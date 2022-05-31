@@ -123,7 +123,7 @@ public:
   CatchDynEnv_O(jmp_buf* target, T_sp a_tag) : DestDynEnv_O(target), tag(a_tag) {}
   virtual ~CatchDynEnv_O() {};
 public:
-  virtual bool unwound_dynenv_p() { return false; }
+  virtual bool unwound_dynenv_p() { return true; }
 };
 
 // Dynenv for a CL:UNWIND-PROTECT cleanup.
