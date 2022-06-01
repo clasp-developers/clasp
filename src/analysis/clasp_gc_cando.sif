@@ -157,8 +157,8 @@
  "chem::IterateAtoms_O"
  "core::LongFloat_O"
  "core::ComplexVector_int4_t_O"
- "chem::DirectionalCoupling_O"
  "llvmo::DILocalVariable_O"
+ "chem::DirectionalCoupling_O"
  "chem::FFPtorDb_O"
  "llvmo::TargetLibraryInfoWrapperPass_O"
  "asttooling::QualType_O"
@@ -482,8 +482,8 @@
  "chem::FFNonbondCrossTermTable_O"
  "kinematics::MonomerBaseNode_O"
  "llvmo::Type_O"
- "chem::Command_O"
  "chem::StereoConfiguration_O"
+ "chem::Command_O"
  "llvmo::JITDylib_O"
  "core::Pointer_O"
  "llvmo::UnreachableInst_O"
@@ -495,8 +495,8 @@
  "chem::EnergySketchStretch"
  "chem::ResidueTest_O"
  "chem::RestraintDistance_O"
- "chem::SmartsRoot_O"
  "llvmo::DIDerivedType_O"
+ "chem::SmartsRoot_O"
  "chem::TwisterDriver_O"
  "core::SimpleVector_int64_t_O"
  "llvmo::ConstantDataSequential_O"
@@ -508,8 +508,8 @@
  "core::MDArray_double_O"
  "chem::EntityNameSet_O"
  "llvmo::StoreInst_O"
- "chem::ResidueList_O"
  "llvmo::DebugLoc_O"
+ "chem::ResidueList_O"
  "core::WeakPointer_O"
  "core::DestDynEnv_O"
  "core::IOFileStream_O"
@@ -1892,10 +1892,10 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<geom::ComplexVectorCoordinate_O>")( TAGS:OFFSET-BASE-CTYPE . "chem::SuperposeSelectedAtoms_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_MoveableCoordinates")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<chem::Matter_O>")( TAGS:OFFSET-BASE-CTYPE . "chem::SuperposeSelectedAtoms_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Matter")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "TAGGED_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>")( TAGS:OFFSET-BASE-CTYPE . "chem::SuperposeSelectedAtoms_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_SuperposeAtoms._Vector._Contents")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_chem__Command_O")(TAGS:STAMP-KEY . "chem::Command_O")(TAGS:PARENT-CLASS . "core::CxxObject_O")(TAGS:LISP-CLASS-BASE . "core::CxxObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_chem__StereoConfiguration_O")(TAGS:STAMP-KEY . "chem::StereoConfiguration_O")(TAGS:PARENT-CLASS . "core::CxxObject_O")(TAGS:LISP-CLASS-BASE . "core::CxxObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Symbol_O>")( TAGS:OFFSET-BASE-CTYPE . "chem::StereoConfiguration_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_AtomName")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Symbol_O>")( TAGS:OFFSET-BASE-CTYPE . "chem::StereoConfiguration_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Configuration")) }
-{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_chem__Command_O")(TAGS:STAMP-KEY . "chem::Command_O")(TAGS:PARENT-CLASS . "core::CxxObject_O")(TAGS:LISP-CLASS-BASE . "core::CxxObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_kinematics__MonomerBaseNode_O")(TAGS:STAMP-KEY . "kinematics::MonomerBaseNode_O")(TAGS:PARENT-CLASS . "core::CxxObject_O")(TAGS:LISP-CLASS-BASE . "core::CxxObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_kinematics__AggregateNode_O")(TAGS:STAMP-KEY . "kinematics::AggregateNode_O")(TAGS:PARENT-CLASS . "kinematics::MonomerBaseNode_O")(TAGS:LISP-CLASS-BASE . "kinematics::MonomerBaseNode_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "TAGGED_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChainNode_O>>>")( TAGS:OFFSET-BASE-CTYPE . "kinematics::AggregateNode_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Chains._Vector._Contents")) }
@@ -5555,7 +5555,6 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Complex_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._ImaginaryUnitNegative")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Ratio_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._PlusHalf")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::List_V>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._UnixSignalHandlers")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::List_V>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._CommandLineArguments")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::HashTableEqual_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._SourceFileIndices")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::HashTableEqual_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._PackageNameIndexMap")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ctype__Bool")( TAGS:OFFSET-CTYPE . "_Bool")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._PrintSymbolsProperly")) }
