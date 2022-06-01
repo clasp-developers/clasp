@@ -55,6 +55,8 @@
 * Replace hard coded paths to `nm` in snapshot code with NM_BINARY macro value
   set by configure.
 * Clasp can now be built directly from source. Resolves issue [#175][].
+* Snapshots now parse command line options such as `--noinform`, `--noprint`,
+  `--quit`, and `--disable-debugger`.
 
 # Version 1.0.0 (LLVM13) 2022-03-26
 
