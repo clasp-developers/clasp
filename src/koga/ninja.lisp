@@ -178,6 +178,22 @@
                      :inputs outputs
                      :outputs (list "install_code")))
 
+(defmethod print-target-source
+    (configuration (name (eql :ninja)) output-stream (target (eql :install-bin)) source
+     &aux (output (make-source (file-namestring (source-path source)) :package-bin)))
+  (declare (ignore configuration))
+  (ninja:write-build output-stream :install-binary
+                     :inputs (list source)
+                     :outputs (list output))
+  (list :outputs output))
+
+(defmethod print-target-sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :install-bin)) sources
+     &key outputs &allow-other-keys)
+  (ninja:write-build output-stream :phony
+                     :inputs outputs
+                     :outputs (list "install_bin")))
+
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :iclasp))
      (source c-source))
@@ -315,6 +331,7 @@
     (ninja:write-build output-stream :phony
                                      :inputs (append (list "install_bitcode"
                                                            "install_code"
+                                                           "install_bin"
                                                            exe-installed
                                                            lib-installed
                                                            symlink-installed)
@@ -592,7 +609,7 @@
         (ninja:write-build output-stream :phony
                            :inputs kernels
                            :outputs (list (build-name "jupyter_cclasp")))
-        (unless (eq :dclasp (default-stage configuration))
+        (unless (eq :sclasp (default-stage configuration))
           (ninja:write-build output-stream :phony
                              :inputs (list (build-name "jupyter_cclasp"))
                              :outputs (list (build-name "jupyter"))))))
@@ -713,19 +730,19 @@
                          :outputs (list "analyze")))))
 
 (defmethod print-variant-target-source
-    (configuration (name (eql :ninja)) output-stream (target (eql :dclasp))
+    (configuration (name (eql :ninja)) output-stream (target (eql :sclasp))
      (source c-source))
   (declare (ignore configuration name output-stream target))
   (list :objects (make-source-output source :type "o")))
 
 (defmethod print-variant-target-source
-    (configuration (name (eql :ninja)) output-stream (target (eql :dclasp))
+    (configuration (name (eql :ninja)) output-stream (target (eql :sclasp))
      (source cc-source))
   (declare (ignore configuration name output-stream target))
   (list :objects (make-source-output source :type "o")))
 
 (defmethod print-variant-target-sources
-    (configuration (name (eql :ninja)) output-stream (target (eql :dclasp)) sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :sclasp)) sources
      &key objects &allow-other-keys
      &aux (cclasp (build-name :cclasp))
           (iclasp (make-source (build-name :iclasp) :variant)))
@@ -734,21 +751,21 @@
            (let* ((executable (make-source (build-name name) :variant))
                   (symlink (make-source name :variant))
                   (symlink-installed (make-source name :package-bin))
-                  (dcleap-symlink (make-source "dcleap" :variant))
-                  (dcleap-symlink-installed (make-source "dcleap" :package-bin))
+                  (scleap-symlink (make-source "scleap" :variant))
+                  (scleap-symlink-installed (make-source "scleap" :package-bin))
                   (installed (make-source (build-name name) :package-bin))
                   (build-outputs (list executable symlink))
                   (install-outputs (list installed symlink-installed))
                   (system (not (uiop:subpathp (share-path configuration)
                                               (uiop:getenv-absolute-directory "HOME"))))
                   (kernel (jupyter-kernel-path configuration
-                                               (if (equal name "dclasp")
-                                                   "common-lisp_dclasp"
-                                                   "cando_dcando")
+                                               (if (equal name "sclasp")
+                                                   "common-lisp_sclasp"
+                                                   "cando_scando")
                                                :system system))
                   (user-kernel (jupyter-kernel-path configuration
                                                     (format nil "~a_~a"
-                                                            (if (equal name "dclasp")
+                                                            (if (equal name "sclasp")
                                                                 "common-lisp"
                                                                 "cando")
                                                             (build-name name)))))
@@ -763,12 +780,12 @@
                                 :inputs (list executable)
                                 :target (file-namestring (source-path executable))
                                 :outputs (list symlink))
-             (when (equal name "dcando")
+             (when (equal name "scando")
                (ninja:write-build output-stream :symbolic-link
                                   :inputs (list executable)
                                   :target (file-namestring (source-path executable))
-                                  :outputs (list dcleap-symlink))
-               (push dcleap-symlink build-outputs))
+                                  :outputs (list scleap-symlink))
+               (push scleap-symlink build-outputs))
              (when (jupyter configuration)
                (ninja:write-build output-stream :jupyter-user-kernel
                                                 :outputs (list user-kernel)
@@ -786,12 +803,12 @@
                                   :inputs (list installed)
                                   :target (file-namestring (source-path installed))
                                   :outputs (list symlink-installed))
-               (when (equal name "dcando")
+               (when (equal name "scando")
                  (ninja:write-build output-stream :symbolic-link
                                     :inputs (list installed)
                                     :target (file-namestring (source-path executable))
-                                    :outputs (list dcleap-symlink-installed))
-                 (push dcleap-symlink-installed install-outputs))
+                                    :outputs (list scleap-symlink-installed))
+                 (push scleap-symlink-installed install-outputs))
                (when (jupyter configuration)
                  (ninja:write-build output-stream (if system
                                                       :jupyter-system-kernel
@@ -806,27 +823,27 @@
                  (push kernel install-outputs)))
              (list build-outputs install-outputs user-kernel))))
     (let ((outputs (if (member :cando (extensions configuration))
-                       (list (snapshot "dcando")
-                             (snapshot "dclasp" :ignore-extensions t))
-                       (list (snapshot "dclasp")))))
+                       (list (snapshot "scando")
+                             (snapshot "sclasp" :ignore-extensions t))
+                       (list (snapshot "sclasp")))))
       (ninja:write-build output-stream :phony
                          :inputs (list* (build-name :cclasp)
                                         (mapcan #'first outputs))
-                         :outputs (list (build-name :dclasp)))
+                         :outputs (list (build-name :sclasp)))
       (when (jupyter configuration)
         (ninja:write-build output-stream :phony
                            :inputs (mapcar #'third outputs)
-                           :outputs (list (build-name "jupyter_dclasp")))
-        (when (eq :dclasp (default-stage configuration))
+                           :outputs (list (build-name "jupyter_sclasp")))
+        (when (eq :sclasp (default-stage configuration))
           (ninja:write-build output-stream :phony
                              :inputs (list (build-name "jupyter_cclasp")
-                                           (build-name "jupyter_dclasp"))
+                                           (build-name "jupyter_sclasp"))
                              :outputs (list (build-name "jupyter")))))
       (when *variant-default*
         (ninja:write-build output-stream :phony
                            :inputs (list* "install_cclasp"
                                           (mapcan #'second outputs))
-                           :outputs (list "install_dclasp"))))))
+                           :outputs (list "install_sclasp"))))))
 
 (defmethod print-epilogue (configuration (name (eql :ninja)) output-stream)
   (ninja:write-build output-stream :update-unicode
