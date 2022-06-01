@@ -1022,8 +1022,12 @@
          (output (bir:output instruction))
          (outputrt (cc-bmir:rtype output))
          (ninputs (length inputs)))
-    (assert (equal (length outputrt) ninputs))
-    (out (if (= ninputs 1) (in (first inputs)) (mapcar #'in inputs)) output)))
+    (cond ((null outputrt) ; e.g. unused, so ignore inputs
+           (out nil output))
+          (t
+           (assert (equal (length outputrt) ninputs))
+           (out (if (= ninputs 1) (in (first inputs)) (mapcar #'in inputs))
+                output)))))
 
 (defun %cast-to-mv (values)
   (cond ((null values) (cmp:irc-make-tmv (%size_t 0) (%nil)))
