@@ -72,6 +72,9 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/instance.h>
+#ifdef DEBUG_DYN_ENV_STACK
+#include <clasp/core/unwind.h> // global_debug_dyn_env_stack
+#endif
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/hashTableEqual.h>
@@ -514,6 +517,11 @@ int main( int argc, char *argv[] )
       llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrint;
     }
   }
+
+#ifdef DEBUG_DYN_ENV_STACK
+  const char* ddes = getenv("CLASP_DEBUG_DYN_ENV_STACK");
+  if (ddes) core::global_debug_dyn_env_stack = true;
+#endif
   
   // Do not touch debug log until after MPI init
 

@@ -1239,6 +1239,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (fmt::sprintf("DEBUG_COMPILE_FILE_OUTPUT_INFO = %s\n" , (debug_compile_file_output_info ? "**DEFINED**" : "undefined") ));
 
+  bool debug_dyn_env_stack = false;
+#if DEBUG_DYN_ENV_STACK==1
+  debug_dyn_env_stack = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DYN-ENV-STACK"),features);
+#endif
+  if (buildReport) ss << (fmt::sprintf("DEBUG_DYN_ENV_STACK = %s\n", (debug_dyn_env_stack ? "**DEFINED**" : "undefined")));
+  
   //
   // DEBUG_MONITOR must be last - other options turn this on
   //

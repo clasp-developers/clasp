@@ -8,6 +8,10 @@
 
 namespace core {
 
+#ifdef DEBUG_DYN_ENV_STACK
+bool global_debug_dyn_env_stack = false;
+#endif
+
 DynEnv_O::SearchStatus sjlj_unwind_search(LexDynEnv_sp dest) {
   DynEnv_O::SearchStatus status = DynEnv_O::Proceed;
   for (T_sp iter = my_thread->dynEnvStackGet();;) {
