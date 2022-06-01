@@ -15,6 +15,7 @@
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
+#include <clasp/core/unwind.h> // DynEnv stuff
 
 
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
@@ -211,32 +212,77 @@ ThreadLocalState::ThreadLocalState() :
   this->_xorshf_z = rand();
 }
 
-void ThreadLocalState::dynEnvStackTest(core::T_sp val) const {
-  if (val.consp()) {
-    Cons_sp cval = gc::As_unsafe<Cons_sp>(val);
-    T_sp cvalcdr = CONS_CDR(cval);
-    if (cvalcdr.consp()) {
-      if ((uintptr_t)cval.raw_() <= (uintptr_t)(__builtin_frame_address(0))) {
-        printf("%s:%d:%s The DynEnvStack is out of order\n", __FILE__, __LINE__, __FUNCTION__ );
-        size_t level=0;
-        intptr_t prev = 0;
-        for (T_sp iter = val;;) {
-          if (level>1000) break;
-          if (iter.consp()) {
-            printf(" level %3lu  %p", level, iter.raw_() );
-            if (prev != 0) {
-              printf( " [delta %ld]\n", (intptr_t)iter.raw_()-prev);
-            } else {
-              printf(" \n");
-            }
-            prev = (intptr_t)iter.raw_();
-          } else break;
-          level++;
-          iter = CONS_CDR(iter);
-        }
+static void dumpDynEnvStack(T_sp stack) {
+  size_t level = 0;
+  intptr_t prev = 0;
+  for (T_sp iter = stack;;) {
+    if (level > 1000) {
+      fprintf(stderr, "[hit length limit (1000)]\n");
+      break;
+    }
+    if (iter.consp()) {
+      fprintf(stderr, " level %3lu  %p", level, iter.raw_());
+      if (prev != 0) {
+        fprintf(stderr, " [delta %ld]\n", (intptr_t)iter.raw_()-prev);
+      } else {
+        fprintf(stderr, "\n");
+      }
+      prev = (intptr_t)iter.raw_();
+    } else if (iter.nilp()) break;
+    else {
+      fprintf(stderr, "level %3lu  %p [NOT A CONS!]\n", level, iter.raw_());
+      break;
+    }
+    ++level;
+    iter = CONS_CDR(iter);
+  }
+}
+
+void ThreadLocalState::dynEnvStackTest(core::T_sp bot) const {
+  uintptr_t approximate_sp = (uintptr_t)(__builtin_frame_address(0));
+  if (bot.consp()) {
+    T_sp turtle = bot;
+    T_sp hare = CONS_CDR(bot);
+    while (true) {
+      if ((uintptr_t)turtle.raw_() <= approximate_sp) {
+        fprintf(stderr, "%s:%d:%s: The DynEnvStack has conses from deallocated stack space\n",
+                __FILE__, __LINE__, __FUNCTION__);
+        dumpDynEnvStack(bot);
         abort();
       }
+      if (turtle == hare) {
+        fprintf(stderr, "%s:%d:%s: The DynEnvStack is circular\n",
+                __FILE__, __LINE__, __FUNCTION__);
+        // This will dump a whole 1000 frames. It could be made smarter,
+        // but I don't think this is a likely scenario and it's just here to
+        // avoid a nonterminating test which would be really damn annoying.
+        dumpDynEnvStack(bot);
+        abort();
+      }
+      if (!gc::IsA<core::DynEnv_sp>(ENSURE_VALID_OBJECT(CONS_CAR(turtle)))) {
+        fprintf(stderr, "%s:%d:%s: The DynEnvStack contains a non-dynenv\n",
+                __FILE__, __LINE__, __FUNCTION__);
+        dumpDynEnvStack(bot);
+        abort();
+      }
+      turtle = CONS_CDR(turtle);
+      if (turtle.nilp()) break;
+      else if (!turtle.consp()) {
+        fprintf(stderr, "%s:%d:%s: The DynEnvStack is a dotted list\n",
+                __FILE__, __LINE__, __FUNCTION__);
+        dumpDynEnvStack(bot);
+        abort();
+      }
+      if (hare.consp()) {
+        hare = CONS_CDR(hare);
+        if (hare.consp()) hare = CONS_CDR(hare);
+      }
     }
+  } else if (bot.notnilp()) {
+    fprintf(stderr, "%s:%d:%s: The DynEnvStack is not a list\n",
+            __FILE__, __LINE__, __FUNCTION__);
+    dumpDynEnvStack(bot);
+    abort();
   }
 }
 uint32_t ThreadLocalState::random() {
