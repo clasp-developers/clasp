@@ -31,7 +31,7 @@ THE SOFTWARE.
 // ----------------------------------------------------------------------------
 // Set system wide debug flags here
 // ----------------------------------------------------------------------------
-#if 1
+#if 0
 /* 0 == no CHECK_FRAME, 1 == fast CHECK_FRAME, 2 == slow CHECK_FRAME */
 #define DEBUG_FRAME() 0
 //#define DEBUG_OBJECT_FILES 1
