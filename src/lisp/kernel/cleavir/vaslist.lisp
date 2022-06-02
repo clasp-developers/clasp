@@ -1,4 +1,4 @@
-(in-package #:cc-vaslist)
+(in-package #:clasp-cleavir-vaslist)
 
 ;;;; The code in this file is supposed to perform a transform on functions
 ;;;; with a &rest parameter such that no list actually needs to be consed.
