@@ -217,7 +217,7 @@
       (%+.sf.4 4 :single-float cc::%fadd)
       (%-.sf.4 4 :single-float cc::%fsub)
     (%*.sf.4 4 :single-float cc::%fmul)
-    (%*.sf.4 4 :single-float cc::%fdiv)
+    (%/.sf.4 4 :single-float cc::%fdiv)
     (%+.df.2 2 :double-float cc::%fadd)
     (%-.df.2 2 :double-float cc::%fsub)
     (%*.df.2 2 :double-float cc::%fmul)
