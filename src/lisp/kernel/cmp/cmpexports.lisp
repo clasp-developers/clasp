@@ -206,6 +206,8 @@
             irc-create-invoke-default-unwind
             irc-create-landing-pad
             irc-exception-typeid*
+            irc-insert-element
+            irc-extract-element
             irc-insert-value
             irc-extract-value
             irc-gep

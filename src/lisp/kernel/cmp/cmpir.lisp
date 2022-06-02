@@ -1653,6 +1653,12 @@ function-description - for debugging."
 (defun undef-t-ptr ()
   (llvm-sys:undef-value-get %t*%))
 
+(defun irc-insert-element (vector value idx &optional (label ""))
+  (llvm-sys:create-insert-element *irbuilder* vector value idx label))
+
+(defun irc-extract-element (vector idx &optional (label ""))
+  (llvm-sys:create-extract-element *irbuilder* vector idx label))
+
 (defun irc-struct-gep (type struct idx &optional (label ""))
   (llvm-sys:create-struct-gep *irbuilder* type struct idx label ))
 

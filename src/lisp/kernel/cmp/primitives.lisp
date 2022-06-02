@@ -252,6 +252,11 @@
 
          (primitive         "llvm.umin.i64" :i64 (list :i64 :i64))
          (primitive         "llvm.umax.i64" :i64 (list :i64 :i64))
+
+         (primitive         "llvm.vector.reduce.fadd.v4f32" :single-float (list :single-float :v4-single-float))
+         (primitive         "llvm.vector.reduce.fmul.v4f32" :single-float (list :single-float :v4-single-float))
+         (primitive         "llvm.vector.reduce.fadd.v2f64" :double-float (list :double-float :v2-double-float))
+         (primitive         "llvm.vector.reduce.fmul.v2f64" :double-float (list :double-float :v2-double-float))
          
          (primitive         "llvm.experimental.stackmap" :void (list :i64 :i32) :varargs t)
          (primitive         "llvm.va_copy" :void (list :i8* :i8*))
@@ -497,6 +502,8 @@
     (:bignum %bignum%)
     (:double-float %double%)
     (:single-float %float%)
+    (:v4-single-float (llvm-sys:vector-type-get %float% 4 nil))
+    (:v2-double-float (llvm-sys:vector-type-get %double% 2 nil))
     (:fn-start-up* %fn-start-up*%)
     (:gcroots-in-module* %gcroots-in-module*%)
     (:i1 %i1%)

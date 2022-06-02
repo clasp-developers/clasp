@@ -470,7 +470,7 @@
 ;; here our datum actually has its rtype, but we (maybe) need to convert it
 ;; for the sake of some instruction.
 (defun maybe-cast-before (inst datum needed-rtype)
-  (unless (equal (cc-bmir:rtype datum) needed-rtype)
+  (unless (equalp (cc-bmir:rtype datum) needed-rtype)
     (let* ((new (make-instance 'bir:output
                   :rtype needed-rtype :derived-type (bir:ctype datum)))
            (cast (make-instance 'cc-bmir:cast
@@ -484,7 +484,7 @@
 ;;; Here, the rtype we want is what datum has, and the actual rtype is what
 ;;; instruction actually outputs. DATUM must be the output of INST.
 (defun maybe-cast-after (inst datum actual-rtype)
-  (unless (or (equal (cc-bmir:rtype datum) actual-rtype)
+  (unless (or (equalp (cc-bmir:rtype datum) actual-rtype)
               ;; Don't bother casting if the datum is unused.
               ;; Inserting a cast anyway can result in BIR verification
               ;; failure for certain special instructions; see #1224.
@@ -697,7 +697,7 @@
            (cast-inputs instruction :multiple-values))
           ((listp outputrt)
            ;; The number of values is fixed, so this is a nop to delete.
-           (assert (equal inputrt outputrt))
+           (assert (equalp inputrt outputrt))
            (cleavir-bir:replace-terminator
             (make-instance 'bir:jump
               :origin (bir:origin instruction) :policy (bir:policy instruction)

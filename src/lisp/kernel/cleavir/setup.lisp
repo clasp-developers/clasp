@@ -174,6 +174,11 @@
     vectorp bit-vector-p simple-bit-vector-p simple-string-p stringp
     hash-table-p sxhash))
 
+(defvar *special-operators* (make-hash-table))
+
+(defmacro define-to-be-special-operator (name)
+  `(setf (gethash ',name *special-operators*) t))
+
 (defun treat-as-special-operator-p (name)
   (cond
     ((cmp:treat-as-special-operator-p name) t)
@@ -191,7 +196,7 @@
     ((eq name 'core::bind-vaslist) t)
     ((eq name 'core::primop) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
-    (t nil)))
+    (t (gethash name *special-operators*))))
 
 ;;; Store inline ASTs in the environment, keyed to their name.
 ;;; FIXME: Fix sysprops for setf names

@@ -42,6 +42,7 @@
                (:file "transform")
                (:file "translate")
                ;;                (:file "satiation")
+               (:file "simd")
                (:file "fixup-eclector-readtables")
                (:file "activate-clasp-readtables-for-eclector")
                (:file "define-unicode-tables")
