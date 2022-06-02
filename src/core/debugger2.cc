@@ -178,7 +178,7 @@ T_mv early_debug(T_sp condition, bool can_continue) {
     printf("The low-level debugger was entered but there is no terminal on fd0 - aboring\n");
     abort();
   }
-  if (globals_->_DebuggerDisabled) {
+  if (global_options->_DebuggerDisabled) {
     printf("This is not an interactive session and the low-level debugger was entered - aborting\n");
     abort();
   }

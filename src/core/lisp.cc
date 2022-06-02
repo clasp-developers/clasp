@@ -235,7 +235,6 @@ Lisp::~Lisp() {};
 void Lisp::shutdownLispEnvironment() {
   this->_Booted = false;
   if (globals_->_DebugStream != NULL) globals_->_DebugStream->beginNode(DEBUG_TOPLEVEL);
-  this->_Roots._CommandLineArguments.reset_();
   delete globals_->_Bundle;
   if (globals_->_DebugStream != NULL) {
     globals_->_DebugStream->endNode(DEBUG_TOPLEVEL);
@@ -475,7 +474,6 @@ void Lisp::startupLispEnvironment() {
   this->_NilsCreated = false;
   this->_EnvironmentInitialized = false;
   this->_EnvironmentId = 0;
-  this->_Roots._CommandLineArguments.reset_();
   //
   // Setup the core package aka the sys package
   //
@@ -510,7 +508,6 @@ void Lisp::startupLispEnvironment() {
 #ifdef DEBUG_PROGRESS
   printf("%s:%d startupLispEnvironment initialize everything\n", __FILE__, __LINE__ );
 #endif
-  this->_Roots._CommandLineArguments = nil<T_O>();
   {
     initialize_Lisp();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
@@ -605,6 +602,74 @@ void Lisp::startupLispEnvironment() {
   gctools::initialize_unix_signal_handlers();
   this->_Booted = true;
   
+  List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
+  features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
+  features = Cons_O::create(_lisp->internKeyword("COMMON-LISP"), features);
+  features = Cons_O::create(_lisp->internKeyword("ANSI-CL"), features);
+  features = Cons_O::create(_lisp->internKeyword("IEEE-FLOATING-POINT"), features);
+#ifdef _TARGET_OS_DARWIN
+  features = Cons_O::create(_lisp->internKeyword("DARWIN"), features);
+  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
+#endif
+#ifdef _TARGET_OS_LINUX
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
+  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
+#endif
+#ifdef _TARGET_OS_FREEBSD
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("FREEBSD"), features);
+  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
+  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
+#endif
+#ifdef CLASP_UNICODE
+  features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
+#endif
+#if (LLVM_VERSION_X100>=380)
+  features = Cons_O::create(_lisp->internKeyword("LLVM38"), features);
+#endif
+#if (LLVM_VERSION_X100>=390)
+  features = Cons_O::create(_lisp->internKeyword("LLVM39"), features);
+#endif
+#ifdef VARARGS
+  features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
+#endif
+#ifdef POLYMORPHIC_SMART_PTR
+  features = Cons_O::create(_lisp->internKeyword("POLYMORPHIC-SMART-PTR"), features);
+#endif
+#ifdef _DEBUG_BUILD
+  features = Cons_O::create(_lisp->internKeyword("DEBUG-BUILD"), features);
+#else // _RELEASE_BUILD
+  features = Cons_O::create(_lisp->internKeyword("RELEASE-BUILD"), features);
+#endif
+#ifdef USE_MPI
+  features = Cons_O::create(_lisp->internKeyword("USE-MPI"), features);
+#endif
+#if defined(USE_BOEHM)
+  features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
+#elif defined(USE_MPS)
+  features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
+#elif defined(USE_MMTK)
+  features = Cons_O::create(_lisp->internKeyword("USE-MMTK"), features);
+#endif
+#ifdef USE_PRECISE_GC
+  // Informs CL that precise GC is being used
+  features = Cons_O::create(_lisp->internKeyword("USE-PRECISE-GC"), features);
+#endif
+#ifdef CLASP_THREADS
+  features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
+#endif
+#if TAG_BITS==4
+  features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"),features);
+#endif
+  cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
+
+  globals_->_InitFileName = "sys:src;lisp;" KERNEL_NAME ";init.lisp";
 }
 
 /*! Get a Str8Ns buffer string from the BufferStr8NsPool.*/
@@ -1169,70 +1234,6 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
   for (auto feature : options._Features) {
     features = Cons_O::create(_lisp->internKeyword(feature), features);
   }
-  features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
-  features = Cons_O::create(_lisp->internKeyword("COMMON-LISP"), features);
-  features = Cons_O::create(_lisp->internKeyword("ANSI-CL"), features);
-  features = Cons_O::create(_lisp->internKeyword("IEEE-FLOATING-POINT"), features);
-#ifdef _TARGET_OS_DARWIN
-  features = Cons_O::create(_lisp->internKeyword("DARWIN"), features);
-  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
-  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
-#endif
-#ifdef _TARGET_OS_LINUX
-  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
-  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
-#endif
-#ifdef _TARGET_OS_FREEBSD
-  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("FREEBSD"), features);
-  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
-  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
-#endif
-#ifdef CLASP_UNICODE
-  features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
-#endif
-#if (LLVM_VERSION_X100>=380)
-  features = Cons_O::create(_lisp->internKeyword("LLVM38"), features);
-#endif
-#if (LLVM_VERSION_X100>=390)
-  features = Cons_O::create(_lisp->internKeyword("LLVM39"), features);
-#endif
-#ifdef VARARGS
-  features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
-#endif
-#ifdef POLYMORPHIC_SMART_PTR
-  features = Cons_O::create(_lisp->internKeyword("POLYMORPHIC-SMART-PTR"), features);
-#endif
-#ifdef _DEBUG_BUILD
-  features = Cons_O::create(_lisp->internKeyword("DEBUG-BUILD"), features);
-#else // _RELEASE_BUILD
-  features = Cons_O::create(_lisp->internKeyword("RELEASE-BUILD"), features);
-#endif
-#ifdef USE_MPI
-  features = Cons_O::create(_lisp->internKeyword("USE-MPI"), features);
-#endif
-#if defined(USE_BOEHM)
-  features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
-#elif defined(USE_MPS)
-  features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
-#elif defined(USE_MMTK)  
-  features = Cons_O::create(_lisp->internKeyword("USE-MMTK"), features);
-#endif
-#ifdef USE_PRECISE_GC
-  // Informs CL that precise GC is being used
-  features = Cons_O::create(_lisp->internKeyword("USE-PRECISE-GC"), features);
-#endif
-#ifdef CLASP_THREADS
-  features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
-#endif
-#if TAG_BITS==4
-  features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"),features);
-#endif
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
   // Set additional features for debugging flags
   //  pass a dummy stringstream that builds a report
@@ -1252,20 +1253,6 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
     printf("%s:%d  Lisp smart_ptr width -> %d  sizeof(Lisp) -> %d\n", __FILE__, __LINE__, (int)(sizeof(_lisp->_Roots)/8), (int)sizeof(Lisp));
   }
 
-  //	this->_FunctionName = execName;
-  globals_->_InitFileName = "sys:src;lisp;" KERNEL_NAME ";init.lisp";
-
-  globals_->_IgnoreInitImage = options._DontLoadImage;
-  globals_->_IgnoreInitLsp = options._DontLoadInitLsp;
-
-  globals_->_NoInform = options._NoInform;
-  globals_->_NoPrint = options._NoPrint;
-  globals_->_DebuggerDisabled = options._DebuggerDisabled;
-  globals_->_Interactive = options._Interactive;
-  globals_->_RCFileName = options._RCFileName;
-  globals_->_NoRc = options._NoRc;
-  globals_->_ExportedSymbolsAccumulate = options._ExportedSymbolsAccumulate;
-  globals_->_ExportedSymbolsFilename = options._ExportedSymbolsFilename;
   if (options._HasDescribeFile) {
     dumpDebuggingLayouts(options._DescribeFile);
   }
@@ -1360,7 +1347,7 @@ DOCGROUP(clasp)
 CL_DEFUN void core__low_level_repl() {
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   if ( features.notnilp() ) {
-    if (globals_->_Interactive) {
+    if (global_options->_Interactive) {
       _lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), nil<T_O>(), true, true);
     }
   }
@@ -1376,47 +1363,47 @@ CL_DEFUN List_sp core__singleDispatchGenericFunctions()
 
 DOCGROUP(clasp)
 CL_DEFUN bool core__noinform_p() {
-  return globals_->_NoInform;
+  return global_options->_NoInform;
 }
 
 DOCGROUP(clasp)
 CL_DEFUN bool core__noprint_p() {
-  return globals_->_NoPrint;
+  return global_options->_NoPrint;
 }
 
 CL_DOCSTRING(R"dx(Enable the system debugger if it has been disabled by disable-debugger.)dx")
 DOCGROUP(clasp)
 CL_DEFUN void ext__enable_debugger() {
-  globals_->_DebuggerDisabled = false;
+  global_options->_DebuggerDisabled = false;
 }
 
 CL_DOCSTRING(R"dx(Disable the system debugger)dx")
 CL_DOCSTRING_LONG(R"dx(If the debugger is disabled, then if invoke-debugger is called, *invoke-debugger-hook* and/or *debugger-hook* are called as normal. However, if the default debugger would be entered, Clasp will instead dump a backtrace and exit with a non-zero code.)dx")
 DOCGROUP(clasp)
 CL_DEFUN void ext__disable_debugger() {
-  globals_->_DebuggerDisabled = true;
+  global_options->_DebuggerDisabled = true;
 }
 
 DOCGROUP(clasp)
 CL_DEFUN bool core__debugger_disabled_p() {
-  return globals_->_DebuggerDisabled;
+  return global_options->_DebuggerDisabled;
 }
 
 DOCGROUP(clasp)
 CL_DEFUN bool core__is_interactive_lisp() {
-  return globals_->_Interactive;
+  return global_options->_Interactive;
 }
 
 // This conses, which is kind of stupid, but we only call it once.
 DOCGROUP(clasp)
 CL_DEFUN String_sp core__rc_file_name() {
   // FIXME: Unicode filenames?
-  return SimpleBaseString_O::make(globals_->_RCFileName);
+  return SimpleBaseString_O::make(global_options->_RCFileName);
 }
 
 DOCGROUP(clasp)
 CL_DEFUN bool core__no_rc_p() {
-  return globals_->_NoRc;
+  return global_options->_NoRc;
 }
 
 void Lisp::readEvalPrintInteractive() {
@@ -2051,7 +2038,7 @@ CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, Lis
     printf("%s\n", ss.str().c_str());
   }
   dbg_hook("universalErrorHandler");
-  if (globals_->_Interactive) {
+  if (global_options->_Interactive) {
     core__invoke_internal_debugger(nil<T_O>());
   }
   abort();
@@ -2383,7 +2370,7 @@ int Lisp::run() {
   Package_sp cluser = gc::As<Package_sp>(_lisp->findPackage("COMMON-LISP-USER"));
   cl::_sym_STARpackageSTAR->defparameter(cluser);
   try {
-    if (!globals_->_IgnoreInitImage) {
+    if (!global_options->_IgnoreInitImage) {
       if ( startup_functions_are_waiting() ) {
         startup_functions_invoke(NULL);
       } else {
@@ -2398,7 +2385,7 @@ int Lisp::run() {
           printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
         }
       }
-    } else if (!globals_->_IgnoreInitLsp) {
+    } else if (!global_options->_IgnoreInitLsp) {
     // Assume that if there is no program then
     // we want an interactive script
     //
@@ -2413,7 +2400,7 @@ int Lisp::run() {
           printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
         }
       }
-    } else if (globals_->_Interactive) {
+    } else if (global_options->_Interactive) {
       write_bf_stream("Clasp (copyright Christian E. Schafmeister 2014)\n");
       write_bf_stream("Low level repl\n");
       this->readEvalPrintInteractive();
@@ -2423,8 +2410,8 @@ int Lisp::run() {
   } catch (core::ExitProgramException &ee) {
     exit_code = ee.getExitResult();
   }
-  if (globals_->_ExportedSymbolsAccumulate) {
-    T_sp stream = core::cl__open(core::SimpleBaseString_O::make(globals_->_ExportedSymbolsFilename),
+  if (global_options->_ExportedSymbolsAccumulate) {
+    T_sp stream = core::cl__open(core::SimpleBaseString_O::make(global_options->_ExportedSymbolsFilename),
                                  kw::_sym_output);
     core::core__mangledSymbols(stream);
     cl__close(stream);
@@ -2497,9 +2484,6 @@ LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
 
 void LispHolder::startup(const CommandLineOptions& options) {
   ::_lisp = this->lisp_;
-
-  globals_->_Argc = options._RawArguments.size();
-  globals_->_Argv = options._RawArguments;
 
   if (!globals_->_Bundle) {
     globals_->_Bundle = new Bundle(options._ExecutableName);

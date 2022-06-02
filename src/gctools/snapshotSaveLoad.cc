@@ -3422,6 +3422,9 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       }
     }
   }
+
+  _lisp->parseCommandLineArguments(*core::global_options);
+
   int exitCode;
   try {
     if (ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue().notnilp()) {

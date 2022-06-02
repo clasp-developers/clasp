@@ -220,8 +220,6 @@ struct globals_t {
   uint           _StackSampleCount;
   uint           _StackSampleSize;
   uint           _StackSampleMax;
-  int            _Argc; //! Raw argc
-  vector<string> _Argv; // Raw argv
   /*! Map source file path strings to FileScope_sp */
   uint _ReplCounter;
   /*! Store paths to important directories */
@@ -235,21 +233,11 @@ struct globals_t {
 	*/
   bool _LockGlobalInitialization;
   vector<InitializationCallback> _GlobalInitializationCallbacks;
-  bool _NoInform;
-  bool _NoPrint;
-  bool _DebuggerDisabled;
-  bool _Interactive;
   string _FunctionName;
   /*! Define the name of a source file that is evaluated
    * before everything else to extend the environment
    */
   string _InitFileName;
-  string _RCFileName;
-  bool _ExportedSymbolsAccumulate;
-  string _ExportedSymbolsFilename;
-  bool _NoRc;
-  bool _IgnoreInitImage;
-  bool _IgnoreInitLsp; // true if the startup shouldn't be loaded
 
  public:
   /*! Callbacks for making packages and exporting symbols */
@@ -279,17 +267,10 @@ struct globals_t {
                 _StackSampleCount(0),
                 _StackSampleSize(0),
                 _StackSampleMax(0),
-                _ExportedSymbolsAccumulate(false),
-                _Argc(0),
                 _ReplCounter(1),
                 _Bundle(NULL),
                 _DebugStream(NULL),
-                _SingleStepLevel(UndefinedUnsignedInt),
-                _NoRc(false),
-                _NoPrint(false),
-                _NoInform(false),
-                _DebuggerDisabled(false),
-                _Interactive(true)
+                _SingleStepLevel(UndefinedUnsignedInt)
   {
     this->_GlobalInitializationCallbacks.clear();
     this->_TraceLevel = 0;
@@ -370,7 +351,6 @@ class Lisp {
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
     List_sp _UnixSignalHandlers;
-    List_sp _CommandLineArguments; // Make this the last smart_ptr in the GCRoots struct
 //    DynamicBindingStack _Bindings;
     HashTableEqual_sp _SourceFileIndices; // map<string,int>
     HashTableEqual_sp _PackageNameIndexMap; // map<string,int>
@@ -834,8 +814,6 @@ public:
 	 * Otherwise return nil
 	 */
   void parseCommandLineArguments(const CommandLineOptions& options);
-
-  List_sp getCommandLineArguments() { return this->_Roots._CommandLineArguments; };
 
   Intrinsic_sp getIntrinsic(const string &name);
   string getMethodName(uint methodId);
