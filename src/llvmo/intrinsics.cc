@@ -864,9 +864,45 @@ ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
   return clasp_ffi::ForeignData_O::create(x).raw_();
 }
 
+// ----------------------------------------------------------------------------
+// VECTORS
+// We convert Lisp vectors (1D arrays) of appropriate length to and from SIMD vectors.
+// ----------------------------------------------------------------------------
 
+typedef float v4float __attribute__ ((vector_size (16)));
+typedef double v2double __attribute__ ((vector_size (16)));
 
+ALWAYS_INLINE v4float from_object_v4float( core::T_O* obj ) {
+  T_sp tobj((gctools::Tagged)obj);
+  // Type and length have already been checked by Lisp compiler
+  core::SimpleVector_float_sp svarray = gc::As_unsafe<core::SimpleVector_float_sp>(tobj);
+  v4float result = {(*svarray)[0], (*svarray)[1], (*svarray)[2], (*svarray)[3]};
+  return result;
+}
 
+ALWAYS_INLINE core::T_O* to_object_v4float( v4float v ) {
+  core::SimpleVector_float_sp res = core::SimpleVector_float_O::make(4);
+  (*res)[0] = v[0];
+  (*res)[1] = v[1];
+  (*res)[2] = v[2];
+  (*res)[3] = v[3];
+  return res.raw_();
+}
+
+ALWAYS_INLINE v2double from_object_v2double( core::T_O* obj ) {
+  T_sp tobj((gctools::Tagged)obj);
+  // Type and length have already been checked by Lisp compiler
+  core::SimpleVector_double_sp svarray = gc::As_unsafe<core::SimpleVector_double_sp>(tobj);
+  v2double result = {(*svarray)[0], (*svarray)[1]};
+  return result;
+}
+
+ALWAYS_INLINE core::T_O* to_object_v2double( v2double v ) {
+  core::SimpleVector_double_sp res = core::SimpleVector_double_O::make(2);
+  (*res)[0] = v[0];
+  (*res)[1] = v[1];
+  return res.raw_();
+}
 
 // === END OF CORE TRANSLATORS ===
 

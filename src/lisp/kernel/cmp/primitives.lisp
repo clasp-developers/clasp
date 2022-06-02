@@ -472,6 +472,13 @@
          (primitive-unwinds "from_object_pointer" :i64* (list :t*))
          (primitive-unwinds "to_object_pointer" :t* (list :i64*))
          (primitive-unwinds "to_object_void" :t* (list))
+
+         ;; VECTORS
+         (primitive-unwinds "from_object_v4float" :v4-single-float (list :t*))
+         (primitive-unwinds "to_object_v4float" :t* (list :v4-single-float))
+         (primitive-unwinds "from_object_v2double" :v2-double-float (list :t*))
+         (primitive-unwinds "to_object_v2double" :t* (list :v2-double-float))
+         
          ;; === END OF TRANSLATORS ===
          (primitive         "cx_read_stamp" :t* (list :t* :i64))
          (primitive         "cc_read_derivable_cxx_stamp_untagged_object" :i64 (list :i8*))

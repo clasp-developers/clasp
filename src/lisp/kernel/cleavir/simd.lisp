@@ -95,6 +95,28 @@
    (cc::vrtype->llvm (vector-rtype-value-rtype vrtype))
    (vector-rtype-length vrtype) nil))
 
+(defmethod cc::cast-one ((from (eql :object)) (to vector-rtype) value)
+  (let ((intrinsic
+          (cond ((and (eq (vector-rtype-value-rtype to) :single-float)
+                      (= (vector-rtype-length to) 4))
+                 "from_object_v4float")
+                ((and (eq (vector-rtype-value-rtype to) :double-float)
+                      (= (vector-rtype-length to) 2))
+                 "from_object_v2double")
+                (t (error "BUG: Unknown vector rtype ~a" to)))))
+    (cc::%intrinsic-invoke-if-landing-pad-or-call intrinsic (list value))))
+
+(defmethod cc::cast-one ((from vector-rtype) (to (eql :object)) value)
+  (let ((intrinsic
+          (cond ((and (eq (vector-rtype-value-rtype from) :single-float)
+                      (= (vector-rtype-length from) 4))
+                 "to_object_v4float")
+                ((and (eq (vector-rtype-value-rtype from) :double-float)
+                      (= (vector-rtype-length from) 2))
+                 "to_object_v2double")
+                (t (error "BUG: Unknown vector rtype ~a" from)))))
+    (cc::%intrinsic-invoke-if-landing-pad-or-call intrinsic (list value))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; DVECTOR and SVECTOR IR
