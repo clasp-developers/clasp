@@ -205,7 +205,7 @@
                   (let ((inputs (bir:inputs inst)))
                     (assert (= 2 (length inputs)))
                     (let ((i1 (cc::in (first (bir:inputs inst))))
-                          (i2 (cc::in (first (bir:inputs inst))))
+                          (i2 (cc::in (second (bir:inputs inst))))
                           (vtype (llvm-sys:vector-type-get
                                   (cc::vrtype->llvm ,vrtype) ,length nil)))
                       (assert (llvm-sys:type-equal (llvm-sys:get-type i1) vtype))
