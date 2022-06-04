@@ -1,6 +1,7 @@
 name: Nightly Packaging
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - nightly
