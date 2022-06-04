@@ -1,6 +1,7 @@
 name: Nightly Packaging
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - nightly
@@ -124,7 +125,7 @@ jobs:
         with:
           buildpackage-opts: --build=binary --build-profiles=nocando
           docker-image: debian:bookworm
-          extra-build-deps: ca-certificates netbase
+          extra-build-deps: ca-certificates netbase g++-12
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -146,7 +147,7 @@ jobs:
         with:
           buildpackage-opts: --build=binary --build-profiles=noclasp
           docker-image: debian:bookworm
-          extra-build-deps: ca-certificates netbase
+          extra-build-deps: ca-certificates netbase g++-12
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
