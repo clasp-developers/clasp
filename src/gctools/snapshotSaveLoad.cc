@@ -1135,6 +1135,10 @@ struct copy_buffer_t {
   void write_to_stream(std::ofstream& stream) {
     stream.write( this->_BufferStart, this->_Size );
   }
+
+  void write_to_filedes(int filedes) {
+    write( filedes, this->_BufferStart, this->_Size );
+  }
 };
 
 
@@ -2123,8 +2127,6 @@ CL_DEFUN size_t gctools__memory_test(core::T_sp filename)
 /* This is not allowed to do any allocations. */
 void* snapshot_save_impl(void* data) {
   core::SaveLispAndDie* snapshot_data = (core::SaveLispAndDie*)data;
-  char buffer[L_tmpnam];
-  std::string filename = (snapshot_data->_Executable) ? std::tmpnam(buffer) : snapshot_data->_FileName;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
 
   printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -2403,23 +2405,39 @@ void* snapshot_save_impl(void* data) {
   fileHeader->_ObjectFileCount = snapshot._ObjectFiles->_WriteCount;
   fileHeader->describe("Loaded");
 
-  std::ofstream wf(filename, std::ios::out | std::ios::binary);
-  if (!wf) {
-    printf("Cannot open file %s\n", filename.c_str());
-    return NULL;
+  int filedes;
+  std::string filename;
+  if (snapshot_data->_Executable) {
+    filedes = open(snapshot_data->_FileName.c_str(), O_CREAT | O_WRONLY );
+    if (filedes<0) {
+      printf("Cannot open file %s\n", snapshot_data->_FileName.c_str());
+      return NULL;
+    }
+    filename = snapshot_data->_FileName;
+  } else {
+    char tfbuffer[32];
+    strcpy(tfbuffer,"/tmp/ss-XXXXXXXX");
+    filedes = mkstemp(tfbuffer);
+    if (filedes<0) {
+      printf("Cannot open temporary file for snapshot_save\n" );
+      return NULL;
+    }
+    filename = tfbuffer;
   }
-  snapshot._HeaderBuffer->write_to_stream(wf);
-  snapshot._Libraries->write_to_stream(wf);
-  snapshot._Memory->write_to_stream(wf);
-  snapshot._ObjectFiles->write_to_stream(wf);
-  wf.close();
-  
-  printf("%s:%d:%s Wrote snapshot %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
+  printf("%s:%d:%s Writing snapshot to %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
+  if (snapshot_data->_Executable) {
+    close(filedes);
+    filedes = -1;
+  }
 
   if (snapshot_data->_Executable) {
     std::string cmd;
 #ifdef _TARGET_OS_LINUX
-    std::string obj_filename = std::tmpnam(buffer);
+    char tlbuffer[32];
+    strcpy(tlbuffer,"/tmp/ss-XXXXXXXX");
+    int lfiledes = mkstemp(tlbuffer);
+    close(lfiledes);
+    std::string obj_filename = tlbuffer;
 
     std::string mangled_name = filename;
     std::replace_if(mangled_name.begin(), mangled_name.end(),
