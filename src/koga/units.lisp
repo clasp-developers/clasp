@@ -149,7 +149,7 @@
       configuration
     (message :emph "Configuring etags")
     (setf etags (configure-program "etags"
-                                   (or etags #P"etags")))))
+                                   (or etags (list #P"ctags" #P"etags"))))))
 
 (defmethod configure-unit (configuration (unit (eql :xcode))
                            &aux (env (uiop:getenv-absolute-directory "XCODE_SDK"))
