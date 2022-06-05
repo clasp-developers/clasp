@@ -1136,8 +1136,10 @@ struct copy_buffer_t {
     stream.write( this->_BufferStart, this->_Size );
   }
 
-  void write_to_filedes(int filedes) {
-    write( filedes, this->_BufferStart, this->_Size );
+  size_t write_to_filedes(int filedes) {
+    size_t wrote = write( filedes, this->_BufferStart, this->_Size );
+    printf("%s:%d:%s Wrote %lu bytes from %p to filedes %d\n", __FILE__, __LINE__, __FUNCTION__, wrote, this->_BufferStart, filedes );
+    return wrote;
   }
 };
 
@@ -1773,7 +1775,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
 //    printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
-      if (ii%1000==0) {
+      if (ii%1000==0 && ii>0) {
         printf("%6lu remaining pointers to dladdr\n", ii );
       }
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
@@ -2405,29 +2407,37 @@ void* snapshot_save_impl(void* data) {
   fileHeader->_ObjectFileCount = snapshot._ObjectFiles->_WriteCount;
   fileHeader->describe("Loaded");
 
-  int filedes;
   std::string filename;
-  if (snapshot_data->_Executable) {
-    filedes = open(snapshot_data->_FileName.c_str(), O_CREAT | O_WRONLY );
-    if (filedes<0) {
-      printf("Cannot open file %s\n", snapshot_data->_FileName.c_str());
-      return NULL;
+  {
+    int filedes;
+    if (!snapshot_data->_Executable) {
+      char cwdbuffer[1024];
+      printf("%s:%d:%s getcwd -> %s\n", __FILE__, __LINE__, __FUNCTION__, getcwd(cwdbuffer,1023) );
+      filedes = open(snapshot_data->_FileName.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IWUSR );
+      if (filedes<0) {
+        printf("Cannot open file %s\n", snapshot_data->_FileName.c_str());
+        return NULL;
+      }
+      filename = snapshot_data->_FileName;
+    } else {
+      char tfbuffer[32];
+      strcpy(tfbuffer,"/tmp/ss-XXXXXXXX");
+      filedes = mkstemp(tfbuffer);
+      if (filedes<0) {
+        printf("Cannot open temporary file for snapshot_save\n" );
+        return NULL;
+      }
+      filename = tfbuffer;
     }
-    filename = snapshot_data->_FileName;
-  } else {
-    char tfbuffer[32];
-    strcpy(tfbuffer,"/tmp/ss-XXXXXXXX");
-    filedes = mkstemp(tfbuffer);
-    if (filedes<0) {
-      printf("Cannot open temporary file for snapshot_save\n" );
-      return NULL;
+    printf("Writing snapshot to %s filedes = %d\n", filename.c_str(), filedes );
+    snapshot._HeaderBuffer->write_to_filedes(filedes);
+    snapshot._Libraries->write_to_filedes(filedes);
+    snapshot._Memory->write_to_filedes(filedes);
+    snapshot._ObjectFiles->write_to_filedes(filedes);
+    int closeres = close(filedes);
+    if (closeres<0) {
+      printf("%s:%d:%s Error closing file %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str());
     }
-    filename = tfbuffer;
-  }
-  printf("%s:%d:%s Writing snapshot to %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
-  if (snapshot_data->_Executable) {
-    close(filedes);
-    filedes = -1;
   }
 
   if (snapshot_data->_Executable) {
@@ -2464,6 +2474,8 @@ void* snapshot_save_impl(void* data) {
       " -Wl,-force_load," + snapshot_data->_LibDir + "/libclasp.a " BUILD_LIB;
 #endif
 
+    std::cout << "Link command:" << std::endl << std::flush;
+    std::cout << cmd << std::endl << std::flush;
     std::cout << "Linking executable..." << std::endl << std::flush;
     if (system(cmd.c_str()) < 0) {
       std::cerr << "Linking of executable failed." << std::endl << std::flush;
