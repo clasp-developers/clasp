@@ -411,9 +411,8 @@
     optimized))
 
 (defun outcome
-    (generic-function method-combination methods actual-specializers)
-  (or (find-existing-outcome (mp:atomic (safe-gf-call-history generic-function))
-                             methods)
+    (generic-function call-history method-combination methods actual-specializers)
+  (or (find-existing-outcome call-history methods)
       (compute-outcome
        generic-function method-combination methods actual-specializers)))
 
@@ -486,52 +485,6 @@ FIXME!!!! This code will have problems with multithreading if a generic function
           do (specializer-call-history-generic-functions-push-new
               specializer generic-function)))
 
-(defun memoize-call (generic-function new-entry)
-  "Add an entry to the generic function's call history based on a call.
-Return true iff a new entry was added; so for example it will return false if another thread has already added the entry."
-  (let ((memoized-key (car new-entry)))
-    (gf-log "Specializers key: {}%N" memoized-key)
-    (gf-log "The specializer-profile: {}%N"
-            (safe-gf-specializer-profile generic-function))
-    (let ((specializer-profile (safe-gf-specializer-profile generic-function)))
-      (unless (= (length memoized-key) (length specializer-profile))
-        (error "The memoized-key ~a is not the same length as the specializer-profile ~a for ~a"
-               memoized-key specializer-profile generic-function))
-      (mp:atomic-pushnew new-entry (safe-gf-call-history generic-function)
-                         :key #'car
-                         :test #'specializer-key-match)
-      (schgf-pushnew memoized-key generic-function)
-      #+debug-long-call-history
-      (check-long-call-history generic-function)
-      t)))
-
-(defun union-entries (old-call-history new-entries)
-  ;; We do this instead of UNION because the new entries can contain
-  ;; duplicates.
-  (loop for entry in new-entries
-        do (pushnew entry old-call-history
-                    :key #'car :test #'specializer-key-match))
-  old-call-history)
-
-(defun memoize-calls (generic-function new-entries)
-  (cond
-    ;; If there are no new entries, the call history is not altered,
-    ;; so return false.
-    ((null new-entries) nil)
-    ((null (rest new-entries))
-     (memoize-call generic-function (first new-entries)))
-    (t
-     ;; Add all entries at once. Adding one entry at a time can lead to
-     ;; errors due to inconsistency, e.g. dispatchers being produced with
-     ;; some but not all relevant EQL specializers.
-     (mp:atomic-update (safe-gf-call-history generic-function)
-                       #'union-entries new-entries)
-     (loop for entry in new-entries
-           do (schgf-pushnew (car entry) generic-function))
-     #+debug-long-call-history
-     (check-long-call-history generic-function)
-     t)))
-
 (defun perform-outcome (outcome arguments)
   (cond
     ((optimized-slot-reader-p outcome)
@@ -566,10 +519,11 @@ Return true iff a new entry was added; so for example it will return false if an
             for elem in (first list)
             nconc (loop for rest in next collect (cons elem rest)))))
 
-;;; Returns two values: the outcome to perform, and a new call history entry,
-;;; or NIL if none should be added (e.g. due to eql specialization).
-;;; This function has no side effects. DO-DISPATCH-MISS is in charge of that.
-(defun dispatch-miss-info (generic-function arguments)
+;;; Returns two values: the outcome to perform, and some new call history entries,
+;;; or NIL if none should be added (e.g. due to eql specialization or another thread
+;;; beating us to it.)
+;;; This function has no side effects. DISPATCH-MISS is in charge of that.
+(defun dispatch-miss-info (generic-function call-history arguments)
   (let ((argument-classes (mapcar #'class-of arguments)))
     (multiple-value-bind (class-method-list ok)
         (compute-applicable-methods-using-classes generic-function argument-classes)
@@ -583,7 +537,7 @@ Return true iff a new entry was added; so for example it will return false if an
                (generic-function-method-combination generic-function))
              (final-methods (final-methods method-list argument-classes))
              (outcome (outcome
-                       generic-function method-combination
+                       generic-function call-history method-combination
                        final-methods argument-classes)))
         (values
          outcome
@@ -599,12 +553,13 @@ Return true iff a new entry was added; so for example it will return false if an
                (ok ; classes are fine; use normal fastgf
                 (gf-log-dispatch-miss "Memoizing normal call"
                                       generic-function arguments)
-                (let ((key-length
-                        (length (safe-gf-specializer-profile generic-function))))
-                  (list
-                   (cons (coerce (subseq argument-classes 0 key-length)
-                                 'simple-vector)
-                         outcome))))
+                (let* ((key-length
+                         (length (safe-gf-specializer-profile generic-function)))
+                       (key (coerce (subseq argument-classes 0 key-length) 'vector)))
+                  (if (find key call-history :key #'car :test #'specializer-key-match)
+                      ;; another thread has already added this entry
+                      nil
+                      (list (cons key outcome)))))
                ((eq (class-of generic-function)
                     (find-class 'standard-generic-function))
                 ;; we have a call with eql specialized arguments.
@@ -638,15 +593,22 @@ Return true iff a new entry was added; so for example it will return false if an
                       finally (let ((speclists (specializers-combinate combo)))
                                 (return
                                   (loop for speclist in speclists
-                                        for key = (coerce speclist
-                                                          'simple-vector)
+                                        for key = (coerce speclist 'simple-vector)
                                         for methods = (compute-applicable-methods-using-specializers generic-function speclist)
                                         for outcome = (outcome
                                                        generic-function
+                                                       call-history
                                                        method-combination
                                                        methods
                                                        argument-classes)
-                                        collect (cons key outcome))))))
+                                        for new-entry = (cons key outcome)
+                                        unless (find key call-history :key #'car
+                                                     :test #'specializer-key-match)
+                                          collect new-entry into new-entries
+                                          ;; This is necessary so that OUTCOME uses the cached
+                                          ;; outcomes we are generating as we go.
+                                          and do (push new-entry call-history)
+                                        finally (return new-entries))))))
                (t
                 ;; No more options: we just don't memoize.
                 ;; This only occurs with eql specializers,
@@ -661,6 +623,16 @@ Return true iff a new entry was added; so for example it will return false if an
       (error 'core:wrong-number-of-arguments
              :called-function generic-function :given-nargs nargs
              :min-nargs min :max-nargs max))))
+
+(defun union-entries (old-call-history new-entries)
+  ;; We do this instead of UNION because the new entries can contain duplicates.
+  (loop for entry in new-entries do (pushnew entry old-call-history
+                                             :key #'car :test #'specializer-key-match))
+  old-call-history)
+
+(defun memoize-entries (old-call-history generic-function arguments)
+  (union-entries old-call-history
+                 (dispatch-miss-info generic-function old-call-history arguments)))
 
 (defun dispatch-miss (generic-function &rest arguments)
   (core:stack-monitor
@@ -681,20 +653,32 @@ Return true iff a new entry was added; so for example it will return false if an
          (gf-log "{}[{}/{}] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
        (gf-log-noindent "%N"))
      (let (#+debug-fastgf
-           (*dispatch-miss-start-time* (get-internal-real-time)))
-       (multiple-value-bind (outcome new-ch-entries)
-           (dispatch-miss-info generic-function arguments)
-         (when (memoize-calls generic-function new-ch-entries)
-           (force-dispatcher generic-function))
-         (gf-log "Performing outcome {}%N" outcome)
-         #+debug-fastgf
-         (let ((results (multiple-value-list
-                         (perform-outcome outcome arguments))))
-           (gf-log "+-+-+-+-+-+-+-+-+ dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
-           (gf-log "----}---- Completed call to effective-method-function for {} results -> {}%N" (clos::generic-function-name generic-function) results)
-           (values-list results))
-         #-debug-fastgf
-         (perform-outcome outcome arguments))))
+           (*dispatch-miss-start-time* (get-internal-real-time))
+           ;; We have to recompute the new entries in the CAS loop because we need to
+           ;; ensure that outcome= works, i.e. that we don't end up with two distinct outcome
+           ;; objects in the call history that represent the same effective method. This would
+           ;; screw up discriminator generation; see #
+           outcome updatedp)
+       (mp:atomic-update (safe-gf-call-history generic-function)
+                         (lambda (call-history)
+                           (multiple-value-bind (noutcome new-entries)
+                               (dispatch-miss-info generic-function call-history arguments)
+                             (setf outcome noutcome)
+                             (cond ((null new-entries)
+                                    (setf updatedp nil)
+                                    call-history)
+                                   (t (setf updatedp t)
+                                      (union-entries call-history new-entries))))))
+       (when updatedp (force-dispatcher generic-function))
+       (gf-log "Performing outcome {}%N" outcome)
+       #+debug-fastgf
+       (let ((results (multiple-value-list
+                       (perform-outcome outcome arguments))))
+         (gf-log "+-+-+-+-+-+-+-+-+ dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
+         (gf-log "----}---- Completed call to effective-method-function for {} results -> {}%N" (clos::generic-function-name generic-function) results)
+         (values-list results))
+       #-debug-fastgf
+       (perform-outcome outcome arguments)))
    (decf-debug-fastgf-indent)))
 
 ;;; Called from the dtree interpreter,
