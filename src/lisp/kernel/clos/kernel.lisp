@@ -324,7 +324,7 @@
                             ;; Add to existing list of eql spec
                             ;; objects, or make a new one.
                             (if (consp e)
-                                (cons o e)
+                                (adjoin o e)
                                 (list o))))
                          ((eql spec +the-t-class+) (or e nil))
                          (t (or e t))))))
