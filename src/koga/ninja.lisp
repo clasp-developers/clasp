@@ -107,6 +107,10 @@
                     :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
                     :description "Running ANSI tests"
                     :pool "console")
+  (ninja:write-rule output-stream :test-random-integer
+                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
+                    :description "Running pfdietz test-random-integer-forms"
+                    :pool "console")
   (ninja:write-rule output-stream :link-fasl
                     :command "$clasp --norc --type image --disable-mpi --ignore-image --feature clasp-min --load link-fasl.lisp -- $out $in"
                     :restat 1
@@ -664,13 +668,20 @@
                      :clasp (make-source (build-name :iclasp) :variant)
                      :inputs (list (build-name "cclasp"))
                      :outputs (list (build-name "ansi-test")))
+  (ninja:write-build output-stream :test-random-integer
+                     :clasp (make-source (build-name :iclasp) :variant)
+                     :inputs (list (build-name "cclasp"))
+                     :outputs (list (build-name "test-random-integer")))
   (when *variant-default*
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test"))
                        :outputs (list "test"))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "ansi-test"))
-                       :outputs (list "ansi-test"))))
+                       :outputs (list "ansi-test"))
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "test-random-integer"))
+                       :outputs (list "test-random-integer"))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :static-analyzer)) sources
