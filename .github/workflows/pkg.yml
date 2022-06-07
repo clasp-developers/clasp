@@ -42,6 +42,7 @@ jobs:
           sudo apt-get update
           sudo apt install -y sbcl
           ./tools-for-build/nightly-version-bump
+          rm -rf dependencies extensions src/lisp/kernel/contrib src/lisp/modules/asdf src/mps src/bdwgc src/libatomic_ops
       - name: Build Ubuntu packages
         uses: jtdor/build-deb-action@v1
         with:
@@ -66,6 +67,7 @@ jobs:
           sudo apt-get update
           sudo apt install -y sbcl
           ./tools-for-build/nightly-version-bump --extensions=cando,seqan-clasp
+          rm -rf dependencies extensions src/lisp/kernel/contrib src/lisp/modules/asdf src/mps src/bdwgc src/libatomic_ops
       - name: Build Ubuntu packages
         uses: jtdor/build-deb-action@v1
         with:
