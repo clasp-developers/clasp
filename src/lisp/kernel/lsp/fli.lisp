@@ -50,7 +50,10 @@
 (declaim (inline ensure-core-pointer))
 (defun ensure-core-pointer (ptr)
   (cond
-    ((not ptr) (error "#'ensure-core-ptr *** Illegal argument value: PTR may not be NIL!"))
+    ((not ptr)
+     (format t "#'ensure-core-pointer *** Illegal argument value: PTR may not be NIL!~%")
+     (gctools:wait-for-user-signal "Send SIGUSR1 to continue")
+     (error "#'ensure-core-ptr *** Illegal argument value: PTR may not be NIL!"))
     ((eql (type-of ptr) 'CLASP-FFI::FOREIGN-DATA) (%core-pointer-from-foreign-data ptr ))
     ((eql (type-of ptr) 'CORE::POINTER) ptr)
     (t (error "#'ensure-core-pointer *** Illegal type ~S of ptr. Cannot convert to core::pointer." (type-of ptr)))))
