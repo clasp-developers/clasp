@@ -24,7 +24,10 @@
                         :etags (etags configuration))
   (terpri output-stream)
   (ninja:write-rule output-stream :etags
-                    :command "$etags -o $out $in"
+                    :command (if (and (etags configuration)
+                                             (equal "ctags" (file-namestring (etags configuration))))
+                                 "$etags -e -I $identifiers -o $out $in"
+                                 "$etags -o $out $in")
                     :restat 1
                     :description "Creating etags")
   (ninja:write-rule output-stream :install-file
@@ -138,11 +141,13 @@
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :etags)) sources
-     &key &allow-other-keys)
+     &key &allow-other-keys
+     &aux (identifiers (make-source ".identifiers" :code)))
   (when (and *variant-default* (etags configuration))
     (ninja:write-build output-stream :etags
                        :inputs (append (remove-if (lambda (source)
-                                                    (not (or (typep source 'h-source)
+                                                    (not (or (typep source 'lisp-source)
+                                                             (typep source 'h-source)
                                                              (typep source 'c-source)
                                                              (typep source 'cc-source))))
                                                   sources)
@@ -151,6 +156,8 @@
                                            (scraper-headers configuration))
                                        (list (make-source "config.h" :variant)
                                              (make-source "version.h" :variant)))
+                       :implicit-inputs (list identifiers)
+                       :identifiers (resolve-source identifiers)
                        :outputs (list (make-source "TAGS" :code)))))
 
 (defmethod print-target-source
