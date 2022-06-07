@@ -187,30 +187,6 @@ Optimizations are available for any of:
                   (declare (ignorable ,@',params))
                   ,,bodysym))))))))
 
-(defmacro define-deriver (name deriver-name)
-  `(setf (gethash ',name *derivers*) ',deriver-name))
-
-;; Given a values ctype, returns three values:
-;; 1) a list of fixed argument types
-;; 2) type of any further arguments
-;; 3) minimum number of arguments
-(defun parse-vct (vct)
-  (let* ((sys *clasp-system*)
-         (req (ctype:values-required vct sys))
-         (opt (ctype:values-optional vct sys))
-         (rest (ctype:values-rest vct sys))
-         (min (length req)))
-    (values (append req opt) rest min)))
-
-(defmethod bir-transformations:derive-return-type ((inst bir:abstract-call)
-                                                   identity argstype
-                                                   (system clasp))
-  (let ((deriver (gethash identity *derivers*)))
-    (if deriver
-        (multiple-value-bind (fixed rest min) (parse-vct argstype)
-          (funcall deriver fixed rest min))
-        (call-next-method))))
-
 ;;;
 
 (defun lambda->birfun (module lambda-expression-cst)
@@ -361,22 +337,56 @@ Optimizations are available for any of:
                   '(truly-the single-float
                     (core::primop ,sf-primop
                      (core::primop core::fixnum-to-single arg)))))))
-  (define-irratf sqrt        core::sf-sqrt   core::df-sqrt)
   (define-irratf exp         core::sf-exp    core::df-exp)
-  ;; Only transform the one-argument case.
-  ;; The compiler macro in opt-number.lisp should reduce two-arg to one-arg.
-  (define-irratf log         core::sf-log    core::df-log)
   (define-irratf cos         core::sf-cos    core::df-cos)
   (define-irratf sin         core::sf-sin    core::df-sin)
   (define-irratf tan         core::sf-tan    core::df-tan)
-  (define-irratf acos        core::sf-acos   core::df-acos)
-  (define-irratf asin        core::sf-asin   core::df-asin)
   (define-irratf cosh        core::sf-cosh   core::df-cosh)
   (define-irratf sinh        core::sf-sinh   core::df-sinh)
   (define-irratf tanh        core::sf-tanh   core::df-tanh)
-  (define-irratf acosh       core::sf-acosh  core::df-acosh)
-  (define-irratf asinh       core::sf-asinh  core::df-asinh)
-  (define-irratf atanh       core::sf-atanh  core::df-atanh))
+  (define-irratf asinh       core::sf-asinh  core::df-asinh))
+
+(deftransform sqrt ((arg (single-float 0f0)))
+  '(truly-the single-float (core::primop core::sf-sqrt arg)))
+(deftransform sqrt ((arg (double-float 0d0)))
+  '(truly-the double-float (core::primop core::df-sqrt arg)))
+(deftransform sqrt ((arg (integer 0 #.most-positive-fixnum)))
+  '(truly-the single-float (core::primop core::sf-sqrt
+                            (core::primop core::fixnum-to-single arg))))
+
+;; Only transform the one-argument case.
+;; The compiler macro in opt-number.lisp should reduce two-arg to one-arg.
+(deftransform log ((arg (single-float (0f0))))
+  '(truly-the single-float (core::primop core::sf-log arg)))
+(deftransform log ((arg (double-float (0d0))))
+  '(truly-the double-float (core::primop core::df-log arg)))
+(deftransform log ((arg (integer 1 #.most-positive-fixnum)))
+  '(truly-the single-float (core::primop core::sf-log
+                            (core::primop core::fixnum-to-single arg))))
+
+(deftransform acos ((arg (single-float -1f0 1f0)))
+  '(truly-the single-float (core::primop core::sf-acos arg)))
+(deftransform acos ((arg (double-float -1d0 1d0)))
+  '(truly-the double-float (core::primop core::df-acos arg)))
+;; Don't bother with fixnums in such a small range
+
+(deftransform asin ((arg (single-float -1f0 1f0)))
+  '(truly-the single-float (core::primop core::sf-asin arg)))
+(deftransform asin ((arg (double-float -1d0 1d0)))
+  '(truly-the double-float (core::primop core::df-asin arg)))
+
+(deftransform acosh ((arg (single-float 1f0)))
+  '(truly-the single-float (core::primop core::sf-acosh arg)))
+(deftransform acosh ((arg (double-float 1d0)))
+  '(truly-the double-float (core::primop core::df-acosh arg)))
+(deftransform acosh ((arg (integer 1 #.most-positive-fixnum)))
+  '(truly-the single-float (core::primop core::sf-acosh
+                            (core::primop core::fixnum-to-single arg))))
+
+(deftransform atanh ((arg (single-float (-1f0) (1f0))))
+  '(truly-the single-float (core::primop core::sf-atanh arg)))
+(deftransform atanh ((arg (double-float (-1d0) (1d0))))
+  '(truly-the double-float (core::primop core::df-atanh arg)))
 
 (deftransform abs ((arg single-float))
   '(truly-the single-float (core::primop core::sf-abs arg)))
@@ -409,60 +419,6 @@ Optimizations are available for any of:
   '(truly-the single-float (core::primop core::fixnum-to-single num)))
 (deftransform float ((num fixnum) (proto double-float))
   '(truly-the double-float (core::primop core::fixnum-to-double num)))
-
-(defun derive-float (args rest min)
-  (let* ((sys *clasp-system*)
-         ;; We only really care about the first two arguments, since anything
-         ;; more will be an error. So we just pop the rest type on the end.
-         (args (append args (list rest)))
-         (float (env:parse-type-specifier 'float nil sys))
-         (rat (env:parse-type-specifier 'rational nil sys))
-         #+(or) ; nonexistent
-         (short (ctype:range 'short-float '* '* sys))
-         (single (ctype:range 'single-float '* '* sys))
-         (double (ctype:range 'double-float '* '* sys))
-         #+(or) ; nonexistent
-         (long (ctype:range 'long-float '* '* *clasp-system*)))
-    ;; FIXME: More sophisticated type operations would make this more
-    ;; precise. For example, it would be good to derive that if the
-    ;; argument is an (or single-float rational), the result is a
-    ;; single float.
-    (ctype:single-value
-     (cond ((> min 1)
-            (let ((proto (second args)))
-              (cond #+(or)((arg-subtypep proto short) short)
-                    ((ctype:subtypep proto single sys) single)
-                    ((ctype:subtypep proto double sys) double)
-                    #+(or)((arg-subtypep proto long) long)
-                    (t float))))
-           ((and (= min 1)
-                 (ctype:bottom-p (second args) sys))
-            (let ((arg (first args)))
-              (cond ((ctype:subtypep arg float sys) arg)
-                    ((ctype:subtypep arg rat sys) single)
-                    (t float))))
-           (t float))
-     sys)))
-
-(define-deriver float derive-float)
-
-(defun derive-random (args rest min)
-  (declare (ignore min))
-  (let* ((sys *clasp-system*)
-         (max (or (first args) rest))
-         (fixnum (ctype:range 'integer
-                              most-negative-fixnum most-positive-fixnum
-                              sys))
-         (single (ctype:range 'single-float '* '* sys))
-         (double (ctype:range 'double-float '* '* sys)))
-    (ctype:single-value
-     (cond ((subtypep max fixnum)
-            (ctype:range 'integer 0 most-positive-fixnum sys))
-           ((subtypep max single) (ctype:range 'single-float 0f0 '* sys))
-           ((subtypep max double) (ctype:range 'double-float 0d0 '* sys))
-           (t (env:parse-type-specifier '(real 0) nil sys)))
-     sys)))
-(define-deriver random derive-random)
 
 ;;;
 
@@ -518,54 +474,6 @@ Optimizations are available for any of:
   '(truly-the valid-array-dimension (core::primop core::vector-length arr)))
 (deftransform length ((arr vector))
   '(truly-the valid-array-dimension (core::primop core::vector-length arr)))
-
-(defun derive-aref (args rest min)
-  (declare (ignore min))
-  (let ((sys *clasp-system*)
-        (ct (if (null args) rest (first args))))
-    (ctype:single-value
-     (if (and (consp ct)
-              (member (first ct) '(array simple-array vector))
-              (consp (cdr ct)))
-         (second ct)
-         (ctype:top sys))
-     sys)))
-
-(define-deriver aref derive-aref)
-(define-deriver row-major-aref derive-aref)
-
-(macrolet ((def (fname etype)
-             (let ((derivename
-                     (make-symbol (concatenate 'string
-                                               (symbol-name '#:derive-)
-                                               (symbol-name fname)))))
-               `(progn
-                  (defun ,derivename (args rest min)
-                    (declare (ignore args rest min))
-                    (let ((sys *clasp-system*))
-                      (ctype:single-value
-                       (ctype:array ',etype '(*) 'simple-array sys)
-                       sys)))
-                  (define-deriver ,fname ,derivename)))))
-  (def core:make-simple-vector-t t)
-  (def core:make-simple-vector-bit bit)
-  (def core:make-simple-vector-base-char base-char)
-  (def core:make-simple-vector-character character)
-  (def core:make-simple-vector-single-float single-float)
-  (def core:make-simple-vector-double-float double-float)
-  (def core:make-simple-vector-int2 ext:integer2)
-  (def core:make-simple-vector-byte2 ext:byte2)
-  (def core:make-simple-vector-int4 ext:integer4)
-  (def core:make-simple-vector-byte4 ext:byte4)
-  (def core:make-simple-vector-int8 ext:integer8)
-  (def core:make-simple-vector-byte8 ext:byte8)
-  (def core:make-simple-vector-int16 ext:integer16)
-  (def core:make-simple-vector-byte16 ext:byte16)
-  (def core:make-simple-vector-int32 ext:integer32)
-  (def core:make-simple-vector-byte32 ext:byte32)
-  (def core:make-simple-vector-int64 ext:integer64)
-  (def core:make-simple-vector-byte64 ext:byte64)
-  (def core:make-simple-vector-fixnum fixnum))
 
 #+(or) ; string= is actually slower atm due to keyword etc processing
 (deftransform equal ((x string) (y string)) '(string= x y))
@@ -653,39 +561,6 @@ Optimizations are available for any of:
 
 ;;;
 
-(defun derive-cons (args rest min)
-  (declare (ignore args rest min))
-  ;; We can't forward the argument types into the cons type, since we don't
-  ;; know if this cons will be mutated. So we just return the CONS type.
-  ;; This is useful so that the compiler understands that CONS definitely
-  ;; returns a CONS and it does not need to insert any runtime checks.
-  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
-    (ctype:single-value (ctype:cons top top sys) sys)))
-(define-deriver cons derive-cons)
-
-(defun derive-list (args rest min)
-  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
-    (ctype:single-value
-     (cond ((> min 0) (ctype:cons top top sys))
-           ((and (= min 0) (null args) (ctype:bottom-p rest sys))
-            (ctype:member sys nil))
-           (t (ctype:disjoin sys (ctype:member sys nil)
-                             (ctype:cons top top sys))))
-     sys)))
-(define-deriver list derive-list)
-
-(defun derive-list* (args rest min)
-  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
-    (ctype:single-value
-     (cond ((> min 1) (ctype:cons top top sys))
-           ((and (= min 1) (null (rest args)) (ctype:bottom-p rest sys))
-            (first args))
-           (t
-            (ctype:disjoin sys (if args (first args) rest)
-                           (ctype:cons top top sys))))
-     sys)))
-(define-deriver list* derive-list*)
-
 (deftransform car ((cons cons)) '(cleavir-primop:car cons))
 (deftransform cdr ((cons cons)) '(cleavir-primop:cdr cons))
 
@@ -705,14 +580,3 @@ Optimizations are available for any of:
 
 (deftransform reverse ((x list)) '(core:list-reverse x))
 (deftransform nreverse ((x list)) '(core:list-nreverse x))
-
-;;;
-
-;;; WRITE et al. just return their first argument.
-(defun derive-write (args rest min)
-  (declare (ignore min))
-  (ctype:single-value (or (first args) rest) *clasp-system*))
-(define-deriver write derive-write)
-(define-deriver prin1 derive-write)
-(define-deriver print derive-write)
-(define-deriver princ derive-write)
