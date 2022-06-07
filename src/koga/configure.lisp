@@ -515,6 +515,11 @@ is not compatible with snapshots.")
           :initarg :etags
           :type (or null pathname)
           :documentation "The etags binary to use.")
+   (ctags :accessor ctags
+          :initform nil
+          :initarg :ctags
+          :type (or null pathname)
+          :documentation "The ctags binary to use.")
    (jupyter :accessor jupyter
             :initform nil
             :initarg :jupyter
@@ -560,7 +565,7 @@ is not compatible with snapshots.")
                   :documentation "Default stage for installation")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
-                      :clang :llvm :ar :cc :cxx :nm :etags :objcopy :jupyter)
+                      :clang :llvm :ar :cc :cxx :nm :etags :ctags :objcopy :jupyter)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
@@ -595,7 +600,7 @@ is not compatible with snapshots.")
                                                                :bitcode :iclasp :aclasp :bclasp :cclasp
                                                                :modules :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :static-analyzer
-                                                               :etags)
+                                                               :tags)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant))
                                                          :version-h
@@ -864,8 +869,9 @@ the function to the overall configuration."
         (append (extension-systems *configuration*)
                 rest)))
 
-(defun configure-program (name candidates &key major-version (version-flag "--version") required)
-  "Configure a program by looking through a list of candidate and checking the version number
+(defun configure-program (name candidates
+                          &key major-version (version-flag "--version") required match)
+  "Configure a program by looking through a list of candidates and checking the version number
 if provided."
   (loop for candidate in (if (listp candidates) candidates (list candidates))
         for path = (if (stringp candidate)
@@ -874,6 +880,8 @@ if provided."
         for version = (run-program-capture (list path version-flag))
         when (and version
                   (or (null major-version)
+                      (and match
+                           (search match version))
                       (= major-version
                          (first (uiop:parse-version version)))))
           do (message :info "Found ~a program with path ~a ~:[~;and version ~a~]"

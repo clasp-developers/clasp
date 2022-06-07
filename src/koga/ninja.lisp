@@ -21,15 +21,15 @@
                                           "-flat_namespace -undefined dynamic_lookup -bundle"
                                           "-shared")
                         :objcopy (objcopy configuration)
-                        :etags (etags configuration))
+                        :tags (or (ctags configuration)
+                                  (etags configuration)))
   (terpri output-stream)
-  (ninja:write-rule output-stream :etags
-                    :command (if (and (etags configuration)
-                                             (equal "ctags" (file-namestring (etags configuration))))
-                                 "$etags -e -I $identifiers -o $out $in"
-                                 "$etags -o $out $in")
+  (ninja:write-rule output-stream :tags
+                    :command (if (ctags configuration)
+                                 "$tags -e -I $identifiers -o $out $in"
+                                 "$tags -o $out $in")
                     :restat 1
-                    :description "Creating etags")
+                    :description "Creating tags")
   (ninja:write-rule output-stream :install-file
                     :command #+bsd "install -C -m 644 $in $out"
                              #+linux "install -CT --mode=644 $in $out"
@@ -140,11 +140,14 @@
                     :description "Updating unicode tables"))
 
 (defmethod print-variant-target-sources
-    (configuration (name (eql :ninja)) output-stream (target (eql :etags)) sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :tags)) sources
      &key &allow-other-keys
-     &aux (identifiers (make-source ".identifiers" :code)))
-  (when (and *variant-default* (etags configuration))
-    (ninja:write-build output-stream :etags
+     &aux (identifiers (make-source ".identifiers" :code))
+          (outputs (list (make-source "TAGS" :code))))
+  (when (and *variant-default*
+             (or (etags configuration)
+                 (ctags configuration)))
+    (ninja:write-build output-stream :tags
                        :inputs (append (remove-if (lambda (source)
                                                     (not (or (typep source 'lisp-source)
                                                              (typep source 'h-source)
@@ -158,7 +161,10 @@
                                              (make-source "version.h" :variant)))
                        :implicit-inputs (list identifiers)
                        :identifiers (resolve-source identifiers)
-                       :outputs (list (make-source "TAGS" :code)))))
+                       :outputs outputs)
+    (ninja:write-build output-stream :phony
+                       :inputs outputs
+                       :outputs '("tags"))))
 
 (defmethod print-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :install-code)) source
@@ -301,8 +307,9 @@
                                      (when (member :cando (extensions configuration))
                                        (list cleap-symlink))
                                      (when (and *variant-default*
-                                                (etags configuration))
-                                       (list (make-source "TAGS" :code))))
+                                                (or (etags configuration)
+                                                    (ctags configuration)))
+                                       (list "tags")))
                      :outputs (list (build-name target)))
   (when *variant-default*
     (loop for input in generated
