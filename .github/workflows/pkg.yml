@@ -39,6 +39,8 @@ jobs:
           fetch-depth: 0
       - name: Update version
         run: |
+          sudo apt-get update
+          sudo apt install -y sbcl
           ./tools-for-build/nightly-version-bump
       - name: Build Ubuntu packages
         uses: jtdor/build-deb-action@v1
@@ -61,7 +63,9 @@ jobs:
           fetch-depth: 0
       - name: Update version
         run: |
-          ./tools-for-build/nightly-version-bump
+          sudo apt-get update
+          sudo apt install -y sbcl
+          ./tools-for-build/nightly-version-bump --extensions=cando,seqan-clasp
       - name: Build Ubuntu packages
         uses: jtdor/build-deb-action@v1
         with:
@@ -119,6 +123,8 @@ jobs:
           fetch-depth: 0
       - name: Update version
         run: |
+          sudo apt-get update
+          sudo apt install -y sbcl
           ./tools-for-build/nightly-version-bump
       - name: Build Debian packages
         uses: jtdor/build-deb-action@v1
@@ -141,7 +147,9 @@ jobs:
           fetch-depth: 0
       - name: Update version
         run: |
-          ./tools-for-build/nightly-version-bump
+          sudo apt-get update
+          sudo apt install -y sbcl
+          ./tools-for-build/nightly-version-bump --extensions=cando,seqan-clasp
       - name: Build Debian packages
         uses: jtdor/build-deb-action@v1
         with:

@@ -549,7 +549,7 @@ is not compatible with snapshots.")
                    :initform nil
                    :initarg :update-version
                    :type boolean
-                   :documentation "Use git describe to update the version and commit values in the config.sexp file and then exit.")
+                   :documentation "Use git describe to update the version and commit values in the version.sexp file and then exit.")
    (extension-systems :accessor extension-systems
                       :initform nil
                       :type list
@@ -642,7 +642,9 @@ is not compatible with snapshots.")
              :type list
              :documentation "A list of the variants")
    (scripts :accessor scripts
-            :initform nil))
+            :initform nil)
+   (repos :reader repos
+          :initform (uiop:read-file-form #P"repos.sexp")))
   (:documentation "A class to encapsulate the configuration state."))
 
 (defmethod initialize-instance :after ((instance configuration) &rest initargs &key &allow-other-keys)

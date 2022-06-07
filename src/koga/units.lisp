@@ -262,7 +262,12 @@ has not been set."
       configuration
     (cond ((git-working-tree-p configuration)
            (message :emph "Updating version number.")
-           (setf version (or (git-describe configuration)
+           (setf version (or (if (member :cando (extensions configuration))
+                                 (format nil "~a-g~a"
+                                         (git-describe configuration)
+                                         (git-commit configuration :directory "extensions/cando/"
+                                                     :short t))
+                                 (git-describe configuration))
                              version)
                  commit-short (git-commit configuration :short t)
                  commit-full (git-commit configuration))
