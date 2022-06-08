@@ -149,7 +149,6 @@ struct FindOwner {
 /*!
  * claspgc_room - the GC specific implementation of ROOM
  */
-typedef enum {room_max, room_default, room_min } RoomVerbosity;
 void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity);
 
 };

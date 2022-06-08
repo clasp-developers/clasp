@@ -983,7 +983,9 @@ inline size_t sizeof_container_with_header(size_t num) {
   };
 };
 
-
+namespace gctools {
+typedef enum {room_max, room_default, room_min } RoomVerbosity;
+};
 
 
 #if defined(USE_BOEHM)

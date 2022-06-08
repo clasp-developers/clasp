@@ -161,7 +161,7 @@ T_sp clasp_off_t_to_integer(clasp_off_t offset);
 clasp_off_t clasp_integer_to_off_t(T_sp i);
 
 T_sp cl__file_length(T_sp stream);
-T_sp cl__file_position(T_sp stream, T_sp position);
+T_sp cl__file_position(T_sp stream, T_sp position=nil<core::T_O>());
 
 T_sp cl__stream_element_type(T_sp strm);
 T_sp cl__stream_external_format(T_sp strm);
@@ -629,6 +629,7 @@ T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T
 T_sp cl__read_char(T_sp ostrm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p);
 
 T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
+T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oend);
 
 bool cl__streamp(T_sp strm);
 
