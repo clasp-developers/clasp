@@ -10,7 +10,7 @@
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
     (add-target-source configuration :etags source))
-  (add-target-source configuration :dclasp source))
+  (add-target-source configuration :sclasp source))
 
 ;; Sources that are added to aclasp also need to be installed and scanned for tags.
 (defmethod add-target-source :after (configuration (target (eql :aclasp)) (source source))

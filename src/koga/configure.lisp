@@ -556,7 +556,7 @@ is not compatible with snapshots.")
                       :documentation "")
    (default-stage :accessor default-stage
                   :initform :cclasp
-                  :type (member :iclasp :aclasp :bclasp :cclasp :dclasp)
+                  :type (member :iclasp :aclasp :bclasp :cclasp :sclasp)
                   :documentation "Default stage for installation")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
@@ -593,8 +593,9 @@ is not compatible with snapshots.")
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
                                                                :bitcode :iclasp :aclasp :bclasp :cclasp
-                                                               :modules :dclasp :install-code :clasp
-                                                               :regression-tests :static-analyzer :etags)
+                                                               :modules :sclasp :install-bin :install-code
+                                                               :clasp :regression-tests :static-analyzer
+                                                               :etags)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant))
                                                          :version-h

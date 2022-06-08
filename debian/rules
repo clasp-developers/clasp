@@ -21,7 +21,7 @@ ifneq (,$(filter clasp-cl,$(DOPACKAGES)))
 	./koga --build-path=clasp-build/ --ldlibs=-ldl --package-path=$$(pwd)/debian/clasp-cl/ --skip-sync=ansi-test,mps --bin-path=/usr/bin/ --share-path=/usr/share/clasp/ --lib-path=/usr/lib/clasp/
 endif
 ifneq (,$(filter cando,$(DOPACKAGES)))
-	./koga --build-path=cando-build/ --extensions=cando,seqan-clasp --jupyter --ldlibs=-ldl --package-path=$$(pwd)/debian/cando/ --skip-sync=ansi-test,mps --bin-path=/usr/bin/ --share-path=/usr/share/clasp/ --lib-path=/usr/lib/clasp/
+	./koga --build-path=cando-build/ --extensions=cando,seqan-clasp --ldlibs=-ldl --package-path=$$(pwd)/debian/cando/ --skip-sync=ansi-test,mps --bin-path=/usr/bin/ --share-path=/usr/share/clasp/ --lib-path=/usr/lib/clasp/
 endif
 
 override_dh_auto_build:
