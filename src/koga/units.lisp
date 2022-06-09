@@ -149,7 +149,14 @@
       configuration
     (message :emph "Configuring etags")
     (setf etags (configure-program "etags"
-                                   (or etags (list #P"ctags" #P"etags"))))))
+                                   (or etags (list #P"etags"))))))
+
+(defmethod configure-unit (configuration (unit (eql :ctags)))
+  "Find the ctags binary."
+  (with-accessors ((ctags ctags))
+      configuration
+    (message :emph "Configuring ctags")
+    (setf ctags (configure-program "ctags" ctags :match "Ctags"))))
 
 (defmethod configure-unit (configuration (unit (eql :xcode))
                            &aux (env (uiop:getenv-absolute-directory "XCODE_SDK"))
