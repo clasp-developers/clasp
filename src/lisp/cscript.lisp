@@ -164,6 +164,7 @@
              #~"kernel/lsp/generated-encodings.lisp"
              #~"kernel/lsp/encodings.lisp"
              #~"kernel/lsp/cltl2.lisp"
+             (k:make-source "generated/cclasp-immutable.lisp" :variant)
              #~"kernel/tag/pre-epilogue-cclasp.lisp"
              #~"kernel/lsp/epilogue-cclasp.lisp"
              #~"kernel/tag/cclasp.lisp"))

@@ -559,6 +559,10 @@ is not compatible with snapshots.")
                       :initform nil
                       :type list
                       :documentation "")
+   (target-systems :accessor target-systems
+                   :initform (make-hash-table)
+                   :type hash-table
+                   :documentation "")
    (default-stage :accessor default-stage
                   :initform :cclasp
                   :type (member :iclasp :aclasp :bclasp :cclasp :sclasp)
@@ -605,6 +609,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"config.h" :variant))
                                                          :version-h
                                                          (list (make-source #P"version.h" :variant))
+                                                         :cclasp-immutable
+                                                         (list (make-source #P"generated/cclasp-immutable.lisp" :variant))
                                                          :compile-commands
                                                          (list (make-source #P"compile_commands.json" :variant)
                                                                :iclasp)))
