@@ -1009,7 +1009,7 @@ namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
   template <class OT>
     struct GCStamp {
-      static GCStampEnum const StampWtag = STAMPWTAG_null;
+    //      static GCStampEnum const StampWtag = STAMPWTAG_null;
     };
 };
 

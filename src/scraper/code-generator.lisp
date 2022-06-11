@@ -632,12 +632,18 @@ STAMPWTAG_null = ADJUST_STAMP(0),~%")
       (setf stamp-max (max stamp-max (stamp-value c))))
     (maphash (lambda (key type)
                (declare (ignore key))
-               (format stream "STAMPWTAG_~a = ADJUST_STAMP(~a),~%"
-                       (build-enum-name (c++type% type)) (stamp-value type))
+               (format stream "STAMPWTAG_~a = ADJUST_STAMP(~a), // stamp ~d unshifted 0x~x  shifted 0x~x~%"
+                       (build-enum-name (c++type% type)) (stamp-value type)
+                       (ash (stamp-value type) (- +stamp-shift+)) (stamp-value type)
+                       (ash (stamp-value type) +stamp-shift+))
                (setf stamp-max (max stamp-max (stamp-value type))))
              gc-managed-types)
-    (format stream "STAMPWTAG_max = ADJUST_STAMP(~a),~%"
-            (logior stamp-max +max-wtag+)))
+    (format stream "STAMPWTAG_max = ADJUST_STAMP(~a), // stamp ~d unshifted 0x~x  shifted 0x~x~%"
+            (logior stamp-max +max-wtag+)
+            (ash stamp-max (- +stamp-shift+))
+            stamp-max
+            (ash stamp-max +stamp-shift+)
+            ))
   (format stream "#endif // GC_ENUM~%"))
 
 (defun generate-gc-enum-names (stream sorted-classes gc-managed-types)

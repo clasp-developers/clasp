@@ -197,6 +197,8 @@ Environment variables:
   CLASP_BACKTRACE_ALLOCATIONS=<stamp>
       Generate a backtrace to /tmp/stamp<stamp>.backtraces everytime a <stamp>
       object is allocates (VERY EXPENSIVE)
+  CLASP_DEBUG_STAMP_INFO=1
+      Generate info about stamps.
   CLASP_MPS_CONFIG=<arenaMb> <spareCommitLimitMb> <nurseryKb>
                    <nurseryMortalityPercent> <generation1Kb>
                    <generation1MortalityPercent> <keyExtendByKb>)dx";

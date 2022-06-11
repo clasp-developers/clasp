@@ -457,7 +457,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
     global_code_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
     global_atomic_kind = GC_I_PTRFREE; // GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1);
     global_strong_weak_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1 );
-    for ( cur_stamp=0; cur_stamp<local_stamp_max; ++cur_stamp ) {
+    for ( cur_stamp=0; cur_stamp<=local_stamp_max; ++cur_stamp ) {
       if (local_stamp_layout[cur_stamp].layout_op != undefined_op) {
 #ifdef DUMP_PRECISE_CALC
         printf("%s:%d --------------------------------------\n", __FILE__, __LINE__ );
@@ -560,6 +560,16 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
     free(local_container_layout);
     free(local_container_info);
   } else if (walk == precise_info) {
+    // Check that everything is ok
+    if (getenv("CLASP_DEBUG_STAMP_INFO")) {
+      for ( size_t stamp = 0; stamp<=local_stamp_max; stamp++ ) {
+        printf("%s:%d:%s stamp: %3lu  boehm._kind_defined %2d  boehm._kind %5lu  name: %s\n", __FILE__, __LINE__, __FUNCTION__, stamp,
+               local_stamp_layout[stamp].boehm._kind_defined,
+               local_stamp_layout[stamp].boehm._kind,
+               local_stamp_info[stamp].name );
+      }
+      printf("%s:%d:%s local_stamp_max: %lu\n", __FILE__, __LINE__, __FUNCTION__, local_stamp_max );
+    }
     global_stamp_max = local_stamp_max;
     global_stamp_info = local_stamp_info;
     global_stamp_layout = local_stamp_layout;
