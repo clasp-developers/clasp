@@ -164,11 +164,27 @@
              #~"kernel/lsp/process.lisp"
              #~"kernel/lsp/top.lisp"
              #~"kernel/lsp/encodings.lisp"
-             #~"kernel/lsp/cltl2.lisp"
-             (k:make-source "generated/cclasp-immutable.lisp" :variant)
+             #~"kernel/lsp/cltl2.lisp")
+  (when (eq target :cclasp)
+    (k:sources target
+               (k:make-source "generated/cclasp-immutable.lisp" :variant)))
+  (k:sources target
              #~"kernel/tag/pre-epilogue-cclasp.lisp"
              #~"kernel/lsp/epilogue-cclasp.lisp"
              #~"kernel/tag/cclasp.lisp"))
+
+(defun add-eclasp-sources (&optional (target :eclasp))
+  (add-cclasp-sources target)
+  (when (eq target :eclasp)
+    (k:sources target
+               (k:make-source "generated/eclasp-immutable.lisp" :variant)))
+  (k:sources target
+             #~"modules/asdf/build/asdf.lisp"
+             :extension-systems)
+  (k:sources target
+             #~"kernel/tag/pre-epilogue-eclasp.lisp"
+             #~"kernel/lsp/epilogue-eclasp.lisp"
+             #~"kernel/tag/eclasp.lisp"))
 
 (add-aclasp-sources)
 
@@ -176,9 +192,44 @@
 
 (add-cclasp-sources)
 
+(add-eclasp-sources)
+
 (k:sources :modules
            #~"modules/asdf/build/asdf.lisp"
            #~"modules/serve-event/serve-event.lisp")
 
 (k:sources :install-code
-           #~"modules/")
+           #~"modules/"
+           #~"kernel/contrib/Acclimation/"
+           #~"kernel/contrib/alexandria/"
+           #~"kernel/contrib/Cleavir/"
+           #~"kernel/contrib/closer-mop/"
+           #~"kernel/contrib/Concrete-Syntax-Tree/"
+           #~"kernel/contrib/Eclector/")
+
+(k:sources :install-extension-code
+           #~"kernel/contrib/anaphora/"
+           #~"kernel/contrib/architecture.builder-protocol/"
+           #~"kernel/contrib/array-utils/"
+           #~"kernel/contrib/babel/"
+           #~"kernel/contrib/bordeaux-threads/"
+           #~"kernel/contrib/cffi/"
+           #~"kernel/contrib/cl-markup/"
+           #~"kernel/contrib/cl-ppcre/"
+           #~"kernel/contrib/cl-svg/"
+           #~"kernel/contrib/documentation-utils/"
+           #~"kernel/contrib/esrap/"
+           #~"kernel/contrib/global-vars/"
+           #~"kernel/contrib/let-plus/"
+           #~"kernel/contrib/cl-netcdf/"
+           #~"kernel/contrib/lparallel/"
+           #~"kernel/contrib/parser.common-rules/"
+           #~"kernel/contrib/plump/"
+           #~"kernel/contrib/split-sequence/"
+           #~"kernel/contrib/static-vectors/"
+           #~"kernel/contrib/trivial-features/"
+           #~"kernel/contrib/trivial-garbage/"
+           #~"kernel/contrib/trivial-http/"
+           #~"kernel/contrib/trivial-indent/"
+           #~"kernel/contrib/trivial-with-current-source-form/"
+           #~"kernel/contrib/usocket/")

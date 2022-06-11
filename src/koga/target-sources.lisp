@@ -1,13 +1,51 @@
 (in-package #:koga)
 
+(defparameter +asdf-system-initargs+
+  '((asdf:component-version :version)
+    (asdf::component-description :description)
+    (asdf::component-long-description :long-description)
+    (asdf:system-author :author)
+    (asdf:system-maintainer :maintainer)
+    (asdf:system-license :license)
+    (asdf:system-homepage :homepage)
+    (asdf:system-bug-tracker :bug-tracker)
+    (asdf:system-mailto :mailto)
+    (asdf:system-long-name :long-name)
+    (asdf:system-source-control :source-control)))
+
 (defmethod add-target-source (configuration target (source symbol))
-  (multiple-value-bind (systems files)
-      (asdf-groveler:grovel (list source) :root-path (truename (root :code)))
-    (loop for file in files
-          do (add-target-source configuration target (make-source file :code)))
-    (loop for system in systems
-          do (pushnew (intern (string-upcase (asdf:component-name system)) :keyword)
-                      (gethash target (target-systems configuration))))))
+  (multiple-value-bind (modules systems files)
+      (asdf-groveler:grovel (list source)
+                            :file-type 'asdf:cl-source-file
+                            :features (features configuration))
+    (when modules
+      (error "Found module dependencies of ~{~#[~;~a~;~a and ~a~:;~@{~a~#[~;, and ~:;, ~]~}~]~} for system ~a."
+             modules source))
+    (loop with root = (truename (root :code))
+          for file in files
+          for relative-path = (uiop:subpathp file root)
+          if relative-path
+            do (add-target-source configuration target (make-source relative-path :code))
+          else
+            do (error "Found source path of ~a which is not relative to code root in system ~a."
+                      file source))
+    (loop for name in systems
+          for system = (asdf:find-system name)
+          do (pushnew (list* name
+                             (loop for (func key) in +asdf-system-initargs+
+                                   for value = (funcall func system)
+                                   when value
+                                     collect key and
+                                     collect value))
+                      (gethash target (target-systems configuration))
+                      :key #'car))))
+
+(defmethod add-target-source (configuration target (source (eql :extension-systems))
+                              &aux (systems (extension-systems configuration)))
+  (when systems
+    (loop for system in (append '(:cffi-toolchain :cffi-grovel :cffi)
+                                systems)
+          do (add-target-source configuration target system))))
 
 ;; Sources that are added to iclasp also need to be installed and scanned for tags.
 (defmethod add-target-source :after (configuration (target (eql :iclasp)) (source source))
@@ -50,6 +88,9 @@
           do (add-target-source configuration target (make-source rel-path (source-root source)))))
 
 (defmethod add-target-source (configuration (target (eql :install-code)) (source directory-source))
+  (add-target-directory configuration target source))
+
+(defmethod add-target-source (configuration (target (eql :install-extension-code)) (source directory-source))
   (add-target-directory configuration target source))
 
 (defmethod add-target-source (configuration (target (eql :etags)) (source directory-source))

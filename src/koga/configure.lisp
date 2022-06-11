@@ -1,5 +1,10 @@
 (in-package #:koga)
 
+(defparameter +core-features+
+  '(:32-bit :64-bit :alpha :arm :arm64 :asdf :asdf2 :asdf3 :asdf3.1 :asdf3.2 :asdf3.3 :asdf-unicode
+    :big-endian :bsd :darwin :freebsd :hppa :hppa64 :linux :little-endian :mips :netbsd :openbsd
+    :ppc :ppc64 :sparc :sparc64 :sunos :unix :x86 :x86-64))
+
 (defparameter *configuration*
   nil
   "The current configuration")
@@ -565,7 +570,7 @@ is not compatible with snapshots.")
                    :documentation "")
    (default-stage :accessor default-stage
                   :initform :cclasp
-                  :type (member :iclasp :aclasp :bclasp :cclasp :sclasp)
+                  :type (member :iclasp :aclasp :bclasp :cclasp :eclasp :sclasp)
                   :documentation "Default stage for installation")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
@@ -587,6 +592,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"compile-bclasp.lisp" :build))
                                                          :compile-cclasp
                                                          (list (make-source #P"compile-cclasp.lisp" :build))
+                                                         :compile-eclasp
+                                                         (list (make-source #P"compile-eclasp.lisp" :build))
                                                          :compile-module
                                                          (list (make-source #P"compile-module.lisp" :build))
                                                          :link-fasl
@@ -602,15 +609,17 @@ is not compatible with snapshots.")
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
                                                                :bitcode :iclasp :aclasp :bclasp :cclasp
-                                                               :modules :sclasp :install-bin :install-code
+                                                               :modules :eclasp :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :static-analyzer
-                                                               :tags)
+                                                               :tags :install-extension-code)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant))
                                                          :version-h
                                                          (list (make-source #P"version.h" :variant))
                                                          :cclasp-immutable
                                                          (list (make-source #P"generated/cclasp-immutable.lisp" :variant))
+                                                         :eclasp-immutable
+                                                         (list (make-source #P"generated/eclasp-immutable.lisp" :variant))
                                                          :compile-commands
                                                          (list (make-source #P"compile_commands.json" :variant)
                                                                :iclasp)))
@@ -632,6 +641,11 @@ is not compatible with snapshots.")
                     :initform nil
                     :type (or null pathname)
                     :documentation "The include directory of LLVM.")
+   (features :accessor features
+             :initform '(:non-base-chars-exist-p :package-local-nicknames :cdr-7 :cdr-6 :cdr-5
+                         :threads :unicode :ieee-floating-point :clasp :ansi-cl :common-lisp)
+             :type list
+             :documentation "The anticipated value of *FEATURES* in the CLASP build.")
    (scraper-headers :accessor scraper-headers
                     :initform nil
                     :type list
@@ -680,7 +694,17 @@ is not compatible with snapshots.")
           (uiop:ensure-directory-pathname (xcode-sdk instance))))
   (when (member :cando (extensions instance))
     (setf (gethash :clasp-sh (outputs instance))
-          (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant)))))
+          (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant))))
+  (loop for system in '(:asdf :asdf-package-system :uiop)
+        for version = (asdf:component-version (asdf:find-system system))
+        for expr = (if version (list system :version version) (list system))
+        do (pushnew expr (gethash :cclasp (target-systems instance)))
+           (pushnew expr (gethash :eclasp (target-systems instance))))
+  (setf (features instance)
+        (append (features instance)
+                (remove-if (lambda (feature)
+                             (not (member feature +core-features+)))
+                           *features*))))
 
 (defun build-name (name
                    &key common
@@ -871,9 +895,8 @@ the function to the overall configuration."
                    (format nil "~{-I~a~^ ~}" (mapcar #'resolve-source paths)))))
 
 (defun systems (&rest rest)
-  (setf (extension-systems *configuration*)
-        (append (extension-systems *configuration*)
-                rest)))
+  (loop for system in rest
+        do (pushnew system (extension-systems *configuration*))))
 
 (defun configure-program (name candidates
                           &key major-version (version-flag "--version") required match)

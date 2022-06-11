@@ -511,7 +511,7 @@ Prints information about OBJECT to STREAM."
            (describe-symbol (category-string)
              (doc-separation category-string)
              (doc-value (or (documentation symbol 'FUNCTION) "") "Documentation:")
-             #+cclasp (doc-value (or (core:function-lambda-list symbol) "") "Arguments:")
+             #+(or cclasp eclasp) (doc-value (or (core:function-lambda-list symbol) "") "Arguments:")
              (mapcar #'(lambda(location)
                          (doc-value (ext:source-location-pathname location) "Source:"))
                      (EXT:SOURCE-LOCATION symbol :function)))

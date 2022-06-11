@@ -30,7 +30,7 @@
   )
 
 
-#+(not (or bclasp cclasp))
+#-(or bclasp cclasp eclasp)
 (core:fset 'cmp::with-compiler-timer
            (let ((body (gensym)))
              #+(or)(core:fmt t "body = {}%N" body)
@@ -623,7 +623,8 @@ Return files."
   (setq *features* (core:remove-equal :clos *features*))
   (setq *features* (core:remove-equal :aclasp *features*))
   (setq *features* (core:remove-equal :bclasp *features*))
-  (setq *features* (core:remove-equal :cclasp *features*)))
+  (setq *features* (core:remove-equal :cclasp *features*))
+  (setq *features* (core:remove-equal :eclasp *features*)))
 
 (export '(aclasp-features with-aclasp-features))
 (defun aclasp-features ()
@@ -755,10 +756,11 @@ Return files."
             t)
 
 (export '(cclasp-features with-cclasp-features))
-(defun cclasp-features ()
+(defun cclasp-features (eclasp)
   (remove-stage-features)
-  (setq *features* (list* :clos :cclasp *features*))
-  (core:fmt t "Cclasp *features* -> {}%N" *features*)
+  (setq *features* (list* :clos (if eclasp :eclasp :cclasp) *features*))
+  (core:fmt t "{}clasp *features* -> {}%N"
+            (if eclasp "E" "C") *features*)
   (setq *target-backend* (default-target-backend)))
 (core:fset 'with-cclasp-features
             #'(lambda (whole env)
@@ -783,7 +785,7 @@ Return files."
             (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
               (compile-system files :file-order file-order :total-files (length system))))))))
 
-(export '(compile-cclasp recompile-cclasp))
+(export '(compile-cclasp recompile-cclasp compile-eclasp))
 
 (defun link-cclasp (&key (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
@@ -796,11 +798,15 @@ Return files."
         (cons target removed))
       files))
 
-(defun compile-cclasp* (output-file system)
+(defun compile-cclasp* (output-file system eclasp)
   "Compile the cclasp source code."
   (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
     (or (= (length ensure-adjacent) 2) (error "src/lisp/kernel/inline-prep MUST immediately precede src/lisp/kernel/auto-compile - currently the order is: ~a" ensure-adjacent)))
-  (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system))
+  (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start"
+                                     (if eclasp
+                                         #P"src/lisp/kernel/tag/eclasp"
+                                         #P"src/lisp/kernel/tag/cclasp")
+                                     :system system))
         (file-order (calculate-file-order system)))
     ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
     ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
@@ -814,12 +820,14 @@ Return files."
           (setq files (maybe-move-to-front files #P"src/lisp/kernel/cleavir/inline"))))
     (compile-system files :reload nil :file-order file-order :total-files (length system))))
   
-(defun recompile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
+(defun recompile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname))
+                              (system (command-line-arguments-as-list)) eclasp)
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t))
-  (compile-cclasp* output-file system))
+  (compile-cclasp* output-file system eclasp))
 
-(defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
-  (cclasp-features)
+(defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname))
+                            (system (command-line-arguments-as-list)))
+  (cclasp-features nil)
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
   (let ((*target-backend* (default-target-backend))
         (*trace-output* *standard-output*))
@@ -848,9 +856,20 @@ Return files."
        (push :cleavir *features*)
        (handler-bind
            ((error #'build-failure))
-         (compile-cclasp* output-file system))))))
+         (compile-cclasp* output-file system nil))))))
 
-#+(or bclasp cclasp)
+(defun compile-eclasp (&key clean (output-file (build-common-lisp-bitcode-pathname))
+                            (system (command-line-arguments-as-list)))
+  (cclasp-features t)
+  (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
+  (let ((*target-backend* (default-target-backend))
+        (*trace-output* *standard-output*))
+    (load-system (select-source-files #P"src/lisp/kernel/tag/cclasp"
+                                      #P"src/lisp/kernel/tag/pre-epilogue-eclasp"
+                                      :system system))
+    (compile-cclasp* output-file system t)))
+
+#+(or bclasp cclasp eclasp)
 (defun bclasp-repl ()
   (let ((cmp:*cleavir-compile-hook* nil)
         (cmp:*cleavir-compile-file-hook* nil)

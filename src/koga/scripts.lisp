@@ -88,6 +88,13 @@
 (core:compile-cclasp)
 (core:quit)" (jobs configuration)))
 
+(defmethod print-prologue (configuration (name (eql :compile-eclasp)) output-stream)
+  (format output-stream "(setq *features* (cons :eclasp *features*))
+(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(core:compile-eclasp)
+(core:quit)" (jobs configuration)))
+
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (write-string "(setq *features* (cons :aclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
@@ -124,7 +131,7 @@
 (defmethod print-prologue (configuration (name (eql :clasp-sh)) output-stream)
   (declare (ignore configuration))
   (format output-stream "#!/usr/bin/env bash
-CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
+exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
           (build-name :iclasp)))
 
 (defmethod print-prologue (configuration (name (eql :jupyter-kernel)) output-stream)
@@ -158,9 +165,26 @@ CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
   (sleep 2) ; ensure that the sequence number if quickclasp is higher
   (ql-dist:install-dist \"http://thirdlaw.tech/quickclasp/quickclasp.txt\" :prompt nil))"))
 
-(defmethod print-prologue (configuration (name (eql :cclasp-immutable)) output-stream)
-  (format output-stream "(in-package \"SYSTEM\")
+(defun pprint-immutable-systems (stream object)
+  (format stream "(in-package \"SYSTEM\")~%~%(defparameter *immutable-systems*~%")
+  (pprint-logical-block (stream (sort (copy-seq object)
+                                      (lambda (x y)
+                                        (string-lessp (car x) (car y))))
+                         :prefix "  '(" :suffix ")")
+    (loop do (pprint-logical-block (stream (pprint-pop) :prefix "(" :suffix ")")
+               (write (pprint-pop) :case :downcase :stream stream)
+               (loop do (pprint-exit-if-list-exhausted)
+                        (pprint-newline :mandatory stream)
+                        (write (pprint-pop) :case :downcase :stream stream)
+                        (pprint-exit-if-list-exhausted)
+                        (write-char #\Space stream)
+                        (write (pprint-pop) :stream stream)))
+              (pprint-exit-if-list-exhausted)
+              (pprint-newline :mandatory stream)))
+  (write-line ")" stream))
 
-(setq *immutable-systems*
-      (list* ~<~@{~(~s~)~13I ~:_~}~:>*immutable-systems*))"
-          (gethash :cclasp (target-systems configuration))))
+(defmethod print-prologue (configuration (name (eql :cclasp-immutable)) output-stream)
+  (pprint-immutable-systems output-stream (gethash :cclasp (target-systems configuration))))
+
+(defmethod print-prologue (configuration (name (eql :eclasp-immutable)) output-stream)
+  (pprint-immutable-systems output-stream (gethash :eclasp (target-systems configuration))))

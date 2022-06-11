@@ -465,13 +465,15 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-host))
 
 (defun default-target-stage ()
-  (let ((stage (if (member :cclasp *features*)
-                   "c"
-                   (if (member :bclasp *features*)
-                       (if (member :compiling-cleavir *features*)
-                           "pre"
-                           "b")
-                       "a"))))
+  (let ((stage (if (member :eclasp *features*)
+                   "e"
+                   (if (member :cclasp *features*)
+                       "c"
+                       (if (member :bclasp *features*)
+                           (if (member :compiling-cleavir *features*)
+                               "pre"
+                               "b")
+                           "a")))))
     stage))
 
 
@@ -732,7 +734,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (export 'core:top-level)
 
-#-(or aclasp bclasp cclasp)
+#-(or aclasp bclasp cclasp eclasp)
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)
   (if (core:noinform-p)
@@ -740,6 +742,6 @@ the stage, the +application-name+ and the +bitcode-name+"
       (core:fmt t "Low level repl - in init.lisp%N"))
   (core:low-level-repl))
 
-#-(or bclasp cclasp)
-(eval-when (:execute :load-top-level)
+#-(or bclasp cclasp eclasp)
+(eval-when (:execute :load-toplevel)
   (core:fmt t "init.lisp  %N!\n!\n! Hello from the bottom of init.lisp - for some reason execution is passing through here\n!\n!\n"))

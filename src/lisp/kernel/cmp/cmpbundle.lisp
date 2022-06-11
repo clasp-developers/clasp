@@ -118,8 +118,8 @@
                (temp-fasl-dir (merge-pathnames
                                (make-pathname :name "remove" :defaults remove-dir))))
           (ensure-directories-exist temp-fasl-dir)
-          #-cclasp(rename-file fasl-dir temp-fasl-dir)
-          #+cclasp
+          #-(or cclasp eclasp)(rename-file fasl-dir temp-fasl-dir)
+          #+(or cclasp eclasp)
           (handler-case
               (progn
                 (rename-file fasl-dir temp-fasl-dir))

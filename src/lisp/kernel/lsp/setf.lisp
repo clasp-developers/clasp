@@ -25,7 +25,7 @@
 
 (in-package "EXT")
 
-#+(or) ;;#+cclasp
+#+(or) ;;#+(or cclasp eclasp)
 (eval-when (:compile-toplevel :execute)
   (format t "~%~%~%~% Turning on cmp::*compile-debug-dump-module* ~%~%~%")
   (setq cmp::*compile-debug-dump-module* t))
