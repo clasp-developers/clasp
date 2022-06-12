@@ -46,6 +46,7 @@
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;environment01.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;types01.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;control01.lisp")
+(load-if-compiled-correctly "sys:src;lisp;regression-tests;iteration.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;loop.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;numbers-core.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;unwind.lisp")
