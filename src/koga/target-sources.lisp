@@ -1,9 +1,13 @@
 (in-package #:koga)
 
 (defmethod add-target-source (configuration target (source symbol))
-  (loop for file in (asdf-groveler:grovel-source-files (list source)
-                                                       :root-path (truename (root :code)))
-        do (add-target-source configuration target (make-source file :code))))
+  (multiple-value-bind (systems files)
+      (asdf-groveler:grovel (list source) :root-path (truename (root :code)))
+    (loop for file in files
+          do (add-target-source configuration target (make-source file :code)))
+    (loop for system in systems
+          do (pushnew (intern (string-upcase (asdf:component-name system)) :keyword)
+                      (gethash target (target-systems configuration))))))
 
 ;; Sources that are added to iclasp also need to be installed and scanned for tags.
 (defmethod add-target-source :after (configuration (target (eql :iclasp)) (source source))

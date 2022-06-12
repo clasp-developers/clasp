@@ -25,14 +25,14 @@
   (loop with *all-systems* = nil
         with *all-source-files* = nil
         for system in systems
-        do (asdf:oos 'sticky-beak-op system :force t)
+        do (asdf:operate 'sticky-beak-op system :force :all)
         finally (return (nreverse *all-systems*))))
 
 (defun grovel-source-files (systems &key all-sources root-path)
   (loop with *all-systems* = nil
         with *all-source-files* = nil
         for system in systems
-        do (asdf:oos 'sticky-beak-op system :force t)
+        do (asdf:operate 'sticky-beak-op system :force :all)
         finally (return (loop for source in (nreverse *all-source-files*)
                               for path = (asdf/component:component-pathname source)
                               when (or all-sources
@@ -40,3 +40,17 @@
                                 collect (if root-path
                                             (uiop:subpathp path root-path)
                                             path)))))
+
+(defun grovel (systems &key all-sources root-path)
+  (loop with *all-systems* = nil
+        with *all-source-files* = nil
+        for system in systems
+        do (asdf:operate 'sticky-beak-op system :force :all)
+        finally (return (values (nreverse *all-systems*)
+                                (loop for source in (nreverse *all-source-files*)
+                                      for path = (asdf/component:component-pathname source)
+                                      when (or all-sources
+                                               (typep source 'asdf/lisp-action:cl-source-file))
+                                        collect (if root-path
+                                                    (uiop:subpathp path root-path)
+                                                    path))))))

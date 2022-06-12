@@ -31,6 +31,16 @@
   Clasp source directory now points to directly to the source code directory,
   which is usually `/usr/clasp/share/`. The APP-BITCODE, APP-EXECUTABLE and
   APP-FASL hosts have been renamed BITCODE, EXECUTABLE and FASL respectively.
+* ASDF systems that are loaded as part the cclasp image are now marked as
+  immutable thereby preventing ASDF from overwriting them. These systems include
+  the systems acclimation, alexandria, clasp-cleavir, cleavir-ast-to-bir, 
+  cleavir-ast, cleavir-ast-transformations, cleavir-attributes, cleavir-bir, 
+  cleavir-bir-transformations, cleavir-compilation-policy, cleavir-conditions,
+  cleavir-cst-to-ast, cleavir-ctype, cleavir-environment, 
+  cleavir-io,cleavir-meter, cleavir-primop, cleavir-set, cleavir-stealth-mixins, 
+  closer-mop, concrete-syntax-tree, concrete-syntax-tree-base,
+  concrete-syntax-tree-destructuring, concrete-syntax-tree-lambda-list,
+  eclector, and eclector-concrete-syntax-tree. 
 
 ## Removed
 * `core:*extensions-startup-loads*` and `core:*extensions-startup-evals*`

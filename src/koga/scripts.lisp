@@ -157,3 +157,10 @@ CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
 (unless (ql-dist:find-dist \"quickclasp\")
   (sleep 2) ; ensure that the sequence number if quickclasp is higher
   (ql-dist:install-dist \"http://thirdlaw.tech/quickclasp/quickclasp.txt\" :prompt nil))"))
+
+(defmethod print-prologue (configuration (name (eql :cclasp-immutable)) output-stream)
+  (format output-stream "(in-package \"SYSTEM\")
+
+(setq *immutable-systems*
+      (list* ~<~@{~(~s~)~13I ~:_~}~:>*immutable-systems*))"
+          (gethash :cclasp (target-systems configuration))))
