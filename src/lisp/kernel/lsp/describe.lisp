@@ -77,7 +77,7 @@
     (return-from read-inspect-command nil))
   (let* ((*quit-tags* (cons *quit-tag* *quit-tag*)) ;; as seen in top.lisp
 	 (*quit-tag* *quit-tags*))
-    (declare (special *quit-tags* *quit-tags*))
+    (declare (special *quit-tag* *quit-tags*))
     (loop
        (when
 	   (catch *quit-tag* ;; as seen in top.lisp
