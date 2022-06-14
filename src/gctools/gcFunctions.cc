@@ -494,7 +494,7 @@ CL_DEFUN core::T_mv cl__room(core::Symbol_sp x) {
   } else if (x.nilp()) {
     verb = room_min;
   } else {
-    SIMPLE_ERROR("You must provide t, nil or :default");
+    TYPE_ERROR(x, core::Cons_O::createList(cl::_sym_member, cl::_sym_T, cl::_sym_nil, kw::_sym_default));
   }
 #if defined(USE_BOEHM) || defined(USE_MPS)
   clasp_gc_room( OutputStream, verb );
