@@ -778,7 +778,7 @@ documentation (x symbol) (doc-type (eql 'variable))
                 COLLECT (LIST S DOC)))
       (nil))
 
-(test-expect-error room-1 (room 42) :type error)
-(test-expect-error room-2 (room (make-hash-table)) :type error)
-(test-expect-error room-3 (room :pepito) :type error)
+(test-expect-error room-1 (room 42) :type type-error)
+(test-expect-error room-2 (room (make-hash-table)) :type type-error)
+(test-expect-error room-3 (room :pepito) :type type-error)
                    
