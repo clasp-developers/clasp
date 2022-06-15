@@ -2,6 +2,7 @@
 
 (define-constant *batch-classes* 3)
 (defparameter *function-partitions* 3)
+(defparameter *clasp-home* #P"")
 
 (define-constant +root-dummy-class+ "RootClass" :test 'equal)
 
@@ -144,7 +145,8 @@
 (defun generate-expose-one-source-info-helper (sout obj idx)
   (let* ((lisp-name (lisp-name% obj))
          (absolute-file (truename (pathname (file% obj))))
-         (file (enough-namestring absolute-file (pathname (format nil "~a/" (uiop:getenv "CLASP_HOME")))))
+         (file (concatenate 'string "sys:"
+                            (substitute #\; #\/ (enough-namestring absolute-file *clasp-home*))))
          (line (line% obj))
          (char-offset (character-offset% obj))
          (docstring (docstring% obj))
