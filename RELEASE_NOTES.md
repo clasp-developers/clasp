@@ -54,6 +54,8 @@
 * The stepper, accessible through `step`, now has basic functionality.
 * `gctools:save-lisp-and-die` now accepts a key `:executable` which can be used
   to create an executable binary with the snapshot embedded in the binary.
+* `garbage-collect`, `finalize`, and `save-lisp-and-die` are now exported from
+  the `ext` interface package.
 
 ## Optimizations
 * Arguments to and return values from local functions (e.g. from FLET) are 
