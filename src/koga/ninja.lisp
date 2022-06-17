@@ -57,7 +57,7 @@
                     :restat 1
                     :description "Creating headers from sif files")
   (ninja:write-rule output-stream :static-analyzer
-                    :command "$clasp --norc --non-interactive --feature ignore-extensions --load ${variant-path}static-analyzer.lisp -- $sif $in"
+                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load ${variant-path}static-analyzer.lisp -- $sif $in"
                     :description "Analyzing clasp"
                     :restat 1
                     :pool "console")
@@ -106,18 +106,22 @@
                       :restat 1
                       :pool "console"))
   (ninja:write-rule output-stream :compile-module
-                    :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image --feature ignore-extensions --load compile-module.lisp -- $out $in"
+                    :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image -t c --feature ignore-extensions --load compile-module.lisp -- $out $in"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
-                    :command "$clasp --norc --non-interactive --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
+                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
                     :description "Running regression tests"
                     :pool "console")
+  (ninja:write-rule output-stream :cando-regression-tests
+                    :command "$clasp --norc --non-interactive --load \"sys:extensions;cando;src;lisp;regression-tests;run-all.lisp\""
+                    :description "Running Cando regression tests"
+                    :pool "console")
   (ninja:write-rule output-stream :ansi-test
-                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
+                    :command "$clasp --norc -t c --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
                     :description "Running ANSI tests"
                     :pool "console")
   (ninja:write-rule output-stream :test-random-integer
-                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
+                    :command "$clasp --norc -t c --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
   (ninja:write-rule output-stream :link-fasl
@@ -779,6 +783,11 @@
                      :clasp (make-source (build-name :iclasp) :variant)
                      :inputs (list (build-name "cclasp"))
                      :outputs (list (build-name "test-random-integer")))
+  (when (member :cando (extensions configuration))
+    (ninja:write-build output-stream :cando-regression-tests
+                       :clasp (make-source (build-name :iclasp) :variant)
+                       :inputs (list (build-name "eclasp"))
+                       :outputs (list (build-name "cando-test"))))
   (when *variant-default*
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test"))
@@ -788,7 +797,11 @@
                        :outputs (list "ansi-test"))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test-random-integer"))
-                       :outputs (list "test-random-integer"))))
+                       :outputs (list "test-random-integer"))
+    (when (member :cando (extensions configuration))
+      (ninja:write-build output-stream :phony
+                         :inputs (list (build-name "cando-test"))
+                         :outputs (list "cando-test")))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :static-analyzer)) sources
