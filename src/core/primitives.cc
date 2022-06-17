@@ -1726,10 +1726,10 @@ namespace core {
 CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return the lambda-list of a function designator. Note that "
-             "this is intended for human consumption and so may not "
-             "literally describe the function; e.g. macro and type expander "
-             "functions will have the defmacro/deftype lambda list.)dx")
+CL_DOCSTRING(R"dx(Return the lambda-list of a function designator. Note that
+this is intended for human consumption and so may not
+literally describe the function; e.g. macro and type expander
+functions will have the defmacro/deftype lambda list.)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {

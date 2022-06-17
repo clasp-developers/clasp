@@ -635,11 +635,13 @@ CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
 }
 
 DOCGROUP(clasp)
+CL_DOCSTRING("Return the documentation string associated with the function.")
 CL_DEFUN T_sp core__function_docstring(Function_sp func) {
   return func->docstring();
 }
 
 CL_LISPIFY_NAME("core:function-docstring");
+CL_DOCSTRING("Set the documentation string associated with the function.")
 DOCGROUP(clasp)
 CL_DEFUN_SETF T_sp setf_function_docstring(T_sp doc, Function_sp func) {
   func->setf_docstring(doc);
