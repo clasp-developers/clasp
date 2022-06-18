@@ -566,7 +566,8 @@ Prints information about OBJECT to STREAM."
                              (first slot-d)(second slot-d)(fourth slot-d)(sixth slot-d))
                      (format t "~&Name: ~15a" slot-d)))))))
 
-    (cond ((ext:setf-expander symbol)
+    (cond ((or (fboundp (list 'setf symbol))
+               (ext:setf-expander symbol))
            (doc-separation "[Setf]")
            (doc-value (documentation symbol 'setf) "Documentation:"))))
   
