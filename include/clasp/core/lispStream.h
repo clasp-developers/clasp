@@ -159,6 +159,7 @@ T_sp clasp_stream_element_type(T_sp strm);
 int clasp_interactive_stream_p(T_sp strm);
 T_sp clasp_off_t_to_integer(clasp_off_t offset);
 clasp_off_t clasp_integer_to_off_t(T_sp i);
+int clasp_stream_to_handle(T_sp s, bool output);
 
 T_sp cl__file_length(T_sp stream);
 T_sp cl__file_position(T_sp stream, T_sp position);
