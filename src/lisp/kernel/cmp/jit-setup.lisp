@@ -746,7 +746,7 @@ No DIBuilder is defined for the default module")
      (makunbound '*jit-log-stream*)
      (format t "Finished makunbound of some symbols~%")))))
 
-(defun jit-register-symbol (symbol-name-string symbol-info)
+(defun jit-register-symbol (symbol-name-string symbol-info &key verbose)
   "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
   (core:hash-table-setf-gethash *jit-saved-symbol-info* symbol-name-string symbol-info)
   (if (member :jit-log-symbols *features*)
@@ -758,13 +758,16 @@ No DIBuilder is defined for the default module")
                ((not (boundp '*jit-pid*))
                 (setq *jit-pid* (core:getpid))
                 (let ((filename (core:fmt nil "/tmp/perf-{}.map" (core:getpid))))
-                  (core:fmt t "Writing jitted symbols to {}%N" filename)
+                  ;; when is not yet available
+                  (if verbose
+                    (core:fmt t "Writing jitted symbols to {}%N" filename))
                   (setq *jit-log-stream* (open filename :direction :output))))
                ;; If we are in a forked child then we need to create a new clasp-symbols-<pid> file and
                ;; refer to the parent clasp-symbols-<ppid> file.
                ((and *jit-log-stream* (not (= *jit-pid* (core:getpid))))
-                (format t "Closing the *jit-log-stream* because the *jit-pid* ~d does not match our pid ~d ~%"
-                        *jit-pid* (core:getpid))
+                (if verbose
+                  (format t "Closing the *jit-log-stream* because the *jit-pid* ~d does not match our pid ~d ~%"
+                          *jit-pid* (core:getpid)))
                 (close *jit-log-stream*) ; Shut down symbols for forked children
                 (setq *jit-log-stream* nil)))
              (if *jit-log-stream*
