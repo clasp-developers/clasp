@@ -583,6 +583,11 @@ CL_DEFUN bool mp__recursive_lock_p(Mutex_sp m) {
 }
 
 DOCGROUP(clasp)
+CL_DEFUN bool mp__holding_lock_p(Mutex_sp m) {
+  return m->_Owner == _sym_STARcurrent_processSTAR->symbolValue();
+}
+
+DOCGROUP(clasp)
 CL_DEFUN core::Fixnum_sp mp__lock_count(Mutex_sp m) {
   return core::clasp_make_fixnum(m->counter());
 }

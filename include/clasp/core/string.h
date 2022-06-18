@@ -79,6 +79,9 @@ namespace core {
     static SimpleBaseString_sp make(const char* data, size_t len) {
       return SimpleBaseString_O::make(len,'\0',true,len,(const unsigned char*)data);
     }
+    static SimpleBaseString_sp makeSize(size_t len) {
+      return SimpleBaseString_O::make(len,'\0',true);
+    }
   //SimpleBaseString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
     virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_base_string,clasp_make_fixnum(this->length()));};

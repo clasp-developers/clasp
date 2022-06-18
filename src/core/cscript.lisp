@@ -50,6 +50,7 @@
            #~"myReadLine.cc"
            #~"specialForm.cc"
            #~"unixfsys.cc"
+           #~"unixsys.cc"
            #~"lispList.cc"
            #~"candoOpenMp.cc"
            #~"foundation.cc"

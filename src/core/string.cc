@@ -1508,6 +1508,8 @@ CL_DEFUN List_sp core__split(const string& all, const string &chars) {
   return result.result();
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,copy_to_simple_base_string);
+
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)
 {
