@@ -157,11 +157,11 @@
                               (princ docstring sout)
                               (terpri sout)
                               (princ docstring-long sout))))
-         (kind (cond
-                 ((typep obj 'function-mixin) "code_kind")
-                 ((typep obj 'class-method-mixin) "code_kind")
-                 ((typep obj 'method-mixin) "method_kind")
-                 ((typep obj 'exposed-class) "class_kind")
+         (kind (typecase obj
+                 (expose-defun-setf "setf_kind")
+                 ((or function-mixin class-method-mixin) "code_kind")
+                 (method-mixin "method_kind")
+                 (exposed-class "class_kind")
                  (t "unknown_kind")))
          (helper-name (format nil "source_info_~d_helper" idx)))
     (format sout "NOINLINE void source_info_~d_helper() {~%" idx)

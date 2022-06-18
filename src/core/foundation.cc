@@ -1067,8 +1067,6 @@ void lisp_defun(Symbol_sp sym,
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   fc->setf_lambdaList(llh->lambdaList());
   fc->setf_docstring(tdocstring);
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
 }
 
 // identical to above except for using setSetfFdefinition.
@@ -1101,8 +1099,6 @@ void lisp_defun_setf(Symbol_sp sym,
   Function_sp func = fc;
   sym->setSetfFdefinition(func);
   sym->exportYourself();
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
 }
 
 void lisp_defmacro(Symbol_sp sym,
