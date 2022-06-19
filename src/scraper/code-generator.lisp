@@ -2,6 +2,7 @@
 
 (define-constant *batch-classes* 3)
 (defparameter *function-partitions* 3)
+(defparameter *clasp-home* #P"")
 
 (define-constant +root-dummy-class+ "RootClass" :test 'equal)
 
@@ -144,7 +145,8 @@
 (defun generate-expose-one-source-info-helper (sout obj idx)
   (let* ((lisp-name (lisp-name% obj))
          (absolute-file (truename (pathname (file% obj))))
-         (file (enough-namestring absolute-file (pathname (format nil "~a/" (uiop:getenv "CLASP_HOME")))))
+         (file (concatenate 'string "sys:"
+                            (substitute #\; #\/ (enough-namestring absolute-file *clasp-home*))))
          (line (line% obj))
          (char-offset (character-offset% obj))
          (docstring (docstring% obj))
@@ -155,11 +157,11 @@
                               (princ docstring sout)
                               (terpri sout)
                               (princ docstring-long sout))))
-         (kind (cond
-                 ((typep obj 'function-mixin) "code_kind")
-                 ((typep obj 'class-method-mixin) "code_kind")
-                 ((typep obj 'method-mixin) "method_kind")
-                 ((typep obj 'exposed-class) "class_kind")
+         (kind (typecase obj
+                 (expose-defun-setf "setf_kind")
+                 ((or function-mixin class-method-mixin) "code_kind")
+                 (method-mixin "method_kind")
+                 (exposed-class "class_kind")
                  (t "unknown_kind")))
          (helper-name (format nil "source_info_~d_helper" idx)))
     (format sout "NOINLINE void source_info_~d_helper() {~%" idx)

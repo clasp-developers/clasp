@@ -90,6 +90,7 @@
   (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
   (assert (every 'uiop:directory-pathname-p (list clasp-home-path build-path)))
   (assert sif-files)
-  (process-all-sif-files clasp-home-path build-path sif-files :use-precise use-precise))
+  (let ((*clasp-home* (truename clasp-home-path)))
+    (process-all-sif-files clasp-home-path build-path sif-files :use-precise use-precise)))
 
 (export '(generate-sif-files generate-headers-from-all-sifs))
