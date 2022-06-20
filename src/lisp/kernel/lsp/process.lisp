@@ -7,7 +7,15 @@
 
 (in-package "EXT")
 
-(export 'ext::external-process-wait)
+(export '(ext::external-process-wait
+          pipe-streams
+          external-process-pid
+          external-process-status
+          run-program
+          ) :ext)
+
+(defconstant +sigkill+ 9 )
+(defconstant +sigterm+ 15 )
 
 (defmacro with-process-lock ((process &optional (wait t)) &body body)
   #+threads
@@ -22,6 +30,9 @@
              (mp:giveup-lock ,lock))))))
   #-threads `(progn ,@body))
 
+(defun missing-function ()
+  (error "You must provide a function for the process to run"))
+
 (defstruct (external-process (:constructor make-external-process ()))
   pid
   input
@@ -30,7 +41,7 @@
   (%status :running)
   (%code nil)
   #+threads (%lock (mp:make-lock))
-  #+threads (%pipe (mp:make-process)))
+  #+threads (%pipe (mp:make-process "external-process" 'missing-function)))
 
 (defun external-process-status (external-process)
   (let ((status (external-process-%status external-process)))
@@ -127,7 +138,7 @@
 
   (labels ((process-stream (which &rest args)
              (core::while (typep which 'synonym-stream)
-               (setf which (symbol-value (synonym-stream-symbol which))))
+                          (setf which (symbol-value (synonym-stream-symbol which))))
              (cond ((null which)
                     (null-stream (getf args :direction)))
                    ((or (stringp which)
@@ -148,32 +159,33 @@
              (si:copy-to-simple-base-string
               (with-output-to-string (str)
                 (loop for (arg . rest) on args
-                   do (if (and escape-arguments
-                               (find-if (lambda (c)
-                                          (find c '(#\Space #\Tab #\")))
-                                        arg))
-                          (escape-arg arg str)
-                          (princ arg str))
-                     (when rest
-                       (write-char #\Space str))))))
+                      do (if (and escape-arguments
+                                  (find-if (lambda (c)
+                                             (find c '(#\Space #\Tab #\")))
+                                           arg))
+                             (escape-arg arg str)
+                             (princ arg str))
+                         (when rest
+                           (write-char #\Space str))))))
            (null-stream (direction)
              (open #-windows "/dev/null"
                    #+windows "nul"
                    :direction direction
-		             :if-exists :overwrite))
+                   :if-exists :overwrite))
            (verify-stream (stream stream-type)
-             (case stream
-               ((nil)
-                (when (null (case stream-type
-                              (:input if-input-does-not-exist)
-                              (:output if-output-exists)
-                              (:error if-error-exists)))
-                  (return-from run-program nil))
-                (null-stream (if (eql stream-type :input)
-                                 :output
-                                 :input)))
-               (:virtual-stream :stream)
-               (otherwise stream))))
+             (let ((res (case stream
+                          ((nil)
+                           (when (null (case stream-type
+                                         (:input if-input-does-not-exist)
+                                         (:output if-output-exists)
+                                         (:error if-error-exists)))
+                             (return-from run-program nil))
+                           (null-stream (if (eql stream-type :input)
+                                            :output
+                                            :input)))
+                          (:virtual-stream :stream)
+                          (otherwise stream))))
+               res)))
     (let ((progname (si:copy-to-simple-base-string command))
           (args (prepare-args (cons command argv)))
           (process (make-external-process))
@@ -195,22 +207,24 @@
                              (verify-stream process-input :input)
                              (verify-stream process-output :output)
                              (verify-stream process-error :error)))
-
       (let ((stream-write
              (when (plusp parent-write)
                (ext:make-stream-from-fd parent-write :output
                                         :element-type 'base-char
-                                        :external-format external-format)))
+                                        :external-format external-format
+                                        :name "parent-write")))
             (stream-read
              (when (plusp parent-read)
                (ext:make-stream-from-fd parent-read :input
                                         :element-type 'base-char
-                                        :external-format external-format)))
+                                        :external-format external-format
+                                        :name "parent-read")))
             (stream-error
              (when (plusp parent-error)
                (ext:make-stream-from-fd parent-error :input
                                         :element-type 'base-char
-                                        :external-format external-format)))
+                                        :external-format external-format
+                                        :name "parent-error" )))
             (pipes nil))
 
         (when (eql process-input :virtual-stream)
@@ -236,7 +250,7 @@
               (warn "EXT:RUN-PROGRAM: Ignoring virtual stream I/O argument.")))
 
         (if wait
-            (si:external-process-wait process t)
+            (ext:external-process-wait process t)
             (gctools:finalize process #'finalize-external-process))
 
         (values (if (and stream-read stream-write)

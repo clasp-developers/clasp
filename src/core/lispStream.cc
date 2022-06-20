@@ -78,6 +78,27 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/core/bits.h>
 namespace core {
+
+
+gctools::Fixnum clasp_normalize_stream_element_type(T_sp element_type);
+
+std::string string_mode(int st_mode) {
+  stringstream ss;
+  if (st_mode & S_IRWXU) ss << "/user-";
+  if (st_mode & S_IRUSR) ss << "r";
+  if (st_mode & S_IWUSR) ss << "w";
+  if (st_mode & S_IXUSR) ss << "x";
+  if (st_mode & S_IRWXG) ss << "/group-";
+  if (st_mode & S_IRGRP) ss << "r";
+  if (st_mode & S_IWGRP) ss << "w";
+  if (st_mode & S_IXGRP) ss << "x";
+  if (st_mode & S_IRWXO) ss << "/other-";
+  if (st_mode & S_IROTH) ss << "r";
+  if (st_mode & S_IWOTH) ss << "w";
+  if (st_mode & S_IXOTH) ss << "x";
+  return ss.str();
+}
+
 FileOps &StreamOps(T_sp strm) {
   Stream_sp stream = gc::As_unsafe<Stream_sp>(strm);
   return stream->ops;
@@ -2993,12 +3014,73 @@ safe_fopen(const char *filename, const char *mode) {
   return output;
 }
 
+/*
+ * Return the (stdio) flags for a given mode.  Store the flags
+ * to be passed to an open() syscall through *optr.
+ * Return 0 on error.
+ */
+int
+__sflags(const char* mode, int* optr)
+{
+  int ret, m, o;
+
+  switch (*mode++) {
+
+  case 'r':	/* open for reading */
+    ret = __SRD;
+    m = O_RDONLY;
+    o = 0;
+    break;
+
+  case 'w':	/* open for writing */
+    ret = __SWR;
+    m = O_WRONLY;
+    o = O_CREAT | O_TRUNC;
+    break;
+
+  case 'a':	/* open for appending */
+    ret = __SWR;
+    m = O_WRONLY;
+    o = O_CREAT | O_APPEND;
+    break;
+
+  default:	/* illegal mode */
+    errno = EINVAL;
+    return (0);
+  }
+
+  /* [rwa]\+ or [rwa]b\+ means read and write */
+  if (*mode == '+' || (*mode == 'b' && mode[1] == '+')) {
+    ret = __SRW;
+    m = O_RDWR;
+  }
+  *optr = m | o;
+  return (ret);
+}
+
 static FILE *
 safe_fdopen(int fildes, const char *mode) {
   const cl_env_ptr the_env = clasp_process_env();
   FILE *output;
   clasp_disable_interrupts_env(the_env);
   output = fdopen(fildes, mode);
+  if (output==NULL) {
+    std::string serr = strerror(errno);
+    struct stat info;
+    int fstat_error = fstat( fildes, &info );
+    int flags, fdflags, tmp, oflags;
+    if ((flags = __sflags(mode, &oflags)) == 0) perror("__sflags failed");
+    if ((fdflags = fcntl(fildes, F_GETFL, 0)) < 0) perror("fcntl failed");
+    tmp = fdflags & O_ACCMODE;
+    if (tmp != O_RDWR && (tmp != (oflags & O_ACCMODE))) {
+      printf("%s:%d fileds: %d fdflags = %d\n", __FUNCTION__, __LINE__, fildes, fdflags );
+      printf("%s:%d | (tmp[%d] != O_RDWR[%d]) -> %d\n", __FUNCTION__, __LINE__, tmp, O_RDWR, (tmp != O_RDWR) );
+      printf("%s:%d | (tmp[%d] != (oflags[%d] & O_ACCMODE[%d])[%d]) -> %d\n", __FUNCTION__, __LINE__, tmp, oflags, O_ACCMODE, (oflags & O_ACCMODE), (tmp != (oflags & O_ACCMODE)) );
+      perror("About to signal EINVAL");
+    }
+   printf("%s:%d | Failed to create FILE* %p for file descriptor %d mode: %s | info.st_mode = %08x | %s\n", __FUNCTION__, __LINE__, output, fildes, mode, info.st_mode, serr.c_str() );
+    perror("In safe_fdopen");
+  }
   clasp_enable_interrupts_env(the_env);
   return output;
 }
@@ -4715,12 +4797,40 @@ T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm,
   fp = safe_fdopen(fd, mode);
 #endif
   if (fp == NULL) {
-    FElibc_error("Unable to create stream for file descriptor ~D",
-                 1, Integer_O::create((gc::Fixnum)fd).raw_());
+    struct stat info;
+    int fstat_error = fstat( fd, &info );
+    if (fstat_error !=0) {
+      SIMPLE_ERROR("Unable to create stream for file descriptor and while running fstat another error occurred -> fd: %ld name: %s mode: %s error: %s | fstat_error = %d  info.st_mode = %08x%s", fd, gc::As<String_sp>(fname)->get_std_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode, string_mode(info.st_mode) );
+    }
+    SIMPLE_ERROR("Unable to create stream for file descriptor %ld name: %s mode: %s error: %s | fstat_error = %d  info.st_mode = %08x%s", fd, gc::As<String_sp>(fname)->get_std_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode, string_mode(info.st_mode) );
   }
-  return clasp_make_stream_from_FILE(fname, fp, smm, byte_size, flags,
-                                     external_format);
+  return clasp_make_stream_from_FILE(fname, fp, smm, byte_size, flags, external_format);
 }
+
+SYMBOL_EXPORT_SC_(KeywordPkg,input_output);
+
+CL_LAMBDA(fd direction &key buffering element-type (external-format :default) (name "FD-STREAM"));
+CL_DEFUN T_sp ext__make_stream_from_fd( int fd, T_sp direction, T_sp buffering, T_sp element_type, T_sp external_format, String_sp name ) {
+  enum StreamMode smm_mode;
+  if (direction == kw::_sym_input) {
+    smm_mode = clasp_smm_input;
+  } else if (direction == kw::_sym_output) {
+    smm_mode = clasp_smm_output;
+  } else if (direction == kw::_sym_io || direction == kw::_sym_input_output) {
+    smm_mode = clasp_smm_io;
+  }
+  if ( cl__integerp(element_type) ) {
+    external_format = nil<T_O>();
+  }
+  gctools::Fixnum byte_size;
+  byte_size = clasp_normalize_stream_element_type(element_type);
+  T_sp stream = clasp_make_stream_from_fd( name, fd, smm_mode, byte_size, CLASP_STREAM_BINARY, external_format );
+  if (buffering.notnilp()) {
+    core__set_buffering_mode( stream, byte_size ? kw::_sym_full : kw::_sym_line);
+  }
+  return stream;
+}
+
 
 int clasp_stream_to_handle(T_sp s, bool output) {
 BEGIN:
@@ -6808,5 +6918,26 @@ CL_DEFUN int64_t core__lseek(int fd, int64_t offset, Symbol_sp whence)
   size_t off = lseek(fd,offset,iwhence);
   return off;
 };
+
+/**********************************************************************
+ * OTHER TOOLS
+ */
+
+CL_DEFUN T_sp core__copy_stream(T_sp in, T_sp out, T_sp wait)
+{
+  claspCharacter c;
+  if ((wait.nilp()) && !clasp_listen_stream(in)) {
+    return nil<T_O>();
+  }
+  for (c = clasp_read_char(in); c != EOF; c = clasp_read_char(in)) {
+    clasp_write_char(c, out);
+    if ((wait.nilp()) && !clasp_listen_stream(in)) {
+      break;
+    }
+  }
+  clasp_force_output(out);
+  return (c==EOF) ? _lisp->_true() : nil<T_O>();
+}
+
 
 };

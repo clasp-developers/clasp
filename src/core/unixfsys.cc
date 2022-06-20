@@ -455,20 +455,6 @@ CL_DEFUN bool core__wifsignaled(Fixnum_sp fstatus) {
   return WIFSIGNALED(status);
 };
 
-CL_LAMBDA(&key pid nohang untraced continued)
-CL_DECLARE();
-CL_DOCSTRING(R"dx(waitpid - see unix waitpid - returns status)dx")
-DOCGROUP(clasp)
-CL_DEFUN T_mv core__waitpid(Fixnum_sp pid, bool nohang, bool untraced, bool continued ) {
-  pid_t p = unbox_fixnum(pid);
-  int status(0);
-  int iopts = 0;
-  if (nohang) iopts |= WNOHANG;
-  if (untraced) iopts |= WUNTRACED;
-  if (continued) iopts |= WCONTINUED;
-  int wpid = waitpid(p, &status, iopts);
-  return Values(make_fixnum(wpid),make_fixnum(status));
-};
 
 CL_LAMBDA()
 CL_DECLARE();
