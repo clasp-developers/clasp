@@ -347,7 +347,6 @@ create_descriptor(T_sp stream, T_sp direction, int *child, int *parent) {
     }
   }
   else if (cl__streamp(stream)) {
-    printf("%s:%d:%s cl_streamp\n", __FILE__, __LINE__, __FUNCTION__ );
     *child = clasp_stream_to_handle(stream, direction != kw::_sym_input);
     if (*child >= 0) {
       *child = dup(*child);

@@ -3020,26 +3020,26 @@ safe_fopen(const char *filename, const char *mode) {
  * Return 0 on error.
  */
 int
-__sflags(const char* mode, int* optr)
+sflags(const char* mode, int* optr)
 {
   int ret, m, o;
 
   switch (*mode++) {
 
   case 'r':	/* open for reading */
-    ret = __SRD;
+    ret = 1;
     m = O_RDONLY;
     o = 0;
     break;
 
   case 'w':	/* open for writing */
-    ret = __SWR;
+    ret = 1;
     m = O_WRONLY;
     o = O_CREAT | O_TRUNC;
     break;
 
   case 'a':	/* open for appending */
-    ret = __SWR;
+    ret = 1;
     m = O_WRONLY;
     o = O_CREAT | O_APPEND;
     break;
@@ -3051,7 +3051,7 @@ __sflags(const char* mode, int* optr)
 
   /* [rwa]\+ or [rwa]b\+ means read and write */
   if (*mode == '+' || (*mode == 'b' && mode[1] == '+')) {
-    ret = __SRW;
+    ret = 1;
     m = O_RDWR;
   }
   *optr = m | o;
@@ -3069,7 +3069,7 @@ safe_fdopen(int fildes, const char *mode) {
     struct stat info;
     int fstat_error = fstat( fildes, &info );
     int flags, fdflags, tmp, oflags;
-    if ((flags = __sflags(mode, &oflags)) == 0) perror("__sflags failed");
+    if ((flags = sflags(mode, &oflags)) == 0) perror("sflags failed");
     if ((fdflags = fcntl(fildes, F_GETFL, 0)) < 0) perror("fcntl failed");
     tmp = fdflags & O_ACCMODE;
     if (tmp != O_RDWR && (tmp != (oflags & O_ACCMODE))) {
