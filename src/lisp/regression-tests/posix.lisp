@@ -72,3 +72,9 @@
        nil)))
 
 
+(test-true
+ run-program-hello-world
+ (let* ((stream (ext:run-program "/bin/bash" (list "-c" "echo hello world")))
+        (output (read-line stream)))
+   (close stream)
+   (string= output "hello world")))
