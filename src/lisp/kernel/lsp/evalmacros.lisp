@@ -359,6 +359,8 @@ values of the last FORM.  If no FORM is given, returns NIL."
 (defmacro sys::until (test &body body)
   (while-until test body 'unless))
 
+(export 'sys::until)
+
 (defun si::simple-program-error (datum &rest arguments)
   (signal-simple-error 'simple-program-error nil datum arguments))
 

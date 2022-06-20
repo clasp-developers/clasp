@@ -149,7 +149,7 @@ from_list_to_execve_argument(T_sp l, char ***environp)
   char **environ;
   for (p = l; p.notnilp(); p = CONS_CDR(p)) {
     T_sp s = CONS_CAR(p);
-    total_size += gc::As<String_sp>(s)->fillPointer() + 1;
+    total_size += cl__length(gc::As<String_sp>(s)) + 1;
     nstrings++;
   }
   /* Extra place for ending null */
@@ -242,6 +242,15 @@ clasp_waitpid(T_sp pid, T_sp wait)
   return Values(status,code,pid);
 }
 
+CL_LAMBDA(pid wait)
+CL_DECLARE();
+CL_DOCSTRING(R"dx(waitpid - see unix waitpid - returns status)dx")
+DOCGROUP(clasp)
+CL_DEFUN T_mv core__waitpid(T_sp pid, T_sp wait) {
+  return clasp_waitpid( pid, wait );
+};
+
+
 #if !defined(ECL_MS_WINDOWS_HOST)
 CL_DEFUN T_sp sys__killpid(T_sp pid, T_sp signal)
 {
@@ -249,6 +258,16 @@ CL_DEFUN T_sp sys__killpid(T_sp pid, T_sp signal)
   return clasp_make_fixnum(ret);
 }
 #endif
+
+
+void describe_fildes(int fildes, const char* name) 
+{
+  struct stat info;
+  int fstat_error = fstat( fildes, &info );
+  int fdflags, tmp, oflags;
+  if ((fdflags = fcntl(fildes, F_GETFL, 0)) < 0) perror("fcntl failed");
+  printf("%s:%d name: %s filedes: %d  fdflags = %d\n", __FUNCTION__, __LINE__, name, fildes, fdflags );
+}
 
 
 #if defined(ECL_MS_WINDOWS_HOST)
@@ -312,8 +331,7 @@ create_descriptor(T_sp stream, T_sp direction,
 }
 #else
 static void
-create_descriptor(T_sp stream, T_sp direction,
-                  int *child, int *parent) {
+create_descriptor(T_sp stream, T_sp direction, int *child, int *parent) {
   if (stream == kw::_sym_stream) {
     int fd[2], ret;
     ret = pipe(fd);
@@ -329,6 +347,7 @@ create_descriptor(T_sp stream, T_sp direction,
     }
   }
   else if (cl__streamp(stream)) {
+    printf("%s:%d:%s cl_streamp\n", __FILE__, __LINE__, __FUNCTION__ );
     *child = clasp_stream_to_handle(stream, direction != kw::_sym_input);
     if (*child >= 0) {
       *child = dup(*child);
@@ -350,7 +369,7 @@ create_descriptor(T_sp stream, T_sp direction,
 SYMBOL_EXPORT_SC_(ClPkg,coerce);
 
 CL_DEFUN
-T_sp sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_sp output, T_sp error)
+T_mv sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_sp output, T_sp error)
 {
   int parent_write = 0, parent_read = 0, parent_error = 0;
   int child_pid;
@@ -362,7 +381,7 @@ T_sp sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_
   } else if (environ != kw::_sym_default) {
     FEerror("Malformed :ENVIRON argument to EXT:RUN-PROGRAM.", 0);
   }
-  
+
 #if defined(ECL_MS_WINDOWS_HOST)
   {
     BOOL ok;
@@ -454,7 +473,19 @@ T_sp sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_
       /* Child */
       int j;
       Array_sp argvv = gc::As<Array_sp>(argv);
-
+      void** argv_ptr = (void**)malloc(sizeof(void*)*cl__length(argvv));
+      for (j = 0; j < cl__length(argvv); j++ ) {
+        T_sp arg = argvv->rowMajorAref(j);
+        if ( arg.nilp() ) {
+          argv_ptr[j] = NULL;
+        } else {
+          std::string str = gc::As<String_sp>(arg)->get_std_string();
+          argv_ptr[j] = (void*)malloc(str.size()+1);
+          char* end = strncpy((char*)argv_ptr[j],(const char*)str.c_str(),str.size());
+          end = end + str.size();
+          *end = '\0';
+        }
+      }
       if (parent_write) close(parent_write);
       if (parent_read)  close(parent_read);
       if (parent_error) close(parent_error);
@@ -463,18 +494,6 @@ T_sp sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_
       dup2(child_stdout, STDOUT_FILENO);
       dup2(child_stderr, STDERR_FILENO);
 
-      void** argv_ptr = (void**)malloc(sizeof(void*)*argvv->fillPointer());
-      for (j = 0; j < argvv->fillPointer(); j++ ) {
-        T_sp arg = argvv->rowMajorAref(j);
-        if ( arg.nilp() ) {
-          argv_ptr[j] = NULL;
-        } else {
-          std::string str = gc::As<String_sp>(arg)->get_std_string();
-          argv_ptr[j] = (void*)malloc(str.size()+1);
-          char* end = strncpy((char*)argv_ptr[j],(const char*)str.c_str(),str.size());
-          *end = '\0';
-        }
-      }
       if (environ.consp() || environ.nilp()) {
         char **pstrings;
         from_list_to_execve_argument(environ, &pstrings);
@@ -512,8 +531,8 @@ T_sp sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_
     parent_error = 0;
     FEerror("Could not spawn subprocess to run ~S.", 1, command);
   }
-
   return Values(
+      pid,
       clasp_make_fixnum(parent_write),
       clasp_make_fixnum(parent_read),
       clasp_make_fixnum(parent_error));

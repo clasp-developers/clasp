@@ -161,7 +161,7 @@
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
              #~"kernel/cmp/compile-file-parallel.lisp"
              #~"kernel/lsp/generated-encodings.lisp"
-;;             #~"kernel/lsp/process.lisp"
+             #~"kernel/lsp/process.lisp"
              #~"kernel/lsp/top.lisp"
              #~"kernel/lsp/encodings.lisp"
              #~"kernel/lsp/cltl2.lisp"
