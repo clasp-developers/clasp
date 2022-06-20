@@ -135,13 +135,10 @@ CL_DEFMETHOD std::string DISubprogram_O::getSubprogram() const {
   return this->wrappedPtr()->getName().str();
 }
 
-
 CL_DEFMETHOD std::string DIFile_O::getPath() const {
-  stringstream ss;
   std::string filename = this->wrappedPtr()->getFilename().str();
   std::string directory = this->wrappedPtr()->getDirectory().str();
-  ss << directory << "/" << filename;
-  return ss.str();
+  return (directory == ".") ? filename : (directory + "/" + filename);
 }
 
 std::string DIFile_O::__repr__() const {
@@ -440,7 +437,7 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
     core::write_bf_stream(fmt::sprintf("info.StartLine %lu\n" , info.StartLine ));
   }
   
-  return Values(core::SimpleBaseString_O::make(info.FileName),
+  return Values(core::SimpleBaseString_O::make((info.FileName.substr(0, 2) == "./") ? info.FileName.substr(2) : info.FileName),
                 core::SimpleBaseString_O::make(info.FunctionName),
                 source,
                 core::Integer_O::create(info.Line),
@@ -606,4 +603,6 @@ CL_DEFMETHOD core::List_sp LineTable_O::element(size_t index) const {
 }
 
 }; // llvmo, DWARFContext_O
+
+
 

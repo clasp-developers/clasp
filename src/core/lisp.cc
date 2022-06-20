@@ -516,6 +516,7 @@ void Lisp::startupLispEnvironment() {
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
     initialize_functions();
     core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_interpret_eval_with_env->symbolFunction());
+    globals_->_Bundle->setup_pathname_translations();
     //    eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_classes_and_methods\n", __FILE__, __LINE__ );
@@ -544,10 +545,6 @@ void Lisp::startupLispEnvironment() {
 #endif
     coreExposer->expose(_lisp, Exposer_O::candoClasses);
     //	    initializeCandoClos(_lisp);
-  }
-  {
-    // Setup the pathname translation
-    globals_->_Bundle->setup_pathname_translations();
   }
   coreExposer->expose(_lisp, Exposer_O::candoFunctions);
   coreExposer->expose(_lisp, Exposer_O::candoGlobals);

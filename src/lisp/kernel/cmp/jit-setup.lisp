@@ -32,7 +32,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :cmp))
 
-(defconstant +debug-dwarf-version+ 4)
+(defconstant +debug-dwarf-version+ 5)
 
 (export '*primitives*)
 

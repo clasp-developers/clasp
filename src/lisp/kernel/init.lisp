@@ -495,19 +495,16 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun ensure-relative-pathname (input)
   "If the input pathname is absolute then search for src, or generated and return
 a relative path from there."
-  #+(or)(core:fmt t "ensure-relative-pathname input = {}   sys-pn = {}%N" input sys-pn)
-  (let ((result
-         (cond
-           ((eq :relative (car (pathname-directory input)))
-            (make-pathname :directory (pathname-directory input)
-                           :name (pathname-name input)))
-           ((eq :absolute (car (pathname-directory input)))
-            (make-pathname :directory (cons :relative (strip-root (pathname-directory input)))
-                           :name (pathname-name input)))
-           (t (error "ensure-relative-pathname could not handle ~a" input)))))
-    #+(or)(core:fmt t "ensure-relative-pathname result = {}%N" result)
-    result))
-
+  (cond ((pathname-host input)
+         input)
+        ((eq :relative (car (pathname-directory input)))
+         (make-pathname :directory (pathname-directory input)
+                        :name (pathname-name input)))
+        ((eq :absolute (car (pathname-directory input)))
+         (make-pathname :directory (cons :relative (strip-root (pathname-directory input)))
+                        :name (pathname-name input)))
+        (t
+         (error "ensure-relative-pathname could not handle ~a" input))))
 
 (defun build-inline-bitcode-pathname (link-type &optional (filetype :intrinsics))
   (let ((name (cond
@@ -518,7 +515,7 @@ a relative path from there."
       ((eq link-type :fasl)
        (translate-logical-pathname (core:fmt nil "lib:{}-{}-cxx.a" +bitcode-name+ name)))
       ((eq link-type :compile)
-       (translate-logical-pathname (core:fmt nil "bitcode:{}-{}-cxx.bc" +bitcode-name+ name)))
+       (translate-logical-pathname (core:fmt nil "lib:{}-{}-cxx.bc" +bitcode-name+ name)))
       ((eq link-type :executable)
        (translate-logical-pathname (core:fmt nil "lib:{}-all-cxx.a" +bitcode-name+)))
       (t (error "Provide a bitcode file for the link-type ~a" link-type)))))
@@ -581,6 +578,15 @@ a relative path from there."
                                   :faspbc
                                   (error "Unsupported build-extension type ~a" type))))))))))
 
+(defun bitcode-pathname (pathname &optional (type cmp:*default-object-type*) stage)
+  (make-pathname :host "sys"
+                 :directory (list* :absolute
+                                   "LIB"
+                                   (build-target-dir type stage)
+                                   (cdr (pathname-directory pathname)))
+                 :name (pathname-name pathname)
+                 :type (build-extension type)))
+
 (defun build-pathname (partial-pathname &optional (type :lisp) stage)
   "If partial-pathname is nil and type is :fasl or :executable then construct the name using
 the stage, the +application-name+ and the +bitcode-name+"
@@ -589,10 +595,8 @@ the stage, the +application-name+ and the +bitcode-name+"
             (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lsp")) root))
             (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) root))
             (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
-    (let ((target-host "lib")
-          (target-dir (build-target-dir type stage)))
+    (let ((target-dir (build-target-dir type stage)))
       #+dbg-print(core:fmt t "DBG-PRINT build-pathname module: {}%N" module)
-      #+dbg-print(core:fmt t "DBG-PRINT build-pathname target-host: {}%N" target-host)
       #+dbg-print(core:fmt t "DBG-PRINT build-pathname target-dir: {}%N" target-dir)
       (let ((result
               (cond
@@ -604,28 +608,28 @@ the stage, the +application-name+ and the +bitcode-name+"
                       (find-lisp-source (make-pathname
                                          :directory (cons :relative (cddr (pathname-directory module)))
                                          :name (pathname-name module))
-                                        (translate-logical-pathname "GENERATED:")))
+                                        (translate-logical-pathname "SYS:GENERATED;")))
                      (t
                       (find-lisp-source module (translate-logical-pathname "sys:"))))))
                 ((and (null partial-pathname) (eq type :executable))
-                 (translate-logical-pathname (core:fmt nil "executable:{}{}-{}"
+                 (translate-logical-pathname (core:fmt nil "sys:executable;{}{}-{}"
                                                        (default-target-stage) +application-name+
                                                        +bitcode-name+)))
                 ((and (null partial-pathname) (eq type :fasl))
-                 (translate-logical-pathname (core:fmt nil "fasl:{}{}-{}.fasl"
+                 (translate-logical-pathname (core:fmt nil "sys:lib;{}{}-{}.fasl"
                                                        (default-target-stage) +application-name+
                                                        +bitcode-name+)))
                 (t
                  (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host target-host)))))))
+                                                   (make-pathname :directory (list :relative "LIB" target-dir) :type (build-extension type)))
+                                  (translate-logical-pathname (make-pathname :host "SYS")))))))
         result))))
 (export '(build-pathname build-extension))
 
 
 (eval-when (:execute)
-  (load (build-pathname #P"src/lisp/kernel/cmp/jit-setup"))
-  (load (build-pathname #P"src/lisp/kernel/clsymbols")))
+  (load #P"sys:src;lisp;kernel;cmp;jit-setup.lisp")
+  (load #P"sys:src;lisp;kernel;clsymbols.lisp"))
 
 (defun entry-filename (filename-or-cons)
   "If filename-or-cons is a list then the first entry is a filename"
@@ -640,7 +644,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (defun delete-init-file (entry &key (really-delete t) stage)
   (let* ((module (entry-filename entry))
-         (bitcode-path (build-pathname module :bitcode stage)))
+         (bitcode-path (bitcode-pathname module :bitcode stage)))
     (if (probe-file bitcode-path)
         (if really-delete
             (progn
@@ -663,12 +667,11 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (defun bitcode-exists-and-up-to-date (entry)
   (let* ((filename (entry-filename entry))
-         (source-path (build-pathname filename))
-         (bitcode-path (build-pathname filename cmp:*default-object-type*))
+         (bitcode-path (bitcode-pathname filename))
          (found-bitcode (probe-file bitcode-path)))
     (if found-bitcode
         (> (file-write-date bitcode-path)
-           (file-write-date source-path))
+           (file-write-date filename))
         nil)))
 
 (defun default-prologue-form (&optional features)
@@ -742,6 +745,6 @@ the stage, the +application-name+ and the +bitcode-name+"
       (core:fmt t "Low level repl - in init.lisp%N"))
   (core:low-level-repl))
 
-#-(or bclasp cclasp eclasp)
+#-(or aclasp bclasp cclasp eclasp)
 (eval-when (:execute :load-toplevel)
   (core:fmt t "init.lisp  %N!\n!\n! Hello from the bottom of init.lisp - for some reason execution is passing through here\n!\n!\n"))

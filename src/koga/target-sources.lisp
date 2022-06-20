@@ -5,12 +5,7 @@
     (when path
       (let ((sub-path (uiop:subpathp path (truename (root :code)))))
         (when sub-path
-          (ignore-errors
-            (make-pathname :host "SYS" 
-                           :directory (list* :absolute (cdr (pathname-directory sub-path)))
-                           :name (pathname-name sub-path)
-                           :type (pathname-type sub-path)
-                           :version nil)))))))
+          (ninja:make-logical-pathname-representation "SYS" sub-path))))))
 
 (defparameter +asdf-system-initargs+
   '((asdf:component-version :version)

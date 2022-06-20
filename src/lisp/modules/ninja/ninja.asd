@@ -4,4 +4,5 @@
   :components ((:file "packages")
                (:file "timestamp-preserving-stream")
                (:file "line-wrapping-stream")
+               (:file "logical-translations")
                (:file "ninja")))

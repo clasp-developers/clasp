@@ -467,7 +467,7 @@ std::string startup_snapshot_name(Bundle& bundle) {
   } else {
     name = executablePath.substr(pos+1);
   }
-  ss << bundle._Directories->_FaslDir.string() << "/" << name << ".snapshot";
+  ss << bundle._Directories->_LibDir.string() << "/" << name << ".snapshot";
   return ss.str();
 };
 
@@ -490,7 +490,7 @@ CL_DOCSTRING(R"dx(startupImagePathname - returns a pathname based on *features* 
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   stringstream ss;
-  ss << "fasl:" << stage << "clasp-" << VARIANT_NAME << "-image";
+  ss << "sys:lib;" << stage << "clasp-" << VARIANT_NAME << "-image";
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
   if (mode == kw::_sym_faso) {
     ss << ".fasp";

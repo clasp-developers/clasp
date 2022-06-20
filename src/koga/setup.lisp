@@ -81,18 +81,13 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
         for *variant-bitcode-name* = (variant-bitcode-name variant)
         for *variant-path* = (merge-pathnames (make-pathname :directory (list :relative *variant-bitcode-name*))
                                               build-path)
-        for variant-lib-path = (merge-pathnames (make-pathname :directory '(:relative "fasl"))
+        for variant-lib-path = (merge-pathnames (make-pathname :directory '(:relative "lib"))
                                                 *variant-path*)
         for variant-generated-path = (merge-pathnames (make-pathname :directory '(:relative "generated"))
                                                       *variant-path*)
-        for variant-startup-path = (merge-pathnames (make-pathname :directory '(:relative "startup"))
-                                                    *variant-path*)
         for *root-paths* = (list* :variant *variant-path*
                                   :variant-lib variant-lib-path
-                                  :variant-fasl variant-lib-path
-                                  :variant-bitcode variant-lib-path
                                   :variant-generated variant-generated-path
-                                  :variant-startup variant-startup-path
                                   root-paths)
         do (funcall func)))
 
@@ -142,20 +137,15 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
       (let* ((output-path (resolve-source path))
              (stream (make-output-stream configuration name output-path))
              (*variant-path* (make-pathname :directory (list :relative *variant-bitcode-name*)))
-             (variant-lib-path (merge-pathnames (make-pathname :directory '(:relative "fasl"))
+             (variant-lib-path (merge-pathnames (make-pathname :directory '(:relative "lib"))
                                                 *variant-path*))
              (variant-generated-path (merge-pathnames (make-pathname :directory '(:relative "generated"))
                                                       *variant-path*))
-             (variant-startup-path (merge-pathnames (make-pathname :directory '(:relative "startup"))
-                                                    *variant-path*))
              (*root-paths* (list* :build #P""
                                   :code (make-pathname :directory '(:relative :up))
                                   :variant *variant-path*
                                   :variant-lib variant-lib-path
-                                  :variant-fasl variant-lib-path
-                                  :variant-bitcode variant-lib-path
                                   :variant-generated variant-generated-path
-                                  :variant-startup variant-startup-path
                                   *root-paths*)))
         (unwind-protect
             (progn
@@ -225,24 +215,16 @@ writing the build and variant outputs."
          (*script-path* #P"")
          (install-generated (merge-pathnames (make-pathname :directory '(:relative "generated"))
                                              (share-path *configuration*)))
-         (install-startup (merge-pathnames (make-pathname :directory '(:relative "startup"))
-                                           (share-path *configuration*)))
          (*root-paths* (list* :build (build-path *configuration*)
                               :code #P""
                               :install-bin (bin-path *configuration*)
                               :install-share (share-path *configuration*)
                               :install-lib (lib-path *configuration*)
-                              :install-fasl (lib-path *configuration*)
-                              :install-bitcode (lib-path *configuration*)
                               :install-generated install-generated
-                              :install-startup install-startup
                               :package-bin (resolve-package-path (bin-path *configuration*))
                               :package-share (resolve-package-path (share-path *configuration*))
                               :package-lib (resolve-package-path (lib-path *configuration*))
-                              :package-fasl (resolve-package-path (lib-path *configuration*))
-                              :package-bitcode (resolve-package-path (lib-path *configuration*))
                               :package-generated (resolve-package-path install-generated)
-                              :package-startup (resolve-package-path install-startup)
                               *root-paths*))
          (*extensions* (extensions *configuration*)))
     (if (update-version *configuration*)

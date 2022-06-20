@@ -881,15 +881,20 @@ struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {
   std::string _Storage;
   DeclareType _v;
   from_object(core::T_sp object) {
-    if (core::String_sp so = object.asOrNull<core::String_O>()) {
-      this->_Storage = gc::As<core::String_sp>(so)->get_std_string();
-      this->_v = this->_Storage;
+    if (object.nilp()) {
+      DeclareType none;
+      _v = none;
+    } else if (gc::IsA<core::String_sp>(object)) {
+      _Storage = gc::As<core::String_sp>(object)->get_std_string();
+      _v = _Storage;
     } else {
-      SIMPLE_ERROR_SPRINTF("You must pass a String");
+      SIMPLE_ERROR_SPRINTF("You must pass a String or NIL");
     }
   }
   from_object(const from_object& orig) = delete;
-  from_object(from_object&& orig) : _Storage(std::move(orig._Storage)), _v(_Storage) {}
+  from_object(from_object&& orig) : _Storage(std::move(orig._Storage)), _v(orig._v) {
+    if (_v.hasValue()) _v = _Storage;
+  }
 };
 };
 
