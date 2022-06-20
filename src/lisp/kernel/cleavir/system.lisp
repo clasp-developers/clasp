@@ -38,7 +38,8 @@
 (defvar *debug-log-index* 0)
 (defvar *debug-ownerships*)
 
-(declaim (special *cst-client* *additional-clasp-character-names*))
+(defvar *cst-client*)
+(defvar *additional-clasp-character-names*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

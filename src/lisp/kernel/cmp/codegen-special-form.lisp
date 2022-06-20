@@ -410,9 +410,7 @@ and put the values into the activation frame for new-env."
                    (number-of-lexical-variables lambda-list-handler))
                  (dynenv-mems nil)
                  (dynenv-cons-mems nil)
-                 (dynenv-conses nil)
                  (*notinlines* (new-notinlines declares)))
-            (declare (ignore dynenv-conses))
             ;; alloca dynenv space for each special.
             (dolist (target (rest reqvars))
               (when (eq (car target) 'ext:special-var)

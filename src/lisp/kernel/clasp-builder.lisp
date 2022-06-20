@@ -30,8 +30,7 @@
   )
 
 
-;;; Fixme probably #+(not bclasp cclasp) is not what is meant
-#+(not bclasp cclasp)
+#+(not (or bclasp cclasp))
 (core:fset 'cmp::with-compiler-timer
            (let ((body (gensym)))
              #+(or)(core:fmt t "body = {}%N" body)
@@ -726,8 +725,6 @@ Return files."
                     (system (command-line-arguments-as-list)))
   (cond
     ((eq core:*clasp-build-mode* :bitcode)
-     ;; FIXME all-modules is not defined here, this will error if called
-     ;; assume that system is meant here
      (cmp:link-bitcode-modules output-file system))
     ((eq core:*clasp-build-mode* :object)
      ;; Do nothing - object files are the result
