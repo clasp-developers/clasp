@@ -62,6 +62,7 @@
 ;;; returni's function.
 (defun return-rtype->llvm (rtype)
   (cond ((eq rtype :multiple-values) cmp:%tmv%)
+        ((eq rtype :vaslist) cmp:%vaslist%)
         ((not (listp rtype)) (error "Bad rtype ~a" rtype))
         ((null rtype) cmp:%void%)
         ((null (rest rtype)) (vrtype->llvm (first rtype)))
@@ -167,6 +168,7 @@
   (let* ((inp (bir:input instruction))
          (rt (cc-bmir:rtype inp)) (inv (in inp)))
     (cond ((eq rt :multiple-values) (cmp:irc-ret inv))
+          ((eq rt :vaslist) (cmp:irc-ret inv))
           ((not (listp rt)) (error "Bad rtype ~a" rt))
           ((null rt) (cmp:irc-ret-void))
           ((null (rest rt)) (cmp:irc-ret inv))
@@ -1738,6 +1740,7 @@
 
 (defun local-call-rv->inputs (llvm-value rtype)
   (cond ((eq rtype :multiple-values) llvm-value)
+        ((eq rtype :vaslist) llvm-value)
         ((not (listp rtype)) (error "BUG: Bad rtype ~a" rtype))
         ((null rtype) nil)
         ((null (rest rtype)) llvm-value)
