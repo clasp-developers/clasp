@@ -1,5 +1,17 @@
 (in-package #:koga)
 
+(defun system-source-file (system)
+  (let ((path (asdf:system-source-file system)))
+    (when path
+      (let ((sub-path (uiop:subpathp path (truename (root :code)))))
+        (when sub-path
+          (ignore-errors
+            (make-pathname :host "SYS" 
+                           :directory (list* :absolute (cdr (pathname-directory sub-path)))
+                           :name (pathname-name sub-path)
+                           :type (pathname-type sub-path)
+                           :version nil)))))))
+
 (defparameter +asdf-system-initargs+
   '((asdf:component-version :version)
     (asdf::component-description :description)
@@ -11,6 +23,7 @@
     (asdf:system-bug-tracker :bug-tracker)
     (asdf:system-mailto :mailto)
     (asdf:system-long-name :long-name)
+    (system-source-file :source-file)
     (asdf:system-source-control :source-control)))
 
 (defmethod add-target-source (configuration target (source symbol))
