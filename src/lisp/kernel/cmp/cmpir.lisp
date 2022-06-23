@@ -1133,9 +1133,9 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     (irc-make-vaslist new-nvals new-vals label)))
 
 (defparameter *default-function-attributes*
-  #+cclasp '(llvm-sys:attribute-uwtable
+  #+(or cclasp eclasp) '(llvm-sys:attribute-uwtable
              ("frame-pointer" "all"))
-  #-cclasp '(llvm-sys:attribute-uwtable
+  #-(or cclasp eclasp) '(llvm-sys:attribute-uwtable
              ("frame-pointer" "all"))
   )
 

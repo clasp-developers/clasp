@@ -2,7 +2,7 @@
 (eval-when (:compile-toplevel)
   (report-lexical-var-reference-depth))
 
-#+cclasp
+#+(or cclasp eclasp)
 (cl:defun sys::cclasp-snapshot-load-foreign-libraries ()
   (when (find-package :cffi)
     (loop with list-foreign-libraries = (find-symbol "LIST-FOREIGN-LIBRARIES" :cffi)
@@ -12,26 +12,28 @@
           for name = (ignore-errors (funcall foreign-library-name lib))
           do (ignore-errors (funcall load-foreign-library name)))))
 
-#+cclasp
+#+(or cclasp eclasp)
 (cl:defun sys::load-extensions ()
-  (unless (member :ignore-extensions *features*)
+  (unless (some (lambda (feature)
+                  (member feature '(:ignore-extensions :ignore-extension-systems)))
+                *features*)
     (require :asdf)
     (loop with load-system = (or (ignore-errors (find-symbol "QUICKLOAD" :quicklisp))
                                  (find-symbol "LOAD-SYSTEM" :asdf))
           for system in core:*extension-systems*
           do (funcall load-system system))))
 
-#+cclasp
+#+(or cclasp eclasp)
 (defun sys::call-initialize-hooks ()
   (loop for hook in core:*initialize-hooks*
         do (funcall hook)))
 
-#+cclasp
+#+(or cclasp eclasp)
 (defun sys::call-terminate-hooks ()
   (loop for hook in core:*terminate-hooks*
         do (funcall hook)))
 
-#+cclasp
+#+(or cclasp eclasp)
 (cl:defun sys::cclasp-snapshot-load-top-level ()
   (let ((core:*use-interpreter-for-eval* nil))
     (sys::cclasp-snapshot-load-foreign-libraries)
@@ -44,7 +46,7 @@
               (core:exit 0)))
       (sys::call-terminate-hooks))))
 
-#+cclasp
+#+(or cclasp eclasp)
 (cl:defun sys::cclasp-top-level ()
   (let ((core:*use-interpreter-for-eval* nil))
     (core:maybe-load-clasprc)

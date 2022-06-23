@@ -15,7 +15,7 @@
       nil
       (format t "Starting ~a ... loading image...~%"
                (lisp-implementation-version))))
-#+cclasp
+#+(or cclasp eclasp)
 (eval-when (:load-toplevel)
   (if (find-package "CLEAVIR-AST") nil (make-package "CLEAVIR-AST"))
   (if (find-package "CLASP-CLEAVIR-AST") nil (make-package "CLASP-CLEAVIR-AST"))

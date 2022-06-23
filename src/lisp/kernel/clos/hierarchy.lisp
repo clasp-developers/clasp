@@ -367,7 +367,7 @@
 ;;; 	standard-class			(class)
 ;;; 	funcallable-standard-class	(class)
 ;;;
-;;;#+cclasp
+;;;#+(or cclasp eclasp)
 #+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
         (setq clasp-cleavir:*use-type-inference* nil))
 

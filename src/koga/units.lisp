@@ -228,14 +228,16 @@
                    (default-stage default-stage))
       configuration
     (unless default-target
-      (setf default-target "cclasp-boehmprecise"))
+      (setf default-target (if (extensions configuration)
+                               "eclasp-boehmprecise"
+                               "cclasp-boehmprecise")))
     (loop with bitcode-name = (subseq default-target (1+ (position #\- default-target)))
           for variant in (variants configuration)
           when (equal bitcode-name (variant-bitcode-name variant))
            do (setf (variant-default variant) t))
     (setf default-stage
           (find (subseq default-target 0 (position #\- default-target))
-                '(:iclasp :aclasp :bclasp :cclasp :sclasp)
+                '(:iclasp :aclasp :bclasp :cclasp :eclasp :sclasp)
                 :test #'string-equal))))
 
 (defmethod configure-unit (configuration (unit (eql :cpu-count)))

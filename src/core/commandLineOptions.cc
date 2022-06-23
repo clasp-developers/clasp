@@ -56,7 +56,7 @@ Options:
       Describe the clasp data structures for lldb Python API to /tmp/clasp.py
   -d, --describe <file>
       Describe the clasp data structures for lldb Python API to <file>
-  -t, --stage (a|b|c)
+  -t, --stage (a|b|c|e)
       Start the specified stage of clasp.
   -U, --unpack-faso <file>
       Unpack the faso <file> into separate object files
@@ -350,7 +350,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
 
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     : _ProcessArguments(process_clasp_arguments), _IgnoreInitImage(false), _IgnoreInitLsp(false), _DisableMpi(false),
-      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _Stage('c'),
+      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _Stage(DEFAULT_STAGE),
       _StartupFile(""), _DefaultStartupType(cloDefault), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0), _NoInform(false),
       _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
       _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), // FIXME should be initialized later with user-homedir-pathname?

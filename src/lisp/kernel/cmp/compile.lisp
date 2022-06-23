@@ -103,7 +103,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 
 (export 'compiler-stats)
 
-#+(or bclasp cclasp)
+#+(or bclasp cclasp eclasp)
 (progn
   (defun bclasp-compile (form &optional definition)
     (let ((cmp:*cleavir-compile-hook* nil)

@@ -57,7 +57,7 @@
                     :restat 1
                     :description "Creating headers from sif files")
   (ninja:write-rule output-stream :static-analyzer
-                    :command "$clasp --norc --non-interactive --feature ignore-extensions --load ${variant-path}static-analyzer.lisp -- $sif $in"
+                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load ${variant-path}static-analyzer.lisp -- $sif $in"
                     :description "Analyzing clasp"
                     :restat 1
                     :pool "console")
@@ -99,19 +99,29 @@
                     :description "Compiling cclasp"
                     :restat 1
                     :pool "console")
+  (when (extensions configuration)
+    (ninja:write-rule output-stream :compile-eclasp
+                      :command "$clasp -f ignore-extension-systems --norc --type image --disable-mpi --image $image --load compile-eclasp.lisp -- $source"
+                      :description "Compiling eclasp"
+                      :restat 1
+                      :pool "console"))
   (ninja:write-rule output-stream :compile-module
-                    :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image --feature ignore-extensions --load compile-module.lisp -- $out $in"
+                    :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image -t c --feature ignore-extensions --load compile-module.lisp -- $out $in"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
-                    :command "$clasp --norc --non-interactive --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
+                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
                     :description "Running regression tests"
                     :pool "console")
+  (ninja:write-rule output-stream :cando-regression-tests
+                    :command "$clasp --norc --non-interactive --load \"sys:extensions;cando;src;lisp;regression-tests;run-all.lisp\""
+                    :description "Running Cando regression tests"
+                    :pool "console")
   (ninja:write-rule output-stream :ansi-test
-                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
+                    :command "$clasp --norc -t c --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
                     :description "Running ANSI tests"
                     :pool "console")
   (ninja:write-rule output-stream :test-random-integer
-                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
+                    :command "$clasp --norc -t c --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
   (ninja:write-rule output-stream :link-fasl
@@ -183,6 +193,24 @@
   (ninja:write-build output-stream :phony
                      :inputs outputs
                      :outputs (list "install_code")))
+
+(defmethod print-target-source
+    (configuration (name (eql :ninja)) output-stream (target (eql :install-extension-code)) source
+     &aux (output (make-source (source-path source) :package-share)))
+  (when (member :cando (extensions configuration))
+    (ninja:write-build output-stream (if (shebangp (source-path source))
+                                         :install-binary
+                                         :install-file)
+                       :inputs (list source)
+                       :outputs (list output))
+    (list :outputs output)))
+
+(defmethod print-target-sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :install-extension-code)) sources
+     &key outputs &allow-other-keys)
+  (ninja:write-build output-stream :phony
+                     :inputs outputs
+                     :outputs (list "install_extension_code")))
 
 (defmethod print-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :install-bin)) source
@@ -338,6 +366,7 @@
     (ninja:write-build output-stream :phony
                                      :inputs (append (list "install_bitcode"
                                                            "install_code"
+                                                           "install_extension_code"
                                                            "install_bin"
                                                            exe-installed
                                                            lib-installed
@@ -689,6 +718,57 @@
                        :outputs (list "install_modules"))))
 
 (defmethod print-variant-target-sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :eclasp)) sources
+     &key &allow-other-keys)
+  (when (extensions configuration)
+    (let ((cimage (image-source configuration :cclasp))
+          (eimage (image-source configuration :eclasp))
+          (eimage-installed (image-source configuration :eclasp :package-fasl))
+          (iclasp (make-source (build-name :iclasp) :variant))
+          (*root-paths* (list* :variant-stage-bitcode (merge-pathnames (make-pathname :directory (list :relative
+                                                                                                       (format nil "eclasp-~a-bitcode"
+                                                                                                                   *variant-name*)))
+                                                                       (root :variant-bitcode))
+                               *root-paths*)))
+      (ninja:write-build output-stream :compile-eclasp
+                         :clasp iclasp
+                         :image cimage
+                         :source (format nil "~{~/ninja:escape/~^ ~}"
+                                         (mapcar (lambda (source)
+                                                   (merge-pathnames (make-pathname :type :unspecific)
+                                                                    (source-path source)))
+                                                 sources))
+                         :inputs sources
+                         :implicit-inputs (list iclasp cimage (build-name "cclasp")
+                                                (make-source "tools-for-build/character-names.sexp" :code))
+                         :outputs (make-source-outputs sources
+                                                       :type (file-faso-extension configuration)
+                                                       :root :variant-stage-bitcode))
+      (ninja:write-build output-stream (case (build-mode configuration)
+                                         ((:faso :fasoll :fasobc) :link-fasl)
+                                         (otherwise "link-fasl-abc"))
+                         :variant-ldflags *variant-ldflags*
+                         :variant-ldlibs *variant-ldlibs*
+                         :clasp iclasp
+                         :target "eclasp"
+                         :inputs (make-source-outputs sources
+                                                      :type (file-faso-extension configuration)
+                                                      :root :variant-stage-bitcode)
+                         :implicit-inputs (list iclasp)
+                         :outputs (list eimage))
+      (ninja:write-build output-stream :phony
+                         :inputs (list eimage (build-name "cclasp"))
+                         :outputs (list (build-name "eclasp")))
+      (when *variant-default*
+        (ninja:write-build output-stream :install-file
+                           :inputs (list eimage)
+                           :outputs (list eimage-installed))
+        (ninja:write-build output-stream :phony
+                           :inputs (list "install_cclasp"
+                                          eimage-installed)
+                           :outputs (list "install_eclasp"))))))
+
+(defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :regression-tests)) sources
      &key &allow-other-keys)
   (ninja:write-build output-stream :regression-tests
@@ -703,6 +783,11 @@
                      :clasp (make-source (build-name :iclasp) :variant)
                      :inputs (list (build-name "cclasp"))
                      :outputs (list (build-name "test-random-integer")))
+  (when (member :cando (extensions configuration))
+    (ninja:write-build output-stream :cando-regression-tests
+                       :clasp (make-source (build-name :iclasp) :variant)
+                       :inputs (list (build-name "eclasp"))
+                       :outputs (list (build-name "cando-test"))))
   (when *variant-default*
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test"))
@@ -712,7 +797,11 @@
                        :outputs (list "ansi-test"))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test-random-integer"))
-                       :outputs (list "test-random-integer"))))
+                       :outputs (list "test-random-integer"))
+    (when (member :cando (extensions configuration))
+      (ninja:write-build output-stream :phony
+                         :inputs (list (build-name "cando-test"))
+                         :outputs (list "cando-test")))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :static-analyzer)) sources
@@ -751,7 +840,7 @@
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :sclasp)) sources
      &key objects &allow-other-keys
-     &aux (cclasp (build-name :cclasp))
+     &aux (cclasp (build-name (if (extensions configuration) :eclasp :cclasp)))
           (iclasp (make-source (build-name :iclasp) :variant)))
   (declare (ignore objects))
   (flet ((snapshot (name &key ignore-extensions)
@@ -779,7 +868,7 @@
              (ninja:write-build output-stream :make-snapshot
                                 :clasp iclasp
                                 :arguments (when ignore-extensions
-                                             "--feature ignore-extensions")
+                                             "-t c --feature ignore-extensions")
                                 :variant-path *variant-path*
                                 :inputs (list cclasp)
                                 :outputs (list executable))

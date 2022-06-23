@@ -368,6 +368,6 @@ Evaluates FORM in the Stepper mode and returns all its values."
         (progn
           (core:set-breakstep)
           (locally
-              #+cclasp (declare (optimize clasp-cleavir::insert-step-conditions))
+              #+(or cclasp eclasp) (declare (optimize clasp-cleavir::insert-step-conditions))
               ,form))
      (core:unset-breakstep)))
