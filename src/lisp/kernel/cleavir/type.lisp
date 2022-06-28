@@ -72,6 +72,72 @@
         (funcall deriver argstype)
         (call-next-method))))
 
+(defun sv (type) (ctype:single-value type *clasp-system*))
+
+;;; Return the minimum and maximum values of a values type.
+;;; NIL maximum means no bound.
+(defun values-type-minmax (values-type sys)
+  (let* ((nreq (length (ctype:values-required values-type sys))))
+    (values nreq
+            (if (ctype:bottom-p (ctype:values-rest values-type sys) sys)
+                (+ nreq (length (ctype:values-optional values-type sys)))
+                nil))))
+
+;;; Derive the type of (typep object 'tspec), where objtype is the derived
+;;; type of object.
+(defun derive-type-predicate (objtype tspec sys)
+  (ctype:single-value
+   (let ((type (handler-case (env:parse-type-specifier tspec nil sys)
+                 (serious-condition ()
+                   (return-from derive-type-predicate
+                     (ctype:single-value (ctype:member sys t nil) sys))))))
+     (cond ((ctype:subtypep objtype type sys) (ctype:member sys t))
+           ((ctype:disjointp objtype type sys) (ctype:member sys nil))
+           (t (ctype:member sys t nil))))
+   sys))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (4) TYPES AND CLASSES
+
+(define-deriver typep (obj type &optional env)
+  (declare (ignore env))
+  (let ((sys *clasp-system*))
+    (if (ctype:member-p sys type)
+        (let ((members (ctype:member-members sys type)))
+          (if (= (length members) 1)
+              (derive-type-predicate obj (first members) sys)
+              (ctype:single-value (ctype:member sys t nil) sys)))
+        (ctype:single-value (ctype:member sys t nil) sys))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (5) DATA AND CONTROL FLOW
+
+(define-deriver functionp (obj)
+  (derive-type-predicate obj 'function *clasp-system*))
+(define-deriver compiled-function-p (obj)
+  (derive-type-predicate obj 'compiled-function *clasp-system*))
+
+(defun derive-eq/l (arg1 arg2 sys)
+  (ctype:single-value
+   (if (ctype:disjointp arg1 arg2 sys)
+       (ctype:member sys nil)
+       ;; our eq/l always return a boolean.
+       (ctype:member sys t nil))
+   sys))
+
+(define-deriver eq (a1 a2) (derive-eq/l a1 a2 *clasp-system*))
+(define-deriver eql (a1 a2) (derive-eq/l a1 a2 *clasp-system*))
+
+(define-deriver identity (arg) (sv arg))
+
+(define-deriver values (&rest args) args)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (12) NUMBERS
+
 (defun contagion (ty1 ty2)
   (ecase ty1
     ((integer)
@@ -248,7 +314,7 @@
 
 ;;;
 
-(defun sv (type) (ctype:single-value type *clasp-system*))
+
 
 (define-deriver core:two-arg-+ (n1 n2) (sv (ty+ n1 n2)))
 (define-deriver core:negate (arg) (sv (ty-negate arg)))
@@ -338,6 +404,43 @@
            (t (env:parse-type-specifier '(real 0) nil sys)))
      sys)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (14) CONSES
+
+(define-deriver cons (car cdr)
+  (declare (ignore car cdr))
+  ;; We can't forward the argument types into the cons type, since we don't
+  ;; know if this cons will be mutated. So we just return the CONS type.
+  ;; This is useful so that the compiler understands that CONS definitely
+  ;; returns a CONS and it does not need to insert any runtime checks.
+  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value (ctype:cons top top sys) sys)))
+
+(define-deriver list (&rest args)
+  (let* ((sys *clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value
+     (multiple-value-bind (min max) (values-type-minmax args sys)
+       (cond ((> min 0) (ctype:cons top top sys))
+             ((and max (zerop max)) (ctype:member sys nil))
+             (t (ctype:disjoin sys (ctype:member sys nil)
+                               (ctype:cons top top sys)))))
+     sys)))
+
+(define-deriver list* (arg &rest args)
+  (let* ((sys *clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value
+     (multiple-value-bind (min max) (values-type-minmax args sys)
+       (cond ((> min 1) (ctype:cons top top sys))
+             ((and max (zerop max)) arg)
+             (t
+              (ctype:disjoin sys arg (ctype:cons top top sys)))))
+     sys)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (15) ARRAYS
+
 (defun derive-aref (array indices)
   (declare (ignore indices))
   (let ((sys *clasp-system*))
@@ -350,7 +453,11 @@
      sys)))
 
 (define-deriver aref (array &rest indices) (derive-aref array indices))
-(define-deriver row-major-aref (array &rest indices) (derive-aref array indices))
+
+(define-deriver arrayp (object)
+  (derive-type-predicate object 'array *clasp-system*))
+
+(define-deriver row-major-aref (array index) (derive-aref array index))
 
 (macrolet ((def (fname etype)
              `(define-deriver ,fname (&rest ignore)
@@ -379,56 +486,20 @@
   (def core:make-simple-vector-byte64 ext:byte64)
   (def core:make-simple-vector-fixnum fixnum))
 
-(define-deriver cons (car cdr)
-  (declare (ignore car cdr))
-  ;; We can't forward the argument types into the cons type, since we don't
-  ;; know if this cons will be mutated. So we just return the CONS type.
-  ;; This is useful so that the compiler understands that CONS definitely
-  ;; returns a CONS and it does not need to insert any runtime checks.
-  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
-    (ctype:single-value (ctype:cons top top sys) sys)))
-
-;;; Return the minimum and maximum values of a values type.
-;;; NIL maximum means no bound.
-(defun values-type-minmax (values-type sys)
-  (let* ((nreq (length (ctype:values-required values-type sys))))
-    (values nreq
-            (if (ctype:bottom-p (ctype:values-rest values-type sys) sys)
-                (+ nreq (length (ctype:values-optional values-type sys)))
-                nil))))
-
-(define-deriver list (&rest args)
-  (let* ((sys *clasp-system*) (top (ctype:top sys)))
-    (ctype:single-value
-     (multiple-value-bind (min max) (values-type-minmax args sys)
-       (cond ((> min 0) (ctype:cons top top sys))
-             ((and max (zerop max)) (ctype:member sys nil))
-             (t (ctype:disjoin sys (ctype:member sys nil)
-                               (ctype:cons top top sys)))))
-     sys)))
-
-(define-deriver list* (arg &rest args)
-  (let* ((sys *clasp-system*) (top (ctype:top sys)))
-    (ctype:single-value
-     (multiple-value-bind (min max) (values-type-minmax args sys)
-       (cond ((> min 1) (ctype:cons top top sys))
-             ((and max (zerop max)) arg)
-             (t
-              (ctype:disjoin sys arg (ctype:cons top top sys)))))
-     sys)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (22) PRINTER
 
 ;;; WRITE et al. just return their first argument.
-(defun ty-identity (type) (ctype:single-value type *clasp-system*))
 (define-deriver write (object &rest keys)
   (declare (ignore keys))
-  (ty-identity object))
+  (sv object))
 (define-deriver prin1 (object &optional stream)
   (declare (ignore stream))
-  (ty-identity object))
+  (sv object))
 (define-deriver print (object &optional stream)
   (declare (ignore stream))
-  (ty-identity object))
+  (sv object))
 (define-deriver princ (object &optional stream)
   (declare (ignore stream))
-  (ty-identity object))
-(define-deriver identity (arg) (ty-identity arg))
+  (sv object))
