@@ -431,7 +431,8 @@ Optimizations are available for any of:
 (deftransform rational ((r rational)) 'r)
 (deftransform rationalize ((r rational)) 'r)
 
-(deftransform equal ((x number) (y number)) '(eql x y))
+(deftransform equal ((x number) (y t)) '(eql x y))
+(deftransform equal ((x t) (y number)) '(eql x y))
 (deftransform equalp ((x number) (y number)) '(= x y))
 
 ;;;
