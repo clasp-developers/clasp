@@ -1,27 +1,75 @@
 (in-package #:clasp-cleavir)
 
-(defmacro define-deriver (name deriver-name)
-  `(setf (gethash ',name *derivers*) ',deriver-name))
+(defmacro with-deriver-types (lambda-list argstype &body body)
+  (multiple-value-bind (req opt rest keyp)
+      (core:process-lambda-list lambda-list 'function)
+    ;; TODO: &key, etc.
+    (when keyp (error "~a not supported yet" '&key))
+    (if (and (zerop (first req)) (zerop (first opt)))
+        ;; If the whole lambda list is &rest, skip parsing entirely.
+        `(let ((,rest ,argstype)) ,@body)
+        ;; hard mode
+        (let ((gsys (gensym "SYS")) (gargs (gensym "ARGSTYPE"))
+              (greq (gensym "REQ")) (glr (gensym "LREQ"))
+              (gopt (gensym "OPT"))
+              (grest (gensym "REST")) (grb (gensym "REST-BOTTOM-P")))
+          `(let* ((,gsys *clasp-system*) (,gargs ,argstype)
+                  (,greq (ctype:values-required ,gargs ,gsys))
+                  (,glr (length ,greq))
+                  (,gopt (ctype:values-optional ,gargs ,gsys))
+                  (,grest (ctype:values-rest ,gargs ,gsys))
+                  (,grb (ctype:bottom-p ,grest ,gsys)))
+             (if (or (and ,grb (< (+ ,glr (length ,gopt)) ,(first req)))
+                     ,@(if (or rest keyp)
+                           nil
+                           `((> ,glr (+ ,(first req) ,(first opt))))))
+                 ;; Not enough arguments, or too many
+                 (ctype:values-bottom ,gsys)
+                 ;; Valid call
+                 (let (,@(loop for reqv in (rest req)
+                               collect `(,reqv (or (pop ,greq)
+                                                   (pop ,gopt) ,grest)))
+                       ,@(loop for (optv _ -p) on (rest opt) by #'cdddr
+                               when -p
+                                 collect `(,-p (cond (,greq t)
+                                                     ((or ,gopt ,grb) :maybe)
+                                                     (t nil)))
+                               collect `(,optv (or (pop ,greq)
+                                                   (pop ,gopt)
+                                                   ,grest)))
+                       ,@(when rest
+                           `((,rest (ctype:values ,greq ,gopt ,grest ,gsys)))))
+                   ,@body)))))))
 
-;; Given a values ctype, returns three values:
-;; 1) a list of fixed argument types
-;; 2) type of any further arguments
-;; 3) minimum number of arguments
-(defun parse-vct (vct)
-  (let* ((sys *clasp-system*)
-         (req (ctype:values-required vct sys))
-         (opt (ctype:values-optional vct sys))
-         (rest (ctype:values-rest vct sys))
-         (min (length req)))
-    (values (append req opt) rest min)))
+;;; Lambda lists are basically ordinary lambda lists, but without &aux
+;;; because &aux sucks.
+;;; &optional defaults are ignored.
+;;; suppliedp parameters will be bound to either T, :MAYBE, or NIL.
+;;; T means an argument is definitely provided, :MAYBE that it may or
+;;; may not be, and NIL that it definitely isn't.
+;;; &rest parameters will be bound to a values type representing all
+;;; remaining parameters, which is often more useful than a join.
+;;; &key defaults are incorporated into the type bound, so e.g. if
+;;; it's derived that a keyword _may_ be provided, within the deriver
+;;; the type will be (or provided-type default-type). They are not
+;;; evaluated but instead interpreted as type specifiers.
+;;; &key is not supported yet.
+(defmacro define-deriver (name lambda-list &body body)
+  (let* ((fname (make-symbol (format nil "~a-DERIVER" (symbol-name name))))
+         (as (gensym "ARGSTYPE")))
+    `(progn
+       (defun ,fname (,as)
+         (block ,name
+           (with-deriver-types ,lambda-list ,as ,@body)))
+       (setf (gethash ',name *derivers*) ',fname)
+       ',name)))
 
 (defmethod bir-transformations:derive-return-type ((inst bir:abstract-call)
                                                    identity argstype
                                                    (system clasp))
   (let ((deriver (gethash identity *derivers*)))
     (if deriver
-        (multiple-value-bind (fixed rest min) (parse-vct argstype)
-          (funcall deriver fixed rest min))
+        (funcall deriver argstype)
         (call-next-method))))
 
 (defun contagion (ty1 ty2)
@@ -61,6 +109,13 @@
        ((integer ratio rational short-float single-float double-float long-float) ty1)
        (t ty2)))
     ((real) ty1)))
+
+;; integer/integer can be a ratio, so this is contagion but lifting to rational.
+(defun divcontagion (ty1 ty2)
+  (let ((cont (contagion ty1 ty2)))
+    (if (member cont '(integer ratio))
+        'rational
+        cont)))
 
 (defun range+ (ty1 ty2)
   (let* ((sys *clasp-system*)
@@ -111,6 +166,13 @@
   (let ((sys *clasp-system*))
     (if (and (ctype:rangep ty1 sys) (ctype:rangep ty2 sys))
         (ctype:range (contagion (ctype:range-kind ty1 sys) (ctype:range-kind ty2 sys))
+                     '* '* sys)
+        (env:parse-type-specifier 'number nil *clasp-system*))))
+(defun ty-divcontagion (ty1 ty2)
+  (let ((sys *clasp-system*))
+    (if (and (ctype:rangep ty1 sys) (ctype:rangep ty2 sys))
+        (ctype:range (divcontagion (ctype:range-kind ty1 sys)
+                                   (ctype:range-kind ty2 sys))
                      '* '* sys)
         (env:parse-type-specifier 'number nil *clasp-system*))))
 
@@ -186,119 +248,78 @@
 
 ;;;
 
-(defun derive-two-arg (args rest min function &optional (default 'number))
-  (declare (ignore rest))
-  (ctype:single-value
-   (handler-case
-       (if (= min 2)
-           (funcall function (first args) (second args))
-           (env:parse-type-specifier default nil *clasp-system*))
-     (serious-condition () (env:parse-type-specifier default nil *clasp-system*)))
-   *clasp-system*))
-(defun derive-two-arg-+ (args rest min) (derive-two-arg args rest min #'ty+))
-(define-deriver core:two-arg-+ derive-two-arg-+)
-(defun derive-two-arg-contagion (args rest min) (derive-two-arg args rest min #'ty-contagion))
-(defun derive-negate (args rest min)
-  (declare (ignore min))
-  (ctype:single-value
-   (ty-negate (or (first args) (first rest)))
-   *clasp-system*))
-(define-deriver core:negate derive-negate)
-(defun derive-two-arg-- (args rest min)
-  (declare (ignore rest))
-  (ctype:single-value
-   (if (= min 2)
-       (ty+ (first args) (ty-negate (second args)))
-       (env:parse-type-specifier 'number nil *clasp-system*))
-   *clasp-system*))
-(define-deriver core:two-arg-- derive-two-arg--)
+(defun sv (type) (ctype:single-value type *clasp-system*))
+
+(define-deriver core:two-arg-+ (n1 n2) (sv (ty+ n1 n2)))
+(define-deriver core:negate (arg) (sv (ty-negate arg)))
+(define-deriver core:two-arg-- (n1 n2) (sv (ty+ n1 (ty-negate n2))))
 ;;; This is imprecise, e.g. a rational*integer can be an integer, but should
 ;;; still be sound.
-(define-deriver core:two-arg-* derive-two-arg-contagion)
-;;; Can't use contagion for / since e.g. integer/integer is a ratio.
+(define-deriver core:two-arg-* (n1 n2) (sv (ty-contagion n1 n2)))
+(define-deriver core:two-arg-/ (n1 n2) (sv (ty-divcontagion n1 n2)))
 
-(defun derive-monotonic1 (args rest min function &key (inf '*) (sup '*))
-  (declare (ignore min))
-  (let ((ty (or (first args) rest)))
-    (ty-irrat-monotonic1 ty function :inf inf :sup sup)))
-(defun derive-exp (args rest min) (derive-monotonic1 args rest min #'exp :inf 0f0))
-(define-deriver exp derive-exp)
+(define-deriver exp (arg) (ty-irrat-monotonic1 arg #'exp :inf 0f0))
 
-(defun derive-sqrt (args rest min)
-  (declare (ignore min))
-  (let ((ty (or (first args) rest)) (sys *clasp-system*))
-    (if (ctype:rangep ty sys)
-        (let ((low (ctype:range-low ty sys)))
+(define-deriver sqrt (arg)
+  (let ((sys *clasp-system*))
+    (if (ctype:rangep arg sys)
+        (let ((low (ctype:range-low arg sys)))
           (if (and low (>= low 0)) ; no complex results
-              (ty-irrat-monotonic1 ty #'sqrt :inf 0f0)
-              (ctype:single-value (env:parse-type-specifier 'number nil sys) sys)))
+              (ty-irrat-monotonic1 arg #'sqrt :inf 0f0)
+              (ctype:single-value
+               (env:parse-type-specifier 'number nil sys) sys)))
         (ctype:single-value (env:parse-type-specifier 'number nil sys) sys))))
-(define-deriver sqrt derive-sqrt)
 
 ;;; If the argument is a real, return [-1,1]. otherwise just NUMBER
 ;;; Technically the range could be reduced sometimes, but figuring out the
 ;;; exact values is kind of a pain and it doesn't seem that useful.
-(defun derive-sincos (args rest min)
-  (declare (ignore min))
-  (let ((ty (or (first args) rest)) (sys *clasp-system*))
+(defun derive-sincos (arg)
+  (let ((sys *clasp-system*))
     (ctype:single-value
-     (if (ctype:rangep ty sys)
-         (let ((kind (ctype:range-kind ty sys)))
+     (if (ctype:rangep arg sys)
+         (let ((kind (ctype:range-kind arg sys)))
            (when (member kind '(integer rational real))
              (setf kind 'single-float))
            (ctype:range kind (coerce -1 kind) (coerce 1 kind) sys))
          (env:parse-type-specifier 'number nil sys))
      sys)))
-(define-deriver sin derive-sincos)
-(define-deriver cos derive-sincos)
+(define-deriver sin (arg) (derive-sincos arg))
+(define-deriver cos (arg) (derive-sincos arg))
 
-(defun derive-tanh (args rest min) (derive-monotonic1 args rest min #'tanh :inf -1f0 :sup 1f0))
-(define-deriver tanh derive-tanh)
+(define-deriver tanh (arg) (ty-irrat-monotonic1 arg #'tanh :inf -1f0 :sup 1f0))
 
-(defun derive-ash (args rest min)
-  (derive-two-arg args rest min #'ty-ash 'integer))
-(define-deriver ash derive-ash)
+(define-deriver ash (num shift) (sv (ty-ash num shift)))
 
-(defun derive-float (args rest min)
+(define-deriver float (num &optional (proto nil protop))
+  ;; FIXME: More sophisticated type operations would make this more
+  ;; precise. For example, it would be good to derive that if the
+  ;; argument is an (or single-float rational), the result is a
+  ;; single float.
   (let* ((sys *clasp-system*)
-         ;; We only really care about the first two arguments, since anything
-         ;; more will be an error. So we just pop the rest type on the end.
-         (args (append args (list rest)))
          (float (env:parse-type-specifier 'float nil sys))
          (rat (env:parse-type-specifier 'rational nil sys))
-         #+(or) ; nonexistent
-         (short (ctype:range 'short-float '* '* sys))
-         (single (ctype:range 'single-float '* '* sys))
-         (double (ctype:range 'double-float '* '* sys))
-         #+(or) ; nonexistent
-         (long (ctype:range 'long-float '* '* *clasp-system*)))
-    ;; FIXME: More sophisticated type operations would make this more
-    ;; precise. For example, it would be good to derive that if the
-    ;; argument is an (or single-float rational), the result is a
-    ;; single float.
-    (ctype:single-value
-     (cond ((> min 1)
-            (let ((proto (second args)))
-              (cond #+(or)((arg-subtypep proto short) short)
-                    ((ctype:subtypep proto single sys) single)
-                    ((ctype:subtypep proto double sys) double)
-                    #+(or)((arg-subtypep proto long) long)
-                    (t float))))
-           ((and (= min 1)
-                 (ctype:bottom-p (second args) sys))
-            (let ((arg (first args)))
-              (cond ((ctype:subtypep arg float sys) arg)
-                    ((ctype:subtypep arg rat sys) single)
-                    (t float))))
-           (t float))
-     sys)))
+         (single (env:parse-type-specifier 'single-float nil sys))
+         (double (env:parse-type-specifier 'double-float nil sys)))
+    (flet ((float1 ()
+             (cond ((ctype:subtypep num float sys) num) ; no coercion
+                   ((ctype:subtypep num rat sys) single)
+                   (t float)))
+           (float2 ()
+             (cond #+(or)((arg-subtypep proto short) short)
+                   ((ctype:subtypep proto single sys) single)
+                   ((ctype:subtypep proto double sys) double)
+                   #+(or)((arg-subtypep proto long) long)
+                   (t float))))
+      (ctype:single-value
+       (cond ((eq protop t) (float2)) ; definitely supplied
+             ((eq protop :maybe)
+              (ctype:disjoin sys (float1) (float2)))
+             (t (float1)))
+       sys))))
 
-(define-deriver float derive-float)
-
-(defun derive-random (args rest min)
-  (declare (ignore min))
-  (let* ((sys *clasp-system*)
-         (max (or (first args) rest)))
+(define-deriver random (max &optional random-state)
+  (declare (ignore random-state))
+  (let ((sys *clasp-system*))
     (ctype:single-value
      (cond ((ctype:rangep max sys)
             (let* ((kind (ctype:range-kind max sys))
@@ -316,36 +337,28 @@
             (ctype:range 'double-float 0d0 '* sys))
            (t (env:parse-type-specifier '(real 0) nil sys)))
      sys)))
-(define-deriver random derive-random)
 
-(defun derive-aref (args rest min)
-  (declare (ignore min))
-  (let ((sys *clasp-system*)
-        (ct (if (null args) rest (first args))))
+(defun derive-aref (array indices)
+  (declare (ignore indices))
+  (let ((sys *clasp-system*))
     (ctype:single-value
-     (if (and (consp ct)
-              (member (first ct) '(array simple-array vector))
-              (consp (cdr ct)))
-         (second ct)
+     (if (and (consp array)
+              (member (first array) '(array simple-array vector))
+              (consp (cdr array)))
+         (second array)
          (ctype:top sys))
      sys)))
 
-(define-deriver aref derive-aref)
-(define-deriver row-major-aref derive-aref)
+(define-deriver aref (array &rest indices) (derive-aref array indices))
+(define-deriver row-major-aref (array &rest indices) (derive-aref array indices))
 
 (macrolet ((def (fname etype)
-             (let ((derivename
-                     (make-symbol (concatenate 'string
-                                               (symbol-name '#:derive-)
-                                               (symbol-name fname)))))
-               `(progn
-                  (defun ,derivename (args rest min)
-                    (declare (ignore args rest min))
-                    (let ((sys *clasp-system*))
-                      (ctype:single-value
-                       (ctype:array ',etype '(*) 'simple-array sys)
-                       sys)))
-                  (define-deriver ,fname ,derivename)))))
+             `(define-deriver ,fname (&rest ignore)
+                (declare (ignore ignore))
+                (let ((sys *clasp-system*))
+                  (ctype:single-value
+                   (ctype:array ',etype '(*) 'simple-array sys)
+                   sys)))))
   (def core:make-simple-vector-t t)
   (def core:make-simple-vector-bit bit)
   (def core:make-simple-vector-base-char base-char)
@@ -366,44 +379,56 @@
   (def core:make-simple-vector-byte64 ext:byte64)
   (def core:make-simple-vector-fixnum fixnum))
 
-(defun derive-cons (args rest min)
-  (declare (ignore args rest min))
+(define-deriver cons (car cdr)
+  (declare (ignore car cdr))
   ;; We can't forward the argument types into the cons type, since we don't
   ;; know if this cons will be mutated. So we just return the CONS type.
   ;; This is useful so that the compiler understands that CONS definitely
   ;; returns a CONS and it does not need to insert any runtime checks.
   (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
     (ctype:single-value (ctype:cons top top sys) sys)))
-(define-deriver cons derive-cons)
 
-(defun derive-list (args rest min)
-  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
-    (ctype:single-value
-     (cond ((> min 0) (ctype:cons top top sys))
-           ((and (= min 0) (null args) (ctype:bottom-p rest sys))
-            (ctype:member sys nil))
-           (t (ctype:disjoin sys (ctype:member sys nil)
-                             (ctype:cons top top sys))))
-     sys)))
-(define-deriver list derive-list)
+;;; Return the minimum and maximum values of a values type.
+;;; NIL maximum means no bound.
+(defun values-type-minmax (values-type sys)
+  (let* ((nreq (length (ctype:values-required values-type sys))))
+    (values nreq
+            (if (ctype:bottom-p (ctype:values-rest values-type sys) sys)
+                (+ nreq (length (ctype:values-optional values-type sys)))
+                nil))))
 
-(defun derive-list* (args rest min)
-  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
+(define-deriver list (&rest args)
+  (let* ((sys *clasp-system*) (top (ctype:top sys)))
     (ctype:single-value
-     (cond ((> min 1) (ctype:cons top top sys))
-           ((and (= min 1) (null (rest args)) (ctype:bottom-p rest sys))
-            (first args))
-           (t
-            (ctype:disjoin sys (if args (first args) rest)
-                           (ctype:cons top top sys))))
+     (multiple-value-bind (min max) (values-type-minmax args sys)
+       (cond ((> min 0) (ctype:cons top top sys))
+             ((and max (zerop max)) (ctype:member sys nil))
+             (t (ctype:disjoin sys (ctype:member sys nil)
+                               (ctype:cons top top sys)))))
      sys)))
-(define-deriver list* derive-list*)
+
+(define-deriver list* (arg &rest args)
+  (let* ((sys *clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value
+     (multiple-value-bind (min max) (values-type-minmax args sys)
+       (cond ((> min 1) (ctype:cons top top sys))
+             ((and max (zerop max)) arg)
+             (t
+              (ctype:disjoin sys arg (ctype:cons top top sys)))))
+     sys)))
 
 ;;; WRITE et al. just return their first argument.
-(defun derive-write (args rest min)
-  (declare (ignore min))
-  (ctype:single-value (or (first args) rest) *clasp-system*))
-(define-deriver write derive-write)
-(define-deriver prin1 derive-write)
-(define-deriver print derive-write)
-(define-deriver princ derive-write)
+(defun ty-identity (type) (ctype:single-value type *clasp-system*))
+(define-deriver write (object &rest keys)
+  (declare (ignore keys))
+  (ty-identity object))
+(define-deriver prin1 (object &optional stream)
+  (declare (ignore stream))
+  (ty-identity object))
+(define-deriver print (object &optional stream)
+  (declare (ignore stream))
+  (ty-identity object))
+(define-deriver princ (object &optional stream)
+  (declare (ignore stream))
+  (ty-identity object))
+(define-deriver identity (arg) (ty-identity arg))
