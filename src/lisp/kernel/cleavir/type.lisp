@@ -1,11 +1,68 @@
 (in-package #:clasp-cleavir)
 
+(defun kwarg-presence (keyword required optional rest sys)
+  (let ((result nil) (oddreq nil)
+        (mems (list keyword)) (ktype (ctype:member sys keyword)))
+    (loop for (param . r) on required by #'cddr
+          ;; Check if it's definitely the keyword.
+          when (and (ctype:member-p sys param)
+                    (equal (ctype:member-members sys param) mems))
+            do (return-from kwarg-presence t)
+          ;; Check if it might be the keyword, if we haven't determined
+          ;; this already.
+          when (and (null result)
+                    (ctype:subtypep ktype param sys))
+            do (setf result :maybe)
+          ;; Check for an odd number of required parameters.
+          when (null r)
+            do (setf oddreq t))
+    ;; Now do the same thing with optionals, if we haven't got a maybe.
+    ;; We don't need to check equality since optional means these might
+    ;; not even be passed.
+    (when (eq result :maybe) (return-from kwarg-presence result))
+    (loop for (param) on (if oddreq (cdr optional) optional) by #'cddr
+          when (ctype:subtypep ktype param sys)
+            do (return-from kwarg-presence :maybe))
+    ;; Finally the rest.
+    (if (ctype:subtypep ktype rest sys)
+        :maybe
+        nil)))
+
+(defun kwarg-type (keyword required optional rest sys)
+  (let ((result (ctype:bottom sys)) (oddreq nil) (ambiguousp nil)
+        (mems (list keyword)) (ktype (ctype:member sys keyword)))
+    (loop for (param . r) on required by #'cddr
+          ;; If this is the first param we've seen that could be the keyword,
+          ;; and it must be the keyword, we're done.
+          when (and (not ambiguousp)
+                    (ctype:member-p sys param)
+                    (equal (ctype:member-members sys param) mems))
+            do (return-from kwarg-type (cond (r (first r))
+                                             (optional (first optional))
+                                             (t rest)))
+          when (ctype:subtypep ktype param sys)
+            do (setf result (ctype:disjoin sys result
+                                           (cond (r (first r))
+                                                 (optional (first optional))
+                                                 (t rest)))
+                     ;; Mark that we've seen the possible keyword, so that
+                     ;; future iterations don't hit the short circuit above.
+                     ambiguousp t)
+          when (null r)
+            do (setf oddreq t))
+    (loop for (param . r) on (if oddreq (cdr optional) optional) by #'cddr
+          when (ctype:subtypep ktype param sys)
+            do (setf result (ctype:disjoin sys result
+                                           (if r (first r) rest))))
+    (if (ctype:subtypep ktype rest sys)
+        (ctype:disjoin sys result rest)
+        result)))
+
 (defmacro with-deriver-types (lambda-list argstype &body body)
-  (multiple-value-bind (req opt rest keyp)
+  (multiple-value-bind (req opt rest keyp keys)
       (core:process-lambda-list lambda-list 'function)
-    ;; TODO: &key, etc.
-    (when keyp (error "~a not supported yet" '&key))
-    (if (and (zerop (first req)) (zerop (first opt)))
+    ;; TODO: &allow-other-keys
+    (if (and (zerop (first req)) (zerop (first opt)) (not keyp))
         ;; If the whole lambda list is &rest, skip parsing entirely.
         `(let ((,rest ,argstype)) ,@body)
         ;; hard mode
@@ -26,19 +83,43 @@
                  ;; Not enough arguments, or too many
                  (ctype:values-bottom ,gsys)
                  ;; Valid call
-                 (let (,@(loop for reqv in (rest req)
-                               collect `(,reqv (or (pop ,greq)
-                                                   (pop ,gopt) ,grest)))
-                       ,@(loop for (optv _ -p) on (rest opt) by #'cdddr
-                               when -p
-                                 collect `(,-p (cond (,greq t)
-                                                     ((or ,gopt ,grb) :maybe)
-                                                     (t nil)))
-                               collect `(,optv (or (pop ,greq)
-                                                   (pop ,gopt)
-                                                   ,grest)))
-                       ,@(when rest
-                           `((,rest (ctype:values ,greq ,gopt ,grest ,gsys)))))
+                 (let* (,@(loop for reqv in (rest req)
+                                collect `(,reqv (or (pop ,greq)
+                                                    (pop ,gopt) ,grest)))
+                        ,@(loop for (optv _ -p) on (rest opt) by #'cdddr
+                                when -p
+                                  collect `(,-p (cond (,greq t)
+                                                      ((or ,gopt ,grb) :maybe)
+                                                      (t nil)))
+                                collect `(,optv (or (pop ,greq)
+                                                    (pop ,gopt)
+                                                    ,grest)))
+                        ,@(when rest
+                            `((,rest (ctype:values ,greq ,gopt ,grest ,gsys))))
+                        ,@(loop for (kw var def -p) on (rest keys) by #'cddddr
+                                ;; We need a -p for processing
+                                for r-p = (or -p (gensym "-P"))
+                                ;; KLUDGE: If no default is specified
+                                ;; we want T, not NIL
+                                for r-def = (or def 't)
+                                collect `(,r-p
+                                          (kwarg-presence ',kw ,greq ,gopt ,grest
+                                                          ,gsys))
+                                collect `(,var
+                                          (ecase ,r-p
+                                            ((nil)
+                                             (env:parse-type-specifier
+                                              ',r-def nil ,gsys))
+                                            ((t)
+                                             (kwarg-type ',kw ,greq ,gopt ,grest
+                                                         ,gsys))
+                                            ((:maybe)
+                                             (ctype:disjoin
+                                              ,gsys
+                                              (env:parse-type-specifier
+                                               ',r-def nil ,gsys)
+                                              (kwarg-type ',kw ,greq ,gopt ,grest
+                                                          ,gsys)))))))
                    ,@body)))))))
 
 ;;; Lambda lists are basically ordinary lambda lists, but without &aux
@@ -440,6 +521,47 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (15) ARRAYS
+
+(define-deriver make-array (dimensions
+                            &key (element-type (eql t))
+                            initial-element initial-contents
+                            (adjustable (eql nil))
+                            (fill-pointer (eql nil)) (displaced-to (eql nil))
+                            displaced-index-offset)
+  (declare (ignore displaced-index-offset initial-element initial-contents))
+  (let* ((sys *clasp-system*)
+         (etypes (if (ctype:member-p sys element-type)
+                     (ctype:member-members sys element-type)
+                     '*))
+         (complexity
+           (let ((null (ctype:member sys nil)))
+             (if (and (ctype:subtypep adjustable null sys)
+                      (ctype:subtypep fill-pointer null sys)
+                      (ctype:subtypep displaced-to null sys))
+                 'simple-array
+                 'array)))
+         (dimensions
+           (cond (;; If the array is adjustable, dimensions could change.
+                  (eq complexity 'array) '*)
+                 (;; FIXME: Clasp's subtypep returns NIL NIL on
+                  ;; (member 23), (or fixnum (cons fixnum null)). Ouch!
+                  (ctype:subtypep dimensions
+                                  (env:parse-type-specifier 'fixnum nil sys)
+                                  sys)
+                  ;; TODO: Check for constant?
+                  '(*))
+                 ;; FIXME: Could be way better.
+                 (t '*))))
+    (ctype:single-value
+     (cond ((eq etypes '*)
+            (ctype:array etypes dimensions complexity sys))
+           ((= (length etypes) 1)
+            (ctype:array (first etypes) dimensions complexity sys))
+           (t
+            (apply #'ctype:disjoin sys
+                   (loop for et in etypes
+                         collect (ctype:array et dimensions complexity sys)))))
+     sys)))
 
 (defun derive-aref (array indices)
   (declare (ignore indices))
