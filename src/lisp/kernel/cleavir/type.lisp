@@ -401,8 +401,6 @@
 
 ;;;
 
-
-
 (define-deriver core:two-arg-+ (n1 n2) (sv (ty+ n1 n2)))
 (define-deriver core:negate (arg) (sv (ty-negate arg)))
 (define-deriver core:two-arg-- (n1 n2) (sv (ty+ n1 (ty-negate n2))))
@@ -754,6 +752,12 @@
 (define-deriver map-into (sequence function &rest seqs)
   (declare (ignore function seqs))
   (type-consless-id sequence *clasp-system*))
+(define-deriver core::map-into-sequence (result function &rest sequences)
+  (declare (ignore function sequences))
+  (type-consless-id result *clasp-system*))
+(define-deriver core::map-into-sequence/1 (result function sequence)
+  (declare (ignore function sequence))
+  (type-consless-id result *clasp-system*))
 
 (define-deriver sort (sequence predicate &rest keys)
   (declare (ignore predicate keys))
@@ -761,6 +765,14 @@
 (define-deriver stable-sort (sequence predicate &rest keys)
   (declare (ignore predicate keys))
   (type-consless-id sequence *clasp-system*))
+
+(define-deriver replace (seq1 seq2 &rest keys)
+  (declare (ignore seq2 keys))
+  (type-consless-id seq1 *clasp-system*))
+
+(define-deriver core::concatenate-into-sequence (result &rest seqs)
+  (declare (ignore seqs))
+  (type-consless-id result *clasp-system*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -1948,6 +1948,7 @@
   (etypecase fdesignator
     (function fdesignator)
     (symbol (fdefinition fdesignator))))
+(declaim (ftype (function (t) function) core:coerce-to-function))
 
 ;;; ------------------------------------------------------------
 ;;;
