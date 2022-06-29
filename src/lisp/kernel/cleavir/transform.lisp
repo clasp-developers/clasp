@@ -44,13 +44,43 @@
   (ctype:subtypep (ctype:primary (asserted-ctype arg) *clasp-system*)
                   ctype *clasp-system*))
 
+(defun lambda->birfun (module lambda-expression-cst)
+  (let* (;; FIXME: We should be harsher with errors than cst->ast is here,
+         ;; since deftransforms are part of the compiler, and not the
+         ;; user's fault.
+         (ast (cst->ast lambda-expression-cst))
+         (bir (cleavir-ast-to-bir:compile-into-module ast module
+                                                      *clasp-system*)))
+    ;; Run the first few transformations.
+    ;; FIXME: Use a pass manager/reoptimize flags/something smarter.
+    (bir-transformations:eliminate-come-froms bir)
+    (bir-transformations:find-module-local-calls module)
+    (bir-transformations:function-optimize-variables bir)
+    bir))
+
+(defun replace-callee-with-lambda (call lambda-expression-cst)
+  (let ((bir (lambda->birfun (bir:module (bir:function call))
+                             lambda-expression-cst)))
+    ;; Now properly insert it.
+    (change-class call 'bir:local-call
+                  :inputs (list* bir (rest (bir:inputs call))))
+    ;; KLUDGEish: maybe-interpolate misbehaves when the flow order is invalid.
+    ;; See #1260.
+    (bir:compute-iblock-flow-order (bir:function call))
+    (bir-transformations:maybe-interpolate bir)))
+
 (defun maybe-transform (call transforms)
-  (loop with args = (rest (bir:inputs call))
-        with nargs = (length args)
-        for (transform . types) in transforms
-        when (and (= (length types) nargs) (every #'arg-subtypep args types))
-          do (funcall transform call)
-          and return t))
+  (flet ((arg-primary (arg)
+           (ctype:primary (bir:asserted-type arg) *clasp-system*)))
+    (loop with args = (rest (bir:inputs call))
+          with argstype
+            = (ctype:values (mapcar #'arg-primary args) nil
+                            (ctype:bottom *clasp-system*) *clasp-system*)
+          for (transform . vtype) in transforms
+          when (ctype:values-subtypep argstype vtype *clasp-system*)
+            do (replace-callee-with-lambda call
+                                           (funcall transform call))
+            and return t)))
 
 (defmethod cleavir-bir-transformations:transform-call
     ((system clasp) key (call bir:call))
@@ -100,38 +130,34 @@ Optimizations are available for any of:
      ',name))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun more-specific-types-p (types1 types2)
-    ;; True if the lists have the same number of types, and all types in
-    ;; the first are recognizable subtypes of those in the second.
-    (and (= (length types1) (length types2))
-         (every (lambda (t1 t2) (ctype:subtypep t1 t2 *clasp-system*))
-                types1 types2)))
-  (defun %def-bir-transformer (name function param-types)
-    ;; We just use a reverse alist (function . types).
-    ;; EQUALP does not actually technically test type equality, which is what we
-    ;; want, but it should be okay for now at least.
+  (defun vtype= (vtype1 vtype2)
+    (and (ctype:values-subtypep vtype1 vtype2 *clasp-system*)
+         (ctype:values-subtypep vtype2 vtype1 *clasp-system*)))
+  (defun vtype< (vtype1 vtype2)
+    (and (ctype:values-subtypep vtype1 vtype2 *clasp-system*)
+         ;; This also includes NIL NIL, but that probably won't happen
+         ;; if the first subtypep returns true
+         (not (ctype:values-subtypep vtype2 vtype1 *clasp-system*))))
+  (defun %def-bir-transformer (name function argstype)
+    ;; We just use a reverse alist (function . argstype).
     (let* ((transformers (gethash name *bir-transformers*))
-           (existing (rassoc param-types transformers :test #'equalp)))
+           (existing (rassoc argstype transformers :test #'vtype=)))
       (if existing
           ;; replace
           (setf (car existing) function)
           ;; Merge in, respecting subtypep
           (setf (gethash name *bir-transformers*)
-                (merge 'list (list (cons function param-types))
+                (merge 'list (list (cons function argstype))
                        (gethash name *bir-transformers*)
-                        #'more-specific-types-p
-                       :key #'cdr))))))
+                        #'vtype< :key #'cdr))))))
 
-(defmacro %deftransform (name (instparam) (&rest param-types)
-                                &body body)
-  (let ((param-types
-          (loop for ty in param-types
-                collect (cleavir-env:parse-type-specifier
-                         ty nil *clasp-system*))))
+(defmacro %deftransform (name (instparam) argstype
+                         &body body)
+  (let ((argstype (env:parse-values-type-specifier argstype nil *clasp-system*)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (unless (nth-value 1 (gethash ',name *bir-transformers*))
          (%deftransformation ,name))
-       (%def-bir-transformer ',name (lambda (,instparam) ,@body) '(,@param-types))
+       (%def-bir-transformer ',name (lambda (,instparam) ,@body) ',argstype)
        ',name)))
 
 ;;; Given an expression, make a CST for it.
@@ -157,62 +183,86 @@ Optimizations are available for any of:
 (defmacro truly-the (type form)
   `(cleavir-primop:truly-the (values ,type &rest nil) ,form))
 
+;;; A deftransform lambda list is like a method lambda list, except with
+;;; types instead of specializers, and &optional and &rest can have types.
+;;; And there's no &key yet.
+;;; &optional parameters can be specified as ((var type) default var-p).
+;;; This function returns six values: Three for the required, optional, and
+;;; rest parts of the lambda list, and three for the corresponding types.
+;;; This function returns two values: An ordinary lambda list and an
+;;; unparsed values type representing the arguments.
+(defun process-deftransform-lambda-list (lambda-list)
+  (loop with state = :required
+        with sys = *clasp-system*
+        with reqparams = nil
+        with optparams = nil
+        with restparam = nil
+        with reqtypes = nil
+        with opttypes = nil
+        with resttype = nil
+        for item in lambda-list
+        do (cond ((member item '(&optional &rest))
+                  (assert (or (eq state :required)
+                              (and (eq item '&rest) (eq state '&optional))))
+                  (setf state item))
+                 ((eq state :required)
+                  (cond ((listp item)
+                         (push (first item) reqparams)
+                         (push (second item) reqtypes))
+                        (t (push item reqparams)
+                           (push 't reqtypes))))
+                 ((eq state '&optional)
+                  (cond ((and (listp item) (listp (first item)))
+                         (push (list (caar item) (second item) (third item))
+                               optparams)
+                         (push (cadar item) opttypes))
+                        (t (push item optparams)
+                           (push t opttypes))))
+                 ((eq state '&rest)
+                  (cond ((listp item)
+                         (setf restparam (first item))
+                         (setf resttype (second item)))
+                        (t (setf restparam item) (setf resttype 't)))
+                  (setf state :done))
+                 ((eq state :done) (error "Bad deftransform ll ~a" lambda-list)))
+        finally (return (values (nreverse reqparams) (nreverse optparams)
+                                restparam
+                                (nreverse reqtypes) (nreverse opttypes)
+                                resttype))))
+
 ;;; FIXME: Only required parameters permitted here
 (defmacro deftransform (name typed-lambda-list &body body)
-  (let* ((params (loop for entry in typed-lambda-list
-                       collect (if (consp entry) (first entry) entry)))
-         (typespecs (loop for entry in typed-lambda-list
-                          collect (if (consp entry) (second entry) 't)))
-         (insurances
-           (mapcar (lambda (param typespec)
-                     (if (ctype:top-p typespec *clasp-system*)
-                         `(,param ,param)
-                         `(,param (ensure-the ,typespec ,param))))
-                   params typespecs))
-         (csym (gensym "CALL")) (bodysym (gensym "BODY")))
-    `(%deftransform ,name (,csym) (,@typespecs)
-       (let ((,bodysym (progn ,@body)))
-         (replace-callee-with-lambda
-          ,csym
-          (cstify-transformer
-           (bir:origin ,csym)
-           ;; double backquotes carefully designed piece by piece
-           (if (policy:policy-value (bir:policy ,csym)
-                                    'insert-minimum-type-checks)
-               `(lambda (,@',params)
-                  (let (,@',insurances)
-                    (declare (ignorable ,@',params))
-                    ,,bodysym))
-               `(lambda (,@',params)
-                  (declare (ignorable ,@',params))
-                  ,,bodysym))))))))
+  (multiple-value-bind (req opt rest reqt optt restt)
+      (process-deftransform-lambda-list typed-lambda-list)
+    (assert (or (null restt) (eq restt t))) ; we're limitd at the moment.
+    (let* ((ignorable (append req opt (when rest (list rest))))
+           (ll `(,@req &optional ,@opt ,@(when rest `((&rest ,rest)))))
+           (vt `(values ,@reqt &optional ,@optt &rest ,restt))
+           (insurances
+             (flet ((insurance (param typespec)
+                      (if (ctype:top-p typespec *clasp-system*)
+                          `(,param ,param)
+                          `(,param (ensure-the ,typespec ,param)))))
+               (append (mapcar #'insurance req reqt)
+                       (mapcar #'insurance opt optt)
+                       (when rest (list `(,rest ,rest))))))
+           (csym (gensym "CALL")) (bodysym (gensym "BODY")))
+      `(%deftransform ,name (,csym) ,vt
+         (let ((,bodysym (progn ,@body)))
+           (cstify-transformer
+            (bir:origin ,csym)
+            ;; double backquotes carefully designed piece by piece
+            (if (policy:policy-value (bir:policy ,csym)
+                                     'insert-minimum-type-checks)
+                `(lambda (,@',ll)
+                   (let (,@',insurances)
+                     (declare (ignorable ,@',ignorable))
+                     ,,bodysym))
+                `(lambda (,@',ll)
+                   (declare (ignorable ,@',ignorable))
+                   ,,bodysym))))))))
 
 ;;;
-
-(defun lambda->birfun (module lambda-expression-cst)
-  (let* (;; FIXME: We should be harsher with errors than cst->ast is here,
-         ;; since deftransforms are part of the compiler, and not the
-         ;; user's fault.
-         (ast (cst->ast lambda-expression-cst))
-         (bir (cleavir-ast-to-bir:compile-into-module ast module
-                                                      *clasp-system*)))
-    ;; Run the first few transformations.
-    ;; FIXME: Use a pass manager/reoptimize flags/something smarter.
-    (bir-transformations:eliminate-come-froms bir)
-    (bir-transformations:find-module-local-calls module)
-    (bir-transformations:function-optimize-variables bir)
-    bir))
-
-(defun replace-callee-with-lambda (call lambda-expression-cst)
-  (let ((bir (lambda->birfun (bir:module (bir:function call))
-                             lambda-expression-cst)))
-    ;; Now properly insert it.
-    (change-class call 'bir:local-call
-                  :inputs (list* bir (rest (bir:inputs call))))
-    ;; KLUDGEish: maybe-interpolate misbehaves when the flow order is invalid.
-    ;; See #1260.
-    (bir:compute-iblock-flow-order (bir:function call))
-    (bir-transformations:maybe-interpolate bir)))
 
 (defmethod cleavir-bir-transformations:generate-type-check-function
     ((module bir:module) origin ctype (system clasp))
