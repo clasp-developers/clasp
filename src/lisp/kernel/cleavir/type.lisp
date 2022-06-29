@@ -217,6 +217,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; (8) STRUCTURES
+
+(define-deriver copy-structure (structure) (sv structure))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; (12) NUMBERS
 
 (defun contagion (ty1 ty2)
@@ -498,6 +504,77 @@
   (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
     (ctype:single-value (ctype:cons top top sys) sys)))
 
+(define-deriver consp (obj)
+  (derive-type-predicate obj 'cons *clasp-system*))
+(define-deriver atom (obj)
+  (derive-type-predicate obj 'atom *clasp-system*))
+
+(defun type-car (type sys)
+  (if (ctype:consp type sys)
+      (ctype:cons-car type sys)
+      (ctype:top sys)))
+(defun type-cdr (type sys)
+  (if (ctype:consp type sys)
+      (ctype:cons-cdr type sys)
+      (ctype:top sys)))
+(defmacro defcr-type (name &rest ops)
+  `(define-deriver ,name (obj)
+     (let ((sys clasp-cleavir:*clasp-system*))
+       (ctype:single-value
+        ,(labels ((rec (ops)
+                    (if ops
+                        `(,(first ops) ,(rec (rest ops)) sys)
+                        'obj)))
+           (rec ops))
+        sys))))
+(defcr-type car type-car)
+(defcr-type cdr type-cdr)
+(defcr-type caar type-car type-car)
+(defcr-type cadr type-car type-cdr)
+(defcr-type cdar type-cdr type-car)
+(defcr-type cddr type-cdr type-cdr)
+(defcr-type caaar type-car type-car type-car)
+(defcr-type caadr type-car type-car type-cdr)
+(defcr-type cadar type-car type-cdr type-car)
+(defcr-type caddr type-car type-cdr type-cdr)
+(defcr-type cdaar type-cdr type-car type-car)
+(defcr-type cdadr type-cdr type-car type-cdr)
+(defcr-type cddar type-cdr type-cdr type-car)
+(defcr-type cdddr type-cdr type-cdr type-cdr)
+(defcr-type caaaar type-car type-car type-car type-car)
+(defcr-type caaadr type-car type-car type-car type-cdr)
+(defcr-type caadar type-car type-car type-cdr type-car)
+(defcr-type caaddr type-car type-car type-cdr type-cdr)
+(defcr-type cadaar type-car type-cdr type-car type-car)
+(defcr-type cadadr type-car type-cdr type-car type-cdr)
+(defcr-type caddar type-car type-cdr type-cdr type-car)
+(defcr-type cadddr type-car type-cdr type-cdr type-cdr)
+(defcr-type cdaaar type-cdr type-car type-car type-car)
+(defcr-type cdaadr type-cdr type-car type-car type-cdr)
+(defcr-type cdadar type-cdr type-car type-cdr type-car)
+(defcr-type cdaddr type-cdr type-car type-cdr type-cdr)
+(defcr-type cddaar type-cdr type-cdr type-car type-car)
+(defcr-type cddadr type-cdr type-cdr type-car type-cdr)
+(defcr-type cdddar type-cdr type-cdr type-cdr type-car)
+(defcr-type cddddr type-cdr type-cdr type-cdr type-cdr)
+
+(defcr-type rest type-cdr)
+(defcr-type first type-car)
+(defcr-type second type-car type-cdr)
+(defcr-type third type-car type-cdr type-cdr)
+(defcr-type fourth type-car type-cdr type-cdr type-cdr)
+(defcr-type fifth type-car type-cdr type-cdr type-cdr type-cdr)
+(defcr-type sixth type-car type-cdr type-cdr type-cdr type-cdr type-cdr)
+(defcr-type seventh type-car
+  type-cdr type-cdr type-cdr type-cdr type-cdr type-cdr)
+(defcr-type eighth type-car
+  type-cdr type-cdr type-cdr type-cdr type-cdr type-cdr type-cdr)
+(defcr-type ninth type-car
+  type-cdr type-cdr type-cdr type-cdr type-cdr type-cdr type-cdr type-cdr)
+(defcr-type tenth type-car
+  type-cdr type-cdr type-cdr type-cdr type-cdr type-cdr type-cdr type-cdr
+  type-cdr)
+
 (define-deriver list (&rest args)
   (let* ((sys *clasp-system*) (top (ctype:top sys)))
     (ctype:single-value
@@ -517,6 +594,9 @@
              (t
               (ctype:disjoin sys arg (ctype:cons top top sys)))))
      sys)))
+
+(define-deriver endp (obj) (derive-type-predicate obj 'null *clasp-system*))
+(define-deriver null (obj) (derive-type-predicate obj 'null *clasp-system*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -581,6 +661,14 @@
 
 (define-deriver row-major-aref (array index) (derive-aref array index))
 
+(define-deriver vectorp (object)
+  (derive-type-predicate object 'vector *clasp-system*))
+
+(define-deriver bit-vector-p (obj)
+  (derive-type-predicate obj 'bit-vector *clasp-system*))
+(define-deriver simple-bit-vector-p (obj)
+  (derive-type-predicate obj 'simple-bit-vector *clasp-system*))
+
 (macrolet ((def (fname etype)
              `(define-deriver ,fname (&rest ignore)
                 (declare (ignore ignore))
@@ -607,6 +695,72 @@
   (def core:make-simple-vector-int64 ext:integer64)
   (def core:make-simple-vector-byte64 ext:byte64)
   (def core:make-simple-vector-fixnum fixnum))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (16) STRINGS
+
+(define-deriver simple-string-p (obj)
+  (derive-type-predicate obj 'simple-string *clasp-system*))
+
+(define-deriver stringp (obj)
+  (derive-type-predicate obj 'string *clasp-system*))
+
+(define-deriver make-string (size &key (initial-element character)
+                                  (element-type (eql character)))
+  (declare (ignore initial-element))
+  (let* ((sys *clasp-system*)
+         (etypes (if (ctype:member-p sys element-type)
+                     (ctype:member-members sys element-type)
+                     '*))
+         ;; TODO? Right now we just check for constants.
+         ;; really, we should probably normalize those to ranges...
+         (size (if (ctype:member-p sys size)
+                   (let ((mems (ctype:member-members sys size)))
+                     (if (and (= (length mems) 1)
+                              (integerp (first mems)))
+                         (first mems)
+                         '*))
+                   '*)))
+    (ctype:single-value
+     (cond ((eq etypes '*)
+            (ctype:array etypes (list size) 'simple-array sys))
+           ((= (length etypes) 1)
+            (ctype:array (first etypes) (list size) 'simple-array sys))
+           (t
+            (apply #'ctype:disjoin sys
+                   (loop for et in etypes
+                         collect (ctype:array et (list size)
+                                              'simple-array sys)))))
+     sys)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (17) SEQUENCES
+
+;;; We can't simply return cons types because these functions alter them.
+;;; Non-simple array types might also be an issue.
+(defun type-consless-id (type sys)
+  (ctype:single-value
+   (if (ctype:consp type sys)
+       (let ((top (ctype:top sys))) (ctype:cons top top sys))
+       type)
+   sys))
+
+(define-deriver fill (sequence item &rest keys)
+  (declare (ignore item keys))
+  (type-consless-id sequence *clasp-system*))
+
+(define-deriver map-into (sequence function &rest seqs)
+  (declare (ignore function seqs))
+  (type-consless-id sequence *clasp-system*))
+
+(define-deriver sort (sequence predicate &rest keys)
+  (declare (ignore predicate keys))
+  (type-consless-id sequence *clasp-system*))
+(define-deriver stable-sort (sequence predicate &rest keys)
+  (declare (ignore predicate keys))
+  (type-consless-id sequence *clasp-system*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
