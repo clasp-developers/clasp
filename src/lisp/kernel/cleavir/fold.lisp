@@ -13,7 +13,11 @@
           (handler-case (apply folder arguments)
             (serious-condition (c)
               (warn 'cmp:fold-failure :operation operator :operands arguments
-                                      :condition c :origin (bir:origin call))
+                                      :condition c
+                                      :origin (loop for o = (bir:origin call)
+                                                      then (cst:source o)
+                                                    while (typep o 'cst:cst)
+                                                    finally (return o)))
               (return-from bir-transformations:fold-call nil))))
         nil)))
 
