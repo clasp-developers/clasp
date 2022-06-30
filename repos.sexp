@@ -53,9 +53,9 @@
   :commit "f892d0587c7f3a1e6c0899425921b48008c29ee3"
   :extension :cando)
  (:name :bordeaux-threads
-  :repository "https://github.com/yitzchak/bordeaux-threads.git"
+  :repository "https://github.com/sionescu/bordeaux-threads.git"
   :directory "src/lisp/kernel/contrib/bordeaux-threads/"
-  :branch "asdf-feature"
+  :commit "39d6790d24002df43e24b3c2d6f41524839b74d5"
   :extension :cando)
  (:name :cffi ; TODO remove once cando-user no longer needs
   :repository "https://github.com/cffi/cffi.git"
