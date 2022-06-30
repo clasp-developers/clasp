@@ -16,13 +16,9 @@
   (setq *features* (cons :bclasp *features*))
   (if (core:noinform-p)
       nil
-      (multiple-value-bind (source-enum source-file source-simple)
-          (core:startup-source)
-        (format t "bclasp starting ~a ... loading ~a : ~a...~%"
-                (lisp-implementation-version)
-                source-simple
-                source-file))))
-#+cclasp
+      (format t "Starting ~a ... loading image...~%"
+               (lisp-implementation-version))))
+#+(or cclasp eclasp)
 (eval-when (:load-toplevel)
   (if (find-package "CLEAVIR-AST") nil (make-package "CLEAVIR-AST"))
   (if (find-package "CLASP-CLEAVIR-AST") nil (make-package "CLASP-CLEAVIR-AST"))

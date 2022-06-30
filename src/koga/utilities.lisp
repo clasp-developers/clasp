@@ -67,20 +67,23 @@ into a list of values and values that are lists will be appended."
       (when (zerop code)
         standard-output))))
 
-(defun git-commit (configuration &key short)
+(defun git-commit (configuration &key short directory)
   "Get the current commit. SHORT specifies to use a short commit style."
   (run-program-capture (format nil "~A rev-parse~:[~; --short~] HEAD"
-                               (git configuration) short)))
+                               (git configuration) short)
+                       :directory directory))
 
-(defun git-describe (configuration)
+(defun git-describe (configuration &key directory)
   "Describe the current commit based on the most recent tag."
   (run-program-capture (format nil "~A describe"
-                               (git configuration))))
+                               (git configuration))
+                       :directory directory))
 
-(defun git-working-tree-p (configuration)
+(defun git-working-tree-p (configuration &key directory)
   "Return non-NIL if we are inside a git repo."
   (and (run-program-capture (format nil "~A rev-parse --is-inside-work-tree"
-                                    (git configuration)))
+                                    (git configuration))
+                            :directory directory)
        t))
 
 (defun hidden-component-p (component)

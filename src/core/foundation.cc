@@ -1087,8 +1087,6 @@ void lisp_defun(Symbol_sp sym,
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   fc->setf_lambdaList(llh->lambdaList());
   fc->setf_docstring(tdocstring);
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
 }
 
 // identical to above except for using setSetfFdefinition.
@@ -1121,8 +1119,6 @@ void lisp_defun_setf(Symbol_sp sym,
   Function_sp func = fc;
   sym->setSetfFdefinition(func);
   sym->exportYourself();
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
 }
 
 void lisp_defmacro(Symbol_sp sym,
@@ -1674,7 +1670,7 @@ void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, c
     printf("%s:%d:%s name = |%s:%lu|  functionPointer = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), arityCode, functionPointer );
   }
 #endif
-  if (globals_->_ExportedSymbolsAccumulate) {
+  if (core::global_options->_ExportedSymbolsAccumulate) {
     if (!global_SymbolLookup) {
       global_SymbolLookup = new snapshotSaveLoad::SymbolLookup();
       global_SymbolLookup->addAllLibraries();

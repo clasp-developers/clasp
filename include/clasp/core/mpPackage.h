@@ -94,9 +94,11 @@ struct ThreadStartInfo {
 extern std::atomic<uintptr_t> global_process_UniqueID;
 
 typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
-    Active, // Running, may proceed to Suspended or Exited
-    Suspended, // Temporarily paused, may proceed to Active or Exited
-    Exited} // Finished running, permanent state.
+              Inactive,
+              Booting,
+              Active, // Running, may proceed to Suspended or Exited
+              Suspended, // Temporarily paused, may proceed to Active or Exited
+              Exited} // Finished running, permanent state.
   ProcessPhase;
   
   class Process_O : public core::CxxObject_O {
@@ -117,6 +119,7 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
     };
   public:
     uintptr_t   _UniqueID;
+    core::T_sp  _Parent;
     core::T_sp  _Name;
     core::T_sp  _Function;
     core::List_sp  _Arguments;
@@ -128,6 +131,7 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
     std::atomic<ProcessPhase>  _Phase;
     dont_expose<Mutex> _SuspensionMutex;
     dont_expose<ConditionVariable> _SuspensionCV;
+    //    dont_expose<ConditionVariable> _ExitBarrier;
     size_t _StackSize;
     dont_expose<pthread_t> _TheThread;
     // Need to match fields in the two GC's
@@ -142,7 +146,8 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
     Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments,
               core::List_sp initialSpecialBindings=nil<core::T_O>(),
               size_t stack_size=8*1024*1024)
-      : _UniqueID(global_process_UniqueID++), _Name(name), _Function(function), _Arguments(arguments),
+        : _Parent(nil<core::T_O>()),
+          _UniqueID(global_process_UniqueID++), _Name(name), _Function(function), _Arguments(arguments),
         _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL),
         _ReturnValuesList(nil<core::T_O>()), _Aborted(false),
         _AbortCondition(nil<core::T_O>()), _StackSize(stack_size), _Phase(Nascent),

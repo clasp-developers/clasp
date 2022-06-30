@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/lispList.h>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/unwind.h>
 
 
 extern "C" {
@@ -132,6 +133,12 @@ void debug_mutex_unlock(Mutex* m) {
 namespace mp {
 
 SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
+
+CL_DEFUN
+Process_sp mp__current_process() {
+  Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
+  return this_process;
+}
 
 // This keeps track of a process on the list of active threads.
 // Also makes sure its phase is set as it exits.
@@ -517,6 +524,141 @@ CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   else return cl__values_list(process->_ReturnValuesList);
 }
 
+
+CL_LAMBDA(process function &rest args)
+CL_DEFUN core::T_sp mp__process_preset(Process_sp process, core::T_sp function, core::T_sp args )
+{
+  process->_Function = function;
+  process->_Arguments = args;
+  return process;
+}
+
+
+CL_DEFUN core::T_sp mp__process_enable(Process_sp process)
+{
+  /* process_env and ok are changed after the setjmp call in
+   * ECL_UNWIND_PROTECT_BEGIN, so they need to be declared volatile */
+  volatile core::cl_env_ptr process_env = NULL;
+  core::cl_env_ptr the_env = core::clasp_process_env();
+  volatile int ok = 0;
+  core::funwind_protect( [&]() {
+    /* Try to gain exclusive access to the process at the same
+     * time we ensure that it is inactive. This prevents two
+     * concurrent calls to process-enable from different threads
+     * on the same process */
+    auto inactive = Inactive;
+    unlikely_if (!process->_Phase.compare_exchange_strong( inactive, Booting ) ) {
+      FEerror("Cannot enable the running process ~A.", 1, process);
+    }
+    process->_Parent = mp__current_process();
+#if 0
+    process->process.trap_fpe_bits =
+        process->process.parent->process.env->trap_fpe_bits;
+#endif
+    /* Link environment and process together */
+#if 0
+    // We don't have process environments
+    process_env = _ecl_alloc_env(the_env);
+    process_env->own_process = process;
+    process->process.env = process_env;
+    /* Immediately list the process such that its environment is
+     * marked by the gc when its contents are allocated */
+    ecl_list_process(process);
+
+    /* Now we can safely allocate memory for the environment contents
+     * and store pointers to it in the environment */
+    ecl_init_env(process_env);
+
+    process_env->trap_fpe_bits = process->process.trap_fpe_bits;
+    process_env->bindings_array = process->process.initial_bindings;
+    process_env->thread_local_bindings_size = 
+        process_env->bindings_array->vector.dim;
+    process_env->thread_local_bindings =
+        process_env->bindings_array->vector.self.t;
+#endif
+
+    SIMPLE_WARN("Handle the exit_barrier");
+#if 0
+    /* Activate the barrier so that processes can immediately start waiting. */
+    mp_barrier_unblock(1, process->process.exit_barrier);
+
+    /* Block the thread with this spinlock until it is ready */
+    process->process.start_stop_spinlock = ECL_T;
+
+    ecl_disable_interrupts_env(the_env);
+#ifdef ECL_WINDOWS_THREADS
+    {
+      HANDLE code;
+      DWORD threadId;
+
+      code = (HANDLE)CreateThread(NULL, 0, thread_entry_point, process, 0, &threadId);
+      ok = (process->process.thread = code) != NULL;
+    }
+#else
+    {
+      int code;
+      pthread_attr_t pthreadattr;
+
+      pthread_attr_init(&pthreadattr);
+      pthread_attr_setdetachstate(&pthreadattr, PTHREAD_CREATE_DETACHED);
+      /*
+       * Block all asynchronous signals until the thread is completely
+       * set up. The synchronous signals SIGSEGV and SIGBUS are needed
+       * by the gc and thus can't be blocked.
+       */
+#ifdef HAVE_SIGPROCMASK
+      {
+        sigset_t new, previous;
+        sigfillset(&new);
+        sigdelset(&new, SIGSEGV);
+        sigdelset(&new, SIGBUS);
+        pthread_sigmask(SIG_BLOCK, &new, &previous);
+        code = pthread_create(&process->process.thread, &pthreadattr,
+                              thread_entry_point, process);
+        pthread_sigmask(SIG_SETMASK, &previous, NULL);
+      }
+#else
+      code = pthread_create(&process->process.thread, &pthreadattr,
+                            thread_entry_point, process);
+#endif
+      ok = (code == 0);
+    }
+#endif
+    ecl_enable_interrupts_env(the_env);
+#endif // #if 0
+    return Values0<core::T_O>();
+  },
+    [&]() { // ECL_UNWIND_PROTECT_THREAD_SAFE_EXIT {
+      if (!ok) {
+        SIMPLE_WARN("ecl_unlist_process");
+#if 0
+        /* INV: interrupts are already disabled through thread safe
+         * unwind-protect */
+        ecl_unlist_process(process);
+        /* Disable the barrier and alert possible waiting processes. */
+        mp_barrier_unblock(3, process->process.exit_barrier,
+                           @':disable', ECL_T);
+        process->process.phase = ECL_PROCESS_INACTIVE;
+        process->process.env = NULL;
+        if (process_env != NULL)
+          _ecl_dealloc_env(process_env);
+#endif
+      }
+      /* Unleash the thread */
+      SIMPLE_WARN("ecl_giveup_spinlock");
+#if 0      
+      ecl_giveup_spinlock(&process->process.start_stop_spinlock);
+#endif
+    } );
+
+  if (ok) {
+    return process;
+  } else {
+    return nil<core::T_O>();
+  }
+}
+
+
 CL_DOCSTRING(R"dx(Interrupt the given process to make it call the given function with no arguments. Return no values.)dx")
 DOCGROUP(clasp)
 CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
@@ -580,6 +722,11 @@ CL_DEFUN void mp__giveup_lock(Mutex_sp m) {
 DOCGROUP(clasp)
 CL_DEFUN bool mp__recursive_lock_p(Mutex_sp m) {
   return gc::IsA<RecursiveMutex_sp>(m);
+}
+
+DOCGROUP(clasp)
+CL_DEFUN bool mp__holding_lock_p(Mutex_sp m) {
+  return m->_Owner == _sym_STARcurrent_processSTAR->symbolValue();
 }
 
 DOCGROUP(clasp)

@@ -1530,8 +1530,9 @@ T_mv sp_go(List_sp args, T_sp env) {
             /* KLUDGE: We cheap out and ban use of our unwinder
              * through here. Would be more efficient to undo
              * the VEDSM there, but that's complicated. */
-            gctools::StackAllocate<UnknownDynEnv_O> ude(my_thread->_DynEnv);
-            DynEnvPusher dep(my_thread, ude.asSmartPtr());
+            gctools::StackAllocate<UnknownDynEnv_O> ude;
+            gctools::StackAllocate<Cons_O> sa_ec(ude.asSmartPtr(), my_thread->dynEnvStackGet());
+            DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
             List_sp curExp = expressions;
@@ -1601,8 +1602,9 @@ T_mv sp_go(List_sp args, T_sp env) {
             MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
             ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
             // See KLUDGE in let, above.
-            gctools::StackAllocate<UnknownDynEnv_O> ude(my_thread->_DynEnv);
-            DynEnvPusher dep(my_thread, ude.asSmartPtr());
+            gctools::StackAllocate<UnknownDynEnv_O> ude;
+            gctools::StackAllocate<Cons_O> sa_ec(ude.asSmartPtr(), my_thread->dynEnvStackGet());
+            DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
             List_sp curExp = expressions;

@@ -409,11 +409,14 @@ and put the values into the activation frame for new-env."
                  (number-of-lexical-vars
                    (number-of-lexical-variables lambda-list-handler))
                  (dynenv-mems nil)
-                 (dynenvs nil)
+                 (dynenv-cons-mems nil)
                  (*notinlines* (new-notinlines declares)))
             ;; alloca dynenv space for each special.
             (dolist (target (rest reqvars))
               (when (eq (car target) 'ext:special-var)
+                (push (alloca-i8 +cons-size+ :alignment +alignment+
+                                             :label "dynenv-cons-mem")
+                      dynenv-cons-mems)
                 (push (alloca-i8 +binding-dynenv-size+
                                  :alignment +alignment+
                                  :label "binding-dynenv-mem")
@@ -428,12 +431,12 @@ and put the values into the activation frame for new-env."
                      ;; Save all special variables
                      (do* ((cur-req (cdr reqvars) (cdr cur-req))
                            (target (car cur-req) (car cur-req))
-                           (dynenv-mems dynenv-mems))
+                           (dynenv-mems dynenv-mems)
+                           (dynenv-cons-mems dynenv-cons-mems))
                           ((endp cur-req) nil)
                        (when (eq (car target) 'ext:special-var)
-                         (push (compile-save-special new-env target
-                                                     (pop dynenv-mems))
-                               dynenvs)))
+                         (compile-save-special new-env target (pop dynenv-mems)
+                                               (pop dynenv-cons-mems))))
                      (if (eq operator-symbol 'let)
                          (codegen-fill-let-environment
                           new-env reqvars expressions env evaluate-env)
@@ -442,12 +445,12 @@ and put the values into the activation frame for new-env."
                      (cmp-log "About to evaluate codegen-progn%N")
                      (codegen-progn result code new-env)))
               (if dynenv-mems ; we are binding specials
-                  (with-try "TRY.let/let*"
-                    (bind)
-                    ((cleanup)
-                     (irc-unwind-environment new-env)
-                     (irc-intrinsic "cc_pop_dynenv"
-                                    (first (last dynenvs)))))
+                  (let ((old-de-stack (irc-intrinsic "cc_get_dynenv_stack")))
+                    (with-try "TRY.let/let*"
+                      (bind)
+                      ((cleanup)
+                       (irc-unwind-environment new-env)
+                       (irc-intrinsic "cc_set_dynenv_stack" old-de-stack))))
                   (bind))))))))
   (cmp-log "Done codegen-let/let*%N"))
 
@@ -600,8 +603,12 @@ jump to blocks within this tagbody."
            ;; cclasp, because here each tagbody and block has its own switch
            ;; encoding and they all share the frameaddress.
            (vhandle (irc-bit-cast tagbody-renv %i8*%))
+           (old-de-stack (irc-intrinsic "cc_get_dynenv_stack"))
+           (dyncons-space (alloca-i8 +cons-size+
+                                     :alignment +alignment+ :label "block-de-cons"))
            (dynenv (irc-intrinsic "cc_createAndPushTagbodyDynenv"
-                                  vhandle jmp-buf*))
+                                  dyncons-space vhandle jmp-buf*))
+           (new-de-stack (irc-intrinsic "cc_get_dynenv_stack"))
            (handle (irc-intrinsic "initializeTagbodyClosure" tagbody-renv dynenv))
            (default-block (irc-basic-block-create "tagbody-default"))
            ;; This block is jumped to both by the setjmp and by the
@@ -644,15 +651,15 @@ jump to blocks within this tagbody."
                     (when section-next-block
                       (irc-branch-if-no-terminator-inst section-next-block))))
               enumerated-tag-blocks)
-        ((cleanup) (irc-unwind-environment tagbody-env))
+        ((cleanup)
+         (irc-intrinsic "cc_set_dynenv_stack" new-de-stack)
+         (irc-unwind-environment tagbody-env))
         ((typeid-core-unwind exception-ptr)
          (let ((go-index (irc-intrinsic
                           "tagbodyHandleDynamicGoIndex_or_rethrow"
                           exception-ptr vhandle))
                (cur-block (irc-get-insert-block)))
            (irc-phi-add-incoming switch-phi go-index cur-block)
-           ;; Reset the dynenv
-           (irc-intrinsic "cc_unwind_dest_dynenv" dynenv)
            ;; End the catch and jump back into the main code
            (cmp:with-landing-pad nil
              (irc-intrinsic "__cxa_end_catch"))
@@ -666,9 +673,9 @@ jump to blocks within this tagbody."
            (irc-intrinsic "throwIllegalSwitchValue"
                           switch-phi (jit-constant-size_t
                                       (length enumerated-tag-blocks))))))
-      ;; We're finally out of the atgbody, so remove it from the
+      ;; We're finally out of the tagbody, so remove it from the
       ;; dynamic environment.
-      (irc-intrinsic "cc_pop_dynenv" dynenv)
+      (irc-intrinsic "cc_set_dynenv_stack" old-de-stack)
       (codegen-literal result nil env))))
 
 (defun codegen-local-tagbody (result rest env)
@@ -755,8 +762,11 @@ jump to blocks within this tagbody."
 	(let* ((jmp-buf* (alloca %jmp-buf-tag% 1 "block-jmp-buf"))
                (block-renv (irc-renv block-env))
                (vhandle (irc-bit-cast block-renv %i8*%))
+               (old-de-stack (irc-intrinsic "cc_get_dynenv_stack"))
+               (dynenv-cons-mem (alloca-i8 +cons-size+ :alignment +alignment+
+                                           :label "dynenv-cons-mem"))
                (dynenv (irc-intrinsic "cc_createAndPushBlockDynenv"
-                                      vhandle jmp-buf*))
+                                      dynenv-cons-mem vhandle jmp-buf*))
                (handle (irc-intrinsic "initializeBlockClosure" block-renv dynenv))
                (sj (irc-intrinsic "_setjmp" jmp-buf*))
                (block-start (irc-basic-block-create
@@ -778,8 +788,7 @@ jump to blocks within this tagbody."
           (with-try "TRY.block"
             (codegen-progn result body block-env)
             ((cleanup)
-             ;; could unwind the dynenv here too, but that ought to
-             ;; be taken care of by the ultimate destination.
+             (irc-intrinsic "cc_set_dynenv_stack" old-de-stack)
              (irc-unwind-environment block-env))
             ((typeid-core-unwind exception-ptr)
              (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom_or_rethrow" exception-ptr vhandle)))
@@ -792,7 +801,7 @@ jump to blocks within this tagbody."
           (irc-begin-block local-return-block)
           (irc-br after-return-block)
           (irc-begin-block after-return-block)
-          (irc-intrinsic "cc_unwind_dest_dynenv" dynenv))))))
+          (irc-intrinsic "cc_set_dynenv_stack" old-de-stack))))))
 
 (defun codegen-local-block (result rest env)
   "codegen-local-block for local return-froms only"

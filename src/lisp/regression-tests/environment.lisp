@@ -57,17 +57,20 @@ documentation (x symbol) (doc-type (eql 'variable))
   "to test describe"
   (list a b c))
 
-(defun test-documentation-with-args (object &optional (doc-category 'function))
+(defun test-documentation-with-args (object &optional (doc-category 'function) requiredp)
   (let ((doc (documentation object doc-category)))
-    (if doc
-        (let ((describe-string 
-               (with-output-to-string (*standard-output*)
-                 (describe object)))
-              (args (ext:function-lambda-list object)))
-          (and (search doc describe-string)
-               (search (write-to-string args :escape t :readably t) describe-string)))
-        (with-output-to-string (*standard-output*)
-          (describe object)))))
+    (cond (doc
+           (let ((describe-string
+                  (with-output-to-string (*standard-output*)
+                    (describe object)))
+                 (args (ext:function-lambda-list object)))
+             (and (search doc describe-string)
+                  (search (write-to-string args :escape t :readably t) describe-string))))
+          (requiredp
+           nil)
+          (t
+           (with-output-to-string (*standard-output*)
+             (describe object))))))
 
 (defun test-documentation-without-args (object &optional (doc-category 'function))
   (let ((doc (documentation object doc-category)))
@@ -87,6 +90,18 @@ documentation (x symbol) (doc-type (eql 'variable))
 
 (test-true describe-function-documentation-macro
            (test-documentation-with-args 'cl:defconstant))
+
+(test-true describe-function-documentation-function-docstring
+           (test-documentation-with-args 'core:function-docstring 'function t))
+
+(test-true describe-function-documentation-setf-function-docstring
+           (test-documentation-with-args 'core:function-docstring 'setf t))
+
+(test-true describe-function-documentation-car
+           (test-documentation-with-args 'cl:car 'function t))
+
+(test-true describe-function-documentation-setf-car
+           (test-documentation-with-args 'cl:car 'setf t))
 
 (defun stupid-function (a) a)
 
@@ -777,3 +792,8 @@ documentation (x symbol) (doc-type (eql 'variable))
               UNLESS (OR (NULL DOC) (STRING DOC))
                 COLLECT (LIST S DOC)))
       (nil))
+
+(test-expect-error room-1 (room 42) :type type-error)
+(test-expect-error room-2 (room (make-hash-table)) :type type-error)
+(test-expect-error room-3 (room :pepito) :type type-error)
+                   

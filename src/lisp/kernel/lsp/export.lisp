@@ -57,15 +57,18 @@
                (multiple-value-bind (declarations body)
                    (process-declarations body nil)
                  `(block nil
-                    (let* ((%dolist-var ,expr)
-                           ,var)
-                      (declare ,@declarations)
+                    (let* ((%dolist-var ,expr))
                       (si::while %dolist-var
-                                 (setq ,var (first %dolist-var))
-                                 ,@body
-                                 (setq %dolist-var (cdr %dolist-var)))
-                      ,(when exit `(setq ,var nil))
-                      ,@exit)))))))
+                        (let ((,var (first %dolist-var)))
+                          (declare ,@declarations)
+                          (tagbody
+                             ,@body
+                             (setq %dolist-var (cdr %dolist-var))))))
+                    ,(when exit
+                       `(let ((,var nil))
+                          (declare (ignorable ,var)
+                                   ,@(filter-dolist-declarations declarations))
+                          ,@exit))))))))
   (si::fset 'dolist f t '((var list-form &optional result-form) &body body)))
 
 (let ((f #'(lambda (whole env)

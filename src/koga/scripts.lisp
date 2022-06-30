@@ -88,6 +88,13 @@
 (core:compile-cclasp)
 (core:quit)" (jobs configuration)))
 
+(defmethod print-prologue (configuration (name (eql :compile-eclasp)) output-stream)
+  (format output-stream "(setq *features* (cons :eclasp *features*))
+(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(core:compile-eclasp)
+(core:quit)" (jobs configuration)))
+
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (write-string "(setq *features* (cons :aclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
@@ -97,13 +104,18 @@
                   :system (cdr args)))
 (core:quit)" output-stream))
 
+;;; TODO The parallel analyzer is disabled below. Enable it once it works.
 (defmethod print-prologue (configuration (name (eql :static-analyzer)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream nil :clasp-analyzer)
-  (format output-stream "~%(clasp-analyzer::serial-search/generate-code
-  (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
-    (pathname (elt core:*command-line-arguments* 1)))
- :output-file (pathname (elt core:*command-line-arguments* 0)))"))
+  (let ((log-path (resolve-source (make-source "analyzer-logs/" :variant))))
+    (format output-stream "
+(setq core::*number-of-jobs* ~a)
+(uiop:delete-directory-tree ~s :validate t :if-does-not-exist :ignore)
+(clasp-analyzer:search-and-generate-code (pathname (elt core:*command-line-arguments* 0))
+                                         (pathname (elt core:*command-line-arguments* 1))
+                                         :log-path ~s :parallel ~s)"
+            (jobs configuration) log-path log-path nil #+(or)(parallel-build configuration))))
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
   (when (jupyter configuration)
@@ -119,7 +131,7 @@
 (defmethod print-prologue (configuration (name (eql :clasp-sh)) output-stream)
   (declare (ignore configuration))
   (format output-stream "#!/usr/bin/env bash
-CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
+exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
           (build-name :iclasp)))
 
 (defmethod print-prologue (configuration (name (eql :jupyter-kernel)) output-stream)
@@ -152,3 +164,27 @@ CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
 (unless (ql-dist:find-dist \"quickclasp\")
   (sleep 2) ; ensure that the sequence number if quickclasp is higher
   (ql-dist:install-dist \"http://thirdlaw.tech/quickclasp/quickclasp.txt\" :prompt nil))"))
+
+(defun pprint-immutable-systems (stream object)
+  (format stream "(in-package \"SYSTEM\")~%~%(defparameter *immutable-systems*~%")
+  (pprint-logical-block (stream (sort (copy-seq object)
+                                      (lambda (x y)
+                                        (string-lessp (car x) (car y))))
+                         :prefix "  '(" :suffix ")")
+    (loop do (pprint-logical-block (stream (pprint-pop) :prefix "(" :suffix ")")
+               (write (pprint-pop) :case :downcase :stream stream)
+               (loop do (pprint-exit-if-list-exhausted)
+                        (pprint-newline :mandatory stream)
+                        (write (pprint-pop) :case :downcase :stream stream)
+                        (pprint-exit-if-list-exhausted)
+                        (write-char #\Space stream)
+                        (write (pprint-pop) :stream stream)))
+              (pprint-exit-if-list-exhausted)
+              (pprint-newline :mandatory stream)))
+  (write-line ")" stream))
+
+(defmethod print-prologue (configuration (name (eql :cclasp-immutable)) output-stream)
+  (pprint-immutable-systems output-stream (gethash :cclasp (target-systems configuration))))
+
+(defmethod print-prologue (configuration (name (eql :eclasp-immutable)) output-stream)
+  (pprint-immutable-systems output-stream (gethash :eclasp (target-systems configuration))))

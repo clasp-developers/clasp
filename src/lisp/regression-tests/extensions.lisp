@@ -26,3 +26,10 @@
 
 (test-true source-location-variable
            (ext::source-location-p (first (ext:source-location '*print-pretty* :variable))))
+
+(test-true
+ run-program-hello-world
+ (let* ((stream (ext:run-program "/bin/bash" (list "-c" "echo hello world")))
+        (output (read-line stream)))
+   (close stream)
+   (string= output "hello world")))

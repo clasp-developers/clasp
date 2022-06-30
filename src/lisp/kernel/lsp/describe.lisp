@@ -77,7 +77,7 @@
     (return-from read-inspect-command nil))
   (let* ((*quit-tags* (cons *quit-tag* *quit-tag*)) ;; as seen in top.lisp
 	 (*quit-tag* *quit-tags*))
-    (declare (special *quit-tags* *quit-tags*))
+    (declare (special *quit-tag* *quit-tags*))
     (loop
        (when
 	   (catch *quit-tag* ;; as seen in top.lisp
@@ -511,7 +511,7 @@ Prints information about OBJECT to STREAM."
            (describe-symbol (category-string)
              (doc-separation category-string)
              (doc-value (or (documentation symbol 'FUNCTION) "") "Documentation:")
-             #+cclasp (doc-value (or (core:function-lambda-list symbol) "") "Arguments:")
+             #+(or cclasp eclasp) (doc-value (or (core:function-lambda-list symbol) "") "Arguments:")
              (mapcar #'(lambda(location)
                          (doc-value (ext:source-location-pathname location) "Source:"))
                      (EXT:SOURCE-LOCATION symbol :function)))
@@ -566,7 +566,8 @@ Prints information about OBJECT to STREAM."
                              (first slot-d)(second slot-d)(fourth slot-d)(sixth slot-d))
                      (format t "~&Name: ~15a" slot-d)))))))
 
-    (cond ((ext:setf-expander symbol)
+    (cond ((or (fboundp (list 'setf symbol))
+               (ext:setf-expander symbol))
            (doc-separation "[Setf]")
            (doc-value (documentation symbol 'setf) "Documentation:"))))
   

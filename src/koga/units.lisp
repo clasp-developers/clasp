@@ -149,7 +149,14 @@
       configuration
     (message :emph "Configuring etags")
     (setf etags (configure-program "etags"
-                                   (or etags #P"etags")))))
+                                   (or etags (list #P"etags"))))))
+
+(defmethod configure-unit (configuration (unit (eql :ctags)))
+  "Find the ctags binary."
+  (with-accessors ((ctags ctags))
+      configuration
+    (message :emph "Configuring ctags")
+    (setf ctags (configure-program "ctags" ctags :match "Ctags"))))
 
 (defmethod configure-unit (configuration (unit (eql :xcode))
                            &aux (env (uiop:getenv-absolute-directory "XCODE_SDK"))
@@ -221,17 +228,16 @@
                    (default-stage default-stage))
       configuration
     (unless default-target
-      (setf default-target
-            (if (member :cando (extensions configuration))
-                "dclasp-boehmprecise"
-                "cclasp-boehmprecise")))
+      (setf default-target (if (extensions configuration)
+                               "eclasp-boehmprecise"
+                               "cclasp-boehmprecise")))
     (loop with bitcode-name = (subseq default-target (1+ (position #\- default-target)))
           for variant in (variants configuration)
           when (equal bitcode-name (variant-bitcode-name variant))
            do (setf (variant-default variant) t))
     (setf default-stage
           (find (subseq default-target 0 (position #\- default-target))
-                '(:iclasp :aclasp :bclasp :cclasp :dclasp)
+                '(:iclasp :aclasp :bclasp :cclasp :eclasp :sclasp)
                 :test #'string-equal))))
 
 (defmethod configure-unit (configuration (unit (eql :cpu-count)))
@@ -262,7 +268,12 @@ has not been set."
       configuration
     (cond ((git-working-tree-p configuration)
            (message :emph "Updating version number.")
-           (setf version (or (git-describe configuration)
+           (setf version (or (if (member :cando (extensions configuration))
+                                 (format nil "~a-g~a"
+                                         (git-describe configuration)
+                                         (git-commit configuration :directory "extensions/cando/"
+                                                     :short t))
+                                 (git-describe configuration))
                              version)
                  commit-short (git-commit configuration :short t)
                  commit-full (git-commit configuration))

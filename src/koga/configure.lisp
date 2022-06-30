@@ -1,8 +1,17 @@
 (in-package #:koga)
 
+(defparameter +core-features+
+  '(:32-bit :64-bit :alpha :arm :arm64 :asdf :asdf2 :asdf3 :asdf3.1 :asdf3.2 :asdf3.3 :asdf-unicode
+    :big-endian :bsd :darwin :freebsd :hppa :hppa64 :linux :little-endian :mips :netbsd :openbsd
+    :ppc :ppc64 :sparc :sparc64 :sunos :unix :x86 :x86-64))
+
 (defparameter *configuration*
   nil
   "The current configuration")
+
+(defparameter *extensions*
+  nil
+  "The current extensions")
 
 (defparameter *variant-gc*
   nil
@@ -511,6 +520,11 @@ is not compatible with snapshots.")
           :initarg :etags
           :type (or null pathname)
           :documentation "The etags binary to use.")
+   (ctags :accessor ctags
+          :initform nil
+          :initarg :ctags
+          :type (or null pathname)
+          :documentation "The ctags binary to use.")
    (jupyter :accessor jupyter
             :initform nil
             :initarg :jupyter
@@ -545,18 +559,22 @@ is not compatible with snapshots.")
                    :initform nil
                    :initarg :update-version
                    :type boolean
-                   :documentation "Use git describe to update the version and commit values in the config.sexp file and then exit.")
+                   :documentation "Use git describe to update the version and commit values in the version.sexp file and then exit.")
    (extension-systems :accessor extension-systems
                       :initform nil
                       :type list
                       :documentation "")
+   (target-systems :accessor target-systems
+                   :initform (make-hash-table)
+                   :type hash-table
+                   :documentation "")
    (default-stage :accessor default-stage
                   :initform :cclasp
-                  :type (member :iclasp :aclasp :bclasp :cclasp :dclasp)
+                  :type (member :iclasp :aclasp :bclasp :cclasp :eclasp :sclasp)
                   :documentation "Default stage for installation")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
-                      :clang :llvm :ar :cc :cxx :nm :etags :objcopy :jupyter)
+                      :clang :llvm :ar :cc :cxx :nm :etags :ctags :objcopy :jupyter)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
@@ -574,6 +592,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"compile-bclasp.lisp" :build))
                                                          :compile-cclasp
                                                          (list (make-source #P"compile-cclasp.lisp" :build))
+                                                         :compile-eclasp
+                                                         (list (make-source #P"compile-eclasp.lisp" :build))
                                                          :compile-module
                                                          (list (make-source #P"compile-module.lisp" :build))
                                                          :link-fasl
@@ -589,12 +609,17 @@ is not compatible with snapshots.")
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
                                                                :bitcode :iclasp :aclasp :bclasp :cclasp
-                                                               :modules :dclasp :install-code :clasp
-                                                               :regression-tests :static-analyzer :etags)
+                                                               :modules :eclasp :sclasp :install-bin :install-code
+                                                               :clasp :regression-tests :static-analyzer
+                                                               :tags :install-extension-code)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant))
                                                          :version-h
                                                          (list (make-source #P"version.h" :variant))
+                                                         :cclasp-immutable
+                                                         (list (make-source #P"generated/cclasp-immutable.lisp" :variant))
+                                                         :eclasp-immutable
+                                                         (list (make-source #P"generated/eclasp-immutable.lisp" :variant))
                                                          :compile-commands
                                                          (list (make-source #P"compile_commands.json" :variant)
                                                                :iclasp)))
@@ -616,6 +641,11 @@ is not compatible with snapshots.")
                     :initform nil
                     :type (or null pathname)
                     :documentation "The include directory of LLVM.")
+   (features :accessor features
+             :initform '(:non-base-chars-exist-p :package-local-nicknames :cdr-7 :cdr-6 :cdr-5
+                         :threads :unicode :ieee-floating-point :clasp :ansi-cl :common-lisp)
+             :type list
+             :documentation "The anticipated value of *FEATURES* in the CLASP build.")
    (scraper-headers :accessor scraper-headers
                     :initform nil
                     :type list
@@ -638,7 +668,9 @@ is not compatible with snapshots.")
              :type list
              :documentation "A list of the variants")
    (scripts :accessor scripts
-            :initform nil))
+            :initform nil)
+   (repos :reader repos
+          :initform (uiop:read-file-form #P"repos.sexp")))
   (:documentation "A class to encapsulate the configuration state."))
 
 (defmethod initialize-instance :after ((instance configuration) &rest initargs &key &allow-other-keys)
@@ -662,7 +694,17 @@ is not compatible with snapshots.")
           (uiop:ensure-directory-pathname (xcode-sdk instance))))
   (when (member :cando (extensions instance))
     (setf (gethash :clasp-sh (outputs instance))
-          (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant)))))
+          (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant))))
+  (loop for system in '(:asdf :asdf-package-system :uiop)
+        for version = (asdf:component-version (asdf:find-system system))
+        for expr = (if version (list system :version version) (list system))
+        do (pushnew expr (gethash :cclasp (target-systems instance)))
+           (pushnew expr (gethash :eclasp (target-systems instance))))
+  (setf (features instance)
+        (append (features instance)
+                (remove-if (lambda (feature)
+                             (not (member feature +core-features+)))
+                           *features*))))
 
 (defun build-name (name
                    &key common
@@ -853,12 +895,12 @@ the function to the overall configuration."
                    (format nil "~{-I~a~^ ~}" (mapcar #'resolve-source paths)))))
 
 (defun systems (&rest rest)
-  (setf (extension-systems *configuration*)
-        (append (extension-systems *configuration*)
-                rest)))
+  (loop for system in rest
+        do (pushnew system (extension-systems *configuration*))))
 
-(defun configure-program (name candidates &key major-version (version-flag "--version") required)
-  "Configure a program by looking through a list of candidate and checking the version number
+(defun configure-program (name candidates
+                          &key major-version (version-flag "--version") required match)
+  "Configure a program by looking through a list of candidates and checking the version number
 if provided."
   (loop for candidate in (if (listp candidates) candidates (list candidates))
         for path = (if (stringp candidate)
@@ -867,6 +909,8 @@ if provided."
         for version = (run-program-capture (list path version-flag))
         when (and version
                   (or (null major-version)
+                      (and match
+                           (search match version))
                       (= major-version
                          (first (uiop:parse-version version)))))
           do (message :info "Found ~a program with path ~a ~:[~;and version ~a~]"
@@ -876,3 +920,4 @@ if provided."
                          "Unable to find ~a program~@[ compatible with major version ~a~]."
                          name major-version)
                 (values nil nil)))
+

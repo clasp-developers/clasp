@@ -25,7 +25,7 @@
 
 (in-package "EXT")
 
-#+(or) ;;#+cclasp
+#+(or) ;;#+(or cclasp eclasp)
 (eval-when (:compile-toplevel :execute)
   (format t "~%~%~%~% Turning on cmp::*compile-debug-dump-module* ~%~%~%")
   (setq cmp::*compile-debug-dump-module* t))
@@ -205,47 +205,170 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 ;;;
 ;;; Built-in SETF expansions.
 
-(defsetf car (x) (y) `(progn (rplaca ,x ,y) ,y))
-(defsetf cdr (x) (y) `(progn (rplacd ,x ,y), y))
-(defsetf caar (x) (y) `(progn (rplaca (car ,x) ,y) ,y))
-(defsetf cdar (x) (y) `(progn (rplacd (car ,x) ,y) ,y))
-(defsetf cadr (x) (y) `(progn (rplaca (cdr ,x) ,y) ,y))
-(defsetf cddr (x) (y) `(progn (rplacd (cdr ,x) ,y) ,y))
-(defsetf caaar (x) (y) `(progn (rplaca (caar ,x) ,y) ,y))
-(defsetf cdaar (x) (y) `(progn (rplacd (caar ,x) ,y) ,y))
-(defsetf cadar (x) (y) `(progn (rplaca (cdar ,x) ,y) ,y))
-(defsetf cddar (x) (y) `(progn (rplacd (cdar ,x) ,y) ,y))
-(defsetf caadr (x) (y) `(progn (rplaca (cadr ,x) ,y) ,y))
-(defsetf cdadr (x) (y) `(progn (rplacd (cadr ,x) ,y) ,y))
-(defsetf caddr (x) (y) `(progn (rplaca (cddr ,x) ,y) ,y))
-(defsetf cdddr (x) (y) `(progn (rplacd (cddr ,x) ,y) ,y))
-(defsetf caaaar (x) (y) `(progn (rplaca (caaar ,x) ,y) ,y))
-(defsetf cdaaar (x) (y) `(progn (rplacd (caaar ,x) ,y) ,y))
-(defsetf cadaar (x) (y) `(progn (rplaca (cdaar ,x) ,y) ,y))
-(defsetf cddaar (x) (y) `(progn (rplacd (cdaar ,x) ,y) ,y))
-(defsetf caadar (x) (y) `(progn (rplaca (cadar ,x) ,y) ,y))
-(defsetf cdadar (x) (y) `(progn (rplacd (cadar ,x) ,y) ,y))
-(defsetf caddar (x) (y) `(progn (rplaca (cddar ,x) ,y) ,y))
-(defsetf cdddar (x) (y) `(progn (rplacd (cddar ,x) ,y) ,y))
-(defsetf caaadr (x) (y) `(progn (rplaca (caadr ,x) ,y) ,y))
-(defsetf cdaadr (x) (y) `(progn (rplacd (caadr ,x) ,y) ,y))
-(defsetf cadadr (x) (y) `(progn (rplaca (cdadr ,x) ,y) ,y))
-(defsetf cddadr (x) (y) `(progn (rplacd (cdadr ,x) ,y) ,y))
-(defsetf caaddr (x) (y) `(progn (rplaca (caddr ,x) ,y) ,y))
-(defsetf cdaddr (x) (y) `(progn (rplacd (caddr ,x) ,y) ,y))
-(defsetf cadddr (x) (y) `(progn (rplaca (cdddr ,x) ,y) ,y))
-(defsetf cddddr (x) (y) `(progn (rplacd (cdddr ,x) ,y) ,y))
-(defsetf first (x) (y) `(progn (rplaca ,x ,y) ,y))
-(defsetf second (x) (y) `(progn (rplaca (cdr ,x) ,y) ,y))
-(defsetf third (x) (y) `(progn (rplaca (cddr ,x) ,y) ,y))
-(defsetf fourth (x) (y) `(progn (rplaca (cdddr ,x) ,y) ,y))
-(defsetf fifth (x) (y) `(progn (rplaca (cddddr ,x) ,y) ,y))
-(defsetf sixth (x) (y) `(progn (rplaca (nthcdr 5 ,x) ,y) ,y))
-(defsetf seventh (x) (y) `(progn (rplaca (nthcdr 6 ,x) ,y) ,y))
-(defsetf eighth (x) (y) `(progn (rplaca (nthcdr 7 ,x) ,y) ,y))
-(defsetf ninth (x) (y) `(progn (rplaca (nthcdr 8 ,x) ,y) ,y))
-(defsetf tenth (x) (y) `(progn (rplaca (nthcdr 9 ,x) ,y) ,y))
-(defsetf rest (x) (y) `(progn (rplacd ,x ,y) ,y))
+(defsetf car (x) (y)
+  "Set the first object in a list."
+  `(progn (rplaca ,x ,y) ,y))
+
+(defsetf cdr (x) (y)
+  "Set the cdr in a list."
+  `(progn (rplacd ,x ,y), y))
+
+(defsetf caar (x) (y)
+  "Set the car of the first sublist."
+  `(progn (rplaca (car ,x) ,y) ,y))
+
+(defsetf cdar (x) (y)
+  "Set the cdr of the first sublist."
+  `(progn (rplacd (car ,x) ,y) ,y))
+
+(defsetf cadr (x) (y)
+  "Set the second object in a list."
+  `(progn (rplaca (cdr ,x) ,y) ,y))
+
+(defsetf cddr (x) (y)
+  "Set the cdr in the cdr of a list."
+  `(progn (rplacd (cdr ,x) ,y) ,y))
+
+(defsetf caaar (x) (y)
+  "Set the first object in the caar of a list."
+  `(progn (rplaca (caar ,x) ,y) ,y))
+
+(defsetf cdaar (x) (y)
+  "Set the cdr of the caar of a list."
+  `(progn (rplacd (caar ,x) ,y) ,y))
+
+(defsetf cadar (x) (y)
+  "Set the car of the cdar of a list."
+  `(progn (rplaca (cdar ,x) ,y) ,y))
+
+(defsetf cddar (x) (y)
+  "Set the cdr of the cdar of a list."
+  `(progn (rplacd (cdar ,x) ,y) ,y))
+
+(defsetf caadr (x) (y)
+  "Set the first object in the cadr of a list."
+  `(progn (rplaca (cadr ,x) ,y) ,y))
+
+(defsetf cdadr (x) (y)
+  "Set the cdr of the cadr of a list."
+  `(progn (rplacd (cadr ,x) ,y) ,y))
+
+(defsetf caddr (x) (y)
+  "Set the first object in the cddr of a list."
+  `(progn (rplaca (cddr ,x) ,y) ,y))
+
+(defsetf cdddr (x) (y)
+  "Set the cdr of the cddr of a list."
+  `(progn (rplacd (cddr ,x) ,y) ,y))
+
+(defsetf caaaar (x) (y)
+  "Set the car of the caaar of a list."
+  `(progn (rplaca (caaar ,x) ,y) ,y))
+
+(defsetf cdaaar (x) (y)
+  "Set the cdr of the caaar of a list."
+  `(progn (rplacd (caaar ,x) ,y) ,y))
+
+(defsetf cadaar (x) (y)
+  "Set the car of the cdaar of a list."
+  `(progn (rplaca (cdaar ,x) ,y) ,y))
+
+(defsetf cddaar (x) (y)
+  "Set the cdr of the cdaar of a list."
+  `(progn (rplacd (cdaar ,x) ,y) ,y))
+
+(defsetf caadar (x) (y)
+  "Set the car of the cadar of a list."
+  `(progn (rplaca (cadar ,x) ,y) ,y))
+
+(defsetf cdadar (x) (y)
+  "Set the cdr of the cadar of a list."
+  `(progn (rplacd (cadar ,x) ,y) ,y))
+
+(defsetf caddar (x) (y)
+  "Set the car of the cddar of a list."
+  `(progn (rplaca (cddar ,x) ,y) ,y))
+
+(defsetf cdddar (x) (y)
+  "Set the cdr of the cddar of a list."
+  `(progn (rplacd (cddar ,x) ,y) ,y))
+
+(defsetf caaadr (x) (y)
+  "Set the car of the caadr of a list."
+  `(progn (rplaca (caadr ,x) ,y) ,y))
+
+(defsetf cdaadr (x) (y)
+  "Set the cdr of the caadr of a list."
+  `(progn (rplacd (caadr ,x) ,y) ,y))
+
+(defsetf cadadr (x) (y)
+  "Set the car of the cdadr of a list."
+  `(progn (rplaca (cdadr ,x) ,y) ,y))
+
+(defsetf cddadr (x) (y)
+  "Set the cdr of the cdadr of a list."
+  `(progn (rplacd (cdadr ,x) ,y) ,y))
+
+(defsetf caaddr (x) (y)
+  "Set the car of the caddr of a list."
+  `(progn (rplaca (caddr ,x) ,y) ,y))
+
+(defsetf cdaddr (x) (y)
+  "Set the cdr of the caddr of a list."
+  `(progn (rplacd (caddr ,x) ,y) ,y))
+
+(defsetf cadddr (x) (y)
+  "Set the car of the cdddr of a list."
+  `(progn (rplaca (cdddr ,x) ,y) ,y))
+
+(defsetf cddddr (x) (y)
+  "Set the cdr of the cdddr of a list."
+  `(progn (rplacd (cdddr ,x) ,y) ,y))
+
+(defsetf first (x) (y)
+  "Set the first object in a list."
+  `(progn (rplaca ,x ,y) ,y))
+
+(defsetf second (x) (y)
+  "Set the second object in a list."
+  `(progn (rplaca (cdr ,x) ,y) ,y))
+
+(defsetf third (x) (y)
+  "Set the third object in a list."
+  `(progn (rplaca (cddr ,x) ,y) ,y))
+
+(defsetf fourth (x) (y)
+  "Set the fourth object in a list."
+  `(progn (rplaca (cdddr ,x) ,y) ,y))
+
+(defsetf fifth (x) (y)
+  "Set the fifth object in a list."
+  `(progn (rplaca (cddddr ,x) ,y) ,y))
+
+(defsetf sixth (x) (y)
+  "Set the sixth object in a list."
+  `(progn (rplaca (nthcdr 5 ,x) ,y) ,y))
+
+(defsetf seventh (x) (y)
+  "Set the seventh object in a list."
+  `(progn (rplaca (nthcdr 6 ,x) ,y) ,y))
+
+(defsetf eighth (x) (y)
+  "Set the eightheighth object in a list."
+  `(progn (rplaca (nthcdr 7 ,x) ,y) ,y))
+
+(defsetf ninth (x) (y)
+  "Set the ninth object in a list."
+  `(progn (rplaca (nthcdr 8 ,x) ,y) ,y))
+
+(defsetf tenth (x) (y)
+  "Set the tenth object in a list."
+  `(progn (rplaca (nthcdr 9 ,x) ,y) ,y))
+
+(defsetf rest (x) (y)
+  "Set the cdr of a list."
+  `(progn (rplacd ,x ,y) ,y))
+
 (defsetf bit (array &rest indices) (value) `(setf (aref ,array ,@indices) ,value))
 (defsetf sbit (array &rest indices) (value) `(setf (aref ,array ,@indices) ,value))
 (defsetf elt setf-elt)

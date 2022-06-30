@@ -55,14 +55,14 @@
                 (let ((record (make-record-patcher (lambda (object)
                                                      (circle-subst circle-table object)))))
                   (patch-object tree record)))
-               ;; These next two are #+cclasp since they need the classes to be defined, etc.
+               ;; These next two are #+(or cclasp eclasp) since they need the classes to be defined, etc.
                ;; For structure objects use raw slots.
-               #+cclasp
+               #+(or cclasp eclasp)
                ((typep tree 'structure-object)
                 (dotimes (i (clos::class-size (class-of tree)))
                   (si:instance-set tree i (circle-subst circle-table (si:instance-ref tree i)))))
                ;; For general objects go full MOP
-               #+cclasp
+               #+(or cclasp eclasp)
                ((typep tree 'standard-object)
                 (let ((class (class-of tree)))
                   (dolist (slotd (clos:class-slots class))
@@ -137,7 +137,7 @@
 
 (defun sharpmacros-lisp-redefine (readtable)
   (cond ((boundp '*read-hook*)
-         (set-eclector-reader-readmacros readtable))
+         #+(or cclasp eclasp) (set-eclector-reader-readmacros readtable))
         (t
          (set-dispatch-macro-character #\# #\= #'sharp-equal readtable)
          (set-dispatch-macro-character #\# #\# #'sharp-sharp readtable)

@@ -21,16 +21,19 @@
                ;; Preserve source info - we want the original C++ definitions,
                ;; not the wrappers
                (core:function-source-pos (fdefinition ',lisp-name))
-             (defun ,lisp-name ,lambda-list
-               (declare (optimize (debug 0)) (core:lambda-name ,(intern c-name :keyword)))
-               ,@(if declare-forms
-                     (list `(declare ,@declare-forms))
-                     nil)
-               (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
-                                                            (core:make-lambda-list-handler
-                                                             lambda-list nil 'function))))
-             (core:set-source-pos-info (fdefinition ',lisp-name)
-                                       pathname pos lineno column))
+
+             (let ((docstring (core:function-docstring (fdefinition ',lisp-name))))
+               (defun ,lisp-name ,lambda-list
+                 (declare (optimize (debug 0)) (core:lambda-name ,(intern c-name :keyword)))
+                 ,@(if declare-forms
+                       (list `(declare ,@declare-forms))
+                       nil)
+                 (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
+                                                              (core:make-lambda-list-handler
+                                                               lambda-list nil 'function))))
+               (setf (core:function-docstring (fdefinition ',lisp-name)) docstring)
+               (core:set-source-pos-info (fdefinition ',lisp-name)
+                                         pathname pos lineno column)))
           `(unless core:*silent-startup*
              (core:fmt t "Will not generate wrapper for {} - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))
 
@@ -48,15 +51,17 @@
                (fboundp lisp-name))
           `(multiple-value-bind (pathname pos lineno column)
                (core:function-source-pos (fdefinition ',lisp-name))
-             (defun ,lisp-name ,lambda-list
-               (declare (optimize (debug 0)) (core:lambda-name (cl:setf ,(intern c-name :keyword))))
-               ,@(if declare-forms
-                     (list `(declare ,@declare-forms))
-                     nil)
-               (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
-                                                            (core:make-lambda-list-handler
-                                                             lambda-list nil 'function))))
-             (core:set-source-pos-info (fdefinition ',lisp-name)
-                                       pathname pos lineno column))
+             (let ((docstring (core:function-docstring (fdefinition ',lisp-name))))
+               (defun ,lisp-name ,lambda-list
+                 (declare (optimize (debug 0)) (core:lambda-name (cl:setf ,(intern c-name :keyword))))
+                 ,@(if declare-forms
+                       (list `(declare ,@declare-forms))
+                       nil)
+                 (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
+                                                              (core:make-lambda-list-handler
+                                                               lambda-list nil 'function))))
+               (setf (core:function-docstring (fdefinition ',lisp-name)) docstring)
+               (core:set-source-pos-info (fdefinition ',lisp-name)
+                                         pathname pos lineno column)))
           `(unless core:*silent-startup*
              (core:fmt t "Will not generate wrapper for {} - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))

@@ -44,8 +44,8 @@ struct CommandLineOptions {
   process_arguments_callback _ProcessArguments;
   std::string _ExecutableName;
   bool _JITLogSymbols;
-  bool _DontLoadImage;
-  bool _DontLoadInitLsp;
+  bool _IgnoreInitImage;
+  bool _IgnoreInitLsp;
   bool _DisableMpi{false};
   std::vector<std::string> _RawArguments;
   std::vector<std::string> _KernelArguments;
@@ -79,3 +79,4 @@ void maybeHandleAddressesOption(CommandLineOptions *options);
 
 }; // namespace core
 #endif
+

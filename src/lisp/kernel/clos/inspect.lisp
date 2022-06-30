@@ -349,6 +349,12 @@ q (or Q):             quits the inspection.~%~
 (defgeneric documentation (object doc-type))
 (defgeneric (setf documentation) (new-value object doc-type))
 
+(defun setf-definition (sym)
+  (let ((name (list 'setf sym)))
+    (if (fboundp name)
+        (fdefinition name)
+        (ext:setf-expander sym))))
+
 (defmethod documentation ((object symbol) doc-type)
   (when (member doc-type +valid-documentation-types+)
     (case doc-type
@@ -370,9 +376,10 @@ q (or Q):             quits the inspection.~%~
            (documentation (compiler-macro-function object) t)
            nil))
       (setf
-       (if (ext:setf-expander object)
-           (documentation (ext:setf-expander object) t)
-           nil))
+       (let ((exp (setf-definition object)))
+         (if exp
+             (documentation exp t)
+             nil)))
       (otherwise
        (si::get-documentation object doc-type)))))
 
@@ -402,7 +409,7 @@ q (or Q):             quits the inspection.~%~
                               t)
                new-value)))
       (setf
-       (let ((exp (ext:setf-expander object)))
+       (let ((exp (setf-definition object)))
          (when exp
            (setf (documentation exp t) new-value))))
       (otherwise

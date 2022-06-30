@@ -1008,10 +1008,13 @@ extern void obj_dump_base(void *base);
 
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
-  template <class OT>
-    struct GCStamp {
-      static GCStampEnum const StampWtag = STAMPWTAG_null;
-    };
+template <class OT>
+struct GCStamp {
+#ifndef USE_GC_PRECISE
+  // Only define this when not using precise gc
+    static GCStampEnum const StampWtag = STAMPWTAG_null;
+#endif
+};
 };
 
 

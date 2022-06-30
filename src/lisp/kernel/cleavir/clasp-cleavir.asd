@@ -39,6 +39,7 @@
                (:file "representation-selection")
                (:file "landing-pad")
                (:file "primop")
+               (:file "type")
                (:file "transform")
                (:file "translate")
                ;;                (:file "satiation")

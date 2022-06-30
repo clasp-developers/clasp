@@ -189,11 +189,11 @@ multithreaded performance that we should explore."
   (let ((form-index (core:next-startup-position))
         (form-counter 0)
         (eof-value (gensym))
-        #+cclasp (cleavir-cst-to-ast:*compiler*
+        #+(or cclasp eclasp) (cleavir-cst-to-ast:*compiler*
                   'cl:compile-file)
-        #+cclasp(core:*use-cleavir-compiler* t)
-        #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
-        #+cclasp(eclector.readtable:*readtable* cl:*readtable*)
+        #+(or cclasp eclasp)(core:*use-cleavir-compiler* t)
+        #+(or cclasp eclasp)(eclector.reader:*client* clasp-cleavir::*cst-client*)
+        #+(or cclasp eclasp)(eclector.readtable:*readtable* cl:*readtable*)
         ast-jobs)
     (cfp-log "Starting the pool of threads~%")
     (finish-output)
@@ -222,9 +222,9 @@ multithreaded performance that we should explore."
                       (*package* . ',*package*)
                       (*compile-file-pathname* . ',*compile-file-pathname*)
                       (*compile-file-truename* . ',*compile-file-truename*)
-                      #+cclasp(cleavir-cst-to-ast:*compiler*
+                      #+(or cclasp eclasp)(cleavir-cst-to-ast:*compiler*
                                . ',cleavir-cst-to-ast:*compiler*)
-                      #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
+                      #+(or cclasp eclasp)(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
                       (*global-function-refs* . ',*global-function-refs*))))))
       (unwind-protect
            (loop

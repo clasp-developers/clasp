@@ -72,6 +72,9 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/instance.h>
+#ifdef DEBUG_DYN_ENV_STACK
+#include <clasp/core/unwind.h> // global_debug_dyn_env_stack
+#endif
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/primitives.h>
@@ -350,8 +353,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   // Do some minimal argument processing
   (core::global_options->_ProcessArguments)(core::global_options);
   ::globals_ = new core::globals_t();
-  globals_->_ExportedSymbolsAccumulate = core::global_options->_ExportedSymbolsAccumulate;
-  globals_->_ExportedSymbolsFilename = core::global_options->_ExportedSymbolsFilename;
   globals_->_DebugStream = new core::DebugStream(mpiRank);
   globals_->_Stage = core::global_options->_Stage;
 
@@ -391,19 +392,10 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   void* start_of_snapshot = NULL;
   void* end_of_snapshot = NULL;
 #endif
-    //
-    // Set up the arguments
-    //
-  const char *argv0 = "./";
-  if (argc > 0) argv0 = argv[0];
-  globals_->_Argc = argc;
-  for (int i = 0; i < argc; ++i) {
-    globals_->_Argv.push_back(string(argv[i]));
-  }
-    //
-    // Look around the local directories for source and fasl files.
-    //
-  core::Bundle *bundle = new core::Bundle(argv0);
+  //
+  // Look around the local directories for source and fasl files.
+  //
+  core::Bundle *bundle = new core::Bundle(core::global_options->_ExecutableName);
   globals_->_Bundle = bundle;
 
   //
@@ -538,6 +530,13 @@ int main( int argc, char *argv[] )
       llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrint;
     }
   }
+
+#ifdef DEBUG_DYN_ENV_STACK
+  const char* ddes = getenv("CLASP_DEBUG_DYN_ENV_STACK");
+  if (ddes) core::global_debug_dyn_env_stack = true;
+#endif
+  
+
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;

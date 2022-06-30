@@ -164,6 +164,7 @@ struct Stamp_info {
   Container_info* container_info_ptr; // 
 };
 
+#define KIND_UNDEFINED 99999
 struct Boehm_info {
   bool              _kind_defined;
   uintptr_t         _class_bitmap;
@@ -176,7 +177,7 @@ struct Boehm_info {
                , _container_bitmap(0)
                , _container_pointer_count(0)
                , _container_element_work(0)
-               , _kind(99999)
+               , _kind(KIND_UNDEFINED)
   {};
 };
 

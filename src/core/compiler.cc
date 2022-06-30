@@ -1148,7 +1148,7 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
   if( p_sym == nullptr ) {
     str_error = dlerror();
   }
-  if (globals_->_ExportedSymbolsAccumulate) {
+  if (global_options->_ExportedSymbolsAccumulate) {
     maybe_register_symbol_using_dladdr(p_sym);
   }
   return std::make_tuple( p_sym, str_error );

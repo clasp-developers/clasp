@@ -48,9 +48,12 @@
 ;;;----------------------------------------------------------------------------
 
 (declaim (inline ensure-core-pointer))
-(defun ensure-core-pointer (ptr)
+(defun ensure-core-pointer (ptr fn info)
   (cond
-    ((not ptr) (error "#'ensure-core-ptr *** Illegal argument value: PTR may not be NIL!"))
+    ((not ptr)
+     (format t "#'ensure-core-pointer *** Illegal argument value: PTR may not be NIL - fn = ~a info = ~a!~%" fn info)
+     (gctools:wait-for-user-signal "Send SIGUSR1 to continue")
+     (error "#'ensure-core-ptr *** Illegal argument value: PTR may not be NIL!"))
     ((eql (type-of ptr) 'CLASP-FFI::FOREIGN-DATA) (%core-pointer-from-foreign-data ptr ))
     ((eql (type-of ptr) 'CORE::POINTER) ptr)
     (t (error "#'ensure-core-pointer *** Illegal type ~S of ptr. Cannot convert to core::pointer." (type-of ptr)))))
@@ -342,12 +345,12 @@
 (defmacro %foreign-funcall (name &rest arguments)
   (multiple-value-bind (signature args)
       (extract-signature arguments)
-    `(core:foreign-call-pointer ,signature (ensure-core-pointer (core:dlsym :rtld-default ,name)) ,@args)))
+    `(core:foreign-call-pointer ,signature (ensure-core-pointer (core:dlsym :rtld-default ,name) "%foreign-funcall" ,name) ,@args)))
 
 (defmacro %foreign-funcall-pointer (ptr &rest arguments)
   (multiple-value-bind (signature args)
       (extract-signature arguments)
-    `(core:foreign-call-pointer ,signature (ensure-core-pointer ,ptr) ,@args)))
+    `(core:foreign-call-pointer ,signature (ensure-core-pointer ,ptr "%foreign-funcall-pointer" ,ptr) ,@args)))
 
 ;;; === F O R E I G N   L I B R A R Y   H A N D L I N G ===
 

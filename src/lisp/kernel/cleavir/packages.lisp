@@ -2,7 +2,7 @@
 
 (defpackage #:clasp-cleavir
   (:use #:common-lisp #:core)
-  (:nicknames #:cc #:clasp-cleavir-translate-bir)
+  (:nicknames #:clasp-cleavir-translate-bir)
   (:local-nicknames (#:bir #:cleavir-bir)
                     (#:bir-transformations #:cleavir-bir-transformations)
                     (#:ast #:cleavir-ast)

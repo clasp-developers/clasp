@@ -31,13 +31,13 @@ defaulting of ORDER is applied."
     (symbol
      ;; KLUDGE: This will not work in bclasp at all, and the cleavir interface
      ;; may not be great for this.
-     #-cclasp
+     #-(or cclasp eclasp)
      (multiple-value-bind (expansion expanded)
          (macroexpand-1 place environment)
        (if expanded
            (apply #'get-atomic-expansion expansion keys)
            (error "Atomic operations on lexical variables not supported yet")))
-     #+cclasp
+     #+(or cclasp eclasp)
      (let ((info (cleavir-env:variable-info
                   clasp-cleavir:*clasp-system* environment place)))
        (etypecase info

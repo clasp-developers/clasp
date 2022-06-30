@@ -1896,7 +1896,7 @@ Constant_sp Constant_O::create(llvm::Constant *ptr) {
 }
 
 namespace llvmo {
-CL_LAMBDA(type values)
+CL_LAMBDA(context values)
 CL_LISPIFY_NAME(constant-data-array-get-uint32);
 DOCGROUP(clasp)
 CL_DEFUN Constant_sp ConstantDataArray_O::getUInt32(LLVMContext_sp context, core::T_sp ovalues) {

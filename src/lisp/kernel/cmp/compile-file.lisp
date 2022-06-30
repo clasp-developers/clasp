@@ -514,7 +514,7 @@ Compile a lisp source file into an LLVM module."
 (eval-when (:load-toplevel :execute)
   (setf (fdefinition 'compile-file) #'compile-file-serial))
 
-#+(or bclasp cclasp)
+#+(or bclasp cclasp eclasp)
 (progn
   (defun bclasp-compile-file (input-file &rest args)
     (let ((cmp:*cleavir-compile-hook* nil)

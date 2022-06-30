@@ -349,33 +349,42 @@ CL_DEFUN T_sp core__bformat1(T_sp destination, const string &original_control, T
     control = original_control;
   }
   std::string str;
+  const char* kind;
   try {
-    T_sp fobj = arg;
-    if (fobj.fixnump()) {
-      Fixnum_sp fint = gc::As<Fixnum_sp>(fobj);
+    if (arg.fixnump()) {
+      Fixnum_sp fint = gc::As<Fixnum_sp>(arg);
       str = fmt::sprintf(control, unbox_fixnum(fint));
-    } else if (fobj.characterp()) {
-      Character_sp fc = gc::As<Character_sp>(fobj);
+      kind = "fixnum";
+    } else if (arg.characterp()) {
+      Character_sp fc = gc::As<Character_sp>(arg);
       str = fmt::sprintf(control, (char)unbox_character(fc));
-    } else if (fobj.single_floatp()) {
-      SingleFloat_sp ff = gc::As<SingleFloat_sp>(fobj);
+      kind = "character";
+    } else if (arg.single_floatp()) {
+      SingleFloat_sp ff = gc::As<SingleFloat_sp>(arg);
       str = fmt::sprintf( control, unbox_single_float(ff) );
-    } else if (core__bignump(fobj)) {
-      Bignum_sp flli = gc::As<Bignum_sp>(fobj);
+      kind = "float";
+    } else if (core__bignump(arg)) {
+      Bignum_sp flli = gc::As<Bignum_sp>(arg);
       stringstream ss;
       ss << clasp_to_mpz(flli);
       str = fmt::sprintf( control, ss.str() );
-    } else if (cl__stringp(fobj)) {
-      String_sp ftext = gc::As_unsafe<String_sp>(fobj);
+      kind = "bignum";
+    } else if (cl__stringp(arg)) {
+      String_sp ftext = gc::As_unsafe<String_sp>(arg);
       str = fmt::sprintf( control, ftext->get_std_string() );
-    } else if (core__double_float_p(fobj)) {
-      DoubleFloat_sp freal = gc::As<DoubleFloat_sp>(fobj);
+      kind = "string";
+    } else if (core__double_float_p(arg)) {
+      DoubleFloat_sp freal = gc::As<DoubleFloat_sp>(arg);
       str = fmt::sprintf( control, freal->get() );
+      kind = "double-float";
     } else {
-      str = fmt::sprintf( control, _rep_(fobj) );
+      str = fmt::sprintf( control, _rep_(arg) );
+      kind = "other";
     }
+  } catch (fmt::format_error& err) {
+    SIMPLE_ERROR(("fmt::format_error %s for format string: \"%s\" for value %s of type %s"), err.what(), original_control, _rep_(arg), kind );
   } catch (...) {
-    SIMPLE_ERROR(("Unknown bformat1 command error in format string: \"%s\""), original_control);
+    SIMPLE_ERROR(("Unknown bformat1 command error in format string: \"%s\" for value %s of type %s"), original_control, _rep_(arg), kind );
   }
   if (output == _sym_printf) {
     printf("%s", str.c_str());

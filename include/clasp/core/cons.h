@@ -357,152 +357,276 @@ struct StackAllocate<core::Cons_O> {
 };
 namespace core {
 
-CL_PKG_NAME(ClPkg,car);
- DOCGROUP(clasp)
-   CL_DEFUN inline core::T_sp oCar(T_sp obj) {
-   if (obj.consp())
-     return obj.unsafe_cons()->ocar();
-   if (obj.nilp())
-     return obj;
-   TYPE_ERROR(obj, cl::_sym_Cons_O);
- };
- CL_PKG_NAME(ClPkg,cdr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdr(T_sp obj) {
+CL_PKG_NAME(ClPkg, car);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the first object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline core::T_sp oCar(T_sp obj) {
+ if (obj.consp())
+   return obj.unsafe_cons()->ocar();
+ if (obj.nilp())
+   return obj;
+ TYPE_ERROR(obj, cl::_sym_Cons_O);
+}
+
+CL_PKG_NAME(ClPkg, cdr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return all but the first object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdr(T_sp obj) {
   if (obj.consp())
     return obj.unsafe_cons()->cdr();
   if (obj.nilp())
     return obj;
   TYPE_ERROR(obj, cl::_sym_Cons_O);
-};
+}
 
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp cl__rest(List_sp obj) {
-   return oCdr(obj);
-};
+CL_LAMBDA(list)
+CL_DOCSTRING("Return all but the first object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp cl__rest(List_sp obj) {
+  return oCdr(obj);
+}
 
- CL_PKG_NAME(ClPkg,caar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); };
- CL_PKG_NAME(ClPkg,cadr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCadr(T_sp o) { return oCar(oCdr(o)); };
- CL_PKG_NAME(ClPkg,cdar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdar(T_sp o) { return oCdr(oCar(o)); };
- CL_PKG_NAME(ClPkg,cddr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCddr(T_sp o) { return oCdr(oCdr(o)); };
- CL_PKG_NAME(ClPkg,caaar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCaaar(T_sp o) { return oCar(oCar(oCar(o))); };
- CL_PKG_NAME(ClPkg,caadr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCaadr(T_sp o) { return oCar(oCar(oCdr(o))); };
- CL_PKG_NAME(ClPkg,cadar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCadar(T_sp o) { return oCar(oCdr(oCar(o))); };
- CL_PKG_NAME(ClPkg,caddr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCaddr(T_sp o) { return oCar(oCdr(oCdr(o))); };
- CL_PKG_NAME(ClPkg,cdaar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdaar(T_sp o) { return oCdr(oCar(oCar(o))); };
- CL_PKG_NAME(ClPkg,cdadr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdadr(T_sp o) { return oCdr(oCar(oCdr(o))); };
- CL_PKG_NAME(ClPkg,cddar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCddar(T_sp o) { return oCdr(oCdr(oCar(o))); };
- CL_PKG_NAME(ClPkg,cdddr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdddr(T_sp o) { return oCdr(oCdr(oCdr(o))); };
- CL_PKG_NAME(ClPkg,caaaar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCaaaar(T_sp o) { return oCar(oCar(oCar(o))); };
- CL_PKG_NAME(ClPkg,caadar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCaadar(T_sp o) { return oCar(oCar(oCdr(oCar(o)))); };
- CL_PKG_NAME(ClPkg,cadaar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCadaar(T_sp o) { return oCar(oCdr(oCar(oCar(o)))); };
- CL_PKG_NAME(ClPkg,caddar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCaddar(T_sp o) { return oCar(oCdr(oCdr(oCar(o)))); };
- CL_PKG_NAME(ClPkg,cdaaar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdaaar(T_sp o) { return oCdr(oCar(oCar(oCar(o)))); };
- CL_PKG_NAME(ClPkg,cdadar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdadar(T_sp o) { return oCdr(oCar(oCdr(oCar(o)))); };
- CL_PKG_NAME(ClPkg,cddaar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCddaar(T_sp o) { return oCdr(oCdr(oCar(oCar(o)))); };
- CL_PKG_NAME(ClPkg,cdddar);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdddar(T_sp o) { return oCdr(oCdr(oCdr(oCar(o)))); };
- CL_PKG_NAME(ClPkg,caaadr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCaaadr(T_sp o) { return oCar(oCar(oCar(oCar(o)))); };
- CL_PKG_NAME(ClPkg,caaddr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCaaddr(T_sp o) { return oCar(oCar(oCdr(oCdr(o)))); };
- CL_PKG_NAME(ClPkg,cadadr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCadadr(T_sp o) { return oCar(oCdr(oCar(oCdr(o)))); };
- CL_PKG_NAME(ClPkg,cadddr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCadddr(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
- CL_PKG_NAME(ClPkg,cdaadr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdaadr(T_sp o) { return oCdr(oCar(oCar(oCdr(o)))); };
- CL_PKG_NAME(ClPkg,cdaddr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCdaddr(T_sp o) { return oCdr(oCar(oCdr(oCdr(o)))); };
- CL_PKG_NAME(ClPkg,cddadr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCddadr(T_sp o) { return oCdr(oCdr(oCar(oCdr(o)))); };
- CL_PKG_NAME(ClPkg,cddddr);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oCddddr(T_sp o) { return oCdr(oCdr(oCdr(oCdr(o)))); };
- CL_PKG_NAME(ClPkg,First);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oFirst(T_sp o) { return oCar(o); };
- CL_PKG_NAME(ClPkg,Second);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oSecond(T_sp o) { return oCar(oCdr(o)); };
- CL_PKG_NAME(ClPkg,Third);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oThird(T_sp o) { return oCar(oCdr(oCdr(o))); };
- CL_PKG_NAME(ClPkg,Fourth);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oFourth(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
- CL_PKG_NAME(ClPkg,Fifth);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oFifth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(o))))); };
- CL_PKG_NAME(ClPkg,Sixth);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oSixth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))); };
- CL_PKG_NAME(ClPkg,Seventh);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oSeventh(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))); };
- CL_PKG_NAME(ClPkg,Eighth);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oEighth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))); };
- CL_PKG_NAME(ClPkg,Ninth);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oNinth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))))); };
- CL_PKG_NAME(ClPkg,Tenth);
- DOCGROUP(clasp)
-   CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); };
+CL_PKG_NAME(ClPkg, caar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the first sublist.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); }
 
+CL_PKG_NAME(ClPkg, cadr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the second object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCadr(T_sp o) { return oCar(oCdr(o)); }
 
- inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->ocar();};
- inline T_sp cons_cdr(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->cdr();};
- inline T_sp cons_car(Cons_sp x) {ASSERT(x.consp());return x->ocar();};
- inline T_sp cons_cdr(Cons_sp x) {ASSERT(x.consp());return x->cdr();};
- inline T_sp cons_car(Cons_O* x) {return x->ocar();};
- inline T_sp cons_cdr(Cons_O* x) {return x->cdr();};
+CL_PKG_NAME(ClPkg, cdar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the first sublist.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdar(T_sp o) { return oCdr(oCar(o)); }
+
+CL_PKG_NAME(ClPkg, cddr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return all but the first two objects of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCddr(T_sp o) { return oCdr(oCdr(o)); }
+
+CL_PKG_NAME(ClPkg, caaar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the first object in the caar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCaaar(T_sp o) { return oCar(oCar(oCar(o))); }
+
+CL_PKG_NAME(ClPkg, caadr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the first object in the cadr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCaadr(T_sp o) { return oCar(oCar(oCdr(o))); }
+
+CL_PKG_NAME(ClPkg, cadar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the cdar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCadar(T_sp o) { return oCar(oCdr(oCar(o))); }
+
+CL_PKG_NAME(ClPkg, caddr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the first object in the cddr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCaddr(T_sp o) { return oCar(oCdr(oCdr(o))); }
+
+CL_PKG_NAME(ClPkg, cdaar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the caar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdaar(T_sp o) { return oCdr(oCar(oCar(o))); }
+
+CL_PKG_NAME(ClPkg, cdadr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the cadr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdadr(T_sp o) { return oCdr(oCar(oCdr(o))); }
+
+CL_PKG_NAME(ClPkg, cddar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the cdar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCddar(T_sp o) { return oCdr(oCdr(oCar(o))); }
+
+CL_PKG_NAME(ClPkg, cdddr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the cddr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdddr(T_sp o) { return oCdr(oCdr(oCdr(o))); }
+
+CL_PKG_NAME(ClPkg, caaaar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the caaar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCaaaar(T_sp o) { return oCar(oCar(oCar(o))); }
+
+CL_PKG_NAME(ClPkg, caadar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the cadar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCaadar(T_sp o) { return oCar(oCar(oCdr(oCar(o)))); }
+
+CL_PKG_NAME(ClPkg, cadaar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the cdaar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCadaar(T_sp o) { return oCar(oCdr(oCar(oCar(o)))); }
+
+CL_PKG_NAME(ClPkg, caddar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the cddar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCaddar(T_sp o) { return oCar(oCdr(oCdr(oCar(o)))); }
+
+CL_PKG_NAME(ClPkg, cdaaar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the caaar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdaaar(T_sp o) { return oCdr(oCar(oCar(oCar(o)))); }
+
+CL_PKG_NAME(ClPkg, cdadar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the cadar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdadar(T_sp o) { return oCdr(oCar(oCdr(oCar(o)))); }
+
+CL_PKG_NAME(ClPkg, cddaar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the cdaar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCddaar(T_sp o) { return oCdr(oCdr(oCar(oCar(o)))); }
+
+CL_PKG_NAME(ClPkg, cdddar);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the cddar of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdddar(T_sp o) { return oCdr(oCdr(oCdr(oCar(o)))); }
+
+CL_PKG_NAME(ClPkg, caaadr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the caadr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCaaadr(T_sp o) { return oCar(oCar(oCar(oCar(o)))); }
+
+CL_PKG_NAME(ClPkg, caaddr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the caddr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCaaddr(T_sp o) { return oCar(oCar(oCdr(oCdr(o)))); }
+
+CL_PKG_NAME(ClPkg, cadadr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the cdadr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCadadr(T_sp o) { return oCar(oCdr(oCar(oCdr(o)))); }
+
+CL_PKG_NAME(ClPkg, cadddr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the car of the cdddr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCadddr(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); }
+
+CL_PKG_NAME(ClPkg, cdaadr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the caadr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdaadr(T_sp o) { return oCdr(oCar(oCar(oCdr(o)))); }
+
+CL_PKG_NAME(ClPkg, cdaddr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the caddr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCdaddr(T_sp o) { return oCdr(oCar(oCdr(oCdr(o)))); }
+
+CL_PKG_NAME(ClPkg, cddadr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the cdadr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCddadr(T_sp o) { return oCdr(oCdr(oCar(oCdr(o)))); }
+
+CL_PKG_NAME(ClPkg, cddddr);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the cdr of the cdddr of a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oCddddr(T_sp o) { return oCdr(oCdr(oCdr(oCdr(o)))); }
+
+CL_PKG_NAME(ClPkg, First);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the first object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oFirst(T_sp o) { return oCar(o); }
+
+CL_PKG_NAME(ClPkg, Second);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the secon object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oSecond(T_sp o) { return oCar(oCdr(o)); }
+
+CL_PKG_NAME(ClPkg, Third);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the third object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oThird(T_sp o) { return oCar(oCdr(oCdr(o))); }
+
+CL_PKG_NAME(ClPkg, Fourth);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the fourth object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oFourth(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); }
+
+CL_PKG_NAME(ClPkg, Fifth);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the fifth object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oFifth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(o))))); }
+
+CL_PKG_NAME(ClPkg, Sixth);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the sixth object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oSixth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))); }
+
+CL_PKG_NAME(ClPkg, Seventh);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the seventh object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oSeventh(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))); }
+
+CL_PKG_NAME(ClPkg, Eighth);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the eighth object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oEighth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))); }
+
+CL_PKG_NAME(ClPkg, Ninth);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the ninth object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oNinth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))))); }
+
+CL_PKG_NAME(ClPkg, Tenth);
+CL_LAMBDA(list)
+CL_DOCSTRING("Return the tenth object in a list.")
+DOCGROUP(clasp)
+CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); }
+
+inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->ocar();};
+
+inline T_sp cons_cdr(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->cdr();};
+
+inline T_sp cons_car(Cons_sp x) {ASSERT(x.consp());return x->ocar();};
+
+inline T_sp cons_cdr(Cons_sp x) {ASSERT(x.consp());return x->cdr();};
+
+inline T_sp cons_car(Cons_O* x) {return x->ocar();};
+
+inline T_sp cons_cdr(Cons_O* x) {return x->cdr();};
 
 };
 

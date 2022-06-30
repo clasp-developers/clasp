@@ -399,7 +399,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(argc)dx")
 DOCGROUP(clasp)
 CL_DEFUN int core__argc() {
-  return globals_->_Argc;
+  return global_options->_RawArguments.size();
 };
 
 CL_LAMBDA(idx)
@@ -407,7 +407,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(argv)dx")
 DOCGROUP(clasp)
 CL_DEFUN SimpleBaseString_sp core__argv(int idx) {
-  if ( idx < globals_->_Argc ) return SimpleBaseString_O::make(globals_->_Argv[idx]);
+  if ( idx < global_options->_RawArguments.size() ) return SimpleBaseString_O::make(global_options->_RawArguments[idx]);
   return SimpleBaseString_O::make("");
 };
 
@@ -1755,10 +1755,10 @@ namespace core {
 CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return the lambda-list of a function designator. Note that "
-             "this is intended for human consumption and so may not "
-             "literally describe the function; e.g. macro and type expander "
-             "functions will have the defmacro/deftype lambda list.)dx")
+CL_DOCSTRING(R"dx(Return the lambda-list of a function designator. Note that
+this is intended for human consumption and so may not
+literally describe the function; e.g. macro and type expander
+functions will have the defmacro/deftype lambda list.)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
@@ -2207,3 +2207,4 @@ void initialize_primitives() {
 }
 
 };
+

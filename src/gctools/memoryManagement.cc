@@ -26,6 +26,8 @@ THE SOFTWARE.
 /* -^- */
 //
 
+#define DEBUG_LEVEL_NONE
+
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcalloc.h>
 #include <clasp/core/object.h>
@@ -121,6 +123,8 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<core::OptionalArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::RequiredArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolClassHolderPair>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolStorage>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<clbind::detail::vertex>);
+
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::T_O *>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<double>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<float>);
@@ -902,6 +906,7 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
   // It hasn't been seen - mark it for scanning
   //
   MarkNode* node = new MarkNode( clientAddress );
+  LOG("pushMarkStack: %p\n", *(void**)clientAddress );
   gather->pushMarkStack(node);
 }
 
@@ -987,6 +992,7 @@ void gatherAllObjects(GatherObjects& gather) {
     if (rootType == LispRoot) forceGeneralRoot = true;
     else if (rootType == CoreSymbolRoot) forceGeneralRoot = true;
     MarkNode* node = new MarkNode( rootAddress, forceGeneralRoot );
+    LOG("Push root: %p\n", *(void**)rootAddress );
     gather->pushMarkStack(node);
   } , (void*)&gather );
 
@@ -1014,6 +1020,7 @@ void gatherAllObjects(GatherObjects& gather) {
       if (!generalOrWeakHeader->_stamp_wtag_mtag.weakObjectP()) {
         // It's a general object - walk it
         size_t objectSize;
+        LOG("Mark/scan client: %p\n", *(void**)client );
         mw_obj_skip( client, false, objectSize );
         uintptr_t clientLimit = client + objectSize;
         mw_obj_scan( 0, client, clientLimit, &gather );
@@ -1021,6 +1028,7 @@ void gatherAllObjects(GatherObjects& gather) {
         // It's a weak object - walk it
         size_t objectSize;
         uintptr_t clientLimit = mw_weak_skip( client, false, objectSize );
+        LOG("Mark/scan weak client: %p\n", *(void**)client );
         mw_weak_scan( 0, client, clientLimit, &gather );
       }
     } else if (tag == cons_tag) {
@@ -1028,6 +1036,7 @@ void gatherAllObjects(GatherObjects& gather) {
       Header_s* consHeader = (Header_s*)ConsPtrToHeaderPtr((void*)client);
       gather.mark(consHeader);
       size_t consSize;
+      LOG("Mark/scan cons client: %p\n", *(void**)client );
       uintptr_t clientLimit = mw_cons_skip(client,consSize);
       mw_cons_scan( 0, client, clientLimit, &gather );
     }

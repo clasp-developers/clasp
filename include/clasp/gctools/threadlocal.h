@@ -11,6 +11,10 @@ typedef void(*voidStartUp)(void);
 
 namespace core {
 
+#ifdef DEBUG_DYN_ENV_STACK
+extern bool global_debug_dyn_env_stack;
+#endif
+
 #define STARTUP_FUNCTION_CAPACITY_INIT 128
 #define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
   struct StartUp {
@@ -81,7 +85,7 @@ namespace core {
     // What frame are we stepping over? NULL means step-into mode.
     void*             _BreakstepFrame;
     // Stuff for SJLJ unwinding
-    T_sp              _DynEnv;
+    List_sp           _DynEnvStackBottom;
     T_sp              _UnwindDest;
     size_t            _UnwindDestIndex;
 #ifdef DEBUG_IHS
@@ -112,6 +116,22 @@ namespace core {
     ThreadLocalState();
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
 
+    void dynEnvStackTest(core::T_sp val) const;
+    void dynEnvStackSet(core::T_sp val) {
+#ifdef DEBUG_DYN_ENV_STACK
+      if (core::global_debug_dyn_env_stack)
+        this->dynEnvStackTest(val);
+#endif
+      this->_DynEnvStackBottom = val;
+    }
+    core::T_sp dynEnvStackGet() const {
+#ifdef DEBUG_DYN_ENV_STACK
+      if (core::global_debug_dyn_env_stack)
+        this->dynEnvStackTest(this->_DynEnvStackBottom);
+#endif
+      return this->_DynEnvStackBottom;
+    }
+    
     uint32_t random();
 
     llvmo::ObjectFile_sp topObjectFile();

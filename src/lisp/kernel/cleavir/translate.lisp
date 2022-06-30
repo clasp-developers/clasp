@@ -62,6 +62,7 @@
 ;;; returni's function.
 (defun return-rtype->llvm (rtype)
   (cond ((eq rtype :multiple-values) cmp:%tmv%)
+        ((eq rtype :vaslist) cmp:%vaslist%)
         ((not (listp rtype)) (error "Bad rtype ~a" rtype))
         ((null rtype) cmp:%void%)
         ((null (rest rtype)) (vrtype->llvm (first rtype)))
@@ -167,6 +168,7 @@
   (let* ((inp (bir:input instruction))
          (rt (cc-bmir:rtype inp)) (inv (in inp)))
     (cond ((eq rt :multiple-values) (cmp:irc-ret inv))
+          ((eq rt :vaslist) (cmp:irc-ret inv))
           ((not (listp rt)) (error "Bad rtype ~a" rt))
           ((null rt) (cmp:irc-ret-void))
           ((null (rest rt)) (cmp:irc-ret inv))
@@ -202,9 +204,9 @@
   (declare (ignore tmv)))
 (defmethod undo-dynenv ((dynenv bir:come-from) tmv)
   (declare (ignore tmv))
-  (let ((de (dynenv-storage dynenv)))
-    (when de
-      (%intrinsic-call "cc_pop_dynenv" (list de)))))
+  (let ((old-de-stack (first (dynenv-storage dynenv))))
+    (when old-de-stack
+      (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))))
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
   (declare (ignore tmv))
   (%intrinsic-call "llvm.stackrestore" (list (dynenv-storage dynenv))))
@@ -347,12 +349,15 @@
 ;;; 3) New LLVM blocks to place between the come-from and the above blocks.
 ;;; 4) A boolean indicating whether we need to use a BlockDynEnv.
 ;;; (This last could alternately be kept from the original source?)
-(defun categorize-come-from (come-from successors)
+(defun categorize-come-from (come-from asuccessors)
   ;; We only care about iblocks that are actually unwound to.
   (loop with escp = nil
         for iblock in (rest (bir:next come-from))
-        for successor in (rest successors)
-        when (has-entrances-p iblock)
+        for successor in (rest asuccessors)
+        when (and (has-entrances-p iblock)
+                  ;; See bug #1321: Sometimes we have duplicates, in which case
+                  ;; only the one entry is needed.
+                  (not (member iblock iblocks :test #'eq)))
           collect iblock into iblocks
           and collect (cmp:irc-basic-block-create "come-from-restore")
                 into blocks
@@ -388,13 +393,23 @@
     (multiple-value-bind (iblocks blocks successors blockp)
         (categorize-come-from come-from successors)
       (let* ((default (cmp:irc-basic-block-create "come-from-default"))
+             (old-de-stack
+               (unless simplep
+                 (%intrinsic-call "cc_get_dynenv_stack" nil)))
+             (dcons-space
+               (unless simplep
+                 (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                :label "come-from-dynenv-cons")))
              (dynenv
                (unless simplep
                  (%intrinsic-invoke-if-landing-pad-or-call
                   (if blockp
                       "cc_createAndPushBlockDynenv"
                       "cc_createAndPushTagbodyDynenv")
-                  (list frame bufp))))
+                  (list dcons-space frame bufp))))
+             (de-stack
+               (unless simplep
+                 (if blockp old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))))
              ;; Set the continuation for use by bir:unwind insts.
              (_ (out
                  (if simplep (cmp:irc-bit-cast bufp cmp:%t*%) dynenv)
@@ -405,7 +420,11 @@
         ;; Set the dynenv storage. We explicitly put in NIL for
         ;; simple unwinds, so that we can figure out if there is a
         ;; dynenv later without dynenv-storage signaling an error.
-        (setf (dynenv-storage come-from) (if simplep nil dynenv))
+        ;; Otherwise, it's a list of two dynenv stacks. The first is
+        ;; where to go when totally exiting, and the second where to
+        ;; go when unwinding here.
+        (setf (dynenv-storage come-from)
+              (if simplep nil (list old-de-stack de-stack)))
         (cmp:irc-begin-block default)
         (cmp:irc-unreachable)
         (cmp:irc-add-case sw (%i32 0) normal-successor)
@@ -427,7 +446,8 @@
          ;; doesn't need to do anything for us.
          (setf (dynenv-storage instruction) nil)
          (cmp:irc-br (first next)))
-        (t (translate-come-from instruction next))))
+        (t
+         (translate-come-from instruction next))))
 
 (defmethod translate-terminator ((instruction bir:unwind) abi next)
   (declare (ignore abi next))
@@ -474,14 +494,18 @@
   (declare (ignore abi))
   (let* ((cleanup (cmp:irc-basic-block-create "unwind-protect-cleanup"))
          (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "unwind-protect-buf"))
-         (upde-mem (cmp:alloca-i8 cmp::+unwind-protect-dynenv-size+
+         (de-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                     :label "upde-cons-mem"))
+         (upde-mem (cmp:alloca-i8 cmp:+unwind-protect-dynenv-size+
                                   :alignment cmp:+alignment+
                                   :label "unwind-protect-dynenv-mem"))
+         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
          (upde (%intrinsic-call "cc_initializeAndPushCleanupDynenv"
-                                (list upde-mem bufp)
+                                (list upde-mem de-cons-mem bufp)
                                 "unwind-protect-dynenv"))
          (sj (%intrinsic-call "_setjmp" (list bufp))))
-    (setf (dynenv-storage instruction) upde) ; used in landing-pad
+    (declare (ignore upde))
+    (setf (dynenv-storage instruction) old-de-stack) ; used in landing-pad
     ;; if the setjmp returns 0 (i.e. is not a nonlocal exit), we can proceed
     ;; directly to the successor; the cleanup call will be generated by
     ;; undo-dynenv.
@@ -508,7 +532,7 @@
            (cmp:with-landing-pad (maybe-entry-landing-pad
                                   (bir:parent dynenv) *tags*)
              (closure-call-or-invoke (in (first (bir:inputs dynenv))) nil))))
-    (%intrinsic-call "cc_pop_dynenv" (list (dynenv-storage dynenv)))
+    (%intrinsic-call "cc_set_dynenv_stack" (list (dynenv-storage dynenv)))
     ;; We have to save values around it if we're in the middle of
     ;; returning values.
     (if tmv
@@ -522,16 +546,19 @@
 
 (defmethod translate-terminator ((instruction bir:bind) abi next)
   (declare (ignore abi))
-  (let* ((bde-mem (cmp:alloca-i8 cmp::+binding-dynenv-size+
+  (let* ((bde-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                      :label "binding-dynenv-cons-mem"))
+         (bde-mem (cmp:alloca-i8 cmp:+binding-dynenv-size+
                                  :alignment cmp:+alignment+
                                  :label "binding-dynenv-mem"))
          (inputs (bir:inputs instruction))
          (sym (in (first inputs)))
          (val (in (second inputs)))
          (old (%intrinsic-call "cc_TLSymbolValue" (list sym)))
-         (bde (%intrinsic-call "cc_initializeAndPushBindingDynenv"
-                               (list bde-mem sym old))))
-    (setf (dynenv-storage instruction) (list sym old bde))
+         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil)))
+    (%intrinsic-call "cc_initializeAndPushBindingDynenv"
+                     (list bde-mem bde-cons-mem sym old))
+    (setf (dynenv-storage instruction) (list sym old old-de-stack))
     (%intrinsic-call "cc_setTLSymbolValue" (list sym val)))
   (cmp:irc-br (first next)))
 
@@ -540,7 +567,7 @@
   (let ((store (dynenv-storage dynenv)))
     (%intrinsic-call "cc_resetTLSymbolValue"
                      (list (first store) (second store)))
-    (%intrinsic-call "cc_pop_dynenv" (list (third store)))))
+    (%intrinsic-call "cc_set_dynenv_stack" (list (third store)))))
 
 (defmethod translate-terminator
     ((instruction cc-bir:header-stamp-case) abi next)
@@ -998,8 +1025,12 @@
          (output (bir:output instruction))
          (outputrt (cc-bmir:rtype output))
          (ninputs (length inputs)))
-    (assert (equal (length outputrt) ninputs))
-    (out (if (= ninputs 1) (in (first inputs)) (mapcar #'in inputs)) output)))
+    (cond ((null outputrt) ; e.g. unused, so ignore inputs
+           (out nil output))
+          (t
+           (assert (equal (length outputrt) ninputs))
+           (out (if (= ninputs 1) (in (first inputs)) (mapcar #'in inputs))
+                output)))))
 
 (defun %cast-to-mv (values)
   (cond ((null values) (cmp:irc-make-tmv (%size_t 0) (%nil)))
@@ -1713,6 +1744,7 @@
 
 (defun local-call-rv->inputs (llvm-value rtype)
   (cond ((eq rtype :multiple-values) llvm-value)
+        ((eq rtype :vaslist) llvm-value)
         ((not (listp rtype)) (error "BUG: Bad rtype ~a" rtype))
         ((null rtype) nil)
         ((null (rest rtype)) llvm-value)

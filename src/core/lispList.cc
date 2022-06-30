@@ -458,6 +458,14 @@ List_sp remove_equal(T_sp element, List_sp alist) {
   return new_list.cons();
 };
 
+CL_LAMBDA(element alist)
+CL_DECLARE();
+CL_DOCSTRING(R"dx(remove an element from a list with test equall)dx")
+DOCGROUP(clasp)
+CL_DEFUN List_sp core__remove_equal(T_sp element, List_sp alist) {
+  return remove_equal(element, alist);
+};
+
   SYMBOL_EXPORT_SC_(ClPkg, revappend);
   SYMBOL_EXPORT_SC_(ClPkg, nreconc);
   SYMBOL_EXPORT_SC_(ClPkg, list);
@@ -468,11 +476,6 @@ List_sp remove_equal(T_sp element, List_sp alist) {
   SYMBOL_EXPORT_SC_(ClPkg, nthcdr);
   SYMBOL_EXPORT_SC_(ClPkg, copyList);
   SYMBOL_EXPORT_SC_(ClPkg, last);
-
-
-
-
-;
-
+  SYMBOL_EXPORT_SC_(CorePkg, remove_equal);
 
 }; /* core */

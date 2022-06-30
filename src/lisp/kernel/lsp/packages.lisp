@@ -142,6 +142,9 @@
 (import 'core:weak-pointer-valid :ext)
 (import 'core:hash-table-weakness :ext)
 (import 'cmp::muffle-note :ext)
+(import 'gctools:garbage-collect :ext)
+(import 'gctools:finalize :ext)
+(import 'gctools:save-lisp-and-die :ext)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (export '(*module-provider-functions*
@@ -216,6 +219,8 @@
             restart-associated-conditions
             ;; Debugger
             tpl-frame tpl-argument tpl-arguments
+            ;; GC
+            garbage-collect finalize save-lisp-and-die
             ;; Misc
             with-current-source-form
             )))

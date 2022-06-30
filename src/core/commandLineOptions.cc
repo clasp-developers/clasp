@@ -56,7 +56,7 @@ Options:
       Describe the clasp data structures for lldb Python API to /tmp/clasp.py
   -d, --describe <file>
       Describe the clasp data structures for lldb Python API to <file>
-  -t, --stage (a|b|c)
+  -t, --stage (a|b|c|e)
       Start the specified stage of clasp.
   -U, --unpack-faso <file>
       Unpack the faso <file> into separate object files
@@ -197,6 +197,8 @@ Environment variables:
   CLASP_BACKTRACE_ALLOCATIONS=<stamp>
       Generate a backtrace to /tmp/stamp<stamp>.backtraces everytime a <stamp>
       object is allocates (VERY EXPENSIVE)
+  CLASP_DEBUG_STAMP_INFO=1
+      Generate info about stamps.
   CLASP_MPS_CONFIG=<arenaMb> <spareCommitLimitMb> <nurseryKb>
                    <nurseryMortalityPercent> <generation1Kb>
                    <generation1MortalityPercent> <keyExtendByKb>)dx";
@@ -261,7 +263,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
       options->_AddressesP = true;
       options->_AddressesFileName = *++arg;
     } else if (*arg == "-I" || *arg == "--ignore-image") {
-      options->_DontLoadImage = true;
+      options->_IgnoreInitImage = true;
     } else if (*arg == "--noinform") {
       options->_NoInform = true;
     } else if (*arg == "--noprint") {
@@ -296,7 +298,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
     } else if (*arg == "-m" || *arg == "--disable-mpi") {
       options->_DisableMpi = true;
     } else if (*arg == "-n" || *arg == "--noinit") {
-      options->_DontLoadInitLsp = true;
+      options->_IgnoreInitLsp = true;
     } else if (*arg == "-v" || *arg == "--version") {
       options->_Version = true;
     } else if (*arg == "-s" || *arg == "--verbose") {
@@ -347,8 +349,8 @@ void process_clasp_arguments(CommandLineOptions *options) {
 }
 
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
-    : _ProcessArguments(process_clasp_arguments), _DontLoadImage(false), _DontLoadInitLsp(false), _DisableMpi(false),
-      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _Stage('c'),
+    : _ProcessArguments(process_clasp_arguments), _IgnoreInitImage(false), _IgnoreInitLsp(false), _DisableMpi(false),
+      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _Stage(DEFAULT_STAGE),
       _StartupFile(""), _DefaultStartupType(cloDefault), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0), _NoInform(false),
       _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
       _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), // FIXME should be initialized later with user-homedir-pathname?

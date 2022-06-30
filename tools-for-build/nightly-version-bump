@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+# This script updates the version numbers for nightly builds
+
+./koga --update-version $1
+echo -e "clasp-cl ($(sbcl --noinform --non-interactive --eval "(write-string (substitute #\~ #\- (getf (with-open-file (s \"version.sexp\") (read s)) :version)))")) bookworm jammy; urgency=medium\n\n  * Nightly release\n\n -- Tarn W. Burton <twburton@gmail.com>  $(date -R)\n\n$(cat debian/changelog)" > debian/changelog

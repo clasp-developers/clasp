@@ -1143,6 +1143,12 @@ struct copy_buffer_t {
   void write_to_stream(std::ofstream& stream) {
     stream.write( this->_BufferStart, this->_Size );
   }
+
+  size_t write_to_filedes(int filedes) {
+    size_t wrote = write( filedes, this->_BufferStart, this->_Size );
+    printf("%s:%d:%s Wrote %lu bytes from %p to filedes %d\n", __FILE__, __LINE__, __FUNCTION__, wrote, this->_BufferStart, filedes );
+    return wrote;
+  }
 };
 
 
@@ -1776,7 +1782,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
 //    printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
-      if (ii%1000==0) {
+      if (ii%1000==0 && ii>0) {
         printf("%6lu remaining pointers to dladdr\n", ii );
       }
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
@@ -1889,6 +1895,17 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       const char* myName = (const char*)&this->_Library._SymbolBuffer[symbolOffset];
       uintptr_t mysymStart = (uintptr_t)lookup.lookupSymbol(myName);
       uintptr_t dlsymStart = (uintptr_t) dlsym(RTLD_DEFAULT,myName);
+#if 1
+      if (mysymStart) {
+        // do nothing - keep going
+      } else if (dlsymStart) {
+        // we got a dlsymStart - use it
+        mysymStart = dlsymStart;
+      } else {
+        printf("%s:%d:%s Could not resolve address with loopup.lookupSymbol or dlsym for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
+        abort();
+      }
+#else
       if (dlsymStart !=0 && mysymStart != dlsymStart) {
         printf("%s:%d:%s Mismatch between mysymStart %p and dlsymStart %p for symbol %s - lookupSymbol with verbose=true\n", __FILE__, __LINE__, __FUNCTION__, (void*)mysymStart, (void*)dlsymStart, myName );
         lookup.lookupSymbol(myName,true);
@@ -1897,9 +1914,8 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       if (!mysymStart) {
         printf("%s:%d:%s Could not resolve address with dlsym for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
         abort();
-      } else {
-//        printf("%s:%d:%s Resolved address[%lu] %p for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, ii, (void*)dlsymStart, ss.str().c_str() );
       }
+#endif
       this->_Library._GroupedPointers[gpindex]._address = mysymStart;
 #if 0
       printf("%s:%d:%s GroupedPointers[%lu] restored address %p  offset: %lu saved symbol address %p @%p\n     name: %s\n",
@@ -2120,8 +2136,6 @@ CL_DEFUN size_t gctools__memory_test(core::T_sp filename)
 /* This is not allowed to do any allocations. */
 void* snapshot_save_impl(void* data) {
   core::SaveLispAndDie* snapshot_data = (core::SaveLispAndDie*)data;
-  char buffer[L_tmpnam];
-  std::string filename = (snapshot_data->_Executable) ? std::tmpnam(buffer) : snapshot_data->_FileName;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
 
   printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -2399,23 +2413,47 @@ void* snapshot_save_impl(void* data) {
   offset += snapshot._ObjectFiles->_Size;
   fileHeader->describe("Loaded");
 
-  std::ofstream wf(filename, std::ios::out | std::ios::binary);
-  if (!wf) {
-    printf("Cannot open file %s\n", filename.c_str());
-    return NULL;
+  std::string filename;
+  {
+    int filedes;
+    if (!snapshot_data->_Executable) {
+      char cwdbuffer[1024];
+      printf("%s:%d:%s getcwd -> %s\n", __FILE__, __LINE__, __FUNCTION__, getcwd(cwdbuffer,1023) );
+      filedes = open(snapshot_data->_FileName.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IWUSR );
+      if (filedes<0) {
+        printf("Cannot open file %s\n", snapshot_data->_FileName.c_str());
+        return NULL;
+      }
+      filename = snapshot_data->_FileName;
+    } else {
+      char tfbuffer[32];
+      strcpy(tfbuffer,"/tmp/ss-XXXXXXXX");
+      filedes = mkstemp(tfbuffer);
+      if (filedes<0) {
+        printf("Cannot open temporary file for snapshot_save\n" );
+        return NULL;
+      }
+      filename = tfbuffer;
+    }
+    printf("Writing snapshot to %s filedes = %d\n", filename.c_str(), filedes );
+    snapshot._HeaderBuffer->write_to_filedes(filedes);
+    snapshot._Libraries->write_to_filedes(filedes);
+    snapshot._Memory->write_to_filedes(filedes);
+    snapshot._ObjectFiles->write_to_filedes(filedes);
+    int closeres = close(filedes);
+    if (closeres<0) {
+      printf("%s:%d:%s Error closing file %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str());
+    }
   }
-  snapshot._HeaderBuffer->write_to_stream(wf);
-  snapshot._Libraries->write_to_stream(wf);
-  snapshot._Memory->write_to_stream(wf);
-  snapshot._ObjectFiles->write_to_stream(wf);
-  wf.close();
-  
-  printf("%s:%d:%s Wrote snapshot %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
 
   if (snapshot_data->_Executable) {
     std::string cmd;
 #ifdef _TARGET_OS_LINUX
-    std::string obj_filename = std::tmpnam(buffer);
+    char tlbuffer[32];
+    strcpy(tlbuffer,"/tmp/ss-XXXXXXXX");
+    int lfiledes = mkstemp(tlbuffer);
+    close(lfiledes);
+    std::string obj_filename = tlbuffer;
 
     std::string mangled_name = filename;
     std::replace_if(mangled_name.begin(), mangled_name.end(),
@@ -2442,6 +2480,8 @@ void* snapshot_save_impl(void* data) {
       " -Wl,-force_load," + snapshot_data->_LibDir + "/libclasp.a " BUILD_LIB;
 #endif
 
+    std::cout << "Link command:" << std::endl << std::flush;
+    std::cout << cmd << std::endl << std::flush;
     std::cout << "Linking executable..." << std::endl << std::flush;
     if (system(cmd.c_str()) < 0) {
       std::cerr << "Linking of executable failed." << std::endl << std::flush;
@@ -3557,6 +3597,9 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       }
     }
   }
+
+  _lisp->parseCommandLineArguments(*core::global_options);
+
   int exitCode;
   try {
     if (ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue().notnilp()) {

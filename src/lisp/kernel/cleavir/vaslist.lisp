@@ -1,4 +1,4 @@
-(in-package #:cc-vaslist)
+(in-package #:clasp-cleavir-vaslist)
 
 ;;;; The code in this file is supposed to perform a transform on functions
 ;;;; with a &rest parameter such that no list actually needs to be consed.
@@ -29,7 +29,8 @@
 ;;;; and allowing passing vaslists to/returning them from functions as long as
 ;;;; they do not escape the dynamic extent.
 
-(defparameter *vaslistable* '(values-list))
+(defparameter *vaslistable* '(cl:car cl:cdr cl:nth cl:nthcdr cl:elt cl:last
+                              cl:butlast cl:nbutlast cl:values-list))
 
 (defun vaslistablep (fname) (member fname *vaslistable*))
 
