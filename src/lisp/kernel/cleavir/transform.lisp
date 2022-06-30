@@ -69,6 +69,13 @@
     (bir:compute-iblock-flow-order (bir:function call))
     (bir-transformations:maybe-interpolate bir)))
 
+(defmacro with-transform-declining (&body body)
+  `(catch '%decline-transform ,@body))
+
+(defmacro decline-transform (reason &rest arguments)
+  (declare (ignore reason arguments)) ; maybe later
+  `(throw '%decline-transform nil))
+
 (defun maybe-transform (call transforms)
   (flet ((arg-primary (arg)
            (ctype:primary (bir:asserted-type arg) *clasp-system*)))
@@ -78,9 +85,10 @@
                             (ctype:bottom *clasp-system*) *clasp-system*)
           for (transform . vtype) in transforms
           when (ctype:values-subtypep argstype vtype *clasp-system*)
-            do (replace-callee-with-lambda call
-                                           (funcall transform call))
-            and return t)))
+            do (with-transform-declining
+                   (replace-callee-with-lambda call
+                                               (funcall transform call))
+                 (return t)))))
 
 (defmethod cleavir-bir-transformations:transform-call
     ((system clasp) key (call bir:call))
