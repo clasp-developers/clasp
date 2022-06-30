@@ -285,6 +285,10 @@ Optimizations are available for any of:
                                                     :datum v
                                                     :expected-type ',ctype))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (12) NUMBERS
+
 (macrolet ((define-two-arg-f (name sf-primop df-primop)
              `(progn
                 (deftransform ,name ((a1 single-float) (a2 single-float))
@@ -618,7 +622,9 @@ Optimizations are available for any of:
 (deftransform ash ((int fixnum) (count (integer * 0)))
   '(truly-the fixnum (core::primop core::fixnum-ashr int (min (- count) 63))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; (14) CONSES
 
 (deftransform car ((cons cons)) '(cleavir-primop:car cons))
 (deftransform cdr ((cons cons)) '(cleavir-primop:cdr cons))
@@ -629,6 +635,10 @@ Optimizations are available for any of:
   `(if (null x)
        0
        (core:cons-length x)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (17) SEQUENCES
 
 ;; These transforms are unsafe, as NTH does not signal out-of-bounds.
 #+(or)

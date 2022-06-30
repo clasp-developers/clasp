@@ -58,10 +58,23 @@
         (ctype:disjoin sys result rest)
         result)))
 
+;;; Determines the real type of a keyword argument given its default type and the
+;;; result of kwarg-presence. For example if the keyword only may be present, the
+;;; default type is stuck in there.
+(defun defaulted-kwarg-type (keyword presence default required optional rest sys)
+  (ecase presence
+    ((nil) default)
+    ((t) (kwarg-type keyword required optional rest sys))
+    ((:maybe)
+     (ctype:disjoin sys default (kwarg-type keyword required optional rest sys)))))
+
+;;;
+
 (defmacro with-deriver-types (lambda-list argstype &body body)
   (multiple-value-bind (req opt rest keyp keys)
       (core:process-lambda-list lambda-list 'function)
-    ;; TODO: &allow-other-keys
+    ;; We ignore &allow-other-keys because it's too much effort for
+    ;; type derivation. Approximate results are fine.
     (if (and (zerop (first req)) (zerop (first opt)) (not keyp))
         ;; If the whole lambda list is &rest, skip parsing entirely.
         `(let ((,rest ,argstype)) ,@body)
@@ -106,20 +119,11 @@
                                           (kwarg-presence ',kw ,greq ,gopt ,grest
                                                           ,gsys))
                                 collect `(,var
-                                          (ecase ,r-p
-                                            ((nil)
-                                             (env:parse-type-specifier
-                                              ',r-def nil ,gsys))
-                                            ((t)
-                                             (kwarg-type ',kw ,greq ,gopt ,grest
-                                                         ,gsys))
-                                            ((:maybe)
-                                             (ctype:disjoin
-                                              ,gsys
-                                              (env:parse-type-specifier
-                                               ',r-def nil ,gsys)
-                                              (kwarg-type ',kw ,greq ,gopt ,grest
-                                                          ,gsys)))))))
+                                          (defaulted-kwarg-type
+                                           ',kw ,r-p
+                                           (env:parse-type-specifier
+                                            ',r-def nil ,gsys)
+                                           ,greq ,gopt ,grest ,gsys))))
                    ,@body)))))))
 
 ;;; Lambda lists are basically ordinary lambda lists, but without &aux
