@@ -77,8 +77,7 @@ jobs:
     - name: Clasp koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'clasp' }}
       run: |
-        brew ls --verbose llvm@13
-        ./koga --llvm-config=llvm-config-13
+        ./koga --llvm-config=/usr/local/Cellar/llvm@13/13.0.1/bin/llvm-config
     - name: Cando koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'cando' }}
       run: |
