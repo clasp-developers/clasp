@@ -99,14 +99,17 @@
                  (let* (,@(loop for reqv in (rest req)
                                 collect `(,reqv (or (pop ,greq)
                                                     (pop ,gopt) ,grest)))
-                        ,@(loop for (optv _ -p) on (rest opt) by #'cdddr
+                        ,@(loop for (optv default -p) on (rest opt) by #'cdddr
                                 when -p
                                   collect `(,-p (cond (,greq t)
-                                                      ((or ,gopt ,grb) :maybe)
+                                                      ((or ,gopt (not ,grb)) :maybe)
                                                       (t nil)))
-                                collect `(,optv (or (pop ,greq)
-                                                    (pop ,gopt)
-                                                    ,grest)))
+                                collect `(,optv
+                                          (or (pop ,greq)
+                                              (ctype:disjoin ,gsys
+                                                             (env:parse-type-specifier
+                                                              ',default nil ,gsys)
+                                                             (or (pop ,gopt) ,grest)))))
                         ,@(when rest
                             `((,rest (ctype:values ,greq ,gopt ,grest ,gsys))))
                         ,@(loop for (kw var def -p) on (rest keys) by #'cddddr
@@ -140,11 +143,11 @@
 ;;; evaluated but instead interpreted as type specifiers.
 ;;; &key is not supported yet.
 (defmacro define-deriver (name lambda-list &body body)
-  (let* ((fname (make-symbol (format nil "~a-DERIVER" (symbol-name name))))
+  (let* ((fname (make-symbol (format nil "~a-DERIVER" (write-to-string name))))
          (as (gensym "ARGSTYPE")))
     `(progn
        (defun ,fname (,as)
-         (block ,name
+         (block ,(core:function-block-name name)
            (with-deriver-types ,lambda-list ,as ,@body)))
        (setf (gethash ',name *derivers*) ',fname)
        ',name)))
@@ -347,13 +350,13 @@
                (let ((olow (cond ((not low)
                                   (cond ((not (numberp inf)) inf)
                                         ((eq kind 'double-float) (float inf 0d0))
-                                        (t inf)))
+                                        (t (float inf 0f0))))
                                  (lxp (list (funcall function low)))
                                  (t (funcall function low))))
                      (ohigh (cond ((not high)
                                    (cond ((not (numberp sup)) sup)
                                          ((eq kind 'double-float) (float sup 0d0))
-                                         (t sup)))
+                                         (t (float sup 0f0))))
                                   (hxp (list (funcall function high)))
                                   (t (funcall function high)))))
                  (ctype:range mkind olow ohigh sys)))))
@@ -405,6 +408,41 @@
 
 ;;;
 
+(defun derive-ftrunc* (x y)
+  ;; The definition of ftruncate in CLHS is kind of gibberish, as relates to
+  ;; the types of the results. So just make sure this does what the function does.
+  (let ((sys *clasp-system*))
+    (ctype:values
+     (mapcar (lambda (kind) (ctype:range kind '* '* sys))
+             (if (and (ctype:rangep x sys) (ctype:rangep y sys))
+                 (ecase (ctype:range-kind x sys)
+                   ((integer rational)
+                    (ecase (ctype:range-kind y sys)
+                      ((integer rational) '(single-float integer))
+                      ((single-float) '(single-float single-float))
+                      ((double-float) '(double-float double-float))
+                      ((float) '(float float))
+                      ((real) '(float real))))
+                   ((single-float)
+                    (ecase (ctype:range-kind y sys)
+                      ((integer rational single-float) '(single-float single-float))
+                      ;; Despite the above note: This returns singles with the function,
+                      ;; but I think it should return doubles; SBCL does. Why not?
+                      ;; FIXME: Change ftruncate behavior.
+                      ((double-float) '(float float))
+                      ((float) '(float float))
+                      ((real) '(float real))))
+                   ((double-float) '(double-float double-float))
+                   ((float) '(float float))
+                   ((real) '(real real)))
+                 '(float real)))
+     nil (ctype:bottom sys) sys)))
+
+(define-deriver ffloor (x &optional (y (integer 1 1))) (derive-ftrunc* x y))
+(define-deriver fceiling (x &optional (y (integer 1 1))) (derive-ftrunc* x y))
+(define-deriver ftruncate (x &optional (y (integer 1 1))) (derive-ftrunc* x y))
+(define-deriver fround (x &optional (y (integer 1 1))) (derive-ftrunc* x y))
+
 (define-deriver core:two-arg-+ (n1 n2) (sv (ty+ n1 n2)))
 (define-deriver core:negate (arg) (sv (ty-negate arg)))
 (define-deriver core:two-arg-- (n1 n2) (sv (ty+ n1 (ty-negate n2))))
@@ -412,18 +450,68 @@
 ;;; still be sound.
 (define-deriver core:two-arg-* (n1 n2) (sv (ty-contagion n1 n2)))
 (define-deriver core:two-arg-/ (n1 n2) (sv (ty-divcontagion n1 n2)))
+(define-deriver core:reciprocal (n)
+  (sv (ty-divcontagion (ctype:range 'integer 1 1 *clasp-system*) n)))
 
 (define-deriver exp (arg) (ty-irrat-monotonic1 arg #'exp :inf 0f0))
 
-(define-deriver sqrt (arg)
+(define-deriver expt (x y)
   (let ((sys *clasp-system*))
-    (if (ctype:rangep arg sys)
-        (let ((low (ctype:range-low arg sys)))
-          (if (and low (>= low 0)) ; no complex results
-              (ty-irrat-monotonic1 arg #'sqrt :inf 0f0)
+    (ctype:single-value
+     (if (and (ctype:rangep x sys) (ctype:rangep y sys))
+         (ctype:range
+          (ecase (ctype:range-kind x sys)
+            ((single-float) (if (eq (ctype:range-kind y sys) 'double-float)
+                                'double-float 'single-float))
+            ((double-float) 'double-float)
+            ((float) 'float)
+            ((integer)
+             (let ((ykind (ctype:range-kind y sys)))
+               (case ykind
+                 ((integer rational) 'rational) ; e.g. (expt 2 -3)
+                 (otherwise ykind))))
+            ((rational)
+             (let ((ykind (ctype:range-kind y sys)))
+               (case ykind
+                 ((integer rational) 'rational)
+                 (otherwise ykind))))
+            ((real) 'real))
+          '* '* sys)
+         (env:parse-type-specifier 'number nil sys))
+     sys)))
+
+(defun ty-boundbelow-irrat-monotonic1 (ty function lowbound &key (inf '*) (sup '*))
+  (let ((sys *clasp-system*))
+    (if (ctype:rangep ty sys)
+        (let ((low (ctype:range-low ty sys)))
+          (if (and low (>= low lowbound))
+              (ty-irrat-monotonic1 ty function :inf inf :sup sup)
               (ctype:single-value
                (env:parse-type-specifier 'number nil sys) sys)))
         (ctype:single-value (env:parse-type-specifier 'number nil sys) sys))))
+
+(defun ty-bound-irrat-monotonic1 (ty function lowb highb &key (inf '*) (sup '*))
+  (let ((sys *clasp-system*))
+    (if (ctype:rangep ty sys)
+        (let ((low (ctype:range-low ty sys))
+              (high (ctype:range-high ty sys)))
+          (if (and low (>= low lowb)
+                   high (<= high highb))
+              (ty-irrat-monotonic1 ty function :inf inf :sup sup)
+              (ctype:single-value
+               (env:parse-type-specifier 'number nil sys) sys)))
+        (ctype:single-value (env:parse-type-specifier 'number nil sys) sys))))
+
+(define-deriver sqrt (arg)
+  (ty-boundbelow-irrat-monotonic1 arg #'sqrt 0 :inf 0f0))
+
+(define-deriver log (arg &optional (base nil basep))
+  (declare (ignore base))
+  (if basep
+      ;; FIXME
+      (let ((sys *clasp-system*))
+        (ctype:single-value (env:parse-type-specifier 'number nil sys) sys))
+      (ty-boundbelow-irrat-monotonic1 arg #'log 0)))
 
 ;;; If the argument is a real, return [-1,1]. otherwise just NUMBER
 ;;; Technically the range could be reduced sometimes, but figuring out the
@@ -433,7 +521,7 @@
     (ctype:single-value
      (if (ctype:rangep arg sys)
          (let ((kind (ctype:range-kind arg sys)))
-           (when (member kind '(integer rational real))
+           (when (member kind '(integer rational))
              (setf kind 'single-float))
            (ctype:range kind (coerce -1 kind) (coerce 1 kind) sys))
          (env:parse-type-specifier 'number nil sys))
@@ -441,7 +529,72 @@
 (define-deriver sin (arg) (derive-sincos arg))
 (define-deriver cos (arg) (derive-sincos arg))
 
+(defun ty-trig (arg)
+  ;; Return an unbounded real range if given a real, else just NUMBER.
+  (let ((sys *clasp-system*))
+    (ctype:single-value
+     (if (ctype:rangep arg sys)
+         (let ((kind (ctype:range-kind arg sys)))
+           (when (member kind '(integer rational))
+             (setf kind 'single-float))
+           (ctype:range kind '* '* sys))
+         (env:parse-type-specifier 'number nil sys))
+     sys)))
+
+(define-deriver tan (arg) (ty-trig arg))
+
+(define-deriver asin (arg)
+  (ty-bound-irrat-monotonic1 arg #'asin -1 1 :inf (- (/ pi 2)) :sup (/ pi 2)))
+(define-deriver acos (arg)
+  ;; TODO: we could get better types here, since acos is monotone decreasing.
+  (let ((sys *clasp-system*))
+    (ctype:single-value
+     (if (ctype:rangep arg sys)
+         (let ((kind (ctype:range-kind arg sys))
+               (low (ctype:range-low arg sys))
+               (high (ctype:range-high arg sys)))
+           (if (and low (>= low -1d0) high (<= high 1d0))
+               (ecase kind
+                 ((integer rational single-float)
+                  (ctype:range 'single-float 0f0 (float pi 0f0) sys))
+                 ((double-float) (ctype:range 'double-float 0d0 pi sys))
+                 ((float real) (ctype:range 'float 0d0 pi sys)))
+               (env:parse-type-specifier 'number nil sys)))
+         (env:parse-type-specifier 'number nil sys))
+     sys)))
+
+(define-deriver sinh (arg) (ty-irrat-monotonic1 arg #'sinh))
+(define-deriver cosh (arg) (ty-trig arg)) ; FIXME: limit to (1, \infty]
+
 (define-deriver tanh (arg) (ty-irrat-monotonic1 arg #'tanh :inf -1f0 :sup 1f0))
+
+(define-deriver asinh (arg) (ty-irrat-monotonic1 arg #'asinh))
+(define-deriver acosh (arg) (ty-boundbelow-irrat-monotonic1 arg #'acosh 1 :inf 0f0))
+(define-deriver atanh (arg) (ty-bound-irrat-monotonic1 arg #'atanh -1 1))
+
+(define-deriver abs (arg)
+  (let ((sys *clasp-system*))
+    (ctype:single-value
+     (if (ctype:rangep arg sys)
+         (let ((kind (ctype:range-kind arg sys)))
+           (multiple-value-bind (low lxp) (ctype:range-low arg sys)
+             (multiple-value-bind (high hxp) (ctype:range-high arg sys)
+               (ctype:range kind
+                            (cond ((or (not low) (and low (minusp low)))
+                                   (case kind
+                                     ((single-float) 0f0)
+                                     ((double-float float) 0d0)
+                                     (t 0)))
+                                  ((or (not high) (< low (abs high)))
+                                   (if lxp (list low) low))
+                                  (t (if hxp (list (abs high)) (abs high))))
+                            (cond ((or (not high) (not low)) '*)
+                                  ((< (abs low) (abs high))
+                                   (if hxp (list (abs high)) (abs high)))
+                                  (t (if lxp (list (abs low)) (abs low))))
+                            sys))))
+         (env:parse-type-specifier 'number nil sys))
+     sys)))
 
 (define-deriver ash (num shift) (sv (ty-ash num shift)))
 
@@ -492,6 +645,73 @@
             (ctype:range 'double-float 0d0 '* sys))
            (t (env:parse-type-specifier '(real 0) nil sys)))
      sys)))
+
+;;; Get inclusive integer bounds from a type. NIL for unbounded.
+;;; FIXME: For integer types we should just normalize away exclusivity at parse
+;;; time, really.
+(defun normalize-integer-bounds (ranget sys)
+  (let ((kind (ctype:range-kind ranget sys)))
+    (multiple-value-bind (low lxp) (ctype:range-low ranget sys)
+      (multiple-value-bind (high hxp) (ctype:range-high ranget sys)
+        (ecase kind
+          ((integer) (values (if (and low lxp) (1+ low) low) (if (and high hxp) (1- high) high)))
+          ((rational real)
+           (values (if low
+                       (multiple-value-bind (clow crem) (ceiling low)
+                         (if (and (zerop crem) lxp) (1+ clow) clow))
+                       low)
+                   (if high
+                       (multiple-value-bind (fhigh frem) (floor high)
+                         (if (and (zerop frem) hxp) (1- fhigh) fhigh))
+                       high))))))))
+
+(define-deriver logcount (arg)
+  ;; not optimal, but should be fine.
+  ;; example non optimality: (logcount (integer 10 15)) could be (integer 2 4)
+  (let ((sys *clasp-system*))
+    (if (and (ctype:rangep arg sys)
+             (member (ctype:range-kind arg sys) '(integer rational real)))
+        (multiple-value-bind (low high) (normalize-integer-bounds arg sys)
+          (if (and low high)
+              (ctype:range 'integer
+                           (if (or (> low 0) (< high -1)) 1 0)
+                           (max (integer-length low) (integer-length high))
+                           sys)
+              (ctype:range 'integer '* '* sys)))
+        (ctype:range 'integer '* '* sys))))
+
+;;; Getting good bounds for these functions is kind of nontrivial.
+;;; For now we just mark them as returning fixnums if given them.
+;;; TODO. Check Hacker's Delight and SBCL's compiler/bitops-derive-type.lisp.
+
+(define-deriver lognot (arg)
+  (let* ((sys *clasp-system*)
+         (fixnum (ctype:range 'integer most-negative-fixnum most-positive-fixnum sys)))
+    (ctype:single-value (if (ctype:subtypep arg fixnum sys)
+                            fixnum
+                            (ctype:range 'integer '* '* sys))
+                        sys)))
+
+(defmacro define-log2-deriver (name)
+  `(define-deriver ,name (int1 int2)
+     (let* ((sys *clasp-system*)
+            (fixnum (ctype:range 'integer
+                                 most-negative-fixnum most-positive-fixnum sys)))
+       (ctype:single-value (if (and (ctype:subtypep int1 fixnum sys)
+                                    (ctype:subtypep int2 fixnum sys))
+                               fixnum
+                               (ctype:range 'integer '* '* sys))
+                           sys))))
+(define-log2-deriver core:logand-2op)
+(define-log2-deriver core:logior-2op)
+(define-log2-deriver core:logxor-2op)
+(define-log2-deriver logandc1)
+(define-log2-deriver logandc2)
+(define-log2-deriver logorc1)
+(define-log2-deriver logorc2)
+(define-log2-deriver core:logeqv-2op)
+(define-log2-deriver lognand)
+(define-log2-deriver lognor)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -645,23 +865,46 @@
                          collect (ctype:array et dimensions complexity sys)))))
      sys)))
 
+(defun type-aet (type sys)
+  (if (ctype:arrayp type sys)
+      (ctype:array-element-type type sys)
+      (ctype:top sys)))
+
 (defun derive-aref (array indices)
   (declare (ignore indices))
   (let ((sys *clasp-system*))
-    (ctype:single-value
-     (if (and (consp array)
-              (member (first array) '(array simple-array vector))
-              (consp (cdr array)))
-         (second array)
-         (ctype:top sys))
-     sys)))
+    (ctype:single-value (type-aet array sys) sys)))
 
 (define-deriver aref (array &rest indices) (derive-aref array indices))
+(define-deriver (setf aref) (value array &rest indices)
+  (declare (ignore array indices))
+  (sv value))
+
+(defun type-array-rank-if-constant (type sys)
+  (if (ctype:arrayp type sys)
+      (let ((dims (ctype:array-dimensions type sys)))
+        (if (eq dims '*)
+            nil
+            (length dims)))
+      nil))
+
+(define-deriver array-rank (array)
+  (let ((sys *clasp-system*))
+    (ctype:single-value (let ((rank (type-array-rank-if-constant array sys)))
+                          (if rank
+                              (ctype:range 'integer rank rank sys)
+                              (ctype:range 'integer 0 (1- array-rank-limit) sys)))
+                        sys)))
 
 (define-deriver arrayp (object)
   (derive-type-predicate object 'array *clasp-system*))
 
-(define-deriver row-major-aref (array index) (derive-aref array index))
+(define-deriver row-major-aref (array index)
+  (declare (ignore index))
+  (sv (type-aet array *clasp-system*)))
+(define-deriver core:row-major-aset (array index value)
+  (declare (ignore array index))
+  (sv value))
 
 (define-deriver vectorp (object)
   (derive-type-predicate object 'vector *clasp-system*))
@@ -762,6 +1005,18 @@
 (define-deriver core::map-into-sequence/1 (result function sequence)
   (declare (ignore function sequence))
   (type-consless-id result *clasp-system*))
+
+(define-deriver length (sequence)
+  (let ((sys *clasp-system*))
+    (ctype:single-value
+     (cond ((ctype:arrayp sequence sys)
+            (let ((dims (ctype:array-dimensions sequence sys)))
+              (if (and (consp dims) (null (cdr dims)) (not (eq (car dims) '*)))
+                  (ctype:range 'integer (car dims) (car dims) sys)
+                  (ctype:range 'integer 0 (1- array-dimension-limit) sys))))
+           ;; FIXME: Weak.
+           (t (ctype:range 'integer 0 '* sys)))
+     sys)))
 
 (define-deriver sort (sequence predicate &rest keys)
   (declare (ignore predicate keys))
