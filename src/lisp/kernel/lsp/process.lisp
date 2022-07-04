@@ -208,23 +208,23 @@
                              (verify-stream process-output :output)
                              (verify-stream process-error :error)))
       (let ((stream-write
-             (when (plusp parent-write)
-               (ext:make-stream-from-fd parent-write :output
-                                        :element-type 'base-char
-                                        :external-format external-format
-                                        :name "parent-write")))
+              (when (plusp parent-write)
+                (ext:make-stream-from-fd parent-write :output
+                                         :element-type 'base-char
+                                         :external-format external-format
+                                         :name "parent-write")))
             (stream-read
-             (when (plusp parent-read)
-               (ext:make-stream-from-fd parent-read :input
-                                        :element-type 'base-char
-                                        :external-format external-format
-                                        :name "parent-read")))
+              (when (plusp parent-read)
+                (ext:make-stream-from-fd parent-read :input
+                                         :element-type 'base-char
+                                         :external-format external-format
+                                         :name "parent-read")))
             (stream-error
-             (when (plusp parent-error)
-               (ext:make-stream-from-fd parent-error :input
-                                        :element-type 'base-char
-                                        :external-format external-format
-                                        :name "parent-error" )))
+              (when (plusp parent-error)
+                (ext:make-stream-from-fd parent-error :input
+                                         :element-type 'base-char
+                                         :external-format external-format
+                                         :name "parent-error" )))
             (pipes nil))
 
         (when (eql process-input :virtual-stream)
@@ -238,7 +238,7 @@
               (external-process-input process) stream-write
               (external-process-output process) stream-read
               (external-process-error-stream process) stream-error)
-
+        (format t "process.lisp:242 Returning process ~s~%" process)
         (when pipes
           #+threads
           (let ((thread (external-process-%pipe process)))

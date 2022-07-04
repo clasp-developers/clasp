@@ -1261,7 +1261,7 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
     SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
     _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(SimpleBaseString_O::make(options._StartupFile)));
   } else {
-    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._Stage));
+    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._StartupStage));
   }
 }
 
