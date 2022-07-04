@@ -130,22 +130,23 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core:select-package :ext))
 
-;;; Imports
-(import 'core:quit :ext)
-(import 'core:getpid :ext)
-(import 'core:argc :ext)
-(import 'core:argv :ext)
-(import 'core:rmdir :ext)
-(import 'core:temporary-directory :ext)
-(import 'core:mkstemp :ext)
-(import 'core:weak-pointer-value :ext)
-(import 'core:make-weak-pointer :ext)
-(import 'core:weak-pointer-valid :ext)
-(import 'core:hash-table-weakness :ext)
-(import 'cmp::muffle-note :ext)
-(import 'gctools:garbage-collect :ext)
-(import 'gctools:finalize :ext)
-(import 'gctools:save-lisp-and-die :ext)
+(import '(cmp::muffle-note
+          core:argc
+          core:argv
+          core:getpid
+          core:hash-table-weakness
+          core:make-weak-pointer
+          core:temporary-directory
+          core:mkstemp
+          core:printing-char-p
+          core:quit
+          core:rmdir
+          core:weak-pointer-valid
+          core:weak-pointer-value
+          gctools:finalize
+          gctools:garbage-collect
+          gctools:save-lisp-and-die)
+        :ext)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (export '(*module-provider-functions*
@@ -224,4 +225,4 @@
             garbage-collect finalize save-lisp-and-die
             ;; Misc
             with-current-source-form
-            )))
+            printing-char-p)))

@@ -55,30 +55,19 @@ void handleWideCharactersError(claspCharacter cc)
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_DOCSTRING(R"dx(Returns true if character is a graphic character other than space-like characters;
+otherwise, returns false.)dx")
+DOCGROUP(clasp)
+CL_DEFUN bool core__printing_char_p(Character_sp c) {
+  return clasp_isprint(clasp_as_claspCharacter(c));
+};
+
+CL_LAMBDA(arg)
+CL_DECLARE();
 CL_DOCSTRING(R"dx(CLHS: graphic-char-p)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool cl__graphic_char_p(Character_sp cc) {
-  claspCharacter c = clasp_as_claspCharacter(cc);
-  // Does not seem to work as it should for codes > 255, not even in Xcode, not even with iswgraph instead of isgraph
-  // return x == ' ' || iswgraph(x);
-  // Translated from ccl definition in %control-char-p/graphic-char-p
-  // sbcl does return c > 159 || ((31 < c) && (c < 127));
-  if (
-            ((c >= 0x00) && (c <= 0x1f))     ||
-            ((c >= 0x7f) && (c <= 0x9f))     ||
-            (c == 0x34f)                     ||
-            ((c >= 0x200c) && (c <= 0x200f)) ||
-            ((c >= 0x202a) && (c <= 0x202e)) ||
-            ((c >= 0x2060) && (c <= 0x2063)) ||
-            ((c >= 0x206a) && (c <= 0x206f)) ||
-            ((c >= 0xf700) && (c <= 0xf7ff)) ||
-            ((c >= 0xfe00) && (c <= 0xfe0f)) ||
-            ((c >= 0xfeff) && (c <= 0xfeff)) ||
-            ((c >= 0xfff0) && (c <= 0xfffd)) ||
-            ((c >= 0xe0000) && (c <= 0xefffd))
-            )
-    return false;
-    else return true;
+CL_DEFUN bool cl__graphic_char_p(Character_sp c) {
+  return clasp_isgraph(clasp_as_claspCharacter(c));
 };
 
 CL_LAMBDA(arg)
@@ -110,11 +99,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(alphanumericp)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__alphanumericp(Character_sp ch) {
-  claspCharacter x = clasp_as_claspCharacter(ch);
-  if (x < 128) {
-    return isalpha(x) || isdigit(x);
-  }
-  return false;
+  return clasp_isalnum(clasp_as_claspCharacter(ch));
 };
 
 CL_LAMBDA(char)
@@ -721,11 +706,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(alpha_char_p)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__alpha_char_p(Character_sp ch) {
-  claspCharacter x = clasp_as_claspCharacter(ch);
-  if (x < 128) {
-    return isalpha(x);
-  }
-  return false;
+  return clasp_isalpha(clasp_as_claspCharacter(ch));
 };
 
 Fixnum clasp_digitp(claspCharacter ch, int basis) {
