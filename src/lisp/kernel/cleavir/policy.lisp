@@ -6,8 +6,7 @@
     ((quality (eql 'insert-type-checks))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
-  (> (policy:optimize-value optimize 'safety)
-     (policy:optimize-value optimize 'speed)))
+  (> (policy:optimize-value optimize 'safety) 0))
 
 ;;; This policy is used in transform.lisp to determine whether to insert
 ;;; type checks enforcing basic safety. Without these checks, low level

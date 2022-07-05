@@ -246,29 +246,15 @@ Optimizations are available for any of:
     (let* ((ignorable (append req opt (when rest (list rest))))
            (ll `(,@req &optional ,@opt ,@(when rest `((&rest ,rest)))))
            (vt `(values ,@reqt &optional ,@optt &rest ,restt))
-           (insurances
-             (flet ((insurance (param typespec)
-                      (if (ctype:top-p typespec *clasp-system*)
-                          `(,param ,param)
-                          `(,param (ensure-the ,typespec ,param)))))
-               (append (mapcar #'insurance req reqt)
-                       (mapcar #'insurance opt optt)
-                       (when rest (list `(,rest ,rest))))))
            (csym (gensym "CALL")) (bodysym (gensym "BODY")))
       `(%deftransform ,name (,csym) ,vt
          (let ((,bodysym (progn ,@body)))
            (cstify-transformer
             (bir:origin ,csym)
             ;; double backquotes carefully designed piece by piece
-            (if (policy:policy-value (bir:policy ,csym)
-                                     'insert-minimum-type-checks)
-                `(lambda (,@',ll)
-                   (let (,@',insurances)
-                     (declare (ignorable ,@',ignorable))
-                     ,,bodysym))
-                `(lambda (,@',ll)
-                   (declare (ignorable ,@',ignorable))
-                   ,,bodysym))))))))
+            `(lambda (,@',ll)
+               (declare (ignorable ,@',ignorable))
+               ,,bodysym)))))))
 
 ;;;
 
