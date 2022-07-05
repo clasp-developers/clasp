@@ -409,7 +409,7 @@ Optimizations are available for any of:
   '(not (zerop (logand f 1))))
 
 (deftransform logandc1 ((n fixnum) (b fixnum)) '(logand (lognot n) b))
-(deftransform logandc2 ((a fixnum) (n fixnum)) '(logand n (lognot b)))
+(deftransform logandc2 ((a fixnum) (n fixnum)) '(logand a (lognot n)))
 (deftransform logorc1 ((n fixnum) (b fixnum)) '(logior (lognot n) b))
 (deftransform logorc2 ((a fixnum) (n fixnum)) '(logior a (lognot n)))
 
