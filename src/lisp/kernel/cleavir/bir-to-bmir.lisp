@@ -147,6 +147,111 @@
       (change-class inst 'cc-bmir:fixed-mv-local-call
                     :nvalues (length req)))))
 
+;;; Calls we can reduce to primops. We do this late so that the more high level inference
+;;; steps don't need to concern themselves with primops.
+;;; This is a hash table where the keys are function names.
+;;; The values are alists (primop . argtypes).
+(defvar *call-to-primop* (make-hash-table :test #'equal))
+
+(defmacro deftransform (name primop-name &rest argtypes)
+  `(setf (gethash ',name *call-to-primop*)
+         (merge 'list (list (cons ',primop-name ',argtypes))
+                (gethash ',name *call-to-primop*)
+                (lambda (types1 types2)
+                  (and (= (length types1) (length types2))
+                       (every #'subtypep types1 types2)))
+                :key #'cdr)))
+
+(macrolet ((define-two-arg-ff (name sf-primop df-primop)
+             `(progn
+                (deftransform ,name ,sf-primop single-float single-float)
+                (deftransform ,name ,df-primop double-float double-float))))
+  (define-two-arg-ff core:two-arg-+ core::two-arg-sf-+ core::two-arg-df-+)
+  (define-two-arg-ff core:two-arg-- core::two-arg-sf-- core::two-arg-df--)
+  (define-two-arg-ff core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
+  (define-two-arg-ff core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/)
+  (define-two-arg-ff expt           core::sf-expt      core::df-expt))
+
+(deftransform ftruncate core::sf-ftruncate single-float single-float)
+(deftransform ftruncate core::df-ftruncate double-float double-float)
+;; TODO: One-arg form
+
+(macrolet ((define-floatf (name sf-primop df-primop)
+             `(progn
+                (deftransform ,name ,sf-primop single-float)
+                (deftransform ,name ,df-primop double-float))))
+  (define-floatf exp         core::sf-exp    core::df-exp)
+  (define-floatf cos         core::sf-cos    core::df-cos)
+  (define-floatf sin         core::sf-sin    core::df-sin)
+  (define-floatf tan         core::sf-tan    core::df-tan)
+  (define-floatf cosh        core::sf-cosh   core::df-cosh)
+  (define-floatf sinh        core::sf-sinh   core::df-sinh)
+  (define-floatf tanh        core::sf-tanh   core::df-tanh)
+  (define-floatf asinh       core::sf-asinh  core::df-asinh)
+  (define-floatf abs         core::sf-abs    core::df-abs)
+  (define-floatf core:negate core::sf-negate core::df-negate))
+
+(deftransform sqrt core::sf-sqrt (single-float 0f0))
+(deftransform sqrt core::df-sqrt (double-float 0d0))
+
+(deftransform log core::sf-log (single-float (0f0)))
+(deftransform log core::df-log (double-float (0d0)))
+
+(deftransform acos core::sf-acos (single-float -1f0 1f0))
+(deftransform acos core::df-acos (double-float -1f0 1f0))
+(deftransform asin core::sf-asin (single-float -1f0 1f0))
+(deftransform asin core::df-asin (double-float -1d0 1d0))
+
+(deftransform acosh core::sf-acosh (single-float 1f0))
+(deftransform acosh core::df-acosh (double-float 1d0))
+(deftransform atanh core::sf-atanh (single-float (-1f0) (1f0)))
+(deftransform atanh core::df-atanh (double-float (-1d0) (1d0)))
+
+(deftransform lognot core::fixnum-lognot fixnum)
+
+(macrolet ((deflog2 (name primop)
+             `(deftransform ,name ,primop fixnum fixnum)))
+  (deflog2 core:logand-2op core::fixnum-logand)
+  (deflog2 core:logior-2op core::fixnum-logior)
+  (deflog2 core:logxor-2op core::fixnum-logxor))
+
+;;; This is a very KLUDGEy way to find additions of fixnums whose result is
+;;; a fixnum as well. Plus it hardcodes the number of fixnum bits. FIXME
+(deftransform core:two-arg-+ core::fixnum-add (signed-byte 60) (signed-byte 60))
+(deftransform core:two-arg-- core::fixnum-sub (signed-byte 60) (signed-byte 60))
+
+(deftransform logcount core::fixnum-positive-logcount (and fixnum unsigned-byte))
+
+;;(deftransform car cleavir-primop:car cons)
+;;(deftransform cdr cleavir-primop:cdr cons)
+
+(deftransform aref core::sf-vref (simple-array single-float (*)) t)
+(deftransform row-major-aref core::sf-vref (simple-array single-float (*)) t)
+(deftransform aref core::df-vref (simple-array double-float (*)) t)
+(deftransform row-major-aref core::df-vref (simple-array double-float (*)) t)
+
+(deftransform (setf aref) core::sf-vset t (simple-array single-float (*)) t)
+(deftransform (setf aref) core::df-vset t (simple-array double-float (*)) t)
+
+(deftransform array-total-size core::vector-length (simple-array * (*)))
+
+(deftransform length core::vector-length (simple-array * (*)))
+
+(defmethod reduce-instruction ((inst bir:call))
+  (let ((ids (cleavir-attributes:identities (bir:attributes inst))))
+    (when ids
+      (let* ((sys clasp-cleavir:*clasp-system*)
+             (args (rest (bir:inputs inst)))
+             (types (mapcar #'bir:ctype args))
+             (ptypes (mapcar (lambda (vty) (cleavir-ctype:primary vty sys)) types))
+             (lptypes (length ptypes)))
+        (dolist (id ids)
+          (loop for (primop . ttypes) in (gethash id *call-to-primop*)
+                when (and (= lptypes (length ttypes)) (every #'subtypep ptypes ttypes))
+                  do (change-class inst 'bir:primop :inputs args
+                                                    :info (cleavir-primop-info:info primop))
+                     (return-from reduce-instruction)))))))
+
 (defun reduce-instructions (function)
   (bir:map-local-instructions #'reduce-instruction function))
 

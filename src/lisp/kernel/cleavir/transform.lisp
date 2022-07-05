@@ -303,56 +303,35 @@ Optimizations are available for any of:
 ;;;
 ;;; (12) NUMBERS
 
-(macrolet ((define-two-arg-f (name sf-primop df-primop)
+(macrolet ((define-two-arg-f (name)
              `(progn
-                (deftransform ,name ((a1 single-float) (a2 single-float))
-                  '(core::primop ,sf-primop a1 a2))
-                (deftransform ,name ((a1 double-float) (a2 double-float))
-                  '(core::primop ,df-primop a1 a2))
                 (deftransform ,name ((a1 single-float) (a2 double-float))
-                  '(core::primop ,df-primop
-                    (core::primop core::single-to-double a1)
-                    a2))
+                  '(,name (float a1 0d0) a2))
                 (deftransform ,name ((a1 double-float) (a2 single-float))
-                  '(core::primop ,df-primop
-                    a1
-                    (core::primop core::single-to-double a2)))))
-           (define-two-arg-ff (name sf-primop df-primop)
+                  '(,name a1 (float a2 0d0)))))
+           (define-two-arg-ff (name)
              `(progn
-                (define-two-arg-f ,name ,sf-primop ,df-primop)
-                (deftransform ,name ((x fixnum) (y single-float))
-                  '(core::primop ,sf-primop
-                    (core::primop core::fixnum-to-single x) y))
-                (deftransform ,name ((x single-float) (y fixnum))
-                  '(core::primop ,sf-primop
-                     (core::primop core::fixnum-to-single y)))
-                (deftransform ,name ((x fixnum) (y double-float))
-                  '(core::primop ,df-primop
-                    (core::primop core::fixnum-to-double x) y))
-                (deftransform ,name ((x double-float) (y fixnum))
-                  '(core::primop ,df-primop
-                    x (core::primop core::fixnum-to-double y))))))
-  (define-two-arg-ff core:two-arg-+ core::two-arg-sf-+ core::two-arg-df-+)
-  (define-two-arg-ff core:two-arg-- core::two-arg-sf-- core::two-arg-df--)
-  (define-two-arg-ff core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
-  (define-two-arg-ff core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/)
-  (define-two-arg-f expt           core::sf-expt      core::df-expt))
+                (define-two-arg-f ,name)
+                (deftransform ,name ((x rational) (y single-float))
+                  '(,name (float x 0f0) y))
+                (deftransform ,name ((x single-float) (y rational))
+                  '(,name x (float y 0f0)))
+                (deftransform ,name ((x rational) (y double-float))
+                  '(,name (float x 0d0) y))
+                (deftransform ,name ((x double-float) (y rational))
+                  '(,name x (float y 0d0))))))
+  (define-two-arg-ff core:two-arg-+)
+  (define-two-arg-ff core:two-arg--)
+  (define-two-arg-ff core:two-arg-*)
+  (define-two-arg-ff core:two-arg-/)
+  (define-two-arg-f  expt))
 
-(deftransform ftruncate ((dividend single-float) (divisor single-float))
-  '(core::primop core::sf-ftruncate dividend divisor))
-(deftransform ftruncate ((dividend double-float) (divisor double-float))
-  '(core::primop core::df-truncate dividend divisor))
 ;; FIXME: i think our FTRUNCATE function has a bug: it should return doubles in
 ;; this case, by my reading.
 (deftransform ftruncate ((dividend single-float) (divisor double-float))
-  '(core::primop core::df-ftruncate
-    (core::primop core::single-to-double dividend)
-    divisor))
+  '(ftruncate (float dividend 0d0) divisor))
 (deftransform ftruncate ((dividend double-float) (divisor single-float))
-  '(core::primop core::df-ftruncate
-    dividend
-    (core::primop core::single-to-double divisor)))
-;; TODO: one-arg form
+  '(ftruncate dividend (float divisor 0d0)))
 
 (macrolet ((define-float-conditional (name sf-primop df-primop)
              `(progn
@@ -393,80 +372,19 @@ Optimizations are available for any of:
 (deftransform minusp ((n double-float))
   '(if (core::primop core::two-arg-df-< n 0d0) t nil))
 
-(macrolet ((define-irratf (name sf-primop df-primop)
-             `(progn
-                (deftransform ,name ((arg single-float))
-                  '(core::primop ,sf-primop arg))
-                (deftransform ,name ((arg double-float))
-                  '(core::primop ,df-primop arg))
-                (deftransform ,name ((arg fixnum))
-                  '(core::primop ,sf-primop
-                    (core::primop core::fixnum-to-single arg))))))
-  (define-irratf exp         core::sf-exp    core::df-exp)
-  (define-irratf cos         core::sf-cos    core::df-cos)
-  (define-irratf sin         core::sf-sin    core::df-sin)
-  (define-irratf tan         core::sf-tan    core::df-tan)
-  (define-irratf cosh        core::sf-cosh   core::df-cosh)
-  (define-irratf sinh        core::sf-sinh   core::df-sinh)
-  (define-irratf tanh        core::sf-tanh   core::df-tanh)
-  (define-irratf asinh       core::sf-asinh  core::df-asinh))
+(macrolet ((define-irratf (name)
+             `(deftransform ,name ((arg rational))
+                '(,name (float arg 0f0))))
+           (define-irratfs (&rest names)
+             `(progn ,@(loop for name in names collect `(define-irratf ,name)))))
+  (define-irratfs exp cos sin tan cosh sinh tanh asinh sqrt
+    ;; Only transform the one-argument case.
+    ;; The compiler macro in opt-number.lisp should reduce two-arg to one-arg.
+    log
+    acos asin acosh atanh))
 
-(deftransform sqrt ((arg (single-float 0f0)))
-  '(core::primop core::sf-sqrt arg))
-(deftransform sqrt ((arg (double-float 0d0)))
-  '(core::primop core::df-sqrt arg))
-(deftransform sqrt ((arg (integer 0 #.most-positive-fixnum)))
-  '(core::primop core::sf-sqrt
-    (core::primop core::fixnum-to-single arg)))
-
-;; Only transform the one-argument case.
-;; The compiler macro in opt-number.lisp should reduce two-arg to one-arg.
-(deftransform log ((arg (single-float (0f0))))
-  '(core::primop core::sf-log arg))
-(deftransform log ((arg (double-float (0d0))))
-  '(core::primop core::df-log arg))
-(deftransform log ((arg (integer 1 #.most-positive-fixnum)))
-  '(core::primop core::sf-log
-    (core::primop core::fixnum-to-single arg)))
-
-(deftransform acos ((arg (single-float -1f0 1f0)))
-  '(core::primop core::sf-acos arg))
-(deftransform acos ((arg (double-float -1d0 1d0)))
-  '(core::primop core::df-acos arg))
-;; Don't bother with fixnums in such a small range
-
-(deftransform asin ((arg (single-float -1f0 1f0)))
-  '(core::primop core::sf-asin arg))
-(deftransform asin ((arg (double-float -1d0 1d0)))
-  '(core::primop core::df-asin arg))
-
-(deftransform acosh ((arg (single-float 1f0)))
-  '(core::primop core::sf-acosh arg))
-(deftransform acosh ((arg (double-float 1d0)))
-  '(core::primop core::df-acosh arg))
-(deftransform acosh ((arg (integer 1 #.most-positive-fixnum)))
-  '(core::primop core::sf-acosh
-    (core::primop core::fixnum-to-single arg)))
-
-(deftransform atanh ((arg (single-float (-1f0) (1f0))))
-  '(core::primop core::sf-atanh arg))
-(deftransform atanh ((arg (double-float (-1d0) (1d0))))
-  '(core::primop core::df-atanh arg))
-
-(deftransform abs ((arg single-float))
-  '(core::primop core::sf-abs arg))
-(deftransform abs ((arg double-float))
-  '(core::primop core::df-abs arg))
-
-(deftransform core:negate ((arg single-float))
-  '(core::primop core::sf-negate arg))
-(deftransform core:negate ((arg double-float))
-  '(core::primop core::df-negate arg))
-
-(deftransform core:reciprocal ((v single-float))
-  '(core::two-arg-sf-/ 1f0 v))
-(deftransform core:reciprocal ((v double-float))
-  '(core::two-arg-df-/ 1d0 v))
+(deftransform core:reciprocal ((v single-float)) '(/ 1f0 v))
+(deftransform core:reciprocal ((v double-float)) '(/ 1d0 v))
 
 (deftransform float ((v single-float)) 'v)
 (deftransform float ((v single-float) (proto single-float)) 'v)
@@ -500,53 +418,22 @@ Optimizations are available for any of:
 ;;;        And maybe should use LOGTEST, but I'm not sure what the best way
 ;;;        to optimize that is yet.
 (deftransform evenp ((f fixnum))
-  '(zerop (truly-the fixnum (core::primop core::fixnum-logand f 1))))
+  '(zerop (logand f 1)))
 (deftransform oddp ((f fixnum))
-  '(not (zerop (truly-the fixnum (core::primop core::fixnum-logand f 1)))))
+  '(not (zerop (logand f 1))))
 
-(deftransform lognot ((f fixnum))
-  '(core::primop core::fixnum-lognot f))
+(deftransform logandc1 ((n fixnum) (b fixnum)) '(logand (lognot n) b))
+(deftransform logandc2 ((a fixnum) (n fixnum)) '(logand n (lognot b)))
+(deftransform logorc1 ((n fixnum) (b fixnum)) '(logior (lognot n) b))
+(deftransform logorc2 ((a fixnum) (n fixnum)) '(logior a (lognot n)))
 
-(macrolet ((deflog2 (name primop)
-             `(deftransform ,name ((a fixnum) (b fixnum))
-                '(core::primop ,primop a b))))
-  (deflog2 core:logand-2op core::fixnum-logand)
-  (deflog2 core:logior-2op core::fixnum-logior)
-  (deflog2 core:logxor-2op core::fixnum-logxor))
+(macrolet ((deflog2r (name neg)
+             `(deftransform ,name ((a fixnum) (b fixnum)) '(lognot (,neg a b)))))
+  (deflog2r core:logeqv-2op core:logxor-2op)
+  (deflog2r lognand core:logand-2op)
+  (deflog2r lognor core:logior-2op))
 
-(deftransform logandc1 ((n fixnum) (b fixnum))
-  '(core::primop core::fixnum-logand
-    (core::primop core::fixnum-lognot n) b))
-(deftransform logandc2 ((a fixnum) (n fixnum))
-  '(core::primop core::fixnum-logand
-    a (core::primop core::fixnum-lognot n)))
-(deftransform logorc1 ((n fixnum) (b fixnum))
-  '(core::primop core::fixnum-logior
-    (core::primop core::fixnum-lognot n) b))
-(deftransform logorc2 ((a fixnum) (n fixnum))
-  '(core::primop core::fixnum-logior
-    a (core::primop core::fixnum-lognot n)))
-
-(macrolet ((deflog2r (name primop)
-             `(deftransform ,name ((a fixnum) (b fixnum))
-                '(core::primop core::fixnum-lognot
-                  (core::primop ,primop a b)))))
-  (deflog2r core:logeqv-2op core::fixnum-logxor)
-  (deflog2r lognand core::fixnum-logand)
-  (deflog2r lognor core::fixnum-logior))
-
-;;; This is a very KLUDGEy way to find additions of fixnums whose result is
-;;; a fixnum as well. Plus it hardcodes the number of fixnum bits. FIXME
-(deftransform core:two-arg-+ ((a (signed-byte 60)) (b (signed-byte 60)))
-  '(core::primop core::fixnum-add a b))
-(deftransform core:two-arg-- ((a (signed-byte 60)) (b (signed-byte 60)))
-  '(core::primop core::fixnum-sub a b))
-
-;; assuming 2's complement, most-negative-fixnum, uniquely among fixnums,
-;; has a bignum negation.
-(deftransform core:negate ((n (integer #.(1+ most-negative-fixnum)
-                                       #.most-positive-fixnum)))
-  '(core::primop core::fixnum-sub 0 n))
+(deftransform core:negate ((n fixnum)) '(- 0 n))
 
 (macrolet ((define-fixnum-conditional (name primop)
              `(deftransform ,name ((x fixnum) (y fixnum))
@@ -564,9 +451,6 @@ Optimizations are available for any of:
 (deftransform minusp ((n fixnum))
   '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
 
-(deftransform logcount ((n (and fixnum unsigned-byte)))
-  '(core::primop core::fixnum-positive-logcount n))
-
 ;; right shift of a fixnum
 (deftransform ash ((int fixnum) (count (integer * 0)))
   '(core::primop core::fixnum-ashr int (min (- count) 63)))
@@ -574,9 +458,6 @@ Optimizations are available for any of:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (14) CONSES
-
-(deftransform car ((cons cons)) '(cleavir-primop:car cons))
-(deftransform cdr ((cons cons)) '(cleavir-primop:cdr cons))
 
 (deftransform length ((x null)) 0)
 (deftransform length ((x cons)) '(core:cons-length x))
@@ -589,15 +470,6 @@ Optimizations are available for any of:
 ;;;
 ;;; (15) ARRAYS
 
-(deftransform aref ((arr (simple-array single-float (*))) i)
-  '(core::primop core::sf-vref arr i))
-(deftransform aref ((arr (simple-array double-float (*))) i)
-  '(core::primop core::df-vref arr i))
-(deftransform row-major-aref ((arr (simple-array single-float (*))) i)
-  '(core::primop core::sf-vref arr i))
-(deftransform row-major-aref ((arr (simple-array double-float (*))) i)
-  '(core::primop core::df-vref arr i))
-
 (deftransform core:row-major-aset ((arr (simple-array single-float (*)))
                                    idx value)
   '(core::primop core::sf-vset value arr idx))
@@ -605,19 +477,11 @@ Optimizations are available for any of:
                                    idx value)
   '(core::primop core::df-vset value arr idx))
 
-(deftransform (setf aref) (value (arr (simple-array single-float (*))) idx)
-  '(core::primop core::sf-vset value arr idx))
-(deftransform (setf aref) (value (arr (simple-array double-float (*))) idx)
-  '(core::primop core::df-vset value arr idx))
-
-(deftransform aref ((arr vector) (index t))
-  '(row-major-aref arr index))
+(deftransform aref ((arr vector) (index t)) '(row-major-aref arr index))
 (deftransform (setf aref) ((val t) (arr vector) (index t))
   '(setf (row-major-aref arr index) val))
 
 (deftransform array-rank ((arr (array * (*)))) 1)
-(deftransform array-total-size ((arr (simple-array * (*))))
-  '(core::primop core::vector-length arr))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -636,9 +500,6 @@ Optimizations are available for any of:
 (deftransform elt ((seq list) n) '(nth n seq))
 (deftransform core:setf-elt ((seq list) n value) '(setf (nth n seq) value))
 )
-
-(deftransform length ((arr vector))
-  '(core::primop core::vector-length arr))
 
 (deftransform reverse ((x list)) '(core:list-reverse x))
 (deftransform nreverse ((x list)) '(core:list-nreverse x))
