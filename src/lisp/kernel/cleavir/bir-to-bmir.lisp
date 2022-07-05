@@ -241,6 +241,7 @@
   (let ((ids (cleavir-attributes:identities (bir:attributes inst))))
     (when ids
       (let* ((sys clasp-cleavir:*clasp-system*)
+             (callee (bir:callee inst))
              (args (rest (bir:inputs inst)))
              (types (mapcar #'bir:ctype args))
              (ptypes (mapcar (lambda (vty) (cleavir-ctype:primary vty sys)) types))
@@ -248,7 +249,21 @@
         (dolist (id ids)
           (loop for (primop . ttypes) in (gethash id *call-to-primop*)
                 when (and (= lptypes (length ttypes)) (every #'subtypep ptypes ttypes))
-                  do (change-class inst 'bir:primop :inputs args
+                  ;; Do the reduction to primop.
+                  ;; If the callee is an fdefinition primop, delete that.
+                  ;; KLUDGEy as we don't do a fully usedness analysis.
+                  do (when (typep callee 'bir:output)
+                       (let ((fdef (bir:definition callee)))
+                         (when (and (typep fdef 'bir:primop)
+                                    (eq 'fdefinition (cleavir-primop-info:name
+                                                      (bir:info fdef))))
+                           (let ((sym (first (bir:inputs fdef))))
+                             (bir:delete-instruction fdef)
+                             (when (typep sym 'bir:output)
+                               (let ((symdef (bir:definition sym)))
+                                 (when (typep symdef 'bir:constant-reference)
+                                   (bir:delete-instruction symdef))))))))
+                     (change-class inst 'bir:primop :inputs args
                                                     :info (cleavir-primop-info:info primop))
                      (return-from reduce-instruction)))))))
 
