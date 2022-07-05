@@ -40,7 +40,7 @@
   error-stream
   (%status :running)
   (%code nil)
-  #+threads (%lock (mp:make-lock))
+  #+threads (%lock (mp:make-lock :name "external-process-lock"))
   #+threads (%pipe (mp:make-process "external-process" 'missing-function)))
 
 (defun external-process-status (external-process)
@@ -111,9 +111,9 @@
 ;;; We don't handle `sigchld' because we don't want races with
 ;;; `external-process-wait'. Take care of forgotten processes.
 (defun finalize-external-process (process)
-  (unless (member (ext:external-process-wait process nil)
-                  '(:exited :signaled :abort :error))
-    (gctools:finalize process #'finalize-external-process)))
+  (let ((wait-val (ext:external-process-wait process nil)))
+    (unless (member wait-val '(:exited :signaled :abort :error))
+      (gctools:finalize process #'finalize-external-process))))
 
 ;;;
 ;;; Almighty EXT:RUN-PROGRAM. Built on top of SI:SPAWN-SUBPROCESS. For simpler
