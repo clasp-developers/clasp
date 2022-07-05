@@ -3,6 +3,7 @@
   :depends-on (#:alexandria
                #:asdf-groveler
                #:clasp-scraper
+               #:closer-mop
                #:ninja
                #:shasht
                #:trivial-features)

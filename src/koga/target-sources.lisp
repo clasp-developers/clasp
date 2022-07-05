@@ -64,26 +64,26 @@
 (defmethod add-target-source :after (configuration (target (eql :iclasp)) (source source))
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
-    (add-target-source configuration :etags source))
+    (add-target-source configuration :tags source))
   (add-target-source configuration :sclasp source))
 
 ;; Sources that are added to aclasp also need to be installed and scanned for tags.
 (defmethod add-target-source :after (configuration (target (eql :aclasp)) (source source))
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
-    (add-target-source configuration :etags source)))
+    (add-target-source configuration :tags source)))
 
 ;; Sources that are added to bclasp also need to be installed and scanned for tags.
 (defmethod add-target-source :after (configuration (target (eql :bclasp)) (source source))
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
-    (add-target-source configuration :etags source)))
+    (add-target-source configuration :tags source)))
 
 ;; Sources that are added to cclasp also need to be installed and scanned for tags.
 (defmethod add-target-source :after (configuration (target (eql :cclasp)) (source source))
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
-    (add-target-source configuration :etags source)))
+    (add-target-source configuration :tags source)))
 
 ;; For directories that are to be installed skip hidden files and waf files.
 (defun add-target-directory (configuration target source)

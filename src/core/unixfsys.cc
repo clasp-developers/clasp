@@ -962,11 +962,20 @@ int clasp_backup_open(const char *filename, int option, int mode) {
 
 Integer_sp
 clasp_file_len(int f) {
-  struct stat filestatus;
   clasp_disable_interrupts();
+#if 1
+  size_t pos = lseek(f,0,SEEK_CUR);
+  lseek(f,0,SEEK_END);
+  size_t size = lseek(f,0,SEEK_CUR);
+  lseek(f,pos,SEEK_SET);
+  clasp_enable_interrupts();
+  return Integer_O::create((gc::Fixnum)(size));
+#else
+  struct stat filestatus;
   fstat(f, &filestatus);
   clasp_enable_interrupts();
   return Integer_O::create((gc::Fixnum)(filestatus.st_size));
+#endif
 }
 
 CL_LAMBDA(oldn newn &key (if-exists :error))

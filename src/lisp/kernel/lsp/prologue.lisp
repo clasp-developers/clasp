@@ -20,9 +20,8 @@
   (if (find-package "CLEAVIR-AST") nil (make-package "CLEAVIR-AST"))
   (if (find-package "CLASP-CLEAVIR-AST") nil (make-package "CLASP-CLEAVIR-AST"))
   (if (find-package "CLASP-CLEAVIR") nil (make-package "CLASP-CLEAVIR"))
-  (setq *features* (cons :cclasp *features*))
+  (setq *features* (cons #+cclasp :cclasp #+eclasp :eclasp *features*))
   (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
-  (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
   (if (core:noinform-p)
       nil
       (format t "Starting ~a ... loading image...~%"

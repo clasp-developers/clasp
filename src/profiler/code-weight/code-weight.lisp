@@ -1,3 +1,4 @@
+(in-package #:code-weight)
 
 (defstruct code metadata)
 (defstruct location line column scope inlined-at)
