@@ -157,7 +157,7 @@
     (ast ctype origin env (system clasp-cleavir:clasp))
   ;; FIXME: same semantics as TYPE-WRAP but should probably use the
   ;; different policy value. didn't want to copy and paste though.
-  (cst-to-ast:type-wrap ast ctype origin env system))
+  (cst-to-ast:type-wrap-argument ast ctype origin env system))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
