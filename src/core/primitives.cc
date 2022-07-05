@@ -414,7 +414,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp core__print_address_of(T_sp arg, T_sp msg) {
   ASSERT(arg.objectp());
   void *ptr = &(*arg);
-  printf("%s:%d  AddressOf = %p\n", __FILE__, __LINE__, ptr);
+  printf("%s:%d  AddressOf = %p msg: %s\n", __FILE__, __LINE__, ptr, _rep_(msg).c_str());
   return arg;
 };
 
