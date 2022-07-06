@@ -266,6 +266,7 @@
 (defclass cc-vaslist:nthcdr (bir:one-output bir:instruction) ())
 (defclass cc-vaslist:last (bir:one-output bir:instruction) ())
 (defclass cc-vaslist:butlast (bir:one-output bir:instruction) ())
+(defclass cc-vaslist:length (bir:one-input bir:one-output bir:instruction) ())
 
 ;;; This is (complement #'endp) for vaslists - i.e. "Not ENDP"
 (defclass cc-vaslist:nendp (bir:one-input bir:conditional-test) ())

@@ -23,7 +23,7 @@
 (defun lambda-list-too-hairy-p (lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs aok aux varest-p)
       (cmp:process-bir-lambda-list lambda-list)
-    (declare (ignore reqargs optargs keyargs aok aux))
+    (declare (ignore reqargs optargs keyargs aok aux rest-var varest-p))
     key-flag))
 
 (defun nontrivial-mv-local-call-p (call)
@@ -1283,6 +1283,12 @@
          (output (bir:output inst))
          (label (datum-name-as-string output)))
     (out (cmp:irc-vaslist-butlast uindex vaslist label) output)))
+(defmethod translate-simple-instruction ((inst cc-vaslist:length) abi)
+  (declare (ignore abi))
+  (let* ((vaslist (in (bir:input inst)))
+         (untagged-length (cmp:irc-vaslist-nvals vaslist))
+         (fix (cmp:irc-tag-fixnum untagged-length "length")))
+    (out fix (bir:output inst))))
 
 (defmethod translate-simple-instruction ((inst bir:primop) abi)
   (declare (ignore abi))

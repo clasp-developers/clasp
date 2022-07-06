@@ -262,6 +262,8 @@
   (if (eq datum (second (bir:inputs inst)))
       '(:vaslist)
       '(:object)))
+(defmethod %use-rtype ((inst cc-vaslist:length) (datum bir:datum))
+  '(:vaslist))
 (defmethod %use-rtype ((inst bir:primop) (datum bir:datum))
   (list (nth (position datum (bir:inputs inst))
              (rest (clasp-cleavir:primop-rtype-info (bir:info inst))))))
@@ -769,6 +771,9 @@
     (maybe-cast-before instruction (first inputs) '(:object))
     (maybe-cast-before instruction (second inputs) '(:vaslist)))
   (cast-output instruction '(:vaslist)))
+(defmethod insert-casts ((instruction cc-vaslist:length))
+  (cast-inputs instruction '(:vaslist))
+  (object-output instruction))
 
 ;; returni just passes out whatever it's given. (or will)
 (defmethod insert-casts ((instruction bir:returni))
