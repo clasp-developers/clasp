@@ -169,9 +169,6 @@
                                    (first real-next-rt))))))))))
           (t '(:object)))))
 (defmethod definition-rtype ((datum bir:argument))
-  #+(or)
-  '(:object)
-  ;;#+(or)
   (argument-definition-rtype datum))
 
 (defmethod definition-rtype ((phi bir:phi))

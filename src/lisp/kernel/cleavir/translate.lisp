@@ -24,7 +24,7 @@
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs aok aux varest-p)
       (cmp:process-bir-lambda-list lambda-list)
     (declare (ignore reqargs optargs keyargs aok aux))
-    (or key-flag (and varest-p (not (bir:unused-p rest-var))))))
+    key-flag))
 
 (defun nontrivial-mv-local-call-p (call)
   (cond ((typep call 'cc-bmir:fixed-mv-local-call)
@@ -677,6 +677,25 @@
        "cc_list" (list* (%size_t (length present-arguments))
                         present-arguments))))
 
+(defun maybe-boxed-vaslist (boxp nvals vals)
+  (let ((vas (cmp:irc-make-vaslist nvals vals)))
+    (if boxp
+        (let ((mem (cmp:alloca cmp:%vaslist% 1)))
+          (cmp:irc-store vas mem)
+          (cmp:irc-tag-vaslist mem))
+        vas)))
+
+(defun gen-va-rest-list (present-arguments boxp)
+  (let* ((nargs (length present-arguments))
+         ;; nargs is constant, so this alloca is just in the intro block.
+         (dat (cmp:alloca cmp:%t*% nargs "local-va-rest")))
+    ;; Store the arguments into the allocated memory.
+    (loop for arg in present-arguments
+          for i from 0
+          do (cmp:irc-store arg (%gep cmp:%t**% dat (list i))))
+    ;; Make and return the va list object.
+    (maybe-boxed-vaslist boxp (%size_t nargs) dat)))
+
 (defun parse-local-call-optional-arguments (opt arguments)
   (loop for (op) on (rest opt) by #'cdddr
         if arguments
@@ -690,7 +709,7 @@
 ;; Create than argument list for a local call by parsing the callee's
 ;; lambda list and filling in the correct values at compile time. We
 ;; assume that we have already checked the validity of this call.
-(defun parse-local-call-arguments (req opt rest arguments)
+(defun parse-local-call-arguments (req opt rest rest-vrtype arguments)
   (let* ((nreq (car req)) (nopt (car opt))
          (reqargs (subseq arguments 0 nreq))
          (more (nthcdr nreq arguments))
@@ -699,6 +718,9 @@
            (cond ((not rest) nil)
                  ((eq rest :unused)
                   (list (cmp:irc-undef-value-get cmp:%t*%)))
+                 ((eq rest :va-rest)
+                  (list (gen-va-rest-list (nthcdr nopt more)
+                                          (eq rest-vrtype :object))))
                  (t (list (gen-rest-list (nthcdr nopt more)))))))
     (append reqargs optargs rest)))
 
@@ -745,6 +767,15 @@
         ;; referenced as literal.
         (%closurette-value enclosed-xep-group))))
 
+(defun rest-vrtype (rest-var)
+  ;; We want :object or :vaslist only, even if the rest
+  ;; param is unused etc., because our local call convention
+  ;; doesn't account for unused parameters.
+  ;; this is a bit suboptimal: see compute-rtype bir:argument method
+  (if (and rest-var (equal (cc-bmir:rtype rest-var) '(:vaslist)))
+      :vaslist
+      :object))
+
 (defun gen-local-call (callee arguments outputrt)
   (let ((callee-info (find-llvm-function-info callee)))
     (cond ((lambda-list-too-hairy-p (bir:lambda-list callee))
@@ -765,8 +796,7 @@
                                  varest-p)
                (cmp:process-bir-lambda-list (bir:lambda-list callee))
              (declare (ignore keyargs aok aux))
-             (assert (and (not key-flag)
-                          (or (not varest-p) (bir:unused-p rest-var))))
+             (assert (not key-flag))
              (let ((largs (length arguments)))
                (when (or (< largs (car req))
                          (and (not rest-var)
@@ -780,10 +810,12 @@
                                    :multiple-values outputrt))))
              (let* ((rest-id (cond ((null rest-var) nil)
                                    ((bir:unused-p rest-var) :unused)
+                                   (varest-p :va-rest)
                                    (t t)))
+                    (rest-vrtype (rest-vrtype rest-var))
                     (subargs
                       (parse-local-call-arguments
-                       req opt rest-id arguments))
+                       req opt rest-id rest-vrtype arguments))
                     (args (append (mapcar #'variable-as-argument
                                           (environment callee-info))
                                   subargs))
@@ -822,7 +854,7 @@
                                  label)
                   :multiple-values outputrt))
 
-(defun direct-mv-local-call-vas (vaslist callee-info req opt rest-var
+(defun direct-mv-local-call-vas (vaslist callee-info req opt rest-var varest-p
                                  label outputrt)
   (let* ((nreq (car req))
          (nopt (car opt))
@@ -837,7 +869,8 @@
                   mismatch))
          (merge (cmp:irc-basic-block-create "lmvc-after"))
          (sw (cmp:irc-switch rnret mte (+ 1 nreq nopt)))
-         (environment (environment callee-info)))
+         (environment (environment callee-info))
+         (rest-vaboxp (not (eq (rest-vrtype rest-var) :vaslist))))
     (labels ((load-return-value (n)
                (cmp:irc-load (cmp:irc-gep rvalues (list n))))
              (load-return-values (low high)
@@ -880,9 +913,15 @@
                  (loop for phi in opt-phis
                        for val in (optionals i)
                        do (cmp:irc-phi-add-incoming phi val b))
-                 (when (and rest-var
-                            (not (bir:unused-p rest-var)))
-                   (cmp:irc-phi-add-incoming rest-phi (%nil) b))
+                 (when (and rest-var (not (bir:unused-p rest-var)))
+                   (cmp:irc-phi-add-incoming
+                    rest-phi
+                    (if varest-p
+                        (maybe-boxed-vaslist
+                         rest-vaboxp (%size_t 0)
+                         (llvm-sys:constant-pointer-null-get cmp:%t**%))
+                        (%nil))
+                    b))
                  (cmp:irc-br merge))
         ;; If there's a &rest, generate the more-than-enough arguments case.
         (when rest-var
@@ -893,31 +932,36 @@
           (unless (bir:unused-p rest-var)
             (cmp:irc-phi-add-incoming
              rest-phi
-             (%intrinsic-invoke-if-landing-pad-or-call
-              "cc_mvcGatherRest2"
-              (list (cmp:irc-gep rvalues (list nfixed))
-                    (cmp:irc-sub rnret (%size_t nfixed))))
-           mte))
-        (cmp:irc-br merge))
-      ;; Generate the call, in the merge block.
-      (cmp:irc-begin-block merge)
-      (let* ((arguments
-               (nconc
-                (mapcar #'variable-as-argument environment)
-                (loop for r in (rest req)
-                      for j from 0
-                      collect (translate-cast (load-return-value j) '(:object)
-                                              (cc-bmir:rtype r)))
-                opt-phis
-                (when rest-var (list rest-phi))))
-             (function (main-function callee-info))
-             (function-type (llvm-sys:get-function-type function))
-             (call
-               (cmp:irc-call-or-invoke function-type function arguments
-                                       cmp:*current-unwind-landing-pad-dest*
-                                       label)))
-        #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
-        (local-call-rv->inputs call outputrt))))))
+             (if varest-p
+                 (maybe-boxed-vaslist
+                  rest-vaboxp
+                  (cmp:irc-sub rnret (%size_t nfixed))
+                  (cmp:irc-gep rvalues (list nfixed)))
+                 (%intrinsic-invoke-if-landing-pad-or-call
+                  "cc_mvcGatherRest2"
+                  (list (cmp:irc-gep rvalues (list nfixed))
+                        (cmp:irc-sub rnret (%size_t nfixed)))))
+             mte))
+          (cmp:irc-br merge))
+        ;; Generate the call, in the merge block.
+        (cmp:irc-begin-block merge)
+        (let* ((arguments
+                 (nconc
+                  (mapcar #'variable-as-argument environment)
+                  (loop for r in (rest req)
+                        for j from 0
+                        collect (translate-cast (load-return-value j) '(:object)
+                                                (cc-bmir:rtype r)))
+                  opt-phis
+                  (when rest-var (list rest-phi))))
+               (function (main-function callee-info))
+               (function-type (llvm-sys:get-function-type function))
+               (call
+                 (cmp:irc-call-or-invoke function-type function arguments
+                                         cmp:*current-unwind-landing-pad-dest*
+                                         label)))
+          #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
+          (local-call-rv->inputs call outputrt))))))
 
 (defmethod translate-simple-instruction
     ((instruction bir:mv-local-call) abi)
@@ -936,10 +980,10 @@
                            aok aux varest-p)
          (cmp::process-bir-lambda-list (bir:lambda-list callee))
        (declare (ignore keyargs aok aux))
-       (if (or key-flag (and varest-p (not (bir:unused-p rest-var))))
+       (if key-flag
            (general-mv-local-call-vas callee-info mvargi oname outputrt)
            (direct-mv-local-call-vas
-            mvargi callee-info req opt rest-var oname outputrt)))
+            mvargi callee-info req opt rest-var varest-p oname outputrt)))
      output)))
 
 (defmethod translate-simple-instruction
