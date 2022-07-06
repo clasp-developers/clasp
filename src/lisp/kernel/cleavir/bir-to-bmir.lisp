@@ -6,7 +6,7 @@
 
 ;;; Transform an instruction. Called for effect.
 (defgeneric reduce-instruction (instruction)
-  ;; Default instruction: Do nothing.
+  ;; Default method: Do nothing.
   (:method ((instruction bir:instruction))))
 
 (defun process-typeq-type (ts)
@@ -51,53 +51,6 @@
                   (check-type header-info (or integer cons)) ; sanity check
                   (change-class typeq 'cc-bmir:headerq :info header-info))
                  (t (error "BUG: Typeq for unknown type: ~a" ts))))))))
-
-(defmethod reduce-instruction ((primop bir:primop))
-  (case (cleavir-primop-info:name (bir:info primop))
-    ((cleavir-primop:car)
-     (let ((in (bir:inputs primop))
-           (nout (make-instance 'bir:output)))
-       (change-class primop 'cc-bmir:load :inputs ())
-       (let ((mr (make-instance 'cc-bmir:memref2
-                   :inputs in :outputs (list nout)
-                   :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
-                   :origin (bir:origin primop)
-                   :policy (bir:policy primop))))
-         (bir:insert-instruction-before mr primop)
-         (setf (bir:inputs primop) (list nout)))))
-    ((cleavir-primop:cdr)
-     (let ((in (bir:inputs primop))
-           (nout (make-instance 'bir:output)))
-       (change-class primop 'cc-bmir:load :inputs ())
-       (let ((mr (make-instance 'cc-bmir:memref2
-                   :inputs in :outputs (list nout)
-                   :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
-                   :origin (bir:origin primop)
-                   :policy (bir:policy primop))))
-         (bir:insert-instruction-before mr primop)
-         (setf (bir:inputs primop) (list nout)))))
-    ((cleavir-primop:rplaca)
-     (let ((in (bir:inputs primop))
-           (nout (make-instance 'bir:output)))
-       (change-class primop 'cc-bmir:store :inputs ())
-       (let ((mr (make-instance 'cc-bmir:memref2
-                   :inputs (list (first in)) :outputs (list nout)
-                   :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
-                   :origin (bir:origin primop)
-                   :policy (bir:policy primop))))
-         (bir:insert-instruction-before mr primop)
-         (setf (bir:inputs primop) (list (second in) nout)))))
-    ((cleavir-primop:rplacd)
-     (let ((in (bir:inputs primop))
-           (nout (make-instance 'bir:output)))
-       (change-class primop 'cc-bmir:store :inputs ())
-       (let ((mr (make-instance 'cc-bmir:memref2
-                   :inputs (list (first in)) :outputs (list nout)
-                   :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
-                   :origin (bir:origin primop)
-                   :policy (bir:policy primop))))
-         (bir:insert-instruction-before mr primop)
-         (setf (bir:inputs primop) (list (second in) nout)))))))
 
 (defmethod reduce-instruction ((inst bir:fixed-values-save))
   ;; Reduce to MTF.
@@ -236,6 +189,11 @@
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 
 (deftransform length core::vector-length (simple-array * (*)))
+
+(deftransform car cleavir-primop:car cons)
+(deftransform cdr cleavir-primop:cdr cons)
+(deftransform rplaca cleavir-primop:rplaca cons t)
+(deftransform rplacd cleavir-primop:rplacd cons t)
 
 (defmethod reduce-instruction ((inst bir:call))
   (let ((ids (cleavir-attributes:identities (bir:attributes inst))))

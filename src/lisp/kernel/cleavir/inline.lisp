@@ -1261,18 +1261,6 @@
                                     value)
                                   ,form)
       `(cleavir-primop:truly-the (values list &rest t) ,form)))
-(define-cleavir-compiler-macro car (&whole form x &environment env)
-  (let ((s (gensym "X")))
-    `(let ((,s ,(list-check-form x env)))
-       (if ,s
-           (cleavir-primop:car ,s)
-           nil))))
-(define-cleavir-compiler-macro cdr (&whole form x &environment env)
-  (let ((s (gensym "X")))
-    `(let ((,s ,x))
-       (if ,(list-check-form s env)
-           (cleavir-primop:cdr ,s)
-           nil))))
 
 (defmacro defcr (name &rest ops)
   `(progn
@@ -1326,26 +1314,6 @@
 (defcr eighth  car cdr cdr cdr cdr cdr cdr cdr)
 (defcr ninth   car cdr cdr cdr cdr cdr cdr cdr cdr)
 (defcr tenth   car cdr cdr cdr cdr cdr cdr cdr cdr cdr)
-
-(debug-inline "rplaca")
-
-(progn
-  (declaim (inline cl:rplaca))
-  (defun cl:rplaca (p v)
-    (if (cleavir-primop:typeq p cons)
-        (progn
-          (cleavir-primop:rplaca p v)
-          p)
-        (error 'type-error :datum p :expected-type 'cons))))
-
-(progn
-  (declaim (inline cl:rplacd))
-  (defun cl:rplacd (p v)
-    (if (cleavir-primop:typeq p cons)
-        (progn
-          (cleavir-primop:rplacd p v)
-          p)
-        (error 'type-error :datum p :expected-type 'cons))))
 
 ;;; This overrides the compiler macro defined in cmp/opt/opt-cons.lisp.
 ;;; That compiler macro must work in bclasp, so it doesn't have access to

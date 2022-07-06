@@ -1212,13 +1212,13 @@
                     (bir:origin instr) inputrt outputrt)
     (out (translate-cast (in input) inputrt outputrt) output)))
 
-(defmethod translate-simple-instruction ((inst cc-bmir:memref2) abi)
+(defmethod translate-simple-instruction ((inst cc-blir:memref2) abi)
   (declare (ignore abi))
   (out (cmp::gen-memref-address (in (first (bir:inputs inst)))
-                                (cc-bmir:offset inst))
+                                (cc-blir:offset inst))
        (bir:output inst)))
 
-(defmethod translate-simple-instruction ((inst cc-bmir:load) abi)
+(defmethod translate-simple-instruction ((inst cc-blir:load) abi)
   (declare (ignore abi))
   (out (cmp:irc-load-atomic (in (first (bir:inputs inst)))
                             :order (cmp::order-spec->order (cc-bir:order inst))
@@ -1226,7 +1226,7 @@
                                     (bir:output inst)))
        (bir:output inst)))
 
-(defmethod translate-simple-instruction ((inst cc-bmir:store) abi)
+(defmethod translate-simple-instruction ((inst cc-blir:store) abi)
   (declare (ignore abi))
   (cmp:irc-store-atomic
    (in (first (bir:inputs inst)))
@@ -1237,7 +1237,7 @@
   (declare (ignore abi))
   (cmp::gen-fence (cc-bir:order inst)))
 
-(defmethod translate-simple-instruction ((inst cc-bmir:cas) abi)
+(defmethod translate-simple-instruction ((inst cc-blir:cas) abi)
   (declare (ignore abi))
   (out (cmp:irc-cmpxchg (in (first (bir:inputs inst)))
                         (in (second (bir:inputs inst)))
@@ -2172,6 +2172,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (cc-vaslist:maybe-transform-module module)
   (bir-transformations:module-generate-type-checks module system)
   (cc-bir-to-bmir:reduce-module-instructions module)
+  (cc-bmir-to-blir:reduce-module-instructions module)
   ;; These should happen after higher level optimizations since they are like
   ;; "post passes" which do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.
