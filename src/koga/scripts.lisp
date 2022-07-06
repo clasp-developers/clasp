@@ -162,7 +162,7 @@ exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
 (defmethod print-prologue (configuration (name (eql :clasprc)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream nil)
-  (format output-stream "~%(load #P\"quicklisp:setup.lisp\")
+  (format output-stream "~%(load #P\"sys:quicklisp;setup.lisp\")
 (unless (ql-dist:find-dist \"quickclasp\")
   (sleep 2) ; ensure that the sequence number if quickclasp is higher
   (ql-dist:install-dist \"http://thirdlaw.tech/quickclasp/quickclasp.txt\" :prompt nil))"))
