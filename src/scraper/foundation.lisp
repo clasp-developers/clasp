@@ -1,5 +1,8 @@
 (in-package :cscrape)
 
+(defparameter *clasp-sys* #P"")
+(defparameter *clasp-code* #P"")
+
 (define-constant +begin-tag+ "BEGIN_TAG_bfc54f90bafadf5" :test 'equal)
 (define-constant +end-tag+ "END_TAG_bfc54f90bafadf5" :test 'equal)
 

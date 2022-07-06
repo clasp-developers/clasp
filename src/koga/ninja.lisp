@@ -106,7 +106,7 @@
                       :restat 1
                       :pool "console"))
   (ninja:write-rule output-stream :compile-module
-                    :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image -t c --feature ignore-extensions --load compile-module.lisp -- $out $in"
+                    :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image -t c --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
                     :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
@@ -381,12 +381,12 @@
      (target (eql :bitcode)) (source cc-source)
      &aux (bitcode-name (format nil "~a-~a-cxx.bc" *variant-bitcode-name*
                                 (pathname-name (source-path source))))
-          (bitcode-output (make-source bitcode-name :variant-bitcode))
-          (bitcode-install (make-source bitcode-name :package-bitcode))
+          (bitcode-output (make-source bitcode-name :variant-lib))
+          (bitcode-install (make-source bitcode-name :package-lib))
           (bitcode-nd-name (format nil "~a-~a-no-debug-info-cxx.bc" *variant-bitcode-name*
                                    (pathname-name (source-path source))))
-          (bitcode-nd-output (make-source bitcode-nd-name :variant-bitcode))
-          (bitcode-nd-install (make-source bitcode-nd-name :package-bitcode))
+          (bitcode-nd-output (make-source bitcode-nd-name :variant-lib))
+          (bitcode-nd-install (make-source bitcode-nd-name :package-lib))
           (object (make-source-output source :type "o"))
           (archive-name (format nil "~a-~a-cxx.a" *variant-bitcode-name*
                                 (pathname-name (source-path source))))
@@ -457,13 +457,26 @@
                        :inputs install-outputs
                        :outputs (list "install_bitcode"))))
 
+(defun make-kernel-source-list (configuration sources)
+  (if (reproducible-build configuration)
+      (format nil "~{\"~/ninja:escape/\" ~a~^ ~}"
+              (mapcan (lambda (source)
+                        (list (source-logical-namestring source)
+                              (make-source-output source
+                                                  :root (if (eq (source-root source) :variant-generated)
+                                                            :install-generated
+                                                            :install-share))))
+                      sources))
+      (format nil "~{\"~/ninja:escape/\"~^ ~}"
+              (mapcar #'source-logical-namestring sources))))
+
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream
      (target (eql :aclasp)) sources
      &key &allow-other-keys)
   (let ((aimage (image-source configuration :aclasp))
         (iclasp (make-source (build-name :iclasp) :variant))
-        (aimage-installed (image-source configuration :aclasp :package-fasl))
+        (aimage-installed (image-source configuration :aclasp :package-lib))
         (*root-paths* (list* :variant-stage-bitcode (merge-pathnames (make-pathname :directory (list :relative
                                                                                                      (format nil "aclasp-~a-bitcode"
                                                                                                                  *variant-name*)))
@@ -471,22 +484,14 @@
                              *root-paths*)))
     (ninja:write-build output-stream :run-aclasp
                        :clasp iclasp
-                       :source (format nil "~{~/ninja:escape/~^ ~}"
-                                       (mapcar (lambda (source)
-                                                 (merge-pathnames (make-pathname :type :unspecific)
-                                                                  (source-path source)))
-                                               sources))
+                       :source (make-kernel-source-list configuration sources)
                        :inputs sources
                        :implicit-inputs (list iclasp
                                               (build-name "bitcode"))
                        :outputs (list (build-name "rclasp")))
     (ninja:write-build output-stream :compile-aclasp
                        :clasp iclasp
-                       :source (format nil "~{~/ninja:escape/~^ ~}"
-                                       (mapcar (lambda (source)
-                                                 (merge-pathnames (make-pathname :type :unspecific)
-                                                                  (source-path source)))
-                                               sources))
+                       :source (make-kernel-source-list configuration sources)
                        :inputs sources
                        :implicit-inputs (list iclasp
                                               (build-name "bitcode"))
@@ -522,26 +527,31 @@
      &key &allow-other-keys)
   (let ((aimage (image-source configuration :aclasp))
         (bimage (image-source configuration :bclasp))
-        (bimage-installed (image-source configuration :bclasp :package-fasl))
+        (bimage-installed (image-source configuration :bclasp :package-lib))
         (iclasp (make-source (build-name :iclasp) :variant))
         (*root-paths* (list* :variant-stage-bitcode (merge-pathnames (make-pathname :directory (list :relative
                                                                                                      (format nil "bclasp-~a-bitcode"
                                                                                                                  *variant-name*)))
-                                                                     (root :variant-bitcode))
+                                                                     (root :variant-lib))
+                             :variant-stage-bitcode-generated (merge-pathnames (make-pathname :directory (list :relative
+                                                                                                     (format nil "bclasp-~a-bitcode"
+                                                                                                                 *variant-name*)
+                                                                                                     "generated"))
+                                                                     (root :variant-lib))
                              *root-paths*)))
     (ninja:write-build output-stream :compile-bclasp
                        :clasp iclasp
                        :image aimage
-                       :source (format nil "~{~/ninja:escape/~^ ~}"
-                                           (mapcar (lambda (source)
-                                                     (merge-pathnames (make-pathname :type :unspecific)
-                                                                      (source-path source)))
-                                                   sources))
+                       :source (make-kernel-source-list configuration sources)
                        :inputs sources
                        :implicit-inputs (list iclasp aimage)
-                       :outputs (make-source-outputs sources
-                                                     :type (file-faso-extension configuration)
-                                                     :root :variant-stage-bitcode))
+                       :outputs (mapcar (lambda (x)
+                                         (make-source-output x
+                                                             :type (file-faso-extension configuration)
+                                                             :root (if (eq (source-root x) :variant-generated)
+                                                                       :variant-stage-bitcode-generated
+                                                                       :variant-stage-bitcode)))
+                                       sources))
     (ninja:write-build output-stream (case (build-mode configuration)
                                        ((:faso :fasoll :fasobc) :link-fasl)
                                        (otherwise "link-fasl-abc"))
@@ -549,9 +559,13 @@
                        :variant-ldlibs *variant-ldlibs*
                        :clasp iclasp
                        :target "bclasp"
-                       :inputs (make-source-outputs sources
-                                                    :type (file-faso-extension configuration)
-                                                    :root :variant-stage-bitcode)
+                       :inputs (mapcar (lambda (x)
+                                         (make-source-output x
+                                                             :type (file-faso-extension configuration)
+                                                             :root (if (eq (source-root x) :variant-generated)
+                                                                       :variant-stage-bitcode-generated
+                                                                       :variant-stage-bitcode)))
+                                       sources)
                        :implicit-inputs (list (make-source (build-name :iclasp) :variant))
                        :outputs (list bimage))
     (ninja:write-build output-stream :phony
@@ -584,27 +598,32 @@
      &key &allow-other-keys)
   (let ((bimage (image-source configuration :bclasp))
         (cimage (image-source configuration :cclasp))
-        (cimage-installed (image-source configuration :cclasp :package-fasl))
+        (cimage-installed (image-source configuration :cclasp :package-lib))
         (iclasp (make-source (build-name :iclasp) :variant))
         (*root-paths* (list* :variant-stage-bitcode (merge-pathnames (make-pathname :directory (list :relative
                                                                                                      (format nil "cclasp-~a-bitcode"
                                                                                                                  *variant-name*)))
-                                                                     (root :variant-bitcode))
+                                                                     (root :variant-lib))
+                             :variant-stage-bitcode-generated (merge-pathnames (make-pathname :directory (list :relative
+                                                                                                     (format nil "cclasp-~a-bitcode"
+                                                                                                                 *variant-name*)
+                                                                                                     "generated"))
+                                                                     (root :variant-lib))
                              *root-paths*)))
     (ninja:write-build output-stream :compile-cclasp
                        :clasp iclasp
                        :image bimage
-                       :source (format nil "~{~/ninja:escape/~^ ~}"
-                                       (mapcar (lambda (source)
-                                                 (merge-pathnames (make-pathname :type :unspecific)
-                                                                  (source-path source)))
-                                               sources))
+                       :source (make-kernel-source-list configuration sources)
                        :inputs sources
                        :implicit-inputs (list iclasp bimage
                                               (make-source "tools-for-build/character-names.sexp" :code))
-                       :outputs (make-source-outputs sources
-                                                     :type (file-faso-extension configuration)
-                                                     :root :variant-stage-bitcode))
+                       :outputs (mapcar (lambda (x)
+                                         (make-source-output x
+                                                             :type (file-faso-extension configuration)
+                                                             :root (if (eq (source-root x) :variant-generated)
+                                                                       :variant-stage-bitcode-generated
+                                                                       :variant-stage-bitcode)))
+                                       sources))
     (ninja:write-build output-stream (case (build-mode configuration)
                                        ((:faso :fasoll :fasobc) :link-fasl)
                                        (otherwise "link-fasl-abc"))
@@ -612,9 +631,13 @@
                        :variant-ldlibs *variant-ldlibs*
                        :clasp iclasp
                        :target "cclasp"
-                       :inputs (make-source-outputs sources
-                                                    :type (file-faso-extension configuration)
-                                                    :root :variant-stage-bitcode)
+                       :inputs (mapcar (lambda (x)
+                                         (make-source-output x
+                                                             :type (file-faso-extension configuration)
+                                                             :root (if (eq (source-root x) :variant-generated)
+                                                                       :variant-stage-bitcode-generated
+                                                                       :variant-stage-bitcode)))
+                                       sources)
                        :implicit-inputs (list iclasp)
                        :outputs (list cimage))
     (ninja:write-build output-stream :phony
@@ -687,8 +710,8 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :modules)) (source lisp-source))
   (let* ((image (image-source configuration :cclasp))
          (name (pathname-name (source-path source)))
-         (module-name (format nil "cclasp-~a-bitcode/src/lisp/modules/~a/~a.~a"
-                              *variant-name* name name
+         (module-name (format nil "cclasp-~a-bitcode/~a.~a"
+                              *variant-name* name
                               (module-fasl-extension configuration)))
          (output (make-source module-name :variant-lib))
          (install-output (make-source module-name :package-lib))
@@ -698,6 +721,10 @@
                        :image image
                        :inputs (list source)
                        :implicit-inputs (list iclasp image)
+                       :source (format nil "\"~/ninja:escape/\""
+                                       (source-logical-namestring source))
+                       :fasl (format nil "\"~/ninja:escape/\""
+                                     (source-logical-namestring output))
                        :outputs (list output))
     (when *variant-default*
       (ninja:write-build output-stream :install-file
@@ -723,27 +750,32 @@
   (when (extensions configuration)
     (let ((cimage (image-source configuration :cclasp))
           (eimage (image-source configuration :eclasp))
-          (eimage-installed (image-source configuration :eclasp :package-fasl))
+          (eimage-installed (image-source configuration :eclasp :package-lib))
           (iclasp (make-source (build-name :iclasp) :variant))
           (*root-paths* (list* :variant-stage-bitcode (merge-pathnames (make-pathname :directory (list :relative
                                                                                                        (format nil "eclasp-~a-bitcode"
                                                                                                                    *variant-name*)))
-                                                                       (root :variant-bitcode))
+                                                                       (root :variant-lib))
+                             :variant-stage-bitcode-generated (merge-pathnames (make-pathname :directory (list :relative
+                                                                                                     (format nil "eclasp-~a-bitcode"
+                                                                                                                 *variant-name*)
+                                                                                                     "generated"))
+                                                                     (root :variant-lib))
                                *root-paths*)))
       (ninja:write-build output-stream :compile-eclasp
                          :clasp iclasp
                          :image cimage
-                         :source (format nil "~{~/ninja:escape/~^ ~}"
-                                         (mapcar (lambda (source)
-                                                   (merge-pathnames (make-pathname :type :unspecific)
-                                                                    (source-path source)))
-                                                 sources))
+                         :source (make-kernel-source-list configuration sources)
                          :inputs sources
                          :implicit-inputs (list iclasp cimage (build-name "cclasp")
                                                 (make-source "tools-for-build/character-names.sexp" :code))
-                         :outputs (make-source-outputs sources
-                                                       :type (file-faso-extension configuration)
-                                                       :root :variant-stage-bitcode))
+                         :outputs (mapcar (lambda (x)
+                                         (make-source-output x
+                                                             :type (file-faso-extension configuration)
+                                                             :root (if (eq (source-root x) :variant-generated)
+                                                                       :variant-stage-bitcode-generated
+                                                                       :variant-stage-bitcode)))
+                                       sources))
       (ninja:write-build output-stream (case (build-mode configuration)
                                          ((:faso :fasoll :fasobc) :link-fasl)
                                          (otherwise "link-fasl-abc"))
@@ -751,9 +783,13 @@
                          :variant-ldlibs *variant-ldlibs*
                          :clasp iclasp
                          :target "eclasp"
-                         :inputs (make-source-outputs sources
-                                                      :type (file-faso-extension configuration)
-                                                      :root :variant-stage-bitcode)
+                         :inputs (mapcar (lambda (x)
+                                           (make-source-output x
+                                                               :type (file-faso-extension configuration)
+                                                               :root (if (eq (source-root x) :variant-generated)
+                                                                         :variant-stage-bitcode-generated
+                                                                         :variant-stage-bitcode)))
+                                         sources)
                          :implicit-inputs (list iclasp)
                          :outputs (list eimage))
       (ninja:write-build output-stream :phony

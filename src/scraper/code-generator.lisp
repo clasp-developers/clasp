@@ -2,7 +2,6 @@
 
 (define-constant *batch-classes* 3)
 (defparameter *function-partitions* 3)
-(defparameter *clasp-home* #P"")
 
 (define-constant +root-dummy-class+ "RootClass" :test 'equal)
 
@@ -142,11 +141,19 @@
       (format sout "#endif // EXPOSE_FUNCTION_BINDINGS~%")
       index)))
 
+(defparameter *translations* (make-hash-table :test #'equal))
+
+(defun truename-if-relative (namestring)
+  (let ((pathname (parse-namestring namestring)))
+    (if (uiop:relative-pathname-p pathname)
+        (truename pathname)
+        pathname)))
+
 (defun generate-expose-one-source-info-helper (sout obj idx)
   (let* ((lisp-name (lisp-name% obj))
-         (absolute-file (truename (pathname (file% obj))))
-         (file (concatenate 'string "sys:"
-                            (substitute #\; #\/ (enough-namestring absolute-file *clasp-home*))))
+         (file (enough-namestring (truename-if-relative (file% obj)) *clasp-sys*))
+         (logical-path (ninja:make-logical-pathname-representation "sys" file))
+         (minimal-translation (ninja:find-minimal-pathname-translation file))
          (line (line% obj))
          (char-offset (character-offset% obj))
          (docstring (docstring% obj))
@@ -165,8 +172,14 @@
                  (t "unknown_kind")))
          (helper-name (format nil "source_info_~d_helper" idx)))
     (format sout "NOINLINE void source_info_~d_helper() {~%" idx)
-    (format sout " define_source_info( ~a, ~a, ~s, ~d, ~d, ~a );~%"
-            kind lisp-name file char-offset line all-docstring)
+    (format sout "  define_source_info(~a, ~a, ~s, ~d, ~d, ~a);~%"
+            kind lisp-name (namestring logical-path) char-offset line all-docstring)
+    (unless (or (null minimal-translation)
+                (gethash minimal-translation *translations*))
+      (setf (gethash minimal-translation *translations*) t)
+      (format sout "  define_pathname_translation(~s, ~s);~%"
+              (namestring (ninja:make-logical-pathname-representation "sys" minimal-translation :version :wild))
+              (namestring minimal-translation)))
     (format sout "}~%")
     helper-name))
 

@@ -100,3 +100,20 @@
 
 (set-dispatch-macro-character #\# #\@ #'read-variant-path)
 
+(defun root-to-logical-host (root)
+  (ecase root
+    (:code "sys")
+    (:variant-lib "lib")
+    (:variant-generated "generated")))
+
+(defun root-to-prefix (root)
+  (ecase root
+    (:code nil)
+    (:variant-lib "lib")
+    (:variant-generated "generated")))
+
+(defun source-logical-namestring (source &key version)
+  (ninja:make-logical-pathname-representation "SYS"
+                                              (source-path source)
+                                              :version version
+                                              :prefix (root-to-prefix (source-root source))))

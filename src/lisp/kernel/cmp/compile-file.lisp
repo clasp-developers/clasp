@@ -124,10 +124,10 @@
 ;;; So I haven't really tried to make this precisely ANSI-compatible
 ;;; at the level of e.g. whether it returns logical pathname or a
 ;;; physical pathname. Patches to make it more correct are welcome.
-(defun compile-file-pathname (input-file &key (output-file nil output-file-p)
-                                           (output-type (default-library-type) output-type-p)
-					   type
-					   target-backend
+(defun compile-file-pathname (input-file
+                              &key (output-file nil output-file-p)
+                                   (output-type (default-library-type) output-type-p)
+					                         type target-backend
                               &allow-other-keys)
   (setf output-type (maybe-fixup-output-type output-type output-type-p))
   (when type (error "Clasp compile-file-pathname uses :output-type rather than :type"))
@@ -136,7 +136,7 @@
 		 (cfp-output-file-default input-file output-type :target-backend target-backend)))
          (ext (cfp-output-extension output-type)))
     (if (or output-type-p (not output-file-p))
-        (make-pathname :type ext :defaults pn)
+        (make-pathname :type ext :defaults pn :version nil)
         pn)))
 
 (defun cf-module-name (type pathname)
@@ -418,11 +418,11 @@ Compile a lisp source file into an LLVM module."
                                                     :output-file output-file :output-type :bitcode)))
       (ensure-directories-exist temp-bitcode-file)
       (when *compile-verbose*
-        (core:fmt t "Writing temporary bitcode file to: {}%N" temp-bitcode-file))
+        (core:fmt t "Writing temporary bitcode {}%N" (namestring temp-bitcode-file)))
       (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
                       :output-type :object)))
   (when *compile-verbose*
-    (core:fmt t "Writing faso file to: {}%N" output-file)
+    (core:fmt t "Writing faso {}%N" (namestring output-file))
     (finish-output))
   (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
                                          'llvm-sys:code-gen-file-type-object-file
@@ -437,13 +437,13 @@ Compile a lisp source file into an LLVM module."
   (cond
     ((eq output-type :object)
      (when *compile-verbose*
-       (core:fmt t "Writing object to: {}%N" (core:coerce-to-filename output-path)))
+       (core:fmt t "Writing object {}%N" (core:coerce-to-filename output-path)))
      ;; save the bitcode so we can look at it.
      (let ((temp-bitcode-file
              (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
        (ensure-directories-exist temp-bitcode-file)
        (when *compile-verbose*
-         (core:fmt t "Writing temporary bitcode file to: {}%N" temp-bitcode-file))
+         (core:fmt t "Writing temporary bitcode {}%N" (namestring temp-bitcode-file)))
        (output-bitcode module temp-bitcode-file
                        :output-type (default-library-type output-type))
        (prog1
@@ -467,11 +467,11 @@ Compile a lisp source file into an LLVM module."
                                                      :output-file output-file :output-type :bitcode)))
        (ensure-directories-exist temp-bitcode-file)
        (when *compile-verbose*
-         (core:fmt t "Writing temporary bitcode file to: {}%N" temp-bitcode-file))
+         (core:fmt t "Writing temporary bitcode {}%N" (namestring temp-bitcode-file)))
        (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
                        :output-type :object)
        (when *compile-verbose*
-         (core:fmt t "Writing faso file to: {}%N" output-file)
+         (core:fmt t "Writing faso {}%N" (namestring output-file))
          (finish-output))
        (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
                                               'llvm-sys:code-gen-file-type-object-file
@@ -497,7 +497,7 @@ Compile a lisp source file into an LLVM module."
                                                      :output-file output-file :output-type :bitcode)))
        (ensure-directories-exist temp-bitcode-file)
        (when *compile-verbose*
-         (core:fmt t "Writing temporary bitcode file to: {}%N" temp-bitcode-file))
+         (core:fmt t "Writing temporary bitcode {}%N" (namestring temp-bitcode-file)))
        (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
                        :output-type :object)
        (when *compile-verbose*

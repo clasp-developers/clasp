@@ -560,6 +560,11 @@ is not compatible with snapshots.")
                    :initarg :update-version
                    :type boolean
                    :documentation "Use git describe to update the version and commit values in the version.sexp file and then exit.")
+   (reproducible-build :accessor reproducible-build
+                       :initform nil
+                       :initarg :reproducible-build
+                       :type boolean
+                       :documentation "Use a reproducible build by remapping build paths, etc.")
    (extension-systems :accessor extension-systems
                       :initform nil
                       :type list
@@ -574,7 +579,7 @@ is not compatible with snapshots.")
                   :documentation "Default stage for installation")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
-                      :clang :llvm :ar :cc :cxx :nm :etags :ctags :objcopy :jupyter)
+                      :clang :llvm :ar :cc :cxx :nm :etags :ctags :objcopy :jupyter :reproducible)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
@@ -616,6 +621,12 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"config.h" :variant))
                                                          :version-h
                                                          (list (make-source #P"version.h" :variant))
+                                                         :cclasp-translations
+                                                         (list (make-source #P"generated/cclasp-translations.lisp" :variant)
+                                                               :cclasp)
+                                                         :eclasp-translations
+                                                         (list (make-source #P"generated/eclasp-translations.lisp" :variant)
+                                                               :eclasp-translations)
                                                          :cclasp-immutable
                                                          (list (make-source #P"generated/cclasp-immutable.lisp" :variant))
                                                          :eclasp-immutable
@@ -750,7 +761,7 @@ then they will overide the current variant's corresponding property."
     (:fasoll "faspll")
     (otherwise "fasl")))
 
-(defun image-source (configuration target &optional (root :variant-fasl))
+(defun image-source (configuration target &optional (root :variant-lib))
   "Return the name of an image based on a target name, the bitcode name
 and the build mode."
   (make-source (format nil "~(~a~)-~a-image.~a"
@@ -892,7 +903,9 @@ the function to the overall configuration."
                              :code (make-pathname :directory '(:relative :up))
                              *root-paths*)))
     (append-cflags *configuration*
-                   (format nil "~{-I~a~^ ~}" (mapcar #'resolve-source paths)))))
+                   (format nil "~{-I~a~^ ~}" (mapcar (lambda (source)
+                                                       (normalize-directory (resolve-source source)))
+                                                     paths)))))
 
 (defun systems (&rest rest)
   (loop for system in rest

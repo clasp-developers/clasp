@@ -19,7 +19,7 @@
              (list :output-translations
                 (list t (list (merge-pathnames ,(if host
                                                     (make-pathname :directory '(:relative "host-fasl"))
-                                                    (root :variant-fasl))
+                                                    (root :variant-lib))
                                                (uiop:getcwd))
                               :implementation))
                 :inherit-configuration))
@@ -46,15 +46,17 @@
                     (equal "1" cl-user::precise)
                     cl-user::variant-path
                     (make-pathname :directory '(:relative :up))
+                    ,(if (reproducible-build configuration)
+                         (root :install-share)
+                         '(truename (make-pathname :directory '(:relative :up))))
                     cl-user::args))
            output-stream)))
 
 (defmethod print-prologue (configuration (name (eql :compile-module)) output-stream)
   (format output-stream
-          "(compile-file (merge-pathnames (elt core:*command-line-arguments* 1)
-                               (ext:getcwd))
-              :output-file (merge-pathnames (elt core:*command-line-arguments* 0)
-                                            (ext:getcwd))
+          "(compile-file (elt core:*command-line-arguments* 1)
+              :source-debug-pathname (elt core:*command-line-arguments* 1)
+              :output-file (elt core:*command-line-arguments* 0)
               :output-type ~s)"
           (case (build-mode configuration)
             (:faso :fasp)
@@ -66,34 +68,34 @@
   (format output-stream "(setq *features* (cons :aclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:compile-aclasp)
-(core:quit)" (jobs configuration)))
+(core:compile-aclasp :reproducible ~s)
+(core:quit)" (jobs configuration) (reproducible-build configuration)))
 
 (defmethod print-prologue (configuration (name (eql :run-aclasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:load-aclasp)" (jobs configuration)))
+(core:load-aclasp :reproducible ~s)" (jobs configuration) (reproducible-build configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-bclasp)) output-stream)
   (format output-stream "(setq *features* (cons :bclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:compile-bclasp)
-(core:quit)" (jobs configuration)))
+(core:compile-bclasp :reproducible ~s)
+(core:quit)" (jobs configuration) (reproducible-build configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-cclasp)) output-stream)
   (format output-stream "(setq *features* (cons :cclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:compile-cclasp)
-(core:quit)" (jobs configuration)))
+(core:compile-cclasp :reproducible ~s)
+(core:quit)" (jobs configuration) (reproducible-build configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-eclasp)) output-stream)
   (format output-stream "(setq *features* (cons :eclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:compile-eclasp)
-(core:quit)" (jobs configuration)))
+(core:compile-eclasp :reproducible ~s)
+(core:quit)" (jobs configuration) (reproducible-build configuration)))
 
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (write-string "(setq *features* (cons :aclasp *features*))
@@ -182,6 +184,55 @@ exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
               (pprint-exit-if-list-exhausted)
               (pprint-newline :mandatory stream)))
   (write-line ")" stream))
+
+(defun print-translations (output-stream targets sources)
+  (format output-stream "(in-package \"SYSTEM\")~%
+(let ((sys (translate-logical-pathname \"SYS:\"))
+      (lib (translate-logical-pathname \"SYS:LIB;\"))
+      (generated (translate-logical-pathname \"SYS:GENERATED;\")))
+  (declare (ignorable sys lib generated))")
+  (flet ((print-translation (translation root
+                             &aux (prefix (root-to-prefix root)))
+           (format output-stream "~%  (push (list ~s~%              (merge-pathnames ~s ~a))~%        (logical-pathname-translations \"SYS\"))"
+                   (ninja:make-logical-pathname-representation "SYS" translation
+                                                               :prefix prefix
+                                                               :version :wild)
+                   translation (or prefix "sys"))))
+    (loop with translations = (make-hash-table :test #'equal)
+          for source in sources
+          for translation = (ninja:find-minimal-pathname-translation (source-path source))
+          when (and translation
+                    (not (member (source-root source) '(:code :variant-generated))))
+            do (error "Found needed logical pathname translation for root ~s of ~s"
+                      (source-root source)
+                      translation)
+          unless (or (null translation)
+                     (gethash translation translations))
+            do (setf (gethash translation translations) t)
+               (print-translation translation :code)
+               (loop for target in targets
+                     do (print-translation (make-pathname :directory (list* :relative
+                                                                            (format nil "~(~a~)-~a-bitcode" target *variant-name*)
+                                                                            (cdr (pathname-directory translation)))
+                                                          :name (pathname-name translation)
+                                                          :type (pathname-type translation))
+                                           :variant-lib))))
+  (format output-stream ")~%"))
+
+(defmethod print-variant-target-sources
+    (configuration (name (eql :cclasp-translations)) output-stream
+     (target (eql :cclasp)) sources
+     &key &allow-other-keys)
+  (print-translations output-stream (if (extensions configuration)
+                                      '(:cclasp :eclasp)
+                                      '(:cclasp))
+                                    sources))
+
+(defmethod print-variant-target-sources
+    (configuration (name (eql :eclasp-translations)) output-stream
+     (target (eql :eclasp-translations)) sources
+     &key &allow-other-keys)
+  (print-translations output-stream '(:eclasp) sources))
 
 (defmethod print-prologue (configuration (name (eql :cclasp-immutable)) output-stream)
   (pprint-immutable-systems output-stream (gethash :cclasp (target-systems configuration))))

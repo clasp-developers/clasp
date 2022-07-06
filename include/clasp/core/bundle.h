@@ -43,11 +43,8 @@ struct BundleDirectories {
   std::filesystem::path _ExecutableDir;
   std::filesystem::path _SysDir;
   std::filesystem::path _GeneratedDir;
-  std::filesystem::path _StartupDir;
   std::filesystem::path _IncludeDir;
   std::filesystem::path _LibDir;
-  std::filesystem::path _FaslDir;
-  std::filesystem::path _BitcodeDir;
   std::filesystem::path _QuicklispDir;
 };
 

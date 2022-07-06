@@ -3437,7 +3437,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   // Setup the pathname info for wherever the executable was loaded
   //
 //  printf("%s:%d:%s Calling setup_pathname_translations\n", __FILE__, __LINE__, __FUNCTION__);
-    globals_->_Bundle->setup_pathname_translations();
     core::getcwd(true);         // set *default-pathname-defaults*
     {
       char* pause_startup = getenv("CLASP_PAUSE_INIT");

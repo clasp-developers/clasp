@@ -96,17 +96,11 @@ Bundle::Bundle(const string &raw_argv0) {
       printf("%s:%d Using the configured installed directories\n", __FILE__, __LINE__);
     }
     this->_Directories->_SysDir = CLASP_INSTALL_SYS_PATH;
-    this->_Directories->_BitcodeDir = CLASP_INSTALL_BITCODE_PATH;
-    this->_Directories->_FaslDir = CLASP_INSTALL_FASL_PATH;
     this->_Directories->_GeneratedDir = CLASP_INSTALL_GENERATED_PATH;
-    this->_Directories->_StartupDir = CLASP_INSTALL_STARTUP_PATH;
     this->_Directories->_IncludeDir = CLASP_INSTALL_INCLUDE_PATH;
     this->_Directories->_LibDir = CLASP_INSTALL_LIB_PATH;
   } else {
-    this->_Directories->_BitcodeDir = (this->_Directories->_SysDir / CLASP_DEV_BITCODE_PATH).lexically_normal();
-    this->_Directories->_FaslDir = (this->_Directories->_SysDir / CLASP_DEV_FASL_PATH).lexically_normal();
     this->_Directories->_GeneratedDir = (this->_Directories->_SysDir / CLASP_DEV_GENERATED_PATH).lexically_normal();
-    this->_Directories->_StartupDir = (this->_Directories->_SysDir / CLASP_DEV_STARTUP_PATH).lexically_normal();
     this->_Directories->_IncludeDir = (this->_Directories->_SysDir / CLASP_DEV_INCLUDE_PATH).lexically_normal();
     this->_Directories->_LibDir = (this->_Directories->_SysDir / CLASP_DEV_LIB_PATH).lexically_normal();
   }
@@ -275,36 +269,30 @@ void Bundle::findExecutableDir(const string &argv0, bool verbose) {
 string Bundle::describe() {
   stringstream ss;
   ss << "Executable dir: " << this->_Directories->_ExecutableDir << std::endl
-     << "Lib dir:        " << this->_Directories->_LibDir.string() << std::endl
      << "Sys dir:        " << this->_Directories->_SysDir.string() << std::endl
      << "Generated dir:  " << this->_Directories->_GeneratedDir.string() << std::endl
-     << "Startup dir:    " << this->_Directories->_StartupDir.string() << std::endl
+     << "Lib dir:        " << this->_Directories->_LibDir.string() << std::endl
      << "Include dir:    " << this->_Directories->_IncludeDir.string() << std::endl
-     << "Fasl dir:       " << this->_Directories->_FaslDir.string() << std::endl
-     << "Bitcode dir:    " << this->_Directories->_BitcodeDir.string() << std::endl
      << "Quicklisp dir:  " << this->_Directories->_QuicklispDir.string() << std::endl;
   return ss.str();
 }
 
-void create_logical_host(const std::string &name, const std::filesystem::path &path) {
+void create_translation(const std::filesystem::path &path, const std::string &translation) {
   if (!path.empty()) {
-    core__pathname_translations(
-        SimpleBaseString_O::make(name), _lisp->_true(),
-        Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make(name + ":**;*.*"),
-                                              cl__pathname(SimpleBaseString_O::make(path / "**" / "*.*")))));
+    T_sp name = SimpleBaseString_O::make("SYS");
+    core__pathname_translations(name, _lisp->_true(),
+        Cons_O::create(Cons_O::createList(SimpleBaseString_O::make("SYS:" + translation),
+                                              cl__pathname(SimpleBaseString_O::make(path / "**" / "*.*"))),
+                        core__pathname_translations(name, _lisp->_true(), _lisp->_false())));
   }
 }
 
 void Bundle::setup_pathname_translations() {
-  create_logical_host("sys", this->_Directories->_SysDir);
-  create_logical_host("generated", this->_Directories->_GeneratedDir);
-  create_logical_host("startup", this->_Directories->_StartupDir);
-  create_logical_host("lib", this->_Directories->_LibDir);
-  create_logical_host("executable", this->_Directories->_ExecutableDir);
-  create_logical_host("fasl", this->_Directories->_FaslDir);
-  create_logical_host("bitcode", this->_Directories->_BitcodeDir);
-  create_logical_host("quicklisp", this->_Directories->_QuicklispDir);
-  create_logical_host("tmp", std::filesystem::temp_directory_path());
+  create_translation(this->_Directories->_SysDir, "**;*.*.*");
+  create_translation(this->_Directories->_GeneratedDir, "GENERATED;**;*.*.*");
+  create_translation(this->_Directories->_LibDir, "LIB;**;*.*.*");
+  create_translation(this->_Directories->_ExecutableDir, "EXECUTABLE;**;*.*.*");
+  create_translation(this->_Directories->_QuicklispDir, "QUICKLISP;**;*.*.*");
 }
 
 }; // namespace core
