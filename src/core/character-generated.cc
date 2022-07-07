@@ -5,7 +5,7 @@
 // url: http://unicode.org/Public/UNIDATA/DerivedCoreProperties.txt
 // last modified: Fri, 13 Aug 2021 00:09:34 GMT
 
-bool clasp_isgraph(claspCharacter cc) {
+bool graphic_char_p(claspCharacter cc) {
   return (cc >= 0x2460 && cc <= 0x2B73) || (cc >= 0x18800 && cc <= 0x18CD5) || (cc >= 0x9FFF && cc <= 0xA48C) ||
          (cc >= 0x13000 && cc <= 0x1342E) || (cc >= 0x1F300 && cc <= 0x1F6D7) || (cc >= 0x11FFF && cc <= 0x12399) ||
          (cc >= 0xAE && cc <= 0x377) || (cc >= 0x1D7CE && cc <= 0x1DA8B) || (cc >= 0x1400 && cc <= 0x169C) ||
@@ -226,7 +226,7 @@ bool clasp_isgraph(claspCharacter cc) {
          cc == 0x2B820 || cc == 0x2CEA1 || cc == 0x2CEB0 || cc == 0x2EBE0 || cc == 0x30000 || cc == 0x3134A;
 }
 
-bool clasp_isprint(claspCharacter cc) {
+bool printing_char_p(claspCharacter cc) {
   return (cc >= 0x2460 && cc <= 0x2B73) || (cc >= 0x18800 && cc <= 0x18CD5) || (cc >= 0x9FFF && cc <= 0xA48C) ||
          (cc >= 0x13000 && cc <= 0x1342E) || (cc >= 0x1F300 && cc <= 0x1F6D7) || (cc >= 0x11FFF && cc <= 0x12399) ||
          (cc >= 0xAE && cc <= 0x377) || (cc >= 0x1D7CE && cc <= 0x1DA8B) || (cc >= 0x2190 && cc <= 0x2426) ||
@@ -447,7 +447,7 @@ bool clasp_isprint(claspCharacter cc) {
          cc == 0x2B820 || cc == 0x2CEA1 || cc == 0x2CEB0 || cc == 0x2EBE0 || cc == 0x30000 || cc == 0x3134A;
 }
 
-bool clasp_isupper(claspCharacter cc) {
+bool upper_case_p(claspCharacter cc) {
   return (cc >= 0x13A0 && cc <= 0x13F5) || (cc >= 0x3FD && cc <= 0x42F) || (cc >= 0x10C80 && cc <= 0x10CB2) ||
          (cc >= 0x2C00 && cc <= 0x2C2F) || (cc >= 0x1C90 && cc <= 0x1CBA) || (cc >= 0x10400 && cc <= 0x10427) ||
          (cc >= 0x531 && cc <= 0x556) || (cc >= 0x10A0 && cc <= 0x10C5) || (cc >= 0x104B0 && cc <= 0x104D3) ||
@@ -545,7 +545,7 @@ bool clasp_isupper(claspCharacter cc) {
          cc == 0xA7C2 || cc == 0xA7C9 || cc == 0xA7D0 || cc == 0xA7D6 || cc == 0xA7D8 || cc == 0xA7F5;
 }
 
-bool clasp_islower(claspCharacter cc) {
+bool lower_case_p(claspCharacter cc) {
   return (cc >= 0xAB70 && cc <= 0xABBF) || (cc >= 0x10CC0 && cc <= 0x10CF2) || (cc >= 0x430 && cc <= 0x45F) ||
          (cc >= 0x2C30 && cc <= 0x2C5F) || (cc >= 0x10D0 && cc <= 0x10FA) || (cc >= 0x10428 && cc <= 0x1044F) ||
          (cc >= 0x561 && cc <= 0x586) || (cc >= 0x2D00 && cc <= 0x2D25) || (cc >= 0x104D8 && cc <= 0x104FB) ||
@@ -644,7 +644,7 @@ bool clasp_islower(claspCharacter cc) {
          cc == 0xA7CA || cc == 0xA7D1 || cc == 0xA7D7 || cc == 0xA7D9 || cc == 0xA7F6 || cc == 0xAB53;
 }
 
-bool clasp_isboth(claspCharacter cc) {
+bool both_case_p(claspCharacter cc) {
   return (cc >= 0x48A && cc <= 0x52F) || (cc >= 0x1E00 && cc <= 0x1E95) || (cc >= 0x3FD && cc <= 0x481) ||
          (cc >= 0x1EA0 && cc <= 0x1F15) || (cc >= 0x2C00 && cc <= 0x2C70) || (cc >= 0x2C7E && cc <= 0x2CE3) ||
          (cc >= 0x13A0 && cc <= 0x13F5) || (cc >= 0xAB70 && cc <= 0xABBF) || (cc >= 0x10400 && cc <= 0x1044F) ||
@@ -686,7 +686,7 @@ bool clasp_isboth(claspCharacter cc) {
          cc == 0xAB53;
 }
 
-bool clasp_isalpha(claspCharacter cc) {
+bool alpha_char_p(claspCharacter cc) {
   return (cc >= 0x20000 && cc <= 0x2A6DF) || (cc >= 0x4E00 && cc <= 0xA48C) || (cc >= 0xAC00 && cc <= 0xD7A3) ||
          (cc >= 0x2CEB0 && cc <= 0x2EBE0) || (cc >= 0x3400 && cc <= 0x4DBF) || (cc >= 0x17000 && cc <= 0x187F7) ||
          (cc >= 0x2B820 && cc <= 0x2CEA1) || (cc >= 0x30000 && cc <= 0x3134A) || (cc >= 0x2A700 && cc <= 0x2B738) ||
@@ -903,7 +903,7 @@ bool clasp_isalpha(claspCharacter cc) {
          cc == 0x1EE7E;
 }
 
-bool clasp_isalnum(claspCharacter cc) {
+bool alphanumericp(claspCharacter cc) {
   return (cc >= 0x20000 && cc <= 0x2A6DF) || (cc >= 0x4E00 && cc <= 0xA48C) || (cc >= 0xAC00 && cc <= 0xD7A3) ||
          (cc >= 0x2CEB0 && cc <= 0x2EBE0) || (cc >= 0x3400 && cc <= 0x4DBF) || (cc >= 0x17000 && cc <= 0x187F7) ||
          (cc >= 0x2B820 && cc <= 0x2CEA1) || (cc >= 0x30000 && cc <= 0x3134A) || (cc >= 0x2A700 && cc <= 0x2B738) ||
@@ -1133,7 +1133,7 @@ bool clasp_isalnum(claspCharacter cc) {
          cc == 0x1EE5D || cc == 0x1EE5F || cc == 0x1EE64 || cc == 0x1EE7E;
 }
 
-claspCharacter clasp_toupper(claspCharacter cc) {
+claspCharacter char_upcase(claspCharacter cc) {
   if (cc >= 0xAB70 && cc <= 0xABBF) {
     return cc - 0x97D0;
   }
@@ -1913,7 +1913,7 @@ claspCharacter clasp_toupper(claspCharacter cc) {
   }
 }
 
-claspCharacter clasp_tolower(claspCharacter cc) {
+claspCharacter char_downcase(claspCharacter cc) {
   if (cc >= 0x13A0 && cc <= 0x13EF) {
     return cc + 0x97D0;
   }

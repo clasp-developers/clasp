@@ -1032,7 +1032,7 @@ T_sp Readtable_O::set_dispatch_macro_character_(Character_sp disp_char, Characte
   }
   HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
   ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
-  Character_sp upcase_sub_char = clasp_make_character(clasp_toupper(sub_char.unsafe_character()));
+  Character_sp upcase_sub_char = clasp_make_character(char_upcase(sub_char.unsafe_character()));
   if (!(gctools::IsA<core::Symbol_sp>(new_func_desig)||gctools::IsA<core::Function_sp>(new_func_desig))) {
     TYPE_ERROR(new_func_desig,Cons_O::createList(cl::_sym_or,cl::_sym_symbol,cl::_sym_function));
   }
@@ -1047,7 +1047,7 @@ T_sp Readtable_O::get_dispatch_macro_character_(Character_sp disp_char, Characte
     SIMPLE_ERROR(("%s is not a dispatching macro character") , _rep_(disp_char));
   }
   HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
-  Character_sp upcase_sub_char = clasp_make_character(clasp_toupper(sub_char.unsafe_character()));
+  Character_sp upcase_sub_char = clasp_make_character(char_upcase(sub_char.unsafe_character()));
   T_sp func = dispatch_table->gethash(upcase_sub_char, nil<T_O>());
   return func;
 }
@@ -1055,9 +1055,9 @@ T_sp Readtable_O::get_dispatch_macro_character_(Character_sp disp_char, Characte
 Character_sp Readtable_O::convert_case_(Character_sp cc) {
   _OF();
   if (this->Case_ == kw::_sym_upcase) {
-    return clasp_make_character(clasp_toupper(cc.unsafe_character()));
+    return clasp_make_character(char_upcase(cc.unsafe_character()));
   } else if (this->Case_ == kw::_sym_downcase) {
-    return clasp_make_character(clasp_tolower(cc.unsafe_character()));
+    return clasp_make_character(char_downcase(cc.unsafe_character()));
   } else if (this->Case_ == kw::_sym_preserve) {
     return cc;
   } else if (this->Case_ == kw::_sym_invert) {

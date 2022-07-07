@@ -59,7 +59,7 @@ CL_DOCSTRING(R"dx(Returns true if character is a graphic character other than sp
 otherwise, returns false.)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool core__printing_char_p(Character_sp c) {
-  return clasp_isprint(clasp_as_claspCharacter(c));
+  return printing_char_p(clasp_as_claspCharacter(c));
 };
 
 CL_LAMBDA(arg)
@@ -67,7 +67,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(CLHS: graphic-char-p)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__graphic_char_p(Character_sp c) {
-  return clasp_isgraph(clasp_as_claspCharacter(c));
+  return graphic_char_p(clasp_as_claspCharacter(c));
 };
 
 CL_LAMBDA(arg)
@@ -75,7 +75,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(lower_case_p)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__lower_case_p(Character_sp c) {
-  return clasp_islower(clasp_as_claspCharacter(c));
+  return lower_case_p(clasp_as_claspCharacter(c));
 };
 
 CL_LAMBDA(arg)
@@ -83,7 +83,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(upper_case_p)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__upper_case_p(Character_sp c) {
-  return clasp_isupper(clasp_as_claspCharacter(c));
+  return upper_case_p(clasp_as_claspCharacter(c));
 };
 
 CL_LAMBDA(arg)
@@ -91,7 +91,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(both_case_p)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__both_case_p(Character_sp c) {
-  return clasp_isboth(clasp_as_claspCharacter(c));
+  return both_case_p(clasp_as_claspCharacter(c));
 };
 
 CL_LAMBDA(char)
@@ -99,7 +99,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(alphanumericp)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__alphanumericp(Character_sp ch) {
-  return clasp_isalnum(clasp_as_claspCharacter(ch));
+  return alphanumericp(clasp_as_claspCharacter(ch));
 };
 
 CL_LAMBDA(char)
@@ -107,7 +107,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(charUpcase)dx")
 DOCGROUP(clasp)
 CL_DEFUN Character_sp cl__char_upcase(Character_sp ch) {
-  return clasp_make_character(clasp_toupper(clasp_as_claspCharacter(ch)));
+  return clasp_make_character(char_upcase(clasp_as_claspCharacter(ch)));
 };
 
 CL_LAMBDA(char)
@@ -115,7 +115,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(charDowncase)dx")
 DOCGROUP(clasp)
 CL_DEFUN Character_sp cl__char_downcase(Character_sp ch) {
-  return clasp_make_character(clasp_tolower(clasp_as_claspCharacter(ch)));
+  return clasp_make_character(char_downcase(clasp_as_claspCharacter(ch)));
 };
 
 /*! Return -1 if a<b
@@ -136,8 +136,8 @@ bool character_comparison(int s, int t, Character_sp x, Character_sp y,
   claspCharacter cx = clasp_as_claspCharacter(x);
   claspCharacter cy = clasp_as_claspCharacter(y);
   if (!preserve_case) {
-    cx = clasp_toupper(cx);
-    cy = clasp_toupper(cy);
+    cx = char_upcase(cx);
+    cy = char_upcase(cy);
   }
   int dir = s * claspCharacter_basic_compare(cx, cy);
   return !(dir < t);
@@ -380,10 +380,10 @@ CL_DEFUN T_mv cl__char_not_equal(List_sp args) {
       PROGRAM_ERROR();
   while (args.notnilp()) {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-    a = clasp_toupper(a);
+    a = char_upcase(a);
     for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
       claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(cur)));
-      b = clasp_toupper(b);
+      b = char_upcase(b);
       if (a == b) return (Values(nil<T_O>()));
     }
     args = oCdr(args);
@@ -393,8 +393,8 @@ CL_DEFUN T_mv cl__char_not_equal(List_sp args) {
 
 bool clasp_charEqual2(T_sp x, T_sp y) {
   if (x.characterp() && y.characterp()) {
-    claspCharacter cx = clasp_toupper(x.unsafe_character());
-    claspCharacter cy = clasp_toupper(y.unsafe_character());
+    claspCharacter cx = char_upcase(x.unsafe_character());
+    claspCharacter cy = char_upcase(y.unsafe_character());
     return cx == cy;
   }
   return false;
@@ -406,8 +406,8 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Two-arg char-equal)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool core__two_arg_char_equal(Character_sp x, Character_sp y) {
-  claspCharacter cx = clasp_toupper(x.unsafe_character());
-  claspCharacter cy = clasp_toupper(y.unsafe_character());
+  claspCharacter cx = char_upcase(x.unsafe_character());
+  claspCharacter cy = char_upcase(y.unsafe_character());
   return cx == cy;
 }
 
@@ -425,18 +425,18 @@ CL_DEFUN T_sp cl__char_equal(Vaslist_sp chars) {
   }
   case 2: {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
-    a = clasp_toupper(a);
+    a = char_upcase(a);
     claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
-    b = clasp_toupper(b);
+    b = char_upcase(b);
     if (a == b) return _lisp->_true();
     return nil<T_O>();
   }
   default: {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
-    a = clasp_toupper(a);
+    a = char_upcase(a);
     while (chars->remaining_nargs()) {
       claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
-      b = clasp_toupper(b);
+      b = char_upcase(b);
       if (a!=b) {
         return ((nil<T_O>()));
       }
@@ -706,7 +706,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(alpha_char_p)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__alpha_char_p(Character_sp ch) {
-  return clasp_isalpha(clasp_as_claspCharacter(ch));
+  return alpha_char_p(clasp_as_claspCharacter(ch));
 };
 
 Fixnum clasp_digitp(claspCharacter ch, int basis) {

@@ -113,7 +113,7 @@ CL_DEFUN SimpleString_sp cl__string_upcase(T_sp arg) {
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     T_sp cc = str->rowMajorAref(i);
     claspCharacter c = cc.unsafe_character();
-    claspCharacter u = clasp_toupper(c);
+    claspCharacter u = char_upcase(c);
     Character_sp cu = clasp_make_character(u);
     result->rowMajorAset(i,clasp_make_character(u));
   }
@@ -130,7 +130,7 @@ CL_DEFUN SimpleString_sp cl__string_downcase(T_sp arg) {
   SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->element_type(),str->length(),false));
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     claspCharacter c = str->rowMajorAref(i).unsafe_character();
-    claspCharacter u = clasp_tolower(c);
+    claspCharacter u = char_downcase(c);
     result->rowMajorAset(i,clasp_make_character(u));
   }
   return (result);
@@ -143,7 +143,7 @@ CL_DOCSTRING(R"dx(nstring_upcase)dx")
 DOCGROUP(clasp)
 CL_DEFUN String_sp cl__nstring_upcase(String_sp arg) {
   for ( cl_index i(0), iEnd(arg->length()); i<iEnd; ++i ) {
-    arg->rowMajorAset(i,clasp_make_character(clasp_toupper(arg->rowMajorAref(i).unsafe_character())));
+    arg->rowMajorAset(i,clasp_make_character(char_upcase(arg->rowMajorAref(i).unsafe_character())));
   }
   return arg;
 };
@@ -154,7 +154,7 @@ CL_DOCSTRING(R"dx(nstring_downcase)dx")
 DOCGROUP(clasp)
 CL_DEFUN String_sp cl__nstring_downcase(String_sp arg) {
   for ( cl_index i(0), iEnd(arg->length()); i<iEnd; ++i ) {
-    arg->rowMajorAset(i,clasp_make_character(clasp_tolower(arg->rowMajorAref(i).unsafe_character())));
+    arg->rowMajorAset(i,clasp_make_character(char_downcase(arg->rowMajorAref(i).unsafe_character())));
   }
   return arg;
 };
@@ -213,7 +213,7 @@ bool template_string_equalp_bool(const T1& string1, const T2& string2, size_t st
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    if ((toupper(static_cast<claspCharacter>(*cp1)) != toupper(static_cast<claspCharacter>(*cp2))))
+    if ((char_upcase(static_cast<claspCharacter>(*cp1)) != char_upcase(static_cast<claspCharacter>(*cp2))))
       goto RETURN_FALSE;
     --num1;
     --num2;
@@ -440,7 +440,7 @@ T_sp template_string_equal(const T1& string1, const T2& string2, size_t start1, 
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    if ((toupper(static_cast<claspCharacter>(*cp1)) != toupper(static_cast<claspCharacter>(*cp2))))
+    if ((char_upcase(static_cast<claspCharacter>(*cp1)) != char_upcase(static_cast<claspCharacter>(*cp2))))
       goto RETURN_FALSE;
     --num1;
     --num2;
@@ -470,7 +470,7 @@ T_sp template_string_not_equal(const T1& string1, const T2& string2, size_t star
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    if ((toupper(static_cast<claspCharacter>(*cp1)) != toupper(static_cast<claspCharacter>(*cp2))))
+    if ((char_upcase(static_cast<claspCharacter>(*cp1)) != char_upcase(static_cast<claspCharacter>(*cp2))))
       goto RETURN_TRUE;
     --num1;
     --num2;
@@ -500,8 +500,8 @@ T_sp template_string_lessp(const T1& string1, const T2& string2, size_t start1, 
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = char_upcase(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = char_upcase(static_cast<claspCharacter>(*cp2));
     if (ucp1 != ucp2) {
       if (ucp1 < ucp2)
         goto RETURN_TRUE;
@@ -534,8 +534,8 @@ T_sp template_string_greaterp(const T1& string1, const T2& string2, size_t start
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = char_upcase(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = char_upcase(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 > ucp2)
         goto RETURN_TRUE;
@@ -568,8 +568,8 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = char_upcase(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = char_upcase(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 < ucp2)
         goto RETURN_TRUE;
@@ -604,8 +604,8 @@ T_sp template_string_not_lessp(const T1& string1, const T2& string2, size_t star
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = char_upcase(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = char_upcase(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 > ucp2)
         goto RETURN_TRUE;
@@ -1042,12 +1042,10 @@ cl_index fsmIntegerDigit(char c, cl_index radix) {
   cl_index idigit = -1;
   if (isdigit(c)) {
     idigit = c - '0';
-  } else if (isalpha(c)) {
-    idigit = -1;
-    if (c >= 'A' && c <= 'Z')
-      idigit = c - 'A' + 10;
-    else if (c >= 'a' && c <= 'z')
-      idigit = c - 'a' + 10;
+  } else if (c >= 'A' && c <= 'Z') {
+    idigit = c - 'A' + 10;
+  } else if (c >= 'a' && c <= 'z') {
+    idigit = c - 'a' + 10;
   }
   if (idigit < 0)
     return idigit;

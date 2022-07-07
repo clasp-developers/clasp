@@ -270,17 +270,17 @@ UnEscapedCase case_state(Fixnum c, UnEscapedCase curCase) {
           // nothing
       break;
   case undefined:
-      if (isupper(c)) {
+      if (upper_case_p(c)) {
         return up;
-      } else if (islower(c)) {
+      } else if (lower_case_p(c)) {
         return down;
       }
       break;
   case up:
-      if (islower(c)) return mixed;
+      if (lower_case_p(c)) return mixed;
       break;
   case down:
-      if (isupper(c)) return mixed;
+      if (upper_case_p(c)) return mixed;
   };
   return curCase;
 }
@@ -317,7 +317,7 @@ void make_str_upcase(StrNs_sp sout, List_sp cur_char) {
     } else if (obj.fixnump()) {
       if (obj.unsafe_fixnum()&TRAIT_ESCAPED)
         sout->vectorPushExtend(core::clasp_make_character(CHR(obj.unsafe_fixnum())));
-      else sout->vectorPushExtend(core::clasp_make_character(toupper(CHR(obj.unsafe_fixnum()))));
+      else sout->vectorPushExtend(core::clasp_make_character(char_upcase(CHR(obj.unsafe_fixnum()))));
     } else if (obj.nilp()) {
       // Handling name ||   do nothing
     }
@@ -333,7 +333,7 @@ void make_str_downcase(StrNs_sp sout, List_sp cur_char) {
     } else if (obj.fixnump()) {
       if (obj.unsafe_fixnum()&TRAIT_ESCAPED)
         sout->vectorPushExtend(core::clasp_make_character(CHR(obj.unsafe_fixnum())));
-      else sout->vectorPushExtend(core::clasp_make_character(tolower(CHR(obj.unsafe_fixnum()))));
+      else sout->vectorPushExtend(core::clasp_make_character(char_downcase(CHR(obj.unsafe_fixnum()))));
     } else if (obj.nilp()) {
       // Handling name ||   do nothing
     }
@@ -389,13 +389,17 @@ void make_str(StrNs_sp sout, List_sp cur_char) {
 string fix_exponent_char(const char *cur) {
   stringstream ss;
   while (*cur) {
-    if (isalpha(*cur)) {
-      char uc = toupper(*cur);
-      switch (uc) {
+    if (alpha_char_p(*cur)) {
+      switch (*cur) {
+      case 'd':
       case 'D':
+      case 'e':
       case 'E':
+      case 'f':
       case 'F':
+      case 'l':
       case 'L':
+      case 's':
       case 'S':
         ss << "E";
         break;
@@ -502,12 +506,12 @@ UnEscapedCase token_check_case(Token&token, size_t start, size_t end) {
 
 void token_upcase(Token& token, size_t start, size_t end) {
   for ( size_t i(start); i<end; ++i ) {
-    if (!(token[i]&TRAIT_ESCAPED)) token[i] = (TRAIT_MASK&token[i])|toupper(CHR(token[i]));
+    if (!(token[i]&TRAIT_ESCAPED)) token[i] = (TRAIT_MASK&token[i])|char_upcase(CHR(token[i]));
   }
 }
 void token_downcase(Token& token, size_t start, size_t end) {
   for ( size_t i(start); i<end; ++i ) {
-    if (!(token[i]&TRAIT_ESCAPED)) token[i] = (TRAIT_MASK&token[i])|tolower(CHR(token[i]));
+    if (!(token[i]&TRAIT_ESCAPED)) token[i] = (TRAIT_MASK&token[i])|char_downcase(CHR(token[i]));
   }
 }
 

@@ -123,14 +123,9 @@ inline bool clasp_invalid_base_char_p(claspCharacter c) {
   return (c <= 32) || (c == 127);
 }
 
-claspCharacter clasp_toupper(claspCharacter code);
+claspCharacter char_upcase(claspCharacter code);
 
-claspCharacter clasp_tolower(claspCharacter code);
-
-inline bool clasp_alphanumericp(claspCharacter i) {
-  return isalnum(i);
-}
-
+claspCharacter char_downcase(claspCharacter code);
 
 // See character.fwd.h for the following
 #if 0
@@ -147,11 +142,19 @@ inline bool clasp_base_char_p(Character_sp c) {
   return c.unsafe_character()>=0 && c.unsafe_character()<=255;
 }
 
-bool clasp_isupper(claspCharacter cc);
+bool alphanumericp(claspCharacter c);
 
-bool clasp_islower(claspCharacter cc);
+bool alpha_char_p(claspCharacter c);
 
-bool clasp_isboth(claspCharacter cc);
+bool graphic_char_p(claspCharacter c);
+
+bool printing_char_p(claspCharacter c);
+
+bool upper_case_p(claspCharacter cc);
+
+bool lower_case_p(claspCharacter cc);
+
+bool both_case_p(claspCharacter cc);
 
 inline Character_sp clasp_make_standard_character(claspCharacter c) {
   return gc::make_tagged_character(c);
