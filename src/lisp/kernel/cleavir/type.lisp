@@ -598,32 +598,48 @@
 
 (define-deriver ash (num shift) (sv (ty-ash num shift)))
 
+(defun derive-to-float (realtype format sys)
+  ;; TODO: disjunctions
+  (if (ctype:rangep realtype sys)
+      (multiple-value-bind (low lxp) (ctype:range-low realtype sys)
+        (multiple-value-bind (high hxp) (ctype:range-high realtype sys)
+          (ctype:range format
+                       (cond ((not low) '*)
+                             (lxp (list (coerce low format)))
+                             (t (coerce low format)))
+                       (cond ((not high) '*)
+                             (hxp (list (coerce high format)))
+                             (t (coerce high format)))
+                       sys)))
+      (ctype:range format '* '* sys)))
+
 (define-deriver float (num &optional (proto nil protop))
-  ;; FIXME: More sophisticated type operations would make this more
-  ;; precise. For example, it would be good to derive that if the
-  ;; argument is an (or single-float rational), the result is a
-  ;; single float.
   (let* ((sys *clasp-system*)
-         (float (env:parse-type-specifier 'float nil sys))
-         (rat (env:parse-type-specifier 'rational nil sys))
-         (single (env:parse-type-specifier 'single-float nil sys))
-         (double (env:parse-type-specifier 'double-float nil sys)))
+         (floatt (ctype:range 'float '* '* sys)))
     (flet ((float1 ()
-             (cond ((ctype:subtypep num float sys) num) ; no coercion
-                   ((ctype:subtypep num rat sys) single)
-                   (t float)))
+             ;; TODO: disjunctions
+             (cond ((ctype:subtypep num floatt sys) num) ; no coercion
+                   ((ctype:subtypep num (ctype:negate floatt sys) sys)
+                    (derive-to-float num 'single-float sys))
+                   (t floatt)))
            (float2 ()
-             (cond #+(or)((arg-subtypep proto short) short)
-                   ((ctype:subtypep proto single sys) single)
-                   ((ctype:subtypep proto double sys) double)
-                   #+(or)((arg-subtypep proto long) long)
-                   (t float))))
+             (cond ((ctype:subtypep proto (ctype:range 'single-float '* '* sys) sys)
+                    (derive-to-float num 'single-float sys))
+                   ((ctype:subtypep proto (ctype:range 'double-float '* '* sys) sys)
+                    (derive-to-float num 'double-float sys))
+                   (t floatt))))
       (ctype:single-value
        (cond ((eq protop t) (float2)) ; definitely supplied
              ((eq protop :maybe)
               (ctype:disjoin sys (float1) (float2)))
              (t (float1)))
        sys))))
+(define-deriver core:to-single-float (num)
+  (let ((sys *clasp-system*))
+    (ctype:single-value (derive-to-float num 'single-float sys) sys)))
+(define-deriver core:to-double-float (num)
+  (let ((sys *clasp-system*))
+    (ctype:single-value (derive-to-float num 'double-float sys) sys)))
 
 (define-deriver random (max &optional random-state)
   (declare (ignore random-state))

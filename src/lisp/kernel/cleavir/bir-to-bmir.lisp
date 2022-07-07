@@ -115,6 +115,11 @@
                        (every #'subtypep types1 types2)))
                 :key #'cdr)))
 
+(deftransform core:to-single-float core::double-to-single double-float)
+(deftransform core:to-single-float core::fixnum-to-single fixnum)
+(deftransform core:to-double-float core::single-to-double single-float)
+(deftransform core:to-double-float core::fixnum-to-double fixnum)
+
 (macrolet ((define-two-arg-ff (name sf-primop df-primop)
              `(progn
                 (deftransform ,name ,sf-primop single-float single-float)

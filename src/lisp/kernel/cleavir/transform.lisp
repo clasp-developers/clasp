@@ -193,7 +193,6 @@ Optimizations are available for any of:
 
 ;;; A deftransform lambda list is like a method lambda list, except with
 ;;; types instead of specializers, and &optional and &rest can have types.
-;;; And there's no &key yet.
 ;;; &optional parameters can be specified as ((var type) default var-p).
 ;;; This function returns six values: Three for the required, optional, and
 ;;; rest parts of the lambda list, and three for the corresponding types.
@@ -238,7 +237,6 @@ Optimizations are available for any of:
                                 (nreverse reqtypes) (nreverse opttypes)
                                 resttype))))
 
-;;; FIXME: Only required parameters permitted here
 (defmacro deftransform (name typed-lambda-list &body body)
   (multiple-value-bind (req opt rest reqt optt restt)
       (process-deftransform-lambda-list typed-lambda-list)
@@ -372,22 +370,14 @@ Optimizations are available for any of:
 (deftransform core:reciprocal ((v single-float)) '(/ 1f0 v))
 (deftransform core:reciprocal ((v double-float)) '(/ 1d0 v))
 
-(deftransform float ((v single-float)) 'v)
+(deftransform float ((v float)) 'v)
+(deftransform float ((v (not float))) '(core:to-single-float v))
 (deftransform float ((v single-float) (proto single-float)) 'v)
+(deftransform float (v (proto single-float)) '(core:to-single-float v))
+(deftransform core:to-single-float ((v single-float)) 'v)
 (deftransform float ((v double-float) (proto double-float)) 'v)
-(deftransform float ((v single-float) (proto double-float))
-  '(core::primop core::single-to-double v))
-(deftransform float ((v double-float) (proto single-float))
-  '(core::primop core::double-to-single v))
-(deftransform float ((v double-float))
-  '(core::primop core::double-to-single v))
-
-(deftransform float ((num fixnum) (proto single-float))
-  '(core::primop core::fixnum-to-single num))
-(deftransform float ((num fixnum))
-  '(core::primop core::fixnum-to-single num))
-(deftransform float ((num fixnum) (proto double-float))
-  '(core::primop core::fixnum-to-double num))
+(deftransform float (v (proto double-float)) '(core:to-double-float v))
+(deftransform core:to-double-float ((v double-float)) 'v)
 
 ;;;
 
