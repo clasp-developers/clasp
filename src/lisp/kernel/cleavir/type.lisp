@@ -923,7 +923,7 @@
 (define-deriver row-major-aref (array index)
   (declare (ignore index))
   (sv (type-aet array *clasp-system*)))
-(define-deriver core:row-major-aset (array index value)
+(define-deriver (setf row-major-aref) (value array index)
   (declare (ignore array index))
   (sv value))
 

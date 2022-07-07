@@ -1518,93 +1518,6 @@
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 )
 
-;;; Unsafe versions to use that don't check bounds (but still check type)
-#+(or)
-(progn
-(debug-inline "svref/no-bounds-check")
-(declaim (inline svref/no-bounds-check))
-(defun svref/no-bounds-check (vector index)
-  (if (typep vector 'simple-vector)
-      (if (cleavir-primop:typeq index fixnum)
-          (cleavir-primop:aref vector index t t t)
-          (error 'type-error :datum index :expected-type 'fixnum))
-      (error 'type-error :datum vector :expected-type 'simple-vector)))
-)
-
-#+(or)
-(progn
-(declaim (inline (setf svref/no-bounds-check)))
-(defun (setf svref/no-bounds-check) (value vector index)
-  (if (typep vector 'simple-vector)
-      (if (cleavir-primop:typeq index fixnum)
-          (progn (cleavir-primop:aset vector index value t t t)
-                 value)
-          (error 'type-error :datum index :expected-type 'fixnum))
-      (error 'type-error :datum vector :expected-type 'simple-vector)))
-)
-
-#+(or)
-(define-cleavir-compiler-macro svref (&whole whole vector index &environment env)
-  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
-      whole
-      `(svref/no-bounds-check ,vector ,index)))
-#+(or)
-(define-cleavir-compiler-macro (setf svref)
-    (&whole whole value vector index &environment env)
-  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
-      whole
-      `(funcall #'(setf svref/no-bounds-check) ,value ,vector ,index)))
-
-#+(or)
-(progn
-  (debug-inline "core:vref")
-  (declaim (inline core:vref))
-  (defun core:vref (array index)
-    ;; FIXME: type inference should be able to remove the redundant
-    ;; checking that it's an array... maybe?
-    (macrolet ((mycase (&rest specs)
-                 `(typecase array
-                    ,@(loop for (type boxed) in specs
-                            collect `((simple-array ,type (*))
-                                      (cleavir-primop:aref array index ,type t ,boxed)))
-                    (t
-                     (core:fmt t "vref array-element-type: {}%N" (array-element-type array))
-                     (error "BUG: vref unknown vector ~a" array)))))
-      (mycase (t t) (base-char nil) (character nil)
-              (double-float nil) (single-float nil)
-              (fixnum nil)
-              (ext:integer64 nil) (ext:integer32 nil)
-              (ext:integer16 nil) (ext:integer8 nil)
-              (ext:byte64 nil) (ext:byte32 nil)
-              (ext:byte16 nil) (ext:byte8 nil)
-              (bit t)))))
-
-;;; This is unsafe in that it doesn't bounds check.
-;;; It DOES check that the value is of the correct type,
-;;; because this is the only place we know the type.
-#+(or)
-(progn
-  (declaim (inline (setf core:vref)))
-  (defun (setf core:vref) (value array index)
-    (macrolet ((mycase (&rest specs)
-                 `(typecase array
-                    ,@(loop for (type boxed) in specs
-                            collect `((simple-array ,type (*))
-                                      (unless (typep value ',type)
-                                        (error 'type-error :datum value :expected-type ',type))
-                                      (cleavir-primop:aset array index value ,type t ,boxed)
-                                      value))
-                    ;; should be unreachable
-                    (t (error "BUG: Unknown vector ~a" array)))))
-      (mycase (t t) (base-char nil) (character nil)
-              (double-float nil) (single-float nil)
-              (fixnum nil)
-              (ext:integer64 nil) (ext:integer32 nil)
-              (ext:integer16 nil) (ext:integer8 nil)
-              (ext:byte64 nil) (ext:byte32 nil)
-              (ext:byte16 nil) (ext:byte8 nil)
-              (bit t)))))
-
 ;;; Array indices are all fixnums. If we're sure sizes are valid, we don't want
 ;;; to use general arithmetic. We can just use this to do unsafe modular arithmetic.
 ;;; (Used in this file only)
@@ -1703,34 +1616,6 @@
       `(row-major-aref/no-bounds-check ,array ,index)))
 )
 
-#+(or)
-(progn
-(declaim (inline row-major-aset/no-bounds-check))
-(defun row-major-aset/no-bounds-check (array index value)
-  (with-array-data (underlying-array offset array)
-    (setf (core:vref underlying-array (add-indices index offset)) value)))
-)
-
-#+(or)
-(progn
-(declaim (inline core:row-major-aset))
-(defun core:row-major-aset (array index value)
-  (let ((max (etypecase array
-               ((simple-array * (*)) (core::vector-length array))
-               (array (core::%array-total-size array)))))
-    (if-in-bounds (index 0 max)
-                  nil
-                  (error 'core:row-major-out-of-bounds :datum index
-                                                       :expected-type `(integer 0 (,max))
-                                                       :object array)))
-  (row-major-aset/no-bounds-check array index value))
-(define-cleavir-compiler-macro core:row-major-aset
-    (&whole whole array index value &environment env)
-  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
-      whole
-      `(row-major-aset/no-bounds-check ,array ,index ,value)))
-)
-
 (declaim (inline schar (setf schar) char (setf char))
          (ftype (function (simple-string sys:index) character) schar)
          (ftype (function (string sys:index) character) char)
@@ -1739,12 +1624,12 @@
 (defun schar (string index)
   (row-major-aref (the simple-string string) index))
 (defun (setf schar) (value string index)
-  (core:row-major-aset (the simple-string string) index value))
+  (setf (row-major-aref (the simple-string string) index) value))
 
 (defun char (string index)
   (row-major-aref (the string string) index))
 (defun (setf char) (value string index)
-  (core:row-major-aset (the string string) index value))
+  (setf (row-major-aref (the string string) index) value))
 
 (defun row-major-index-computer (dimsyms subscripts)
   ;; assumes once-only is taken care of.

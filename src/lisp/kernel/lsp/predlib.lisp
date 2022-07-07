@@ -411,8 +411,8 @@ and is not adjustable."
 			  (dolist (v +upgraded-array-element-types+ 'T)
 			    (when (subtypep element-type v)
 			      (return v))))))
-	  (row-major-aset *upgraded-array-element-type-cache* hash
-                          (cons element-type answer))
+          (setf (row-major-aref *upgraded-array-element-type-cache* hash)
+                (cons element-type answer))
 	  answer))))
 
 (defun upgraded-complex-part-type (real-type &optional env)
@@ -1401,7 +1401,7 @@ if not possible."
 	   (*elementary-types* *elementary-types*))
       (multiple-value-bind (test confident)
 	  (fast-subtypep t1 t2)
-	(row-major-aset cache hash (cons (cons t1 t2) (cons test confident)))
+        (setf (row-major-aref cache hash) (cons (cons t1 t2) (cons test confident)))
 	(values test confident)))))
 
 (defun fast-type= (t1 t2)

@@ -500,19 +500,14 @@ Optimizations are available for any of:
                (not diosp)
                ;; Handle these later. TODO. For efficiency,
                ;; this will probably mean inlining lambdas with &key.
+               ;; Or replacing the make-array with a reqargs-only function,
+               ;; more likely.
                (and (null iesp) (null icsp)))
           (let* ((uaet (upgraded-array-element-type
                         (first (ctype:member-members sys element-type))))
                  (make-sv (cmp::uaet-info uaet)))
             `(,make-sv dimensions nil nil))
           (decline-transform "making a complex array")))))
-
-(deftransform core:row-major-aset (((arr (simple-array single-float (*)))
-                                    idx value))
-  '(core::primop core::sf-vset value arr idx))
-(deftransform core:row-major-aset (((arr (simple-array double-float (*)))
-                                    idx value))
-  '(core::primop core::df-vset value arr idx))
 
 (deftransform aref (((arr vector) (index t))) '(row-major-aref arr index))
 (deftransform (setf aref) (((val t) (arr vector) (index t)))

@@ -177,7 +177,7 @@
 	       (error "In MAKE-ARRAY: the elements in :INITIAL-CONTENTS do not match the array dimensions"))
 	     (if (= (length dims) 1)
                  (sequence:dosequence (e contents)
-                   (sys:row-major-aset array written e)
+                   (setf (row-major-aref array written) e)
                    (incf written))
                  (sequence:dosequence (e contents)
                    (setf written (iterate-over-contents array

@@ -184,12 +184,18 @@
 ;;(deftransform cdr cleavir-primop:cdr cons)
 
 (deftransform aref core::sf-vref (simple-array single-float (*)) t)
-(deftransform row-major-aref core::sf-vref (simple-array single-float (*)) t)
 (deftransform aref core::df-vref (simple-array double-float (*)) t)
+(deftransform row-major-aref core::sf-vref (simple-array single-float (*)) t)
 (deftransform row-major-aref core::df-vref (simple-array double-float (*)) t)
 
-(deftransform (setf aref) core::sf-vset t (simple-array single-float (*)) t)
-(deftransform (setf aref) core::df-vset t (simple-array double-float (*)) t)
+(deftransform (setf aref) core::sf-vset
+  single-float (simple-array single-float (*)) t)
+(deftransform (setf aref) core::df-vset
+  double-float (simple-array double-float (*)) t)
+(deftransform (setf row-major-aref) core::sf-vset
+  single-float (simple-array single-float (*)) t)
+(deftransform (setf row-major-aref) core::df-vset
+  double-float (simple-array double-float (*)) t)
 
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 
