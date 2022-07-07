@@ -131,7 +131,7 @@
 
 ;;; Lambda lists are basically ordinary lambda lists, but without &aux
 ;;; because &aux sucks.
-;;; &optional defaults are ignored.
+;;; &optional defaults are incorporated into the type bound.
 ;;; suppliedp parameters will be bound to either T, :MAYBE, or NIL.
 ;;; T means an argument is definitely provided, :MAYBE that it may or
 ;;; may not be, and NIL that it definitely isn't.

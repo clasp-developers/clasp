@@ -69,6 +69,15 @@
     (bir:compute-iblock-flow-order (bir:function call))
     (bir-transformations:maybe-interpolate bir)))
 
+;;; We can't ever inline mv local calls (yet! TODO, should be possible sometimes)
+;;; so this is a bit simpler than the above.
+(defun replace-mvcallee-with-lambda (call lambda-expression-cst)
+  (let ((bir (lambda->birfun (bir:module (bir:function call))
+                             lambda-expression-cst)))
+    ;; Now properly insert it.
+    (change-class call 'bir:mv-local-call
+                  :inputs (list* bir (rest (bir:inputs call))))))
+
 (defmacro with-transform-declining (&body body)
   `(catch '%decline-transform ,@body))
 
@@ -95,6 +104,19 @@
   (let ((trans (gethash key *bir-transformers*)))
     (if trans
         (maybe-transform call trans)
+        nil)))
+
+(defmethod cleavir-bir-transformations:transform-call
+    ((system clasp) key (call bir:mv-call))
+  (let ((transforms (gethash key *bir-transformers*)))
+    (if transforms
+        (loop with argstype = (bir:ctype (second (bir:inputs call)))
+              for (transform . vtype) in transforms
+              when (ctype:values-subtypep argstype vtype *clasp-system*)
+                do (with-transform-declining
+                       (replace-mvcallee-with-lambda call
+                                                     (funcall transform call))
+                     (return t)))
         nil)))
 
 (define-condition failed-transform (ext:compiler-note)
