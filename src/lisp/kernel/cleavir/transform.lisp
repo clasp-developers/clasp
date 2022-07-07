@@ -87,7 +87,7 @@
 
 (defun maybe-transform (call transforms)
   (flet ((arg-primary (arg)
-           (ctype:primary (bir:asserted-type arg) *clasp-system*)))
+           (ctype:primary (asserted-ctype arg) *clasp-system*)))
     (loop with args = (rest (bir:inputs call))
           with argstype
             = (ctype:values (mapcar #'arg-primary args) nil
@@ -95,8 +95,9 @@
           for (transform . vtype) in transforms
           when (ctype:values-subtypep argstype vtype *clasp-system*)
             do (with-transform-declining
-                   (replace-callee-with-lambda call
-                                               (funcall transform call))
+                   (replace-callee-with-lambda
+                    call (funcall transform :origin (bir:origin call)
+                                  :argstype argstype))
                  (return t)))))
 
 (defmethod cleavir-bir-transformations:transform-call
@@ -114,8 +115,9 @@
               for (transform . vtype) in transforms
               when (ctype:values-subtypep argstype vtype *clasp-system*)
                 do (with-transform-declining
-                       (replace-mvcallee-with-lambda call
-                                                     (funcall transform call))
+                       (replace-mvcallee-with-lambda
+                        call (funcall transform :origin (bir:origin call)
+                                      :argstype argstype))
                      (return t)))
         nil)))
 
@@ -181,13 +183,13 @@ Optimizations are available for any of:
                        (gethash name *bir-transformers*)
                         #'vtype< :key #'cdr))))))
 
-(defmacro %deftransform (name (instparam) argstype
+(defmacro %deftransform (name lambda-list argstype
                          &body body)
   (let ((argstype (env:parse-values-type-specifier argstype nil *clasp-system*)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (unless (nth-value 1 (gethash ',name *bir-transformers*))
          (%deftransformation ,name))
-       (%def-bir-transformer ',name (lambda (,instparam) ,@body) ',argstype)
+       (%def-bir-transformer ',name (lambda ,lambda-list ,@body) ',argstype)
        ',name)))
 
 ;;; Given an expression, make a CST for it.
@@ -212,6 +214,11 @@ Optimizations are available for any of:
 ;; Also useful, for laziness reasons.
 (defmacro truly-the (type form)
   `(cleavir-primop:truly-the (values ,type &rest nil) ,form))
+
+(defmacro with-transformer-types (lambda-list argstype &body body)
+  `(with-types ,lambda-list ,argstype
+     (:default (decline-transform "type mismatch"))
+     ,@body))
 
 ;;; A deftransform lambda list is like a method lambda list, except with
 ;;; types instead of specializers, and &optional and &rest can have types.
@@ -259,18 +266,21 @@ Optimizations are available for any of:
                                 (nreverse reqtypes) (nreverse opttypes)
                                 resttype))))
 
-(defmacro deftransform (name typed-lambda-list &body body)
+(defmacro deftransform (name (typed-lambda-list
+                              &key (argstype (gensym "ARGSTYPE") argstypep))
+                        &body body)
   (multiple-value-bind (req opt rest reqt optt restt)
       (process-deftransform-lambda-list typed-lambda-list)
     (assert (or (null restt) (eq restt t))) ; we're limitd at the moment.
     (let* ((ignorable (append req opt (when rest (list rest))))
-           (ll `(,@req &optional ,@opt ,@(when rest `((&rest ,rest)))))
+           (ll `(,@req &optional ,@opt ,@(when rest `(&rest ,rest))))
            (vt `(values ,@reqt &optional ,@optt &rest ,restt))
-           (csym (gensym "CALL")) (bodysym (gensym "BODY")))
-      `(%deftransform ,name (,csym) ,vt
+           (osym (gensym "ORIGIN")) (bodysym (gensym "BODY")))
+      `(%deftransform ,name (&key ((:origin ,osym)) ((:argstype ,argstype))) ,vt
+         ,@(unless argstypep `((declare (ignore ,argstype))))
          (let ((,bodysym (progn ,@body)))
            (cstify-transformer
-            (bir:origin ,csym)
+            ,osym
             ;; double backquotes carefully designed piece by piece
             `(lambda (,@',ll)
                (declare (ignorable ,@',ignorable))
@@ -295,12 +305,12 @@ Optimizations are available for any of:
 ;;;
 ;;; (5) DATA AND CONTROL FLOW
 
-(deftransform equal ((x number) (y t)) '(eql x y))
-(deftransform equal ((x t) (y number)) '(eql x y))
-(deftransform equalp ((x number) (y number)) '(= x y))
+(deftransform equal (((x number) (y t))) '(eql x y))
+(deftransform equal (((x t) (y number))) '(eql x y))
+(deftransform equalp (((x number) (y number))) '(= x y))
 
-(deftransform equal ((x character) (y character)) '(char= x y))
-(deftransform equalp ((x character) (y character)) '(char-equal x y))
+(deftransform equal (((x character) (y character))) '(char= x y))
+(deftransform equalp (((x character) (y character))) '(char-equal x y))
 
 #+(or) ; string= is actually slower atm due to keyword etc processing
 (deftransform equal ((x string) (y string)) '(string= x y))
@@ -311,20 +321,20 @@ Optimizations are available for any of:
 
 (macrolet ((define-two-arg-f (name)
              `(progn
-                (deftransform ,name ((a1 single-float) (a2 double-float))
+                (deftransform ,name (((a1 single-float) (a2 double-float)))
                   '(,name (float a1 0d0) a2))
-                (deftransform ,name ((a1 double-float) (a2 single-float))
+                (deftransform ,name (((a1 double-float) (a2 single-float)))
                   '(,name a1 (float a2 0d0)))))
            (define-two-arg-ff (name)
              `(progn
                 (define-two-arg-f ,name)
-                (deftransform ,name ((x rational) (y single-float))
+                (deftransform ,name (((x rational) (y single-float)))
                   '(,name (float x 0f0) y))
-                (deftransform ,name ((x single-float) (y rational))
+                (deftransform ,name (((x single-float) (y rational)))
                   '(,name x (float y 0f0)))
-                (deftransform ,name ((x rational) (y double-float))
+                (deftransform ,name (((x rational) (y double-float)))
                   '(,name (float x 0d0) y))
-                (deftransform ,name ((x double-float) (y rational))
+                (deftransform ,name (((x double-float) (y rational)))
                   '(,name x (float y 0d0))))))
   (define-two-arg-ff core:two-arg-+)
   (define-two-arg-ff core:two-arg--)
@@ -334,22 +344,22 @@ Optimizations are available for any of:
 
 ;; FIXME: i think our FTRUNCATE function has a bug: it should return doubles in
 ;; this case, by my reading.
-(deftransform ftruncate ((dividend single-float) (divisor double-float))
+(deftransform ftruncate (((dividend single-float) (divisor double-float)))
   '(ftruncate (float dividend 0d0) divisor))
-(deftransform ftruncate ((dividend double-float) (divisor single-float))
+(deftransform ftruncate (((dividend double-float) (divisor single-float)))
   '(ftruncate dividend (float divisor 0d0)))
 
 (macrolet ((define-float-conditional (name sf-primop df-primop)
              `(progn
-                (deftransform ,name ((x single-float) (y single-float))
+                (deftransform ,name (((x single-float) (y single-float)))
                   '(if (core::primop ,sf-primop x y) t nil))
-                (deftransform ,name ((x double-float) (y double-float))
+                (deftransform ,name (((x double-float) (y double-float)))
                   '(if (core::primop ,df-primop x y) t nil))
-                (deftransform ,name ((x single-float) (y double-float))
+                (deftransform ,name (((x single-float) (y double-float)))
                   '(if (core::primop ,df-primop
                         (core::primop core::single-to-double x) y)
                     t nil))
-                (deftransform ,name ((x double-float) (y single-float))
+                (deftransform ,name (((x double-float) (y single-float)))
                   '(if (core::primop ,df-primop
                         x (core::primop core::single-to-double y))
                     t nil)))))
@@ -364,22 +374,22 @@ Optimizations are available for any of:
   (define-float-conditional core:two-arg->=
     core::two-arg-sf->= core::two-arg-df->=))
 
-(deftransform zerop ((n single-float))
+(deftransform zerop (((n single-float)))
   '(if (core::primop core::two-arg-sf-= n 0f0) t nil))
-(deftransform plusp ((n single-float))
+(deftransform plusp (((n single-float)))
   '(if (core::primop core::two-arg-sf-> n 0f0) t nil))
-(deftransform minusp ((n single-float))
+(deftransform minusp (((n single-float)))
   '(if (core::primop core::two-arg-sf-< n 0f0) t nil))
 
-(deftransform zerop ((n double-float))
+(deftransform zerop (((n double-float)))
   '(if (core::primop core::two-arg-df-= n 0d0) t nil))
-(deftransform plusp ((n double-float))
+(deftransform plusp (((n double-float)))
   '(if (core::primop core::two-arg-df-> n 0d0) t nil))
-(deftransform minusp ((n double-float))
+(deftransform minusp (((n double-float)))
   '(if (core::primop core::two-arg-df-< n 0d0) t nil))
 
 (macrolet ((define-irratf (name)
-             `(deftransform ,name ((arg rational))
+             `(deftransform ,name (((arg rational)))
                 '(,name (float arg 0f0))))
            (define-irratfs (&rest names)
              `(progn ,@(loop for name in names collect `(define-irratf ,name)))))
@@ -389,52 +399,52 @@ Optimizations are available for any of:
     log
     acos asin acosh atanh))
 
-(deftransform core:reciprocal ((v single-float)) '(/ 1f0 v))
-(deftransform core:reciprocal ((v double-float)) '(/ 1d0 v))
+(deftransform core:reciprocal (((v single-float))) '(/ 1f0 v))
+(deftransform core:reciprocal (((v double-float))) '(/ 1d0 v))
 
-(deftransform float ((v float)) 'v)
-(deftransform float ((v (not float))) '(core:to-single-float v))
-(deftransform float ((v single-float) (proto single-float)) 'v)
-(deftransform float (v (proto single-float)) '(core:to-single-float v))
-(deftransform core:to-single-float ((v single-float)) 'v)
-(deftransform float ((v double-float) (proto double-float)) 'v)
-(deftransform float (v (proto double-float)) '(core:to-double-float v))
-(deftransform core:to-double-float ((v double-float)) 'v)
+(deftransform float (((v float))) 'v)
+(deftransform float (((v (not float)))) '(core:to-single-float v))
+(deftransform float (((v single-float) (proto single-float))) 'v)
+(deftransform float ((v (proto single-float))) '(core:to-single-float v))
+(deftransform core:to-single-float (((v single-float))) 'v)
+(deftransform float (((v double-float) (proto double-float))) 'v)
+(deftransform float ((v (proto double-float))) '(core:to-double-float v))
+(deftransform core:to-double-float (((v double-float))) 'v)
 
 ;;;
 
-(deftransform realpart ((r real)) 'r)
-(deftransform imagpart ((r rational)) 0)
+(deftransform realpart (((r real))) 'r)
+(deftransform imagpart (((r rational))) 0)
 ;; imagpart of a float is slightly complicated with negative zero
-(deftransform conjugate ((r real)) 'r)
-(deftransform numerator ((r integer)) 'r)
-(deftransform denominator ((r integer)) 1)
-(deftransform rational ((r rational)) 'r)
-(deftransform rationalize ((r rational)) 'r)
+(deftransform conjugate (((r real))) 'r)
+(deftransform numerator (((r integer))) 'r)
+(deftransform denominator (((r integer))) 1)
+(deftransform rational (((r rational))) 'r)
+(deftransform rationalize (((r rational))) 'r)
 
 ;;; FIXME: Maybe should be a compiler macro not specializing on fixnum.
 ;;;        And maybe should use LOGTEST, but I'm not sure what the best way
 ;;;        to optimize that is yet.
-(deftransform evenp ((f fixnum))
+(deftransform evenp (((f fixnum)))
   '(zerop (logand f 1)))
-(deftransform oddp ((f fixnum))
+(deftransform oddp (((f fixnum)))
   '(not (zerop (logand f 1))))
 
-(deftransform logandc1 ((n fixnum) (b fixnum)) '(logand (lognot n) b))
-(deftransform logandc2 ((a fixnum) (n fixnum)) '(logand a (lognot n)))
-(deftransform logorc1 ((n fixnum) (b fixnum)) '(logior (lognot n) b))
-(deftransform logorc2 ((a fixnum) (n fixnum)) '(logior a (lognot n)))
+(deftransform logandc1 (((n fixnum) (b fixnum))) '(logand (lognot n) b))
+(deftransform logandc2 (((a fixnum) (n fixnum))) '(logand a (lognot n)))
+(deftransform logorc1 (((n fixnum) (b fixnum))) '(logior (lognot n) b))
+(deftransform logorc2 (((a fixnum) (n fixnum))) '(logior a (lognot n)))
 
 (macrolet ((deflog2r (name neg)
-             `(deftransform ,name ((a fixnum) (b fixnum)) '(lognot (,neg a b)))))
+             `(deftransform ,name (((a fixnum) (b fixnum))) '(lognot (,neg a b)))))
   (deflog2r core:logeqv-2op core:logxor-2op)
   (deflog2r lognand core:logand-2op)
   (deflog2r lognor core:logior-2op))
 
-(deftransform core:negate ((n fixnum)) '(- 0 n))
+(deftransform core:negate (((n fixnum))) '(- 0 n))
 
 (macrolet ((define-fixnum-conditional (name primop)
-             `(deftransform ,name ((x fixnum) (y fixnum))
+             `(deftransform ,name (((x fixnum) (y fixnum)))
                 '(if (core::primop ,primop x y) t nil))))
   (define-fixnum-conditional core:two-arg-=  core::two-arg-fixnum-=)
   (define-fixnum-conditional core:two-arg-<  core::two-arg-fixnum-<)
@@ -442,24 +452,24 @@ Optimizations are available for any of:
   (define-fixnum-conditional core:two-arg->  core::two-arg-fixnum->)
   (define-fixnum-conditional core:two-arg->= core::two-arg-fixnum->=))
 
-(deftransform zerop ((n fixnum))
+(deftransform zerop (((n fixnum)))
   '(if (core::primop core::two-arg-fixnum-= n 0) t nil))
-(deftransform plusp ((n fixnum))
+(deftransform plusp (((n fixnum)))
   '(if (core::primop core::two-arg-fixnum-> n 0) t nil))
-(deftransform minusp ((n fixnum))
+(deftransform minusp (((n fixnum)))
   '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
 
 ;; right shift of a fixnum
-(deftransform ash ((int fixnum) (count (integer * 0)))
+(deftransform ash (((int fixnum) (count (integer * 0))))
   '(core::primop core::fixnum-ashr int (min (- count) 63)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (14) CONSES
 
-(deftransform length ((x null)) 0)
-(deftransform length ((x cons)) '(core:cons-length x))
-(deftransform length ((x list))
+(deftransform length (((x null))) 0)
+(deftransform length (((x cons))) '(core:cons-length x))
+(deftransform length (((x list)))
   `(if (null x)
        0
        (core:cons-length x)))
@@ -468,25 +478,54 @@ Optimizations are available for any of:
 ;;;
 ;;; (15) ARRAYS
 
-(deftransform core:row-major-aset ((arr (simple-array single-float (*)))
-                                   idx value)
+;;; FIXME: The &key stuff should be integrated into deftransform itself. Easier.
+(deftransform make-array (((dimensions (integer 0 #.array-dimension-limit)) &rest keys)
+                          :argstype args)
+  (with-transformer-types (dimensions &key (element-type (eql t))
+                                      (initial-element null iesp)
+                                      (initial-contents null icsp)
+                                      (adjustable null)
+                                      (fill-pointer null)
+                                      (displaced-to null)
+                                      (displaced-index-offset (eql 0) diosp))
+    args
+    (declare (ignore dimensions displaced-index-offset
+                     initial-element initial-contents))
+    (let* ((sys *clasp-system*) (null (ctype:member sys nil)))
+      (if (and (ctype:member-p sys element-type)
+               (= (length (ctype:member-members sys element-type)) 1)
+               (ctype:subtypep adjustable null sys)
+               (ctype:subtypep fill-pointer null sys)
+               (ctype:subtypep displaced-to null sys)
+               (not diosp)
+               ;; Handle these later. TODO. For efficiency,
+               ;; this will probably mean inlining lambdas with &key.
+               (and (null iesp) (null icsp)))
+          (let* ((uaet (upgraded-array-element-type
+                        (first (ctype:member-members sys element-type))))
+                 (make-sv (cmp::uaet-info uaet)))
+            `(,make-sv dimensions nil nil))
+          (decline-transform "making a complex array")))))
+
+(deftransform core:row-major-aset (((arr (simple-array single-float (*)))
+                                    idx value))
   '(core::primop core::sf-vset value arr idx))
-(deftransform core:row-major-aset ((arr (simple-array double-float (*)))
-                                   idx value)
+(deftransform core:row-major-aset (((arr (simple-array double-float (*)))
+                                    idx value))
   '(core::primop core::df-vset value arr idx))
 
-(deftransform aref ((arr vector) (index t)) '(row-major-aref arr index))
-(deftransform (setf aref) ((val t) (arr vector) (index t))
+(deftransform aref (((arr vector) (index t))) '(row-major-aref arr index))
+(deftransform (setf aref) (((val t) (arr vector) (index t)))
   '(setf (row-major-aref arr index) val))
 
-(deftransform array-rank ((arr (array * (*)))) 1)
+(deftransform array-rank (((arr (array * (*))))) 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (16) STRINGS
 
-(deftransform string ((x symbol)) '(symbol-name x))
-(deftransform string ((x string)) '(progn x))
+(deftransform string (((x symbol))) '(symbol-name x))
+(deftransform string (((x string))) '(progn x))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -499,5 +538,5 @@ Optimizations are available for any of:
 (deftransform core:setf-elt ((seq list) n value) '(setf (nth n seq) value))
 )
 
-(deftransform reverse ((x list)) '(core:list-reverse x))
-(deftransform nreverse ((x list)) '(core:list-nreverse x))
+(deftransform reverse (((x list))) '(core:list-reverse x))
+(deftransform nreverse (((x list))) '(core:list-nreverse x))

@@ -70,7 +70,7 @@
 
 ;;;
 
-(defmacro with-deriver-types (lambda-list argstype &body body)
+(defmacro with-types (lambda-list argstype (&key default) &body body)
   (multiple-value-bind (req opt rest keyp keys)
       (core:process-lambda-list lambda-list 'function)
     ;; We ignore &allow-other-keys because it's too much effort for
@@ -94,7 +94,7 @@
                            nil
                            `((> ,glr (+ ,(first req) ,(first opt))))))
                  ;; Not enough arguments, or too many
-                 (ctype:values-bottom ,gsys)
+                 ,default
                  ;; Valid call
                  (let* (,@(loop for reqv in (rest req)
                                 collect `(,reqv (or (pop ,greq)
@@ -128,6 +128,11 @@
                                             ',r-def nil ,gsys)
                                            ,greq ,gopt ,grest ,gsys))))
                    ,@body)))))))
+
+(defmacro with-deriver-types (lambda-list argstype &body body)
+  `(with-types ,lambda-list ,argstype
+     (:default (ctype:values-bottom *clasp-system*))
+     ,@body))
 
 ;;; Lambda lists are basically ordinary lambda lists, but without &aux
 ;;; because &aux sucks.
