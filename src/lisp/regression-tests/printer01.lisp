@@ -334,6 +334,23 @@ BBBBCCCCDDDD"))
       ("AA  
 BBBBCCCC**DDDD"))
 
+(test format-c.01
+      (values-list (mapcar (lambda (c)
+                             (format nil "~:C" c))
+                           '(#\a #\0 #\TAB #\SPACE #\NO-BREAK_SPACE
+                             #\OGHAM_SPACE_MARK #\EN_QUAD #\EM_QUAD
+                             #\EN_SPACE #\EM_SPACE #\THREE-PER-EM_SPACE
+                             #\FOUR-PER-EM_SPACE #\SIX-PER-EM_SPACE
+                             #\FIGURE_SPACE #\PUNCTUATION_SPACE #\THIN_SPACE
+                             #\HAIR_SPACE #\NARROW_NO-BREAK_SPACE
+                             #\MEDIUM_MATHEMATICAL_SPACE #\IDEOGRAPHIC_SPACE)))
+      ("a" "0" "TAB" "SPACE" "NO-BREAK_SPACE" "OGHAM_SPACE_MARK"
+       "EN_QUAD" "EM_QUAD" "EN_SPACE" "EM_SPACE" "THREE-PER-EM_SPACE"
+       "FOUR-PER-EM_SPACE" "SIX-PER-EM_SPACE" "FIGURE_SPACE"
+       "PUNCTUATION_SPACE" "THIN_SPACE" "HAIR_SPACE"
+       "NARROW_NO-BREAK_SPACE" "MEDIUM_MATHEMATICAL_SPACE"
+       "IDEOGRAPHIC_SPACE"))
+
 (test print-0-strange-radix
       (LET ((*PRINT-READABLY* NIL))
         (LET ((*PRINT-BASE* 7))
