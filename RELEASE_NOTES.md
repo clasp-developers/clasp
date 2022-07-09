@@ -14,6 +14,8 @@
   `--noinform` and `--non-interactive`. Any shebang in `<file>` will also be 
   skipped.
 * Asynchronous external process control with `ext:run-program`.
+* Function `ext:temporary-directory` that returns the directory used for
+  temporary files.
 
 ## Changed
 * `core:lisp-implementation-id` and `core:clasp-git-full-commit` only return
