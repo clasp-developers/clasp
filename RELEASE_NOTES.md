@@ -16,13 +16,18 @@
 * Asynchronous external process control with `ext:run-program`.
 * Function `ext:temporary-directory` that returns the directory used for
   temporary files.
+* Function `ext:printing-char-p` that returns non-NIL for graphic characters
+  that are not blank glyphs. This is an extension of the ANSI specification
+  that defines "printing" characters as graphic characters aside from the space
+  character.
 
 ## Changed
 * `core:lisp-implementation-id` and `core:clasp-git-full-commit` only return
   non-`NIL` values if Clasp was built in a git working tree.
-* `upper-case-p`, `lower-case-p`, `both-case-p`, `char-upcase` and 
-  `char-downcase` now no longer depend on C++ locale functions and are now
-  generated directly from the Unicode character tables.
+* `graphic-char-p`, `alpha-char-p`, `alphanumericp`, `upper-case-p`, 
+  `lower-case-p`, `both-case-p`, `char-upcase` and `char-downcase` now no longer 
+  depend on C++ locale functions and are now generated directly from the Unicode 
+  character tables.
 * Loading of extensions such as Cando no longer uses startup scripts via LOAD.
   Instead the systems associated with each extension are loaded via QL:QUICKLOAD
   or as a fallback ASDF:LOAD-SYSTEM.
