@@ -1291,6 +1291,30 @@ OUTPUT:
   return cl__nreverse(out);
 }
 
+// TODO This will need to be adjusted if we port to Windows.
+Pathname_sp clasp_temporary_directory() {
+  const char *tmp_env = getenv("TMPDIR");
+#ifdef P_tmpdir
+  std::string tempdir = tmp_env ? tmp_env : P_tmpdir;
+#else
+  std::string tempdir = tmp_env ? tmp_env : (DIR_SEPARATOR + "tmp" + DIR_SEPARATOR);
+#endif
+
+  if (!IS_DIR_SEPARATOR(tempdir[tempdir.size() - 1])) {
+    tempdir += DIR_SEPARATOR;
+  }
+
+  return gc::As<Pathname_sp>(cl__parse_namestring(SimpleBaseString_O::make(tempdir)));
+}
+
+CL_LAMBDA()
+CL_DECLARE();
+CL_DOCSTRING(R"dx(Return the temporary directory for this system.)dx")
+DOCGROUP(clasp)
+CL_DEFUN T_sp core__temporary_directory() {
+  return clasp_temporary_directory();
+}
+
 CL_LAMBDA(template)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(mkstemp)dx")
