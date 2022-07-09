@@ -41,15 +41,20 @@
 ;;; in a distinct DISubprogram - not our intention. So we hash on the scope.
 ;;; ATM function scopes are lists so an EQUAL hash table is fine here.
 (defvar *dbg-function-metadata-cache*)
+;;; We make a cache for file metadata just to save time and make reproducible
+;;; builds possible
+(defvar *dbg-file-metadata-cache* (make-hash-table :test #'equal))
 
 (defun dbg-create-function-type (difile function-type)
   (declare (ignore difile function-type))
   "Currently create a bogus function type"
-  (let ((arg-array (llvm-sys:get-or-create-type-array
-		    *the-module-dibuilder*
-		    (list
-		     (llvm-sys:create-basic-type *the-module-dibuilder* "int" 64 llvm-sys:+dw-ate-signed-fixed+ (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)))
-		     ))))
+  (let ((arg-array (llvm-sys:get-or-create-type-array *the-module-dibuilder*
+                                                      (list
+                                                       (llvm-sys:create-basic-type *the-module-dibuilder*
+                                                                                   "int" 64
+                                                                                   llvm-sys:+dw-ate-signed-fixed+
+                                                                                   (core:enum-logical-or llvm-sys:diflags-enum
+                                                                                                         '(llvm-sys:diflags-zero)))))))
     (llvm-sys:create-subroutine-type *the-module-dibuilder* arg-array
                                      (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))
                                      0)))
@@ -57,22 +62,21 @@
 (defmacro with-dibuilder ((module) &rest body)
   `(let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module)))
      (unwind-protect
-          (progn ,@body)
-       (progn
-         (llvm-sys:finalize *the-module-dibuilder*)
-         ;; add the flag that defines the Dwarf Version
-         (llvm-sys:add-module-flag *the-module*
-                                   (llvm-sys:mdnode-get (thread-local-llvm-context)
-                                                        (list
-                                                         (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                         (llvm-sys:mdstring-get (thread-local-llvm-context) "Dwarf Version")
-                                                         (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
-         (llvm-sys:add-module-flag *the-module*
-                                   (llvm-sys:mdnode-get (thread-local-llvm-context)
-                                                        (list
-                                                         (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                         (llvm-sys:mdstring-get (thread-local-llvm-context) "Debug Info Version")
-                                                         (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+)))))))))
+         (progn ,@body)
+       (llvm-sys:finalize *the-module-dibuilder*)
+       ;; add the flag that defines the Dwarf Version
+       (llvm-sys:add-module-flag *the-module*
+                                 (llvm-sys:mdnode-get (thread-local-llvm-context)
+                                                      (list
+                                                       (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                       (llvm-sys:mdstring-get (thread-local-llvm-context) "Dwarf Version")
+                                                       (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
+       (llvm-sys:add-module-flag *the-module*
+                                 (llvm-sys:mdnode-get (thread-local-llvm-context)
+                                                      (list
+                                                       (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                       (llvm-sys:mdstring-get (thread-local-llvm-context) "Debug Info Version")
+                                                       (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))))))
     
 (defmacro with-dbg-compile-unit ((source-pathname) &rest body)
   (let ((path (gensym))
@@ -107,20 +111,39 @@
        (cmp-log "with-dbg-compile-unit dir-name: [{}]%N" ,dir-name)
        ,@body)))
 
-(defun make-file-metadata (pathname)
-  (let* ((dir-name-slash (directory-namestring pathname))
-         (dir-name (if (> (length dir-name-slash) 0)
-                       (if (char= (char dir-name-slash (1- (length dir-name-slash))) #\/)
-                           (subseq dir-name-slash 0 (1- (length dir-name-slash)))
-                           dir-name-slash)
-                       dir-name-slash))
-         (file-name (file-namestring pathname)))
-    (llvm-sys:create-file *the-module-dibuilder*
-                          (namestring file-name)
-                          (namestring dir-name)
-                          nil
-                          "difile-source" ; source
-                          )))
+(defun do-make-create-file-args (pathname logical-pathname)
+  (let ((filename (file-namestring pathname))
+        (directory (namestring (make-pathname :name nil :type nil :defaults pathname))))
+    (list filename
+          (if (zerop (length directory))
+              "."
+              (string-right-trim '(#\/) directory))
+          nil
+          (if logical-pathname
+              ;; If we include the source we should put this at the end
+              (core:fmt nil ";; LOGICAL-PATHNAME={}%n" logical-pathname)
+              nil))))
+
+(defun make-create-file-args (pathname namestring &optional install-pathname)
+  (let (args)
+    (if (typep pathname 'logical-pathname)
+        (let ((translated-path (translate-logical-pathname pathname)))
+          (setq args (do-make-create-file-args (or install-pathname translated-path) namestring))
+          (core:hash-table-setf-gethash *dbg-file-metadata-cache* translated-path args))
+        (setq args (do-make-create-file-args (or install-pathname pathname) nil)))
+    (core:hash-table-setf-gethash *dbg-file-metadata-cache* pathname args)))
+
+(defun make-file-metadata (path)
+  (let ((namestring (if (typep path 'pathname)
+                        (namestring path)
+                        path))
+        (pathname (if (typep path 'pathname)
+                      path
+                      (parse-namestring path))))
+    (multiple-value-bind (args foundp)
+        (gethash path *dbg-file-metadata-cache*)
+      (apply #'llvm-sys:create-file *the-module-dibuilder*
+             (if foundp args (make-create-file-args pathname namestring))))))
 
 (defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
   `(let ((*dbg-current-file* (make-file-metadata (pathname ,source-pathname))))
@@ -200,24 +223,25 @@
      ,lineno ,function-type ,function))
 
 (defvar *with-dbg-lexical-block* nil)
+
 (defun do-dbg-lexical-block (closure lineno)
   (let ((*with-dbg-lexical-block* t))
     (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
         (progn
           (unless *dbg-current-scope*
             (error "The *dbg-current-scope* is nil - it cannot be when create-lexical-block is called"))
-          (let* ((*dbg-current-scope*
-                   (llvm-sys:create-lexical-block *the-module-dibuilder*
-                                                  *dbg-current-scope*
-                                                  *dbg-current-file*
-                                                  lineno
-                                                  0 
-                                                  )))
+          ;; TODO: Dwarf path discriminator
+          (let* ((*dbg-current-scope* (llvm-sys:create-lexical-block *the-module-dibuilder*
+                                                                     *dbg-current-scope*
+                                                                     *dbg-current-file*
+                                                                     lineno 0)))
             (cmp-log "with-dbg-lexical-block%N")
             (funcall closure)))
         (funcall closure))))
   
-(defmacro with-dbg-lexical-block ((&key (lineno (core:source-pos-info-lineno core:*current-source-pos-info*))) &body body)
+(defmacro with-dbg-lexical-block
+    ((&key (lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
+     &body body)
   `(do-dbg-lexical-block (lambda () ,@body) ,lineno))
 
 (defun dbg-clear-irbuilder-source-location (irbuilder)
@@ -229,10 +253,11 @@
 
 (defun cached-function-scope (function-scope-info &optional function-type)
   ;; See production in cleavir/inline-prep.lisp
-  #+(or cclasp eclasp)(when core:*debug-source-pos-info*
-            (let ((name (car function-scope-info)))
-              (when (char= #\^ (elt name (1- (length name))))
-                (break "The name ~s ends in ^" name))))
+  #+(or cclasp eclasp)
+  (when core:*debug-source-pos-info*
+    (let ((name (car function-scope-info)))
+      (when (char= #\^ (elt name (1- (length name))))
+        (break "The name ~s ends in ^" name))))
   (multiple-value-bind (value found)
       (gethash function-scope-info *dbg-function-metadata-cache*)
     (if found
@@ -242,11 +267,14 @@
                           function-scope-info
                         (make-function-metadata :linkage-name function-name
                                                 :lineno lineno
-                                                :function-type (if function-type function-type (fn-prototype :general-entry))
+                                                :function-type (if function-type
+                                                                   function-type
+                                                                   (fn-prototype :general-entry))
                                                 :file-metadata (cached-file-metadata file-handle))))
                 :created))))
 
 (defparameter *trap-zero-lineno* nil)
+
 (defun get-dilocation (spi dbg-current-scope)
   (let ((file-handle (core:source-pos-info-file-handle spi))
         (lineno (core:source-pos-info-lineno spi))
@@ -258,13 +286,11 @@
               (setf lineno 666666)))
     (if inlined-at
         (llvm-sys:get-dilocation (thread-local-llvm-context)
-                                 lineno
-                                 col
-                                 dbg-current-scope #+(or)(cached-function-scope (core:source-pos-info-function-scope spi))
+                                 lineno col
+                                 dbg-current-scope
                                  (get-dilocation inlined-at dbg-current-scope))
         (llvm-sys:get-dilocation (thread-local-llvm-context)
-                                 lineno
-                                 col
+                                 lineno col
                                  dbg-current-scope))))
 
 (defun dbg-set-irbuilder-source-location (irbuilder spi)
@@ -273,25 +299,18 @@
       (llvm-sys:set-current-debug-location irbuilder diloc))))
 
 (defun dbg-create-auto-variable (&key (scope *dbg-current-scope*)
-                                   name (file *dbg-current-file*)
-                                   lineno type always-preserve)
+                                      name (file *dbg-current-file*)
+                                      lineno type always-preserve)
   (llvm-sys:create-auto-variable *the-module-dibuilder*
                                  scope name file lineno type always-preserve
-                                 (core:enum-logical-or
-                                  llvm-sys:diflags-enum
-                                  '(llvm-sys:diflags-zero))
-                                 ;; FIXME: I'm guessing
-                                 64))
+                                 (core:enum-logical-or llvm-sys:diflags-enum
+                                                       '(llvm-sys:diflags-zero))
+                                                       ;; FIXME: I'm guessing
+                                                       64))
 
-(defun dbg-create-parameter-variable (&key (scope *dbg-current-scope*)
-                                        name
-                                        argno
-                                        (file *dbg-current-file*)
-                                        lineno
-                                        type
-                                        always-preserve
-                                        annotations
-                                        )
+(defun dbg-create-parameter-variable
+    (&key (scope *dbg-current-scope*) name argno (file *dbg-current-file*)
+          lineno type always-preserve annotations)
   (progn
     (unless (> argno 0)
       (error "The argno for ~a must start at 1 - got ~a" name argno))
@@ -310,16 +329,18 @@
 (defun set-instruction-source-position (origin function-metadata)
   (when *dbg-generate-dwarf*
     (if origin
-        (let ((source-pos-info (if (consp origin) (car origin) origin))
+        (let ((source-pos-info (if (consp origin)
+                                   (car origin)
+                                   origin))
               (*dbg-current-scope* function-metadata))
           (dbg-set-irbuilder-source-location *irbuilder* source-pos-info))
         (dbg-clear-irbuilder-source-location *irbuilder*))))
 
 (defun do-debug-info-source-position (origin body-lambda)
   (unwind-protect
-       (progn
-         (set-instruction-source-position origin *dbg-current-function-metadata*)
-         (funcall body-lambda))
+      (progn
+        (set-instruction-source-position origin *dbg-current-function-metadata*)
+        (funcall body-lambda))
     (set-instruction-source-position nil *dbg-current-function-metadata*)))
 
 (defmacro with-debug-info-source-position ((origin) &body body)

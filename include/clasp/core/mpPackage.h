@@ -177,7 +177,7 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
 template <>
 struct gctools::GCInfo<mp::Mutex_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -201,6 +201,9 @@ namespace mp {
     core::T_sp  _Owner;
     dont_expose<Mutex> _Mutex;
     Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(nil<T_O>()), _Mutex(Mutex(lisp_nameword(name),recursive)) {};
+    ~Mutex_O() {
+      printf("%s:%d:%s Finalizing Mutex_O @ %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this);
+    }
     bool lock(bool waitp) {
       bool locked = this->_Mutex._value.lock(waitp);
       if (locked) this->_Owner = my_thread->_Process;
@@ -225,7 +228,7 @@ namespace mp {
 template <>
 struct gctools::GCInfo<mp::SharedMutex_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -286,7 +289,7 @@ namespace mp {
 template <>
 struct gctools::GCInfo<mp::RecursiveMutex_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -310,7 +313,7 @@ namespace mp {
 template <>
 struct gctools::GCInfo<mp::ConditionVariable_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 

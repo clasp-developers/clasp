@@ -19,7 +19,10 @@
   (let ((cur-line 0)
         (char-offset 0)
         (prev-char-offset 0))
-    (with-open-file (fin source-file :direction :input :external-format :utf-8)
+    (with-open-file (fin (if (uiop:relative-pathname-p source-file)
+                             source-file
+                             (merge-pathnames (enough-namestring source-file *clasp-sys*) *clasp-code*))
+                     :direction :input :external-format :utf-8)
       (dolist (tag tags)
         (let ((search-line (tags:line% tag)))
           (loop

@@ -6,6 +6,6 @@
         (cmp::compile-file-serial "sys:src;lisp;kernel;lsp;predlib.lisp"
                                   :output-file (make-pathname
                                                 :type (pathname-type (compile-file-pathname "foo.lisp"))
-                                                :defaults (core:mkstemp "TMP:predlib")))
+                                                :defaults (core:mkstemp "/tmp/predlib")))
         (- (gctools:thread-local-unwinds) unwinds))
       (0))

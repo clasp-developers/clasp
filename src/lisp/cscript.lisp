@@ -5,7 +5,7 @@
   (when wrappers
     (k:sources target
                #~"kernel/lsp/direct-calls.lisp"
-               (k:make-source "generated/cl-wrappers.lisp" :variant)))
+               (k:make-source "cl-wrappers.lisp" :variant-generated)))
   (k:sources target
              #~"kernel/tag/min-start.lisp"
              #~"kernel/init.lisp"
@@ -155,6 +155,7 @@
 (defun add-cclasp-sources (&optional (target :cclasp))
   (add-bclasp-sources target)
   (k:sources target
+             (k:make-source "cclasp-translations.lisp" :variant-generated)
              :clasp-cleavir
              #~"kernel/cleavir/auto-compile.lisp"
              #~"kernel/cleavir/inline.lisp"
@@ -167,7 +168,7 @@
              #~"kernel/lsp/cltl2.lisp")
   (when (eq target :cclasp)
     (k:sources target
-               (k:make-source "generated/cclasp-immutable.lisp" :variant)))
+               (k:make-source "cclasp-immutable.lisp" :variant-generated)))
   (k:sources target
              #~"kernel/tag/pre-epilogue-cclasp.lisp"
              #~"kernel/lsp/epilogue-cclasp.lisp"
@@ -177,8 +178,9 @@
   (add-cclasp-sources target)
   (when (eq target :eclasp)
     (k:sources target
-               (k:make-source "generated/eclasp-immutable.lisp" :variant)))
+               (k:make-source "eclasp-immutable.lisp" :variant-generated)))
   (k:sources target
+             (k:make-source "eclasp-translations.lisp" :variant-generated)
              #~"modules/asdf/build/asdf.lisp"
              :extension-systems)
   (k:sources target
@@ -193,6 +195,8 @@
 (add-cclasp-sources)
 
 (add-eclasp-sources)
+
+(k:sources :eclasp-translations :extension-systems)
 
 (k:sources :modules
            #~"modules/asdf/build/asdf.lisp"

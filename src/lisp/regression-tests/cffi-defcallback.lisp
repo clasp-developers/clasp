@@ -1,7 +1,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (let ((*package* (find-package :cl-user)))
-    (load "quicklisp:setup.lisp")))
+    (load "sys:quicklisp;setup.lisp")))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (ql:quickload :cffi))

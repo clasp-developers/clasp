@@ -211,30 +211,8 @@ CL_DEFUN T_sp cl__lisp_implementation_type() {
   return SimpleBaseString_O::make(program_name());
 };
 
-SYMBOL_EXPORT_SC_(KeywordPkg,image_file);
-SYMBOL_EXPORT_SC_(KeywordPkg,snapshot_memory);
-SYMBOL_EXPORT_SC_(KeywordPkg,snapshot_file);
 
-CL_DEFUN T_mv core__startup_source() {
-  T_sp kind;
-  std::string simpleSource;
-  if (global_startupEnum == imageFile) {
-    kind = kw::_sym_image_file;
-    simpleSource = "image";
-  } else if (global_startupEnum == snapshotFile) {
-    kind = kw::_sym_snapshot_file;
-    simpleSource = "snapshot";
-  } else if (global_startupEnum == snapshotMemory) {
-    kind = kw::_sym_snapshot_memory;
-    simpleSource = "snapshot";
-  } else {
-    SIMPLE_ERROR("Illegal global_startupEnum value %d", global_startupEnum );
-  }
-  SimpleBaseString_sp source = SimpleBaseString_O::make(global_startupSourceName);
-  SimpleBaseString_sp simpleSourceT = SimpleBaseString_O::make(simpleSource);
-  return Values(kind,source,simpleSourceT);
-}
-
+SYMBOL_EXPORT_SC_(KeywordPkg,eclasp);
 
 CL_LAMBDA()
 CL_DECLARE();
@@ -242,9 +220,12 @@ CL_DOCSTRING(R"dx(lisp-implementation-version)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__lisp_implementation_version() {
   stringstream ss;
-  List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
+  List_sp eclasp = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_eclasp);
+  List_sp cclasp = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
   List_sp cst = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cst);
-  if (cleavir.notnilp()) {
+  if (eclasp.notnilp()) {
+    ss << "e";
+  } else if (cclasp.notnilp()) {
     ss << "c";
   }
   ss << program_name();
@@ -437,7 +418,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp core__print_address_of(T_sp arg, T_sp msg) {
   ASSERT(arg.objectp());
   void *ptr = &(*arg);
-  printf("%s:%d  AddressOf = %p\n", __FILE__, __LINE__, ptr);
+  printf("%s:%d  AddressOf = %p msg: %s\n", __FILE__, __LINE__, ptr, _rep_(msg).c_str());
   return arg;
 };
 

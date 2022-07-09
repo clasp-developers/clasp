@@ -20,6 +20,7 @@
 #endif
 #include <stdio.h> // debug messaging
 #include <stdlib.h> // calloc, realloc, free
+#include <regex>
 
 //#define DEBUG_BACKTRACE 1
 #ifdef DEBUG_BACKTRACE
@@ -121,21 +122,27 @@ static SimpleBaseString_sp lu_procname(unw_cursor_t* cursorp) {
 }
 #endif // USE_LIBUNWIND
 
-static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
-                      llvmo::SectionedAddress_sp sa) {
-    // FIXME: Might be better to just use the llvm::DILineInfo directly.
-  T_mv lineinfo = llvmo::getLineInfoForAddress_( dcontext, sa, false );
-  if (lineinfo.notnilp()) {
-    SimpleBaseString_sp filename = gc::As<SimpleBaseString_sp>(lineinfo);
-    Integer_sp line = gc::As<Integer_sp>(lineinfo.valueGet_(3));
-    Integer_sp column = gc::As<Integer_sp>(lineinfo.valueGet_(4));
-    return core__makeSourcePosInfo(filename->get_std_string(), true,
-                                   0, true, // eck
-                                 // See above FIXME; these should all be fine,
-                                 // but then why go through Integer_O at all?
-                                   line.unsafe_fixnum(), true,
-                                   column.unsafe_fixnum(), true );
-  } else return nil<T_O>();
+static T_sp getSourcePosInfoForAddress(llvmo::DWARFContext_sp dcontext, llvmo::SectionedAddress_sp sa) {
+  static std::regex logical_pathname_regex("LOGICAL-PATHNAME=([:;.\\-[:alnum:]]+)");
+  llvm::DILineInfoSpecifier lispec;
+  lispec.FNKind = llvm::DILineInfoSpecifier::FunctionNameKind::None;
+  lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
+  llvm::DILineInfo info = dcontext->wrappedPtr()->getLineInfoForAddress(sa->_value, lispec);
+
+  if (info.FileName == info.BadString) {
+    return nil<T_O>();
+  }
+
+  std::string source_path = info.FileName;
+  if (info.Source.hasValue()) {
+    std::smatch match;
+    std::string source = info.Source.getValue().str();
+    if (std::regex_search(source, match, logical_pathname_regex)) {
+      source_path = match[1];
+    }
+  }
+
+  return core__makeSourcePosInfo(source_path, true, 0, false, info.Line, true, info.Column, true);
 }
 
 static T_sp dwarf_ep(size_t frameIndex,
@@ -397,8 +404,8 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex,
   MaybeTrace trace(__FUNCTION__);
   llvmo::SectionedAddress_sp sa = object_file_sectioned_address(absolute_ip, ofi, false);
   llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
-  D(printf("%s%s:%d:%s frameIndex = %lu absolute_ip = %p  sa= %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, frameIndex, absolute_ip, _rep_(sa).c_str()););
-  T_sp spi = dwarf_spi(dcontext, sa);
+  D(printf("%s%s:%d:%s sa= %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(sa).c_str()););
+  T_sp spi = getSourcePosInfoForAddress(dcontext, sa);
   D(printf("%s%s:%d:%s spi= %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(spi).c_str()););
   bool XEPp = false;
   int arityCode;

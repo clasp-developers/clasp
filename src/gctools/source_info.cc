@@ -7,6 +7,7 @@
 #include <clasp/core/documentation.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/array.h>
+#include <clasp/core/bundle.h>
 
 typedef enum { code_kind, setf_kind, method_kind, class_kind, variable_kind, unknown_kind } source_info_kind;
 
@@ -57,6 +58,16 @@ NOINLINE void define_source_info(source_info_kind kind, const string &lisp_name,
     printf("%s:%d Could not set source-location for %d\n", __FILE__, __LINE__, kind);
     break;
   }
+}
+
+NOINLINE void define_pathname_translation(const string &from, const string &to) {
+  core::T_sp host = core::SimpleBaseString_O::make("SYS");
+  core::core__pathname_translations(
+      host, _lisp->_true(),
+      core::Cons_O::create(core::Cons_O::createList(
+                               core::cl__pathname(core::SimpleBaseString_O::make(from)),
+                               core::cl__pathname(core::SimpleBaseString_O::make(globals_->_Bundle->_Directories->_SysDir / to))),
+                           core::core__pathname_translations(host, _lisp->_true(), _lisp->_false())));
 }
 
 #define SOURCE_INFO_HELPERS

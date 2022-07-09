@@ -266,9 +266,44 @@ CL_DEFUN T_sp core__fmt(T_sp destination, const string &original_control, List_s
   std::string control;
   if (original_control.size()>1) {
     for ( int i(0); i<original_control.size(); ++i ) {
-      if (original_control[i] == '%' && original_control[i+1] == 'N') {
-        scontrol << '\n';
-        ++i;
+      if (original_control[i] == '%') {
+        switch (original_control[++i]) {
+        case 'a':
+        case 'A':
+          scontrol << '\a';
+          break;
+        case 'b':
+        case 'B':
+          scontrol << '\b';
+          break;
+        case 'e':
+        case 'E':
+          scontrol << '\x1b';
+          break;
+        case 'f':
+        case 'F':
+          scontrol << '\f';
+          break;
+        case 'n':
+        case 'N':
+          scontrol << '\n';
+          break;
+        case 'r':
+        case 'R':
+          scontrol << '\r';
+          break;
+        case 't':
+        case 'T':
+          scontrol << '\t';
+          break;
+        case 'v':
+        case 'V':
+          scontrol << '\v';
+          break;
+        default:
+          scontrol << original_control[i];
+          break;
+        }
       } else {
         scontrol << original_control[i];
       }

@@ -54,7 +54,7 @@
     (unless llvm-includedir
       (setf llvm-includedir
             (uiop:ensure-directory-pathname (run-program-capture (list llvm-config "--includedir")))))
-    (append-cflags configuration (format nil "-I~a" llvm-includedir))
+    (append-cflags configuration (format nil "-I~a" (normalize-directory llvm-includedir)))
     (append-ldflags configuration (run-program-capture (list llvm-config "--ldflags")))
     (append-ldlibs configuration (run-program-capture (list llvm-config "--system-libs")))
     (append-ldlibs configuration (run-program-capture (list llvm-config "--libs")))
@@ -193,7 +193,7 @@
   (append-cflags configuration "-O0 -g" :type :cflags :debug t)
   (append-cflags configuration "-std=c++20" :type :cxxflags)
   #+darwin (append-cflags configuration "-stdlib=libc++" :type :cxxflags)
-  #+darwin (append-cflags configuration "-I/usr/local/include/")
+  #+darwin (append-cflags configuration "-I/usr/local/include")
   #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -stdlib=libstdc++"
                                        :type :cxxflags)
   #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
@@ -296,3 +296,22 @@ has not been set."
            (setf (jupyter-path configuration)
                  (merge-pathnames (make-pathname :directory '(:relative :up "jupyter"))
                                   (share-path configuration)))))))
+
+(defmethod configure-unit (configuration (unit (eql :reproducible)))
+  "Configure for a reproducible build."
+  (when (reproducible-build configuration)
+    (message :emph "Configuring reducible build")
+    (append-cflags configuration
+                   (format nil "-ffile-prefix-map=..=~a"
+                           (normalize-directory (root :install-share))))
+    (loop for variant in (variants configuration)
+          do (append-cflags variant
+                            (format nil "-ffile-prefix-map=~a=~a -ffile-prefix-map=~a=~a"
+                                    (normalize-directory (make-pathname :directory (list :relative
+                                                                                         (variant-bitcode-name variant)
+                                                                                         "generated")))
+                                    (normalize-directory (root :install-generated))
+                                    (normalize-directory (make-pathname :directory (list :relative
+                                                                                         (variant-bitcode-name variant)
+                                                                                         "lib")))
+                                    (normalize-directory (root :install-lib)))))))                                    

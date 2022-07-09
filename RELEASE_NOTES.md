@@ -13,6 +13,7 @@
 * `--script <file>` command line option which equivalent to passing `--norc`,
   `--noinform` and `--non-interactive`. Any shebang in `<file>` will also be 
   skipped.
+* Asynchronous external process control with `ext:run-program`.
 
 ## Changed
 * `core:lisp-implementation-id` and `core:clasp-git-full-commit` only return
@@ -26,11 +27,13 @@
 * Behavior of `--rc` command line option has changed. Relative paths passed via
   this option are no longer assumed to be located in the user's home directory.
 * The logical hosts used by Clasp to locate source code and other components of
-  Clasp has been changed. The SOURCE-DIR and APP-RESOURCES logical hosts have
-  been removed. The SYS logical host which used to point to `src/lisp/` in the
-  Clasp source directory now points to directly to the source code directory,
-  which is usually `/usr/clasp/share/`. The APP-BITCODE, APP-EXECUTABLE and
-  APP-FASL hosts have been renamed BITCODE, EXECUTABLE and FASL respectively.
+  Clasp has been changed. Only the reserved logical host SYS is now used. The
+  default mappings for a system installed to `/usr/` are
+  1. `SYS:LIB;**;*.*.*` ↦ `/usr/lib/clasp/**/*.*`
+  2. `SYS:GENERATED;**;*.*.*` ↦ `/usr/share/clasp/generated/**/*.*`
+  3. `SYS:EXECUTABLE;**;*.*.*` ↦ `/usr/bin/**/*.*`
+  4. `SYS:QUICKLISP;**;*.*.*` ↦ `~/quicklisp/**/*.*`
+  5. `SYS:**;*.*.*` ↦ `/usr/share/clasp/**/*.*`
 * ASDF systems that are loaded as part the cclasp image are now marked as
   immutable thereby preventing ASDF from overwriting them. These systems include
   the systems acclimation, alexandria, clasp-cleavir, cleavir-ast-to-bir, 
@@ -40,7 +43,9 @@
   cleavir-io,cleavir-meter, cleavir-primop, cleavir-set, cleavir-stealth-mixins, 
   closer-mop, concrete-syntax-tree, concrete-syntax-tree-base,
   concrete-syntax-tree-destructuring, concrete-syntax-tree-lambda-list,
-  eclector, and eclector-concrete-syntax-tree. 
+  eclector, and eclector-concrete-syntax-tree.
+* Source code file references for Lisp and C/C++ files compiled as part of the
+  Clasp binary or images are now stored using logical pathnames.
 
 ## Removed
 * `core:*extensions-startup-loads*` and `core:*extensions-startup-evals*`

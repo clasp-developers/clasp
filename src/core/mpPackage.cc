@@ -708,8 +708,16 @@ CL_LAMBDA(mutex &optional (waitp t))
 CL_DOCSTRING(R"dx(Try to obtain exclusion on the given mutex)dx")
 CL_DOCSTRING_LONG(R"dx(If WAITP is true, this function will not return until exclusion is obtained.\n\nReturn true iff exclusion was obtained, otherwise false.)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool mp__get_lock(Mutex_sp m, bool waitp) {
-  return m->lock(waitp);
+CL_DEFUN bool mp__get_lock(core::T_sp m, bool waitp) {
+  if (*(void**)&*m == NULL) {
+    printf("%s:%d:%s The Mutex @%p has been wiped out\n", __FILE__, __LINE__, __FUNCTION__, (void*)&*m);
+    abort();
+  }
+  if (!gc::IsA<Mutex_sp>(m)) {
+    TYPE_ERROR(m,mp::_sym_Mutex_O);
+  }
+  Mutex_sp mm = gc::As_unsafe<Mutex_sp>(m);
+  return mm->lock(waitp);
 }
 
 CL_LAMBDA(mutex)

@@ -42,7 +42,7 @@ Build-Profiles: <!nocando>
 Depends: ${shlibs:Depends}, ${misc:Depends}, libbsd-dev, libelf-dev, libffi-dev,
 	libgmp-dev, libncurses-dev, llvm-13, clang-13, sbcl, libclang-13-dev,
 	zlib1g-dev, llvm-13-dev, libfmt-dev, libclang-cpp13, libclang-cpp13-dev,
-	libnetcdf-dev, libczmq-dev, libexpat1-dev
+	libnetcdf-dev, libczmq-dev, libexpat1-dev, ninja-build
 Description: Common Lisp implementation that brings Common Lisp and C++ Together
 	Clasp is a new Common Lisp implementation that seamlessly interoperates
 	with C++ libraries and programs using LLVM for compilation to native

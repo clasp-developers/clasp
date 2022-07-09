@@ -96,3 +96,6 @@ into a list of values and values that are lists will be appended."
                       (with-open-file (stream path)
                         (and (equal #\# (read-char stream nil nil))
                              (equal #\! (read-char stream nil nil)))))))
+
+(defun normalize-directory (path)
+  (string-right-trim (list (uiop:directory-separator-for-host path)) (namestring path)))
