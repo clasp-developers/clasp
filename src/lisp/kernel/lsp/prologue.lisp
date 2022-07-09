@@ -4,12 +4,9 @@
   (setq *features* (cons :aclasp *features*))
   (if (core:noinform-p)
       nil
-      (multiple-value-bind (source-enum source-file source-simple)
-          (core:startup-source)
-        (format t "aclasp starting ~a ... loading ~a : ~a ...~%"
-                (lisp-implementation-version)
-                source-simple
-                source-file))))
+      (progn
+        (format t "Starting ~a ... loading image...~%"
+                 (lisp-implementation-version)))))
 #+bclasp
 (progn
   (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
@@ -27,9 +24,5 @@
   (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
   (if (core:noinform-p)
       nil
-      (multiple-value-bind (source-enum source-file source-simple)
-          (core:startup-source)
-        (format t "cclasp starting ~a ... loading ~a : ~a...~%"
-                (lisp-implementation-version)
-                source-simple
-                source-file))))
+      (format t "Starting ~a ... loading image...~%"
+               (lisp-implementation-version))))
