@@ -136,6 +136,7 @@
 (import 'core:argc :ext)
 (import 'core:argv :ext)
 (import 'core:rmdir :ext)
+(import 'core:temporary-directory :ext)
 (import 'core:mkstemp :ext)
 (import 'core:weak-pointer-value :ext)
 (import 'core:make-weak-pointer :ext)
@@ -186,7 +187,7 @@
             get-signal-handler set-signal-handler
             *ed-functions*
             ;;; for asdf and slime and trivial-garbage to use ext:
-            getpid argc argv rmdir mkstemp weak-pointer-value
+            getpid argc argv rmdir temporary-directory mkstemp weak-pointer-value
             make-weak-pointer weak-pointer-valid hash-table-weakness
             compiler-note
             muffle-note
