@@ -2093,7 +2093,7 @@ DOCGROUP(clasp)
     }
     printf("Dumping backtrace\n");
     dbg_safe_backtrace();
-#if defined(__i386__)
+#if defined(__i386__) || defined(__x86_64__)
     asm("int $03");
 #else
     printf("%s:%d:%s Figure out how to generate a break/int $03\n", __FILE__, __LINE__, __FUNCTION__ );

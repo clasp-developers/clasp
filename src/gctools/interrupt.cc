@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include <signal.h>
-#if defined(__i386__)
+#if defined(__i386__) || defined(__x86_64__)
 # include <xmmintrin.h>
 #endif
 #include <llvm/Support/ErrorHandling.h>
@@ -324,7 +324,7 @@ int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 
 DOCGROUP(clasp)
 CL_DEFUN void core__disable_all_fpe_masks() {
-#if defined(__i386__)
+#if defined(__i386__) || defined(__x86_64__)
   _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
 #else
   printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -338,7 +338,7 @@ DOCGROUP(clasp)
 CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, core::T_sp inexact, core::T_sp invalid, core::T_sp divide_by_zero, core::T_sp denormalized_operand) {
   // See https://doc.rust-lang.org/stable/core/arch/x86_64/fn._mm_setcsr.html
   // mask all -> no fpe-exceptions
-#if defined(__i386__)
+#if defined(__i386__) || defined(__x86_64__)
   _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
   if (underflow.notnilp())
     _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_UNDERFLOW));
@@ -359,7 +359,7 @@ CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, 
 
 DOCGROUP(clasp)
 CL_DEFUN core::Fixnum_sp core__get_current_fpe_mask() {
-#if defined(__i386__)
+#if defined(__i386__) || defined(__x86_64__)
   unsigned int before = _MM_GET_EXCEPTION_MASK ();
   return core::clasp_make_fixnum(before);
 #else
@@ -371,7 +371,7 @@ CL_DEFUN core::Fixnum_sp core__get_current_fpe_mask() {
 DOCGROUP(clasp)
 CL_DEFUN void core__set_current_fpe_mask(core::Fixnum_sp mask) {
   Fixnum value = core::unbox_fixnum(mask);
-#if defined(__i386__)
+#if defined(__i386__) || defined(__x86_64__)
   _MM_SET_EXCEPTION_MASK(value);
 #else
   printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );

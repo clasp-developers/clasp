@@ -432,7 +432,7 @@ CL_DEFUN void core__help_booting() {
 CL_DOCSTRING(R"dx(Return the rdtsc performance timer value)dx")
 DOCGROUP(clasp)
 CL_DEFUN Fixnum core__rdtsc(){
-#if defined(__i386__)
+#if defined(__i386__) || defined(__x86_64__)
   unsigned int lo,hi;
   __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
   return ((uint64_t)hi << 32) | lo;
