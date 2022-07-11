@@ -342,6 +342,8 @@ Optimizations are available for any of:
   (define-two-arg-ff core:two-arg-/)
   (define-two-arg-f  expt))
 
+(deftransform expt (((x (eql 2)) (y (integer 0)))) '(ash 1 y))
+
 ;; FIXME: i think our FTRUNCATE function has a bug: it should return doubles in
 ;; this case, by my reading.
 (deftransform ftruncate (((dividend single-float) (divisor double-float)))
