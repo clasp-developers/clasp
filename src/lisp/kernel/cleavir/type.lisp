@@ -701,17 +701,23 @@
               (ctype:range 'integer '* '* sys)))
         (ctype:range 'integer '* '* sys))))
 
+;;; LOGNOT (in Lisp's unbounded conception) is monotonic decreasing.
+(define-deriver lognot (arg)
+  (let* ((sys *clasp-system*))
+    (ctype:single-value
+     (if (and (ctype:rangep arg sys)
+              (member (ctype:range-kind arg sys) '(integer rational real)))
+         (multiple-value-bind (low high) (normalize-integer-bounds arg sys)
+           (ctype:range 'integer
+                        (if high (lognot high) '*)
+                        (if low (lognot low) '*)
+                        sys))
+         (ctype:range 'integer '* '* sys))
+     sys)))
+
 ;;; Getting good bounds for these functions is kind of nontrivial.
 ;;; For now we just mark them as returning fixnums if given them.
 ;;; TODO. Check Hacker's Delight and SBCL's compiler/bitops-derive-type.lisp.
-
-(define-deriver lognot (arg)
-  (let* ((sys *clasp-system*)
-         (fixnum (ctype:range 'integer most-negative-fixnum most-positive-fixnum sys)))
-    (ctype:single-value (if (ctype:subtypep arg fixnum sys)
-                            fixnum
-                            (ctype:range 'integer '* '* sys))
-                        sys)))
 
 (defmacro define-log2-deriver (name)
   `(define-deriver ,name (int1 int2)
