@@ -200,8 +200,6 @@ typedef std::size_t class_id;
 /*! If CLOS is being implemented */
 #define CLOS 1
 
-#define MULTIPLE_VALUES_LIMIT 64
-
 #ifdef SOURCE_DEBUG
  #ifdef DEBUG_LEVEL_FULL //[
   #define DEBUG_ON 1
