@@ -227,6 +227,40 @@
 
 (define-deriver values (&rest args) args)
 
+(defun derive-values-list-aux (ltype sys)
+  (cond ((ctype:member-p sys ltype)
+         (let ((members (ctype:member-members sys ltype)))
+           (cond ((some #'consp members) ; weird, but ok: just give up
+                  (ctype:values-top sys))
+                 ;; this is a very important case, perhaps surprisingly,
+                 ;; because we convert (apply foo bar) to
+                 ;; (multiple-value-call foo (values-list bar))
+                 ;; and apply to NIL comes up every once in a while,
+                 ;; e.g. from &rest parameters.
+                 ((member nil members)
+                  ;; zero values.
+                  (ctype:values nil nil (ctype:bottom sys) sys))
+                 (t ; nothing valid
+                  (ctype:values-bottom sys)))))
+        ((ctype:consp ltype sys)
+         (let* ((vr (derive-values-list-aux (ctype:cons-cdr ltype sys) sys))
+                (req (ctype:values-required vr sys))
+                (opt (ctype:values-optional vr sys))
+                (rest (ctype:values-rest vr sys)))
+           (ctype:values (list* (ctype:cons-car ltype sys) req) opt rest sys)))
+        ((ctype:conjunctionp ltype sys)
+         (apply #'ctype:values-conjoin sys
+                (mapcar (lambda (sub) (derive-values-list-aux sub sys))
+                        (ctype:conjunction-ctypes ltype sys))))
+        ((ctype:disjunctionp ltype sys)
+         (apply #'ctype:values-disjoin sys
+                (mapcar (lambda (sub) (derive-values-list-aux sub sys))
+                        (ctype:disjunction-ctypes ltype sys))))
+        (t (ctype:values-top sys))))
+
+(define-deriver values-list (list)
+  (derive-values-list-aux list *clasp-system*))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (8) STRUCTURES
