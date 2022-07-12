@@ -229,7 +229,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
                                               "-f",
                                               "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
-    if (parameter_required.contains(*arg) && (arg + 1) == end) {
+    if (parameter_required.find(*arg) != parameter_required.end() && (arg + 1) == end) {
       std::cerr << "Missing parameter for " << *arg << " option." << std::endl;
       exit(1);
     }

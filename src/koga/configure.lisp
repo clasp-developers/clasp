@@ -167,6 +167,11 @@
                :initform nil
                :type list
                :documentation "")
+   (broken-stdlib :accessor broken-stdlib
+                  :initarg :broken-stdlib
+                  :initform nil
+                  :type boolean
+                  :documentation "If T if the C++ stdlib is broken for C++20.")
    (cst :accessor cst
         :initarg :cst
         :initform t
