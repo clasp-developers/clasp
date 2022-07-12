@@ -16,6 +16,7 @@
 namespace snapshotSaveLoad {
 
 extern bool global_debugSnapshot;
+extern bool global_InSnapshotLoad;
 
 
 enum PointerType { UninitializedPointer=0, EndPointer=1, FunctionPointer=2, VtablePointer=3 };
@@ -142,8 +143,8 @@ void clearLibraries();
 void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr);
 void decodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr);
 
-void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp code);
-void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp code);
+void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp code);
+void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp code);
 
 
 struct LibraryLookup {

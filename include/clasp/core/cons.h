@@ -165,7 +165,12 @@ namespace core {
     inline
 #endif
   static Cons_sp create(T_sp car, T_sp cdr) {
-    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O,gctools::DoRegister>::allocate(car,cdr);
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<gctools::RuntimeStage,Cons_O,gctools::DoRegister>::allocate(car,cdr);
+    return ll;
+  };
+    template <typename Stage>
+  static Cons_sp createAtStage(T_sp car, T_sp cdr) {
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Stage,Cons_O,gctools::DoRegister>::allocate(car,cdr);
     return ll;
   };
   public:
@@ -256,7 +261,7 @@ namespace core {
     List_sp nreconc(T_sp tail);
 
 //    CL_LISPIFY_NAME("core:cons-setf-cdr");
-//    CL_DEFMETHOD
+//    CLASP_DEFMETHOD
     T_sp setf_cdr(T_sp o) {
       this->setCdr(o);
       return o;

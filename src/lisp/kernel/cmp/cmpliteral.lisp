@@ -597,21 +597,20 @@ rewrite the slot in the literal table to store a closure."
            (let* ((label (object-label creator index))
                   (entry (let ((type (llvm-sys:get-pointer-element-type
                                       (llvm-sys:get-scalar-type
-                                       (llvm-sys:get-type
-                                        cmp:*load-time-value-holder-global-var*)))))
+                                       cmp:*load-time-value-holder-global-var-type*))))
                            (llvm-sys:create-geparray cmp:*irbuilder*
                                                      type
                                                      cmp:*load-time-value-holder-global-var*
                                                      (list (cmp:jit-constant-i32 0)
                                                            (cmp:jit-constant-i32 index))
                                                      label)))
-                  (arg (cmp:irc-load entry label)))
+                  (arg (cmp:irc-t*-load entry label)))
              arg))
           ((eq kind :transient)
            (let* ((label (object-label creator index "TRANSIENT"))
                   (arg (cmp:irc-intrinsic-call "ltvc_lookup_transient" (list *gcroots-in-module*
-                                                                           (cmp:jit-constant-i8 tag)
-                                                                           (cmp:jit-constant-size_t index)) label)))
+                                                                             (cmp:jit-constant-i8 tag)
+                                                                             (cmp:jit-constant-size_t index)) label)))
              arg))
           (t (error "Illegal creator for lookup-arg ~a" creator)))))))
 
@@ -744,7 +743,7 @@ Return the index of the load-time-value"
                                                                          (cmp:irc-bit-cast fn cmp:%opaque-fn-prototype*%))
                                                                        (coerce (literal-machine-function-vector *literal-machine*) 'list)))
                                   (core:fmt nil "function-vector-{}" id))))
-    (values function-vector-length function-vector-global)))
+    (values function-vector-length function-vector-global function-vector-type)))
 
 (defun do-literal-table (id body-fn)
   (llog "do-literal-table~%")
@@ -755,10 +754,11 @@ Return the index of the load-time-value"
                                          'llvm-sys:internal-linkage
                                          (cmp:gcroots-in-module-initial-value)
                                          (core:fmt nil "{}{}" core:+gcroots-in-module-name+ (core:next-number))))
+        (cmp:*load-time-value-holder-global-var-type* cmp:%t*[DUMMY]%)
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[DUMMY]% ; type
-                                         nil             ; isConstant
+                                         nil ; isConstant
                                          'llvm-sys:internal-linkage
                                          (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
                                          ;; nil ; initializer
@@ -782,7 +782,8 @@ Return the index of the load-time-value"
                                                                   (core:fmt nil "startup-byte-code-{}" id))))
               (cmp:irc-intrinsic-call "cc_invoke_byte_code_interpreter"
                                       (list *gcroots-in-module*
-                                            (cmp:irc-bit-cast (cmp:irc-gep byte-code-global (list 0 0))
+                                            (cmp:irc-bit-cast (cmp:irc-typed-gep (llvm-sys:array-type-get cmp:%i8% (1+ byte-code-length))
+                                                                           byte-code-global (list 0 0))
                                                               cmp:%i8*%)
                                             (cmp:jit-constant-size_t byte-code-length)))
               (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*)))))
@@ -806,7 +807,7 @@ Return the index of the load-time-value"
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
             (cmp::cmp-log "Replaced all {} with {}%N" cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
-            (multiple-value-bind (function-vector-length function-vector)
+            (multiple-value-bind (function-vector-length function-vector function-vector-type)
                 (setup-literal-machine-function-vectors cmp:*the-module* :id id)
               (cmp:with-run-all-entry-codegen
                   (let ((transient-vector (cmp:alloca-i8* "transients")))
@@ -820,9 +821,8 @@ Return the index of the load-time-value"
                                                   (cmp:jit-constant-size_t transient-entries)
                                                   (cmp:jit-constant-size_t function-vector-length)
                                                   (cmp:irc-bit-cast
-                                                   (cmp:irc-gep function-vector
-                                                                (list (cmp:jit-constant-size_t 0)
-                                                                      (cmp:jit-constant-size_t 0)))
+                                                   (cmp:irc-typed-gep function-vector-type function-vector
+                                                                (list 0 0))
                                                    cmp:%i8**%)
                                                   )))))
             ;; Erase the dummy holder
@@ -834,9 +834,10 @@ Return the index of the load-time-value"
 (defun do-rtv (body-fn)
   (let* ((cmp:*generate-compile-file-load-time-values* nil)
          (module-id (core:next-jit-compile-counter))
+         (cmp:*load-time-value-holder-global-var-type* cmp:%t*[0]%)
          (cmp:*load-time-value-holder-global-var*
            (llvm-sys:make-global-variable cmp:*the-module*
-                                          cmp:%t*[0]% ; type
+                                          cmp:*load-time-value-holder-global-var-type* ; type
                                           nil         ; isConstant
                                           'llvm-sys:internal-linkage
                                           nil
@@ -869,10 +870,11 @@ Return the index of the load-time-value"
           (let ((bitcast-constant-table (cmp:irc-bit-cast constant-table cmp:%t*[0]*% "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-constant-table)
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
-            (let ((cmp:*load-time-value-holder-global-var* bitcast-constant-table))
+            (let ((cmp:*load-time-value-holder-global-var-type* cmp:%t*[0]%)
+                  (cmp:*load-time-value-holder-global-var* bitcast-constant-table))
               (cmp::cmp-log "do-rtv Replaced all {} with {}%N" cmp:*load-time-value-holder-global-var* bitcast-constant-table)
               (multiple-value-bind (startup-shutdown-id ordered-raw-constant-list)
-                  (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
+                  (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* array-type constant-table num-elements ordered-literals-list bitcast-constant-table)
                 (values ordered-raw-constant-list constant-table startup-shutdown-id)))))))))
 
 (defmacro with-rtv (&body body)
@@ -1157,14 +1159,18 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;; Access load-time-values
 ;;;
 
-(defun constants-table-reference (index &optional (holder cmp:*load-time-value-holder-global-var*) literal-name)
+(defun constants-table-reference (index &key
+                                          (holder cmp:*load-time-value-holder-global-var*)
+                                          (holder-type cmp:*load-time-value-holder-global-var-type*)
+                                          literal-name)
   (let ((label (if literal-name
                    (core:fmt nil "values-table[{}]/{}" index literal-name)
                    (core:fmt nil "values-table[{}]" index))))
-    (llvm-sys:create-const-gep2-64 cmp:*irbuilder* holder 0 index label)))
+    (cmp:irc-const-gep2-64 holder-type holder 0 index label)))
 
-(defun constants-table-value (index &optional (holder cmp:*load-time-value-holder-global-var*))
-  (cmp:irc-load (constants-table-reference index holder)))
+(defun constants-table-value (index &key (holder cmp:*load-time-value-holder-global-var*)
+                                      (holder-type cmp:*load-time-value-holder-global-var-type*))
+  (cmp:irc-t*-load (constants-table-reference index :holder holder)))
 
 
 

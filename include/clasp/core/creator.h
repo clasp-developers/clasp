@@ -49,7 +49,7 @@ namespace core {
     virtual int duplicationLevel() const { return 0; };
     virtual bool creates_classes() const { return false; };
     CL_NAME("CORE:CREATOR-TEMPLATED-SIZE");
-    virtual CL_DEFMETHOD size_t templatedSizeof() const override= 0;
+    virtual CLASP_DEFMETHOD size_t templatedSizeof() const override= 0;
     virtual Creator_sp duplicateForClassName(core::Symbol_sp className) {
       printf("Subclass must implement Creator::duplicateForClassName\n");
       abort();

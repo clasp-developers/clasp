@@ -207,6 +207,15 @@
   (unless (unfinalizablep class)
     (finalize-inheritance class)))
 
+
+#+(or)(eval-when (:compile-toplevel :execute)
+  (format t "std-slot-value-lsp *print-implicit-compile-form* t~%")
+  (setf cmp::*print-implicit-compile-form* t))
+
+
+#+(or)(eval-when (:compile-toplevel :execute)
+  (gctools:wait-for-user-signal "About to standard-instance-access"))
+
 (defmethod make-instances-obsolete ((class class))
   ;; This changes what stamp new instances of the class get- which also means obsolete
   ;; instances will have a different stamp from their class, which is how the system

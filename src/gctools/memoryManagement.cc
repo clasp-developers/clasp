@@ -487,8 +487,8 @@ namespace gctools {
   global_NextBuiltInStamp starts at STAMP_max+1
   so that it doesn't use any stamps that correspond to KIND values
    assigned by the static analyzer. */
-std::atomic<UnshiftedStamp>   global_NextUnshiftedStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(Header_s::max_clbind_stamp+1));
-std::atomic<UnshiftedStamp>   global_NextUnshiftedClbindStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(Header_s::max_builtin_stamp+1));
+std::atomic<UnshiftedStamp>   global_NextUnshiftedStamp(Header_s::StampWtagMtag::first_NextUnshiftedStamp(Header_s::max_clbind_stamp+1));
+std::atomic<UnshiftedStamp>   global_NextUnshiftedClbindStamp(Header_s::StampWtagMtag::first_NextUnshiftedStamp(Header_s::max_builtin_stamp+1));
 
 void OutOfStamps() {
   printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %lu are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, (uintptr_t)Header_s::largest_possible_stamp );
@@ -610,12 +610,14 @@ void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, 
 
 GCRootsInModule::GCRootsInModule(void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+(sizeof(core::T_O*)*num_entries)));
+  llvmo::JITDataReadWriteMaybeExecute();
   this->_function_pointer_count = function_pointer_count;
   this->_function_pointers = fptrs;
   this->_num_entries = num_entries;
   this->_capacity = num_entries;
   this->_module_memory = module_mem;
   this->setup_transients(transient_alloca, transient_entries);
+  llvmo::JITDataReadExecute();
 }
 
 
@@ -752,7 +754,9 @@ Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
          __FILE__, __LINE__, __FUNCTION__,
          raw_index, (void*)this->_module_memory );
 #endif
+  llvmo::JITDataReadWriteMaybeExecute();
   reinterpret_cast<core::T_O**>(this->_module_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
+  llvmo::JITDataReadExecute();
   return val;
 }
 Tagged GCRootsInModule::getLiteral(size_t raw_index) {
@@ -859,9 +863,17 @@ void* GCRootsInModule::lookup_function(size_t index) {
 
 namespace gctools {
 
+/* Walk all of the roots, passing the address of each root and what it represents */
+void walkRoots( RootWalkCallback callback, void* data ) {
+  callback( (Tagged*)&_lisp, LispRoot, 0, data);
+  for ( size_t jj=0; jj<global_symbol_count; ++jj ) {
+    callback( (Tagged*)&global_symbols[jj], SymbolRoot, jj, data );
+  }
+};
+
+
 PointerFix globalMemoryWalkPointerFix;
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* userData ) {
   GatherObjects* gather = (GatherObjects*)userData;
   Header_s* header;

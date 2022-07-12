@@ -49,7 +49,7 @@ int gcFunctions_after;
 #include <clasp/core/wrappers.h>
 
 namespace gctools {
-std::atomic<double>   global_DiscriminatingFunctionCompilationSeconds = ATOMIC_VAR_INIT(0.0);
+std::atomic<double>   global_DiscriminatingFunctionCompilationSeconds(0.0);
 
 DOCGROUP(clasp)
 CL_DEFUN void gctools__accumulate_discriminating_function_compilation_seconds(double seconds) {

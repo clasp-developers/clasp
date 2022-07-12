@@ -8,9 +8,10 @@
 
 #ifndef code_H //[
 #define code_H
-
+#include <unistd.h>
 #include <clasp/core/common.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <llvm/ExecutionEngine/JITLink/JITLinkMemoryManager.h>
 
 template <>
 struct gctools::GCInfo<llvmo::ObjectFile_O> {
@@ -20,6 +21,21 @@ struct gctools::GCInfo<llvmo::ObjectFile_O> {
 };
 
 
+
+namespace llvmo {
+
+/* On Apple Silicon switch this thread so that it can and then cannot write into MEM_JIT memory.
+   On other processors, do nothing. */
+void JITDataReadWriteMaybeExecute();
+void JITDataReadExecute();
+
+/* On Apple Silicon switch this thread so that it can and then cannot write into MEM_JIT memory.
+   On other processors switch between RWX and R-X.
+   Refresh instruction cache if architecture (arm64) requires it. */
+void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL);
+void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& bl);
+
+};
 
 // ObjectFile_O
 namespace llvmo {
@@ -36,42 +52,106 @@ typedef enum { SaveState, RunState } CodeState_t;
 
   
 
-  FORWARD(Code);
+  FORWARD(CodeBlock);
   FORWARD(ObjectFile);
   class ObjectFile_O : public LibraryBase_O {
     LISP_CLASS(llvmo, LlvmoPkg, ObjectFile_O, "ObjectFile", LibraryBase_O);
   public:
+    typedef uint8_t value_type;
     CodeState_t    _State;
+    core::SimpleBaseString_sp _CodeName;
     std::unique_ptr<llvm::MemoryBuffer> _MemoryBuffer;
     uintptr_t      _ObjectFileOffset; // Only has meaning when _State is SaveState
     uintptr_t      _ObjectFileSize; // Only has meaning when _State is SaveState
     size_t         _Size;
     size_t         _ObjectId;
-    JITDylib_sp    _JITDylib;
+    JITDylib_sp    _TheJITDylib;
     core::SimpleBaseString_sp _FasoName;
     size_t         _FasoIndex;
-    Code_sp        _Code;
+    //
+    // Code data
+    //
+    gctools::GCRootsInModule* _gcRoots;
+    void*         _TextSectionStart;
+    void*         _TextSectionEnd;
+    uintptr_t     _TextSectionId;
+    void*         _StackmapStart;
+    uintptr_t     _StackmapSize;
+// Absolute address of literals in memory - this must be in the _DataCode vector.
+    uintptr_t     _LiteralVectorStart;
+    size_t        _LiteralVectorSizeBytes; // size in bytes
+    CodeBlock_sp  _CodeBlock;
+    gctools::GCArray_moveable<uint8_t> _DataCode;
+    
   public:
-    static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
-    ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId, JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _ObjectId(objectId), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(unbound<Code_O>()) {
+    ObjectFile_O( core::SimpleBaseString_sp codename, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId, JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex) :
+        _State(RunState),
+        _CodeName(codename),
+        _MemoryBuffer(std::move(buffer)),
+        _ObjectId(objectId),
+        _TheJITDylib(jitdylib),
+        _FasoName(fasoName),
+        _FasoIndex(fasoIndex),
+        _gcRoots(NULL),
+        _CodeBlock(unbound<CodeBlock_O>() ) {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId));
     };
+    ObjectFile_O( core::SimpleBaseString_sp codename, JITDylib_sp jitdylib, size_t objectId ) :
+        _State(RunState),
+        _CodeName(codename),
+        _TheJITDylib(jitdylib),
+        _gcRoots(NULL),
+        _CodeBlock(unbound<CodeBlock_O>()),
+        _ObjectId(objectId) {
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   codename = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(codename).c_str() ));
+    };
+    ObjectFile_O( core::SimpleBaseString_sp codename, CodeBlock_sp codeBlock, JITDylib_sp dylib, size_t objectId) :
+        _State(RunState),
+        _CodeName(codename),
+        _TheJITDylib(dylib),
+        _gcRoots(NULL),
+        _CodeBlock(codeBlock),
+        _TextSectionStart(0),
+        _TextSectionEnd(0),
+        _ObjectId(objectId)
+    {
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s created with CodeBlock_sp   codename = %s CodeBlock = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(codename).c_str(), core::_rep_(codeBlock).c_str() ));
+    };
+    static ObjectFile_sp createForModule( const std::string& codename, JITDylib_sp jitdylib, size_t objectId );
+    static ObjectFile_sp createForObjectFile( const std::string& codename, JITDylib_sp jitdylib, size_t objectId );
+    static ObjectFile_sp create(const std::string& name, std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
+    static size_t sizeofInState(ObjectFile_O* code, CodeState_t state);
+  public:
     ~ObjectFile_O();
     std::string __repr__() const;
     static void writeToFile(const std::string& filename, const char* start, size_t size);
-    size_t frontSize() { return sizeof(this); }
     size_t objectFileSize() { return this->_MemoryBuffer->getBufferSize(); };
     void* objectFileData() { return (void*)this->_MemoryBuffer->getBufferStart(); };
     size_t objectFileSizeAlignedUp() {
       return gctools::AlignUp(this->objectFileSize());
     }
     llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> getObjectFile();
-    Code_sp code() const;
+
+    //
+    // Code methods
+    //
+    uintptr_t codeStart() const { return (uintptr_t)this->_TextSectionStart; };
+    uintptr_t codeEnd() const { return (uintptr_t)this->_TextSectionEnd; };
+    void* absoluteAddress(SectionedAddress_sp sa);
+    size_t frontSize() const { return sizeof(*this); };
+    size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };
+  // The location of the literals vector in memory
+    void* literalsStart() const;
+    core::T_O** TOLiteralsStart() const { return (core::T_O**)literalsStart(); }
+    size_t TOLiteralsSize() const { return literalsSize()/sizeof(core::T_O*); }
+    virtual std::string filename() const;
+    core::T_sp codeLineTable() const;
+    virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point);
+    
   }; // ObjectFile_O class def
 }; // llvmo
 
 namespace llvmo {
-  FORWARD(Code);
   FORWARD(ObjectFile);
   FORWARD(LibraryFile);
   class LibraryFile_O : public LibraryBase_O {
@@ -103,81 +183,127 @@ namespace llvmo {
 };
 
 
+namespace llvmo {
+
+
+bool general_entry_point_redirect_p(void* ep);
+
+};
+
 template <>
-struct gctools::GCInfo<llvmo::Code_O> {
+struct gctools::GCInfo<llvmo::CodeBlock_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = collectable_immobile;
 };
 
-
-
 namespace llvmo {
 
 
-  /* Code_O
-   * This object contains all of the code and data generated by relocating an object file.
-   * The data and code is stored in _DataCode.
+  /* CodeBlock_O
+   * This object contains all of the code and data generated by relocating multiple object files.
+   * The Code_O objects are stored in _DataCode
    * The layout is | RWData | ROData | Code 
    * We place the RWData at the top of the object so we can scan it for GC managed pointers.
    */
-FORWARD(Code);
-class Code_O : public CodeBase_O {
-  LISP_CLASS(llvmo, LlvmoPkg, Code_O, "Code", CodeBase_O);
- public:
-  static Code_sp make(uintptr_t scanSize, uintptr_t size, ObjectFile_sp of);
- public:
+#if defined (CLASP_APPLE_SILICON)
+# define USE_MMAP_CODEBLOCK 1
+# include <sys/mman.h>
+#endif
+
+FORWARD(CodeBlock);
+class CodeBlock_O : public core::CxxObject_O {
+  LISP_CLASS(llvmo, LlvmoPkg, CodeBlock_O, "CodeBlock", core::CxxObject_O);
+public:
   typedef uint8_t value_type;
- public:
+public:
   // Store the allocation sizes and alignments
   // Keep track of the Head and Tail indices of the memory in _Data;
-  CodeState_t         _State;
   uintptr_t     _HeadOffset;
   uintptr_t     _TailOffset;
-  ObjectFile_sp _ObjectFile;
-  gctools::GCRootsInModule* _gcroots;
-  void*         _TextSectionStart;
-  void*         _TextSectionEnd;
-  uintptr_t     _TextSectionId;
-  void*         _StackmapStart;
-  uintptr_t     _StackmapSize;
-// Absolute address of literals in memory - this must be in the _DataCode vector.
-  uintptr_t     _LiteralVectorStart;
-  size_t        _LiteralVectorSizeBytes; // size in bytes
+  uintptr_t     _TotalSize;
+#ifdef USE_MMAP_CODEBLOCK
+  void*         _mmapBlock;
+  uintptr_t     _mmapSize;
+#else
   gctools::GCArray_moveable<uint8_t> _DataCode;
+#endif
+  static constexpr size_t DefaultSize = 8*1024*1024;
 public:
-  static size_t sizeofInState(Code_O* code, CodeState_t state);
+  template <typename Stage>
+  static CodeBlock_sp make(uintptr_t size) {
+#ifdef USE_MMAP_CODEBLOCK
+    CodeBlock_sp codeblock = gctools::GC<CodeBlock_O>::allocate<Stage>(size);
+    void* mmappedBlock = mmap( NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC,
+                               MAP_ANON | MAP_PRIVATE | MAP_JIT, -1, 0);
+    if (mmappedBlock==MAP_FAILED || !mmappedBlock ) {
+      printf("%s:%d:%s mmap failed\n", __FILE__, __LINE__, __FUNCTION__ );
+      abort();
+    }
+    uintptr_t top = (uintptr_t)mmappedBlock;
+    uintptr_t bottom = (uintptr_t)mmappedBlock+size;
+    codeblock->_TailOffset = size;
+    codeblock->_HeadOffset = 0;
+    codeblock->_mmapBlock = mmappedBlock;
+    codeblock->_mmapSize = size;
+    return codeblock;
+#else
+    // When we can gc code allocate entire block in GC memory
+    CodeBlock_sp codeblock = gctools::GC<CodeBlock_O>::allocate_container<Stage>(false,size);
+    uintptr_t top = (uintptr_t)&codeblock->_DataCode[0];
+    uintptr_t bottom = (uintptr_t)&codeblock->_DataCode[size];
+    size_t PageSize = getpagesize();
+    bottom = (bottom/PageSize)*PageSize;
+    codeblock->_TailOffset = bottom-top;
+    codeblock->_HeadOffset = 0;
+    return codeblock;
+#endif
+  };
 public:
-  void* allocateHead(uintptr_t size, uint32_t align);
-  void* allocateTail(uintptr_t size, uint32_t align);
+  /*! Calculate the BasicLayout based on the sizes. 
+   *  Return false if it won't fit and true if it will and then lock in the allocation
+   */
+  void* dataStart() const {
+#ifdef USE_MMAP_CODEBLOCK
+    return (void*)this->_mmapBlock;
+#else
+    return (void*)&this->_DataCode[0];
+#endif
+  };
+  void* dataEnd() const {
+#ifdef USE_MMAP_CODEBLOCK
+    return (void*)((uintptr_t)this->_mmapBlock+this->_HeadOffset);
+#else
+    return (void*)&this->_DataCode[this->_HeadOffset];
+#endif
+  };
+  unsigned char* address(uintptr_t index) const {
+#ifdef USE_MMAP_CODEBLOCK
+    return (unsigned char*)((uintptr_t)this->_mmapBlock+index);
+#else
+    return (unsigned char*)&this->_DataCode[index];
+#endif
+  };
+  bool calculate(llvm::jitlink::BasicLayout& BL);
+  void* calculateHead( uintptr_t size, uint32_t align, uintptr_t& headOffset );
+  void* calculateTail( uintptr_t size, uint32_t align, uintptr_t& tailOffset );
   void describe() const;
 
   std::string __repr__() const;
- Code_O(uintptr_t totalSize ) :
-   _State(RunState)
-   , _TailOffset(totalSize)
-   , _ObjectFile(unbound<ObjectFile_O>())
-   , _gcroots(NULL)
-   , _LiteralVectorStart(0)
-   , _LiteralVectorSizeBytes(0)
-   , _DataCode(totalSize,0,true) {};
+  
+  CodeBlock_O(uintptr_t totalSize ) :
+      _HeadOffset(0)
+      , _TailOffset(totalSize)
+#ifdef USE_MMAP_CODEBLOCK
+      , _mmapBlock(NULL)
+      , _mmapSize(totalSize)
+#else
+      , _DataCode(totalSize,0,true)
+#endif
+  {};
 
-  ~Code_O();
-  uintptr_t codeStart() const { return (uintptr_t)this->_TextSectionStart; };
-  uintptr_t codeEnd() const { return (uintptr_t)this->_TextSectionEnd; };
-  void* absoluteAddress(SectionedAddress_sp sa);
-  size_t frontSize() const { return sizeof(*this); };
-  size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };
-  // The location of the literals vector in memory
-  void* literalsStart() const;
-  core::T_O** TOLiteralsStart() const { return (core::T_O**)literalsStart(); }
-  size_t TOLiteralsSize() const { return literalsSize()/sizeof(core::T_O*); }
-  virtual std::string filename() const;
-  core::T_sp codeLineTable() const;
-  virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point);
+  ~CodeBlock_O();
 };
-
-bool general_entry_point_redirect_p(void* ep);
 
 };
 
@@ -245,126 +371,8 @@ namespace llvmo {
 using namespace llvm;
 using namespace llvm::jitlink;
 
-class ClaspAllocator final : public JITLinkMemoryManager {
-public:
-  ClaspAllocator() {
-  }
-public:
-  static Expected<std::unique_ptr<ClaspAllocator>>
-  Create() {
-    Error Err = Error::success();
-    std::unique_ptr<ClaspAllocator> Allocator(
-        new ClaspAllocator());
-    return std::move(Allocator);
-  }
 
-  Expected<std::unique_ptr<JITLinkMemoryManager::Allocation>>
-  allocate(const JITLinkDylib *JD, const SegmentsRequestMap &Request) override {
-    using AllocationMap = DenseMap<unsigned, sys::MemoryBlock>;
-//    printf("%s:%d:%s ClaspAllocation allocate entered with %lu requests\n", __FILE__, __LINE__, __FUNCTION__, (unsigned long)Request.size() );
-
-    // Local class for allocation.
-    class IPMMAlloc : public Allocation {
-    public:
-    IPMMAlloc(ClaspAllocator &Parent, AllocationMap SegBlocks)
-      : Parent(Parent), SegBlocks(std::move(SegBlocks)) {}
-      MutableArrayRef<char> getWorkingMemory(ProtectionFlags Seg) override {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Seg = 0x%x base = %p  size = %lu\n", __FILE__, __LINE__, __FUNCTION__, Seg, static_cast<char *>(SegBlocks[Seg].base()), SegBlocks[Seg].allocatedSize() ));
-        assert(SegBlocks.count(Seg) && "No allocation for segment");
-        return {static_cast<char *>(SegBlocks[Seg].base()), SegBlocks[Seg].allocatedSize()};
-      }
-      JITTargetAddress getTargetMemory(ProtectionFlags Seg) override {
-        assert(SegBlocks.count(Seg) && "No allocation for segment");
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Seg = 0x%x Returning %p\n", __FILE__, __LINE__, __FUNCTION__, Seg, (void*)pointerToJITTargetAddress(SegBlocks[Seg].base()))); 
-        return pointerToJITTargetAddress(SegBlocks[Seg].base());
-      }
-      void finalizeAsync(FinalizeContinuation OnFinalize) override {
-        OnFinalize(applyProtections());
-      }
-      Error deallocate() override {
-        for (auto &KV : SegBlocks)
-          if (auto EC = sys::Memory::releaseMappedMemory(KV.second))
-            return errorCodeToError(EC);
-        return Error::success();
-      }
-
-    private:
-      Error applyProtections() {
-        for (auto &KV : SegBlocks) {
-          auto &Prot = KV.first;
-          auto &Block = KV.second;
-          if (Prot & sys::Memory::MF_EXEC)
-            if (auto EC = sys::Memory::protectMappedMemory(Block,sys::Memory::MF_RWE_MASK))
-              return errorCodeToError(EC);
-            sys::Memory::InvalidateInstructionCache(Block.base(),
-                                                    Block.allocatedSize());
-        }
-        return Error::success();
-      }
-
-      ClaspAllocator &Parent;
-      AllocationMap SegBlocks;
-    };
-
-    AllocationMap Blocks;
-
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  Interating Request\n", __FILE__, __LINE__, __FUNCTION__ ));
-    size_t totalSize = 0;
-    size_t scanSize = 0;
-    for (auto &KV : Request) {
-      auto &Seg = KV.second;
-      uint64_t ZeroFillStart = Seg.getContentSize();
-      uint64_t SegmentSize = gctools::AlignUp((ZeroFillStart+Seg.getZeroFillSize()),Seg.getAlignment());
-//      printf("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, (unsigned long long)Seg.getAlignment(), Seg.getContentSize(), (unsigned long long)Seg.getZeroFillSize());
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, (unsigned long long)Seg.getAlignment(), Seg.getContentSize(), (unsigned long long)Seg.getZeroFillSize()));
-      // Add Seg.getAlignment() just in case we need a bit more space to make alignment.
-      if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
-        // We have to scan the entire RW data region (sigh) for pointers
-        scanSize = SegmentSize;
-      }
-      totalSize += gctools::AlignUp(Seg.getContentSize()+Seg.getZeroFillSize(),Seg.getAlignment())+Seg.getAlignment();
-    }
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocation scanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize));
-    Code_sp codeObject(unbound<llvmo::Code_O>());
-    bool allocatingCodeObject = (Request.size()>1);
-    if (allocatingCodeObject) { // It's the allocation that creates a Code object
-    // Associate the Code object with the current ObjectFile
-      ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(my_thread->topObjectFile());
-      codeObject = Code_O::make( scanSize, totalSize, of );
-    // printf("%s:%d:%s ObjectFile_sp at %p is associated with Code_sp at %p\n", __FILE__, __LINE__, __FUNCTION__, my_thread->topObjectFile().raw_(), codeObject.raw_());
-    }
-    for (auto &KV : Request) {
-      auto &Seg = KV.second;
-      uint64_t ZeroFillStart = Seg.getContentSize();
-      size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart+Seg.getZeroFillSize(),Seg.getAlignment());
-      void* base;
-      if (allocatingCodeObject) {
-        if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
-          base = codeObject->allocateHead(SegmentSize,Seg.getAlignment());
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating Prot 0x%x from the head base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base ));
-        } else {
-        base = codeObject->allocateTail(SegmentSize,Seg.getAlignment());
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating Prot 0x%x from the tail base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base ));
-        }
-      } else {
-        base = aligned_alloc(Seg.getAlignment(),SegmentSize);
-      }
-      sys::MemoryBlock SegMem(base,SegmentSize);
-        // Zero out the zero-fill memory
-      memset(static_cast<char*>(SegMem.base())+ZeroFillStart, 0,
-             Seg.getZeroFillSize());
-        // Record the block for this segment
-      Blocks[KV.first] = std::move(SegMem);
-    }
-    return std::unique_ptr<InProcessMemoryManager::Allocation>(new IPMMAlloc(*this, std::move(Blocks)));
-  }
-
-};
-
-
-void dumpObjectFile(const char* start, size_t size, void* codeStart = NULL );
-
- void save_object_file_and_code_info( ObjectFile_sp of );
+//void dumpObjectFile(const char* start, size_t size, void* codeStart = NULL );
 
 };
 
@@ -380,11 +388,91 @@ size_t total_memory_allocated_for_object_files();
 
 };
 
+namespace llvmo {
 
+/*! Guaranteed allocation of the BasicLayout within the current CodeBlock or create a new one.
+ */
+template <typename Stage>
+inline void allocateInCodeBlock( BasicLayout& BL, CodeBlock_sp& codeBlock ) {
+  WITH_READ_WRITE_LOCK(globals_->_CodeBlocksMutex);
+  size_t PageSize = getpagesize();
+  bool newCodeBlock = false;
+  auto SegsSizes = BL.getContiguousPageBasedLayoutSizes(PageSize);
+  if (_lisp->_Roots._AllCodeBlocks.load().consp()) {
+    core::Cons_sp ll = gc::As_unsafe<core::Cons_sp>(_lisp->_Roots._AllCodeBlocks.load());
+    codeBlock = gc::As<CodeBlock_sp>(CONS_CAR(ll));
+  } else {
+    size_t size = std::max((size_t)CodeBlock_O::DefaultSize, (size_t)SegsSizes->total());
+    codeBlock = CodeBlock_O::make<Stage>(size);
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Created first CodeBlock size: %lu\n", __FILE__, __LINE__, __FUNCTION__, size ));
+    _lisp->_Roots._AllCodeBlocks.store(core::Cons_O::createAtStage<Stage>(codeBlock,_lisp->_Roots._AllCodeBlocks.load()));
+  }
+  bool fits = codeBlock->calculate(BL);
+  if (!fits) {
+    size_t size = std::max((size_t)CodeBlock_O::DefaultSize, (size_t)SegsSizes->total());
+    codeBlock = CodeBlock_O::make<Stage>(size);
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Created a fresh CodeBlock size: %lu\n", __FILE__, __LINE__, __FUNCTION__, size ));
+    _lisp->_Roots._AllCodeBlocks.store(core::Cons_O::createAtStage<Stage>(codeBlock,_lisp->_Roots._AllCodeBlocks.load()));
+    fits = codeBlock->calculate(BL);
+    if (!fits) {
+      SIMPLE_ERROR("Could not allocate enough space for code %lu", size );
+    }
+  }
+  //
+  // Temporarily set memory permissions to RW- (current thread) or RWX (all threads), depending on OS
+  //
+  JITMemoryReadWriteMaybeExecute(BL);
+};
+
+};
+
+namespace llvmo {
+
+};
 
 
 namespace llvmo {
-  CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point);
+core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point);
+
+
+
+size_t countObjectFileNames(const std::string& name);
+
+std::string createIRModuleObjectFileName(size_t startupId, std::string& prefix);
+bool verifyIRModuleObjectFileStartupSymbol(const std::string& name);
+
+ObjectFile_sp lookupObjectFile(const std::string& name );
+
+bool lookupObjectFileFromEntryPoint( uintptr_t entry_point, ObjectFile_sp& objectFile );
+
+void validateEntryPoint(core::T_sp code, uintptr_t entry_point );
+void validateEntryPoint(core::T_sp code, const core::ClaspXepFunction& entry_point );
+void validateEntryPoint(core::T_sp code, const core::ClaspLocalFunction& entry_point );
+
+uintptr_t codeStart(core::T_sp codeOrLibrary);
+
+template <typename Stage = gctools::RuntimeStage>
+void registerObjectFile(ObjectFile_sp ofi)
+{
+  std::string name = ofi->_CodeName->get_std_string();
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Adding to _lisp->_Roots._AllObjectFiles  %p ofi->_CodeName = \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (void*)ofi.raw_(), name.c_str()));
+  if (ofi->_CodeName->length()==0) {
+    printf("%s:%d:%s Got zero length ObjectFile code name\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
+  size_t count = countObjectFileNames(name);
+  if (count>0) {
+    printf("%s:%d:%s The object-file name %s is present %lu times\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), count );
+  }
+  core::T_sp expected;
+  core::Cons_sp entry = core::Cons_O::createAtStage<Stage>(ofi,nil<core::T_O>());
+//  printf("%s:%d:%s Registering object file with name %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(ofi->_CodeName).c_str());
+  do {
+    expected = _lisp->_Roots._AllObjectFiles.load();
+    entry->rplacd(expected);
+  } while (!_lisp->_Roots._AllObjectFiles.compare_exchange_weak(expected,entry));
+}
+
+
 };
 
 #endif // code_H

@@ -1,7 +1,7 @@
 (in-package #:koga)
 
 (defparameter +llvm-major-version+
-  13
+  14
   "The required LLVM version.")
 
 (defparameter +llvm-config-candidates+
@@ -60,7 +60,7 @@
     (append-ldlibs configuration (run-program-capture (list llvm-config "--libs")))
     (when (ld configuration)
       (append-ldflags configuration (format nil "-fuse-ld=~(~a~)" (ld configuration))))
-    (append-ldflags configuration "-pthread -lstdc++ -fvisibility=default -rdynamic")))
+    (append-ldflags configuration "-pthread -fvisibility=default -rdynamic")))
 
 (defmethod configure-unit (configuration (unit (eql :ar)))
   "Find the ar binary."
@@ -191,12 +191,15 @@
   (append-cflags configuration "-O3 -g -fPIC" :type :cflags :debug nil)
   (append-cflags configuration "-O0 -g" :type :cxxflags :debug t)
   (append-cflags configuration "-O0 -g" :type :cflags :debug t)
-  (append-cflags configuration "-std=c++20" :type :cxxflags)
+  (append-cflags configuration (if (broken-stdlib configuration)
+                                   "-std=c++17 -Wno-c++20-extensions"
+                                   "-std=c++20")
+                               :type :cxxflags)
   #+darwin (append-cflags configuration "-stdlib=libc++" :type :cxxflags)
   #+darwin (append-cflags configuration "-I/usr/local/include")
-  #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -stdlib=libstdc++"
+  #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-stack-protector -stdlib=libstdc++"
                                        :type :cxxflags)
-  #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+  #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-stack-protector"
                                        :type :cflags)
   (when (address-sanitizer configuration)
     (append-cflags configuration "-fsanitize=address" :type :cxxflags)

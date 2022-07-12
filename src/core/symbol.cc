@@ -283,9 +283,9 @@ ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
     _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundFunctionEntryPoint>(name,nil<T_O>());
   }
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,1,
-                                                              _lisp->_Roots._UnboundSymbolFunctionEntryPoint,
-                                                              ClosureWithSlots_O::cclaspClosure);
+      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,1,
+                                                                                       _lisp->_Roots._UnboundSymbolFunctionEntryPoint,
+                                                                                       ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
 }
@@ -299,9 +299,9 @@ ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
     _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundSetfFunctionEntryPoint>(sname,nil<T_O>());
   }
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, 1,
-                                                              _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint,
-                                                              ClosureWithSlots_O::cclaspClosure);
+      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false, 1,
+                                                                                       _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint,
+                                                                                       ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
 }

@@ -24,9 +24,9 @@
 
 //#define DEBUG_BACKTRACE 1
 #ifdef DEBUG_BACKTRACE
-#define D(x) do { x } while(0);
+#define D(x) do { x } while(0)
 #else
-#define D(x) do {} while(0);
+#define D(x) do {} while(0)
 #endif
 
 /*
@@ -145,59 +145,100 @@ static T_sp getSourcePosInfoForAddress(llvmo::DWARFContext_sp dcontext, llvmo::S
   return core__makeSourcePosInfo(source_path, true, 0, false, info.Line, true, info.Column, true);
 }
 
-static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
+static T_sp dwarf_ep(size_t frameIndex,
+                     llvmo::ObjectFile_sp ofi,
                      llvmo::DWARFContext_sp dcontext,
                      llvmo::SectionedAddress_sp sa,
                      void*& codeStart,
-                     void*& startAddress,
+                     void*& functionStartAddress,
                      bool& XEPp,
                      int& arityCode) {
   MaybeTrace trace(__FUNCTION__);
-  startAddress = NULL;
-  auto eranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
-  if (eranges) {
-    auto ranges = eranges.get();
-    llvmo::Code_sp code = ofi->_Code;
-    codeStart = (void*)code->codeStart();
-    D(printf("%s%s:%d:%s code_start = %p \n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)codeStart ); );
-    T_O** rliterals = code->TOLiteralsStart();
-    size_t nliterals = code->TOLiteralsSize();
-    for (size_t i = 0; i < nliterals; ++i) {
-      T_sp literal((gc::Tagged)(rliterals[i]));
-      if (gc::IsA<LocalEntryPoint_sp>(literal)) {
-        LocalEntryPoint_sp ep = gc::As_unsafe<LocalEntryPoint_sp>(literal);
-        uintptr_t ip = (uintptr_t)(ep->_EntryPoint) - (uintptr_t)codeStart;
-        for (auto range : ranges) {
-          if ((range.LowPC <= ip) && (ip < range.HighPC)) {
-            XEPp = false;
-            // This will be identical to the entry point address in LocalEntryPoint_sp ep
-            startAddress = (void*)(range.LowPC+(uintptr_t)codeStart);
-            return ep;
+  functionStartAddress = NULL;
+  D(printf("%s:%d:%s frameIndex = %lu\n", __FILE__, __LINE__, __FUNCTION__, frameIndex ););
+  //
+  // If the object file contains the interpreter_trampoline - then we are in the interpreter
+  //
+  if (ofi->codeStart()<=(uintptr_t)interpreter_trampoline && (uintptr_t)interpreter_trampoline<ofi->codeEnd()) {
+    functionStartAddress = (void*)interpreter_trampoline;
+    D(printf("%s:%d:%s interpreter trampoline functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress ););
+    return nil<T_O>();
+  }
+  
+  auto expected_ranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
+  if (expected_ranges) {
+    auto ranges = expected_ranges.get();
+    if (ranges.size()==0) {
+      D(printf("%s:%d:%s No ranges were found for %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sa).c_str() ););
+    } else {
+      if (ranges.size()>1) {
+        printf("%s:%d:%s There is more than one range - there are %lu\n", __FILE__, __LINE__, __FUNCTION__, ranges.size());
+      } else {
+        llvmo::ObjectFile_sp code = ofi;
+        codeStart = (void*)code->codeStart();
+        uintptr_t codeEnd = code->codeEnd();
+        uintptr_t absolute_LowPC = ranges.begin()->LowPC+(uintptr_t)codeStart;
+        functionStartAddress = (void*)(absolute_LowPC);
+        D(printf("%s:%d:%s Calculated functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress ););
+        T_O** rliterals = code->TOLiteralsStart();
+        size_t nliterals = code->TOLiteralsSize();
+        D(printf("%s%s:%d:%s sectioned address %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(sa).c_str()); );
+        D(printf("%s%s:%d:%s codeStart = %p - %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)codeStart, (void*)codeEnd ); );
+        D(printf("%s%s:%d:%s objectFile = %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ofi).c_str() ); );
+        D(for ( auto range : ranges ) {
+              uintptr_t absolute_LowPC = range.LowPC+(uintptr_t)codeStart;
+              uintptr_t absolute_HighPC = range.HighPC+(uintptr_t)codeStart;
+              printf("%s%s:%d:%s found range %p - %p  Absolute %p - %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)range.LowPC, (void*)range.HighPC, (void*)absolute_LowPC, (void*)absolute_HighPC );
           }
-        }
-      } else if (gc::IsA<GlobalEntryPoint_sp>(literal)) {
-        GlobalEntryPoint_sp ep = gc::As_unsafe<GlobalEntryPoint_sp>(literal);
-        for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
-          uintptr_t ip = (uintptr_t)(ep->_EntryPoints[j]) - (uintptr_t)codeStart;
-          for (auto range : ranges) {
-            if ((range.LowPC <= ip) && (ip < range.HighPC)) {
-              XEPp = true;
+          printf("%s%s:%d:%s rliterals = %p nliterals = %lu\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, rliterals, nliterals );
+          );
+        for (size_t i = 0; i < nliterals; ++i) {
+          T_sp literal((gc::Tagged)(rliterals[i]));
+          if (gc::IsA<LocalEntryPoint_sp>(literal)) {
+            LocalEntryPoint_sp ep = gc::As_unsafe<LocalEntryPoint_sp>(literal);
+            uintptr_t absolute_entry = (uintptr_t)(ep->_EntryPoint);
+            D(printf("%s%s:%d:%s LocalEntryPoint_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), (void*)absolute_entry, _rep_(ep->functionDescription()).c_str()););
+            for (auto range : ranges) {
+              uintptr_t absolute_LowPC = range.LowPC+(uintptr_t)codeStart;
+              uintptr_t absolute_HighPC = range.HighPC+(uintptr_t)codeStart;
+              if ((absolute_LowPC<=absolute_entry) && (absolute_entry<absolute_HighPC)) {
+                D(printf("%s%s:%d:%s Matched absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC ););
+                XEPp = false;
+            // This will be identical to the entry point address in LocalEntryPoint_sp ep
+                return ep;
+              } else {
+                D(printf("%s%s:%d:%s DID NOT match absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC ););
+              }
+            }
+          } else if (gc::IsA<GlobalEntryPoint_sp>(literal)) {
+            GlobalEntryPoint_sp ep = gc::As_unsafe<GlobalEntryPoint_sp>(literal);
+            D(printf("%s%s:%d:%s GlobalEntryPoint_sp %s  FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), _rep_(ep->functionDescription()).c_str() ););
+            for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
+              uintptr_t absolute_entry = (uintptr_t)(ep->_EntryPoints[j]);
+              for (auto range : ranges) {
+                uintptr_t absolute_LowPC = range.LowPC+(uintptr_t)codeStart;
+                uintptr_t absolute_HighPC = range.HighPC+(uintptr_t)codeStart;
+                if ((absolute_LowPC<=absolute_entry) && (absolute_entry<absolute_HighPC)) {
+                  D(printf("%s%s:%d:%s Matched arityCode: %lu absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, j, (void*)absolute_LowPC, (void*)absolute_HighPC ););
+                  XEPp = true;
               // This will be identical to ONE of the the entry point address in GlobalEntryPoint_sp ep
-              startAddress = (void*)(range.LowPC+(uintptr_t)codeStart);
-              // arityCode is the index into the GlobalEntryPoint_sp vector corresponding to startAddress
-              arityCode = j;
-              return ep;
+              // arityCode is the index into the GlobalEntryPoint_sp vector corresponding to functionStartAddress
+                  arityCode = j;
+                  return ep;
+                } else {
+                  //D(printf("%s%s:%d:%s absolute_entry -> %p DID NOT match absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)absolute_entry, (void*)absolute_LowPC, (void*)absolute_HighPC ););
+                }
+              }
             }
           }
         }
+    // no hits
+        return nil<T_O>();
       }
     }
-    // no hits
-    return nil<T_O>();
-  } else {
-    // FIXME: signal error?
-    return nil<T_O>();
   }
+  D(printf("%s:%d:%s No eranges\n", __FILE__, __LINE__, __FUNCTION__ ););
+  return nil<T_O>();
 }
 
 
@@ -316,25 +357,31 @@ __attribute__((optnone))
 static bool args_for_function(size_t fi, void* ip, const char* string,
                               bool XEPp, int arityCode,
                               void* code_start,
-                              void* startAddress,
+                              void* functionStartAddress,
                               llvmo::ObjectFile_sp ofi,
-                              T_sp functionDescriptionOrNil,
+                              T_sp& functionDescriptionOrNil,
                               void* frameptr,
                               T_sp& closure, T_sp& args) {
   MaybeTrace trace(__FUNCTION__);
-  if (!startAddress) return false;
-  uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);
-  if (!stackmap_start) return false; // ends up as null sometimes apparently
-  uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
+  if (!functionStartAddress) {
+    D(printf("%s:%d:%s functionStartAddress is NULL returning\n", __FILE__, __LINE__, __FUNCTION__ ););
+    return false;
+  }
+  uintptr_t stackmap_start = (uintptr_t)(ofi->_StackmapStart);
+  if (!stackmap_start) {
+    D(printf("%s:%d:%s stackmap_start is NULL returning\n", __FILE__, __LINE__, __FUNCTION__ ););
+    return false; // ends up as null sometimes apparently
+  }
+  uintptr_t stackmap_end = stackmap_start + ofi->_StackmapSize;
   bool args_available = false;
   T_sp name = nil<T_O>();;
   if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil)) 
     name = gc::As_unsafe<FunctionDescription_sp>(functionDescriptionOrNil);
-  D(printf("%s%s:%d:%s startAddress FunctionDescription %s  code_start = %p  startAddress = %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(name).c_str(), (void*)code_start, startAddress ););
+  D(printf("%s%s:%d:%s functionStartAddress FunctionDescription %s  code_start = %p  functionStartAddress = %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(name).c_str(), (void*)code_start, functionStartAddress ););
   auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
-    if (function.FunctionAddress == (uintptr_t)startAddress ) {
-      MaybeTrace tracel("startAddress_thunk");
-      D(printf("%s%s:%d:%s function.FunctionAddress = %p  startAddress = %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)function.FunctionAddress, startAddress ););
+    if (function.FunctionAddress == (uintptr_t)functionStartAddress ) {
+      MaybeTrace tracel("functionStartAddress_thunk");
+      D(printf("%s%s:%d:%s function.FunctionAddress = %p  functionStartAddress = %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)function.FunctionAddress, functionStartAddress ););
       if (args_from_offset( fi, ip, string, name, XEPp, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
         args_available |= true;
       return;
@@ -349,13 +396,13 @@ static bool args_for_function(size_t fi, void* ip, const char* string,
 }
 
 __attribute__((optnone))
-static DebuggerFrame_sp make_lisp_frame(size_t fi,
-                                        void* ip,
+static DebuggerFrame_sp make_lisp_frame(size_t frameIndex,
+                                        void* absolute_ip,
                                         const char* string,
                                         llvmo::ObjectFile_sp ofi,
                                         void* fbp) {
   MaybeTrace trace(__FUNCTION__);
-  llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
+  llvmo::SectionedAddress_sp sa = object_file_sectioned_address(absolute_ip, ofi, false);
   llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
   D(printf("%s%s:%d:%s sa= %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(sa).c_str()););
   T_sp spi = getSourcePosInfoForAddress(dcontext, sa);
@@ -363,23 +410,36 @@ static DebuggerFrame_sp make_lisp_frame(size_t fi,
   bool XEPp = false;
   int arityCode;
   void* codeStart;
-  void* startAddress;
-  T_sp ep = dwarf_ep(ofi, dcontext, sa, codeStart, startAddress, XEPp, arityCode );
+  void* functionStartAddress;
+  T_sp ep = dwarf_ep( frameIndex, ofi, dcontext, sa, codeStart, functionStartAddress, XEPp, arityCode );
+  D(printf("%s:%d:%s dwarf_ep returned ep = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str() ););
+  D(printf("%s:%d:%s dwarf_ep returned functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)functionStartAddress ););
   T_sp functionDescriptionOrNil = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
+  D(printf("%s:%d:%s functionDescriptionOrNil = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(functionDescriptionOrNil).c_str() ););
   T_sp closure = nil<T_O>(), args = nil<T_O>();
-  bool args_available = args_for_function( fi, ip, string,
+  bool args_available = args_for_function( frameIndex, absolute_ip, string,
                                            XEPp, arityCode,
                                            codeStart,
-                                           startAddress,
+                                           functionStartAddress,
                                            ofi,
                                            functionDescriptionOrNil,
                                            fbp,
                                            closure,
                                            args);
   T_sp fname = nil<T_O>();
-  if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil)) 
+  if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil)) {
     fname = gc::As_unsafe<FunctionDescription_sp>(functionDescriptionOrNil)->functionName();
+    D(printf("%s%s:%d:%s Using functionDescriptionOrNil %s to get name\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(fname).c_str()););
+  } else if (args_available && gc::IsA<Function_sp>(closure)) {
+    fname = gc::As_unsafe<Function_sp>(closure)->functionName();
+    D(printf("%s%s:%d:%s Using closure %s to get name\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(fname).c_str()););
+  }
   D(printf("%s%s:%d:%s fname = %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(fname).c_str()););
+  if (fname.nilp() && string ) {
+    D(printf("%s:%d:%s So sad - the function-description name is NIL and the function-description.nilp()->%d trying to use string\n", __FILE__, __LINE__, __FUNCTION__, functionDescriptionOrNil.nilp()););
+    fname = SimpleBaseString_O::make(std::string(string));
+  }
+  D(printf("%s%s:%d:%s string = %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, string ););
   return DebuggerFrame_O::make(fname, Cons_O::create(sa,ofi), spi, functionDescriptionOrNil, closure, args, args_available,
                                INTERN_(kw, lisp), XEPp);
 }
@@ -463,14 +523,15 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring)
 }
 
 __attribute__((optnone))
-static DebuggerFrame_sp make_frame(size_t fi, void* ip, const char* string, void* fbp) {
+static DebuggerFrame_sp make_frame(size_t fi, void* absolute_ip, const char* string, void* fbp) {
   MaybeTrace trace(__FUNCTION__);
-  T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
-  if (of.nilp()) return make_cxx_frame(fi, ip, string);
-  else return make_lisp_frame(fi, ip, string, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
+  T_sp of = llvmo::only_object_file_for_instruction_pointer(absolute_ip);
+  if (of.nilp()) return make_cxx_frame(fi, absolute_ip, string);
+  // The absolute_ip is in an ObjectFile_O object - so it must be a lisp frame
+  else return make_lisp_frame(fi, absolute_ip, string, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
 }
 
-static bool sanity_check_frame( void* ip, void* fbp) {
+static bool sanity_check_frame( size_t frameIndex, void* ip, void* fbp) {
   MaybeTrace trace(__FUNCTION__);
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp()) return true; // C++ frames are always fine for our purposes
@@ -479,12 +540,12 @@ static bool sanity_check_frame( void* ip, void* fbp) {
     llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
     llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
     void* codeStart;
-    void* startAddress;
+    void* functionStartAddress;
     bool XEPp = false;
     int arityCode;
-    T_sp ep = dwarf_ep(ofi, dcontext, sa, codeStart, startAddress, XEPp, arityCode);
-    uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);
-    uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
+    T_sp ep = dwarf_ep( frameIndex, ofi, dcontext, sa, codeStart, functionStartAddress, XEPp, arityCode );
+    uintptr_t stackmap_start = (uintptr_t)(ofi->_StackmapStart);
+    uintptr_t stackmap_end = stackmap_start + ofi->_StackmapSize;
     if (gc::IsA<LocalEntryPoint_sp>(ep)) {
       LocalEntryPoint_sp localEntryPoint = gc::As_unsafe<LocalEntryPoint_sp>(ep);
       bool result = true;
@@ -573,6 +634,7 @@ static bool lu_sanity_check_backtrace() {
   unw_context_t uc;
   unw_getcontext(&uc);
   unw_init_local(&cursor, &uc);
+  size_t frameIndex(0);
   do {
     int resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
     int resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
@@ -580,7 +642,7 @@ static bool lu_sanity_check_backtrace() {
       fprintf(stderr, "%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
       return false;
     }
-    if (!(sanity_check_frame((void*)ip, (void*)fbp))) return false;
+    if (!(sanity_check_frame( frameIndex, (void*)ip, (void*)fbp) )) return false;
     int resstep = unw_step(&cursor);
     if (resstep == 0) return true;
     else if (resstep < 0) { // error
@@ -588,6 +650,7 @@ static bool lu_sanity_check_backtrace() {
               __FILE__, __LINE__, __FUNCTION__, resstep);
       return false;
     }
+    frameIndex++;
   } while (true);
 }
 
@@ -643,9 +706,9 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func ) {
         fbp = newfbp;
         // Subtract one from IPs in case they are just beyond the end of the
         // function, as happens with return instructions at times.
-        void* ip = (void*)((uintptr_t)buffer[j] - 1);
-        D(printf("%s%s:%d:%s top-frame[%lu] ip = %p %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, j, ip, strings[j] ););
-        DebuggerFrame_sp frame = make_frame(j, ip, strings[j], fbp);
+        void* absolute_ip = (void*)((uintptr_t)buffer[j] - 1);
+        D(printf("%s%s:%d:%s top-frame[%lu] absolute_ip = %p %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, j, absolute_ip, strings[j] ););
+        DebuggerFrame_sp frame = make_frame(j, absolute_ip, strings[j], fbp);
         frame->down = prev;
         prev->up = frame;
         prev = frame;
@@ -681,7 +744,7 @@ static bool os_sanity_check_backtrace() {
           return false;
         }
         */
-        if (!sanity_check_frame(buffer[j], fbp)) return false;
+        if (!sanity_check_frame( 0, buffer[j], fbp )) return false;
         void* nfbp = *(void**)fbp;
         if (nfbp && !((uintptr_t)fbp < (uintptr_t)nfbp)) {
           fprintf(stderr, "%s:%d:%s In backtrace sanity check, the frame pointer is not monotonically increasing from %p to %p\n",

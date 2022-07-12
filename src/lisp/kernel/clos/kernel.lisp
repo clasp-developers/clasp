@@ -382,6 +382,8 @@
   (print-unreadable-object (object stream)
     ;; We don't just use :type, because that outputs an extra space.
     (let ((*package* (find-package "CL")))
-      (format stream "~S"
-              (class-name (si:instance-class object)))))
+      (if (eq (core:unbound) object)
+          (format stream "#<UNBOUND>")
+          (format stream "~S"
+                  (class-name (si:instance-class object))))))
   object)

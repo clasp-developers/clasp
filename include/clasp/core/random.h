@@ -77,12 +77,12 @@ public: // ctor/dtor for classes with shared virtual base
   };
   virtual ~RandomState_O() {}
 
-  CL_DEFMETHOD std::string random_state_get() const {
+  CLASP_DEFMETHOD std::string random_state_get() const {
     stringstream ss;
     ss << this->_Producer._value;
     return ss.str();
   }
-  CL_DEFMETHOD RandomState_sp random_state_set(const std::string& s) {
+  CLASP_DEFMETHOD RandomState_sp random_state_set(const std::string& s) {
     stringstream ss(s);
     ss >> this->_Producer._value;
     return this->asSmartPtr();

@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/allClSymbols.h>
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/exceptions.h>
+#include <clasp/core/primitives.h>
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/compiler.h>
@@ -203,6 +204,7 @@ public:
 Lisp::GCRoots::GCRoots() :
   _ClaspJIT(nil<T_O>()),
   _AllObjectFiles(nil<T_O>()),
+  _AllCodeBlocks(nil<T_O>()),
   _AllLibraries(nil<T_O>()),
 #ifdef CLASP_THREADS
     _UnboundSymbolFunctionEntryPoint(unbound<GlobalEntryPoint_O>()),
@@ -297,6 +299,7 @@ void Lisp::setupSpecialSymbols() {
   symbol_no_key->_HomePackage = symbol_nil;
   symbol_deleted->_HomePackage = symbol_nil;
   symbol_same_as_key->_HomePackage = symbol_nil;
+  symbol_nil->_BindingIdx.store(NO_THREAD_LOCAL_BINDINGS);
 }
 
 void Lisp::finalizeSpecialSymbols() {
@@ -840,7 +843,6 @@ T_sp Lisp::specialFormOrNil(Symbol_sp sym) {
 }
 
 void Lisp::installPackage(const Exposer_O *pkg) {
-  _OF();
   LOG("Installing package[%s]" , pkg->packageName());
   int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
   ChangePackage change(pkg->package());
@@ -860,6 +862,10 @@ void Lisp::installPackage(const Exposer_O *pkg) {
       (*ic)(_lisp);
     }
   }
+}
+
+void Lisp::uninstallPackage(Exposer_O *pkg) {
+  pkg->shutdown();
 }
 
 void Lisp::installGlobalInitializationCallback(InitializationCallback c) {
@@ -2087,7 +2093,11 @@ DOCGROUP(clasp)
     }
     printf("Dumping backtrace\n");
     dbg_safe_backtrace();
+#if defined(__i386__) || defined(__x86_64__)
     asm("int $03");
+#else
+    printf("%s:%d:%s Figure out how to generate a break/int $03\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
   }
   call_with_variable_bound(_sym_STARnestedErrorDepthSTAR,
                            make_fixnum(nestedErrorDepth + 1),
@@ -2235,10 +2245,8 @@ Symbol_mv Lisp::intern(const string &name, T_sp optionalPackageDesignator) {
   Package_sp package;
   string symbolName;
   bool exported, packageDefined;
-  this->parseStringIntoPackageAndSymbolName(name, packageDefined, package, symbolName, exported);
-  if (!packageDefined) {
-    package = coerce::packageDesignator(optionalPackageDesignator);
-  }
+  symbolName = name;
+  package = coerce::packageDesignator(optionalPackageDesignator);
   ASSERTNOTNULL(package);
   ASSERT(package.notnilp());
   SimpleBaseString_sp sname = SimpleBaseString_O::make(symbolName);
@@ -2376,10 +2384,17 @@ int Lisp::run() {
         if (!global_options->_SilentStartup) {
           printf("Loading image %s\n", _rep_(initPathname).c_str() );
         }
+        global_startupEnum = imageFile;
+        global_startupSourceName = gc::As<String_sp>(cl__namestring(initPathname))->get_std_string();
         T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
         if (result.nilp()) {
           T_sp err = result.second();
           printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+        }
+        char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
+        if (pause_startup) {
+          gctools::setup_user_signal();
+          gctools::wait_for_user_signal("Paused at startup after object files added");
         }
       }
     } else if (!global_options->_IgnoreInitLsp) {

@@ -40,6 +40,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcFunctions.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/cxxObject.h>
@@ -72,6 +73,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/unwind.h> // funwind_protect
@@ -81,6 +83,7 @@ namespace core {
 
 
 std::atomic<size_t> global_jit_compile_counter;
+std::atomic<size_t> global_jit_unique_counter;
 
 DOCGROUP(clasp)
 CL_DEFUN size_t core__get_jit_compile_counter() {
@@ -100,6 +103,11 @@ CL_DEFUN void core__update_max_jit_compile_counter(size_t val) {
 DOCGROUP(clasp)
 CL_DEFUN size_t core__next_jit_compile_counter() {
   return ++global_jit_compile_counter;
+}
+
+DOCGROUP(clasp)
+CL_DEFUN size_t core__next_jit_unique_counter() {
+  return ++global_jit_unique_counter;
 }
 
 
@@ -424,9 +432,14 @@ CL_DEFUN void core__help_booting() {
 CL_DOCSTRING(R"dx(Return the rdtsc performance timer value)dx")
 DOCGROUP(clasp)
 CL_DEFUN Fixnum core__rdtsc(){
+#if defined(__i386__) || defined(__x86_64__)
   unsigned int lo,hi;
   __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
   return ((uint64_t)hi << 32) | lo;
+#else
+  printf("%s:%d:%s Add support for rdtsc performance timer for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
+  abort();
+#endif
 }
 
 CL_LAMBDA(object &optional is-function)
@@ -457,6 +470,9 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
 /*! Return the default snapshot name
  */
 std::string startup_snapshot_name(Bundle& bundle) {
+
+  stringstream sn;
+  sn << globals_->_Stage << "clasp-" << VARIANT_NAME;
   stringstream ss;
   std::string executablePath;
   core::executablePath(executablePath);
@@ -776,12 +792,13 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd,0,SEEK_SET);
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
+  free(name_buffer);
   if (memory==MAP_FAILED) {
     close(fd);
     SIMPLE_ERROR(("Could not mmap %s because of %s") , _rep_(pathDesig) , strerror(errno));
   }
   close(fd); // Ok to close file descriptor after mmap
-  llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
+  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
   FasoHeader* header = (FasoHeader*)memory;
   llvmo::JITDylib_sp jitDylib;
   for (size_t fasoIndex = 0; fasoIndex<header->_NumberOfObjectFiles; ++fasoIndex) {
@@ -792,19 +809,52 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
     if (print.notnilp()) write_bf_stream(fmt::sprintf("%s:%d Adding faso %s object file %d to jit\n" , __FILE__ , __LINE__ , filename , fasoIndex));
     llvm::StringRef sbuffer((const char*)of_start, of_length);
-    std::string uniqueName = llvmo::uniqueMemoryBufferName("buffer",header->_ObjectFiles[fasoIndex]._ObjectId, fasoIndex);
+    stringstream tryUniqueName;
+    tryUniqueName << filename << "-" << header->_ObjectFiles[fasoIndex]._ObjectId;
+    std::string uniqueName = llvmo::ensureUniqueMemoryBufferName(tryUniqueName.str());
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
-    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[fasoIndex]._ObjectId,jitDylib,filename,fasoIndex);
-    jit->addObjectFile(of,print.notnilp());
+    llvmo::ObjectFile_sp objectFile = jit->addObjectFile( jitDylib, std::move(memoryBuffer), print.notnilp(), header->_ObjectFiles[fasoIndex]._ObjectId );
+//    printf("%s:%d:%s addObjectFile objectFile = %p badge: 0x%0x jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__, objectFile.raw_(), lisp_badge(objectFile), jitDylib.raw_());
     T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId,nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
-    llvmo::Code_sp codeObject;
-    jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string(), unbound<core::T_O>(), codeObject);
+    jit->runStartupCode(jitDylib, str->get_std_string(), unbound<core::T_O>());
   }
   return _lisp->_true();
 }
+
+
+int global_jit_pid = -1;
+FILE* global_jit_log_stream = NULL;
+bool global_jit_log_symbols = false;
+
+void jit_register_symbol( const std::string& name, size_t size, void* address ) {
+  WITH_READ_WRITE_LOCK(globals_->_JITLogMutex);
+  int gpid = getpid();
+  if (global_jit_log_stream && (global_jit_pid!=gpid)) {
+    fclose(global_jit_log_stream);
+    global_jit_log_stream = NULL;
+    global_jit_pid = -1;
+  }
+  if (global_jit_pid == -1) {
+    global_jit_pid = gpid;
+    stringstream filename;
+    filename << "/tmp/perf-" << gpid << ".map";
+    global_jit_log_stream = fopen(filename.str().c_str(),"w");
+  }
+  if (global_jit_log_stream) {
+    fprintf( global_jit_log_stream, "%0lx %lx %s\n", (uintptr_t)address, size, name.c_str() );
+    fflush(global_jit_log_stream);
+  }
+}
+
+CL_DEFUN void core__jit_register_symbol( const std::string& name, size_t size, void* address ) {
+  if (global_jit_log_symbols) {
+    jit_register_symbol( name, size, address );
+  }
+}
+
 
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
@@ -909,23 +959,36 @@ CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp pri
 }
 
 
+void startup_shutdown_names( size_t id, const std::string& prefix, std::string& start, std::string& shutdown ) {
+  stringstream sstart;
+  stringstream sshutdown;
+  if (prefix!="") {
+    sstart << prefix << "-";
+    sshutdown << prefix << "-";
+  }
+  sstart << MODULE_STARTUP_FUNCTION_NAME << "_" << id;
+  sshutdown << MODULE_SHUTDOWN_FUNCTION_NAME << "_" << id;
+  start = sstart.str();
+  shutdown = sshutdown.str();
+}
+
 CL_DOCSTRING(R"dx(Return the startup function name and the linkage based on the current dynamic environment)dx")
 CL_DOCSTRING_LONG(R"dx(The name contains the id as part of itself. Return (values startup-name linkage shutdown-name).)dx")
 DOCGROUP(clasp)
-CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage_shutdown_names(size_t id, core::T_sp prefix)
+CL_LAMBDA(&optional (id 0) prefix)
+CL_DEFUN T_mv core__startup_linkage_shutdown_names(size_t id, core::T_sp tprefix)
 {
-  stringstream sstart;
-  stringstream sshutdown;
-  if (gc::IsA<String_sp>(prefix)) {
-    sstart << gc::As<String_sp>(prefix)->get_std_string() << "-";
-    sshutdown << gc::As<String_sp>(prefix)->get_std_string() << "-";
-  } else if (prefix.notnilp()) {
-    SIMPLE_ERROR(("Illegal prefix for startup function name: %s") , _rep_(prefix));
-  }    
-  sstart << MODULE_STARTUP_FUNCTION_NAME << "_" << id;
-  sshutdown << MODULE_SHUTDOWN_FUNCTION_NAME << "_" << id;
+  std::string prefix;
+  if (gc::IsA<String_sp>(tprefix)) {
+    prefix = gc::As<String_sp>(tprefix)->get_std_string();
+  } else if (tprefix.notnilp()) {
+    SIMPLE_ERROR(("Illegal prefix for startup function name: %s") , _rep_(tprefix));
+  }
+  std::string start;
+  std::string shutdown;
+  startup_shutdown_names( id, prefix, start, shutdown );
   Symbol_sp linkage_type = llvmo::_sym_ExternalLinkage;
-  return Values(core::SimpleBaseString_O::make(sstart.str()),linkage_type,core::SimpleBaseString_O::make(sshutdown.str()));
+  return Values(core::SimpleBaseString_O::make(start),linkage_type,core::SimpleBaseString_O::make(shutdown));
 };
 
 
@@ -1800,7 +1863,7 @@ void initialize_compiler_primitives(LispPtr lisp) {
   // Initialize raw object translators needed for Foreign Language Interface support 
   llvmo::initialize_raw_translators(); // See file intrinsics.cc!
 
-  comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
+  comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default);
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
 
   return;

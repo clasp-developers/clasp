@@ -490,20 +490,6 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
 }
 
 
-/* Walk all of the roots, passing the address of each root and what it represents */
-void walkRoots( RootWalkCallback callback, void* data ) {
-  callback( (Tagged*)&_lisp, LispRoot, 0, data);
-#if 0
-  for ( size_t ii=0; ii<NUMBER_OF_CORE_SYMBOLS; ++ii ) {
-    callback( (Tagged*)&global_core_symbols[ii], CoreSymbolRoot, ii, data );
-  }
-#endif
-  for ( size_t jj=0; jj<global_symbol_count; ++jj ) {
-    callback( (Tagged*)&global_symbols[jj], SymbolRoot, jj, data );
-  }
-};
-
-
 
 size_t ReachableClass::print(std::ostringstream& OutputStream ) {
   Fixnum k = this->_Kind;
@@ -575,6 +561,23 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   OutputStream << "Total GC_get_bytes_since_gc():     " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
   OutputStream << "Total GC_get_total_bytes():        " <<  std::setw(12) << GC_get_total_bytes() << '\n';
   delete static_ReachableClassKinds;
+}
+
+void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots)
+{
+#ifdef USE_MMAP_CODEBLOCK
+  //
+  // This is experimental for Apple Silicon M1 chip
+  //
+  // It doesn't allow RWX memory - so we use GC_add_roots to add roots to boehm for code.
+  //   This runs into the hard limit of 8,192 root sets very quickly
+  //
+  void* rootsEnd = (void*)((uintptr_t)rootsStart+numberOfRoots*sizeof(void*));
+  if (rootsEnd != rootsStart) {
+    printf("%s:%d:%s GC_add_roots %p to %p\n", __FILE__, __LINE__, __FUNCTION__, rootsStart, rootsEnd );
+    GC_add_roots(rootsStart,rootsEnd);
+  }
+#endif
 }
 
 

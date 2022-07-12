@@ -66,6 +66,10 @@ THE SOFTWARE.
 #error "We are sorry but this address model is not supported yet."
 #endif
 
+#if defined( _TARGET_OS_DARWIN ) && defined( __arm64__ )
+# define CLASP_APPLE_SILICON 1
+#endif
+
 // ----------------------------------------------------------------------------
 //  CLASP FUNDAMENTAL DEFINITIONS
 // ----------------------------------------------------------------------------
@@ -251,8 +255,11 @@ ENTRY_POINT_MAX_ARGS_IN_REGISTER_SAVE_AREA includes the closure
 #define STACKMAP_REGISTER_SAVE_AREA_MASK         0xFFFF0000
 #define STACKMAP_ARITY_CODE_MASK                 0x0000000F
 
-/*! Maximum number of arguments that can be passed */
-#define CALL_ARGUMENTS_LIMIT 136
+/*! Maximum number of multiple values */
+#define MULTIPLE_VALUES_LIMIT 8192
+/*! Maximum number of arguments that can be passed. Current compiler optimations require that
+    MULTIPLE_VALUES_LIMIT >= CALL_ARGUMENTS_LIMIT */
+#define CALL_ARGUMENTS_LIMIT 8192
 
 #define CHAR_CODE_LIMIT 1114112
 

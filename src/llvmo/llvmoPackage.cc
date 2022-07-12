@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <stdint.h>
 #include <csetjmp>
+#include <regex>
+
 
 #include <llvm/Support/raw_ostream.h>
 #include "llvm/Support/InitLLVM.h"
@@ -44,7 +46,9 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/llvmo/llvmoPackage.h>
 //#include "llvmoExpose.generated.h"
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/llvmoDwarf.h>
@@ -117,10 +121,11 @@ CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, c
   SIMPLE_ERROR(("Could not find llvm-ir file %s with .bc or .ll extension") , _rep_(filename));
 }
 
-void loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname )
+JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname )
 {
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
   JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
+//  printf("%s:%d:%s jit = %p  jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__, jit.raw_(), jitDylib.raw_() );
   ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
   std::vector<std::string> startup_functions;
   for (auto &F : *module->wrappedPtr()) {
@@ -131,9 +136,11 @@ void loadModule(llvmo::Module_sp module, size_t startupID, const std::string& li
     }
   }
   jit->addIRModule( jitDylib, module, tsc, startupID );
+  //
+  //
   for ( auto name : startup_functions ) {
 //    printf("%s:%d Startup function: %s\n", __FILE__, __LINE__, name.c_str());
-    core::Pointer_sp ptr = jit->lookup(*jitDylib->wrappedPtr(),name);
+    core::Pointer_sp ptr = jit->lookup(jitDylib,name);
     voidStartUp startup = (voidStartUp)ptr->ptr();
 //    printf("%s:%d      ptr->%p\n", __FILE__, __LINE__, startup);
     (startup)();
@@ -142,17 +149,7 @@ void loadModule(llvmo::Module_sp module, size_t startupID, const std::string& li
 //  printf("%s:%d There are %lu startup functions waiting to be evaluated\n", __FILE__, __LINE__, num);
   core::startup_functions_invoke(NULL);
 //  printf("%s:%d Invoked startup functions - continuing\n", __FILE__, __LINE__ );
-#if 0
-  EngineBuilder_sp engineBuilder = EngineBuilder_O::make(module);
-  engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
-  TargetOptions_sp targetOptions = TargetOptions_O::make();
-  engineBuilder->setTargetOptions(targetOptions);
-  ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
-  if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
-    SIMPLE_ERROR(("The cmp:*load-time-value-holder-name* is nil"));
-  }
-  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine,startup_name);
-#endif
+  return jitDylib;
 }
   
 CL_LAMBDA(filename &optional verbose print external_format (startup-id 0))
@@ -581,6 +578,7 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
     #endif
 #endif
     auto jit_engine = gctools::GC<ClaspJIT_O>::allocate(false);
+    //llvm_sys__create_lljit_thread_pool();
     _lisp->_Roots._ClaspJIT = jit_engine;
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_dumpObjectFiles));
@@ -603,6 +601,69 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
 }
 
 
+void LlvmoExposer_O::shutdown() {
+  _lisp->_Roots._ClaspJIT = nil<core::T_O>();
+  gctools::gctools__garbage_collect();
+};
+
+CL_DEFUN core::Pointer_sp llvm_sys__installInterpreterTrampoline() {
+  std::string trampoline = R"trampoline(
+
+@__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
+@__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
+
+define { i8*, i64 } @tail_call_with_stackmap({ i8*, i64 } (i8*, i64, i8**)* nocapture %fn, i8* %closure, i64 %nargs, i8** %args) #0  {
+entry:
+  %Registers = alloca [3 x i64], align 16
+  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %Registers)
+  %0 = bitcast [3 x i64]* %Registers to i8*
+  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %0) #2
+  %1 = ptrtoint i8* %closure to i64
+  %arrayidx = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 0
+  store i64 %1, i64* %arrayidx, align 16
+  %arrayidx1 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 1
+  store i64 %nargs, i64* %arrayidx1, align 8
+  %2 = ptrtoint i8** %args to i64
+  %arrayidx2 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 2
+  store i64 %2, i64* %arrayidx2, align 16
+  %call = call { i8*, i64 } %fn( i8* %closure, i64 %nargs, i8** %args)
+  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %0) #2
+  ret { i8*, i64 } %call
+}
+
+declare i32 @__gxx_personality_v0(...) #4
+
+define void @"CLASP_STARTUP_trampoline"() #4 personality i32 (...)* @__gxx_personality_v0 {
+entry:
+  ret void
+}
+
+declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #1
+
+declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #1
+
+declare void @llvm.experimental.stackmap(i64, i32, ...) #3
+
+
+attributes #0 = { mustprogress uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { argmemonly mustprogress nofree nosync nounwind willreturn }
+attributes #2 = { nounwind }
+attributes #3 = { nofree nosync willreturn }
+attributes #4 = { nounwind "frame-pointer"="all" }
+
+)trampoline";
+  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
+  trampoline = std::regex_replace( trampoline, std::regex("CLASP_STARTUP"), std::string(MODULE_STARTUP_FUNCTION_NAME) );
+  Module_sp module = llvm_sys__parseIRString(trampoline, context, "interpreter_trampoline" );
+//  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
+  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
+  ClaspJIT_sp jit = llvm_sys__clasp_jit();
+  core::Pointer_sp ptr = jit->lookup(jitDylib,"tail_call_with_stackmap");
+//  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
+  core::interpreter_trampoline = (trampoline_function)ptr->ptr();
+//  printf("%s:%d:%s after interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
+  return ptr;
+}
 
 void initialize_llvm(int argc, char **argv) {
 //  InitLLVM X(argc,argv);

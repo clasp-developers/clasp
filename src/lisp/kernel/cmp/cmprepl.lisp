@@ -33,6 +33,40 @@
 (eval-when (:compile-toplevel :execute)
   (setq core:*debug-eval* t))
 
+(defun trace-compiler ()
+  (format t "Turning on safe-trace of compiler functions~%")
+  (core:safe-trace
+   cmp::irc-typed-gep
+   literal::do-literal-table
+   cmp::maybe-spill-to-register-save-area
+   cmp::codegen-startup-shutdown
+   literal::constants-table-reference
+   cmp::compile-to-module-with-run-time-table
+   cmp::bclasp-compile*
+   cmp::compile-with-hook
+   cmp::compile-in-env
+   compile
+   load
+   cmp::bclasp-implicit-compile-repl-form
+   cmp::irc-const-gep2-64
+   literal::constants-table-value
+   cmp::gen-defcallback
+   cmp::irc-rack-slot-address
+   cmp::irc-value-frame-reference
+   cmp::irc-array-dimension
+   cmp::irc-header-stamp
+   cmp::irc-calculate-entry
+   cmp::irc-calculate-real-args
+   cmp::compile-lambda-list-code
+   cmp::c++-field-ptr
+   cmp::layout-xep-function*
+   cmp::layout-xep-function
+   cmp::bclasp-compile-lambda-list-code
+   cmp::layout-xep-group
+   cmp::do-new-function
+   literal::do-rtv
+   llvm-sys:make-global-variable
+   ))
 
 (in-package :cmp)
 
@@ -62,8 +96,8 @@
 ;;;   Don't add this feature if you want implicit compilation
 ;;;
 ;;; 
-#-(or cleavir no-implicit-compilation)
-(setq *implicit-compile-hook* #'bclasp-implicit-compile-repl-form)
+#-(or no-implicit-compilation)
+(setq *implicit-compile-hook* 'bclasp-implicit-compile-repl-form)
 
 ;;#+(and clasp-min (not no-implicit-compilation))
 #+(or)

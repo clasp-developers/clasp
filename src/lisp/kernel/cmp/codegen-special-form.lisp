@@ -94,7 +94,7 @@
     (if result
         ;; TODO:   Here walk the source code in lambda-or-lambda-block and
         ;; get the line-number/column for makeCompiledFunction
-        (let* ((runtime-environment (irc-load (irc-renv env)))
+        (let* ((runtime-environment (irc-t*-load (irc-renv env)))
                (fnptr (irc-intrinsic "makeCompiledFunction" 
                                      (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference xep-group)))
                                      runtime-environment)))
@@ -216,8 +216,8 @@
             (codegen temp-mv-result form env)
 ;;            (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
             (let ((register-ret (irc-intrinsic "cc_call_multipleValueOneFormCallWithRet0"
-                                               (irc-load funcDesignator)
-                                               (irc-load temp-mv-result))))
+                                               (irc-t*-load funcDesignator)
+                                               (irc-typed-load %tmv% temp-mv-result))))
               (irc-tmv-result register-ret result)))
           (codegen result
                    `(core:multiple-value-funcall
@@ -243,7 +243,7 @@
         ;; and finally the stored values are the result.
         (let ((tmvp (alloca-tmv "mvp1-tmv")))
           (codegen tmvp first-form env)
-          (let* ((tmv (irc-load tmvp))
+          (let* ((tmv (irc-typed-load %tmv% tmvp))
                  (primary (irc-tmv-primary tmv))
                  (nvals (irc-tmv-nret tmv))
                  (temp (alloca-temp-values nvals "mvp1-temp")))
@@ -279,12 +279,12 @@
                       ((eq (car classified) 'ext:special-var)
                        (codegen temp-res cur-expr env)
                        (let* ((symbol-t* (irc-global-symbol cur-var env))
-                              (val (irc-load temp-res)))
+                              (val (irc-t*-load temp-res)))
                          (irc-intrinsic "cc_setSymbolValue" symbol-t* val))
                        #+(or)
                        (let ((special-target-ref (codegen-special-var-reference cur-var env)))
                          (codegen temp-res cur-expr env)
-                         (irc-t*-result (irc-load temp-res) special-target-ref)))
+                         (irc-t*-result (irc-t*-load temp-res) special-target-ref)))
                       ((eq (car classified) 'ext:lexical-var)
                        (let ((symbol (cadr classified))
                              (depth (third classified))
@@ -296,7 +296,7 @@
                                                                                   env
                                                                                   dest-env)))
                            (codegen temp-res cur-expr env)
-                           (irc-t*-result (irc-load temp-res) lexical-target-ref))))
+                           (irc-t*-result (irc-t*-load temp-res) lexical-target-ref))))
                       (t (error "Handle codegen-setq with ~s" classified)))
                     ))
 		;; symbol was macroexpanded use SETF
@@ -305,7 +305,7 @@
                            cur-var expanded)
 		  (codegen temp-res `(setf ,expanded ,cur-expr) env))))
 	  (unless (cddr cur)
-	    (irc-t*-result (irc-load temp-res) result)))
+	    (irc-t*-result (irc-t*-load temp-res) result)))
 	;; There were no pairs, return nil
 	(codegen-literal result nil env))))
 
@@ -350,11 +350,11 @@ and put the values into the activation frame for new-env."
       (cond
         ((eq (car classified-target) 'ext:special-var)
          (let ((symbol-t* (irc-global-symbol (cdr classified-target) new-env))
-               (val (irc-load (elt temps tempidx))))
+               (val (irc-t*-load (elt temps tempidx))))
            (irc-intrinsic "cc_setTLSymbolValue" symbol-t* val)))
         ((eq (car classified-target) 'ext:lexical-var)
          (with-target-reference-do (target-ref classified-target new-env)
-           (irc-t*-result (irc-load (elt temps tempidx)) target-ref)))
+           (irc-t*-result (irc-t*-load (elt temps tempidx)) target-ref)))
         (t (error "Illegal target ~s" classified-target))))))
 
 (defun codegen-fill-let*-environment (new-env reqvars
@@ -379,7 +379,7 @@ and put the values into the activation frame for new-env."
          (codegen temp-var exp evaluate-env)
          (let* ((symbol-name (cdr classified-target))
                 (symbol-t* (irc-global-symbol symbol-name new-env))
-                (val (irc-load temp-var)))
+                (val (irc-t*-load temp-var)))
            (irc-intrinsic "cc_setTLSymbolValue" symbol-t* val)))
         ((eq (car classified-target) 'ext:lexical-var)
          (with-target-reference-do (target-ref classified-target new-env)
@@ -471,7 +471,7 @@ and put the values into the activation frame for new-env."
       (compiler-error nil "too many arguments for typeq"))
     (let ((value (alloca-t* "if-typeq-tsp")))
       (codegen value object env)
-      (let ((object-raw (irc-load value)))
+      (let ((object-raw (irc-t*-load value)))
         (case type
           ((fixnum) (compile-tag-check object-raw +fixnum-mask+ +fixnum00-tag+ thenb elseb))
           ((cons) (compile-tag-check object-raw +immediate-mask+ +cons-tag+ thenb elseb))
@@ -490,7 +490,7 @@ and put the values into the activation frame for new-env."
      (let ((object (second cond))
            (value (alloca-t* "if-tag-tsp")))
        (codegen value object env)
-       (compile-tag-check (irc-load value) ,mask ,tag thenb elseb))))
+       (compile-tag-check (irc-t*-load value) ,mask ,tag thenb elseb))))
 
 (define-tag-check compile-fixnump +fixnum-mask+ +fixnum00-tag+)
 (define-tag-check compile-consp +immediate-mask+ +cons-tag+)
@@ -506,7 +506,7 @@ and put the values into the activation frame for new-env."
        (codegen n1 n1form env)
        (codegen n2 n2form env)
        (irc-cond-br
-        (,operator (irc-load n1) (irc-load n2) "fixnum-cmp")
+        (,operator (irc-t*-load n1) (irc-t*-load n2) "fixnum-cmp")
         thenb elseb))))
 
 (define-fixnum-cmp compile-fixnum-less-condition irc-icmp-slt)
@@ -522,7 +522,7 @@ and put the values into the activation frame for new-env."
     (codegen n1 n1form env)
     (codegen n2 n2form env)
     (irc-cond-br
-     (irc-icmp-eq (irc-load n1) (irc-load n2) "eq")
+     (irc-icmp-eq (irc-t*-load n1) (irc-t*-load n2) "eq")
      thenb elseb)))
 
 (defun compile-general-condition (cond env thenb elseb)
@@ -530,7 +530,7 @@ and put the values into the activation frame for new-env."
   (let ((test-temp-store (alloca-t* "if-cond-tsp")))
     (codegen test-temp-store cond env)
     (irc-cond-br
-     (irc-icmp-eq (irc-load test-temp-store) (irc-nil))
+     (irc-icmp-eq (irc-t*-load test-temp-store) (irc-nil))
      elseb thenb)))
 
 (defun compile-if-cond (cond env thenb elseb)
@@ -589,7 +589,7 @@ jump to blocks within this tagbody."
          ;; If the GO spec.ops. are in the same function we could
          ;; use simple cleanup and branches for TAGBODY/GO
          ;; so save the function
-         (renv (irc-load (irc-renv env)))
+         (renv (irc-t*-load (irc-renv env)))
          (instruction (irc-intrinsic "makeTagbodyFrameSetParent" renv))
          (go-blocks (mapcar #'cadr enumerated-tag-blocks))
          (go-vec (make-array (length go-blocks)
@@ -719,7 +719,7 @@ jump to blocks within this tagbody."
        (let ((depth (cadr classified-tag))
 	     (index (caddr classified-tag))
              (tagbody-env (cadddr classified-tag))
-             (start-renv (irc-load (irc-renv env))))
+             (start-renv (irc-t*-load (irc-renv env))))
          #+optimize-bclasp
          (let ((frame-info (gethash tagbody-env *tagbody-frame-info*)))
            (unless frame-info (error "Could not find frame-info for tagbody-env ~s" tagbody-env))
@@ -841,8 +841,8 @@ jump to blocks within this tagbody."
                 (codegen temp-mv-result return-form env)
                 (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
                 (irc-low-level-trace)
-                (let* ((return-from-call (irc-intrinsic "throwReturnFrom" (jit-constant-size_t depth) (irc-load (irc-renv env))))
-                       (start-renv (irc-load (irc-renv env))))
+                (let* ((return-from-call (irc-intrinsic "throwReturnFrom" (jit-constant-size_t depth) (irc-t*-load (irc-renv env))))
+                       (start-renv (irc-t*-load (irc-renv env))))
                   #+optimize-bclasp
                   (push (make-throw-return-from :instruction return-from-call
                                                 :depth depth
@@ -881,7 +881,7 @@ jump to blocks within this tagbody."
   "Create a closure for each of the function bodies in the flet/labels and put the closures into the activation frame in (result-af). (env) is the parent environment of the (result-af) value frame"
   (declare (ignore operator-symbol))
   (let ((result-af (irc-renv function-env)))
-    (let* ((parent-renv (irc-load (irc-renv parent-env)))
+    (let* ((parent-renv (irc-t*-load (irc-renv parent-env)))
            (val (irc-intrinsic "makeFunctionFrame"
                               (jit-constant-i32 (length functions))
                               parent-renv)))
@@ -898,7 +898,7 @@ jump to blocks within this tagbody."
 	     (fn-lambda (generate-lambda-block fn-name fn-lambda-list fn-raw-body))
 	     (fn-classified (function-info function-env fn-name))
 	     (fn-index (or (cadddr fn-classified) (error "Could not find lexical function ~a" fn-name)))
-	     (target (irc-intrinsic "functionFrameReference" (irc-load result-af) (jit-constant-i32 fn-index) )))
+	     (target (irc-intrinsic "functionFrameReference" (irc-t*-load result-af) (jit-constant-i32 fn-index) )))
 	(codegen-closure target fn-lambda closure-env)))))
 
 (defun codegen-flet/labels (operator-symbol result rest env)
@@ -1027,22 +1027,22 @@ jump to blocks within this tagbody."
 ;;; CORE::VECTOR-LENGTH
 
 (defun gen-vector-length (vector)
-  (let* (;; Since we're not touching the data, the element type is irrelevant.
-         (type (llvm-sys:type-get-pointer-to (simple-vector-llvm-type 't)))
+  (let* ((type (llvm-sys:type-get-pointer-to (simple-vector-llvm-type 't)))
          (cast (irc-bit-cast vector type)) ; treat the vector as a vector
          ;; find the location of the length
          (length-address
-           (irc-gep-variable cast (list (jit-constant-i32 0)
-                                        (jit-constant-i32 +simple-vector-length-slot+))
-                             "vector-length-address"))
-         (untagged-length (irc-load length-address "vector-length")))
+           (irc-typed-in-bounds-gep (simple-vector-llvm-type 't)
+                                    cast
+                                    (list 0 +simple-vector-length-slot+)
+                                    "vector-length-address"))
+         (untagged-length (irc-typed-load %i64% length-address "vector-length")))
     (irc-tag-fixnum untagged-length "vector-length")))
 
 (defun codegen-vector-length (result rest env)
   (let ((form (car rest))
         (vector (alloca-t* "vector-alloca")))
     (codegen vector form env)
-    (irc-t*-result (gen-vector-length (irc-load vector "vector")) result)))
+    (irc-t*-result (gen-vector-length (irc-t*-load vector "vector")) result)))
 
 ;;; CORE::%ARRAY-DIMENSION
 
@@ -1058,7 +1058,7 @@ jump to blocks within this tagbody."
         (axis-alloca (alloca-t* "axis-alloca")))
     (codegen array-alloca array-form env)
     (codegen axis-alloca axis-form env)
-    (irc-t*-result (gen-%array-dimension (irc-load array-alloca) (irc-load axis-alloca))
+    (irc-t*-result (gen-%array-dimension (irc-t*-load array-alloca) (irc-t*-load axis-alloca))
                    result)))
 
 ;;; FENCE
@@ -1087,7 +1087,8 @@ jump to blocks within this tagbody."
 (defun gen-memref-address (tpointer offset)
   (irc-bit-cast
    ;; memref/set use byte addressing, so treat these as i8 arrays
-   (irc-gep-variable (irc-bit-cast tpointer %i8*%)
+   (irc-typed-gep-variable %i8%
+                     (irc-bit-cast tpointer %i8*%)
                      ;; llvm doesn't actually have signed types,
                      ;; so the u is a misnomer - don't sweat it.
                      (list (cmp:make-uintptr_t offset)))
@@ -1097,8 +1098,8 @@ jump to blocks within this tagbody."
   (let ((cons-form (first rest))
         (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
-    (irc-t*-result (irc-load-atomic (gen-memref-address
-                                     (irc-load cons-alloca)
+    (irc-t*-result (irc-t*-load-atomic (gen-memref-address
+                                     (irc-t*-load cons-alloca)
                                      (- +cons-car-offset+ +cons-tag+)))
                    result)))
 
@@ -1106,8 +1107,8 @@ jump to blocks within this tagbody."
   (let ((cons-form (first rest))
         (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
-    (irc-t*-result (irc-load-atomic (gen-memref-address
-                                     (irc-load cons-alloca)
+    (irc-t*-result (irc-t*-load-atomic (gen-memref-address
+                                     (irc-t*-load cons-alloca)
                                      (- +cons-cdr-offset+ +cons-tag+)))
                    result)))
 
@@ -1118,8 +1119,8 @@ jump to blocks within this tagbody."
         (cons-form (second rest))
         (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
-    (irc-t*-result (irc-load-atomic (gen-memref-address
-                                     (irc-load cons-alloca)
+    (irc-t*-result (irc-t*-load-atomic (gen-memref-address
+                                     (irc-t*-load cons-alloca)
                                      (- +cons-car-offset+ +cons-tag+))
                                     :order order)
                    result)))
@@ -1129,8 +1130,8 @@ jump to blocks within this tagbody."
         (cons-form (second rest))
         (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
-    (irc-t*-result (irc-load-atomic (gen-memref-address
-                                     (irc-load cons-alloca)
+    (irc-t*-result (irc-t*-load-atomic (gen-memref-address
+                                     (irc-t*-load cons-alloca)
                                      (- +cons-cdr-offset+ +cons-tag+))
                                     :order order)
                    result)))
@@ -1143,9 +1144,9 @@ jump to blocks within this tagbody."
         (nv-alloca (alloca-t* "nv")))
     (codegen nv-alloca nv-form env)
     (codegen cons-alloca cons-form env)
-    (let ((nv (irc-load nv-alloca)))
+    (let ((nv (irc-t*-load nv-alloca)))
       (irc-store-atomic nv (gen-memref-address
-                            (irc-load cons-alloca)
+                            (irc-t*-load cons-alloca)
                             (- +cons-car-offset+ +cons-tag+))
                         :order order)
       (irc-t*-result nv result))))
@@ -1158,9 +1159,9 @@ jump to blocks within this tagbody."
         (nv-alloca (alloca-t* "nv")))
     (codegen nv-alloca nv-form env)
     (codegen cons-alloca cons-form env)
-    (let ((nv (irc-load nv-alloca)))
+    (let ((nv (irc-t*-load nv-alloca)))
       (irc-store-atomic nv (gen-memref-address
-                            (irc-load cons-alloca)
+                            (irc-t*-load cons-alloca)
                             (- +cons-cdr-offset+ +cons-tag+))
                         :order order)
       (irc-t*-result nv result))))
@@ -1175,9 +1176,9 @@ jump to blocks within this tagbody."
     (codegen nv-alloca nv-form env)
     (codegen cons-alloca cons-form env)
     (irc-t*-result
-     (irc-cmpxchg (gen-memref-address (irc-load cons-alloca)
+     (irc-cmpxchg (gen-memref-address (irc-t*-load cons-alloca)
                                       (- +cons-car-offset+ +cons-tag+))
-                  (irc-load cmp-alloca) (irc-load nv-alloca)
+                  (irc-t*-load cmp-alloca) (irc-t*-load nv-alloca)
                   :order order)
      result)))
 
@@ -1191,9 +1192,9 @@ jump to blocks within this tagbody."
     (codegen nv-alloca nv-form env)
     (codegen cons-alloca cons-form env)
     (irc-t*-result
-     (irc-cmpxchg (gen-memref-address (irc-load cons-alloca)
+     (irc-cmpxchg (gen-memref-address (irc-t*-load cons-alloca)
                                       (- +cons-cdr-offset+ +cons-tag+))
-                  (irc-load cmp-alloca) (irc-load nv-alloca)
+                  (irc-t*-load cmp-alloca) (irc-t*-load nv-alloca)
                   :order order)
      result)))
 
@@ -1204,7 +1205,7 @@ jump to blocks within this tagbody."
         (funcy (alloca-t* "function"))
         (args (rest rest)))
     (codegen funcy func env)
-    (codegen-call result (irc-load funcy) args env)))
+    (codegen-call result (irc-t*-load funcy) args env)))
 
 ;;; CLEAVIR-PRIMOP:UNREACHABLE
 
@@ -1222,40 +1223,41 @@ jump to blocks within this tagbody."
 
 (defun gen-vaslist-length (vaslist)
   (irc-tag-fixnum
-   (irc-load
-    (irc-vaslist-nargs-address vaslist))))
+   (irc-typed-load %size_t% (c++-field-ptr info.%vaslist% vaslist :nargs "vaslist-nargs"))))
 
 (defun codegen-vaslist-length (result rest env)
   (let ((form (car rest))
         (vaslist (alloca-t* "vaslist-length-vaslist")))
     (codegen vaslist form env)
-    (irc-t*-result (gen-vaslist-length (irc-load vaslist)) result)))
+    (irc-t*-result (gen-vaslist-length (irc-t*-load vaslist)) result)))
 
 ;;; CORE:VASLIST-POP
 ;;; Remove one item from the vaslist and return it.
 ;;; Without DEBUG_BUILD, does not actually check if there is an element to pop.
 ;;; Use caution.
 
+#+(or)
 (defun gen-vaslist-pop (vaslist)
   ;; We need to decrement the remaining nargs, then return va_arg.
   (let* ((nargs* (irc-vaslist-nargs-address vaslist))
-         (nargs (irc-load nargs*))
+         (nargs (irc-t*-load nargs*))
          (nargs-- (irc-sub nargs (jit-constant-size_t 1))))
     ;; Decrement.
     (irc-store nargs-- nargs*)
     (let* ((args* (irc-vaslist-args-address vaslist))
-           (args (irc-load args*))
-           (args++ (irc-gep args (list 1))))
+           (args (irc-t*-load args*))
+           (args++ (irc-typed-gep %t***% args (list 1) "gen-vaslist-pop")))
       ;; Increment
       (irc-store args++ args*)
       ;; va_arg.
-      (irc-load args))))
+      (irc-t*-load args))))
 
 (defun codegen-vaslist-pop (result rest env)
   (let ((form (car rest))
-        (vaslist (alloca-t* "vaslist-pop-vaslist")))
-    (codegen vaslist form env)
-    (irc-t*-result (gen-vaslist-pop (irc-load vaslist)) result)))
+        (vaslist-tagged (alloca-t* "vaslist-pop-vaslist")))
+    (codegen vaslist-tagged form env)
+    (let ((vaslist* (irc-untag-vaslist (irc-t*-load vaslist-tagged))))
+      (irc-t*-result (gen-vaslist-pop (irc-bit-cast vaslist* %vaslist*%)) result))))
 
 ;;; CLEAVIR-PRIMOP:CASE
 ;;; CL:CASE when all the keys are immediates. Generated by the compiler macro.
@@ -1272,7 +1274,7 @@ jump to blocks within this tagbody."
                      (incf sum (length (first case))))))
          (keyt (alloca-t* "case-key")))
     (codegen keyt keyform env)
-    (let* ((key64 (irc-ptr-to-int (irc-load keyt) %i64%))
+    (let* ((key64 (irc-ptr-to-int (irc-t*-load keyt) %i64%))
            (sw (irc-switch key64 defaultb ncases)))
       (dolist (case main-cases)
         (let ((keys (first case))
@@ -1306,7 +1308,7 @@ jump to blocks within this tagbody."
         (defaultb (irc-basic-block-create "impossible-default"))
         (mergeb (irc-basic-block-create "header-stamp-case-after")))
     (codegen stampt stampf env)
-    (let* ((stamp-i64 (irc-ptr-to-int (irc-load stampt) %i64%))
+    (let* ((stamp-i64 (irc-ptr-to-int (irc-t*-load stampt) %i64%))
            (where (irc-and stamp-i64 (jit-constant-i64 +where-tag-mask+)))
            (sw (irc-switch where defaultb 4)))
       (irc-add-case sw (jit-constant-i64 +derivable-where-tag+) derivableb)
@@ -1338,7 +1340,7 @@ jump to blocks within this tagbody."
   (let ((form (car rest))
         (object (alloca-t* "read-stamp-obj")))
     (codegen object form env)
-    (irc-t*-result (irc-header-stamp (irc-load object)) result)))
+    (irc-t*-result (irc-header-stamp (irc-t*-load object)) result)))
 
 ;;; CORE:RACK-STAMP
 
@@ -1346,7 +1348,7 @@ jump to blocks within this tagbody."
   (let ((form (car rest))
         (object (alloca-t* "read-stamp-obj")))
     (codegen object form env)
-    (irc-t*-result (irc-rack-stamp (irc-load object)) result)))
+    (irc-t*-result (irc-rack-stamp (irc-t*-load object)) result)))
 
 ;;; CORE:WRAPPED-STAMP
 
@@ -1354,7 +1356,7 @@ jump to blocks within this tagbody."
   (let ((form (car rest))
         (object (alloca-t* "read-stamp-obj")))
     (codegen object form env)
-    (irc-t*-result (irc-wrapped-stamp (irc-load object)) result)))
+    (irc-t*-result (irc-wrapped-stamp (irc-t*-load object)) result)))
 
 ;;; CORE:DERIVABLE-STAMP
 
@@ -1362,7 +1364,7 @@ jump to blocks within this tagbody."
   (let ((form (car rest))
         (object (alloca-t* "read-stamp-obj")))
     (codegen object form env)
-    (irc-t*-result (irc-derivable-stamp (irc-load object)) result)))
+    (irc-t*-result (irc-derivable-stamp (irc-t*-load object)) result)))
 
 ;;; CORE:INSTANCE-REF
 
@@ -1375,7 +1377,7 @@ jump to blocks within this tagbody."
         (indext (alloca-t* "instance-ref-index")))
     (codegen instancet instance env)
     (codegen indext index env)
-    (irc-t*-result (gen-instance-ref (irc-load instancet) (irc-load indext))
+    (irc-t*-result (gen-instance-ref (irc-t*-load instancet) (irc-t*-load indext))
                    result)))
 
 ;;; CORE:INSTANCE-SET
@@ -1392,7 +1394,7 @@ jump to blocks within this tagbody."
     (codegen indext index env)
     (codegen valuet value env)
     (irc-t*-result
-     (gen-instance-set (irc-load instancet) (irc-load indext) (irc-load valuet))
+     (gen-instance-set (irc-t*-load instancet) (irc-t*-load indext) (irc-t*-load valuet))
      result)))
 
 ;;; CORE:INSTANCE-CAS
@@ -1413,8 +1415,8 @@ jump to blocks within this tagbody."
     (codegen oldt old env)
     (codegen newt new env)
     (irc-t*-result
-     (gen-instance-cas (irc-load instancet) (irc-load indext)
-                       (irc-load oldt) (irc-load newt))
+     (gen-instance-cas (irc-t*-load instancet) (irc-t*-load indext)
+                       (irc-t*-load oldt) (irc-t*-load newt))
      result)))
 
 ;;; CORE:INSTANCE-RACK
@@ -1425,7 +1427,7 @@ jump to blocks within this tagbody."
   (let ((instance (first rest))
         (instancet (alloca-t* "instance-rack-instance")))
     (codegen instancet instance env)
-    (irc-t*-result (gen-instance-rack (irc-load instancet)) result)))
+    (irc-t*-result (gen-instance-rack (irc-t*-load instancet)) result)))
 
 ;;; CORE:INSTANCE-RACK-SET
 
@@ -1440,7 +1442,7 @@ jump to blocks within this tagbody."
     (codegen instancet instance env)
     (codegen rackt rack env)
     (irc-t*-result
-     (gen-instance-rack-set (irc-load instancet) (irc-load rackt))
+     (gen-instance-rack-set (irc-t*-load instancet) (irc-t*-load rackt))
      result)))
 
 ;;; CORE:RACK-REF
@@ -1455,7 +1457,7 @@ jump to blocks within this tagbody."
         (indext (alloca-t* "rack-ref-index")))
     (codegen rackt rack env)
     (codegen indext index env)
-    (irc-t*-result (gen-rack-ref (irc-load rackt) (irc-load indext))
+    (irc-t*-result (gen-rack-ref (irc-t*-load rackt) (irc-t*-load indext))
                    result)))
 
 ;;; CORE:RACK-SET
@@ -1474,7 +1476,7 @@ jump to blocks within this tagbody."
     (codegen indext index env)
     (codegen valuet value env)
     (irc-t*-result
-     (gen-rack-set (irc-load rackt) (irc-load indext) (irc-load valuet))
+     (gen-rack-set (irc-t*-load rackt) (irc-t*-load indext) (irc-t*-load valuet))
      result)))
 
 ;;; CORE::ATOMIC-RACK-READ, CORE::ATOMIC-RACK-WRITE
@@ -1487,9 +1489,9 @@ jump to blocks within this tagbody."
     (codegen rackt rack env)
     (codegen indext index env)
     (irc-t*-result (irc-rack-read
-                    (irc-load rackt)
+                    (irc-t*-load rackt)
                     (irc-untag-fixnum
-                     (irc-load indext) %size_t% "slot-location")
+                     (irc-t*-load indext) %size_t% "slot-location")
                     :order order)
                    result)))
 
@@ -1502,10 +1504,10 @@ jump to blocks within this tagbody."
     (codegen nvt nv env)
     (codegen rackt rack env)
     (codegen indext index env)
-    (let ((nv (irc-load nvt)))
-      (irc-rack-write (irc-load rackt)
+    (let ((nv (irc-t*-load nvt)))
+      (irc-rack-write (irc-t*-load rackt)
                       (irc-untag-fixnum
-                       (irc-load indext) %size_t% "slot-location")
+                       (irc-t*-load indext) %size_t% "slot-location")
                       nv
                       :order order)
       (irc-t*-result nv result))))
@@ -1521,11 +1523,11 @@ jump to blocks within this tagbody."
     (codegen rackt rack env)
     (codegen indext index env)
     (irc-t*-result
-     (irc-cmpxchg (irc-rack-slot-address (irc-load rackt)
+     (irc-cmpxchg (irc-rack-slot-address (irc-t*-load rackt)
                                          (irc-untag-fixnum
-                                          (irc-load indext)
+                                          (irc-t*-load indext)
                                           %size_t% "slot-location"))
-                  (irc-load oldt) (irc-load newt)
+                  (irc-t*-load oldt) (irc-t*-load newt)
                   :order order)
      result)))
 
@@ -1582,21 +1584,22 @@ jump to blocks within this tagbody."
           (blog "got cleavir-lambda-list-analysis -> {}%N" cleavir-lambda-list-analysis)
           (let ((eval-vaslist (alloca-t* "bind-vaslist")))
             (codegen eval-vaslist vaslist evaluate-env)
-            (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
-                   (src-remaining-nargs* (irc-vaslist-nargs-address lvaslist))
-                   (src-args* (irc-vaslist-args-address lvaslist))
-                   (local-args* (alloca-vaslist :label "local-vaslist"))
-                   (_ (vaslist-start local-args* (irc-load src-remaining-nargs*) (irc-load src-args*)))
-                   (callconv (make-calling-convention :closure (llvm-sys:constant-pointer-null-get %i8*%)
-                                                      :nargs (irc-load src-remaining-nargs*)
-                                                      :vaslist* local-args*
-                                                      :rest-alloc rest-alloc
-                                                      :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)))
-              (declare (ignore _))
-              ;; See comment in cleavir bind-vaslist w/r/t safep.
-              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :general-entry :safep nil))
-                    (*notinlines* (new-notinlines canonical-declares)))
-                (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))
+            (let* ((lvaslist (irc-t*-load eval-vaslist "lvaslist"))
+                   (src-remaining-nargs* (c++-field-ptr info.%vaslist% lvaslist :nargs "vaslist-nargs"))
+                   (src-args* (c++-field-ptr info.%vaslist% lvaslist :args "vaslist-args"))
+                   (local-args* (alloca-vaslist :label "local-vaslist")))
+              (vaslist-start local-args*
+                             (irc-typed-load %i64% src-remaining-nargs*)
+                             (irc-typed-load %t**% src-args*))
+              (let ((callconv (make-calling-convention :closure (llvm-sys:constant-pointer-null-get %i8*%)
+                                                       :nargs (irc-typed-load %i64% src-remaining-nargs*)
+                                                       :vaslist* local-args*
+                                                       :rest-alloc rest-alloc
+                                                       :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)))
+                ;; See comment in cleavir bind-vaslist w/r/t safep.
+                (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :general-entry :safep nil))
+                      (*notinlines* (new-notinlines canonical-declares)))
+                  (codegen-let/let* (car new-body) result (cdr new-body) new-env))))))))))
 
 ;;; MULTIPLE-VALUE-FOREIGN-CALL
 
@@ -1616,7 +1619,7 @@ jump to blocks within this tagbody."
          ((endp cur-exp) nil)
       ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen arg[{}] -> {}%N" i exp)
       (codegen temp-result exp evaluate-env)
-      (push (irc-load temp-result) args))
+      (push (irc-t*-load temp-result) args))
     (let* ((func (or (llvm-sys:get-function *the-module* intrinsic-name)
                      (let ((arg-types (make-list (length args) :initial-element %t*%))
                            (varargs nil))
@@ -1651,7 +1654,7 @@ jump to blocks within this tagbody."
       ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen arg[{}] -> {}%N" i exp)
       (codegen temp-result exp evaluate-env)
       (push (irc-intrinsic-call (clasp-ffi::from-translator-name type)
-                             (list (irc-load temp-result))) args))
+                             (list (irc-t*-load temp-result))) args))
     args))
 
 (defun codegen-foreign-call (result form evaluate-env)
@@ -1697,7 +1700,7 @@ jump to blocks within this tagbody."
       ;; evaluate the function pointer
       (codegen temp-result func-pointer evaluate-env)
       (let* ((function-pointer-type (llvm-sys:type-get-pointer-to function-type))
-             (pointer-t* (irc-load temp-result))
+             (pointer-t* (irc-t*-load temp-result))
              (function-pointer (llvm-sys:create-bit-cast *irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
              (foreign-result
               (irc-call-or-invoke function-type function-pointer (nreverse args)))
@@ -1770,7 +1773,7 @@ jump to blocks within this tagbody."
                                        (format nil "translated-~a" c-arg-name)))
                                     c-args c-argument-names argument-translator-names))
                    ;; Generate code to get the closure from the global variable from earlier.
-                   (closure-to-call (irc-load (literal:constants-table-reference closure-literal-slot-index) closure-var-name))
+                   (closure-to-call (irc-t*-load (literal:constants-table-reference closure-literal-slot-index) closure-var-name))
                    ;; Generate the code to actually call the lisp function.
                    ;; results-in-registers keeps things in the basic tmv format, because
                    ;; here we don't need the store/load values dance.
@@ -1801,4 +1804,4 @@ jump to blocks within this tagbody."
       (gen-defcallback c-name convention
                        return-type return-translator-name
                        argument-types argument-translator-names
-                       parameters place-holder (irc-load closure-temp)))))
+                       parameters place-holder (irc-t*-load closure-temp)))))

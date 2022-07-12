@@ -175,7 +175,7 @@
    nil ; 10 TParam = nullptr
    nil ; 11 Decl = nullptr
    nil ; 12 ThrownTypes = nullptr
-
+   nil ; 13 Annotations = nullptr
    #|
 (DIScope *Scope, ; 1
  StringRef Name, ; 2
@@ -310,20 +310,21 @@
 
 (defun dbg-create-parameter-variable
     (&key (scope *dbg-current-scope*) name argno (file *dbg-current-file*)
-          lineno type always-preserve)
-  (unless (> argno 0)
-    (error "The argno for ~a must start at 1 - got ~a" name argno))
-  (llvm-sys:create-parameter-variable *the-module-dibuilder*
-                                      scope
-                                      name
-                                      argno
-                                      file
-                                      lineno
-                                      type
-                                      always-preserve
-                                      (core:enum-logical-or
-                                       llvm-sys:diflags-enum
-                                       '(llvm-sys:diflags-zero))))
+          lineno type always-preserve annotations)
+  (progn
+    (unless (> argno 0)
+      (error "The argno for ~a must start at 1 - got ~a" name argno))
+    (llvm-sys:create-parameter-variable *the-module-dibuilder*
+                                        scope
+                                        name
+                                        argno
+                                        file
+                                        lineno
+                                        type
+                                        always-preserve
+                                        (core:enum-logical-or llvm-sys:diflags-enum
+                                                              '(llvm-sys:diflags-zero))
+                                        annotations)))
 
 (defun set-instruction-source-position (origin function-metadata)
   (when *dbg-generate-dwarf*

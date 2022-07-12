@@ -152,6 +152,7 @@ struct FindOwner {
 typedef enum {room_max, room_default, room_min } RoomVerbosity;
 void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity);
 
+void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots );
 };
 
 #endif // _clasp_boehmGarbageCollection_H

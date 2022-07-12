@@ -126,7 +126,7 @@ fields at the same offset as Instance_O.
  public:
   // Accessors
    EntryPointBase_O(FunctionDescription_sp fdesc) : _FunctionDescription(fdesc) {  };
-   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
+   CLASP_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
    virtual Pointer_sp defaultEntryAddress() const;
  };
 
@@ -136,14 +136,14 @@ fields at the same offset as Instance_O.
  public:
    CLASP_DEFAULT_CTOR CodeEntryPoint_O() {};
  public:
-   llvmo::CodeBase_sp _Code;                       //  10 code
+   T_sp _Code;                       //  10 code
  public:
   // Accessors
-   CodeEntryPoint_O(FunctionDescription_sp fdesc, llvmo::CodeBase_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
+   CodeEntryPoint_O(FunctionDescription_sp fdesc, T_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(("Subclass must implement")); };
    void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
-   CL_DEFMETHOD llvmo::CodeBase_sp EntryPoint_code() const { return this->_Code; };
+   CLASP_DEFMETHOD T_sp EntryPoint_code() const { return this->_Code; };
  };
 
  FORWARD(LocalEntryPoint);
@@ -153,7 +153,7 @@ fields at the same offset as Instance_O.
    ClaspLocalFunction _EntryPoint;
  public:
   // Accessors
-   LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, llvmo::CodeBase_sp code );
+   LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code );
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
@@ -184,13 +184,13 @@ FORWARD(GlobalEntryPoint);
    T_sp _localEntryPoint;
  public:
   // Accessors
-   GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, llvmo::CodeBase_sp code, T_sp localEntryPoint );
+   GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp localEntryPoint );
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
    T_mv sectionedEntryInfo() const;
    T_sp lineTable() const;
-   llvmo::Code_sp code() const;
+   llvmo::ObjectFile_sp code() const;
    T_sp localEntryPoint() const;
    string __repr__() const;
  };
@@ -318,24 +318,24 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
 
 
     CL_LISPIFY_NAME("core:entry-point");
-    CL_DEFMETHOD T_sp entryPoint() const {
+    CLASP_DEFMETHOD T_sp entryPoint() const {
       return this->_EntryPoint.load();
     }
     
     CL_LISPIFY_NAME("core:functionName");
-    CL_DEFMETHOD virtual T_sp functionName() const {
+    CLASP_DEFMETHOD virtual T_sp functionName() const {
       return this->fdesc()->functionName();
     }
-    CL_DEFMETHOD void setf_functionName(T_sp name) {
+    CLASP_DEFMETHOD void setf_functionName(T_sp name) {
       this->fdesc()->setf_functionName(name);
     }
     T_sp docstring() const {
       return this->fdesc()->docstring();
     }
-    CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
+    CLASP_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
       this->fdesc()->setf_lambdaList(lambda_list);
     }
-    CL_DEFMETHOD T_sp sourcePathname() const {
+    CLASP_DEFMETHOD T_sp sourcePathname() const {
       return this->fdesc()->sourcePathname();
     }
     void setf_sourcePathname(T_sp sourceFileName) const {
@@ -370,7 +370,7 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return nil<T_O>(); };
-    CL_DEFMETHOD T_sp functionLambdaListHandler() const {
+    CLASP_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
     }
     virtual T_sp closedEnvironment() const {SUBIMP();};
@@ -492,12 +492,12 @@ namespace core {
         return nil<T_O>();
       };
     }
-    CL_DEFMETHOD T_sp interpretedSourceCode();
-    CL_DEFMETHOD T_sp closedEnvironment() const override {
+    CLASP_DEFMETHOD T_sp interpretedSourceCode();
+    CLASP_DEFMETHOD T_sp closedEnvironment() const override {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT];
     };      
-    CL_DEFMETHOD T_O*& closedEnvironment_rawRef() {
+    CLASP_DEFMETHOD T_O*& closedEnvironment_rawRef() {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT].rawRef_();
     };      
@@ -535,5 +535,11 @@ namespace core {
 #undef LCC_FUNCALL
 };
 
+
+namespace core {
+typedef gctools::return_type (*trampoline_function)(void* fn, core::T_O* closure, size_t nargs, core::T_O** args );
+extern trampoline_function interpreter_trampoline;
+
+};
 
 #endif

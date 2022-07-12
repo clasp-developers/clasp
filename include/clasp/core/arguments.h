@@ -160,7 +160,7 @@ struct ScopeManager {
 };
 
 class ValueEnvironmentDynamicScopeManager : public ScopeManager {
-private:
+public:
   ValueEnvironment_sp _Environment;
   Vaslist _VaRest;
 public:
@@ -177,22 +177,19 @@ public:
   virtual T_sp lexenv() const { return this->_Environment; };
 };
 
-class StackFrameDynamicScopeManager : public ScopeManager {
+class StackFrameDynamicScopeManager : public ValueEnvironmentDynamicScopeManager {
 private:
   gc::Frame &frame;
 public:
   Vaslist VaRest;
 
 public:
-  StackFrameDynamicScopeManager(size_t numberOfBindings, SpecialBinding* bindings, gc::Frame* fP) : ScopeManager(numberOfBindings,bindings), frame(*fP) {};
+  StackFrameDynamicScopeManager(LambdaListHandler_sp llh, size_t numberOfSpecialBindings, SpecialBinding* bindings, gc::Frame* fP, size_t totalBindings) : ValueEnvironmentDynamicScopeManager(numberOfSpecialBindings,bindings,( lisp_lambdaListHandlerNeedsValueEnvironment(llh) ? ValueEnvironment_O::createSingleTopLevelEnvironment(totalBindings) : nil<ValueEnvironment_O>() )), frame(*fP) {};
 public:
-  virtual Vaslist &valist() { return this->VaRest; };
   virtual void va_rest_binding(const Argument &argument);
   virtual void new_binding(const Argument &argument, T_sp val);
   virtual void ensureLexicalElementUnbound(const Argument &argument);
   virtual bool lexicalElementBoundP_(const Argument &argument);
-  //  T_sp activationFrame() const;
-  virtual T_sp lexenv() const;
 };
 };
 

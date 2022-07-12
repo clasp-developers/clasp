@@ -130,16 +130,16 @@ public:
   template <class... ARGS>
   static ValueFrame_sp create_fill_capacity(int capacity, T_sp parent, ARGS &&... args) {
     ASSERT(sizeof...(ARGS) <= capacity);
-    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(false,capacity,parent,std::forward<ARGS>(args)...);
+    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container<gctools::RuntimeStage>(false,capacity,parent,std::forward<ARGS>(args)...);
     return vf;
   }
 
-  static ValueFrame_sp create(int numArgs, const T_sp &parent) {
+  static ValueFrame_sp create(int numArgs, T_sp parent) {
     ValueFrame_sp vf = create_fill_capacity(numArgs,parent);
     return vf;
   }
 
-    static ValueFrame_sp createForMultipleValues(const T_sp &parent) {
+    static ValueFrame_sp createForMultipleValues(T_sp parent) {
     MultipleValues &mv = core::lisp_multipleValues();
     ValueFrame_sp vf = ValueFrame_O::create(mv.getSize(),parent);
     // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
@@ -230,7 +230,7 @@ GCPRIVATE:
   gctools::GCArray_moveable<value_type> _Objects;
 public:
   static FunctionFrame_sp create(int numArgs, T_sp parent) {
-    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(false,numArgs,parent);
+    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container<gctools::RuntimeStage>(false,numArgs,parent);
     return vf;
   }
 

@@ -683,8 +683,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 
 ;;; Called from the dtree interpreter,
 ;;; because APPLY from C++ is kind of annoying.
-(defun dispatch-miss-va (generic-function valist-args)
-  (apply #'dispatch-miss generic-function valist-args))
+(defun dispatch-miss-va (generic-function vaslist-args)
+  (apply #'dispatch-miss generic-function vaslist-args))
 
 (defvar *fastgf-force-compiler* nil)
 (defun calculate-fastgf-dispatch-function (generic-function &key compile)
@@ -724,16 +724,16 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 #+debug-fastgf
 (defvar *dispatch-miss-recursion-check* nil)
 
-(defun invalidated-dispatch-function (generic-function valist-args)
-  (declare (optimize (debug 3)))
+(defun invalidated-dispatch-function (generic-function vaslist-args)
+  #+(or)(declare (optimize (debug 3)))
   #+debug-fastgf
-  (when (find (cons generic-function (core:list-from-vaslist valist-args)) *dispatch-miss-recursion-check*
+  (when (find (cons generic-function (core:list-from-vaslist vaslist-args)) *dispatch-miss-recursion-check*
               :test #'equal)
     (format t "~&Recursive dispatch miss detected~%")
     (ext:quit 1))
   (let (#+debug-fastgf
         (*dispatch-miss-recursion-check* (cons (cons generic-function
-                                                     (core:list-from-vaslist valist-args))
+                                                     (core:list-from-vaslist vaslist-args))
                                                *dispatch-miss-recursion-check*)))
 
   ;;; If there is a call history then compile a dispatch function
@@ -749,8 +749,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (if (mp:atomic (safe-gf-call-history generic-function))
       (progn
         (force-dispatcher generic-function)
-        (apply generic-function valist-args))
-      (apply #'dispatch-miss generic-function valist-args))))
+        (apply generic-function vaslist-args))
+      (apply #'dispatch-miss generic-function vaslist-args))))
 
 ;;; I don't believe the following few functions are called from anywhere, but they may be useful for debugging.
 

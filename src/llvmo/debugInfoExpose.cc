@@ -311,7 +311,8 @@ CL_EXTERN_DEFMETHOD(DIBuilder_O,
                       llvm::DISubprogram::DISPFlags SPFlags,
                       llvm::DITemplateParameterArray TParams,
                       llvm::DISubprogram *Decl,
-                      llvm::DITypeArray ThrownTypes))
+                      llvm::DITypeArray ThrownTypes,
+                      llvm::DINodeArray Annotations ))
                     &llvm::DIBuilder::createFunction );
 CL_LISPIFY_NAME(createLexicalBlock);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
@@ -350,21 +351,24 @@ CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalizeSubprogram);;
 
 
 CL_LISPIFY_NAME(getOrCreateArray);
-CL_DEFMETHOD DINodeArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
+CL_DEFMETHOD DINodeArray_sp DIBuilder_O::getOrCreateArray(core::T_sp telements) {
   _G();
   //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
   //		printf("     cons --> %s\n", cur->__repr__().c_str() );
   vector<llvm::Metadata *> vector_values;
-  for (auto cur : elements) {
-    if (Value_sp val = oCar(cur).asOrNull<Value_O>()) {
-      //			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());
-      llvm::ValueAsMetadata *vd = llvm::ValueAsMetadata::get(val->wrappedPtr());
-      vector_values.push_back(vd); // val->wrappedPtr());
-    } else if (DINode_sp di = oCar(cur).asOrNull<DINode_O>()) {
-      llvm::MDNode *mdnode = di->operator llvm::MDNode *();
-      vector_values.push_back(mdnode);
-    } else {
-      SIMPLE_ERROR(("Handle conversion of %s to llvm::Value*") , _rep_(oCar(cur)));
+  if (telements.consp()) {
+    core::List_sp elements = gc::As_unsafe<core::List_sp>(telements);
+    for (auto cur : elements) {
+      if (Value_sp val = oCar(cur).asOrNull<Value_O>()) {
+        //			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());
+        llvm::ValueAsMetadata *vd = llvm::ValueAsMetadata::get(val->wrappedPtr());
+        vector_values.push_back(vd); // val->wrappedPtr());
+      } else if (DINode_sp di = oCar(cur).asOrNull<DINode_O>()) {
+        llvm::MDNode *mdnode = di->operator llvm::MDNode *();
+        vector_values.push_back(mdnode);
+      } else {
+        SIMPLE_ERROR(("Handle conversion of %s to llvm::Value*") , _rep_(oCar(cur)));
+      }
     }
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
@@ -526,7 +530,7 @@ CL_DEFUN DWARFContext_sp DWARFContext_O::createDWARFContext(ObjectFile_sp ofi) {
   llvm::StringRef sbuffer((const char*)ofi->_MemoryBuffer->getBufferStart(), ofi->_MemoryBuffer->getBufferSize());
   stringstream ss;
   ss << "DWARFContext/" << ofi->_FasoName;
-  std::string uniqueName = uniqueMemoryBufferName(ss.str(),ofi->_ObjectId, ofi->_FasoIndex);
+  std::string uniqueName = ensureUniqueMemoryBufferName(ss.str());
   llvm::StringRef name(uniqueName);
 //  printf("%s:%d uniqueName = %s\n", __FILE__, __LINE__, uniqueName.c_str());
   std::unique_ptr<llvm::MemoryBuffer> mbuf = llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false);
@@ -565,10 +569,9 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
     if (verbose){
       core::write_bf_stream(fmt::sprintf("Address: %p\n" , address ));
       core::write_bf_stream(fmt::sprintf("ObjectFile: %s SectionedAddress: %s DWARFContext: %s\n"  , _rep_(object_file)  , _rep_(sectioned_address)  , _rep_(context)));
-      Code_sp code = object_file->_Code;
-      core::write_bf_stream(fmt::sprintf("Code object: %s\n"  , _rep_(code)));
-      core::write_bf_stream(fmt::sprintf("Code _text start: %p   end: %p\n"  , code->_TextSectionStart  , code->_TextSectionEnd ));
-      core::write_bf_stream(fmt::sprintf("address (%p) - _TextSectionStart(%p) -> %ld\n"  , (void*)address  , (void*)code->_TextSectionStart  , (intptr_t)((uintptr_t)address - (uintptr_t)code->_TextSectionStart )));
+      core::write_bf_stream(fmt::sprintf("Object_File object: %s\n"  , _rep_(object_file)));
+      core::write_bf_stream(fmt::sprintf("Object_File _text start: %p   end: %p\n"  , object_file->_TextSectionStart  , object_file->_TextSectionEnd ));
+      core::write_bf_stream(fmt::sprintf("address (%p) - _TextSectionStart(%p) -> %ld\n"  , (void*)address  , (void*)object_file->_TextSectionStart  , (intptr_t)((uintptr_t)address - (uintptr_t)object_file->_TextSectionStart )));
     }
     return getLineInfoForAddress_(context,sectioned_address, verbose);
   }

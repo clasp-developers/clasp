@@ -156,6 +156,10 @@ union NW {
   char name[8];
 };
 
+bool lisp_lambdaListHandlerNeedsValueEnvironment(LambdaListHandler_sp llh) {
+  return llh->needsValueEnvironmentP();
+}
+
 uint64_t lisp_nameword(core::T_sp name)
 {
   NW nw;
@@ -395,7 +399,21 @@ void colon_split(const string& name, string& package_str, string& symbol_str)
   std::size_t found = name.find(":");
   if ( found != std::string::npos ) {
     package_str = name.substr(0,found);
+    transform( package_str.begin(), package_str.end(), package_str.begin(), ::toupper );
     symbol_str = name.substr(found+1,std::string::npos);
+    size_t first = 0;
+    for ( first=0; first<symbol_str.size(); first++ ) {
+      if (!isspace(symbol_str[first])) break;
+    }
+    size_t last;
+    for ( last=symbol_str.size()-1; last>=0; last-- ) {
+      if (!isspace(symbol_str[last])) break;
+    }
+    symbol_str = symbol_str.substr(first,last-first+1);
+    if (symbol_str[0] == '|' &&
+        symbol_str[symbol_str.size()-1] == '|') {
+      symbol_str = symbol_str.substr(1,symbol_str.size()-2);
+    }
     return;
   }
   SIMPLE_ERROR(("Could not convert %s into package:symbol_name") , name);
@@ -748,6 +766,8 @@ Instance_sp lisp_instance_class(T_sp o) {
     tc = go->_instanceClass();
   } else if (o.valistp()) {
     tc = core::Vaslist_dummy_O::staticClass();
+  } else if (o.unboundp()) {
+    SIMPLE_ERROR("lisp_instance_class called on #<UNBOUND>");
   } else {
     SIMPLE_ERROR(("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") , (void*)(o.raw_()));
   }
@@ -1585,22 +1605,23 @@ void throwIfClassesNotInitialized(const LispPtr &lisp) {
 
 namespace core {
 
-size_t lisp_general_badge(General_sp object) {
+uint32_t lisp_general_badge(General_sp object) {
   const gctools::Header_s* header = gctools::header_pointer(object.unsafe_general());
   return header->_stamp_wtag_mtag._header_badge;
 }
 
-size_t lisp_cons_badge(Cons_sp object) {
+uint32_t lisp_cons_badge(Cons_sp object) {
   const gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(object.unsafe_cons());
   return header->_stamp_wtag_mtag._header_badge;
 }
 
-size_t lisp_badge(T_sp object) {
+uint32_t lisp_badge(T_sp object) {
   if (object.consp()) {
     Cons_sp cobject = gc::As_unsafe<Cons_sp>(object);
     return lisp_cons_badge(cobject);
-  }
-  return lisp_general_badge(gc::As_unsafe<General_sp>(object));
+  } else if (object.generalp()) {
+    return lisp_general_badge(gc::As_unsafe<General_sp>(object));
+  } else return 0;
 }
 
 
@@ -1617,9 +1638,10 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::ConsPtrToHeaderPtr(object.unsafe_cons()));
     header->_stamp_wtag_mtag._header_badge = badge;
     return;
+  } else if (object.generalp()) {
+    gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
+    header->_stamp_wtag_mtag._header_badge = badge;
   }
-  gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
-  header->_stamp_wtag_mtag._header_badge = badge;
 }
 
 

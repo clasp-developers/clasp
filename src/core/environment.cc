@@ -1020,6 +1020,14 @@ CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int nu
   return env;
 }
 
+ValueEnvironment_sp ValueEnvironment_O::createSingleTopLevelEnvironment(size_t numberOfArguments) {
+  ValueEnvironment_sp env(ValueEnvironment_O::create());
+  env->_Invisible = false;
+  env->setupParent(nil<T_O>());
+  env->_ActivationFrame = ValueFrame_O::create(numberOfArguments,nil<T_O>());
+  return env;
+}
+
 CL_LISPIFY_NAME(makeValueEnvironmentForLocallySpecialEntries);
 DOCGROUP(clasp)
 CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(List_sp specials, T_sp parent) {

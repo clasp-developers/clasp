@@ -216,7 +216,7 @@ local-function - the lcl function that all of the xep functions call."
   (let* ((depth (third classified))
          (index (fourth classified))
          (function-env (fifth classified))
-         (start-renv (irc-load (irc-renv start-env)))
+         (start-renv (irc-t*-load (irc-renv start-env)))
          (instruction (irc-intrinsic "va_lexicalFunction"
                                      (jit-constant-size_t depth)
                                      (jit-constant-size_t index)
@@ -257,15 +257,39 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-add-case (switch val block)
   (llvm-sys:add-case switch val block))
 
-(defun irc-gep (array indices &optional (name "gep"))
-  (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-intptr_t x) x)) indices)))
-    (llvm-sys:create-in-bounds-gep *irbuilder* array indices name )))
+(defun irc-fix-gep-indices (indices)
+  (let ((fixed-indices (mapcar (lambda (val)
+                                 (cond
+                                   ((fixnump val) (jit-constant-i32 val))
+                                   ((llvm-sys:type-equal %i32% val) val)
+                                   ((llvm-sys:type-equal %i64% val) val)
+                                   ((typep val 'llvm-sys:constant-int) val)
+                                   ((typep val 'llvm-sys:value) val)
+                                   (t (error "irc-fix-gep-indices - handle index ~a ~%type -> ~a (type-of val) -> ~a" val (llvm-sys:get-type val) (type-of val)))))
+                               indices)))
+    fixed-indices))
 
-(defun irc-gep-variable (array indices &optional (label "gep"))
-  (llvm-sys:create-in-bounds-gep *irbuilder* array indices label))
+(defun ensure-opaque-or-pointee-type-matches (ptr type)
+  (unless (llvm-sys:is-opaque-or-pointee-type-matches (llvm-sys:get-type ptr) type)
+    (error "irc-typed-gep is-opaque-or-pointee-type-matches failed for type -> ~a value -> ~a (llvm-sys:get-type value) -> ~a"
+           type ptr (llvm-sys:get-type ptr))))
+  
+(defun irc-typed-gep (type ptr indices &optional (name "gep"))
+  (ensure-opaque-or-pointee-type-matches ptr type)
+  (let ((fixed-indices (irc-fix-gep-indices indices)))
+    (llvm-sys:create-in-bounds-gep *irbuilder* type ptr fixed-indices name )))
 
-(defun irc-in-bounds-gep-type (type value indices &optional (label "gep"))
-  (llvm-sys:create-in-bounds-geptype *irbuilder* type value indices label))
+(defun irc-const-gep2-64 (type ptr idx0 idx1 label)
+  (ensure-opaque-or-pointee-type-matches ptr type)
+  (llvm-sys:create-const-gep2-64 *irbuilder* type ptr idx0 idx1 label))
+
+(defun irc-typed-in-bounds-gep (type ptr indices &optional (label "gep"))
+  (ensure-opaque-or-pointee-type-matches ptr type)
+  (let ((fixed-indices (irc-fix-gep-indices indices)))
+    (llvm-sys:create-in-bounds-geptype *irbuilder* type ptr fixed-indices label)))
+
+(defun irc-typed-gep-variable (type array indices &optional (label "gep"))
+  (irc-typed-in-bounds-gep type array indices label))
 
 (defun irc-exception-typeid** (name)
   (exception-typeid*-from-name name))
@@ -366,7 +390,7 @@ local-function - the lcl function that all of the xep functions call."
                               (let ((closure (core:function-container-environment-closure visible-ancestor-environment)))
                                 (irc-intrinsic "activationFrameReferenceFromClosure" closure))
                               (irc-renv visible-ancestor-environment)))
-         (parent-renv (irc-load parent-renv-ref))
+         (parent-renv (irc-t*-load parent-renv-ref))
          (instr (irc-intrinsic "makeBlockFrameSetParent" parent-renv)))
     (irc-store instr new-renv)
     (irc-set-renv block-env new-renv)
@@ -399,7 +423,7 @@ local-function - the lcl function that all of the xep functions call."
                               (let ((closure (core:function-container-environment-closure visible-ancestor-environment)))
                                 (irc-intrinsic "activationFrameReferenceFromClosure" closure))
                               (irc-renv visible-ancestor-environment)))
-         (parent-renv (irc-load parent-renv-ref))
+         (parent-renv (irc-t*-load parent-renv-ref))
          (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv)))
     #+optimize-bclasp
     (setf (gethash new-env *make-value-frame-instructions*)
@@ -424,7 +448,7 @@ local-function - the lcl function that all of the xep functions call."
         (let ((parent-renv2 (irc-renv visible-ancestor-environment)))
           (irc-intrinsic "setParentOfActivationFrame"
                          new-renv
-                         (irc-load parent-renv2))))))
+                         (irc-t*-load parent-renv2))))))
 
 (defun irc-parent-renv (env)
   (let ((renv (runtime-environment (current-visible-environment (get-parent-environment env)))))
@@ -440,7 +464,7 @@ local-function - the lcl function that all of the xep functions call."
   (jit-constant-size_t num))
 
 (defun irc-literal (lit &optional (label "literal"))
-  (irc-load (literal:compile-reference-to-literal lit) label))
+  (irc-t*-load (literal:compile-reference-to-literal lit) label))
 
 (defun irc-t ()
   (irc-literal t "T"))
@@ -612,23 +636,35 @@ local-function - the lcl function that all of the xep functions call."
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
 
 (defun irc-fdefinition (symbol &optional (label ""))
-  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :function) :label label))
+  (irc-t*-load-atomic (c++-field-ptr info.%symbol% symbol :function) :label label))
 
 (defun irc-setf-fdefinition (symbol &optional (label ""))
-  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)
+  (irc-t*-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)
                    :label label))
+
+(defun irc-maybe-check-tag (tagged-ptr tag)
+  (if (member :check-tags *features*)
+      (irc-intrinsic "cc_verify_tag" (jit-constant-i64 (core:next-jit-unique-counter)) tagged-ptr (jit-constant-i64 tag))))
 
 (defun irc-untag-general (tagged-ptr &optional (type %t**%))
   #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
-         (ptr-untagged (irc-gep ptr-i8* (list (- +general-tag+)))))
+               (ptr-untagged (irc-typed-gep %i8*% ptr-i8* (list (- +general-tag+)))))
           (irc-bit-cast ptr-untagged type))
+  (irc-maybe-check-tag tagged-ptr +general-tag+)
   (let* ((ptr-int (irc-ptr-to-int tagged-ptr %uintptr_t%))
          (ptr-adjusted (irc-sub ptr-int (jit-constant-i64 1))))
     (irc-int-to-ptr ptr-adjusted type)))
 
 (defun irc-untag-cons (tagged-ptr &optional (type %cons*%))
+  (irc-maybe-check-tag tagged-ptr +cons-tag+)
   (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
-         (ptr-untagged (irc-gep ptr-i8* (list (- +cons-tag+)))))
+         (ptr-untagged (irc-typed-gep %i8% ptr-i8* (list (- +cons-tag+)))))
+    (irc-bit-cast ptr-untagged type)))
+
+(defun irc-untag-vaslist (tagged-ptr &optional (type %vaslist*%))
+  (irc-maybe-check-tag tagged-ptr +vaslist0-tag+)
+  (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
+         (ptr-untagged (irc-typed-gep %i8% ptr-i8* (list (- +vaslist0-tag+)))))
     (irc-bit-cast ptr-untagged type)))
 
 (defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
@@ -658,17 +694,15 @@ representing a tagged fixnum."
 
 (defun irc-unbox-vaslist (t* &optional (label "vaslist-v*"))
   ;; FIXME: Probably we should untag by masking instead of subttraction
-  (let* ((ptr-int (irc-ptr-to-int t* %uintptr_t%))
-         (ptr-adjusted (irc-sub ptr-int (jit-constant-i64 +vaslist0-tag+)))
-         (ptr-ptr (irc-int-to-ptr ptr-adjusted %vaslist*%)))
-    (irc-load ptr-ptr label)))
+  (let* ((vaslist* (irc-untag-vaslist t*)))
+    (irc-typed-load %vaslist% vaslist* label)))
 
 ;;; "tag" rather than "box" because we don't allocate here, just tag an
 ;;; existing pointer.
 (defun irc-tag-vaslist (ptr &optional (label "vaslist-v*"))
   "Given a word aligned ptr, add the vaslist tag"
   (let* ((ptr-i8* (irc-bit-cast ptr %i8*%))
-         (ptr-tagged (irc-gep ptr-i8* (list (jit-constant-i64 +vaslist0-tag+)) label)))
+         (ptr-tagged (irc-typed-gep %i8% ptr-i8* (list (jit-constant-i64 +vaslist0-tag+)) label)))
     ptr-tagged))
 
 ;;; NOTE: Unsafe. Cleavir inserts this only after type checks on safety > 0.
@@ -709,7 +743,7 @@ representing a tagged fixnum."
     (irc-struct-gep %instance% instance* +instance.rack-index+)))
 
 (defun irc-rack (instance-tagged)
-  (irc-load-atomic (irc-rack-address instance-tagged) :label "rack-tagged"))
+  (irc-t*-load-atomic (irc-rack-address instance-tagged) :label "rack-tagged"))
 
 (defun irc-rack-set (instance-tagged rack)
   (irc-store-atomic rack (irc-rack-address instance-tagged)))
@@ -718,14 +752,15 @@ representing a tagged fixnum."
   (let* ((rack* (irc-untag-general rack-tagged %rack*%))
          ;; Address of the start of the data vector.
          (data0* (irc-struct-gep %rack% rack* +rack.data-index+)))
-    (irc-gep data0* (list 0 index))))
+    (irc-typed-gep %t*[0]% data0* (list 0 index))))
 
 (defun irc-instance-slot-address (instance index)
   "Return a %t**% a pointer to a slot in the rack of an instance"
   (irc-rack-slot-address (irc-rack instance) index))
 
 (defun irc-rack-read (rack index &key (order 'llvm-sys:monotonic))
-  (irc-load-atomic (irc-rack-slot-address rack index) :order order))
+  (let ((rack-slot-address (irc-rack-slot-address rack index)))
+    (irc-t*-load-atomic rack-slot-address :order order)))
 
 (defun irc-rack-write (rack index value &key (order 'llvm-sys:monotonic))
   (irc-store-atomic value (irc-rack-slot-address rack index) :order order))
@@ -733,7 +768,7 @@ representing a tagged fixnum."
 (defun irc-read-slot (instance index)
   "Read a value from the rack of an instance"
   (let ((dataN* (irc-instance-slot-address instance index)))
-    (irc-load-atomic dataN*)))
+    (irc-t*-load-atomic dataN*)))
 
 (defun irc-write-slot (instance index value)
   "Write a value into the rack of an instance"
@@ -745,7 +780,7 @@ representing a tagged fixnum."
   (let* ((value-frame (irc-untag-general renv %value-frame*%))
          (parent-tsp* (irc-struct-gep %value-frame% value-frame +value-frame.parent-index+))
          (parent-t** (irc-struct-gep %tsp% parent-tsp* 0))
-         (parent-t* (irc-load parent-t**)))
+         (parent-t* (irc-t*-load parent-t**)))
     parent-t*))
 
 (defun irc-nth-value-frame-parent (value-frame depth)
@@ -759,7 +794,7 @@ representing a tagged fixnum."
   "Return the nth cell of the value-frame"
   (let* ((value-frame* (irc-untag-general value-frame %value-frame*%))
          (data0tsp* (irc-struct-gep %value-frame% value-frame* +value-frame.data-index+))
-         (dataNtsp* (irc-gep data0tsp* (list 0 index)))
+         (dataNtsp* (irc-typed-gep %tsp[0]% data0tsp* (list 0 index)))
          (dataNt** (irc-struct-gep %tsp% dataNtsp* 0)))
     dataNt**))
 
@@ -786,38 +821,43 @@ representing a tagged fixnum."
 ;;;
 
 (defun irc-real-array-displacement (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :data)
+  (irc-t*-load-atomic (c++-field-ptr info.%mdarray% tarray :data)
                    :label "real-array-displacement"))
 
 (defun irc-real-array-index-offset (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :displaced-index-offset)
-                   :label "real-array-displaced-index"))
+  (irc-typed-load-atomic %size_t% (c++-field-ptr info.%mdarray% tarray :displaced-index-offset)
+                         :label "real-array-displaced-index"))
 
 (defun irc-array-total-size (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :array-total-size)
-                   :label "array-total-size"))
+  (irc-typed-load-atomic %size_t% (c++-field-ptr info.%mdarray% tarray :array-total-size)
+                         :label "array-total-size"))
 
 (defun irc-array-rank (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :rank)
-                   :label "array-rank"))
+  (irc-typed-load-atomic %size_t% (c++-field-ptr info.%mdarray% tarray :rank)
+                         :label "array-rank"))
 
 (defun irc-array-dimension (tarray axis)
   (let* ((dims (c++-field-ptr info.%mdarray% tarray :dimensions))
-         (axisN* (irc-gep dims (list 0 axis))))
-    (irc-load-atomic axisN*)))
+         (type (c++-field-pointee-type info.%mdarray% :dimensions))
+         (axisN* (irc-typed-gep type dims (list 0 axis))))
+    (irc-typed-load-atomic %mdarray-dimensions-type% axisN*)))
 
 (defun irc-header-stamp (object)
   (let* ((object* (irc-untag-general object))
          (byte-ptr (irc-bit-cast object* %i8*%))
          (byte-addr
-           (irc-gep byte-ptr
+           (irc-typed-gep %i8% byte-ptr
                     (list (jit-constant-i64 (+ +header-stamp-offset+ (- +header-size+))))))
-         (header-stamp-type (cond
+         (header-stamp-ptr-type (cond
                               ((= 4 +header-stamp-size+) %i32*%)
                               ((= 8 +header-stamp-size+) %i64*%)
                               (t (error "illegal +header-stamp-size+ ~a expected 4 or 8" +header-stamp-size+))))
-         (header-addr (irc-bit-cast byte-addr header-stamp-type))
-         (value32 (irc-load header-addr))
+         (header-stamp-type (cond
+                              ((= 4 +header-stamp-size+) %i32%)
+                              ((= 8 +header-stamp-size+) %i64%)
+                              (t (error "illegal +header-stamp-size+ ~a expected 4 or 8" +header-stamp-size+))))
+         (header-addr (irc-bit-cast byte-addr header-stamp-ptr-type))
+         (value32 (irc-typed-load header-stamp-type header-addr))
          (value64 (irc-zext value32 %i64%))
          (valuet* (irc-int-to-ptr value64 %t*%)))
     valuet*))
@@ -826,18 +866,18 @@ representing a tagged fixnum."
   (let* ((instance (irc-untag-general object))
          (instance* (irc-bit-cast instance %instance*%))
          (racks* (irc-struct-gep %instance% instance* +instance.rack-index+))
-         (rack (irc-load racks* "rack-tagged"))
+         (rack (irc-t*-load racks* "rack-tagged"))
          (rack* (irc-untag-general rack %rack*%))
          (stamp* (irc-struct-gep %rack% rack* +rack.stamp-index+))
          (stamp-fixnum* (irc-bit-cast stamp* %t**%)))
-    (irc-load stamp-fixnum*)))
+    (irc-typed-load %t*% stamp-fixnum*)))
 
 (defun irc-wrapped-stamp (object)
   (let* ((wrapped (irc-untag-general object))
          (wrapped* (irc-bit-cast wrapped %wrapped-pointer*%))
          (stamp* (irc-struct-gep %wrapped-pointer% wrapped* +wrapped-pointer.stamp-index+))
          (stamp-fixnum* (irc-bit-cast stamp* %t**%)))
-    (irc-load stamp-fixnum*)))
+    (irc-t*-load stamp-fixnum*)))
 
 (defun irc-derivable-stamp (object)
   (let* ((derivable (irc-untag-general object))
@@ -923,16 +963,48 @@ Otherwise do a variable shift."
 (defun irc-fence (order &optional (label ""))
   (llvm-sys:create-fence *irbuilder* order 1 #+(or)'llvm-sys:system label))
 
-(defun irc-load (source &optional (label "") is-volatile)
-  (llvm-sys:create-load-value-bool-twine *irbuilder* source is-volatile label))
+(defun irc-maybe-check-word-aligned-load (pointee-type source)
+  (when (member :check-word-aligned-loads *features*)
+    (when (>= (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) pointee-type) 8)
+      (irc-intrinsic "cc_verify_tag"
+                     (jit-constant-i64 (core:next-jit-unique-counter))
+                     (irc-bit-cast source %i8*%)
+                     (jit-constant-i64 0)))))
 
-(defun irc-load-atomic (source
+(defun irc-typed-load (pointee-type source &optional (label "") is-volatile)
+  (ensure-opaque-or-pointee-type-matches source pointee-type)
+  (irc-maybe-check-word-aligned-load pointee-type source)
+  ;; If :check-alignment is on and the pointee-type is a word or larger then it must be aligned
+  (llvm-sys:create-load-type-value-bool-twine *irbuilder* pointee-type source is-volatile label))
+
+(defun irc-t*-load (source &optional (label "") is-volatile)
+  (ensure-opaque-or-pointee-type-matches source %t*%)
+  (let ((source-type (llvm-sys:get-type source)))
+    (cond
+      ((llvm-sys:type-equal source-type %t**%)
+       (irc-typed-load %t*% source label is-volatile))
+      ((llvm-sys:type-equal source-type %i8***%)
+       (error "Not t* - load from %i8***%")
+       (irc-typed-load %i8**% source label is-volatile))
+      ((llvm-sys:type-equal source-type %tsp*%)
+       (error "Not t* - load from %tsp*%")
+       (irc-typed-load %tsp*% source label is-volatile))
+      ((llvm-sys:type-equal source-type %i64*%)
+       (error "Not t* - load from %64*%")
+       (irc-typed-load %i64% source label is-volatile))
+      (t
+       (error "Wrong type for irc-t*-load - it was ~a" source)))))
+
+(defun irc-typed-load-atomic (pointee-type source
                         &key (label "") (align 8) (order 'llvm-sys:monotonic))
-  (let ((inst (irc-load source label)))
+  (let ((inst (irc-typed-load pointee-type source label)))
     ;; atomic loads require an explicit alignment.
     (llvm-sys:set-alignment inst align)
     (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
+
+(defun irc-t*-load-atomic (source &rest rest &key (label "") (align 8) (order 'llvm-sys:monotonic))
+  (apply #'irc-typed-load-atomic %t*% source rest))
 
 (defun irc-store (val destination &optional (is-volatile nil))
   ;; Mismatch in store types is a very common bug we hit when rewriting codegen.
@@ -1052,8 +1124,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   ;; a XOR with an all-1s constant, which amounts to the same.
   (llvm-sys:create-not *irbuilder* x label))
 
-(defun irc-va_arg (valist* type &optional (name "vaarg"))
-  (llvm-sys:create-vaarg *irbuilder* valist* type name))
+(defun irc-va_arg (vaslist* type &optional (name "vaarg"))
+  (llvm-sys:create-vaarg *irbuilder* vaslist* type name))
 
 (defun irc-vaslist-args-address (vaslist-v &optional (label "vaslist_address"))
   (c++-field-ptr info.%vaslist% vaslist-v :args label))
@@ -1067,12 +1139,18 @@ the type LLVMContexts don't match - so they were defined in different threads!"
          (s1 (llvm-sys:create-insert-value *irbuilder* undef vals '(0) label))
          (s2 (llvm-sys:create-insert-value *irbuilder* s1 nvals '(1)
                                            label)))
+    (unless (llvm-sys:type-equal (llvm-sys:get-type s2) %vaslist%)
+      (error "s2 is a ~a and it must be a %vaslist%" s2))
     s2))
 
 (defun irc-vaslist-values (vaslist &optional (label "values"))
+  (unless (llvm-sys:type-equal (llvm-sys:get-type vaslist) %vaslist%)
+    (error "You must pass a %vaslist% to irc-vaslist-values - you passed a ~a" vaslist))
   (irc-extract-value vaslist '(0) label))
 
 (defun irc-vaslist-nvals (vaslist &optional (label "nvals"))
+  (unless (llvm-sys:type-equal (llvm-sys:get-type vaslist) %vaslist%)
+    (error "You must pass a %vaslist% to irc-vaslist-nvals - you passed a ~a" vaslist))
   (irc-extract-value vaslist '(1) label))
 
 ;;; Get the nth value of a vaslist. This entails checking the number
@@ -1093,9 +1171,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     (let ((null (irc-literal nil "NIL")))
       (irc-br merge)
       (irc-begin-block values)
-      (let ((primary (irc-load (cmp:irc-gep (irc-vaslist-values vaslist)
-                                            (list n))
-                               "primary")))
+      (let ((primary (irc-t*-load (cmp:irc-typed-gep %t*% (irc-vaslist-values vaslist) (list n)) "primary")))
         (irc-br merge)
         (irc-begin-block merge)
         (let ((phi (irc-phi %t*% 2 label)))
@@ -1112,7 +1188,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
          (real-n (irc-intrinsic "llvm.umin.i64" n nvals))
          (new-nvals (irc-sub nvals real-n))
          (vals (irc-vaslist-values vaslist))
-         (new-vals (irc-gep vals (list real-n))))
+         (new-vals (irc-typed-gep %t*% vals (list real-n))))
     (irc-make-vaslist new-nvals new-vals label)))
 
 ;;; Ditto the above, but it's LAST instead of NTHCDR.
@@ -1121,7 +1197,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
          (new-nvals (irc-intrinsic "llvm.umin.i64" n nvals))
          (skip (irc-sub nvals new-nvals))
          (vals (irc-vaslist-values vaslist))
-         (new-vals (irc-gep vals (list skip))))
+         (new-vals (irc-typed-gep vals (list skip))))
     (irc-make-vaslist new-nvals new-vals label)))
 
 ;;; ...and finally, BUTLAST, which is actually the simplest.
@@ -1191,7 +1267,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                    (push (calling-convention-closure calling-convention) rev-call-args)
                    (dolist (binding output-bindings)
                      (let ((alloca-arg (cdr binding)))
-                       (push (irc-load alloca-arg) rev-call-args)))
+                       (push (irc-t*-load alloca-arg) rev-call-args)))
                    (let ((call-args (nreverse rev-call-args)))
                      (cmp:irc-ret
                       (let ((function-type (llvm-sys:get-function-type local-function)))
@@ -1345,7 +1421,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                       (cmp-log "ReturnA%N")
                       (if return-void
                           (irc-ret-void)
-                          (irc-ret (irc-load result)))))))))
+                          (irc-ret (irc-typed-load %tmv% result)))))))))
           (cmp-log "ReturnB%N")
           (let ((xep-group (irc-xep-functions-create cleavir-lambda-list-analysis
                                                      linkage
@@ -1603,6 +1679,14 @@ function-description - for debugging."
     (llvm-sys:set-alignment alloca alignment) ; 8-byte alignment
     alloca))
 
+
+(defun alloca-exn (&optional (label "exn.slot"))
+  (cmp:alloca %exn% 1 label))
+(defun alloca-ehselector (&optional (label "ehselector.slot"))
+  (cmp:alloca %ehselector% 1 label))
+(defun alloca-go-index (&optional (label "go-index.slot"))
+  (cmp:alloca %go-index% 1 label))
+
 (defun alloca-return (&optional (label "")) (alloca %return-type% 1 label))
 (defun alloca-t* (&optional (label "")) (alloca %t*% 1 label))
 (defun alloca-tmv (&optional (label "")) (alloca %tmv% 1 label))
@@ -1613,7 +1697,6 @@ function-description - for debugging."
     al))
 
 (defun alloca-i8* (&optional (label "i8*-")) (alloca %i8*% 1 label))
-
 
 
 (defun alloca-i32 (&optional (label "i32-")) (alloca %i32% 1 label))
@@ -1725,12 +1808,12 @@ function-description - for debugging."
 (defun irc-calculate-entry (closure arity function-type &optional (label "ep-gep"))
   (declare (ignore label))
   (let* ((global-entry-point** (c++-field-ptr info.%function% closure :global-entry-point "global-entry-point**"))
-         (global-entry-point* (irc-load global-entry-point** "global-entry-point*"))
+         (global-entry-point* (irc-typed-load %global-entry-point*% global-entry-point** "global-entry-point*"))
          (ep-i8** (c++-field-ptr info.%global-entry-point% global-entry-point* :entry-points "ep-i8**"))
          (arity-index (irc-arity-index arity))
-         (ep-bc (irc-bit-cast ep-i8** %entry-point-vector*% "ep-bc"))
-         (ep-arity-i8** (irc-gep ep-bc (list 0 arity-index) (format nil "xep-~a-i8**" arity)))
-         (ep-arity-i8*  (irc-load ep-arity-i8** (format nil "xep-~a-i8*" arity))))
+         (ep-bc (irc-bit-cast ep-i8** %i8**% "ep-bc"))
+         (ep-arity-i8** (irc-typed-gep %i8*% ep-bc (list arity-index) (format nil "xep-~a-i8**" arity)))
+         (ep-arity-i8*  (irc-typed-load %i8*% ep-arity-i8** (format nil "xep-~a-i8*" arity))))
     (cmp-log "Got ep-arity-i8* -> {}%N" ep-arity-i8*)
     (prog1 (irc-bit-cast ep-arity-i8* function-type "ep")
       (cmp-log-dump-module *the-module*))))
@@ -1751,7 +1834,7 @@ function-description - for debugging."
       (let ((arg-buffer (alloca-arguments (length arguments) "call-args"))
             (idx 0))
         (dolist (arg arguments)
-          (let ((arg-gep (irc-gep arg-buffer (list 0 idx))))
+          (let ((arg-gep (irc-typed-gep (llvm-sys:array-type-get %t*% (length arguments)) arg-buffer (list 0 idx))))
             (incf idx)
             (irc-store arg arg-gep)))
         (list closure (jit-constant-size_t (length arguments)) (irc-bit-cast arg-buffer %t**%)))
@@ -1990,13 +2073,13 @@ function-description - for debugging."
     (let ((label (if literal-name
                      literal-name
                      "")))
-      (values (irc-load ref label) label))))
+      (values (irc-t*-load ref label) label))))
 
 (defun irc-global-setf-symbol (sym env)
   (declare (ignore env))
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).
    Pass XXXX as the sym to this function."
-  (irc-load (literal:compile-reference-to-literal sym)))
+  (irc-t*-load (literal:compile-reference-to-literal sym)))
 
 (defun irc-environment-activation-frame (env)
   (if env

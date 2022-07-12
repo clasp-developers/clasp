@@ -5,6 +5,10 @@ verbose = False   # turns on dbg_print(xxxx)
 layout = None
 debugger = False
 
+data_type_smart_ptr = 1
+data_type_atomic_smart_ptr = 2
+data_type_tagged_ptr = 3
+
 def dbg_print(msg):
     if (verbose):
         print(msg)
@@ -156,7 +160,7 @@ def Init_bitunit_container_kind(stamp, name, size, bits_per_bitunit):
     global_kinds[stamp] = BitunitContainerKind(stamp,name,size,bits_per_bitunit)
     
 def Init__fixed_field(stamp,index,data_type,field_name,field_offset):
-    # print("Init__fixed_field stamp = %d\n" % stamp)
+    # print("Init__fixed_field stamp = %d field_offset=%d\n" % (stamp, field_offset))
     classKind = global_kinds[stamp]
     field = FixedField(index,data_type,field_name,field_offset)
     classKind._fields[index] = field
@@ -571,6 +575,7 @@ class GodObject_O(General_O):
         out = StringIO()
         out.write("Dump %s at 0x%x\n" % (self._class._name, self._Ptr))
         idx = 1
+        # print("global_kinds = %s\n" % global_kinds[306]._fields )
         convchar = nextConvenienceCharacter()
         for offset in range(0,self._classSize,8):
             if (not offset in self._fieldAtOffset):
@@ -579,10 +584,18 @@ class GodObject_O(General_O):
                 out.write("[         off: +%3d @0x%x] $%c%d-> 0x%x %d\n" % (offset, addr, convchar, idx, tptr, tptr))
             else:
                 cur = self._fieldAtOffset[offset]
+                data_type = cur._data_type
                 addr = self._address+cur._field_offset
                 tptr = self._debugger.read_memory(addr,8)
-                obj = translate_tagged_ptr(self._debugger,tptr)
-                out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" %(cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, obj))
+                if ( (data_type == data_type_smart_ptr) or
+                     (data_type == data_type_atomic_smart_ptr) or
+                     (data_type == data_type_tagged_ptr) ):
+                    addr = self._address+cur._field_offset
+                    tptr = self._debugger.read_memory(addr,8)
+                    obj = translate_tagged_ptr(self._debugger,tptr)
+                    out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" %(cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, obj))
+                else:
+                    out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" % (cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, tptr ))
             self._debugger.set_convenience_variable("%c%d" % (convchar, idx), tptr )
             idx += 1
         return out.getvalue()

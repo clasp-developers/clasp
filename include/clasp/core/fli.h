@@ -140,27 +140,27 @@ namespace clasp_ffi {
     void *raw_data( void ) { return m_raw_data; };
     void *ptr( void ) { return m_raw_data; };
 
-    CL_DEFMETHOD size_t foreign_data_size(void) { return m_size; };
+    CLASP_DEFMETHOD size_t foreign_data_size(void) { return m_size; };
 
     // -- TRANSFORMING ACCESS --
     template <class T>
       T data() { return reinterpret_cast<T>(this->raw_data()); };
 
     // LISP EXPOSED SETTER & GETTER METHODS
-    CL_DEFMETHOD core::T_sp PERCENTkind();
-    CL_DEFMETHOD core::Integer_sp PERCENTownership_flags();
-    CL_DEFMETHOD core::Integer_sp PERCENTforeign_data_address();
+    CLASP_DEFMETHOD core::T_sp PERCENTkind();
+    CLASP_DEFMETHOD core::Integer_sp PERCENTownership_flags();
+    CLASP_DEFMETHOD core::Integer_sp PERCENTforeign_data_address();
 
     // MAKE AND CREATE
     static ForeignData_sp create(const uintptr_t address = 0);
     static ForeignData_sp create(void * p_address = nullptr, size_t size = 0);
 
-    CL_DEFMETHOD void PERCENTfree_foreign_object();
-    CL_DEFMETHOD void PERCENTfree_foreign_data();
+    CLASP_DEFMETHOD void PERCENTfree_foreign_object();
+    CLASP_DEFMETHOD void PERCENTfree_foreign_data();
 
     // POINTER ADDRESS MANIPULATION
-    CL_DEFMETHOD ForeignData_sp PERCENTinc_pointer_in_place(core::Integer_sp offset);
-    CL_DEFMETHOD ForeignData_sp PERCENTinc_pointer(core::Integer_sp offset);
+    CLASP_DEFMETHOD ForeignData_sp PERCENTinc_pointer_in_place(core::Integer_sp offset);
+    CLASP_DEFMETHOD ForeignData_sp PERCENTinc_pointer(core::Integer_sp offset);
 
     // OBJECT PRINTING
     string __repr__() const;
@@ -522,20 +522,20 @@ namespace clasp_ffi
                                       ForeignData_sp    from_object_fn_ptr );
 
     // SLOT ACCESS
-    CL_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; }; // e.g. :unsigned-int
-    CL_DEFMETHOD core::String_sp      PERCENTlisp_name() { return m_lisp_name; }; // e.g. unisgned_int
-    CL_DEFMETHOD core::Integer_sp     PERCENTsize() { return m_size; }; // size in bytes
-    CL_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; }; // alignment in bytes
-    CL_DEFMETHOD core::String_sp      PERCENTcxx_name() { return m_cxx_name; }; // e.g. "unsigned int"
+    CLASP_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; }; // e.g. :unsigned-int
+    CLASP_DEFMETHOD core::String_sp      PERCENTlisp_name() { return m_lisp_name; }; // e.g. unisgned_int
+    CLASP_DEFMETHOD core::Integer_sp     PERCENTsize() { return m_size; }; // size in bytes
+    CLASP_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; }; // alignment in bytes
+    CLASP_DEFMETHOD core::String_sp      PERCENTcxx_name() { return m_cxx_name; }; // e.g. "unsigned int"
 
-    CL_DEFMETHOD core::String_sp      PERCENTto_object_fn_name() { return m_to_object_fn_name; };
-    CL_DEFMETHOD core::String_sp      PERCENTfrom_object_fn_name() { return m_from_object_fn_name; };
-    CL_DEFMETHOD ForeignData_sp      PERCENTto_object_fn_ptr() { return m_to_object_fn_ptr; };
-    CL_DEFMETHOD ForeignData_sp      PERCENTfrom_object_fn_ptr() { return m_from_object_fn_ptr; };
+    CLASP_DEFMETHOD core::String_sp      PERCENTto_object_fn_name() { return m_to_object_fn_name; };
+    CLASP_DEFMETHOD core::String_sp      PERCENTfrom_object_fn_name() { return m_from_object_fn_name; };
+    CLASP_DEFMETHOD ForeignData_sp      PERCENTto_object_fn_ptr() { return m_to_object_fn_ptr; };
+    CLASP_DEFMETHOD ForeignData_sp      PERCENTfrom_object_fn_ptr() { return m_from_object_fn_ptr; };
 
-    CL_DEFMETHOD core::Function_sp    PERCENTllvm_type_symbol_fn() { return m_llvm_type_symbol_fn; };
+    CLASP_DEFMETHOD core::Function_sp    PERCENTllvm_type_symbol_fn() { return m_llvm_type_symbol_fn; };
 
-    CL_DEFMETHOD void                 PERCENTset_llvm_type_symbol_fn( core::Function_sp llvm_type_symbol_fn );
+    CLASP_DEFMETHOD void                 PERCENTset_llvm_type_symbol_fn( core::Function_sp llvm_type_symbol_fn );
 
     // SLOTS
     core::Symbol_sp       m_lisp_symbol;

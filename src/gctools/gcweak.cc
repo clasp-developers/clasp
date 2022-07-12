@@ -110,7 +110,7 @@ void WeakKeyHashTable::setupThreadSafeHashTable() {
 
 uint WeakKeyHashTable::sxhashKey(const value_type &key) {
   GCWEAK_LOG(fmt::sprintf("Calling lisp_hash for key: %p" , (void *)lisp_badge(key)));
-  return core::lisp_hash(reinterpret_cast<uintptr_t>(lisp_badge(key)));
+  return core::lisp_hash(static_cast<uintptr_t>(lisp_badge(key)));
 }
 
 /*! Return 0 if there is no more room in the sequence of entries for the key

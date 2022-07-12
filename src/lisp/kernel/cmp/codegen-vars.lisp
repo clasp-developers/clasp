@@ -502,7 +502,7 @@
   "Generate code to reference a lexical variable in the current value frame"
   (or (llvm-sys:type-equal (llvm-sys:get-type renv) %afsp*%)
       (error "renv is not the right type %afsp*%, it is: ~a" (llvm-sys:get-type renv)))
-  (let* ((value-frame-tsp           (irc-load renv))
+  (let* ((value-frame-tsp           (irc-t*-load renv))
          (tagged-value-frame-ptr    (llvm-sys:create-extract-value *irbuilder* value-frame-tsp (list 0) "tagged-value-frame-ptr"))
          (as-uintptr_t              (irc-ptr-to-int tagged-value-frame-ptr %uintptr_t% ""))
          (general-pointer-tag       (cdr (assoc :general-tag cmp::+cxx-data-structures-info+)))
@@ -517,7 +517,7 @@
 
 #+(or)
 (defun codegen-parent-frame-lookup (renv)
-  (let* ((value-frame-tsp        (irc-load          renv))
+  (let* ((value-frame-tsp        (irc-t*-load          renv))
          (tagged-value-frame-ptr (irc-extract-value value-frame-tsp (list 0) "pfl-tagged-value-frame-ptr"))
          (as-uintptr-t           (irc-ptr-to-int    tagged-value-frame-ptr %uintptr_t% "pfl-as-uintptr-t"))
          (parent-uintptr         (irc-add           as-uintptr-t (jit-constant-uintptr_t (- +value-frame-parent-offset+ +general-tag+)) "pfl-no-tag-uintptr"))
@@ -557,7 +557,7 @@
   ;;      in activation frames as quickly as possible but cannot use registers
   ;; This second option saves information that can be used later to convert local lexical variables into allocas
   (declare (ignore dest-env))
-  (let* ((start-renv (irc-load (irc-renv start-env)))
+  (let* ((start-renv (irc-t*-load (irc-renv start-env)))
          (instruction (irc-intrinsic "lexicalValueReference" (jit-constant-size_t depth) (jit-constant-size_t index) start-renv)))
     #+optimize-bclasp(push (make-lexical-variable-reference :symbol symbol
                                                             :start-env start-env
@@ -571,13 +571,13 @@
 (defun codegen-lexical-var-lookup (result symbol depth index src-env dest-env)
   "Generate IR for lookup of lexical value in runtime-env using depth and index"
   (let* ((ref (codegen-lexical-var-reference symbol depth index src-env dest-env))
-         (val (irc-load ref "lexical-value-load")))
+         (val (irc-t*-load ref "lexical-value-load")))
     (irc-t*-result val result))
   result)
 
 (defun codegen-alloca-var-lookup (result alloca)
   ;; Read from an alloca
-  (let ((val (irc-load alloca)))
+  (let ((val (irc-t*-load alloca)))
     (irc-t*-result val result)))
 
 (defun codegen-llvm-register-var-lookup (result register)

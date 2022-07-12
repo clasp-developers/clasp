@@ -22,6 +22,8 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 #+(or)(defvar *run-time-values-table* (core:load-time-value-array *run-time-values-table-name* 0))
 #+(or)(core:set-run-time-values-table *run-time-values-table-name*)
 
+(defvar *load-time-value-holder-global-var-type* nil
+  "Store the current load-time-value data structure type for COMPILE-FILE")
 (defvar *load-time-value-holder-global-var* nil
   "Store the current load-time-value data structure for COMPILE-FILE")
 
@@ -100,10 +102,8 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 
 (defun ltv-global ()
   "called by cclasp"
-  *load-time-value-holder-global-var*
-  #+(or)(if cmp:*generate-compile-file-load-time-values*
-      *load-time-value-holder-global-var*
-      *run-time-values-table-global-var*))
+  (values *load-time-value-holder-global-var*
+          *load-time-value-holder-global-var-type*))
 
 (defun generate-load-time-values () *generate-compile-file-load-time-values*)
 

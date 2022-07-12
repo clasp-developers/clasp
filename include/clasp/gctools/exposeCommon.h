@@ -26,7 +26,7 @@ typedef bool _Bool;
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/Support/FormattedStream.h>
-#include <llvm/Support/TargetRegistry.h>
+#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Pass.h>
 #include <llvm/IR/LegacyPassManager.h>
@@ -123,6 +123,7 @@ typedef bool _Bool;
 
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/insertPoint.h>
@@ -134,9 +135,6 @@ typedef bool _Bool;
 #include <clasp/asttooling/example.h>
 
 #include <clasp/asttooling/translators.h>
-//#include <clasp/asttooling/Registry.h>
-//#include <clasp/asttooling/Diagnostics.h>
-//#include <clasp/asttooling/Marshallers.h>
 
 #ifdef BUILD_EXTENSION
 #define GC_INTERFACE_INCLUDES

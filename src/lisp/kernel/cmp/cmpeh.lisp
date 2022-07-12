@@ -28,7 +28,7 @@
 
 #|
 For sbcl
-(sb-ext:restrict-compiler-policy 'debug 3)
+(sb-ext:restrict-compiler-policy '!debug 3)
 
 |#
 
@@ -111,14 +111,14 @@ For sbcl
       ((eq (caar clause) 'all-other-exceptions)
        `(progn
 	  (irc-begin-block ,cur-dispatcher-block)
-	  (with-begin-end-catch ((irc-load ,exn.slot "exn") dummy-exception ,rethrow-bb)
+	  (with-begin-end-catch ((irc-typed-load cmp:%exn% ,exn.slot "exn") dummy-exception ,rethrow-bb)
 	    ,@clause-body
 	    ))
        )
       (t
        `(progn
 	  (irc-begin-block ,cur-dispatcher-block)
-	  (let* ((,sel-gs (irc-load ,ehselector.slot "ehselector-slot"))
+	  (let* ((,sel-gs (irc-typed-load %ehselector% ,ehselector.slot "ehselector-slot"))
 		 (,typeid-gs (irc-intrinsic "llvm.eh.typeid.for"
                                             (irc-exception-typeid* ',clause-type)))
                  #+debug-eh(_          (irc-intrinsic "debugPrintI32" ,sel-gs))
@@ -131,7 +131,7 @@ For sbcl
 ;;	    (irc-intrinsic "debugPrintI32" ,typeid-gs)
 	    (irc-cond-br ,matches-type-gs ,handler-block-gs ,next-dispatcher-block)
 	    (irc-begin-block ,handler-block-gs)
-	    (with-begin-end-catch ((irc-load ,exn.slot "exn") ,clause-exception-name ,rethrow-bb)
+	    (with-begin-end-catch ((irc-typed-load cmp:%exn% ,exn.slot "exn") ,clause-exception-name ,rethrow-bb)
 	      ,@clause-body)
 	    (irc-branch-if-no-terminator-inst ,successful-catch-block) ;; Why is this commented out?
 	    ))
@@ -182,19 +182,23 @@ For sbcl
     rethrow-cleanup))
 
 (defun generate-ehcleanup-and-resume-code (function exn.slot ehselector.slot)
+  ;; Make sure everything goes into ehbuilder
   (let* ((ehbuilder       (llvm-sys:make-irbuilder (thread-local-llvm-context)))
          (ehcleanup       (irc-basic-block-create "TRY.ehcleanup" function))
          (ehresume        (irc-basic-block-create "TRY.ehresume" function))
          (_1              (irc-set-insert-point-basic-block ehcleanup ehbuilder))
          (_2              (llvm-sys:create-br ehbuilder ehresume))
          (_3              (irc-set-insert-point-basic-block ehresume ehbuilder))
-         (exn7            (llvm-sys:create-load-value-twine ehbuilder exn.slot "exn7"))
-         (sel             (llvm-sys:create-load-value-twine ehbuilder ehselector.slot "sel"))
+         (exn7            (llvm-sys:create-load-type-value-twine ehbuilder cmp:%exn% exn.slot "exn7"))
+         (sel             (llvm-sys:create-load-type-value-twine ehbuilder cmp:%ehselector% ehselector.slot "sel"))
          (undef           (llvm-sys:undef-value-get %exception-struct% ))
          (lpad.val        (llvm-sys:create-insert-value ehbuilder undef exn7 '(0) "lpad.val"))
          (lpad.val8       (llvm-sys:create-insert-value ehbuilder lpad.val sel '(1) "lpad.val8"))
-         (_4               (llvm-sys:create-resume ehbuilder lpad.val8)))
+         #+(or)(__ (format t "About to create-resume ~a~%" lpad.val8))
+         (_4              (llvm-sys:create-resume ehbuilder lpad.val8))
+         #+(or)(__2 (format t "Resume is ~a~%" _4)))
     (declare (ignore _1 _2 _3 _4))
+    ;;(llvm-sys:dump-module *the-module*)
     ehcleanup))
 
 ;;; ------------------------------------------------------------
@@ -207,8 +211,8 @@ For sbcl
 (defmacro with-new-function-prepare-for-try ((function) &body body)
   `(let* ((*exception-handling-level* 0)
           (*exception-clause-types-to-handle* nil)
-          (*current-function-exn.slot* (alloca-i8* "exn.slot"))
-          (*current-function-ehselector.slot* (alloca-i32 "ehselector.slot"))
+          (*current-function-exn.slot* (alloca-exn "exn.slot"))
+          (*current-function-ehselector.slot* (alloca-ehselector "ehselector.slot"))
           (*exception-handler-cleanup-block* (generate-ehcleanup-and-resume-code ,function *current-function-exn.slot* *current-function-ehselector.slot*))
           (*current-function-terminate-landing-pad* nil)
           (*current-unwind-landing-pad-dest* nil)) ; *current-function-terminate-landing-pad*))

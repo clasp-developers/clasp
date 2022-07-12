@@ -245,7 +245,7 @@
            ,@arguments))
         ;; Default: AMOP protocol.
         (t `(funcall (load-time-value (method-function ,method) t)
-                     ;; last element might be a valist
+                     ;; last element might be a vaslist
                      (apply #'list ,@arguments)
                      (load-time-value
                       (list ,@(call-method-next-methods

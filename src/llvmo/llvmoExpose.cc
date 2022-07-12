@@ -92,7 +92,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/Support/FormattedStream.h>
-#include <llvm/Support/TargetRegistry.h>
+#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Pass.h>
@@ -134,6 +134,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <clasp/core/array.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/lightProfiler.h>
 #include <clasp/llvmo/insertPoint.h>
@@ -177,12 +178,23 @@ CL_DEFUN void llvm_sys__debugObjectFiles(core::Symbol_sp sym) {
 
     
 
-std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size) {
-  stringstream ss;
-  ss << prefix;
-  ss << "@" << start << "-" << size;
-//  printf("%s:%d uniqueMemoryBufferName -> %s\n", __FILE__, __LINE__, ss.str().c_str());
-  return ss.str();
+std::string ensureUniqueMemoryBufferName(const std::string& name) {
+  if (countObjectFileNames(name)>0) {
+    stringstream ss;
+    ss << name << "-" << core::core__next_jit_compile_counter();
+    return ensureUniqueMemoryBufferName(ss.str());
+  }
+  return name;
+}
+
+/*! Return the id from a name with the format xxxx#num
+ */
+size_t objectIdFromName(const std::string& name) {
+  size_t pos = name.find_first_of("0123456789");
+  size_t lpos = name.find_last_of("0123456789");
+  std::string snum = name.substr(pos,lpos+1);
+  size_t num = std::stoull(snum);
+  return num;
 }
 
 
@@ -730,7 +742,7 @@ CL_EXTERN_DEFUN(( std::string(*)(llvm::StringRef str))&llvm::Triple::normalize);
 CL_LISPIFY_NAME(getTriple);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getTriple);
 CL_LISPIFY_NAME(getArchName);
-CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getArchName);
+CL_EXTERN_DEFMETHOD(Triple_O, (llvm::StringRef (llvm::Triple::*)() const) &llvm::Triple::getArchName);
 CL_LISPIFY_NAME(getVendorName);
 CL_EXTERN_DEFMETHOD(Triple_O, &llvm::Triple::getVendorName);
 CL_LISPIFY_NAME(getOSName);
@@ -974,10 +986,12 @@ CL_END_ENUM(_sym_ObjectFormatType);
 namespace llvmo {
 
 CL_LISPIFY_NAME(make-target-options);
+CL_LAMBDA(&key function-sections)
 DOCGROUP(clasp)
-CL_DEFUN TargetOptions_sp TargetOptions_O::make() {
+CL_DEFUN TargetOptions_sp TargetOptions_O::make(bool functionSections ) {
   auto  self = gctools::GC<TargetOptions_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::TargetOptions();
+  self->_ptr->FunctionSections = functionSections;
   return self;
 };
 
@@ -1111,7 +1125,7 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
   }
 };
 
-
+#if 0
 DOCGROUP(clasp)
 CL_DEFUN Module_sp llvm_sys__parseIRString(core::T_sp llvm_ir_string, LLVMContext_sp context) {
   core::String_sp source = gc::As<core::String_sp>(llvm_ir_string);
@@ -1131,7 +1145,9 @@ CL_DEFUN Module_sp llvm_sys__parseIRString(core::T_sp llvm_ir_string, LLVMContex
   return omodule;
 };
 
+#endif
 DOCGROUP(clasp)
+
 CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp context) {
   if (tfilename.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
   core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
@@ -1146,6 +1162,24 @@ CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp co
   if (!m) {
     std::string message = smd.getMessage().str();
     SIMPLE_ERROR(("Could not load llvm-ir for file %s - error: %s") , spathname->get_std_string() , message );
+  }
+  Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
+  return omodule;
+};
+
+DOCGROUP(clasp)
+CL_DEFUN Module_sp llvm_sys__parseIRString(const std::string& llCode, LLVMContext_sp context, const std::string& bufferName ) {
+  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getMemBuffer(llCode, bufferName );
+  if (std::error_code ec = eo_membuf.getError()) {
+    SIMPLE_ERROR("Could not construct a memory buffer for the string %s error: %s", llCode , ec.message());
+  }
+  llvm::SMDiagnostic smd;
+  std::unique_ptr<llvm::Module> module =
+    llvm::parseIR(eo_membuf.get()->getMemBufferRef(), smd, *(context->wrappedPtr()));
+  llvm::Module* m = module.release();
+  if (!m) {
+    std::string message = smd.getMessage().str();
+    SIMPLE_ERROR("Could not load llvm-ir for string %s - error: %s" , llCode , message );
   }
   Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
   return omodule;
@@ -1358,12 +1392,16 @@ void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type *> 
 }
 
 namespace llvmo {
-CL_PKG_NAME(LlvmoPkg,"make-Module");
+CL_PKG_NAME(LlvmoPkg,"make-module");
 CL_LAMBDA(module-name context)
 DOCGROUP(clasp)
-CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
+CL_DEFUN Module_sp Module_O::make(const std::string& namePrefix, LLVMContext_sp context) {
   auto  self = gctools::GC<Module_O>::allocate_with_default_constructor();
-  self->_ptr = new llvm::Module(module_name, *(context->wrappedPtr()));
+  self->_Id = core::core__next_jit_compile_counter();
+  stringstream uniqueName;
+  uniqueName << namePrefix << "-" << self->_Id;
+  self->_UniqueName = uniqueName.str();
+  self->_ptr = new llvm::Module(self->_UniqueName, *(context->wrappedPtr()));
   return self;
 };
 
@@ -1637,6 +1675,20 @@ CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getOrEmitGlobalVa
 
 }; // llvmo
 
+
+
+namespace llvmo {
+
+
+CL_DEFMETHOD llvm::Type* PointerType_O::getElementType() const {
+  return dyn_cast<llvm::PointerType>(this->wrappedPtr())->getElementType();
+}
+
+CL_DEFUN bool llvm_sys__isOpaqueOrPointeeTypeMatches(Type_sp ptrType, Type_sp ty) {
+  return dyn_cast<llvm::PointerType>(ptrType->wrappedPtr())->isOpaqueOrPointeeTypeMatches(ty->wrappedPtr());
+}  
+  
+};
 
 namespace llvmo {
 CL_LISPIFY_NAME("DataLayoutCopy");
@@ -2042,7 +2094,7 @@ CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
 }; // llvmo
 
 namespace llvmo {
-
+#if 0
 DOCGROUP(clasp)
 CL_DEFUN llvm::Instruction* llvm_sys__replace_call_keep_args(llvm::Function* func, llvm::Instruction* callOrInvoke) {
 //  printf("%s:%d In llvm-sys::replace-call\n",__FILE__, __LINE__);
@@ -2070,7 +2122,7 @@ CL_DEFUN llvm::Instruction* llvm_sys__replace_call_keep_args(llvm::Function* fun
   llvm::ReplaceInstWithInst(callOrInvoke,NewCI);
   return NewCI;
 };
-
+#endif
 
 DOCGROUP(clasp)
 CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Function* func, llvm::Instruction* callOrInvoke, llvm::ArrayRef<llvm::Value *> args) {
@@ -2593,20 +2645,20 @@ CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateConstGEP2_32(llvm::Type* ty, llvm::
 }
 
 CL_LISPIFY_NAME(CreateConstGEP2_64);
-CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateConstGEP2_64(llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name) {
+CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateConstGEP2_64(llvm::Type* type, llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name) {
   size_t uidx0 = static_cast<size_t>(idx0);
   size_t uidx1 = static_cast<size_t>(idx1);
-  return this->wrappedPtr()->CreateConstGEP2_64(Ptr,uidx0, uidx1,Name);
+  return this->wrappedPtr()->CreateConstGEP2_64(type,Ptr,uidx0, uidx1,Name);
 }
 
 CL_LISPIFY_NAME("CreateInBoundsGEP");
-CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name) {
+CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateInBoundsGEP(llvm::Type* type, llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name) {
   vector<llvm::Value *> vector_IdxList;
   for (auto cur : IdxList) {
     vector_IdxList.push_back(gc::As<Value_sp>(oCar(cur))->wrappedPtr());
   }
   llvm::ArrayRef<llvm::Value *> array_ref_vector_IdxList(vector_IdxList);
-  return this->wrappedPtr()->CreateInBoundsGEP(Ptr, array_ref_vector_IdxList, Name);
+  return this->wrappedPtr()->CreateInBoundsGEP(type, Ptr, array_ref_vector_IdxList, Name);
 }
 
 CL_LISPIFY_NAME("CreateExtractValue");
@@ -3204,10 +3256,10 @@ CL_LISPIFY_NAME(CreateXor_value_apint);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateXor);
 CL_LISPIFY_NAME(CreateXor_value_uint64);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateXor);
-CL_LISPIFY_NAME(CreateLoad_value_twine);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
-CL_LISPIFY_NAME(CreateLoad_value_bool_twine);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, bool, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
+CL_LISPIFY_NAME(CreateLoad_type_value_twine);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Type* Ty, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
+CL_LISPIFY_NAME(CreateLoad_type_value_bool_twine);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Type* Ty, llvm::Value *, bool, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
 CL_DOCSTRING("The type must be equiv to firstValue->getType()->getScalarType()->getPointerElementType()");
 CL_LISPIFY_NAME(CreateGEP0);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Type*, llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
@@ -3327,8 +3379,10 @@ CL_LISPIFY_NAME("removeFnAttr");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(Attribute::AttrKind Kind))&llvm::Function::removeFnAttr);
 CL_LISPIFY_NAME("hasFnAttribute");
 CL_EXTERN_DEFMETHOD(Function_O, (bool (llvm::Function::*)(Attribute::AttrKind Kind) const)&llvm::Function::hasFnAttribute);
+#if 0
 CL_LISPIFY_NAME("addAttribute");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(unsigned i, typename llvm::Attribute::AttrKind Attr))&llvm::Function::addAttribute);
+#endif
 CL_LISPIFY_NAME("addParamAttr");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(unsigned i, typename llvm::Attribute::AttrKind Attr))&llvm::Function::addParamAttr);
 
@@ -3337,7 +3391,10 @@ CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::DISubprogram*))&
 
 CL_LISPIFY_NAME("addReturnAttr");
 CL_DEFMETHOD void Function_O::addReturnAttr(typename llvm::Attribute::AttrKind Attr) {
-  this->wrappedPtr()->addAttribute(llvm::AttributeList::ReturnIndex, Attr);
+  printf("%s:%d:%s Entered but this function has been retired in llvm or it's name changed to addRetAttr\n",
+         __FILE__, __LINE__, __FUNCTION__ );
+  
+  // this->wrappedPtr()->addAttribute(llvm::AttributeList::ReturnIndex, Attr);
 }
 
 CL_DEFMETHOD LLVMContext_sp Function_O::getContext() const {
@@ -3497,6 +3554,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(get_contained_type);
 CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getContainedType);
+CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::isPointerTy);
 
 CL_DEFMETHOD LLVMContext_sp Type_O::getContext() const {
   return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
@@ -3518,6 +3576,8 @@ string Type_O::__repr__() const {
   ss << ro.str() << ">";
   return ss.str();
 }
+
+
 
 CL_LAMBDA((self llvm-sys::type) &optional (addressSpace 0))
 CL_DOCSTRING(R"dx(Return a PointerType to the llvm Type)dx")
@@ -3692,8 +3752,13 @@ CL_DEFUN ArrayType_sp ArrayType_O::get(Type_sp elementType, uint64_t numElements
 }
 
 
-
-;
+CL_DEFUN size_t llvm_sys__getNumElements(Type_sp ty) {
+  llvm::ArrayType* array = dyn_cast<llvm::ArrayType>(ty->wrappedPtr());
+  if (!array) {
+    SIMPLE_ERROR("Could not cast %s to array" , _rep_(ty));
+  }
+  return array->getNumElements();
+}
 
 };
 
@@ -4305,399 +4370,7 @@ CL_DEFUN core::T_sp llvm_sys__vmmap()
 SYMBOL_EXPORT_SC_(LlvmoPkg,library);
 };
 
-#ifdef _TARGET_OS_DARWIN    
-#define TEXT_NAME "__TEXT,__text"
-#define DATA_NAME "__DATA,__data"
-#define EH_FRAME_NAME "__TEXT,__eh_frame"
-#define BSS_NAME  "__DATA,__bss"
-#define STACKMAPS_NAME "__LLVM_STACKMAPS,__llvm_stackmaps"
-#elif defined(_TARGET_OS_LINUX)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define DATA_NAME ".data"
-#define BSS_NAME  ".bss"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#elif defined(_TARGET_OS_FREEBSD)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define DATA_NAME ".data"
-#define BSS_NAME  ".bss"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#else
-#error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
-#endif
-
 namespace llvmo {
-
-#if defined(_TARGET_OS_DARWIN)
-  std::string gcroots_in_module_name = "_" GCROOTS_IN_MODULE_NAME;
-  std::string literals_name = "_" LITERALS_NAME;
-#endif
-#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-  std::string gcroots_in_module_name = GCROOTS_IN_MODULE_NAME;
-  std::string literals_name = LITERALS_NAME;
-#endif
-#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
-#error You need to decide here
-#endif
-
-
-
-class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
-  void modifyPassConfig(llvm::orc::MaterializationResponsibility &MR,
-                        llvm::jitlink::LinkGraph &G,
-                        llvm::jitlink::PassConfiguration &Config) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ClaspPlugin modifyPassConfig\n", __FILE__, __LINE__, __FUNCTION__ ));
-    auto PersonalitySymbol =
-      MR.getTargetJITDylib().getExecutionSession().intern("DW.ref.__gxx_personality_v0");
-    if (!MR.getSymbols().count(PersonalitySymbol))
-      Config.PrePrunePasses.insert( Config.PrePrunePasses.begin(),
-                                  [this](jitlink::LinkGraph&G) -> Error {
-                                    for (auto ssym : G.defined_symbols()) {
-                                      if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
-                                        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__, __FUNCTION__ ));
-                                        ssym->setLinkage(Linkage::Strong);
-                                        ssym->setScope(Scope::Local);
-                                        break;
-                                      }
-                                    }
-                                    return Error::success();
-                                  });
-    Config.PrePrunePasses.push_back(
-                                    [this](jitlink::LinkGraph &G) -> Error {
-                                      size_t count = 0;
-                                      for (auto &Sec : G.sections()) {
-                                        if (Sec.getName() == EH_FRAME_NAME )
-                                          for (auto *S : Sec.symbols()) {
-                                            S->setLive(true);
-                                            count++;
-                                          }
-                                      }
-                                      for (auto ssym : G.defined_symbols()) {
-                                        std::string sname = ssym->getName().str();
-                                        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
-                                        bool keptAlive = false;
-                                        if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
-                                          keptAlive = true;
-                                        } else if ( sname.find(literals_name) != std::string::npos ) {
-                                          keptAlive = true;
-#if 1
-                                          // I'd like to do this on linux because jit symbols need to be exposed but it slows down startup enormously
-                                        } else if ( sname.find("^^") != std::string::npos ) {
-                                          // Keep alive mangled symbols that we care about
-//                                          keptAlive = true;
-#endif
-                                        } 
-                                        if (keptAlive) {
-//                                          printf("%s:%d:%s preprune symbol: %s  alive: %d\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str(), keptAlive );
-                                          ssym->setLive(true);
-                                        }
-                                      }
-                                      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %lu symbols\n", __FILE__, __LINE__, __FUNCTION__, count ));
-                                      return Error::success();
-                                    });
-    Config.PrePrunePasses.push_back([this](jitlink::LinkGraph &G) -> Error {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePasses\n", __FILE__, __LINE__, __FUNCTION__));
-      keepAliveStackmap(G);
-                                      //printLinkGraph(G, "PrePrune:");
-      return Error::success();
-    });
-    Config.PostFixupPasses.push_back([this](jitlink::LinkGraph &G) -> Error {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PostFixupPasses\n", __FILE__, __LINE__, __FUNCTION__));
-      parseLinkGraph(G);
-                                       // printLinkGraph(G, "PostFixup:");
-      return Error::success();
-    });
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__));
-  }
-
-  void notifyLoaded(llvm::orc::MaterializationResponsibility& MR) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ ));
-  }
-
-  llvm::Error  notifyFailed(llvm::orc::MaterializationResponsibility& MR) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ ));
-    return Error::success();
-  }
-
-  llvm::Error notifyRemovingResources(ResourceKey K) {
-    printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
-    return Error::success();
-  }
-
-  void notifyTransferringResources(ResourceKey DstKey, ResourceKey SrcKey) {
-    printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
-  }
-
-
-  
-  void keepAliveStackmap(llvm::jitlink::LinkGraph &G) {
-    for (auto &S : G.sections()) {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
-      if (S.getName().str() == STACKMAPS_NAME) {
-        for ( auto& sym : S.symbols() ) {
-          sym->setLive(true);
-        }
-      }
-    }
-  }
-  
-  void parseLinkGraph(llvm::jitlink::LinkGraph &G) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
-    uintptr_t textStart = ~0;
-    uintptr_t textEnd = 0;
-    bool gotGcroots = false;
-    for (auto &S : G.sections()) {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  section: %s getOrdinal->%u \n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
-      std::string sectionName = S.getName().str();
-      if ( (sectionName.find(BSS_NAME)!=string::npos) ||
-	   (sectionName.find(DATA_NAME)!=string::npos) ) {
-        llvm::jitlink::SectionRange range(S);
-        for ( auto& sym : S.symbols() ) {
-          std::string name = sym->getName().str();
-          void* address = (void*)sym->getAddress();
-          size_t size = sym->getSize();
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
-        }
-      }
-#if 0
-      else if (sectionName.find(DATA_NAME)!=string::npos) {
-        // If we want to handle the .data section differently than .bss then add more code here
-	llvm::jitlink::SectionRange range(S);
-	for ( auto& sym : S.symbols() ) {
-          // If we need to grab symbols from DATA_NAME segment do it here
-	}
-      }
-#endif    
-      else if (S.getProtectionFlags() & llvm::sys::Memory::MF_EXEC) {
-	// Text section
-        llvm::jitlink::SectionRange range(S);
-	if ((uintptr_t)range.getStart() < textStart) textStart = (uintptr_t)range.getStart();
-	uintptr_t tend = (uintptr_t)range.getStart()+range.getSize();
-	if ( textEnd < tend ) textEnd = tend;
-        Code_sp currentCode = my_thread->topObjectFile()->_Code;
-        currentCode->_TextSectionStart = (void*)range.getStart();
-        currentCode->_TextSectionEnd = (void*)((char*)range.getStart()+range.getSize());
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
-#if 0
-        if (snapshotSaveLoad::global_debugSnapshot) {
-          printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 my_thread->topObjectFile().raw_(),
-                 currentCode.raw_(),
-                 currentCode->_TextSectionStart,
-                 currentCode->_TextSectionEnd );
-        }
-#endif
-        for ( auto& sym : S.symbols() ) {
-          if (sym->isCallable()&&sym->hasName()) {
-            std::string name = sym->getName().str();
-            void* address = (void*)sym->getAddress();
-            size_t size = sym->getSize();
-#ifdef DEBUG_JIT_LOG_SYMBOLS
-            core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)address));
-            if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
-              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Registering jit symbol %s address: %p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)address, size ));
-              core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
-            }
-#endif
-          }
-        }
-      } else if (sectionName.find(EH_FRAME_NAME)!=string::npos) {
-        llvm::jitlink::SectionRange range(S);
-        void* start = (void*)range.getStart();
-        uintptr_t size = range.getSize();
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
-      } else if (sectionName.find(STACKMAPS_NAME)!=string::npos) {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range in thread local storage\n", __FILE__, __LINE__, __FUNCTION__ ));
-        llvm::jitlink::SectionRange range(S);
-        my_thread->topObjectFile()->_Code->_StackmapStart = (void*)range.getStart();
-        my_thread->topObjectFile()->_Code->_StackmapSize = (size_t)range.getSize();
-      }
-    }
-    // Keep track of the executable region
-    if (textStart) {
-      Code_sp currentCode = my_thread->topObjectFile()->_Code;
-      //      printf("%s:%d:%s  textStart %p - textStop %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)textStart, (void*)textEnd );
-      currentCode->_TextSectionStart = (void*)textStart;
-      currentCode->_TextSectionEnd = (void*)textEnd;
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- Final TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
-      if (snapshotSaveLoad::global_debugSnapshot) {
-	printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
-	       __FILE__, __LINE__, __FUNCTION__,
-	       my_thread->topObjectFile().raw_(),
-	       currentCode.raw_(),
-	       currentCode->_TextSectionStart,
-	       currentCode->_TextSectionEnd );
-      }
-    } else {
-      printf("%s:%d:%s No executable region was found for the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
-    }
-    //
-    size_t gcroots_in_module_name_len = gcroots_in_module_name.size();
-    size_t literals_name_len = literals_name.size();
-    bool found_gcroots_in_module = false;
-    bool found_literals = false;
-    Code_sp currentCode = my_thread->topObjectFile()->_Code;
-    for (auto ssym : G.defined_symbols()) {
-      if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__, __FUNCTION__ ));
-        ssym->setLinkage(Linkage::Strong);
-        ssym->setScope(Scope::Local);
-        break;
-      }
-    }
-    for (auto ssym : G.defined_symbols()) {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n",
-                                __FILE__, __LINE__, __FUNCTION__,
-                                ssym->hasName(),
-                                ssym->getName().str().c_str(),
-                                (void*)ssym->getAddress(),
-                                (size_t)ssym->getSize()));
-      if (ssym->hasName()) {
-        std::string sname = ssym->getName().str();
-        size_t pos = sname.find(gcroots_in_module_name);
-        if (pos!=std::string::npos) {
-          found_gcroots_in_module = true;
-          void* address = (void*)ssym->getAddress();
-          size_t size = ssym->getSize();
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
-                                    gcroots_in_module_name.c_str(),
-                                    address, size ));
-          currentCode->_gcroots = (gctools::GCRootsInModule*)address;
-          continue;
-        }
-        pos = sname.find(literals_name);
-        if (pos != std::string::npos) {
-          found_literals = true;
-          currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress();
-          size_t symbolSize = (size_t)ssym->getSize();
-          if (symbolSize==1) {
-            // A symbol of size 1 is really zero
-            symbolSize = 0;
-          } else if ((symbolSize&7) != 0) {
-            printf("%s:%d:%s The symbol %s is %lu bytes in size but it must be a multiple of 8 bytes!!!\n",
-                   __FILE__, __LINE__, __FUNCTION__, sname.c_str(), symbolSize );
-            abort();
-          }
-          currentCode->_LiteralVectorSizeBytes = symbolSize;
-        }
-      }        
-    }
-    if (!found_literals) {
-      printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, literals_name.c_str() );
-      abort();
-    }
-    if (!found_gcroots_in_module) {
-      printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, gcroots_in_module_name.c_str() );
-      abort();
-    }
-    //
-    // Write the address of literals vector into the gcroots structure
-    // Later when we run the code we will check that the gcroots structure
-    //  has the correct values
-    //
-    currentCode->_gcroots->_module_memory = (void*)currentCode->_LiteralVectorStart;
-    currentCode->_gcroots->_num_entries = currentCode->_LiteralVectorSizeBytes/sizeof(void*);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-			      (gctools::GCRootsInModule*)currentCode->_gcroots,
-			      currentCode->_gcroots->_module_memory,
-                              currentCode->_gcroots->_num_entries ));
-
-#ifdef DEBUG_OBJECT_FILES
-    for (auto *Sym : G.external_symbols())
-      if (Sym->getName() == "DW.ref.__gxx_personality_v0") {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Graph %s has external DW.ref.__gxx_personality_v0 reference.\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str()));
-        break;
-      }
-#endif
-  }
-  
-  void printLinkGraph(llvm::jitlink::LinkGraph &G, llvm::StringRef Title) {
-    constexpr llvm::JITTargetAddress LineWidth = 16;
-    stringstream ss;
-    ss << "--- " << Title.str() << "---\n";
-    for (auto &S : G.sections()) {
-      ss << "  section: " << S.getName().str() << "\n";
-      for (auto *B : S.blocks()) {
-        ss << "    block@";
-        ss << formatv("{0:x16}", B->getAddress()).str();
-        ss << ":\n";
-        if (B->isZeroFill())
-          continue;
-        llvm::JITTargetAddress InitAddr = B->getAddress() & ~(LineWidth - 1);
-        llvm::JITTargetAddress StartAddr = B->getAddress();
-        llvm::JITTargetAddress EndAddr = B->getAddress() + B->getSize();
-        auto *Data = reinterpret_cast<const uint8_t *>(B->getContent().data());
-        for (llvm::JITTargetAddress CurAddr = InitAddr; CurAddr != EndAddr;
-             ++CurAddr) {
-          if (CurAddr  % LineWidth == 0)
-            ss << "    " << formatv("{0:x16}" , CurAddr).str() << ": ";
-          if (CurAddr < StartAddr)
-            ss << "   ";
-          else
-            ss << formatv("{0:x-2}" , Data[CurAddr - StartAddr]).str() << " ";
-          if (CurAddr  % LineWidth == LineWidth - 1)
-            ss << "\n";
-        }
-        if (EndAddr  % LineWidth != 0)
-          ss << "\n";
-        ss << "\n";
-      }
-    }
-    printf("%s\n", ss.str().c_str());
-  }
-
-};
-
-std::atomic<size_t> global_object_file_number;
-
-
-uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf) {
-  for (llvm::object::SectionRef Sec : objf.sections()) {
-    if (!Sec.isText() || Sec.isVirtual()) continue;
-    if (Sec.getName()->str() == TEXT_NAME) {
-      return Sec.getIndex();
-    }
-  }
-  return llvm::object::SectionedAddress::UndefSection;
-}
-
-
-void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s You now OWN MemoryBuffer @%p  size: %lu\n",
-                      __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() ));
-#ifdef DEBUG_OBJECT_FILES
-  if (globalDebugObjectFiles == DebugObjectFilesPrintSave ) {
-    stringstream ss;
-    ss << "/tmp/clasp_repl_object_file_" << ++global_object_file_number << ".o";
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Writing object file to: %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
-    ObjectFile_O::writeToFile(ss.str(), buffer->getBufferStart(), buffer->getBufferSize());
-  }
-#endif
-  // Grab the buffer and put it in the current ObjectFile
-  my_thread->topObjectFile()->_MemoryBuffer = std::move(buffer);
-  if (snapshotSaveLoad::global_debugSnapshot) {
-    printf("%s:%d:%s   ObjectFile_sp %p start %p size %lu\n",
-           __FILE__, __LINE__, __FUNCTION__,
-           my_thread->topObjectFile().raw_(),
-           my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferStart(),
-           my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferSize() );
-  }
-  auto objf = my_thread->topObjectFile()->getObjectFile();
-  llvm::object::ObjectFile& of = *objf->release();
-  Code_sp code = my_thread->topObjectFile()->_Code;
-#if defined(_TARGET_OS_LINUX)
-  uint64_t secId = getModuleSectionIndexForText( of );
-  code->_TextSectionId = secId;
-#elif defined(_TARGET_OS_DARWIN)
-  code->_TextSectionId = 0;
-#else
-  printf("%s:%d:%s Add support to set _TextSectionID for this os\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-  save_object_file_and_code_info(my_thread->topObjectFile());
-  buffer.reset();
-}
 
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
@@ -4871,8 +4544,9 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   void* replPtrRaw;
   // Run the startup code by looking up a symbol
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    About to runStartupCode name = %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
-  Code_sp codeObject;
-  replPtrRaw = jit->runStartupCode(jit->_LLJIT->getMainJITDylib(), startupName, initialData, codeObject );
+  ObjectFile_sp codeObject;
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str(), jit->getMainJITDylib().raw_(), jit->getMainJITDylib()->wrappedPtr(), llvm::cast<JITLinkDylib>(jit->getMainJITDylib()->wrappedPtr())));
+  replPtrRaw = jit->runStartupCode(jit->getMainJITDylib(), startupName, initialData );
   core::T_O* closure = makeCompiledFunction((core::T_O*)replPtrRaw,nil<core::T_O>().raw_());
   core::Function_sp functoid((gctools::Tagged)closure);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -4909,7 +4583,7 @@ CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp d
   // always unique 
   core::Pointer_sp startupPtr;
   void* ptr;
-  bool found = jit->do_lookup(*dylib->wrappedPtr(),cxxName,ptr);
+  bool found = jit->do_lookup(dylib,cxxName,ptr);
   if (!found) {
     SIMPLE_ERROR(("Could not find function %s") , cxxName );
   }
@@ -4930,235 +4604,8 @@ CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp d
 
 
 
+
 namespace llvmo {
-
-
-#if 0
-/void handleObjectEmitted(VModuleKey K, std::unique_ptr<MemoryBuffer> O) {
-//  printf("%s:%d:%s Received emitted object buffer obj@%p\n", __FILE__,__LINE__, __FUNCTION__, (void*)O->getBufferStart());
-}
-#endif
-
-
-
-
-DOCGROUP(clasp)
-CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
-{
-  printf("%s:%d:%s Creating JIT - we did this already at startup!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
-  auto cj = gctools::GC<ClaspJIT_O>::allocate(false);
-  return cj;
-}
-
-ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
-        llvm::ExitOnError ExitOnErr;
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Initializing ClaspJIT_O\n", __FILE__, __LINE__, __FUNCTION__));
-        auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
-        JTMB.setCodeModel(CodeModel::Small);
-        JTMB.setRelocationModel(Reloc::Model::PIC_);
-        this->_TPC = ExitOnErr(orc::SelfExecutorProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
-        auto J = ExitOnErr(
-                           LLJITBuilder()
-                           .setExecutionSession(std::make_unique<ExecutionSession>(std::move(this->_TPC)))
-                           .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
-                           .setJITTargetMachineBuilder(std::move(JTMB))
-//                           .setPlatformSetUp(orc::setUpMachOPlatform)
-                           .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
-                       auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
-                       ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
-                       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
-                       ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
-                       // GDB registrar isn't working at the moment
-                       if (!getenv("CLASP_NO_JIT_GDB")) {
-//			 printf("%s:%d:%s CLASP_NO_JIT_GDB not defined Adding ObjLinkingLayer plugin for orc::createJITLoaderGDBRegistrar\n", __FILE__, __LINE__, __FUNCTION__ );
-                         ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
-                       }
-                       ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
-                       return ObjLinkingLayer;
-                     })
-                     .create());
-  this->_LLJIT =  std::move(J);
-  if (loading) {
-    // Fixup the JITDylib_sp object in place
-    JITDylib& dylib = this->_LLJIT->getMainJITDylib();
-    dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-    if (!mainJITDylib) {
-      printf("%s:%d:%s the jitdylib @%p is null!\n", __FILE__, __LINE__, __FUNCTION__, &this->_MainJITDylib );
-      abort();
-    }
-    mainJITDylib->set_wrapped( &dylib );
-    this->_MainJITDylib.rawRef_() = (llvmo::JITDylib_O*)gctools::tag_general<llvmo::JITDylib_O*>(mainJITDylib);
-  } else {
-    // Create a new JITDylib_sp object
-    this->_MainJITDylib = core::RP_Create_wrapped<JITDylib_O>(&this->_LLJIT->getMainJITDylib());
-  }
-//  printf("%s:%d Creating ClaspJIT_O  globalPrefix = %c\n", __FILE__, __LINE__, this->_LLJIT->getDataLayout().getGlobalPrefix());
-  this->_LLJIT->getMainJITDylib().addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-}
-
-
-ClaspJIT_O::~ClaspJIT_O()
-{
-  printf("%s:%d Shutdown the ClaspJIT\n", __FILE__, __LINE__);
-}
-
-bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr) {
-  llvm::ExitOnError ExitOnErr;
-  std::string mangledName = Name;
-#if defined(_TARGET_OS_DARWIN)
-  // gotta put a _ in front of the name on DARWIN but not Unixes? Why? Dunno.
-//  mangledName = "_" + Name;
-#endif
-#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
-#error You need to decide here
-#endif
-  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->_LLJIT->lookup(dylib,mangledName);
-  if (!symbol) {
-    // printf("%s:%d could not find external linkage symbol named: %s\n", __FILE__, __LINE__, mangledName.c_str() );
-    // dylib.dump(llvm::errs());
-    return false;
-  }
-//  printf("%s:%d:%s !!symbol -> %d  symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, !!symbol, (void*)symbol->getAddress());
-  ptr = (void*)symbol->getAddress();
-  return true;
-}
-
- CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::string& Name) {
-     void* ptr;
-     bool found = this->do_lookup(dylib,Name,ptr);
-     if (!found) {
-       SIMPLE_ERROR(("Could not find pointer for name %s") , Name );
-     }
-     return core::Pointer_O::create(ptr);
- }
-
-
-CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
-    core::T_sp jcur = _lisp->_Roots._JITDylibs.load();
-    void* ptr;
-    while (jcur.consp()) {
-      JITDylib_sp jitdylib = gc::As<JITDylib_sp>(CONS_CAR(jcur));
-      JITDylib& jd = *jitdylib->wrappedPtr();
-        bool found = this->do_lookup(jd,name,ptr);
-        if (found) {
-            clasp_ffi::ForeignData_sp sp_sym = clasp_ffi::ForeignData_O::create(ptr);
-            sp_sym->set_kind( kw::_sym_clasp_foreign_data_kind_symbol_pointer );
-            return sp_sym;
-        }
-        jcur = CONS_CDR(jcur);
-    }
-    return nil<core::T_O>();
-}
-            
-        
-    
-CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context, size_t startupID) {
-//  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
-  std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
-  llvm::ExitOnError ExitOnErr;
-  std::unique_ptr<llvm::MemoryBuffer> empty;
-  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(empty), startupID, dylib,"REPL", 0);
-  my_thread->pushObjectFile(of);
-  ExitOnErr(this->_LLJIT->addIRModule( *dylib->wrappedPtr(), llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr()) ));
-}
-
-
-void ClaspJIT_O::addObjectFile(ObjectFile_sp of, bool print)
-{
-  // Create an llvm::MemoryBuffer for the ObjectFile bytes
-  //  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
-  if (print) core::write_bf_stream(fmt::sprintf("%s:%d Adding object file at %p  %lu bytes\n"   , __FILE__  , __LINE__   , (void*)of->_MemoryBuffer->getBufferStart()  , of->_MemoryBuffer->getBufferSize() ));
-  // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
-  if (print) core::write_bf_stream(fmt::sprintf("%s:%d Materializing\n"  , __FILE__  , __LINE__ ));
-  llvm::ExitOnError ExitOnErr;
-  my_thread->pushObjectFile(of);
-  ExitOnErr(this->_LLJIT->addObjectFile(*of->_JITDylib->wrappedPtr(),std::move(of->_MemoryBuffer)));
-}
-
-/*
- * runLoadtimeCode 
- */
-__attribute__((optnone))
-void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject )
-{
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
-  void* ptr;
-  bool found = this->do_lookup(dylib,startupName,ptr);
-  if (!found) {
-    SIMPLE_ERROR(("Could not find function %s - exit program and look at llvm::errs() stream") , startupName.c_str() );
-  }
-  T_OStartUp startup = reinterpret_cast<T_OStartUp>(ptr);
-//    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup));
-  core::T_O* arg0 = initialDataOrUnbound.unboundp() ? (core::T_O*)NULL : initialDataOrUnbound.raw_();
-  core::T_O* replPtrRaw = startup(arg0);
-  // If we load a bitcode file generated by clasp - then startup_functions will be waiting - so run them
-  if (!initialDataOrUnbound.unboundp()) {
-//    printf("%s:%d:%s There is initialData -> %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(initialDataOrUnbound).c_str());
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from startup function with %p\n", __FILE__, __LINE__, __FUNCTION__, replPtrRaw ));
-    // Clear out the current ObjectFile and Code
-    codeObject= my_thread->topObjectFile()->_Code;
-    codeObject->_gcroots = my_thread->_GCRootsInModule;
-    my_thread->popObjectFile();
-    return (void*)replPtrRaw;
-  }
-  // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
-  if (core::startup_functions_are_waiting()) {
-    // This is where we can take the my_thread->_ObjectFile and my_thread->_Code and write it into the FunctionDescription_O objects that are bound to functions.
-    void* result = core::startup_functions_invoke(NULL);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s The startup functions were INVOKED\n", __FILE__, __LINE__, __FUNCTION__ ));
-    // Clear out the current ObjectFile and Code
-    codeObject= my_thread->topObjectFile()->_Code;
-    codeObject->_gcroots = my_thread->_GCRootsInModule;
-    my_thread->popObjectFile();
-    return result;
-  }
-  SIMPLE_ERROR(("No startup functions are waiting after runInitializers\n"));
-}
-
-CL_DEFMETHOD JITDylib_sp ClaspJIT_O::getMainJITDylib() {
-  if (this->_MainJITDylib.raw_() && gctools::untag_general<core::T_O*>(this->_MainJITDylib.raw_()) ) {
-    return this->_MainJITDylib;
-  }
-  SIMPLE_ERROR(("The main-jit-dylib of the JIT is not setup properly: raw -> %p\n") , (void*)this->_MainJITDylib.raw_());
-}
-
-std::atomic<size_t> global_JITDylibCounter;
-CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
-  stringstream sname;
-  sname << name << "-" << global_JITDylibCounter;
-//  printf("%s:%d:%s  name -> %s\n", __FILE__, __LINE__, __FUNCTION__, sname.str().c_str());
-  auto dy = this->_LLJIT->createJITDylib(sname.str());
-  JITDylib& dylib(*dy);
-  dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-  JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
-  dylib_sp->_name = core::SimpleBaseString_O::make(sname.str());
-  dylib_sp->_Id = ++global_JITDylibCounter;
-  core::Cons_sp cell = core::Cons_O::create(dylib_sp,nil<core::T_O>());
-  core::T_sp expected;
-  core::T_sp current;
-  // Use CAS to push the new JITDylib into the list of JITDylibs.
-  do {
-    current = _lisp->_Roots._JITDylibs.load();
-    expected = current;
-    cell->rplacd(current);
-    _lisp->_Roots._JITDylibs.compare_exchange_strong(expected,gc::As_unsafe<core::T_sp>(cell));
-  } while (expected != current);
-  return dylib_sp;
-}
-
-
-void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
-  core::SimpleBaseString_sp name = jitDylib->_name;
-  auto dy = this->_LLJIT->createJITDylib(name->get_std_string());
-  JITDylib& dylib(*dy);
-  if ( jitDylib->_Id >= global_JITDylibCounter.load() ) {
-    global_JITDylibCounter.store(jitDylib->_Id+1);
-  }
-  dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-  jitDylib->set_wrapped( &dylib );
-}
-
 
 CL_DOCSTRING(R"dx(Tell LLVM what LLVM_DEBUG messages to turn on.)dx")
 CL_DOCSTRING_LONG(R"dx(Pass a list of strings like \"dyld\" - which
@@ -5200,7 +4647,7 @@ std::string SectionedAddress_O::__repr__() const {
   stringstream ss;
   ss << "#<SECTIONED-ADDRESS ";
   ss << ":section-index " << this->_value.SectionIndex << " ";
-  ss << ":address " << this->_value.Address << ">";
+  ss << ":address " << (void*)this->_value.Address << ">";
   return ss.str();
 }
 

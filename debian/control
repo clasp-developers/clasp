@@ -3,9 +3,9 @@ Section: lisp
 Priority: optional
 Maintainer: Tarn W. Burton <twburton@gmail.com>
 Build-Depends: debhelper-compat (= 13), libbsd-dev, libelf-dev, libffi-dev,
-	libgmp-dev, libncurses-dev, llvm-13, clang-13, sbcl, libclang-13-dev,
-	zlib1g-dev, llvm-13-dev, ninja-build, libfmt-dev, git, pkg-config,
-	libboost-all-dev, libclang-cpp13, libclang-cpp13-dev, libnetcdf-dev,
+	libgmp-dev, libncurses-dev, llvm-14, clang-14, sbcl, libclang-14-dev,
+	zlib1g-dev, llvm-14-dev, ninja-build, libfmt-dev, git, pkg-config,
+	libboost-all-dev, libclang-cpp14, libclang-cpp14-dev, libnetcdf-dev,
 	libczmq-dev, libexpat1-dev
 Standards-Version: 4.5.1
 Homepage: https://github.com/clasp-developers/clasp
@@ -21,8 +21,8 @@ Provides: lisp-compiler
 Architecture: any
 Build-Profiles: <!noclasp>
 Depends: ${shlibs:Depends}, ${misc:Depends}, libbsd0, libelf1, libffi-dev,
-	libgmp10, libgmpxx4ldbl, libncurses6, llvm-13, clang-13, zlib1g,
-	libclang-cpp13
+	libgmp10, libgmpxx4ldbl, libncurses6, llvm-14, clang-14, zlib1g,
+	libclang-cpp14
 Description: Common Lisp implementation that brings Common Lisp and C++ Together
 	Clasp is a new Common Lisp implementation that seamlessly interoperates
 	with C++ libraries and programs using LLVM for compilation to native
@@ -40,8 +40,8 @@ Provides: lisp-compiler, clasp-cl
 Architecture: any
 Build-Profiles: <!nocando>
 Depends: ${shlibs:Depends}, ${misc:Depends}, libbsd-dev, libelf-dev, libffi-dev,
-	libgmp-dev, libncurses-dev, llvm-13, clang-13, sbcl, libclang-13-dev,
-	zlib1g-dev, llvm-13-dev, libfmt-dev, libclang-cpp13, libclang-cpp13-dev,
+	libgmp-dev, libncurses-dev, llvm-14, clang-14, sbcl, libclang-14-dev,
+	zlib1g-dev, llvm-14-dev, libfmt-dev, libclang-cpp14, libclang-cpp14-dev,
 	libnetcdf-dev, libczmq-dev, libexpat1-dev, ninja-build
 Description: Common Lisp implementation that brings Common Lisp and C++ Together
 	Clasp is a new Common Lisp implementation that seamlessly interoperates

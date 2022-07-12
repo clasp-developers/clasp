@@ -67,7 +67,11 @@ public:
     MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
+    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler,
+                                              numSpecialBindings,
+                                              specialBindingsVLA,
+                                              frame,
+                                              sizeof...(ARGS)+1);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     translate::from_object<OT*> otep(frame->arg(0));
@@ -125,7 +129,11 @@ public:
     MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
+    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler,
+                                              numSpecialBindings,
+                                              specialBindingsVLA,
+                                              frame,
+                                              sizeof...(ARGS)+1);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     translate::from_object<OT*> otep(frame->arg(0));

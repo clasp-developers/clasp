@@ -60,7 +60,7 @@ namespace mp {
 std::atomic<uintptr_t> global_process_UniqueID;
 
 #ifdef CLASP_THREADS
-std::atomic<size_t> global_LastBindingIndex = ATOMIC_VAR_INIT(0);
+std::atomic<size_t> global_LastBindingIndex;
 Mutex global_BindingIndexPoolMutex(BINDINDX_NAMEWORD,false);
 std::vector<size_t> global_BindingIndexPool;
 #endif

@@ -88,6 +88,10 @@ THE SOFTWARE.
 
 namespace core {
 
+std::string global_startupSourceName = "";
+StartupEnum global_startupEnum = undefined;
+
+
 int clasp_musleep(double dsec, bool alertable) {
   double seconds = floor(dsec);
   double frac_seconds = dsec - seconds;
@@ -2127,7 +2131,7 @@ namespace core {
 CL_DEFUN void core__withStackCons(T_sp car, T_sp cdr, T_sp fn) {
   gc::StackAllocate<Cons_O> cons(car,cdr);
   printf("%s:%d:%s The cons size is %lu\n", __FILE__, __LINE__, __FUNCTION__, sizeof(cons));
-  printf("%s:%d:%s The ConsSizeCalculator<Cons_O> size is %lu\n", __FILE__, __LINE__, __FUNCTION__, gctools::ConsSizeCalculator<Cons_O>::value());
+  printf("%s:%d:%s The ConsSizeCalculator<Cons_O> size is %lu\n", __FILE__, __LINE__, __FUNCTION__, gctools::ConsSizeCalculator<gctools::RuntimeStage,Cons_O>::value());
   eval::funcall(fn,cons.asSmartPtr());
 }
 

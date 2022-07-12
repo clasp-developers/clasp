@@ -55,6 +55,7 @@
             *irbuilder*
             *thread-safe-context*
             thread-local-llvm-context
+            *load-time-value-holder-global-var-type*
             *load-time-value-holder-global-var*
             *low-level-trace*
             *low-level-trace-print*
@@ -97,6 +98,9 @@
             %i8**%
             %i8*%
             %i8%
+            %exn%
+            %ehselector%
+            %go-index%
             %fixnum%
             %word%
             %mv-struct%
@@ -163,6 +167,7 @@
             register-global-function-ref
             safe-system
             jit-constant-uintptr_t
+            irc-const-gep2-64
             irc-sext
             irc-zext
             irc-int-to-ptr
@@ -180,6 +185,9 @@
             irc-add-clause
             alloca
             alloca-t*
+            alloca-exn
+            alloca-ehselector
+            alloca-go-index
             alloca-i8
             alloca-i8*
             alloca-i32
@@ -208,8 +216,8 @@
             irc-exception-typeid*
             irc-insert-value
             irc-extract-value
-            irc-gep
-            irc-gep-variable
+            irc-typed-gep
+            irc-typed-gep-variable
             irc-smart-ptr-extract
             irc-set-insert-point-basic-block
             irc-size_t-*current-source-pos-info*-filepos
@@ -225,8 +233,10 @@
             irc-icmp-sge
             irc-icmp-sgt
             irc-intrinsic
-            irc-load
-            irc-load-atomic
+            irc-typed-load
+            irc-t*-load
+            irc-typed-load-atomic
+            irc-t*-load-atomic
             irc-low-level-trace
             irc-phi
             irc-personality-function
@@ -269,6 +279,9 @@
             irc-untag-fixnum
             irc-untag-general
             irc-untag-cons
+            irc-untag-vaslist
+            irc-tag-vaslist
+            irc-unbox-vaslist
             irc-unbox-single-float
             irc-box-single-float
             irc-unbox-double-float
@@ -280,7 +293,6 @@
             irc-array-total-size
             irc-array-rank
             gen-%array-dimension
-            irc-vaslist-nargs-address
             gen-instance-rack
             gen-instance-rack-set
             gen-rack-ref

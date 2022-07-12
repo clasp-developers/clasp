@@ -6541,7 +6541,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
           sbuf_wide = _lisp->get_StrWNs_buffer_string();
           // Extend the wide buffer if necessary
           if (sbuf_wide->arrayTotalSize() < sbuf_small->length())
-            sbuf_wide->internalAdjustSize_(sbuf_small->length());
+            sbuf_wide->resize(sbuf_small->length());
           // copy in the small buffer, then release the small buffer
           sbuf_wide->unsafe_setf_subseq(0,sbuf_small->length(),sbuf_small->asSmartPtr());
           sbuf_wide->fillPointerSet(sbuf_small->length());
@@ -6883,6 +6883,16 @@ CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
     }
   }
 };
+
+
+CL_DOCSTRING(R"dx(Read 4 bytes and interpret them as a single float))dx")
+DOCGROUP(clasp)
+CL_DEFUN T_sp core__read_binary_single_float(T_sp stream) {
+  unsigned char buffer[4];
+  if (StreamOps(stream).read_byte8(stream, buffer, 4)<4) return nil<T_O>();
+  float val = *(float*)buffer;
+  return make_single_float(val);
+}
 
 
 CL_DOCSTRING(R"dx(Set filedescriptor to nonblocking)dx")

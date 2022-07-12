@@ -52,8 +52,8 @@ class SharpEqualWrapper_O : public General_O {
   T_sp   _Value;
   T_sp   _Label;
  public:
-  CL_DEFMETHOD T_sp sharp_equal_wrapper_value() const { return this->_Value; };
-  CL_DEFMETHOD T_sp setf_sharp_equal_wrapper_value(T_sp v) { this->_Value = v; return v;};
+  CLASP_DEFMETHOD T_sp sharp_equal_wrapper_value() const { return this->_Value; };
+  CLASP_DEFMETHOD T_sp setf_sharp_equal_wrapper_value(T_sp v) { this->_Value = v; return v;};
   string __repr__() const;
   
   SharpEqualWrapper_O(T_sp label) : _Value(_sym__PLUS_sharp_marker_PLUS_), _Label(label) {};

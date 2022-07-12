@@ -229,7 +229,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
                                               "-f",
                                               "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
-    if (parameter_required.contains(*arg) && (arg + 1) == end) {
+    if (parameter_required.find(*arg) != parameter_required.end() && (arg + 1) == end) {
       std::cerr << "Missing parameter for " << *arg << " option." << std::endl;
       exit(1);
     }
@@ -355,7 +355,6 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
       _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), // FIXME should be initialized later with user-homedir-pathname?
       _NoRc(false), _PauseForDebugger(false)
-
 {
   if (argc == 0) {
     this->_RawArguments.push_back("./");

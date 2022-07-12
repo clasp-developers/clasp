@@ -377,8 +377,7 @@
            (phi-out
             (list* (cmp:irc-tmv-primary mv)
                    (loop for i from 1 below (length rt)
-                         collect (cmp:irc-load
-                                  (return-value-elt i))))
+                         collect (cmp:irc-t*-load (return-value-elt i))))
             phi block))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
@@ -597,7 +596,7 @@
 
 (defun maybe-insert-step-before (inst)
   (when (policy:policy-value (bir:policy inst)
-                                     'insert-step-conditions)
+                             'insert-step-conditions)
     (let ((origin (bir:origin inst)))
       (when (typep origin 'cst:cst)
         (let* ((frame (%intrinsic-call "llvm.frameaddress.p0i8"
@@ -609,10 +608,12 @@
                      (literal:reference-literal
                       "<error dumping form>" t))))
                (lit
-                 (cmp:irc-load
-                  (cmp:irc-gep-variable (literal:ltv-global)
-                                        (list (%size_t 0) (%i64 index))
-                                        "step-source"))))
+                 (multiple-value-bind (literals literals-type)
+                     (literal:ltv-global)
+                   (cmp:irc-t*-load
+                    (cmp:irc-typed-gep-variable literals-type literals
+                                                (list (%size_t 0) (%i64 index))
+                                                "step-source")))))
           (%intrinsic-invoke-if-landing-pad-or-call
            "cc_breakstep" (list lit frame)))))))
 
@@ -839,7 +840,7 @@
          (sw (cmp:irc-switch rnret mte (+ 1 nreq nopt)))
          (environment (environment callee-info)))
     (labels ((load-return-value (n)
-               (cmp:irc-load (cmp:irc-gep rvalues (list n))))
+               (cmp:irc-t*-load (cmp:irc-typed-gep cmp:%t*% rvalues (list n))))
              (load-return-values (low high)
                (loop for i from low below high
                      collect (load-return-value i)))
@@ -895,7 +896,7 @@
              rest-phi
              (%intrinsic-invoke-if-landing-pad-or-call
               "cc_mvcGatherRest2"
-              (list (cmp:irc-gep rvalues (list nfixed))
+              (list (cmp:irc-typed-gep cmp:%t*% rvalues (list nfixed))
                     (cmp:irc-sub rnret (%size_t nfixed))))
            mte))
         (cmp:irc-br merge))
@@ -1117,7 +1118,7 @@
                                   (cmp:irc-tmv-primary inputv))
                         (loop for i from 1
                               for ort in (rest outputrt)
-                              for val = (cmp:irc-load (return-value-elt i))
+                              for val = (cmp:irc-t*-load (return-value-elt i))
                               collect (cast-one :object ort val))))))
         ((eq inputrt :vaslist)
          (cond ((eq outputrt :multiple-values)
@@ -1176,7 +1177,7 @@
 
 (defmethod translate-simple-instruction ((inst cc-bmir:load) abi)
   (declare (ignore abi))
-  (out (cmp:irc-load-atomic (in (first (bir:inputs inst)))
+  (out (cmp:irc-t*-load-atomic (in (first (bir:inputs inst)))
                             :order (cmp::order-spec->order (cc-bir:order inst))
                             :label (datum-name-as-string
                                     (bir:output inst)))
@@ -1298,7 +1299,8 @@
                                 (in (first inputs)) (in (second inputs)))
          (first (bir:outputs inst)))))
 (defmethod translate-primop ((name (eql 'core:vaslist-pop)) inst)
-  (out (cmp:gen-vaslist-pop (in (first (bir:inputs inst))))
+  (out (cmp:gen-vaslist-pop (let ((vaslist-tagged (in (first (bir:inputs inst)))))
+                              (cmp:irc-untag-vaslist vaslist-tagged)))
        (first (bir:outputs inst))))
 (defmethod translate-primop ((name (eql 'core:vaslist-length)) inst)
   (out (cmp:gen-vaslist-length (in (first (bir:inputs inst))))
@@ -1370,13 +1372,14 @@
     ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
     ;; For layout of the vector, check simple-vector-llvm-type's definition.
     ;; untagged is the actual offset.
-    (cmp:irc-gep-variable
-     cast
-     (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged) "aref")))
+    (cmp:irc-typed-gep-variable type
+                          cast
+                          (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged)
+                          "aref")))
 
 (defmethod translate-simple-instruction ((inst cc-bir:vref) abi)
   (let ((inputs (bir:inputs inst)))
-    (out (cmp:irc-load-atomic
+    (out (cmp:irc-t*-load-atomic
           (gen-vector-effective-address
            (in (first inputs)) (in (second inputs)) (cc-bir:element-type inst)
            (%default-int-type abi))
@@ -1420,14 +1423,14 @@
                 (t (let ((inp (in input)))
                      (cons (cmp:irc-tmv-primary inp)
                            (loop for i from 1 below nvalues
-                                 collect (cmp:irc-load
+                                 collect (cmp:irc-t*-load
                                           (return-value-elt i)))))))))
            ((eq irt :vaslist)
             (let ((ls
                     (loop with vals = (cmp:irc-vaslist-values (in input))
                           for i below (bir:nvalues inst)
-                          for ptr = (cmp:irc-gep vals (list i))
-                          collect (cmp:irc-load ptr))))
+                          for ptr = (cmp:irc-typed-gep cmp:%t*% vals (list i))
+                          collect (cmp:irc-t*-load ptr))))
               (if (= (bir:nvalues inst) 1)
                   (first ls)
                   ls)))
@@ -1475,7 +1478,7 @@
           do (if seen-non-save
                  (error "BUG: Can only have one variable non-save-values input, but saw ~a and ~a!" inst seen-non-save)
                  (setf seen-non-save inst)))
-  (let* ((liven nil) ; index for the :variable storage.
+  (let* ((liven nil)          ; index for the :variable storage.
          ;; Collect the form of each input.
          ;; Each datum is (symbol nvalues extra).
          ;; For saved values, the extra is the storage for it. For the current
@@ -1531,12 +1534,12 @@
       (destructuring-bind (size primary) (rest (nth liven data))
         (let* ((spos (nth (1- liven) partial-sums))
                ;; LLVM type is t**, i.e. this is a pointer to the 0th value.
-               (mvalues (%gep cmp:%t*[0]*% (multiple-value-array-address)
+               (mvalues (%gep cmp:%t*[0]% (multiple-value-array-address)
                               '(0 0) "multiple-values"))
-               (sdest (cmp:irc-gep-variable valvec (list spos) "var-dest"))
+               (sdest (cmp:irc-typed-gep-variable cmp:%t*% valvec (list spos) "var-dest"))
                ;; Add one, since we store the primary separately
-               (dest (%gep cmp:%t**% sdest '(1) "var-dest-subsequent"))
-               (source (%gep cmp:%t**% mvalues '(1) "var-source-subsequent"))
+               (dest (%gep cmp:%t*% sdest '(1) "var-dest-subsequent"))
+               (source (%gep cmp:%t*% mvalues '(1) "var-source-subsequent"))
                ;; Number of elements to copy out of the values vector.
                ;; This is a bit tricky, in that we want to copy nvalues-1,
                ;; unless nvalues is zero in which case we want zero.
@@ -1558,7 +1561,7 @@
                                  ;; Multiply size by sizeof(T_O*)
                                  ;; (subtract one for the primary, again)
                                  (cmp::irc-shl ncopy 3 :nuw t
-                                               :label "real-ntocopy")
+                                                       :label "real-ntocopy")
                                  ;; non volatile
                                  (%i1 0)))
           ;; Store the primary
@@ -1567,7 +1570,7 @@
     (loop for (key size extra) in data
           for startn = (%size_t 0) then finishn
           for finishn in partial-sums
-          for dest = (cmp:irc-gep-variable valvec (list startn) "dest")
+          for dest = (cmp:irc-typed-gep-variable cmp:%t*% valvec (list startn) "dest")
           do (ecase key
                ((:saved)
                 (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
@@ -1576,14 +1579,15 @@
                                                          "source")
                                        ;; Multiply by sizeof(T_O*)
                                        (cmp::irc-shl size 3 :nuw t
-                                                     :label "real-ntocopy")
+                                                            :label "real-ntocopy")
                                        (%i1 0))))
                ((:fixed)
                 (loop for i below (first extra) ; size
                       for v in (rest extra)
-                      do (cmp:irc-store v (%gep cmp:%t**% dest (list i)
-                                                "fixed-dest"))))
-               ((:variable)))) ; done already
+                      do (cmp:irc-store v (%gep cmp:%t*% dest (list i) "fixed-dest"))))
+               ((:variable))))          ; done already
+    ;; Now just return a T_mv. We load the primary from the vector again, which
+    ;; is technically slightly inefficient.
     (cmp:irc-make-vaslist n-total-values valvec "values-collected")))
 
 (defmethod translate-terminator ((inst bir:values-collect) abi next)
@@ -1638,10 +1642,7 @@
   (out (let* ((ltv (first (bir:inputs inst)))
               (index (gethash ltv *constant-values*))
               (label (datum-name-as-string (bir:output inst))))
-         (cmp:irc-load
-          (cmp:irc-gep-variable (literal:ltv-global)
-                                (list (%size_t 0) (%i64 index))
-                                label)))
+         (cmp:irc-t*-load (%indexed-literal-ref index label)))
        (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-reference)
@@ -1656,12 +1657,15 @@
               (immediate-or-index (gethash constant *constant-values*)))
          (assert immediate-or-index () "Constant not found!")
          (if (integerp immediate-or-index)
-             (cmp:irc-load
-              (cmp:irc-gep-variable (literal:ltv-global)
-                                    (list (%size_t 0)
-                                          (%i64 immediate-or-index))
-                                    label)
-              label)
+             (multiple-value-bind (literals literals-type)
+                 (literal:ltv-global)
+               (cmp:irc-t*-load
+                (cmp:irc-typed-gep-variable literals-type
+                                      literals
+                                      (list (%size_t 0)
+                                            (%i64 immediate-or-index))
+                                      label)
+                label))
              immediate-or-index))
        (bir:output inst)))
 
@@ -1766,7 +1770,7 @@
              (loop for import in (environment llvm-function-info)
                    for i from 0
                    for offset = (cmp:%closure-with-slots%.offset-of[n]/t* i)
-                   collect (cmp:irc-load-atomic
+                   collect (cmp:irc-t*-load-atomic
                             (cmp::gen-memref-address closure-vec offset))))
            (source-pos-info (function-source-pos-info ir)))
       ;; Tail call the real function.

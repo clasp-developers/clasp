@@ -136,6 +136,46 @@ namespace gctools {
 
 // Defined in threadlocal.fwd.h
 // extern THREAD_LOCAL core::ThreadLocalStateLowLevel *my_thread_low_level;
+
+namespace gctools {
+
+//
+// We need to allocate Code_O objects in snapshot_load
+//  from threads that are not under our control.
+//  The threads don't have thread local state setup so we
+//  don't want to disable interrupts or register allocations.
+// 
+struct RuntimeStage {};
+struct SnapshotLoadStage {};
+
+template <typename Stage>
+struct RAIIAllocationStage {
+private:
+  RAIIAllocationStage(ThreadLocalStateLowLevel* t) {
+    printf("%s:%d:%s This should never be called\n", __FILE__, __LINE__, __FUNCTION__ );
+  };
+};
+
+template <>
+struct RAIIAllocationStage<RuntimeStage> {
+  ThreadLocalStateLowLevel* _threadLocalStateLowLevel;
+  RAIIDisableInterrupts _disableInterrupts;
+  
+  RAIIAllocationStage(ThreadLocalStateLowLevel* t) : _threadLocalStateLowLevel(t), _disableInterrupts(t) {};
+  void registerAllocation(uintptr_t ustamp, size_t size) {
+    this->_threadLocalStateLowLevel->_Allocations.registerAllocation(ustamp,size);
+  }
+};
+
+
+template <>
+struct RAIIAllocationStage<SnapshotLoadStage> {
+  
+  RAIIAllocationStage(ThreadLocalStateLowLevel* t) {};
+  void registerAllocation(uintptr_t ustamp, size_t size) {};
+};
+
+};
 #define RAII_DISABLE_INTERRUPTS() gctools::RAIIDisableInterrupts disable_interrupts__(my_thread_low_level)
 
 

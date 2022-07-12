@@ -47,6 +47,9 @@ T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
 llvmo::ClaspJIT_sp compiler__jit_engine();
 
 void initialize_compiler_primitives(LispPtr lisp);
+
+void core__jit_register_symbol( const std::string& name, size_t size, void* address );
+
 };
 
 namespace core {
@@ -90,6 +93,7 @@ struct MaybeDebugStartup {
 
 void core__update_max_jit_compile_counter(size_t val);
 size_t core__get_jit_compile_counter();
+size_t core__next_jit_compile_counter();
 
 };
 
@@ -106,6 +110,8 @@ void register_startup_function(const StartUp& startup);
 void transfer_StartupInfo_to_my_thread();
 T_mv core__startup_linkage_shutdown_names(size_t id=0, core::T_sp prefix=nil<core::T_O>());
 void clasp_unpack_faso(const std::string& path_designator);
+void startup_shutdown_names( size_t id, const std::string& prefix, std::string& start, std::string& shutdown );
+extern bool global_jit_log_symbols;
 }
 
 #endif /* _compiler_H_ */

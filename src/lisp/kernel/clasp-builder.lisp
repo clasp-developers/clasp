@@ -1,4 +1,5 @@
-#+(or)(eval-when (:compile-toplevel :execute)
+#+(or)
+(eval-when (:compile-toplevel :execute)
   (setq *echo-repl-read* t))
 ;;
 ;; Clasp builder code
@@ -280,7 +281,7 @@ Return files."
         (if (probe-file fn)
             (progn
               (message nil "Loading/{} {}"
-                       (if cmp:*implicit-compile-hook*
+                       (if (eq cmp:*implicit-compile-hook* 'cmp:implicit-compile-hook-default)
                            "compiling"
                            "interpreting")
                        (namestring fn))
@@ -407,7 +408,9 @@ Return files."
                (let* ((filename (entry-filename entry))
                       (output-path (bitcode-pathname filename output-type)))
                  (message nil "Starting {: >3d} of {:d} [pid {:d}] {}"
-                          (1+ (entry-position entry)) total child-pid (namestring filename))))
+                          (1+ (entry-position entry)) total child-pid (namestring filename)))
+               (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
+                 (format t "CLASP_PAUSE_FORKED_CHILD is set - will pause all children until they receive SIGUSR1~%")))
              (started-some (entries child-pid)
                (dolist (entry entries)
                  (started-one entry child-pid)))
@@ -521,9 +524,12 @@ Return files."
                        (let ((pid pid-or-error))
                          (if (= pid 0)
                              (progn
+                               (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
+                                 (gctools:wait-for-user-signal (format nil "Child with pid ~a is waiting for SIGUSR1" (core:getpid))))
                                #+(or)(progn
                                        (message nil "A child started up with pid {} - sleeping for 10 seconds" (core:getpid))
                                        (sleep 10))
+                               (llvm-sys:create-lljit-thread-pool)
                                (ext:disable-debugger)
                                (let ((new-sigset (core:make-cxx-object 'core:sigset))
                                      (old-sigset (core:make-cxx-object 'core:sigset)))

@@ -374,6 +374,9 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
 };
 
 
+uint32_t my_thread_random() {
+  return my_thread->random();
+}
 
 namespace gctools {
 

@@ -200,8 +200,6 @@ typedef std::size_t class_id;
 /*! If CLOS is being implemented */
 #define CLOS 1
 
-#define MULTIPLE_VALUES_LIMIT 64
-
 #ifdef SOURCE_DEBUG
  #ifdef DEBUG_LEVEL_FULL //[
   #define DEBUG_ON 1
@@ -926,6 +924,7 @@ uint64_t lisp_nameword(T_sp name);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, T_sp a8);
+  bool lisp_lambdaListHandlerNeedsValueEnvironment(LambdaListHandler_sp llh);
 
 
 //    void lisp_setGlobalInt(const string& package, const string& n, uint val );
@@ -1018,8 +1017,8 @@ size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp llh);
   DebugStream *lisp_debugLog();
 /*! Return a string representation of the object */
   string lisp_rep(T_sp obj);
-size_t lisp_badge(T_sp obj);
- size_t lisp_general_badge(General_sp obj);
+  uint32_t lisp_badge(T_sp obj);
+  uint32_t lisp_general_badge(General_sp obj);
   Symbol_sp lisp_internKeyword(const string &name);
   Symbol_sp lisp_intern(const string &name);
   Symbol_sp lisp_intern(const string &symbolName, const string &packageName);

@@ -3,6 +3,9 @@
 ;;
 
 
+;;#+(or)
+(llvm-sys:install-interpreter-trampoline)
+
 #+(or)
 (eval-when (:compile-toplevel :execute)
   (setq core:*debug-eval* t))
@@ -625,7 +628,6 @@ the stage, the +application-name+ and the +bitcode-name+"
                                   (translate-logical-pathname (make-pathname :host "SYS")))))))
         result))))
 (export '(build-pathname build-extension))
-
 
 (eval-when (:execute)
   (load #P"sys:src;lisp;kernel;cmp;jit-setup.lisp")

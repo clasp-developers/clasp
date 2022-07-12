@@ -144,21 +144,22 @@
           nil
           (ecase (bir:extent variable)
             (:local
-             (let ((alloca (or (gethash variable *datum-values*)
-                               (error "BUG: Variable missing: ~a" variable))))
-               (cmp:irc-load alloca "")))
+             (let* ((alloca (or (gethash variable *datum-values*)
+                                (error "BUG: Variable missing: ~a" variable)))
+                    (rtype (first (cc-bmir:rtype variable)))
+                    (alloca-type (vrtype->llvm rtype)))
+               (cmp:irc-typed-load alloca-type alloca)))
             (:dynamic
              (let ((alloca (or (gethash variable *datum-values*)
                                (error "BUG: DX cell missing: ~a" variable)))
                    (volatile (needs-volatile-loads-p
                               (bir:function (bir:binder variable)))))
-               (cmp:irc-load (cmp:irc-bit-cast alloca cmp:%t**%) ""
-                             volatile)))
+               (cmp:irc-t*-load (cmp:irc-bit-cast alloca cmp:%t**%) "" volatile)))
             (:indefinite
              (let ((cell (or (gethash variable *datum-values*)
                              (error "BUG: Cell missing: ~a" variable)))
                    (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-               (cmp:irc-load-atomic (cmp::gen-memref-address cell offset))))))))
+               (cmp:irc-t*-load-atomic (cmp::gen-memref-address cell offset))))))))
 
 (defun out (value datum)
   (check-type datum bir:ssa)

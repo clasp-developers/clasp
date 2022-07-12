@@ -199,8 +199,8 @@ class FunctionCallee_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, FunctionCallee_O, "FunctionCallee", core::CxxObject_O);
  public:
   dont_expose<llvm::FunctionCallee> _Info;
-  CL_DEFMETHOD llvm::FunctionType * 	getFunctionType () {return this->_Info._value.getFunctionType();};
-  CL_DEFMETHOD llvm::Value * 	getCallee () {return this->_Info._value.getCallee(); };
+  CLASP_DEFMETHOD llvm::FunctionType * 	getFunctionType () {return this->_Info._value.getFunctionType();};
+  CLASP_DEFMETHOD llvm::Value * 	getCallee () {return this->_Info._value.getCallee(); };
  FunctionCallee_O(llvm::FunctionType* ft, llvm::Value* v) : _Info(llvm::FunctionCallee(ft,v)) {};
 };
 };
@@ -278,6 +278,18 @@ struct from_object<llvm::Linker &, std::true_type> {
     ;
 /* to_object translators */
 
+namespace llvmo {
+typedef enum {DebugObjectFilesOff, DebugObjectFilesPrint, DebugObjectFilesPrintSave } DebugObjectFilesEnum;
+extern DebugObjectFilesEnum globalDebugObjectFiles;
+
+
+};
+
+#ifdef DEBUG_OBJECT_FILES
+# define DEBUG_OBJECT_FILES_PRINT(msg) if ( llvmo::globalDebugObjectFiles != llvmo::DebugObjectFilesOff )  { printf msg; }
+#else
+# define DEBUG_OBJECT_FILES_PRINT(msg)
+#endif
 
 
 
@@ -289,6 +301,8 @@ class JITDylib_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::orc::JITDylib, JITDylib_O, "JITDylib", core::ExternalObject_O);
   typedef llvm::orc::JITDylib ExternalType;
   typedef llvm::orc::JITDylib *PointerToExternalType;
+private:
+  JITDylib_O() {};
 public:
   PointerToExternalType _ptr;
   size_t                _Id;
@@ -302,11 +316,15 @@ public:
   }
   void dump(core::T_sp stream);
 public:
+#if 0
   void set_wrapped(PointerToExternalType ptr) {
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  JITDylib_O() : Base(), _ptr(NULL){};
+#endif
+  JITDylib_O(core::SimpleBaseString_sp name, PointerToExternalType ptr) : Base(), _ptr(ptr), _name(name) {
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s name = %s  ptr = %p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(name).c_str(), ptr ));
+  };
   ~JITDylib_O() {
     /* delete _ptr;*/
     _ptr = NULL;
@@ -331,13 +349,17 @@ namespace translate {
 template <>
 struct to_object<llvm::orc::JITDylib *> {
   static core::T_sp convert(llvm::orc::JITDylib *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::JITDylib_O, llvm::orc::JITDylib *>(ptr)));
+    std::string name = ptr->getName();
+    core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(name);
+    return gctools::GC<llvmo::JITDylib_O>::allocate(sname,ptr);
   }
 };
 template <>
 struct to_object<llvm::orc::JITDylib&> {
   static core::T_sp convert(llvm::orc::JITDylib& jd) {
-    return ((core::RP_Create_wrapped<llvmo::JITDylib_O, llvm::orc::JITDylib *>(&jd)));
+    std::string name = jd.getName();
+    core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(name);
+    return gctools::GC<llvmo::JITDylib_O>::allocate(sname,&jd);
   }
 };
 };
@@ -555,7 +577,7 @@ protected:
   PointerToExternalType _ptr;
 
 public:
-  static TargetOptions_sp make();
+  static TargetOptions_sp make(bool functionSections);
 
 public:
   virtual void *externalObject() const {
@@ -1608,7 +1630,7 @@ class DataLayout_O : public core::General_O {
   llvm::DataLayout* _DataLayout;
 public:
   CL_LISPIFY_NAME("getStringRepresentation");
-  CL_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout->getStringRepresentation(); };
+  CLASP_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout->getStringRepresentation(); };
   size_t getTypeAllocSize(llvm::Type* ty);
   const llvm::DataLayout& dataLayout() { return *(this->_DataLayout); };
   StructLayout_sp getStructLayout(StructType_sp ty) const;
@@ -2035,6 +2057,7 @@ class Module_O : public core::ExternalObject_O {
   void initialize();
 GCPROTECTED:
   size_t _Id;
+  std::string _UniqueName;
   PointerToExternalType _ptr;
   core::HashTableEqual_sp _UniqueGlobalVariableStrings;
 
@@ -2056,17 +2079,18 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
- Module_O() : Base(), _ptr(NULL), _Id(++global_NextModuleId) {};
+ Module_O() : Base(), _ptr(NULL) {};
   ~Module_O() {
     // delete _ptr;   // Don't delete the module Delete the module when it's not used
     _ptr = NULL;
   }
   std::string __repr__() const;
-  CL_DEFMETHOD size_t module_id() const { return this->_Id;};
-  static Module_sp make(llvm::StringRef module_name, LLVMContext_sp context);
+  CLASP_DEFMETHOD size_t module_id() const { return this->_Id;};
+  static Module_sp make( const std::string& namePrefix, LLVMContext_sp context);
   /*! Return true if the wrapped Module is defined */
   bool valid() const;
   llvm::DataLayout getDataLayout() const;
+  std::string getUniqueName() const { return this->_UniqueName; };
   
   /*! Return a Cons of all the globals for this module */
   core::List_sp getGlobalList() const;
@@ -2365,8 +2389,8 @@ public:
     this->_ptr = ptr;
   }
 CL_LISPIFY_NAME("error_string");
-CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
-// CL_DEFMETHOD void setUseOrcMCJITReplacement(bool use);
+CLASP_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
+// CLASP_DEFMETHOD void setUseOrcMCJITReplacement(bool use);
 
   EngineBuilder_O() : Base(), _ptr(NULL){};
   ~EngineBuilder_O() {
@@ -2631,7 +2655,7 @@ public:
   /*! Set the current debug location by building a DebugLoc on the fly */
   void SetCurrentDebugLocationToLineColumnScope(int line, int col, DINode_sp scope);
 CL_LISPIFY_NAME("CurrentDebugLocation");
-CL_DEFMETHOD   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
+CLASP_DEFMETHOD   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
 /* from_object translators */
@@ -2686,8 +2710,8 @@ public:
 public:
   llvm::InvokeInst *CreateInvoke(FunctionType_sp function_type, llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name = "");
   llvm::Value* CreateConstGEP2_32(llvm::Type* ty, llvm::Value *ptr, int idx0, int idx1, const llvm::Twine &Name);
-  llvm::Value* CreateConstGEP2_64(llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name);
-  llvm::Value *CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name = "");
+  llvm::Value* CreateConstGEP2_64(llvm::Type* ty, llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name);
+  llvm::Value *CreateInBoundsGEP(llvm::Type* ty, llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name = "");
 
   llvm::Value *CreateExtractValue(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name = "");
 
@@ -2716,8 +2740,8 @@ public:
   core::T_sp getNextNode(); // instruction or nil
   core::T_sp getPrevNode(); // instruction or nil
   core::T_sp getParent(); // basic block or nil
-  CL_DEFMETHOD bool CallInstP() const { return llvm::isa<llvm::CallInst>(this->wrappedPtr()); };
-  CL_DEFMETHOD bool InvokeInstP() const { return llvm::isa<llvm::InvokeInst>(this->wrappedPtr()); };
+  CLASP_DEFMETHOD bool CallInstP() const { return llvm::isa<llvm::CallInst>(this->wrappedPtr()); };
+  CLASP_DEFMETHOD bool InvokeInstP() const { return llvm::isa<llvm::InvokeInst>(this->wrappedPtr()); };
   Instruction_O() : Base(){};
   ~Instruction_O() {}
 
@@ -3017,7 +3041,7 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  CL_DEFMETHOD bool CallInstP() const { return true; };
+  CLASP_DEFMETHOD bool CallInstP() const { return true; };
   CallInst_O() : Base(){};
   ~CallInst_O() {}
 
@@ -3372,7 +3396,7 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  CL_DEFMETHOD bool InvokeInstP() const { return true; };
+  CLASP_DEFMETHOD bool InvokeInstP() const { return true; };
   InvokeInst_O() : Base(){};
   ~InvokeInst_O() {}
 
@@ -3882,7 +3906,7 @@ public:
   llvm::MDNode *getOperand(uint i) { return this->_ptr->getOperand(i); };
   uint getNumOperands() { return this->_ptr->getNumOperands(); };
 CL_LISPIFY_NAME("addOperand");
-CL_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
+CLASP_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
   string getName() { return this->_ptr->getName().str(); };
 
 }; // NamedMDNode_O
@@ -4298,6 +4322,8 @@ public: // static methods
 public: // static methods
   static PointerType_sp get(Type_sp elementType, uint addressSpace);
 
+  llvm::Type* getElementType() const;
+    
 }; // PointerType_O
 }; // llvmo
 /* from_object translators */
@@ -4340,6 +4366,7 @@ public:
 
 public: // static methods
   static ArrayType_sp get(Type_sp elementType, uint64_t numElements);
+  
 }; // ArrayType_O
 }; // llvmo
 /* from_object translators */
@@ -4522,8 +4549,9 @@ struct from_object<llvm::CmpInst::Predicate, std::true_type> {
 namespace llvmo {
 void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp startup_name);
 
-  Module_sp llvm_sys__parseBitcodeFile(core::T_sp filename, LLVMContext_sp context);
-  Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
+Module_sp llvm_sys__parseBitcodeFile(core::T_sp filename, LLVMContext_sp context);
+Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
+Module_sp llvm_sys__parseIRString(const std::string& llCode, LLVMContext_sp context, const std::string& bufferName );
 
 void initialize_llvmo_expose();
 
@@ -4540,56 +4568,6 @@ namespace llvmo {
   using namespace llvm::orc;
 
 //  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
-};
-
-// Don't allow the object to move, but maybe I'll need to collect it
-// if we create a ClaspJIT_O for each thread and need to collect it when
-// the thread is killed
-template <>
-struct gctools::GCInfo<llvmo::ClaspJIT_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = collectable_immobile;
-};
-
-namespace llvmo {
-
-FORWARD(ObjectFile);
-FORWARD(ClaspJIT);
-class ClaspJIT_O : public core::General_O {
-  LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
-public:
-  bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
-  core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
-  core::T_sp lookup_all_dylibs(const std::string& Name);
-  JITDylib_sp getMainJITDylib();
-  JITDylib_sp createAndRegisterJITDylib(const std::string& name);
-  void registerJITDylibAfterLoad(JITDylib_O* jitDylib);
-  
-  void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context, size_t startupID);
-  void addObjectFile(ObjectFile_sp of, bool print=false);
-  /*! Return a pointer to a function WHAT FUNCTION???????
-        llvm_sys__jitFinalizeReplFunction needs to build a closure over it
-   */
-  void* runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject );
-  ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib = NULL);
-  ~ClaspJIT_O();
-public:
-  JITDylib_sp _MainJITDylib;
-  std::unique_ptr<llvm::orc::ExecutorProcessControl> _TPC;
-  std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
-//  llvm::jitlink::JITLink* _LinkLayer;
-#ifdef _TARGET_OS_DARWIN
-  llvm::orc::ObjectLinkingLayer *LinkLayer;
-#else
-  llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
-#endif
-};
-
-
-core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
-
-
 };
 
 namespace llvmo {
@@ -4623,7 +4601,7 @@ public:
   };
 public:
 
-  CL_DEFMETHOD MDNode* createBranchWeightsTrueFalse(uint32_t trueWeight, uint32_t falseWeight)
+  CLASP_DEFMETHOD MDNode* createBranchWeightsTrueFalse(uint32_t trueWeight, uint32_t falseWeight)
   {
     return this->_Builder->createBranchWeights(trueWeight,falseWeight);
   };
@@ -4701,20 +4679,17 @@ extern std::atomic<size_t> global_JITDylibCounter;
 void dump_objects_for_lldb(FILE* fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 
-std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size);
+std::string ensureUniqueMemoryBufferName(const std::string& prefix );
+size_t objectIdFromName(const std::string& name);
+
 llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream,llvm::SmallString<1024>& stringOutput,bool& stringOutputStream);
 
  
-typedef enum {DebugObjectFilesOff, DebugObjectFilesPrint, DebugObjectFilesPrintSave } DebugObjectFilesEnum;
-extern DebugObjectFilesEnum globalDebugObjectFiles;
+
+core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
+
 
 };
 
-
-#ifdef DEBUG_OBJECT_FILES
-# define DEBUG_OBJECT_FILES_PRINT(msg) if ( llvmo::globalDebugObjectFiles != llvmo::DebugObjectFilesOff )  { printf msg; }
-#else
-# define DEBUG_OBJECT_FILES_PRINT(msg)
-#endif
 
 #endif //]

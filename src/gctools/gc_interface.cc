@@ -770,6 +770,14 @@ void dumpBoehmLayoutTables(FILE* fout) {
   Init__fixed_field(core::Symbol_O,4,SMART_PTR_OFFSET,_SetfFunction);
   Init__fixed_field(core::Symbol_O,5,SMART_PTR_OFFSET,_PropertyList);
 
+  Init_class_kind(core::GlobalEntryPoint_O);
+  Init__fixed_field(core::GlobalEntryPoint_O,0,SMART_PTR_OFFSET,_FunctionDescription );
+  Init__fixed_field(core::GlobalEntryPoint_O,1,RAW_POINTER_OFFSET,_EntryPoints._EntryPoints[0]);
+  Init__fixed_field(core::GlobalEntryPoint_O,1+NUMBER_OF_ENTRY_POINTS,ctype__Bool,_EntryPoints._Defined);
+
+  Init_class_kind(core::FunctionDescription_O);
+  Init__fixed_field(core::FunctionDescription_O,0,SMART_PTR_OFFSET,_functionName);
+  
   Init_class_kind(core::FuncallableInstance_O);
   Init__fixed_field(core::FuncallableInstance_O,0,SMART_PTR_OFFSET,_Rack);
   Init__fixed_field(core::FuncallableInstance_O,1,SMART_PTR_OFFSET,_Class);

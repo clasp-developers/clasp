@@ -95,13 +95,13 @@ public:
 public:
   void dump()override ;
   // quick and dirty way to identify environments (only works with Boehm)
-  CL_DEFMETHOD std::string environmentAddress() const { stringstream ss; ss << (void*)this; return ss.str(); };
+  CLASP_DEFMETHOD std::string environmentAddress() const { stringstream ss; ss << (void*)this; return ss.str(); };
 CL_LISPIFY_NAME("lexicalEnvironmentP");
-CL_DEFMETHOD   virtual bool lexicalEnvironmentP() const { return false; };
+CLASP_DEFMETHOD   virtual bool lexicalEnvironmentP() const { return false; };
 CL_LISPIFY_NAME("functionContainerEnvironmentP");
-CL_DEFMETHOD   virtual bool functionContainerEnvironmentP() const { return false; };
+CLASP_DEFMETHOD   virtual bool functionContainerEnvironmentP() const { return false; };
 CL_LISPIFY_NAME("unwindProtectEnvironmentP");
-CL_DEFMETHOD   virtual bool unwindProtectEnvironmentP() const { return false; };
+CLASP_DEFMETHOD   virtual bool unwindProtectEnvironmentP() const { return false; };
   virtual bool catchEnvironmentP() const { return false; };
 
   virtual void setupParent(T_sp environ);
@@ -116,7 +116,7 @@ public:
 
   /*! Associate a symbol in the current environment to some meta-data */
 CL_LISPIFY_NAME("setf_metadata");
-CL_DEFMETHOD   virtual T_sp setf_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
+CLASP_DEFMETHOD   virtual T_sp setf_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
 
   /*! Gather a list of all metadata with the key ordered from outermost environment
 	  to the innermost one */
@@ -124,7 +124,7 @@ CL_DEFMETHOD   virtual T_sp setf_metadata(Symbol_sp key, T_sp val) { SUBIMP(); }
 
   /*! Push metadata into a Cons associated with the symbol */
 CL_LISPIFY_NAME("push_metadata");
-CL_DEFMETHOD   virtual List_sp push_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
+CLASP_DEFMETHOD   virtual List_sp push_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
 
   /*! Lookup metadata - return two values
 	  The first is the value found or nil and the second is t if a value is found or nil if not */
@@ -305,7 +305,7 @@ public:
 
   virtual T_sp currentVisibleEnvironment(bool stopAtFunctionContainerEnvironment) const override;
 
-  CL_DEFMETHOD void setInvisible(bool invisible) { this->_Invisible = invisible; };
+  CLASP_DEFMETHOD void setInvisible(bool invisible) { this->_Invisible = invisible; };
   RuntimeVisibleEnvironment_O();
   virtual ~RuntimeVisibleEnvironment_O(){};
 };
@@ -327,7 +327,7 @@ class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
   List_sp _SymbolIndex_alist;
   ValueFrame_sp _ActivationFrame;
  public:
-  static ValueEnvironment_sp createSingleTopLevelEnvironment();
+  static ValueEnvironment_sp createSingleTopLevelEnvironment(size_t numberOfArguments);
 
   /*! Create an environment that extends a parent environment,
 	 Pass a Cons of 2-element conses that contain either `(lexical ,symbol-name) or `(special ,symbol-name) 
@@ -495,7 +495,7 @@ public:
 public:
   virtual string summaryOfContents() const override;
 CL_LISPIFY_NAME("UnwindProtectEnvironment-cleanupForm");
-CL_DEFMETHOD   List_sp cleanupForm() const { return this->_CleanupForm; };
+CLASP_DEFMETHOD   List_sp cleanupForm() const { return this->_CleanupForm; };
 
 public:
   DEFAULT_CTOR_DTOR(UnwindProtectEnvironment_O);
@@ -548,10 +548,10 @@ public:
 	  that defines it return nil if you don't find it*/
   virtual T_sp find_block_named_environment(Symbol_sp tag) const override;
 
-  CL_DEFMETHOD void setf_LocalReturnBlock(T_sp returnBlock) { this->_LocalReturnBlock = returnBlock; };
-  CL_DEFMETHOD T_sp localReturnBlock() const { return this->_LocalReturnBlock; };
-  CL_DEFMETHOD void setf_LocalReturnValue(T_sp returnValue) { this->_LocalReturnValue = returnValue; };
-  CL_DEFMETHOD T_sp localReturnValue() const { return this->_LocalReturnValue; };
+  CLASP_DEFMETHOD void setf_LocalReturnBlock(T_sp returnBlock) { this->_LocalReturnBlock = returnBlock; };
+  CLASP_DEFMETHOD T_sp localReturnBlock() const { return this->_LocalReturnBlock; };
+  CLASP_DEFMETHOD void setf_LocalReturnValue(T_sp returnValue) { this->_LocalReturnValue = returnValue; };
+  CLASP_DEFMETHOD T_sp localReturnValue() const { return this->_LocalReturnValue; };
   
   BlockEnvironment_O() : _BlockSymbol(unbound<Symbol_O>()), _ActivationFrame(unbound<ValueFrame_O>()),
                          _LocalReturnBlock(unbound<T_O>()),
@@ -633,8 +633,8 @@ public:
   virtual T_sp find_current_code_environment() const override;
   virtual bool functionContainerEnvironmentP() const override { return true; };
 
-  CL_DEFMETHOD T_sp FunctionContainerEnvironment_closure() const { return this->_Closure;};
-  CL_DEFMETHOD T_sp FunctionContainerEnvironment_function() const { return this->_Function;};
+  CLASP_DEFMETHOD T_sp FunctionContainerEnvironment_closure() const { return this->_Closure;};
+  CLASP_DEFMETHOD T_sp FunctionContainerEnvironment_function() const { return this->_Function;};
   virtual int countFunctionContainerEnvironments() const override;
   T_sp currentVisibleEnvironment(bool stopAtFunctionContainerEnvironment) const override;  
 
@@ -701,8 +701,8 @@ public:
 	  that defines it return nil if you don't find it*/
   virtual T_sp find_tagbody_tag_environment(Symbol_sp tag) const override;
 
-  CL_DEFMETHOD void setf_LocalBlocks(T_sp blocks) { this->_LocalBlocks = blocks; };
-  CL_DEFMETHOD T_sp localBlocks() const { return this->_LocalBlocks; };
+  CLASP_DEFMETHOD void setf_LocalBlocks(T_sp blocks) { this->_LocalBlocks = blocks; };
+  CLASP_DEFMETHOD T_sp localBlocks() const { return this->_LocalBlocks; };
   
 }; // TagbodyEnvironment class
 

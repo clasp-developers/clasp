@@ -43,6 +43,7 @@ struct CommandLineOptions {
   CommandLineOptions(int argc, char *argv[]);
   process_arguments_callback _ProcessArguments;
   std::string _ExecutableName;
+  bool _JITLogSymbols;
   bool _IgnoreInitImage;
   bool _IgnoreInitLsp;
   bool _DisableMpi{false};

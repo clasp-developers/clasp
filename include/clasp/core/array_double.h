@@ -38,7 +38,7 @@ namespace core {
                                size_t initialContentsSize=0,
                                const value_type* initialContents=NULL,
                                bool static_vector_p = false) {
-      auto bs = gctools::GC<my_type>::allocate_container(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<my_type>::allocate_container<gctools::RuntimeStage>(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
   public:
@@ -102,7 +102,7 @@ namespace core {
     static smart_ptr_type make_vector(size_t dimension, simple_element_type initialElement/*=simple_element_type()*/, T_sp fillPointer/*=_Nil<T_O>()*/, T_sp dataOrDisplacedTo/*=_Nil<T_O>()*/, bool displacedToP/*=false*/, Fixnum_sp displacedIndexOffset/*=clasp_make_fixnum(0)*/ ) {
       LIKELY_if (dataOrDisplacedTo.nilp())
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
-      return gctools::GC<my_type>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      return gctools::GC<my_type>::allocate_container<gctools::RuntimeStage>(false,1/*CRANK*/,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
     static smart_ptr_type make_vector(size_t dimension) {
       return make_vector(dimension,0,nil<T_O>(),nil<T_O>(),false,clasp_make_fixnum(0));

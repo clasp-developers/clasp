@@ -144,7 +144,9 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
 
 void cc_finish_gcroots_in_module(gctools::GCRootsInModule* holder)
 {NO_UNWIND_BEGIN();
+  llvmo::JITDataReadWriteMaybeExecute();
   holder->_TransientAlloca = NULL;
+  llvmo::JITDataReadExecute();
   NO_UNWIND_END();
 }
 
@@ -165,9 +167,9 @@ LtvcReturnVoid ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, 
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
   core::GlobalEntryPoint_sp entryPoint(tentrypoint);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
-                                                              entryPoint,
-                                                              core::ClosureWithSlots_O::cclaspClosure);
+      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,0,
+                                                                                       entryPoint,
+                                                                                       core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
   NO_UNWIND_END();
 }
@@ -758,9 +760,9 @@ core::T_O* makeCompiledFunction(core::T_O* tentrypoint,
   };
 //  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
   core::ClosureWithSlots_sp toplevel_closure =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,
-                                                              entryPoint,
-                                                              core::ClosureWithSlots_O::bclaspClosure);
+      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false, BCLASP_CLOSURE_SLOTS,
+                                                                                       entryPoint,
+                                                                                       core::ClosureWithSlots_O::bclaspClosure);
   (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
   return toplevel_closure.raw_();
   NO_UNWIND_END();
@@ -900,8 +902,8 @@ void debugSymbolValue(core::Symbol_sp sym) {
 
 void debugPrintI32(int i32)
 {NO_UNWIND_BEGIN();
-  printf("+++DBG-I32[%d]\n", i32);
-  fflush(stdout);
+  //printf("+++DBG-I32[%d]\n", i32);
+  //fflush(stdout);
   NO_UNWIND_END();
 }
 
@@ -928,6 +930,13 @@ void debugPrint_size_t(size_t v)
 {NO_UNWIND_BEGIN();
   printf("+++DBG-size_t[%lu/%lx]\n", v, v);
   NO_UNWIND_END();
+}
+
+void cc_verify_tag(size_t uid, core::T_O* ptr, size_t tag) {
+  if (((uintptr_t)ptr&0x7)!=tag) {
+    printf("%s:%d:%s id: %lu - the ptr %p does not have the necessary tag 0x%lx - aborting\n", __FILE__, __LINE__, __FUNCTION__, uid, ptr, tag );
+    abort();
+  }
 }
 
 void debug_memory(size_t num, core::T_O** vector)
@@ -1218,9 +1227,9 @@ core::T_O *cc_enclose(core::T_O* entryPointInfo,
   core::T_sp tentryPoint((gctools::Tagged)entryPointInfo);
   core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tentryPoint);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container( false, numCells
-                                                               , entryPoint
-                                                               , core::ClosureWithSlots_O::cclaspClosure);
+      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>( false, numCells
+                                                                                        , entryPoint
+                                                                                        , core::ClosureWithSlots_O::cclaspClosure);
   return functoid.raw_();
 }
 

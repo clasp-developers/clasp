@@ -772,9 +772,12 @@ size_t processMpsMessages(size_t& finalizations) {
 
 namespace gctools {
 
+#ifndef RUNNING_PRECISEPREP
 void walkRoots( RootWalkCallback, void* data ) {
   // Do nothing
 };
+#endif
+
 
 void test_mps_allocation() {
   int numAllocations = 10000;
@@ -1165,7 +1168,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Could not create scan root");
 #else
   mps_register_roots((void*)&_lisp,1);
-//  mps_register_roots((void*)&global_core_symbols[0],NUMBER_OF_CORE_SYMBOLS);
   mps_register_roots((void*)&global_symbols[0],global_symbol_count);
   // printf("%s:%d UNDEF USE_main_thread_roots_scan NUMBER_OF_CORE_SYMBOLS[%d] global_symbol_count[%d]\n", __FILE__, __LINE__, NUMBER_OF_CORE_SYMBOLS, global_symbol_count );
 #endif  
@@ -1378,6 +1380,12 @@ void clasp_gc_room(std::ostringstream& OutputStream) {
   OutputStream << std::setw(12) << global_TotalRootTableSize.load() << " words - total module root table size\n";
 }
 
+void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots)
+{
+  // Do nothing
+  printf("%s:%d:%s Implement clasp_gc_registerRoots\n", __FILE__, __LINE__, __FUNCTION__ );
+  abort();
+}
 
 
 };

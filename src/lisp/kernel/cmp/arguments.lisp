@@ -163,7 +163,7 @@ tstar bad_keyword = undef;
 bool seen_bad_keyword = false;
 t_star a_temp = undef, a_p_temp = [nil], allow_other_keys_temp = [nil], allow_other_keys_p_temp = [nil];
 for (; remaining_nargs != 0; remaining_nargs -= 2) {
-  tstar key = va_arg(valist), value = va_arg(valist);
+  tstar key = va_arg(vaslist), value = va_arg(vaslist);
   if (key == [:a]) {
     if (a_p_temp == [nil]) {
       a_p_temp = [t]; a_temp = value; continue;
@@ -655,7 +655,7 @@ a_p = a_p_temp; a = a_temp;
                 (vaslist* (alloca-vaslist))
                 (idx 0))
            (dolist (arg register-args)
-             (let ((arg-gep (irc-gep arg-buffer (list 0 idx))))
+             (let ((arg-gep (irc-typed-gep (llvm-sys:array-type-get %t*% nargs) arg-buffer (list 0 idx))))
                (incf idx)
                (irc-store arg arg-gep)))
            (if (= nargs 0)

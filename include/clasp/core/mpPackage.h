@@ -336,7 +336,7 @@ namespace mp {
     void signal() { this->_ConditionVariable._value.signal();};
     void broadcast() { this->_ConditionVariable._value.broadcast();};
     CL_DOCSTRING("Return the name of the condition variable.")
-    CL_DEFMETHOD core::T_sp condition_variable_name() {
+    CLASP_DEFMETHOD core::T_sp condition_variable_name() {
       return _Name;
     }
     string __repr__() const override;

@@ -767,6 +767,12 @@ makes it the new value of PLACE.  Returns the new value of PLACE."
 		    (append vals (list (list 'cons item access-form))))
        ,store-form)))
 
+#+(or)
+(eval-when (:compile-toplevel :execute)
+  (gctools:wait-for-user-signal "Waiting")
+  (setq *echo-repl-read* t))
+
+
 (defmacro pushnew (&environment env item place
                    &rest rest &key test test-not key)
   "Syntax: (pushnew form place {keyword-form value-form}*)

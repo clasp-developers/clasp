@@ -67,7 +67,7 @@
          cmp::layout-xep-function
          cmp::layout-xep-function*
          cmp::irc-create-call-wft
-         cmp::irc-gep
+         cmp::irc-typed-gep
          cmp::irc-bit-cast
          cmp::dbg-parameter-var
          cmp::%dbg-variable-value
@@ -80,7 +80,7 @@
          cmp::c++-field-ptr
          cmp::calling-convention-vaslist.va-arg
          cmp::calling-convention-vaslist*
-         cmp::irc-load
+         cmp::irc-typed-load
          cmp::irc-add
          cmp::irc-sub
          cmp::irc-store

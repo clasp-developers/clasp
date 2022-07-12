@@ -1664,6 +1664,15 @@ T_mv sp_go(List_sp args, T_sp env) {
             return (Values(nil<T_O>()));
         }
 
+    struct MonitorBlock {
+      T_O* _tag;
+      MonitorBlock(T_O* tag) : _tag(tag) {
+        printf("%s:%d:%s Entered BLOCK %p\n", __FILE__, __LINE__, __FUNCTION__, tag );
+      }
+      ~MonitorBlock() {
+        printf("%s:%d:%s Leaving BLOCK %p\n", __FILE__, __LINE__, __FUNCTION__, this->_tag );
+      }
+    };
         T_mv sp_block(List_sp args, T_sp environment) {
           ASSERT(environment.generalp());
           Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
@@ -2083,9 +2092,12 @@ T_mv sp_go(List_sp args, T_sp env) {
                 }
                 result = af_interpreter_lookup_variable(sym, environment);
 #ifdef DEBUG_EVALUATE
-          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-            printf("%s:%d evaluate variable %s -> %s\n", __FILE__, __LINE__, _rep_(sym).c_str(), _rep_(result).c_str());
-          }
+                if (sym.nilp() && gc::IsA<HashTable_sp>(result)) {
+                  printf("%s:%d:%s Hit place where nil @ %p -> HashTable %s\n", __FILE__, __LINE__, __FUNCTION__, (void*)sym.raw_(), _rep_(result).c_str() );
+                }
+                if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+                  printf("%s:%d evaluate variable %s -> %s\n", __FILE__, __LINE__, _rep_(sym).c_str(), _rep_(result).c_str());
+                }
 #endif                
                 return (result);
             }
@@ -2226,7 +2238,7 @@ T_mv sp_go(List_sp args, T_sp env) {
         }
 
     
-        T_mv evaluate(T_sp exp, T_sp environment) {
+    T_mv evaluate(T_sp exp, T_sp environment) {
 #ifdef DEBUG_EVALUATE
           if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
           //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
@@ -2370,7 +2382,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
               printf("%s:%d evaluate %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
               for (size_t ia=0; ia<argIdx; ++ia) {
-                T_sp obj((gctools::Tagged)callArgs->value(ia));
+                T_sp obj((gctools::Tagged)callArgs->value_(ia));
                 printf("    arg[%lu] -> %s\n", ia, _rep_(obj).c_str());
               }
               if (_rep_(headSym)=="REPLACE-ALL-USES-WITH") {

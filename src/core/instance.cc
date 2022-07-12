@@ -55,7 +55,7 @@ namespace core {
 
 Rack_sp Rack_O::make(size_t numSlots, T_sp sig, T_sp initialValue )
 {
-  auto bs = gctools::GC<Rack_O>::allocate_container(false,numSlots,sig,initialValue,true);
+  auto bs = gctools::GC<Rack_O>::allocate_container<gctools::RuntimeStage>(false,numSlots,sig,initialValue,true);
   return bs;
 }
 

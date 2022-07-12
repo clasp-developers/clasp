@@ -264,7 +264,7 @@
   "Run time modules are used by COMPILE - a new one needs to be created for every COMPILE.
 Return the module and the global variable that represents the load-time-value-holder as
 \(value module global-run-time-values function-pass-manager\)."
-  (llvm-create-module (next-run-time-module-name)))
+  (llvm-create-module "compile"))
 
 (llvm-sys:initialize-native-target)
 
@@ -381,7 +381,7 @@ No DIBuilder is defined for the default module")
   (let* ((str-gv (llvm-sys:get-or-create-uniqued-string-global-variable
                  *the-module* str
                  (core:fmt nil "str-{}" str))))
-    (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 label)))
+    (irc-const-gep2-64 %t*% str-gv 0 0 label)))
 
 
 (defun module-make-global-string (str &optional (label ""))
@@ -820,7 +820,7 @@ No DIBuilder is defined for the default module")
                            (core:fmt t "Done dump module%N")
                            ))
                      (mp:get-lock *jit-lock*)
-                     #+(or)(llvm-sys:dump-module module)
+                     (if (member :dump-compile *features*) (llvm-sys:dump-module module))
                      (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context* startup-shutdown-id)
                      (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list name))
                 (progn

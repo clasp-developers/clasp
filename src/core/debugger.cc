@@ -78,6 +78,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/code.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/stackmap.h>
 
@@ -278,8 +279,7 @@ bool lookup_address(uintptr_t address, const char*& symbol,
   symbol = llvmo::getFunctionNameForAddress(dcontext, sa);
 
   // Get the address ranges
-  llvmo::Code_sp code = ofi->_Code;
-  uintptr_t code_start = code->codeStart();
+  uintptr_t code_start = ofi->codeStart();
   auto eranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
   if (eranges) {
     auto ranges = eranges.get();
@@ -439,8 +439,8 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 }
 
 extern "C" {
-//#define REPR_ADDR(addr) << "@" << (void*)addr
-#define REPR_ADDR(addr)
+#define REPR_ADDR(addr) << "@" << (void*)addr
+//#define REPR_ADDR(addr)
 
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
@@ -468,6 +468,12 @@ std::string dbg_safe_repr(uintptr_t raw) {
     } else if (gc::IsA<core::SimpleBaseString_sp>(obj)) {
       core::SimpleBaseString_sp sobj = gc::As_unsafe<core::SimpleBaseString_sp>(obj);
       ss << "\"" << sobj->get_std_string() << "\"";
+    } else if (gc::IsA<core::SimpleCharacterString_sp>(obj)) {
+      core::SimpleCharacterString_sp sobj = gc::As_unsafe<core::SimpleCharacterString_sp>(obj);
+      ss << "\"" << sobj->get_std_string() << "\"";
+    } else if (gc::IsA<core::Str8Ns_sp>(obj)) {
+      core::Str8Ns_sp sobj = gc::As_unsafe<core::Str8Ns_sp>(obj);
+      ss << "\"" << sobj->get_std_string() << "\"";
     } else if (gc::IsA<core::SimpleVector_sp>(obj)) {
       core::SimpleVector_sp svobj = gc::As_unsafe<core::SimpleVector_sp>(obj);
       ss << "#(";
@@ -477,18 +483,28 @@ std::string dbg_safe_repr(uintptr_t raw) {
       ss << ")" REPR_ADDR(raw);
     } else if (gc::IsA<core::FuncallableInstance_sp>(obj)) {
       core::FuncallableInstance_sp fi = gc::As_unsafe<core::FuncallableInstance_sp>(obj);
-      ss << "#<FUNCALLABLE-INSTANCE ";
+      ss << "#<$FUNCALLABLE-INSTANCE ";
       ss << _safe_rep_(fi->functionName());
       ss << " :class " << _safe_rep_(fi->_Class->_className());
-      ss << ">" REPR_ADDR(raw); 
+      ss << "$>" REPR_ADDR(raw);
+    } else if (gc::IsA<llvmo::SectionedAddress_sp>(obj)) {
+      llvmo::SectionedAddress_sp sa = gc::As_unsafe<llvmo::SectionedAddress_sp>(obj);
+      ss << "#<$SECTIONED-ADDRESS :address " << (void*)sa->_value.Address;
+      ss << " :section-index " << sa->_value.SectionIndex;
+      ss << " " REPR_ADDR(raw) << "$>";
+    } else if (gc::IsA<llvmo::ObjectFile_sp>(obj)) {
+      llvmo::ObjectFile_sp of = gc::As_unsafe<llvmo::ObjectFile_sp>(obj);
+      ss << "#<$OBJECT-FILE :code-start " << (void*)of->codeStart();
+      ss << " :code-end " << (void*)of->codeEnd();
+      ss << " " REPR_ADDR(raw) << "$>";
     } else if (gc::IsA<core::Instance_sp>(obj)) {
       core::Instance_sp ii = gc::As_unsafe<core::Instance_sp>(obj);
-      ss << "#<INSTANCE :class ";
+      ss << "#<$INSTANCE :class ";
       ss << _safe_rep_(ii->_Class->_className());
-      ss << ">" REPR_ADDR(raw);
+      ss << " " REPR_ADDR(raw) << "$>";
     } else {
       core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
-      ss << "#<" << gen->className() << " " REPR_ADDR(gen.raw_()) << ">";
+      ss << "#<$" << gen->className() << " " REPR_ADDR(gen.raw_()) << "$>";
     }
   } else if (obj.consp()) {
     ss << "(";
@@ -507,7 +523,7 @@ std::string dbg_safe_repr(uintptr_t raw) {
     ss << "NIL";
   } else if (obj.valistp()) {
     core::Vaslist_sp vaslist = gc::As_unsafe<core::Vaslist_sp>(obj);
-    ss << "#<VASLIST ";;
+    ss << "#<$VASLIST ";;
 #if 0
     // difference during diff
     ss << (void*)obj.raw_();
@@ -521,7 +537,7 @@ std::string dbg_safe_repr(uintptr_t raw) {
     for ( size_t ii=0; ii<vaslist->remaining_nargs(); ii++ ) {
       ss << dbg_safe_repr((uintptr_t)vaslist->relative_indexed_arg(ii)) << " ";
     }
-    ss << ") >";
+    ss << ")$>";
   } else if (obj.unboundp()) {
     ss << "#:UNBOUND";
   } else if (obj.characterp()) {
@@ -529,7 +545,7 @@ std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.single_floatp()) {
     ss << (float)obj.unsafe_single_float();
   } else {
-    ss << " #<RAW" REPR_ADDR(obj.raw_()) << ">";
+    ss << " #<$RAW" REPR_ADDR(obj.raw_()) << "$>";
   }
   if (ss.str().size() > 2048) {
     return ss.str().substr(0,2048);

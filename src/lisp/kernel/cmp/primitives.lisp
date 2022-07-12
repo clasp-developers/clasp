@@ -307,6 +307,8 @@
          (primitive-unwinds "cc_invoke_sub_run_all_function" :void (list :fn-start-up*))
          (primitive-unwinds "cc_invoke_byte_code_interpreter" :void (list :gcroots-in-module* :i8* :size_t))
 
+         (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
+
          (primitive-unwinds "cc_enclose" :t* (list
                                               :t*
                                               :size_t))

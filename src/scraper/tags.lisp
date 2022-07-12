@@ -152,6 +152,8 @@
 
 (defclass tags:cl-defmethod-tag (internal-code-tag) ())
 
+(defclass tags:clasp-defmethod-tag (internal-code-tag) ())
+
 (defclass tags:cl-def-class-method-tag (internal-code-tag) ())
 
 (defclass tags:cl-extern-defmethod-tag (external-code-tag)
@@ -350,6 +352,8 @@
   (define-tag-handler cl-defun-setf-tag "CL_DEFUN_SETF_TAG" tags:cl-defun-setf-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))
   (define-tag-handler cl-defmethod-tag "CL_DEFMETHOD_TAG" tags:cl-defmethod-tag
+    :signature-text% (cscrape:read-string-to-character bufs #\) t))
+  (define-tag-handler clasp-defmethod-tag "CLASP_DEFMETHOD_TAG" tags:clasp-defmethod-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))
   (define-tag-handler cl-def-class-method-tag "CL_DEF_CLASS_METHOD_TAG" tags:cl-def-class-method-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))
