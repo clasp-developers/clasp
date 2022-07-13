@@ -546,3 +546,200 @@ Optimizations are available for any of:
 
 (deftransform reverse (((x list))) '(core:list-reverse x))
 (deftransform nreverse (((x list))) '(core:list-nreverse x))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Flushing calls
+;;;
+;;; Flushing unused calls has to be done carefully even if they are seemingly
+;;; side-effect-free, because many (in fact almost all) functions sometimes have
+;;; to signal errors. In particular, in safe code, we are required to signal a
+;;; program error on argument count mismatch. Beyond that, we have to worry
+;;; about things like not deleting arithmetic code that could signal overflow.
+
+(defvar *flushable* (make-hash-table :test #'equal))
+
+(defmethod bir-transformations:flushable-call-p
+    ((call bir:abstract-call) identity (system clasp))
+  (let ((test (gethash identity *flushable*)))
+    (if test (funcall test call) nil)))
+
+(defmacro defflusher (name (call-param) &body body)
+  (let ((fname (make-symbol (format nil "~a-FLUSHER" (write-to-string name)))))
+    `(progn
+       (defun ,fname (,call-param)
+         (block ,(core:function-block-name name)
+           ;; If we're not on heightened safety, go ahead and flush.
+           (unless (policy:policy-value (bir:policy ,call-param)
+                                        'flush-safely)
+             (return-from ,(core:function-block-name name) t))
+           ,@body))
+       (setf (gethash ',name *flushable*) ',fname)
+       ',name)))
+
+(defun call-argstype (call)
+  (etypecase call
+    ((or bir:mv-call bir:mv-local-call)
+     (bir:ctype (second (bir:inputs call))))
+    ((or bir:call bir:local-call)
+     (let ((sys *clasp-system*))
+       (ctype:values
+        (loop for arg in (rest (bir:inputs call))
+              collect (ctype:primary (bir:ctype arg) sys))
+        nil (ctype:bottom sys) sys)))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun parse-flusher-type (type)
+    (let ((opt (member '&optional type))
+          (rest (member '&rest type))
+          (sys *clasp-system*))
+      (flet ((parse1 (ty) (env:parse-type-specifier ty nil sys)))
+        (ctype:values
+         (mapcar #'parse1 (ldiff type (or opt rest)))
+         (mapcar #'parse1 (rest (ldiff opt rest)))
+         (if rest (parse1 (second rest)) (ctype:bottom sys))
+         sys)))))
+
+;;; Flush unless we're in safe code.
+(defmacro defflusher-unsafe (name) `(defflusher ,name (call) nil))
+
+(defmacro defflushers-unsafe (&rest names)
+  `(progn ,@(loop for name in names collect `(defflusher-unsafe ,name))))
+
+;;; Flush even in safe code unconditionally.
+;;; This is only really valid for functions that accept any arguments.
+(defmacro defflusher-always (name) `(defflusher ,name (call) t))
+
+;;; Flush iff the arguments are a recognizable subtype of some given type.
+;;; The type is specified as the &rest of the macro, and is interpreted strictly,
+;;; i.e. without the &optional padding and stuff inserted.
+;;; However if no &rest is specified, that's put in automatically.
+(defmacro defflusher-type (name &rest type)
+  `(defflusher ,name (call)
+     (values (ctype:values-subtypep
+              (call-argstype call)
+              ',(parse-flusher-type type)
+              *clasp-system*))))
+
+(defflusher-type special-operator-p symbol)
+(defflusher-type constantp t &optional t)
+
+(defflusher-type type-of t)
+(defflusher-type type-error-datum type-error)
+(defflusher-type type-error-expected-type type-error)
+
+(defflusher-type functionp t)
+(defflusher-type compiled-function-p t)
+(defflusher-type not t)
+(defflusher-type eq t t)
+(defflusher-type eql t t)
+(defflusher-type equal t t)
+(defflusher-type equalp t t)
+(defflusher-type identity t)
+(defflusher-type complement function)
+(defflusher-type constantly t)
+(defflusher-always values)
+
+(defflusher-type class-of t)
+
+(defflusher-type copy-structure structure-object)
+
+(defflusher-type symbolp t)
+(defflusher-type keywordp t)
+(defflusher-type make-symbol string)
+(defflusher-type copy-symbol symbol &optional t)
+(defflusher-type gensym &optional (or string (integer 0)))
+(defflusher-type symbol-name symbol)
+(defflusher-type symbol-package symbol)
+(defflusher-type symbol-plist symbol)
+(defflusher-type boundp symbol)
+
+;;; TODO: Some of this might be okay to flush in safe code.
+;;; But I haven't thought hard about it, so no flushing in safe code for now.
+(defflushers-unsafe = /= < > <= >= max min minusp plusp zerop
+  floor ffloor ceiling fceiling truncate ftruncate round fround
+  sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh
+  * + - / core:two-arg-* core:two-arg-+ core:two-arg-- core:two-arg-/
+  core:negate core:reciprocal 1+ 1- abs evenp oddp exp expt gcd lcm
+  log mod rem signum sqrt isqrt cis conjugate phase realpart imagpart
+  upgraded-complex-part-type numerator denominator rational rationalize
+  ash integer-length parse-integer boole logand logandc1 logandc2
+  logeqv logior lognand lognor lognot logorc1 logorc2 logxor
+  logbitp logcount logtest byte byte-size byte-position
+  deposit-byte dpb ldb ldb-test mask-field
+  decode-float scale-float float-radix float-sign float-digits
+  float-precision integer-decode-float)
+(defflusher-type make-random-state &optional (or random-state null (eql t)))
+(defflusher-type random-state-p t)
+(defflusher-type numberp t)
+(defflusher-type complexp t)
+(defflusher-type complex real &optional real)
+(defflusher-type realp t)
+(defflusher-type rationalp t)
+(defflusher-type integerp t)
+(defflusher-type floatp t)
+(defflusher-type arithmetic-error-operands arithmetic-error)
+(defflusher-type arithmetic-error-operation arithmetic-error)
+
+(macrolet ((defchars (&rest names)
+             `(progn
+                ,@(loop for name in names
+                        collect `(defflusher-type ,name &rest character)))))
+  (defchars char= char/= char< char> char<= char>=
+    char-equal char-not-equal char-lessp char-greaterp
+    char-not-greaterp char-not-lessp))
+(defflusher-type characterp t)
+(defflusher-type alpha-char-p character)
+(defflusher-type alphanumericp character)
+(defflusher-type digit-char (integer 0) &optional (integer 2 36))
+(defflusher-type digit-char-p character &optional (integer 2 36))
+(defflusher-type graphic-char-p character)
+(defflusher-type standard-char-p character)
+(defflusher-type char-upcase character)
+(defflusher-type char-downcase character)
+(defflusher-type upper-case-p character)
+(defflusher-type lower-case-p character)
+(defflusher-type both-case-p character)
+(defflusher-type char-code character)
+(defflusher-type char-int character)
+(defflusher-type code-char (integer 0 (#.char-code-limit)))
+(defflusher-type char-name character)
+(defflusher-type name-char string)
+
+(defflusher-type cons t t)
+(defflusher-type consp t)
+(defflusher-type atom t)
+(defflusher-type car list)
+(defflusher-type cdr list)
+(defflusher-type first list)
+(defflusher-type rest list)
+(defflusher-type listp t)
+(defflusher-type endp list)
+(defflusher-type null t)
+(defflusher-always list)
+
+(defflusher-type array-dimensions array)
+(defflusher-type array-element-type array)
+(defflusher-type array-has-fill-pointer-p array)
+(defflusher-type array-displacement array)
+(defflusher-type array-rank array)
+(defflusher-type arrayp t)
+(defflusher-type simple-vector-p t)
+(defflusher-always vector)
+(defflusher-type vectorp t)
+(defflusher-type bit-vector-p t)
+(defflusher-type simple-bit-vector-p t)
+
+(defflusher-type simple-string-p t)
+(defflusher-type stringp t)
+
+(defflusher-type hash-table-p t)
+(defflusher-type hash-table-count hash-table)
+(defflusher-type hash-table-rehash-size hash-table)
+(defflusher-type hash-table-rehash-threshold hash-table)
+(defflusher-type hash-table-size hash-table)
+(defflusher-type hash-table-test hash-table)
+(defflusher-type gethash t hash-table &optional t)
+(defflusher-type sxhash t)
+
+(defflusher-type pathnamep t)
