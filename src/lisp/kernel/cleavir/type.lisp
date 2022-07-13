@@ -162,7 +162,12 @@
                                                    (system clasp))
   (let ((deriver (gethash identity *derivers*)))
     (if deriver
-        (funcall deriver argstype)
+        (handler-case
+            (funcall deriver argstype)
+          (serious-condition (e)
+            (cmp:note "BUG: Serious condition during type inference of ~s:~%~a"
+                      identity e)
+            (call-next-method)))
         (call-next-method))))
 
 (defun sv (type) (ctype:single-value type *clasp-system*))
@@ -485,9 +490,39 @@
 (define-deriver core:two-arg-+ (n1 n2) (sv (ty+ n1 n2)))
 (define-deriver core:negate (arg) (sv (ty-negate arg)))
 (define-deriver core:two-arg-- (n1 n2) (sv (ty+ n1 (ty-negate n2))))
-;;; This is imprecise, e.g. a rational*integer can be an integer, but should
-;;; still be sound.
-(define-deriver core:two-arg-* (n1 n2) (sv (ty-contagion n1 n2)))
+
+(defun range->interval (range sys)
+  (multiple-value-bind (low lxp) (ctype:range-low range sys)
+    (multiple-value-bind (high hxp) (ctype:range-high range sys)
+      (make-interval (if lxp (list low) low) (if hxp (list high) high)))))
+
+(defun coerce-bound (bound kind)
+  (flet ((%coerce (num)
+           (ecase kind
+             ((integer rational) (rational num))
+             ((single-float double-float float) (coerce num kind))
+             ((real) num))))
+    (cond ((null bound) '*)
+          ((consp bound) (list (%coerce (car bound))))
+          (t (%coerce bound)))))
+
+(defun interval->range (interval kind sys)
+  (ctype:range kind
+               (coerce-bound (interval-low interval) kind)
+               (coerce-bound (interval-high interval) kind) sys))
+
+(define-deriver core:two-arg-* (n1 n2)
+  (let* ((sys *clasp-system*))
+    (ctype:single-value
+     (if (and (ctype:rangep n1 sys) (ctype:rangep n2 sys))
+         (let ((i1 (range->interval n1 sys)) (i2 (range->interval n2 sys)))
+           (interval->range (interval* i1 i2)
+                            (contagion (ctype:range-kind n1 sys)
+                                       (ctype:range-kind n2 sys))
+                            sys))
+         (env:parse-type-specifier 'number nil sys))
+     sys)))
+
 (define-deriver core:two-arg-/ (n1 n2) (sv (ty-divcontagion n1 n2)))
 (define-deriver core:reciprocal (n)
   (sv (ty-divcontagion (ctype:range 'integer 1 1 *clasp-system*) n)))

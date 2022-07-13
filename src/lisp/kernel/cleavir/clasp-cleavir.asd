@@ -41,6 +41,7 @@
                (:file "bmir-to-blir")
                (:file "landing-pad")
                (:file "primop")
+               (:file "interval")
                (:file "type")
                (:file "transform")
                (:file "translate")
