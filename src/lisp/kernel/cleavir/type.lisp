@@ -759,16 +759,18 @@
   ;; not optimal, but should be fine.
   ;; example non optimality: (logcount (integer 10 15)) could be (integer 2 4)
   (let ((sys *clasp-system*))
-    (if (and (ctype:rangep arg sys)
-             (member (ctype:range-kind arg sys) '(integer rational real)))
-        (multiple-value-bind (low high) (normalize-integer-bounds arg sys)
-          (if (and low high)
-              (ctype:range 'integer
-                           (if (or (> low 0) (< high -1)) 1 0)
-                           (max (integer-length low) (integer-length high))
-                           sys)
-              (ctype:range 'integer '* '* sys)))
-        (ctype:range 'integer '* '* sys))))
+    (ctype:single-value
+     (if (and (ctype:rangep arg sys)
+              (member (ctype:range-kind arg sys) '(integer rational real)))
+         (multiple-value-bind (low high) (normalize-integer-bounds arg sys)
+           (if (and low high)
+               (ctype:range 'integer
+                            (if (or (> low 0) (< high -1)) 1 0)
+                            (max (integer-length low) (integer-length high))
+                            sys)
+               (ctype:range 'integer '* '* sys)))
+         (ctype:range 'integer '* '* sys))
+     sys)))
 
 ;;; LOGNOT (in Lisp's unbounded conception) is monotonic decreasing.
 (define-deriver lognot (arg)
