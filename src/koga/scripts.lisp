@@ -239,3 +239,27 @@ exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
 
 (defmethod print-prologue (configuration (name (eql :eclasp-immutable)) output-stream)
   (pprint-immutable-systems output-stream (gethash :eclasp (target-systems configuration))))
+
+(defmethod print-prologue (configuration (name (eql :bench)) output-stream)
+  (format output-stream "(require :asdf)
+(asdf:load-system :cl-bench)
+(asdf:load-system :cl-bench/report)
+(asdf:load-system :split-sequence)
+(loop with bench = (uiop:getenv \"CLASP_BENCH\")
+      with negate = (and (position #\\^ bench :test #'char=) t)
+      with names = (split-sequence:split-sequence-if (lambda (ch)
+                                                       (position ch \",^\" :test #'char=))
+                                                     bench
+                                                     :remove-empty-subseqs t)
+      for benchmark in cl-bench::*benchmarks*
+      for name = (cl-bench::benchmark-name benchmark)
+      for namesp = (find name names :test #'string-equal)
+      when (or (and negate namesp)
+               (and (not negate) names (not namesp)))
+        do (pushnew :clasp (cl-bench::benchmark-disabled-for benchmark)))
+(let ((cl-bench::*output-dir* (make-pathname :directory '(:relative :up \"bench\"))))
+  (ensure-directories-exist cl-bench::*output-dir*)
+  (cl-bench:bench-run)
+  (cl-bench::bench-analysis-page))
+(ext:quit)"))
+
