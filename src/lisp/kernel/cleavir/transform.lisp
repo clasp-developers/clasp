@@ -100,8 +100,17 @@
                                   :argstype argstype))
                  (return t)))))
 
+(defun transform-values-call-to-ftm (call)
+  (change-class call 'bir:fixed-to-multiple
+                :inputs (rest (bir:inputs call))))
+
 (defmethod cleavir-bir-transformations:transform-call
     ((system clasp) key (call bir:call))
+  ;; FUNKY SPECIAL CASE: If we find calls to VALUES, we replace them
+  ;; with FIXED-TO-MULTIPLE directly. KLUDGE.
+  (when (eq key 'values)
+    (transform-values-call-to-ftm call)
+    (return-from cleavir-bir-transformations:transform-call t))
   (let ((trans (gethash key *bir-transformers*)))
     (if trans
         (maybe-transform call trans)
