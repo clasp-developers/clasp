@@ -772,6 +772,34 @@
          (ctype:range 'integer '* '* sys))
      sys)))
 
+(define-deriver integer-length (arg)
+  (let ((sys *clasp-system*))
+    (ctype:single-value
+     (if (and (ctype:rangep arg sys)
+              (member (ctype:range-kind arg sys) '(integer rational real)))
+         (multiple-value-bind (low high) (normalize-integer-bounds arg sys)
+           (multiple-value-bind (nlow nhigh)
+               ;; We compute bounds based on integer-length being nondecreasing
+               ;; from 0 on up and from -1 on down. So if we're entirely positive
+               ;; or negative we just work monotonically, otherwise min is zero
+               ;; and max is whatever's biggest.
+               (cond ((and low (> low 0))
+                      ;; entirely positive range.
+                      (values (integer-length low)
+                              (if high (integer-length high) '*)))
+                     ((and high (< high 0))
+                      ;; entirely negative
+                      (values (integer-length high)
+                              (if low (integer-length low) '*)))
+                     (t
+                      ;; zero-crossing
+                      (values 0 (if (and low high)
+                                    (max (integer-length low) (integer-length high))
+                                    '*))))
+             (ctype:range 'integer nlow nhigh sys)))
+         (ctype:range 'integer 0 '* sys))
+     sys)))
+
 ;;; LOGNOT (in Lisp's unbounded conception) is monotonic decreasing.
 (define-deriver lognot (arg)
   (let* ((sys *clasp-system*))
