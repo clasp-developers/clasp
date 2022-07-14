@@ -69,13 +69,24 @@
   passed unboxed in some common cases.
 * Nonlocal exits are much faster in most cases, the exception being when
   the exit goes through uncooperative C++ code.
-  
+* Types inferred for many standard functions are tighter.
+* Calls to some local functions with &rest parameters are more efficient.
+* LENGTH is now a "vaslistable" function; &rest parameters that are only
+  used for vaslistable functions can be compiled to avoid consing.
+* Multiple value calls and APPLY calls to known function can sometimes
+  be optimized.
+* Some MAKE-ARRAY calls are compiled more efficiently.
+* Unused calls to many more (side-effect-free) standard functions are deleted.
+
 ## Fixes
 * Replace hard coded paths to `nm` in snapshot code with NM_BINARY macro value
   set by configure.
 * Clasp can now be built directly from source. Resolves issue [#175][].
 * Snapshots now parse command line options such as `--noinform`, `--noprint`,
   `--quit`, and `--disable-debugger`.
+* Source locations for warnings from errors during constant folding now
+  print correctly.
+* Unused calls that must remain in safe code are no longer deleted.
 
 # Version 1.0.0 (LLVM13) 2022-03-26
 

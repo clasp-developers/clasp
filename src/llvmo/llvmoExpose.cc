@@ -3652,9 +3652,6 @@ CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&ll
 }; // llvmo
 
 namespace llvmo {
-// I can't get the following to work yet
-//CL_EXTERN_DEFMETHOD(FunctionType_O, &llvm::FunctionType::getReturnType);
-
 
 CL_LAMBDA(result &optional params is-var-arg)
 CL_LISPIFY_NAME(function-type-get);
@@ -3674,7 +3671,23 @@ CL_DEFUN core::T_sp FunctionType_O::get(core::T_sp result_type, core::T_sp param
   return translate::to_object<llvm::FunctionType *>::convert(result);
 };
 
-;
+// I can't get the following to work yet
+//CL_EXTERN_DEFMETHOD(FunctionType_O, &llvm::FunctionType::getReturnType);
+
+DOCGROUP(clasp)
+CL_DEFUN core::T_sp llvm_sys__function_type_param_types(llvmo::FunctionType_sp ftype) {
+  ql::list paramtypes;
+  llvm::FunctionType* fty = ftype->wrapped();
+  for (auto ptype = fty->param_begin(); ptype != fty->param_end(); ++ptype) {
+    paramtypes << translate::to_object<llvm::Type*>::convert(*ptype);
+  }
+  return paramtypes.cons();
+}
+
+DOCGROUP(clasp)
+CL_DEFUN bool llvm_sys__function_type_vararg_p(llvmo::FunctionType_sp ftype) {
+  return ftype->wrapped()->isVarArg();
+}
 
 };
 

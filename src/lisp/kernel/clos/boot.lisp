@@ -45,7 +45,7 @@
               name metaclass direct-superclasses direct-slots)
   (let* ((the-metaclass (progn
                           (debug-boot "    About to do the~%")
-                          (the class (find-class metaclass nil))))
+                          (find-class metaclass nil)))
          (class (progn
                   (debug-boot "    About to allocate-boot-class~%")
                   (or (find-class name nil)

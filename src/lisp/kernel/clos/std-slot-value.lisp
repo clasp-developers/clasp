@@ -116,7 +116,9 @@
     (setf slots (symbol-value slots)))
   `(let* ((%class ,class)
           (,object (core:allocate-standard-instance %class ,(length slots))))
-     (declare (type standard-object ,object))
+     ;; This declaration isn't really helpful to the compiler, and causes problems
+     ;; with checking during boot.
+     #+(or)(declare (type standard-object ,object))
      ,@(flet ((initializerp (name list)
                 (not (eq (getf list name 'wrong) 'wrong))))
          (loop for (name . slotd) in slots
@@ -140,7 +142,7 @@
   `(let* ((%class ,class)
           ;; Identical to above macro except here. (FIXME: rewrite more nicely.)
           (,object (core:allocate-funcallable-standard-instance %class ,(length slots))))
-     (declare (type standard-object ,object))
+     #+(or)(declare (type standard-object ,object))
      ,@(flet ((initializerp (name list)
                 (not (eq (getf list name 'wrong) 'wrong))))
          (loop for (name . slotd) in slots

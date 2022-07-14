@@ -6,8 +6,7 @@
     ((quality (eql 'insert-type-checks))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
-  (> (policy:optimize-value optimize 'safety)
-     (policy:optimize-value optimize 'speed)))
+  (> (policy:optimize-value optimize 'safety) 0))
 
 ;;; This policy is used in transform.lisp to determine whether to insert
 ;;; type checks enforcing basic safety. Without these checks, low level
@@ -18,6 +17,15 @@
      optimize
      (environment clasp-global-environment))
   (> (policy:optimize-value optimize 'safety) 0))
+
+;;; This policy is used in transform.lisp to determine whether to flush unused
+;;; calls, even if this will not preserve some error that the call might signal.
+;;; If this policy is not in place, such calls may be flushed.
+(defmethod policy:compute-policy-quality
+    ((quality (eql 'flush-safely))
+     optimize
+     (environment clasp-global-environment))
+  (= (policy:optimize-value optimize 'safety) 3))
 
 ;;; Should the compiler insert code to signal step conditions? This has
 ;;; some overhead, so it's only done at debug 3.
@@ -87,6 +95,7 @@
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (flush-safely boolean t)
     (insert-step-conditions boolean t)
     (note-untransformed-calls boolean t)
     (note-boxing boolean t)
@@ -103,6 +112,7 @@
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (flush-safely boolean t)
     (insert-step-conditions boolean t)
     (note-untransformed-calls boolean t)
     (note-boxing boolean t)

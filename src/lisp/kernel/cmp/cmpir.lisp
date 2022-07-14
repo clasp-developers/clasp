@@ -1897,32 +1897,41 @@ function-description - for debugging."
 (defun get-primitives ()
   *primitives*)
 
+(defun check-function-call-types (parameter-types varargs-p arguments &optional fn-name)
+  (let ((arg-types (mapcar #'(lambda (val)
+                               (cond ((not (llvm-sys:llvm-value-p val))
+                                      (core:class-name-as-string val))
+                                     ((llvm-sys:valid val)
+                                      (llvm-sys:get-type val))
+                                     (t (error "Invalid (NULL pointer) value ~a about to be passed to function~@[ ~a~]"
+                                               val fn-name))))
+                           arguments)))
+    (unless varargs-p
+      (unless (= (length parameter-types) (length arg-types))
+        (error "Constructing call~@[ to ~a~] - mismatch in the number of arguments, expected ~a - received ~a"
+               fn-name (length parameter-types) (length arg-types))))
+    (let ((i 0))
+      (mapc #'(lambda (ptype atype arg)
+                (unless (llvm-sys:type-equal ptype atype)
+                  (error "Constructing call~@[ to ~a~] - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i arg ptype atype))
+                (setq i (1+ i)))
+            parameter-types arg-types arguments))))
+
+(defun check-call-types (function-type arguments &optional fn-name)
+  (check-function-call-types (llvm-sys:function-type-param-types function-type)
+                             (llvm-sys:function-type-vararg-p function-type)
+                             arguments fn-name))
+
 (defun throw-if-mismatched-arguments (fn-name args)
-  (let* ((info (gethash fn-name (get-primitives)))
-         (_ (unless info
-              (error "Unknown primitive ~a" fn-name)))
-         (required-args-ty (primitive-argument-types info))
-         (passed-args-ty (mapcar #'(lambda (x)
-                                     (if (llvm-sys:llvm-value-p x)
-                                         (if (llvm-sys:valid x)
-                                             (llvm-sys:get-type x)
-                                             (progn
-                                               (error "Invalid (NULL pointer) value ~a about to be passed to intrinsic function ~a" x fn-name)))
-                                         (core:class-name-as-string x)))
-                                 args))
-         (i 0))
-    (declare (ignore _))
-    (unless (primitive-varargs info)
-      (unless (= (length required-args-ty) (length passed-args-ty))
-        (error "Constructing call to intrinsic ~a - mismatch in the number of arguments, expected ~a - received ~a"
-               fn-name (length required-args-ty) (length passed-args-ty))))
-    (mapc #'(lambda (x y z)
-              (unless (llvm-sys:type-equal x y)
-                (error "Constructing call to intrinsic ~a - mismatch of arg#~a value[~a], expected type ~a - received type ~a" fn-name i z x y))
-              (setq i (1+ i)))
-          required-args-ty passed-args-ty args)))
+  (let ((info (gethash fn-name (get-primitives))))
+    (unless info
+      (error "Unknown primitive ~a" fn-name))
+    (check-function-call-types (primitive-argument-types info)
+                               (primitive-varargs info)
+                               args fn-name)))
 
 (defun irc-create-invoke-wft (function-type entry-point args unwind-dest &optional (label ""))
+  #+debug-compiler(check-call-types function-type args)
   ;;(core:fmt t "irc-create-invoke-wft entry-point: {}%N" entry-point)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (unless (null (stringp entry-point)) (error "entry-point for irc-create-invoke cannot be a string - it is ~a" entry-point))
@@ -1943,7 +1952,7 @@ function-description - for debugging."
 (defparameter *debug-create-call* nil)
 
 (defun irc-create-call-wft (function-type entry-point args &optional (label ""))
-  ;;(throw-if-mismatched-arguments function-name args)
+  #+debug-compiler(check-call-types function-type args)
   (if *debug-create-call* (core:fmt t "irc-create-call-wft function-type: {} entry-point: {} args: {}%N" function-type entry-point args ))
   (llvm-sys:create-call-function-pointer *irbuilder* function-type entry-point args label nil))
 

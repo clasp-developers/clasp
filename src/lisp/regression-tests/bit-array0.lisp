@@ -73,50 +73,50 @@
 
 ;;; displaced arrays
 ;;; bit-and
-(test test-bitaray-bitand-displaced-1
+(test test-bitarray-bitand-displaced-1
       (bit-and
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*00))
 
-(test test-bitaray-bitand-displaced-2
+(test test-bitarray-bitand-displaced-2
       (bit-and
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*00))
 
-(test test-bitaray-bitand-displaced-3
+(test test-bitarray-bitand-displaced-3
       (bit-and
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*00))
 
-(test test-bitaray-bitand-displaced-4
+(test test-bitarray-bitand-displaced-4
       (bit-and
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*00))
 ;;; bit-andc1
-(test test-bitaray-bitandc1-displaced-1
+(test test-bitarray-bitandc1-displaced-1
       (bit-andc1
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*01))
 
-(test test-bitaray-bitandc1-displaced-2
+(test test-bitarray-bitandc1-displaced-2
       (bit-andc1
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*00))
 
-(test test-bitaray-bitandc1-displaced-3
+(test test-bitarray-bitandc1-displaced-3
       (bit-andc1
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*00))
 
-(test test-bitaray-bitandc1-displaced-4
+(test test-bitarray-bitandc1-displaced-4
       (bit-andc1
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
@@ -124,50 +124,50 @@
       (#*00))
 
 ;;; bit-andc2
-(test test-bitaray-bitandc2-displaced-1
+(test test-bitarray-bitandc2-displaced-1
       (bit-andc2
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*00))
 
-(test test-bitaray-bitandc2-displaced-2
+(test test-bitarray-bitandc2-displaced-2
       (bit-andc2
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*01))
 
-(test test-bitaray-bitandc2-displaced-3
+(test test-bitarray-bitandc2-displaced-3
       (bit-andc2
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*01))
 
-(test test-bitaray-bitandc2-displaced-4
+(test test-bitarray-bitandc2-displaced-4
       (bit-andc2
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*01))
 ;;; bit-eqv
-(test test-bitaray-biteqv-displaced-1
+(test test-bitarray-biteqv-displaced-1
       (BIT-EQV
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*10))
 
-(test test-bitaray-biteqv-displaced-2
+(test test-bitarray-biteqv-displaced-2
       (BIT-EQV
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*10))
 
-(test test-bitaray-biteqv-displaced-3
+(test test-bitarray-biteqv-displaced-3
       (BIT-EQV
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*10))
 
-(test test-bitaray-biteqv-displaced-4
+(test test-bitarray-biteqv-displaced-4
       (BIT-EQV
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
@@ -175,161 +175,161 @@
       (#*10))
 
 ;;; bit-ior bit-array1 bit-array2 &optional opt-arg	 resulting-bit-array
-(test test-bitaray-bitior-displaced-1
+(test test-bitarray-bitior-displaced-1
       (bit-ior
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*01))
 
-(test test-bitaray-bitior-displaced-2
+(test test-bitarray-bitior-displaced-2
       (bit-ior
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*01))
 
-(test test-bitaray-bitior-displaced-3
+(test test-bitarray-bitior-displaced-3
       (bit-ior
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*01))
 
-(test test-bitaray-bitior-displaced-4
+(test test-bitarray-bitior-displaced-4
       (bit-ior
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*01))
 ;;; bit-nand bit-array1 bit-array2 &optional opt-arg	 resulting-bit-array
-(test test-bitaray-bitnand-displaced-1
+(test test-bitarray-bitnand-displaced-1
       (bit-nand
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*11))
 
-(test test-bitaray-bitnand-displaced-2
+(test test-bitarray-bitnand-displaced-2
       (bit-nand
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*11))
 
-(test test-bitaray-bitnand-displaced-3
+(test test-bitarray-bitnand-displaced-3
       (bit-nand
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*11))
 
-(test test-bitaray-bitnand-displaced-4
+(test test-bitarray-bitnand-displaced-4
       (bit-nand
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*11))
 ;;; bit-nor bit-array1 bit-array2 &optional opt-arg	 resulting-bit-array
-(test test-bitaray-bit-nor-displaced-1
+(test test-bitarray-bit-nor-displaced-1
       (bit-nor
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*10))
 
-(test test-bitaray-bit-nor-displaced-2
+(test test-bitarray-bit-nor-displaced-2
       (bit-nor
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*10))
 
-(test test-bitaray-bit-nor-displaced-3
+(test test-bitarray-bit-nor-displaced-3
       (bit-nor
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*10))
 
-(test test-bitaray-bit-nor-displaced-4
+(test test-bitarray-bit-nor-displaced-4
       (bit-nor
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*10))
 ;;; bit-orc1 bit-array1 bit-array2 &optional opt-arg	 resulting-bit-array
-(test test-bitaray-bit-orc1-displaced-1
+(test test-bitarray-bit-orc1-displaced-1
       (bit-orc1
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*11))
 
-(test test-bitaray-bit-orc1-displaced-2
+(test test-bitarray-bit-orc1-displaced-2
       (bit-orc1
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*10))
 
-(test test-bitaray-bit-orc1-displaced-3
+(test test-bitarray-bit-orc1-displaced-3
       (bit-orc1
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*10))
 
-(test test-bitaray-bit-orc1-displaced-4
+(test test-bitarray-bit-orc1-displaced-4
       (bit-orc1
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*10))
 ;;; bit-orc2 bit-array1 bit-array2 &optional opt-arg	 resulting-bit-array
-(test test-bitaray-bit-orc2-displaced-1
+(test test-bitarray-bit-orc2-displaced-1
       (bit-orc2
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*10))
 
-(test test-bitaray-bit-orc2-displaced-2
+(test test-bitarray-bit-orc2-displaced-2
       (bit-orc2
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*11))
 
-(test test-bitaray-bit-orc2-displaced-3
+(test test-bitarray-bit-orc2-displaced-3
       (bit-orc2
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*11))
 
-(test test-bitaray-bit-orc2-displaced-4
+(test test-bitarray-bit-orc2-displaced-4
       (bit-orc2
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*11))
 ;;; bit-xor bit-array1 bit-array2 &optional opt-arg	 resulting-bit-array
-(test test-bitaray-bit-xor-displaced-1
+(test test-bitarray-bit-xor-displaced-1
       (bit-xor
        #*00
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*01))
 
-(test test-bitaray-bit-xor-displaced-2
+(test test-bitarray-bit-xor-displaced-2
       (bit-xor
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        #*00)
       (#*01))
 
-(test test-bitaray-bit-xor-displaced-3
+(test test-bitarray-bit-xor-displaced-3
       (bit-xor
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*01))
 
-(test test-bitaray-bit-xor-displaced-4
+(test test-bitarray-bit-xor-displaced-4
       (bit-xor
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))
       (#*01))
 ;;; bit-not bit-array &optional opt-arg    resulting-bit-array
-(test test-bitaray-bit-not-displaced-1
+(test test-bitarray-bit-not-displaced-1
       (bit-not (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2))
       (#*10))
 
-(test test-bitaray-bit-not-displaced-4
+(test test-bitarray-bit-not-displaced-4
       (bit-not
        (make-array 2 :element-type 'bit :displaced-to #*0101 :displaced-index-offset 2)
        (make-array 2 :element-type 'bit :displaced-to #*0000 :displaced-index-offset 2))

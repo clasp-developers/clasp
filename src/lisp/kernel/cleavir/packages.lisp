@@ -102,18 +102,27 @@
   (:export #:reduce-module-instructions)
   (:export #:assign-module-rtypes #:insert-casts-into-module))
 
+(defpackage #:cc-bmir-to-blir
+  (:use #:cl)
+  (:local-nicknames (#:bir #:cleavir-bir))
+  (:export #:reduce-module-instructions))
+
 (defpackage #:clasp-cleavir-bmir
   (:nicknames #:cc-bmir)
   (:shadow #:characterp #:consp #:load #:variable)
   (:local-nicknames (#:bir #:cleavir-bir))
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
-  (:export #:memref2 #:offset #:load #:store #:cas)
   (:export #:cast #:unboxed-constant-reference
            #:mtf #:append-values #:fixed-mv-call #:fixed-mv-local-call)
   (:export #:datum)
   (:export #:rtype)
   (:export #:cast-one))
+
+(defpackage #:clasp-cleavir-blir
+  (:nicknames #:cc-blir)
+  (:local-nicknames (#:bir #:cleavir-bir))
+  (:export #:memref2 #:offset #:load #:store #:cas))
 
 (defpackage #:clasp-cleavir-vaslist
   (:nicknames #:cc-vaslist)
@@ -122,7 +131,7 @@
                     (#:set #:cleavir-set)
                     (#:attributes #:cleavir-attributes)
                     (#:policy #:cleavir-compilation-policy))
-  (:shadow #:values-list #:nth #:nthcdr #:last #:butlast)
-  (:export #:values-list #:nth #:nthcdr #:last #:butlast #:nendp)
+  (:shadow #:values-list #:nth #:nthcdr #:last #:butlast #:length)
+  (:export #:values-list #:nth #:nthcdr #:last #:butlast #:nendp #:length)
   (:export #:maybe-transform-module)
   (:export #:vaslistablep))

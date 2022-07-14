@@ -16,6 +16,7 @@
 ;;;; nthcdr -> (vaslist-nthcdr n vaslist) ; with (cdr x) = (nthcdr 0 x)
 ;;;; last -> (vaslist-last vaslist n)
 ;;;; butlast -> (vaslist-butlast vaslist n)
+;;;; length -> (vaslist-length vaslist)
 ;;;; values-list -> (vaslist-values-list vaslist)
 
 ;;;; Note that this last is how APPLY works, since (apply x y z) is compiler-
@@ -30,7 +31,8 @@
 ;;;; they do not escape the dynamic extent.
 
 (defparameter *vaslistable* '(cl:car cl:cdr cl:nth cl:nthcdr cl:elt cl:last
-                              cl:butlast cl:nbutlast cl:values-list))
+                              cl:butlast cl:nbutlast cl:values-list
+                              cl:length core:cons-length))
 
 (defun vaslistablep (fname) (member fname *vaslistable*))
 
@@ -112,7 +114,7 @@
   (datum-ok-p (bir:output inst)))
 
 (defmethod use-ok-p ((inst bir:fixed-to-multiple) (datum bir:datum))
-  (cond ((= (length (bir:inputs inst)) 1) (datum-ok-p (bir:output inst)))
+  (cond ((= (cl:length (bir:inputs inst)) 1) (datum-ok-p (bir:output inst)))
         (*record-failures* (push inst *failure-reasons*) nil)
         (t nil)))
 
@@ -170,25 +172,25 @@
          (out (bir:output inst))
          (result
            (case name
-             ((cl:car) (and (= (length args) 1)
+             ((cl:car) (and (= (cl:length args) 1)
                             (eq datum (first args))))
-             ((cl:cdr) (and (= (length args) 1)
+             ((cl:cdr) (and (= (cl:length args) 1)
                             (eq datum (first args))
                             (datum-ok-p out)))
-             ((cl:nth) (and (= (length args) 2)
+             ((cl:nth) (and (= (cl:length args) 2)
                             (eq datum (second args))
                             (nonnegative-fixnum-p (first args))))
-             ((cl:nthcdr) (and (= (length args) 2)
+             ((cl:nthcdr) (and (= (cl:length args) 2)
                                (eq datum (second args))
                                (nonnegative-fixnum-p (first args))
                                (datum-ok-p out)))
-             ((cl:elt) (and (= (length args) 2)
+             ((cl:elt) (and (= (cl:length args) 2)
                             (eq datum (first args))
                             (nonnegative-fixnum-p (second args))))
              #+(or)
-             ((endp) (and (= (length args) 1)
+             ((endp) (and (= (cl:length args) 1)
                           (eq datum (first args))))
-             ((cl:last) (and (<= 1 (length args) 2)
+             ((cl:last) (and (<= 1 (cl:length args) 2)
                              (eq datum (first args))
                              (if (second args)
                                  (nonnegative-fixnum-p (second args))
@@ -200,13 +202,16 @@
              ;; be noticed elsewhere.
              ;; but we consider it to mean that it _may_ modify the list.
              ((cl:butlast cl:nbutlast)
-              (and (<= 1 (length args) 2)
+              (and (<= 1 (cl:length args) 2)
                    (eq datum (first args))
                    (if (second args)
                        (nonnegative-fixnum-p (second args))
                        t)
                    (datum-ok-p out)))
-             ((cl:values-list) (and (= (length args) 1)
+             ((cl:length core:cons-length)
+              (and (= (cl:length args) 1)
+                   (eq datum (first args))))
+             ((cl:values-list) (and (= (cl:length args) 1)
                                     (eq datum (first args))))
              (otherwise nil))))
     (when (and *record-failures* (not result))
@@ -326,6 +331,8 @@
        (let ((index (or (second args) (insert-constant-before 1 use))))
          (change-class use 'butlast :inputs (list index (first args)))
          (rewrite-use (bir:use (bir:output use)))))
+      ((cl:length core:cons-length)
+       (change-class use 'length :inputs (list (first args))))
       ((cl:values-list)
        ;; FIXME: Flush fdefinition of values-list if possible
        (change-class use 'values-list :inputs args)))
