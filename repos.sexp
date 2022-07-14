@@ -8,6 +8,14 @@
   :repository "https://gitlab.common-lisp.net/kpoeck/ansi-test.git"
   :directory "dependencies/ansi-test/"
   :branch "feature-clasp-changes")
+ (:name :cl-bench
+  :repository "https://gitlab.common-lisp.net/ansi-test/cl-bench.git"
+  :directory "dependencies/cl-bench/"
+  :branch "master")
+ (:name :cl-who
+  :repository "https://github.com/edicl/cl-who.git"
+  :directory "dependencies/cl-who/"
+  :branch "master")
  (:name :quicklisp-client
   :repository "https://github.com/quicklisp/quicklisp-client.git"
   :directory "dependencies/quicklisp-client/"
