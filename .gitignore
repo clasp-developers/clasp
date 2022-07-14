@@ -52,3 +52,4 @@ src/lisp/regression-tests/*.bc
 src/lisp/regression-tests/*.newfasl
 src/analysis/*.lst
 src/analysis/*.cc
+bench/

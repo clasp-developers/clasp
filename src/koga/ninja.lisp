@@ -116,6 +116,10 @@
                     :command "$clasp --norc --non-interactive --load \"sys:extensions;cando;src;lisp;regression-tests;run-all.lisp\""
                     :description "Running Cando regression tests"
                     :pool "console")
+  (ninja:write-rule output-stream :bench
+                    :command "$clasp --norc -t c --feature ignore-extensions --load bench.lisp"
+                    :description "Running benchmarks"
+                    :pool "console")
   (ninja:write-rule output-stream :ansi-test
                     :command "$clasp --norc -t c --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
                     :description "Running ANSI tests"
@@ -811,6 +815,10 @@
                      :clasp (make-source (build-name :iclasp) :variant)
                      :inputs (list (build-name "cclasp"))
                      :outputs (list (build-name "test")))
+  (ninja:write-build output-stream :bench
+                     :clasp (make-source (build-name :iclasp) :variant)
+                     :inputs (list (build-name "cclasp"))
+                     :outputs (list (build-name "bench")))
   (ninja:write-build output-stream :ansi-test
                      :clasp (make-source (build-name :iclasp) :variant)
                      :inputs (list (build-name "cclasp"))
@@ -828,6 +836,9 @@
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test"))
                        :outputs (list "test"))
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "bench"))
+                       :outputs (list "bench"))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "ansi-test"))
                        :outputs (list "ansi-test"))
