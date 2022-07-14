@@ -693,7 +693,7 @@
     ;; Store the arguments into the allocated memory.
     (loop for arg in present-arguments
           for i from 0
-          do (cmp:irc-store arg (%gep cmp:%t**% dat (list i))))
+          do (cmp:irc-store arg (cmp:irc-typed-gep cmp:%t*% dat (list i))))
     ;; Make and return the va list object.
     (maybe-boxed-vaslist boxp (%size_t nargs) dat)))
 
@@ -1425,14 +1425,14 @@
        (bir:output inst)))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
-  (let* ((type (llvm-sys:type-get-pointer-to
-                (cmp::simple-vector-llvm-type element-type)))
+  (let* ((vtype (cmp::simple-vector-llvm-type element-type))
+         (type (llvm-sys:type-get-pointer-to vtype))
          (cast (cmp:irc-bit-cast array type))
          (untagged (cmp:irc-untag-fixnum index fixnum-type "vector-index")))
     ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
     ;; For layout of the vector, check simple-vector-llvm-type's definition.
     ;; untagged is the actual offset.
-    (cmp:irc-typed-gep-variable type
+    (cmp:irc-typed-gep-variable vtype
                           cast
                           (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged)
                           "aref")))
