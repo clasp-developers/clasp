@@ -1197,8 +1197,18 @@
                 (error "BUG: Cast from ~a to ~a" inputrt outputrt))
                ((= (length outputrt) 1)
                 (cond ((null inputrt)
-                       (assert (equal outputrt '(:object)))
-                       (%nil))
+                       (ecase (first outputrt)
+                         ((:object) (%nil))
+                         ;; We can end up here with a variety of output vrtypes
+                         ;; in some unusual situations where a primop expects
+                         ;; a value, but control will never actually reach it.
+                         ;; Ideally the compiler would not bother compiling
+                         ;; such unreachable code, but sometimes it's stupid.
+                         ((:fixnum) (llvm-sys:undef-value-get cmp:%fixnum%))
+                         ((:single-float)
+                          (llvm-sys:undef-value-get cmp:%float%))
+                         ((:double-float)
+                          (llvm-sys:undef-value-get cmp:%double%))))
                       (t
                        (cast-one (first inputrt) (first outputrt)
                                  (first inputv)))))
