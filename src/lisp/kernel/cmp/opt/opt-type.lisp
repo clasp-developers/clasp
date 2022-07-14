@@ -247,17 +247,21 @@
                   'nil
                   `(if (cleavir-primop:typeq object bignum)
                        (and ,@(cond ((null bignum-low) ; no negative bignums
-                                     `((core:two-arg-> object ,most-positive-fixnum)))
+                                     `((core:two-arg-> (the bignum object)
+                                                       ,most-positive-fixnum)))
                                     ((eq bignum-low '*) ; all negative bignums
                                      nil)
                                     (t ; only some
-                                     `((core:two-arg->= object ,bignum-low))))
+                                     `((core:two-arg->= (the bignum object)
+                                                        ,bignum-low))))
                             ,@(cond ((null bignum-high) ; no positive bignums
-                                     `((core:two-arg-< object ,most-negative-fixnum)))
+                                     `((core:two-arg-< (the bignum object)
+                                                       ,most-negative-fixnum)))
                                     ((eq bignum-high '*) ; all positive bignums
                                      nil)
                                     (t ; only some
-                                     `((core:two-arg-<= object ,bignum-high)))))
+                                     `((core:two-arg-<= (the bignum object)
+                                                        ,bignum-high)))))
                        'nil))))
         ;; fixnums
         (if (or (null fixnum-low) (null fixnum-high)) ; none
@@ -265,54 +269,59 @@
             (let* ((high-test
                      (if (eq fixnum-high '*)
                          't
-                         `(if (<= #+(or)cleavir-primop:fixnum-not-greater object ,fixnum-high) t nil)))
+                         `(if (<= (the fixnum object) ,fixnum-high) t nil)))
                    (low-test
                      (if (eq fixnum-low '*)
                          high-test
-                         `(if (<= #+(or)cleavir-primop:fixnum-not-greater ,fixnum-low object)
+                         `(if (<= ,fixnum-low (the fixnum object))
                               ,high-test
                               nil))))
               `(if (cleavir-primop:typeq object fixnum) ,low-test ,bignum-test)))))))
 
 ;;; The simpler version
 ;;; FIXME: Use floating point compares, etc, when available
-(defun real-interval-test (low high)
+(defun real-interval-test (oform low high)
   `(and ,@(cond ((eq high '*) nil)
-                ((consp high) `((< object ,(car high))))
-                (t `((<= object ,high))))
+                ((consp high) `((< ,oform ,(car high))))
+                (t `((<= ,oform ,high))))
         ,@(cond ((eq low '*) nil)
-                ((consp low) `((> object ,(car low))))
-                (t `((>= object ,low))))))
+                ((consp low) `((> ,oform ,(car low))))
+                (t `((>= ,oform ,low))))))
 
 (defun real-interval-typep-form (head low high)
-  (ecase head
-    ((integer) (integral-interval-typep-form low high))
-    ((rational)
-     `(or ,(integral-interval-typep-form low high)
-          (if (cleavir-primop:typeq object ratio)
-              ,(real-interval-test low high)
-              nil)))
-    ((short-float single-float double-float long-float)
-     `(if (cleavir-primop:typeq object ,head)
-          ,(real-interval-test low high)
-          nil))
-    ((float)
-     ;; only singles and doubles actually exist.
-     ;; FIXME: write in this assumption better in case we change it later.
-     `(if (if (cleavir-primop:typeq object single-float)
-              t
-              (if (cleavir-primop:typeq object double-float) t nil))
-          ,(real-interval-test low high)
-          nil))
-    ((real)
-     `(or ,(integral-interval-typep-form low high)
-          (if (if (cleavir-primop:typeq object single-float)
+  ;; <= and so on sometimes expand into uses of THE and etc.
+  ;; The code we're generating does not need these types checked, given that
+  ;; we are doing that, and the compiler inserting checks needlessly complicates.
+  `(locally
+       (declare (optimize (safety 0)))
+     ,(ecase head
+        ((integer) (integral-interval-typep-form low high))
+        ((rational)
+         `(or ,(integral-interval-typep-form low high)
+              (if (cleavir-primop:typeq object ratio)
+                  ,(real-interval-test `(the ratio object) low high)
+                  nil)))
+        ((short-float single-float double-float long-float)
+         `(if (cleavir-primop:typeq object ,head)
+              ,(real-interval-test `(the ,head object) low high)
+              nil))
+        ((float)
+         ;; only singles and doubles actually exist.
+         ;; FIXME: write in this assumption better in case we change it later.
+         `(if (if (cleavir-primop:typeq object single-float)
                   t
-                  (if (cleavir-primop:typeq object double-float)
+                  (if (cleavir-primop:typeq object double-float) t nil))
+              ,(real-interval-test `(the float object) low high)
+              nil))
+        ((real)
+         `(or ,(integral-interval-typep-form low high)
+              (if (if (cleavir-primop:typeq object single-float)
                       t
-                      (if (cleavir-primop:typeq object ratio) t nil)))
-              ,(real-interval-test low high)
-              nil)))))
+                      (if (cleavir-primop:typeq object double-float)
+                          t
+                          (if (cleavir-primop:typeq object ratio) t nil)))
+                  ,(real-interval-test '(the real object) low high)
+                  nil))))))
 
 (defun typep-expansion (type env &optional (form nil formp))
   (ext:with-current-source-form (type)
