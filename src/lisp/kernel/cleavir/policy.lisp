@@ -1,22 +1,43 @@
 (in-package :clasp-cleavir)
 
-;;; With this policy on, the compiler tries to treat type declarations as
-;;; assertions. They will be checked carefully and somewhat slowly.
+;;; The type policies work as follows.
+;;; If the value is 0, type assertions of the given kind are believed by
+;;; the compiler and are not checked. Very unsafe.
+;;; If the value is 1, type assertions are noted by the compiler but
+;;; not believed nor checked. The compiler will not use the information to
+;;; perform optimizations, but can note it to e.g. warn about type conflicts.
+;;; If 2 or 3, type assertions are checked and believed.
+
+;;; This policy is used for THE as well as TYPE declarations on variables.
 (defmethod policy:compute-policy-quality
-    ((quality (eql 'insert-type-checks))
+    ((quality (eql 'type-check-the))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
-  (> (policy:optimize-value optimize 'safety) 0))
+  (if (> (policy:optimize-value optimize 'safety) 0)
+      3
+      0))
 
-;;; This policy is used in transform.lisp to determine whether to insert
-;;; type checks enforcing basic safety. Without these checks, low level
-;;; operators that do not check their inputs will be used unprotected, so
-;;; very bad problems can occur (segfaults, crashes, etc.)
+;;; This policy is used for type assertions derived from arguments to a call
+;;; to a function with declared FTYPE.
 (defmethod policy:compute-policy-quality
-    ((quality (eql 'insert-minimum-type-checks))
+    ((quality (eql 'type-check-ftype-arguments))
      optimize
-     (environment clasp-global-environment))
-  (> (policy:optimize-value optimize 'safety) 0))
+     (environment clasp-cleavir::clasp-global-environment))
+  (ecase (policy:optimize-value optimize 'safety)
+    ((0) 0)
+    ((1 2) 1)
+    ((3) 3)))
+
+;;; This policy is used for type assertions derived from the return values of
+;;; a call to a function with declared FTYPE.
+(defmethod policy:compute-policy-quality
+    ((quality (eql 'type-check-ftype-return-values))
+     optimize
+     (environment clasp-cleavir::clasp-global-environment))
+  (ecase (policy:optimize-value optimize 'safety)
+    ((0) 0)
+    ((1 2) 1)
+    ((3) 3)))
 
 ;;; This policy is used in transform.lisp to determine whether to flush unused
 ;;; calls, even if this will not preserve some error that the call might signal.
@@ -75,26 +96,15 @@
   nil)
 
 (defmethod policy:compute-policy-quality
-    ((quality (eql 'type-check-ftype-arguments))
-     optimize
-     (environment clasp-cleavir::clasp-global-environment))
-  (= (policy:optimize-value optimize 'safety) 3))
-
-(defmethod policy:compute-policy-quality
-    ((quality (eql 'type-check-ftype-return-values))
-     optimize
-     (environment clasp-cleavir::clasp-global-environment))
-  (= (policy:optimize-value optimize 'safety) 3))
-
-(defmethod policy:compute-policy-quality
     (quality optimize (environment null))
     (policy:compute-policy-quality quality optimize *clasp-env*))
 
 (defmethod policy:policy-qualities append ((env clasp-global-environment))
   '((save-register-args boolean t)
     (perform-optimization boolean t)
-    (insert-type-checks boolean t)
-    (insert-minimum-type-checks boolean t)
+    (type-check-the (integer 0 3) 3)
+    (type-check-ftype-arguments (integer 0 3) 3)
+    (type-check-ftype-return-values (integer 0 3) 3)
     (flush-safely boolean t)
     (insert-step-conditions boolean t)
     (note-untransformed-calls boolean t)
@@ -103,15 +113,14 @@
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
-    (do-dx-analysis boolean t)
-    (type-check-ftype-arguments boolean t)
-    (type-check-ftype-return-values boolean t)))
+    (do-dx-analysis boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
     (perform-optimization boolean t)
-    (insert-type-checks boolean t)
-    (insert-minimum-type-checks boolean t)
+    (type-check-the (integer 0 3) 3)
+    (type-check-ftype-arguments (integer 0 3) 3)
+    (type-check-ftype-return-values (integer 0 3) 3)
     (flush-safely boolean t)
     (insert-step-conditions boolean t)
     (note-untransformed-calls boolean t)
@@ -120,9 +129,7 @@
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
-    (do-dx-analysis boolean t)
-    (type-check-ftype-arguments boolean t)
-    (type-check-ftype-return-values boolean t)))
+    (do-dx-analysis boolean t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

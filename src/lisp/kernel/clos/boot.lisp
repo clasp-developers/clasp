@@ -118,14 +118,14 @@
 	   (effective-slots (loop for i fixnum from 0
                                   for slotd in slots
                                   for name = (getf slotd :name)
-                                  for declared-location fixnum
+                                  for declared-location of-type (or null fixnum)
                                     = (getf slotd :location)
                                   for s = (apply #'make-simple-slotd effective-slot-class slotd)
                                   do (setf (slot-definition-location s) i
                                            (gethash name location-table) i)
                                   ;; do a sanity check on :location
                                   when (and declared-location
-                                            (/= i declared-location))
+                                            (/= i (the fixnum declared-location)))
                                     do (error "BUG: Primitive slot ~a has incorrect :location"
                                               name)
                                   collect s)))

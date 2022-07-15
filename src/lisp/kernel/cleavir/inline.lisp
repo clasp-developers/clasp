@@ -226,7 +226,10 @@
          (ftype (sfunction (function-designator &rest sequence) t)
                 every some notevery notany)
          (ftype (function (&rest t)) values)
-         (ftype (function (list)) values-list)
+         ;; FIXME: values-list also accepts valists, but the type system doesn't
+         ;; really know about those. Also they probably ideally wouldn't be
+         ;; first-class regardless.
+         (ftype (function (t)) values-list)
          (ftype (sfunction (form &optional environment)
                            (values list list list form form))
                 get-setf-expansion))
@@ -489,7 +492,10 @@
          (ftype (sfunction (predicate list &key (:key key)) list) member-if member-if-not)
          (ftype (sfunction (function-designator list &rest list) list)
                 mapc mapcar mapcan mapl maplist mapcon)
-         (ftype (sfunction (t t list) list) acons)
+         ;; Although the standard says the alist is an alist, it also says
+         ;; (in the non normative notes) that acons = cons cons, which doesn't have
+         ;; such a requirement; and really I don't see much value in strictness here.
+         (ftype (sfunction (t t t) list) acons)
          (ftype (sfunction (t list &key (:key key) (:test test) (:test-not test)) (maybe cons))
                 assoc rassoc)
          (ftype (sfunction (predicate list &key (:key key)) (maybe cons))
@@ -955,7 +961,8 @@
                 core:two-arg-- core:two-arg-/)) ; for / we also have that the denominator can't be zero.
 (declaim (ftype (sfunction (real real) t)
                 core:two-arg-< core:two-arg-> core:two-arg-<=
-                core:two-arg->= core:two-arg-=))
+                core:two-arg->=)
+         (ftype (sfunction (number number) t) core:two-arg-=))
 (declaim (ftype (sfunction (character character) t)
                 core:two-arg-char-equal core:two-arg-char-greaterp
                 core:two-arg-char-lessp core:two-arg-char-not-greaterp
@@ -1235,32 +1242,6 @@
 (declaim (ftype (function (t t) cons) cons))
 
 (declaim (ftype (function (list) t) car cdr))
-;;; We define CAR and CDR to be (if (ensure-the list x) (primop:car x) x).
-;;; Using an ensure-the lets the compiler understand the type through relatively
-;;; simple data flow analysis. For example, it can delete the check if it can
-;;; prove X is a list. Tests, like typep/typeq, are not as understandable to it
-;;; because leveraging them means understanding control flow as well.
-;;; This does mean that if the test can't be eliminated, there is a bit of a
-;;; redundant test, but checking if something is NIL is pretty cheap anyway.
-;;; Returning a constant NIL in the else branch is important for similar
-;;; reasons - with (if ,s ... ,s), the compiler wouldn't be able to determine
-;;; that ,s is NIL without an understanding of control flow.
-;;; FIXME: These should be done as transforms.
-(defun minimal-safety-p (env)
-  (policy:policy-value
-   (env:policy (env:optimize-info env))
-   'insert-minimum-type-checks))
-(defun list-check-form (form env)
-  (if (minimal-safety-p env)
-      `(cleavir-primop:ensure-the (values list &rest t)
-                                  (lambda (&optional value &rest ign)
-                                    (declare (ignore ign))
-                                    (unless (typep value 'list)
-                                      (error 'type-error :datum value
-                                                         :expected-type 'list))
-                                    value)
-                                  ,form)
-      `(cleavir-primop:truly-the (values list &rest t) ,form)))
 
 (defmacro defcr (name &rest ops)
   `(progn
@@ -1314,12 +1295,6 @@
 (defcr eighth  car cdr cdr cdr cdr cdr cdr cdr)
 (defcr ninth   car cdr cdr cdr cdr cdr cdr cdr cdr)
 (defcr tenth   car cdr cdr cdr cdr cdr cdr cdr cdr cdr)
-
-;;; This overrides the compiler macro defined in cmp/opt/opt-cons.lisp.
-;;; That compiler macro must work in bclasp, so it doesn't have access to
-;;; the same type-checking cooperation with the compiler that we do here.
-(define-cleavir-compiler-macro endp (&whole form list &environment env)
-  `(if ,(list-check-form list env) nil t))
 
 (define-cleavir-compiler-macro core:set-breakstep (&whole form)
   ;; Because the primop is for-effect, it must not be placed in a
@@ -1697,32 +1672,6 @@
                        collect `(core:check-index ,ssub ,dimsym ,axis)))
              ;; Now we know we're good, do the actual computation
              ,(row-major-index-computer dimsyms ssubscripts))))))
-
-#+(or)
-(define-cleavir-compiler-macro aref (&whole form array &rest subscripts
-                                            &environment env)
-  ;; FIXME: See tragic comment above in array-row-major-index.
-  (if (or (> (length subscripts) 1) (null subscripts))
-      form
-      (let ((sarray (gensym "ARRAY"))
-            (index0 (gensym "INDEX0")))
-        `(let ((,sarray ,array)
-               (,index0 ,(first subscripts)))
-           ,@(when-policy env 'insert-type-checks
-              `(if (cleavir-primop:typeq ,sarray array)
-                   nil
-                   (error 'type-error :datum ,sarray :expected-type '(array * 1))))
-           ,@(when-policy
-              env 'core::insert-array-bounds-checks
-              `(core::multiple-value-foreign-call
-                "cm_check_index"
-                ,index0
-                (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
-                    (core::vector-length ,sarray)
-                    (core::%array-dimension ,sarray 0))
-                0))
-           (with-array-data (data offset ,sarray)
-             (core::MULTIPLE-VALUE-FOREIGN-CALL "cm_vref" data (add-indices offset ,index0)))))))
 
 #+(or)
 (define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts

@@ -167,10 +167,10 @@
 ;;; This is used in MAKE-ARRAY to fill an array with initial contents.
 (defun fill-array-with-seq (array initial-contents)
   (declare (array array)
-           (sequence initial-contents)
            (optimize (safety 0)))
   (labels ((iterate-over-contents (array contents dims written)
 	     (declare (fixnum written)
+                      (sequence contents)
 		      (array array)
 		      (optimize (safety 0)))
 	     (when (/= (length contents) (first dims))
