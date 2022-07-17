@@ -335,9 +335,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     core::global_initialize_builtin_classes = false;
   }
   
-  // Create the one global CommandLineOptions object and do some minimal argument processing
-  core::global_options = new core::CommandLineOptions(argc, argv);
-  
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
     printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
     stringstream ss;
