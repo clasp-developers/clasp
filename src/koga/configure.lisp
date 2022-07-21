@@ -378,6 +378,11 @@
                          :initform nil
                          :type boolean
                          :documentation "Verify LLVM modules before using them")
+   (debug-verify-transformations :accessor debug-verify-transformations
+                                 :initarg :debug-verify-transformations
+                                 :initform nil
+                                 :type boolean
+                                 :documentation "Verify BIR transformations before using them")
    (debug-long-call-history :accessor debug-long-call-history
                             :initarg :debug-long-call-history
                             :initform nil
