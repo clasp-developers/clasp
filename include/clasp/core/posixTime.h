@@ -39,6 +39,11 @@ THE SOFTWARE.
 
 namespace core {
 
+
+void first_exit();
+void last_exit();
+
+
 T_sp cl__get_internal_real_time();
 T_sp cl__get_internal_run_time();
 };

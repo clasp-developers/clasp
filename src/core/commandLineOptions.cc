@@ -156,6 +156,8 @@ Environment variables:
       Don't insert signal handlers for crash signals.
   CLASP_GC_MESSAGES=1
       Print a message when garbage collection takes place.
+  CLASP_TIME_EXIT=1 (or wait-start|wait-end|wait-start-end)
+      Print time to shutdown clasp - time from calling exit to the last atexit call.
   CLASP_HOME=<dir>
       Define where clasp source code lives
   CLASP_TIME_SNAPSHOT=1

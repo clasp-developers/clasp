@@ -43,6 +43,7 @@ THE SOFTWARE.
 
 #include <clasp/core/posixTime.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/gctools/interrupt.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lisp.h>
 #
@@ -51,16 +52,9 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA()
-CL_DECLARE();
-CL_DOCSTRING(R"dx(getInternalRealTime)dx")
-DOCGROUP(clasp)
-CL_DEFUN T_sp cl__get_internal_real_time() {
-  auto now = std::chrono::system_clock::now();
-  auto d = now.time_since_epoch();
-  auto us = std::chrono::duration_cast<std::chrono::microseconds>(d);
-  return Integer_O::create(us.count() * (CLASP_INTERNAL_TIME_UNITS_PER_SECOND / 1000000 ));
-};
+struct timespec global__start_end_time;
+struct timespec global__end_end_time;
+
 
 /* Return the time in nanoseconds form the system defined starting time */
 void systemReadClock(struct timespec &ts) {
@@ -76,6 +70,40 @@ void systemReadClock(struct timespec &ts) {
   clock_gettime(CLOCK_REALTIME, &ts);
 #endif
 }
+
+void first_exit() {
+  if (strcmp(getenv("CLASP_TIME_EXIT"),"wait-start")==0 ||
+      strcmp(getenv("CLASP_TIME_EXIT"),"wait-start-end")==0 ) {
+    gctools::wait_for_user_signal("About to exit");
+  }
+  systemReadClock(global__start_end_time);
+}
+
+void last_exit() {
+  struct timespec now_time;
+  systemReadClock(global__end_end_time);
+  size_t seconds = global__end_end_time.tv_sec - global__start_end_time.tv_sec;
+  if (strcmp(getenv("CLASP_TIME_EXIT"),"wait-")==0 ||
+      strcmp(getenv("CLASP_TIME_EXIT"),"wait-start-end")==0 ) {
+    gctools::wait_for_user_signal("About to exit");
+  }
+  if (getenv("CLASP_TIME_EXIT")) {
+    printf("%s:%d:%s Number of seconds between first_exit and last_exit: %lu\n",
+           __FILE__, __LINE__, __FUNCTION__, seconds );
+  }
+}
+
+
+CL_LAMBDA()
+CL_DECLARE();
+CL_DOCSTRING(R"dx(getInternalRealTime)dx")
+DOCGROUP(clasp)
+CL_DEFUN T_sp cl__get_internal_real_time() {
+  auto now = std::chrono::system_clock::now();
+  auto d = now.time_since_epoch();
+  auto us = std::chrono::duration_cast<std::chrono::microseconds>(d);
+  return Integer_O::create(us.count() * (CLASP_INTERNAL_TIME_UNITS_PER_SECOND / 1000000 ));
+};
 
 /* Converts the two-tier time structure into one big number */
 Bignum convertClockToNs(struct timespec &ts) {

@@ -77,6 +77,7 @@ THE SOFTWARE.
 #endif
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/gctools/gctoolsPackage.h>
@@ -514,6 +515,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
+  atexit(core::last_exit);
   const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
   if (dof) {
     if (strcmp(dof,"save")==0) {

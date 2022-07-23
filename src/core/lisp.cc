@@ -53,6 +53,7 @@ THE SOFTWARE.
 #include <clasp/mpip/claspMpi.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/core/allClSymbols.h>
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/exceptions.h>
@@ -168,6 +169,7 @@ extern "C" void add_history(char *line);
 core::globals_t* globals_;
 
 namespace core {
+
 
 CommandLineOptions *global_options = NULL;
 bool global_initialize_builtin_classes = false;
@@ -1515,6 +1517,7 @@ CL_DEFUN void core__exit(int exitValue) {
       dbg_safe_backtrace();
     }
   }
+  atexit(first_exit);
   throw(ExitProgramException(exitValue));
 };
 
