@@ -562,7 +562,7 @@ Return files."
                                      (message :info "Child time run({:.3f} secs) consed({} bytes)"
                                               (float (/ (- after-ms *before-ms*) internal-time-units-per-second))
                                               (- after-bytes *before-bytes*)))
-                                   (core:c_exit))))
+                                   (sys:c_exit))))
                              (let ((one-pjob (make-pjob
                                               :done nil
                                               :pid pid
