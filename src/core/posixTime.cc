@@ -76,6 +76,7 @@ void first_exit() {
       strcmp(getenv("CLASP_TIME_EXIT"),"wait-start-end")==0 ) {
     gctools::wait_for_user_signal("About to exit");
   }
+  printf("%s:%d:%s About to exit\n", __FILE__, __LINE__, __FUNCTION__ );
   systemReadClock(global__start_end_time);
 }
 

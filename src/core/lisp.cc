@@ -1517,7 +1517,9 @@ CL_DEFUN void core__exit(int exitValue) {
       dbg_safe_backtrace();
     }
   }
-  atexit(first_exit);
+  if (getenv("CLASP_TIME_EXIT")) {
+    atexit(first_exit);
+  }
   throw(ExitProgramException(exitValue));
 };
 

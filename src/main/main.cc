@@ -515,7 +515,9 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
-  atexit(core::last_exit);
+  if (getenv("CLASP_TIME_EXIT")) {
+    atexit(core::last_exit);
+  }
   const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
   if (dof) {
     if (strcmp(dof,"save")==0) {
