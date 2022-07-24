@@ -201,6 +201,7 @@
                                        :type :cxxflags)
   #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-stack-protector"
                                        :type :cflags)
+  #+linux (append-ldlibs configuration "-ldl"))
   (when (address-sanitizer configuration)
     (append-cflags configuration "-fsanitize=address" :type :cxxflags)
     (append-ldflags configuration "-fsanitize=address"))
