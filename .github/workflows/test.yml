@@ -51,11 +51,11 @@ jobs:
     - name: Clasp koga @ Ubuntu
       if: ${{ matrix.os == 'ubuntu-22.04' && matrix.build == 'clasp' }}
       run: |
-        ./koga --no-clang-cpp --ldlibs=-ldl
+        ./koga --no-clang-cpp
     - name: Cando koga @ Ubuntu
       if: ${{ matrix.os == 'ubuntu-22.04' && matrix.build == 'cando' }}
       run: |
-        ./koga --extensions=cando,seqan-clasp --no-clang-cpp --ldlibs=-ldl
+        ./koga --extensions=cando,seqan-clasp --no-clang-cpp
     - name: Clasp koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'clasp' }}
       run: |
