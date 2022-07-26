@@ -148,6 +148,7 @@
              #~"kernel/lsp/fli.lisp"
              #~"kernel/lsp/posix.lisp"
              #~"modules/sockets/sockets.lisp"
+             #~"kernel/lsp/top.lisp"
              #~"kernel/tag/pre-epilogue-bclasp.lisp"
              #~"kernel/lsp/epilogue-bclasp.lisp"
              #~"kernel/tag/bclasp.lisp"))
@@ -163,7 +164,6 @@
              #~"kernel/cmp/compile-file-parallel.lisp"
              #~"kernel/lsp/generated-encodings.lisp"
              #~"kernel/lsp/process.lisp"
-             #~"kernel/lsp/top.lisp"
              #~"kernel/lsp/encodings.lisp"
              #~"kernel/lsp/cltl2.lisp")
   (when (eq target :cclasp)
