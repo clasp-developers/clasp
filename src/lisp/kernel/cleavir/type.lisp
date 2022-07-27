@@ -157,6 +157,16 @@
        (setf (gethash ',name *derivers*) ',fname)
        ',name)))
 
+(define-condition inference-error-note (ext:compiler-note)
+  ((%fname :initarg :fname :reader inference-error-note-fname)
+   (%original-condition :reader inference-error-note-original-condition
+                        :initarg :condition))
+  (:report
+   (lambda (condition stream)
+     (format stream "BUG: Serious condition during type inference of ~s:~%~a"
+             (inference-error-note-fname condition)
+             (inference-error-note-original-condition condition)))))
+
 (defmethod bir-transformations:derive-return-type ((inst bir:abstract-call)
                                                    identity argstype
                                                    (system clasp))
@@ -165,8 +175,12 @@
         (handler-case
             (funcall deriver argstype)
           (serious-condition (e)
-            (cmp:note "BUG: Serious condition during type inference of ~s:~%~a"
-                      identity e)
+            (cmp:note 'inference-error-note
+                      :origin (loop for org = (bir:origin inst)
+                                      then (cst:source org)
+                                    while (typep org 'cst:cst)
+                                    finally (return org))
+                      :fname identity :condition e)
             (call-next-method)))
         (call-next-method))))
 
@@ -523,9 +537,115 @@
          (env:parse-type-specifier 'number nil sys))
      sys)))
 
-(define-deriver core:two-arg-/ (n1 n2) (sv (ty-divcontagion n1 n2)))
+;;; Split into two intervals, one wholly less than zero and one greater.
+;;; If either range is empty, NIL is returned for it instead.
+(defun range->intervals-for-reciprocal (range sys)
+  (multiple-value-bind (low lxp) (ctype:range-low range sys)
+    (multiple-value-bind (high hxp) (ctype:range-high range sys)
+      (if (eq (ctype:range-kind range sys) 'integer)
+          ;; Integer ranges we treat specially when they include 0,
+          ;; because the interval arithmetic doesn't understand discreteness.
+          ;; For example, the reciprocal of an (integer -7 7) is a rational
+          ;; between -1 and 1, because (/ 1) = 1; but the reciprocal of a
+          ;; (rational -7 7) is unbounded as it approaches zero.
+          ;; We also normalize exclusive bounds while we're at it.
+          (values
+           (if (and low (>= low (if lxp -1 0)))
+               nil
+               (make-interval (cond ((not low) low)
+                                    (lxp (1+ low))
+                                    (t low))
+                              (cond ((or (not high) (>= high 0)) -1)
+                                    (hxp (1- high))
+                                    (t high))))
+           (if (and high (<= high (if hxp 1 0)))
+               nil
+               (make-interval (cond ((or (not low) (<= low 0)) 1)
+                                    (lxp (1+ low))
+                                    (t low))
+                              (cond ((not high) high)
+                                    (hxp (1- high))
+                                    (t high)))))
+          (values
+           (if (and low (>= low 0))
+               nil
+               (make-interval (cond ((not low) low)
+                                    (lxp (list low))
+                                    (t low))
+                              (cond ((or (not high) (>= high 0)) '(0))
+                                    (hxp (list high))
+                                    (t high))))
+           (if (and high (<= high 0))
+               nil
+               (make-interval (cond ((or (not low) (<= low 0)) '(0))
+                                    (lxp (list low))
+                                    (t low))
+                              (cond ((not high) high)
+                                    (hxp (list high))
+                                    (t high)))))))))
+
+(define-deriver core:two-arg-/ (n1 n2)
+  (let ((sys *clasp-system*))
+    (ctype:single-value
+     (if (and (ctype:rangep n1 sys) (ctype:rangep n2 sys))
+         (let* ((int1 (range->interval n1 sys))
+                (n2kind (ctype:range-kind n2 sys))
+                (rkind (divcontagion (ctype:range-kind n1 sys) n2kind)))
+           (multiple-value-bind (below2 above2)
+               (range->intervals-for-reciprocal n2 sys)
+             (let ((rbelow (if below2
+                               (interval-negate
+                                (interval*-1-pos
+                                 (interval-reciprocal-+ (interval-negate below2))
+                                 int1))
+                               nil))
+                   (rabove (if above2
+                               (interval*-1-pos (interval-reciprocal-+ above2) int1)
+                               nil)))
+               (cond ((and rbelow rabove)
+                      (interval->range
+                       (interval-merge rbelow rabove) rkind sys))
+                     (rbelow (interval->range rbelow rkind sys))
+                     (rabove (interval->range rabove rkind sys))
+                     ;; arises from division by zero.
+                     ;; this can result in infinities and NaN, so we punt a bit.
+                     ;; FIXME: We could be a bit more intelligent, e.g. NIL type
+                     ;; for rationals, and get the sign of infinities.
+                     (t (ctype:range rkind '* '* sys))))))
+         (env:parse-type-specifier 'number nil sys))
+     sys)))
 (define-deriver core:reciprocal (n)
-  (sv (ty-divcontagion (ctype:range 'integer 1 1 *clasp-system*) n)))
+  (let ((sys *clasp-system*))
+    (ctype:single-value
+     (if (ctype:rangep n sys)
+         (let* ((kind (ctype:range-kind n sys))
+                (rkind (if (eq kind 'integer) 'rational kind)))
+           (multiple-value-bind (below above)
+               (range->intervals-for-reciprocal n sys)
+             (let ((rbelow
+                     (if below
+                         (interval->range
+                          (interval-negate
+                           (interval-reciprocal-+ (interval-negate below)))
+                          rkind sys)
+                         nil))
+                   (rabove
+                     (if above
+                         (interval-reciprocal-+ above)
+                         nil)))
+               (cond (rabove
+                      (interval->range
+                       (if rbelow
+                           (interval-merge rbelow rabove)
+                           rabove)
+                       rkind sys))
+                     (rbelow (interval->range rbelow rkind sys))
+                     ;; Both being NIL happens if the input range is all zero.
+                     ;; As in / above, this can result in infinities rather than
+                     ;; being an error, so we punt.
+                     (t (ctype:range rkind '* '* sys))))))
+         (env:parse-type-specifier 'number nil sys))
+     sys)))
 
 (define-deriver exp (arg) (ty-irrat-monotonic1 arg #'exp :inf 0f0))
 

@@ -52,7 +52,7 @@
 
 ;; Multiply two intervals that are both positive, i.e. have lower bounds
 ;; that are at least zero.
-(defun interval*-pos (i1 i2)
+(defun interval*-both-pos (i1 i2)
   (make-interval
    ;; the lower bounds are necessarily finite.
    (finite-bound-binop #'* (interval-low i1) (interval-low i2))
@@ -75,15 +75,27 @@
     (make-interval (lbmin (interval-low i1) (interval-low i2))
                    (hbmax (interval-high i1) (interval-high i2)))))
 
+;; Multiply a positive interval by any interval.
+(defun interval*-1-pos (i1 i2)
+  (multiple-value-bind (i2L i2H) (split-interval i2 0)
+    (let ((rL (and i2L (interval-negate
+                        (interval*-both-pos i1 (interval-negate i2L)))))
+          (rH (and i2H (interval*-both-pos i1 i2H))))
+      (if rL
+          (if rH
+              (interval-merge rL rH)
+              rL)
+          rH))))
+
 (defun interval* (i1 i2)
   (multiple-value-bind (i1L i1H) (split-interval i1 0)
     (multiple-value-bind (i2L i2H) (split-interval i2 0)
       (let* ((i1L (and i1L (interval-negate i1L)))
              (i2L (and i2L (interval-negate i2L)))
-             (iLL (and i1L i2L (interval*-pos i1L i2L)))
-             (iLH (and i1L i2H (interval-negate (interval*-pos i1L i2H))))
-             (iHL (and i1H i2L (interval-negate (interval*-pos i1H i2L))))
-             (iHH (and i1H i2H (interval*-pos i1H i2H))))
+             (iLL (and i1L i2L (interval*-both-pos i1L i2L)))
+             (iLH (and i1L i2H (interval-negate (interval*-both-pos i1L i2H))))
+             (iHL (and i1H i2L (interval-negate (interval*-both-pos i1H i2L))))
+             (iHH (and i1H i2H (interval*-both-pos i1H i2H))))
         (labels ((pim (i1 i2)
                    (cond ((not i1) i2)
                          ((not i2) i1)
@@ -116,6 +128,18 @@
             (cond ((or (not low) (<= low 0)) nil)
                   (lxp (list (/ low)))
                   (t (/ low)))))))))
+
+;;; Compute the reciprocal of an all-positive interval, i.e. low must be finite
+;;; and greater than zero (or 0 exclusive).
+(defun interval-reciprocal-+ (interval)
+  (multiple-value-bind (low lxp) (bound-parts (interval-low interval))
+    (multiple-value-bind (high hxp) (bound-parts (interval-high interval))
+      (make-interval (cond ((not high) '(0))
+                           (hxp (list (/ high)))
+                           (t (/ high)))
+                     (cond ((not lxp) (/ low))
+                           ((zerop low) nil)
+                           (t (list (/ low))))))))
 
 (defun approximate-interval-reciprocal (interval)
   (multiple-value-bind (minus plus) (interval-reciprocal interval)

@@ -153,9 +153,10 @@ Operation was (~s~{ ~s~})."
 (defun note (datum &rest arguments)
   ;; We don't use coerce-to-condition because there is no simple-note type
   ;; for cleanliness reasons.
-  (let ((note (if (typep datum 'ext:compiler-note)
-                  datum
-                  (apply #'make-condition datum arguments))))
+  (let ((note (etypecase datum
+                (ext:compiler-note datum)
+                (symbol ; condition type
+                 (apply #'make-condition datum arguments)))))
     (restart-case (signal note)
       (muffle-note ()
         :report "Silence note."
