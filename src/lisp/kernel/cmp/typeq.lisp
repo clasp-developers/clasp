@@ -33,6 +33,7 @@
            (value32             (irc-typed-load header-stamp-type header-addr))
            (_ (if *debug-typeq* (irc-intrinsic "debugPrintI32" value32)))
            (header-value        (irc-zext value32 %uintptr_t%)))
+      (declare (ignore _))
       (if (fixnump header-value-min-max)
           (let* ((shifted-header-value (core:shift-stamp-for-compiled-code header-value-min-max))
                  (match (irc-icmp-eq header-value (jit-constant-uintptr_t shifted-header-value))))
