@@ -1243,6 +1243,33 @@
 
 (declaim (ftype (function (list) t) car cdr))
 
+;;; So. CAR and CDR are commonly used enough that doing a full function call for them
+;;; noticeably slows down plenty of code (e.g. try cl-bench TAKL), even in case we
+;;; have no type information about the list.
+;;; But it's convenient for the compiler to just see CAR and CDR calls, since it can
+;;; use the fancy inference on cons types (see type.lisp).
+;;; So we provide this inline definition, but also put a notinline function call in
+;;; it. The transform code (in bir-to-bmir.lisp) will take note of the declared type
+;;; and reduce that "notinline" car to a primop, but that happens after type inference
+;;; and so the compiler can use the type information.
+;;; This is a KLUDGE, but it really seems to help in a lot of code.
+(declaim (inline car cdr))
+(defun car (list)
+  "Return the first object in a list."
+  (declare (optimize (safety 0)) (notinline car))
+  (if (cleavir-primop:typeq list cons)
+      (car (the cons list))
+      (if (eq list nil)
+          (the null list)
+          (error 'type-error :datum list :expected-type 'list))))
+(defun cdr (list)
+  "Return all but the first object in a list."
+  (declare (optimize (safety 0)) (notinline cdr))
+  (typecase list
+    (cons (cdr (the cons list)))
+    (null (the null list))
+    (t (error 'type-error :datum list :expected-type 'list))))
+
 (defmacro defcr (name &rest ops)
   `(progn
      (debug-inline ,(symbol-name name))
@@ -1597,14 +1624,22 @@
          (ftype (function (character simple-string sys:index) character) (setf schar))
          (ftype (function (character string sys:index) character) (setf char)))
 (defun schar (string index)
-  (row-major-aref (the simple-string string) index))
+  ;; We use DECLARE instead of THE here so as to skip needless
+  ;; multiple-value checkers. cclasp is not yet smart enough to realize that in
+  ;; (fun (the string foo)) the type check function for STRING does not need to
+  ;; preserve non-primary values.
+  (declare (type simple-string string))
+  (row-major-aref string index))
 (defun (setf schar) (value string index)
-  (setf (row-major-aref (the simple-string string) index) value))
+  (declare (type simple-string string))
+  (setf (row-major-aref string index) value))
 
 (defun char (string index)
-  (row-major-aref (the string string) index))
+  (declare (type string string))
+  (row-major-aref string index))
 (defun (setf char) (value string index)
-  (setf (row-major-aref (the string string) index) value))
+  (declare (type string string))
+  (setf (row-major-aref string index) value))
 
 (defun row-major-index-computer (dimsyms subscripts)
   ;; assumes once-only is taken care of.

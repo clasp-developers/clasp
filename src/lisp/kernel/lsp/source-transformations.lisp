@@ -49,7 +49,13 @@
     (declare (ignore fun))
     (case (length args)
       (0 identity)
-      (1 `(values (the ,one-arg-result-type ,(first args))))
+      ;; We use these values &rest nil types here and below because they are
+      ;; easier to check in cclasp (where THEs usually become checks).
+      ;; See cleavir/convert-special.lisp.
+      ;; Also note that we only use the type information in the one argument
+      ;; case because we need that check. With more arguments, the two-arg-fun
+      ;; will do checks. This also applies to EXPAND-COMPARE below.
+      (1 `(the (values ,one-arg-result-type &rest nil) (values ,(first args))))
       (2 (values `(,two-arg-fun ,@args) t))
       (t (simple-associate-args two-arg-fun (first args) (rest args)))))
 
@@ -70,15 +76,13 @@
            form)
           ((1)
            ;; preserve nontoplevelness and side effects
-           `(progn (the ,arg-type ,(first args)) t))
+           `(progn (the (values ,arg-type &rest nil) (values ,(first args))) t))
           ((2)
-           `(,fun (the ,arg-type ,(first args))
-                  (the ,arg-type ,(second args))))
+           `(,fun ,(first args) ,(second args)))
           (otherwise
            ;; Evaluate arguments only once
            (let ((syms (mapcar (lambda (a) (declare (ignore a)) (gensym)) args)))
              `(let (,@(mapcar #'list syms args))
-                (declare (type ,arg-type ,@syms))
                 ,(simple-compare-args fun (first syms) (rest syms))))))
         ;; bad syntax. warn?
         form))
@@ -91,9 +95,8 @@
         (case (length args)
           ((1)
            ;; preserve nontoplevelness and side effects.
-           `(progn (the ,arg-type ,(first args)) t))
-          ((2) `(not (,fun (the ,arg-type ,(first args))
-                           (the ,arg-type ,(second args)))))
+           `(progn (the (values ,arg-type &rest nil) (values ,(first args))) t))
+          ((2) `(not (,fun ,(first args) ,(second args))))
           (otherwise form))
         form))
   )

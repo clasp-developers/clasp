@@ -73,13 +73,12 @@ Returns the integer square root of INTEGER."
   (if (zerop i)
       0
       (let ((n (integer-length i)))
-        (do ((x (ash 1 (ceiling n 2)))
-             (y))
+        (do ((x (ash 1 (ceiling n 2))))
             (nil)
-          (setq y (floor i x))
-          (when (<= x y)
-            (return x))
-          (setq x (floor (+ x y) 2))))))
+          (let ((y (floor i x)))
+            (when (<= x y)
+              (return x))
+            (setq x (floor (+ x y) 2)))))))
 
 (defun phase (x)
   "Args: (number)
@@ -97,12 +96,11 @@ Returns a number that represents the sign of NUMBER.  Returns NUMBER If it is
 zero.  Otherwise, returns the value of (/ NUMBER (ABS NUMBER))"
   (if (zerop x) x (/ x (abs x))))
 
-(defun cis (x)
-  "Args: (radians)
+(defun cis (theta)
+  "Args: (theta)
 Returns a complex number whose realpart and imagpart are the values of (COS
-RADIANS) and (SIN RADIANS) respectively."
-  (declare (type real x))
-  (exp (* #c(0.0 1.0) x)))
+THETA) and (SIN THETA) respectively."
+  (complex (cos theta) (sin theta)))
 
 (defun asin (x)
   "Args: (number)
@@ -199,7 +197,6 @@ Returns the hyperbolic arc tangent of NUMBER."
 	    (complex-atanh x)))))
 
 (defun complex-atanh (z)
-  (declare (number z))
   (/ (- (log (1+ z)) (log (- 1 z))) 2))
 
 (defun ffloor (x &optional (y 1))
