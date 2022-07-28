@@ -305,16 +305,16 @@
 		(entry `(,constructor :posn
 				      (index-posn
 				       (pretty-stream-buffer-fill-pointer
-					(the pretty-stream ,stream))
+					,stream)
 				       ,stream)
 				      ,@args))
 		(op `(list ,entry))
-		(head `(pretty-stream-queue-head (the pretty-stream ,stream))))
+		(head `(pretty-stream-queue-head ,stream)))
       `(progn
 	 (if ,head
 	     (setf (cdr ,head) ,op)
-	     (setf (pretty-stream-queue-tail (the pretty-stream ,stream)) ,op))
-	 (setf (pretty-stream-queue-head (the pretty-stream ,stream)) ,op)
+	     (setf (pretty-stream-queue-tail ,stream) ,op))
+	 (setf (pretty-stream-queue-head ,stream) ,op)
 	 ,entry))))
 )
 
@@ -346,6 +346,7 @@
   (amount 0 :type fixnum))
 
 (defun enqueue-indent (stream kind amount)
+  (declare (type pretty-stream stream))
   (enqueue stream indentation :kind kind :amount amount))
 
 (defstruct (block-start
@@ -390,6 +391,7 @@
   (colinc 0 :type column))
 
 (defun enqueue-tab (stream kind colnum colinc)
+  (declare (type pretty-stream stream))
   (multiple-value-bind
       (sectionp relativep)
       (ecase kind
