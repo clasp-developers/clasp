@@ -55,6 +55,9 @@
       ;; Also note that we only use the type information in the one argument
       ;; case because we need that check. With more arguments, the two-arg-fun
       ;; will do checks. This also applies to EXPAND-COMPARE below.
+      ;; Also also note that we have to use VALUES or else we'll get
+      ;; (+ (values 1 nil)) => 1 NIL
+      ;; which is unlikely in practice, but a bug.
       (1 `(the (values ,one-arg-result-type &rest nil) (values ,(first args))))
       (2 (values `(,two-arg-fun ,@args) t))
       (t (simple-associate-args two-arg-fun (first args) (rest args)))))
