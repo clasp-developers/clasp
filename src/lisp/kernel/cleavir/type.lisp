@@ -1260,8 +1260,13 @@
               (if (and (consp dims) (null (cdr dims)) (not (eq (car dims) '*)))
                   (ctype:range 'integer (car dims) (car dims) sys)
                   (ctype:range 'integer 0 (1- array-dimension-limit) sys))))
-           ;; FIXME: Weak.
-           (t (ctype:range 'integer 0 '* sys)))
+           ;; As a matter of policy we decide that LENGTH always returns a
+           ;; positive fixnum. This is true of arrays and lists because there's
+           ;; no way to fit 2^60 elements in memory. Technically, an extended
+           ;; sequence that doesn't store everything in memory could be defined,
+           ;; but this doesn't seem likely and we could find a way to ban it
+           ;; outright. And should (FIXME) tell programmers not to do so.
+           (t (ctype:range 'integer 0 most-positive-fixnum sys)))
      sys)))
 
 (define-deriver sort (sequence predicate &rest keys)
