@@ -161,3 +161,30 @@
             (make-interval nil nil)
             (interval* i1 m2))
         (interval* i1 p2))))
+
+(defun interval-truncate (interval)
+  (let ((low (bound-parts (interval-low interval)))
+        (high (bound-parts (interval-high interval))))
+    (make-interval (if low (truncate low) nil)
+                   (if high (truncate high) nil))))
+
+(defun interval-floor (interval)
+  (multiple-value-bind (low lxp) (bound-parts (interval-low interval))
+    (declare (ignore lxp)) ; FIXME: Could this be open...? It's not on SBCL
+    (multiple-value-bind (high hxp) (bound-parts (interval-high interval))
+      (make-interval (if low (floor low) nil)
+                     (cond ((not high) nil)
+                           ;; floor of (10.0) is 9, not 10
+                           (hxp (multiple-value-bind (quo rem) (floor high)
+                                  (if (zerop rem) (1- quo) quo)))
+                           (t (floor high)))))))
+
+(defun interval-ceiling (interval)
+  (multiple-value-bind (low lxp) (bound-parts (interval-low interval))
+    (multiple-value-bind (high hxp) (bound-parts (interval-high interval))
+      (declare (ignore hxp)) ; ditto comment from interval-floor
+      (make-interval (cond ((not low) nil)
+                           (lxp (multiple-value-bind (quo rem) (ceiling low)
+                                  (if (zerop rem) (1+ quo) quo)))
+                           (t (ceiling low)))
+                     (if high (ceiling high) nil)))))

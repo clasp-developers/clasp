@@ -466,6 +466,117 @@
 
 ;;;
 
+;;; Split into two intervals, one wholly less than zero and one greater.
+;;; If either range is empty, NIL is returned for it instead.
+(defun range->intervals-for-reciprocal (range sys)
+  (multiple-value-bind (low lxp) (ctype:range-low range sys)
+    (multiple-value-bind (high hxp) (ctype:range-high range sys)
+      (if (eq (ctype:range-kind range sys) 'integer)
+          ;; Integer ranges we treat specially when they include 0,
+          ;; because the interval arithmetic doesn't understand discreteness.
+          ;; For example, the reciprocal of an (integer -7 7) is a rational
+          ;; between -1 and 1, because (/ 1) = 1; but the reciprocal of a
+          ;; (rational -7 7) is unbounded as it approaches zero.
+          ;; We also normalize exclusive bounds while we're at it.
+          (values
+           (if (and low (>= low (if lxp -1 0)))
+               nil
+               (make-interval (cond ((not low) low)
+                                    (lxp (1+ low))
+                                    (t low))
+                              (cond ((or (not high) (>= high 0)) -1)
+                                    (hxp (1- high))
+                                    (t high))))
+           (if (and high (<= high (if hxp 1 0)))
+               nil
+               (make-interval (cond ((or (not low) (<= low 0)) 1)
+                                    (lxp (1+ low))
+                                    (t low))
+                              (cond ((not high) high)
+                                    (hxp (1- high))
+                                    (t high)))))
+          (values
+           (if (and low (>= low 0))
+               nil
+               (make-interval (cond ((not low) low)
+                                    (lxp (list low))
+                                    (t low))
+                              (cond ((or (not high) (>= high 0)) '(0))
+                                    (hxp (list high))
+                                    (t high))))
+           (if (and high (<= high 0))
+               nil
+               (make-interval (cond ((or (not low) (<= low 0)) '(0))
+                                    (lxp (list low))
+                                    (t low))
+                              (cond ((not high) high)
+                                    (hxp (list high))
+                                    (t high)))))))))
+
+;;; Given two range types, return an interval for the result.
+;;; We take types rather than intervals because the divisor being an integer
+;;; can restrict the result when it crosses zero.
+(defun range-divide (n1 n2 sys)
+  (let* ((int1 (range->interval n1 sys)))
+    (multiple-value-bind (below2 above2)
+        (range->intervals-for-reciprocal n2 sys)
+      (let ((rbelow (if below2
+                        (interval-negate
+                         (interval*-1-pos
+                          (interval-reciprocal-+ (interval-negate below2))
+                          int1))
+                        nil))
+            (rabove (if above2
+                        (interval*-1-pos (interval-reciprocal-+ above2) int1)
+                        nil)))
+        (cond ((and rbelow rabove) (interval-merge rbelow rabove))
+              (rbelow rbelow)
+              (rabove rabove)
+              ;; arises from division by zero.
+              ;; this can result in infinities and NaN, so we punt a bit.
+              ;; FIXME: We could be a bit more intelligent, e.g. NIL type
+              ;; for rationals, and get the sign of infinities.
+              (t (make-interval nil nil)))))))
+
+(defun derive-floor-etc (dividend divisor quofun remfun sys)
+  (declare (ignore remfun)) ; TODO
+  (if (and (ctype:rangep dividend sys) (ctype:rangep divisor sys))
+      (let* ((k1 (ctype:range-kind dividend sys))
+             (k2 (ctype:range-kind divisor sys))
+             (rkind (cond ((and (eq k1 'integer) (eq k2 'integer)) 'integer)
+                          ((and (member k1 '(integer rational))
+                                (member k2 '(integer rational)))
+                           'rational)
+                          ;; The CLHS actually only says that the remainder
+                          ;; is a float if an argument is a float, i.e. it doesn't
+                          ;; specify that it has to be a double given doubles, etc.
+                          ;; But that is the case in Clasp.
+                          ((or (eq k1 'float) (eq k2 'float)) 'float)
+                          ((or (member k1 '(double-float long-float))
+                               (member k2 '(double-float long-float)))
+                           'double-float)
+                          ((and (member k1 '(single-float short-float))
+                                (member k2 '(single-float short-float)))
+                           'single-float)
+                          (t 'real))))
+        (ctype:values
+         (list (interval->range
+                (funcall quofun (range-divide dividend divisor sys))
+                'integer sys)
+               ;; TODO: Improve with remfun
+               (ctype:range rkind '* '* sys))
+         nil (ctype:bottom sys) sys))
+      (ctype:values (list (ctype:range 'integer '* '* sys)
+                          (env:parse-type-specifier 'real nil sys))
+                    nil (ctype:bottom sys) sys)))
+
+(define-deriver truncate (dividend &optional (divisor (integer 1 1)))
+  (derive-floor-etc dividend divisor #'interval-truncate nil *clasp-system*))
+(define-deriver floor (dividend &optional (divisor (integer 1 1)))
+  (derive-floor-etc dividend divisor #'interval-floor nil *clasp-system*))
+(define-deriver ceiling (dividend &optional (divisor (integer 1 1)))
+  (derive-floor-etc dividend divisor #'interval-ceiling nil *clasp-system*))
+
 (defun derive-ftrunc* (x y)
   ;; The definition of ftruncate in CLHS is kind of gibberish, as relates to
   ;; the types of the results. So just make sure this does what the function does.
@@ -487,6 +598,8 @@
                       ;; Despite the above note: This returns singles with the function,
                       ;; but I think it should return doubles; SBCL does. Why not?
                       ;; FIXME: Change ftruncate behavior.
+                      ;; FIXME: Use range-divide for all of this. I'm only not doing
+                      ;; this now because I'm concerned about this float incongruity.
                       ((double-float) '(float float))
                       ((float) '(float float))
                       ((real) '(float real))))
@@ -537,81 +650,14 @@
          (env:parse-type-specifier 'number nil sys))
      sys)))
 
-;;; Split into two intervals, one wholly less than zero and one greater.
-;;; If either range is empty, NIL is returned for it instead.
-(defun range->intervals-for-reciprocal (range sys)
-  (multiple-value-bind (low lxp) (ctype:range-low range sys)
-    (multiple-value-bind (high hxp) (ctype:range-high range sys)
-      (if (eq (ctype:range-kind range sys) 'integer)
-          ;; Integer ranges we treat specially when they include 0,
-          ;; because the interval arithmetic doesn't understand discreteness.
-          ;; For example, the reciprocal of an (integer -7 7) is a rational
-          ;; between -1 and 1, because (/ 1) = 1; but the reciprocal of a
-          ;; (rational -7 7) is unbounded as it approaches zero.
-          ;; We also normalize exclusive bounds while we're at it.
-          (values
-           (if (and low (>= low (if lxp -1 0)))
-               nil
-               (make-interval (cond ((not low) low)
-                                    (lxp (1+ low))
-                                    (t low))
-                              (cond ((or (not high) (>= high 0)) -1)
-                                    (hxp (1- high))
-                                    (t high))))
-           (if (and high (<= high (if hxp 1 0)))
-               nil
-               (make-interval (cond ((or (not low) (<= low 0)) 1)
-                                    (lxp (1+ low))
-                                    (t low))
-                              (cond ((not high) high)
-                                    (hxp (1- high))
-                                    (t high)))))
-          (values
-           (if (and low (>= low 0))
-               nil
-               (make-interval (cond ((not low) low)
-                                    (lxp (list low))
-                                    (t low))
-                              (cond ((or (not high) (>= high 0)) '(0))
-                                    (hxp (list high))
-                                    (t high))))
-           (if (and high (<= high 0))
-               nil
-               (make-interval (cond ((or (not low) (<= low 0)) '(0))
-                                    (lxp (list low))
-                                    (t low))
-                              (cond ((not high) high)
-                                    (hxp (list high))
-                                    (t high)))))))))
-
 (define-deriver core:two-arg-/ (n1 n2)
   (let ((sys *clasp-system*))
     (ctype:single-value
      (if (and (ctype:rangep n1 sys) (ctype:rangep n2 sys))
-         (let* ((int1 (range->interval n1 sys))
-                (n2kind (ctype:range-kind n2 sys))
-                (rkind (divcontagion (ctype:range-kind n1 sys) n2kind)))
-           (multiple-value-bind (below2 above2)
-               (range->intervals-for-reciprocal n2 sys)
-             (let ((rbelow (if below2
-                               (interval-negate
-                                (interval*-1-pos
-                                 (interval-reciprocal-+ (interval-negate below2))
-                                 int1))
-                               nil))
-                   (rabove (if above2
-                               (interval*-1-pos (interval-reciprocal-+ above2) int1)
-                               nil)))
-               (cond ((and rbelow rabove)
-                      (interval->range
-                       (interval-merge rbelow rabove) rkind sys))
-                     (rbelow (interval->range rbelow rkind sys))
-                     (rabove (interval->range rabove rkind sys))
-                     ;; arises from division by zero.
-                     ;; this can result in infinities and NaN, so we punt a bit.
-                     ;; FIXME: We could be a bit more intelligent, e.g. NIL type
-                     ;; for rationals, and get the sign of infinities.
-                     (t (ctype:range rkind '* '* sys))))))
+         (interval->range (range-divide n1 n2 sys)
+                          (divcontagion (ctype:range-kind n1 sys)
+                                        (ctype:range-kind n2 sys))
+                          sys)
          (env:parse-type-specifier 'number nil sys))
      sys)))
 (define-deriver core:reciprocal (n)
