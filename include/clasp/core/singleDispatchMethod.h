@@ -74,19 +74,19 @@ public: // Functions here
   string __repr__() const;
 
 CL_LISPIFY_NAME("singleDispatchMethodName");
-CLASP_DEFMETHOD   T_sp singleDispatchMethodName() const { return this->_name; };
+CL_DEFMETHOD   T_sp singleDispatchMethodName() const { return this->_name; };
 CL_LISPIFY_NAME("singleDispatchMethodReceiverClass");
-CLASP_DEFMETHOD   Instance_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
+CL_DEFMETHOD   Instance_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
  
 //CL_LISPIFY_NAME("singleDispatchMethodCode");
-//CLASP_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
+//CL_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
  
 CL_LISPIFY_NAME("singleDispatchMethodLambdaListHandler");
-CLASP_DEFMETHOD   LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler; };
+CL_DEFMETHOD   LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler; };
 CL_LISPIFY_NAME("singleDispatchMethodDeclares");
-CLASP_DEFMETHOD   List_sp singleDispatchMethodDeclares() const { return this->_declares; };
+CL_DEFMETHOD   List_sp singleDispatchMethodDeclares() const { return this->_declares; };
 CL_LISPIFY_NAME("singleDispatchMethodDocstring");
-CLASP_DEFMETHOD   T_sp singleDispatchMethodDocstring() const { return this->_docstring; };
+CL_DEFMETHOD   T_sp singleDispatchMethodDocstring() const { return this->_docstring; };
 
 }; // SingleDispatchMethod class
 

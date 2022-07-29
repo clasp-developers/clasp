@@ -216,31 +216,31 @@ public:
   /*! Return true if the LambdaListHandler only has required arguments */
   bool requiredLexicalArgumentsOnlyP_() const;
 CL_LISPIFY_NAME("lambdaListHandlerRequiredLexicalArgumentsOnlyP");
-CLASP_DEFMETHOD   inline bool requiredLexicalArgumentsOnlyP() const { return this->_RequiredLexicalArgumentsOnly; };
+CL_DEFMETHOD   inline bool requiredLexicalArgumentsOnlyP() const { return this->_RequiredLexicalArgumentsOnly; };
 
 CL_LISPIFY_NAME("numberOfRequiredArguments");
-CLASP_DEFMETHOD   inline int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
+CL_DEFMETHOD   inline int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
 CL_LISPIFY_NAME("numberOfOptionalArguments");
-CLASP_DEFMETHOD   int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
+CL_DEFMETHOD   int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
 CL_LISPIFY_NAME("numberOfRestArguments");
-CLASP_DEFMETHOD   int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
+CL_DEFMETHOD   int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
   bool hasKeyFlag() const { return this->_KeyFlag.isTrue(); };
 CL_LISPIFY_NAME("numberOfKeyArguments");
-CLASP_DEFMETHOD   int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
+CL_DEFMETHOD   int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
 CL_LISPIFY_NAME("numberOfAuxArguments");
-CLASP_DEFMETHOD   int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
+CL_DEFMETHOD   int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
 CL_LISPIFY_NAME("allowOtherKeys");
-CLASP_DEFMETHOD   bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
+CL_DEFMETHOD   bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
 
   //	uint _numberOfRequiredArguments() const;
 
   /*! The total number of arguments that will be bound by this handler in a lexical ActivationFrame */
 CL_LISPIFY_NAME("numberOfLexicalVariables");
-CLASP_DEFMETHOD   int numberOfLexicalVariables() const { return this->_NumberOfLexicalVariables; };
+CL_DEFMETHOD   int numberOfLexicalVariables() const { return this->_NumberOfLexicalVariables; };
 
   /*! Return all of the symbols that this LambdaListHandler will fill classified as to whether they are special-var or lexical-var's */
 CL_LISPIFY_NAME("classifiedSymbols");
-CLASP_DEFMETHOD   List_sp classifiedSymbols() const { return this->_ClassifiedSymbolList; };
+CL_DEFMETHOD   List_sp classifiedSymbols() const { return this->_ClassifiedSymbolList; };
 
   /*! Return a Cons of all lexical variable names extracted from this->_ClassifiedSymbolList
 	  in the order that they appear in _ClassifiedSymbolList - this is used for

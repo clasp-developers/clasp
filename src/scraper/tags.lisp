@@ -353,7 +353,7 @@
     :signature-text% (cscrape:read-string-to-character bufs #\) t))
   (define-tag-handler cl-defmethod-tag "CL_DEFMETHOD_TAG" tags:cl-defmethod-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))
-  (define-tag-handler clasp-defmethod-tag "CLASP_DEFMETHOD_TAG" tags:clasp-defmethod-tag
+  #+(or)(define-tag-handler clasp-defmethod-tag "CL_DEFMETHOD_TAG" tags:clasp-defmethod-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))
   (define-tag-handler cl-def-class-method-tag "CL_DEF_CLASS_METHOD_TAG" tags:cl-def-class-method-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))

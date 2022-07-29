@@ -19,19 +19,19 @@ namespace core {
     inline int& operator[](size_t i) { BOUNDS_ASSERT(i<this->_Vector.size()); return this->_Vector[i]; };
     inline const int& operator[](size_t i) const { BOUNDS_ASSERT(i<this->_Vector.size());return this->_Vector[i]; };
     CL_LISPIFY_NAME("native-vector<int>-setf-elt");
-    CLASP_DEFMETHOD inline void setf_elt(size_t index, int val) { this->_Vector[index] = val; };
+    CL_DEFMETHOD inline void setf_elt(size_t index, int val) { this->_Vector[index] = val; };
     CL_LISPIFY_NAME("native-vector<int>-elt");
-    CLASP_DEFMETHOD inline int elt(size_t index ) { return this->_Vector[index]; };
+    CL_DEFMETHOD inline int elt(size_t index ) { return this->_Vector[index]; };
     CL_LISPIFY_NAME("native-vector<int>-clear");
-    CLASP_DEFMETHOD inline void clear() { this->_Vector.clear(); };
+    CL_DEFMETHOD inline void clear() { this->_Vector.clear(); };
     CL_LISPIFY_NAME("native-vector<int>-push-back");
-    CLASP_DEFMETHOD inline void push_back(int val) { this->_Vector.push_back(val); };
+    CL_DEFMETHOD inline void push_back(int val) { this->_Vector.push_back(val); };
     CL_LISPIFY_NAME("native-vector<int>-size");
-    CLASP_DEFMETHOD inline size_t size() { return this->_Vector.size(); };
+    CL_DEFMETHOD inline size_t size() { return this->_Vector.size(); };
     CL_LISPIFY_NAME("native-vector<int>-capacity");
-    CLASP_DEFMETHOD inline size_t capacity() { return this->_Vector.capacity(); };
+    CL_DEFMETHOD inline size_t capacity() { return this->_Vector.capacity(); };
     CL_LISPIFY_NAME("native-vector<int>-resize");
-    CLASP_DEFMETHOD inline void resize(size_t sz, int val) { this->_Vector.resize(sz,val); };
+    CL_DEFMETHOD inline void resize(size_t sz, int val) { this->_Vector.resize(sz,val); };
   };
 
 };

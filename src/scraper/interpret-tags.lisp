@@ -24,6 +24,7 @@
    (character-offset% :initarg :character-offset% :accessor character-offset%)
    (namespace% :initform nil :initarg :namespace% :accessor namespace%)
    (lisp-name% :initform nil :initarg :lisp-name% :accessor lisp-name%)
+   (best-lisp-name% :initform nil :initarg :best-lisp-name% :accessor best-lisp-name%)
    (lambda-list% :initform nil :initarg :lambda-list% :accessor lambda-list%)
    (declare% :initform nil :initarg :declare% :accessor declare%)
    (docstring% :initform nil :initarg :docstring% :accessor docstring%)
@@ -69,6 +70,7 @@
 
 (defclass method-mixin ()
   ((class% :initform nil :initarg :class% :accessor class%)
+   (class-name% :initform nil :initarg :class-name% :accessor class-name%)
    (method-name% :initform nil :initarg :method-name% :accessor method-name%)))
 
 (defclass expose-defmethod (expose-code method-mixin)
@@ -187,7 +189,8 @@
   (tags:stamp-wtag (tag% object)))
 
 (defun lispify-class-name (tag packages)
-  (format nil "core::magic_name(\"~a:~a\")" (gethash (tags:package% tag) packages) (tags:class-symbol% tag)))
+  (let ((magic-name (format nil "~a:~a" (gethash (tags:package% tag) packages) (lispify-symbol-name (tags:class-symbol% tag)))))
+    (format nil "~s" magic-name)))
 
 (defun maybe-override-name (namespace-tag override-name-tag name packages)
   "* Arguments
@@ -196,6 +199,7 @@
 - packages :: A map of namespace and C++ package names to package name strings.
 * Description
 If override-name-tag is not nil then return its value, otherwise return name"
+  (declare (optimize (debug 3)))
   (if (null override-name-tag)
       name
       (etypecase override-name-tag
@@ -204,9 +208,10 @@ If override-name-tag is not nil then return its value, otherwise return name"
         (tags:cl-name-tag
          (packaged-name namespace-tag override-name-tag packages))
         (tags:cl-pkg-name-tag
-         (format nil "core::magic_name(~s,~s)"
-                 (tags:name% override-name-tag)
-                 (gethash (tags:package% override-name-tag) packages))))))
+         (make-function-method-name
+                        :source :maybe-override-name
+                        :package (gethash (tags:package% override-name-tag) packages)
+                        :name (lispify-symbol-name (tags:name% override-name-tag)))))))
 
 (defun order-packages-by-use (packages)
   "* Arguments
@@ -320,6 +325,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
   (classes (make-hash-table :test #'equal))
   (gc-managed-types (make-hash-table :test #'equal))
   (functions nil) (symbols nil)
+  (setf-functions nil)
   (previous-symbols (make-hash-table :test #'equal)))
 
 (defgeneric interpret-tag (tag state))
@@ -330,6 +336,8 @@ Compare the symbol against previous definitions of symbols - if there is a misma
   (setf (gethash (tags:namespace% tag) (state-packages state))
         (tags:package-str% tag))
   (setf (gethash (tags:package% tag) (state-packages state))
+        (tags:package-str% tag))
+  (setf (gethash (tags:package-str% tag) (state-packages state))
         (tags:package-str% tag))
   (pushnew (make-instance 'package-to-create
              :file% (tags:file% tag)
@@ -408,30 +416,30 @@ Compare the symbol against previous definitions of symbols - if there is a misma
           (extract-function-name-from-signature signature-text tag)
         (declare (ignore function-name))
         (pushnew (make-instance 'expose-defun
-                   :namespace% namespace
-                   :lisp-name% packaged-function-name
-                   :function-name% full-function-name
-                   :file% (tags:file% tag)
-                   :line% (tags:line% tag)
-                   :character-offset% (tags:character-offset% tag)
-                   :lambda-list% lambda-list
-                   :declare% declare-form
-                   :docstring% docstring
-                   :docstring-long% docstring-long
-                   :unwind-coop% unwind-coop
-                   :priority% priority
-                   :provide-declaration% simple-function
-                   :signature% signature)
+                                :namespace% namespace
+                                :lisp-name% (ensure-function-method-name packaged-function-name)
+                                :function-name% full-function-name
+                                :file% (tags:file% tag)
+                                :line% (tags:line% tag)
+                                :character-offset% (tags:character-offset% tag)
+                                :lambda-list% lambda-list
+                                :declare% declare-form
+                                :docstring% docstring
+                                :docstring-long% docstring-long
+                                :unwind-coop% unwind-coop
+                                :priority% priority
+                                :provide-declaration% simple-function
+                                :signature% signature)
                  (state-functions state)
                  :test #'string=
-                 :key #'lisp-name%))
-      (setf (state-cur-lambda state) nil
-            (state-cur-declare state) nil
-            (state-cur-docstring state) nil
-            (state-cur-docstring-long state) nil
-            (state-cur-unwind-coop state) nil
-            (state-cur-priority state) nil
-            (state-cur-name state) nil))))
+                 :key (lambda (obj) (function-method-name-key (lisp-name% obj))))
+        (setf (state-cur-lambda state) nil
+              (state-cur-declare state) nil
+              (state-cur-docstring state) nil
+              (state-cur-docstring-long state) nil
+              (state-cur-unwind-coop state) nil
+              (state-cur-priority state) nil
+              (state-cur-name state) nil)))))
 
 (defmethod interpret-tag ((tag tags:cl-defun-setf-tag) state)
   ;; identical to previous case, except for...
@@ -462,30 +470,30 @@ Compare the symbol against previous definitions of symbols - if there is a misma
           (extract-function-name-from-signature signature-text tag)
         (declare (ignore function-name))
         (pushnew (make-instance 'expose-defun-setf ; here.
-                   :namespace% namespace
-                   :lisp-name% packaged-function-name
-                   :function-name% full-function-name
-                   :file% (tags:file% tag)
-                   :line% (tags:line% tag)
-                   :character-offset% (tags:character-offset% tag)
-                   :lambda-list% lambda-list
-                   :declare% declare-form
-                   :docstring% docstring
-                   :docstring-long% docstring-long
-                   :unwind-coop% unwind-coop
-                   :priority% priority
-                   :provide-declaration% simple-function
-                   :signature% signature)
-                 (state-functions state)
+                                :namespace% namespace
+                                :lisp-name% (ensure-function-method-name packaged-function-name)
+                                :function-name% full-function-name
+                                :file% (tags:file% tag)
+                                :line% (tags:line% tag)
+                                :character-offset% (tags:character-offset% tag)
+                                :lambda-list% lambda-list
+                                :declare% declare-form
+                                :docstring% docstring
+                                :docstring-long% docstring-long
+                                :unwind-coop% unwind-coop
+                                :priority% priority
+                                :provide-declaration% simple-function
+                                :signature% signature)
+                 (state-setf-functions state)
                  :test #'string=
-                 :key #'lisp-name%))
-      (setf (state-cur-lambda state) nil
-            (state-cur-declare state) nil
-            (state-cur-docstring state) nil
-            (state-cur-docstring-long state) nil
-            (state-cur-unwind-coop state) nil
-            (state-cur-priority state) nil
-            (state-cur-name state) nil))))
+                 :key (lambda (obj) (function-method-name-key (lisp-name% obj))))
+        (setf (state-cur-lambda state) nil
+              (state-cur-declare state) nil
+              (state-cur-docstring state) nil
+              (state-cur-docstring-long state) nil
+              (state-cur-unwind-coop state) nil
+              (state-cur-priority state) nil
+              (state-cur-name state) nil)))))
 
 (defmethod interpret-tag ((tag tags:cl-extern-defun-tag) state)
   (error-if-bad-expose-info-setup tag
@@ -515,7 +523,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
          )
     (pushnew (make-instance 'expose-extern-defun
                :namespace% namespace
-               :lisp-name% packaged-function-name
+               :lisp-name% (ensure-function-method-name packaged-function-name)
                :function-name% function-name
                :file% (tags:file% tag)
                :line% (tags:line% tag)
@@ -528,13 +536,26 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                :function-ptr% function-ptr)
              (state-functions state)
              :test #'string=
-             :key #'lisp-name%)
+             :key (lambda (obj) (function-method-name-key (lisp-name% obj))))
     (setf (state-cur-lambda state) nil
           (state-cur-declare state) nil
           (state-cur-docstring state) nil
-          (state-cur-docstring-long state) nil          
+          (state-cur-docstring-long state) nil
           (state-cur-priority state) nil
           (state-cur-name state) nil)))
+
+(defun ensure-function-method-name (obj)
+  (unless (typep obj 'function-method-name)
+    (error "~s must be a function-method-name" obj))
+  obj)
+
+(defun best-method-name (class-name lisp-method-name)
+    ;;(format t "best-method-name class-name ~s  lisp-method-name: ~s~%" class-name lisp-method-name)
+  (unless (string= (subseq class-name (- (length class-name) 2)) "_O")
+    (error "Bad class name for method - it must end in _O instead: ~s" class-name))
+  (let ((copy (function-method-name-copy lisp-method-name)))
+    (setf (class% copy) (lispify-symbol-name (subseq class-name 0 (- (length class-name) 2))))
+    copy))
 
 (defmethod interpret-tag ((tag tags:cl-defmethod-tag) state)
   (error-if-bad-expose-info-setup tag
@@ -556,31 +577,34 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                                                  method-name
                                                  (state-packages state))
                                   (state-packages state)))
+           (best-lisp-name (best-method-name class-name packaged-method-name))
            (signature-text (tags:signature-text% tag))
            (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state))
                             (parse-lambda-list-from-signature signature-text
                                                               :class class)))
            (declare-form (tags:maybe-declare (state-cur-declare state)))
            (docstring (tags:maybe-docstring (state-cur-docstring state)))
-           (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))           
+           (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))
            )
       (unless class (error "For cl-defmethod-tag couldn't find class ~a"
                            class-key))
       (pushnew (make-instance 'expose-defmethod
-                 :class% class
-                 :lisp-name% packaged-method-name
-                 :method-name% method-name
-                 :file% (tags:file% tag)
-                 :line% (tags:line% tag)
-                 :character-offset% (tags:character-offset% tag)
-                 :lambda-list% lambda-list
-                 :declare% declare-form
-                 :docstring% docstring
-                 :docstring-long% docstring-long                 
-                 )
+                              :class% class
+                              :class-name% class-name
+                              :lisp-name% (ensure-function-method-name packaged-method-name)
+                              :best-lisp-name% (ensure-function-method-name best-lisp-name)
+                              :method-name% method-name
+                              :file% (tags:file% tag)
+                              :line% (tags:line% tag)
+                              :character-offset% (tags:character-offset% tag)
+                              :lambda-list% lambda-list
+                              :declare% declare-form
+                              :docstring% docstring
+                              :docstring-long% docstring-long
+                              )
                (methods% class)
                :test #'string=
-               :key #'lisp-name%)))
+               :key (lambda (obj) (function-method-name-key (lisp-name% obj))))))
   (setf (state-cur-lambda state) nil
         (state-cur-declare state) nil
         (state-cur-docstring state) nil
@@ -620,7 +644,8 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                            class-key))
       (pushnew (make-instance 'expose-defmethod
                  :class% class
-                 :lisp-name% packaged-method-name
+                 :lisp-name% (ensure-function-method-name packaged-method-name)
+                 :best-lisp-name% (ensure-function-method-name packaged-method-name) ;; maybe later we change them to class/method-name
                  :method-name% method-name
                  :file% (tags:file% tag)
                  :line% (tags:line% tag)
@@ -632,7 +657,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                  )
                (methods% class)
                :test #'string=
-               :key #'lisp-name%)))
+               :key (lambda (obj) (function-method-name-key (lisp-name% obj))))))
   (setf (state-cur-lambda state) nil
         (state-cur-declare state) nil
         (state-cur-docstring state) nil
@@ -672,7 +697,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                           class-key))
      (pushnew (make-instance 'expose-def-class-method
                 :class% class
-                :lisp-name% packaged-method-name
+                :lisp-name% (ensure-function-method-name packaged-method-name)
                 :method-name% method-name
                 :file% (tags:file% tag)
                 :line% (tags:line% tag)
@@ -684,7 +709,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                 )
               (class-methods% class)
               :test #'string=
-              :key #'lisp-name%)))
+              :key (lambda (obj) (function-method-name-key (lisp-name% obj))))))
  (setf (state-cur-lambda state) nil
        (state-cur-declare state) nil
        (state-cur-docstring state) nil
@@ -711,15 +736,17 @@ Compare the symbol against previous definitions of symbols - if there is a misma
             (packaged-name (state-cur-namespace-tag state) method-name
                            (state-packages state))
             (state-packages state)))
+         (best-lisp-name (best-method-name class-name packaged-method-name))
          (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state)) ""))
-        (declare-form (tags:maybe-declare (state-cur-declare state)))
+         (declare-form (tags:maybe-declare (state-cur-declare state)))
          (docstring (tags:maybe-docstring (state-cur-docstring state)))
          (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))         
          (pointer (tags:pointer% tag)))
     (unless class (error "Couldn't find class ~a" class-key))
     (pushnew (make-instance 'expose-extern-defmethod
                :class% class
-               :lisp-name% packaged-method-name
+               :lisp-name% (ensure-function-method-name packaged-method-name)
+               :best-lisp-name% (ensure-function-method-name best-lisp-name)
                :method-name% method-name
                :file% (tags:file% tag)
                :line% (tags:line% tag)
@@ -731,7 +758,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                :pointer% pointer)
              (methods% class)
              :test #'string=
-             :key #'lisp-name%)
+             :key (lambda (obj) (function-method-name-key (lisp-name% obj))))
    (setf (state-cur-lambda state) nil
          (state-cur-declare state) nil
          (state-cur-docstring state) nil
@@ -1081,6 +1108,7 @@ This interprets the tags and generates objects that are used to generate code."
      (state-classes state) (state-gc-managed-types state))
     (values (order-packages-by-use (state-packages-to-create state))
             (state-functions state)
+            (state-setf-functions state)
             (state-symbols state)
             (state-classes state)
             (state-gc-managed-types state)

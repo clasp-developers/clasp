@@ -26,7 +26,10 @@
    #:extract-method-name-from-signature
    #:extract-method-name-from-pointer
    #:packaged-class-name
-   #:extract-function-name-from-pointer))
+   #:extract-function-name-from-pointer
+   #:magic-name
+   #:lispify-symbol-name
+   ))
 
 (defpackage "TAGS"
   (:use :cl)

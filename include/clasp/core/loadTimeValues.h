@@ -63,7 +63,7 @@ public: // Functions here
 
   inline T_sp &data_element(size_t i) { return this->_Objects[i]; };
   size_t data_vectorPushExtend(T_sp val, size_t extension);
-CLASP_DEFMETHOD  void load_time_value_array_setf(size_t index, T_sp object ) { this->_Objects[index] = object;};
+CL_DEFMETHOD  void load_time_value_array_setf(size_t index, T_sp object ) { this->_Objects[index] = object;};
   // -------- Symbols storage
 
 //  void symbols_setFillPointer(uint i);

@@ -58,9 +58,9 @@ namespace core {
     void setf(T_sp key, T_sp val);
     void setfEqual(T_sp key, T_sp val);
     CL_LISPIFY_NAME("map_size");
-    CLASP_DEFMETHOD   int size() const { return this->map.size(); };
+    CL_DEFMETHOD   int size() const { return this->map.size(); };
     CL_LISPIFY_NAME("map_capacity");
-    CLASP_DEFMETHOD   int capacity() const { return this->map.capacity(); };
+    CL_DEFMETHOD   int capacity() const { return this->map.capacity(); };
 
     DEFAULT_CTOR_DTOR(SmallMap_O);
   };
