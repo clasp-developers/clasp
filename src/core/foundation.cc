@@ -432,6 +432,19 @@ CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
   return p->intern(SimpleBaseString_O::make(sym));
 }
 
+CL_LAMBDA("name")
+CL_DOCSTRING(R"(Disassemble and intern the package:name)")
+DOCGROUP(clasp)
+CL_DEFUN T_mv core__magic_disassemble_and_intern(const string& name)
+{
+  std::string sym;
+  std::string pkg;
+  colon_split(name,pkg,sym);
+  Package_sp p = gc::As<Package_sp>(_lisp->findPackage(pkg));
+  p->intern(SimpleBaseString_O::make(sym));
+  return Values(SimpleBaseString_O::make(pkg),SimpleBaseString_O::make(sym));
+}
+
 
 /*!
 * Arguments

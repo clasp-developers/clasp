@@ -118,9 +118,9 @@ struct KeyValuePair {
     KeyValuePair* rehash_no_lock(bool expandTable, T_sp findKey);
     KeyValuePair* rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
     CL_LISPIFY_NAME("hash-table-buckets");
-//    CLASP_DEFMETHOD ComplexVector_T_sp hash_table_buckets() const { return this->_HashTable; };
+//    CL_DEFMETHOD ComplexVector_T_sp hash_table_buckets() const { return this->_HashTable; };
     CL_LISPIFY_NAME("hash-table-shared-mutex");
-    CLASP_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return nil<T_O>(); };
+    CL_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return nil<T_O>(); };
 //    void set_thread_safe(bool thread_safe);
   public: // Functions here
     virtual bool is_eq_hashtable() const { return false;}

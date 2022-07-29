@@ -46,7 +46,7 @@ public:
   void _setInstanceClassUsingSymbol(core::Symbol_sp classSymbol);
 public:
 CL_LISPIFY_NAME("validp");
-CLASP_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
+CL_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
   virtual size_t templatedSizeof() const override { SUBIMP(); };
   virtual bool eql_(core::T_sp obj) const override;
   virtual void *mostDerivedPointer() const {

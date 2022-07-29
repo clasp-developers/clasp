@@ -71,7 +71,7 @@ public: // Functions here
   string parentPathName() const;
   string namestring() const;
 CL_LISPIFY_NAME("FileScope-pathname");
-CLASP_DEFMETHOD   Pathname_sp pathname() const { return this->_pathname; };
+CL_DEFMETHOD   Pathname_sp pathname() const { return this->_pathname; };
   const char *permanentPathName();
   const char *permanentFileName();
   string __repr__() const override;
@@ -124,9 +124,9 @@ public:
   T_sp _FunctionScope;
   T_sp _InlinedAt;
   //	Function_sp 	_Expander;
-  CLASP_DEFMETHOD size_t source_file_pos_filepos() const { return this->_Filepos;}
-  CLASP_DEFMETHOD size_t source_file_pos_lineno() const { return this->_Lineno;}
-  CLASP_DEFMETHOD size_t source_file_pos_column() const { return this->_Column;}
+  CL_DEFMETHOD size_t source_file_pos_filepos() const { return this->_Filepos;}
+  CL_DEFMETHOD size_t source_file_pos_lineno() const { return this->_Lineno;}
+  CL_DEFMETHOD size_t source_file_pos_column() const { return this->_Column;}
   SourcePosInfo_sp source_pos_info_copy() const;
   T_sp setf_source_pos_info_inlined_at(T_sp inlinedAt);
   T_sp source_pos_info_inlined_at() const;

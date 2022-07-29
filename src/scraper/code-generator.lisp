@@ -49,13 +49,13 @@
                       collect (first pt)
                       finally (setf tail pt))))
 
-(defun group-expose-functions-by-namespace (functions)
+(defun group-expose-functions-by-namespace (all-functions)
   (declare (optimize (speed 3)))
   (let ((ns-hashes (make-hash-table :test #'equal)))
-    (dolist (func functions)
+    (dolist (func all-functions)
       (let* ((namespace (namespace% func))
              (ns-ht (gethash namespace ns-hashes (make-hash-table :test #'equal))))
-        (setf (gethash (lisp-name% func) ns-ht) func)
+        (setf (gethash (cons (class-of func) (lisp-name% func)) ns-ht) func)
         (setf (gethash namespace ns-hashes) ns-ht)))
     ns-hashes))
 
@@ -99,21 +99,23 @@
              (format sout "NOINLINE void ~a() {~%" name)
              (etypecase f
                (expose-defun
-                (format sout "  /* expose-defun */ expose_function(~a,&~a::~a,~s);~%"
+                (format sout "  /* expose-defun ~s */ expose_function(~s,&~a::~a,~s);~%"
                         (lisp-name% f)
+                        (function-method-name-key (lisp-name% f))
                         ns
                         (function-name% f)
                         (maybe-wrap-lambda-list (lambda-list% f))))
                (expose-defun-setf
-                (format sout "  /* expose-defun-setf */ expose_function_setf(~a,&~a::~a,~s);~%"
+                (format sout "  /* expose-defun-setf ~s */ expose_function_setf(~s,&~a::~a,~s);~%"
                         (lisp-name% f)
+                        (function-method-name-key (lisp-name% f))
                         ns
                         (function-name% f)
                         (maybe-wrap-lambda-list (lambda-list% f))))
                (expose-extern-defun
                 (format sout "  // ~a~%" (file-line f))
-                (format sout "  /* expose-extern-defun */ expose_function(~a,~a,~s);~%"
-                        (lisp-name% f)
+                (format sout "  /* expose-extern-defun */ expose_function(~s,~a,~s);~%"
+                        (function-method-name-key (lisp-name% f))
                         (pointer% f)
                         (if (lambda-list% f)
                             (maybe-wrap-lambda-list (lambda-list% f))
@@ -173,7 +175,12 @@
          (helper-name (format nil "source_info_~d_helper" idx)))
     (format sout "NOINLINE void source_info_~d_helper() {~%" idx)
     (format sout "  define_source_info(~a, ~a, ~s, ~d, ~d, ~a);~%"
-            kind lisp-name (namestring logical-path) char-offset line all-docstring)
+            kind
+            (cond
+              ((typep lisp-name 'function-method-name)
+               (format nil "~s" (function-method-name-key lisp-name)))
+              (t lisp-name))
+            (namestring logical-path) char-offset line all-docstring)
     (unless (or (null minimal-translation)
                 (gethash minimal-translation *translations*))
       (setf (gethash minimal-translation *translations*) t)
@@ -234,6 +241,12 @@
                                  (length buffer))
                          (princ buffer sout))
                        tags-data-ht)))))
+
+(defun generate-expose-methods (stream sorted-classes)
+  (let ((partitions (partition-list sorted-classes *batch-classes*)))
+    (loop for partition in partitions
+          for batch-num from 1
+          do (generate-expose-methods-batch stream partition batch-num))))
 
 (defun generate-code-for-init-functions (all-functions)
   (declare (optimize (speed 3)))
@@ -783,21 +796,11 @@ public:
                 (tags:namespace% class-tag) (tags:name% class-tag)))))
   (format stream "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
 
-(defun generate-expose-instance-method (stream method class-tag)
-  (format stream "// ~a~%" (file-line method))
-  (let* ((lisp-name (lisp-name% method))
-         (lambda-list (lambda-list% method))
-         (declare-form (declare% method)))
-    (format stream "        .def(~a,~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
-            lisp-name
-            (if (typep method 'expose-defmethod)
-                (format nil "&~a::~a"
-                        (tags:name% class-tag) (method-name% method))
-                (pointer% method))
-            (if (string/= lambda-list "")
-                (format nil "(~a)" lambda-list)
-                lambda-list)
-            declare-form)))
+(defun build-names (lisp-name best-lisp-name)
+  (if (string= (function-method-name-key lisp-name)
+               (function-method-name-key best-lisp-name))
+      (format nil "core::names_(~s)" (function-method-name-key lisp-name))
+      (format nil "core::names_(~s,~s)" (function-method-name-key lisp-name) (function-method-name-key best-lisp-name))))
 
 (defun generate-expose-class-method (stream class-method class-tag)
   (if (typep class-method 'expose-def-class-method)
@@ -807,11 +810,27 @@ public:
              (lambda-list (lambda-list% class-method))
              (declare-form (declare% class-method)))
         (declare (ignore declare-form))
-        (format stream " expose_function(~a,&~a::~a,R\"lambda(~a)lambda\");~%"
-                lisp-name
+        (format stream " expose_function(~s,&~a::~a,R\"lambda(~a)lambda\");~%"
+                (function-method-name-key lisp-name)
                 class-name
                 method-name
                 (maybe-wrap-lambda-list lambda-list)))))
+
+(defun generate-expose-instance-method (stream method class-tag)
+  (format stream "// ~a~%" (file-line method))
+  (let* ((lisp-name (lisp-name% method))
+         (lambda-list (lambda-list% method))
+         (declare-form (declare% method)))
+    (format stream "        .def(~a,~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
+            (build-names lisp-name (best-lisp-name% method))
+            (if (typep method 'expose-defmethod)
+                (format nil "&~a::~a"
+                        (tags:name% class-tag) (method-name% method))
+                (pointer% method))
+            (if (string/= lambda-list "")
+                (format nil "(~a)" lambda-list)
+                lambda-list)
+            declare-form)))
 
 (defun generate-expose-methods-batch (stream partition batch-num)
   (format stream "#ifdef BATCH~a~%" batch-num)
@@ -844,11 +863,42 @@ void ~a::expose_to_clasp() {
   (format stream "#endif //#ifdef EXPOSE_CLASSES_AND_METHODS~%")
   (format stream "#endif // BATCH~a~%" batch-num))
 
-(defun generate-expose-methods (stream sorted-classes)
-  (let ((partitions (partition-list sorted-classes *batch-classes*)))
-    (loop for partition in partitions
-          for batch-num from 1
-          do (generate-expose-methods-batch stream partition batch-num))))
+(defun generate-rename-methods (classes)
+  (with-output-to-string (sout)
+    (let ((renames (make-hash-table :test 'equal)))
+      (maphash (lambda (name exposed-class)
+                 (declare (ignore name))
+                 (when (is-exposed-class exposed-class)
+                   (dolist (method (methods% exposed-class))
+                     (let* ((lisp-name (lisp-name% method))
+                            (best-lisp-name (best-lisp-name% method)))
+                       (when (not (string= (function-method-name-key lisp-name)
+                                           (function-method-name-key best-lisp-name)))
+                         (push method (gethash (function-method-name-key lisp-name) renames)))))))
+               classes)
+      (let (easy-renames hard-renames)
+        (maphash (lambda (name methods)
+                   (if (> (length methods) 1)
+                       (push (cons name methods) hard-renames)
+                       (push (cons name (first methods)) easy-renames)))
+                 renames)
+        (format sout "((:easy-renames~%")
+        (let ((sorted-easy-renames (sort easy-renames (lambda (x y) (> (length x) (length y))) :key #'car)))
+          (loop for pair in sorted-easy-renames
+                for name = (car pair)
+                for method = (cdr pair)
+                do (format sout "( ~s ~s )~%" (string-downcase name) (string-downcase (function-method-name-key (best-lisp-name% method))))))
+        (format sout ")~%")
+        (format sout "(:hard-renames~%")
+        (loop for pair in hard-renames
+              for name = (car pair)
+              for methods = (cdr pair)
+              do (format sout "( ~s~%" (string-downcase name))
+              do (loop for method in methods
+                       do (format sout "    ~s~%" (string-downcase (function-method-name-key (best-lisp-name% method)))))
+              do (format sout " )~%")
+              )
+        (format sout "))~%")))))
 
 (defun generate-code-for-init-classes-and-methods
     (exposed-classes gc-managed-types)
@@ -1408,21 +1458,24 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
           (loop for header in sorted-header-list
                 do (format sout "#include \"~a\"~%" header)))))))
 
-(defun generate-code (packages-to-create functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config forwards &key use-precise)
-  (let ((header-includes (generate-class-header-includes classes))
-        (init-functions (generate-code-for-init-functions functions))
-        (init-classes-and-methods (generate-code-for-init-classes-and-methods classes gc-managed-types))
-        (source-info (generate-code-for-source-info functions classes))
-        (symbol-info (generate-code-for-symbols packages-to-create symbols))
-        (enum-info (generate-code-for-enums enums))
-        (startups-info (generate-code-for-startups startups))
-        (initializers-info (generate-code-for-initializers initializers))
-        (exposes-info (generate-code-for-exposes exposes))
-        (terminators-info (generate-code-for-terminators terminators))
-        (gc-code-info (when use-precise (generate-gc-code classes gc-managed-types forwards))))
+(defun generate-code (packages-to-create normal-functions setf-functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config forwards &key use-precise)
+  (let* ((all-functions (append normal-functions setf-functions))
+         (header-includes (generate-class-header-includes classes))
+         (init-functions (generate-code-for-init-functions all-functions))
+         (rename-methods (generate-rename-methods classes))
+         (init-classes-and-methods (generate-code-for-init-classes-and-methods classes gc-managed-types))
+         (source-info (generate-code-for-source-info all-functions classes))
+         (symbol-info (generate-code-for-symbols packages-to-create symbols))
+         (enum-info (generate-code-for-enums enums))
+         (startups-info (generate-code-for-startups startups))
+         (initializers-info (generate-code-for-initializers initializers))
+         (exposes-info (generate-code-for-exposes exposes))
+         (terminators-info (generate-code-for-terminators terminators))
+         (gc-code-info (when use-precise (generate-gc-code classes gc-managed-types forwards))))
     (write-if-changed header-includes build-path (safe-app-config :header_includes_inc_h app-config))
     (write-if-changed init-functions build-path (safe-app-config :init_functions_inc_h app-config))
     (write-if-changed init-classes-and-methods build-path (safe-app-config :init_classes_inc_h app-config))
+    (write-if-changed rename-methods build-path "generated/rename-methods.sexp")
     (write-if-changed source-info build-path (safe-app-config :source_info_inc_h app-config))
     (write-if-changed symbol-info build-path (safe-app-config :symbols_scraped_inc_h app-config))
     (write-if-changed enum-info build-path (safe-app-config :enum_inc_h app-config))
@@ -1433,7 +1486,7 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
     (when use-precise
       (write-if-changed gc-code-info build-path (safe-app-config :clasp_gc_filename app-config)))
     (multiple-value-bind (direct-call-c-code direct-call-cl-code c-code-info cl-code-info)
-        (generate-code-for-direct-call-functions functions)
+        (generate-code-for-direct-call-functions all-functions)
       (write-if-changed direct-call-c-code build-path (safe-app-config :c_wrappers app-config))
       (write-if-changed direct-call-cl-code build-path (safe-app-config :lisp_wrappers app-config))
       (write-if-changed c-code-info build-path (merge-pathnames (make-pathname :type "txt") (safe-app-config :c_wrappers app-config)))

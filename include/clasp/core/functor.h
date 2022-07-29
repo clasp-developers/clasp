@@ -126,7 +126,7 @@ fields at the same offset as Instance_O.
  public:
   // Accessors
    EntryPointBase_O(FunctionDescription_sp fdesc) : _FunctionDescription(fdesc) {  };
-   CLASP_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
+   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
    virtual Pointer_sp defaultEntryAddress() const;
  };
 
@@ -143,7 +143,7 @@ fields at the same offset as Instance_O.
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(("Subclass must implement")); };
    void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
-   CLASP_DEFMETHOD T_sp EntryPoint_code() const { return this->_Code; };
+   CL_DEFMETHOD T_sp EntryPoint_code() const { return this->_Code; };
  };
 
  FORWARD(LocalEntryPoint);
@@ -318,24 +318,24 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
 
 
     CL_LISPIFY_NAME("core:entry-point");
-    CLASP_DEFMETHOD T_sp entryPoint() const {
+    CL_DEFMETHOD T_sp entryPoint() const {
       return this->_EntryPoint.load();
     }
     
     CL_LISPIFY_NAME("core:functionName");
-    CLASP_DEFMETHOD virtual T_sp functionName() const {
+    CL_DEFMETHOD virtual T_sp functionName() const {
       return this->fdesc()->functionName();
     }
-    CLASP_DEFMETHOD void setf_functionName(T_sp name) {
+    CL_DEFMETHOD void setf_functionName(T_sp name) {
       this->fdesc()->setf_functionName(name);
     }
     T_sp docstring() const {
       return this->fdesc()->docstring();
     }
-    CLASP_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
+    CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
       this->fdesc()->setf_lambdaList(lambda_list);
     }
-    CLASP_DEFMETHOD T_sp sourcePathname() const {
+    CL_DEFMETHOD T_sp sourcePathname() const {
       return this->fdesc()->sourcePathname();
     }
     void setf_sourcePathname(T_sp sourceFileName) const {
@@ -370,7 +370,7 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return nil<T_O>(); };
-    CLASP_DEFMETHOD T_sp functionLambdaListHandler() const {
+    CL_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
     }
     virtual T_sp closedEnvironment() const {SUBIMP();};
@@ -492,12 +492,12 @@ namespace core {
         return nil<T_O>();
       };
     }
-    CLASP_DEFMETHOD T_sp interpretedSourceCode();
-    CLASP_DEFMETHOD T_sp closedEnvironment() const override {
+    CL_DEFMETHOD T_sp interpretedSourceCode();
+    CL_DEFMETHOD T_sp closedEnvironment() const override {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT];
     };      
-    CLASP_DEFMETHOD T_O*& closedEnvironment_rawRef() {
+    CL_DEFMETHOD T_O*& closedEnvironment_rawRef() {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT].rawRef_();
     };      

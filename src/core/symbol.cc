@@ -645,10 +645,9 @@ string Symbol_O::fullName() const {
   return formattedName;
 }
 
-CL_LISPIFY_NAME("core:fullName");
 CL_LAMBDA(symbol)
 DOCGROUP(clasp)
-CL_DEFUN string core__fullname(Symbol_sp symbol){
+CL_DEFUN string core__fullName(Symbol_sp symbol){
   return symbol->fullName();
 }
 

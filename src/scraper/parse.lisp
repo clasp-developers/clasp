@@ -240,17 +240,18 @@ into two lists (int int string) and (a b c) and return as two values"
 :: maybe-magic-name - A string
 * Description
 If the string contains core::magic_name then transform it into a
-CL call to (core:magic-name ...)"
-  (let ((magic-pos (search "core::magic_name" maybe-magic-name)))
+CL call to (core:magic-intern ...)"
+  (format nil "(core:magic-disassemble-and-intern ~s #|maybe-fix-magic-name3|#)" (function-method-name-key maybe-magic-name))
+  #+(or)(let ((magic-pos (search "core::magic_name" maybe-magic-name)))
     (if magic-pos
         (let* ((open-paren (position #\( maybe-magic-name))
                (close-paren (position #\) maybe-magic-name))
                (args (subseq maybe-magic-name (1+ open-paren) close-paren))
                (comma-pos (position #\, args)))
           (if comma-pos
-              (format nil "(core:magic-intern ~a ~a)" (subseq args 0 comma-pos) (subseq args (1+ comma-pos) nil))
-              (format nil "(core:magic-intern ~a)" args)))
-        (format nil "(core:magic-intern ~a)" maybe-magic-name))))
+              (format nil "(core:magic-disassemble-and-intern ~a ~a #|maybe-fix-magic-name1|#)" (subseq args 0 comma-pos) (subseq args (1+ comma-pos) nil))
+              (format nil "(core:magic-disassemble-and-intern ~a #|maybe-fix-magic-name2|#)" args)))
+        (format nil "(core:magic-disassemble-and-intern ~a #|maybe-fix-magic-name3|#)" maybe-magic-name))))
 
 (defstruct ptr-name-struct ptr-name)
 (defstruct argument-struct type name)

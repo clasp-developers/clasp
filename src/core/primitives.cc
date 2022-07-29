@@ -921,12 +921,12 @@ CL_DEFUN bool core__symbol_constantp(Symbol_sp symbol) {
   return symbol->getReadOnly();
 }
 
-CL_LISPIFY_NAME("core:symbol-constantp");
+CL_LISPIFY_NAME("CORE:symbol-constantp");
 CL_LAMBDA(value symbol)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Set whether SYMBOL is known to be a constant. Use cautiously.)dx")
 DOCGROUP(clasp)
-CL_DEFUN_SETF T_sp setf_symboL_constantp(T_sp value, Symbol_sp symbol) {
+CL_DEFUN_SETF T_sp setf_symbol_constantp(T_sp value, Symbol_sp symbol) {
   symbol->setReadOnly(value.notnilp());
   return value;
 }
