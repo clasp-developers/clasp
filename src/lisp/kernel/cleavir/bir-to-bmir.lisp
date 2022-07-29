@@ -115,6 +115,8 @@
                        (every #'subtypep types1 types2)))
                 :key #'cdr)))
 
+(deftransform symbol-value symbol-value symbol)
+
 (deftransform core:to-single-float core::double-to-single double-float)
 (deftransform core:to-single-float core::fixnum-to-single fixnum)
 (deftransform core:to-double-float core::single-to-double single-float)
