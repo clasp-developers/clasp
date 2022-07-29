@@ -288,6 +288,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; (10) SYMBOLS
+
+(define-deriver symbolp (object)
+  (derive-type-predicate object 'symbol *clasp-system*))
+(define-deriver keywordp (object)
+  (derive-type-predicate object 'keyword *clasp-system*))
+
+;;; Note that this will apply to the primop as well as to the function.
+;;; That's important since it lets the compiler know that it's exactly one value.
+(define-deriver symbol-value (symbol)
+  (declare (ignore symbol))
+  (let ((sys *clasp-system*))
+    (ctype:single-value (ctype:top sys) sys)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; (12) NUMBERS
 
 (defun contagion (ty1 ty2)
@@ -679,8 +695,8 @@
                      (if above
                          (interval-reciprocal-+ above)
                          nil)))
-               (cond (rabove
-                      (interval->range
+               (cond (rabove 
+                     (interval->range
                        (if rbelow
                            (interval-merge rbelow rabove)
                            rabove)
