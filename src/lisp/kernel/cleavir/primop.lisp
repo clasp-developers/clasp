@@ -364,10 +364,20 @@
     ((:fixnum :fixnum) :fixnum :fixnum) (inst)
   (let* ((arg1 (in (first (bir:inputs inst))))
          (arg2 (in (second (bir:inputs inst))))
+         ;; The LLVM reference doesn't say this very well, but sdiv and srem
+         ;; both round towards zero.
+         ;; Note that both sdiv and srem are undefined for
+         ;; most-negative-fixnum/-1 as that would overflow.
+         ;; They're also undefined for zero divisors. Don't do these things.
          (quo (cmp:irc-sdiv arg1 arg2))
          (tquo (cmp:irc-shl quo cmp:+fixnum-shift+ :nsw t))
          (rem (cmp:irc-srem arg1 arg2)))
     (list tquo rem)))
+(defvprimop (core::fixnum-rem :flags (:flushable))
+    ((:fixnum) :fixnum :fixnum) (inst)
+  (let* ((arg1 (in (first (bir:inputs inst))))
+         (arg2 (in (second (bir:inputs inst)))))
+    (cmp:irc-srem arg1 arg2)))
 
 (macrolet ((def-fixnum-compare (name op)
              `(progn

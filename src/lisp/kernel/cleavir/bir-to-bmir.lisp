@@ -167,6 +167,22 @@
 (deftransform atanh core::sf-atanh (single-float (-1f0) (1f0)))
 (deftransform atanh core::df-atanh (double-float (-1d0) (1d0)))
 
+;;; When both dividend and divisor are positive, MOD and REM coincide,
+;;; as do FLOOR and TRUNCATE.
+(deftransform truncate core::fixnum-truncate
+  fixnum (integer 1 #.most-positive-fixnum))
+(deftransform truncate core::fixnum-truncate
+  ;; -2 because most-negative-fixnum/-1 would overflow
+  fixnum (integer #.most-negative-fixnum -2))
+(deftransform floor core::fixnum-truncate
+  (integer 0 #.most-positive-fixnum) (integer 1 #.most-positive-fixnum))
+(deftransform mod core::fixnum-rem
+  (integer 0 #.most-positive-fixnum) (integer 1 #.most-positive-fixnum))
+(deftransform rem core::fixnum-rem
+  fixnum (integer 1 #.most-positive-fixnum))
+(deftransform rem core::fixnum-rem
+  fixnum (integer #.most-negative-fixnum -2))
+
 (deftransform lognot core::fixnum-lognot fixnum)
 
 (macrolet ((deflog2 (name primop)
