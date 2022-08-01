@@ -473,7 +473,7 @@ CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, Vaslist_sp indices) {
 }
 
 
-CL_LISPIFY_NAME("CL:rowMajorAref");
+CL_LISPIFY_NAME("cl:RowMajorAref");
 DOCGROUP(clasp)
 CL_DEFUN_SETF T_sp core__rowMajorAset(T_sp value, Array_sp array, gc::Fixnum idx)
 {
