@@ -1143,6 +1143,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (fmt::sprintf("DEBUG_VERIFY_MODULES = %s\n" , (debug_verify_modules ? "**DEFINED**" : "undefined")));
 
+  bool debug_verify_transformations = false;
+#ifdef DEBUG_VERIFY_TRANSFORMATIONS
+  debug_verify_transformations = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-VERIFY-TRANSFORMATIONS"), features);
+#endif
+  if (buildReport) ss << (fmt::sprintf("DEBUG_VERIFY_TRANSFORMATIONS = %s\n" , (debug_verify_transformations ? "**DEFINED**" : "undefined")));
+
   bool debug_assert_type_cast = false;
 #ifdef DEBUG_ASSERT_TYPE_CAST
   debug_assert_type_cast = true;

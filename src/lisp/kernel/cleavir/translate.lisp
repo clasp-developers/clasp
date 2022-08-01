@@ -2156,7 +2156,7 @@ COMPILE-FILE will use the default *clasp-env*."
 ;;; which case they'll happen after the given transformation.
 ;;; *verify-transformations* will just run the verifier.
 ;;; *display-transformations* will dump a BIR disassembly and BREAK.
-(defvar *verify-transformations* t)
+(defvar *verify-transformations* (and (member :debug-verify-transformations *features*) t))
 (defvar *display-transformations* nil)
 
 (defun maybe-debug-transformation (module key)

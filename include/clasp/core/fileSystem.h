@@ -61,7 +61,7 @@ public:
 public:
 
 CL_LISPIFY_NAME("isAbsolute");
-CLASP_DEFMETHOD   bool isAbsolute() const { return this->_Path._value.is_absolute(); };
+CL_DEFMETHOD   bool isAbsolute() const { return this->_Path._value.is_absolute(); };
 
   Path_sp copyPath() const;
 

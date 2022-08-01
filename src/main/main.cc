@@ -77,6 +77,7 @@ THE SOFTWARE.
 #endif
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/gctools/gctoolsPackage.h>
@@ -335,9 +336,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     core::global_initialize_builtin_classes = false;
   }
   
-  // Create the one global CommandLineOptions object and do some minimal argument processing
-  core::global_options = new core::CommandLineOptions(argc, argv);
-  
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
     printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
     stringstream ss;
@@ -382,11 +380,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   extern const char __attribute__((weak)) SNAPSHOT_END;
   start_of_snapshot = (void*)&SNAPSHOT_START;
   end_of_snapshot = (void*)&SNAPSHOT_END;
-  if (start_of_snapshot) {
-      printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
-  } else {
-      printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
-  }
 #  endif
 #else
   void* start_of_snapshot = NULL;
@@ -522,6 +515,9 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
+  if (getenv("CLASP_TIME_EXIT")) {
+    atexit(core::last_exit);
+  }
   const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
   if (dof) {
     if (strcmp(dof,"save")==0) {

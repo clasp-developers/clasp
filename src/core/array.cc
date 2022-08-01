@@ -550,7 +550,6 @@ CL_DEFUN size_t core__fillPointerSet(Array_sp vector, size_t idx)
   return idx;
 }
 
-CL_NAME("CL:FILL-POINTER");
 DOCGROUP(clasp)
 CL_DEFUN size_t cl__fillPointer(Array_sp vector)
 {
@@ -559,7 +558,6 @@ CL_DEFUN size_t cl__fillPointer(Array_sp vector)
 }
 
 
-CL_LISPIFY_NAME("cl:array-has-fill-pointer-p");
 DOCGROUP(clasp)
 CL_DEFUN bool cl__arrayHasFillPointerP(Array_sp array) {
   return array->arrayHasFillPointerP();
@@ -631,7 +629,7 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
   }
 }
 
-CL_LISPIFY_NAME("CL:aref");
+CL_LISPIFY_NAME("cl:aref"); // SETF symbol
 CL_LAMBDA(value array core:&va-rest indices)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(aset)dx")
@@ -666,7 +664,7 @@ CL_DEFUN T_sp cl__svref(SimpleVector_sp simple_vector, size_t idx)
   return simple_vector->rowMajorAref(idx);
 }
 
-CL_LISPIFY_NAME("CL:svref");
+CL_LISPIFY_NAME("cl:svref");
 DOCGROUP(clasp)
 CL_DEFUN_SETF T_sp core__setf_svref(T_sp val, SimpleVector_sp simple_vector, cl_index idx)
 {

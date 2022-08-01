@@ -14,9 +14,9 @@
     (format t "app-config-path    -> ~a~%" app-config-path)
     (let ((app-config (read-application-config app-config-path)))
       (format t "Interpreting tags~%")
-      (multiple-value-bind (packages-to-create functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators forwards)
+      (multiple-value-bind (packages-to-create functions setf-functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators forwards)
           (interpret-tags tags)
-        (generate-code packages-to-create functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators build-path app-config forwards :use-precise use-precise))
+        (generate-code packages-to-create functions setf-functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators build-path app-config forwards :use-precise use-precise))
       (format t "Done scraping code~%"))))
 (export 'process-all-sif-files)
 

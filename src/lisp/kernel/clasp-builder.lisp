@@ -234,7 +234,7 @@ Return files."
                   (apply #'cmp::compile-file-serial compile-file-arguments)
                   (let ((after-ms (get-internal-run-time))
                         (after-bytes (gctools:bytes-allocated)))
-                    (message :info "Time run({:.3f} secs) consed({} bytes)"
+                    (message :info "Compile time run({:.3f} secs) consed({} bytes)"
                              (float (/ (- after-ms before-ms) internal-time-units-per-second))
                              (- after-bytes before-bytes))))
                 (apply #'cmp::compile-file-serial compile-file-arguments))
@@ -320,29 +320,34 @@ Return files."
       (tagbody
        top
          (if (endp cur) (go done))
-         (compile-kernel-file (car cur)
+         (let ((*before-ms* (get-internal-run-time))
+               (*before-bytes* (gctools:bytes-allocated)))
+             (compile-kernel-file (car cur)
                               :reload reload
                               :output-type output-type
                               :position (gethash (car cur) file-order)
                               :total-files total
                               :print t
-                              :verbose t)
+                              :verbose t))
          (setq cur (cdr cur))
          (go top)
        done)))
 
+(defconstant +pjob-slots+ 7)
 (defconstant +done-of+ 0)
 (defconstant +pid-of+ 1)
 (defconstant +signals-of+ 2)
 (defconstant +entries-of+ 3)
 (defconstant +child-stdout-of+ 4)
 (defconstant +child-stderr-of+ 5)
+(defconstant +start-time-of+ 6)
 
 (defun setf-pjob-done (pjob value) (setf-elt pjob +done-of+ value))
 (defun setf-pjob-done (pjob value) (setf-elt pjob +done-of+ value))
 (defun setf-pjob-pid (pjob value) (setf-elt pjob +pid-of+ value))
 (defun setf-pjob-signals (pjob value) (setf-elt pjob +signals-of+ value))
 (defun setf-pjob-entries (pjob value) (setf-elt pjob +entries-of+ value))
+(defun setf-pjob-start-time (pjob value) (setf-elt pjob +start-time-of+ value))
 (defun setf-pjob-child-stdout (pjob value) (setf-elt pjob +child-stdout-of+ value))
 (defun setf-pjob-child-stderr (pjob value) (setf-elt pjob +child-stderr-of+ value))
 
@@ -352,17 +357,21 @@ Return files."
 (defun pjob-entries (pjob) (elt pjob +entries-of+)) 
 (defun pjob-child-stdout (pjob) (elt pjob +child-stdout-of+)) 
 (defun pjob-child-stderr (pjob) (elt pjob +child-stderr-of+)) 
+(defun pjob-start-time (pjob) (elt pjob +start-time-of+)) 
 
-(defun make-pjob (&key done pid signals entries child-stdout child-stderr)
-  (let ((pjob (make-array 6)))
+(defun make-pjob (&key done pid signals entries child-stdout child-stderr start-time)
+  (let ((pjob (make-array +pjob-slots+)))
     (setf-pjob-done pjob done)
     (setf-pjob-pid pjob pid)
     (setf-pjob-signals pjob signals)
     (setf-pjob-entries pjob entries)
     (setf-pjob-child-stdout pjob child-stdout)
     (setf-pjob-child-stderr pjob child-stderr)
+    (setf-pjob-start-time pjob start-time)
     pjob))
 
+(defvar *before-ms* 0)
+(defvar *before-bytes* 0)
 
                             
 (defun wait-for-child-to-exit (jobs)
@@ -505,6 +514,10 @@ Return files."
                                (message :err "wait returned for process {:d} status {:d}: exiting compile-system"
                                         wpid status))
                            (if reload (reload-some finished-entries))
+                           (let ((after-ms (get-internal-run-time))
+                                 (after-bytes (gctools:bytes-allocated)))
+                             (message :info "Parent time run({:.3f} secs)"
+                                      (float (/ (- after-ms (pjob-start-time pjob)) internal-time-units-per-second))))
                            (decf child-count))
                          (error "wait returned ~d  status ~d~%" wpid status))
                      (if (and (numberp wpid) (>= wpid 0))
@@ -517,6 +530,8 @@ Return files."
            (if entries
                (let ((child-stdout (core:mkstemp-fd "clasp-build-stdout"))
                      (child-stderr (core:mkstemp-fd "clasp-build-stderr")))
+                 (setq *before-ms* (get-internal-run-time)
+                       *before-bytes* (gctools:bytes-allocated))
                  (multiple-value-bind (maybe-error pid-or-error child-stream)
                      (core:fork-redirect child-stdout child-stderr)
                    (if maybe-error
@@ -542,22 +557,27 @@ Return files."
                                    (if fail
                                        (error "sigthreadmask has an error errno = ~a" errno))
                                    (finish-output)
-                                   (sleep 1)
-                                   (core:exit))))
+                                   (let ((after-ms (get-internal-run-time))
+                                         (after-bytes (gctools:bytes-allocated)))
+                                     (message :info "Child time run({:.3f} secs) consed({} bytes)"
+                                              (float (/ (- after-ms *before-ms*) internal-time-units-per-second))
+                                              (- after-bytes *before-bytes*)))
+                                   (sys:c_exit))))
                              (let ((one-pjob (make-pjob
                                               :done nil
                                               :pid pid
                                               :signals nil
                                               :entries entries
                                               :child-stdout child-stdout
-                                              :child-stderr child-stderr)))
+                                              :child-stderr child-stderr
+                                              :start-time *before-ms*)))
                                (started-some entries pid)
                                (core:hash-table-setf-gethash jobs pid one-pjob)
                                (incf child-count))))))))
            (if (> child-count 0) (go top)))))))
 
 (defun parallel-build-p ()
-  (and core:*use-parallel-build* (> *number-of-jobs* 1)))
+  core:*use-parallel-build*)
 
 (defun compile-system (&rest args)
   (apply (if (parallel-build-p)
