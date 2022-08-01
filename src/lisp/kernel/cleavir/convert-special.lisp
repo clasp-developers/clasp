@@ -102,7 +102,14 @@
                             (error "Required parameter of type ~s not provided"
                                    ',ty))
                  collect (one reqv ty))
-         ,@(mapcar #'one optvars opt)
+         ,@(loop for optv in optvars
+                 for -p in optp
+                 for ty in opt
+                 ;; Our default is NIL, so if the type includes NIL we don't need
+                 ;; to check the presence, but otherwise we do.
+                 collect (if (ctype:disjointp ty 'null system)
+                             `(when ,-p ,(one optv ty))
+                             (one optv ty)))
          ,@(cond (rest-top-p nil)
                  (rest-bot-p
                   `((when ,restvar
