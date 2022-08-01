@@ -86,21 +86,29 @@
          (optp (loop repeat lopt collect (gensym "CHECKED-PRESENT-P")))
          (restvar (gensym "REST")))
     (flet ((one (var type)
-           `(unless (typep ,var ',(discrimination-type type))
-              (error 'type-error :datum ,var :expected-type ',type)))
+             (let ((dtype (discrimination-type type)))
+               `(unless (typep ,var ',dtype)
+                  ;; We use the discrimination type in the error as well.
+                  ;; The ANSI tests expect to be able to use it as a discrimination
+                  ;; type, and we might as well comply.
+                  (error 'type-error :datum ,var :expected-type ',dtype))))
            (mash (var -p) `(,var nil ,-p)))
       `(lambda (&optional ,@(mapcar #'mash reqvars reqp)
                   ,@(mapcar #'mash optvars optp)
                 &rest ,restvar)
          (declare (core:lambda-name ,(make-symbol (format nil "~a-CHECKER" ctype)))
+                  (ignorable ,@reqp)
                   (optimize (safety 0)))
          ,@(loop for reqv in reqvars
                  for -p in reqp
                  for ty in req
-                 ;; FIXME: Better error
-                 collect `(unless ,-p
-                            (error "Required parameter of type ~s not provided"
-                                   ',ty))
+                 ;; If the type doesn't include NIL, we can skip checking -p since
+                 ;; the type check will be (typep nil whatever) which will fail.
+                 unless (ctype:disjointp ty 'null system)
+                   ;; FIXME: Better error
+                   collect `(unless ,-p
+                              (error "Required parameter of type ~s not provided"
+                                     ',ty))
                  collect (one reqv ty))
          ,@(loop for optv in optvars
                  for -p in optp
@@ -132,8 +140,9 @@
 
 (defun make-type-check-fun (context ctype system)
   (flet ((one (var type)
-           `(unless (typep ,var ',(discrimination-type type))
-              (error 'type-error :datum ,var :expected-type ',type))))
+           (let ((dtype (discrimination-type type)))
+             `(unless (typep ,var ',dtype)
+                (error 'type-error :datum ,var :expected-type ',dtype)))))
     (ecase context
       ((:variable)
        (let ((var (gensym "CHECKED")))

@@ -194,7 +194,9 @@
                 macroexpand macroexpand-1)
          (ftype (function (declaration-specifier) *) proclaim)
          (ftype (sfunction (symbol) t) special-operator-p)
-         (ftype (sfunction (form &optional environment) t) constantp))
+         ;; Although technically constantp is specified to take a form, in practice
+         ;; it can get called on some unevaluable things, and the ansi tests do this.
+         (ftype (sfunction (t &optional environment) t) constantp))
 
 ;;; Chapter 4 Types and Classes
 
@@ -723,8 +725,10 @@
                             (:junk-allowed t))
                            (values (maybe pathname) sequence-index))
                 parse-namestring)
-         (ftype (sfunction (pathname-designator
-                            &optional (member :host :device :directory :name :type nil))
+         ;; See note on set-pprint-dispatch for why arg1 is not pathname-designator.
+         (ftype (sfunction (t
+                            &optional (member :host :device :directory :name :type
+                                              :version nil))
                            t)
                 wild-pathname-p)
          (ftype (sfunction (pathname-designator pathname-designator) t) pathname-match-p)
@@ -831,20 +835,26 @@
                 pprint-fill pprint-linear)
          (ftype (sfunction (stream-designator t &optional t t (integer 0)) null)
                 pprint-tabular)
-         (ftype (sfunction ((member :block :current) real &optional stream-designator)
-                           null)
+         ;; First argument would be (member :block :current), except see
+         ;; SET-PPRINT-DISPATCH below.
+         (ftype (sfunction (t real &optional stream-designator) null)
                 pprint-indent)
-         (ftype (sfunction ((member :linear :fill :miser :mandatory)
-                            &optional stream-designator)
-                           null)
+         ;; ditto with (member :linear :fill :miser :mandatory)
+         (ftype (sfunction (t &optional stream-designator) null)
                 pprint-newline)
-         (ftype (sfunction ((member :line :section :line-relative :section-relative)
-                            (integer 0) (integer 0) &optional stream-designator)
+         ;; ditto (member :line :section :line-relative :section-relative)
+         (ftype (sfunction (t (integer 0) (integer 0) &optional stream-designator)
                            null)
                 pprint-tab)
          (ftype (sfunction (t stream) t) print-object)
+         ;; The third argument could be REAL, except that this function is specified
+         ;; to signal an error if it's not, _regardless of safety level_. At safety 0,
+         ;; if it can determine that the input is not a REAL, it may just dump in an
+         ;; unsafe unreachability marker.
+         ;; FIXME: It might be preferable to instead keep the error even in
+         ;; unreachable code - it means increased code size, but eh.
          (ftype (sfunction (type-specifier (or function function-name null)
-                                           &optional real pprint-dispatch-table)
+                                           &optional t pprint-dispatch-table)
                            null)
                 set-pprint-dispatch)
          (ftype (write-function t) write)

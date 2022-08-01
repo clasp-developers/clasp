@@ -54,11 +54,12 @@ Destructive UNION.  Both LIST1 and LIST2 may be destroyed."
 (defun adjoin (item list &key key (test #'eql) test-not)
   "Add ITEM to LIST unless it is already a member."
   (declare (optimize safety))
-  (when test-not
-    (setq test (complement test-not)))
-  (if (member (apply-key key item) list :key key :test test)
-      list
-    (cons item list)))
+  (let ((test (if test-not
+                  (complement (coerce-fdesignator test-not))
+                  (coerce-fdesignator test))))
+    (if (member (apply-key key item) list :key key :test test)
+        list
+        (cons item list))))
 
 
 (defun intersection (list1 list2 &key test test-not key)
