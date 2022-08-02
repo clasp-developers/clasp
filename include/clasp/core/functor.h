@@ -18,7 +18,7 @@ namespace core {
   FORWARD(GlobalEntryPoint);
   FORWARD(LocalEntryPoint);
   FORWARD(Function);
-  FORWARD(Closure);
+  FORWARD(ClosureBase);
   FORWARD(BuiltinClosure);
   FORWARD(ClosureWithSlots);
 };
@@ -392,45 +392,20 @@ namespace core {
 SMART(LambdaListHandler);
 };
 
-template <>
-struct gctools::GCInfo<core::Closure_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
-  /*! Closure_O
-   *  Can have an environment associated with it 
-   */
-class Closure_O : public Function_O {
-    LISP_CLASS(core,CorePkg,Closure_O,"Closure",Function_O);
-public:
-  CLASP_DEFAULT_CTOR Closure_O() {};
-public:
-  Closure_O(GlobalEntryPoint_sp ep ) : Base(ep) {};
-  public:
-    virtual const char *describe() const override { return "Closure"; };
-    void describeFunction() const;
-  };
-};
-
-
 namespace core {
 //#define SOURCE_INFO_PASS sourceFileInfoHandle, filePos, lineno, column
   
-  class BuiltinClosure_O : public Closure_O {
-    LISP_CLASS(core,CorePkg,BuiltinClosure_O,"BuiltinClosure",Closure_O);
+  class BuiltinClosure_O : public Function_O {
+    LISP_CLASS(core,CorePkg,BuiltinClosure_O,"BuiltinClosure",Function_O);
   public:
     CLASP_DEFAULT_CTOR BuiltinClosure_O() {};
-
   public:
     LambdaListHandler_sp _lambdaListHandler;
   public:
   BuiltinClosure_O(GlobalEntryPoint_sp ep)
-    : Closure_O(ep), _lambdaListHandler(unbound<LambdaListHandler_O>())  {};
+    : Function_O(ep), _lambdaListHandler(unbound<LambdaListHandler_O>())  {};
   BuiltinClosure_O(GlobalEntryPoint_sp ep, LambdaListHandler_sp llh)
-    : Closure_O(ep), _lambdaListHandler(llh)  {};
+    : Function_O(ep), _lambdaListHandler(llh)  {};
     void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
     }
@@ -447,10 +422,14 @@ namespace core {
 
 namespace core {
 
-  class ClosureWithSlots_O final : public core::BuiltinClosure_O::BuiltinClosure_O::Closure_O {
-    LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::Closure_O);
-    typedef enum { interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
+  class ClosureWithSlots_O final : public core::Function_O {
+    LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::Function_O);
+    typedef enum { bytecodeClosure, interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
 #define ENVIRONMENT_SLOT 0
+#define BYTECODE_CLOSURE_SLOTS 3
+#define BYTECODE_CLOSURE_ENTRY_INDEX_SLOT 0
+#define BYTECODE_CLOSURE_MODULE_SLOT      1
+#define BYTECODE_CLOSURE_LAMBDA_LIST_HANDLER_SLOT 2
 #define INTERPRETED_CLOSURE_SLOTS  3
 #define INTERPRETED_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
 #define INTERPRETED_CLOSURE_FORM_SLOT 1
@@ -470,9 +449,11 @@ namespace core {
     };
   public:
     static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column);
-    
+
+    static ClosureWithSlots_sp make_bytecode_closure(T_sp name, T_sp bytecodeModule, T_sp functionIndex,  size_t closedOverSlots, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column);
+
     static ClosureWithSlots_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint);
-    
+
     static ClosureWithSlots_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column );
   public:
     ClosureWithSlots_O(size_t capacity,
@@ -486,6 +467,8 @@ namespace core {
       switch (this->closureType) {
       case interpretedClosure:
         return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
+      case bytecodeClosure:
+        return (*this)[BYTECODE_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
       case bclaspClosure:
         return nil<T_O>();
       case cclaspClosure:
@@ -496,7 +479,7 @@ namespace core {
     CL_DEFMETHOD T_sp closedEnvironment() const override {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT];
-    };      
+    };
     CL_DEFMETHOD T_O*& closedEnvironment_rawRef() {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT].rawRef_();
@@ -525,7 +508,7 @@ namespace core {
 };
 
 namespace core {
-  void core__closure_slots_dump(Closure_sp func);
+  void core__closure_slots_dump(Function_sp func);
 
 };
 

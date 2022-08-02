@@ -170,7 +170,7 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, cor
 //  printf("%s:%d:%s  closureRaw = %p\n", __FILE__, __LINE__, __FUNCTION__, closureRaw);
   core::T_O* parentP;
   if (closureRaw != NULL ) {
-    Closure_sp closure = Closure_sp((gctools::Tagged)closureRaw);
+    Function_sp closure = Function_sp((gctools::Tagged)closureRaw);
     T_sp activationFrame = closure->closedEnvironment();
 //    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
     parentP =  activationFrame.raw_();

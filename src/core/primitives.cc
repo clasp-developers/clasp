@@ -1761,7 +1761,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(functionSourcePosInfo)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__function_source_pos_info(T_sp functionDesignator) {
-  Closure_sp closure = coerce::closureDesignator(functionDesignator);
+  Function_sp closure = coerce::closureDesignator(functionDesignator);
   return closure->sourcePosInfo();
 }
 

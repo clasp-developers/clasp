@@ -45,7 +45,7 @@ namespace coerce {
 	   See also extended function designator.
 	*/
 extern Function_sp functionDesignator(T_sp obj);
-extern Closure_sp closureDesignator(T_sp obj);
+extern Function_sp closureDesignator(T_sp obj);
 
 #if 0
 /*! Return a Path by interpreting a pathname designator */

@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <signal.h>
 #include <execinfo.h>
 #include <clasp/core/foundation.h>
@@ -16,6 +17,7 @@
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/core/unwind.h> // DynEnv stuff
+#include <clasp/gctools/boehmGarbageCollection.h> // DynEnv stuff
 
 
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
@@ -131,6 +133,33 @@ ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
 
 };
 namespace core {
+
+
+VirtualMachine::VirtualMachine() {
+  size_t pageSize = getpagesize();
+  void* mem;
+  int result = posix_memalign( &mem, pageSize, VirtualMachine::MaxStackSize );
+  if (result !=0) {
+    printf("%s:%d:%s posix_memalign failed with error %d\n", __FILE__, __LINE__, __FUNCTION__, result );
+    abort();
+  }
+  this->_Stack = (T_O*)mem;
+  this->_StackTop = this->_Stack+(VirtualMachine::MaxStackSize/sizeof(T_O*)-1);
+  this->_StackSize = VirtualMachine::MaxStackSize;
+  memset(this->_Stack,0,VirtualMachine::MaxStackSize);
+  int mprotectResult = mprotect(this->_Stack,pageSize,PROT_READ);
+  gctools::clasp_gc_registerRoots((this->_Stack+pageSize),(this->_StackSize-pageSize)/sizeof(T_O*));
+}
+
+VirtualMachine::~VirtualMachine() {
+  size_t pageSize = getpagesize();
+  gctools::clasp_gc_deregisterRoots((this->_Stack+pageSize),(this->_StackSize-pageSize)/sizeof(T_O*));
+  int mprotectResult = mprotect(this->_Stack,pageSize,PROT_READ|PROT_WRITE);
+  free(this->_Stack);
+}
+
+
+
 
 // For main thread initialization - it happens too early and _Nil is undefined
 // So this partially sets up the ThreadLocalState and the system must invoke

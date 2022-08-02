@@ -37,7 +37,6 @@ namespace core {
   class T_O;
   class WrappedPointer_O;
   class Function_O;
-  class Closure_O;
   class Creator_O;
   class Iterator_O;
 };

@@ -71,6 +71,7 @@ typedef bool _Bool;
 #include <clasp/core/weakPointer.h>
 #include <clasp/core/random.h>
 #include <clasp/core/mpPackage.h>
+#include <clasp/core/bytecode.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/smallMultimap.h>
