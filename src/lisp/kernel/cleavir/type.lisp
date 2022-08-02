@@ -604,18 +604,19 @@
             (max (make-interval (list (- max)) (list max)))
             (t (make-interval nil nil))))))
 
-(defun derive-floor-etc (dividend divisor quofun remfun sys)
+(defun derive-floor-etc (dividend divisor quokindfun quofun remfun sys)
   (if (and (ctype:rangep dividend sys) (ctype:rangep divisor sys))
       ;; The CLHS actually only says that the remainder
       ;; is a float if an argument is a float, i.e. it doesn't
       ;; specify that it has to be a double given doubles, etc.
       ;; But in Clasp we choose to use the usual contagion rules.
-      (let ((rkind (contagion (ctype:range-kind dividend sys)
-                              (ctype:range-kind divisor sys))))
+      (let* ((dividend-kind (ctype:range-kind dividend sys))
+             (divisor-kind (ctype:range-kind divisor sys))
+             (rkind (contagion dividend-kind divisor-kind)))
         (ctype:values
          (list (interval->range
                 (funcall quofun (range-divide dividend divisor sys))
-                'integer sys)
+                (funcall quokindfun dividend-kind divisor-kind) sys)
                (interval->range
                 (funcall remfun (range->interval dividend sys)
                          (range->interval divisor sys))
@@ -625,14 +626,19 @@
                           (env:parse-type-specifier 'real nil sys))
                     nil (ctype:bottom sys) sys)))
 
+(defun floor-quokind (k1 k2) (declare (ignore k1 k2)) 'integer)
+
 (define-deriver truncate (dividend &optional (divisor (integer 1 1)))
-  (derive-floor-etc dividend divisor #'interval-truncate #'truncate-remainder
+  (derive-floor-etc dividend divisor
+                    #'floor-quokind #'interval-truncate #'truncate-remainder
                     *clasp-system*))
 (define-deriver floor (dividend &optional (divisor (integer 1 1)))
-  (derive-floor-etc dividend divisor #'interval-floor #'floor-remainder
+  (derive-floor-etc dividend divisor
+                    #'floor-quokind #'interval-floor #'floor-remainder
                     *clasp-system*))
 (define-deriver ceiling (dividend &optional (divisor (integer 1 1)))
-  (derive-floor-etc dividend divisor #'interval-ceiling #'ceiling-remainder
+  (derive-floor-etc dividend divisor
+                    #'floor-quokind #'interval-ceiling #'ceiling-remainder
                     *clasp-system*))
 
 (define-deriver mod (number divisor)
@@ -658,42 +664,27 @@
          sys)
         (ctype:single-value (env:parse-type-specifier 'real nil sys) sys))))
 
-(defun derive-ftrunc* (x y)
-  ;; The definition of ftruncate in CLHS is kind of gibberish, as relates to
-  ;; the types of the results. So just make sure this does what the function does.
-  (let ((sys *clasp-system*))
-    (ctype:values
-     (mapcar (lambda (kind) (ctype:range kind '* '* sys))
-             (if (and (ctype:rangep x sys) (ctype:rangep y sys))
-                 (ecase (ctype:range-kind x sys)
-                   ((integer rational)
-                    (ecase (ctype:range-kind y sys)
-                      ((integer rational) '(single-float integer))
-                      ((single-float) '(single-float single-float))
-                      ((double-float) '(double-float double-float))
-                      ((float) '(float float))
-                      ((real) '(float real))))
-                   ((single-float)
-                    (ecase (ctype:range-kind y sys)
-                      ((integer rational single-float) '(single-float single-float))
-                      ;; Despite the above note: This returns singles with the function,
-                      ;; but I think it should return doubles; SBCL does. Why not?
-                      ;; FIXME: Change ftruncate behavior.
-                      ;; FIXME: Use range-divide for all of this. I'm only not doing
-                      ;; this now because I'm concerned about this float incongruity.
-                      ((double-float) '(float float))
-                      ((float) '(float float))
-                      ((real) '(float real))))
-                   ((double-float) '(double-float double-float))
-                   ((float) '(float float))
-                   ((real) '(real real)))
-                 '(float real)))
-     nil (ctype:bottom sys) sys)))
+;;; The specification of the quotient's type in the CLHS is really weird, but
+;;; Clasp does the following: If both arguments are rational, a single float.
+;;; Otherwise, a float of the largest format among the arguments.
+(defun ffloor-quokind (k1 k2)
+  (cond ((or (member k1 '(float real)) (member k2 '(float real))) 'float)
+        ((and (member k1 '(integer ratio real)) (member k2 '(integer ratio real)))
+         'single-float)
+        (t (contagion k1 k2))))
 
-(define-deriver ffloor (x &optional (y (integer 1 1))) (derive-ftrunc* x y))
-(define-deriver fceiling (x &optional (y (integer 1 1))) (derive-ftrunc* x y))
-(define-deriver ftruncate (x &optional (y (integer 1 1))) (derive-ftrunc* x y))
-(define-deriver fround (x &optional (y (integer 1 1))) (derive-ftrunc* x y))
+(define-deriver ffloor (dividend &optional (divisor (integer 1 1)))
+  (derive-floor-etc dividend divisor
+                    #'ffloor-quokind #'interval-floor #'floor-remainder
+                    *clasp-system*))
+(define-deriver fceiling (dividend &optional (divisor (integer 1 1)))
+  (derive-floor-etc dividend divisor
+                    #'ffloor-quokind #'interval-ceiling #'ceiling-remainder
+                    *clasp-system*))
+(define-deriver ftruncate (dividend &optional (divisor (integer 1 1)))
+  (derive-floor-etc dividend divisor
+                    #'ffloor-quokind #'interval-truncate #'truncate-remainder
+                    *clasp-system*))
 
 (define-deriver core:two-arg-+ (n1 n2) (sv (ty+ n1 n2)))
 (define-deriver core:negate (arg) (sv (ty-negate arg)))
