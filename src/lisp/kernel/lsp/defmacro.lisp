@@ -295,7 +295,9 @@
 	    body doc)))
 
 ;; Optional argument CONTEXT can be deftype or defmacro (default)
-(defun expand-defmacro (name vledm body &optional (context 'cl:defmacro))
+(defun expand-defmacro (name vledm body
+                        &optional (context 'cl:defmacro)
+                          (block-name (function-block-name name)))
   (multiple-value-bind (decls body doc)
       (find-declarations body)
     ;; We turn (a . b) into (a &rest b)
@@ -318,7 +320,7 @@
             (declare (ignorable ,@ignorables) (core:lambda-name ,name))
             ,@decls
             ,@(when doc (list doc))
-            (block ,(si::function-block-name name)
+            (block ,block-name
               ,@arg-check
               ,@body))
          doc)))))
@@ -342,14 +344,14 @@
 	  t)
 
 ;;; Like EXPAND-DEFMACRO, but is slightly nicer about invalid arguments.
-(defun expand-define-compiler-macro (name vldm body)
+(defun expand-define-compiler-macro (name vldm body
+                                     &optional (block-name (function-block-name name)))
   (multiple-value-bind (decls body doc)
       (find-declarations body)
     (let ((cell (last vldm)))
       (when (rest cell)
         (setq vldm (nconc (butlast vldm 0) (list '&rest (rest cell))))))
-    (let ((block-name (function-block-name name))
-          (env-part (member '&environment vldm :test #'eq)))
+    (let ((env-part (member '&environment vldm :test #'eq)))
       (if env-part
           (setq vldm (nconc (ldiff vldm env-part) (cddr env-part))
                 env-part (second env-part))
@@ -376,20 +378,24 @@
 
 (defun parse-macro (name lambda-list body &optional env)
   (declare (ignore env)) ; for now.
-  (sys::expand-defmacro name lambda-list body 'cl:defmacro))
+  (sys::expand-defmacro `(macro-function ,name) lambda-list body 'cl:defmacro
+                        (core:function-block-name name)))
 
 (defun parse-compiler-macro (name lambda-list body &optional env)
   (declare (ignore env)) ; also for now
-  (sys::expand-define-compiler-macro name lambda-list body))
+  (sys::expand-define-compiler-macro `(compiler-macro-function ,name) lambda-list body
+                                     (core:function-block-name name)))
 
 (defun parse-deftype (name lambda-list body &optional env)
   (declare (ignore env))
-  (sys::expand-defmacro name lambda-list body 'cl:deftype))
+  (sys::expand-defmacro `(type-expander ,name) lambda-list body 'cl:deftype
+                        (core:function-block-name name)))
 
 (defun parse-define-setf-expander (name lambda-list body &optional env)
   (declare (ignore env))
   ;; define-setf-expander uses macro lambda lists exactly.
-  (sys::expand-defmacro name lambda-list body 'cl:defmacro))
+  (sys::expand-defmacro `(setf-expander ,name) lambda-list body 'cl:defmacro
+                        (core:function-block-name name)))
 
 ;; FIXME: move
 (export '(parse-macro parse-compiler-macro parse-deftype

@@ -592,6 +592,11 @@ No DIBuilder is defined for the default module")
      (jit-function-name (second lname)))
     ((and (consp lname) (eq (car lname) 'cl:labels))
      (jit-function-name (second lname)))
+    ;; Various little extensions for readability. See defmacro.lisp for occurrence.
+    ((and (consp lname)
+          (member (car lname) '(cl:macro-function cl:compiler-macro-function
+                                ext::type-expander ext::setf-expander)))
+     (jit-function-name (second lname)))
     #+(or) ;; uncomment this to be more forgiving
     ((consp lname)
      (core:fmt t "jit-function-name handling UNKNOWN: {}%N" lname)
