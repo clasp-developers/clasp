@@ -281,12 +281,12 @@
     
          ;; Primitives for Cleavir code
 
-         (primitive         "cm_check_index" :return-type (list :t* :t* :t*))
          (primitive         "cm_vref" :return-type (list :t* :t*))
          (primitive         "cm_vset" :return-type (list :t* :t* :t*))
          (primitive         "cc_ensure_valid_object" :t* (list :t*))
          (primitive         "cc_getPointer" :i8* (list :t*))
          (primitive-unwinds "cc_makeCell" :t* nil)
+         (primitive-unwinds "cc_checkBound" :size_t (list :t* :size_t :t*))
          (primitive         "cc_simpleBitVectorAref" :i8 (list :t* :size_t))
          (primitive         "cc_simpleBitVectorAset" :void (list :t* :size_t :i8))
          (primitive-unwinds "cc_simpleFloatVectorAref" :single-float (list :t* :t*))

@@ -1229,6 +1229,18 @@
                          collect (ctype:array et dimensions complexity sys)))))
      sys)))
 
+;;; This is partly around for a KLUDGEy reason - the transform in bir-to-bmir
+;;; won't fire unless the compiler tracks check-bound's identity, and it will
+;;; not do that just because it has a bir-to-bmir lowering. FIXME.
+(define-deriver core:check-bound (vector bound index)
+  (declare (ignore vector bound index))
+  ;; We can improve this a lot based on the types of index and bound, and knowing
+  ;; that bound will always be constant in practice. Might not matter though.
+  ;; (We should, however, put a higher level transform on this to eliminate it
+  ;;  when the type bounds work out to guarantee the bound.)
+  (let ((sys *clasp-system*))
+    (ctype:single-value (ctype:range 'integer 0 (1- array-dimension-limit) sys) sys)))
+
 (defun type-aet (type sys)
   (if (ctype:arrayp type sys)
       (ctype:array-element-type type sys)
@@ -1242,6 +1254,11 @@
 (define-deriver aref (array &rest indices) (derive-aref array indices))
 (define-deriver (setf aref) (value array &rest indices)
   (declare (ignore array indices))
+  (sv value))
+
+(define-deriver core:vref (vector index) (derive-aref vector (list index)))
+(define-deriver (setf core:vref) (value vector index)
+  (declare (ignore vector index))
   (sv value))
 
 (defun type-array-rank-if-constant (type sys)

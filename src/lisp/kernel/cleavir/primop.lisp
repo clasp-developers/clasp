@@ -335,6 +335,41 @@
                 (in (second (bir:inputs inst))))
                cmp:+fixnum-shift+ :nsw t))
 
+(defvprimop (core::check-bound :flags (:flushable))
+    ((:fixnum) :object :fixnum :object) (inst)
+  (let* ((vec (in (first (bir:inputs inst))))
+         (bound (in (second (bir:inputs inst))))
+         (index (in (third (bir:inputs inst))))
+         (fbound (cmp:irc-ashr bound cmp:+fixnum-shift+ :exact t))
+         (res
+           (%intrinsic-invoke-if-landing-pad-or-call "cc_checkBound"
+                                                     (list vec fbound index))))
+    (cmp:irc-shl res cmp:+fixnum-shift+ :nsw t)))
+
+(defun %vector-element-address (vec element-type index)
+  (let* ((vtype (cmp::simple-vector-llvm-type element-type))
+         (type (llvm-sys:type-get-pointer-to vtype))
+         (cvec (cmp:irc-bit-cast vec type))
+         (gep-indices (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) index)))
+    (cmp:irc-typed-gep-variable vtype cvec gep-indices)))
+
+(defvprimop (core::t-vref :flags (:flushable))
+    ((:object) :object :fixnum) (inst)
+  (let* ((vec (in (first (bir:inputs inst))))
+         (index (in (second (bir:inputs inst))))
+         (findex (cmp:irc-ashr index cmp:+fixnum-shift+ :exact t))
+         (addr (%vector-element-address vec 't findex)))
+    (cmp:irc-t*-load addr)))
+(defvprimop core::t-vset
+    ((:object) :object :object :fixnum) (inst)
+  (let* ((val (in (first (bir:inputs inst))))
+         (vec (in (second (bir:inputs inst))))
+         (index (in (third (bir:inputs inst))))
+         (findex (cmp:irc-ashr index cmp:+fixnum-shift+ :exact t))
+         (addr (%vector-element-address vec 't findex)))
+    (cmp:irc-store val addr)
+    val))
+
 (defvprimop-intrinsic (core::sf-vref :flags (:flushable))
     ((:single-float) :object :object)
   "cc_simpleFloatVectorAref")

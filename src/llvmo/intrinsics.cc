@@ -925,6 +925,20 @@ void cc_rewind_vaslist(vaslist va_args, void** register_save_areaP)
 }
 #endif
 
+size_t cc_checkBound(core::T_O* array, size_t bound, core::T_O* index) {
+  (void)array; // FIXME
+  core::T_sp tindex((gctools::Tagged)index);
+  if (tindex.fixnump()) {
+    core::Fixnum findex = tindex.unsafe_fixnum();
+    if ((0 <= findex) && (findex < bound)) return findex;
+    else {
+      // FIXME: use core::badIndexError instead
+      TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer,
+                                            core::make_fixnum(0),
+                                            Cons_O::createList(core::make_fixnum(bound))));
+    }
+  } else TYPE_ERROR(tindex, cl::_sym_fixnum);
+}
 
 unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));

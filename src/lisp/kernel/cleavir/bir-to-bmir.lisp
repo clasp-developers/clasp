@@ -211,6 +211,13 @@
 (deftransform array-rank core::%array-rank (and array (not (simple-array * (*)))))
 ;;; Can't use %array-dimension since it doesn't check the rank.
 
+(deftransform core:check-bound core:check-bound
+  t fixnum t)
+;; These are unsafe - make sure we only use core:vref when we don't need a
+;; (further) bounds check.
+(deftransform core:vref core::t-vref (simple-array t (*)) fixnum)
+(deftransform (setf core:vref) core::t-vset t (simple-array t (*)) fixnum)
+
 (deftransform aref core::sf-vref (simple-array single-float (*)) t)
 (deftransform aref core::df-vref (simple-array double-float (*)) t)
 (deftransform row-major-aref core::sf-vref (simple-array single-float (*)) t)

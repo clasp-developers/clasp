@@ -52,15 +52,6 @@ THE SOFTWARE.
 
 extern "C" {
 
-gctools::return_type cm_check_index(void* index, void* max, void* axis )
-{
-  // this test 0 <= index < max, so legal values are 0 .. max -1 
-  if (((intptr_t)(index)<0) || (((intptr_t)(index)>=(intptr_t)max))) invalid_index_error(index,(void *) ((intptr_t) max -1),axis);
-  gctools::return_type result(nil<core::T_O>().raw_(),0);
-  return result;
-}
-
-
 gctools::return_type cm_vset(void* vector, void* idx, void* value)
 {
   core::AbstractSimpleVector_sp asv((gctools::Tagged)vector);

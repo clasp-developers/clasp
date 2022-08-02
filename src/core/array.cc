@@ -498,6 +498,19 @@ CL_DEFUN  T_sp cl__rowMajorAref(Array_sp array, gc::Fixnum idx)
   return array->rowMajorAref(idx);
 }
 
+// Note for the curious: this is kind of a sham function.
+// In cclasp we use it when we move bounds checks out from the aref callee
+// to the caller, but in that case it should always be transformed into a
+// call to cc_checkBound. See cleavir/bir-to-bmir.lisp for that.
+CL_LISPIFY_NAME("core:checkBound");
+DOCGROUP(clasp)
+CL_DEFUN Fixnum core__check_bound(AbstractSimpleVector_sp vec, size_t len,
+                                  gc::Fixnum idx) {
+  unlikely_if ((idx < 0) || (idx >= len))
+    badIndexError(vec, 0, idx, len);
+  return idx;
+}
+
 CL_LISPIFY_NAME("core:vref");
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__vref(AbstractSimpleVector_sp vec, size_t idx)
