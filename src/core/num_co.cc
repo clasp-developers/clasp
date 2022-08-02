@@ -175,6 +175,9 @@ CL_DEFUN Number_sp cl__denominator(Rational_sp x) {
 // Stores the result in quotient, remainder.
 static void clasp_truncate(Real_sp dividend, Real_sp divisor,
                            Integer_sp& quotient, Real_sp& remainder) {
+  // The CL standard is a bit ambiguous about the type of the remainder.
+  // We treat it as a contagion thing: If either argument is a float, the
+  // remainder is a float of the largest format among the arguments.
   MATH_DISPATCH_BEGIN(dividend, divisor) {
   case_Fixnum_v_Fixnum: {
       Fixnum a = dividend.unsafe_fixnum();
@@ -316,10 +319,6 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor,
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
   case_SingleFloat_v_SingleFloat:
-  case_SingleFloat_v_DoubleFloat:
-#ifdef CLASP_LONG_FLOAT
-  case_SingleFloat_v_LongFloat:
-#endif
   case_SingleFloat_v_Ratio: {
       float n = clasp_to_double(divisor);
       float p = dividend.unsafe_single_float() / n;
@@ -330,14 +329,16 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor,
     }
   case_DoubleFloat_v_Fixnum:
   case_DoubleFloat_v_Bignum:
+  case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat:
 #ifdef CLASP_LONG_FLOAT
   case_DoubleFloat_v_LongFloat:
+  case_SingleFloat_v_LongFloat:
 #endif
   case_DoubleFloat_v_Ratio: {
       double n = clasp_to_double(divisor);
-      double p = gc::As_unsafe<DoubleFloat_sp>(dividend)->get() / n;
+      double p = clasp_to_double(dividend) / n;
       double q = std::trunc(p);
       quotient = _clasp_double_to_integer(q);
       remainder = clasp_make_double_float(p * n - q * n);
