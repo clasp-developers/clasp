@@ -554,8 +554,57 @@
               ;; for rationals, and get the sign of infinities.
               (t (make-interval nil nil)))))))
 
+(defun floor-remainder (dividend divisor)
+  ;; Technically the range of the remainder can change based on the range of the
+  ;; dividend, like when the dividend range is smaller than a known divisor,
+  ;; but that probably doesn't come up enough to be interesting.
+  ;; For FLOOR, the remainder always has the same sign as the divisor.
+  ;; Note that we don't check for division by zero here. That's mostly out of
+  ;; laziness, but it should be okay since the quotient type does more checking.
+  (declare (ignore dividend))
+  (make-interval (let ((low (interval-low divisor)))
+                   (cond ((not low) low)
+                         ((>= low 0) 0)
+                         ;; these are always exclusive.
+                         ;; e.g (floor x -2) never has a remainder of -2.
+                         (t (list low))))
+                 (let ((high (interval-high divisor)))
+                   (cond ((not high) high)
+                         ((<= high 0) 0)
+                         (t (list high))))))
+
+(defun ceiling-remainder (dividend divisor)
+  (declare (ignore dividend))
+  ;; The remainder has the opposite sign of the divisor.
+  (make-interval (let ((high (interval-high divisor)))
+                   (cond ((not high) high)
+                         ((<= high 0) 0)
+                         (t (list (- high)))))
+                 (let ((low (interval-low divisor)))
+                   (cond ((not low) low)
+                         ((>= low 0) 0)
+                         (t (list (- low)))))))
+
+(defun truncate-remainder (dividend divisor)
+  ;; The remainder has the same sign as the dividend. A bit trickier.
+  ;; First, get the divisor bound with the largest magnitude.
+  (let* ((low (interval-low divisor))
+         (high (interval-high divisor))
+         (max (if (or (not low) (not high))
+                  nil
+                  (max (abs low) (abs high)))))
+    (let ((low (interval-low dividend)) (high (interval-high dividend)))
+      (cond ((and low (>= low 0))
+             ;; Dividend is positive, so the remainder must be.
+             (make-interval 0 (if max (list max) nil)))
+            ((and high (<= high 0))
+             ;; Dividend is negative, so the remainder must be.
+             (make-interval (if max (list (- max)) nil) 0))
+            ;; Dividend is either sign, so we don't know.
+            (max (make-interval (list (- max)) (list max)))
+            (t (make-interval nil nil))))))
+
 (defun derive-floor-etc (dividend divisor quofun remfun sys)
-  (declare (ignore remfun)) ; TODO
   (if (and (ctype:rangep dividend sys) (ctype:rangep divisor sys))
       (let* ((k1 (ctype:range-kind dividend sys))
              (k2 (ctype:range-kind divisor sys))
@@ -579,19 +628,24 @@
          (list (interval->range
                 (funcall quofun (range-divide dividend divisor sys))
                 'integer sys)
-               ;; TODO: Improve with remfun
-               (ctype:range rkind '* '* sys))
+               (interval->range
+                (funcall remfun (range->interval dividend sys)
+                         (range->interval divisor sys))
+                rkind sys))
          nil (ctype:bottom sys) sys))
       (ctype:values (list (ctype:range 'integer '* '* sys)
                           (env:parse-type-specifier 'real nil sys))
                     nil (ctype:bottom sys) sys)))
 
 (define-deriver truncate (dividend &optional (divisor (integer 1 1)))
-  (derive-floor-etc dividend divisor #'interval-truncate nil *clasp-system*))
+  (derive-floor-etc dividend divisor #'interval-truncate #'truncate-remainder
+                    *clasp-system*))
 (define-deriver floor (dividend &optional (divisor (integer 1 1)))
-  (derive-floor-etc dividend divisor #'interval-floor nil *clasp-system*))
+  (derive-floor-etc dividend divisor #'interval-floor #'floor-remainder
+                    *clasp-system*))
 (define-deriver ceiling (dividend &optional (divisor (integer 1 1)))
-  (derive-floor-etc dividend divisor #'interval-ceiling nil *clasp-system*))
+  (derive-floor-etc dividend divisor #'interval-ceiling #'ceiling-remainder
+                    *clasp-system*))
 
 (defun derive-ftrunc* (x y)
   ;; The definition of ftruncate in CLHS is kind of gibberish, as relates to
