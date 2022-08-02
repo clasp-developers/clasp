@@ -606,24 +606,12 @@
 
 (defun derive-floor-etc (dividend divisor quofun remfun sys)
   (if (and (ctype:rangep dividend sys) (ctype:rangep divisor sys))
-      (let* ((k1 (ctype:range-kind dividend sys))
-             (k2 (ctype:range-kind divisor sys))
-             (rkind (cond ((and (eq k1 'integer) (eq k2 'integer)) 'integer)
-                          ((and (member k1 '(integer rational))
-                                (member k2 '(integer rational)))
-                           'rational)
-                          ;; The CLHS actually only says that the remainder
-                          ;; is a float if an argument is a float, i.e. it doesn't
-                          ;; specify that it has to be a double given doubles, etc.
-                          ;; But that is the case in Clasp.
-                          ((or (eq k1 'float) (eq k2 'float)) 'float)
-                          ((or (member k1 '(double-float long-float))
-                               (member k2 '(double-float long-float)))
-                           'double-float)
-                          ((and (member k1 '(single-float short-float))
-                                (member k2 '(single-float short-float)))
-                           'single-float)
-                          (t 'real))))
+      ;; The CLHS actually only says that the remainder
+      ;; is a float if an argument is a float, i.e. it doesn't
+      ;; specify that it has to be a double given doubles, etc.
+      ;; But in Clasp we choose to use the usual contagion rules.
+      (let ((rkind (contagion (ctype:range-kind dividend sys)
+                              (ctype:range-kind divisor sys))))
         (ctype:values
          (list (interval->range
                 (funcall quofun (range-divide dividend divisor sys))
@@ -646,6 +634,29 @@
 (define-deriver ceiling (dividend &optional (divisor (integer 1 1)))
   (derive-floor-etc dividend divisor #'interval-ceiling #'ceiling-remainder
                     *clasp-system*))
+
+(define-deriver mod (number divisor)
+  (let ((sys *clasp-system*))
+    (if (and (ctype:rangep number sys) (ctype:rangep divisor sys))
+        (ctype:single-value
+         (interval->range (floor-remainder (range->interval number sys)
+                                           (range->interval divisor sys))
+                          (contagion (ctype:range-kind number sys)
+                                     (ctype:range-kind divisor sys))
+                          sys)
+         sys)
+        (ctype:single-value (env:parse-type-specifier 'real nil sys) sys))))
+(define-deriver rem (number divisor)
+  (let ((sys *clasp-system*))
+    (if (and (ctype:rangep number sys) (ctype:rangep divisor sys))
+        (ctype:single-value
+         (interval->range (truncate-remainder (range->interval number sys)
+                                           (range->interval divisor sys))
+                          (contagion (ctype:range-kind number sys)
+                                     (ctype:range-kind divisor sys))
+                          sys)
+         sys)
+        (ctype:single-value (env:parse-type-specifier 'real nil sys) sys))))
 
 (defun derive-ftrunc* (x y)
   ;; The definition of ftruncate in CLHS is kind of gibberish, as relates to
