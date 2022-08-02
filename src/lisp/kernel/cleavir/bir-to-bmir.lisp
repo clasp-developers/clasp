@@ -215,22 +215,13 @@
   t fixnum t)
 ;; These are unsafe - make sure we only use core:vref when we don't need a
 ;; (further) bounds check.
-(deftransform core:vref core::t-vref (simple-array t (*)) fixnum)
-(deftransform (setf core:vref) core::t-vset t (simple-array t (*)) fixnum)
-
-(deftransform aref core::sf-vref (simple-array single-float (*)) t)
-(deftransform aref core::df-vref (simple-array double-float (*)) t)
-(deftransform row-major-aref core::sf-vref (simple-array single-float (*)) t)
-(deftransform row-major-aref core::df-vref (simple-array double-float (*)) t)
-
-(deftransform (setf aref) core::sf-vset
-  single-float (simple-array single-float (*)) t)
-(deftransform (setf aref) core::df-vset
-  double-float (simple-array double-float (*)) t)
-(deftransform (setf row-major-aref) core::sf-vset
-  single-float (simple-array single-float (*)) t)
-(deftransform (setf row-major-aref) core::df-vset
-  double-float (simple-array double-float (*)) t)
+(defmacro define-vector-transforms (element-type ref set)
+  `(progn
+     (deftransform core:vref ,ref (simple-array ,element-type (*)) fixnum)
+     (deftransform (setf core:vref) ,set t (simple-array ,element-type (*)) fixnum)))
+(define-vector-transforms t core::t-vref core::t-vset)
+(define-vector-transforms single-float core::sf-vref core::sf-vset)
+(define-vector-transforms double-float core::df-vref core::df-vset)
 
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 

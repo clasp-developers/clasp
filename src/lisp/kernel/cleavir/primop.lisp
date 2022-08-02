@@ -353,42 +353,30 @@
          (gep-indices (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) index)))
     (cmp:irc-typed-gep-variable vtype cvec gep-indices)))
 
-(defvprimop (core::t-vref :flags (:flushable))
-    ((:object) :object :fixnum) (inst)
-  (let* ((vec (in (first (bir:inputs inst))))
-         (index (in (second (bir:inputs inst))))
-         (findex (cmp:irc-ashr index cmp:+fixnum-shift+ :exact t))
-         (addr (%vector-element-address vec 't findex)))
-    (cmp:irc-t*-load addr)))
-(defvprimop core::t-vset
-    ((:object) :object :object :fixnum) (inst)
-  (let* ((val (in (first (bir:inputs inst))))
-         (vec (in (second (bir:inputs inst))))
-         (index (in (third (bir:inputs inst))))
-         (findex (cmp:irc-ashr index cmp:+fixnum-shift+ :exact t))
-         (addr (%vector-element-address vec 't findex)))
-    (cmp:irc-store val addr)
-    val))
+(defmacro define-vector-primops (refname setname element-type vrtype)
+  `(progn
+     (defvprimop (,refname :flags (:flushable))
+         ((,vrtype) :object :fixnum) (inst)
+       (let* ((vec (in (first (bir:inputs inst))))
+              (index (in (second (bir:inputs inst))))
+              (findex (cmp:irc-ashr index cmp:+fixnum-shift+ :exact t))
+              (addr (%vector-element-address vec ',element-type findex)))
+         (cmp:irc-typed-load (vrtype->llvm ',vrtype) addr)))
+     ;; These return the new value because it's a bit involved to rewrite BIR to use
+     ;; a linear datum more than once.
+     (defvprimop ,setname
+         ((,vrtype) ,vrtype :object :fixnum) (inst)
+       (let* ((val (in (first (bir:inputs inst))))
+              (vec (in (second (bir:inputs inst))))
+              (index (in (third (bir:inputs inst))))
+              (findex (cmp:irc-ashr index cmp:+fixnum-shift+ :exact t))
+              (addr (%vector-element-address vec ',element-type findex)))
+         (cmp:irc-store val addr)
+         val))))
 
-(defvprimop-intrinsic (core::sf-vref :flags (:flushable))
-    ((:single-float) :object :object)
-  "cc_simpleFloatVectorAref")
-(defvprimop-intrinsic (core::df-vref :flags (:flushable))
-    ((:double-float) :object :object)
-  "cc_simpleDoubleVectorAref")
-
-;;; These return the new value because it's a bit involved to rewrite BIR to use
-;;; a linear datum more than once.
-(defvprimop core::sf-vset ((:single-float) :single-float :object :object) (inst)
-  (let ((args (mapcar #'in (bir:inputs inst))))
-    (assert (llvm-sys:type-equal (llvm-sys:get-type (first args)) cmp:%float%))
-    (%intrinsic-invoke-if-landing-pad-or-call "cc_simpleFloatVectorAset" args)
-    (first args)))
-(defvprimop core::df-vset ((:double-float) :double-float :object :object) (inst)
-  (let ((args (mapcar #'in (bir:inputs inst))))
-    (assert (llvm-sys:type-equal (llvm-sys:get-type (first args)) cmp:%double%))
-    (%intrinsic-invoke-if-landing-pad-or-call "cc_simpleDoubleVectorAset" args)
-    (first args)))
+(define-vector-primops core::t-vref core::t-vset t :object)
+(define-vector-primops core::sf-vref core::sf-vset single-float :single-float)
+(define-vector-primops core::df-vref core::df-vset double-float :double-float)
 
 ;;;
 
