@@ -1026,7 +1026,7 @@ jump to blocks within this tagbody."
 
 ;;; CORE::VECTOR-LENGTH
 
-(defun gen-vector-length (vector)
+(defun gen-vector-length-untagged (vector)
   (let* ((type (llvm-sys:type-get-pointer-to (simple-vector-llvm-type 't)))
          (cast (irc-bit-cast vector type)) ; treat the vector as a vector
          ;; find the location of the length
@@ -1034,9 +1034,11 @@ jump to blocks within this tagbody."
            (irc-typed-in-bounds-gep (simple-vector-llvm-type 't)
                                     cast
                                     (list 0 +simple-vector-length-slot+)
-                                    "vector-length-address"))
-         (untagged-length (irc-typed-load %i64% length-address "vector-length")))
-    (irc-tag-fixnum untagged-length "vector-length")))
+                                    "vector-length-address")))
+    (irc-typed-load %i64% length-address "vector-length")))
+
+(defun gen-vector-length (vector)
+  (irc-tag-fixnum (gen-vector-length-untagged vector) "vector-length"))
 
 (defun codegen-vector-length (result rest env)
   (let ((form (car rest))

@@ -525,6 +525,8 @@ Optimizations are available for any of:
   '(setf (row-major-aref arr index) val))
 
 (deftransform array-rank (((arr (array * (*))))) 1)
+(deftransform array-dimension (((arr (simple-array * (*))) (dimension (eql 0))))
+  '(length arr))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

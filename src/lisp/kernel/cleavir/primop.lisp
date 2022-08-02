@@ -301,6 +301,40 @@
     (%sitofp fix cmp:%double%
              (datum-name-as-string (first (bir:outputs inst))))))
 
+(defvprimop (core::vector-length :flags (:flushable))
+    ((:fixnum) :object) (inst)
+  (assert (= 1 (length (bir:inputs inst))))
+  (cmp:irc-shl (cmp::gen-vector-length-untagged (in (first (bir:inputs inst))))
+               cmp:+fixnum-shift+ :nsw t))
+
+;;; several of these complex-array primops are not yet used, by may be of interest
+;;; eventually, so here they remain.
+
+(defvprimop (core::%displacement :flags (:flushable))
+    ((:object :fixnum) :object) (inst)
+  (let ((ain (in (first (bir:inputs inst)))))
+    (list (cmp:irc-real-array-displacement ain)
+          (cmp:irc-shl
+           (cmp:irc-real-array-index-offset ain)
+           cmp:+fixnum-shift+ :nsw t))))
+
+(defvprimop (core::%array-total-size :flags (:flushable))
+    ((:fixnum) :object) (inst)
+  (cmp:irc-shl (cmp:irc-array-total-size (in (first (bir:inputs inst))))
+               cmp:+fixnum-shift+ :nsw t))
+
+(defvprimop (core::%array-rank :flags (:flushable))
+    ((:fixnum) :object) (inst)
+  (cmp:irc-shl (cmp:irc-array-rank (in (first (bir:inputs inst))))
+               cmp:+fixnum-shift+ :nsw t))
+
+(defvprimop (core::%array-dimension :flags (:flushable))
+    ((:fixnum) :object :fixnum) (inst)
+  (cmp:irc-shl (cmp::irc-array-dimension
+                (in (first (bir:inputs inst)))
+                (in (second (bir:inputs inst))))
+               cmp:+fixnum-shift+ :nsw t))
+
 (defvprimop-intrinsic (core::sf-vref :flags (:flushable))
     ((:single-float) :object :object)
   "cc_simpleFloatVectorAref")

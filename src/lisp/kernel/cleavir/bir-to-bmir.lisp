@@ -201,6 +201,16 @@
 ;;(deftransform car cleavir-primop:car cons)
 ;;(deftransform cdr cleavir-primop:cdr cons)
 
+;;; We can't use %DISPLACEMENT here because it will return the underlying
+;;; simple array even when there isn't one as far as standard lisp is concerned,
+;;; e.g. for a simple mdarray, or an undisplaced adjustable array.
+#+(or)
+(deftransform array-displacement core::%displacement (and array (not simple-array)))
+(deftransform array-total-size core::%array-total-size
+  (and array (not (simple-array * (*)))))
+(deftransform array-rank core::%array-rank (and array (not (simple-array * (*)))))
+;;; Can't use %array-dimension since it doesn't check the rank.
+
 (deftransform aref core::sf-vref (simple-array single-float (*)) t)
 (deftransform aref core::df-vref (simple-array double-float (*)) t)
 (deftransform row-major-aref core::sf-vref (simple-array single-float (*)) t)

@@ -282,12 +282,6 @@
                                      *primop-rtypes*)
                             '(,@rtype-info))))
                 (cleavir-cst-to-ast:defprimop ,name))))
-  (defprimop core::vector-length 1 :value)
-  (defprimop core::%displacement 1 :value)
-  (defprimop core::%displaced-index-offset 1 :value)
-  (defprimop core::%array-total-size 1 :value)
-  (defprimop core::%array-rank 1 :value)
-  (defprimop core::%array-dimension 2 :value)
 
   (defprimop core:instance-rack 1 :value)
   (defprimop core:instance-rack-set 2 :effect)

@@ -955,7 +955,7 @@
 (defmethod sequence:elt ((sequence vector) index) (aref sequence index))
 (defmethod (setf sequence:elt) (new (sequence vector) index)
   (setf (aref sequence index) new))
-(defmethod sequence:length ((sequence vector)) (core::vector-length sequence))
+(defmethod sequence:length ((sequence vector)) (length sequence))
 
 (defmethod sequence:make-sequence-like
     ((sequence vector) length
