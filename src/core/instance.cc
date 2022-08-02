@@ -395,9 +395,9 @@ Instance_sp Instance_O::create(Symbol_sp symbol, Instance_sp metaClass, Creator_
 Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, Instance_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
   ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
 #if 0  
-  printf("%s:%d:%s stamp -> %llu\n", __FILE__, __LINE__, __FUNCTION__, stamp);
+  printf("%s:%d:%s stamp -> %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   if (!metaClass.unboundp()) {
-    printf("       metaClass->CLASS_stamp_for_instances() -> %llu\n", metaClass->CLASS_stamp_for_instances());
+    printf("       metaClass->CLASS_stamp_for_instances() -> %zu\n", metaClass->CLASS_stamp_for_instances());
   } else {
     printf("       The metaClass was UNBOUND !!!!! I need a stamp for the class slots!!!!!!\n");
   }
