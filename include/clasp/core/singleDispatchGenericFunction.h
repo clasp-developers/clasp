@@ -35,8 +35,8 @@ THE SOFTWARE.
 
 namespace core {
 FORWARD(SingleDispatchMethod);
-class SingleDispatchGenericFunction_O : public Closure_O {
-  LISP_CLASS(core,CorePkg,SingleDispatchGenericFunction_O,"SingleDispatchGenericFunction",Closure_O);
+class SingleDispatchGenericFunction_O : public Function_O {
+  LISP_CLASS(core,CorePkg,SingleDispatchGenericFunction_O,"SingleDispatchGenericFunction",Function_O);
 public:
   SingleDispatchGenericFunction_O(GlobalEntryPoint_sp ep) : Base(ep) {};
 public:

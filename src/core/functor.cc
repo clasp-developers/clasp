@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/bytecode.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/lambdaListHandler.h>
 //#i n c l u d e "environmentDependent.h"
@@ -773,6 +774,74 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, const Cla
   return closure;
 }
 
+
+gctools::return_type bytecode_call(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
+{
+  // entry point for bytecode interpreter
+  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+  BytecodeModule_sp module = gc::As<BytecodeModule_sp>((*closure)[BYTECODE_CLOSURE_MODULE_SLOT]);
+  Fixnum_sp entryIndex = gc::As<Fixnum_sp>((*closure)[BYTECODE_CLOSURE_ENTRY_INDEX_SLOT]);
+  printf("%s:%d:%s This is where we evaluate bytecode functions module: %p   entryIndex: %lld\n", __FILE__, __LINE__, __FUNCTION__, _rep_(module).c_str(), entryIndex.unsafe_fixnum() );
+  return Values0<T_O>();
+}
+
+
+struct BytecodeClosureEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    if (interpreter_trampoline) {
+      return (interpreter_trampoline)((void*)&bytecode_call,lcc_closure,lcc_nargs,lcc_args);
+    }
+    return bytecode_call(lcc_closure,lcc_nargs,lcc_args);
+  }
+  static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
+};
+
+CL_LISPIFY_NAME(bytecode_closure/make);
+CL_DEF_CLASS_METHOD
+ClosureWithSlots_sp ClosureWithSlots_O::make_bytecode_closure(T_sp name, T_sp bytecodeModule, T_sp functionIndex, size_t closedOverSlots, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
+  FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<BytecodeClosureEntryPoint>(name,nil<T_O>(),lambda_list,docstring,declares,sfi,lineno,column,filePos );
+  ClosureWithSlots_sp closure =
+      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,
+                                                                                       BYTECODE_CLOSURE_SLOTS+closedOverSlots,
+                                                                                       entryPoint,
+                                                                                       ClosureWithSlots_O::bytecodeClosure);
+  (*closure)[BYTECODE_CLOSURE_ENTRY_INDEX_SLOT] = functionIndex;
+  (*closure)[BYTECODE_CLOSURE_MODULE_SLOT] = bytecodeModule;
+  if (lambda_list_handler.nilp()) {
+    printf("%s:%d  A NIL lambda-list-handler was passed for %s lambdalist: %s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(lambda_list).c_str());
+    abort();
+  }
+  (*closure)[BYTECODE_CLOSURE_LAMBDA_LIST_HANDLER_SLOT] = lambda_list_handler;
+  closure->setf_lambdaList(lambda_list_handler->lambdaList());
+  closure->setf_docstring(docstring);
+  validateFunctionDescription(__FILE__,__LINE__,closure);
+  return closure;
+}
+
 ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
   printf("%s:%d:%s What are you going to do with an unbound Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
   FunctionDescription_sp fdesc = makeFunctionDescription(name,lambda_list,nil<T_O>(),nil<T_O>(),nil<T_O>(),lineno,column);
@@ -889,11 +958,13 @@ string Function_O::__repr__() const {
 
 namespace core {
 char* global_dump_functions = NULL;
+#if 0
 void Closure_O::describeFunction() const {
   if (global_dump_functions) {
     printf("%s:%d  Closure_O %s entry@%p\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), (void*)this->entry());
   }
 }
+#endif
 
 DOCGROUP(clasp)
 CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
@@ -903,7 +974,7 @@ CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
 }
 
 DOCGROUP(clasp)
-CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
+CL_DEFUN size_t core__closure_length(Function_sp tclosure)
 {
   ASSERT(gc::IsA<ClosureWithSlots_sp>(tclosure));
   ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(tclosure);
@@ -937,6 +1008,9 @@ string ClosureWithSlots_O::__repr__() const {
   case interpretedClosure:
       ss << "interpreted ";
       break;
+  case bytecodeClosure:
+      ss << "bytecode ";
+      break;
   case bclaspClosure:
       ss << "bclasp ";
       break;
@@ -956,7 +1030,7 @@ string ClosureWithSlots_O::__repr__() const {
 
 
 DOCGROUP(clasp)
-CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
+CL_DEFUN T_sp core__closure_ref(Function_sp tclosure, size_t index)
 {
   if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
     switch (closure->closureType) {
@@ -976,6 +1050,10 @@ CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
         SIMPLE_ERROR(("Out of bounds closure reference - there are no slots"));
       }
       break;
+    case ClosureWithSlots_O::bytecodeClosure:
+        printf("%s:%d:%s Add support for looking up slot %lu in bytecodeClosure\n", __FILE__, __LINE__, __FUNCTION__, index );
+        return nil<core::T_O>();
+        break;
     case ClosureWithSlots_O::cclaspClosure:
         if ( index >= closure->_Slots.length() ) {
           SIMPLE_ERROR(("Out of bounds closure reference - there are only %d slots") , closure->_Slots.length() );
@@ -987,7 +1065,7 @@ CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
 }
 
 DOCGROUP(clasp)
-CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
+CL_DEFUN void core__closure_slots_dump(Function_sp closure) {
   size_t nslots = core__closure_length(closure);
   printf("Closure has %zu slots\n", nslots);
   for ( int i=0; i<nslots; ++i ) {

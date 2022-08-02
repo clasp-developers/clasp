@@ -334,7 +334,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(compiled_function_p)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__compiled_function_p(T_sp o) {
-  if (Closure_sp fn = o.asOrNull<Closure_O>()) {
+  if (Function_sp fn = o.asOrNull<Function_O>()) {
     return fn->compiledP();
   } else if (gc::IsA<FuncallableInstance_sp>(o)) {
     return true;

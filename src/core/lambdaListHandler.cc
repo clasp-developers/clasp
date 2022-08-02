@@ -185,7 +185,7 @@ CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 }
 
 
-void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager *scope, size_t nargs, T_O** args ) {
+void lambdaListHandler_createBindings(Function_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager *scope, size_t nargs, T_O** args ) {
 #if 0
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();

@@ -348,7 +348,7 @@ void dbg_lowLevelDescribe(T_sp obj) {
     printf("vtable-ptr: %p  typeid: %s\n", &*obj, typeid(obj.unsafe_general()).name());
     printf("className-> %s\n", obj.unsafe_general()->className().c_str());
     printf("contents-> [%s]\n", _rep_(obj).c_str());
-    if ( Closure_sp closure = obj.asOrNull<Closure_O>() ) {
+    if ( Function_sp closure = obj.asOrNull<Function_O>() ) {
       core__closure_slots_dump(closure);
     }
   } else if (obj.consp()) {

@@ -56,6 +56,26 @@ typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 
 };
 namespace core {
+
+struct VirtualMachine {
+
+  static constexpr size_t MaxStackSize = 16384*8; // 16K words for now.
+  
+  core::T_O*     _Stack;
+  size_t         _StackSize;
+  core::T_O*     _StackTop;
+  core::T_O*     _FramePointer;
+  core::T_sp     _CurrentFunction;
+  core::T_O*     _Literals;
+  unsigned char* _PC; 
+
+  VirtualMachine();
+  ~VirtualMachine();
+  
+};
+
+
+
 #define IHS_BACKTRACE_SIZE 16
   struct ThreadLocalState {
 
@@ -100,7 +120,8 @@ namespace core {
     uint64_t   _BytesAllocated;
     uint64_t            _Tid;
     uintptr_t           _BacktraceBasePointer;
-
+    VirtualMachine      _VM;
+    
 #ifdef DEBUG_MONITOR_SUPPORT
     // When enabled, maintain a thread-local map of strings to FILE*
     // used for logging. This is so that per-thread log files can be

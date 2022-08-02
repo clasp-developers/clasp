@@ -459,10 +459,6 @@ void registerObjectFile(ObjectFile_sp ofi)
   if (ofi->_CodeName->length()==0) {
     printf("%s:%d:%s Got zero length ObjectFile code name\n", __FILE__, __LINE__, __FUNCTION__ );
   }
-  size_t count = countObjectFileNames(name);
-  if (count>0) {
-    printf("%s:%d:%s The object-file name %s is present %lu times\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), count );
-  }
   core::T_sp expected;
   core::Cons_sp entry = core::Cons_O::createAtStage<Stage>(ofi,nil<core::T_O>());
 //  printf("%s:%d:%s Registering object file with name %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(ofi->_CodeName).c_str());

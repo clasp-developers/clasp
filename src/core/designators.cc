@@ -61,13 +61,13 @@ Function_sp functionDesignator(T_sp obj) {
 // this very similar to functionDesignator, can we merge?
 // only use is core__function_source_pos_info
 // perhaps expected type == core::_sym_closure or cl::_sym_symbol
-Closure_sp closureDesignator(T_sp obj) {
-  if (Closure_sp fnobj = obj.asOrNull<Closure_O>()) {
+Function_sp closureDesignator(T_sp obj) {
+  if (Function_sp fnobj = obj.asOrNull<Function_O>()) {
     return fnobj;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     if (!sym->fboundp())
       SIMPLE_ERROR(("Function value for %s is unbound") , _rep_(sym));
-    Closure_sp closure = sym->symbolFunction().asOrNull<Closure_O>();
+    Function_sp closure = sym->symbolFunction().asOrNull<Function_O>();
     ASSERT(closure);
     return closure;
   }

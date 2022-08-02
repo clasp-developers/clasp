@@ -1134,7 +1134,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_templated_kind(core::WrappedPointer_O);
      Init_templated_kind(core::Creator_O);
      Init_templated_kind(clbind::ConstructorCreator_O);
-     Init_templated_kind(core::Closure_O);
      Init_templated_kind(core::BuiltinClosure_O);
 
 };
