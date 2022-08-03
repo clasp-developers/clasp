@@ -77,6 +77,7 @@
   be optimized.
 * Some MAKE-ARRAY calls are compiled more efficiently.
 * Unused calls to many more (side-effect-free) standard functions are deleted.
+* Accesses to 1D simple arrays of known element type are a bit faster.
 
 ## Fixes
 * Replace hard coded paths to `nm` in snapshot code with NM_BINARY macro value
