@@ -56,6 +56,10 @@ THE SOFTWARE.
 
 namespace core {
 
+trampoline_function interpreter_trampoline = NULL;
+bytecode_trampoline_function bytecode_trampoline = NULL;
+
+
 // Keep track of how many interpreted closure calls there are
 std::atomic<uint64_t> global_interpreted_closure_calls;
 
@@ -88,7 +92,7 @@ GlobalEntryPoint_O::GlobalEntryPoint_O(FunctionDescription_sp fdesc, const Clasp
 };
 
 GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point,
-                                                       T_sp code,
+                                                       T_sp module,
                                                        unsigned short localsFrameSize,
                                                        unsigned short required,
                                                        unsigned short optional,
@@ -98,7 +102,7 @@ GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fd
                                                        unsigned char flags,
                                                        unsigned int environmentSize,
                                                        unsigned int entryPcs[NUMBER_OF_ENTRY_POINTS] )
-: CodeEntryPoint_O(fdesc, code), _EntryPoints(entry_point),
+: CodeEntryPoint_O(fdesc, module), _EntryPoints(entry_point),
   _LocalsFrameSize(localsFrameSize),
   _Required(required),
   _Optional(optional),
@@ -109,7 +113,7 @@ GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fd
   _EnvironmentSize(environmentSize),
   _EntryPcs{entryPcs[0],entryPcs[1],entryPcs[2],entryPcs[3],entryPcs[4],entryPcs[5],entryPcs[6]}
 {
-  llvmo::validateEntryPoint( code, entry_point );
+  llvmo::validateEntryPoint( module, entry_point );
 };
 
 
@@ -425,23 +429,16 @@ GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp entryPoint,
   return ep;
 }
 
-gctools::return_type bytecode_call(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
+gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   // entry point for bytecode interpreter
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
-  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
-  printf("%s:%d:%s Get the code BytecodeModule_sp\n", __FILE__, __LINE__, __FUNCTION__ );
-  BytecodeModule_sp module = gc::As<BytecodeModule_sp>(entryPoint->_Code);
-  size_t ei;
-  if (lcc_nargs>=NUMBER_OF_ENTRY_POINTS) {
-    ei = 0;
-  } else {
-    ei = 1+lcc_nargs;
-  }
-  int entryIndex = (*entryPoint)._EntryPcs[ei];
-  printf("%s:%d:%s This is where we evaluate bytecode functions module: %p   entryIndex: %d\n", __FILE__, __LINE__, __FUNCTION__, _rep_(module).c_str(), entryIndex );
+  // Do we need the lookup entryPoint? - if so - maybe we should pass it to bytecode_call
+  // Meh, it's just a lookup and we are going to read closed over slots
+  // which should be in the same cache line.
+  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
+  printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
   VirtualMachine& vm = my_thread->_VM;
-  unsigned char* pc = (unsigned char*)(gc::As<Array_sp>(module->bytecode())->rowMajorAddressOfElement_(0))+entryIndex;
   vm.push((T_O*)vm._FramePointer);
   vm._FramePointer = vm._StackPointer;
   while (1) {
@@ -472,36 +469,56 @@ gctools::return_type bytecode_call(core::T_O* lcc_closure, size_t lcc_nargs, cor
 }
 
 struct BytecodeClosureEntryPoint {
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    if (interpreter_trampoline) {
-      return (interpreter_trampoline)((void*)&bytecode_call,lcc_closure,lcc_nargs,lcc_args);
-    }
-    return bytecode_call(lcc_closure,lcc_nargs,lcc_args);
+  static inline LCC_RETURN bytecode_enter(size_t entryIndex, T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
+    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
+    core::BytecodeModule_sp module = gctools::As_unsafe<core::BytecodeModule_sp>(entryPoint->_Code);
+    int entryPcOffset = (*entryPoint)._EntryPcs[entryIndex];
+    unsigned char* pc =  (unsigned char*)(gc::As<Array_sp>(module->bytecode())->rowMajorAddressOfElement_(0)) + entryPcOffset;
+    if (bytecode_trampoline) return (bytecode_trampoline)((void*)&bytecode_call,pc,lcc_closure,lcc_nargs,lcc_args);
+    return bytecode_call(pc,lcc_closure,lcc_nargs,lcc_args);
   }
+
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    size_t ei = 0;
+    return bytecode_enter( ei, lcc_closure, lcc_nargs, lcc_args );
+  }
+
   static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
+    constexpr size_t lcc_nargs = 0;
+    size_t ei = 1 + lcc_nargs;
+    return bytecode_enter( ei, lcc_closure, lcc_nargs, NULL );
   }
   static inline LISP_ENTRY_1() {
     core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
+    constexpr size_t lcc_nargs = 1;
+    size_t ei = 1 + lcc_nargs;
+    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
   }
   static inline LISP_ENTRY_2() {
     core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
+    constexpr size_t lcc_nargs = 2;
+    size_t ei = 1 + lcc_nargs;
+    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
   }
   static inline LISP_ENTRY_3() {
     core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
+    constexpr size_t lcc_nargs = 3;
+    size_t ei = 1 + lcc_nargs;
+    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
   }
   static inline LISP_ENTRY_4() {
     core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
+    constexpr size_t lcc_nargs = 4;
+    size_t ei = 1 + lcc_nargs;
+    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
   }
   static inline LISP_ENTRY_5() {
     core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
+    constexpr size_t lcc_nargs = 5;
+    size_t ei = 1 + lcc_nargs;
+    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
   }
-
 };
 
 
@@ -849,8 +866,6 @@ CL_DEFUN void core__verify_global_entry_point(T_sp alist)
   expect_offset(kw::_sym_defined,alist,offsetof(GlobalEntryPoint_O,_EntryPoints._Defined)-gctools::general_tag);
 }
 
-
-trampoline_function interpreter_trampoline = NULL;
 
 gctools::return_type interpreter_call(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
