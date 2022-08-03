@@ -201,19 +201,29 @@
 ;;(deftransform car cleavir-primop:car cons)
 ;;(deftransform cdr cleavir-primop:cdr cons)
 
-(deftransform aref core::sf-vref (simple-array single-float (*)) t)
-(deftransform aref core::df-vref (simple-array double-float (*)) t)
-(deftransform row-major-aref core::sf-vref (simple-array single-float (*)) t)
-(deftransform row-major-aref core::df-vref (simple-array double-float (*)) t)
+;;; We can't use %DISPLACEMENT here because it will return the underlying
+;;; simple array even when there isn't one as far as standard lisp is concerned,
+;;; e.g. for a simple mdarray, or an undisplaced adjustable array.
+#+(or)
+(deftransform array-displacement core::%displacement (and array (not simple-array)))
+(deftransform array-total-size core::%array-total-size
+  (and array (not (simple-array * (*)))))
+(deftransform array-rank core::%array-rank (and array (not (simple-array * (*)))))
+;;; Can't use %array-dimension since it doesn't check the rank.
 
-(deftransform (setf aref) core::sf-vset
-  single-float (simple-array single-float (*)) t)
-(deftransform (setf aref) core::df-vset
-  double-float (simple-array double-float (*)) t)
-(deftransform (setf row-major-aref) core::sf-vset
-  single-float (simple-array single-float (*)) t)
-(deftransform (setf row-major-aref) core::df-vset
-  double-float (simple-array double-float (*)) t)
+(deftransform core:check-bound core:check-bound
+  t fixnum t)
+;; These are unsafe - make sure we only use core:vref when we don't need a
+;; (further) bounds check.
+(defmacro define-vector-transforms (element-type ref set)
+  `(progn
+     (deftransform core:vref ,ref (simple-array ,element-type (*)) fixnum)
+     (deftransform (setf core:vref) ,set t (simple-array ,element-type (*)) fixnum)))
+(define-vector-transforms t core::t-vref core::t-vset)
+(define-vector-transforms single-float core::sf-vref core::sf-vset)
+(define-vector-transforms double-float core::df-vref core::df-vset)
+(define-vector-transforms base-char core::bc-vref core::bc-vset)
+(define-vector-transforms character core::c-vref core::c-vset)
 
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 

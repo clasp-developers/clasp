@@ -97,7 +97,8 @@
             do (with-transform-declining
                    (replace-callee-with-lambda
                     call (funcall transform :origin (bir:origin call)
-                                  :argstype argstype))
+                                            :argstype argstype
+                                            :policy (bir:policy call)))
                  (return t)))))
 
 (defun transform-values-call-to-ftm (call)
@@ -126,7 +127,8 @@
                 do (with-transform-declining
                        (replace-mvcallee-with-lambda
                         call (funcall transform :origin (bir:origin call)
-                                      :argstype argstype))
+                                                :argstype argstype
+                                                :policy (bir:policy call)))
                      (return t)))
         nil)))
 
@@ -276,7 +278,8 @@ Optimizations are available for any of:
                                 resttype))))
 
 (defmacro deftransform (name (typed-lambda-list
-                              &key (argstype (gensym "ARGSTYPE") argstypep))
+                              &key (argstype (gensym "ARGSTYPE") argstypep)
+                              (policy (gensym "POLICY") policyp))
                         &body body)
   (multiple-value-bind (req opt rest reqt optt restt)
       (process-deftransform-lambda-list typed-lambda-list)
@@ -285,8 +288,11 @@ Optimizations are available for any of:
            (ll `(,@req &optional ,@opt ,@(when rest `(&rest ,rest))))
            (vt `(values ,@reqt &optional ,@optt &rest ,restt))
            (osym (gensym "ORIGIN")) (bodysym (gensym "BODY")))
-      `(%deftransform ,name (&key ((:origin ,osym)) ((:argstype ,argstype))) ,vt
+      `(%deftransform ,name (&key ((:origin ,osym))
+                                  ((:argstype ,argstype))
+                                  ((:policy ,policy))) ,vt
          ,@(unless argstypep `((declare (ignore ,argstype))))
+         ,@(unless policyp `((declare (ignore ,policy))))
          (let ((,bodysym (progn ,@body)))
            (cstify-transformer
             ,osym
@@ -524,7 +530,43 @@ Optimizations are available for any of:
 (deftransform (setf aref) (((val t) (arr vector) (index t)))
   '(setf (row-major-aref arr index) val))
 
+;;; Move bounds check outside the callee
+(defun bounds-check-form (array index policy)
+  (if (cleavir-policy:policy-value policy 'core::insert-array-bounds-checks)
+      ;; Note that this LENGTH is on a known simple-vector, so it will be inlined.
+      `(core:check-bound ,array (length ,array) ,index)
+      index))
+(defmacro define-vector-transforms (element-type)
+  `(progn
+     (deftransform aref (((arr (simple-array ,element-type (*))) (index t))
+                         :policy policy)
+       (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+     (deftransform (setf aref) (((val t)
+                                 (arr (simple-array ,element-type (*)))
+                                 (index t))
+                                :policy policy)
+       (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
+             (list 'the (list 'values ',element-type '&rest 'nil) 'val)))
+     (deftransform row-major-aref (((arr (simple-array ,element-type (*))) (index t))
+                                   :policy policy)
+       (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+     (deftransform (setf row-major-aref) (((val t)
+                                           (arr (simple-array ,element-type (*)))
+                                           (index t))
+                                          :policy policy)
+       (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
+             (list 'the (list 'values ',element-type '&rest 'nil) 'val)))))
+;;; These are the ones we have underlying primops for at the moment.
+;;; Doesn't seem to be worth it otherwise.
+(define-vector-transforms t)
+(define-vector-transforms single-float)
+(define-vector-transforms double-float)
+(define-vector-transforms base-char)
+(define-vector-transforms character)
+
 (deftransform array-rank (((arr (array * (*))))) 1)
+(deftransform array-dimension (((arr (simple-array * (*))) (dimension (eql 0))))
+  '(length arr))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

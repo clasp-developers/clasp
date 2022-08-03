@@ -72,6 +72,8 @@
             +fixnum01-tag+
             #+tag-bits4 +fixnum10-tag+
             #+tag-bits4 +fixnum11-tag+
+            +character-shift+
+            +character-tag+
             +alignment+
             #+tag-bits4 +vaslist-ptag-mask+
             +vaslist0-tag+
@@ -92,6 +94,7 @@
             %void%
             %i1%
             %exception-struct%
+            %i16%
             %i32%
             %i32*%
             %i64%
@@ -274,6 +277,10 @@
             irc-switch
             irc-add-case
             irc-tag-fixnum
+            irc-tag-base-char
+            irc-untag-base-char
+            irc-tag-character
+            irc-untag-character
             irc-trunc
             irc-unreachable
             irc-untag-fixnum

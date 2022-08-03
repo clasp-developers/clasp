@@ -152,11 +152,10 @@
                ;; no length check: easy
                (generate-test simple-vector-type complex-vector-type
                               't 't 'nil)
-               ;; Now we have to get the length differently based on
-               ;; the simplicity.
                (generate-test simple-vector-type complex-vector-type
-                              `(eq (core::vector-length object) ',length)
-                              `(eq (core::%array-dimension object 0) ',length)
+                              ;; This LENGTH can be inlined; see cleavir/bir-to-bmir
+                              `(eq (length (the ,simple-vector-type object)) ',length)
+                              `(eq (length object) ',length)
                               'nil))))
         ((*) ; anything, and dimensions are unspecified
          ;; for general arrays we have superclasses to use
@@ -176,11 +175,13 @@
                             nil nil '(return nil))
             ;; Now, it is an mdarray, so check dimensions.
             (and
-             (= (core::%array-rank object) ',rank)
+             ;; see transform in cleavir/bir-to-bmir.lisp
+             (= (array-rank (the (and array (not (simple-array * (*)))) object))
+                ',rank)
              ,@(loop for dim in dims
                      for i from 0
                      unless (eq dim '*)
-                       collect `(eq (core::%array-dimension object ',i) ,dim)))))))))
+                       collect `(eq (array-dimension object ',i) ,dim)))))))))
 
 (defun cons-typep-form (cart cdrt env)
   `(if (cleavir-primop:typeq object cons)

@@ -15,7 +15,11 @@
 ;;; * :object, meaning T_O*
 ;;; * :single-float, meaning an unboxed single float
 ;;; * :double-float, meaning an unboxed double float
+;;; * :base-char, meaning an untagged base-char
+;;; * :character, meaning an untagged character
 ;;; * :fixnum, meaning a tagged fixnum
+;;; * :utfixnum, meaning an untagged fixnum, i.e. a word that would shift into
+;;;   being a fixnum without losing any bits
 ;;; * :vaslist, meaning an unboxed vaslist
 ;;; So e.g. (:object :object) means a pair of T_O*.
 
@@ -328,6 +332,10 @@
       (error "BUG: ~a not defined on ~a ~a" 'min-vrtype vrt1 vrt2)))
 (defmethod min-vrtype ((vrt1 (eql :object)) vrt2) vrt2)
 (defmethod min-vrtype (vrt1 (vrt2 (eql :object))) vrt1)
+(defmethod min-vrtype ((vrt1 (eql :utfixnum)) (vrt2 (eql :fixnum))) vrt1)
+(defmethod min-vrtype ((vrt1 (eql :fixnum)) (vrt2 (eql :utfixnum))) vrt2)
+(defmethod min-vrtype ((vrt1 (eql :base-char)) (vrt2 (eql :character))) vrt1)
+(defmethod min-vrtype ((vrt1 (eql :character)) (vrt2 (eql :base-char))) vrt2)
 
 (defgeneric max-vrtype (vrt1 vrt2))
 (defmethod max-vrtype (vrt1 vrt2)
@@ -340,6 +348,10 @@
 (defmethod max-vrtype (vrt1 (vrt2 (eql :object)))
   (declare (ignore vrt1))
   vrt2)
+(defmethod max-vrtype ((vrt1 (eql :utfixnum)) (vrt2 (eql :fixnum))) vrt2)
+(defmethod max-vrtype ((vrt1 (eql :fixnum)) (vrt2 (eql :utfixnum))) vrt1)
+(defmethod max-vrtype ((vrt1 (eql :base-char)) (vrt2 (eql :character))) vrt2)
+(defmethod max-vrtype ((vrt1 (eql :character)) (vrt2 (eql :base-char))) vrt1)
 
 ;;; Given two rtypes, return the most preferable rtype.
 (defun min-rtype (rt1 rt2)
@@ -800,20 +812,14 @@
 ;;; (passed to a general function, etc.) we don't want to box it every time.
 
 (defgeneric constant-unboxable-p (value rtype))
-(defmethod constant-unboxable-p (value (rt (eql :object)))
-  (declare (ignore value))
-  nil)
-(defmethod constant-unboxable-p (value (rt (eql nil)))
-  (declare (ignore value))
+(defmethod constant-unboxable-p (value rt)
+  (declare (ignore value rt))
   nil)
 (defmethod constant-unboxable-p ((value single-float) (rt (eql :single-float)))
   t)
-(defmethod constant-unboxable-p ((value t) (rt (eql :single-float))) nil)
 (defmethod constant-unboxable-p ((value double-float) (rt (eql :double-float)))
   t)
-(defmethod constant-unboxable-p ((value t) (rt (eql :double-float))) nil)
-;; no point since they're just integers anyway
-(defmethod constant-unboxable-p ((value t) (rt (eql :fixnum))) nil)
+(defmethod constant-unboxable-p ((value fixnum) (rt (eql :utfixnum))) t)
 
 (defun unbox-constant-reference (inst value)
   (let ((constant (bir:input inst)))

@@ -287,39 +287,79 @@
     (%fptrunc arg cmp:%float%)))
 
 (defvprimop (core::fixnum-to-single :flags (:flushable))
-    ((:single-float) :fixnum) (inst)
+    ((:single-float) :utfixnum) (inst)
   (assert (= 1 (length (bir:inputs inst))))
-  (let* ((arg (in (first (bir:inputs inst))))
-         (fix (cmp:irc-ashr arg cmp:+fixnum-shift+ :exact t)))
-    (%sitofp fix cmp:%float%
-             (datum-name-as-string (first (bir:outputs inst))))))
+  (%sitofp (in (first (bir:inputs inst))) cmp:%float%
+           (datum-name-as-string (first (bir:outputs inst)))))
 (defvprimop (core::fixnum-to-double :flags (:flushable))
-    ((:double-float) :fixnum) (inst)
+    ((:double-float) :utfixnum) (inst)
   (assert (= 1 (length (bir:inputs inst))))
-  (let* ((arg (in (first (bir:inputs inst))))
-         (fix (cmp:irc-ashr arg cmp:+fixnum-shift+ :exact t)))
-    (%sitofp fix cmp:%double%
-             (datum-name-as-string (first (bir:outputs inst))))))
+  (%sitofp (in (first (bir:inputs inst))) cmp:%double%
+           (datum-name-as-string (first (bir:outputs inst)))))
 
-(defvprimop-intrinsic (core::sf-vref :flags (:flushable))
-    ((:single-float) :object :object)
-  "cc_simpleFloatVectorAref")
-(defvprimop-intrinsic (core::df-vref :flags (:flushable))
-    ((:double-float) :object :object)
-  "cc_simpleDoubleVectorAref")
+(defvprimop (core::vector-length :flags (:flushable))
+    ((:utfixnum) :object) (inst)
+  (assert (= 1 (length (bir:inputs inst))))
+  (cmp::gen-vector-length-untagged (in (first (bir:inputs inst)))))
 
-;;; These return the new value because it's a bit involved to rewrite BIR to use
-;;; a linear datum more than once.
-(defvprimop core::sf-vset ((:single-float) :single-float :object :object) (inst)
-  (let ((args (mapcar #'in (bir:inputs inst))))
-    (assert (llvm-sys:type-equal (llvm-sys:get-type (first args)) cmp:%float%))
-    (%intrinsic-invoke-if-landing-pad-or-call "cc_simpleFloatVectorAset" args)
-    (first args)))
-(defvprimop core::df-vset ((:double-float) :double-float :object :object) (inst)
-  (let ((args (mapcar #'in (bir:inputs inst))))
-    (assert (llvm-sys:type-equal (llvm-sys:get-type (first args)) cmp:%double%))
-    (%intrinsic-invoke-if-landing-pad-or-call "cc_simpleDoubleVectorAset" args)
-    (first args)))
+;;; several of these complex-array primops are not yet used, by may be of interest
+;;; eventually, so here they remain.
+
+(defvprimop (core::%displacement :flags (:flushable))
+    ((:object :utfixnum) :object) (inst)
+  (let ((ain (in (first (bir:inputs inst)))))
+    (list (cmp:irc-real-array-displacement ain)
+          (cmp:irc-real-array-index-offset ain))))
+
+(defvprimop (core::%array-total-size :flags (:flushable))
+    ((:utfixnum) :object) (inst)
+  (cmp:irc-array-total-size (in (first (bir:inputs inst)))))
+
+(defvprimop (core::%array-rank :flags (:flushable))
+    ((:utfixnum) :object) (inst)
+  (cmp:irc-array-rank (in (first (bir:inputs inst)))))
+
+(defvprimop (core::%array-dimension :flags (:flushable))
+    ((:utfixnum) :object :fixnum) (inst)
+  (cmp::irc-array-dimension
+   (in (first (bir:inputs inst)))
+   (in (second (bir:inputs inst)))))
+
+(defvprimop-intrinsic (core::check-bound :flags (:flushable))
+    ((:utfixnum) :object :utfixnum :object)
+  "cc_checkBound")
+
+(defun %vector-element-address (vec element-type index)
+  (let* ((vtype (cmp::simple-vector-llvm-type element-type))
+         (type (llvm-sys:type-get-pointer-to vtype))
+         (cvec (cmp:irc-bit-cast vec type))
+         (gep-indices (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) index)))
+    (cmp:irc-typed-gep-variable vtype cvec gep-indices)))
+
+(defmacro define-vector-primops (refname setname element-type vrtype)
+  `(progn
+     (defvprimop (,refname :flags (:flushable))
+         ((,vrtype) :object :utfixnum) (inst)
+       (let* ((vec (in (first (bir:inputs inst))))
+              (index (in (second (bir:inputs inst))))
+              (addr (%vector-element-address vec ',element-type index)))
+         (cmp:irc-typed-load (vrtype->llvm ',vrtype) addr)))
+     ;; These return the new value because it's a bit involved to rewrite BIR to use
+     ;; a linear datum more than once.
+     (defvprimop ,setname
+         ((,vrtype) ,vrtype :object :utfixnum) (inst)
+       (let* ((val (in (first (bir:inputs inst))))
+              (vec (in (second (bir:inputs inst))))
+              (index (in (third (bir:inputs inst))))
+              (addr (%vector-element-address vec ',element-type index)))
+         (cmp:irc-store val addr)
+         val))))
+
+(define-vector-primops core::t-vref core::t-vset t :object)
+(define-vector-primops core::sf-vref core::sf-vset single-float :single-float)
+(define-vector-primops core::df-vref core::df-vset double-float :double-float)
+(define-vector-primops core::bc-vref core::bc-vset base-char :base-char)
+(define-vector-primops core::c-vref core::c-vset character :character)
 
 ;;;
 
@@ -361,7 +401,7 @@
 ;; For division we don't need to untag the inputs but do need to
 ;; shift the quotient.
 (defvprimop (core::fixnum-truncate :flags (:flushable))
-    ((:fixnum :fixnum) :fixnum :fixnum) (inst)
+    ((:utfixnum :fixnum) :fixnum :fixnum) (inst)
   (let* ((arg1 (in (first (bir:inputs inst))))
          (arg2 (in (second (bir:inputs inst))))
          ;; The LLVM reference doesn't say this very well, but sdiv and srem
@@ -370,9 +410,8 @@
          ;; most-negative-fixnum/-1 as that would overflow.
          ;; They're also undefined for zero divisors. Don't do these things.
          (quo (cmp:irc-sdiv arg1 arg2))
-         (tquo (cmp:irc-shl quo cmp:+fixnum-shift+ :nsw t))
          (rem (cmp:irc-srem arg1 arg2)))
-    (list tquo rem)))
+    (list quo rem)))
 (defvprimop (core::fixnum-rem :flags (:flushable))
     ((:fixnum) :fixnum :fixnum) (inst)
   (let* ((arg1 (in (first (bir:inputs inst))))
@@ -401,21 +440,18 @@
   (def-fixnum-compare core::two-arg-fixnum->= cmp:irc-icmp-sge))
 
 (defvprimop (core::fixnum-positive-logcount :flags (:flushable))
-    ((:fixnum) :fixnum) (inst)
-  (let* ((arg (in (first (bir:inputs inst))))
-         (label (datum-name-as-string (first (bir:outputs inst))))
-         ;; NOTE we do not need to shift the argument: the tag is all zero
-         ;; so it won't affect the population count.
-         (count (%intrinsic-call "llvm.ctpop.i64" (list arg))))
-    (cmp:irc-shl count cmp:+fixnum-shift+ :label label :nsw t)))
+    ((:utfixnum) :fixnum) (inst)
+  (let ((arg (in (first (bir:inputs inst)))))
+    ;; NOTE we do not need to shift the argument: the tag is all zero
+    ;; so it won't affect the population count.
+    (%intrinsic-call "llvm.ctpop.i64" (list arg))))
 
 (defvprimop (core::fixnum-ashr :flags (:flushable))
-    ((:fixnum) :fixnum :fixnum) (inst)
+    ((:fixnum) :fixnum :utfixnum) (inst)
   (let* ((int (in (first (bir:inputs inst))))
          ;; NOTE: shift must be 0-63 inclusive or shifted is poison!
          (shift (in (second (bir:inputs inst))))
-         (ushift (cmp:irc-ashr shift cmp:+fixnum-shift+ :exact t))
-         (shifted (cmp:irc-ashr int ushift))
+         (shifted (cmp:irc-ashr int shift))
          (demask (%i64 (ldb (byte 64 0) (lognot cmp:+fixnum-mask+))))
          ;; zero the tag bits
          (fixn (cmp:irc-and shifted demask

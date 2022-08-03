@@ -1099,10 +1099,34 @@
 (defmethod cast-one ((from (eql :object)) (to (eql :double-float)) value)
   (cmp:irc-unbox-double-float value))
 
+(defmethod cast-one ((from (eql :base-char)) (to (eql :object)) value)
+  (cmp:irc-tag-base-char value))
+(defmethod cast-one ((from (eql :object)) (to (eql :base-char)) value)
+  (cmp:irc-untag-base-char value))
+(defmethod cast-one ((from (eql :character)) (to (eql :object)) value)
+  (cmp:irc-tag-character value))
+(defmethod cast-one ((from (eql :object)) (to (eql :character)) value)
+  (cmp:irc-untag-character value))
+
+(defmethod cast-one ((from (eql :base-char)) (to (eql :character)) value)
+  (cmp:irc-zext value cmp:%i32%))
+(defmethod cast-one ((from (eql :character)) (to (eql :base-char)) value)
+  (cmp:irc-trunc value cmp:%i8%))
+
 (defmethod cast-one ((from (eql :fixnum)) (to (eql :object)) value)
   (cmp:irc-int-to-ptr value cmp:%t*%))
 (defmethod cast-one ((from (eql :object)) (to (eql :fixnum)) value)
   (cmp:irc-ptr-to-int value cmp:%fixnum%))
+
+(defmethod cast-one ((from (eql :utfixnum)) (to (eql :fixnum)) value)
+  (cmp:irc-shl value cmp:+fixnum-shift+ :nsw t))
+(defmethod cast-one ((from (eql :fixnum)) (to (eql :utfixnum)) value)
+  (cmp:irc-ashr value cmp:+fixnum-shift+ :exact t))
+
+(defmethod cast-one ((from (eql :utfixnum)) (to (eql :object)) value)
+  (cmp:irc-tag-fixnum value))
+(defmethod cast-one ((from (eql :object)) (to (eql :utfixnum)) value)
+  (cmp:irc-untag-fixnum value cmp:%fixnum%))
 
 (defmethod cast-one ((from (eql :object)) (to (eql :vaslist)) value)
   ;; We only generate these when we know for sure the input is a vaslist,
@@ -1319,32 +1343,6 @@
         (outp (first (bir:outputs inst))))
     (out (cmp:irc-setf-fdefinition setf-symbol (datum-name-as-string outp))
          outp)))
-(defmethod translate-primop ((name (eql 'core::vector-length)) inst)
-  (out (cmp::gen-vector-length (in (first (bir:inputs inst))))
-       (first (bir:outputs inst))))
-(defmethod translate-primop ((name (eql 'core::%displacement)) inst)
-  (out (cmp:irc-real-array-displacement (in (first (bir:inputs inst))))
-       (first (bir:outputs inst))))
-(defmethod translate-primop ((name (eql 'core::%displaced-index-offset)) inst)
-  (out
-   (cmp:irc-tag-fixnum
-    (cmp:irc-real-array-index-offset (in (first (bir:inputs inst))))
-    (datum-name-as-string (first (bir:outputs inst))))
-   (first (bir:outputs inst))))
-(defmethod translate-primop ((name (eql 'core::%array-total-size)) inst)
-  (out (cmp:irc-tag-fixnum
-        (cmp:irc-array-total-size (in (first (bir:inputs inst))))
-        (datum-name-as-string (first (bir:outputs inst))))
-       (first (bir:outputs inst))))
-(defmethod translate-primop ((name (eql 'core::%array-rank)) inst)
-  (out (cmp:irc-tag-fixnum
-        (cmp:irc-array-rank (in (first (bir:inputs inst))))
-        (datum-name-as-string (first (bir:outputs inst))))
-       (first (bir:outputs inst))))
-(defmethod translate-primop ((name (eql 'core::%array-dimension)) inst)
-  (out (cmp:gen-%array-dimension (in (first (bir:inputs inst)))
-                                 (in (second (bir:inputs inst))))
-       (first (bir:outputs inst))))
 (defmethod translate-primop ((name (eql 'cleavir-primop:slot-read)) inst)
   (out (cmp::gen-instance-ref (in (first (bir:inputs inst)))
                               (in (second (bir:inputs inst))))
@@ -1738,7 +1736,8 @@
            ((:single-float)
             (llvm-sys:constant-fp-get-type-double cmp:%float% val))
            ((:double-float)
-            (llvm-sys:constant-fp-get-type-double cmp:%double% val)))
+            (llvm-sys:constant-fp-get-type-double cmp:%double% val))
+           ((:utfixnum) (%i64 val)))
          out)))
 
 (defun initialize-iblock-translation (iblock)

@@ -8,18 +8,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf cmp::*debug-create-call* nil))
 
-(defpackage "PRIMOP"
-  (:export #:inlined-two-arg-+
-           #:inlined-two-arg--
-           #:inlined-two-arg-*
-           #:inlined-two-arg-/
-           #:inlined-two-arg-<
-           #:inlined-two-arg-<=
-           #:inlined-two-arg-=
-           #:inlined-two-arg->
-           #:inlined-two-arg->=
-           ))
-
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*defun-inline-hook* 'defun-inline-hook))
 
@@ -1125,59 +1113,6 @@
                nil))
           (t nil))))
 
-#+(or)
-(progn
-  ;; Really want a bit-vector-equal intrinsic here.
-  ;; Maybe even separate simple and not vectors.
-  
-  (defmacro type2case (x y fail &rest cases)
-    (let ((sx (gensym "X")) (sy (gensym "Y")))
-      `(let ((,sx ,x) (,sy ,y))
-         (cond ,@(loop for (type . body) in cases
-                       collect `((typep ,sx ',type)
-                                 (if (typep ,sy ',type)
-                                     (progn ,@body)
-                                     ,fail))
-                       collect `((typep ,sy ',type) ,fail))
-               (t ,fail)))))
-  
-  (defun equal (x y)
-    (or (eql x y)
-        (type2case x y nil
-                   (cons (and (equal (car x) (car y))
-                              (equal (cdr x) (cdr y))))
-                   (string (string= x y))
-                   (bit-vector (bit-vector-equal x y))
-                   (pathname (pathname-equal x y)))))
-  
-  (defun hash-table-equalp (x y)
-    (and (eq (hash-table-count x) (hash-table-count y))
-         (eq (hash-table-test x) (hash-table-test y))
-         ;; since the number of entries is the same,
-         ;; we don't need to check for extra keys in y.
-         (maphash (lambda (k v)
-                    (multiple-value-bind (otherv present)
-                        (gethash k y)
-                      (unless present
-                        (return-from hash-table-equalp nil))
-                      (unless (equalp v otherv)
-                        (return-from hash-table-equalp nil))))
-                  x)
-         t))
-  
-  (defun equalp (x y)
-    (or (eq x y)
-        (type2case x y nil
-                   (character (char-equal x y))
-                   (number (= x y))
-                   (cons (and (equalp (car x) (car y))
-                              (equalp (cdr x) (cdr y))))
-                   (array (array-equalp x y))
-                   (structure-object (structure-equalp x y))
-                   (hash-table (hash-table-equalp x y))
-                   (pathname (pathname-equal x y)))))
-  )
-
 ;;; Type predicates.
 (macrolet ((defpred (name type)
              ;; We have to be careful about recursion - if one of these ended up
@@ -1340,121 +1275,6 @@
 (define-cleavir-compiler-macro core:unset-breakstep (&whole form)
   `(progn (core::primop core:unset-breakstep) nil))
 
-(debug-inline "primop")
-
-#+(or)
-(progn
-  (defmacro define-with-contagion (inlined-name comparison (x y) fixnum single-float double-float generic)
-    (declare (ignore comparison)) ; this will be used to control fp behavior, see CLHS 12.1.4.1
-    `(progn
-       (declaim (inline ,inlined-name))
-       (defun ,inlined-name (,x ,y)
-         (tagbody
-            ;; FIXME: The "generic" jumps should actually coerce and then jump
-            ;; to a specialized one.
-            (cond ((cleavir-primop:typeq ,x fixnum)
-                   (if (cleavir-primop:typeq ,y fixnum)
-                       (go fixnum)
-                       (go generic)))
-                  ((cleavir-primop:typeq ,x single-float)
-                   (cond ((cleavir-primop:typeq ,y single-float)
-                          (go single-float))
-                         #+(or)
-                         ((cleavir-primop:typeq ,y double-float)
-                          (setf ,x (cleavir-primop:coerce single-float double-float ,x))
-                          (go double-float))
-                         (t (go generic))))
-                  ((cleavir-primop:typeq ,x double-float)
-                   (cond ((cleavir-primop:typeq ,y double-float)
-                          (go double-float))
-                         #+(or)
-                         ((cleavir-primop:typeq ,y single-float)
-                          (setf ,y (cleavir-primop:coerce single-float double-float ,y))
-                          (go double-float))
-                         (t (go generic))))
-                  (t (go generic)))
-          fixnum (return-from ,inlined-name ,@fixnum)
-          single-float (return-from ,inlined-name ,@single-float)
-          double-float (return-from ,inlined-name ,@double-float)
-          generic (return-from ,inlined-name ,@generic)))))
-  (define-with-contagion primop:inlined-two-arg-+ nil (x y)
-    ((cleavir-primop:let-uninitialized (z)
-       (if (cleavir-primop:fixnum-add x y z)
-           z
-           (core:convert-overflow-result-to-bignum z))))
-    ((cleavir-primop:float-add single-float x y))
-    ((cleavir-primop:float-add double-float x y))
-    ((core:two-arg-+ x y)))
-  (define-with-contagion primop:inlined-two-arg-- nil (x y)
-    ((cleavir-primop:let-uninitialized (z)
-       (if (cleavir-primop:fixnum-sub x y z)
-           z
-           (core:convert-overflow-result-to-bignum z))))
-    ((cleavir-primop:float-sub single-float x y))
-    ((cleavir-primop:float-sub double-float x y))
-    ((core:two-arg-- x y)))
-  (define-with-contagion primop:inlined-two-arg-* nil (x y)
-    ((go generic))             ; FIXME: fixnum arithmetic!
-    ((cleavir-primop:float-mul single-float x y))
-    ((cleavir-primop:float-mul double-float x y))
-    ((core:two-arg-* x y)))
-  (define-with-contagion primop:inlined-two-arg-/ nil (x y)
-    ((go generic))             ; FIXME: fixnum arithmetic!
-    ((cleavir-primop:float-div single-float x y))
-    ((cleavir-primop:float-div double-float x y))
-    ((core:two-arg-/ x y)))
-  (defmacro defcomparison (inline-name fixnum-op float-op generic-name)
-    `(define-with-contagion ,inline-name t (x y)
-       ((if (,fixnum-op x y) t nil))
-       ((if (,float-op single-float x y) t nil))
-       ((if (,float-op double-float x y) t nil))
-       ((,generic-name x y))))
-  (defcomparison primop:inlined-two-arg-<
-    cleavir-primop:fixnum-less        cleavir-primop:float-less        core:two-arg-<)
-  (defcomparison primop:inlined-two-arg-<=
-    cleavir-primop:fixnum-not-greater cleavir-primop:float-not-greater core:two-arg-<=)
-  (defcomparison primop:inlined-two-arg-=
-    cleavir-primop:fixnum-equal       cleavir-primop:float-equal       core:two-arg-=)
-  (defcomparison primop:inlined-two-arg->
-    cleavir-primop:fixnum-greater     cleavir-primop:float-greater     core:two-arg->)
-  (defcomparison primop:inlined-two-arg->=
-    cleavir-primop:fixnum-not-less    cleavir-primop:float-not-less    core:two-arg->=))
-
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (define-cleavir-compiler-macro + (&whole form &rest numbers)
-    (core:expand-associative '+ 'primop:inlined-two-arg-+ numbers 0))
-  (define-cleavir-compiler-macro - (&whole form minuend &rest subtrahends)
-    (if (core:proper-list-p subtrahends)
-        (if subtrahends
-            `(primop:inlined-two-arg-- ,minuend ,(core:expand-associative '+ 'primop:inlined-two-arg-+ subtrahends 0))
-            `(core:negate ,minuend))
-        (error "The - operator can not be part of a form that is a dotted list.")))
-  (define-cleavir-compiler-macro * (&whole form &rest numbers)
-    (core:expand-associative '* 'primop:inlined-two-arg-* numbers 1))
-  (define-cleavir-compiler-macro / (&whole form dividend &rest divisors)
-    (if (core:proper-list-p divisors)
-        (if divisors
-            `(primop:inlined-two-arg-/ ,dividend (* ,@divisors))
-            `(primop:inlined-two-arg-/ 1 ,dividend))
-        (error "The / operator can not be part of a form that is a dotted list.")))
-  (define-cleavir-compiler-macro < (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg-< numbers 'real))
-  (define-cleavir-compiler-macro <= (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg-<= numbers 'real))
-  (define-cleavir-compiler-macro = (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg-= numbers 'number))
-  (define-cleavir-compiler-macro /= (&whole form &rest numbers)
-    (core:expand-uncompare form 'primop:inlined-two-arg-= numbers 'number))
-  (define-cleavir-compiler-macro > (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg-> numbers 'real))
-  (define-cleavir-compiler-macro >= (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg->= numbers 'real))
-  (define-cleavir-compiler-macro 1+ (&whole form x)
-    `(primop:inlined-two-arg-+ ,x 1))
-  (define-cleavir-compiler-macro 1- (&whole form x)
-    `(primop:inlined-two-arg-- ,x 1)))
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Array functions
@@ -1465,9 +1285,9 @@
          (ftype (function (array) sys:index) array-total-size))
 (defun array-total-size (array)
   (etypecase array
-    ((simple-array * (*)) (core::vector-length array))
+    ((simple-array * (*)) (core::primop core::vector-length array))
     ;; MDArray
-    (array (core::%array-total-size array))))
+    (array (core::primop core::%array-total-size array))))
 
 (debug-inline "array-rank")
 (declaim (inline array-rank)
@@ -1475,158 +1295,7 @@
 (defun array-rank (array)
   (etypecase array
     ((simple-array * (*)) 1)
-    (array (core::%array-rank array))))
-
-#+(or)
-(progn
-(debug-inline "array-dimension")
-(declaim (inline array-dimension))
-(defun array-dimension (array axis-number)
-  (etypecase array
-    ((simple-array * (*))
-     (if (zerop axis-number)
-         (core::vector-length array)
-         (error "Invalid axis number ~d for array of rank ~d" axis-number 1)))
-    (array
-     (if-in-bounds (axis-number 0 (core::%array-rank array))
-                   (core::%array-dimension array axis-number)
-                   (error "Invalid axis number ~d for array of rank ~d"
-                          axis-number (core::%array-rank array))))))
-)
-
-;; Unsafe version for array-row-major-index
-(debug-inline "%array-dimension")
-(declaim (inline %array-dimension)
-         (ftype (function (array) (integer 0 #.array-dimension-limit)) %array-dimension))
-(defun %array-dimension (array axis-number)
-  (etypecase array
-    ((simple-array * (*))
-     (core::vector-length array))
-    (array (core::array-dimension array axis-number))))
-
-#+(or)
-(progn
-(debug-inline "svref")
-(declaim (inline svref))
-(defun svref (vector index)
-  (if (typep vector 'simple-vector)
-      (let ((ats (core::vector-length vector)))
-        (if-in-bounds (index 0 ats)
-                      (cleavir-primop:aref vector index t t t)
-                      (error "Invalid index ~d for vector of length ~d" index ats)))
-      (error 'type-error :datum vector :expected-type 'simple-vector)))
-)
-
-#+(or)
-(progn
-(declaim (inline (setf svref)))
-(defun (setf svref) (value vector index)
-  (if (typep vector 'simple-vector)
-      (let ((ats (core::vector-length vector)))
-        (if-in-bounds (index 0 ats)
-                      (progn (cleavir-primop:aset vector index value t t t)
-                             value)
-                      (error "Invalid index ~d for vector of length ~d" index ats)))
-      (error 'type-error :datum vector :expected-type 'simple-vector)))
-)
-
-;;; Array indices are all fixnums. If we're sure sizes are valid, we don't want
-;;; to use general arithmetic. We can just use this to do unsafe modular arithmetic.
-;;; (Used in this file only)
-#+(or)
-(defmacro add-indices (a b)
-  `(cleavir-primop:let-uninitialized (z)
-     (if (cleavir-primop:fixnum-add ,a ,b z) z z)))
-
-;; FIXME: Duplicate code from seqmacros.lisp.
-#+(or)
-(defmacro with-array-data ((arrayname offsetname array) &body body)
-  `(multiple-value-bind (,arrayname ,offsetname)
-       (let ((,arrayname ,array) (,offsetname 0))
-         (loop
-           (if (cleavir-primop:typeq ,arrayname core:abstract-simple-vector)
-               (return (values ,arrayname ,offsetname)))
-           (psetf ,arrayname (core::%displacement ,arrayname)
-                  ,offsetname (add-indices
-                               ,offsetname
-                               (core::%displaced-index-offset ,arrayname)))))
-     (declare (type (simple-array * (*)) ,arrayname)
-              (type fixnum ,offsetname))
-     ,@body))
-
-#+(or)
-(progn
-(declaim (inline vector-read))
-(defun vector-read (vector index)
-  ;; first bounds check. Use the original arguments.
-  ;; second, undisplace. This can be done independently
-  ;; of the index, meaning it could potentially be
-  ;; moved out of loops, though that can invite inconsistency
-  ;; in a multithreaded environment.
-  ;; NOTE: vector-length will be the fill pointer, if there is one.
-  ;; ALSO NOTE: This function is only used in ELT. We know already
-  ;; that vector really is a vector.
-  (let ((max (core::vector-length vector)))
-    (if-in-bounds (index 0 max)
-                  nil
-                  (error 'core:sequence-out-of-bounds
-                         :datum index :expected-type `(integer 0 (,max))
-                         :object vector))
-    (with-array-data (underlying-array offset vector)
-      ;; Okay, now array is a vector/simple, and index is valid.
-      ;; This function takes care of element type discrimination.
-      (vref underlying-array (add-indices index offset)))))
-)
-
-#+(or)
-(progn
-(declaim (inline vector-set))
-(defun vector-set (vector index value)
-  ;; NOTE: This function is only used in CORE:SETF-ELT. We know already
-  ;; that vector really is a vector.
-  (let ((max (core::vector-length vector)))
-    (if-in-bounds (index 0 max)
-                  nil
-                  (error 'core:sequence-out-of-bounds
-                         :datum index :expected-type `(integer 0 (,max))
-                         :object vector))
-    (with-array-data (underlying-array offset vector)
-      ;; Okay, now array is a vector/simple, and index is valid.
-      ;; This function takes care of element type discrimination.
-      (setf (vref underlying-array (add-indices index offset)) value))))
-)
-
-#+(or)
-(progn
-(declaim (inline row-major-aref/no-bounds-check))
-(defun row-major-aref/no-bounds-check (array index)
-  ;; First, undisplace. This can be done independently
-  ;; of the index, meaning it could potentially be
-  ;; moved out of loops, though that can invite inconsistency
-  ;; in a multithreaded environment.
-  (with-array-data (underlying-array offset array)
-    ;; Array is a vector/simple, and we assume index is valid.
-    (core:vref underlying-array (add-indices index offset))))
-)
-
-#+(or)
-(progn
-(declaim (inline cl:row-major-aref))
-(defun cl:row-major-aref (array index)
-  (let ((max (etypecase array
-               ((simple-array * (*)) (core::vector-length array))
-               (array (core::%array-total-size array)))))
-    (if-in-bounds (index 0 max)
-                  nil
-                  (error 'core:row-major-out-of-bounds :datum index
-                                                       :expected-type `(integer 0 (,max))
-                                                       :object array)))
-  (row-major-aref/no-bounds-check array index))
-(define-cleavir-compiler-macro row-major-aref (&whole whole array index &environment env)
-  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
-      whole
-      `(row-major-aref/no-bounds-check ,array ,index)))
-)
+    (array (core::primop core::%array-rank array))))
 
 (declaim (inline schar (setf schar) char (setf char))
          (ftype (function (simple-string sys:index) character) schar)
@@ -1674,115 +1343,12 @@
                      for subsym in (reverse subsyms)
                      collect `(* ,sub ,subsym))))))))
 
-;;; Insert some form if the policy is in effect, otherwise nil.
-;;; intended use is like ,@(when-policy ...)
-(defun when-policy (env policy form)
-  (when (environment-has-policy-p env policy) (list form)))
-
-;;; FIXME: core::%array-dimension won't work for simple vectors. Might need to
-;;; shuffle type checks around to do things properly.
-#+(or)
-(define-cleavir-compiler-macro array-row-major-index
-    (&whole form array &rest subscripts &environment env)
-  ;; FIXME: Cleavir arithmetic is not yet clever enough for this to be fast in the
-  ;; >1dimensional case. We need wrapped fixnum multiplication and addition, basically,
-  ;; where overflow jumps to an error.
-  ;; As such, we don't expand (using the C++ definition) for these cases.
-  (if (> (length subscripts) 1)
-      form
-      (let* ((rank (length subscripts))
-             (sarray (gensym "ARRAY"))
-             (ssubscripts (loop repeat rank collecting (gensym "SUBSCRIPT")))
-             (dimsyms (loop repeat rank collecting (gensym "DIMENSION")))
-             (rmindex (gensym "ROW-MAJOR-INDEX")))
-        ;; First up, once-only the array and subscripts.
-        `(let ((,sarray ,array)
-               ,@(loop for ssub in ssubscripts for sub in subscripts
-                       collecting `(,ssub ,sub)))
-           (declare (type fixnum ,@ssubscripts))
-           ;; Now verify that the rank is correct (maybe)
-           ,@(when-policy
-              env 'core::insert-array-bounds-checks
-              `(core:check-rank ,sarray ,rank))
-           ;; We need the array dimensions, so bind those
-           (let (,@(loop for dimsym in dimsyms
-                         for axis below rank
-                         collect `(,dimsym (core::%array-dimension ,sarray ,axis))))
-             (declare (type fixnum ,@dimsyms))
-             ;; Check that the index is valid (maybe)
-             ,@(when (environment-has-policy-p env 'core::insert-array-bounds-checks)
-                 (loop for ssub in ssubscripts
-                       for dimsym in dimsyms
-                       for axis below rank
-                       collect `(core:check-index ,ssub ,dimsym ,axis)))
-             ;; Now we know we're good, do the actual computation
-             ,(row-major-index-computer dimsyms ssubscripts))))))
-
-#+(or)
-(define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts
-                                                   &environment env)
-  (if (or (> (length subscripts) 1) (null subscripts))
-      form
-      (let ((sarray (gensym "ARRAY"))
-            (index0 (gensym "INDEX0")))
-        `(let ((,sarray ,array)
-               (,index0 ,(first subscripts)))
-           ,@(when-policy
-              env 'core::insert-array-bounds-checks
-              `(core::multiple-value-foreign-call
-                "cm_check_index"
-                ,index0
-                (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
-                    (core::vector-length ,sarray)
-                    (core::%array-dimension ,sarray 0))
-                0))
-           (with-array-data (data offset ,sarray)
-             (core::MULTIPLE-VALUE-FOREIGN-CALL "cm_vset" data (add-indices offset ,index0) ,new))))))
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Sequence functions
 ;;;
 
 (declaim (ftype (function (sequence) sys:index) length))
-
-#+(or)
-(progn
-  (debug-inline "elt")
-  (declaim (inline elt))
-  (defun elt (sequence index)
-    (etypecase sequence
-      (cons
-       (let ((cell (nthcdr index sequence)))
-         (cond ((consp cell) (car (cleavir-primop:the cons cell)))
-               ((null cell) ; Ran out of conses - index is too large.
-                (error 'core:sequence-out-of-bounds
-                       :datum index :object sequence
-                       :expected-type `(integer 0 ,(1- (core:cons-length sequence)))))
-               (t ; improper list.
-                (error 'type-error :datum sequence :expected-type 'sequence)))))
-      (vector (vector-read sequence index))
-      (null (error 'core:sequence-out-of-bounds :datum index :expected-type '(integer 0 (0))
-                                                :object sequence))
-      (t (sequence:elt sequence index))))
-
-  (debug-inline "core:setf-elt")
-  (declaim (inline core:setf-elt))
-  (defun core:setf-elt (sequence index new-value)
-    (typecase sequence
-      (cons
-       (let ((cell (nthcdr index sequence)))
-         (cond ((consp cell) (setf (car (cleavir-primop:the cons cell)) new-value))
-               ((null cell) ; Ran out of conses - index is too large.
-                (error 'core:sequence-out-of-bounds
-                       :datum index :object sequence
-                       :expected-type `(integer 0 ,(1- (core:cons-length sequence)))))
-               (t ; improper list.
-                (error 'type-error :datum sequence :expected-type 'sequence)))))
-      (vector (vector-set sequence index new-value))
-      (null (error 'core:sequence-out-of-bounds :datum index :expected-type '(integer 0 (0))
-                                                :object sequence))
-      (t (setf (sequence:elt sequence index) new-value)))))
 
 ;;; Redefinition of C++ function.
 ;;; NOTE: This will be faster if we use a generic function or implement typecase

@@ -194,6 +194,34 @@
 ;;; See bugs #399, #1205
 (test floor-mpf-1 (floor 2.305843e18) (2305843009213693952 0e0))
 
+;;; The standard doesn't specify the types here beyond "float", but we want
+;;; to be using the usual contagion rules.
+(test floor-remainder-contagion
+      (loop for fun in '(floor ceiling truncate round
+                         ffloor fceiling ftruncate fround)
+            nconc
+            (loop for args in '((3f0 2) (3 2f0) (3f0 4/7) (31/30 2f0)
+                                (3f0 2d0) (3d0 2f0) (3d0 2d0))
+                  for rtype in '(single-float single-float single-float single-float
+                                 double-float double-float double-float)
+                  unless (typep (nth-value 1 (apply fun args)) rtype)
+                    collect (cons fun args)))
+      (nil))
+;; The standard's description here is just weird, but again, we go with contagion.
+;; And in this case also that given two rationals we should get a single.
+(test ffloor-quotient-contagion
+      (loop for fun in '(ffloor fceiling ftruncate fround)
+            nconc
+            (loop for args in '((3 2) (3 4/7) (31/30 2)
+                                (3f0 2) (3 2f0) (3f0 4/7) (31/30 2f0)
+                                (3f0 2d0) (3d0 2f0) (3d0 2d0))
+                  for rtype in '(single-float single-float single-float
+                                 single-float single-float single-float single-float
+                                 double-float double-float double-float)
+                  unless (typep (apply fun args) rtype)
+                    collect (cons fun args)))
+      (nil))
+
 (test-true negate-most-negative-fixnum-1 (plusp (- -2305843009213693952)))
 
 (test-type reciprocal-1 (/ -1) fixnum)

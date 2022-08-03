@@ -312,6 +312,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "UNUSED-STAMP", make_fixnum(gctools::STAMPWTAG_UNUSED));
   ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::STAMPWTAG_FIXNUM));
   ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
+  ENTRY(list, "CHARACTER-SHIFT", make_fixnum(gctools::character_shift));
+  ENTRY(list, "CHARACTER-TAG", make_fixnum(gctools::character_tag));
   ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMPWTAG_max));
   ENTRY(list, "WHERE-TAG-MASK", make_fixnum(gctools::Header_s::where_mask));
   ENTRY(list, "DERIVABLE-WHERE-TAG", make_fixnum(gctools::Header_s::derivable_wtag));
