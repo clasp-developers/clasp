@@ -127,7 +127,8 @@ public: // Functions here
   gc::Fixnum popcount() const;
   Rational_sp ratdivide(Integer_sp) const override;
   virtual gc::Fixnum bit_length_() const override;
-  Integer_sp shift_(gc::Fixnum) const override;
+  Integer_sp shift_left(gc::Fixnum) const override;
+  Integer_sp shift_right(gc::Fixnum) const override;
 
   virtual bool eql_(T_sp obj) const override;
   virtual bool evenp_() const override { return !((this->limbs())[0] & 1); }

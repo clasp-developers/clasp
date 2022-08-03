@@ -326,11 +326,13 @@ CL_DEFUN Integer_sp core__next_rshift(Bignum_sp num, Fixnum shift) {
   }
 }
 
-Integer_sp Bignum_O::shift_(Fixnum shift) const {
-  Bignum_sp sthis = this->asSmartPtr();
-  if (shift > 0) return core__next_lshift(sthis, shift);
-  else if (shift < 0) return core__next_rshift(sthis, -shift);
-  else return sthis;
+Integer_sp Bignum_O::shift_left(Fixnum shift) const {
+  if (shift > 0) return core__next_lshift(this->asSmartPtr(), shift);
+  else return this->asSmartPtr();
+}
+Integer_sp Bignum_O::shift_right(Fixnum shift) const {
+  if (shift > 0) return core__next_rshift(this->asSmartPtr(), shift);
+  else return this->asSmartPtr();
 }
 
 DOCGROUP(clasp)

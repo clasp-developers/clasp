@@ -142,7 +142,8 @@ namespace core
   bool clasp_float_nan_p(Float_sp num);
   bool clasp_float_infinity_p(Float_sp num);
   NumberType clasp_t_of(Number_sp num);
-  Integer_sp clasp_shift(Integer_sp num, Fixnum bits);
+  Integer_sp clasp_shift_left(Integer_sp num, Fixnum nbits);
+  Integer_sp clasp_shift_right(Integer_sp num, Fixnum nbits);
   gc::Fixnum clasp_integer_length(Integer_sp x);
 
   Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
@@ -329,9 +330,10 @@ namespace core {
     // returning an exact, reduced rational.
     virtual Rational_sp ratdivide(Integer_sp) const { SUBIMP(); };
 
-    /*! Return the value shifted by BITS bits.
-      If BITS < 0 shift right, if BITS >0 shift left. */
-    virtual Integer_sp shift_(gc::Fixnum bits) const { SUBIMP(); };
+    // Return the value shifted by BITS bits left.
+    virtual Integer_sp shift_left(gc::Fixnum nbits) const { SUBIMP(); };
+    // and right.
+    virtual Integer_sp shift_right(gc::Fixnum nbits) const { SUBIMP(); };
 
     virtual void __write__(T_sp strm) const override;
     Integer_O(){};
@@ -970,44 +972,42 @@ namespace core {
     UNREACHABLE();
   }
 
-  inline Integer_sp clasp_shift(Integer_sp n, Fixnum bits) {
+  inline Integer_sp clasp_shift_left(Integer_sp n, Fixnum bits) {
     if (n.fixnump()) {
-      if (bits < 0) {
-        Fixnum y = n.unsafe_fixnum();
-        bits = -bits;
-        if (bits >= gc::fixnum_bits) {
-          y = (y < 0) ? -1 : 0;
-        } else {
-          y >>= bits;
-        }
-        return immediate_fixnum<Integer_O>(y);
-      } else {
-        Fixnum y = (uint64_t)n.raw_();
-        if (y>0) {
-          int clz = fixnum_clz(y);
-          if (clz>bits) {
-            y <<= bits;
-            Integer_sp result((gctools::Tagged)y);
-            return result;
-          }
-        } else if (y<0) {
-          int clrsb = fixnum_clrsb(y);
-          if (clrsb>bits) {
-            y <<= bits;
-            Integer_sp result((gctools::Tagged)y);
-            return result;
-          }
-        } else if (y==0) {
-          Integer_sp result((gctools::Tagged)0);
+      Fixnum y = (uint64_t)n.raw_();
+      if (y>0) {
+        int clz = fixnum_clz(y);
+        if (clz>bits) {
+          y <<= bits;
+          Integer_sp result((gctools::Tagged)y);
           return result;
         }
-        Bignum val(static_cast<signed long>(n.unsafe_fixnum()));
-        Bignum res;
-        mpz_mul_2exp(res.get_mpz_t(), val.get_mpz_t(), bits);
-        return Integer_O::create(res);
+      } else if (y<0) {
+        int clrsb = fixnum_clrsb(y);
+        if (clrsb>bits) {
+          y <<= bits;
+          Integer_sp result((gctools::Tagged)y);
+          return result;
+        }
+      } else if (y==0) {
+        Integer_sp result((gctools::Tagged)0);
+        return result;
       }
+      Bignum val(static_cast<signed long>(n.unsafe_fixnum()));
+      Bignum res;
+      mpz_mul_2exp(res.get_mpz_t(), val.get_mpz_t(), bits);
+      return Integer_O::create(res);
+    } else return n->shift_left(bits);
+  }
+  inline Integer_sp clasp_shift_right(Integer_sp n, Fixnum nbits) {
+    if (n.fixnump()) {
+      Fixnum y = n.unsafe_fixnum();
+      if (nbits >= gc::fixnum_bits) y = (y < 0) ? -1 : 0;
+      else y >>= nbits;
+      return immediate_fixnum<Integer_O>(y);
+    } else {
+      return n->shift_right(nbits);
     }
-    return n->shift_(bits);
   }
 
   inline gc::Fixnum clasp_integer_length(Integer_sp x) {

@@ -826,21 +826,40 @@ CL_DEFUN T_sp cl__special_operator_p(Symbol_sp sym) {
   return _lisp->specialFormOrNil(sym);
 };
 
+CL_DEFUN Integer_sp core__ash_left(Integer_sp integer, Integer_sp count) {
+  if (count.fixnump())
+    return clasp_shift_left(integer, count.unsafe_fixnum());
+  else if (clasp_zerop(integer))
+    return integer;
+  else SIMPLE_ERROR(("ash for bignum count not implemented"));
+}
+
+CL_DEFUN Integer_sp core__ash_right(Integer_sp integer, Integer_sp count) {
+  if (count.fixnump())
+    return clasp_shift_right(integer, count.unsafe_fixnum());
+  // bignum zero is impossible, so: all digits gone.
+  else if (clasp_minusp(integer))
+    return clasp_make_fixnum(-1);
+  else return clasp_make_fixnum(0);
+}
 
 CL_DECLARE();
 CL_DOCSTRING(R"dx(CLHS: ash)dx")
 DOCGROUP(clasp)
 CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
-  if (count.fixnump())
-    return clasp_shift(integer, count.unsafe_fixnum());
-  else {
+  if (count.fixnump()) {
+    Fixnum c = count.unsafe_fixnum();
+    if (c > 0) return clasp_shift_left(integer, c);
+    else if (c < 0) return clasp_shift_right(integer, -c);
+    else return integer;
+  } else {
     // count is bignum
     // We don't have integers with more than most-positive-fixnum digits,
     // so this operation is now pretty trivial.
     if (clasp_plusp(count)) {
       if (clasp_zerop (integer))
         return integer;
-        // result will not fit in memory, giveup
+        // result will not fit in memory, giveup (FIXME: storage-condition?)
       else SIMPLE_ERROR(("ash for bignum count not implemented"));
     } else if (clasp_minusp (count)) {
         // Count is a negative bignum, so all digits are gone.
