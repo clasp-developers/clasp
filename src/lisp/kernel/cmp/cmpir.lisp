@@ -941,6 +941,9 @@ representing a tagged fixnum."
 (defun irc-sub (lhs rhs &optional (label ""))
   (llvm-sys:create-sub *irbuilder* lhs rhs label nil nil))
 
+(defun irc-mul (lhs rhs &key (label "") (nsw nil) (nuw nil))
+  (llvm-sys:create-mul *irbuilder* lhs rhs label nuw nsw))
+
 (defun irc-sdiv (lhs rhs &key (label "") exact)
   (llvm-sys:create-sdiv *irbuilder* lhs rhs label exact))
 (defun irc-srem (lhs rhs &key (label ""))

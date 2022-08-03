@@ -102,18 +102,40 @@
 
 ;;; Calls we can reduce to primops. We do this late so that the more high level inference
 ;;; steps don't need to concern themselves with primops.
+;;; We do reductions based on the derived types of the arguments and of the
+;;; return value. Using the return type makes it easy to e.g. use fixnum
+;;; arithmetic when we know the result is a fixnum, without recapitulating the
+;;; difficult logic in type.lisp for figuring that out.
 ;;; This is a hash table where the keys are function names.
-;;; The values are alists (primop . argtypes).
+;;; The values are alists (primop return-type . argtypes).
 (defvar *call-to-primop* (make-hash-table :test #'equal))
 
+(defun %deftransform (name primop-name return-type argtypes)
+  (setf (gethash name *call-to-primop*)
+        (merge 'list (list (list* primop-name return-type argtypes))
+               (gethash name *call-to-primop*)
+               (lambda (k1 k2)
+                 (let ((rt1 (first k1)) (ts1 (rest k1))
+                       (rt2 (first k2)) (ts2 (rest k2)))
+                   (and (= (length ts1) (length ts2))
+                        (every #'subtypep ts1 ts2)
+                        (cleavir-ctype:values-subtypep
+                         rt1 rt2 clasp-cleavir:*clasp-system*))))
+               :key #'cdr)))
+
 (defmacro deftransform (name primop-name &rest argtypes)
-  `(setf (gethash ',name *call-to-primop*)
-         (merge 'list (list (cons ',primop-name ',argtypes))
-                (gethash ',name *call-to-primop*)
-                (lambda (types1 types2)
-                  (and (= (length types1) (length types2))
-                       (every #'subtypep types1 types2)))
-                :key #'cdr)))
+  `(progn (%deftransform ',name ',primop-name
+                         '(values &optional &rest t) ',argtypes)
+          ',name))
+
+;;; deftransform with return type. This is a separate operator because it's
+;;; much less common. And it has the annotated name because deftransform was 1st.
+(defmacro deftransform-wr (name primop-name return-type &rest argtypes)
+  `(progn (%deftransform ',name ',primop-name
+                         (cleavir-env:parse-values-type-specifier
+                          ',return-type nil clasp-cleavir:*clasp-system*)
+                         ',argtypes)
+          ',name))
 
 (deftransform symbol-value symbol-value symbol)
 
@@ -193,8 +215,9 @@
 
 ;;; This is a very KLUDGEy way to find additions of fixnums whose result is
 ;;; a fixnum as well. Plus it hardcodes the number of fixnum bits. FIXME
-(deftransform core:two-arg-+ core::fixnum-add (signed-byte 60) (signed-byte 60))
-(deftransform core:two-arg-- core::fixnum-sub (signed-byte 60) (signed-byte 60))
+(deftransform-wr core:two-arg-+ core::fixnum-add fixnum fixnum fixnum)
+(deftransform-wr core:two-arg-- core::fixnum-sub fixnum fixnum fixnum)
+(deftransform-wr core:two-arg-* core::fixnum-mul fixnum fixnum fixnum)
 
 (deftransform logcount core::fixnum-positive-logcount (and fixnum unsigned-byte))
 
@@ -240,12 +263,17 @@
       (let* ((sys clasp-cleavir:*clasp-system*)
              (callee (bir:callee inst))
              (args (rest (bir:inputs inst)))
+             (output (bir:output inst))
+             (prtype (bir:ctype output))
              (types (mapcar #'bir:ctype args))
              (ptypes (mapcar (lambda (vty) (cleavir-ctype:primary vty sys)) types))
              (lptypes (length ptypes)))
         (dolist (id ids)
-          (loop for (primop . ttypes) in (gethash id *call-to-primop*)
-                when (and (= lptypes (length ttypes)) (every #'subtypep ptypes ttypes))
+          (loop for (primop trtype . ttypes) in (gethash id *call-to-primop*)
+                when (and (= lptypes (length ttypes))
+                          (every #'subtypep ptypes ttypes)
+                          (cleavir-ctype:values-subtypep
+                           prtype trtype clasp-cleavir:*clasp-system*))
                   ;; Do the reduction to primop.
                   ;; If the callee is an fdefinition primop, delete that.
                   ;; KLUDGEy as we don't do a fully usedness analysis.

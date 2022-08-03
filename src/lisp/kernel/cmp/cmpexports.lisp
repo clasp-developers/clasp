@@ -182,6 +182,7 @@
             with-track-llvm-time
             irc-add
             irc-sub
+            irc-mul
             irc-sdiv irc-srem
             irc-udiv irc-urem
             irc-shl irc-lshr irc-ashr

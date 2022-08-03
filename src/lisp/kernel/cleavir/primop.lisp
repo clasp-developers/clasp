@@ -398,6 +398,15 @@
         (arg2 (in (second (bir:inputs inst)))))
     (cmp:irc-sub arg1 arg2)))
 
+;; And multiplication. We just avoid tag bits.
+;; We could possibly be a bit faster in some situations by shifting
+;; in different ways. TODO.
+(defvprimop (core::fixnum-mul :flags (:flushable))
+    ((:utfixnum) :utfixnum :utfixnum) (inst)
+  (let ((arg1 (in (first (bir:inputs inst))))
+        (arg2 (in (second (bir:inputs inst)))))
+    (cmp:irc-mul arg1 arg2 :nsw t :nuw t)))
+
 ;; For division we don't need to untag the inputs but do need to
 ;; shift the quotient.
 (defvprimop (core::fixnum-truncate :flags (:flushable))
