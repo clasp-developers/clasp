@@ -476,6 +476,10 @@ Optimizations are available for any of:
 (deftransform minusp (((n fixnum)))
   '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
 
+;; really obvious case, but it comes up in e.g. (ldb (byte 8 0) ...)
+(deftransform ash (((int integer) (count (eql 0)))) 'int)
+;; also obvious
+(deftransform ash (((int (eql 0)) (count integer))) 'int)
 ;; right shift of a fixnum
 (deftransform ash (((int fixnum) (count (integer * 0))))
   '(core::primop core::fixnum-ashr int (min (- count) 63)))
