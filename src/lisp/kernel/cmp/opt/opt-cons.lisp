@@ -17,7 +17,10 @@
     (t form)))
 
 (define-compiler-macro null (object) `(if ,object nil t))
-(define-compiler-macro endp (object) `(if (the list ,object) nil t))
+(define-compiler-macro endp (object)
+  ;; awkward THE to prevent very inefficient arbitrary-values type check in cclasp
+  ;; see the notes in opt-number for a little more information
+  `(if (the (values list &rest nil) (values ,object)) nil t))
 
 (defconstant +nthcdr-inline-limit+ 8) ; totally arbitrary
 
@@ -114,7 +117,7 @@
            (declare (ignore ,@ignores))
            (do-in-list (,%elt ,%sublist ,%list)
              (if (consp ,%elt)
-                 (let ((,%car (car (the cons ,%elt))))
+                 (let ((,%car (car (the (values cons &rest nil) (values ,%elt)))))
                    (when ,(funcall test-function %value
                                    (funcall key-function %car))
                      (return ,%elt)))

@@ -530,7 +530,7 @@ T_mv sys__spawn_subprocess(T_sp command, T_sp argv, T_sp environ, T_sp input, T_
     parent_error = 0;
     FEerror("Could not spawn subprocess to run ~S.", 1, command);
   }
-  printf("%s:%d:%s child_pid = %lld\n", __FILE__, __LINE__, __FUNCTION__, (int64_t)(pid.fixnump() ? pid.unsafe_fixnum() : -1));
+  printf("%s:%d:%s child_pid = %" PFixnum "\n", __FILE__, __LINE__, __FUNCTION__, pid.fixnump() ? pid.unsafe_fixnum() : -1);
   return Values(
       pid,
       clasp_make_fixnum(parent_write),

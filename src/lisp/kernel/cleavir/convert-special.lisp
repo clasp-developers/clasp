@@ -72,92 +72,162 @@
           ,@(mapcar #'discrimination-type (rest ctype))))
        (t ctype)))))
 
-(defun make-type-check-form (required system)
-  (let ((vars (loop repeat (length required)
-                    collect (gensym "CHECKED"))))
-    `(lambda (,@vars &rest rest)
-       ;; We don't want to insert type checks for typep and error, or
-       ;; else we risk getting trapped in an infinite recursion.
-       (declare (optimize (safety 0)))
-       ,@(loop for var in vars
-               for ty in required
-               unless (cleavir-ctype:top-p ty system)
-                 collect `(if (typep ,var
-                                     ',(discrimination-type ty))
-                              ,var
-                              (error 'type-error
-                                     :datum ,var
-                                     :expected-type ',ty)))
-       (apply #'values ,@vars rest))))
+(defun make-general-type-check-fun (ctype system)
+  (let* ((req (ctype:values-required ctype system))
+         (lreq (length req))
+         (opt (ctype:values-optional ctype system))
+         (lopt (length opt))
+         (rest (ctype:values-rest ctype system))
+         (rest-top-p (ctype:top-p rest system))
+         (rest-bot-p (ctype:bottom-p rest system))
+         (reqvars (loop repeat lreq collect (gensym "CHECKED")))
+         (reqp (loop repeat lreq collect (gensym "CHECKED-PRESENT-P")))
+         (optvars (loop repeat lopt collect (gensym "CHECKED")))
+         (optp (loop repeat lopt collect (gensym "CHECKED-PRESENT-P")))
+         (restvar (gensym "REST")))
+    (flet ((one (var type)
+             (let ((dtype (discrimination-type type)))
+               `(unless (typep ,var ',dtype)
+                  ;; We use the discrimination type in the error as well.
+                  ;; The ANSI tests expect to be able to use it as a discrimination
+                  ;; type, and we might as well comply.
+                  (error 'type-error :datum ,var :expected-type ',dtype))))
+           (mash (var -p) `(,var nil ,-p)))
+      `(lambda (&optional ,@(mapcar #'mash reqvars reqp)
+                  ,@(mapcar #'mash optvars optp)
+                &rest ,restvar)
+         (declare (core:lambda-name ,(make-symbol (format nil "~a-CHECKER" ctype)))
+                  (ignorable ,@reqp)
+                  (optimize (safety 0)))
+         ,@(loop for reqv in reqvars
+                 for -p in reqp
+                 for ty in req
+                 ;; If the type doesn't include NIL, we can skip checking -p since
+                 ;; the type check will be (typep nil whatever) which will fail.
+                 unless (ctype:disjointp ty 'null system)
+                   ;; FIXME: Better error
+                   collect `(unless ,-p
+                              (error "Required parameter of type ~s not provided"
+                                     ',ty))
+                 collect (one reqv ty))
+         ,@(loop for optv in optvars
+                 for -p in optp
+                 for ty in opt
+                 ;; Our default is NIL, so if the type includes NIL we don't need
+                 ;; to check the presence, but otherwise we do.
+                 collect (if (ctype:disjointp ty 'null system)
+                             `(when ,-p ,(one optv ty))
+                             (one optv ty)))
+         ,@(cond (rest-top-p nil)
+                 (rest-bot-p
+                  `((when ,restvar
+                      (error 'type-error :datum (first ,restvar) :expected-type 'nil))))
+                 (t
+                  (let ((rv (gensym "CHECKED")))
+                    `((loop for ,rv in ,restvar do ,(one rv rest))))))
+         ;; Check successful, now return the values
+         ,(if rest-bot-p
+              `(cond ,@(loop for optvs on (reverse optvars) for -p in (reverse optp)
+                             collect `(,-p (values ,@reqvars ,@(reverse optvs))))
+                     (t (values ,@reqvars)))
+              `(multiple-value-call #'values
+                 ,@reqvars
+                 (cond
+                   ,@(loop for optvs on (reverse optvars) for -p in (reverse optp)
+                           collect `(,-p (values ,@(reverse optvs))))
+                   (t (values)))
+                 (values-list ,restvar)))))))
+
+(defun make-type-check-fun (context ctype system)
+  (flet ((one (var type)
+           (let ((dtype (discrimination-type type)))
+             `(unless (typep ,var ',dtype)
+                (error 'type-error :datum ,var :expected-type ',dtype)))))
+    (ecase context
+      ((:variable)
+       (let ((var (gensym "CHECKED")))
+         `(lambda (,var)
+            (declare (core:lambda-name ,(make-symbol (format nil "~a-CHECKER" ctype)))
+                     (optimize (safety 0)))
+            ,(one var ctype)
+            ,var)))
+      ((:setq :argument)
+       (let ((var (gensym "CHECKED")) (ignore (gensym "IGNORE")))
+         `(lambda (&optional ,var &rest ,ignore)
+            (declare (core:lambda-name ,(make-symbol (format nil "~a-CHECKER" ctype)))
+                     (ignore ,ignore) (optimize (safety 0)))
+            ,(one var ctype)
+            ,var)))
+      ((:the :return)
+       (make-general-type-check-fun ctype system)))))
+
+(defun unreachability-error (ast origin policy env system)
+  ;; FIXME: Better error (condition type at least)
+  (ast:make-progn-ast
+   (list ast
+         (cst-to-ast:convert
+          (cst:cst-from-expression
+           '(locally
+             ;; Avoid recursion
+             (declare (optimize (type-check-ftype-return-values 0)))
+             (error "Unreachable"))
+           :source origin)
+          env system)
+         (ast:make-unreachable-ast :origin origin :policy policy))
+   :origin origin :policy policy))
 
 (defmethod cst-to-ast:type-wrap
-    (ast ctype origin env (system clasp-cleavir:clasp))
-  ;; We unconditionally insert a declaration,
-  ;; and insert a type check as well on high safety,
-  ;; unless the type is top in which case we do nothing.
-  ;; NOTE that the type check doesn't check &optional and &rest. FIXME?
-  (let ((insert-type-checks
-          (policy:policy-value
-           (cleavir-env:policy (cleavir-env:optimize-info env))
-           'insert-type-checks))
-        (required (cleavir-ctype:values-required ctype system)))
-    (cond
-      ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
-           (null required))
-       ast)
-      ((some (lambda (ty) (cleavir-ctype:bottom-p ty system)) required)
-       ;; KLUDGE: This isn't actually a check; if the restriction is violated
-       ;; bad things will happen. The right thing to do would be to call ERROR,
-       ;; but I don't want to worry about the recursion (as ERROR is declared
-       ;; as returning NIL type) right this second.
-       (cleavir-ast:make-progn-ast
-        (list ast (cleavir-ast:make-unreachable-ast :origin origin))))
-      (insert-type-checks
-       (let ((check
-               (cst-to-ast:convert
-                (cst:cst-from-expression
-                 (make-type-check-form required system)
-                 :source origin)
-                env system)))
-         (cleavir-ast:make-the-ast ast ctype check :origin origin)))
-      (t (cleavir-ast:make-the-ast ast ctype nil :origin origin)))))
-
-(defmethod cst-to-ast:type-wrap-argument
-    (ast ctype origin env (system clasp-cleavir:clasp))
-  ;; Insert an untrusted THE at non-high safety and insert type checks
-  ;; on high safety, unless the type is top in which case we do nothing.
-  ;; NOTE that the type check doesn't check &optional and &rest. FIXME?
-  (let ((insert-type-checks
-          (policy:policy-value
-           (cleavir-env:policy (cleavir-env:optimize-info env))
-           'type-check-ftype-arguments))
-        (required (cleavir-ctype:values-required ctype system)))
-    (declare (ignore insert-type-checks))
-    (cond ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
-               (null required))
-           ast)
-          ((some (lambda (ty) (cleavir-ctype:bottom-p ty system)) required)
-           ;; KLUDGE: This isn't actually a check; if the restriction is
-           ;; violated bad things will happen. The right thing to do would be
-           ;; to call ERROR, but I don't want to worry about the recursion
-           ;; (as ERROR is declared as returning NIL type) right this second.
-           (cleavir-ast:make-progn-ast
-            (list ast (cleavir-ast:make-unreachable-ast :origin origin))))
-          #+(or) ;; FIXME: doesn't work yet for some reason.
-          (insert-type-checks
-           (let ((check
-                   (cst-to-ast:convert
-                    (cst:cst-from-expression
-                     (make-type-check-form ctype system))
-                    env system)))
-             (cleavir-ast:make-the-ast ast ctype check :origin origin)))
-          (t (cleavir-ast:make-the-ast ast ctype nil :origin origin)))))
-
-(defmethod cst-to-ast:type-wrap-return-values
-    (ast ctype origin env (system clasp-cleavir:clasp))
-  ;; FIXME: same semantics as TYPE-WRAP but should probably use the
-  ;; different policy value. didn't want to copy and paste though.
-  (cst-to-ast:type-wrap ast ctype origin env system))
+    (ast ctype context origin env (system clasp-cleavir:clasp))
+  (let ((sv-ctype-p (member context '(:variable :argument :setq))))
+    (if (if sv-ctype-p
+            (ctype:top-p ctype system)
+            (and (null (ctype:values-required ctype system))
+                 (loop for ct in (ctype:values-optional ctype system)
+                       always (ctype:top-p ct system))
+                 (ctype:top-p (ctype:values-rest ctype system) system)))
+        ;; The type is too boring to note under any policy.
+        ast
+        ;; Do something.
+        (let* ((policy (env:policy (env:optimize-info env)))
+               (insert-type-checks
+                 (policy:policy-value
+                  policy
+                  (ecase context
+                    ((:the :variable :setq) 'type-check-the)
+                    ((:argument) 'type-check-ftype-arguments)
+                    ((:return) 'type-check-ftype-return-values))))
+               (vctype (ecase context
+                         ((:the :return) ctype)
+                         ((:variable) (ctype:single-value ctype system))
+                         ((:argument :setq) (ctype:coerce-to-values ctype system))))
+               (botp (if sv-ctype-p
+                         (ctype:bottom-p ctype system)
+                         (some (lambda (ct) (ctype:bottom-p ct system))
+                               (ctype:values-required ctype system)))))
+          (ecase insert-type-checks
+            ((0) ; trust without checking. Unsafe! 
+             (if botp
+                 ;; Type is bottom, so rather than THE, mark unreachable.
+                 (ast:make-progn-ast
+                  (list ast (cleavir-ast:make-unreachable-ast
+                             :origin origin :policy policy))
+                  :origin origin :policy policy)
+                 ;; Trusted THE
+                 (ast:make-the-ast ast vctype :trusted :origin origin :policy policy)))
+            ((1) ; note but don't use, i.e. make an untrusted+unchecked THE.
+             (ast:make-the-ast ast vctype nil :origin origin :policy policy))
+            ((2 3) ; Check
+             (if botp
+                 ;; This is unreachable, so insert an error.
+                 (unreachability-error ast origin policy env system)
+                 ;; Type check
+                 (ast:make-the-ast ast vctype
+                                   (cst-to-ast:convert
+                                    (cst:cst-from-expression
+                                     (make-type-check-fun context ctype system)
+                                     :source origin)
+                                    env system)
+                                   :origin origin :policy policy))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

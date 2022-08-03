@@ -473,9 +473,9 @@ CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, Vaslist_sp indices) {
 }
 
 
-CL_LISPIFY_NAME("core:rowMajorAset");
+CL_LISPIFY_NAME("cl:RowMajorAref");
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl__rowMajorAset(Array_sp array, gc::Fixnum idx, T_sp value)
+CL_DEFUN_SETF T_sp core__rowMajorAset(T_sp value, Array_sp array, gc::Fixnum idx)
 {
   // bounds check
   size_t max = array->arrayTotalSize();

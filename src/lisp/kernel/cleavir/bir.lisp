@@ -75,6 +75,7 @@
    (make-instance 'cc-bir:fence :order (cc-ast:order ast)))
   ())
 
+;;; FIXME: This should be a primop or something, not direct LIR.
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:atomic-car-ast) inserter system)
   (ast-to-bir:with-compiled-asts (args ((cleavir-ast:cons-ast ast))
                                        inserter system)
@@ -82,12 +83,12 @@
           (out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:memref2
+       (make-instance 'cc-blir:memref2
          :inputs args :outputs (list mr2-out)
          :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:load
+       (make-instance 'cc-blir:load
          :order (cc-ast:order ast) :inputs (list mr2-out) :outputs (list out)))
       (list out))))
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:atomic-cdr-ast) inserter system)
@@ -97,12 +98,12 @@
           (out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:memref2
+       (make-instance 'cc-blir:memref2
          :inputs args :outputs (list mr2-out)
          :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:load
+       (make-instance 'cc-blir:load
          :order (cc-ast:order ast) :inputs (list mr2-out) :outputs (list out)))
       (list out))))
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:atomic-rplaca-ast)
@@ -113,12 +114,12 @@
     (let ((mr2-out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:memref2
+       (make-instance 'cc-blir:memref2
          :inputs (list (second args)) :outputs (list mr2-out)
          :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:store
+       (make-instance 'cc-blir:store
          :order (cc-ast:order ast)
          :inputs (list (first args) mr2-out)))))
   :no-value)
@@ -130,12 +131,12 @@
     (let ((mr2-out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:memref2
+       (make-instance 'cc-blir:memref2
          :inputs (list (second args)) :outputs (list mr2-out)
          :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:store
+       (make-instance 'cc-blir:store
          :order (cc-ast:order ast)
          :inputs (list (first args) mr2-out)))))
   :no-value)
@@ -148,12 +149,12 @@
           (out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:memref2
+       (make-instance 'cc-blir:memref2
          :inputs (list (third args)) :outputs (list mr2-out)
          :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:cas
+       (make-instance 'cc-blir:cas
          :order (cc-ast:order ast)
          :outputs (list out) :inputs (list mr2-out (first args) (second args))))
       (list out))))
@@ -166,12 +167,12 @@
           (out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:memref2
+       (make-instance 'cc-blir:memref2
          :inputs (list (third args)) :outputs (list mr2-out)
          :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
       (ast-to-bir:insert
        inserter
-       (make-instance 'cc-bmir:cas
+       (make-instance 'cc-blir:cas
          :order (cc-ast:order ast)
          :outputs (list out) :inputs (list mr2-out (first args) (second args))))
       (list out))))
@@ -266,6 +267,7 @@
 (defclass cc-vaslist:nthcdr (bir:one-output bir:instruction) ())
 (defclass cc-vaslist:last (bir:one-output bir:instruction) ())
 (defclass cc-vaslist:butlast (bir:one-output bir:instruction) ())
+(defclass cc-vaslist:length (bir:one-input bir:one-output bir:instruction) ())
 
 ;;; This is (complement #'endp) for vaslists - i.e. "Not ENDP"
 (defclass cc-vaslist:nendp (bir:one-input bir:conditional-test) ())

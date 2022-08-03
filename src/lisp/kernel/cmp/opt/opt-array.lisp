@@ -68,21 +68,7 @@
                    (if icsp
                        `(core::fill-array-with-seq ,form ,initial-contents)
                        form)))
-                (t (let* ((dimsym (gensym "DIMENSIONS"))
-                          (iesym (gensym "INITIAL-ELEMENT"))
-                          (form
-                            `(let ((,dimsym ,dimensions) (,iesym ,initial-element))
-                               (etypecase ,dimsym
-                                 ;; vectors are (probably) most common; check that first.
-                                 (ext:array-index
-                                  (,make-sv ,dimsym ,iesym ,iesp))
-                                 ((cons ext:array-index null)
-                                  (,make-sv (car ,dimsym) ,iesym ,iesp))
-                                 (list
-                                  (,make-smdarray ,dimsym ,iesym ,iesp))))))
-                     (if icsp
-                         `(core::fill-array-with-seq ,form ,initial-contents)
-                         form))))))
+                (t form))))
       form))
 
 (define-compiler-macro sys:make-vector

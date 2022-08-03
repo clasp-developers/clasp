@@ -702,6 +702,24 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
 };
 
 DOCGROUP(clasp)
+CL_DEFUN core::T_sp gctools__finalizers(core::T_sp object) {
+  WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
+  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  return ht->gethash(object,nil<core::T_O>());
+}
+
+DOCGROUP(clasp)
+CL_DEFUN int gctools__invoke_finalizers() {
+#if defined(USE_BOEHM)
+  return GC_invoke_finalizers();
+#elif defined(USE_MPS)
+  MISSING_GC_SUPPORT();
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
+#endif
+}
+
+DOCGROUP(clasp)
 CL_DEFUN void gctools__definalize(core::T_sp object) {
 //  printf("%s:%d erasing finalizers for %p\n", __FILE__, __LINE__, (void*)object.tagged_());
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);

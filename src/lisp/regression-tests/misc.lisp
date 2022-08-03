@@ -258,3 +258,16 @@
                                   (sqrt (the double-float y)))))
                nil 4d0)
       (2d0))
+
+;;; This tests a problem where the compiler sees that both inputs are
+;;; subtypes of FIXNUM (or something) and uses primitive operations;
+;;; but one of the inputs is actually bottom (unreachable) and casts
+;;; could not deal with it, signaling an error during compilation.
+;;; Also causes a failure in the ANSI test misc.110.
+(test bottom-primop
+      (funcall (compile nil '(lambda (x)
+                              (declare (fixnum x))
+                              (values
+                               (ignore-errors (>= x (the real nil))))))
+               0)
+      (nil))

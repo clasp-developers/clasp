@@ -194,7 +194,9 @@
                 macroexpand macroexpand-1)
          (ftype (function (declaration-specifier) *) proclaim)
          (ftype (sfunction (symbol) t) special-operator-p)
-         (ftype (sfunction (form &optional environment) t) constantp))
+         ;; Although technically constantp is specified to take a form, in practice
+         ;; it can get called on some unevaluable things, and the ansi tests do this.
+         (ftype (sfunction (t &optional environment) t) constantp))
 
 ;;; Chapter 4 Types and Classes
 
@@ -226,7 +228,10 @@
          (ftype (sfunction (function-designator &rest sequence) t)
                 every some notevery notany)
          (ftype (function (&rest t)) values)
-         (ftype (function (list)) values-list)
+         ;; FIXME: values-list also accepts valists, but the type system doesn't
+         ;; really know about those. Also they probably ideally wouldn't be
+         ;; first-class regardless.
+         (ftype (function (t)) values-list)
          (ftype (sfunction (form &optional environment)
                            (values list list list form form))
                 get-setf-expansion))
@@ -489,7 +494,10 @@
          (ftype (sfunction (predicate list &key (:key key)) list) member-if member-if-not)
          (ftype (sfunction (function-designator list &rest list) list)
                 mapc mapcar mapcan mapl maplist mapcon)
-         (ftype (sfunction (t t list) list) acons)
+         ;; Although the standard says the alist is an alist, it also says
+         ;; (in the non normative notes) that acons = cons cons, which doesn't have
+         ;; such a requirement; and really I don't see much value in strictness here.
+         (ftype (sfunction (t t t) list) acons)
          (ftype (sfunction (t list &key (:key key) (:test test) (:test-not test)) (maybe cons))
                 assoc rassoc)
          (ftype (sfunction (predicate list &key (:key key)) (maybe cons))
@@ -717,8 +725,10 @@
                             (:junk-allowed t))
                            (values (maybe pathname) sequence-index))
                 parse-namestring)
-         (ftype (sfunction (pathname-designator
-                            &optional (member :host :device :directory :name :type nil))
+         ;; See note on set-pprint-dispatch for why arg1 is not pathname-designator.
+         (ftype (sfunction (t
+                            &optional (member :host :device :directory :name :type
+                                              :version nil))
                            t)
                 wild-pathname-p)
          (ftype (sfunction (pathname-designator pathname-designator) t) pathname-match-p)
@@ -825,20 +835,26 @@
                 pprint-fill pprint-linear)
          (ftype (sfunction (stream-designator t &optional t t (integer 0)) null)
                 pprint-tabular)
-         (ftype (sfunction ((member :block :current) real &optional stream-designator)
-                           null)
+         ;; First argument would be (member :block :current), except see
+         ;; SET-PPRINT-DISPATCH below.
+         (ftype (sfunction (t real &optional stream-designator) null)
                 pprint-indent)
-         (ftype (sfunction ((member :linear :fill :miser :mandatory)
-                            &optional stream-designator)
-                           null)
+         ;; ditto with (member :linear :fill :miser :mandatory)
+         (ftype (sfunction (t &optional stream-designator) null)
                 pprint-newline)
-         (ftype (sfunction ((member :line :section :line-relative :section-relative)
-                            (integer 0) (integer 0) &optional stream-designator)
+         ;; ditto (member :line :section :line-relative :section-relative)
+         (ftype (sfunction (t (integer 0) (integer 0) &optional stream-designator)
                            null)
                 pprint-tab)
          (ftype (sfunction (t stream) t) print-object)
+         ;; The third argument could be REAL, except that this function is specified
+         ;; to signal an error if it's not, _regardless of safety level_. At safety 0,
+         ;; if it can determine that the input is not a REAL, it may just dump in an
+         ;; unsafe unreachability marker.
+         ;; FIXME: It might be preferable to instead keep the error even in
+         ;; unreachable code - it means increased code size, but eh.
          (ftype (sfunction (type-specifier (or function function-name null)
-                                           &optional real pprint-dispatch-table)
+                                           &optional t pprint-dispatch-table)
                            null)
                 set-pprint-dispatch)
          (ftype (write-function t) write)
@@ -955,7 +971,8 @@
                 core:two-arg-- core:two-arg-/)) ; for / we also have that the denominator can't be zero.
 (declaim (ftype (sfunction (real real) t)
                 core:two-arg-< core:two-arg-> core:two-arg-<=
-                core:two-arg->= core:two-arg-=))
+                core:two-arg->=)
+         (ftype (sfunction (number number) t) core:two-arg-=))
 (declaim (ftype (sfunction (character character) t)
                 core:two-arg-char-equal core:two-arg-char-greaterp
                 core:two-arg-char-lessp core:two-arg-char-not-greaterp
@@ -1235,44 +1252,33 @@
 (declaim (ftype (function (t t) cons) cons))
 
 (declaim (ftype (function (list) t) car cdr))
-;;; We define CAR and CDR to be (if (ensure-the list x) (primop:car x) x).
-;;; Using an ensure-the lets the compiler understand the type through relatively
-;;; simple data flow analysis. For example, it can delete the check if it can
-;;; prove X is a list. Tests, like typep/typeq, are not as understandable to it
-;;; because leveraging them means understanding control flow as well.
-;;; This does mean that if the test can't be eliminated, there is a bit of a
-;;; redundant test, but checking if something is NIL is pretty cheap anyway.
-;;; Returning a constant NIL in the else branch is important for similar
-;;; reasons - with (if ,s ... ,s), the compiler wouldn't be able to determine
-;;; that ,s is NIL without an understanding of control flow.
-;;; FIXME: These should be done as transforms.
-(defun minimal-safety-p (env)
-  (policy:policy-value
-   (env:policy (env:optimize-info env))
-   'insert-minimum-type-checks))
-(defun list-check-form (form env)
-  (if (minimal-safety-p env)
-      `(cleavir-primop:ensure-the (values list &rest t)
-                                  (lambda (&optional value &rest ign)
-                                    (declare (ignore ign))
-                                    (unless (typep value 'list)
-                                      (error 'type-error :datum value
-                                                         :expected-type 'list))
-                                    value)
-                                  ,form)
-      `(cleavir-primop:truly-the (values list &rest t) ,form)))
-(define-cleavir-compiler-macro car (&whole form x &environment env)
-  (let ((s (gensym "X")))
-    `(let ((,s ,(list-check-form x env)))
-       (if ,s
-           (cleavir-primop:car ,s)
-           nil))))
-(define-cleavir-compiler-macro cdr (&whole form x &environment env)
-  (let ((s (gensym "X")))
-    `(let ((,s ,x))
-       (if ,(list-check-form s env)
-           (cleavir-primop:cdr ,s)
-           nil))))
+
+;;; So. CAR and CDR are commonly used enough that doing a full function call for them
+;;; noticeably slows down plenty of code (e.g. try cl-bench TAKL), even in case we
+;;; have no type information about the list.
+;;; But it's convenient for the compiler to just see CAR and CDR calls, since it can
+;;; use the fancy inference on cons types (see type.lisp).
+;;; So we provide this inline definition, but also put a notinline function call in
+;;; it. The transform code (in bir-to-bmir.lisp) will take note of the declared type
+;;; and reduce that "notinline" car to a primop, but that happens after type inference
+;;; and so the compiler can use the type information.
+;;; This is a KLUDGE, but it really seems to help in a lot of code.
+(declaim (inline car cdr))
+(defun car (list)
+  "Return the first object in a list."
+  (declare (optimize (safety 0)) (notinline car))
+  (if (cleavir-primop:typeq list cons)
+      (car (the cons list))
+      (if (eq list nil)
+          (the null list)
+          (error 'type-error :datum list :expected-type 'list))))
+(defun cdr (list)
+  "Return all but the first object in a list."
+  (declare (optimize (safety 0)) (notinline cdr))
+  (typecase list
+    (cons (cdr (the cons list)))
+    (null (the null list))
+    (t (error 'type-error :datum list :expected-type 'list))))
 
 (defmacro defcr (name &rest ops)
   `(progn
@@ -1326,32 +1332,6 @@
 (defcr eighth  car cdr cdr cdr cdr cdr cdr cdr)
 (defcr ninth   car cdr cdr cdr cdr cdr cdr cdr cdr)
 (defcr tenth   car cdr cdr cdr cdr cdr cdr cdr cdr cdr)
-
-(debug-inline "rplaca")
-
-(progn
-  (declaim (inline cl:rplaca))
-  (defun cl:rplaca (p v)
-    (if (cleavir-primop:typeq p cons)
-        (progn
-          (cleavir-primop:rplaca p v)
-          p)
-        (error 'type-error :datum p :expected-type 'cons))))
-
-(progn
-  (declaim (inline cl:rplacd))
-  (defun cl:rplacd (p v)
-    (if (cleavir-primop:typeq p cons)
-        (progn
-          (cleavir-primop:rplacd p v)
-          p)
-        (error 'type-error :datum p :expected-type 'cons))))
-
-;;; This overrides the compiler macro defined in cmp/opt/opt-cons.lisp.
-;;; That compiler macro must work in bclasp, so it doesn't have access to
-;;; the same type-checking cooperation with the compiler that we do here.
-(define-cleavir-compiler-macro endp (&whole form list &environment env)
-  `(if ,(list-check-form list env) nil t))
 
 (define-cleavir-compiler-macro core:set-breakstep (&whole form)
   ;; Because the primop is for-effect, it must not be placed in a
@@ -1550,93 +1530,6 @@
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 )
 
-;;; Unsafe versions to use that don't check bounds (but still check type)
-#+(or)
-(progn
-(debug-inline "svref/no-bounds-check")
-(declaim (inline svref/no-bounds-check))
-(defun svref/no-bounds-check (vector index)
-  (if (typep vector 'simple-vector)
-      (if (cleavir-primop:typeq index fixnum)
-          (cleavir-primop:aref vector index t t t)
-          (error 'type-error :datum index :expected-type 'fixnum))
-      (error 'type-error :datum vector :expected-type 'simple-vector)))
-)
-
-#+(or)
-(progn
-(declaim (inline (setf svref/no-bounds-check)))
-(defun (setf svref/no-bounds-check) (value vector index)
-  (if (typep vector 'simple-vector)
-      (if (cleavir-primop:typeq index fixnum)
-          (progn (cleavir-primop:aset vector index value t t t)
-                 value)
-          (error 'type-error :datum index :expected-type 'fixnum))
-      (error 'type-error :datum vector :expected-type 'simple-vector)))
-)
-
-#+(or)
-(define-cleavir-compiler-macro svref (&whole whole vector index &environment env)
-  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
-      whole
-      `(svref/no-bounds-check ,vector ,index)))
-#+(or)
-(define-cleavir-compiler-macro (setf svref)
-    (&whole whole value vector index &environment env)
-  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
-      whole
-      `(funcall #'(setf svref/no-bounds-check) ,value ,vector ,index)))
-
-#+(or)
-(progn
-  (debug-inline "core:vref")
-  (declaim (inline core:vref))
-  (defun core:vref (array index)
-    ;; FIXME: type inference should be able to remove the redundant
-    ;; checking that it's an array... maybe?
-    (macrolet ((mycase (&rest specs)
-                 `(typecase array
-                    ,@(loop for (type boxed) in specs
-                            collect `((simple-array ,type (*))
-                                      (cleavir-primop:aref array index ,type t ,boxed)))
-                    (t
-                     (core:fmt t "vref array-element-type: {}%N" (array-element-type array))
-                     (error "BUG: vref unknown vector ~a" array)))))
-      (mycase (t t) (base-char nil) (character nil)
-              (double-float nil) (single-float nil)
-              (fixnum nil)
-              (ext:integer64 nil) (ext:integer32 nil)
-              (ext:integer16 nil) (ext:integer8 nil)
-              (ext:byte64 nil) (ext:byte32 nil)
-              (ext:byte16 nil) (ext:byte8 nil)
-              (bit t)))))
-
-;;; This is unsafe in that it doesn't bounds check.
-;;; It DOES check that the value is of the correct type,
-;;; because this is the only place we know the type.
-#+(or)
-(progn
-  (declaim (inline (setf core:vref)))
-  (defun (setf core:vref) (value array index)
-    (macrolet ((mycase (&rest specs)
-                 `(typecase array
-                    ,@(loop for (type boxed) in specs
-                            collect `((simple-array ,type (*))
-                                      (unless (typep value ',type)
-                                        (error 'type-error :datum value :expected-type ',type))
-                                      (cleavir-primop:aset array index value ,type t ,boxed)
-                                      value))
-                    ;; should be unreachable
-                    (t (error "BUG: Unknown vector ~a" array)))))
-      (mycase (t t) (base-char nil) (character nil)
-              (double-float nil) (single-float nil)
-              (fixnum nil)
-              (ext:integer64 nil) (ext:integer32 nil)
-              (ext:integer16 nil) (ext:integer8 nil)
-              (ext:byte64 nil) (ext:byte32 nil)
-              (ext:byte16 nil) (ext:byte8 nil)
-              (bit t)))))
-
 ;;; Array indices are all fixnums. If we're sure sizes are valid, we don't want
 ;;; to use general arithmetic. We can just use this to do unsafe modular arithmetic.
 ;;; (Used in this file only)
@@ -1735,48 +1628,28 @@
       `(row-major-aref/no-bounds-check ,array ,index)))
 )
 
-#+(or)
-(progn
-(declaim (inline row-major-aset/no-bounds-check))
-(defun row-major-aset/no-bounds-check (array index value)
-  (with-array-data (underlying-array offset array)
-    (setf (core:vref underlying-array (add-indices index offset)) value)))
-)
-
-#+(or)
-(progn
-(declaim (inline core:row-major-aset))
-(defun core:row-major-aset (array index value)
-  (let ((max (etypecase array
-               ((simple-array * (*)) (core::vector-length array))
-               (array (core::%array-total-size array)))))
-    (if-in-bounds (index 0 max)
-                  nil
-                  (error 'core:row-major-out-of-bounds :datum index
-                                                       :expected-type `(integer 0 (,max))
-                                                       :object array)))
-  (row-major-aset/no-bounds-check array index value))
-(define-cleavir-compiler-macro core:row-major-aset
-    (&whole whole array index value &environment env)
-  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
-      whole
-      `(row-major-aset/no-bounds-check ,array ,index ,value)))
-)
-
 (declaim (inline schar (setf schar) char (setf char))
          (ftype (function (simple-string sys:index) character) schar)
          (ftype (function (string sys:index) character) char)
          (ftype (function (character simple-string sys:index) character) (setf schar))
          (ftype (function (character string sys:index) character) (setf char)))
 (defun schar (string index)
-  (row-major-aref (the simple-string string) index))
+  ;; We use DECLARE instead of THE here so as to skip needless
+  ;; multiple-value checkers. cclasp is not yet smart enough to realize that in
+  ;; (fun (the string foo)) the type check function for STRING does not need to
+  ;; preserve non-primary values.
+  (declare (type simple-string string))
+  (row-major-aref string index))
 (defun (setf schar) (value string index)
-  (core:row-major-aset (the simple-string string) index value))
+  (declare (type simple-string string))
+  (setf (row-major-aref string index) value))
 
 (defun char (string index)
-  (row-major-aref (the string string) index))
+  (declare (type string string))
+  (row-major-aref string index))
 (defun (setf char) (value string index)
-  (core:row-major-aset (the string string) index value))
+  (declare (type string string))
+  (setf (row-major-aref string index) value))
 
 (defun row-major-index-computer (dimsyms subscripts)
   ;; assumes once-only is taken care of.
@@ -1844,32 +1717,6 @@
                        collect `(core:check-index ,ssub ,dimsym ,axis)))
              ;; Now we know we're good, do the actual computation
              ,(row-major-index-computer dimsyms ssubscripts))))))
-
-#+(or)
-(define-cleavir-compiler-macro aref (&whole form array &rest subscripts
-                                            &environment env)
-  ;; FIXME: See tragic comment above in array-row-major-index.
-  (if (or (> (length subscripts) 1) (null subscripts))
-      form
-      (let ((sarray (gensym "ARRAY"))
-            (index0 (gensym "INDEX0")))
-        `(let ((,sarray ,array)
-               (,index0 ,(first subscripts)))
-           ,@(when-policy env 'insert-type-checks
-              `(if (cleavir-primop:typeq ,sarray array)
-                   nil
-                   (error 'type-error :datum ,sarray :expected-type '(array * 1))))
-           ,@(when-policy
-              env 'core::insert-array-bounds-checks
-              `(core::multiple-value-foreign-call
-                "cm_check_index"
-                ,index0
-                (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
-                    (core::vector-length ,sarray)
-                    (core::%array-dimension ,sarray 0))
-                0))
-           (with-array-data (data offset ,sarray)
-             (core::MULTIPLE-VALUE-FOREIGN-CALL "cm_vref" data (add-indices offset ,index0)))))))
 
 #+(or)
 (define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts
@@ -1948,6 +1795,7 @@
   (etypecase fdesignator
     (function fdesignator)
     (symbol (fdefinition fdesignator))))
+(declaim (ftype (function (t) function) core:coerce-to-function))
 
 ;;; ------------------------------------------------------------
 ;;;

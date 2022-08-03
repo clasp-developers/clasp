@@ -7,7 +7,8 @@
       form
       (let ((arg0 (first args)) (args (rest args)))
         (if (null args)
-            `(the real ,arg0) ; preserve nontoplevelness
+            ;; preserve nontoplevelness and eliminate extra values
+            `(the (values real &rest nil) (values ,arg0))
             (let ((s (gensym)))
               `(let ((,s ,arg0)
                      (minrest (min ,@args)))
@@ -17,7 +18,7 @@
       form
       (let ((arg0 (first args)) (args (rest args)))
         (if (null args)
-            `(the real ,arg0) ; preserve nontoplevelness
+            `(the (values real &rest nil) (values ,arg0)) ; preserve nontoplevelness
             (let ((s (gensym)))
               `(let ((,s ,arg0)
                      (maxrest (max ,@args)))
