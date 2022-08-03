@@ -56,6 +56,7 @@
 (defmethod vrtype->llvm ((vrtype (eql :single-float))) cmp:%float%)
 (defmethod vrtype->llvm ((vrtype (eql :double-float))) cmp:%double%)
 (defmethod vrtype->llvm ((vrtype (eql :fixnum))) cmp:%fixnum%)
+(defmethod vrtype->llvm ((vrtype (eql :utfixnum))) cmp:%fixnum%)
 (defmethod vrtype->llvm ((vrtype (eql :vaslist))) cmp:%vaslist%)
 
 (defun bind-variable (var)

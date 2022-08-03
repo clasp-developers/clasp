@@ -1104,6 +1104,16 @@
 (defmethod cast-one ((from (eql :object)) (to (eql :fixnum)) value)
   (cmp:irc-ptr-to-int value cmp:%fixnum%))
 
+(defmethod cast-one ((from (eql :utfixnum)) (to (eql :fixnum)) value)
+  (cmp:irc-shl value cmp:+fixnum-shift+ :nsw t))
+(defmethod cast-one ((from (eql :fixnum)) (to (eql :utfixnum)) value)
+  (cmp:irc-ashr value cmp:+fixnum-shift+ :exact t))
+
+(defmethod cast-one ((from (eql :utfixnum)) (to (eql :object)) value)
+  (cmp:irc-tag-fixnum value))
+(defmethod cast-one ((from (eql :object)) (to (eql :utfixnum)) value)
+  (cmp:irc-untag-fixnum value cmp:%fixnum%))
+
 (defmethod cast-one ((from (eql :object)) (to (eql :vaslist)) value)
   ;; We only generate these when we know for sure the input is a vaslist,
   ;; so we don't do checking.
@@ -1712,7 +1722,8 @@
            ((:single-float)
             (llvm-sys:constant-fp-get-type-double cmp:%float% val))
            ((:double-float)
-            (llvm-sys:constant-fp-get-type-double cmp:%double% val)))
+            (llvm-sys:constant-fp-get-type-double cmp:%double% val))
+           ((:utfixnum) (%i64 val)))
          out)))
 
 (defun initialize-iblock-translation (iblock)
