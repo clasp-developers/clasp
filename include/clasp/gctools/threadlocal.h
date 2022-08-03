@@ -58,9 +58,9 @@ typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 namespace core {
 
 struct VirtualMachine {
-  static constexpr size_t MaxStackSize = 16384*8; // 16K words for now.
-  core::T_O**    _Stack;
-  size_t         _StackSize;
+  static constexpr size_t MaxStackWords = 16384; // 16K words for now.
+  core::T_O**    _StackBottom;
+  size_t         _StackBytes;
   core::T_O**    _StackTop;
   core::T_O**    _FramePointer;
   core::T_O**    _StackPointer;
