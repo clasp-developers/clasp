@@ -358,6 +358,8 @@
 (define-vector-primops core::t-vref core::t-vset t :object)
 (define-vector-primops core::sf-vref core::sf-vset single-float :single-float)
 (define-vector-primops core::df-vref core::df-vset double-float :double-float)
+(define-vector-primops core::bc-vref core::bc-vset base-char :base-char)
+(define-vector-primops core::c-vref core::c-vset character :character)
 
 ;;;
 

@@ -53,11 +53,14 @@
 
 (defgeneric vrtype->llvm (vrtype))
 (defmethod vrtype->llvm ((vrtype (eql :object))) cmp:%t*%)
+(defmethod vrtype->llvm ((vrtype (eql :vaslist))) cmp:%vaslist%)
+;; These all pretty much have to match element-type->llvm-type in cmp/cmpintrinsics.
 (defmethod vrtype->llvm ((vrtype (eql :single-float))) cmp:%float%)
 (defmethod vrtype->llvm ((vrtype (eql :double-float))) cmp:%double%)
+(defmethod vrtype->llvm ((vrtype (eql :base-char))) cmp:%i8%)
+(defmethod vrtype->llvm ((vrtype (eql :character))) cmp:%i32%)
 (defmethod vrtype->llvm ((vrtype (eql :fixnum))) cmp:%fixnum%)
 (defmethod vrtype->llvm ((vrtype (eql :utfixnum))) cmp:%fixnum%)
-(defmethod vrtype->llvm ((vrtype (eql :vaslist))) cmp:%vaslist%)
 
 (defun bind-variable (var)
   (if (bir:immutablep var)

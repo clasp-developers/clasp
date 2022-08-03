@@ -222,6 +222,8 @@
 (define-vector-transforms t core::t-vref core::t-vset)
 (define-vector-transforms single-float core::sf-vref core::sf-vset)
 (define-vector-transforms double-float core::df-vref core::df-vset)
+(define-vector-transforms base-char core::bc-vref core::bc-vset)
+(define-vector-transforms character core::c-vref core::c-vset)
 
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 

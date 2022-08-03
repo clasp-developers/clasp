@@ -1099,6 +1099,20 @@
 (defmethod cast-one ((from (eql :object)) (to (eql :double-float)) value)
   (cmp:irc-unbox-double-float value))
 
+(defmethod cast-one ((from (eql :base-char)) (to (eql :object)) value)
+  (cmp:irc-tag-base-char value))
+(defmethod cast-one ((from (eql :object)) (to (eql :base-char)) value)
+  (cmp:irc-untag-base-char value))
+(defmethod cast-one ((from (eql :character)) (to (eql :object)) value)
+  (cmp:irc-tag-character value))
+(defmethod cast-one ((from (eql :object)) (to (eql :character)) value)
+  (cmp:irc-untag-character value))
+
+(defmethod cast-one ((from (eql :base-char)) (to (eql :character)) value)
+  (cmp:irc-zext value cmp:%i32%))
+(defmethod cast-one ((from (eql :character)) (to (eql :base-char)) value)
+  (cmp:irc-trunc value cmp:%i8%))
+
 (defmethod cast-one ((from (eql :fixnum)) (to (eql :object)) value)
   (cmp:irc-int-to-ptr value cmp:%t*%))
 (defmethod cast-one ((from (eql :object)) (to (eql :fixnum)) value)

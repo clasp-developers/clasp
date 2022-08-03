@@ -692,6 +692,24 @@ representing a tagged fixnum."
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
+(defun irc-untag-base-char (t* &optional (label "base-char"))
+  ;; convert to word first to avoid losing bits by truncation before we shift.
+  (irc-trunc (irc-ashr (irc-ptr-to-int t* %i64% label) +character-shift+) %i8% label))
+
+(defun irc-tag-base-char (bc &optional (label "base-char"))
+  (irc-int-to-ptr (irc-or (irc-shl (irc-zext bc %i64%) +character-shift+ :nsw t)
+                          (jit-constant-i64 +character-tag+))
+                  %t*% label))
+
+(defun irc-untag-character (t* &optional (label "base-char"))
+  ;; convert to word first to avoid losing bits by truncation before we shift.
+  (irc-trunc (irc-ashr (irc-ptr-to-int t* %i64% label) +character-shift+) %i32% label))
+
+(defun irc-tag-character (c &optional (label "base-char"))
+  (irc-int-to-ptr (irc-or (irc-shl (irc-zext c %i64%) +character-shift+ :nsw t)
+                          (jit-constant-i64 +character-tag+))
+                  %t*% label))
+
 (defun irc-unbox-vaslist (t* &optional (label "vaslist-v*"))
   ;; FIXME: Probably we should untag by masking instead of subttraction
   (let* ((vaslist* (irc-untag-vaslist t*)))
