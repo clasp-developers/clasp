@@ -221,6 +221,8 @@
 
 (deftransform logcount core::fixnum-positive-logcount (and fixnum unsigned-byte))
 
+(deftransform-wr ash core::fixnum-shl fixnum fixnum (integer 0 63))
+
 ;;(deftransform car cleavir-primop:car cons)
 ;;(deftransform cdr cleavir-primop:cdr cons)
 

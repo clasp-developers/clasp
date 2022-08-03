@@ -455,6 +455,13 @@
     ;; so it won't affect the population count.
     (%intrinsic-call "llvm.ctpop.i64" (list arg))))
 
+(defvprimop (core::fixnum-shl :flags (:flushable))
+    ((:fixnum) :fixnum :utfixnum) (inst)
+  (let ((int (in (first (bir:inputs inst))))
+        ;; NOTE: shift must be 0-63 inclusive or shifted is poison.
+        (shift (in (second (bir:inputs inst)))))
+    (cmp:irc-shl int shift :nuw t :nsw t)))
+
 (defvprimop (core::fixnum-ashr :flags (:flushable))
     ((:fixnum) :fixnum :utfixnum) (inst)
   (let* ((int (in (first (bir:inputs inst))))
