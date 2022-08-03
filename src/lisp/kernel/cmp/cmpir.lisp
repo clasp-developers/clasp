@@ -1557,7 +1557,7 @@ function-description - for debugging."
         (when l (setf lineno l))
         (when c (setf column c))
         (when f (setf filepos f)))
-      (sys:make-function-description :function-name function-name
+      (sys:function-description/make :function-name function-name
                                      :source-pathname source-pathname
                                      :lambda-list lambda-list
                                      :docstring docstring

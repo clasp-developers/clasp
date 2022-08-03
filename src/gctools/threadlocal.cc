@@ -143,12 +143,18 @@ VirtualMachine::VirtualMachine() {
     printf("%s:%d:%s posix_memalign failed with error %d\n", __FILE__, __LINE__, __FUNCTION__, result );
     abort();
   }
-  this->_Stack = (T_O*)mem;
+  this->_Stack = (T_O**)mem;
   this->_StackTop = this->_Stack+(VirtualMachine::MaxStackSize/sizeof(T_O*)-1);
   this->_StackSize = VirtualMachine::MaxStackSize;
   memset(this->_Stack,0,VirtualMachine::MaxStackSize);
   int mprotectResult = mprotect(this->_Stack,pageSize,PROT_READ);
   gctools::clasp_gc_registerRoots((this->_Stack+pageSize),(this->_StackSize-pageSize)/sizeof(T_O*));
+  
+  this->_StackTop = &this->_Stack[this->_StackSize];
+  this->_FramePointer = NULL;
+  this->_StackPointer = this->_StackTop;
+  this->push((core::T_O*)this->_FramePointer);
+  this->_FramePointer = this->_StackPointer;
 }
 
 VirtualMachine::~VirtualMachine() {

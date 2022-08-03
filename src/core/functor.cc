@@ -46,6 +46,7 @@ THE SOFTWARE.
 //#i n c l u d e "environmentDependent.h"
 #include <clasp/core/environment.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/virtualMachine.h>
 // to avoid Generic to_object include headers here
 #include <clasp/core/wrappers.h>
 #include <clasp/llvmo/code.h>
@@ -85,6 +86,33 @@ CL_DEFMETHOD Pointer_sp EntryPointBase_O::defaultEntryAddress() const {
 GlobalEntryPoint_O::GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp lep ) : CodeEntryPoint_O(fdesc, code), _EntryPoints(entry_point), _localEntryPoint(lep) {
   llvmo::validateEntryPoint( code, entry_point );
 };
+
+GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point,
+                                                       T_sp code,
+                                                       unsigned short localsFrameSize,
+                                                       unsigned short required,
+                                                       unsigned short optional,
+                                                       unsigned short restSlot,
+                                                       unsigned short keyStart,
+                                                       T_sp keyConsts,
+                                                       unsigned char flags,
+                                                       unsigned int environmentSize,
+                                                       unsigned int entryPcs[NUMBER_OF_ENTRY_POINTS] )
+: CodeEntryPoint_O(fdesc, code), _EntryPoints(entry_point),
+  _LocalsFrameSize(localsFrameSize),
+  _Required(required),
+  _Optional(optional),
+  _RestSlot(restSlot),
+  _KeyStart(keyStart),
+  _KeyConsts(keyConsts),
+  _Flags(flags),
+  _EnvironmentSize(environmentSize),
+  _EntryPcs{entryPcs[0],entryPcs[1],entryPcs[2],entryPcs[3],entryPcs[4],entryPcs[5],entryPcs[6]}
+{
+  llvmo::validateEntryPoint( code, entry_point );
+};
+
+
 
 LocalEntryPoint_O::LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {
   llvmo::validateEntryPoint( code, entry_point );
@@ -162,6 +190,46 @@ void GlobalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fi
   }
 };
 
+void GlobalBytecodeEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+#if 0
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
+    llvmo::ObjectFile_sp code = gc::As_unsafe<llvmo::ObjectFile_sp>(this->_Code);
+    if ((uintptr_t)this->_EntryPoints[0]<code->codeStart()) {
+      printf("%s:%d:%s Entrypoint %p is before the codeStart %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this->_EntryPoints[0], (void*)code->codeStart() );
+      abort();
+    }
+  }
+#endif
+  for ( size_t ii=0; ii<ClaspXepFunction::Entries; ++ii ) {
+    this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints._EntryPoints[ii]);
+  }
+};
+
+Pointer_sp GlobalBytecodeEntryPoint_O::defaultEntryAddress() const {
+  return Pointer_O::create((void*)this->_EntryPoints[0]);
+};
+
+CL_LISPIFY_NAME("global-entry-point-code");
+CL_DEFMETHOD
+BytecodeModule_sp GlobalBytecodeEntryPoint_O::code() const {
+  BytecodeModule_sp code = gc::As<BytecodeModule_sp>(this->_Code);
+  return code;
+}
+
+std::string GlobalBytecodeEntryPoint_O::__repr__() const {
+  stringstream ss;
+  ss << "#<GLOBAL-BYTECODE-ENTRY-POINT ";
+  for ( size_t ii = 0; ii<NUMBER_OF_ENTRY_POINTS; ii++ ) {
+    if (ii==0) {
+      ss << "xep@";
+    } else {
+      ss << "xep" << (ii-1) << "@";
+    }
+    ss << (void*)this->_EntryPoints._EntryPoints[ii] << " ";
+  }
+  ss << " @" << (void*)this << ">";
+  return ss.str();
+}
 
 void LocalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
@@ -240,16 +308,17 @@ std::string GlobalEntryPointGenerator_O::__repr__() const {
   return ss.str();
 }
 
+CL_LISPIFY_NAME(FunctionDescription/make);
 CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname (lineno 0) (column 0) (filepos 0))
 DOCGROUP(clasp)
 CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
-                                                              T_sp lambdaList,
-                                                              T_sp docstring,
-                                                              T_sp declares,
-                                                              T_sp sourcePathname,
-                                                              int lineno,
-                                                              int column,
-                                                              int filePos) {
+                              T_sp lambdaList,
+                              T_sp docstring,
+                              T_sp declares,
+                              T_sp sourcePathname,
+                              int lineno,
+                              int column,
+                              int filePos) {
   return makeFunctionDescription(functionName,
                                  lambdaList,
                                  docstring,
@@ -283,13 +352,13 @@ GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName
 #endif
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
-                                               T_sp lambda_list,
-                                               T_sp docstring,
-                                               T_sp declares,
-                                               T_sp sourcePathname,
-                                               int lineno,
-                                               int column,
-                                               int filePos) {
+                                                     T_sp lambda_list,
+                                                     T_sp docstring,
+                                                     T_sp declares,
+                                                     T_sp sourcePathname,
+                                                     int lineno,
+                                                     int column,
+                                                     int filePos) {
   auto fdesc = gctools::GC<FunctionDescription_O>::allocate();
   fdesc->_sourcePathname = sourcePathname;
   fdesc->_functionName = functionName;
@@ -315,6 +384,9 @@ LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
   auto ep = gctools::GC<LocalEntryPoint_O>::allocate( fdesc, entry_point, code );
   return ep;
 }
+
+
+
 GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp tfdesc,
                                          const ClaspXepFunction& entry_point,
                                          T_sp lep) {
@@ -351,6 +423,129 @@ GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp entryPoint,
   }
   auto ep = gctools::GC<GlobalEntryPoint_O>::allocate( entryPoint->_FunctionDescription, entry_point, code, entryPoint->_localEntryPoint );
   return ep;
+}
+
+gctools::return_type bytecode_call(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
+{
+  // entry point for bytecode interpreter
+  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
+  printf("%s:%d:%s Get the code BytecodeModule_sp\n", __FILE__, __LINE__, __FUNCTION__ );
+  BytecodeModule_sp module = gc::As<BytecodeModule_sp>(entryPoint->_Code);
+  size_t ei;
+  if (lcc_nargs>=NUMBER_OF_ENTRY_POINTS) {
+    ei = 0;
+  } else {
+    ei = 1+lcc_nargs;
+  }
+  int entryIndex = (*entryPoint)._EntryPcs[ei];
+  printf("%s:%d:%s This is where we evaluate bytecode functions module: %p   entryIndex: %d\n", __FILE__, __LINE__, __FUNCTION__, _rep_(module).c_str(), entryIndex );
+  VirtualMachine& vm = my_thread->_VM;
+  unsigned char* pc = (unsigned char*)(gc::As<Array_sp>(module->bytecode())->rowMajorAddressOfElement_(0))+entryIndex;
+  vm.push((T_O*)vm._FramePointer);
+  vm._FramePointer = vm._StackPointer;
+  while (1) {
+    switch (*pc) {
+    case NIL_VM:
+        vm.push(nil<T_O>().raw_());
+        pc++;
+        break;
+    case RETURN_VM:
+      {
+        size_t numValues = vm._FramePointer - vm._StackPointer;
+        vm._FramePointer = (T_O**)*vm._FramePointer;
+        vm._StackPointer = vm._FramePointer; // Is this right?
+        if (numValues>1) {
+          memcpy( (void*)&my_thread->_MultipleValues._Values[1],
+                  (void*)(vm._StackPointer+1),
+                  (numValues-1)*sizeof(T_O*) );
+          return gctools::return_type(*vm._StackPointer,numValues);
+        }
+        if (numValues==1) {
+          return gctools::return_type(*vm._StackPointer,1);
+        }
+        return gctools::return_type(nil<T_O>().raw_(),0);
+      }
+      break;
+    };
+  }
+}
+
+struct BytecodeClosureEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    if (interpreter_trampoline) {
+      return (interpreter_trampoline)((void*)&bytecode_call,lcc_closure,lcc_nargs,lcc_args);
+    }
+    return bytecode_call(lcc_closure,lcc_nargs,lcc_args);
+  }
+  static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
+};
+
+
+CL_LISPIFY_NAME(GlobalBytecodeEntryPoint/make);
+CL_DEFUN
+GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescription_sp fdesc,
+                                                               BytecodeModule_sp module,
+                                                               size_t localsFrameSize,
+                                                               size_t required,
+                                                               size_t optional,
+                                                               size_t restSlot,
+                                                               size_t keyStart,
+                                                               T_sp keyConsts,
+                                                               size_t flags,
+                                                               size_t environmentSize,
+                                                               List_sp pcIndices )
+{
+  if (cl__length(pcIndices)!=NUMBER_OF_ENTRY_POINTS) {
+    SIMPLE_ERROR("You must provide %zu entry-points - you provided %s", NUMBER_OF_ENTRY_POINTS, _rep_(pcIndices).c_str() );
+  }
+  unsigned int entryPcs[NUMBER_OF_ENTRY_POINTS];
+  size_t idx = 0;
+  for ( auto cur : pcIndices ) {
+    T_sp num = CONS_CAR(cur);
+    if (!num.fixnump()) {
+      SIMPLE_ERROR("Bad pc index %s", _rep_(pcIndices).c_str());
+    }
+    entryPcs[idx++] = num.unsafe_fixnum();
+  }
+  ClaspXepFunction xep;
+  xep.setup<BytecodeClosureEntryPoint>();
+  auto entryPoint = gctools::GC<GlobalBytecodeEntryPoint_O>::allocate( fdesc,
+                                                                       xep,
+                                                                       module,
+                                                                       localsFrameSize,
+                                                                       required,
+                                                                       optional,
+                                                                       restSlot,
+                                                                       keyStart,
+                                                                       keyConsts,
+                                                                       flags,
+                                                                       environmentSize,
+                                                                       entryPcs);
+  return entryPoint;
 }
 
 LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp original, void** entry_points) {
@@ -402,33 +597,6 @@ GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_
   return globalEntryPoint;
 }
 
-#if 0
-FunctionDescription_sp makeFunctionDescriptionFromFunctionInfo(T_sp information,
-                                                               claspFunction entry_point)
-{
-#define POP(rrr,lll) T_sp rrr = oCar(lll); lll = oCdr(lll);
-  // THE order of entries MUST match cmpir.lisp function-info
-  POP(function_info_name, information);
-  POP(functionName, information);
-  POP(lambdaList, information);
-  POP(docstring, information);
-  POP(declares, information);
-  POP(sourcePathname,information);
-  POP(tlineno,information);
-  POP(tcolumn,information);
-  POP(tfilepos,information);
-  POP(form,information);
-  int lineno = clasp_to_fixnum(tlineno);
-  int column = clasp_to_fixnum(tcolumn);
-  int filepos = clasp_to_fixnum(tfilepos);
-  return makeFunctionDescription(functionName, entry_point,
-                                 lambdaList, docstring,
-                                 sourcePathname,
-                                 lineno,
-                                 column,
-                                 filepos);
-}
-#endif
 
 
 DOCGROUP(clasp)
@@ -775,69 +943,16 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, const Cla
 }
 
 
-gctools::return_type bytecode_call(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
-{
-  // entry point for bytecode interpreter
-  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
-  BytecodeModule_sp module = gc::As<BytecodeModule_sp>((*closure)[BYTECODE_CLOSURE_MODULE_SLOT]);
-  Fixnum_sp entryIndex = gc::As<Fixnum_sp>((*closure)[BYTECODE_CLOSURE_ENTRY_INDEX_SLOT]);
-  printf("%s:%d:%s This is where we evaluate bytecode functions module: %p   entryIndex: %lld\n", __FILE__, __LINE__, __FUNCTION__, _rep_(module).c_str(), entryIndex.unsafe_fixnum() );
-  return Values0<T_O>();
-}
 
-
-struct BytecodeClosureEntryPoint {
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    if (interpreter_trampoline) {
-      return (interpreter_trampoline)((void*)&bytecode_call,lcc_closure,lcc_nargs,lcc_args);
-    }
-    return bytecode_call(lcc_closure,lcc_nargs,lcc_args);
-  }
-  static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
-  }
-
-};
 
 CL_LISPIFY_NAME(bytecode_closure/make);
 CL_DEF_CLASS_METHOD
-ClosureWithSlots_sp ClosureWithSlots_O::make_bytecode_closure(T_sp name, T_sp bytecodeModule, T_sp functionIndex, size_t closedOverSlots, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
-  FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<BytecodeClosureEntryPoint>(name,nil<T_O>(),lambda_list,docstring,declares,sfi,lineno,column,filePos );
+ClosureWithSlots_sp ClosureWithSlots_O::make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots ) {
   ClosureWithSlots_sp closure =
       gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,
-                                                                                       BYTECODE_CLOSURE_SLOTS+closedOverSlots,
+                                                                                       closedOverSlots,
                                                                                        entryPoint,
                                                                                        ClosureWithSlots_O::bytecodeClosure);
-  (*closure)[BYTECODE_CLOSURE_ENTRY_INDEX_SLOT] = functionIndex;
-  (*closure)[BYTECODE_CLOSURE_MODULE_SLOT] = bytecodeModule;
-  if (lambda_list_handler.nilp()) {
-    printf("%s:%d  A NIL lambda-list-handler was passed for %s lambdalist: %s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(lambda_list).c_str());
-    abort();
-  }
-  (*closure)[BYTECODE_CLOSURE_LAMBDA_LIST_HANDLER_SLOT] = lambda_list_handler;
-  closure->setf_lambdaList(lambda_list_handler->lambdaList());
-  closure->setf_docstring(docstring);
   validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
