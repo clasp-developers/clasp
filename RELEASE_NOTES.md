@@ -73,7 +73,7 @@
 * Calls to some local functions with &rest parameters are more efficient.
 * LENGTH is now a "vaslistable" function; &rest parameters that are only
   used for vaslistable functions can be compiled to avoid consing.
-* Multiple value calls and APPLY calls to known function can sometimes
+* Multiple value calls and APPLY calls to known functions can sometimes
   be optimized.
 * Some MAKE-ARRAY calls are compiled more efficiently.
 * Unused calls to many more (side-effect-free) standard functions are deleted.
