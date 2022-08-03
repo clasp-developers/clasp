@@ -781,7 +781,7 @@ gctools::return_type bytecode_call(core::T_O* lcc_closure, size_t lcc_nargs, cor
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
   BytecodeModule_sp module = gc::As<BytecodeModule_sp>((*closure)[BYTECODE_CLOSURE_MODULE_SLOT]);
   Fixnum_sp entryIndex = gc::As<Fixnum_sp>((*closure)[BYTECODE_CLOSURE_ENTRY_INDEX_SLOT]);
-  printf("%s:%d:%s This is where we evaluate bytecode functions module: %p   entryIndex: %lld\n", __FILE__, __LINE__, __FUNCTION__, _rep_(module).c_str(), entryIndex.unsafe_fixnum() );
+  printf("%s:%d:%s This is where we evaluate bytecode functions module: %p   entryIndex: %" PFixnum "\n", __FILE__, __LINE__, __FUNCTION__, _rep_(module).c_str(), entryIndex.unsafe_fixnum() );
   return Values0<T_O>();
 }
 
