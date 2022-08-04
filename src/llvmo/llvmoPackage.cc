@@ -667,6 +667,76 @@ attributes #4 = { nounwind "frame-pointer"="all" }
   return ptr;
 }
 
+
+/*!
+   Install a trampoline that spills registers onto the stack
+
+   We could recover the bytecode PC if we spill it into the stack here as well.
+   We could register another stackmap entry that stores the PC for backtraces and debugging.
+   Just add another slot to %Registers and register it with a new stackmap value.
+
+*/
+
+CL_DEFUN core::Pointer_sp llvm_sys__installBytecodeTrampoline() {
+  std::string trampoline = R"trampoline(
+
+@__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
+@__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
+
+define { i8*, i64 } @tail_call_with_stackmap({ i8*, i64 } (i8*, i8*, i64, i8**)* nocapture %fn, i8* %pc, i8* %closure, i64 %nargs, i8** %args) #0  {
+entry:
+  %Registers = alloca [3 x i64], align 16
+  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %Registers)
+  %0 = bitcast [3 x i64]* %Registers to i8*
+  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %0) #2
+  %1 = ptrtoint i8* %closure to i64
+  %arrayidx = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 0
+  store i64 %1, i64* %arrayidx, align 16
+  %arrayidx1 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 1
+  store i64 %nargs, i64* %arrayidx1, align 8
+  %2 = ptrtoint i8** %args to i64
+  %arrayidx2 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 2
+  store i64 %2, i64* %arrayidx2, align 16
+  %call = call { i8*, i64 } %fn( i8* %pc, i8* %closure, i64 %nargs, i8** %args)
+  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %0) #2
+  ret { i8*, i64 } %call
+}
+
+declare i32 @__gxx_personality_v0(...) #4
+
+define void @"CLASP_STARTUP_trampoline"() #4 personality i32 (...)* @__gxx_personality_v0 {
+entry:
+  ret void
+}
+
+declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #1
+
+declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #1
+
+declare void @llvm.experimental.stackmap(i64, i32, ...) #3
+
+
+attributes #0 = { mustprogress uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { argmemonly mustprogress nofree nosync nounwind willreturn }
+attributes #2 = { nounwind }
+attributes #3 = { nofree nosync willreturn }
+attributes #4 = { nounwind "frame-pointer"="all" }
+
+)trampoline";
+
+  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
+  trampoline = std::regex_replace( trampoline, std::regex("CLASP_STARTUP"), std::string(MODULE_STARTUP_FUNCTION_NAME) );
+  Module_sp module = llvm_sys__parseIRString(trampoline, context, "interpreter_trampoline" );
+//  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
+  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
+  ClaspJIT_sp jit = llvm_sys__clasp_jit();
+  core::Pointer_sp ptr = jit->lookup(jitDylib,"tail_call_with_stackmap");
+//  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
+  core::bytecode_trampoline = (bytecode_trampoline_function)ptr->ptr();
+//  printf("%s:%d:%s after interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
+  return ptr;
+}
+
 void initialize_llvm(int argc, char **argv) {
 //  InitLLVM X(argc,argv);
   printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );

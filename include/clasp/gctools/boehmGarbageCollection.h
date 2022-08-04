@@ -66,6 +66,7 @@ namespace gctools {
 };
 
 namespace gctools {
+#ifndef RUNNING_PRECISEPREP
 
   // Given an interior_pointer
   // Return true and the base object if the interior_pointer points into an object
@@ -93,7 +94,7 @@ namespace gctools {
     }
     return false;
   }
-  
+#endif
   void boehm_set_finalizer_list(gctools::Tagged object, gctools::Tagged finalizers );
   void boehm_clear_finalizer_list(gctools::Tagged object);
 

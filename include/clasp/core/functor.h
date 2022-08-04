@@ -21,6 +21,8 @@ namespace core {
   FORWARD(ClosureBase);
   FORWARD(BuiltinClosure);
   FORWARD(ClosureWithSlots);
+  FORWARD(BytecodeModule);
+  FORWARD(SimpleVector_byte32_t);
 };
 
 namespace llvmo {
@@ -195,6 +197,73 @@ FORWARD(GlobalEntryPoint);
    string __repr__() const;
  };
 
+
+// Fulfill the role of bytecode_function
+FORWARD(GlobalBytecodeEntryPoint);
+ class GlobalBytecodeEntryPoint_O : public CodeEntryPoint_O {
+   LISP_CLASS(core,CorePkg,GlobalBytecodeEntryPoint_O,"GlobalBytecodeEntryPoint",CodeEntryPoint_O);
+ public:
+   /*! A general entry point at 0 and fixed arity entry points from 1...(NUMBER_OF_ENTRY_POINTS-1)
+       The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
+   */
+   // All code entry points
+   ClaspXepFunction _EntryPoints;
+   // The frame size this function needs for local variables.
+   unsigned short   _LocalsFrameSize;
+  // Number of required args.
+   unsigned short   _Required;
+  // Number of optional args.
+   unsigned short   _Optional;
+  // The frame slot for the &REST arg if there is one.
+   unsigned short   _RestSlot;
+  // A fixed offset (to be added to key-consts) for where the stack slots for the keyword arguments are.
+   unsigned short    _KeyStart;
+  // An array of named &KEY symbols.
+   T_sp             _KeyConsts;
+  // Packed flags for:
+  //  1. If lambda list has &REST
+  //  2. If lambda list has &KEY
+  //  3. If lambda list has &ALLOW-OTHER-KEYS
+   unsigned char    _Flags;
+  // Number of closure values in the environment
+   unsigned int     _EnvironmentSize;
+  // Entry points into the bytes vector in the containing module.
+  // These are offsets instead of an interior pointers to make dumping/loading/GC considerations easier.
+   unsigned int     _EntryPcs[NUMBER_OF_ENTRY_POINTS];
+ public:
+  // Accessors
+   GlobalBytecodeEntryPoint_O(FunctionDescription_sp fdesc,
+                              const ClaspXepFunction& entry_point,
+                              T_sp code,
+                              unsigned short localsFrameSize,
+                              unsigned short required,
+                              unsigned short optional,
+                              unsigned short restSlot,
+                              unsigned short keyStart,
+                              T_sp keyConsts,
+                              unsigned char flags,
+                              unsigned int environmentSize,
+                              unsigned int entryPcs[NUMBER_OF_ENTRY_POINTS] );
+
+ public:
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
+   virtual Pointer_sp defaultEntryAddress() const;
+   BytecodeModule_sp code() const;
+   string __repr__() const;
+
+   CL_DEFMETHOD Fixnum localsFrameSize() const { return this->_LocalsFrameSize; };
+   CL_DEFMETHOD Fixnum required() const { return this->_Required; };
+   CL_DEFMETHOD Fixnum optional() const { return this->_Optional; };
+   CL_DEFMETHOD Fixnum restSlot() const { return this->_RestSlot; };
+   CL_DEFMETHOD Fixnum keyStart() const { return this->_KeyStart; };
+   CL_DEFMETHOD T_sp keyConsts() const { return this->_KeyConsts; };
+   CL_DEFMETHOD Fixnum flags() const { return this->_Flags; };
+   CL_DEFMETHOD Fixnum environmentSize() const { return this->_EnvironmentSize; };
+   SimpleVector_byte32_t_sp entryPcs() const;
+
+ };
+
+
 FORWARD(GlobalEntryPointGenerator);
 class GlobalEntryPointGenerator_O : public EntryPointBase_O {
    LISP_CLASS(core,CorePkg,GlobalEntryPointGenerator_O,"GlobalEntryPointGenerator",EntryPointBase_O);
@@ -209,13 +278,13 @@ class GlobalEntryPointGenerator_O : public EntryPointBase_O {
  };
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
-                                                T_sp lambda_list=unbound<T_O>(),
-                                                T_sp docstring=nil<T_O>(),
-                                                T_sp declares=nil<T_O>(),
-                                                T_sp sourcePathname=nil<T_O>(),
-                                                int lineno=-1,
-                                                int column=-1,
-                                                int filePos=-1);
+                                                     T_sp lambda_list=unbound<T_O>(),
+                                                     T_sp docstring=nil<T_O>(),
+                                                     T_sp declares=nil<T_O>(),
+                                                     T_sp sourcePathname=nil<T_O>(),
+                                                     int lineno=-1,
+                                                     int column=-1,
+                                                     int filePos=-1);
 
 
 LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
@@ -268,6 +337,19 @@ GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName
 
 
 
+GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescription_sp fdesc,
+                                                               BytecodeModule_sp module,
+                                                               size_t localsFrameSize,
+                                                               size_t required,
+                                                               size_t optional,
+                                                               size_t restSlot,
+                                                               size_t keyStart,
+                                                               T_sp keyConsts,
+                                                               size_t flags,
+                                                               size_t environmentSize,
+                                                               List_sp pcIndices );
+
+
 GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
 LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp ep, void** fptrs);
 
@@ -313,15 +395,13 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
 
     virtual FunctionDescription_sp fdesc() const { return this->_EntryPoint.load()->_FunctionDescription; };
     // Rewrite the function-description pointer - used in direct-calls.lisp
-    
-//    virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
+    //  virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
 
 
-    CL_LISPIFY_NAME("core:entry-point");
     CL_DEFMETHOD T_sp entryPoint() const {
       return this->_EntryPoint.load();
     }
-    
+
     CL_LISPIFY_NAME("core:functionName");
     CL_DEFMETHOD virtual T_sp functionName() const {
       return this->fdesc()->functionName();
@@ -426,10 +506,6 @@ namespace core {
     LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::Function_O);
     typedef enum { bytecodeClosure, interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
 #define ENVIRONMENT_SLOT 0
-#define BYTECODE_CLOSURE_SLOTS 3
-#define BYTECODE_CLOSURE_ENTRY_INDEX_SLOT 0
-#define BYTECODE_CLOSURE_MODULE_SLOT      1
-#define BYTECODE_CLOSURE_LAMBDA_LIST_HANDLER_SLOT 2
 #define INTERPRETED_CLOSURE_SLOTS  3
 #define INTERPRETED_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
 #define INTERPRETED_CLOSURE_FORM_SLOT 1
@@ -450,7 +526,7 @@ namespace core {
   public:
     static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column);
 
-    static ClosureWithSlots_sp make_bytecode_closure(T_sp name, T_sp bytecodeModule, T_sp functionIndex,  size_t closedOverSlots, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column);
+    static ClosureWithSlots_sp make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots);
 
     static ClosureWithSlots_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint);
 
@@ -466,13 +542,13 @@ namespace core {
     core::T_sp lambdaListHandler() const override {
       switch (this->closureType) {
       case interpretedClosure:
-        return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
+          return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
       case bytecodeClosure:
-        return (*this)[BYTECODE_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
+          return nil<T_O>();
       case bclaspClosure:
-        return nil<T_O>();
+          return nil<T_O>();
       case cclaspClosure:
-        return nil<T_O>();
+          return nil<T_O>();
       };
     }
     CL_DEFMETHOD T_sp interpretedSourceCode();
@@ -522,6 +598,9 @@ namespace core {
 namespace core {
 typedef gctools::return_type (*trampoline_function)(void* fn, core::T_O* closure, size_t nargs, core::T_O** args );
 extern trampoline_function interpreter_trampoline;
+
+typedef gctools::return_type (*bytecode_trampoline_function)(void* fn, unsigned char* pc, core::T_O* closure, size_t nargs, core::T_O** args );
+extern bytecode_trampoline_function bytecode_trampoline;
 
 };
 

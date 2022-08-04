@@ -44,7 +44,7 @@ struct CleanupFunctionNode {
   CleanupFunctionNode*      _Next;
   CleanupFunctionNode(const std::function<void(void)>& cleanup, CleanupFunctionNode* next)
     : _CleanupFunction(cleanup), _Next(next) {};
-  
+
 };
 };
 
@@ -58,20 +58,30 @@ typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 namespace core {
 
 struct VirtualMachine {
-
-  static constexpr size_t MaxStackSize = 16384*8; // 16K words for now.
-  
-  core::T_O*     _Stack;
-  size_t         _StackSize;
-  core::T_O*     _StackTop;
-  core::T_O*     _FramePointer;
+  static constexpr size_t MaxStackWords = 16384; // 16K words for now.
+  core::T_O**    _StackBottom;
+  size_t         _StackBytes;
+  core::T_O**    _StackTop;
+  core::T_O**    _FramePointer;
+  core::T_O**    _StackPointer;
   core::T_sp     _CurrentFunction;
-  core::T_O*     _Literals;
-  unsigned char* _PC; 
+  core::T_O**    _Literals;
+  unsigned char* _PC;
+
+  inline void push(core::T_O* value) {
+    this->_StackPointer--;
+    *this->_StackPointer = value;
+  }
+
+  inline core::T_O* pop() {
+    core::T_O* value = *this->_StackPointer;
+    this->_StackPointer++;
+    return value;
+  }
 
   VirtualMachine();
   ~VirtualMachine();
-  
+
 };
 
 

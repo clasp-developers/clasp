@@ -5,6 +5,7 @@
 
 ;;#+(or)
 (llvm-sys:install-interpreter-trampoline)
+(llvm-sys:install-bytecode-trampoline)
 
 #+(or)
 (eval-when (:compile-toplevel :execute)

@@ -77,7 +77,7 @@ namespace core {
     // _Rack (matches offset in Instance_O)
     Rack_sp _Rack;
     Instance_sp _Class;
-    std::atomic<size_t>        _InterpretedCalls;
+    std::atomic<size_t> _InterpretedCalls;
     std::atomic<T_sp>   _CompiledDispatchFunction;
   public:
 
@@ -85,6 +85,7 @@ namespace core {
     void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction.store(val); };
   public:
 
+    virtual bool compiledP() const { return true; };
     void accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc);
     void lowLevel_calculateClassPrecedenceList();
 
