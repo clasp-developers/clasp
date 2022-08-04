@@ -221,7 +221,13 @@
 
 (deftransform logcount core::fixnum-positive-logcount (and fixnum unsigned-byte))
 
+;;; 63 is magic - fixnums are i64 so llvm will shift them 63 at most.
+;;; should be done more elegantly, FIXME
 (deftransform-wr ash core::fixnum-shl fixnum fixnum (integer 0 63))
+(deftransform-wr core:ash-left core::fixnum-shl fixnum fixnum (integer 0 63))
+(deftransform core:ash-right core::fixnum-ashr fixnum (integer 0 63))
+(deftransform core:ash-right core::fixnum-ashr-min
+  fixnum (and fixnum (integer 0)))
 
 ;;(deftransform car cleavir-primop:car cons)
 ;;(deftransform cdr cleavir-primop:cdr cons)

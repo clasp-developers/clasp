@@ -909,6 +909,8 @@
      sys)))
 
 (define-deriver ash (num shift) (sv (ty-ash num shift)))
+(define-deriver core:ash-left (num shift) (sv (ty-ash num shift)))
+(define-deriver core:ash-right (num shift) (sv (ty-ash num (ty-negate shift))))
 
 (defun derive-to-float (realtype format sys)
   ;; TODO: disjunctions
