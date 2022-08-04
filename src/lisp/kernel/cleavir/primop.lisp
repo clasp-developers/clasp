@@ -36,15 +36,6 @@
 
 ;;; Called by translate-simple-instruction. Return value irrelevant.
 (defgeneric translate-primop (opname instruction))
-;;; Called by translate-conditional-test
-(defgeneric translate-conditional-primop (opname instruction next)
-  (:method (opname (instruction bir:primop) next)
-    (declare (ignore opname))
-    ;; Like the default method on translate-conditional-test, compare the output
-    ;; against NIL.
-    (cmp:irc-cond-br
-     (cmp:irc-icmp-eq (in (first (bir:outputs instruction))) (%nil))
-     (second next) (first next))))
 
 ;;; Hash table from primop infos to rtype info.
 ;;; An rtype info is just a list (return-rtype argument-rtypes...)
@@ -114,28 +105,12 @@
 
 ;;; Define a primop used as a conditional test.
 ;;; Here param-info is parameters only.
-;;; The body is used for translate-conditional-primop, which is expected to
-;;; return an LLVM i1 Value.
-(defmacro deftprimop (name param-info (instparam nextparam) &body body)
-  (let ((name (if (consp name) (first name) name))
-        (options (if (consp name) (rest name) nil))
-        (param-info
-          (list* '(:object)
-                 (if (integerp param-info)
-                     (make-list param-info :initial-element :object)
-                     param-info)))
-        (nsym (gensym "NAME")))
-    (destructuring-bind (&key flags) options
-      `(progn
-         (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) 2
-           ,@flags)
-         (setf (gethash ',name *primop-rtypes*) '(,@param-info))
-         (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
-           (declare (ignore ,instparam)))
-         (defmethod translate-conditional-primop ((,nsym (eql ',name))
-                                                  ,instparam ,nextparam)
-           ,@body)
-         ',name))))
+(defmacro deftprimop (name param-info (instparam) &body body)
+  `(defvprimop ,name ((:boolean) ,@(if (integerp param-info)
+                                       (make-list param-info :initial-element :object)
+                                       param-info))
+     (,instparam)
+     ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -145,7 +120,7 @@
 (macrolet ((def-float-compare (sfname dfname op reversep)
              `(progn
                 (deftprimop ,sfname (:single-float :single-float)
-                  (inst next)
+                  (inst)
                   (assert (= (length (bir:inputs inst)) 2))
                   (let ((,(if reversep 'i2 'i1)
                           (in (first (bir:inputs inst))))
@@ -155,9 +130,9 @@
                                                  cmp:%float%))
                     (assert (llvm-sys:type-equal (llvm-sys:get-type i2)
                                                  cmp:%float%))
-                    (cmp:irc-cond-br (,op i1 i2) (first next) (second next))))
+                    (,op i1 i2)))
                 (deftprimop ,dfname (:double-float :double-float)
-                  (inst next)
+                  (inst)
                   (assert (= (length (bir:inputs inst)) 2))
                   (let ((,(if reversep 'i2 'i1)
                           (in (first (bir:inputs inst))))
@@ -167,7 +142,7 @@
                                                  cmp:%double%))
                     (assert (llvm-sys:type-equal (llvm-sys:get-type i2)
                                                  cmp:%double%))
-                    (cmp:irc-cond-br (,op i1 i2) (first next) (second next)))))))
+                    (,op i1 i2))))))
   (def-float-compare core::two-arg-sf-=  core::two-arg-df-=  %fcmp-oeq nil)
   (def-float-compare core::two-arg-sf-<  core::two-arg-df-<  %fcmp-olt nil)
   (def-float-compare core::two-arg-sf-<= core::two-arg-df-<= %fcmp-ole nil)
@@ -430,7 +405,7 @@
 (macrolet ((def-fixnum-compare (name op)
              `(progn
                 (deftprimop ,name (:fixnum :fixnum)
-                  (inst next)
+                  (inst)
                   (assert (= (length (bir:inputs inst)) 2))
                   ;; NOTE: We do not HAVE to cast to an integer type,
                   ;; as icmp works fine on pointers directly.
@@ -440,8 +415,7 @@
                   ;; constants. So we use the fixnum rtype.
                   (let ((i1 (in (first (bir:inputs inst))))
                         (i2 (in (second (bir:inputs inst)))))
-                    (cmp:irc-cond-br (,op i1 i2)
-                                     (first next) (second next)))))))
+                    (,op i1 i2))))))
   (def-fixnum-compare core::two-arg-fixnum-=  cmp:irc-icmp-eq)
   (def-fixnum-compare core::two-arg-fixnum-<  cmp:irc-icmp-slt)
   (def-fixnum-compare core::two-arg-fixnum-<= cmp:irc-icmp-sle)

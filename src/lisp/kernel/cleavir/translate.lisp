@@ -256,12 +256,12 @@
   (declare (ignore next))
   (error "Don't know how to translate this conditional test ~a." instruction))
 
-(defmethod translate-conditional-test ((instruction bir:eq-test) next)
+(defmethod translate-simple-instruction ((instruction bir:eq-test) abi)
+  (declare (ignore abi))
   (let ((inputs (bir:inputs instruction)))
-    (cmp:irc-cond-br
-     (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs))
-                      (datum-name-as-string (bir:output instruction)))
-     (first next) (second next))))
+    (out (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs))
+                          (datum-name-as-string (bir:output instruction)))
+         (bir:output instruction))))
 
 (defmacro define-tag-test (inst mask tag)
   `(defmethod translate-conditional-test ((instruction ,inst) next)
@@ -281,22 +281,19 @@
    (in (first (bir:inputs instruction)))
    (first next) (second next)))
 
-(defmethod translate-conditional-test ((inst cc-vaslist:nendp) next)
-  (cmp:irc-cond-br
-   (cmp:irc-icmp-ugt (cmp:irc-vaslist-nvals (in (bir:input inst)))
-                     (%size_t 0))
-   (first next) (second next)))
-
-(defmethod translate-conditional-test ((inst bir:primop) next)
-  (translate-conditional-primop (cleavir-primop-info:name (bir:info inst))
-                                inst next))
+(defmethod translate-simple-instruction ((inst cc-vaslist:nendp) next)
+  (out (cmp:irc-icmp-ugt (cmp:irc-vaslist-nvals (in (bir:input inst)))
+                         (%size_t 0))
+       (bir:output inst)))
 
 (defmethod translate-terminator ((instruction bir:ifi) abi next)
   (declare (ignore abi))
   (let ((in (first (bir:inputs instruction))))
     (etypecase in
       (bir:output
-       (translate-conditional-test (bir:definition in) next))
+       (if (equal (cc-bmir:rtype in) '(:boolean))
+           (cmp:irc-cond-br (in in) (first next) (second next))
+           (translate-conditional-test (bir:definition in) next)))
       ((or bir:phi bir:argument)
        (cmp:irc-cond-br (cmp:irc-icmp-eq (in in) (%nil))
                         (second next) (first next))))))
@@ -702,7 +699,7 @@
         if arguments
           collect (translate-cast (pop arguments) '(:object)
                                   (cc-bmir:rtype op))
-          and collect (cmp::irc-t)
+          and collect (%t)
         else
           collect (cmp:irc-undef-value-get (argument-rtype->llvm op))
           and collect (%nil)))
@@ -1088,6 +1085,27 @@
     (if (eql from to)
         value
         (error "BUG: Don't know how to cast ~a ~a to ~a" from value to))))
+
+(defmethod cast-one ((from (eql :boolean)) (to (eql :object)) value)
+  ;; we could use a select instruction, but then we'd have a redundant memory load.
+  ;; which really shouldn't be a big deal, but why risk it.
+  (let* ((thenb (cmp:irc-basic-block-create "bool-t"))
+         (elseb (cmp:irc-basic-block-create "bool-nil"))
+         (_0 (cmp:irc-cond-br value thenb elseb))
+         (merge (cmp:irc-basic-block-create "bool"))
+         (_1 (cmp:irc-begin-block merge))
+         (phi (cmp:irc-phi cmp:%t*% 2 "bool")))
+    (declare (ignore _0 _1))
+    (cmp:irc-begin-block thenb)
+    (cmp:irc-phi-add-incoming phi (%t) thenb)
+    (cmp:irc-br merge)
+    (cmp:irc-begin-block elseb)
+    (cmp:irc-phi-add-incoming phi (%nil) elseb)
+    (cmp:irc-br merge)
+    (cmp:irc-begin-block merge)
+    phi))
+(defmethod cast-one ((from (eql :object)) (to (eql :boolean)) value)
+  (cmp:irc-icmp-ne value (%nil)))
 
 (defmethod cast-one ((from (eql :single-float)) (to (eql :object)) value)
   (cmp:irc-box-single-float value))

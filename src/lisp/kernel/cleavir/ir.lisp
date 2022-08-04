@@ -58,6 +58,9 @@
 (defun %nil ()
   "A nil in a T*"
   (%literal-value nil))
+(defun %t ()
+  "A T in a T*"
+  (%literal-value t))
 
 
 (defun instruction-llvm-function (instr)
