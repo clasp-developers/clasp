@@ -117,6 +117,10 @@ GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fd
 };
 
 
+CL_DEFMETHOD SimpleVector_byte32_t_sp GlobalBytecodeEntryPoint_O::entryPcs() const {
+  return SimpleVector_byte32_t_O::make(NUMBER_OF_ENTRY_POINTS,0,false,NUMBER_OF_ENTRY_POINTS,this->_EntryPcs);
+}
+
 
 LocalEntryPoint_O::LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {
   llvmo::validateEntryPoint( code, entry_point );
@@ -429,9 +433,17 @@ GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp entryPoint,
   return ep;
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,bytecode_call);
+
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   // entry point for bytecode interpreter
+  Pointer_sp pcptr = Pointer_O::create((void*)pc);
+  ClosureWithSlots_sp closureObject((gctools::Tagged)lcc_closure);
+  SimpleVector_sp args = SimpleVector_O::make(lcc_nargs,nil<T_O>(),false,lcc_nargs,(const T_sp*)lcc_args);
+  return eval::funcall(_sym_bytecode_call,pcptr,closureObject,args);
+
+#if 0
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
   // Do we need the lookup entryPoint? - if so - maybe we should pass it to bytecode_call
   // Meh, it's just a lookup and we are going to read closed over slots
@@ -466,6 +478,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     };
   }
+#endif
 }
 
 struct BytecodeClosureEntryPoint {

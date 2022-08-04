@@ -53,6 +53,9 @@ namespace core {
     bool in_pointer_range(Pointer_sp low, Pointer_sp high) { return ((char*)this->m_raw_data>=(char*)low->m_raw_data) && (char*)this->m_raw_data<((char*)high->m_raw_data);  };
     string __repr__() const override;
 
+    Fixnum peekByte() const;
+    void inPlaceIncrement(Fixnum offset);
+    
     Integer_sp pointer_integer() const;
   }; // Pointer class
 

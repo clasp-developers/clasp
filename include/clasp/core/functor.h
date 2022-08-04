@@ -22,6 +22,7 @@ namespace core {
   FORWARD(BuiltinClosure);
   FORWARD(ClosureWithSlots);
   FORWARD(BytecodeModule);
+  FORWARD(SimpleVector_byte32_t);
 };
 
 namespace llvmo {
@@ -249,6 +250,17 @@ FORWARD(GlobalBytecodeEntryPoint);
    virtual Pointer_sp defaultEntryAddress() const;
    BytecodeModule_sp code() const;
    string __repr__() const;
+
+   CL_DEFMETHOD Fixnum localsFrameSize() const { return this->_LocalsFrameSize; };
+   CL_DEFMETHOD Fixnum required() const { return this->_Required; };
+   CL_DEFMETHOD Fixnum optional() const { return this->_Optional; };
+   CL_DEFMETHOD Fixnum restSlot() const { return this->_RestSlot; };
+   CL_DEFMETHOD Fixnum keyStart() const { return this->_KeyStart; };
+   CL_DEFMETHOD T_sp keyConsts() const { return this->_KeyConsts; };
+   CL_DEFMETHOD Fixnum flags() const { return this->_Flags; };
+   CL_DEFMETHOD Fixnum environmentSize() const { return this->_EnvironmentSize; };
+   SimpleVector_byte32_t_sp entryPcs() const;
+
  };
 
 
@@ -383,15 +395,13 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
 
     virtual FunctionDescription_sp fdesc() const { return this->_EntryPoint.load()->_FunctionDescription; };
     // Rewrite the function-description pointer - used in direct-calls.lisp
-    
-//    virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
+    //  virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
 
 
-    CL_LISPIFY_NAME("core:entry-point");
     CL_DEFMETHOD T_sp entryPoint() const {
       return this->_EntryPoint.load();
     }
-    
+
     CL_LISPIFY_NAME("core:functionName");
     CL_DEFMETHOD virtual T_sp functionName() const {
       return this->fdesc()->functionName();

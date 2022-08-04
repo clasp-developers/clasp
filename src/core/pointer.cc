@@ -98,11 +98,21 @@ CL_DEFUN void core__replace_foreign_memory(clasp_ffi::ForeignData_sp dest, clasp
 CL_DEFMETHOD Integer_sp Pointer_O::pointer_integer() const {
   return Integer_O::create((uintptr_t)this->ptr());
 };
-
+#if 0
 DOCGROUP(clasp)
 CL_DEFUN Pointer_sp core__pointer_increment(Pointer_sp ptr,Fixnum inc)
 {
   return Pointer_O::create((void*)(((intptr_t)ptr->ptr())+inc));
+};
+#endif
+
+CL_DEFMETHOD Fixnum Pointer_O::peekByte() const {
+  unsigned char byte = *(unsigned char*)this->ptr();
+  return byte;
+};
+
+CL_DEFMETHOD void Pointer_O::inPlaceIncrement(Fixnum offset) {
+  this->m_raw_data = (void*)((unsigned char*)this->m_raw_data + offset);
 };
 
 };
