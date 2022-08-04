@@ -480,9 +480,17 @@ Optimizations are available for any of:
 (deftransform ash (((int integer) (count (eql 0)))) 'int)
 ;; also obvious
 (deftransform ash (((int (eql 0)) (count integer))) 'int)
-;; right shift of a fixnum
-(deftransform ash (((int fixnum) (count (integer * 0))))
-  '(core::primop core::fixnum-ashr int (min (- count) 63)))
+
+;; transform shifts into direct use of shift-left, shift-right
+;; the efficiency gain is negligible, but we can go from there into
+;; better optimizations; see bir-to-bmir
+(deftransform ash (((int t) (count (integer 0)))) '(core:ash-left int count))
+(deftransform ash (((int t) (count (integer * 0))))
+  ;; A weakness of meta-evaluate reveals itself here - if we do the more obvious
+  ;; (- count), that will be transformed into (- 0 count) by the above, but then
+  ;; our transformations may be spent and it will remain there, and we'll do a
+  ;; full call to ash-right. Which would be pretty subpar.
+  '(core:ash-right int (- 0 count)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

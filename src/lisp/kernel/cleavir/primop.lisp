@@ -474,6 +474,17 @@
                             (datum-name-as-string
                              (first (bir:outputs inst))))))
     fixn))
+;;; ditto the above, but makes sure the shift is valid by taking the min.
+(defvprimop (core::fixnum-ashr-min :flags (:flushable))
+    ((:fixnum) :fixnum :utfixnum) (inst)
+  (let* ((int (in (first (bir:inputs inst))))
+         ;; NOTE: treated as unsigned, so it'd better be positive
+         (pshift (in (second (bir:inputs inst))))
+         (shift (%intrinsic-call "llvm.umin.i64" (list pshift (%i64 63))))
+         (shifted (cmp:irc-ashr int shift))
+         (demask (%i64 (ldb (byte 64 0) (lognot cmp:+fixnum-mask+))))
+         (fixn (cmp:irc-and shifted demask)))
+    fixn))
 
 ;;; Primops for debugging
 
