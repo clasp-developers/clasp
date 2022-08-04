@@ -16,16 +16,19 @@
   (format t "~:[Did not find~;Found~] ~A clone in ~A, assuming everything is okay.~%"
           (probe-file directory) repository directory))
 
-(defun sync-repo (help &key directory repository branch commit &allow-other-keys
+(defun sync-repo (help deep-clean &key directory repository branch commit &allow-other-keys
                   &aux (exists (probe-file directory)))
   (unless (and help exists)
-    (cond (exists
+    (cond ((and exists (not deep-clean))
            (format t "Fetching ~A~%" repository)
            (uiop:run-program (list *git* "fetch" "--quiet")
                              :output :interactive
                              :error-output :output
                              :directory directory))
          (t
+          (when (and deep-clean exists)
+            (format t "Removing existing directory ~A~%" directory)
+            (uiop:delete-directory-tree exists :validate t))
           (format t "Cloning ~A~%" repository)
           (uiop:run-program (list *git* "clone" repository (namestring directory))
                             :output :interactive
@@ -93,10 +96,18 @@
        (extensions (getf initargs :extensions))
        (skip-sync (getf initargs :skip-sync))
        (help (getf initargs :help)))
+  (when (and (not help)
+             (or (getf initargs :clean)
+                 (getf initargs :deep-clean)))
+    (format t "Cleaning up previous build~%~%")
+    (uiop:delete-directory-tree build
+                                :validate t
+                                :if-does-not-exist :ignore))
   ;; Get all the external dependencies
   (unless help
     (format t "Synchronizing external repositories~%~%"))
-  (loop for source in (uiop:read-file-form #P"repos.sexp")
+  (loop with deep-clean = (getf initargs :deep-clean)
+        for source in (uiop:read-file-form #P"repos.sexp")
         for name = (getf source :name)
         for extension = (getf source :extension)
         if (or (eq t skip-sync)
@@ -104,15 +115,9 @@
           do (apply #'check-repo source)
         else if (or (not extension)
                     (member extension extensions))
-          do (apply #'sync-repo help source)
+          do (apply #'sync-repo help deep-clean source)
         unless help
           do (terpri))
-  (when (and (not help)
-             (getf initargs :clean))
-    (format t "Cleaning up previous build~%~%")
-    (uiop:delete-directory-tree build
-                                :validate t
-                                :if-does-not-exist :ignore))
   ;; Do the absolute minimum to inform ASDF about the location of systems
   ;; in order to find the clasp root and the desired build directory.
   (asdf:initialize-source-registry
