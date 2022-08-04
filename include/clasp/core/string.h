@@ -443,18 +443,18 @@ namespace core {
 
 namespace core {
 
-  extern bool clasp_isupper(claspCharacter cc);
-  extern bool clasp_islower(claspCharacter cc);
+  extern bool upper_case_p(claspCharacter cc);
+  extern bool lower_case_p(claspCharacter cc);
   
 template <class StringType>
 int template_string_case(const StringType& s) {
   int upcase = 0;
   for (typename StringType::const_iterator it = s.begin(); it!=s.end(); ++it ) {
     claspCharacter cc = static_cast<claspCharacter>(*it);
-    if (clasp_isupper(cc)) {
+    if (upper_case_p(cc)) {
       if (upcase < 0) return 0;
       upcase = +1;
-    } else if (clasp_islower(cc)) {
+    } else if (lower_case_p(cc)) {
       if (upcase > 0) return 0;
       upcase = -1;
     }

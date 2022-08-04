@@ -578,49 +578,13 @@ bool lispify_match(const char *&cur, const char *match, NextCharTest nextCharTes
     return true;
   }
   if ( nextCharTest == upperCaseAlpha ) {
-    if (*match && isalpha(*match) && isupper(*match)) {
+    if (*match && upper_case_p(*match)) {
       cur = ccur;
       return true;
     }
     return false;
   }
   SIMPLE_ERROR(("Unknown nextCharTest(%d)") , nextCharTest );
-}
-
-/*! This checks for names like CXXObject and will convert them to CXX-OBJECT.
-It looks for [A-Z]+[A-Z][a-z] - a run of more than 
-two upper case characters followed by a lower case
-alpha character. If it sees this it returns true and the first N-1 characters of the
-upper case sequence and it advances cur to the last upper case character */
-
- bool lispify_more_than_two_upper_case_followed_by_lower_case(const char*&cur, stringstream& accumulate)
-{
-  const char *ccur = cur;
-  stringstream ss_acc;
-  while (*ccur) {
-    if (isalpha(*ccur)) {
-      if (isupper(*ccur)) {
-        if (!*(ccur+1)) return false;
-        if (isalpha(*(ccur+1))) {
-          if (isupper(*(ccur+1))) {
-            if (!*(ccur+2) ) return false;
-            if (isalpha(*(ccur+2))) {
-              if ( islower(*(ccur+2))) {
-                accumulate << ss_acc.str() << '-';
-                cur = ccur;
-                return true;
-              } else {
-                ss_acc << *ccur;
-                ++ccur;
-                continue;
-              }
-            } else return false;
-          } else return false;
-        } else return false;
-      } else return false;
-    } else return false;
-  }
-  return false;
 }
 
 string lispify_symbol_name(const string &s) {
@@ -732,14 +696,14 @@ string lispify_symbol_name(const string &s) {
   const char *start_pass2 = str_pass2.c_str();
   cur = start_pass2;
   while (*cur) {
-    if (islower(*cur) && isalpha(*(cur + 1)) && isupper(*(cur + 1))) {
+    if (lower_case_p(*cur) && upper_case_p(*(cur + 1))) {
       char lcur = *cur;
-      char ucur = toupper(lcur);
+      char ucur = char_upcase(lcur);
       stream_pass2 << ucur << "-";
       ++cur;
       continue;
     }
-    stream_pass2 << (char)(toupper(*cur));
+    stream_pass2 << (char)(char_upcase(*cur));
     ++cur;
   }
   LOG("lispify_symbol_name output[%s]" , stream_pass2.str());
@@ -1455,7 +1419,7 @@ string stringUpper(const string &s) {
   LOG("Converting string(%s) to uppercase" , s);
   stringstream ss;
   for (uint si = 0; si < s.length(); si++) {
-    ss << (char)(toupper(s[si]));
+    ss << (char)(char_upcase(s[si]));
   }
   LOG("Returning stringUpper(%s)" , ss.str());
   return ss.str();
@@ -1465,7 +1429,7 @@ string stringUpper(const char *s) {
   LOG("Converting const char*(%s) to uppercase" , s);
   stringstream ss;
   for (; *s; s++) {
-    ss << (char)(toupper(*s));
+    ss << (char)(char_upcase(*s));
   }
   LOG("Returning stringUpper(%s)" , ss.str());
   return ss.str();

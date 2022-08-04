@@ -90,7 +90,7 @@ potential_number_p(String_sp s, int base) {
     } else if (c == '+' || c == '-' ||
                c == '/' || c == '.' || c == '^' || c == '_') {
       continue;
-    } else if (isalpha(c) && (((i + 1) >= l) || !isalpha(clasp_as_claspCharacter(cl__char(s,i + 1))))) {
+    } else if (alpha_char_p(c) && (((i + 1) >= l) || !alpha_char_p(clasp_as_claspCharacter(cl__char(s,i + 1))))) {
       continue;
     } else {
       return false;
@@ -127,9 +127,9 @@ needs_to_be_escaped(String_sp s, T_sp readtable) {
         clasp_invalid_base_char_p(c) ||
         (c) == ':')
       return 1;
-    if ((action == kw::_sym_downcase) && isupper(c))
+    if ((action == kw::_sym_downcase) && upper_case_p(c))
       return 1;
-    if (islower(c))
+    if (lower_case_p(c))
       return 1;
   }
   return 0;
@@ -155,24 +155,24 @@ write_symbol_string(SimpleString_sp s, Symbol_sp action, T_sp print_case,
         clasp_write_char('\\', stream);
       }
     } else if (action != kw::_sym_preserve) {
-      if (isupper(c)) {
+      if (upper_case_p(c)) {
         if ((action == kw::_sym_invert) ||
             ((action == kw::_sym_upcase) &&
              ((print_case == kw::_sym_downcase) ||
               ((print_case == kw::_sym_capitalize) && !capitalize)))) {
-          c = tolower(c);
+          c = char_downcase(c);
         }
         capitalize = 0;
-      } else if (islower(c)) {
+      } else if (lower_case_p(c)) {
         if ((action == kw::_sym_invert) ||
             ((action == kw::_sym_downcase) &&
              ((print_case == kw::_sym_upcase) ||
               ((print_case == kw::_sym_capitalize) && capitalize)))) {
-          c = toupper(c);
+          c = char_upcase(c);
         }
         capitalize = 0;
       } else {
-        capitalize = !clasp_alphanumericp(c);
+        capitalize = !alphanumericp(c);
       }
     }
     clasp_write_char(c, stream);
@@ -280,3 +280,4 @@ void Symbol_O::__write__(T_sp stream) const {
   }
 }
 };
+
