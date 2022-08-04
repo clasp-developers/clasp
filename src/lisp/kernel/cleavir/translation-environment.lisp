@@ -53,6 +53,7 @@
 
 (defgeneric vrtype->llvm (vrtype))
 (defmethod vrtype->llvm ((vrtype (eql :object))) cmp:%t*%)
+(defmethod vrtype->llvm ((vrtype (eql :boolean))) cmp:%i1%)
 (defmethod vrtype->llvm ((vrtype (eql :vaslist))) cmp:%vaslist%)
 ;; These all pretty much have to match element-type->llvm-type in cmp/cmpintrinsics.
 (defmethod vrtype->llvm ((vrtype (eql :single-float))) cmp:%float%)
