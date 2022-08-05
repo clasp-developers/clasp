@@ -154,6 +154,22 @@
   (define-two-arg-ff core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/)
   (define-two-arg-ff expt           core::sf-expt      core::df-expt))
 
+(macrolet ((define-float-conditional (name sf-primop df-primop)
+             `(progn
+                (deftransform ,name ,sf-primop single-float single-float)
+                (deftransform ,name ,df-primop double-float double-float))))
+  (define-float-conditional core:two-arg-= core::two-arg-sf-= core::two-arg-df-=)
+  (define-float-conditional core:two-arg-< core::two-arg-sf-< core::two-arg-df-<)
+  (define-float-conditional core:two-arg-<= core::two-arg-sf-<= core::two-arg-df-<=)
+  (define-float-conditional core:two-arg-> core::two-arg-sf-> core::two-arg-df->)
+  (define-float-conditional core:two-arg->= core::two-arg-sf->= core::two-arg-df->=))
+
+(deftransform core:two-arg-=  core::two-arg-fixnum-=  fixnum fixnum)
+(deftransform core:two-arg-<  core::two-arg-fixnum-<  fixnum fixnum)
+(deftransform core:two-arg-<= core::two-arg-fixnum-<= fixnum fixnum)
+(deftransform core:two-arg->  core::two-arg-fixnum->  fixnum fixnum)
+(deftransform core:two-arg->= core::two-arg-fixnum->= fixnum fixnum)
+
 (deftransform ftruncate core::sf-ftruncate single-float single-float)
 (deftransform ftruncate core::df-ftruncate double-float double-float)
 ;; TODO: One-arg form

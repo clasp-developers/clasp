@@ -366,44 +366,25 @@ Optimizations are available for any of:
 (deftransform ftruncate (((dividend double-float) (divisor single-float)))
   '(ftruncate dividend (float divisor 0d0)))
 
-(macrolet ((define-float-conditional (name sf-primop df-primop)
+(macrolet ((define-float-conditional (name)
              `(progn
-                (deftransform ,name (((x single-float) (y single-float)))
-                  '(if (core::primop ,sf-primop x y) t nil))
-                (deftransform ,name (((x double-float) (y double-float)))
-                  '(if (core::primop ,df-primop x y) t nil))
                 (deftransform ,name (((x single-float) (y double-float)))
-                  '(if (core::primop ,df-primop
-                        (core::primop core::single-to-double x) y)
-                    t nil))
+                  '(,name (core:to-double-float x) y))
                 (deftransform ,name (((x double-float) (y single-float)))
-                  '(if (core::primop ,df-primop
-                        x (core::primop core::single-to-double y))
-                    t nil)))))
-  (define-float-conditional core:two-arg-=
-    core::two-arg-sf-= core::two-arg-df-=)
-  (define-float-conditional core:two-arg-<
-    core::two-arg-sf-< core::two-arg-df-<)
-  (define-float-conditional core:two-arg-<=
-    core::two-arg-sf-<= core::two-arg-df-<=)
-  (define-float-conditional core:two-arg->
-    core::two-arg-sf-> core::two-arg-df->)
-  (define-float-conditional core:two-arg->=
-    core::two-arg-sf->= core::two-arg-df->=))
+                  '(,name x (core:to-double-float y))))))
+  (define-float-conditional core:two-arg-=)
+  (define-float-conditional core:two-arg-<)
+  (define-float-conditional core:two-arg-<=)
+  (define-float-conditional core:two-arg->)
+  (define-float-conditional core:two-arg->=))
 
-(deftransform zerop (((n single-float)))
-  '(if (core::primop core::two-arg-sf-= n 0f0) t nil))
-(deftransform plusp (((n single-float)))
-  '(if (core::primop core::two-arg-sf-> n 0f0) t nil))
-(deftransform minusp (((n single-float)))
-  '(if (core::primop core::two-arg-sf-< n 0f0) t nil))
+(deftransform zerop (((n single-float))) '(= n 0f0))
+(deftransform plusp (((n single-float))) '(> n 0f0))
+(deftransform minusp (((n single-float))) '(< n 0f0))
 
-(deftransform zerop (((n double-float)))
-  '(if (core::primop core::two-arg-df-= n 0d0) t nil))
-(deftransform plusp (((n double-float)))
-  '(if (core::primop core::two-arg-df-> n 0d0) t nil))
-(deftransform minusp (((n double-float)))
-  '(if (core::primop core::two-arg-df-< n 0d0) t nil))
+(deftransform zerop (((n double-float))) '(= n 0d0))
+(deftransform plusp (((n double-float))) '(> n 0d0))
+(deftransform minusp (((n double-float))) '(< n 0d0))
 
 (macrolet ((define-irratf (name)
              `(deftransform ,name (((arg rational)))
@@ -460,21 +441,9 @@ Optimizations are available for any of:
 
 (deftransform core:negate (((n fixnum))) '(- 0 n))
 
-(macrolet ((define-fixnum-conditional (name primop)
-             `(deftransform ,name (((x fixnum) (y fixnum)))
-                '(if (core::primop ,primop x y) t nil))))
-  (define-fixnum-conditional core:two-arg-=  core::two-arg-fixnum-=)
-  (define-fixnum-conditional core:two-arg-<  core::two-arg-fixnum-<)
-  (define-fixnum-conditional core:two-arg-<= core::two-arg-fixnum-<=)
-  (define-fixnum-conditional core:two-arg->  core::two-arg-fixnum->)
-  (define-fixnum-conditional core:two-arg->= core::two-arg-fixnum->=))
-
-(deftransform zerop (((n fixnum)))
-  '(if (core::primop core::two-arg-fixnum-= n 0) t nil))
-(deftransform plusp (((n fixnum)))
-  '(if (core::primop core::two-arg-fixnum-> n 0) t nil))
-(deftransform minusp (((n fixnum)))
-  '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
+(deftransform zerop (((n fixnum))) '(= n 0))
+(deftransform plusp (((n fixnum))) '(> n 0))
+(deftransform minusp (((n fixnum))) '(< n 0))
 
 ;; really obvious case, but it comes up in e.g. (ldb (byte 8 0) ...)
 (deftransform ash (((int integer) (count (eql 0)))) 'int)
