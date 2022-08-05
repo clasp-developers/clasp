@@ -1,25 +1,5 @@
 (in-package :clasp-cleavir-ast)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class SETF-FDEFINITION-AST.
-;;;
-;;; This AST is generated from a reference to a global SETF function.
-
-(defclass setf-fdefinition-ast (ast:fdefinition-ast)
-  ())
-
-(defun make-setf-fdefinition-ast (name-ast
-                                  &key origin
-                                    (attributes
-                                     (cleavir-attributes:default-attributes)))
-  (make-instance 'setf-fdefinition-ast :name-ast name-ast
-                 :attributes attributes :origin origin))
-
-(cleavir-io:define-save-info setf-fdefinition-ast)
-
-(ast:define-children setf-fdefinition-ast ())
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class THROW-AST

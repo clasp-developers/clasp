@@ -299,19 +299,12 @@
                           (cleavir-ctype:values-subtypep
                            prtype trtype clasp-cleavir:*clasp-system*))
                   ;; Do the reduction to primop.
-                  ;; If the callee is an fdefinition primop, delete that.
+                  ;; If the callee is an fdefinition, delete that.
                   ;; KLUDGEy as we don't do a fully usedness analysis.
                   do (when (typep callee 'bir:output)
                        (let ((fdef (bir:definition callee)))
-                         (when (and (typep fdef 'bir:primop)
-                                    (eq 'fdefinition (cleavir-primop-info:name
-                                                      (bir:info fdef))))
-                           (let ((sym (first (bir:inputs fdef))))
-                             (bir:delete-instruction fdef)
-                             (when (typep sym 'bir:output)
-                               (let ((symdef (bir:definition sym)))
-                                 (when (typep symdef 'bir:constant-reference)
-                                   (bir:delete-instruction symdef))))))))
+                         (when (typep fdef 'bir:constant-fdefinition)
+                           (bir:delete-instruction fdef))))
                      (change-class inst 'bir:primop :inputs args
                                                     :info (cleavir-primop-info:info primop))
                      (return-from reduce-instruction)))))))
