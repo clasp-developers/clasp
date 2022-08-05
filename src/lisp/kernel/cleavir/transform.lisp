@@ -337,20 +337,20 @@ Optimizations are available for any of:
 (macrolet ((define-two-arg-f (name)
              `(progn
                 (deftransform ,name (((a1 single-float) (a2 double-float)))
-                  '(,name (float a1 0d0) a2))
+                  '(,name (core:to-double-float a1) a2))
                 (deftransform ,name (((a1 double-float) (a2 single-float)))
-                  '(,name a1 (float a2 0d0)))))
+                  '(,name a1 (core:to-double-float a2)))))
            (define-two-arg-ff (name)
              `(progn
                 (define-two-arg-f ,name)
                 (deftransform ,name (((x rational) (y single-float)))
-                  '(,name (float x 0f0) y))
+                  '(,name (core:to-single-float x) y))
                 (deftransform ,name (((x single-float) (y rational)))
-                  '(,name x (float y 0f0)))
+                  '(,name x (core:to-single-float y)))
                 (deftransform ,name (((x rational) (y double-float)))
-                  '(,name (float x 0d0) y))
+                  '(,name (core:to-double-float x) y))
                 (deftransform ,name (((x double-float) (y rational)))
-                  '(,name x (float y 0d0))))))
+                  '(,name x (core:to-double-float y))))))
   (define-two-arg-ff core:two-arg-+)
   (define-two-arg-ff core:two-arg--)
   (define-two-arg-ff core:two-arg-*)
@@ -362,9 +362,9 @@ Optimizations are available for any of:
 ;; FIXME: i think our FTRUNCATE function has a bug: it should return doubles in
 ;; this case, by my reading.
 (deftransform ftruncate (((dividend single-float) (divisor double-float)))
-  '(ftruncate (float dividend 0d0) divisor))
+  '(ftruncate (core:to-double-float dividend) divisor))
 (deftransform ftruncate (((dividend double-float) (divisor single-float)))
-  '(ftruncate dividend (float divisor 0d0)))
+  '(ftruncate dividend (core:to-single-float divisor)))
 
 (macrolet ((define-float-conditional (name)
              `(progn
@@ -388,7 +388,7 @@ Optimizations are available for any of:
 
 (macrolet ((define-irratf (name)
              `(deftransform ,name (((arg rational)))
-                '(,name (float arg 0f0))))
+                '(,name (core:to-single-float arg))))
            (define-irratfs (&rest names)
              `(progn ,@(loop for name in names collect `(define-irratf ,name)))))
   (define-irratfs exp cos sin tan cosh sinh tanh asinh sqrt
