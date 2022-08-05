@@ -108,10 +108,6 @@
   (setf (symbol-value (interpret-ast (cleavir-ast:symbol-ast ast) env))
         (interpret-ast (cleavir-ast:value-ast ast) env)))
 
-(defcan cleavir-ast:fdefinition-ast)
-(defmethod interpret-ast ((ast cleavir-ast:fdefinition-ast) env)
-  (fdefinition (interpret-ast (cleavir-ast:name-ast ast) env)))
-
 (defcan cleavir-ast:call-ast)
 (defmethod interpret-ast ((ast cleavir-ast:call-ast) env)
   (let ((fn (interpret-ast (cleavir-ast:callee-ast ast) env))
@@ -444,10 +440,6 @@
 ;;; Unimplemented:
 ;;; debug-message, debug-break, m-v-foreign-call, foreign-call, foreign-call-pointer, defcallback,
 ;;; precalc-whatever
-
-(defcan cc-ast:setf-fdefinition-ast)
-(defmethod interpret-ast ((ast cc-ast:setf-fdefinition-ast) env)
-  (fdefinition `(setf ,(interpret-ast (cleavir-ast:name-ast ast) env))))
 
 (defcan cc-ast:throw-ast)
 (defmethod interpret-ast ((ast cc-ast:throw-ast) env)

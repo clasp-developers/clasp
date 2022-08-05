@@ -281,7 +281,8 @@
    (in (first (bir:inputs instruction)))
    (first next) (second next)))
 
-(defmethod translate-simple-instruction ((inst cc-vaslist:nendp) next)
+(defmethod translate-simple-instruction ((inst cc-vaslist:nendp) abi)
+  (declare (ignore abi))
   (out (cmp:irc-icmp-ugt (cmp:irc-vaslist-nvals (in (bir:input inst)))
                          (%size_t 0))
        (bir:output inst)))
@@ -1352,15 +1353,6 @@
         "cc_safe_symbol_value" (list (in (first (bir:inputs inst))))
         (datum-name-as-string (first (bir:outputs inst))))
        (first (bir:outputs inst))))
-(defmethod translate-primop ((name (eql 'fdefinition)) inst)
-  (let ((symbol (in (first (bir:inputs inst))))
-        (out (first (bir:outputs inst))))
-    (out (cmp:irc-fdefinition symbol (datum-name-as-string out)) out)))
-(defmethod translate-primop ((name (eql 'cc-bir::setf-fdefinition)) inst)
-  (let ((setf-symbol (in (first (bir:inputs inst))))
-        (outp (first (bir:outputs inst))))
-    (out (cmp:irc-setf-fdefinition setf-symbol (datum-name-as-string outp))
-         outp)))
 (defmethod translate-primop ((name (eql 'cleavir-primop:slot-read)) inst)
   (out (cmp::gen-instance-ref (in (first (bir:inputs inst)))
                               (in (second (bir:inputs inst))))
@@ -1721,29 +1713,43 @@
          (cmp:irc-t*-load (%indexed-literal-ref index label)))
        (bir:output inst)))
 
+(defun translate-constant-value (constant)
+  (let* (;; NOTE: Printing out the constant for a label is problematic,
+         ;; because LLVM will reject (assert failure) if a label has
+         ;; any null bytes in it. Null bytes can arise in non-obvious
+         ;; ways, e.g. from non-ASCII Unicode characters.
+         (label "")
+         (immediate-or-index (gethash constant *constant-values*)))
+    (assert immediate-or-index () "Constant not found!")
+    (if (integerp immediate-or-index)
+        (multiple-value-bind (literals literals-type)
+            (literal:ltv-global)
+          (cmp:irc-t*-load
+           (cmp:irc-typed-gep-variable literals-type
+                                       literals
+                                       (list (%size_t 0)
+                                             (%i64 immediate-or-index))
+                                       label)
+           label))
+        immediate-or-index)))
+
 (defmethod translate-simple-instruction ((inst bir:constant-reference)
                                          abi)
   (declare (ignore abi))
-  (out (let* ((constant (first (bir:inputs inst)))
-              ;; NOTE: Printing out the constant for a label is problematic,
-              ;; because LLVM will reject (assert failure) if a label has
-              ;; any null bytes in it. Null bytes can arise in non-obvious
-              ;; ways, e.g. from non-ASCII Unicode characters.
-              (label "")
-              (immediate-or-index (gethash constant *constant-values*)))
-         (assert immediate-or-index () "Constant not found!")
-         (if (integerp immediate-or-index)
-             (multiple-value-bind (literals literals-type)
-                 (literal:ltv-global)
-               (cmp:irc-t*-load
-                (cmp:irc-typed-gep-variable literals-type
-                                      literals
-                                      (list (%size_t 0)
-                                            (%i64 immediate-or-index))
-                                      label)
-                label))
-             immediate-or-index))
-       (bir:output inst)))
+  (out (translate-constant-value (bir:input inst)) (bir:output inst)))
+
+(defmethod translate-simple-instruction ((inst bir:constant-fdefinition) abi)
+  (declare (ignore abi))
+  (let* ((output (bir:output inst))
+         (name (datum-name-as-string output)))
+    (out (let* ((constant (bir:input inst))
+                (value (bir:constant-value constant)))
+           (etypecase value
+             (symbol
+              (cmp:irc-fdefinition (translate-constant-value constant) name))
+             ((cons (eql setf) (cons symbol null))
+              (cmp:irc-setf-fdefinition (%literal-value (second value)) name))))
+         output)))
 
 (defmethod translate-simple-instruction
     ((inst cc-bmir:unboxed-constant-reference) abi)

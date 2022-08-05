@@ -309,48 +309,6 @@
   (defprimop core::rack-stamp 1 :value
     cc-ast:rack-stamp-ast cleavir-ast:arg-ast))
 
-;;; Get the attributes into the output of the setf-definition,
-;;; and mark it as being of type FUNCTION.
-;;; Also get the name if it's there.
-(cleavir-primop-info:defprimop setf-fdefinition 1 :value :flushable)
-(defmethod ast-to-bir:compile-ast
-    ((ast cc-ast:setf-fdefinition-ast) inserter (system clasp-cleavir:clasp))
-  (let ((name (cleavir-ast:name-ast ast))
-        (ftype (cleavir-ctype:single-value
-                (cleavir-ctype:function-top clasp-cleavir:*clasp-system*)
-                clasp-cleavir:*clasp-system*)))
-    (ast-to-bir:with-compiled-asts (rv (name) inserter system)
-      (let* ((name (if (typep name 'cleavir-ast:constant-ast)
-                       (cleavir-ast:value name)
-                       nil))
-             (out (make-instance 'bir:output
-                    :name name :attributes (cleavir-ast:attributes ast)
-                    :derived-type ftype)))
-        (ast-to-bir:insert inserter
-                           (make-instance 'bir:primop
-                             :info (cleavir-primop-info:info 'setf-fdefinition)
-                             :inputs rv :outputs (list out)))
-        (list out)))))
-
-(defmethod ast-to-bir:compile-ast
-    ((ast cleavir-ast:fdefinition-ast) inserter (system clasp-cleavir:clasp))
-  (let ((name (cleavir-ast:name-ast ast)))
-    (ast-to-bir:with-compiled-asts (rv (name) inserter system)
-      (let* ((name (if (typep name 'cleavir-ast:constant-ast)
-                       (cleavir-ast:value name)
-                       nil))
-             (ftype (cleavir-ctype:single-value
-                     (cleavir-ctype:function-top clasp-cleavir:*clasp-system*)
-                     clasp-cleavir:*clasp-system*))
-             (out (make-instance 'cleavir-bir:output
-                    :name name :attributes (cleavir-ast:attributes ast)
-                    :derived-type ftype)))
-        (ast-to-bir:insert inserter
-                           (make-instance 'cleavir-bir:primop
-                             :info (cleavir-primop-info:info 'fdefinition)
-                             :inputs rv :outputs (list out)))
-        (list out)))))
-
 ;;; misc
 
 ;;; longjmping through values allocas is no problem.
