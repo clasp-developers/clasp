@@ -1357,11 +1357,6 @@
   (declare (ignore abi))
   (translate-primop (cleavir-primop-info:name (bir:info inst)) inst))
 
-(defmethod translate-primop ((name (eql 'symbol-value)) inst)
-  (out (%intrinsic-invoke-if-landing-pad-or-call
-        "cc_safe_symbol_value" (list (in (first (bir:inputs inst))))
-        (datum-name-as-string (first (bir:outputs inst))))
-       (first (bir:outputs inst))))
 (defmethod translate-primop ((name (eql 'cleavir-primop:slot-read)) inst)
   (out (cmp::gen-instance-ref (in (first (bir:inputs inst)))
                               (in (second (bir:inputs inst))))
@@ -1408,13 +1403,6 @@
   (cmp:gen-rack-set (in (first (bir:inputs inst)))
                     (in (second (bir:inputs inst)))
                     (in (third (bir:inputs inst)))))
-
-(defmethod translate-primop ((name cons) inst) ; FIXME
-  (cond ((equal name '(setf symbol-value))
-         (%intrinsic-invoke-if-landing-pad-or-call
-          "cc_setSymbolValue" (mapcar #'in (bir:inputs inst))))
-        (t
-         (error "BUG: Don't know how to translate primop ~a" name))))
 
 (defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-read) abi)
   (declare (ignore abi))
@@ -1754,6 +1742,21 @@
              ((cons (eql setf) (cons symbol null))
               (cmp:irc-setf-fdefinition (%literal-value (second value)) name))))
          output)))
+
+(defmethod translate-simple-instruction ((inst bir:constant-symbol-value) abi)
+  (declare (ignore abi))
+  (let ((output (bir:output inst)))
+    (out (%intrinsic-invoke-if-landing-pad-or-call
+          "cc_safe_symbol_value" (list (translate-constant-value (bir:input inst)))
+          (datum-name-as-string output))
+         output)))
+
+(defmethod translate-simple-instruction ((inst bir:set-constant-symbol-value) abi)
+  (declare (ignore abi))
+  (let ((sym (translate-constant-value (first (bir:inputs inst))))
+        (val (in (second (bir:inputs inst)))))
+    (%intrinsic-invoke-if-landing-pad-or-call
+     "cc_setSymbolValue" (list sym val))))
 
 (defmethod translate-simple-instruction
     ((inst cc-bmir:unboxed-constant-reference) abi)

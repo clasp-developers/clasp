@@ -137,6 +137,7 @@
                          ',argtypes)
           ',name))
 
+#+(or)
 (deftransform symbol-value symbol-value symbol)
 
 (deftransform core:to-single-float core::double-to-single double-float)
