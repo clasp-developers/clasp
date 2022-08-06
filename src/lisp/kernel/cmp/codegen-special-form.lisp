@@ -45,6 +45,7 @@
     (core::rplacd-atomic codegen-atomic-rplacd)
     (core::cas-car codegen-cas-car)
     (core::cas-cdr codegen-cas-cdr)
+    (cleavir-primop:typeq codegen-typeq)
     (cleavir-primop:funcall codegen-primop-funcall)
     (cleavir-primop:unreachable codegen-unreachable)
     (cleavir-primop:case codegen-primop-case)
@@ -463,27 +464,22 @@ and put the values into the activation frame for new-env."
 ;;; If
 
 ;;; see typeq.lisp for continuation
-(defun compile-typeq-condition (cond env thenb elseb)
-  (let ((object (second cond))
-        (type (third cond)))
-    (when (cdddr cond)
-      (format t "compile-typeq-condition (cdddr cond) = ~a~%" (cdddr cond))
-      (compiler-error nil "too many arguments for typeq"))
-    (let ((value (alloca-t* "if-typeq-tsp")))
-      (codegen value object env)
-      (let ((object-raw (irc-t*-load value)))
-        (case type
-          ((fixnum) (compile-tag-check object-raw +fixnum-mask+ +fixnum00-tag+ thenb elseb))
-          ((cons) (compile-tag-check object-raw +immediate-mask+ +cons-tag+ thenb elseb))
-          ((character) (compile-tag-check object-raw +immediate-mask+ +character-tag+ thenb elseb))
-          ((single-float) (compile-tag-check object-raw +immediate-mask+ +single-float-tag+ thenb elseb))
-          ((core:general) (compile-tag-check object-raw +immediate-mask+ +general-tag+ thenb elseb))
-          (t
-           (let ((header-value-min-max (gethash type core:+type-header-value-map+)))
-             (when (null header-value-min-max)
-               (format t "typeq type = ~a~%" type)
-               (compiler-error nil "unknown type for typeq: {}" type))
-             (compile-header-check header-value-min-max object-raw thenb elseb))))))))
+(defun compile-typeq-condition (object type env thenb elseb)
+  (let ((value (alloca-t* "if-typeq-tsp")))
+    (codegen value object env)
+    (let ((object-raw (irc-t*-load value)))
+      (case type
+        ((fixnum) (compile-tag-check object-raw +fixnum-mask+ +fixnum00-tag+ thenb elseb))
+        ((cons) (compile-tag-check object-raw +immediate-mask+ +cons-tag+ thenb elseb))
+        ((character) (compile-tag-check object-raw +immediate-mask+ +character-tag+ thenb elseb))
+        ((single-float) (compile-tag-check object-raw +immediate-mask+ +single-float-tag+ thenb elseb))
+        ((core:general) (compile-tag-check object-raw +immediate-mask+ +general-tag+ thenb elseb))
+        (t
+         (let ((header-value-min-max (gethash type core:+type-header-value-map+)))
+           (when (null header-value-min-max)
+             (format t "typeq type = ~a~%" type)
+             (compiler-error nil "unknown type for typeq: {}" type))
+           (compile-header-check header-value-min-max object-raw thenb elseb)))))))
 
 (defmacro define-tag-check (name mask tag)
   `(defun ,name (cond env thenb elseb)
@@ -537,7 +533,11 @@ and put the values into the activation frame for new-env."
   (if (consp cond)
       (case (first cond)
         ((cleavir-primop:typeq)
-         (compile-typeq-condition cond env thenb elseb))
+         (when (cdddr cond)
+           (format t "compile-typeq-condition (cdddr cond) = ~a~%"
+                   (cdddr cond))
+           (compiler-error nil "too many arguments for typeq"))
+         (compile-typeq-condition (second cond) (third cond) env thenb elseb))
         ((cleavir-primop:fixnum-less)
          (compile-fixnum-less-condition cond env thenb elseb))
         ((cleavir-primop:fixnum-not-greater)
@@ -553,6 +553,27 @@ and put the values into the activation frame for new-env."
         ((core:generalp) (compile-generalp cond env thenb elseb))
         (otherwise (compile-general-condition cond env thenb elseb)))
       (compile-general-condition cond env thenb elseb)))
+
+;;; TYPEQ
+;;; This is for TYPEQ outside of an IF. When we're in an if, see
+;;; compile-typeq-condition above.
+
+(defun codegen-typeq (result rest env)
+  ;; Make blocks to return T and NIL, then use compile-typeq-condition.
+  (let ((thenb (irc-basic-block-create "typeq-then"))
+        (elseb (irc-basic-block-create "typeq-else"))
+        (merge (irc-basic-block-create "typeq-merge")))
+    (compile-typeq-condition (first rest) (second rest) env thenb elseb)
+    (irc-begin-block merge)
+    (let ((phi (irc-phi %t*% 2 "typeq")))
+      (irc-begin-block thenb)
+      (irc-phi-add-incoming phi (irc-t) thenb)
+      (irc-br merge)
+      (irc-begin-block elseb)
+      (irc-phi-add-incoming phi (irc-nil) elseb)
+      (irc-br merge)
+      (irc-begin-block merge)
+      (irc-t*-result phi result))))
 
 ;;; TAGBODY, GO
 
