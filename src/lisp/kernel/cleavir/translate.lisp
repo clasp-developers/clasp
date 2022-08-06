@@ -266,8 +266,7 @@
 (defmacro define-tag-test (inst mask tag)
   `(defmethod translate-simple-instruction ((instruction ,inst) abi)
      (declare (ignore abi))
-     (out (cmp:tag-check-cond (in (first (bir:inputs instruction)))
-                              ,mask ,tag)
+     (out (cmp:tag-check-cond (in (bir:input instruction)) ,mask ,tag)
           (bir:output instruction))))
 (define-tag-test cc-bmir:fixnump cmp:+fixnum-mask+ cmp:+fixnum00-tag+)
 (define-tag-test cc-bmir:consp cmp:+immediate-mask+ cmp:+cons-tag+)
@@ -276,6 +275,27 @@
   cmp:+immediate-mask+ cmp:+single-float-tag+)
 (define-tag-test cc-bmir:generalp cmp:+immediate-mask+ cmp:+general-tag+)
 
+(defmethod translate-simple-instruction ((inst cc-bmir:headerq) abi)
+  (declare (ignore abi))
+  ;; We can only actually look at the header value if we have a general,
+  ;; so we have to use a phi.
+  ;; LLVM's jump-threading analysis ought to take care of the if-if.
+  (let ((curb (cmp:irc-get-insert-block))
+        (hedb (cmp:irc-basic-block-create "headerq-check"))
+        (merge (cmp:irc-basic-block-create "headerq-merge"))
+        (in (in (bir:input inst))))
+    (cmp:compile-tag-check in cmp:+immediate-mask+ cmp:+general-tag+
+                           hedb merge)
+    (cmp:irc-begin-block hedb)
+    (let ((hedp (cmp:header-check-cond (cc-bmir:info inst) in)))
+      (cmp:irc-br merge)
+      (cmp:irc-begin-block merge)
+      (let ((phi (cmp:irc-phi cmp:%i1% 2 "headerq-check")))
+        (cmp:irc-phi-add-incoming phi (%i1 0) curb)
+        (cmp:irc-phi-add-incoming phi hedp hedb)
+        (out phi (bir:output inst))))))
+
+#+(or)
 (defmethod translate-conditional-test ((instruction cc-bmir:headerq) next)
   (cmp:compile-header-check
    (cc-bmir:info instruction)

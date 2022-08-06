@@ -223,6 +223,7 @@
             irc-typed-gep
             irc-typed-gep-variable
             irc-smart-ptr-extract
+            irc-get-insert-block
             irc-set-insert-point-basic-block
             irc-size_t-*current-source-pos-info*-filepos
             irc-size_t-*current-source-pos-info*-column
