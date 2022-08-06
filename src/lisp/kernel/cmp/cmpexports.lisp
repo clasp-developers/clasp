@@ -366,6 +366,8 @@
             irc-calculate-call-info
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
             compute-rest-alloc
+            tag-check-cond
+            header-check-cond
             compile-tag-check
             compile-header-check
             ensure-xep-function-not-placeholder

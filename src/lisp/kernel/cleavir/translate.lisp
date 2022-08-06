@@ -264,10 +264,11 @@
          (bir:output instruction))))
 
 (defmacro define-tag-test (inst mask tag)
-  `(defmethod translate-conditional-test ((instruction ,inst) next)
-     (cmp:compile-tag-check (in (first (bir:inputs instruction)))
-                            ,mask ,tag
-                            (first next) (second next))))
+  `(defmethod translate-simple-instruction ((instruction ,inst) abi)
+     (declare (ignore abi))
+     (out (cmp:tag-check-cond (in (first (bir:inputs instruction)))
+                              ,mask ,tag)
+          (bir:output instruction))))
 (define-tag-test cc-bmir:fixnump cmp:+fixnum-mask+ cmp:+fixnum00-tag+)
 (define-tag-test cc-bmir:consp cmp:+immediate-mask+ cmp:+cons-tag+)
 (define-tag-test cc-bmir:characterp cmp:+immediate-mask+ cmp:+character-tag+)
