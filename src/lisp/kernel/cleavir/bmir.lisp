@@ -1,11 +1,11 @@
 (in-package #:cc-bmir)
 
-(defclass fixnump (bir:conditional-test) ())
-(defclass consp (bir:conditional-test) ())
-(defclass characterp (bir:conditional-test) ())
-(defclass single-float-p (bir:conditional-test) ())
-(defclass generalp (bir:conditional-test) ())
-(defclass headerq (bir:conditional-test)
+(defclass fixnump (bir:one-input bir:conditional-test) ())
+(defclass consp (bir:one-input bir:conditional-test) ())
+(defclass characterp (bir:one-input bir:conditional-test) ())
+(defclass single-float-p (bir:one-input bir:conditional-test) ())
+(defclass generalp (bir:one-input bir:conditional-test) ())
+(defclass headerq (bir:one-input bir:conditional-test)
   ((%info :initarg :info :reader info)))
 
 ;;;
