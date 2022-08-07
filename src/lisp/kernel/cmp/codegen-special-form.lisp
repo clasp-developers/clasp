@@ -46,6 +46,7 @@
     (core::cas-car codegen-cas-car)
     (core::cas-cdr codegen-cas-cdr)
     (cleavir-primop:typeq codegen-typeq)
+    (cleavir-primop:fixnum-not-greater codegen-fixnum-not-greater)
     (cleavir-primop:funcall codegen-primop-funcall)
     (cleavir-primop:unreachable codegen-unreachable)
     (cleavir-primop:case codegen-primop-case)
@@ -558,14 +559,14 @@ and put the values into the activation frame for new-env."
 ;;; This is for TYPEQ outside of an IF. When we're in an if, see
 ;;; compile-typeq-condition above.
 
-(defun codegen-typeq (result rest env)
+(defun codegen-conditional-sf (result brancher env &rest args)
   ;; Make blocks to return T and NIL, then use compile-typeq-condition.
-  (let ((thenb (irc-basic-block-create "typeq-then"))
-        (elseb (irc-basic-block-create "typeq-else"))
-        (merge (irc-basic-block-create "typeq-merge")))
-    (compile-typeq-condition (first rest) (second rest) env thenb elseb)
+  (let ((thenb (irc-basic-block-create "then"))
+        (elseb (irc-basic-block-create "else"))
+        (merge (irc-basic-block-create "merge")))
+    (apply brancher thenb elseb env args)
     (irc-begin-block merge)
-    (let ((phi (irc-phi %t*% 2 "typeq")))
+    (let ((phi (irc-phi %t*% 2 "conditional")))
       (irc-begin-block thenb)
       (irc-phi-add-incoming phi (irc-t) thenb)
       (irc-br merge)
@@ -574,6 +575,21 @@ and put the values into the activation frame for new-env."
       (irc-br merge)
       (irc-begin-block merge)
       (irc-t*-result phi result))))
+
+(defun codegen-typeq (result rest env)
+  (codegen-conditional-sf
+   result
+   (lambda (thenb elseb env form type)
+     (compile-typeq-condition form type env thenb elseb))
+   env (first rest) (second rest)))
+
+(defun codegen-fixnum-not-greater (result rest env)
+  (codegen-conditional-sf
+   result
+   (lambda (then else env rest)
+     (compile-fixnum-lte-condition (list* 'cleavir-primop:fixnum-not-greater rest)
+                                   env then else))
+   env rest))
 
 ;;; TAGBODY, GO
 

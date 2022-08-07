@@ -242,6 +242,15 @@
                 (null (cdr high))
                 (typep (car high) head)))))
 
+(defun fixnum-<=-operator ()
+  ;; In cclasp, rely on the compiler to reduce to a fixnum operator-
+  ;; this lets it work more cleanly as the frontend doesn't need to know
+  ;; about primops.
+  ;; In bclasp, do it straight.
+  (if cmp:*cleavir-compile-hook*
+      '<=
+      'cleavir-primop:fixnum-not-greater))
+
 ;;; This is more complicated than for the other real types because of
 ;;; the fixnum/bignum split.
 ;;; What we basically arrange is to use fixnum arithmetic when possible.
@@ -260,9 +269,11 @@
             (declare (optimize speed (safety 0)))
             (and (cleavir-primop:typeq object fixnum)
                  ,@(unless (eql low most-negative-fixnum)
-                     `((<= ,low (the (values fixnum &rest nil) object))))
+                     `((,(fixnum-<=-operator)
+                        ,low (the (values fixnum &rest nil) object))))
                  ,@(unless (eql high most-positive-fixnum)
-                     `((<= (the (values fixnum &rest nil) object) ,high))))))
+                     `((,(fixnum-<=-operator)
+                        (the (values fixnum &rest nil) object) ,high))))))
         (t ; general case
          `(let ((object ,object))
             (declare (optimize speed (safety 0)))
@@ -270,10 +281,12 @@
                 (and
                  ,@(unless (or (eql low '*)
                                (<= low most-negative-fixnum))
-                     `((<= ,low (the (values fixnum &rest nil) object))))
+                     `((,(fixnum-<=-operator)
+                        ,low (the (values fixnum &rest nil) object))))
                  ,@(unless (or (eql high '*)
                                (>= high most-positive-fixnum))
-                     `((<= (the (values fixnum &rest nil) object) ,high))))
+                     `((,(fixnum-<=-operator)
+                        (the (values fixnum &rest nil) object) ,high))))
                 (if (cleavir-primop:typeq object bignum)
                     (and
                      ,@(unless (eql low '*) `((<= ,low object)))
