@@ -95,7 +95,8 @@
 
 (deftype radix () '(integer 2 36))
 (deftype boole-spec ()
-  ;; on clasp, boole specs are contiguous from 0
+  ;; on clasp, boole specs are contiguous from 0. and right now the member type
+  ;; does not work very efficiently.
   `(integer 0
             ,(max boole-1 boole-2 boole-and boole-andc1 boole-andc2
                   boole-c1 boole-c2 boole-clr boole-eqv boole-ior
@@ -1135,9 +1136,9 @@
              `(progn
                 (debug-inline ,(symbol-name name))
                 (define-cleavir-compiler-macro ,name (&whole form object)
-                  `(if (cleavir-primop:typeq ,object ,',type) t nil))
+                  `(cleavir-primop:typeq ,object ,',type))
                 (defun ,name (o)
-                  (if (cleavir-primop:typeq o ,type) t nil))))
+                  (cleavir-primop:typeq o ,type))))
            (defpreds (&rest rest)
              `(progn
                 ,@(loop for (fun name) on rest by #'cddr
