@@ -7,6 +7,18 @@
 ;;; TYPEP
 ;;;
 
+;;; A word on efficiency. Throughout this code, we try to expand directly into
+;;; TYPEQ when possible. For example we want (if (typep x 'fixnum) ...) to
+;;; expand into (if (typeq x fixnum) ...). The compiler (both bclasp and cclasp)
+;;; will have an easier time dealing with typeq when it's used directly as an
+;;; if conditional, and in bclasp's case this is the only way to avoid clumsily
+;;; returning a T or NIL and then testing on that at runtime.
+;;; Whenever we expand into more code, we declare (speed (safety 0)). This is to
+;;; tell cclasp not to insert type checks into our type checks. E.g., if we
+;;; expand (typep x '(integer 0 7)) into (if (typeq x fixnum) (<= 0 x 7) nil),
+;;; we want to use inline fixnum arithmetic without x being checked within the
+;;; <=, since we just did that check.
+
 ;;; TODO: Treat malformed types better:
 ;;; We should DEFINITELY NOT cause compile time errors
 ;;; We COULD signal warnings on types like (standard-char foo)
@@ -116,7 +128,7 @@
     core:mdarray-character
     core:mdarray-t))
 
-(defun array-typep-form (simplicity dims uaet)
+(defun array-typep-form (object simplicity dims uaet)
   (let ((rank (if (eq dims '*) '* (length dims)))
         (simple-vector-type (simple-vector-type uaet))
         (complex-vector-type (complex-vector-type uaet))
@@ -148,56 +160,73 @@
       (case rank
         ((1) ; vector
          (let ((length (first dims)))
-           (if (eq length '*)
-               ;; no length check: easy
-               (generate-test simple-vector-type complex-vector-type
-                              't 't 'nil)
-               (generate-test simple-vector-type complex-vector-type
-                              ;; This LENGTH can be inlined; see cleavir/bir-to-bmir
-                              `(eq (length (the ,simple-vector-type object)) ',length)
-                              `(eq (length object) ',length)
-                              'nil))))
+           (cond
+             ((not (eq length '*)) ; have to check length.
+              `(let ((object ,object))
+                 (declare (optimize speed (safety 0)))
+                 ,(generate-test simple-vector-type complex-vector-type
+                                 ;; This LENGTH can be inlined; see cleavir/bir-to-bmir
+                                 `(eq (length (the ,simple-vector-type object))
+                                      ',length)
+                                 `(eq (length object) ',length)
+                                 'nil)))
+             ((eq simplicity 'simple-array)
+              ;; expand directly into typeq to ease compiler work.
+              `(cleavir-primop:typeq ,object ,simple-vector-type))
+             (t
+              `(let ((object ,object))
+                 (declare (optimize speed (safety 0)))
+                 ,(generate-test simple-vector-type complex-vector-type
+                                 't 't 'nil))))))
         ((*) ; anything, and dimensions are unspecified
          ;; for general arrays we have superclasses to use
          (if (and (eq uaet '*) (eq simplicity 'array))
-             `(if (cleavir-primop:typeq object array) t nil)
-             (generate-test simple-vector-type complex-vector-type
-                            't 't
-                            (generate-test simple-mdarray-type
-                                           mdarray-type
-                                           't 't 'nil))))
+             `(cleavir-primop:typeq ,object array)
+             `(let ((object ,object))
+                (declare (optimize speed (safety 0)))
+                ,(generate-test simple-vector-type complex-vector-type
+                                't 't
+                                (generate-test simple-mdarray-type
+                                               mdarray-type
+                                               't 't 'nil)))))
         (otherwise ; an mdarray with possibly specified dimensions
-         `(block nil
-            ;; We use a block so the dimensions check code is only
-            ;; generated once.
-            ;; First, if it's not an mdarray, return NIL early.
-            ,(generate-test simple-mdarray-type mdarray-type
-                            nil nil '(return nil))
-            ;; Now, it is an mdarray, so check dimensions.
-            (and
-             ;; see transform in cleavir/bir-to-bmir.lisp
-             (= (array-rank (the (and array (not (simple-array * (*)))) object))
-                ',rank)
-             ,@(loop for dim in dims
-                     for i from 0
-                     unless (eq dim '*)
-                       collect `(eq (array-dimension object ',i) ,dim)))))))))
+         `(let ((object ,object))
+            (declare (optimize speed (safety 0)))
+            (block nil
+              ;; We use a block so the dimensions check code is only
+              ;; generated once.
+              ;; First, if it's not an mdarray, return NIL early.
+              ,(generate-test simple-mdarray-type mdarray-type
+                              nil nil '(return nil))
+              ;; Now, it is an mdarray, so check dimensions.
+              (and
+               ;; see transform in cleavir/bir-to-bmir.lisp
+               (= (array-rank (the (and array (not (simple-array * (*)))) object))
+                  ',rank)
+               ,@(loop for dim in dims
+                       for i from 0
+                       unless (eq dim '*)
+                         collect `(eq (array-dimension object ',i) ,dim))))))))))
 
-(defun cons-typep-form (cart cdrt env)
-  `(if (cleavir-primop:typeq object cons)
-       (and ,@(if (eq cart '*)
-                  nil
-                  (list
-                   `(let ((object (cleavir-primop:car object)))
-                      (declare (ignorable object))
-                      ,(typep-expansion cart env))))
-            ,@(if (eq cdrt '*)
-                  nil
-                  (list
-                   `(let ((object (cleavir-primop:cdr object)))
-                      (declare (ignorable object))
-                      ,(typep-expansion cdrt env)))))
-       nil))
+(defun cons-typep-form (object cart cdrt env)
+  ;; If the cart and cdrt are both *, expand directly into typeq.
+  (if (and (eq cart '*) (eq cdrt '*))
+      `(cleavir-primop:typeq ,object cons)
+      ;; Otherwise...
+      `(let ((object ,object))
+         (declare (optimize speed (safety 0)))
+         (if (cleavir-primop:typeq object cons)
+             (and ,@(if (eq cart '*)
+                        nil
+                        (list
+                         (typep-expansion '(cleavir-primop:car object)
+                                          cart env)))
+                  ,@(if (eq cdrt '*)
+                        nil
+                        (list
+                         (typep-expansion '(cleavir-primop:cdr object)
+                                          cdrt env))))
+             nil))))
 
 (defun valid-number-type-p (head low high)
   (and (or (eq low '*)
@@ -215,69 +244,41 @@
 
 ;;; This is more complicated than for the other real types because of
 ;;; the fixnum/bignum split.
-(defun integral-interval-typep-form (low high)
+;;; What we basically arrange is to use fixnum arithmetic when possible.
+(defun integral-interval-typep-form (object low high)
   ;; Turn exclusive ranges into inclusive ones.
   (when (consp low) (setf low (1+ (car low))))
   (when (consp high) (setf high (1- (car high))))
-  ;; Now we basically want to break things up into three ranges:
-  ;; fixnum, negative bignum, and positive bignum.
-  ;; at most two of these may be empty.
-  ;; FIXME: Check for stupid empty types like (integer (0) 0) or (integer 3 -3)
-  (multiple-value-bind (bignum-low fixnum-low)
-      (cond
-        ;; All negative bignums are included, and no limit for fixnums
-        ((eq low '*) (values low low))
-        ;; Some negative bignums are included, and no limit for fixnums
-        ((< low most-negative-fixnum) (values low '*))
-        ;; No negative bignums are included, but all negative fixnums are
-        ((= low most-negative-fixnum) (values nil '*))
-        ;; No negative bignums, some fixnums
-        ((<= low most-positive-fixnum) (values nil low))
-        ;; No negative bignums and no fixnums
-        (t (values nil nil)))
-    (multiple-value-bind (bignum-high fixnum-high)
-        (cond
-          ((eq high '*) (values high high))
-          ((> high most-positive-fixnum) (values high '*))
-          ((= high most-positive-fixnum) (values nil '*))
-          ((>= high most-negative-fixnum) (values nil high))
-          (t (values nil nil)))
-      ;; Now the actual tests
-      (let ((bignum-test
-              (if (and (null bignum-low) (null bignum-high)) ; none
-                  'nil
-                  `(if (cleavir-primop:typeq object bignum)
-                       (and ,@(cond ((null bignum-low) ; no negative bignums
-                                     `((core:two-arg-> (the bignum object)
-                                                       ,most-positive-fixnum)))
-                                    ((eq bignum-low '*) ; all negative bignums
-                                     nil)
-                                    (t ; only some
-                                     `((core:two-arg->= (the bignum object)
-                                                        ,bignum-low))))
-                            ,@(cond ((null bignum-high) ; no positive bignums
-                                     `((core:two-arg-< (the bignum object)
-                                                       ,most-negative-fixnum)))
-                                    ((eq bignum-high '*) ; all positive bignums
-                                     nil)
-                                    (t ; only some
-                                     `((core:two-arg-<= (the bignum object)
-                                                        ,bignum-high)))))
-                       'nil))))
-        ;; fixnums
-        (if (or (null fixnum-low) (null fixnum-high)) ; none
-            bignum-test
-            (let* ((high-test
-                     (if (eq fixnum-high '*)
-                         't
-                         `(if (<= (the fixnum object) ,fixnum-high) t nil)))
-                   (low-test
-                     (if (eq fixnum-low '*)
-                         high-test
-                         `(if (<= ,fixnum-low (the fixnum object))
-                              ,high-test
-                              nil))))
-              `(if (cleavir-primop:typeq object fixnum) ,low-test ,bignum-test)))))))
+  (cond ((and (eql low most-negative-fixnum)
+              (eql high most-positive-fixnum))
+         ;; type is just fixnum
+         `(cleavir-primop:typeq ,object fixnum))
+        ((and (not (eql low '*)) (>= low most-negative-fixnum)
+              (not (eql high '*)) (<= high most-positive-fixnum))
+         ;; type only includes fixnums
+         `(let ((object ,object))
+            (declare (optimize speed (safety 0)))
+            (and (cleavir-primop:typeq object fixnum)
+                 ,@(unless (eql low most-negative-fixnum)
+                     `((<= ,low (the (values fixnum &rest nil) object))))
+                 ,@(unless (eql high most-positive-fixnum)
+                     `((<= (the (values fixnum &rest nil) object) ,high))))))
+        (t ; general case
+         `(let ((object ,object))
+            (declare (optimize speed (safety 0)))
+            (if (cleavir-primop:typeq object fixnum)
+                (and
+                 ,@(unless (or (eql low '*)
+                               (<= low most-negative-fixnum))
+                     `((<= ,low (the (values fixnum &rest nil) object))))
+                 ,@(unless (or (eql high '*)
+                               (>= high most-positive-fixnum))
+                     `((<= (the (values fixnum &rest nil) object) ,high))))
+                (if (cleavir-primop:typeq object bignum)
+                    (and
+                     ,@(unless (eql low '*) `((<= ,low object)))
+                     ,@(unless (eql high '*) `((<= object ,high))))
+                    nil))))))
 
 ;;; The simpler version
 ;;; FIXME: Use floating point compares, etc, when available
@@ -289,63 +290,76 @@
                 ((consp low) `((> ,oform ,(car low))))
                 (t `((>= ,oform ,low))))))
 
-(defun real-interval-typep-form (head low high)
-  ;; <= and so on sometimes expand into uses of THE and etc.
-  ;; The code we're generating does not need these types checked, given that
-  ;; we are doing that, and the compiler inserting checks needlessly complicates.
-  `(locally
-       (declare (optimize (safety 0)))
-     ,(ecase head
-        ((integer) (integral-interval-typep-form low high))
-        ((rational)
-         `(or ,(integral-interval-typep-form low high)
-              (if (cleavir-primop:typeq object ratio)
-                  ,(real-interval-test `(the ratio object) low high)
-                  nil)))
-        ((short-float single-float double-float long-float)
-         `(if (cleavir-primop:typeq object ,head)
-              ,(real-interval-test `(the ,head object) low high)
-              nil))
-        ((float)
-         ;; only singles and doubles actually exist.
-         ;; FIXME: write in this assumption better in case we change it later.
-         `(if (if (cleavir-primop:typeq object single-float)
-                  t
-                  (if (cleavir-primop:typeq object double-float) t nil))
-              ,(real-interval-test `(the float object) low high)
-              nil))
-        ((real)
-         `(or ,(integral-interval-typep-form low high)
-              (if (if (cleavir-primop:typeq object single-float)
-                      t
-                      (if (cleavir-primop:typeq object double-float)
-                          t
-                          (if (cleavir-primop:typeq object ratio) t nil)))
-                  ,(real-interval-test '(the real object) low high)
-                  nil))))))
+(defun real-interval-typep-form (object head low high)
+  (ecase head
+    ((integer) (integral-interval-typep-form object low high))
+    ((rational)
+     `(let ((object ,object))
+        (declare (optimize speed (safety 0)))
+        (or ,(integral-interval-typep-form 'object low high)
+            (if (cleavir-primop:typeq object ratio)
+                ,(real-interval-test `(the ratio object) low high)
+                nil))))
+    ((short-float single-float double-float long-float)
+     (if (and (eql low '*) (eql high '*))
+         `(cleavir-primop:typeq ,object ,head)
+         `(let ((object ,object))
+            (declare (optimize speed (safety 0)))
+            (if (cleavir-primop:typeq object ,head)
+                ,(real-interval-test `(the (values ,head &rest nil) object) low high)
+                nil))))
+    ((float)
+     ;; only singles and doubles actually exist.
+     ;; FIXME: write in this assumption better in case we change it later.
+     `(let ((object ,object))
+        (declare (optimize speed (safety 0)))
+         (if (if (cleavir-primop:typeq object single-float)
+                 t
+                 (if (cleavir-primop:typeq object double-float) t nil))
+             ,(real-interval-test `(the float object) low high)
+             nil)))
+    ((real)
+     `(let ((object ,object))
+        (declare (optimize speed (safety 0)))
+        (or ,(integral-interval-typep-form 'object low high)
+            (if (if (cleavir-primop:typeq object single-float)
+                    t
+                    (if (cleavir-primop:typeq object double-float)
+                        t
+                        (if (cleavir-primop:typeq object ratio) t nil)))
+                ,(real-interval-test '(the (values real &rest nil) object) low high)
+                nil))))))
 
-(defun typep-expansion (type env &optional (form nil formp))
+(defun typep-expansion (object type env &optional (form nil formp))
   (ext:with-current-source-form (type)
-    (flet ((default () (if formp form `(typep object ',type))))
+    (flet ((default () (if formp form `(typep object ',type)))
+           (recur (type) (typep-expansion 'object type env)))
       (multiple-value-bind (head args) (normalize-type type)
         (case head
-          ((t) 't)
-          ((nil) 'nil)
+          ;; We do this expansion so that the object is used.
+          ;; This prevents the compiler from complaining on code like
+          ;; (lambda (x) (typep x t)) which is occasionally generated.
+          ;; And more importantly that any side effects in the object
+          ;; form are executed.
+          ((t) `(progn ,object t))
+          ((nil) `(progn ,object nil))
           ((and or)
-           `(,head ,@(mapcar (lambda (type) (typep-expansion type env)) args)))
-          ((not) `(not ,(typep-expansion (first args) env)))
-          ((eql) `(eql object ',(first args)))
+           `(let ((object ,object)) ; prevent multiple evaluation
+              (,head ,@(mapcar #'recur args))))
+          ((not) `(not ,(typep-expansion object (first args) env)))
+          ((eql) `(eql ,object ',(first args)))
           ((satisfies)
-           `(if (funcall (fdefinition ',(first args)) object) t nil))
+           `(if (funcall (fdefinition ',(first args)) ,object) t nil))
           ((member)
-           `(or ,@(mapcar (lambda (x) `(eql object ',x)) args)))
+           `(let ((object ,object))
+              (or ,@(mapcar (lambda (x) `(eql object ',x)) args))))
           ((cons)
            (destructuring-bind (&optional (cart '*) (cdrt '*)) args
-             (cons-typep-form cart cdrt env)))
+             (cons-typep-form object cart cdrt env)))
           ((simple-array complex-array array)
            (destructuring-bind (&optional (et '*) (dims '*)) args
              (array-typep-form
-              head
+              object head
               (if (integerp dims)
                   (make-list dims :initial-element '*)
                   dims)
@@ -353,12 +367,15 @@
                   et
                   (upgraded-array-element-type et env)))))
           ((sequence)
-           `(or (listp object) (vectorp object)))
+           `(let ((object ,object))
+              (or (listp object) (vectorp object))))
           ((standard-char)
-           `(and (characterp object) (standard-char-p object)))
+           `(let ((object ,object))
+              (and (characterp object) (standard-char-p object))))
           ;; NOTE: Probably won't actually occur, due to normalization.
           ((bignum)
-           `(and (integerp object) (not (fixnump object))))
+           `(let ((object ,object))
+              (and (integerp object) (not (fixnump object)))))
           ((#+short-float short-float #+long-float long-float
             single-float double-float
             float integer rational real)
@@ -367,7 +384,7 @@
              ;; We use primitives for testing with them, so we want
              ;; to be sure that they're valid.
              (cond ((valid-number-type-p head low high)
-                    (real-interval-typep-form head low high))
+                    (real-interval-typep-form object head low high))
                    (t (cmp:warn-invalid-number-type nil type)
                       (default)))))
           ((complex)
@@ -375,19 +392,19 @@
            ;; We don't have multiple complex types in the backend,
            ;; so we can just do this.
            ;; See comment in DEFUN TYPEP in lsp/predlib.lisp.
-           `(complexp object))
+           `(complexp ,object))
           (otherwise
            ;; Last ditch efforts.
            (cond
              ;; Is there a simple predicate?
              ((and (null args) (simple-type-predicate head))
-              `(,(simple-type-predicate head) object))
+              `(,(simple-type-predicate head) ,object))
              ;; Could be a C++ class kind of thing.
              ;; NOTE: This is a static header check, so it shouldn't be used
              ;; for anything that could be subclassed. The most likely candidate
              ;; for this problem is STREAM, but it's caught by the previous case.
              ((and (null args) (gethash head core:+type-header-value-map+))
-              `(if (cleavir-primop:typeq object ,type) t nil))
+              `(cleavir-primop:typeq ,object ,type))
              ;; Maybe it's a class name? (See also, comment in clos/defclass.lisp.)
              ((and (null args) (symbolp head) (class-info head env))
               ;; By semantic constraints, classes that are defined at compile time
@@ -395,10 +412,10 @@
               ;; and metaclass. This would let us just serialize and check the CPL,
               ;; but to be a little flexible we only assume that it will still be a
               ;; class (i.e. so users can do technically-illegal redefinitions easier).
-              `(subclassp (class-of object) (find-class ',head)))
+              `(subclassp (class-of ,object) (find-class ',head)))
              ;; Could be a literal class?
              ((and (null args) (clos::classp head))
-              `(subclassp (class-of object) ,type))
+              `(subclassp (class-of ,object) ,type))
              ;; We know nothing.
              (t
               ;; NOTE: In cclasp cleavir will wrap this with better source info.
@@ -410,13 +427,8 @@
                                      &environment macro-env)
   (unless (and (constantp type macro-env) (null environment))
     (return-from typep whole))
-  (let* ((type (ext:constant-form-value type macro-env))
-         (expanded (typep-expansion type macro-env whole)))
-    (if (eq expanded whole)
-        whole ; failure
-        `(let ((object ,object))
-           (declare (ignorable object)) ; e.g. for type T
-           ,expanded))))
+  (let ((type (ext:constant-form-value type macro-env)))
+    (typep-expansion object type macro-env whole)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
