@@ -95,6 +95,13 @@
 
 (deftype radix () '(integer 2 36))
 (deftype boole-spec ()
+  ;; on clasp, boole specs are contiguous from 0
+  `(integer 0
+            ,(max boole-1 boole-2 boole-and boole-andc1 boole-andc2
+                  boole-c1 boole-c2 boole-clr boole-eqv boole-ior
+                  boole-nand boole-nor boole-orc1 boole-orc2
+                  boole-set boole-xor))
+  #+(or)
   `(member ,BOOLE-1 ,BOOLE-2 ,BOOLE-AND ,BOOLE-ANDC1 ,BOOLE-ANDC2
            ,BOOLE-C1 ,BOOLE-C2 ,BOOLE-CLR ,BOOLE-EQV ,BOOLE-IOR
            ,BOOLE-NAND ,BOOLE-NOR ,BOOLE-ORC1 ,BOOLE-ORC2 ,BOOLE-SET ,BOOLE-XOR))
