@@ -880,7 +880,7 @@ representing a tagged fixnum."
          (valuet* (irc-int-to-ptr value64 %t*%)))
     valuet*))
 
-(defun irc-rack-stamp (object)
+(defun irc-instance-stamp (object)
   (let* ((instance (irc-untag-general object))
          (instance* (irc-bit-cast instance %instance*%))
          (racks* (irc-struct-gep %instance% instance* +instance.rack-index+))

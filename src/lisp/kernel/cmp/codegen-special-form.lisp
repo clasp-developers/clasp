@@ -53,10 +53,10 @@
     (core:vaslist-pop codegen-vaslist-pop)
     (core:vaslist-length codegen-vaslist-length)
     (core::header-stamp-case codegen-header-stamp-case)
-    (core::header-stamp codegen-header-stamp)
-    (core::rack-stamp codegen-rack-stamp)
-    (core::derivable-stamp codegen-derivable-stamp)
-    (core::wrapped-stamp codegen-wrapped-stamp)
+    (core:header-stamp codegen-header-stamp)
+    (core:instance-stamp codegen-instance-stamp)
+    (core:derivable-stamp codegen-derivable-stamp)
+    (core:wrapped-stamp codegen-wrapped-stamp)
     (core:instance-ref codegen-instance-ref)
     (core:instance-set codegen-instance-set)
     (core::instance-cas codegen-instance-cas)
@@ -1381,13 +1381,13 @@ jump to blocks within this tagbody."
     (codegen object form env)
     (irc-t*-result (irc-header-stamp (irc-t*-load object)) result)))
 
-;;; CORE:RACK-STAMP
+;;; CORE:INSTANCE-STAMP
 
-(defun codegen-rack-stamp (result rest env)
+(defun codegen-instance-stamp (result rest env)
   (let ((form (car rest))
         (object (alloca-t* "read-stamp-obj")))
     (codegen object form env)
-    (irc-t*-result (irc-rack-stamp (irc-t*-load object)) result)))
+    (irc-t*-result (irc-instance-stamp (irc-t*-load object)) result)))
 
 ;;; CORE:WRAPPED-STAMP
 

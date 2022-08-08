@@ -298,16 +298,7 @@
                 (ast-to-bir:defprimop ,name ,ast ,@readers))))
   (defprimop core::instance-cas 4 :value cc-ast:slot-cas-ast
     cc-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:object-ast
-    cleavir-ast:slot-number-ast)
-
-  (defprimop core::header-stamp 1 :value
-    cc-ast:header-stamp-ast cleavir-ast:arg-ast)
-  (defprimop core::derivable-stamp 1 :value
-    cc-ast:derivable-stamp-ast cleavir-ast:arg-ast)
-  (defprimop core::wrapped-stamp 1 :value
-    cc-ast:wrapped-stamp-ast cleavir-ast:arg-ast)
-  (defprimop core::rack-stamp 1 :value
-    cc-ast:rack-stamp-ast cleavir-ast:arg-ast))
+    cleavir-ast:slot-number-ast))
 
 ;;; misc
 

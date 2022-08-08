@@ -71,7 +71,7 @@
    #:datum-id
    #:vaslist-pop-ast
    #:vaslist-length-ast
-   #:header-stamp-ast #:rack-stamp-ast
+   #:header-stamp-ast #:instance-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-vaslist-ast #:rest-alloc #:make-bind-vaslist-ast #:vaslist-ast
    #:atomic-car-ast #:atomic-cdr-ast #:atomic-rplaca-ast #:atomic-rplacd-ast

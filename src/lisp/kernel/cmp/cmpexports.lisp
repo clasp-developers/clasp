@@ -274,7 +274,7 @@
             irc-tag-vaslist
             irc-unbox-vaslist
             irc-header-stamp
-            irc-rack-stamp
+            irc-instance-stamp
             irc-wrapped-stamp
             irc-derivable-stamp
             irc-switch

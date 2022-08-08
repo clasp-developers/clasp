@@ -331,11 +331,6 @@
 ;;; See their AST classes for more info probably
 ;;;
 
-(define-functionlike-special-form core::header-stamp cc-ast:header-stamp-ast (:arg))
-(define-functionlike-special-form core::rack-stamp cc-ast:rack-stamp-ast (:arg))
-(define-functionlike-special-form core::wrapped-stamp cc-ast:wrapped-stamp-ast (:arg))
-(define-functionlike-special-form core::derivable-stamp cc-ast:derivable-stamp-ast (:arg))
-
 (define-functionlike-special-form core::instance-cas cc-ast:slot-cas-ast
   (:cmp-ast :value-ast :object-ast :slot-number-ast))
 

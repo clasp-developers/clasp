@@ -35,6 +35,8 @@ int gcFunctions_after;
 #include <clasp/core/lispStream.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/core/derivableCxxObject.h> // for derivable_stamp
+#include <clasp/core/wrappedPointer.h> // wrapped_stamp
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/intrinsics.h>
@@ -242,6 +244,13 @@ CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
   core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(),0));
   if (stamp.fixnump()) return stamp;
   SIMPLE_ERROR(("core:instance-stamp was about to return a non-fixnum %p") , (void*)stamp.raw_());
+}
+
+CL_DEFUN core::T_sp core__derivable_stamp(core::T_sp obj) {
+  core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(obj.raw_());
+  core::T_O* tstamp = (core::T_O*)derivable_cxx_object_ptr->get_stamp_();
+  core::T_sp stamp((gctools::Tagged)tstamp);
+  return stamp;
 }
 
 CL_DOCSTRING(R"dx(Return the tagged pointer for the object, the flags and the header stamp)dx")
@@ -527,6 +536,22 @@ CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename, core::T_sp executa
 #else
   SIMPLE_ERROR(("save-lisp-and-die only works for precise GC"));
 #endif
+}
+
+CL_DEFUN core::T_sp core__header_stamp(core::General_sp obj) {
+  core::General_O* gen = reinterpret_cast<core::General_O*>(gctools::untag_general<core::T_O*>(obj.raw_()));
+  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(gctools::GeneralPtrToHeaderPtr(gen));
+  uint64_t stamp = header.shifted_stamp();
+  core::T_O* tstamp = (core::T_O*)stamp;
+  core::T_sp res((gctools::Tagged)tstamp);
+  return res;
+}
+
+CL_DEFUN core::T_sp core__wrapped_stamp(core::General_sp obj) {
+  core::WrappedPointer_O* wrapped_ptr = reinterpret_cast<core::WrappedPointer_O*>(obj.raw_());
+  core::T_O* tstamp = (core::T_O*)wrapped_ptr->ShiftedStamp_;
+  core::T_sp res((gctools::Tagged)tstamp);
+  return res;
 }
 
 CL_LAMBDA(stamp)

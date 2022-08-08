@@ -460,6 +460,21 @@
          (fixn (cmp:irc-and shifted demask)))
     fixn))
 
+;;; some general primops
+
+(defvprimop (core:header-stamp :flags (:flushable))
+    ((:object) :object) (inst)
+  (cmp:irc-header-stamp (in (first (bir:inputs inst)))))
+(defvprimop (core:instance-stamp :flags (:flushable))
+    ((:object) :object) (inst)
+  (cmp:irc-instance-stamp (in (first (bir:inputs inst)))))
+(defvprimop (core:wrapped-stamp :flags (:flushable))
+    ((:object) :object) (inst)
+  (cmp:irc-wrapped-stamp (in (first (bir:inputs inst)))))
+(defvprimop (core:derivable-stamp :flags (:flushable))
+    ((:object) :object) (inst)
+  (cmp:irc-derivable-stamp (in (first (bir:inputs inst)))))
+
 ;;; Primops for debugging
 
 (defeprimop core:set-breakstep () (inst)

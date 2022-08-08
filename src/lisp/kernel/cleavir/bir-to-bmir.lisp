@@ -282,6 +282,12 @@
 (deftransform rplaca cleavir-primop:rplaca cons t)
 (deftransform rplacd cleavir-primop:rplacd cons t)
 
+;;; these ones we can always (with correct argcount) make into primops
+(deftransform core:header-stamp core:header-stamp t)
+(deftransform core:instance-stamp core:instance-stamp t)
+(deftransform core:wrapped-stamp core:wrapped-stamp t)
+(deftransform core:derivable-stamp core:derivable-stamp t)
+
 (defmethod reduce-instruction ((inst bir:call))
   (let ((ids (cleavir-attributes:identities (bir:attributes inst))))
     (when ids

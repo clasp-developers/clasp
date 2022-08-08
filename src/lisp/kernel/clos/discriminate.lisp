@@ -212,9 +212,9 @@
                         c++-case
                         `(let ((,stamp
                                  (core::header-stamp-case ,stamp
-                                   (core::derivable-stamp ,form)
-                                   (core::rack-stamp ,form)
-                                   (core::wrapped-stamp ,form)
+                                   (core:derivable-stamp ,form)
+                                   (core:instance-stamp ,form)
+                                   (core:wrapped-stamp ,form)
                                    ,c++-case)))
                            (case ,stamp
                              ,@(loop for (tag . keys)
@@ -235,7 +235,7 @@
                                      collect `((cleavir-primop:typeq ,form ,type)
                                                (go ,tag)))
                             ((cleavir-primop:typeq ,form core:general)
-                             (let ((,stamp (core::header-stamp ,form)))
+                             (let ((,stamp (core:header-stamp ,form)))
                                ,header-case))
                             (t (go ,default-tag)))))
                    ;; back in the tagbody
