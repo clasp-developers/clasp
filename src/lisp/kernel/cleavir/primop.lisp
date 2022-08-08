@@ -475,6 +475,15 @@
     ((:object) :object) (inst)
   (cmp:irc-derivable-stamp (in (first (bir:inputs inst)))))
 
+(defvprimop core:vaslist-pop
+    ((:object) :object) (inst)
+  (cmp:gen-vaslist-pop (let ((vaslist-tagged (in (first (bir:inputs inst)))))
+                         (cmp:irc-untag-vaslist vaslist-tagged))))
+;;; FIXME: Obviously redundant with cc-vaslist:length. Delete one.
+(defvprimop (core:vaslist-length :flags (:flushable))
+    ((:object) :object) (inst)
+  (cmp:gen-vaslist-length (in (first (bir:inputs inst)))))
+
 ;;; Primops for debugging
 
 (defeprimop core:set-breakstep () (inst)

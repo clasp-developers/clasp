@@ -69,8 +69,6 @@
    #:result-ast
    #:tag-ast
    #:datum-id
-   #:vaslist-pop-ast
-   #:vaslist-length-ast
    #:header-stamp-ast #:instance-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-vaslist-ast #:rest-alloc #:make-bind-vaslist-ast #:vaslist-ast

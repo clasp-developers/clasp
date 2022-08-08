@@ -287,6 +287,8 @@
 (deftransform core:instance-stamp core:instance-stamp t)
 (deftransform core:wrapped-stamp core:wrapped-stamp t)
 (deftransform core:derivable-stamp core:derivable-stamp t)
+(deftransform core:vaslist-pop core:vaslist-pop t)
+(deftransform core:vaslist-length core:vaslist-length t)
 
 (defmethod reduce-instruction ((inst bir:call))
   (let ((ids (cleavir-attributes:identities (bir:attributes inst))))

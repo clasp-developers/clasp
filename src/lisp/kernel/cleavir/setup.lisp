@@ -158,10 +158,12 @@
 
 (defun treat-as-special-operator-p (name)
   (cond
-    ((eq name 'core:header-stamp) nil) ; these four we have as primops instead
+    ((eq name 'core:header-stamp) nil) ; these we have as primops instead
     ((eq name 'core:instance-stamp) nil)
     ((eq name 'core:wrapped-stamp) nil)
     ((eq name 'core:derivable-stamp) nil)
+    ((eq name 'core:vaslist-pop) nil)
+    ((eq name 'core:vaslist-length) nil)
     ((cmp:treat-as-special-operator-p name) t)
     ((eq name 'unwind-protect) t)
     ((eq name 'core::atomic-vref) t)
