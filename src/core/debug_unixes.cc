@@ -49,9 +49,6 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
-#ifdef _TARGET_OS_LINUX
-#include <bsd/bsd.h>
-#endif
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 #include <err.h>
 #include <fcntl.h>
@@ -64,7 +61,6 @@ THE SOFTWARE.
 #define _GNU_SOURCE
 #include <elf.h>
 #include <link.h>
-//#include <bsd/vis.h>
 #endif
 #include <clasp/core/debugger.h>
 
