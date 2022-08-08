@@ -552,14 +552,6 @@ NOINLINE void lowLevelTrace(uint traceid)
   NO_UNWIND_END();
 }
 
-void unreachableError()
-{NO_UNWIND_BEGIN();
-  printf("%s:%d In unreachableError -  Hit an unreachable block\n",
-         __FILE__, __LINE__);
-  NO_UNWIND_END();
-}
-
-
 void dumpLowLevelTrace(int numLowLevels) {
   int cur = _LLVMLowLevelTraceQueueIn;
   for (int i = 0; i < numLowLevels; i++) {
