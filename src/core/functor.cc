@@ -437,48 +437,79 @@ SYMBOL_EXPORT_SC_(CorePkg,bytecode_call);
 
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
-  // entry point for bytecode interpreter
-  Pointer_sp pcptr = Pointer_O::create((void*)pc);
-  ClosureWithSlots_sp closureObject((gctools::Tagged)lcc_closure);
-  SimpleVector_sp args = SimpleVector_O::make(lcc_nargs,nil<T_O>(),false,lcc_nargs,(const T_sp*)lcc_args);
-  return eval::funcall(_sym_bytecode_call,pcptr,closureObject,args);
-
-#if 0
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
   // Do we need the lookup entryPoint? - if so - maybe we should pass it to bytecode_call
   // Meh, it's just a lookup and we are going to read closed over slots
   // which should be in the same cache line.
   core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
   printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
+  BytecodeModule_sp module = entryPoint->code();
+  SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
+
   VirtualMachine& vm = my_thread->_VM;
   vm.push((T_O*)vm._FramePointer);
   vm._FramePointer = vm._StackPointer;
+  T_O** fp = vm._FramePointer;
+  vm._StackPointer -= entryPoint->localsFrameSize();
   while (1) {
     switch (*pc) {
-    case NIL_VM:
+    case 0: // ref
+        printf("ref %hu\n", *(pc+1));
+        vm.push(*(fp - *(++pc)));
+        pc++;
+        break;
+    case 1: // constant
+        printf("const %hu\n", *(pc+1));
+        vm.push(literals->rowMajorAref(*(++pc)).raw_());
+        pc++;
+        break;
+    case 2: // closure
+        printf("closure %hu\n", *(pc+1));
+        vm.push((*closure)[*(++pc)].raw_());
+        pc++;
+        break;
+        // 3, 4, 5 are call, -receive-one, -receive-fixed
+    case 6: { // bind
+      printf("bind %hu %hu\n", *(pc+1), *(pc+2));
+      size_t limit = *(++pc);
+      T_O** base = fp - *(++pc);
+      for (size_t i = 0; i < limit; ++i)
+        *(base--) = vm.pop();
+      pc++;
+      break;
+    }
+    case 7: // set
+        printf("set %hu\n", *(pc+1));
+        *(fp - *(++pc)) = vm.pop();
+        pc++;
+        break;
+        // 8, 9, 10 are cells
+        // 11 is closure
+    case 12: { // return
+      printf("return\n");
+      size_t numValues = fp - entryPoint->localsFrameSize() - vm._StackPointer;
+      T_O** old_sp = vm._StackPointer;
+      vm._StackPointer = fp; // Is this right?
+      printf("  numValues = %zu\n", numValues);
+      if (numValues>1) {
+        memcpy( (void*)&my_thread->_MultipleValues._Values[1],
+                (void*)(old_sp+1),
+                (numValues-1)*sizeof(T_O*) );
+        return gctools::return_type(*old_sp,numValues);
+      }
+      else if (numValues==1) {
+        return gctools::return_type(*old_sp,1);
+      } else { // FIXME: Should return mv register as-is
+        return gctools::return_type(nil<T_O*>, 0);
+      }
+    }
+    case 31: // nil
+        printf("nil\n");
         vm.push(nil<T_O>().raw_());
         pc++;
         break;
-    case RETURN_VM:
-      {
-        size_t numValues = vm._FramePointer - vm._StackPointer;
-        vm._FramePointer = (T_O**)*vm._FramePointer;
-        vm._StackPointer = vm._FramePointer; // Is this right?
-        if (numValues>1) {
-          memcpy( (void*)&my_thread->_MultipleValues._Values[1],
-                  (void*)(vm._StackPointer+1),
-                  (numValues-1)*sizeof(T_O*) );
-          return gctools::return_type(*vm._StackPointer,numValues);
-        }
-        if (numValues==1) {
-          return gctools::return_type(*vm._StackPointer,1);
-        }
-        return gctools::return_type(nil<T_O>().raw_(),0);
-      }
-      break;
     };
   }
-#endif
 }
 
 struct BytecodeClosureEntryPoint {
