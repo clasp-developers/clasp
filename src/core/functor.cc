@@ -483,8 +483,31 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         *(fp - *(++pc)) = vm.pop();
         pc++;
         break;
-        // 8, 9, 10 are cells
-        // 11 is closure
+    case 8: {
+      printf("make-cell\n");
+      T_sp car((gctools::Tagged)(vm.pop()));
+      T_sp cdr((gctools::Tagged)nil<T_O*>);
+      vm.push(Cons_O::create(car, cdr).raw_());
+      pc++;
+      break;
+    }
+    case 9: {
+      printf("cell-ref\n");
+      T_sp cons((gctools::Tagged)vm.pop());
+      vm.push(oCar(cons).raw_());
+      pc++;
+      break;
+    }
+    case 10: {
+      printf("cell-set\n");
+      T_O* val = vm.pop();
+      T_sp tval((gctools::Tagged)val);
+      T_sp cons((gctools::Tagged)vm.pop());
+      CONS_CAR(cons) = tval;
+      pc++;
+      break;
+    }
+    // 11 is closure
     case 12: { // return
       printf("return\n");
       size_t numValues = fp - entryPoint->localsFrameSize() - vm._StackPointer;
@@ -503,7 +526,24 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         return gctools::return_type(nil<T_O*>, 0);
       }
     }
-    case 31: // nil
+    // bind-required-args 13 bind-optional-args 14 listify-rest-args 15 parse-key-args 16
+    case 17: // jump
+        pc += *(++pc);
+        break;
+    case 18: { // jump-if
+      T_sp tval((gctools::Tagged)vm.pop());
+      if (tval.notnilp()) pc += *(++pc);
+      else pc += 2;
+      break;
+    }
+    // jump-if-supplied 18 check-arg-count<= 19 check-arg-count>= 20 check-arg-count= 21
+    case 36: { // fdefinition
+      T_sp name((gctools::Tagged)vm.pop());
+      vm.push(cl__fdefinition(name).raw_());
+      pc++;
+      break;
+    }
+    case 37: // nil
         printf("nil\n");
         vm.push(nil<T_O>().raw_());
         pc++;
