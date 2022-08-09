@@ -616,18 +616,60 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         return gctools::return_type(nil<T_O*>, 0);
       }
     }
-    // bind-required-args 13 bind-optional-args 14 listify-rest-args 15 parse-key-args 16
+    case vm_bind_required_args: {
+      printf("bind-required-args %hu\n", *(pc+1));
+      size_t nreq = *(++pc);
+      T_O** base = fp;
+      for (size_t i = 0; i < nreq; ++i)
+        *(base--) = lcc_args[i];
+      pc++;
+      break;
+    }
+    // bind-optional-args 14 listify-rest-args 15 parse-key-args 16
     case vm_jump: // 17 jump
+        printf("jump %hu\n", *(pc+1));
         pc += *(++pc);
         break;
     case vm_jump_if: { // 18 jump-if
+      printf("jump-if %hu\n", *(pc+1));
       T_sp tval((gctools::Tagged)vm.pop());
       if (tval.notnilp()) pc += *(++pc);
       else pc += 2;
       break;
     }
-    // jump-if-supplied 18 check-arg-count<= 19 check-arg-count>= 20 check-arg-count= 21
+    // jump-if-supplied
+    case vm_check_arg_count_LE_: {
+      printf("check-arg-count<= %hu\n", *(pc+1));
+      size_t max_nargs = *(++pc);
+      if (lcc_nargs > max_nargs) {
+        T_sp tclosure((gctools::Tagged)lcc_closure);
+        throwTooManyArgumentsError(tclosure, lcc_nargs, max_nargs);
+      }
+      pc++;
+      break;
+    }
+    case vm_check_arg_count_GE_: {
+      printf("check-arg-count>= %hu\n", *(pc+1));
+      size_t min_nargs = *(++pc);
+      if (lcc_nargs < min_nargs) {
+        T_sp tclosure((gctools::Tagged)lcc_closure);
+        throwTooFewArgumentsError(tclosure, lcc_nargs, min_nargs);
+      }
+      pc++;
+      break;
+    }
+    case vm_check_arg_count_EQ_: {
+      printf("check-arg-count= %hu\n", *(pc+1));
+      size_t req_nargs = *(++pc);
+      if (lcc_nargs != req_nargs) {
+        T_sp tclosure((gctools::Tagged)lcc_closure);
+        wrongNumberOfArguments(tclosure, lcc_nargs, req_nargs);
+      }
+      pc++;
+      break;
+    }
     case vm_fdefinition: { // 36 fdefinition
+      printf("fdefinition\n");
       T_sp name((gctools::Tagged)vm.pop());
       vm.push(cl__fdefinition(name).raw_());
       pc++;
@@ -638,6 +680,8 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         vm.push(nil<T_O>().raw_());
         pc++;
         break;
+    default:
+        SIMPLE_ERROR("Unknown opcode %hu", *pc);
     };
   }
 }
