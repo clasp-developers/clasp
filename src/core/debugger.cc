@@ -42,9 +42,6 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <sys/stat.h>
 #endif
-#ifdef _TARGET_OS_LINUX
-#include <bsd/bsd.h>
-#endif
 #if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
 #include <err.h>
 #include <stdio.h>
