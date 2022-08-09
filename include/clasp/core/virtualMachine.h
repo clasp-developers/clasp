@@ -1,7 +1,45 @@
 #ifndef virtualMachine_H
 #define virtualMachine_H
 
-#define NIL_VM    0x00
-#define RETURN_VM 0x01
+enum vm_codes {
+   vm_ref=0,
+   vm_const=1,
+   vm_closure=2,
+   vm_call=3,
+   vm_call_receive_one=4,
+   vm_call_receive_fixed=5,
+   vm_bind=6,
+   vm_set=7,
+   vm_make_cell=8,
+   vm_cell_ref=9,
+   vm_cell_set=10,
+   vm_make_closure=11,
+   vm_return=12,
+   vm_bind_required_args=13,
+   vm_bind_optional_args=14,
+   vm_listify_rest_args=15,
+   vm_parse_key_args=16,
+   vm_jump=17,
+   vm_jump_if=18,
+   vm_jump_if_supplied=19,
+   vm_check_arg_count_LE_=20,
+   vm_check_arg_count_GE_=21,
+   vm_check_arg_count_EQ_=22,
+   vm_push_values=23,
+   vm_append_values=24,
+   vm_pop_values=25,
+   vm_mv_call=26,
+   vm_mv_call_receive_one=27,
+   vm_mv_call_receive_fixed=28,
+   vm_entry=29,
+   vm_exit=30,
+   vm_entry_close=31,
+   vm_special_bind=32,
+   vm_symbol_value=33,
+   vm_symbol_value_set=34,
+   vm_unbind=35,
+   vm_fdefinition=36,
+   vm_nil=37,
+   vm_eq=38 };
 
 #endif

@@ -18,6 +18,7 @@
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;defcallback-native.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;lowlevel.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;fastgf.lisp")
+(load-if-compiled-correctly "sys:src;lisp;regression-tests;virtual-machine.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;array0.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;tests01.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;finalizers.lisp")

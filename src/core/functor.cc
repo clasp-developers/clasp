@@ -93,11 +93,11 @@ GlobalEntryPoint_O::GlobalEntryPoint_O(FunctionDescription_sp fdesc, const Clasp
 
 GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point,
                                                        T_sp module,
-                                                       unsigned short localsFrameSize,
-                                                       unsigned short required,
-                                                       unsigned short optional,
-                                                       unsigned short restSlot,
-                                                       unsigned short keyStart,
+                                                       uint16_t localsFrameSize,
+                                                       uint16_t required,
+                                                       uint16_t optional,
+                                                       uint16_t restSlot,
+                                                       uint16_t keyStart,
                                                        T_sp keyConsts,
                                                        unsigned char flags,
                                                        unsigned int environmentSize,
@@ -435,6 +435,96 @@ GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp entryPoint,
 
 SYMBOL_EXPORT_SC_(CorePkg,bytecode_call);
 
+void write_unsigned_short(ComplexVector_byte8_t_sp buffer, unsigned int value ) {
+  if ( value <= 127 ) {
+    buffer->vectorPushExtend(value);
+  } else {
+    unsigned byte0 = 0x80 | (value&0x7f);
+    unsigned byte1 = (value>>7) & 0xff;
+    buffer->vectorPushExtend(byte0);
+    buffer->vectorPushExtend(byte1);
+  }
+}
+
+
+uint16_t read_unsigned_short( unsigned char*& pc ) {
+  uint16_t byte0 = (uint16_t)(*pc);
+  pc++;
+  if (byte0<=127) return byte0;
+  uint16_t byte1 = (uint16_t)(*pc);
+  pc++;
+  uint16_t result = ((uint16_t)byte1)<<7 | ((uint16_t)byte0)&0x7f;
+  return result;
+}
+
+CL_DEFUN void core__write_unsigned_short( ComplexVector_byte8_t_sp buffer, uint16_t value)
+{
+  write_unsigned_short(buffer,value);
+}
+
+CL_DEFUN Fixnum core__read_unsigned_short( ComplexVector_byte8_t_sp buffer, size_t index )
+{
+  unsigned char* pc = (unsigned char*)(buffer->rowMajorAddressOfElement_(index))+index;
+  return (Fixnum)read_unsigned_short(pc);
+}
+
+
+void write_int(ComplexVector_byte8_t_sp buffer, int value ) {
+  if ( value >= -64 && value <= 63 ) {
+    buffer->vectorPushExtend(value&0x7f);
+    return;
+  } else if (value >= -16384 && value <= 16383 ) {
+    buffer->vectorPushExtend((value&0x7f)|0x80);
+    buffer->vectorPushExtend((value>>7)&0xff);
+    return;
+  }
+  buffer->vectorPushExtend(0x80);
+  buffer->vectorPushExtend(0);
+  buffer->vectorPushExtend(value&0xff);
+  buffer->vectorPushExtend((value>>8)&0xff);
+  buffer->vectorPushExtend((value>>16)&0xff);
+  buffer->vectorPushExtend((value>>24)&0xff);
+}
+
+
+int read_int(unsigned char*& pc) {
+  unsigned char byte0 = *pc;
+  pc++;
+  if (byte0<=127) {
+    if ((byte0&0x40)==0) { // positive
+      return (int)(byte0&0x3f);
+    }
+    return (int)(0xFFFFff80 | byte0);
+  }
+  unsigned char byte1 = *pc;
+  pc++;
+  if ((byte1&0x80)==0) { // positive
+    int result = ((int)byte1)<<7|((int)(byte0&0x7f));
+    if (result == 0) {
+      unsigned int ibyte0 = *pc;
+      pc++;
+      unsigned int ibyte1 = *pc;
+      pc++;
+      unsigned int ibyte2 = *pc;
+      pc++;
+      unsigned int ibyte3 = *pc;
+      pc++;
+      return (ibyte3<<24)|(ibyte2<<16)|(ibyte1<<8)|ibyte0;
+    }
+    return result;
+  }
+  return (int)(0xFFFF8000 | ((int)byte1<<7) | ((int)(byte0&0x7f)));
+}
+
+CL_DEFUN void core__write_int(ComplexVector_byte8_t_sp buffer, int value) {
+  write_int(buffer,value);
+}
+
+CL_DEFUN int core__read_int(ComplexVector_byte8_t_sp buffer, size_t index) {
+  unsigned char* pc = (unsigned char*)(buffer->rowMajorAddressOfElement_(index))+index;
+  return read_int(pc);
+}
+
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
@@ -453,23 +543,23 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   vm._StackPointer -= entryPoint->localsFrameSize();
   while (1) {
     switch (*pc) {
-    case 0: // ref
+    case vm_ref: // 0 ref
         printf("ref %hu\n", *(pc+1));
         vm.push(*(fp - *(++pc)));
         pc++;
         break;
-    case 1: // constant
+    case vm_const: // 1 constant
         printf("const %hu\n", *(pc+1));
         vm.push(literals->rowMajorAref(*(++pc)).raw_());
         pc++;
         break;
-    case 2: // closure
+    case vm_closure: // 2 closure
         printf("closure %hu\n", *(pc+1));
         vm.push((*closure)[*(++pc)].raw_());
         pc++;
         break;
         // 3, 4, 5 are call, -receive-one, -receive-fixed
-    case 6: { // bind
+    case vm_bind: { // 6 bind
       printf("bind %hu %hu\n", *(pc+1), *(pc+2));
       size_t limit = *(++pc);
       T_O** base = fp - *(++pc);
@@ -478,12 +568,12 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-    case 7: // set
+    case vm_set: // 7 set
         printf("set %hu\n", *(pc+1));
         *(fp - *(++pc)) = vm.pop();
         pc++;
         break;
-    case 8: {
+    case vm_make_cell: { // 8 make_cell
       printf("make-cell\n");
       T_sp car((gctools::Tagged)(vm.pop()));
       T_sp cdr((gctools::Tagged)nil<T_O*>);
@@ -491,14 +581,14 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-    case 9: {
+    case vm_cell_ref: { // 9 cell_ref
       printf("cell-ref\n");
       T_sp cons((gctools::Tagged)vm.pop());
       vm.push(oCar(cons).raw_());
       pc++;
       break;
     }
-    case 10: {
+    case vm_cell_set: { // 10 cell_set
       printf("cell-set\n");
       T_O* val = vm.pop();
       T_sp tval((gctools::Tagged)val);
@@ -508,7 +598,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     }
     // 11 is closure
-    case 12: { // return
+    case vm_return: { // 12 return
       printf("return\n");
       size_t numValues = fp - entryPoint->localsFrameSize() - vm._StackPointer;
       T_O** old_sp = vm._StackPointer;
@@ -527,23 +617,23 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       }
     }
     // bind-required-args 13 bind-optional-args 14 listify-rest-args 15 parse-key-args 16
-    case 17: // jump
+    case vm_jump: // 17 jump
         pc += *(++pc);
         break;
-    case 18: { // jump-if
+    case vm_jump_if: { // 18 jump-if
       T_sp tval((gctools::Tagged)vm.pop());
       if (tval.notnilp()) pc += *(++pc);
       else pc += 2;
       break;
     }
     // jump-if-supplied 18 check-arg-count<= 19 check-arg-count>= 20 check-arg-count= 21
-    case 36: { // fdefinition
+    case vm_fdefinition: { // 36 fdefinition
       T_sp name((gctools::Tagged)vm.pop());
       vm.push(cl__fdefinition(name).raw_());
       pc++;
       break;
     }
-    case 37: // nil
+    case vm_nil: // 37 nil
         printf("nil\n");
         vm.push(nil<T_O>().raw_());
         pc++;
