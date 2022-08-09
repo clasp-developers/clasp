@@ -79,7 +79,7 @@ public:
   void ensure_initialized() { return this->_Vector.ensure_initialized(); };
   size_t capacity() const { return this->_Vector.capacity(); };
   size_t max_size() const { return ~(size_t)0; };
-  //  pointer_type data() const { return this->_Vector.data(); };
+  pointer_type data() const { return this->_Vector._Contents->data(); };
   inline void operator = (const Vec0_impl& other) {
     this->_Vector = other._Vector;
   }

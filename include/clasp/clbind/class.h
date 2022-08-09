@@ -397,6 +397,7 @@ struct memfun_registration : registration {
     this->m_arguments = policies.lambdaList();
     this->m_doc_string = policies.docstring();
     this->m_declares = policies.declares();
+    this->m_auto_export = policies.autoExport();
   }
 
   void register_() const {
@@ -409,7 +410,7 @@ struct memfun_registration : registration {
     lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), 
                                     symbol, classSymbol, entry, 0, true,
                                     m_arguments, m_declares, m_doc_string,
-                                    true,
+                                    m_auto_export,
                                     CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
                                     GatherPureOutValues<Policies, 0>::gather());
   }
@@ -423,6 +424,7 @@ struct memfun_registration : registration {
   string m_arguments;
   string m_declares;
   string m_doc_string;
+  bool m_auto_export;
 };
 
 template <class Class, class Begin, class End, class Policies>

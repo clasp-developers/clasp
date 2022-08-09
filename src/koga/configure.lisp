@@ -912,6 +912,9 @@ the function to the overall configuration."
   "Configure a library with the current configuration state."
   (apply #'configure-library *configuration* rest))
 
+(defun framework (name)
+  (append-ldlibs *configuration* (format nil "-framework ~a" name)))
+
 (defun includes (&rest paths)
   "Add C include directories to the current configuration."
   (let ((*root-paths* (list* :build #P""

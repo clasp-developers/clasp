@@ -1003,11 +1003,6 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specia
                                      std::set<int> pureOutIndices = std::set<int>());
 
 
-#if 0
-void lisp_defmacro(Symbol_sp name, const string &packageName,
-                     BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
-                     const string &docstring = "");
-#endif
   typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
   void lisp_bytecode_defun(SymbolFunctionEnum kind,
                            int bytecodep,
@@ -1020,18 +1015,8 @@ void lisp_defmacro(Symbol_sp name, const string &packageName,
                            const string &sourceFile = "",
                            int lineNumber = 0,
                            int numberOfRequiredArguments = 0,
+                           bool autoExport = true,
                            const std::set<int> &skipIndices = std::set<int>() );
-
-  void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);
-
-  void lisp_defsetfSingleDispatchMethod(LispPtr lisp, const string &name, Symbol_sp classSymbol,
-                                        Function_sp, const string &arguments = "", const string &declares = "", const string &docstring = "", bool autoExport = true);
-
-  void lisp_defsetf(const string &name, Symbol_sp classSymbol,
-                    Function_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
-
-  
-  core::T_sp lisp_hiddenBinderLookup(Symbol_sp sym);
 
 //
 // You define what is being sent to the debug log using these constants

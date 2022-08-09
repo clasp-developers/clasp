@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -127,12 +127,28 @@ struct DocString {
   DocString(const std::string& val) : m_doc_string(val) {};
 };
 
- 
+struct AutoExport {
+  bool m_auto_export;
+  AutoExport(bool val) : m_auto_export(val) {};
+};
+
+struct Setf {
+  bool m_setf;
+  Setf(bool val) : m_setf(val) {};
+};
+
+inline AutoExport noAutoExport() { return AutoExport(false); }
+
+inline Setf setf() { return Setf(true); }
+
+
 template <class...PTypes>
 struct policies {
     std::vector<Keyword> m_keywords;
     std::string m_lambda_list;
     std::string m_doc_string;
+    bool m_auto_export = true;
+    bool m_setf = false;
     void describe() {
         printf("%s:%d Descibing Policy\n", __FILE__, __LINE__ );
         if (this->m_lambda_list!="") {
@@ -164,6 +180,8 @@ struct policies {
   }
   std::string docstring() const { return this->m_doc_string; };
   std::string declares() const { return ""; };
+  bool autoExport() const { return m_auto_export; };
+  bool setf() const { return m_setf; };
 };
 
 template <class Policy, int N>
@@ -209,7 +227,19 @@ void update_policy(Policy& policy, const DocString& doc_string)
 }
 
 template <class Policy>
-void walk_policy(Policy& policy) 
+void update_policy(Policy& policy, const AutoExport& auto_export)
+{
+    policy.m_auto_export = auto_export.m_auto_export;
+}
+
+template <class Policy>
+void update_policy(Policy& policy, const Setf& setf)
+{
+    policy.m_setf = setf.m_setf;
+}
+
+template <class Policy>
+void walk_policy(Policy& policy)
 {
     // Do nothing
 }
@@ -218,7 +248,7 @@ template <class Policy, class PType, class... PTypes>
 void walk_policy(Policy& policy, PType arg, PTypes...args) {
     update_policy(policy,arg);
     walk_policy(policy,args...);
-} 
+}
 
 
 template <typename... Pols>

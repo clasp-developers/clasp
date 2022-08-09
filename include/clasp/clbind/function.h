@@ -199,6 +199,8 @@ struct function_registration<FunctionPointerType,policies<Policies...>,PureOutsP
     this->m_lambdalist = policies.lambdaList();
     this->m_docstring = policies.docstring();
     this->m_declares = policies.declares();
+    this->m_autoExport = policies.autoExport();
+    this->m_setf = policies.setf();
   }
 
   void register_() const {
@@ -208,7 +210,7 @@ struct function_registration<FunctionPointerType,policies<Policies...>,PureOutsP
     using VariadicType = WRAPPER_VariadicFunction<FunctionPointerType, policies<Policies...>, typename inValuePack::type, clbind::DefaultWrapper >;
     core::FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<core::T_O>());
     auto entry = gctools::GC<VariadicType>::allocate(this->functionPtr,fdesc,nil<core::T_O>());
-    core::lisp_bytecode_defun( core::symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, core::lisp_currentPackageName(), entry, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<policies<Policies...>, -1>::gather());
+    core::lisp_bytecode_defun(this->m_setf ? core::symbol_function_setf : core::symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, core::lisp_currentPackageName(), entry, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), m_autoExport, GatherPureOutValues<policies<Policies...>, -1>::gather());
   }
 
   virtual std::string name() const { return this->m_name;}
@@ -220,6 +222,8 @@ struct function_registration<FunctionPointerType,policies<Policies...>,PureOutsP
   string m_lambdalist;
   string m_declares;
   string m_docstring;
+  bool m_autoExport;
+  bool m_setf;
 };
 
 } // namespace detail

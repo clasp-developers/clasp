@@ -1088,6 +1088,7 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
                          const string &sourceFile,
                          int lineNumber,
                          int numberOfRequiredArguments,
+                         bool autoExport,
                          const std::set<int> &skipIndices)
 {
   List_sp lambda_list = lisp_parse_arguments(packageName, arguments,numberOfRequiredArguments,skipIndices);
@@ -1128,7 +1129,7 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
     names = Cons_O::create(sym,names);
     core::_sym_STARbuiltin_setf_function_namesSTAR->setf_symbolValue(names);
   }
-  sym->exportYourself();
+  if (autoExport) sym->exportYourself();
   T_sp tdocstring = nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   func->setf_lambdaList(lambda_list);
