@@ -74,7 +74,21 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         vm.push((*closure)[*(++pc)].raw_());
         pc++;
         break;
-        // 3, 4, 5 are call, -receive-one, -receive-fixed
+    case vm_call: {
+      printf("call %hu\n", *(pc+1));
+      size_t nargs = *(++pc);
+      T_O* func = *(vm._StackPointer + nargs);
+      T_O** args = vm._StackPointer;
+      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      res.saveToMultipleValue0();
+      vm._StackPointer += nargs + 1;
+      pc++;
+      break;
+    }
+        /*
+    case vm_call_receive_one:
+    case vm_call_receive_fixed:
+*/
     case vm_bind: { // 6 bind
       printf("bind %hu %hu\n", *(pc+1), *(pc+2));
       size_t limit = *(++pc);
@@ -128,8 +142,10 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       }
       else if (numValues==1) {
         return gctools::return_type(*old_sp,1);
-      } else { // FIXME: Should return mv register as-is
-        return gctools::return_type(nil<T_O*>, 0);
+      } else { // Return mv register as-is
+        core::MultipleValues &mv = core::lisp_multipleValues();
+        size_t nvalues = mv.getSize();
+        return gctools::return_type(mv.valueGet(0, nvalues).raw_(), nvalues);
       }
     }
     case vm_bind_required_args: {
@@ -186,8 +202,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     }
     case vm_fdefinition: { // 36 fdefinition
       printf("fdefinition\n");
-      T_sp name((gctools::Tagged)vm.pop());
-      vm.push(cl__fdefinition(name).raw_());
+      vm.push(cl__fdefinition(literals->rowMajorAref(*(++pc))).raw_());
       pc++;
       break;
     }
