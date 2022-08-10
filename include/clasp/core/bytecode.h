@@ -50,6 +50,10 @@ public:
   void setf_bytecode(T_sp obj);
   BytecodeModule_O() {};
 };
-};
+
+gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure,
+                                   size_t lcc_nargs, core::T_O** lcc_args);
+
+}; // namespace core
 
 #endif

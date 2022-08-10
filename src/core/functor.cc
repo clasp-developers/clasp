@@ -46,7 +46,6 @@ THE SOFTWARE.
 //#i n c l u d e "environmentDependent.h"
 #include <clasp/core/environment.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/virtualMachine.h>
 // to avoid Generic to_object include headers here
 #include <clasp/core/wrappers.h>
 #include <clasp/llvmo/code.h>
@@ -523,131 +522,6 @@ CL_DEFUN void core__write_int(ComplexVector_byte8_t_sp buffer, int value) {
 CL_DEFUN int core__read_int(ComplexVector_byte8_t_sp buffer, size_t index) {
   unsigned char* pc = (unsigned char*)(buffer->rowMajorAddressOfElement_(index))+index;
   return read_int(pc);
-}
-
-gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
-{
-  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
-  // Do we need the lookup entryPoint? - if so - maybe we should pass it to bytecode_call
-  // Meh, it's just a lookup and we are going to read closed over slots
-  // which should be in the same cache line.
-  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
-  printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
-  BytecodeModule_sp module = entryPoint->code();
-  SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
-
-  VirtualMachine& vm = my_thread->_VM;
-  vm.push((T_O*)vm._framePointer);
-  vm._framePointer = vm._stackPointer;
-  T_O** fp = vm._framePointer;
-#ifdef STACK_GROWS_UP
-  vm._stackPointer += entryPoint->localsFrameSize();
-#else
-  vm._stackPointer -= entryPoint->localsFrameSize();
-#endif
-  while (1) {
-    switch (*pc) {
-    case vm_ref: // 0 ref
-        printf("ref %hu\n", *(pc+1));
-        vm.push(*(fp - *(++pc)));
-        pc++;
-        break;
-    case vm_const: // 1 constant
-        printf("const %hu\n", *(pc+1));
-        vm.push(literals->rowMajorAref(*(++pc)).raw_());
-        pc++;
-        break;
-    case vm_closure: // 2 closure
-        printf("closure %hu\n", *(pc+1));
-        vm.push((*closure)[*(++pc)].raw_());
-        pc++;
-        break;
-        // 3, 4, 5 are call, -receive-one, -receive-fixed
-    case vm_bind: { // 6 bind
-      printf("bind %hu %hu\n", *(pc+1), *(pc+2));
-      size_t limit = *(++pc);
-      T_O** base = fp - *(++pc);
-      for (size_t i = 0; i < limit; ++i)
-        *(base--) = vm.pop();
-      pc++;
-      break;
-    }
-    case vm_set: // 7 set
-        printf("set %hu\n", *(pc+1));
-        *(fp - *(++pc)) = vm.pop();
-        pc++;
-        break;
-    case vm_make_cell: { // 8 make_cell
-      printf("make-cell\n");
-      T_sp car((gctools::Tagged)(vm.pop()));
-      T_sp cdr((gctools::Tagged)nil<T_O*>);
-      vm.push(Cons_O::create(car, cdr).raw_());
-      pc++;
-      break;
-    }
-    case vm_cell_ref: { // 9 cell_ref
-      printf("cell-ref\n");
-      T_sp cons((gctools::Tagged)vm.pop());
-      vm.push(oCar(cons).raw_());
-      pc++;
-      break;
-    }
-    case vm_cell_set: { // 10 cell_set
-      printf("cell-set\n");
-      T_O* val = vm.pop();
-      T_sp tval((gctools::Tagged)val);
-      T_sp cons((gctools::Tagged)vm.pop());
-      CONS_CAR(cons) = tval;
-      pc++;
-      break;
-    }
-    // 11 is closure
-    case vm_return: { // 12 return
-      printf("return\n");
-#ifdef STACK_GROWS_UP
-      size_t numValues = fp + entryPoint->localsFrameSize() - vm._stackPointer;
-#else
-      size_t numValues = fp - entryPoint->localsFrameSize() - vm._stackPointer;
-#endif
-      T_O** old_sp = vm._stackPointer;
-      vm._stackPointer = fp; // Is this right?
-      printf("  numValues = %zu\n", numValues);
-      if (numValues>1) {
-        memcpy( (void*)&my_thread->_MultipleValues._Values[1],
-                (void*)(old_sp+1),
-                (numValues-1)*sizeof(T_O*) );
-        return gctools::return_type(*old_sp,numValues);
-      }
-      else if (numValues==1) {
-        return gctools::return_type(*old_sp,1);
-      } else { // FIXME: Should return mv register as-is
-        return gctools::return_type(nil<T_O*>, 0);
-      }
-    }
-    // bind-required-args 13 bind-optional-args 14 listify-rest-args 15 parse-key-args 16
-    case vm_jump: // 17 jump
-        pc += *(++pc);
-        break;
-    case vm_jump_if: { // 18 jump-if
-      T_sp tval((gctools::Tagged)vm.pop());
-      if (tval.notnilp()) pc += *(++pc);
-      else pc += 2;
-      break;
-    }
-    // jump-if-supplied 18 check-arg-count<= 19 check-arg-count>= 20 check-arg-count= 21
-    case vm_fdefinition: { // 36 fdefinition
-      T_sp name((gctools::Tagged)vm.pop());
-      vm.push(cl__fdefinition(name).raw_());
-      pc++;
-      break;
-    }
-    case vm_nil: // 37 nil
-        printf("nil\n");
-        vm.push(nil<T_O>().raw_());
-        pc++;
-        break;
-    };
-  }
 }
 
 struct BytecodeClosureEntryPoint {
