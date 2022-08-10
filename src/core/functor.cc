@@ -537,9 +537,9 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
 
   VirtualMachine& vm = my_thread->_VM;
-  vm.push((T_O*)vm._FramePointer);
-  vm._FramePointer = vm._stackPointer;
-  T_O** fp = vm._FramePointer;
+  vm.push((T_O*)vm._framePointer);
+  vm._framePointer = vm._stackPointer;
+  T_O** fp = vm._framePointer;
 #ifdef STACK_GROWS_UP
   vm._stackPointer += entryPoint->localsFrameSize();
 #else

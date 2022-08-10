@@ -143,24 +143,24 @@ VirtualMachine::VirtualMachine() {
     printf("%s:%d:%s posix_memalign failed with error %d\n", __FILE__, __LINE__, __FUNCTION__, result );
     abort();
   }
-  this->_StackBottom = (T_O**)mem;
-  this->_StackTop = this->_StackBottom+VirtualMachine::MaxStackWords-1;
-  this->_StackBytes = VirtualMachine::MaxStackWords*sizeof(T_O*);
-  memset(this->_StackBottom,0,VirtualMachine::MaxStackWords*sizeof(T_O*));
-  int mprotectResult = mprotect(this->_StackBottom,pageSize,PROT_READ);
-  gctools::clasp_gc_registerRoots((this->_StackBottom+pageSize),(this->_StackBytes-pageSize)/sizeof(T_O*));
-  this->_FramePointer = NULL;
-  this->_StackPointer = this->_StackTop;
-  (*this->_StackPointer) = NULL;
-  this->push((core::T_O*)this->_FramePointer);
-  this->_FramePointer = this->_StackPointer;
+  this->_stackBottom = (T_O**)mem;
+  this->_stackTop = this->_stackBottom+VirtualMachine::MaxStackWords-1;
+  this->_stackBytes = VirtualMachine::MaxStackWords*sizeof(T_O*);
+  memset(this->_stackBottom,0,VirtualMachine::MaxStackWords*sizeof(T_O*));
+  int mprotectResult = mprotect(this->_stackTop-pageSize,pageSize,PROT_READ);
+  gctools::clasp_gc_registerRoots((this->_stackBottom),(this->_stackBytes-pageSize)/sizeof(T_O*));
+  this->_framePointer = NULL;
+  this->_stackPointer = this->_stackBottom;
+  (*this->_stackPointer) = NULL;
+  this->push((core::T_O*)this->_framePointer);
+  this->_framePointer = this->_stackPointer;
 }
 
 VirtualMachine::~VirtualMachine() {
   size_t pageSize = getpagesize();
-  gctools::clasp_gc_deregisterRoots((this->_StackBottom+pageSize),(this->_StackBytes-pageSize)/sizeof(T_O*));
-  int mprotectResult = mprotect(this->_StackBottom,pageSize,PROT_READ|PROT_WRITE);
-  free(this->_StackBottom);
+  gctools::clasp_gc_deregisterRoots((this->_stackBottom),(this->_stackBytes-pageSize)/sizeof(T_O*));
+  int mprotectResult = mprotect(this->_stackTop-pageSize,pageSize,PROT_READ|PROT_WRITE);
+  free(this->_stackBottom);
 }
 
 

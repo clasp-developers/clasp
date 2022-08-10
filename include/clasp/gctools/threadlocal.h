@@ -57,25 +57,34 @@ typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 };
 namespace core {
 
+#define STACK_GROWS_UP 1
 struct VirtualMachine {
   static constexpr size_t MaxStackWords = 16384; // 16K words for now.
-  core::T_O**    _StackBottom;
-  size_t         _StackBytes;
-  core::T_O**    _StackTop;
-  core::T_O**    _FramePointer;
-  core::T_O**    _StackPointer;
-  core::T_sp     _CurrentFunction;
-  core::T_O**    _Literals;
-  unsigned char* _PC;
+  core::T_O**    _stackBottom;
+  size_t         _stackBytes;
+  core::T_O**    _stackTop;
+  core::T_O**    _framePointer;
+  core::T_O**    _stackPointer;
+  core::T_sp     _currentFunction;
+  core::T_O**    _literals;
+  unsigned char* _pc;
 
   inline void push(core::T_O* value) {
-    this->_StackPointer--;
-    *this->_StackPointer = value;
+#ifdef STACK_GROWS_UP
+    this->_stackPointer++;
+#else
+    this->_stackPointer--;
+#endif
+    *this->_stackPointer = value;
   }
 
   inline core::T_O* pop() {
-    core::T_O* value = *this->_StackPointer;
-    this->_StackPointer++;
+    core::T_O* value = *this->_stackPointer;
+#ifdef STACK_GROWS_UP
+    this->_stackPointer--;
+#else
+    this->_stackPointer++;
+#endif
     return value;
   }
 
