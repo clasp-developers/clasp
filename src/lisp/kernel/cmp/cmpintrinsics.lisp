@@ -314,12 +314,13 @@ Boehm and MPS use a single pointer"
 
 
 (define-c++-struct %global-entry-point% +general-tag+
-                 ((%i8*% :vtable)
-                  (%t*%  :function-description)
-                  (%t*%  :code)
-                  (%entry-point-vector% :entry-points)
-                  (%i8%  :defined)
-                  ))
+  ((%i8*% :vtable)
+   (%t*%  :entry-point)
+   (%t*%  :function-description)
+   (%t*%  :code)
+   (%entry-point-vector% :entry-points)
+   (%i8%  :defined)
+   ))
 (define-symbol-macro %global-entry-point*% (llvm-sys:type-get-pointer-to %global-entry-point%))
 (define-symbol-macro %entry-point-vector*% (llvm-sys:type-get-pointer-to %entry-point-vector%))
 
@@ -400,7 +401,7 @@ Boehm and MPS use a single pointer"
 ;;; MUST match FuncallableInstance_O layout
 (define-c++-struct %funcallable-instance% +general-tag+
   ((%i8*% :vtable)
-   (%i8*% :function-description)
+   (%t*% :entry-point)
    (%t*% :rack)
    (%t*% :class)
    (%atomic<size_t>% :interpreted-calls)

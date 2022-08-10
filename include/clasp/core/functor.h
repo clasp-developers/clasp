@@ -15,6 +15,7 @@ namespace cl {
 };
 
 namespace core {
+  FORWARD(EntryPointBase);
   FORWARD(GlobalEntryPoint);
   FORWARD(LocalEntryPoint);
   FORWARD(Function);
@@ -117,17 +118,127 @@ fields at the same offset as Instance_O.
    std::string __repr__() const;
  };
 
+};
+
+namespace core {
+
+extern std::atomic<uint64_t> global_interpreted_closure_calls;
+
+  /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
+*/
+  class Function_O : public General_O {
+    LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
+  public:
+    CLASP_DEFAULT_CTOR Function_O() {};
+    Function_O(EntryPointBase_O* ep) : _EntryPoint(EntryPointBase_sp((gctools::Tagged)ep)) {};
+  public:
+    std::atomic<EntryPointBase_sp>    _EntryPoint;
+  public:
+    virtual const char *describe() const { return "Function - subclass must implement describe()"; };
+    virtual size_t templatedSizeof() const { return sizeof(*this); };
+  public:
+  Function_O(GlobalEntryPoint_sp ptr)
+      : _EntryPoint(ptr)
+    {
+#ifdef _DEBUG_BUILD
+      if (!ptr.generalp()) {
+        printf("%s:%d Something other than a function-description pointer was passed to initialize Function_O::_FunctionDescription -> %p\n", __FILE__, __LINE__, ptr.raw_() );
+        abort();
+      }
+#endif
+    };
+    ClaspXepGeneralFunction entry() const;
+    ClaspXep0Function entry_0() const;
+    ClaspXep1Function entry_1() const;
+    ClaspXep2Function entry_2() const;
+    ClaspXep3Function entry_3() const;
+    ClaspXep4Function entry_4() const;
+    ClaspXep5Function entry_5() const;
+
+    virtual FunctionDescription_sp fdesc() const;
+    // Rewrite the function-description pointer - used in direct-calls.lisp
+    //  virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
+
+
+    CL_DEFMETHOD T_sp entryPoint() const {
+      return this->_EntryPoint.load();
+    }
+
+    CL_LISPIFY_NAME("core:functionName");
+    CL_DEFMETHOD virtual T_sp functionName() const {
+      return this->fdesc()->functionName();
+    }
+    CL_DEFMETHOD void setf_functionName(T_sp name) {
+      this->fdesc()->setf_functionName(name);
+    }
+    T_sp docstring() const {
+      return this->fdesc()->docstring();
+    }
+    CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
+      this->fdesc()->setf_lambdaList(lambda_list);
+    }
+    CL_DEFMETHOD T_sp sourcePathname() const {
+      return this->fdesc()->sourcePathname();
+    }
+    void setf_sourcePathname(T_sp sourceFileName) const {
+      this->fdesc()->setf_sourcePathname(sourceFileName);
+    }
+    void setf_docstring(T_sp x) const {
+      this->fdesc()->setf_docstring(x);
+    }
+    void setf_declares(T_sp x) const {
+      this->fdesc()->setf_declares(x);
+    }
+    size_t filePos() const {
+      return this->fdesc()->filepos;
+    }
+    void setf_filePos(int filePos) { this->fdesc()->filepos = filePos; };
+    int lineNumber() const {
+      return this->fdesc()->lineno;
+    }
+    int lineno() const {
+      return this->fdesc()->lineno;
+    }
+    void setf_lineno(int lineno) { this->fdesc()->lineno = lineno; };
+    virtual int column() const {
+      return this->fdesc()->column;
+    }
+    void setf_column(int x) { this->fdesc()->column = x; };
+    
+    virtual void __write__(T_sp) const;
+    
+    Pointer_sp function_pointer() const;
+    virtual bool compiledP() const { return false; };
+    virtual bool interpretedP() const { return false; };
+    virtual bool builtinP() const { return false; };
+    virtual T_sp sourcePosInfo() const { return nil<T_O>(); };
+    CL_DEFMETHOD T_sp functionLambdaListHandler() const {
+      return this->lambdaListHandler();
+    }
+    virtual T_sp closedEnvironment() const {SUBIMP();};
+    T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
+    virtual T_mv functionSourcePos() const;
+    virtual T_sp lambdaListHandler() const {SUBIMP();};
+    virtual T_sp lambdaList() const {
+      return this->fdesc()->lambdaList();
+    }
+    virtual string __repr__() const;
+    virtual ~Function_O() {};
+  };
+};
+
+namespace core {
 
  FORWARD(EntryPointBase);
- class EntryPointBase_O : public General_O {
-   LISP_CLASS(core,CorePkg,EntryPointBase_O,"EntryPointBase",General_O);
+ class EntryPointBase_O : public Function_O {
+   LISP_CLASS(core,CorePkg,EntryPointBase_O,"EntryPointBase",Function_O);
  public:
    CLASP_DEFAULT_CTOR EntryPointBase_O() {};
  public:
    FunctionDescription_sp _FunctionDescription;
  public:
   // Accessors
-   EntryPointBase_O(FunctionDescription_sp fdesc) : _FunctionDescription(fdesc) {  };
+   EntryPointBase_O(FunctionDescription_sp fdesc) : Function_O(this), _FunctionDescription(fdesc) {  };
    CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
    virtual Pointer_sp defaultEntryAddress() const;
  };
@@ -359,111 +470,6 @@ void validateFunctionDescription(const char* filename, size_t lineno, Function_s
 };
 
 
-namespace core {
-
-extern std::atomic<uint64_t> global_interpreted_closure_calls;
-
-  /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
-*/
-  class Function_O : public General_O {
-    LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
-  public:
-    CLASP_DEFAULT_CTOR Function_O() {};
-  public:
-    std::atomic<GlobalEntryPoint_sp>    _EntryPoint;
-  public:
-    virtual const char *describe() const { return "Function - subclass must implement describe()"; };
-    virtual size_t templatedSizeof() const { return sizeof(*this); };
-  public:
-  Function_O(GlobalEntryPoint_sp ptr)
-      : _EntryPoint(ptr)
-    {
-#ifdef _DEBUG_BUILD
-      if (!ptr.generalp()) {
-        printf("%s:%d Something other than a function-description pointer was passed to initialize Function_O::_FunctionDescription -> %p\n", __FILE__, __LINE__, ptr.raw_() );
-        abort();
-      }
-#endif
-    };
-    ClaspXepGeneralFunction entry() const { return (ClaspXepGeneralFunction)(this->_EntryPoint.load()->_EntryPoints[0]); }
-    ClaspXep0Function entry_0() const { return (ClaspXep0Function)(this->_EntryPoint.load()->_EntryPoints[1]); }
-    ClaspXep1Function entry_1() const { return (ClaspXep1Function)(this->_EntryPoint.load()->_EntryPoints[2]); }
-    ClaspXep2Function entry_2() const { return (ClaspXep2Function)(this->_EntryPoint.load()->_EntryPoints[3]); }
-    ClaspXep3Function entry_3() const { return (ClaspXep3Function)(this->_EntryPoint.load()->_EntryPoints[4]); }
-    ClaspXep4Function entry_4() const { return (ClaspXep4Function)(this->_EntryPoint.load()->_EntryPoints[5]); }
-    ClaspXep5Function entry_5() const { return (ClaspXep5Function)(this->_EntryPoint.load()->_EntryPoints[6]); }
-
-    virtual FunctionDescription_sp fdesc() const { return this->_EntryPoint.load()->_FunctionDescription; };
-    // Rewrite the function-description pointer - used in direct-calls.lisp
-    //  virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
-
-
-    CL_DEFMETHOD T_sp entryPoint() const {
-      return this->_EntryPoint.load();
-    }
-
-    CL_LISPIFY_NAME("core:functionName");
-    CL_DEFMETHOD virtual T_sp functionName() const {
-      return this->fdesc()->functionName();
-    }
-    CL_DEFMETHOD void setf_functionName(T_sp name) {
-      this->fdesc()->setf_functionName(name);
-    }
-    T_sp docstring() const {
-      return this->fdesc()->docstring();
-    }
-    CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
-      this->fdesc()->setf_lambdaList(lambda_list);
-    }
-    CL_DEFMETHOD T_sp sourcePathname() const {
-      return this->fdesc()->sourcePathname();
-    }
-    void setf_sourcePathname(T_sp sourceFileName) const {
-      this->fdesc()->setf_sourcePathname(sourceFileName);
-    }
-    void setf_docstring(T_sp x) const {
-      this->fdesc()->setf_docstring(x);
-    }
-    void setf_declares(T_sp x) const {
-      this->fdesc()->setf_declares(x);
-    }
-    size_t filePos() const {
-      return this->fdesc()->filepos;
-    }
-    void setf_filePos(int filePos) { this->fdesc()->filepos = filePos; };
-    int lineNumber() const {
-      return this->fdesc()->lineno;
-    }
-    int lineno() const {
-      return this->fdesc()->lineno;
-    }
-    void setf_lineno(int lineno) { this->fdesc()->lineno = lineno; };
-    virtual int column() const {
-      return this->fdesc()->column;
-    }
-    void setf_column(int x) { this->fdesc()->column = x; };
-    
-    virtual void __write__(T_sp) const;
-    
-    Pointer_sp function_pointer() const;
-    virtual bool compiledP() const { return false; };
-    virtual bool interpretedP() const { return false; };
-    virtual bool builtinP() const { return false; };
-    virtual T_sp sourcePosInfo() const { return nil<T_O>(); };
-    CL_DEFMETHOD T_sp functionLambdaListHandler() const {
-      return this->lambdaListHandler();
-    }
-    virtual T_sp closedEnvironment() const {SUBIMP();};
-    T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
-    virtual T_mv functionSourcePos() const;
-    virtual T_sp lambdaListHandler() const {SUBIMP();};
-    virtual T_sp lambdaList() const {
-      return this->fdesc()->lambdaList();
-    }
-    virtual string __repr__() const;
-    virtual ~Function_O() {};
-  };
-};
 
 namespace core {
   extern bool cl__stringp(T_sp obj);

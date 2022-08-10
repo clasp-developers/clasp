@@ -207,11 +207,11 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
       if (closure->openP())
         this->_EntryPoint.store(closure->_EntryPoint.load());
       else {
-        GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(this->_EntryPoint);
+        GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(gctools::As<GlobalEntryPoint_sp>(this->_EntryPoint.load()));
         this->_EntryPoint.store(entryPoint);
       }
     } else {
-      GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(this->_EntryPoint);
+      GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(gc::As<GlobalEntryPoint_sp>(this->_EntryPoint.load()));
       this->_EntryPoint.store(entryPoint);
     }
   } else {

@@ -538,9 +538,13 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
 
   VirtualMachine& vm = my_thread->_VM;
   vm.push((T_O*)vm._FramePointer);
-  vm._FramePointer = vm._StackPointer;
+  vm._FramePointer = vm._stackPointer;
   T_O** fp = vm._FramePointer;
-  vm._StackPointer -= entryPoint->localsFrameSize();
+#ifdef STACK_GROWS_UP
+  vm._stackPointer += entryPoint->localsFrameSize();
+#else
+  vm._stackPointer -= entryPoint->localsFrameSize();
+#endif
   while (1) {
     switch (*pc) {
     case vm_ref: // 0 ref
@@ -600,9 +604,13 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     // 11 is closure
     case vm_return: { // 12 return
       printf("return\n");
-      size_t numValues = fp - entryPoint->localsFrameSize() - vm._StackPointer;
-      T_O** old_sp = vm._StackPointer;
-      vm._StackPointer = fp; // Is this right?
+#ifdef STACK_GROWS_UP
+      size_t numValues = fp + entryPoint->localsFrameSize() - vm._stackPointer;
+#else
+      size_t numValues = fp - entryPoint->localsFrameSize() - vm._stackPointer;
+#endif
+      T_O** old_sp = vm._stackPointer;
+      vm._stackPointer = fp; // Is this right?
       printf("  numValues = %zu\n", numValues);
       if (numValues>1) {
         memcpy( (void*)&my_thread->_MultipleValues._Values[1],
@@ -987,6 +995,16 @@ CL_DEFUN void core__dumpFunctionDescription(T_sp func)
     SIMPLE_ERROR(("You can only dump function-descriptions from functions or function-descriptions"));
   }
 }
+
+
+ClaspXepGeneralFunction Function_O::entry() const { return (ClaspXepGeneralFunction)(gc::As_unsafe<GlobalEntryPoint_sp>(this->_EntryPoint.load())->_EntryPoints[0]); }
+ClaspXep0Function Function_O::entry_0() const { return (ClaspXep0Function)(gc::As_unsafe<GlobalEntryPoint_sp>(this->_EntryPoint.load())->_EntryPoints[1]); }
+ClaspXep1Function Function_O::entry_1() const { return (ClaspXep1Function)(gc::As_unsafe<GlobalEntryPoint_sp>(this->_EntryPoint.load())->_EntryPoints[2]); }
+ClaspXep2Function Function_O::entry_2() const { return (ClaspXep2Function)(gc::As_unsafe<GlobalEntryPoint_sp>(this->_EntryPoint.load())->_EntryPoints[3]); }
+ClaspXep3Function Function_O::entry_3() const { return (ClaspXep3Function)(gc::As_unsafe<GlobalEntryPoint_sp>(this->_EntryPoint.load())->_EntryPoints[4]); }
+ClaspXep4Function Function_O::entry_4() const { return (ClaspXep4Function)(gc::As_unsafe<GlobalEntryPoint_sp>(this->_EntryPoint.load())->_EntryPoints[5]); }
+ClaspXep5Function Function_O::entry_5() const { return (ClaspXep5Function)(gc::As_unsafe<GlobalEntryPoint_sp>(this->_EntryPoint.load())->_EntryPoints[6]); }
+FunctionDescription_sp Function_O::fdesc() const { return this->_EntryPoint.load()->_FunctionDescription; };
 
 CL_LISPIFY_NAME("core:functionSourcePos");
 CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
