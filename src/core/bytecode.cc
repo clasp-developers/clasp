@@ -151,6 +151,33 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
+    case vm_make_uninitialized_closure: {
+      printf("make-uninitialized-closure %hu\n", *(pc+1));
+      GlobalBytecodeEntryPoint_sp fn
+        = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(*(++pc)));
+      size_t nclosed = fn->environmentSize();
+      printf("  nclosed = %zu\n", nclosed);
+      ClosureWithSlots_sp closure
+        = ClosureWithSlots_O::make_bytecode_closure(fn, nclosed);
+      vm.push(closure.raw_());
+      pc++;
+      break;
+    }
+    case vm_initialize_closure: {
+      printf("initialize-closure %hu\n", *(pc+1));
+      T_sp tclosure((gctools::Tagged)(*(vm.reg(*(++pc)))));
+      ClosureWithSlots_sp closure = gc::As<ClosureWithSlots_sp>(tclosure);
+      // FIXME: We ought to be able to get the closure size directly
+      // from the closure through some nice method.
+      GlobalBytecodeEntryPoint_sp fn
+        = gc::As<GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
+      size_t nclosed = fn->environmentSize();
+      printf("  nclosed = %zu\n", nclosed);
+      vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
+      vm.drop(nclosed);
+      pc++;
+      break;
+    }
     case vm_return: {
       printf("return\n");
       size_t numValues = vm.npushed(nlocals);
@@ -217,7 +244,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     }
     case vm_fdefinition: { // 36 fdefinition
-      printf("fdefinition\n");
+      printf("fdefinition %hu\n", *(pc+1));
       vm.push(cl__fdefinition(literals->rowMajorAref(*(++pc))).raw_());
       pc++;
       break;

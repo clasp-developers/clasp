@@ -131,7 +131,7 @@ struct VirtualMachine {
   // of the source data; otherwise the last.
   inline void copytoreg(core::T_O** source, size_t n, size_t base) {
 #ifdef STACK_GROWS_UP
-    std::copy(source, source + n, this->_framePointer + base);
+    std::copy(source, source + n, this->_framePointer + base + 1);
 #else
     std::copy_backward(source - n, source, this->_framePointer - base);
 #endif
@@ -140,7 +140,7 @@ struct VirtualMachine {
   // Get a pointer to the nth register in the current frame.
   inline core::T_O** reg(size_t n) {
 #ifdef STACK_GROWS_UP
-    return this->_framePointer + n;
+    return this->_framePointer + n + 1;
 #else
     return this->_framePointer - n;
 #endif
