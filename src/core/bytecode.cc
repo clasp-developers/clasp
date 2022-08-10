@@ -49,19 +49,17 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // which should be in the same cache line.
   core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
   printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
+  size_t nlocals = entryPoint->localsFrameSize();
   BytecodeModule_sp module = entryPoint->code();
   SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
 
   VirtualMachine& vm = my_thread->_VM;
-  vm.push((T_O*)vm._framePointer);
-  vm._framePointer = vm._stackPointer;
-  T_O** fp = vm._framePointer;
-  vm._stackPointer += entryPoint->localsFrameSize();
+  vm.push_frame(nlocals);
   while (1) {
     switch (*pc) {
     case vm_ref: // 0 ref
         printf("ref %hu\n", *(pc+1));
-        vm.push(*(fp + *(++pc)));
+        vm.push(*(vm.reg(*(++pc))));
         pc++;
         break;
     case vm_const: // 1 constant
@@ -77,21 +75,21 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     case vm_call: {
       printf("call %hu\n", *(pc+1));
       size_t nargs = *(++pc);
-      T_O* func = *(vm._stackPointer - nargs);
-      T_O** args = vm._stackPointer - nargs + 1;
+      T_O* func = *(vm.stackref(nargs));
+      T_O** args = vm.stackref(nargs-1);
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       res.saveToMultipleValue0();
-      vm._stackPointer -= nargs + 1;
+      vm.drop(nargs+1);
       pc++;
       break;
     }
     case vm_call_receive_one: {
       printf("call-receive-one %hu\n", *(pc+1));
       size_t nargs = *(++pc);
-      T_O* func = *(vm._stackPointer - nargs);
-      T_O** args = vm._stackPointer - nargs + 1;
+      T_O* func = *(vm.stackref(nargs));
+      T_O** args = vm.stackref(nargs-1);
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm._stackPointer -= nargs + 1;
+      vm.drop(nargs+1);
       vm.push(res.raw_());
       pc++;
       break;
@@ -99,21 +97,22 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         /*
     case vm_call_receive_fixed:
 */
-    case vm_bind: { // 6 bind
+    case vm_bind: {
       printf("bind %hu %hu\n", *(pc+1), *(pc+2));
-      size_t limit = *(++pc);
-      T_O** base = fp + *(++pc);
-      for (size_t i = 0; i < limit; ++i)
-        *(base++) = vm.pop();
+      size_t nelems = *(++pc);
+      size_t base = *(++pc);
+      vm.copytoreg(vm.stackref(nelems-1), nelems, base);
+      vm.drop(nelems);
       pc++;
       break;
     }
-    case vm_set: // 7 set
+    case vm_set:
         printf("set %hu\n", *(pc+1));
-        *(fp + *(++pc)) = vm.pop();
+        vm.copytoreg(vm.stackref(0), 1, *(++pc));
+        vm.drop(1);
         pc++;
         break;
-    case vm_make_cell: { // 8 make_cell
+    case vm_make_cell: {
       printf("make-cell\n");
       T_sp car((gctools::Tagged)(vm.pop()));
       T_sp cdr((gctools::Tagged)nil<T_O*>);
@@ -121,14 +120,14 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-    case vm_cell_ref: { // 9 cell_ref
+    case vm_cell_ref: {
       printf("cell-ref\n");
       T_sp cons((gctools::Tagged)vm.pop());
       vm.push(oCar(cons).raw_());
       pc++;
       break;
     }
-    case vm_cell_set: { // 10 cell_set
+    case vm_cell_set: {
       printf("cell-set\n");
       T_O* val = vm.pop();
       T_sp tval((gctools::Tagged)val);
@@ -140,33 +139,26 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     // 11 is closure
     case vm_return: { // 12 return
       printf("return\n");
-      size_t numValues = vm._stackPointer - entryPoint->localsFrameSize() - fp;
-      T_O** old_sp = vm._stackPointer;  
-      vm._stackPointer = fp; // Is this right?
+      size_t numValues = vm.npushed(nlocals);
       printf("  numValues = %zu\n", numValues);
-      if (numValues>1) {
-        memcpy( (void*)&my_thread->_MultipleValues._Values[1],
-                (void*)(old_sp+1),
-                (numValues-1)*sizeof(T_O*) );
-        return gctools::return_type(*old_sp,numValues);
-      }
-      else if (numValues==1) {
-        return gctools::return_type(*old_sp,1);
-      } else { // Return mv register as-is
+      if (numValues == 0) { // Return mv register as-is.
+        vm.pop_frame(nlocals);
         core::MultipleValues &mv = core::lisp_multipleValues();
         size_t nvalues = mv.getSize();
         return gctools::return_type(mv.valueGet(0, nvalues).raw_(), nvalues);
+      } else {
+        vm.copyto(numValues - 1, &my_thread->_MultipleValues._Values[1]);
+        vm.drop(numValues - 1);
+        T_O* primary = vm.pop();
+        vm.pop_frame(nlocals);
+        return gctools::return_type(primary, numValues);
       }
     }
-    case vm_bind_required_args: {
-      printf("bind-required-args %hu\n", *(pc+1));
-      size_t nreq = *(++pc);
-      T_O** base = fp;
-      for (size_t i = 0; i < nreq; ++i)
-        *(base++) = lcc_args[i];
-      pc++;
-      break;
-    }
+    case vm_bind_required_args:
+        printf("bind-required-args %hu\n", *(pc+1));
+        vm.copytoreg(lcc_args, *(++pc), 0);
+        pc++;
+        break;
     // bind-optional-args 14 listify-rest-args 15 parse-key-args 16
     case vm_jump: // 17 jump
         printf("jump %hu\n", *(pc+1));

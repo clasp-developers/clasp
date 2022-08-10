@@ -3,6 +3,7 @@
 
 #include <signal.h>
 #include <functional>
+#include <algorithm> // copy
 #include <clasp/gctools/threadlocal.fwd.h>
 
 typedef core::T_O*(*T_OStartUp)(core::T_O*);
@@ -86,6 +87,84 @@ struct VirtualMachine {
     this->_stackPointer++;
 #endif
     return value;
+  }
+  
+  // Drop NELEMS slots on the stack all in one go.
+  inline void drop(size_t nelems) {
+#ifdef STACK_GROWS_UP
+    this->_stackPointer -= nelems;
+#else
+    this->_stackPointer += nelems;
+#endif
+  }
+
+  // Get a pointer to the nth element from the stack
+  // i.e. 0 is most recently pushed, 1 the next most recent, etc.
+  inline core::T_O** stackref(ptrdiff_t n) {
+#ifdef STACK_GROWS_UP
+    return this->_stackPointer - n;
+#else
+    return this->_stackPointer + n;
+#endif
+  }
+
+  // Push a new frame with NLOCALS local variables.
+  inline void push_frame(size_t nlocals) {
+    this->push((T_O*)this->_framePointer);
+    this->_framePointer = this->_stackPointer;
+#ifdef STACK_GROWS_UP
+    this->_stackPointer += nlocals;
+#else
+    this->_stackPointer -= nlocals;
+#endif
+  }
+
+  // Pop a frame that had NLOCALS local variables.
+  inline void pop_frame(size_t nlocals) {
+    this->drop(nlocals);
+    this->_framePointer = (core::T_O**)(this->pop());
+  }
+
+  // Copy N elements from SOURCE into the current frame's register file
+  // starting at BASE.
+  // If the stack grows up, SOURCE should be a pointer to the first element
+  // of the source data; otherwise the last.
+  inline void copytoreg(core::T_O** source, size_t n, size_t base) {
+#ifdef STACK_GROWS_UP
+    std::copy(source, source + n, this->_framePointer + base);
+#else
+    std::copy_backward(source - n, source, this->_framePointer - base);
+#endif
+  }
+
+  // Get a pointer to the nth register in the current frame.
+  inline core::T_O** reg(size_t n) {
+#ifdef STACK_GROWS_UP
+    return this->_framePointer + n;
+#else
+    return this->_framePointer - n;
+#endif
+  }
+
+  // Compute how many elements are on the stack in the current frame
+  // but which are not part of the register file.
+  inline size_t npushed(size_t nlocals) {
+#ifdef STACK_GROWS_UP
+    return this->_stackPointer - nlocals - this->_framePointer;
+#else
+    return this->_framePointer - nlocals - this->_stackPointer;
+#endif
+  }
+
+  // Copy the n most recent pushes to the given memory.
+  // Unlike copytoreg, here the destination is the pointer to the start
+  // of the range regardless of stack growth direction.
+  inline void copyto(size_t n, core::T_O** dest) {
+#ifdef STACK_GROWS_UP
+    std::copy(this->_stackPointer - n, this->_stackPointer, dest);
+#else
+    std::copy(this->_stackPointer, this->_stackPointer + n, dest);
+#endif
   }
 
   VirtualMachine();
