@@ -136,8 +136,22 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-    // 11 is closure
-    case vm_return: { // 12 return
+    case vm_make_closure: {
+      printf("make-closure %hu\n", *(pc+1));
+      GlobalBytecodeEntryPoint_sp fn
+        = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(*(++pc)));
+      size_t nclosed = fn->environmentSize();
+      printf("  nclosed = %zu\n", nclosed);
+      ClosureWithSlots_sp closure
+        = ClosureWithSlots_O::make_bytecode_closure(fn, nclosed);
+      // FIXME: Can we use some more abstracted access?
+      vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
+      vm.drop(nclosed);
+      vm.push(closure.raw_());
+      pc++;
+      break;
+    }
+    case vm_return: {
       printf("return\n");
       size_t numValues = vm.npushed(nlocals);
       printf("  numValues = %zu\n", numValues);

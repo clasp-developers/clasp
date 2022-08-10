@@ -157,11 +157,13 @@ struct VirtualMachine {
   }
 
   // Copy the n most recent pushes to the given memory.
+  // The most recent push goes to the end of the range.
   // Unlike copytoreg, here the destination is the pointer to the start
   // of the range regardless of stack growth direction.
-  inline void copyto(size_t n, core::T_O** dest) {
+  template < class OutputIter >
+  inline void copyto(size_t n, OutputIter dest) {
 #ifdef STACK_GROWS_UP
-    std::copy(this->_stackPointer - n, this->_stackPointer, dest);
+    std::copy(this->_stackPointer + 1 - n, this->_stackPointer + 1, dest);
 #else
     std::copy(this->_stackPointer, this->_stackPointer + n, dest);
 #endif
