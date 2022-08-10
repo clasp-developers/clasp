@@ -85,8 +85,18 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
+    case vm_call_receive_one: {
+      printf("call-receive-one %hu\n", *(pc+1));
+      size_t nargs = *(++pc);
+      T_O* func = *(vm._stackPointer - nargs);
+      T_O** args = vm._stackPointer - nargs + 1;
+      T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm._stackPointer -= nargs + 1;
+      vm.push(res.raw_());
+      pc++;
+      break;
+    }
         /*
-    case vm_call_receive_one:
     case vm_call_receive_fixed:
 */
     case vm_bind: { // 6 bind
