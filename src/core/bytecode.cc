@@ -53,10 +53,10 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
 
   VirtualMachine& vm = my_thread->_VM;
-  vm.push((T_O*)vm._FramePointer);
-  vm._FramePointer = vm._StackPointer;
-  T_O** fp = vm._FramePointer;
-  vm._StackPointer -= entryPoint->localsFrameSize();
+  vm.push((T_O*)vm._framePointer);
+  vm._framePointer = vm._stackPointer;
+  T_O** fp = vm._framePointer;
+  vm._stackPointer += entryPoint->localsFrameSize(); // stack grows up
   while (1) {
     switch (*pc) {
     case vm_ref: // 0 ref
@@ -77,11 +77,11 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     case vm_call: {
       printf("call %hu\n", *(pc+1));
       size_t nargs = *(++pc);
-      T_O* func = *(vm._StackPointer + nargs);
-      T_O** args = vm._StackPointer;
+      T_O* func = *(vm._stackPointer - nargs); // stack grows up
+      T_O** args = vm._stackPointer - nargs + 1; // stack grows up
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       res.saveToMultipleValue0();
-      vm._StackPointer += nargs + 1;
+      vm._stackPointer -= nargs + 1; // stack grows up
       pc++;
       break;
     }
@@ -130,9 +130,9 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     // 11 is closure
     case vm_return: { // 12 return
       printf("return\n");
-      size_t numValues = fp - entryPoint->localsFrameSize() - vm._StackPointer;
-      T_O** old_sp = vm._StackPointer;
-      vm._StackPointer = fp; // Is this right?
+      size_t numValues = fp + entryPoint->localsFrameSize() - vm._stackPointer; // FIX for stack grows up
+      T_O** old_sp = vm._stackPointer;  
+      vm._stackPointer = fp; // Is this right?
       printf("  numValues = %zu\n", numValues);
       if (numValues>1) {
         memcpy( (void*)&my_thread->_MultipleValues._Values[1],
