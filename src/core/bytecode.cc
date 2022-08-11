@@ -41,6 +41,85 @@ void BytecodeModule_O::setf_bytecode(BytecodeModule_O::Bytecode_sp_Type o) {
   this->_Bytecode = o;
 }
 
+static void write_uint16(ComplexVector_byte8_t_sp buffer, unsigned int value ) {
+  if ( value <= 127 ) {
+    buffer->vectorPushExtend(value);
+  } else {
+    unsigned byte0 = 0x80 | (value&0x7f);
+    unsigned byte1 = (value>>7) & 0xff;
+    buffer->vectorPushExtend(byte0);
+    buffer->vectorPushExtend(byte1);
+  }
+}
+
+static inline uint16_t read_uint16( unsigned char*& pc ) {
+  uint16_t byte0 = (uint16_t)(*(++pc));
+  if (byte0<=127) return byte0;
+  uint16_t byte1 = (uint16_t)(*(++pc));
+  uint16_t result = ((uint16_t)byte1)<<7 | ((uint16_t)byte0)&0x7f;
+  return result;
+}
+
+CL_DEFUN void core__write_uint16( ComplexVector_byte8_t_sp buffer, uint16_t value)
+{
+  write_uint16(buffer,value);
+}
+
+CL_DEFUN Fixnum core__read_uint16( ComplexVector_byte8_t_sp buffer, size_t index )
+{
+  unsigned char* pc = (unsigned char*)(buffer->rowMajorAddressOfElement_(index))+index;
+  return (Fixnum)read_uint16(pc);
+}
+
+static void write_int32(ComplexVector_byte8_t_sp buffer, int value ) {
+  if ( value >= -64 && value <= 63 ) {
+    buffer->vectorPushExtend(value&0x7f);
+    return;
+  } else if (value >= -16384 && value <= 16383 ) {
+    buffer->vectorPushExtend((value&0x7f)|0x80);
+    buffer->vectorPushExtend((value>>7)&0xff);
+    return;
+  }
+  buffer->vectorPushExtend(0x80);
+  buffer->vectorPushExtend(0);
+  buffer->vectorPushExtend(value&0xff);
+  buffer->vectorPushExtend((value>>8)&0xff);
+  buffer->vectorPushExtend((value>>16)&0xff);
+  buffer->vectorPushExtend((value>>24)&0xff);
+}
+
+static inline int32_t read_int32(unsigned char*& pc) {
+  unsigned char byte0 = *(++pc);
+  if (byte0<=127) {
+    if ((byte0&0x40)==0) { // positive
+      return (int32_t)(byte0&0x3f);
+    }
+    return (int32_t)(0xFFFFff80 | byte0);
+  }
+  unsigned char byte1 = *(++pc);
+  if ((byte1&0x80)==0) { // positive
+    int result = ((int32_t)byte1)<<7|((int32_t)(byte0&0x7f));
+    if (result == 0) {
+      uint32_t ibyte0 = *(++pc);
+      uint32_t ibyte1 = *(++pc);
+      uint32_t ibyte2 = *(++pc);
+      uint32_t ibyte3 = *(++pc);
+      return (ibyte3<<24)|(ibyte2<<16)|(ibyte1<<8)|ibyte0;
+    }
+    return result;
+  }
+  return (int32_t)(0xFFFF8000 | ((int32_t)byte1<<7) | ((int32_t)(byte0&0x7f)));
+}
+
+CL_DEFUN void core__write_int32(ComplexVector_byte8_t_sp buffer, int value) {
+  write_int32(buffer,value);
+}
+
+CL_DEFUN int core__read_int32(ComplexVector_byte8_t_sp buffer, size_t index) {
+  unsigned char* pc = (unsigned char*)(buffer->rowMajorAddressOfElement_(index))+index;
+  return read_int32(pc);
+}
+
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
@@ -57,24 +136,30 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   vm.push_frame(nlocals);
   while (1) {
     switch (*pc) {
-    case vm_ref: // 0 ref
-        printf("ref %hu\n", *(pc+1));
-        vm.push(*(vm.reg(*(++pc))));
-        pc++;
-        break;
-    case vm_const: // 1 constant
-        printf("const %hu\n", *(pc+1));
-        vm.push(literals->rowMajorAref(*(++pc)).raw_());
-        pc++;
-        break;
-    case vm_closure: // 2 closure
-        printf("closure %hu\n", *(pc+1));
-        vm.push((*closure)[*(++pc)].raw_());
-        pc++;
-        break;
+    case vm_ref: {
+      uint16_t n = read_uint16(pc);
+      printf("ref %" PRIu16 "\n", n);
+      vm.push(*(vm.reg(n)));
+      pc++;
+      break;
+    }
+    case vm_const: {
+      uint16_t n = read_uint16(pc);
+      printf("const %" PRIu16 "\n", n);
+      vm.push(literals->rowMajorAref(n).raw_());
+      pc++;
+      break;
+    }
+    case vm_closure: {
+      uint16_t n = read_uint16(pc);
+      printf("closure %" PRIu16 "\n", n);
+      vm.push((*closure)[n].raw_());
+      pc++;
+      break;
+    }
     case vm_call: {
-      printf("call %hu\n", *(pc+1));
-      size_t nargs = *(++pc);
+      uint16_t nargs = read_uint16(pc);
+      printf("call %" PRIu16 "\n", nargs);
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -84,8 +169,8 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     }
     case vm_call_receive_one: {
-      printf("call-receive-one %hu\n", *(pc+1));
-      size_t nargs = *(++pc);
+      uint16_t nargs = read_uint16(pc);
+      printf("call-receive-one %hu\n", nargs);
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -98,20 +183,22 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     case vm_call_receive_fixed:
 */
     case vm_bind: {
-      printf("bind %hu %hu\n", *(pc+1), *(pc+2));
-      size_t nelems = *(++pc);
-      size_t base = *(++pc);
+      uint16_t nelems = read_uint16(pc);
+      uint16_t base = read_uint16(pc);
+      printf("bind %" PRIu16 " %" PRIu16 "\n", nelems, base);
       vm.copytoreg(vm.stackref(nelems-1), nelems, base);
       vm.drop(nelems);
       pc++;
       break;
     }
-    case vm_set:
-        printf("set %hu\n", *(pc+1));
-        vm.copytoreg(vm.stackref(0), 1, *(++pc));
-        vm.drop(1);
-        pc++;
-        break;
+    case vm_set: {
+      uint16_t n = read_uint16(pc);
+      printf("set %" PRIu16 "\n", n);
+      vm.copytoreg(vm.stackref(0), 1, read_uint16(pc));
+      vm.drop(1);
+      pc++;
+      break;
+    }
     case vm_make_cell: {
       printf("make-cell\n");
       T_sp car((gctools::Tagged)(vm.pop()));
@@ -137,9 +224,10 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     }
     case vm_make_closure: {
-      printf("make-closure %hu\n", *(pc+1));
+      uint16_t c = read_uint16(pc);
+      printf("make-closure %" PRIu16 "\n", c);
       GlobalBytecodeEntryPoint_sp fn
-        = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(*(++pc)));
+        = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(c));
       size_t nclosed = fn->environmentSize();
       printf("  nclosed = %zu\n", nclosed);
       ClosureWithSlots_sp closure
@@ -152,9 +240,10 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     }
     case vm_make_uninitialized_closure: {
-      printf("make-uninitialized-closure %hu\n", *(pc+1));
+      uint16_t c = read_uint16(pc);
+      printf("make-uninitialized-closure %" PRIu16 "\n", c);
       GlobalBytecodeEntryPoint_sp fn
-        = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(*(++pc)));
+        = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(c));
       size_t nclosed = fn->environmentSize();
       printf("  nclosed = %zu\n", nclosed);
       ClosureWithSlots_sp closure
@@ -164,8 +253,9 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     }
     case vm_initialize_closure: {
-      printf("initialize-closure %hu\n", *(pc+1));
-      T_sp tclosure((gctools::Tagged)(*(vm.reg(*(++pc)))));
+      uint16_t c = read_uint16(pc);
+      printf("initialize-closure %" PRIu16 "\n", c);
+      T_sp tclosure((gctools::Tagged)(*(vm.reg(c))));
       ClosureWithSlots_sp closure = gc::As<ClosureWithSlots_sp>(tclosure);
       // FIXME: We ought to be able to get the closure size directly
       // from the closure through some nice method.
@@ -195,27 +285,32 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         return gctools::return_type(primary, numValues);
       }
     }
-    case vm_bind_required_args:
-        printf("bind-required-args %hu\n", *(pc+1));
-        vm.copytoreg(lcc_args, *(++pc), 0);
-        pc++;
-        break;
+    case vm_bind_required_args: {
+      uint16_t nargs = read_uint16(pc);
+      printf("bind-required-args %" PRIu16 "\n", nargs);
+      vm.copytoreg(lcc_args, nargs, 0);
+      pc++;
+      break;
+    }
     // bind-optional-args 14 listify-rest-args 15 parse-key-args 16
-    case vm_jump: // 17 jump
-        printf("jump %hu\n", *(pc+1));
-        pc += *(++pc);
-        break;
-    case vm_jump_if: { // 18 jump-if
-      printf("jump-if %hu\n", *(pc+1));
+    case vm_jump: {
+      int32_t rel = read_int32(pc);
+      printf("jump %" PRId32 "\n", rel);
+      pc += rel;
+      break;
+    }
+    case vm_jump_if: {
+      int32_t rel = read_int32(pc);
+      printf("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
-      if (tval.notnilp()) pc += *(++pc);
-      else pc += 2;
+      if (tval.notnilp()) pc += rel;
+      else pc++;
       break;
     }
     // jump-if-supplied
     case vm_check_arg_count_LE_: {
-      printf("check-arg-count<= %hu\n", *(pc+1));
-      size_t max_nargs = *(++pc);
+      uint16_t max_nargs = read_uint16(pc);
+      printf("check-arg-count<= %" PRIu16 "\n", max_nargs);
       if (lcc_nargs > max_nargs) {
         T_sp tclosure((gctools::Tagged)lcc_closure);
         throwTooManyArgumentsError(tclosure, lcc_nargs, max_nargs);
@@ -224,8 +319,8 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     }
     case vm_check_arg_count_GE_: {
-      printf("check-arg-count>= %hu\n", *(pc+1));
-      size_t min_nargs = *(++pc);
+      uint16_t min_nargs = read_uint16(pc);
+      printf("check-arg-count>= %" PRIu16 "\n", min_nargs);
       if (lcc_nargs < min_nargs) {
         T_sp tclosure((gctools::Tagged)lcc_closure);
         throwTooFewArgumentsError(tclosure, lcc_nargs, min_nargs);
@@ -234,8 +329,8 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     }
     case vm_check_arg_count_EQ_: {
+      uint16_t req_nargs = read_uint16(pc);
       printf("check-arg-count= %hu\n", *(pc+1));
-      size_t req_nargs = *(++pc);
       if (lcc_nargs != req_nargs) {
         T_sp tclosure((gctools::Tagged)lcc_closure);
         wrongNumberOfArguments(tclosure, lcc_nargs, req_nargs);
@@ -243,13 +338,14 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-    case vm_fdefinition: { // 36 fdefinition
-      printf("fdefinition %hu\n", *(pc+1));
-      vm.push(cl__fdefinition(literals->rowMajorAref(*(++pc))).raw_());
+    case vm_fdefinition: {
+      uint16_t c = read_uint16(pc);
+      printf("fdefinition %" PRIu16 "\n", c);
+      vm.push(cl__fdefinition(literals->rowMajorAref(c)).raw_());
       pc++;
       break;
     }
-    case vm_nil: // 37 nil
+    case vm_nil:
         printf("nil\n");
         vm.push(nil<T_O>().raw_());
         pc++;
