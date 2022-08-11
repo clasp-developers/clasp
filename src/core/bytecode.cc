@@ -350,6 +350,15 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         vm.push(nil<T_O>().raw_());
         pc++;
         break;
+    case vm_pop:{
+      printf("pop\n");
+      T_sp obj((gctools::Tagged)vm.pop());
+      core::MultipleValues &mv = core::lisp_multipleValues();
+      mv.setSize(1);
+      mv.valueSet(0, obj);
+      pc++;
+      break;
+    }
     default:
         SIMPLE_ERROR("Unknown opcode %hu", *pc);
     };

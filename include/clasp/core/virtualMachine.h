@@ -46,6 +46,7 @@ enum vm_codes {
    vm_progv=41,
    vm_fdefinition=42,
    vm_nil=43,
-   vm_eq=44 };
+   vm_eq=44,
+   vm_pop=45};
 
 #endif /* guard */
