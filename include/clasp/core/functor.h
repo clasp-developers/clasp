@@ -130,7 +130,9 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
     CLASP_DEFAULT_CTOR Function_O() {};
-    Function_O(EntryPointBase_O* ep) : _EntryPoint(EntryPointBase_sp((gctools::Tagged)ep)) {};
+    Function_O(EntryPointBase_O* ep) : _EntryPoint(EntryPointBase_sp((gctools::Tagged)(gctools::tag_general<EntryPointBase_O*>(ep)))) {
+      ASSERT(!tagged_general_p<EntryPointBase_O>(ep)); // on entry should not be tagged
+    };
   public:
     std::atomic<EntryPointBase_sp>    _EntryPoint;
   public:
