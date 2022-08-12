@@ -182,7 +182,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     }
     case vm_call_receive_one: {
       uint16_t nargs = read_uint16(pc);
-      printf("call-receive-one %hu\n", nargs);
+      printf("call-receive-one %" PRIu16 "\n", nargs);
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -191,9 +191,24 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-        /*
-    case vm_call_receive_fixed:
-*/
+    case vm_call_receive_fixed: {
+      uint16_t nargs = read_uint16(pc);
+      uint16_t nvals = read_uint16(pc);
+      printf("call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
+      T_O* func = *(vm.stackref(nargs));
+      T_O** args = vm.stackref(nargs-1);
+      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm.drop(nargs+1);
+      if (nvals != 0) {
+        MultipleValues &mv = lisp_multipleValues();
+        vm.push(res.raw_()); // primary
+        size_t svalues = mv.getSize();
+        for (size_t i = 1; i < svalues; ++i)
+          vm.push(mv.valueGet(i, svalues).raw_());
+      }
+      pc++;
+      break;
+    }
     case vm_bind: {
       uint16_t nelems = read_uint16(pc);
       uint16_t base = read_uint16(pc);
@@ -375,6 +390,83 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       if (lcc_nargs != req_nargs) {
         T_sp tclosure((gctools::Tagged)lcc_closure);
         wrongNumberOfArguments(tclosure, lcc_nargs, req_nargs);
+      }
+      pc++;
+      break;
+    }
+    case vm_push_values: {
+      // TODO: Direct copy?
+      printf("push-values\n");
+      MultipleValues &mv = lisp_multipleValues();
+      size_t nvalues = mv.getSize();
+      printf("  nvalues = %zu\n", nvalues);
+      for (size_t i = 0; i < nvalues; ++i) vm.push(mv.valueGet(i, nvalues).raw_());
+      // We could skip tagging this, but that's error-prone.
+      vm.push(make_fixnum(nvalues).raw_());
+      pc++;
+      break;
+    }
+    case vm_append_values: {
+      printf("append-values\n");
+      T_sp texisting_values((gctools::Tagged)vm.pop());
+      size_t existing_values = texisting_values.unsafe_fixnum();
+      printf("  existing-values = %zu\n", existing_values);
+      MultipleValues &mv = lisp_multipleValues();
+      size_t nvalues = mv.getSize();
+      printf("  nvalues = %zu\n", nvalues);
+      for (size_t i = 0; i < nvalues; ++i) vm.push(mv.valueGet(i, nvalues).raw_());
+      vm.push(make_fixnum(nvalues + existing_values).raw_());
+      pc++;
+      break;
+    }
+    case vm_pop_values: {
+      printf("pop-values\n");
+      MultipleValues &mv = lisp_multipleValues();
+      T_sp texisting_values((gctools::Tagged)vm.pop());
+      size_t existing_values = texisting_values.unsafe_fixnum();
+      printf("  existing-values = %zu\n", existing_values);
+      vm.copyto(existing_values, &my_thread->_MultipleValues._Values[0]);
+      mv.setSize(existing_values);
+      vm.drop(existing_values);
+      pc++;
+      break;
+    }
+    case vm_mv_call: {
+      printf("mv-call\n");
+      T_O* func = vm.pop();
+      size_t nargs = lisp_multipleValues().getSize();
+      T_O* args[nargs];
+      multipleValuesSaveToTemp(nargs, args);
+      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      res.saveToMultipleValue0();
+      pc++;
+      break;
+    }
+    case vm_mv_call_receive_one: {
+      printf("mv-call-receive-one\n");
+      T_O* func = vm.pop();
+      size_t nargs = lisp_multipleValues().getSize();
+      T_O* args[nargs];
+      multipleValuesSaveToTemp(nargs, args);
+      T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm.push(res.raw_());
+      pc++;
+      break;
+    }
+    case vm_mv_call_receive_fixed: {
+      uint16_t nvals = read_uint16(pc);
+      printf("mv-call-receive-fixed %" PRIu16 "\n", nvals);
+      T_O* func = vm.pop();
+      MultipleValues& mv = lisp_multipleValues();
+      size_t nargs = mv.getSize();
+      T_O* args[nargs];
+      multipleValuesSaveToTemp(nargs, args);
+      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      if (nvals != 0) {
+        vm.push(res.raw_()); // primary
+        size_t svalues = mv.getSize();
+        for (size_t i = 1; i < svalues; ++i)
+          vm.push(mv.valueGet(i, svalues).raw_());
       }
       pc++;
       break;
