@@ -351,7 +351,57 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-    // parse-key-args 16
+    case vm_parse_key_args: {
+      uint8_t more_start = read_uint8(pc);
+      uint8_t key_count_info = read_uint8(pc);
+      uint8_t key_literal_start = read_uint8(pc);
+      uint8_t key_frame_start = read_uint8(pc);
+      printf("parse-key-args %" PRIu8 " %" PRIu8 " %" PRIu8 " %" PRIu8 "\n",
+             more_start, key_count_info, key_literal_start, key_frame_start);
+      uint8_t key_count = key_count_info & 0x7f;
+      bool ll_aokp = key_count_info & 0x80;
+      bool seen_aokp = false;
+      bool aokp = false;
+      bool unknown_key_p = false;
+      T_O* unknown_key = unbound<T_O>().raw_();
+      // Set keyword arguments to unbound.
+      vm.fillreg(unbound<T_O>().raw_(), key_count, key_frame_start);
+      if (lcc_nargs > more_start) {
+        // FIXME: Check for odd keyword portion
+        // KLUDGE: We use a signed type so that if more_start is zero we don't
+        // wrap arg_index around. There's probably a cleverer solution.
+        ptrdiff_t arg_index;
+        for (arg_index = lcc_nargs - 1; arg_index >= more_start;
+             arg_index -= 2) {
+          bool valid_key_p = false;
+          T_O* key = lcc_args[arg_index - 1];
+          if (key == kw::_sym_allow_other_keys.raw_()) {
+            valid_key_p = true; // aok is always valid.
+            T_sp value((gctools::Tagged)(lcc_args[arg_index]));
+            if (!seen_aokp) aokp = value.notnilp();
+          }
+          for (size_t key_id = 0; key_id < key_count; ++key_id) {
+            T_O* ckey = literals->rowMajorAref(key_id + key_literal_start).raw_();
+            if (key == ckey) {
+              valid_key_p = true;
+              *vm.reg(key_frame_start + key_id) = lcc_args[arg_index];
+              break;
+            }
+          }
+          if (!valid_key_p) {
+            if (!unknown_key_p) unknown_key = key;
+            unknown_key_p = true;
+          }
+        }
+      }
+      if (unknown_key_p && !aokp & !ll_aokp) {
+        T_sp tclosure((gctools::Tagged)lcc_closure);
+        T_sp tunknown((gctools::Tagged)unknown_key);
+        throwUnrecognizedKeywordArgumentError(tclosure, tunknown);
+      }
+      pc++;
+      break;
+    }
     case vm_jump_8: {
       int32_t rel = read_label(pc, 1);
       printf("jump %" PRId32 "\n", rel);
