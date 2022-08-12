@@ -512,7 +512,7 @@ namespace core {
 #undef OVERRIDE
 #define OVERRIDE override
 
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
 #include <clasp/core/creator.h>
 #include <clasp/gctools/gcweak.h>
 

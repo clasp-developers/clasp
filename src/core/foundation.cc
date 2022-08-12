@@ -49,7 +49,7 @@ THE SOFTWARE.
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/singleDispatchGenericFunction.h>

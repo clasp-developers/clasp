@@ -5,7 +5,7 @@
            #~"environment.cc"
            #~"activationFrame.cc"
            #~"evaluator.cc"
-           #~"functor.cc"
+           #~"function.cc"
            #~"creator.cc"
            #~"sharpEqualWrapper.cc"
            #~"weakHashTable.cc"

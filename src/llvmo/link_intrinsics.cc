@@ -37,7 +37,7 @@ extern "C" {
 #include <clasp/core/common.h>
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/bignum.h>
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>

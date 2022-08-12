@@ -24,7 +24,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/debugger.h>
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
 #include <clasp/core/null.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/lisp.h>

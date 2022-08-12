@@ -56,7 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
 #include <clasp/core/character.h>
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/debugger.h>

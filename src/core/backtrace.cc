@@ -6,7 +6,7 @@
 #include <clasp/core/array.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/functor.h> // function description stuff
+#include <clasp/core/function.h> // function description stuff
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/code.h>

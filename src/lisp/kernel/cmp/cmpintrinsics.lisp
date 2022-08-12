@@ -805,7 +805,7 @@ Boehm and MPS use a single pointer"
   )
 
 ;;
-;; The %function% type MUST match the layout and size of Function_O in functor.h
+;; The %function% type MUST match the layout and size of Function_O in function.h
 ;;
 (define-c++-struct %Function% +general-tag+
   ((%i8*%      :vtable)
@@ -817,7 +817,7 @@ Boehm and MPS use a single pointer"
 
 ;;; ------------------------------------------------------------
 ;;;
-;;; This must match FunctionDescription in functor.h
+;;; This must match FunctionDescription in function.h
 ;;;
 ;;; source-info/function-name are stored in a CONS cell CAR/CDR
 ;;; lambda-list/docstring are stored in a CONS cell CAR/CDR
