@@ -120,6 +120,18 @@ CL_DEFUN int core__read_int32(ComplexVector_byte8_t_sp buffer, size_t index) {
   return read_int32(pc);
 }
 
+static inline int32_t read_label(unsigned char*& pc, size_t nbytes) {
+  // Labels are stored little-endian.
+  uint32_t result = 0;
+  for (size_t i = 0; i < nbytes - 1; ++i) result |= *(++pc) << i * 8;
+  uint8_t msb = *(++pc);
+  result |= (msb & 0x7f) << ((nbytes - 1) * 8);
+  // Signed conversion. TODO: Get something that optimizes well.
+  if (msb & 0x80)
+    return static_cast<int32_t>(result) - (1 << (8 * nbytes - 1));
+  return static_cast<int32_t>(result);
+}
+
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
@@ -293,17 +305,46 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       break;
     }
     // bind-optional-args 14 listify-rest-args 15 parse-key-args 16
-    case vm_jump: {
-      int32_t rel = read_int32(pc);
+    case vm_jump_8: {
+      int32_t rel = read_label(pc, 1);
       printf("jump %" PRId32 "\n", rel);
       pc += rel;
       break;
     }
-    case vm_jump_if: {
-      int32_t rel = read_int32(pc);
+    case vm_jump_16: {
+      int32_t rel = read_label(pc, 2);
+      printf("jump %" PRId32 "\n", rel);
+      // jumps are relative to the first byte of the label, not the last.
+      pc += rel - 1;
+      break;
+    }
+    case vm_jump_24: {
+      int32_t rel = read_label(pc, 3);
+      printf("jump %" PRId32 "\n", rel);
+      pc += rel - 2;
+      break;
+    }
+    case vm_jump_if_8: {
+      int32_t rel = read_label(pc, 1);
       printf("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
       if (tval.notnilp()) pc += rel;
+      else pc++;
+      break;
+    }
+    case vm_jump_if_16: {
+      int32_t rel = read_label(pc, 2);
+      printf("jump-if %" PRId32 "\n", rel);
+      T_sp tval((gctools::Tagged)vm.pop());
+      if (tval.notnilp()) pc += rel - 1;
+      else pc++;
+      break;
+    }
+    case vm_jump_if_24: {
+      int32_t rel = read_label(pc, 3);
+      printf("jump-if %" PRId32 "\n", rel);
+      T_sp tval((gctools::Tagged)vm.pop());
+      if (tval.notnilp()) pc += rel -2;
       else pc++;
       break;
     }
@@ -330,7 +371,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     }
     case vm_check_arg_count_EQ_: {
       uint16_t req_nargs = read_uint16(pc);
-      printf("check-arg-count= %hu\n", *(pc+1));
+      printf("check-arg-count= %" PRIu16 "\n", req_nargs);
       if (lcc_nargs != req_nargs) {
         T_sp tclosure((gctools::Tagged)lcc_closure);
         wrongNumberOfArguments(tclosure, lcc_nargs, req_nargs);
