@@ -221,7 +221,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     case vm_set: {
       uint16_t n = read_uint16(pc);
       printf("set %" PRIu16 "\n", n);
-      vm.copytoreg(vm.stackref(0), 1, read_uint16(pc));
+      vm.copytoreg(vm.stackref(0), 1, n);
       vm.drop(1);
       pc++;
       break;
@@ -319,7 +319,22 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-    // bind-optional-args 14 listify-rest-args 15 parse-key-args 16
+    case vm_bind_optional_args: {
+      uint16_t nreq = read_uint16(pc);
+      uint16_t nopt = read_uint16(pc);
+      printf("bind-optional-args %" PRIu16 " %" PRIu16 "\n", nreq, nopt);
+      if (lcc_nargs >= nreq + nopt) { // enough args- easy mode
+        printf("  enough args\n");
+        vm.copytoreg(lcc_args + nreq, nopt, nreq);
+      } else { // put in some unbounds
+        printf("  not enough args\n");
+        vm.copytoreg(lcc_args + nreq, lcc_nargs - nreq, nreq);
+        vm.fillreg(unbound<T_O>().raw_(), nreq + nopt - lcc_nargs, lcc_nargs);
+      }
+      pc++;
+      break;
+    }
+    // listify-rest-args 15 parse-key-args 16
     case vm_jump_8: {
       int32_t rel = read_label(pc, 1);
       printf("jump %" PRId32 "\n", rel);
@@ -363,7 +378,15 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       else pc++;
       break;
     }
-    // jump-if-supplied
+    case vm_jump_if_supplied: {
+      uint16_t slot = read_uint16(pc);
+      int32_t rel = read_label(pc, 3);
+      printf("jump-if-supplied %" PRIu16 " %" PRId32 "\n", slot, rel);
+      T_sp tval((gctools::Tagged)(*(vm.reg(slot))));
+      if (tval.unboundp()) pc++;
+      else pc += rel - 2;
+      break;
+    }
     case vm_check_arg_count_LE_: {
       uint16_t max_nargs = read_uint16(pc);
       printf("check-arg-count<= %" PRIu16 "\n", max_nargs);
