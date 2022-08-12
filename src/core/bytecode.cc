@@ -12,6 +12,7 @@
 #include <clasp/core/array.h>
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/primitives.h> // cl__fdefinition
+#include <clasp/core/ql.h>
 
 namespace core {
 
@@ -334,7 +335,19 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-    // listify-rest-args 15 parse-key-args 16
+    case vm_listify_rest_args: {
+      uint16_t start = read_uint16(pc);
+      printf("listify-rest-args %" PRIu16 "\n", start);
+      ql::list rest;
+      for (size_t i = start; i < lcc_nargs; ++i) {
+        T_sp tobj((gctools::Tagged)lcc_args[i]);
+        rest << tobj;
+      }
+      vm.push(rest.cons().raw_());
+      pc++;
+      break;
+    }
+    // parse-key-args 16
     case vm_jump_8: {
       int32_t rel = read_label(pc, 1);
       printf("jump %" PRId32 "\n", rel);
