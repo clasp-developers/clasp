@@ -137,6 +137,17 @@ struct VirtualMachine {
 #endif
   }
 
+  // Fill OBJECT into N registers starting at BASE.
+  inline void fillreg(core::T_O* object, size_t n, size_t base) {
+#ifdef STACK_GROWS_UP
+    std::fill(this->_framePointer + base + 1, this->_framePointer + base + n + 1,
+              object);
+#else
+    std::fill(this->_framePointer - base, this->_framePointer - base + n,
+              object);
+#endif
+  }
+
   // Get a pointer to the nth register in the current frame.
   inline core::T_O** reg(size_t n) {
 #ifdef STACK_GROWS_UP

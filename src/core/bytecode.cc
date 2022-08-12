@@ -12,6 +12,7 @@
 #include <clasp/core/array.h>
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/primitives.h> // cl__fdefinition
+#include <clasp/core/ql.h>
 
 namespace core {
 
@@ -120,6 +121,18 @@ CL_DEFUN int core__read_int32(ComplexVector_byte8_t_sp buffer, size_t index) {
   return read_int32(pc);
 }
 
+static inline int32_t read_label(unsigned char*& pc, size_t nbytes) {
+  // Labels are stored little-endian.
+  uint32_t result = 0;
+  for (size_t i = 0; i < nbytes - 1; ++i) result |= *(++pc) << i * 8;
+  uint8_t msb = *(++pc);
+  result |= (msb & 0x7f) << ((nbytes - 1) * 8);
+  // Signed conversion. TODO: Get something that optimizes well.
+  if (msb & 0x80)
+    return static_cast<int32_t>(result) - (1 << (8 * nbytes - 1));
+  return static_cast<int32_t>(result);
+}
+
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
@@ -170,7 +183,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     }
     case vm_call_receive_one: {
       uint16_t nargs = read_uint16(pc);
-      printf("call-receive-one %hu\n", nargs);
+      printf("call-receive-one %" PRIu16 "\n", nargs);
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -179,9 +192,24 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-        /*
-    case vm_call_receive_fixed:
-*/
+    case vm_call_receive_fixed: {
+      uint16_t nargs = read_uint16(pc);
+      uint16_t nvals = read_uint16(pc);
+      printf("call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
+      T_O* func = *(vm.stackref(nargs));
+      T_O** args = vm.stackref(nargs-1);
+      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm.drop(nargs+1);
+      if (nvals != 0) {
+        MultipleValues &mv = lisp_multipleValues();
+        vm.push(res.raw_()); // primary
+        size_t svalues = mv.getSize();
+        for (size_t i = 1; i < svalues; ++i)
+          vm.push(mv.valueGet(i, svalues).raw_());
+      }
+      pc++;
+      break;
+    }
     case vm_bind: {
       uint16_t nelems = read_uint16(pc);
       uint16_t base = read_uint16(pc);
@@ -194,7 +222,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     case vm_set: {
       uint16_t n = read_uint16(pc);
       printf("set %" PRIu16 "\n", n);
-      vm.copytoreg(vm.stackref(0), 1, read_uint16(pc));
+      vm.copytoreg(vm.stackref(0), 1, n);
       vm.drop(1);
       pc++;
       break;
@@ -292,22 +320,86 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
-    // bind-optional-args 14 listify-rest-args 15 parse-key-args 16
-    case vm_jump: {
-      int32_t rel = read_int32(pc);
+    case vm_bind_optional_args: {
+      uint16_t nreq = read_uint16(pc);
+      uint16_t nopt = read_uint16(pc);
+      printf("bind-optional-args %" PRIu16 " %" PRIu16 "\n", nreq, nopt);
+      if (lcc_nargs >= nreq + nopt) { // enough args- easy mode
+        printf("  enough args\n");
+        vm.copytoreg(lcc_args + nreq, nopt, nreq);
+      } else { // put in some unbounds
+        printf("  not enough args\n");
+        vm.copytoreg(lcc_args + nreq, lcc_nargs - nreq, nreq);
+        vm.fillreg(unbound<T_O>().raw_(), nreq + nopt - lcc_nargs, lcc_nargs);
+      }
+      pc++;
+      break;
+    }
+    case vm_listify_rest_args: {
+      uint16_t start = read_uint16(pc);
+      printf("listify-rest-args %" PRIu16 "\n", start);
+      ql::list rest;
+      for (size_t i = start; i < lcc_nargs; ++i) {
+        T_sp tobj((gctools::Tagged)lcc_args[i]);
+        rest << tobj;
+      }
+      vm.push(rest.cons().raw_());
+      pc++;
+      break;
+    }
+    // parse-key-args 16
+    case vm_jump_8: {
+      int32_t rel = read_label(pc, 1);
       printf("jump %" PRId32 "\n", rel);
       pc += rel;
       break;
     }
-    case vm_jump_if: {
-      int32_t rel = read_int32(pc);
+    case vm_jump_16: {
+      int32_t rel = read_label(pc, 2);
+      printf("jump %" PRId32 "\n", rel);
+      // jumps are relative to the first byte of the label, not the last.
+      pc += rel - 1;
+      break;
+    }
+    case vm_jump_24: {
+      int32_t rel = read_label(pc, 3);
+      printf("jump %" PRId32 "\n", rel);
+      pc += rel - 2;
+      break;
+    }
+    case vm_jump_if_8: {
+      int32_t rel = read_label(pc, 1);
       printf("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
       if (tval.notnilp()) pc += rel;
       else pc++;
       break;
     }
-    // jump-if-supplied
+    case vm_jump_if_16: {
+      int32_t rel = read_label(pc, 2);
+      printf("jump-if %" PRId32 "\n", rel);
+      T_sp tval((gctools::Tagged)vm.pop());
+      if (tval.notnilp()) pc += rel - 1;
+      else pc++;
+      break;
+    }
+    case vm_jump_if_24: {
+      int32_t rel = read_label(pc, 3);
+      printf("jump-if %" PRId32 "\n", rel);
+      T_sp tval((gctools::Tagged)vm.pop());
+      if (tval.notnilp()) pc += rel -2;
+      else pc++;
+      break;
+    }
+    case vm_jump_if_supplied: {
+      uint16_t slot = read_uint16(pc);
+      int32_t rel = read_label(pc, 3);
+      printf("jump-if-supplied %" PRIu16 " %" PRId32 "\n", slot, rel);
+      T_sp tval((gctools::Tagged)(*(vm.reg(slot))));
+      if (tval.unboundp()) pc++;
+      else pc += rel - 2;
+      break;
+    }
     case vm_check_arg_count_LE_: {
       uint16_t max_nargs = read_uint16(pc);
       printf("check-arg-count<= %" PRIu16 "\n", max_nargs);
@@ -330,10 +422,87 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
     }
     case vm_check_arg_count_EQ_: {
       uint16_t req_nargs = read_uint16(pc);
-      printf("check-arg-count= %hu\n", *(pc+1));
+      printf("check-arg-count= %" PRIu16 "\n", req_nargs);
       if (lcc_nargs != req_nargs) {
         T_sp tclosure((gctools::Tagged)lcc_closure);
         wrongNumberOfArguments(tclosure, lcc_nargs, req_nargs);
+      }
+      pc++;
+      break;
+    }
+    case vm_push_values: {
+      // TODO: Direct copy?
+      printf("push-values\n");
+      MultipleValues &mv = lisp_multipleValues();
+      size_t nvalues = mv.getSize();
+      printf("  nvalues = %zu\n", nvalues);
+      for (size_t i = 0; i < nvalues; ++i) vm.push(mv.valueGet(i, nvalues).raw_());
+      // We could skip tagging this, but that's error-prone.
+      vm.push(make_fixnum(nvalues).raw_());
+      pc++;
+      break;
+    }
+    case vm_append_values: {
+      printf("append-values\n");
+      T_sp texisting_values((gctools::Tagged)vm.pop());
+      size_t existing_values = texisting_values.unsafe_fixnum();
+      printf("  existing-values = %zu\n", existing_values);
+      MultipleValues &mv = lisp_multipleValues();
+      size_t nvalues = mv.getSize();
+      printf("  nvalues = %zu\n", nvalues);
+      for (size_t i = 0; i < nvalues; ++i) vm.push(mv.valueGet(i, nvalues).raw_());
+      vm.push(make_fixnum(nvalues + existing_values).raw_());
+      pc++;
+      break;
+    }
+    case vm_pop_values: {
+      printf("pop-values\n");
+      MultipleValues &mv = lisp_multipleValues();
+      T_sp texisting_values((gctools::Tagged)vm.pop());
+      size_t existing_values = texisting_values.unsafe_fixnum();
+      printf("  existing-values = %zu\n", existing_values);
+      vm.copyto(existing_values, &my_thread->_MultipleValues._Values[0]);
+      mv.setSize(existing_values);
+      vm.drop(existing_values);
+      pc++;
+      break;
+    }
+    case vm_mv_call: {
+      printf("mv-call\n");
+      T_O* func = vm.pop();
+      size_t nargs = lisp_multipleValues().getSize();
+      T_O* args[nargs];
+      multipleValuesSaveToTemp(nargs, args);
+      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      res.saveToMultipleValue0();
+      pc++;
+      break;
+    }
+    case vm_mv_call_receive_one: {
+      printf("mv-call-receive-one\n");
+      T_O* func = vm.pop();
+      size_t nargs = lisp_multipleValues().getSize();
+      T_O* args[nargs];
+      multipleValuesSaveToTemp(nargs, args);
+      T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm.push(res.raw_());
+      pc++;
+      break;
+    }
+    case vm_mv_call_receive_fixed: {
+      uint16_t nvals = read_uint16(pc);
+      printf("mv-call-receive-fixed %" PRIu16 "\n", nvals);
+      T_O* func = vm.pop();
+      MultipleValues& mv = lisp_multipleValues();
+      size_t nargs = mv.getSize();
+      T_O* args[nargs];
+      multipleValuesSaveToTemp(nargs, args);
+      T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      if (nvals != 0) {
+        vm.push(res.raw_()); // primary
+        size_t svalues = mv.getSize();
+        for (size_t i = 1; i < svalues; ++i)
+          vm.push(mv.valueGet(i, svalues).raw_());
       }
       pc++;
       break;
