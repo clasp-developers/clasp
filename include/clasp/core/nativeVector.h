@@ -1,3 +1,5 @@
+#ifndef CORE_NATIVEVECTOR_H
+#define CORE_NATIVEVECTOR_H
 
 #include <clasp/gctools/containers.h>
 #include <clasp/core/nativeVector.fwd.h>
@@ -35,5 +37,5 @@ namespace core {
   };
 
 };
-  
 
+#endif

@@ -1,6 +1,9 @@
 // ============================================================
 // Arrays specialized for float
 //
+#ifndef CORE_ARRAY_FLOAT_H
+#define CORE_ARRAY_FLOAT_H
+
 namespace core {
 FORWARD(SimpleVector_float);
 FORWARD(MDArray_float);
@@ -117,3 +120,5 @@ namespace core {
     }
   };
 };
+
+#endif

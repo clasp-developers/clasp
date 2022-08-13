@@ -21,6 +21,16 @@
     (system-source-file :source-file)
     (asdf:system-source-control :source-control)))
 
+(defmethod add-target-source :after (configuration (target (eql :scraper)) (source h-source))
+  (push source (scraper-headers configuration))
+  (push source (scraper-precise-headers configuration)))
+
+(defmethod add-target-source :after (configuration (target (eql :scraper)) (source cc-source))
+  (push source (scraper-precise-headers configuration)))
+
+(defmethod add-target-source :after (configuration (target (eql :scraper)) (source lisp-source))
+  (push source (scraper-lisp-sources configuration)))
+
 (defmethod add-target-source (configuration target (source symbol))
   (multiple-value-bind (modules systems files)
       (asdf-groveler:grovel (list source)

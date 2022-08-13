@@ -1,6 +1,9 @@
 // ============================================================
 // Arrays specialized for double
 //
+#ifndef CORE_ARRAY_DOUBLE_H
+#define CORE_ARRAY_DOUBLE_H
+
 namespace core {
 FORWARD(SimpleVector_double);
 FORWARD(MDArray_double);
@@ -116,3 +119,5 @@ namespace core {
     }
   };
 };
+
+#endif

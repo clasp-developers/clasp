@@ -751,7 +751,7 @@ void initialize_llvm(int argc, char **argv) {
 #ifndef RUNNING_PRECISEPREP
 #define NAMESPACE_llvmo
 #ifndef SCRAPING
-#include CLASP_GC_FILENAME
+#include CLASP_GC_CC
 #endif
 #undef NAMESPACE_llvmo
 #endif

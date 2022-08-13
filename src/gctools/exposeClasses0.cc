@@ -140,7 +140,7 @@ void define_builtin_cxx_class_names() {
   #if !defined(USE_PRECISE_GC)
    #include INIT_CLASSES_INC_H
   #else
-   #include CLASP_GC_FILENAME
+   #include CLASP_GC_CC
   #endif
  #undef GC_ENUM_NAMES
 #endif
@@ -215,11 +215,11 @@ void initialize_typeq_map() {
 #ifndef SCRAPING
  #if !defined(USE_PRECISE_GC)
   #define GC_TYPEQ
-   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_CC
   #undef GC_TYPEQ
  #else
   #define GC_TYPEQ
-   #include CLASP_GC_FILENAME
+   #include CLASP_GC_CC
   #undef GC_TYPEQ
  #endif
 #endif

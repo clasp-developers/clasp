@@ -81,27 +81,18 @@ namespace asttooling {
 //
 // Forward definition for classes
 //
-#ifdef BUILD_EXTENSION
-#define GC_INTERFACE_FORWARD
-#include <project_headers.h>
-#undef GC_INTERFACE_FORWARD
-
-#define GC_INTERFACE_GC_MANAGED_TYPES
-#include <project_headers.h>
-#undef GC_INTERFACE_GC_MANAGED_TYPES
-#endif
 
 #ifndef USE_PRECISE_GC
 #ifndef SCRAPING
   #define DECLARE_FORWARDS
-  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_CC // "main/clasp_gc.cc"
   #undef DECLARE_FORWARDS
 #endif
 #endif
 #if defined(USE_PRECISE_GC) && !defined(SCRAPING)
  #ifndef RUNNING_PRECISEPREP
   #define DECLARE_FORWARDS
-  #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+  #include CLASP_GC_CC // "main/clasp_gc.cc"
   #undef DECLARE_FORWARDS
  #endif
 #endif
@@ -116,13 +107,13 @@ namespace gctools {
 #ifndef USE_PRECISE_GC
  #ifndef SCRAPING
   #define GC_STAMP_SELECTORS
-  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_CC
   #undef GC_STAMP_SELECTORS
  #endif
 #elif !defined(SCRAPING)
  #ifndef RUNNING_PRECISEPREP
   #define GC_STAMP_SELECTORS
-  #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+  #include CLASP_GC_CC // "main/clasp_gc.cc"
   #undef GC_STAMP_SELECTORS
  #endif
 #endif

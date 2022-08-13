@@ -43,7 +43,7 @@ THE SOFTWARE.
 extern "C" {
 
 #ifndef SCRAPING
-#include C_WRAPPERS
+#include C_WRAPPERS_H
 #endif
 };
 

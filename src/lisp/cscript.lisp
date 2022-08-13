@@ -5,7 +5,7 @@
   (when wrappers
     (k:sources target
                #~"kernel/lsp/direct-calls.lisp"
-               (k:make-source "cl-wrappers.lisp" :variant-generated)))
+               #@"cl-wrappers.lisp"))
   (k:sources target
              #~"kernel/tag/min-start.lisp"
              #~"kernel/init.lisp"

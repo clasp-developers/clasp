@@ -1,6 +1,9 @@
 // ============================================================
 // Arrays specialized for byte32_t
 //
+#ifndef CORE_ARRAY_INT32_H
+#define CORE_ARRAY_INT32_H
+
 namespace core {
 FORWARD(SimpleVector_byte32_t);
 FORWARD(MDArray_byte32_t);
@@ -219,3 +222,5 @@ namespace core {
     }
   };
 };
+
+#endif

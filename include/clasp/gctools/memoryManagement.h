@@ -162,11 +162,11 @@ namespace gctools {
 #if !defined(SCRAPING)
  #if !defined(USE_PRECISE_GC)
   #define GC_ENUM
-   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_CC
   #undef GC_ENUM
  #else
   #define GC_ENUM
-   #include CLASP_GC_FILENAME
+   #include CLASP_GC_CC
   #undef GC_ENUM
  #endif
 #endif

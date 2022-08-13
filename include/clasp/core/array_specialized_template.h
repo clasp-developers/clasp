@@ -1,6 +1,9 @@
 // ============================================================
 // Arrays specialized for SPECIALIZE_ME
 //
+#ifndef CORE_ARRAY_SPECIALIZED_TEMPLATE_H
+#define CORE_ARRAY_SPECIALIZED_TEMPLATE_H
+
 namespace core {
   FORWARD(SimpleVector_SPECIALIZE_ME);
   FORWARD(MDArray_SPECIALIZE_ME);
@@ -116,3 +119,5 @@ namespace core {
     }
   };
 };
+
+#endif

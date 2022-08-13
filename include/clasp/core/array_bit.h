@@ -1,6 +1,8 @@
 // ============================================================
 // Arrays holding bits
 //
+#ifndef CORE_ARRAY_BIT_H
+#define CORE_ARRAY_BIT_H
 
 namespace core {
   FORWARD(SimpleBitVector_O);
@@ -149,3 +151,5 @@ namespace core {
   bool SimpleBitVector_isZero(SimpleBitVector_sp x);
   SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv);
 }
+
+#endif

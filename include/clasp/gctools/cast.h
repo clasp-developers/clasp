@@ -54,13 +54,13 @@ namespace clbind {
 //----------------------------------------------------------------------
 # ifndef SCRAPING
 #  define DECLARE_FORWARDS
-#  include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+#  include INIT_CLASSES_INC_H // REPLACED CLASP_GC_CC // "main/clasp_gc.cc"
 #  undef DECLARE_FORWARDS
 # endif
 namespace cast {
 #ifndef SCRAPING
 # define GC_DYNAMIC_CAST
-# include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+# include INIT_CLASSES_INC_H // REPLACED CLASP_GC_CC // "main/clasp_gc.cc"
 # undef GC_DYNAMIC_CAST
 #endif
 };
@@ -71,11 +71,11 @@ namespace cast {
  #if defined(USE_PRECISE_GC)
 //----------------------------------------------------------------------
   #define DECLARE_FORWARDS
-   #include CLASP_GC_FILENAME
+   #include CLASP_GC_CC
   #undef DECLARE_FORWARDS
 namespace cast {
   #define GC_DYNAMIC_CAST
-   #include CLASP_GC_FILENAME
+   #include CLASP_GC_CC
   #undef GC_DYNAMIC_CAST
 };
  #endif // #if defined(USE_PRECISE_GC)
