@@ -271,7 +271,7 @@ def print_simple_base_string(debugger,verbose,indent,class_,obj):
     data = debugger.read_memory(base+data_offset,length_)
     dbg_print("Data: %s "% str(data))
 
-def print_ClosureWithSlots_O(debugger,verbose,indent,class_,obj):
+def print_Closure_O(debugger,verbose,indent,class_,obj):
     dbg_print("class dict -> %s" % class_.__dict__)
     
 def print_shallow_object_type(debugger,verbose,indent,obj,type_=0,toplevel=False):

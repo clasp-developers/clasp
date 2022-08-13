@@ -72,9 +72,9 @@
 #|
 (defparameter *l* '(1 2 3 nil 4 5 6))
 (defmethod foo ((x integer) y z) (+ x y z))
-(let ((before (allocation-meter (find-class 'closure-with-slots))))
+(let ((before (allocation-meter (find-class 'closure))))
   (dotimes (i 1000) nil)
-  (let ((after (allocation-meter (find-class 'closure-with-slots))))
+  (let ((after (allocation-meter (find-class 'closure))))
     (list before after (- after before))))
 
 |#

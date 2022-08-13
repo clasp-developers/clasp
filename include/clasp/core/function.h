@@ -15,13 +15,13 @@ namespace cl {
 };
 
 namespace core {
-  FORWARD(EntryPointBase);
+  FORWARD(EntryPoint);
   FORWARD(GlobalEntryPoint);
   FORWARD(LocalEntryPoint);
   FORWARD(Function);
   FORWARD(ClosureBase);
   FORWARD(BuiltinClosure);
-  FORWARD(ClosureWithSlots);
+  FORWARD(Closure);
   FORWARD(BytecodeModule);
   FORWARD(SimpleVector_byte32_t);
 };
@@ -130,11 +130,11 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
     CLASP_DEFAULT_CTOR Function_O() {};
-    Function_O(EntryPointBase_O* ep) : _EntryPoint(EntryPointBase_sp((gctools::Tagged)(gctools::tag_general<EntryPointBase_O*>(ep)))) {
-      ASSERT(!tagged_general_p<EntryPointBase_O>(ep)); // on entry should not be tagged
+    Function_O(EntryPoint_O* ep) : _EntryPoint(EntryPoint_sp((gctools::Tagged)(gctools::tag_general<EntryPoint_O*>(ep)))) {
+      ASSERT(!tagged_general_p<EntryPoint_O>(ep)); // on entry should not be tagged
     };
   public:
-    std::atomic<EntryPointBase_sp>    _EntryPoint;
+    std::atomic<EntryPoint_sp>    _EntryPoint;
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
@@ -231,30 +231,30 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
 
 namespace core {
 
- FORWARD(EntryPointBase);
- class EntryPointBase_O : public Function_O {
-   LISP_CLASS(core,CorePkg,EntryPointBase_O,"EntryPointBase",Function_O);
+ FORWARD(EntryPoint);
+ class EntryPoint_O : public Function_O {
+   LISP_CLASS(core,CorePkg,EntryPoint_O,"EntryPoint",Function_O);
  public:
-   CLASP_DEFAULT_CTOR EntryPointBase_O() {};
+   CLASP_DEFAULT_CTOR EntryPoint_O() {};
  public:
    FunctionDescription_sp _FunctionDescription;
  public:
   // Accessors
-   EntryPointBase_O(FunctionDescription_sp fdesc) : Function_O(this), _FunctionDescription(fdesc) {  };
+   EntryPoint_O(FunctionDescription_sp fdesc) : Function_O(this), _FunctionDescription(fdesc) {  };
    CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
    virtual Pointer_sp defaultEntryAddress() const;
  };
 
  FORWARD(CodeEntryPoint);
- class CodeEntryPoint_O : public EntryPointBase_O {
-   LISP_CLASS(core,CorePkg,CodeEntryPoint_O,"CodeEntryPoint",EntryPointBase_O);
+ class CodeEntryPoint_O : public EntryPoint_O {
+   LISP_CLASS(core,CorePkg,CodeEntryPoint_O,"CodeEntryPoint",EntryPoint_O);
  public:
    CLASP_DEFAULT_CTOR CodeEntryPoint_O() {};
  public:
    T_sp _Code;                       //  10 code
  public:
   // Accessors
-   CodeEntryPoint_O(FunctionDescription_sp fdesc, T_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
+   CodeEntryPoint_O(FunctionDescription_sp fdesc, T_sp code) : EntryPoint_O(fdesc), _Code(code) {  };
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(("Subclass must implement")); };
    void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
@@ -276,13 +276,13 @@ namespace core {
 };
 
 FORWARD(LocalEntryPointGenerator);
-class LocalEntryPointGenerator_O : public EntryPointBase_O {
-   LISP_CLASS(core,CorePkg,LocalEntryPointGenerator_O,"LocalEntryPointGenerator",EntryPointBase_O);
+class LocalEntryPointGenerator_O : public EntryPoint_O {
+   LISP_CLASS(core,CorePkg,LocalEntryPointGenerator_O,"LocalEntryPointGenerator",EntryPoint_O);
  public:
   T_sp _entry_point_indices;
  public:
   // Accessors
-   LocalEntryPointGenerator_O( FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices) {
+   LocalEntryPointGenerator_O( FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPoint_O(fdesc), _entry_point_indices(entry_point_indices) {
      //ASSERT(cl__length(entry_point_indices)==1);
    };
   std::string __repr__() const;
@@ -378,14 +378,14 @@ FORWARD(GlobalBytecodeEntryPoint);
 
 
 FORWARD(GlobalEntryPointGenerator);
-class GlobalEntryPointGenerator_O : public EntryPointBase_O {
-   LISP_CLASS(core,CorePkg,GlobalEntryPointGenerator_O,"GlobalEntryPointGenerator",EntryPointBase_O);
+class GlobalEntryPointGenerator_O : public EntryPoint_O {
+   LISP_CLASS(core,CorePkg,GlobalEntryPointGenerator_O,"GlobalEntryPointGenerator",EntryPoint_O);
  public:
   T_sp _entry_point_indices;
   size_t _localEntryPointIndex;
  public:
   // Accessors
-  GlobalEntryPointGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices), _localEntryPointIndex(lepIndex) {};
+  GlobalEntryPointGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex) : EntryPoint_O(fdesc), _entry_point_indices(entry_point_indices), _localEntryPointIndex(lepIndex) {};
   std::string __repr__() const;
   size_t localEntryPointIndex() const;
  };
@@ -510,8 +510,8 @@ namespace core {
 
 namespace core {
 
-  class ClosureWithSlots_O final : public core::Function_O {
-    LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::Function_O);
+  class Closure_O final : public core::Function_O {
+    LISP_CLASS(core,CorePkg,Closure_O,"Closure",core::Function_O);
     typedef enum { bytecodeClosure, interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
 #define ENVIRONMENT_SLOT 0
 #define INTERPRETED_CLOSURE_SLOTS  3
@@ -529,18 +529,18 @@ namespace core {
   public:
     virtual const char *describe() const override { return "CompiledClosure"; };
     virtual size_t templatedSizeof() const override {
-      return gctools::sizeof_container<ClosureWithSlots_O>(this->_Slots.size());
+      return gctools::sizeof_container<Closure_O>(this->_Slots.size());
     };
   public:
-    static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column);
+    static Closure_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column);
 
-    static ClosureWithSlots_sp make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots);
+    static Closure_sp make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots);
 
-    static ClosureWithSlots_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint);
+    static Closure_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint);
 
-    static ClosureWithSlots_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column );
+    static Closure_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column );
   public:
-    ClosureWithSlots_O(size_t capacity,
+    Closure_O(size_t capacity,
                        GlobalEntryPoint_sp ep,
                        ClosureType nclosureType)
         : Base(ep),

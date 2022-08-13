@@ -202,8 +202,8 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
   if (gc::IsA<Function_sp>(function)) {
     this->GFUN_DISPATCHER_set(function);
     // If the function has no closure slots, we can use its entry point.
-    if (gc::IsA<ClosureWithSlots_sp>(function)) {
-      ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(function);
+    if (gc::IsA<Closure_sp>(function)) {
+      Closure_sp closure = gc::As_unsafe<Closure_sp>(function);
       if (closure->openP())
         this->_EntryPoint.store(closure->_EntryPoint.load());
       else {

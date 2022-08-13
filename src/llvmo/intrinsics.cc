@@ -225,21 +225,21 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 {NO_UNWIND_BEGIN();
   ASSERT(((uintptr_t)(closure_address)&0x7)==0); //
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
-  const gctools::Header_s::StampWtagMtag closure_header = gctools::Header_s::StampWtagMtag::make_Value<core::ClosureWithSlots_O>();
-  size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
+  const gctools::Header_s::StampWtagMtag closure_header = gctools::Header_s::StampWtagMtag::make_Value<core::Closure_O>();
+  size_t size = gctools::sizeof_container_with_header<core::Closure_O>(numCells);
 //  gctools::global_stack_closure_bytes_allocated += size;
 #ifdef DEBUG_GUARD
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_header,size,0,size);
+  new (header) gctools::GCHeader<core::Closure_O>::HeaderType(closure_header,size,0,size);
 #else
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_header);
+  new (header) gctools::GCHeader<core::Closure_O>::HeaderType(closure_header);
 #endif
   core::T_sp tentryPoint((gctools::Tagged)entryPointInfo);
   core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tentryPoint);
-  auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
-  new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
+  auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::Closure_O>::Type>(closure_address);
+  new (obj) (typename gctools::smart_ptr<core::Closure_O>::Type)( numCells,
                                                                            entryPoint,
-                                                                           core::ClosureWithSlots_O::cclaspClosure);
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
+                                                                           core::Closure_O::cclaspClosure);
+  gctools::smart_ptr<core::Closure_O> functoid = gctools::smart_ptr<core::Closure_O>(obj);
 //  printf("%s:%d  Allocating closure on stack at %p  stack_closure_p()->%d\n", __FILE__, __LINE__, functoid.raw_(), functoid->stack_closure_p());
   return functoid.raw_();
   NO_UNWIND_END();
@@ -954,7 +954,7 @@ core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
 {
   ASSERT(closureRaw);
   if (closureRaw!=NULL) {
-    core::ClosureWithSlots_sp closure = core::ClosureWithSlots_sp((gctools::Tagged)closureRaw);
+    core::Closure_sp closure = core::Closure_sp((gctools::Tagged)closureRaw);
     return &closure->closedEnvironment_rawRef();
   }
   return NULL;

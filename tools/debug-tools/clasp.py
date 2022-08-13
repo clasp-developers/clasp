@@ -172,7 +172,7 @@ def print_simple_base_string(debugger,verbose,indent,class_,obj):
     else:
         print("Data Could not read!!!")
 
-def print_ClosureWithSlots_O(debugger,verbose,indent,class_,obj):
+def print_Closure_O(debugger,verbose,indent,class_,obj):
     print("class dict -> %s" % class_.__dict__)
     
 def print_shallow_object_type(debugger,verbose,indent,obj,type_=0):

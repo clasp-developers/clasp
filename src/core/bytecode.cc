@@ -139,7 +139,7 @@ static inline int32_t read_label(unsigned char*& pc, size_t nbytes) {
 
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
-  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+  Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
   // Do we need the lookup entryPoint? - if so - maybe we should pass it to bytecode_call
   // Meh, it's just a lookup and we are going to read closed over slots
   // which should be in the same cache line.
@@ -262,8 +262,8 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(c));
       size_t nclosed = fn->environmentSize();
       printf("  nclosed = %zu\n", nclosed);
-      ClosureWithSlots_sp closure
-        = ClosureWithSlots_O::make_bytecode_closure(fn, nclosed);
+      Closure_sp closure
+        = Closure_O::make_bytecode_closure(fn, nclosed);
       // FIXME: Can we use some more abstracted access?
       vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
       vm.drop(nclosed);
@@ -278,8 +278,8 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(c));
       size_t nclosed = fn->environmentSize();
       printf("  nclosed = %zu\n", nclosed);
-      ClosureWithSlots_sp closure
-        = ClosureWithSlots_O::make_bytecode_closure(fn, nclosed);
+      Closure_sp closure
+        = Closure_O::make_bytecode_closure(fn, nclosed);
       vm.push(closure.raw_());
       pc++;
       break;
@@ -288,7 +288,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       uint8_t c = read_uint8(pc);
       printf("initialize-closure %" PRIu8 "\n", c);
       T_sp tclosure((gctools::Tagged)(*(vm.reg(c))));
-      ClosureWithSlots_sp closure = gc::As<ClosureWithSlots_sp>(tclosure);
+      Closure_sp closure = gc::As<Closure_sp>(tclosure);
       // FIXME: We ought to be able to get the closure size directly
       // from the closure through some nice method.
       GlobalBytecodeEntryPoint_sp fn

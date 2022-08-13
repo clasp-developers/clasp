@@ -1807,7 +1807,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                     spi = _sym_STARcurrentSourcePosInfoSTAR->symbolValue();
                 }
             }
-            ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name, kw::_sym_function, lambda_list, llh, declares, docstring, code, env, SOURCE_POS_INFO_FIELDS(spi));
+            Closure_sp ic = Closure_O::make_interpreted_closure(name, kw::_sym_function, lambda_list, llh, declares, docstring, code, env, SOURCE_POS_INFO_FIELDS(spi));
             return ic;
         }
 
@@ -1981,7 +1981,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                 parse_lambda_body(outer_body, declares, docstring, code);
                 LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
                 //    printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
-                ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name, kw::_sym_macro, outer_ll, outer_llh, declares, docstring, code, newEnv, SOURCE_POS_INFO_FIELDS(nil<T_O>()));
+                Closure_sp ic = Closure_O::make_interpreted_closure(name, kw::_sym_macro, outer_ll, outer_llh, declares, docstring, code, newEnv, SOURCE_POS_INFO_FIELDS(nil<T_O>()));
                 outer_func = ic;
                 LOG("func = %s" , ic->__repr__());
                 newEnv->addMacro(name, outer_func);
@@ -2027,7 +2027,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                                                                              oCadr(declares),
                                                                              cl::_sym_function);
                 //    printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
-                ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(_sym_symbolMacroletLambda, kw::_sym_macro, outer_ll, outer_llh, declares, nil<T_O>(), expansion, newEnv, SOURCE_POS_INFO_FIELDS(nil<T_O>()));
+                Closure_sp ic = Closure_O::make_interpreted_closure(_sym_symbolMacroletLambda, kw::_sym_macro, outer_ll, outer_llh, declares, nil<T_O>(), expansion, newEnv, SOURCE_POS_INFO_FIELDS(nil<T_O>()));
                 Function_sp outer_func = ic;
                 newEnv->addSymbolMacro(name, outer_func);
                 cur = oCdr(cur);

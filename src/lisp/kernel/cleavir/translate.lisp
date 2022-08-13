@@ -739,7 +739,7 @@
                    (:dynamic
                     (%intrinsic-call
                      "cc_stack_enclose"
-                     (list (cmp:alloca-i8 (core:closure-with-slots-size ninputs)
+                     (list (cmp:alloca-i8 (core:closure-size ninputs)
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
                            (literal:constants-table-value (cmp:entry-point-reference-index entry-point-reference))
@@ -1828,7 +1828,7 @@
            (environment-values
              (loop for import in (environment llvm-function-info)
                    for i from 0
-                   for offset = (cmp:%closure-with-slots%.offset-of[n]/t* i)
+                   for offset = (cmp:%closure%.offset-of[n]/t* i)
                    collect (cmp:irc-t*-load-atomic
                             (cmp::gen-memref-address closure-vec offset))))
            (source-pos-info (function-source-pos-info ir)))

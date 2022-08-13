@@ -836,7 +836,7 @@ Boehm and MPS use a single pointer"
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
-(define-c++-struct %closure-with-slots% +general-tag+
+(define-c++-struct %closure% +general-tag+
   ((%i8*% vtable)
    (%t*% entry-point)
    (%i32% closure-type)
@@ -844,11 +844,11 @@ Boehm and MPS use a single pointer"
    (%tsp[0]% data0))
   )
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (verify-closure-with-slots (c++-struct-field-offsets info.%closure-with-slots%)))
+  (verify-closure (c++-struct-field-offsets info.%closure%)))
 
-(defun %closure-with-slots%.offset-of[n]/t* (index)
+(defun %closure%.offset-of[n]/t* (index)
   "This assumes that the t* offset coincides with the tsp start"
-  (let* ((offset-of-data (cdr (assoc 'data0 (c++-struct-field-offsets info.%closure-with-slots%))))
+  (let* ((offset-of-data (cdr (assoc 'data0 (c++-struct-field-offsets info.%closure%))))
          (sizeof-element (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) %tsp%)))
     (+ (* sizeof-element index) offset-of-data)))
 

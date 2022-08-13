@@ -81,7 +81,7 @@ void CodeEntryPoint_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void
 #endif
 }
 
-CL_DEFMETHOD Pointer_sp EntryPointBase_O::defaultEntryAddress() const {
+CL_DEFMETHOD Pointer_sp EntryPoint_O::defaultEntryAddress() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
@@ -436,7 +436,7 @@ SYMBOL_EXPORT_SC_(CorePkg,bytecode_call);
 
 struct BytecodeClosureEntryPoint {
   static inline LCC_RETURN bytecode_enter(size_t entryIndex, T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
-    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
     core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
     core::BytecodeModule_sp module = gctools::As_unsafe<core::BytecodeModule_sp>(entryPoint->_Code);
     int entryPcOffset = (*entryPoint)._EntryPcs[entryIndex];
@@ -620,7 +620,7 @@ CL_DEFUN size_t core__FunctionDescription_filepos(FunctionDescription_sp fdesc) 
 }
 
 DOCGROUP(clasp)
-CL_DEFUN T_sp core__EntryPointBase_function_description(EntryPointBase_sp entryPoint) {
+CL_DEFUN T_sp core__EntryPoint_function_description(EntryPoint_sp entryPoint) {
   return entryPoint->_FunctionDescription;
 }
 
@@ -820,12 +820,12 @@ SYMBOL_SC_(CompPkg,data0);
 
 
 DOCGROUP(clasp)
-CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
+CL_DEFUN void core__verify_closure(T_sp alist)
 {
-  expect_offset(core::_sym_entry_point,alist,offsetof(ClosureWithSlots_O,_EntryPoint)-gctools::general_tag);
-  expect_offset(comp::_sym_closure_type,alist,offsetof(ClosureWithSlots_O,closureType)-gctools::general_tag);
-  expect_offset(comp::_sym_data_length,alist,offsetof(ClosureWithSlots_O,_Slots._MaybeSignedLength)-gctools::general_tag);
-  expect_offset(comp::_sym_data0,alist,offsetof(ClosureWithSlots_O,_Slots._Data)-gctools::general_tag);
+  expect_offset(core::_sym_entry_point,alist,offsetof(Closure_O,_EntryPoint)-gctools::general_tag);
+  expect_offset(comp::_sym_closure_type,alist,offsetof(Closure_O,closureType)-gctools::general_tag);
+  expect_offset(comp::_sym_data_length,alist,offsetof(Closure_O,_Slots._MaybeSignedLength)-gctools::general_tag);
+  expect_offset(comp::_sym_data0,alist,offsetof(Closure_O,_Slots._Data)-gctools::general_tag);
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg,function_description);
@@ -845,7 +845,7 @@ CL_DEFUN void core__verify_global_entry_point(T_sp alist)
 
 gctools::return_type interpreter_call(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
-    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
     //  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     ++global_interpreted_closure_calls;
@@ -897,14 +897,14 @@ struct InterpretedClosureEntryPoint {
 };
 
     
-ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
+Closure_sp Closure_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
   FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<InterpretedClosureEntryPoint>(name,nil<T_O>(),lambda_list,docstring,declares,sfi,lineno,column,filePos );
-  ClosureWithSlots_sp closure =
-      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,
+  Closure_sp closure =
+      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,
                                                                                        INTERPRETED_CLOSURE_SLOTS,
                                                                                        entryPoint,
-                                                                                       ClosureWithSlots_O::interpretedClosure);
+                                                                                       Closure_O::interpretedClosure);
   (*closure)[INTERPRETED_CLOSURE_FORM_SLOT] = form;
   (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT] = environment;
   if (lambda_list_handler.nilp()) {
@@ -917,14 +917,14 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
   validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
-ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint ) {
+Closure_sp Closure_O::make_bclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint ) {
   FunctionDescription_sp fdesc = makeFunctionDescription(name,lambda_list);
   core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPoint(fdesc,fn,localEntryPoint);
-  ClosureWithSlots_sp closure = 
-      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,
+  Closure_sp closure = 
+      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,
                                                                                        BCLASP_CLOSURE_SLOTS,
                                                                                        entryPoint,
-                                                                                       ClosureWithSlots_O::bclaspClosure);
+                                                                                       Closure_O::bclaspClosure);
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
   closure->setf_sourcePathname(nil<T_O>());
   closure->setf_lambdaList(lambda_list);
@@ -936,32 +936,32 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, const Cla
 
 CL_LISPIFY_NAME(bytecode_closure/make);
 CL_DEF_CLASS_METHOD
-ClosureWithSlots_sp ClosureWithSlots_O::make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots ) {
-  ClosureWithSlots_sp closure =
-      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,
+Closure_sp Closure_O::make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots ) {
+  Closure_sp closure =
+      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,
                                                                                        closedOverSlots,
                                                                                        entryPoint,
-                                                                                       ClosureWithSlots_O::bytecodeClosure);
+                                                                                       Closure_O::bytecodeClosure);
   validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
 
-ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
+Closure_sp Closure_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
   printf("%s:%d:%s What are you going to do with an unbound Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
   FunctionDescription_sp fdesc = makeFunctionDescription(name,lambda_list,nil<T_O>(),nil<T_O>(),nil<T_O>(),lineno,column);
   core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPoint(fdesc,fn,localEntryPoint);
-  ClosureWithSlots_sp closure = 
-      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,
+  Closure_sp closure = 
+      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,
                                                                                        0,
                                                                                        entryPoint,
-                                                                                       ClosureWithSlots_O::cclaspClosure);
+                                                                                       Closure_O::cclaspClosure);
   closure->setf_lambdaList(lambda_list);
   closure->setf_docstring(nil<T_O>());
   validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
 
-T_sp ClosureWithSlots_O::interpretedSourceCode() {
+T_sp Closure_O::interpretedSourceCode() {
   if (this->closureType==interpretedClosure) {
     return (*this)[INTERPRETED_CLOSURE_FORM_SLOT];
   };
@@ -971,7 +971,7 @@ T_sp ClosureWithSlots_O::interpretedSourceCode() {
 /* This function is used (currently exclusively) in funcallableInstance.cc.
  * It returns true if the function doesn't refer to any closure slots,
  * i.e., if the entry point ignores its first argument. */
-bool ClosureWithSlots_O::openP() {
+bool Closure_O::openP() {
   switch (this->closureType) {
   case bclaspClosure: return this->closedEnvironment().nilp();
   case cclaspClosure: return (this->_Slots.length() == 0);
@@ -980,7 +980,7 @@ bool ClosureWithSlots_O::openP() {
 }
 
 DOCGROUP(clasp)
-CL_DEFUN T_mv core__interpreted_closure_form(ClosureWithSlots_sp func) {
+CL_DEFUN T_mv core__interpreted_closure_form(Closure_sp func) {
   return Values(func->interpretedSourceCode(),func->closedEnvironment());
 }
 
@@ -1071,18 +1071,18 @@ void Closure_O::describeFunction() const {
 #endif
 
 DOCGROUP(clasp)
-CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
+CL_DEFUN size_t core__closure_size(size_t number_of_slots)
 {
-  size_t result = gctools::sizeof_container_with_header<ClosureWithSlots_O>(number_of_slots);
+  size_t result = gctools::sizeof_container_with_header<Closure_O>(number_of_slots);
   return result;
 }
 
 DOCGROUP(clasp)
 CL_DEFUN size_t core__closure_length(Function_sp tclosure)
 {
-  ASSERT(gc::IsA<ClosureWithSlots_sp>(tclosure));
-  ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(tclosure);
-  if (closure->closureType == ClosureWithSlots_O::cclaspClosure) {
+  ASSERT(gc::IsA<Closure_sp>(tclosure));
+  Closure_sp closure = gc::As_unsafe<Closure_sp>(tclosure);
+  if (closure->closureType == Closure_O::cclaspClosure) {
     return closure->_Slots.length();
   }
   if (tclosure->closedEnvironment().notnilp()) {
@@ -1091,7 +1091,7 @@ CL_DEFUN size_t core__closure_length(Function_sp tclosure)
   return 0;
 }
 
-T_sp ClosureWithSlots_O::code() const {
+T_sp Closure_O::code() const {
   if (this->interpretedP()) {
     return (*this)[INTERPRETED_CLOSURE_FORM_SLOT];
   }
@@ -1099,7 +1099,7 @@ T_sp ClosureWithSlots_O::code() const {
 }
 
 
-string ClosureWithSlots_O::__repr__() const {
+string Closure_O::__repr__() const {
   T_sp name = this->functionName();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
@@ -1136,10 +1136,10 @@ string ClosureWithSlots_O::__repr__() const {
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__closure_ref(Function_sp tclosure, size_t index)
 {
-  if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
+  if ( Closure_sp closure = tclosure.asOrNull<Closure_O>() ) {
     switch (closure->closureType) {
-    case ClosureWithSlots_O::interpretedClosure:
-    case ClosureWithSlots_O::bclaspClosure:
+    case Closure_O::interpretedClosure:
+    case Closure_O::bclaspClosure:
       {
         T_sp env = closure->closedEnvironment();
         if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
@@ -1154,11 +1154,11 @@ CL_DEFUN T_sp core__closure_ref(Function_sp tclosure, size_t index)
         SIMPLE_ERROR(("Out of bounds closure reference - there are no slots"));
       }
       break;
-    case ClosureWithSlots_O::bytecodeClosure:
+    case Closure_O::bytecodeClosure:
         printf("%s:%d:%s Add support for looking up slot %lu in bytecodeClosure\n", __FILE__, __LINE__, __FUNCTION__, index );
         return nil<core::T_O>();
         break;
-    case ClosureWithSlots_O::cclaspClosure:
+    case Closure_O::cclaspClosure:
         if ( index >= closure->_Slots.length() ) {
           SIMPLE_ERROR(("Out of bounds closure reference - there are only %d slots") , closure->_Slots.length() );
         }

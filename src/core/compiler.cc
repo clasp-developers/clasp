@@ -1234,7 +1234,7 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   stringstream ss;
   ss << "THE-IMPLICIT-COMPILE-REPL"; // << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
-  ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name,
+  Closure_sp ic = Closure_O::make_interpreted_closure(name,
                                                                         kw::_sym_function,
                                                                         nil<T_O>(),
                                                                         llh,

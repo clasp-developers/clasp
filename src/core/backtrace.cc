@@ -414,7 +414,7 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex,
   T_sp ep = dwarf_ep( frameIndex, ofi, dcontext, sa, codeStart, functionStartAddress, XEPp, arityCode );
   D(printf("%s:%d:%s dwarf_ep returned ep = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str() ););
   D(printf("%s:%d:%s dwarf_ep returned functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)functionStartAddress ););
-  T_sp functionDescriptionOrNil = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
+  T_sp functionDescriptionOrNil = ep.notnilp() ? gc::As_unsafe<EntryPoint_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
   D(printf("%s:%d:%s functionDescriptionOrNil = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(functionDescriptionOrNil).c_str() ););
   T_sp closure = nil<T_O>(), args = nil<T_O>();
   bool args_available = args_for_function( frameIndex, absolute_ip, string,

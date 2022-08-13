@@ -350,7 +350,7 @@
             c++-struct-type
             c++-struct*-type
             c++-field-ptr
-            %closure-with-slots%.offset-of[n]/t*
+            %closure%.offset-of[n]/t*
             with-try
             with-new-function-prepare-for-try
             with-debug-info-generator

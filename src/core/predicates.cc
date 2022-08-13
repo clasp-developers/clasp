@@ -117,9 +117,9 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(interpretedFunctionP)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool core__interpreted_function_p(T_sp arg) {
-  if ( gc::IsA<ClosureWithSlots_sp>(arg)){
-    ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(arg);
-    return closure->closureType == ClosureWithSlots_O::interpretedClosure;
+  if ( gc::IsA<Closure_sp>(arg)){
+    Closure_sp closure = gc::As_unsafe<Closure_sp>(arg);
+    return closure->closureType == Closure_O::interpretedClosure;
   }
   return false;
 };

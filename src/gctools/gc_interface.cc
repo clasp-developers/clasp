@@ -786,10 +786,10 @@ void dumpBoehmLayoutTables(FILE* fout) {
   Init_templated_kind(core::BuiltinClosure_O);
   Init__fixed_field( core::BuiltinClosure_O, 0,SMART_PTR_OFFSET,_lambdaListHandler);
   
-  Init_class_kind(core::ClosureWithSlots_O);
-  Init__variable_array0(core::ClosureWithSlots_O,_Slots._Data);
-  Init__variable_capacity(core::ClosureWithSlots_O,value_type,_Slots._MaybeSignedLength,_Slots._MaybeSignedLength);
-  Init__variable_field(core::ClosureWithSlots_O,SMART_PTR_OFFSET,0,"only",0);
+  Init_class_kind(core::Closure_O);
+  Init__variable_array0(core::Closure_O,_Slots._Data);
+  Init__variable_capacity(core::Closure_O,value_type,_Slots._MaybeSignedLength,_Slots._MaybeSignedLength);
+  Init__variable_field(core::Closure_O,SMART_PTR_OFFSET,0,"only",0);
 
   Init_templated_kind( core::WrappedPointer_O );
   Init__fixed_field( core::WrappedPointer_O, 0, SMART_PTR_OFFSET, Class_ );

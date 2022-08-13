@@ -4578,11 +4578,11 @@ CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp d
   //    So use the code below
   llvm::ExitOnError ExitOnErr;
   ExitOnErr(jit->_Jit->runConstructors());
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid;
+  gctools::smart_ptr<core::Closure_O> functoid;
   if (core::startup_functions_are_waiting()) {
     core::T_O* replPtrRaw = core::startup_functions_invoke(initialData.raw_());
     core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
-    functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
+    functoid = core::Closure_O::make_bclasp_closure( core::_sym_repl,
                                                               lisp_funcPtr,
                                                               kw::_sym_function,
                                                               nil<core::T_O>(),
