@@ -15,7 +15,7 @@
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
 
-#if 0
+#if 1
 # define DBG_printf printf
 #else
 # define DBG_printf(...)
@@ -403,27 +403,27 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_jump_8: {
       int32_t rel = read_label(pc, 1);
       DBG_printf("jump %" PRId32 "\n", rel);
-      pc += rel;
+      pc += rel - 1;
       break;
     }
     case vm_jump_16: {
       int32_t rel = read_label(pc, 2);
       DBG_printf("jump %" PRId32 "\n", rel);
       // jumps are relative to the first byte of the label, not the last.
-      pc += rel - 1;
+      pc += rel - 2;
       break;
     }
     case vm_jump_24: {
       int32_t rel = read_label(pc, 3);
       DBG_printf("jump %" PRId32 "\n", rel);
-      pc += rel - 2;
+      pc += rel - 3;
       break;
     }
     case vm_jump_if_8: {
       int32_t rel = read_label(pc, 1);
       DBG_printf("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
-      if (tval.notnilp()) pc += rel;
+      if (tval.notnilp()) pc += rel - 1;
       else pc++;
       break;
     }
@@ -431,7 +431,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       int32_t rel = read_label(pc, 2);
       DBG_printf("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
-      if (tval.notnilp()) pc += rel - 1;
+      if (tval.notnilp()) pc += rel - 2;
       else pc++;
       break;
     }
@@ -439,7 +439,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       int32_t rel = read_label(pc, 3);
       DBG_printf("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
-      if (tval.notnilp()) pc += rel -2;
+      if (tval.notnilp()) pc += rel - 3;
       else pc++;
       break;
     }
@@ -458,7 +458,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       DBG_printf("jump-if-supplied %" PRIu8 " %" PRId32 "\n", slot, rel);
       T_sp tval((gctools::Tagged)(*(vm.reg(slot))));
       if (tval.unboundp()) pc++;
-      else pc += rel - 2;
+      else pc += rel - 3;
       break;
     }
     case vm_check_arg_count_LE_: {
