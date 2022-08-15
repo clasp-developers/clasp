@@ -144,6 +144,25 @@ static inline int32_t read_label(unsigned char*& pc, size_t nbytes) {
   return static_cast<int32_t>(result);
 }
 
+// Set up the lisp_multipleValues() based on the stack.
+// If the stack is empty, leave the return values alone.
+// Otherwise, put all the values of the current frame in.
+static gctools::return_type bytecode_return(VirtualMachine& vm,
+                                            size_t nlocals) {
+  size_t numValues = vm.npushed(nlocals);
+  DBG_printf("  numValues = %zu\n", numValues);
+  if (numValues == 0) {
+    core::MultipleValues &mv = core::lisp_multipleValues();
+    size_t nvalues = mv.getSize();
+    return gctools::return_type(mv.valueGet(0, nvalues).raw_(), nvalues);
+  } else {
+    vm.copyto(numValues - 1, &my_thread->_MultipleValues._Values[1]);
+    vm.drop(numValues - 1);
+    T_O* primary = vm.pop();
+    return gctools::return_type(primary, numValues);
+  }
+}
+
 static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
                                         SimpleVector_sp literals,
                                         size_t nlocals, Closure_O* closure,
@@ -301,19 +320,9 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_return: {
       DBG_printf("return\n");
       size_t numValues = vm.npushed(nlocals);
-      DBG_printf("  numValues = %zu\n", numValues);
-      if (numValues == 0) { // Return mv register as-is.
-        vm.pop_frame(nlocals);
-        core::MultipleValues &mv = core::lisp_multipleValues();
-        size_t nvalues = mv.getSize();
-        return gctools::return_type(mv.valueGet(0, nvalues).raw_(), nvalues);
-      } else {
-        vm.copyto(numValues - 1, &my_thread->_MultipleValues._Values[1]);
-        vm.drop(numValues - 1);
-        T_O* primary = vm.pop();
-        vm.pop_frame(nlocals);
-        return gctools::return_type(primary, numValues);
-      }
+      gctools::return_type res = bytecode_return(vm, nlocals);
+      vm.pop_frame(nlocals);
+      return res;
     }
     case vm_bind_required_args: {
       uint8_t nargs = read_uint8(pc);
@@ -567,6 +576,48 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       }
       pc++;
       break;
+    }
+    case vm_entry: {
+      DBG_printf("entry\n");
+      VirtualMachineStackState vmss = vm.save();
+      call_with_tagbody([&](TagbodyDynEnv_sp tde, size_t index) {
+        if (index == 0) // first iteration
+          vm.push(tde.raw_());
+        bytecode_vm(++pc, vm, literals, nlocals, closure, lcc_nargs, lcc_args);
+      });
+      vm.load(vmss);
+      pc++;
+      break;
+    }
+    case vm_exit_8: {
+      int32_t rel = read_label(pc, 1);
+      DBG_printf("exit %" PRId32 "\n", rel);
+      pc += rel - 1;
+      T_sp ttde((gctools::Tagged)(vm.pop()));
+      TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
+      sjlj_unwind(tde, 1);
+    }
+    case vm_exit_16: {
+      int32_t rel = read_label(pc, 2);
+      DBG_printf("exit %" PRId32 "\n", rel);
+      pc += rel - 2;
+      T_sp ttde((gctools::Tagged)(vm.pop()));
+      TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
+      sjlj_unwind(tde, 1);
+    }
+    case vm_exit_24: {
+      int32_t rel = read_label(pc, 3);
+      DBG_printf("exit %" PRId32 "\n", rel);
+      pc += rel - 3;
+      T_sp ttde((gctools::Tagged)(vm.pop()));
+      TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
+      sjlj_unwind(tde, 1);
+    }
+    case vm_entry_close: {
+      DBG_printf("entry-close\n");
+      // This sham return value just gets us out of the bytecode_vm call in
+      // vm_entry, above.
+      return gctools::return_type(nil<T_O>().raw_(), 0);
     }
     case vm_special_bind: {
       uint8_t c = read_uint8(pc);

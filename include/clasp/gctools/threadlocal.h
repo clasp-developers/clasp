@@ -58,6 +58,14 @@ typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 };
 namespace core {
 
+// Used to save a bit of the state for use in nonlocal exits.
+struct VirtualMachineStackState {
+  core::T_O**    _framePointer;
+  core::T_O**    _stackPointer;
+  VirtualMachineStackState(core::T_O** fp, core::T_O** sp)
+    : _framePointer(fp), _stackPointer(sp) {};
+};
+
 #define STACK_GROWS_UP 1
 struct VirtualMachine {
   static constexpr size_t MaxStackWords = 16384; // 16K words for now.
@@ -123,6 +131,14 @@ struct VirtualMachine {
   inline void pop_frame(size_t nlocals) {
     this->drop(nlocals);
     this->_framePointer = (core::T_O**)(this->pop());
+  }
+
+  inline VirtualMachineStackState save() {
+    return VirtualMachineStackState(this->_framePointer, this->_stackPointer);
+  }
+  inline void load(VirtualMachineStackState vmss) {
+    this->_framePointer = vmss._framePointer;
+    this->_stackPointer = vmss._stackPointer;
   }
 
   // Copy N elements from SOURCE into the current frame's register file
