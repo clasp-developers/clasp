@@ -12,6 +12,7 @@
 #include <clasp/core/array.h>
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/primitives.h> // cl__fdefinition
+#include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
 
 #if 0
@@ -143,20 +144,11 @@ static inline int32_t read_label(unsigned char*& pc, size_t nbytes) {
   return static_cast<int32_t>(result);
 }
 
-gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
-{
-  Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-  // Do we need the lookup entryPoint? - if so - maybe we should pass it to bytecode_call
-  // Meh, it's just a lookup and we are going to read closed over slots
-  // which should be in the same cache line.
-  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
-  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
-  size_t nlocals = entryPoint->localsFrameSize();
-  BytecodeModule_sp module = entryPoint->code();
-  SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
-
-  VirtualMachine& vm = my_thread->_VM;
-  vm.push_frame(nlocals);
+static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
+                                        SimpleVector_sp literals,
+                                        size_t nlocals, Closure_O* closure,
+                                        size_t lcc_nargs,
+                                        core::T_O** lcc_args) {
   while (1) {
     switch (*pc) {
     case vm_ref: {
@@ -401,7 +393,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
         }
       }
       if (unknown_key_p && !aokp & !ll_aokp) {
-        T_sp tclosure((gctools::Tagged)lcc_closure);
+        T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
         T_sp tunknown((gctools::Tagged)unknown_key);
         throwUnrecognizedKeywordArgumentError(tclosure, tunknown);
       }
@@ -473,7 +465,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       uint8_t max_nargs = read_uint8(pc);
       DBG_printf("check-arg-count<= %" PRIu8 "\n", max_nargs);
       if (lcc_nargs > max_nargs) {
-        T_sp tclosure((gctools::Tagged)lcc_closure);
+        T_sp tclosure((gctools::Tagged)(gctools::tag_general(closure)));
         throwTooManyArgumentsError(tclosure, lcc_nargs, max_nargs);
       }
       pc++;
@@ -483,7 +475,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       uint8_t min_nargs = read_uint8(pc);
       DBG_printf("check-arg-count>= %" PRIu8 "\n", min_nargs);
       if (lcc_nargs < min_nargs) {
-        T_sp tclosure((gctools::Tagged)lcc_closure);
+        T_sp tclosure((gctools::Tagged)(gctools::tag_general(closure)));
         throwTooFewArgumentsError(tclosure, lcc_nargs, min_nargs);
       }
       pc++;
@@ -493,7 +485,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       uint8_t req_nargs = read_uint8(pc);
       DBG_printf("check-arg-count= %" PRIu8 "\n", req_nargs);
       if (lcc_nargs != req_nargs) {
-        T_sp tclosure((gctools::Tagged)lcc_closure);
+        T_sp tclosure((gctools::Tagged)(gctools::tag_general(closure)));
         wrongNumberOfArguments(tclosure, lcc_nargs, req_nargs);
       }
       pc++;
@@ -576,6 +568,41 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       pc++;
       break;
     }
+    case vm_special_bind: {
+      uint8_t c = read_uint8(pc);
+      DBG_printf("special-bind %" PRIu8 "\n", c);
+      T_sp value((gctools::Tagged)(vm.pop()));
+      call_with_variable_bound(literals->rowMajorAref(c), value,
+                               [&]() { return bytecode_vm(++pc, vm, literals,
+                                                          nlocals, closure,
+                                                          lcc_nargs, lcc_args);
+                               });
+      pc++;
+      break;
+    }
+    case vm_symbol_value: {
+      uint8_t c = read_uint8(pc);
+      DBG_printf("symbol-value %" PRIu8 "\n", c);
+      Symbol_sp sym = gc::As<Symbol_sp>(literals->rowMajorAref(c));
+      vm.push(sym->symbolValue().raw_());
+      pc++;
+      break;
+    }
+    case vm_symbol_value_set: {
+      uint8_t c = read_uint8(pc);
+      DBG_printf("symbol-value-set %" PRIu8 "\n", c);
+      Symbol_sp sym = gc::As<Symbol_sp>(literals->rowMajorAref(c));
+      T_sp value((gctools::Tagged)(vm.pop()));
+      sym->setf_symbolValue(value);
+      pc++;
+      break;
+    }
+    case vm_unbind: {
+      DBG_printf("unbind\n");
+      // This return value is not actually used - we're just returning from
+      // a bytecode_vm recursively invoked by vm_special_bind above.
+      return gctools::return_type(nil<T_O>().raw_(), 0);
+    }
     case vm_fdefinition: {
       uint8_t c = read_uint8(pc);
       DBG_printf("fdefinition %" PRIu8 "\n", c);
@@ -603,6 +630,18 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   }
 }
 
+gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
+{
+  Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
+  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
+  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
+  size_t nlocals = entryPoint->localsFrameSize();
+  BytecodeModule_sp module = entryPoint->code();
+  SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
 
-};
+  VirtualMachine& vm = my_thread->_VM;
+  vm.push_frame(nlocals);
+  return bytecode_vm(pc, vm, literals, nlocals, closure, lcc_nargs, lcc_args);
+}
 
+}; // namespace core
