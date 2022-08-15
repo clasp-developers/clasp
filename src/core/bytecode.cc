@@ -15,7 +15,7 @@
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
 
-#if 1
+#if 0
 # define DBG_printf printf
 #else
 # define DBG_printf(...)
