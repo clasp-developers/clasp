@@ -321,7 +321,6 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       DBG_printf("return\n");
       size_t numValues = vm.npushed(nlocals);
       gctools::return_type res = bytecode_return(vm, nlocals);
-      vm.pop_frame(nlocals);
       return res;
     }
     case vm_bind_required_args: {
@@ -681,6 +680,17 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
   }
 }
 
+static struct VMFramePusher {
+  VirtualMachine& vm;
+  size_t nlocals;
+  VMFramePusher(VirtualMachine& nvm, size_t nl) : vm(nvm), nlocals(nl) {
+    vm.push_frame(nlocals);
+  }
+  ~VMFramePusher() {
+    vm.pop_frame(nlocals);
+  }
+};
+
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
@@ -691,7 +701,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
 
   VirtualMachine& vm = my_thread->_VM;
-  vm.push_frame(nlocals);
+  VMFramePusher vmfp(vm, nlocals);
   return bytecode_vm(pc, vm, literals, nlocals, closure, lcc_nargs, lcc_args);
 }
 
