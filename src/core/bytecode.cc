@@ -451,9 +451,18 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
       else pc++;
       break;
     }
-    case vm_jump_if_supplied: {
+    case vm_jump_if_supplied_8: {
       uint8_t slot = read_uint8(pc);
-      int32_t rel = read_label(pc, 3);
+      int32_t rel = read_label(pc, 1);
+      DBG_printf("jump-if-supplied %" PRIu8 " %" PRId32 "\n", slot, rel);
+      T_sp tval((gctools::Tagged)(*(vm.reg(slot))));
+      if (tval.unboundp()) pc++;
+      else pc += rel - 2;
+      break;
+    }
+    case vm_jump_if_supplied_16: {
+      uint8_t slot = read_uint8(pc);
+      int32_t rel = read_label(pc, 2);
       DBG_printf("jump-if-supplied %" PRIu8 " %" PRId32 "\n", slot, rel);
       T_sp tval((gctools::Tagged)(*(vm.reg(slot))));
       if (tval.unboundp()) pc++;
