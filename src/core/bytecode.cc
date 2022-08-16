@@ -680,7 +680,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
   }
 }
 
-static struct VMFramePusher {
+struct VMFramePusher {
   VirtualMachine& vm;
   size_t nlocals;
   VMFramePusher(VirtualMachine& nvm, size_t nl) : vm(nvm), nlocals(nl) {
