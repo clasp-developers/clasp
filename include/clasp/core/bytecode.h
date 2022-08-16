@@ -111,17 +111,17 @@ FORWARD(BytecodeCmpSymbolMacroVarInfo);
 class BytecodeCmpSymbolMacroVarInfo_O : public BytecodeCmpVarInfo_O {
   LISP_CLASS(core, CorePkg, BytecodeCmpSymbolMacroVarInfo_O, "BytecodeCmpSymbolMacroVarInfo", BytecodeCmpVarInfo_O);
 public:
-  T_sp _expansion;
+  Function_sp _expander;
 public:
-  BytecodeCmpSymbolMacroVarInfo_O(T_sp n_expansion)
-    : BytecodeCmpVarInfo_O(), _expansion(n_expansion) {};
+  BytecodeCmpSymbolMacroVarInfo_O(T_sp n_expander)
+    : BytecodeCmpVarInfo_O(), _expander(n_expander) {};
   CL_LISPIFY_NAME(BytecodeCmpSymbolMacroVarInfo/make)
   CL_DEF_CLASS_METHOD
-  static BytecodeCmpSymbolMacroVarInfo_sp make(T_sp expansion) {
-    BytecodeCmpSymbolMacroVarInfo_sp info = gctools::GC<BytecodeCmpSymbolMacroVarInfo_O>::allocate<gctools::RuntimeStage>(expansion);
+  static BytecodeCmpSymbolMacroVarInfo_sp make(T_sp expander) {
+    BytecodeCmpSymbolMacroVarInfo_sp info = gctools::GC<BytecodeCmpSymbolMacroVarInfo_O>::allocate<gctools::RuntimeStage>(expander);
     return info;
   }
-  CL_DEFMETHOD T_sp expansion() const { return this->_expansion; }
+  CL_DEFMETHOD T_sp expander() const { return this->_expander; }
 };
 
 FORWARD(BytecodeCmpConstantVarInfo);
@@ -236,6 +236,15 @@ public:
   CL_DEFMETHOD T_sp blocks() const { return this->_blocks; }
   CL_DEFMETHOD T_sp funs() const { return this->_funs; }
   CL_DEFMETHOD Integer_sp frameEnd() const { return this->frame_end; }
+public:
+  T_sp variableInfo(T_sp varname);
+  T_sp lookupSymbolMacro(T_sp sname);
+  T_sp functionInfo(T_sp fname);
+  T_sp lookupMacro(T_sp mname);
+  /*
+  T_sp blockInfo(T_sp bname);
+  T_sp tagInfo(T_sp tname);
+*/
 };
 
 }; // namespace core
