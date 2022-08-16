@@ -1,6 +1,9 @@
 // ============================================================
 // Arrays specialized for byte64_t
 //
+#ifndef CORE_ARRAY_INT64_H
+#define CORE_ARRAY_INT64_H
+
 namespace core {
 FORWARD(SimpleVector_byte64_t);
 FORWARD(MDArray_byte64_t);
@@ -219,3 +222,5 @@ namespace core {
     }
   };
 };
+
+#endif

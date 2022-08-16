@@ -1,6 +1,8 @@
 // ============================================================
 // Arrays holding four-bit unsigned integers
 //
+#ifndef CORE_ARRAY_INT4_H
+#define CORE_ARRAY_INT4_H
 
 namespace core {
   FORWARD(SimpleVector_byte4_t);
@@ -179,3 +181,5 @@ namespace core {
     }
   };
 };
+
+#endif

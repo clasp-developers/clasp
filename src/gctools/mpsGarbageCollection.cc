@@ -192,7 +192,7 @@ extern mps_addr_t weak_obj_skip(mps_addr_t client);
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_EXTERN
-#include PREGCSTARTUP_INC_H
+#include PRE_GC_STARTUP_INC_H
 #undef ALL_PREGCSTARTUPS_EXTERN
 #endif
 
@@ -1112,7 +1112,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS
-#include PREGCSTARTUP_INC_H
+#include PRE_GC_STARTUP_INC_H
 #undef ALL_PREGCSTARTUPS_CALLS
 #endif // ifndef SCRAPING
   

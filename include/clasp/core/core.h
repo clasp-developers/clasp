@@ -40,13 +40,6 @@ THE SOFTWARE.
 //#define DEBUG_ASSERT
 //#endif
 
-// To debug memory usage turn this on and then you can mark
-// objects as they are allocated with an integer using gctools::MARKER
-#ifndef APPLICATION_CONFIG
-//#error "You must define the APPLICATION_CONFIG as something like <clasp/main/application.config>"
-#define APPLICATION_CONFIG <clasp/main/application.config>
-#endif
-
 // Load the waf config file
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmacro-redefined"
@@ -60,8 +53,6 @@ THE SOFTWARE.
 #undef USE_MMTK
 #define USE_MPS
 #endif
-/*! Configure the application Clasp or Cando currently */
-#include APPLICATION_CONFIG
 
 /*! Old way of doing #= and ## used alists which are slow
   Switch to hash-tables to speed things up */

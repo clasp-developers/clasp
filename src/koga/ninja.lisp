@@ -53,7 +53,7 @@
                     :restat 1
                     :description "Scraping $in")
   (ninja:write-rule output-stream :generate-headers
-                    :command "$lisp --script generate-headers.lisp $precise $variant-path $in"
+                    :command "$lisp --script ${variant-path}generate-headers.lisp $precise $in"
                     :restat 1
                     :description "Creating headers from sif files")
   (ninja:write-rule output-stream :static-analyzer

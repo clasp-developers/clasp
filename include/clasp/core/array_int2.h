@@ -1,6 +1,8 @@
 // ============================================================
 // Arrays holding unsigned two-bit integers
 //
+#ifndef CORE_ARRAY_INT2_H
+#define CORE_ARRAY_INT2_H
 
 namespace core {
   FORWARD(SimpleVector_byte2_t);
@@ -181,3 +183,5 @@ namespace core {
     }
   };
 };
+
+#endif

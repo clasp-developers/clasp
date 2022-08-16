@@ -1,6 +1,8 @@
 // ============================================================
 // General arrays (hold T_sp)
 //
+#ifndef CORE_ARRAY_T_H
+#define CORE_ARRAY_T_H
 
 namespace core { class SimpleVector_O; };
 template <>
@@ -123,3 +125,5 @@ public: // make vector
   }
  };
 }; // namespace core
+
+#endif

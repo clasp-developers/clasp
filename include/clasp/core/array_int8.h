@@ -1,6 +1,9 @@
 // ============================================================
 // Arrays specialized for byte8_t
 //
+#ifndef CORE_ARRAY_INT8_H
+#define CORE_ARRAY_INT8_H
+
 namespace core {
 FORWARD(SimpleVector_byte8_t);
 FORWARD(MDArray_byte8_t);
@@ -219,3 +222,5 @@ namespace core {
     }
   };
 };
+
+#endif

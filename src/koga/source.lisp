@@ -90,15 +90,12 @@
 
 (set-dispatch-macro-character #\# #\~ #'read-code-path)
 
-(defun read-variant-path (stream char n)
+(defun read-variant-generated-path (stream char n)
   (declare (ignore char n))
-  (let ((path (uiop:parse-unix-namestring (read stream :recursive-p t))))
-    (make-source (if *script-path*
-                     (merge-pathnames path *script-path*)
-                     path)
-                 :variant)))
+  (make-source (uiop:parse-unix-namestring (read stream :recursive-p t))
+               :variant-generated))
 
-(set-dispatch-macro-character #\# #\@ #'read-variant-path)
+(set-dispatch-macro-character #\# #\@ #'read-variant-generated-path)
 
 (defun root-to-logical-host (root)
   (ecase root

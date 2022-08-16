@@ -46,7 +46,7 @@ Layout_code* get_stamp_layout_codes() {
 #define NIL uintptr_t 
       
 #define GC_OBJ_SCAN_HELPERS
-#include CLASP_GC_FILENAME
+#include CLASP_GC_CC
 #undef GC_OBJ_SCAN_HELPERS
 #undef NIL
 #endif // #ifndef RUNNING_PRECISEPREP
@@ -77,7 +77,7 @@ Layout_code* get_stamp_layout_codes() {
 extern "C" {
 
 #ifndef SCRAPING
-#include C_WRAPPERS
+#include C_WRAPPERS_H
 #endif
 };
 
@@ -168,7 +168,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 #if defined(USE_PRECISE_GC)
   #ifndef RUNNING_PRECISEPREP
     #define GC_OBJ_DEALLOCATOR_TABLE
-    #include CLASP_GC_FILENAME
+    #include CLASP_GC_CC
     #undef GC_OBJ_DEALLOCATOR_TABLE
   #endif
 #endif
@@ -182,7 +182,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
   printf("%s:%d Calculated jump_table_index %lu\n", __FILE__, __LINE__, jump_table_index);
   goto *(OBJ_DEALLOCATOR_table[jump_table_index]);
     #define GC_OBJ_DEALLOCATOR
-    #include CLASP_GC_FILENAME
+    #include CLASP_GC_CC
     #undef GC_OBJ_DEALLOCATOR
   #endif // USE_MPS
 #endif
@@ -374,7 +374,7 @@ void obj_finalize(mps_addr_t client) {
   size_t block_size = (char*)next_client-(char*)client;
   #ifndef RUNNING_PRECISEPREP
     #define GC_OBJ_FINALIZE_TABLE
-    #include CLASP_GC_FILENAME
+    #include CLASP_GC_CC
     #undef GC_OBJ_FINALIZE_TABLE
   #endif // ifndef RUNNING_PRECISEPREP
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(GeneralPtrToHeaderPtr(client)));
@@ -384,7 +384,7 @@ void obj_finalize(mps_addr_t client) {
   size_t table_index = (size_t)stamp;
   goto *(OBJ_FINALIZE_table[table_index]);
     #define GC_OBJ_FINALIZE
-    #include CLASP_GC_FILENAME
+    #include CLASP_GC_CC
     #undef GC_OBJ_FINALIZE
   #endif // ifndef RUNNING_PRECISEPREP
  finalize_done:
@@ -404,7 +404,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   MPS_SCAN_BEGIN(ss) {
 #ifndef RUNNING_PRECISEPREP
 #define GC_GLOBALS
-#include CLASP_GC_FILENAME
+#include CLASP_GC_CC
 #undef GC_GLOBALS
 #endif
     for ( int i=0; i<global_symbol_count; ++i ) {
@@ -424,7 +424,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   #ifndef RUNNING_PRECISEPREP
     #ifndef SCRAPING
       #define HOUSEKEEPING_SCANNERS
-      #include CLASP_GC_FILENAME
+      #include CLASP_GC_CC
       #undef HOUSEKEEPING_SCANNERS
     #endif // ifdef USE_MPS
   #endif // ifndef RUNNING_PRECISEPREP
@@ -586,7 +586,7 @@ void define_builtin_cxx_classes() {
   #if !defined(USE_PRECISE_GC)
    #include INIT_CLASSES_INC_H
   #else
-   #include CLASP_GC_FILENAME
+   #include CLASP_GC_CC
   #endif
  #undef GC_ENUM_NAMES
 #endif
@@ -661,11 +661,11 @@ void initialize_typeq_map() {
 #ifndef SCRAPING
  #if !defined(USE_PRECISE_GC)
   #define GC_TYPEQ
-   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_CC
   #undef GC_TYPEQ
  #else
   #define GC_TYPEQ
-   #include CLASP_GC_FILENAME
+   #include CLASP_GC_CC
   #undef GC_TYPEQ
  #endif
 #endif

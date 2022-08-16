@@ -17,17 +17,17 @@
 (defparameter +scraper-headers+
   '(:init_functions_inc_h :init_classes_inc_h :source_info_inc_h
     :symbols_scraped_inc_h :enum_inc_h :initializers_inc_h :expose_inc_h
-    :terminators_inc_h :pregcstartup_inc_h :c_wrappers)
+    :terminators_inc_h :pre_gc_startup_inc_h :c_wrappers_h)
   "The C macro names of the scraper headers used during a non-precise build.")
 
 (defparameter +scraper-precise-headers+
   '(:init_functions_inc_h :init_classes_inc_h :source_info_inc_h
     :symbols_scraped_inc_h :enum_inc_h :initializers_inc_h :expose_inc_h
-    :terminators_inc_h :pregcstartup_inc_h :c_wrappers :clasp_gc_filename)
+    :terminators_inc_h :pre_gc_startup_inc_h :c_wrappers_h :clasp_gc_cc)
   "The C macro names of the scraper headers used during a precise build.")
 
 (defparameter +scraper-lisp-sources+
-  '(:lisp_wrappers)
+  '(:cl_wrappers_lisp)
   "The C macro names of the scraper lisp sources.")
 
 (defmethod configure-unit (configuration (unit (eql :llvm)))
@@ -175,9 +175,8 @@
     (when xcode-sdk
       (append-cflags configuration (format nil "-isysroot ~a" xcode-sdk)))))
 
-(defmethod configure-unit (configuration (unit (eql :base))
-                           &aux (app-config (cscrape:read-application-config #P"include/clasp/main/application.config")))
-  "Add base cflags, ldflags and parse application.config to determine the scraper outputs."
+(defmethod configure-unit (configuration (unit (eql :base)))
+  "Add base cflags and ldflags."
   (message :emph "Configuring base")
   (append-cflags configuration
                  (format nil "-Wno-macro-redefined -Wno-deprecated-declarations ~
@@ -186,7 +185,8 @@
 -Wno-error=c++11-narrowing -Wno-c++11-narrowing -Wno-deprecated-enum-enum-conversion ~
 -Wno-deprecated-anon-enum-enum-conversion"))
   (loop for variant in (variants configuration)
-        do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant))))
+        do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant)))
+           (append-cflags variant (format nil "-I~a/generated" (variant-bitcode-name variant))))
   (append-cflags configuration "-O3 -g -fPIC" :type :cxxflags :debug nil)
   (append-cflags configuration "-O3 -g -fPIC" :type :cflags :debug nil)
   (append-cflags configuration "-O0 -g" :type :cxxflags :debug t)
@@ -211,19 +211,7 @@
     (append-ldflags configuration "-fsanitize=memory -fsanitize-memory-track-origins=1"))
   (when (thread-sanitizer configuration)
     (append-cflags configuration "-fsanitize=thread" :type :cxxflags)
-    (append-ldflags configuration "-fsanitize=thread"))
-  (setf (scraper-headers configuration)
-        (mapcar (lambda (key)
-                  (make-source (gethash key app-config) :variant))
-                +scraper-headers+)
-        (scraper-precise-headers configuration)
-        (mapcar (lambda (key)
-                  (make-source (gethash key app-config) :variant))
-                +scraper-precise-headers+)
-        (scraper-lisp-sources configuration)
-        (mapcar (lambda (key)
-                  (make-source (gethash key app-config) :variant))
-                +scraper-lisp-sources+)))
+    (append-ldflags configuration "-fsanitize=thread")))
 
 (defmethod configure-unit (configuration (unit (eql :default-target)))
   "Configure default target."
