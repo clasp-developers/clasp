@@ -265,9 +265,9 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     }
     case vm_cell_set: {
       DBG_printf("cell-set\n");
+      T_sp cons((gctools::Tagged)vm.pop());
       T_O* val = vm.pop();
       T_sp tval((gctools::Tagged)val);
-      T_sp cons((gctools::Tagged)vm.pop());
       CONS_CAR(cons) = tval;
       pc++;
       break;
