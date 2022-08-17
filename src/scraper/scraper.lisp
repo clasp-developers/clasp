@@ -78,7 +78,7 @@
   (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
   (assert (every 'uiop:directory-pathname-p (list clasp-code-path clasp-sys-path)))
   (assert sif-files)
-  (let ((*clasp-code* (truename clasp-code-path))
+  (let ((*clasp-code* clasp-code-path)
         (*clasp-sys* clasp-sys-path))
     (process-all-sif-files config clasp-code-path sif-files :use-precise use-precise)))
 
