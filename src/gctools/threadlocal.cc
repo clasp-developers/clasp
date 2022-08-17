@@ -136,17 +136,21 @@ namespace core {
 
 
 VirtualMachine::VirtualMachine() {
+#if 0
   size_t pageSize = getpagesize();
   void* mem;
-  int result = posix_memalign( &mem, pageSize, VirtualMachine::MaxStackWords*sizeof(T_O**) );
+  size_t stackSpace = VirtualMachine::MaxStackWords*sizeof(T_O*);
+  printf("%s:%d:%s stackSpace = %lu bytes\n", __FILE__, __LINE__, __FUNCTION__, stackSpace );
+  int result = posix_memalign( &mem, pageSize, stackSpace );
   if (result !=0) {
     printf("%s:%d:%s posix_memalign failed with error %d\n", __FILE__, __LINE__, __FUNCTION__, result );
     abort();
   }
   this->_stackBottom = (T_O**)mem;
   this->_stackTop = this->_stackBottom+VirtualMachine::MaxStackWords-1;
-  this->_stackBytes = VirtualMachine::MaxStackWords*sizeof(T_O*);
-  memset(this->_stackBottom,0,VirtualMachine::MaxStackWords*sizeof(T_O*));
+  printf("%s:%d:%s stackTop %p - stackBottom %p = %lu\n", __FILE__, __LINE__, __FUNCTION__, this->_stackTop, this->_stackBottom, (uintptr_t)this->_stackTop - (uintptr_t)this->_stackBottom );
+  this->_stackBytes = stackSpace;
+  memset(this->_stackBottom,0,stackSpace);
   int mprotectResult = mprotect(this->_stackTop-pageSize,pageSize,PROT_READ);
   gctools::clasp_gc_registerRoots((this->_stackBottom),(this->_stackBytes-pageSize)/sizeof(T_O*));
   this->_framePointer = NULL;
@@ -154,13 +158,26 @@ VirtualMachine::VirtualMachine() {
   (*this->_stackPointer) = NULL;
   this->push((core::T_O*)this->_framePointer);
   this->_framePointer = this->_stackPointer;
+#else
+  size_t stackSpace = VirtualMachine::MaxStackWords*sizeof(T_O*);
+  this->_stackTop = this->_stackBottom+VirtualMachine::MaxStackWords-1;
+  this->_stackBytes = stackSpace;
+  memset(this->_stackBottom,0,stackSpace);
+  this->_framePointer = NULL;
+  this->_stackPointer = this->_stackBottom;
+  (*this->_stackPointer) = NULL;
+  this->push((core::T_O*)this->_framePointer);
+  this->_framePointer = this->_stackPointer;
+#endif
 }
 
 VirtualMachine::~VirtualMachine() {
+#if 0
   size_t pageSize = getpagesize();
   gctools::clasp_gc_deregisterRoots((this->_stackBottom),(this->_stackBytes-pageSize)/sizeof(T_O*));
   int mprotectResult = mprotect(this->_stackTop-pageSize,pageSize,PROT_READ|PROT_WRITE);
   free(this->_stackBottom);
+#endif
 }
 
 
