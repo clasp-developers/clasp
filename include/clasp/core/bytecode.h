@@ -173,7 +173,7 @@ public:
   static BytecodeCmpLocalFunInfo_sp make(T_sp value) {
     return gctools::GC<BytecodeCmpLocalFunInfo_O>::allocate<gctools::RuntimeStage>(value);
   }
-  CL_DEFMETHOD size_t funVar() const { return this->fun_var; }
+  CL_DEFMETHOD T_sp funVar() const { return this->fun_var; }
 };
 
 // We have separate global and local macro classes because it is sometimes
