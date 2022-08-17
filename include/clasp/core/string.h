@@ -1,4 +1,6 @@
 // Strings
+#ifndef CORE_STRING_H
+#define CORE_STRING_H
 
 namespace core {
   template <typename T1,typename T2>
@@ -479,3 +481,5 @@ inline int clasp_string_case(String_sp s) {
 }
 
 }; // namespace core
+
+#endif

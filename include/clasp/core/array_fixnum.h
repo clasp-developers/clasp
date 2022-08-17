@@ -1,6 +1,8 @@
 // ============================================================
 // Arrays specialized for fixnum
 //
+#ifndef CORE_ARRAY_FIXNUM_H
+#define CORE_ARRAY_FIXNUM_H
 
 namespace core {
   FORWARD(SimpleVector_fixnum);
@@ -106,3 +108,5 @@ namespace core {
     }
   };
 };
+
+#endif

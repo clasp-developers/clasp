@@ -21,21 +21,6 @@
          (data (string-trim " <>" (subseq trimmed data-start))))
     (setf (gethash (intern var :keyword) config) data)))
 
-(defun read-application-config (filename)
-  (let ((config (make-hash-table :test #'equal)))
-    (with-open-file (fin filename :direction :input :external-format :utf-8)
-      (loop for l = (read-line fin nil 'eof)
-         until (eq l 'eof)
-         for tl = (string-trim '(#\space #\tab) l)
-         do (cond
-              ((string= (subseq tl 0 7) "#define")
-               (fill-config config tl))
-              (t (error "Illegal application.config line: ~a" l)))))
-    config))
-
-
-
-
 (defun lispify-match (cur name match &optional (next-char-text :ignore))
   (when (<= (length match) (- (length name) cur))
     ;; There are no enough characters in name to match match

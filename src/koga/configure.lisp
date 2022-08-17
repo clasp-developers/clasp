@@ -596,7 +596,8 @@ is not compatible with snapshots.")
             :initform (alexandria:plist-hash-table (list :generate-sif
                                                          (list (make-source #P"generate-sif.lisp" :build))
                                                          :generate-headers
-                                                         (list (make-source #P"generate-headers.lisp" :build))
+                                                         (list (make-source #P"generate-headers.lisp" :variant)
+                                                               :scraper)
                                                          :update-unicode
                                                          (list (make-source #P"update-unicode.lisp" :build))
                                                          :run-aclasp
@@ -630,7 +631,8 @@ is not compatible with snapshots.")
                                                                :clasp :regression-tests :static-analyzer
                                                                :tags :install-extension-code)
                                                          :config-h
-                                                         (list (make-source #P"config.h" :variant))
+                                                         (list (make-source #P"config.h" :variant)
+                                                               :scraper)
                                                          :version-h
                                                          (list (make-source #P"version.h" :variant))
                                                          :cclasp-translations

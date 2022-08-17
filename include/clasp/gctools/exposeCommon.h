@@ -137,20 +137,8 @@ typedef bool _Bool;
 
 #include <clasp/asttooling/translators.h>
 
-#ifdef BUILD_EXTENSION
-#define GC_INTERFACE_INCLUDES
-#include <project_headers.h>
-#undef GC_INTERFACE_INCLUDES
-#endif
-
-//
-// TODO: Generate everything in project_headers.h through scraping
-//
-
-#ifdef BUILD_EXTENSION
-#define GC_INTERFACE_INCLUDES
-#include <cando/main/project_headers.h>
-#undef GC_INTERFACE_INCLUDES
+#ifndef SCRAPING
+#include HEADER_INCLUDES_INC_H
 #endif
 
 #define NAMESPACE_gctools

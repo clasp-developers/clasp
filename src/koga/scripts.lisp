@@ -37,14 +37,20 @@
   (print-asdf-stub output-stream t :clasp-scraper)
   (pprint '(apply #'uiop:symbol-call "CSCRAPE" "GENERATE-SIF" (uiop:command-line-arguments)) output-stream))
 
-(defmethod print-prologue (configuration (name (eql :generate-headers)) output-stream)
+(defmethod print-variant-target-sources
+    (configuration (name (eql :generate-headers)) output-stream
+     (target (eql :scraper)) sources
+     &key &allow-other-keys)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :clasp-scraper)
-  (with-standard-io-syntax (pprint `(destructuring-bind (cl-user::precise cl-user::variant-path &rest cl-user::args)
+  (with-standard-io-syntax
+    (pprint `(destructuring-bind (cl-user::precise &rest cl-user::args)
                (uiop:command-line-arguments)
              (apply #'uiop:symbol-call "CSCRAPE" "GENERATE-HEADERS"
                     (equal "1" cl-user::precise)
-                    cl-user::variant-path
+                    ',(loop for source in sources
+                            collect (intern (string-upcase (substitute #\_ #\- (substitute #\_ #\. (file-namestring (source-path source))))) 'keyword)
+                            collect (resolve-source source))
                     (make-pathname :directory '(:relative :up))
                     ,(if (reproducible-build configuration)
                          (root :install-share)

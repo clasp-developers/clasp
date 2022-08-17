@@ -16,7 +16,6 @@
    #:read-string-to-white-space
    #:next-tag-name
    #:read-string-to-tag
-   #:read-application-config
    #:gather-source-files
    #:generate-sif
    #:generate-headers

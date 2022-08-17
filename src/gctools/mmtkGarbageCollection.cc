@@ -41,7 +41,7 @@ THE SOFTWARE.
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_EXTERN
-#include PREGCSTARTUP_INC_H
+#include PRE_GC_STARTUP_INC_H
 #undef ALL_PREGCSTARTUPS_EXTERN
 #endif
 
@@ -73,7 +73,7 @@ int initializeMmtk(MainFunctionType startupFn, int argc, char *argv[], bool mpiE
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS
-#include PREGCSTARTUP_INC_H
+#include PRE_GC_STARTUP_INC_H
 #undef ALL_PREGCSTARTUPS_CALLS
 
 

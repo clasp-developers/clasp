@@ -423,7 +423,7 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_EXTERN
-#include PREGCSTARTUP_INC_H
+#include PRE_GC_STARTUP_INC_H
 #undef ALL_PREGCSTARTUPS_EXTERN
 #endif
 
@@ -456,7 +456,7 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
  
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS
-#include PREGCSTARTUP_INC_H
+#include PRE_GC_STARTUP_INC_H
 #undef ALL_PREGCSTARTUPS_CALLS
 #endif
 

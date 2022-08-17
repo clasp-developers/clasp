@@ -1,6 +1,8 @@
 // ============================================================
 // Arrays specialized for size_t
 //
+#ifndef CORE_ARRAY_SIZE_T_H
+#define CORE_ARRAY_SIZE_T_H
 
 namespace core {
   FORWARD(SimpleVector_size_t);
@@ -106,3 +108,5 @@ namespace core {
     }
   };
 };
+
+#endif

@@ -1,6 +1,9 @@
 // ============================================================
 // Arrays specialized for byte16_t
 //
+#ifndef CORE_ARRAY_INT16_H
+#define CORE_ARRAY_INT16_H
+
 namespace core {
 FORWARD(SimpleVector_byte16_t);
 FORWARD(MDArray_byte16_t);
@@ -219,3 +222,5 @@ namespace core {
     }
   };
 };
+
+#endif

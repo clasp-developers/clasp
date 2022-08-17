@@ -1,23 +1,23 @@
 (in-package :cscrape)
 
-(defun process-all-sif-files (clasp-home-path build-path sif-files &key use-precise)
+(defun process-all-sif-files (app-config clasp-home-path sif-files &key use-precise)
   (declare (optimize debug))
   (format t "process-all-sif-files: ~s~%" sif-files)
-  (let* ((tags (loop for sif-file in sif-files
-                     if (probe-file sif-file)
-                       nconc (progn
-                               (format t "Processing sif file: ~s~%" sif-file)
-                               (read-sif-file sif-file))
-                     else
-                       do (format t "There was no file: ~s~%" sif-file)))
-         (app-config-path (merge-pathnames #P"include/clasp/main/application.config" (pathname clasp-home-path))))
-    (format t "app-config-path    -> ~a~%" app-config-path)
-    (let ((app-config (read-application-config app-config-path)))
-      (format t "Interpreting tags~%")
-      (multiple-value-bind (packages-to-create functions setf-functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators forwards)
-          (interpret-tags tags)
-        (generate-code packages-to-create functions setf-functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators build-path app-config forwards :use-precise use-precise))
-      (format t "Done scraping code~%"))))
+  (format t "Interpreting tags~%")
+  (multiple-value-bind (packages-to-create functions setf-functions symbols classes
+                        gc-managed-types enums pregcstartups initializers exposes terminators
+                        forwards)
+      (interpret-tags (loop for sif-file in sif-files
+                            if (probe-file sif-file)
+                              do (format t "Processing sif file: ~s~%" sif-file) and
+                              nconc (read-sif-file sif-file)
+                             else
+                               do (format t "There was no file: ~s~%" sif-file)))
+    (generate-code packages-to-create functions setf-functions symbols classes gc-managed-types
+                   enums pregcstartups initializers exposes terminators app-config forwards
+                   :use-precise use-precise))
+  (format t "Done scraping code~%"))
+
 (export 'process-all-sif-files)
 
 (defun run-clang (command output-file-path)
@@ -72,27 +72,14 @@
     (ninja:with-timestamp-preserving-stream (stream out :external-format :utf-8)
       (write (process-all-recognition-elements buffer-stream) :escape t :stream stream))))
 
-(defun generate-headers-from-all-sifs (&optional use-precise)
-  (destructuring-bind
-        (build-path clasp-home-path &rest sif-files)
-      (uiop:command-line-arguments)
-    (let ((*default-pathname-defaults* (pathname build-path)))
-      (format t "clasp-home-path             -> ~a~%" clasp-home-path)
-      (format t "build-path                  -> ~a~%" build-path)
-      (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
-      (assert (every 'uiop:directory-pathname-p (list clasp-home-path build-path)))
-      (assert sif-files)
-      (process-all-sif-files clasp-home-path build-path sif-files :use-precise use-precise))))
-
-(defun generate-headers (use-precise build-path clasp-code-path clasp-sys-path &rest sif-files)
+(defun generate-headers (use-precise config clasp-code-path clasp-sys-path &rest sif-files)
   (format t "clasp-code-path             -> ~a~%" clasp-code-path)
   (format t "clasp-sys-path             -> ~a~%" clasp-sys-path)
-  (format t "build-path                  -> ~a~%" build-path)
   (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
-  (assert (every 'uiop:directory-pathname-p (list clasp-code-path clasp-sys-path build-path)))
+  (assert (every 'uiop:directory-pathname-p (list clasp-code-path clasp-sys-path)))
   (assert sif-files)
   (let ((*clasp-code* (truename clasp-code-path))
         (*clasp-sys* clasp-sys-path))
-    (process-all-sif-files clasp-code-path build-path sif-files :use-precise use-precise)))
+    (process-all-sif-files config clasp-code-path sif-files :use-precise use-precise)))
 
-(export '(generate-sif-files generate-headers-from-all-sifs))
+(export '(generate-sif-files generate-headers))
