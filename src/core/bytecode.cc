@@ -12,6 +12,8 @@
 #include <clasp/core/array.h>
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/primitives.h> // cl__fdefinition
+#include <clasp/core/evaluator.h> // af_interpreter_lookup_macro
+#include <clasp/core/sysprop.h> // core__get_sysprop
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
 
@@ -51,6 +53,51 @@ BytecodeModule_O::Bytecode_sp_Type BytecodeModule_O::bytecode() const {
 CL_DEFMETHOD
 void BytecodeModule_O::setf_bytecode(BytecodeModule_O::Bytecode_sp_Type o) {
   this->_Bytecode = o;
+}
+
+T_sp BytecodeCmpEnv_O::variableInfo(T_sp varname) {
+  T_sp vars = this->vars();
+  if (vars.nilp()) return vars;
+  else {
+    T_sp pair = gc::As<Cons_sp>(vars)->assoc(varname, nil<T_O>(),
+                                             cl::_sym_eq, nil<T_O>());
+    if (pair.nilp()) return pair;
+    else return oCdr(pair);
+  }
+}
+
+T_sp BytecodeCmpEnv_O::lookupSymbolMacro(T_sp sname) {
+  T_sp info = this->variableInfo(sname);
+  if (gc::IsA<BytecodeCmpSymbolMacroVarInfo_sp>(info))
+    return gc::As_unsafe<BytecodeCmpSymbolMacroVarInfo_sp>(info)->expander();
+  else if (info.notnilp()) { // global?
+    T_mv result = core__get_sysprop(sname, ext::_sym_symbolMacro);
+    if (gc::As<T_sp>(result.valueGet_(1)).notnilp()) {
+      return result;
+    } else return nil<T_O>();
+  } else return nil<T_O>();
+}
+
+T_sp BytecodeCmpEnv_O::functionInfo(T_sp funname) {
+  T_sp funs = this->funs();
+  if (funs.nilp()) return funs;
+  else {
+    T_sp pair = gc::As<Cons_sp>(funs)->assoc(funname, nil<T_O>(),
+                                             cl::_sym_equal, nil<T_O>());
+    if (pair.nilp()) return pair;
+    else return oCdr(pair);
+  }
+}
+
+T_sp BytecodeCmpEnv_O::lookupMacro(T_sp macroname) {
+  T_sp info = this->functionInfo(macroname);
+  if (gc::IsA<BytecodeCmpGlobalMacroInfo_sp>(info))
+    return gc::As_unsafe<BytecodeCmpGlobalMacroInfo_sp>(info)->expander();
+  else if (gc::IsA<BytecodeCmpLocalMacroInfo_sp>(info))
+    return gc::As_unsafe<BytecodeCmpLocalMacroInfo_sp>(info)->expander();
+  else if (info.nilp()) // could be global
+    return af_interpreter_lookup_macro(macroname, nil<T_O>());
+  else return nil<T_O>();
 }
 
 static void write_uint16(ComplexVector_byte8_t_sp buffer, unsigned int value ) {
@@ -384,9 +431,9 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     }
     case vm_cell_set: {
       DBG_VM("cell-set\n");
+      T_sp cons((gctools::Tagged)vm.pop());
       T_O* val = vm.pop();
       T_sp tval((gctools::Tagged)val);
-      T_sp cons((gctools::Tagged)vm.pop());
       CONS_CAR(cons) = tval;
       pc++;
       break;
@@ -440,7 +487,6 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       DBG_VM1("return\n");
       size_t numValues = vm.npushed(nlocals);
       gctools::return_type res = bytecode_return(vm, nlocals);
-      vm.pop_frame(nlocals);
       return res;
     }
     case vm_bind_required_args: {
@@ -801,6 +847,17 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
   }
 }
 
+struct VMFramePusher {
+  VirtualMachine& vm;
+  size_t nlocals;
+  VMFramePusher(VirtualMachine& nvm, size_t nl) : vm(nvm), nlocals(nl) {
+    vm.push_frame(nlocals);
+  }
+  ~VMFramePusher() {
+    vm.pop_frame(nlocals);
+  }
+};
+
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
@@ -811,7 +868,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
 
   VirtualMachine& vm = my_thread->_VM;
-  vm.push_frame(nlocals);
+  VMFramePusher vmfp(vm, nlocals);
   try {
     return bytecode_vm(pc, vm, literals, nlocals, closure, lcc_nargs, lcc_args);
   } catch (VM_error& err) {

@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/environment.h>
+#include <clasp/core/bytecode.h> // BytecodeCmpEnv
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/bignum.h>
@@ -714,6 +715,8 @@ CL_DEFUN bool core__operator_shadowed_p(T_sp name, T_sp env) {
       return true;
     // No local function, check for local macro instead.
     return Environment_O::clasp_findMacro(eenv, name, depth, index, value);
+  } else if (BytecodeCmpEnv_sp bce = env.asOrNull<BytecodeCmpEnv_O>()) {
+    return bce->functionInfo(name).notnilp();
   } else { // Cleavir, maybe
     SYMBOL_EXPORT_SC_(CorePkg, cleavir_operator_shadowed_p);
     T_sp lbool = eval::funcall(core::_sym_cleavir_operator_shadowed_p,
@@ -732,6 +735,8 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
     func = af_interpreter_lookup_macro(symbol, env);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     func = af_interpreter_lookup_macro(symbol, eenv);
+  } else if (BytecodeCmpEnv_sp bce = env.asOrNull<BytecodeCmpEnv_O>()) {
+    func = bce->lookupMacro(symbol);
 #if 0    
   } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>()) {
     clcenv::Info_sp info = clcenv::function_info(cenv,symbol);
