@@ -17,9 +17,10 @@
  "core::SourcePosInfo_O"
  "llvmo::BranchInst_O"
  "llvmo::AllocaInst_O"
+ "core::BytecodeCmpGlobalMacroInfo_O"
  "core::StandardClassCreator_O"
- "core::ComplexVector_float_O"
  "core::GlobalBytecodeEntryPoint_O"
+ "core::ComplexVector_float_O"
  "core::HashTableCustom_O"
  "core::ComplexVector_byte8_t_O"
  "core::OptionalArgument"
@@ -42,8 +43,10 @@
  "core::ShortFloat_O"
  "core::Number_O"
  "core::T_O"
+ "core::BytecodeCmpLocalFunInfo_O"
  "llvmo::DICompileUnit_O"
  "core::BindingDynEnv_O"
+ "core::BytecodeCmpLocalMacroInfo_O"
  "core::AbstractSimpleVector_O"
  "core::SimpleMDArray_byte16_t_O"
  "core::Pathname_O"
@@ -51,6 +54,7 @@
  "llvmo::FunctionPass_O"
  "core::SimpleVector_byte4_t_O"
  "llvmo::UndefValue_O"
+ "core::BytecodeCmpFunInfo_O"
  "llvmo::CallBase_O"
  "core::CompileTimeEnvironment_O"
  "core::Path_O"
@@ -85,6 +89,7 @@
  "core::LongFloat_O"
  "core::ComplexVector_int4_t_O"
  "llvmo::TargetLibraryInfoWrapperPass_O"
+ "core::BytecodeCmpGlobalFunInfo_O"
  "asttooling::QualType_O"
  "llvmo::LibraryFile_O"
  "llvmo::User_O"
@@ -177,6 +182,7 @@
  "core::BitVectorNs_O"
  "core::CoreExposer_O"
  "core::KeyValuePair"
+ "core::BytecodeCmpSymbolMacroVarInfo_O"
  "llvmo::NamedMDNode_O"
  "core::SimpleVector_byte16_t_O"
  "llvmo::ThreadSafeContext_O"
@@ -198,6 +204,7 @@
  "llvmo::ConstantStruct_O"
  "core::Exposer_O"
  "core::DirectoryIterator_O"
+ "core::BytecodeCmpConstantVarInfo_O"
  "core::MDArray_byte2_t_O"
  "llvmo::DISubroutineType_O"
  "core::LexicalEnvironment_O"
@@ -208,6 +215,7 @@
  "llvmo::ResumeInst_O"
  "llvmo::Function_O"
  "llvmo::DIType_O"
+ "core::BytecodeCmpVarInfo_O"
  "core::Readtable_O"
  "llvmo::IRBuilder_O"
  "llvmo::ClaspJIT_O"
@@ -247,6 +255,7 @@
  "core::SimpleMDArrayCharacter_O"
  "core::SimpleCharacterString_O"
  "core::Symbol_O"
+ "core::BytecodeCmpEnv_O"
  "core::Array_O"
  "core::MDArray_byte4_t_O"
  "llvmo::Argument_O"
@@ -313,6 +322,7 @@
  "llvmo::ArrayType_O"
  "core::SimpleMDArray_int64_t_O"
  "core::SimpleString_O"
+ "core::BytecodeCmpLexicalVarInfo_O"
  "llvmo::DIVariable_O"
  "core::SimpleMDArray_byte2_t_O"
  "llvmo::BlockAddress_O"
@@ -321,6 +331,7 @@
  "core::FunctionValueEnvironment_O"
  "core::DerivableCxxClassCreator_O"
  "core::HashTableEq_O"
+ "core::BytecodeCmpSpecialVarInfo_O"
  "core::HashTableEqualp_O"
  "asttooling::PresumedLoc_O"
  "core::LambdaListHandler_O"
@@ -1365,6 +1376,12 @@
 { TAGS:VARIABLE-BIT-ARRAY0 ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:INTEGRAL-VALUE . 4 )( TAGS:OFFSET-BASE-CTYPE . "core::SimpleVector_byte4_t_O")( TAGS:FIELD-NAMES . ("_Data" "._Data"))) }
 { TAGS:VARIABLE-CAPACITY ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:CTYPE . "unsigned long")( TAGS:OFFSET-BASE-CTYPE . "core::SimpleVector_byte4_t_O")( TAGS:END-FIELD-NAMES . ("_Data" "._Length"))( TAGS:LENGTH-FIELD-NAMES . ("_Data" "._Length"))) }
   { TAGS:VARIABLE-FIELD-ONLY ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ctype_unsigned_long")( TAGS:FIXUP-TYPE . "unsigned long")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpEnv_O")(TAGS:STAMP-KEY . "core::BytecodeCmpEnv_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_vars")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_tags")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_blocks")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_funs")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Integer_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "frame_end")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__Symbol_O")(TAGS:STAMP-KEY . "core::Symbol_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::SimpleString_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Symbol_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Name")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Symbol_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_HomePackage")) }
@@ -1399,6 +1416,17 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::HashTable_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Readtable_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "SyntaxTypes_")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::HashTable_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Readtable_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "MacroCharacters_")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::HashTable_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Readtable_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "DispatchMacroCharacters_")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpVarInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpVarInfo_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpSpecialVarInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpSpecialVarInfo_O")(TAGS:PARENT-CLASS . "core::BytecodeCmpVarInfo_O")(TAGS:LISP-CLASS-BASE . "core::BytecodeCmpVarInfo_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpLexicalVarInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpLexicalVarInfo_O")(TAGS:PARENT-CLASS . "core::BytecodeCmpVarInfo_O")(TAGS:LISP-CLASS-BASE . "core::BytecodeCmpVarInfo_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ctype_unsigned_long")( TAGS:OFFSET-CTYPE . "unsigned long")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpLexicalVarInfo_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "frame_index")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpLexicalVarInfo_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_funct")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ctype__Bool")( TAGS:OFFSET-CTYPE . "_Bool")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpLexicalVarInfo_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "closed_over_p")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ctype__Bool")( TAGS:OFFSET-CTYPE . "_Bool")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpLexicalVarInfo_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "set_p")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpConstantVarInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpConstantVarInfo_O")(TAGS:PARENT-CLASS . "core::BytecodeCmpVarInfo_O")(TAGS:LISP-CLASS-BASE . "core::BytecodeCmpVarInfo_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpConstantVarInfo_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_value")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpSymbolMacroVarInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpSymbolMacroVarInfo_O")(TAGS:PARENT-CLASS . "core::BytecodeCmpVarInfo_O")(TAGS:LISP-CLASS-BASE . "core::BytecodeCmpVarInfo_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Function_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpSymbolMacroVarInfo_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_expander")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__Exposer_O")(TAGS:STAMP-KEY . "core::Exposer_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Package_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Exposer_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Package")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::SimpleBaseString_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Exposer_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_PackageName")) }
@@ -1932,6 +1960,14 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::FileScope_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_PermanentFileName")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ctype_int")( TAGS:OFFSET-CTYPE . "int")( TAGS:OFFSET-BASE-CTYPE . "core::FileScope_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_FileHandle")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__Path_O")(TAGS:STAMP-KEY . "core::Path_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpFunInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpFunInfo_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpGlobalFunInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpGlobalFunInfo_O")(TAGS:PARENT-CLASS . "core::BytecodeCmpFunInfo_O")(TAGS:LISP-CLASS-BASE . "core::BytecodeCmpFunInfo_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpLocalMacroInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpLocalMacroInfo_O")(TAGS:PARENT-CLASS . "core::BytecodeCmpFunInfo_O")(TAGS:LISP-CLASS-BASE . "core::BytecodeCmpFunInfo_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Function_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpLocalMacroInfo_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_expander")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpLocalFunInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpLocalFunInfo_O")(TAGS:PARENT-CLASS . "core::BytecodeCmpFunInfo_O")(TAGS:LISP-CLASS-BASE . "core::BytecodeCmpFunInfo_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpLocalFunInfo_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "fun_var")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BytecodeCmpGlobalMacroInfo_O")(TAGS:STAMP-KEY . "core::BytecodeCmpGlobalMacroInfo_O")(TAGS:PARENT-CLASS . "core::BytecodeCmpFunInfo_O")(TAGS:LISP-CLASS-BASE . "core::BytecodeCmpFunInfo_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Function_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BytecodeCmpGlobalMacroInfo_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_expander")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__Pathname_O")(TAGS:STAMP-KEY . "core::Pathname_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Pathname_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Host")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Pathname_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Device")) }
