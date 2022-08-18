@@ -5,7 +5,6 @@
 
 (in-package #:cmp)
 
-#+(or)
 (setq *print-circle* t)
 
 ;;; FIXME: New package
@@ -143,14 +142,17 @@
            (let* ((size (fixup-size fixup))
                   (offset (unsigned (fixup-delta fixup) (* 8 (1- size)))))
              (setf (aref code position)
-                   (ecase size (2 opcode8) (3 opcode16) (4 opcode24)))
+                   (cond ((eql size 2) opcode 8)
+                         ((eql size 3) opcode16)
+                         ((eql size 4) opcode24)
+                         (t (error "Unknown size ~d" size))))
              (write-le-unsigned code offset (1- size) (1+ position))))
          (resizer (fixup)
-           (typecase (fixup-delta fixup)
-             ((signed-byte 8) 2)
-             ((signed-byte 16) 3)
-             ((signed-byte 24) 4)
-             (t (error "???? PC offset too big ????")))))
+           (let ((delta (fixup-delta fixup)))
+             (cond ((typep delta '(signed-byte 8)) 2)
+                   ((typep delta '(signed-byte 16)) 3)
+                   ((typep delta '(signed-byte 24)) 4)
+                   (t (error "???? PC offset too big ????"))))))
     (emit-fixup context (make-fixup label 2 #'emitter #'resizer))))
 
 (defun emit-jump (context label)
@@ -167,16 +169,17 @@
            (let* ((size (fixup-size fixup))
                   (offset (unsigned (fixup-delta fixup) (* 8 (1- size)))))
              (setf (aref code position)
-                   (ecase size
-                     (3 +jump-if-supplied-8+)
-                     (4 +jump-if-supplied-16+)))
+                   (cond
+                     ((eql size 3) +jump-if-supplied-8+)
+                     ((eql size 4_ +jump-if-supplied-16+))
+                     (t (error "Unknown size ~d" size))))
              (setf (aref code (1+ position)) index)
              (write-le-unsigned code offset (- size 2) (+ position 2))))
          (resizer (fixup)
-           (typecase (fixup-delta fixup)
-             ((signed-byte 8) 3)
-             ((signed-byte 16) 4)
-             (t (error "???? PC offset too big ????")))))
+           (let ((delta (fixup-delta fixup)))
+             (cond ((typep delta '(signed-byte 8)) 3)
+                   ((typep delta '(signed-byte 16)) 4)
+                   (t (error "???? PC offset too big ????"))))))
     (emit-fixup context (make-fixup label 3 #'emitter #'resizer))))
 
 ;;; Different kinds of things can go in the variable namespace and they can
@@ -239,23 +242,23 @@
 
 #+clasp
 (defun var-info-kind (info)
-  (etypecase info
-    (null nil)
-    (core:bytecode-cmp-lexical-var-info :lexical)
-    (core:bytecode-cmp-special-var-info :special)
-    (core:bytecode-cmp-symbol-macro-var-info :symbol-macro)
-    (core:bytecode-cmp-constant-var-info :constant)))
+  (cond ((null info) info)
+        ((typep info 'core:bytecode-cmp-lexical-var-info) :lexical)
+        ((typep info 'core:bytecode-cmp-special-var-info) :special)
+        ((typep info 'core:bytecode-cmp-symbol-macro-var-info) :symbol-macro)
+        ((typep info 'core:bytecode-cmp-constant-var-info) :constant)
+        (t (error "Unknown info ~a" info))))
 
 #+clasp
 (defun var-info-data (info)
-  (etypecase info
-    (null nil)
-    (core:bytecode-cmp-lexical-var-info info)
-    (core:bytecode-cmp-special-var-info nil)
-    (core:bytecode-cmp-symbol-macro-var-info
-     (core:bytecode-cmp-symbol-macro-var-info/expander info))
-    (core:bytecode-cmp-constant-var-info
-     (core:bytecode-cmp-constant-var-info/value info))))
+  (cond ((null info) info)
+        ((typep info 'core:bytecode-cmp-lexical-var-info) info)
+        ((typep info 'core:bytecode-cmp-special-var-info) 'nil)
+        ((typep info 'core:bytecode-cmp-symbol-macro-var-info)
+         (core:bytecode-cmp-symbol-macro-var-info/expander info))
+        ((typep info 'core:bytecode-cmp-constant-var-info)
+         (core:bytecode-cmp-constant-var-info/value info))
+        (t (error "Unknown info ~a" info))))
 
 #-clasp
 (defstruct (fun-info (:constructor make-fun-info (kind data)))
@@ -286,23 +289,23 @@
   (make-fun-info :local-macro expander))
 
 (defun fun-info-kind (info)
-  (etypecase info
-    (null nil)
-    (core:bytecode-cmp-global-fun-info :global-function)
-    (core:bytecode-cmp-local-fun-info :local-function)
-    (core:bytecode-cmp-global-macro-info :global-macro)
-    (core:bytecode-cmp-local-macro-info :local-macro)))
+  (cond ((null info) nil)
+        ((typep info 'core:bytecode-cmp-global-fun-info) :global-function)
+        ((typep info 'core:bytecode-cmp-local-fun-info) :local-function)
+        ((typep info 'core:bytecode-cmp-global-macro-info) :global-macro)
+        ((typep info 'core:bytecode-cmp-local-macro-info) :local-macro)
+        (t (error "Unknown info ~a" info))))
 
 (defun fun-info-data (info)
-  (etypecase info
-    (null nil)
-    (core:bytecode-cmp-global-fun-info nil)
-    (core:bytecode-cmp-local-fun-info
-     (core:bytecode-cmp-local-fun-info/fun-var info))
-    (core:bytecode-cmp-global-macro-info
-     (core:bytecode-cmp-global-macro-info/expander info))
-    (core:bytecode-cmp-local-macro-info
-     (core:bytecode-cmp-local-macro-info/expander info))))
+  (cond ((null info) nil)
+        ((typep info 'core:bytecode-cmp-global-fun-info) nil)
+        ((typep info 'core:bytecode-cmp-local-fun-info)
+         (core:bytecode-cmp-local-fun-info/fun-var info))
+        ((typep info 'core:bytecode-cmp-global-macro-info)
+         (core:bytecode-cmp-global-macro-info/expander info))
+        ((typep info 'core:bytecode-cmp-local-macro-info)
+         (core:bytecode-cmp-local-macro-info/expander info))
+        (t (error "Unknown info ~a" info))))
 
 #-clasp
 (defstruct (lexical-environment (:constructor make-null-lexical-environment)
@@ -374,19 +377,19 @@
 (defun var-info (symbol env)
   (let ((info (cdr (assoc symbol (vars env)))))
     (cond (info (values (var-info-kind info) (var-info-data info)))
-          ((constantp symbol nil) (values :constant (eval symbol)))
+          ((constantp symbol nil) (values :constant (symbol-value symbol)))
           ((ext:specialp symbol) (values :special nil)) ; globally special
           (t (values nil nil)))))
 
 ;;; Like the above. Check the struct for details.
-(defun fun-info (symbol env)
-  (let ((info (cdr (assoc symbol (funs env)))))
+(defun fun-info (name env)
+  (let ((info (cdr (assoc name (funs env)))))
     (cond (info (values (fun-info-kind info) (fun-info-data info)))
-          ((macro-function symbol nil)
-           (values :global-macro (macro-function symbol nil)))
-          ((special-operator-p symbol)
+          ((and (symbolp name) (macro-function name nil))
+           (values :global-macro (macro-function name nil)))
+          ((and (symbolp name) (special-operator-p name))
            (error "Tried to get FUN-INFO for a special operator - impossible"))
-          ((fboundp symbol) (values :global-function nil))
+          ((fboundp name) (values :global-function nil))
           (t (values nil nil)))))
 
 (deftype lambda-expression () '(cons (eql lambda) (cons list list)))
@@ -454,22 +457,21 @@
     (link-function (compile-lambda lambda-list body env module))))
 
 (defun compile-form (form env context)
-  (etypecase form
-    (symbol (compile-symbol form env context))
-    (cons (compile-cons (car form) (cdr form) env context))
-    (t (compile-literal form env context))))
+  (cond ((symbolp form) (compile-symbol form env context))
+        ((consp form) (compile-cons (car form) (cdr form) env context))
+        (t (compile-literal form env context))))
 
 (defun compile-literal (form env context)
   (declare (ignore env))
   (unless (eql (context-receiving context) 0)
-    (case form
-      ((nil) (assemble context +nil+))
-      (t (assemble context +const+ (literal-index form context))))
+    (cond ((null form) (assemble context +nil+))
+          (t (assemble context +const+ (literal-index form context))))
     (when (eql (context-receiving context) t)
       (assemble context +pop+))))
 
 (flet ((maybe-emit (lexical-info opcode context)
          (flet ((emitter (fixup position code)
+                  #+(or)
                   (assert (= (fixup-size fixup) 1))
                   (setf (aref code position) opcode))
                 (resizer (fixup)
@@ -487,6 +489,7 @@
 (defun maybe-emit-encage (lexical-info context)
   (let ((index (lexical-info-frame-offset lexical-info)))
     (flet ((emitter (fixup position code)
+             #+(or)
              (assert (= (fixup-size fixup) 5))
              (assemble-into code position
                             +ref+ index +make-cell+ +set+ index))
@@ -516,62 +519,63 @@
           ;; values are wanted, we want to not compile anything.
           ((eql (context-receiving context) 0))
           (t
-           (ecase kind
-             ((:lexical)
+           (cond
+             ((eq kind :lexical)
               (cond ((eq (lexical-info-function data) (context-function context))
                      (assemble context +ref+ (lexical-info-frame-offset data)))
                     (t
                      (setf (lexical-info-closed-over-p data) t)
                      (assemble context +closure+ (closure-index data context))))
               (maybe-emit-cell-ref data context))
-             ((:special) (assemble context +symbol-value+
+             ((eq kind :special) (assemble context +symbol-value+
                            (literal-index form context)))
-             ((:constant) (return-from compile-symbol ; don't pop again.
+             ((eq kind :constant) (return-from compile-symbol ; don't pop again.
                             (compile-literal data env context)))
-             ((nil)
+             ((null kind)
               (warn "Unknown variable ~a: treating as special" form)
               (assemble context +symbol-value+
-                (literal-index form context))))
+                        (literal-index form context)))
+             (t (error "Unknown kind ~a" kind)))
            (when (eq (context-receiving context) t)
              (assemble context +pop+))))))
 
 (defun compile-cons (head rest env context)
-  (case head
-    ((progn) (compile-progn rest env context))
-    ((let) (compile-let (first rest) (rest rest) env context))
-    ((let*) (compile-let* (first rest) (rest rest) env context))
-    ((flet) (compile-flet (first rest) (rest rest) env context))
-    ((labels) (compile-labels (first rest) (rest rest) env context))
-    ((setq) (compile-setq rest env context))
-    ((if) (compile-if (first rest) (second rest) (third rest) env context))
-    ((function) (compile-function (first rest) env context))
-    ((tagbody) (compile-tagbody rest env context))
-    ((go) (compile-go (first rest) env context))
-    ((block) (compile-block (first rest) (rest rest) env context))
-    ((return-from) (compile-return-from (first rest) (second rest) env context))
-    ((catch) (compile-catch (first rest) (rest rest) env context))
-    ((throw) (compile-throw (first rest) (second rest) env context))
-    ((progv) (compile-progv (first rest) (second rest) (rest (rest rest)) env context))
-    ((quote) (compile-literal (first rest) env context))
-    ((symbol-macrolet)
+  (cond
+    ((eq head 'progn) (compile-progn rest env context))
+    ((eq head 'let) (compile-let (first rest) (rest rest) env context))
+    ((eq head 'let*) (compile-let* (first rest) (rest rest) env context))
+    ((eq head 'flet) (compile-flet (first rest) (rest rest) env context))
+    ((eq head 'labels) (compile-labels (first rest) (rest rest) env context))
+    ((eq head 'setq) (compile-setq rest env context))
+    ((eq head 'if) (compile-if (first rest) (second rest) (third rest) env context))
+    ((eq head 'function) (compile-function (first rest) env context))
+    ((eq head 'tagbody) (compile-tagbody rest env context))
+    ((eq head 'go) (compile-go (first rest) env context))
+    ((eq head 'block) (compile-block (first rest) (rest rest) env context))
+    ((eq head 'return-from) (compile-return-from (first rest) (second rest) env context))
+    ((eq head 'catch) (compile-catch (first rest) (rest rest) env context))
+    ((eq head 'throw) (compile-throw (first rest) (second rest) env context))
+    ((eq head 'progv) (compile-progv (first rest) (second rest) (rest (rest rest)) env context))
+    ((eq head 'quote) (compile-literal (first rest) env context))
+    ((eq head 'symbol-macrolet)
      (compile-symbol-macrolet (first rest) (rest rest) env context))
     #+clasp
-    ((macrolet)
+    ((eq head 'macrolet)
      (compile-macrolet (first rest) (rest rest) env context))
-    ((multiple-value-call)
+    ((eq head 'multiple-value-call)
      (compile-multiple-value-call (first rest) (rest rest) env context))
-    ((multiple-value-prog1)
+    ((eq head 'multiple-value-prog1)
      (compile-multiple-value-prog1 (first rest) (rest rest) env context))
-    ((locally) (compile-locally rest env context))
-    ((the) ; don't do anything.
+    ((eq head 'locally) (compile-locally rest env context))
+    ((eq head 'the) ; don't do anything.
      (compile-form (second rest) env context))
-    (otherwise ; function call or macro
+    (t ; function call or macro
      (multiple-value-bind (kind data) (fun-info head env)
-       (ecase kind
-         ((:global-macro :local-macro)
+       (cond
+         ((member kind '(:global-macro :local-macro))
           (compile-form (funcall *macroexpand-hook* data (cons head rest) env)
                         env context))
-         ((:global-function :local-function nil)
+         ((member kind '(:global-function :local-function nil))
           ;; unknown function warning handled by compile-function
           ;; note we do a double lookup, which is inefficient
           (compile-function head env (new-context context :receiving 1))
@@ -582,7 +586,8 @@
                   ((eql receiving 1)
                    (assemble context +call-receive-one+ (length rest)))
                   (t (assemble context
-                       +call-receive-fixed+ (length rest) receiving))))))))))
+                               +call-receive-fixed+ (length rest) receiving)))))
+         (t (error "Unknown kind ~a" kind)))))))
 
 (defun compile-progn (forms env context)
   (do ((forms forms (rest forms)))
@@ -697,10 +702,10 @@
 
 (defun compile-setq-1 (var valf env context)
   (multiple-value-bind (kind data) (var-info var env)
-    (ecase kind
-      ((:symbol-macro)
+    (cond
+      ((eq kind :symbol-macro)
        (compile-form `(setf ,data ,valf) env context))
-      ((:special nil)
+      ((or (eq kind :special) (null kind))
        (when (null kind)
          (warn "Unknown variable ~a: treating as special" var))
        (compile-form valf env (new-context context :receiving 1))
@@ -718,7 +723,7 @@
            (assemble context +ref+ index)
            (when (eql (context-receiving context) t)
              (assemble context +pop+)))))
-      ((:lexical)
+      ((eq kind :lexical)
        (let ((localp (eq (lexical-info-function data)
                          (context-function context)))
              (index (frame-end env)))
@@ -739,7 +744,8 @@
          (unless (eql (context-receiving context) 0)
            (assemble context +ref+ index)
            (when (eql (context-receiving context) t)
-             (assemble context +pop+))))))))
+             (assemble context +pop+)))))
+      (t (error "Unknown kind ~a" kind)))))
 
 (defun compile-flet (definitions body env context)
   (let ((fun-vars '())
@@ -831,12 +837,13 @@
               (assemble context +const+ (literal-index cfunction context))
               (assemble context +make-closure+ (literal-index cfunction context))))
         (multiple-value-bind (kind data) (fun-info fnameoid env)
-          (ecase kind
-            ((:global-function nil)
+          (cond
+            ((member kind '(:global-function nil))
              (when (null kind) (warn "Unknown function ~a" fnameoid))
              (assemble context +fdefinition+ (literal-index fnameoid context)))
-            ((:local-function)
-             (reference-lexical-info data context)))))
+            ((member kind '(:local-function))
+             (reference-lexical-info data context))
+            (t (error "Unknown kind ~a" kind)))))
     (when (eql (context-receiving context) t)
       (assemble context +pop+))))
 
@@ -1183,6 +1190,7 @@
               (let ((old-size (fixup-size annotation))
                     (new-size (funcall (fixup-resizer annotation) annotation)))
                 (unless (= old-size new-size)
+                  #+(or)
                   (assert (>= new-size old-size))
                   (setf (fixup-size annotation) new-size)
                   (setq changed-p t)
@@ -1211,7 +1219,8 @@
         (dotimes (i (length (cfunction-annotations function)))
           (let ((annotation (aref (cfunction-annotations function) i)))
             (when (fixup-p annotation)
-            (unless (zerop (fixup-size annotation))
+              (unless (zerop (fixup-size annotation))
+                #+(or)
               (assert (= (fixup-size annotation)
                          (funcall (fixup-resizer annotation) annotation)))
               ;; Copy bytes in this segment.
@@ -1219,6 +1228,7 @@
                 (replace bytecode cfunction-bytecode :start1 index :start2 position :end2 end)
                 (incf index (- end position))
                 (setf position end))
+              #+(or)
               (assert (= index (annotation-module-position annotation)))
               ;; Emit fixup.
               (funcall (fixup-emitter annotation)
@@ -1315,6 +1325,7 @@
 ;;; which they are defined above in *codes*.
 ;;;
 
+#+(or)
 (defun c++ify (name)
   (flet ((submatch (substr remain)
            (let ((sublen (length substr)))
@@ -1339,6 +1350,7 @@
                  ((char= chr #\-) (format sout "_"))
                  (t (format sout "~a" chr)))))))
 
+#+(or)
 (defun generate-header (&optional (file-name "virtualMachine.h"))
   (with-open-file (fout file-name :direction :output :if-exists :supersede)
     (write-string "#ifndef virtualMachine_H" fout) (terpri fout)
