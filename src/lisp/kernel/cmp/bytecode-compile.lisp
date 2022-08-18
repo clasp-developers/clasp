@@ -567,6 +567,7 @@
     ((eq head 'multiple-value-prog1)
      (compile-multiple-value-prog1 (first rest) (rest rest) env context))
     ((eq head 'locally) (compile-locally rest env context))
+    ((eq head 'eval-when) (compile-eval-when (first rest) (rest rest) env context))
     ((eq head 'the) ; don't do anything.
      (compile-form (second rest) env context))
     (t ; function call or macro
@@ -609,6 +610,11 @@
       (core:process-declarations body nil)
     (declare (ignore decls docs))
     (compile-progn body (if specials (add-specials specials env) env) context)))
+
+(defun compile-eval-when (situations body env context)
+  (if (or (member 'cl:eval situations) (member :execute situations))
+      (compile-progn body env context)
+      (compile-literal nil env context)))
 
 (defun parse-let (bindings env)
   (let ((lexical-bindings '())
