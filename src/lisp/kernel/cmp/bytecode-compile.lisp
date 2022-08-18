@@ -1118,7 +1118,7 @@
              (body (cddr binding))
              (eform (ext:parse-macro name lambda-list body env))
              (aenv (lexenv-for-macrolet env))
-             (expander (compile eform aenv))
+             (expander (bytecompile eform aenv))
              (info (make-local-macro-fun-info expander)))
         (push (cons name info) macros)))
     (compile-locally body (make-lexical-environment
