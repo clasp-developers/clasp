@@ -142,7 +142,7 @@
            (let* ((size (fixup-size fixup))
                   (offset (unsigned (fixup-delta fixup) (* 8 (1- size)))))
              (setf (aref code position)
-                   (cond ((eql size 2) opcode 8)
+                   (cond ((eql size 2) opcode8)
                          ((eql size 3) opcode16)
                          ((eql size 4) opcode24)
                          (t (error "Unknown size ~d" size))))
