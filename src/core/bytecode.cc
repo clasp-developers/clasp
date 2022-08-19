@@ -491,9 +491,9 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       break;
     }
     case vm_jump_8: {
-      int32_t rel = read_label(pc, 1);
-      DBG_VM1("jump %" PRId32 "\n", rel);
-      pc += rel - 1;
+      int8_t rel = *(pc + 1);
+      DBG_VM1("jump %" PRId8 "\n", rel);
+      pc += rel;
       break;
     }
     case vm_jump_16: {
@@ -510,12 +510,12 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       break;
     }
     case vm_jump_if_8: {
-      int32_t rel = read_label(pc, 1);
-      DBG_VM1("jump-if %" PRId32 "\n", rel);
+      int8_t rel = *(pc + 1);
+      DBG_VM1("jump-if %" PRId8 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
       VM_RECORD_PLAYBACK(tval.raw_(),"vm_jump_if_8");
-      if (tval.notnilp()) pc += rel - 1;
-      else pc++;
+      if (tval.notnilp()) pc += rel;
+      else pc += 2;
       break;
     }
     case vm_jump_if_16: {
@@ -535,12 +535,12 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       break;
     }
     case vm_jump_if_supplied_8: {
-      uint8_t slot = read_uint8(pc);
-      int32_t rel = read_label(pc, 1);
-      DBG_VM("jump-if-supplied %" PRIu8 " %" PRId32 "\n", slot, rel);
+      uint8_t slot = *(pc + 1);
+      int32_t rel = *(pc + 2);
+      DBG_VM("jump-if-supplied %" PRIu8 " %" PRId8 "\n", slot, rel);
       T_sp tval((gctools::Tagged)(*(vm.reg(slot))));
-      if (tval.unboundp()) pc++;
-      else pc += rel - 2;
+      if (tval.unboundp()) pc += 3;
+      else pc += rel;
       break;
     }
     case vm_jump_if_supplied_16: {
@@ -672,9 +672,9 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       break;
     }
     case vm_exit_8: {
-      int32_t rel = read_label(pc, 1);
-      DBG_VM("exit %" PRId32 "\n", rel);
-      pc += rel - 2;
+      int8_t rel = *(pc + 1);
+      DBG_VM("exit %" PRId8 "\n", rel);
+      pc += rel - 1; // why -1?
       T_sp ttde((gctools::Tagged)(vm.pop()));
       TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
