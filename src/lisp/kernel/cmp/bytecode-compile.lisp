@@ -900,9 +900,9 @@
             (push (car opts) vars))))
       (when rest
         (assemble context +listify-rest-args+ max-count)
-        (assemble context +make-cell+)
         (assemble context +set+ (frame-end env))
-        (setq env (bind-vars (list rest) env context)))
+        (setq env (bind-vars (list rest) env context))
+        (maybe-emit-encage (nth-value 1 (var-info rest env)) context))
       (when key-flag
         (let ((key-names nil))
           (do ((keys (cdr keys) (cddddr keys)))
