@@ -1153,7 +1153,7 @@
   (let ((receiving (context-receiving context)))
     (cond ((eq receiving t) (assemble context +mv-call+))
           ((eql receiving 1) (assemble context +mv-call-receive-one+))
-          (t (assemble context +mv-call-receive-fixed+)))))
+          (t (assemble context +mv-call-receive-fixed+ receiving)))))
 
 (defun compile-multiple-value-prog1 (first-form forms env context)
   (compile-form first-form env context)
