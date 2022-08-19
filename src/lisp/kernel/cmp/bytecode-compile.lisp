@@ -16,6 +16,7 @@
                         ((endp names) forms)
                       (push `(defconstant ,(first names) ,i) forms)))
                 (defparameter *codes* '(,@names))
+                #-clasp ; collides with core:decode, and we don't need it.
                 (defun decode (code)
                   (nth code '(,@names))))))
   (defcodes +ref+ +const+ +closure+
@@ -42,7 +43,7 @@
     +fdefinition+
     +nil+
     +eq+
-    +pop+
+    +push+ +pop+
     +long+))
 
 ;;;
@@ -171,7 +172,7 @@
              (setf (aref code position)
                    (cond
                      ((eql size 3) +jump-if-supplied-8+)
-                     ((eql size 4_ +jump-if-supplied-16+))
+                     ((eql size 4) +jump-if-supplied-16+)
                      (t (error "Unknown size ~d" size))))
              (setf (aref code (1+ position)) index)
              (write-le-unsigned code offset (- size 2) (+ position 2))))
@@ -471,7 +472,8 @@
 
 (flet ((maybe-emit (lexical-info opcode context)
          (flet ((emitter (fixup position code)
-                  #+(or)
+                  #+clasp-min (declare (ignore fixup))
+                  #-clasp-min
                   (assert (= (fixup-size fixup) 1))
                   (setf (aref code position) opcode))
                 (resizer (fixup)
@@ -489,7 +491,8 @@
 (defun maybe-emit-encage (lexical-info context)
   (let ((index (lexical-info-frame-offset lexical-info)))
     (flet ((emitter (fixup position code)
-             #+(or)
+             #+clasp-min (declare (ignore fixup))
+             #-clasp-min
              (assert (= (fixup-size fixup) 5))
              (assemble-into code position
                             +ref+ index +make-cell+ +set+ index))
@@ -689,6 +692,7 @@
                          env)
                      context)
       (dotimes (_ special-binding-count)
+        #-clasp
         (declare (ignore _))
         (assemble context +unbind+)))))
 
@@ -942,7 +946,13 @@
             (setq env
                   (compile-optional/key-item key-var defaulting-form supplied-var
                                              next-key-label context env)))))
-      (values aux env))))
+      (values
+       ;; convert from process-lambda-list's aux format (var val var val) to bindings.
+       (let ((bindings nil))
+         (do ((aux aux (cddr aux)))
+             ((endp aux) (nreverse bindings))
+           (push (list (car aux) (cadr aux)) bindings)))
+       env))))
 
 ;;; Compile an optional/key item and return the resulting environment.
 (defun compile-optional/key-item (var defaulting-form supplied-var next-label
@@ -1045,9 +1055,12 @@
     (let ((env (make-lexical-environment
                 env
                 :blocks (acons name (cons dynenv-info label) (blocks env)))))
-      (compile-progn body env context))
+      ;; Force single values into multiple so that we can uniformly PUSH afterward.
+      (compile-progn body env (new-context context :receiving t)))
     (emit-label context label)
-    (assemble context +entry-close+)))
+    (assemble context +entry-close+)
+    (when (eql (context-receiving context) 1)
+      (assemble context +push+))))
 
 (defun compile-return-from (name value env context)
   (compile-form value env (new-context context :receiving t))

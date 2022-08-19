@@ -20,7 +20,11 @@
 #if 0
 # define DBG_printf printf
 # define DBG_VM(...) {printf("%s:%d:%s pc %p : stack %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)pc, (uintptr_t)(vm)._stackPointer-(uintptr_t)(vm)._stackBottom ); printf(__VA_ARGS__); }
-# define DBG_VM1(...)
+# if 0
+#  define DBG_VM1(...) DBG_VM(__VA_ARGS__)
+# else
+#  define DBG_VM1(...)
+# endif
 #else
 # define DBG_printf(...)
 # define DBG_VM(...)
@@ -351,6 +355,10 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_call: {
       uint8_t nargs = read_uint8(pc);
       DBG_VM1("call %" PRIu8 "\n", nargs);
+#ifdef DBG_VM1
+      if (nargs + 1 > vm.npushed(nlocals))
+        SIMPLE_ERROR("Help");
+#endif
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -833,6 +841,13 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
         vm.push(nil<T_O>().raw_());
         pc++;
         break;
+    case vm_push: {
+      DBG_VM1("push\n");
+      MultipleValues &mv = lisp_multipleValues();
+      vm.push(mv.valueGet(0, mv.getSize()).raw_());
+      pc++;
+      break;
+    }
     case vm_pop:{
       DBG_VM1("pop\n");
       T_sp obj((gctools::Tagged)vm.pop());

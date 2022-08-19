@@ -55,7 +55,8 @@ enum vm_codes {
    vm_fdefinition=50,
    vm_nil=51,
    vm_eq=52,
-   vm_pop=53,
-   vm_long=54 };
+   vm_push=53,
+   vm_pop=54,
+   vm_long=55 };
 
 #endif /*guard */
