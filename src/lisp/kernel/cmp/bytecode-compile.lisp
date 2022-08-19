@@ -908,6 +908,7 @@
           (do ((keys (cdr keys) (cddddr keys)))
               ((endp keys))
             (push (car keys) key-names))
+          (setq key-names (nreverse key-names))
           (assemble context +parse-key-args+
             max-count
             (if aok-p (- key-count) key-count)
