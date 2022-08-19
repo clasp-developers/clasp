@@ -203,25 +203,6 @@ static inline int32_t read_label(unsigned char*& pc, size_t nbytes) {
   return returnResult;
 }
 
-// Set up the lisp_multipleValues() based on the stack.
-// If the stack is empty, leave the return values alone.
-// Otherwise, put all the values of the current frame in.
-static gctools::return_type bytecode_return(VirtualMachine& vm,
-                                            size_t nlocals) {
-  size_t numValues = vm.npushed(nlocals);
-  DBG_printf("  numValues = %zu\n", numValues);
-  if (numValues == 0) {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    size_t nvalues = mv.getSize();
-    return gctools::return_type(mv.valueGet(0, nvalues).raw_(), nvalues);
-  } else {
-    vm.copyto(numValues - 1, &my_thread->_MultipleValues._Values[1]);
-    vm.drop(numValues - 1);
-    T_O* primary = vm.pop();
-    return gctools::return_type(primary, numValues);
-  }
-}
-
 #define DEBUG_VM_RECORD_PLAYBACK 0
 
 struct VM_error {
@@ -495,9 +476,13 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     }
     case vm_return: {
       DBG_VM1("return\n");
-      size_t numValues = vm.npushed(nlocals);
-      gctools::return_type res = bytecode_return(vm, nlocals);
-      return res;
+#ifdef DBG_VM1
+      if (vm.npushed(nlocals) != 0)
+        SIMPLE_ERROR("Help");
+#endif
+      core::MultipleValues &mv = core::lisp_multipleValues();
+      size_t nvalues = mv.getSize();
+      return gctools::return_type(mv.valueGet(0, nvalues).raw_(), nvalues);
     }
     case vm_bind_required_args: {
       uint8_t nargs = read_uint8(pc);
