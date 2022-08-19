@@ -104,87 +104,8 @@ T_sp BytecodeCmpEnv_O::lookupMacro(T_sp macroname) {
   else return nil<T_O>();
 }
 
-static void write_uint16(ComplexVector_byte8_t_sp buffer, unsigned int value ) {
-  if ( value <= 127 ) {
-    buffer->vectorPushExtend(value);
-  } else {
-    unsigned byte0 = 0x80 | (value&0x7f);
-    unsigned byte1 = (value>>7) & 0xff;
-    buffer->vectorPushExtend(byte0);
-    buffer->vectorPushExtend(byte1);
-  }
-}
-
 static inline uint8_t read_uint8( unsigned char*& pc ) {
   return *(++pc);
-}
-
-static inline uint16_t read_uint16( unsigned char*& pc ) {
-  uint16_t byte0 = (uint16_t)(*(++pc));
-  if (byte0<=127) return byte0;
-  uint16_t byte1 = (uint16_t)(*(++pc));
-  uint16_t result = ((uint16_t)byte1)<<7 | ((uint16_t)byte0)&0x7f;
-  return result;
-}
-
-CL_DEFUN void core__write_uint16( ComplexVector_byte8_t_sp buffer, uint16_t value)
-{
-  write_uint16(buffer,value);
-}
-
-CL_DEFUN Fixnum core__read_uint16( ComplexVector_byte8_t_sp buffer, size_t index )
-{
-  unsigned char* pc = (unsigned char*)(buffer->rowMajorAddressOfElement_(index))+index;
-  return (Fixnum)read_uint16(pc);
-}
-
-static void write_int32(ComplexVector_byte8_t_sp buffer, int value ) {
-  if ( value >= -64 && value <= 63 ) {
-    buffer->vectorPushExtend(value&0x7f);
-    return;
-  } else if (value >= -16384 && value <= 16383 ) {
-    buffer->vectorPushExtend((value&0x7f)|0x80);
-    buffer->vectorPushExtend((value>>7)&0xff);
-    return;
-  }
-  buffer->vectorPushExtend(0x80);
-  buffer->vectorPushExtend(0);
-  buffer->vectorPushExtend(value&0xff);
-  buffer->vectorPushExtend((value>>8)&0xff);
-  buffer->vectorPushExtend((value>>16)&0xff);
-  buffer->vectorPushExtend((value>>24)&0xff);
-}
-
-static inline int32_t read_int32(unsigned char*& pc) {
-  unsigned char byte0 = *(++pc);
-  if (byte0<=127) {
-    if ((byte0&0x40)==0) { // positive
-      return (int32_t)(byte0&0x3f);
-    }
-    return (int32_t)(0xFFFFff80 | byte0);
-  }
-  unsigned char byte1 = *(++pc);
-  if ((byte1&0x80)==0) { // positive
-    int result = ((int32_t)byte1)<<7|((int32_t)(byte0&0x7f));
-    if (result == 0) {
-      uint32_t ibyte0 = *(++pc);
-      uint32_t ibyte1 = *(++pc);
-      uint32_t ibyte2 = *(++pc);
-      uint32_t ibyte3 = *(++pc);
-      return (ibyte3<<24)|(ibyte2<<16)|(ibyte1<<8)|ibyte0;
-    }
-    return result;
-  }
-  return (int32_t)(0xFFFF8000 | ((int32_t)byte1<<7) | ((int32_t)(byte0&0x7f)));
-}
-
-CL_DEFUN void core__write_int32(ComplexVector_byte8_t_sp buffer, int value) {
-  write_int32(buffer,value);
-}
-
-CL_DEFUN int core__read_int32(ComplexVector_byte8_t_sp buffer, size_t index) {
-  unsigned char* pc = (unsigned char*)(buffer->rowMajorAddressOfElement_(index))+index;
-  return read_int32(pc);
 }
 
 __attribute__((optnone))
