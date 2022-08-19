@@ -112,6 +112,7 @@
 ;;; 
 #-(or no-implicit-compilation)
 (setq *implicit-compile-hook* 'bytecode-implicit-compile-repl-form)
+(setq *eval-with-env-hook* 'bytecode-implicit-compile-repl-form)
 
 ;;#+(and clasp-min (not no-implicit-compilation))
 #+(or)
