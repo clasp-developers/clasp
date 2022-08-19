@@ -441,9 +441,10 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_cell_set: {
       DBG_VM("cell-set\n");
       T_sp cons((gctools::Tagged)vm.pop());
+      Cons_sp ccons = gc::As<Cons_sp>(cons);
       T_O* val = vm.pop();
       T_sp tval((gctools::Tagged)val);
-      CONS_CAR(cons) = tval;
+      ccons->rplaca(tval);
       pc++;
       break;
     }
