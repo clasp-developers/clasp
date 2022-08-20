@@ -39,7 +39,7 @@
         (llvm-sys:debug-object-files 'llvm-sys:debug-object-files-print-save)))
 
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
-(setq *load-print* nil)
+;;;(setq *load-print* nil)
 
 (setq cl:*print-circle* nil)
 
