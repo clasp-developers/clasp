@@ -66,6 +66,9 @@
 
 (setq *features* (remove :clasp-min *features*))
 
+(push :clos *features*)
+(push :bclasp *features*)
+
 (load "SYS:SRC;LISP;KERNEL;TAG;START.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;PROLOGUE.LISP")
 ;;;(load "SYS:SRC;LISP;KERNEL;LSP;DIRECT-CALLS.LISP")

@@ -85,6 +85,8 @@ static void debugger_display_frame(DebuggerFrame_sp cur, int index) {
 SYMBOL_EXPORT_SC_(CorePkg,primitive_print_backtrace);
 
 static void debugger_backtrace(DebuggerFrame_sp cur, int index) {
+  // Bind *print-circle* to T for backtrace so things don't blow up
+  DynamicScopeManager tempBind(cl::_sym_STARprint_circleSTAR, _lisp->_true() );
   if (_sym_primitive_print_backtrace.boundp() && _sym_primitive_print_backtrace->fboundp()) {
     printf("%s:%d:%s Calling sys:primitive-print-backtrace\n", __FILE__, __LINE__, __FUNCTION__ );
     eval::funcall(_sym_primitive_print_backtrace);

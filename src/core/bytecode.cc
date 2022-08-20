@@ -767,17 +767,28 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     }
     // FIXME: Put this in its own function for better icache utilization.
     case vm_long: {
-      switch (*++pc) {
+      uint8_t sub_opcode = *++pc;
+      switch (sub_opcode) {
       case vm_const: {
         uint8_t low = *(++pc);
         uint16_t n = low + (*(++pc) << 8);
-        DBG_VM1("const %" PRIu16 "\n", n);
+        DBG_VM1("long const %" PRIu16 "\n", n);
         T_O* value = literals->rowMajorAref(n).raw_();
         vm.push(value);
         VM_RECORD_PLAYBACK(value,"long const");
         pc++;
         break;
       }
+      case vm_fdefinition: {
+        uint8_t low = *(++pc);
+        uint16_t n = low + (*(++pc) << 8);
+        DBG_VM1("long fdefinition %" PRIu16 "\n", n);
+        vm.push(cl__fdefinition(literals->rowMajorAref(n)).raw_());
+        pc++;
+        break;
+      }
+      default:
+          SIMPLE_ERROR("Unknown LONG sub_opcode %hu", sub_opcode);
       }
       break;
     }

@@ -108,6 +108,10 @@
 (defun assemble (context &rest values)
   (let ((assembly (context-assembly context)))
     (dolist (value values)
+      (if (integerp value)
+          (if (or (< value 0) (> value 255))
+              (error "The value ~a is outside of the range 0..255" value))
+          (error "The value ~s is not an integer 0..255" value))
       (vector-push-extend value assembly))))
 
 (defun assemble-into (code position &rest values)
@@ -189,6 +193,24 @@
         +long+ +const+
         (logand index #xff) (logand (ash index -8) #xff))
       (assemble context +const+ index)))
+
+(defun emit-fdefinition (context index)
+  (if (> index 255)
+      (assemble context
+        +long+ +fdefinition+
+        (logand index #xff) (logand (ash index -8) #xff))
+      (assemble context +fdefinition+ index)))
+
+
+(defun emit-parse-key-args (context max-count key-count key-names env aok-p)
+  (if (<= key-count 127)
+      (assemble context +parse-key-args+
+                max-count
+                (if aok-p (boole boole-ior 128 key-count) key-count)
+                (literal-index (first key-names) context)
+                (frame-end env))
+      (error "Handle more than 127 keyword parameters - you need ~s" key-count)
+      ))
 
 ;;; Different kinds of things can go in the variable namespace and they can
 ;;; all shadow each other, so we use this structure to disambiguate.
@@ -385,6 +407,7 @@
 (defun var-info (symbol env)
   (let ((info (cdr (assoc symbol (vars env)))))
     (cond (info (values (var-info-kind info) (var-info-data info)))
+          ((ext:symbol-macro symbol) (values :symbol-macro (ext:symbol-macro symbol)))
           ((constantp symbol nil) (values :constant (symbol-value symbol)))
           ((ext:specialp symbol) (values :special nil)) ; globally special
           (t (values nil nil)))))
@@ -885,7 +908,9 @@
           (cond
             ((member kind '(:global-function nil))
              (when (null kind) (warn "Unknown function ~a" fnameoid))
-             (assemble context +fdefinition+ (literal-index fnameoid context)))
+             ;;(assemble context +fdefinition+ (literal-index fnameoid context))
+             (emit-fdefinition context (literal-index fnameoid context))
+             )
             ((member kind '(:local-function))
              (reference-lexical-info data context))
             (t (error "Unknown kind ~a" kind)))))
@@ -944,11 +969,7 @@
               ((endp keys))
             (push (car keys) key-names))
           (setq key-names (nreverse key-names))
-          (assemble context +parse-key-args+
-            max-count
-            (if aok-p (- key-count) key-count)
-            (literal-index (first key-names) context)
-            (frame-end env))
+          (emit-parse-key-args context max-count key-count key-names env aok-p)
           (dolist (key-name (rest key-names))
             (literal-index key-name context)))
         (let ((keyvars nil))
