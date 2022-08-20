@@ -784,20 +784,27 @@
 
 (defun compile-labels (definitions body env context)
   (let ((fun-count 0)
+        (funs '())
+        (fun-vars '())
         (closures '())
         (env env)
-        (frame-start (frame-end env)))
+        (frame-start (frame-end env))
+        (frame-slot (frame-end env)))
     (dolist (definition definitions)
-      (let* ((name (first definition))
-             (fun-var (gensym "LABELS-FUN"))
-             (frame-slot (frame-end env))
-             ;; KLUDGE
-             (temp-env (bind-vars (list fun-var) env context))
-             (fun-info (nth-value 1 (var-info fun-var temp-env))))
-        (setq env (make-lexical-environment
-                   temp-env
-                   :funs (acons name (make-local-function-fun-info fun-info)
-                                (funs temp-env))))
+      (let ((name (first definition))
+            (fun-var (gensym "LABELS-FUN")))
+        (push fun-var fun-vars)
+        (push (cons name (make-local-function-fun-info
+                          (make-lexical-info frame-slot
+                                             (context-function context))))
+              funs)
+        (incf frame-slot)
+        (incf fun-count)))
+    (let ((frame-slot (frame-end env))
+          (env (make-lexical-environment
+                (bind-vars fun-vars env context)
+                :funs (append funs (funs env)))))
+      (dolist (definition definitions)
         (let* ((fun (compile-lambda (second definition)
                                     (rest (rest definition))
                                     env
@@ -809,14 +816,14 @@
                  (push (cons fun frame-slot) closures)
                  (assemble context +make-uninitialized-closure+
                    literal-index))))
-        (incf fun-count)))
-    (assemble context +bind+ fun-count frame-start)
-    (dolist (closure closures)
-      (dotimes (i (length (cfunction-closed (car closure))))
-        (reference-lexical-info (aref (cfunction-closed (car closure)) i)
-                                context))
-      (assemble context +initialize-closure+ (cdr closure)))
-    (compile-locally body env context)))
+        (incf frame-slot))
+      (assemble context +bind+ fun-count frame-start)
+      (dolist (closure closures)
+        (dotimes (i (length (cfunction-closed (car closure))))
+          (reference-lexical-info (aref (cfunction-closed (car closure)) i)
+                                  context))
+        (assemble context +initialize-closure+ (cdr closure)))
+      (compile-progn body env context))))
 
 (defun compile-if (condition then else env context)
   (compile-form condition env (new-context context :receiving 1))
