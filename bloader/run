@@ -1,0 +1,2 @@
+#! /bin/bash
+build/boehmprecise/iclasp-boehmprecise -I -f clasp-min -l bloader/loader.lisp
