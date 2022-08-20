@@ -614,7 +614,7 @@ CL_DEFUN core::Pointer_sp llvm_sys__installInterpreterTrampoline() {
 @__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
 @__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
 
-define { i8*, i64 } @tail_call_with_stackmap({ i8*, i64 } (i8*, i64, i8**)* nocapture %fn, i8* %closure, i64 %nargs, i8** %args) #0  {
+define { i8*, i64 } @interpreter_tail_call_with_stackmap({ i8*, i64 } (i8*, i64, i8**)* nocapture %fn, i8* %closure, i64 %nargs, i8** %args) #0  {
 entry:
   %Registers = alloca [3 x i64], align 16
   call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %Registers)
@@ -660,7 +660,7 @@ attributes #4 = { nounwind "frame-pointer"="all" }
 //  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
   JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  core::Pointer_sp ptr = jit->lookup(jitDylib,"tail_call_with_stackmap");
+  core::Pointer_sp ptr = jit->lookup(jitDylib,"interpreter_tail_call_with_stackmap");
 //  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
   core::interpreter_trampoline = (trampoline_function)ptr->ptr();
 //  printf("%s:%d:%s after interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
@@ -683,7 +683,7 @@ CL_DEFUN core::Pointer_sp llvm_sys__installBytecodeTrampoline() {
 @__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
 @__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
 
-define { i8*, i64 } @tail_call_with_stackmap({ i8*, i64 } (i8*, i8*, i64, i8**)* nocapture %fn, i8* %pc, i8* %closure, i64 %nargs, i8** %args) #0  {
+define { i8*, i64 } @bytecode_tail_call_with_stackmap({ i8*, i64 } (i8*, i8*, i64, i8**)* nocapture %fn, i8* %pc, i8* %closure, i64 %nargs, i8** %args) #0  {
 entry:
   %Registers = alloca [3 x i64], align 16
   call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %Registers)
@@ -726,14 +726,14 @@ attributes #4 = { nounwind "frame-pointer"="all" }
 
   LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
   trampoline = std::regex_replace( trampoline, std::regex("CLASP_STARTUP"), std::string(MODULE_STARTUP_FUNCTION_NAME) );
-  Module_sp module = llvm_sys__parseIRString(trampoline, context, "interpreter_trampoline" );
+  Module_sp module = llvm_sys__parseIRString(trampoline, context, "bytecode_trampoline" );
 //  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
   JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  core::Pointer_sp ptr = jit->lookup(jitDylib,"tail_call_with_stackmap");
-//  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
+  core::Pointer_sp ptr = jit->lookup(jitDylib,"bytecode_tail_call_with_stackmap");
+//  printf("%s:%d:%s before bytecode_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::bytecode_trampoline );
   core::bytecode_trampoline = (bytecode_trampoline_function)ptr->ptr();
-//  printf("%s:%d:%s after interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
+//  printf("%s:%d:%s after bytecode_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::bytecode_trampoline );
   return ptr;
 }
 

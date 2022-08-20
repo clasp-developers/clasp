@@ -163,8 +163,11 @@ static T_sp dwarf_ep(size_t frameIndex,
     functionStartAddress = (void*)interpreter_trampoline;
     D(printf("%s:%d:%s interpreter trampoline functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress ););
     return nil<T_O>();
+  } else if (ofi->codeStart()<=(uintptr_t)bytecode_trampoline && (uintptr_t)bytecode_trampoline<ofi->codeEnd()) {
+    functionStartAddress = (void*)bytecode_trampoline;
+    D(printf("%s:%d:%s bytecode trampoline functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress ););
+    return nil<T_O>();
   }
-  
   auto expected_ranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
   if (expected_ranges) {
     auto ranges = expected_ranges.get();
