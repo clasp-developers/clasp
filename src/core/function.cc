@@ -435,55 +435,42 @@ GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp entryPoint,
 SYMBOL_EXPORT_SC_(CorePkg,bytecode_call);
 
 struct BytecodeClosureEntryPoint {
-  static inline LCC_RETURN bytecode_enter(size_t entryIndex, T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
+  static inline LCC_RETURN bytecode_enter(T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
     Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
     core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
     core::BytecodeModule_sp module = gctools::As_unsafe<core::BytecodeModule_sp>(entryPoint->_Code);
-    int entryPcOffset = (*entryPoint)._EntryPcs[entryIndex];
+    int entryPcOffset = (*entryPoint)._EntryPcs[0]; // FIXME: remove this unused indirection.
     unsigned char* pc =  (unsigned char*)(gc::As<Array_sp>(module->bytecode())->rowMajorAddressOfElement_(0)) + entryPcOffset;
     if (bytecode_trampoline) return (bytecode_trampoline)((void*)&bytecode_call,pc,lcc_closure,lcc_nargs,lcc_args);
     return bytecode_call(pc,lcc_closure,lcc_nargs,lcc_args);
   }
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    size_t ei = 0;
-    return bytecode_enter( ei, lcc_closure, lcc_nargs, lcc_args );
+    return bytecode_enter( lcc_closure, lcc_nargs, lcc_args );
   }
 
   static inline LISP_ENTRY_0() {
-    constexpr size_t lcc_nargs = 0;
-    size_t ei = 1 + lcc_nargs;
-    return bytecode_enter( ei, lcc_closure, lcc_nargs, NULL );
+    return bytecode_enter( lcc_closure, 0, NULL );
   }
   static inline LISP_ENTRY_1() {
     core::T_O* args[1] = {lcc_farg0};
-    constexpr size_t lcc_nargs = 1;
-    size_t ei = 1 + lcc_nargs;
-    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
+    return bytecode_enter( lcc_closure, 1, args );
   }
   static inline LISP_ENTRY_2() {
     core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    constexpr size_t lcc_nargs = 2;
-    size_t ei = 1 + lcc_nargs;
-    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
+    return bytecode_enter( lcc_closure, 2, args );
   }
   static inline LISP_ENTRY_3() {
     core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    constexpr size_t lcc_nargs = 3;
-    size_t ei = 1 + lcc_nargs;
-    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
+    return bytecode_enter( lcc_closure, 3, args );
   }
   static inline LISP_ENTRY_4() {
     core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    constexpr size_t lcc_nargs = 4;
-    size_t ei = 1 + lcc_nargs;
-    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
+    return bytecode_enter( lcc_closure, 4, args );
   }
   static inline LISP_ENTRY_5() {
     core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    constexpr size_t lcc_nargs = 5;
-    size_t ei = 1 + lcc_nargs;
-    return bytecode_enter( ei, lcc_closure, lcc_nargs, args );
+    return bytecode_enter( lcc_closure, 5, args );
   }
 };
 
