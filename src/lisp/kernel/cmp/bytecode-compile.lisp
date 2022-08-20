@@ -562,9 +562,14 @@
     ((eq head 'go) (compile-go (first rest) env context))
     ((eq head 'block) (compile-block (first rest) (rest rest) env context))
     ((eq head 'return-from) (compile-return-from (first rest) (second rest) env context))
+    ;; handled by macros
+    #-clasp
     ((eq head 'catch) (compile-catch (first rest) (rest rest) env context))
+    #-clasp
     ((eq head 'throw) (compile-throw (first rest) (second rest) env context))
-    ((eq head 'progv) (compile-progv (first rest) (second rest) (rest (rest rest)) env context))
+    #-clasp
+    ((eq head 'progv)
+     (compile-progv (first rest) (second rest) (rest (rest rest)) env context))
     ((eq head 'quote) (compile-literal (first rest) env context))
     ((eq head 'load-time-value) (compile-load-time-value (first rest) env context))
     ((eq head 'symbol-macrolet)
