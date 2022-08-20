@@ -389,7 +389,7 @@
           ((and (symbolp name) (macro-function name nil))
            (values :global-macro (macro-function name nil)))
           ((and (symbolp name) (special-operator-p name))
-           (error "Tried to get FUN-INFO for a special operator - impossible"))
+           (error "Tried to get FUN-INFO for special operator ~s - that's impossible" name))
           ((fboundp name) (values :global-function nil))
           (t (values nil nil)))))
 
