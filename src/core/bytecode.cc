@@ -764,6 +764,22 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       pc++;
       break;
     }
+    // FIXME: Put this in its own function for better icache utilization.
+    case vm_long: {
+      switch (*++pc) {
+      case vm_const: {
+        uint8_t low = *(++pc);
+        uint16_t n = low + (*(++pc) << 8);
+        DBG_VM1("const %" PRIu16 "\n", n);
+        T_O* value = literals->rowMajorAref(n).raw_();
+        vm.push(value);
+        VM_RECORD_PLAYBACK(value,"long const");
+        pc++;
+        break;
+      }
+      }
+      break;
+    }
     default:
         SIMPLE_ERROR("Unknown opcode %hu", *pc);
     };
