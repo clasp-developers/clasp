@@ -665,9 +665,10 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       call_with_tagbody([&](TagbodyDynEnv_sp tde, size_t index) {
         if (index == 0) // first iteration
           vm.push(tde.raw_());
+        else
+          vm.load(vmss);
         bytecode_vm(++pc, vm, literals, nlocals, closure, lcc_nargs, lcc_args);
       });
-      vm.load(vmss);
       break;
     }
     case vm_exit_8: {

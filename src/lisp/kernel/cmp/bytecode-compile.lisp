@@ -1083,7 +1083,8 @@
   (let* ((block-dynenv (gensym "BLOCK-DYNENV"))
          (env (bind-vars (list block-dynenv) env context))
          (dynenv-info (nth-value 1 (var-info block-dynenv env)))
-         (label (make-label)))
+         (label (make-label))
+         (normal-label (make-label)))
     (assemble context +entry+)
     ;; Bind the dynamic environment. We don't need a cell as it is
     ;; not mutable.
@@ -1092,11 +1093,16 @@
                 env
                 :blocks (acons name (cons dynenv-info label) (blocks env)))))
       ;; Force single values into multiple so that we can uniformly PUSH afterward.
-      (compile-progn body env (new-context context :receiving t)))
-    (emit-label context label)
-    (assemble context +entry-close+)
+      (compile-progn body env context))
     (when (eql (context-receiving context) 1)
-      (assemble context +push+))))
+      (emit-jump context normal-label))
+    (emit-label context label)
+    ;; When we need 1 value, we have to make sure that the
+    ;; "exceptional" case pushes a single value onto the stack.
+    (when (eql (context-receiving context) 1)
+      (assemble context +push+)
+      (emit-label context normal-label))
+    (assemble context +entry-close+)))
 
 (defun compile-return-from (name value env context)
   (compile-form value env (new-context context :receiving t))
