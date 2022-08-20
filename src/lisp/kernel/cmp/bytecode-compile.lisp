@@ -470,6 +470,12 @@
     (when (eql (context-receiving context) t)
       (assemble context +pop+))))
 
+(defun compile-load-time-value (form env context)
+  (if *generate-compile-file-load-time-values*
+      (error "Handle compile-file")
+      (let ((value (eval form)))
+        (compile-literal value env context))))
+
 (flet ((maybe-emit (lexical-info opcode context)
          (flet ((emitter (fixup position code)
                   #+clasp-min (declare (ignore fixup))
@@ -560,6 +566,7 @@
     ((eq head 'throw) (compile-throw (first rest) (second rest) env context))
     ((eq head 'progv) (compile-progv (first rest) (second rest) (rest (rest rest)) env context))
     ((eq head 'quote) (compile-literal (first rest) env context))
+    ((eq head 'load-time-value) (compile-load-time-value (first rest) env context))
     ((eq head 'symbol-macrolet)
      (compile-symbol-macrolet (first rest) (rest rest) env context))
     #+clasp
