@@ -757,6 +757,12 @@
              (assemble context +pop+)))))
       (t (error "Unknown kind ~a" kind)))))
 
+(defun fun-name-block-name (fun-name)
+  (if (symbolp fun-name)
+      fun-name
+      ;; setf name
+      (second fun-name)))
+
 (defun compile-flet (definitions body env context)
   (let ((fun-vars '())
         (funs '())
@@ -767,7 +773,8 @@
       (let ((name (first definition))
             (fun-var (gensym "FLET-FUN")))
         (compile-function `(lambda ,(second definition)
-                             ,@(cddr definition))
+                             (block ,(fun-name-block-name name)
+                               (locally ,@(cddr definition))))
                           env (new-context context :receiving 1))
         (push fun-var fun-vars)
         (push (cons name (make-local-function-fun-info
@@ -805,8 +812,10 @@
                 (bind-vars fun-vars env context)
                 :funs (append funs (funs env)))))
       (dolist (definition definitions)
-        (let* ((fun (compile-lambda (second definition)
-                                    (rest (rest definition))
+        (let* ((name (first definition))
+               (fun (compile-lambda (second definition)
+                                    `((block ,(fun-name-block-name name)
+                                        (locally ,@(cddr definition))))
                                     env
                                     (context-module context)))
                (literal-index (literal-index fun context)))
