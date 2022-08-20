@@ -717,12 +717,12 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       uint8_t c = read_uint8(pc);
       DBG_VM("special-bind %" PRIu8 "\n", c);
       T_sp value((gctools::Tagged)(vm.pop()));
+      pc++;
       call_with_variable_bound(literals->rowMajorAref(c), value,
-                               [&]() { return bytecode_vm(++pc, vm, literals,
+                               [&]() { return bytecode_vm(pc, vm, literals,
                                                           nlocals, closure,
                                                           lcc_nargs, lcc_args);
                                });
-      pc++;
       break;
     }
     case vm_symbol_value: {
@@ -744,6 +744,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     }
     case vm_unbind: {
       DBG_VM("unbind\n");
+      pc++;
       // This return value is not actually used - we're just returning from
       // a bytecode_vm recursively invoked by vm_special_bind above.
       return gctools::return_type(nil<T_O>().raw_(), 0);
