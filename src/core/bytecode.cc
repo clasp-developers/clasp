@@ -667,7 +667,6 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
           vm.push(tde.raw_());
         bytecode_vm(++pc, vm, literals, nlocals, closure, lcc_nargs, lcc_args);
       });
-      pc++;
       vm.load(vmss);
       break;
     }
@@ -699,6 +698,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       DBG_VM("entry-close\n");
       // This sham return value just gets us out of the bytecode_vm call in
       // vm_entry, above.
+      pc++;
       return gctools::return_type(nil<T_O>().raw_(), 0);
     }
     case vm_special_bind: {
