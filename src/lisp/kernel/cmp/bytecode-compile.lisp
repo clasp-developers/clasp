@@ -795,8 +795,8 @@
             (fun-var (gensym "LABELS-FUN")))
         (push fun-var fun-vars)
         (push (cons name (make-local-function-fun-info
-                          (make-lexical-info frame-slot
-                                             (context-function context))))
+                          (make-lexical-var-info frame-slot
+                                                 (context-function context))))
               funs)
         (incf frame-slot)
         (incf fun-count)))
