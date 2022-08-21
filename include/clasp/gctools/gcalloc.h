@@ -813,7 +813,7 @@ namespace gctools {
 
     template <typename... ARGS>
       static smart_pointer_type never_invoke_allocator( ARGS &&... args) {
-      auto kind = GCStamp<OT>::Stamp;
+      auto kind = GCStamp<OT>::StampWtag;
       return GCObjectAllocator<OT>::allocate_kind(kind,0, std::forward<ARGS>(args)...);
     }
 

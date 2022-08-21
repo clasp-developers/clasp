@@ -37,7 +37,7 @@
            (list #'shared-initialize (list instance t)))))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance T) slot-names #+(or)&rest core:&va-rest initargs)
+(defmethod shared-initialize ((instance T) slot-names &rest #+(or)core:&va-rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set
@@ -61,7 +61,7 @@
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
     (dolist (slotd (class-slots class))
-      (core:vaslist-rewind initargs)
+      #+(or)(core:vaslist-rewind initargs)
       (let* ((slot-initargs (slot-definition-initargs slotd))
              (slot-name (slot-definition-name slotd)))
         (or
@@ -69,18 +69,18 @@
          (do ((largs initargs)
               initarg
               val)
-           (#+(or)(null largs) (= (core:vaslist-length largs) 0)
+           ((null largs) #+(or)(= (core:vaslist-length largs) 0)
               (progn nil))
-           (setf initarg #+(or)(pop largs) (core:vaslist-pop largs))
-           #+(or)(when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
-           (when (= (core:vaslist-length largs) 0)
+           (setf initarg (pop largs) #+(or)(core:vaslist-pop largs))
+           (when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
+           #+(or)(when (= (core:vaslist-length largs) 0)
              (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
                                    (progn
                                      (core:vaslist-rewind initargs)
                                      (core:list-from-vaslist initargs))))
            (unless (symbolp initarg)
              (simple-program-error "Not a valid initarg: ~A" initarg))
-           (setf val #+(or)(pop l) (core:vaslist-pop largs))
+           (setf val (pop largs) #+(or)(core:vaslist-pop largs))
            (when (member initarg slot-initargs :test #'eq)
              (setf (slot-value instance slot-name) val)
              (return t)))

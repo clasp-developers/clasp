@@ -224,8 +224,8 @@
                                      collect `((,@keys) (go ,tag)))
                              (otherwise (go ,default-tag)))))))
              (return
-               `(core::local-block ,bname
-                  (core::local-tagbody
+               `(block ,bname
+                  (tagbody
                    (case ,form
                      ,@(loop for (tag . objects)
                                in (partition eql-specs :key #'cdr :getter #'car)
@@ -290,8 +290,8 @@
   (let ((*codegen-map* (make-hash-table))
         (*block-name* (gensym "DISCRIMINATION"))
         (*default-tag* (gensym "DEFAULT")))
-    `(core::local-block ,*block-name*
-       (core::local-tagbody
+    `(block ,*block-name*
+       (tagbody
           (go ,(node-tag acycle syms))
           ,@(loop for (tag . code)
                     being each hash-value of *codegen-map*

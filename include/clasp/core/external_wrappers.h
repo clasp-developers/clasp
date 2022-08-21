@@ -227,7 +227,7 @@ public:
 template <typename Policies, typename OT, typename MethodPtrType>
 class gctools::GCStamp<core::TEMPLATED_FUNCTION_IndirectMethoid<Policies, OT, MethodPtrType>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_IndirectMethoid<Policies, OT, MethodPtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_IndirectMethoid<Policies, OT, MethodPtrType>::TemplatedBase>::StampWtag;
 };
 
 namespace core {

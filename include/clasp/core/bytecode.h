@@ -34,6 +34,7 @@ public:
   typedef T_sp                       Bytecode_sp_Type;
   Literals_sp_Type                   _Literals;
   Bytecode_sp_Type                   _Bytecode;
+  T_sp                               _CompileInfo;
 
 public:
   CL_LISPIFY_NAME(BytecodeModule/make)
@@ -48,6 +49,8 @@ public:
   void setf_literals(T_sp obj);
   Bytecode_sp_Type bytecode() const;
   void setf_bytecode(T_sp obj);
+  Bytecode_sp_Type compileInfo() const;
+  void setf_compileInfo(T_sp obj);
   BytecodeModule_O() {};
 };
 

@@ -86,6 +86,15 @@
 (defmacro cl:progv (symbols values &rest forms)
   `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
 
+;;;;;;;;
+;;;;;;;;
+
+
+(defmacro cleavir-primop:eq (xx yy)  `(eq ,xx ,yy))
+
+(defmacro cleavir-primop:typeq (object type) `(typep ,object ',type))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; core:debug-message is a macro to mimic the core:debug-message special operator

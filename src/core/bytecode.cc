@@ -59,6 +59,16 @@ void BytecodeModule_O::setf_bytecode(BytecodeModule_O::Bytecode_sp_Type o) {
   this->_Bytecode = o;
 }
 
+CL_DEFMETHOD
+T_sp BytecodeModule_O::compileInfo() const {
+  return this->_CompileInfo;
+}
+
+CL_DEFMETHOD
+void BytecodeModule_O::setf_compileInfo(T_sp o) {
+  this->_CompileInfo = o;
+}
+
 T_sp BytecodeCmpEnv_O::variableInfo(T_sp varname) {
   T_sp vars = this->vars();
   if (vars.nilp()) return vars;
@@ -206,6 +216,7 @@ void vm_record_playback(void* value, const char* name) {
 # define VM_RECORD_PLAYBACK(value,name)
 #endif
 
+__attribute__((optnone))
 static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
                                         SimpleVector_sp literals,
                                         size_t nlocals, Closure_O* closure,
@@ -793,7 +804,11 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       break;
     }
     default:
-        SIMPLE_ERROR("Unknown opcode %hu", *pc);
+        EntryPoint_sp ep = closure->entryPoint();
+        BytecodeModule_sp bcm = gc::As<GlobalBytecodeEntryPoint_sp>(ep)->code();
+        unsigned char* codeStart = (unsigned char*)gc::As<Array_sp>(bcm->_Bytecode)->rowMajorAddressOfElement_(0);
+        unsigned char* codeEnd = codeStart + gc::As<Array_sp>(bcm->_Bytecode)->arrayTotalSize();
+        SIMPLE_ERROR("Unknown opcode %hu pc: %p  module: %p - %p", *pc, pc, codeStart, codeEnd );
     };
   }
 }

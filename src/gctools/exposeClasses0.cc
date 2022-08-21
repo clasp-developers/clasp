@@ -271,7 +271,7 @@ void initialize_allocate_metaclasses(  core::BootStrapCoreSymbolMap& bootStrapCo
   ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(TheDerivableCxxClass_stamp));
   gctools::ShiftedStamp TheClbindCxxClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
   ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(TheClbindCxxClass_stamp));
-//  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::Stamp;
+//  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::StampWtag;
 
 
   _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,unbound<core::Instance_O>());

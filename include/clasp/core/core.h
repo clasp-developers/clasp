@@ -500,6 +500,7 @@ class SimpleVector_O;
   [[noreturn]]void lisp_error_sprintf(const char* file, int lineno, const char* function, const char* fmt, ... );
   [[noreturn]]void lisp_errorDereferencedNonPointer(core::T_O *objP);
   [[noreturn]]void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP);
+  [[noreturn]]void lisp_errorBadCastStampWtag(size_t toStampWtag, size_t fromStampWtag, core::T_O *objP);
   [[noreturn]]void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP);
   [[noreturn]]void lisp_errorBadCastToFixnum(class_id fromType, core::T_O *objP);
   [[noreturn]]void lisp_errorBadCastFromT_OToCons_O(core::T_O *objP);

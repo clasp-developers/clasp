@@ -112,7 +112,7 @@ namespace core {
 template <typename T>
 class gctools::GCStamp<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<T>> {
  public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_BuiltInObjectCreator<T>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_BuiltInObjectCreator<T>::TemplatedBase>::StampWtag;
 };
 template <typename T>
 struct gctools::GCInfo<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<T>> {

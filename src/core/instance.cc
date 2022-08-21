@@ -92,6 +92,34 @@ CL_DEFUN void core__rack_set(Rack_sp rack, size_t i, T_sp val) {
   rack->low_level_rackSet(i, val);
 }
 
+DOCGROUP(clasp)
+CL_LAMBDA(order rack index)
+CL_DEFUN T_sp core__atomic_rack_read(T_sp order, Rack_sp rack, size_t i) {
+  T_sp val = rack->low_level_rackRef(i);
+  return val;
+}
+
+DOCGROUP(clasp)
+CL_LAMBDA(order value rack index)
+CL_DEFUN void core__atomic_rack_write(T_sp order, T_sp val, Rack_sp rack, size_t i) {
+  rack->low_level_rackSet(i, val);
+}
+
+
+SYMBOL_EXPORT_SC_(KeywordPkg,SequentiallyConsistent);
+
+DOCGROUP(clasp)
+CL_LAMBDA(order old nv rack index)
+CL_DEFUN T_sp core__cas_rack(T_sp order, T_sp old, T_sp newval, Rack_sp rack, size_t index) {
+  if (order != kw::_sym_SequentiallyConsistent) {
+    SIMPLE_ERROR("Add support for order %s", _rep_(order).c_str());
+  }
+  bool result = rack->low_level_rack_compare_exchange_strong(index, old, newval);
+  printf("%s:%d:%s order = %s old = %p newval = %p rack = %p index = %zu result = %d\n",
+         __FILE__, __LINE__, __FUNCTION__, _rep_(order).c_str(), old.raw_(), newval.raw_(), rack.raw_(), index, result );
+  return old;
+}
+
 CL_LAMBDA(instance class)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(instanceClassSet)dx")
@@ -212,13 +240,23 @@ void Instance_O::fields(Record_sp node) {
 
 
 DOCGROUP(clasp)
-CL_DEFUN Rack_sp core__instance_rack(Instance_sp instance) {
-  return instance->rack();
+CL_DEFUN Rack_sp core__instance_rack(T_sp instance) {
+  if (gc::IsA<Instance_sp>(instance)) {
+    return gc::As_unsafe<Instance_sp>(instance)->rack();
+  } else if (gc::IsA<FuncallableInstance_sp>(instance)) {
+    return gc::As_unsafe<FuncallableInstance_sp>(instance)->rack();
+  }
+  TYPE_ERROR(instance,Cons_O::createList(core::_sym_Instance_O,core::_sym_FuncallableInstance_O));
 }
 
 DOCGROUP(clasp)
-CL_DEFUN void core__instance_rack_set(Instance_sp instance, Rack_sp rack) {
-  instance->_Rack = rack;
+CL_DEFUN void core__instance_rack_set(T_sp instance, Rack_sp rack) {
+  if (gc::IsA<Instance_sp>(instance)) {
+    gc::As_unsafe<Instance_sp>(instance)->_Rack = rack;
+  } else if (gc::IsA<FuncallableInstance_sp>(instance)) {
+    gc::As_unsafe<FuncallableInstance_sp>(instance)->_Rack = rack;
+  }
+  TYPE_ERROR(instance,Cons_O::createList(core::_sym_Instance_O,core::_sym_FuncallableInstance_O));
 }
 
 size_t Instance_O::rack_stamp_offset() {

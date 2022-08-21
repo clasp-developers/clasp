@@ -349,4 +349,4 @@
                   (safe-gf-specializer-profile generic-function))))
     (lambda (core:&va-rest args)
       (declare (core:lambda-name interpreted-discriminating-function))
-      (clos:interpret-dtree-program program generic-function args))))
+      (apply #'clos:interpret-dtree-program program generic-function args))))

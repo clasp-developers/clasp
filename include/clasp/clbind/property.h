@@ -158,7 +158,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::StampWtag;
 };
 
 
@@ -281,7 +281,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::SetterMethoid<SetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::SetterMethoid<SetterPolicies, OT, VariablePtrType>::TemplatedBase>::StampWtag;
 };
 
 #endif

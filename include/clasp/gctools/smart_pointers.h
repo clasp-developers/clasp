@@ -544,9 +544,9 @@ inline To_SP As(From_SP const &rhs) {
     return ret;
   }
   // If the cast didn't work then signal a type error
-  class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
-  class_id this_typ = reg::registered_class<typename From_SP::Type>::id;
-  lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.raw_()));
+  gctools::GCStampEnum expectedStampWtag = gctools::GCStamp<typename To_SP::Type>::StampWtag;
+  gctools::GCStampEnum thisStampWtag = gctools::GCStamp<typename From_SP::Type>::StampWtag;
+  lisp_errorBadCastStampWtag((size_t)expectedStampWtag, (size_t)thisStampWtag, reinterpret_cast<core::T_O *>(rhs.raw_()));
   HARD_UNREACHABLE();
 }
 template <typename To_SP>

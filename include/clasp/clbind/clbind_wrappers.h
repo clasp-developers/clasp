@@ -308,7 +308,7 @@ struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
 template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, T *>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::StampWtag;
 };
 
 template <typename T>
@@ -323,7 +323,7 @@ struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
 template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, std::unique_ptr<T>>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::StampWtag;
 };
 
 template <typename T>
@@ -337,7 +337,7 @@ struct gctools::GCInfo<clbind::Wrapper<T, std::shared_ptr<T>>> {
 template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, std::shared_ptr<T>>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, std::shared_ptr<T>>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, std::shared_ptr<T>>::TemplatedBase>::StampWtag;
 };
 
 namespace translate {

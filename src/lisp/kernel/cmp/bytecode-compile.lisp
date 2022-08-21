@@ -7,6 +7,22 @@
 
 (setq *print-circle* t)
 
+(defmacro logf (message &rest args)
+  nil)
+;;;#+(or)
+(progn
+  (defvar *bclog* (progn
+                    (format t "!~%!~%!   Opening /tmp/allcode.log - logging all bytecode compilation~%!~%!~%")
+                    (open "/tmp/allcode.log" :direction :output :if-exists :supersede)))
+  (defun log-function (cfunction compile-info bytecode)
+    (format *bclog* "Name: ~s~%" (cfunction-name cfunction))
+    (let ((*print-circle* t))
+      (format *bclog* "Form: ~s~%" (car compile-info))
+      (format *bclog* "Bytecode: ~s~%" bytecode)
+      (finish-output *bclog*)))
+  (defmacro logf (message &rest args)
+    `(format *bclog* ,message ,@args)))
+
 ;;; FIXME: New package
 (macrolet ((defcodes (&rest names)
              `(progn
@@ -482,12 +498,15 @@
 (defun bytecompile (lambda-expression
                     &optional (env (make-null-lexical-environment)))
   (check-type lambda-expression lambda-expression)
+  (logf "------- bytecompile ~%Form: ~s~%" lambda-expression)
   (let* ((module (make-cmodule (make-array 0 :fill-pointer 0 :adjustable t)))
          (lambda-list (cadr lambda-expression))
          (body (cddr lambda-expression)))
-    (link-function (compile-lambda lambda-list body env module))))
+    (link-function (compile-lambda lambda-list body env module) (cons lambda-expression env))))
 
 (defun compile-form (form env context)
+  (when *code-walker*
+    (setq form (funcall sys:*code-walker* form env)))
   (cond ((symbolp form) (compile-symbol form env context))
         ((consp form) (compile-cons (car form) (cdr form) env context))
         (t (compile-literal form env context))))
@@ -579,6 +598,7 @@
              (assemble context +pop+))))))
 
 (defun compile-cons (head rest env context)
+  (logf "compile-cons ~s~%" (list* head rest))
   (cond
     ((eq head 'progn) (compile-progn rest env context))
     ((eq head 'let) (compile-let (first rest) (rest rest) env context))
@@ -1346,7 +1366,7 @@
 ;;; Run down the hierarchy and link the compile time representations
 ;;; of modules and functions together into runtime objects. Return the
 ;;; bytecode function corresponding to CFUNCTION.
-(defun link-function (cfunction)
+(defun link-function (cfunction compile-info)
   (declare (optimize debug))
   (let ((cmodule (cfunction-cmodule cfunction)))
     (initialize-cfunction-positions cmodule)
@@ -1379,7 +1399,7 @@
                   :docstring (cfunction-doc cfunction))
                  bytecode-module
                  (cfunction-nlocals cfunction)
-                 0 0 0 0 nil 0 ; unused at the moment
+                 0 0 0 0 nil 0          ; unused at the moment
                  (length (cfunction-closed cfunction))
                  (make-list 7 :initial-element
                             (annotation-module-position (cfunction-entry-point cfunction)))))))
@@ -1395,7 +1415,9 @@
       (progn
         (core:bytecode-module/setf-literals bytecode-module literals)
         ;; Now just install the bytecode and Bob's your uncle.
-        (core:bytecode-module/setf-bytecode bytecode-module bytecode))))
+        (core:bytecode-module/setf-bytecode bytecode-module bytecode)
+        (core:bytecode-module/setf-compile-info bytecode-module compile-info))
+      (log-function cfunction compile-info bytecode)))
   (cfunction-info cfunction))
 
 ;;; --------------------------------------------------

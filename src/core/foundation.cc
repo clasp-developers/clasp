@@ -254,13 +254,17 @@ void lisp_errorDereferencedUnbound() {
   SIMPLE_ERROR(("Tried to dereference unbound"));
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP) {
-  if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("expected class_id %d out of range max[%d]" , expectedTyp , _lisp->classSymbolsHolder().size()));
+DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, size_t from, core::T_O *objP) {
+#if 1
+  printf("%s:%d:%s to = %lu  from = %lu   objP = %p\n", __FILE__, __LINE__, __FUNCTION__, (size_t)to, (size_t)from, (void*)objP);
+  SIMPLE_ERROR("Unexpected type in lisp_errorUnexpectedTypeStampWtag");
+#else
+  if (expected_class_id >= _lisp->classSymbolsHolder().size()) {
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("expected class_id %d out of range max[%d]" , expected_class_id , _lisp->classSymbolsHolder().size()));
   }
-  core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expectedTyp];
+  core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expected_class_id];
   if (expectedSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("unexpected type for object %p givenTyp %d could not find expectedTyp %d because symbol was not defined" , (void*)objP , givenTyp , expectedTyp));
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("unexpected class_id for object %p (given_class_id %d / expected_class_id %d) could not lookup expected_class_id symbol" , (void*)objP , given_class_id , expected_class_id));
   }
 
   if (givenTyp >= _lisp->classSymbolsHolder().size()) {
@@ -269,6 +273,28 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expectedTyp, class_i
   core::Symbol_sp givenSym = _lisp->classSymbolsHolder()[givenTyp];
   if (givenSym.nilp()) {
     core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("given class_id %d symbol was not defined" , givenTyp));
+  }
+
+  gctools::smart_ptr<core::T_O> obj((gc::Tagged)objP);
+  TYPE_ERROR(obj, expectedSym);
+#endif
+}
+
+DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O *objP) {
+  if (expected_class_id >= _lisp->classSymbolsHolder().size()) {
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("expected class_id %d out of range max[%d]" , expected_class_id , _lisp->classSymbolsHolder().size()));
+  }
+  core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expected_class_id];
+  if (expectedSym.nilp()) {
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("unexpected class_id for object %p (given_class_id %d / expected_class_id %d) could not lookup expected_class_id symbol" , (void*)objP , given_class_id , expected_class_id));
+  }
+
+  if (given_class_id >= _lisp->classSymbolsHolder().size()) {
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("given class_id %d out of range max[%d]" , given_class_id , _lisp->classSymbolsHolder().size()));
+  }
+  core::Symbol_sp givenSym = _lisp->classSymbolsHolder()[given_class_id];
+  if (givenSym.nilp()) {
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("given class_id %d symbol was not defined" , given_class_id));
   }
 
   gctools::smart_ptr<core::T_O> obj((gc::Tagged)objP);
@@ -282,6 +308,12 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O
 
 DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP) {
   lisp_errorUnexpectedType(toType, fromType, objP);
+}
+
+
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, size_t from, core::T_O *objP) {
+  lisp_errorUnexpectedTypeStampWtag((size_t)to, (size_t)from, objP);
+  abort();
 }
 
 DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP) {

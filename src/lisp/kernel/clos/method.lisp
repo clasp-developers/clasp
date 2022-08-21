@@ -150,10 +150,10 @@
                   `((next-method-p ()
                       '(typep ,contsym '(not %no-next-method-continuation))))))
      (flet (,@(when (eq cnm-p 'function)
-                `((call-next-method (core:&va-rest cnm-args)
-                    (if (> (vaslist-length cnm-args) 0)
-                        (apply ,contsym cnm-args)
-                        ,default-cnm-form))))
+                `((call-next-method (&rest cnm-args)
+                    (if (null cnm-args)
+                        ,default-cnm-form
+                        (apply ,contsym cnm-args)))))
             ,@(when (eq nnmp-p 'function)
                 `((next-method-p ()
                     (typep ,contsym '(not %no-next-method-continuation))))))
@@ -170,7 +170,7 @@
              (declare (core:lambda-name ,lambda-name))
              ,@(when doc (list doc))
              ,(wrap-contf-lexical-function-binds
-               `(core::bind-vaslist ,lambda-list .method-args. ,@decls ,@body)
+               `(apply (lambda ,lambda-list ,@decls ,@body) .method-args.)
                contsym call-next-method-p no-next-method-p-p
                `(apply ,contsym .method-args.)))
           ;; We have only required parameters. This allows us to use a function

@@ -17,7 +17,12 @@ namespace core {
 
 // TODO: Delete Frame_O, make this Frame_O
 FORWARD(DebuggerFrame);
-class DebuggerFrame_O : public General_O {
+class
+
+
+
+
+DebuggerFrame_O : public General_O {
   LISP_CLASS(core, CorePkg, DebuggerFrame_O, "DebuggerFrame", General_O);
   virtual ~DebuggerFrame_O() {};
 public:

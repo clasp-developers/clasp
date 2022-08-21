@@ -104,7 +104,7 @@ public:
 template <typename Pols, typename OT, typename Begin, typename End>
 class gctools::GCStamp<clbind::IteratorMethoid<Pols, OT, Begin, End>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::IteratorMethoid<Pols, OT, Begin, End>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::IteratorMethoid<Pols, OT, Begin, End>::TemplatedBase>::StampWtag;
 };
 
 #endif

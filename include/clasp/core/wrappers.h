@@ -280,7 +280,7 @@ void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(
 template <int DispatchOn, typename Policies, typename FunctionPtrType>
 class gctools::GCStamp<core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, Policies, FunctionPtrType>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, Policies, FunctionPtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, Policies, FunctionPtrType>::TemplatedBase>::StampWtag;
 };
 
 namespace core {

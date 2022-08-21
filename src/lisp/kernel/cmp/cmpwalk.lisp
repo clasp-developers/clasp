@@ -49,6 +49,12 @@
         (llvm-sys::module-delete module))))
   t)
 
+
+(defun code-walk-using-bytecode (code-walker-function form env)
+  (let* ((sys:*code-walker* code-walker-function)
+         (module (make-cmodule (make-array 0 :fill-pointer 0 :adjustable t))))
+    (compile-lambda nil `(progn ,form) env module)))
+
 (defun code-walk (code-walker-function form env)
   "Walk the form using whichever compiler we are currently using
    within env and call the code-walker-function on each internal form.
@@ -56,7 +62,9 @@ code-walker-function takes two arguments (form env).
 Returns T if walked, NIL if not (e.g. because the compiler signaled an error)."
   (let ((*code-walking* t))
     (if (not core:*use-cleavir-compiler*)
-        (code-walk-using-bclasp code-walker-function form env)
+        (if (eq cmp::*implicit-compile-hook* 'cmp::bytecode-implicit-compile-repl-form)
+            (code-walk-using-bytecode code-walker-function form env)
+            (code-walk-using-bclasp code-walker-function form env))
         (let* ((clasp-cleavir-pkg (find-package :clasp-cleavir))
                (code-walk-using-cleavir-symbol (find-symbol "CODE-WALK-USING-CLEAVIR" clasp-cleavir-pkg)))
           (if (fboundp code-walk-using-cleavir-symbol)

@@ -94,7 +94,7 @@ public:
 template <typename T, typename Pointer>
 class gctools::GCStamp<clbind::DefaultConstructorCreator_O<T, Pointer>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DefaultConstructorCreator_O<T, Pointer>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DefaultConstructorCreator_O<T, Pointer>::TemplatedBase>::StampWtag;
 };
 
 namespace clbind {
@@ -132,7 +132,7 @@ public:
 template <typename T>
 class gctools::GCStamp<clbind::DerivableDefaultConstructorCreator_O<T>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorCreator_O<T>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorCreator_O<T>::TemplatedBase>::StampWtag;
 };
 
 namespace clbind {
@@ -179,7 +179,7 @@ public:
 template <typename Policies, typename T>
 class gctools::GCStamp<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::StampWtag;
 };
 
 namespace clbind {
@@ -248,7 +248,7 @@ public:
 template <typename Pols, typename Pointer, typename T, typename Sig>
 class gctools::GCStamp<clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>::TemplatedBase>::StampWtag;
 };
 
 
