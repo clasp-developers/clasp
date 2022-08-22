@@ -225,8 +225,12 @@
                 (if aok-p (boole boole-ior 128 key-count) key-count)
                 (literal-index (first key-names) context)
                 (frame-end env))
-      (error "Handle more than 127 keyword parameters - you need ~s" key-count)
-      ))
+      (error "Handle more than 127 keyword parameters - you need ~s" key-count)))
+
+(defun emit-bind (context count offset)
+  (cond ((= count 1) (assemble context +set+ offset))
+        ((= count 0))
+        (t (assemble context +bind+ count offset))))
 
 ;;; Different kinds of things can go in the variable namespace and they can
 ;;; all shadow each other, so we use this structure to disambiguate.
@@ -711,7 +715,7 @@
             (incf lexical-count))
           (when lexical-bindings
             ;; ... And use the end of the old env's frame.
-            (assemble context +bind+ lexical-count (frame-end env)))
+            (emit-bind context lexical-count (frame-end env)))
           (dolist (binding special-bindings)
             (compile-form (second binding) new-env (new-context context :receiving 1))
             (assemble context +special-bind+ (literal-index (first binding) context))
@@ -845,7 +849,7 @@
               funs)
         (incf frame-slot)
         (incf fun-count)))
-    (assemble context +bind+ fun-count (frame-end env))
+    (emit-bind context fun-count (frame-end env))
     (let ((env (make-lexical-environment
                 (bind-vars fun-vars env context)
                 :funs (append funs (funs env)))))
@@ -888,7 +892,7 @@
                  (assemble context +make-uninitialized-closure+
                    literal-index))))
         (incf frame-slot))
-      (assemble context +bind+ fun-count frame-start)
+      (emit-bind context fun-count frame-start)
       (dolist (closure closures)
         (dotimes (i (length (cfunction-closed (car closure))))
           (reference-lexical-info (aref (cfunction-closed (car closure)) i)
