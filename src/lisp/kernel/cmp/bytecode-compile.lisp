@@ -9,7 +9,7 @@
 
 (defmacro logf (message &rest args)
   nil)
-;;;#+(or)
+#+(or)
 (progn
   (defvar *bclog* (progn
                     (format t "!~%!~%!   Opening /tmp/allcode.log - logging all bytecode compilation~%!~%!~%")
@@ -1095,11 +1095,9 @@
       (when (go-tag-p statement)
         (push (list* statement dynenv-info (make-label))
               new-tags)))
-    (assemble context +entry+)
     (let ((env (make-lexical-environment env :tags new-tags)))
-      ;; Bind the dynamic environment. We don't need a cell as it is
-      ;; not mutable.
-      (assemble context +set+ (lexical-info-frame-offset dynenv-info))
+      ;; Bind the dynamic environment.
+      (assemble context +entry+ (lexical-info-frame-offset dynenv-info))
       ;; Compile the body, emitting the tag destination labels.
       (dolist (statement statements)
         (if (go-tag-p statement)
@@ -1126,10 +1124,8 @@
          (dynenv-info (nth-value 1 (var-info block-dynenv env)))
          (label (make-label))
          (normal-label (make-label)))
-    (assemble context +entry+)
-    ;; Bind the dynamic environment. We don't need a cell as it is
-    ;; not mutable.
-    (assemble context +set+ (lexical-info-frame-offset dynenv-info))
+    ;; Bind the dynamic environment.
+    (assemble context +entry+ (lexical-info-frame-offset dynenv-info))
     (let ((env (make-lexical-environment
                 env
                 :blocks (acons name (cons dynenv-info label) (blocks env)))))
@@ -1417,7 +1413,7 @@
         ;; Now just install the bytecode and Bob's your uncle.
         (core:bytecode-module/setf-bytecode bytecode-module bytecode)
         (core:bytecode-module/setf-compile-info bytecode-module compile-info))
-      (log-function cfunction compile-info bytecode)))
+      #+(or)(log-function cfunction compile-info bytecode)))
   (cfunction-info cfunction))
 
 ;;; --------------------------------------------------

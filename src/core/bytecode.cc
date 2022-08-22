@@ -331,8 +331,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_set: {
       uint8_t n = read_uint8(pc);
       DBG_VM("set %" PRIu8 "\n", n);
-      vm.copytoreg(vm.stackref(0), 1, n);
-      vm.drop(1);
+      vm.setreg(n, vm.pop());
       pc++;
       break;
     }
@@ -673,9 +672,10 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_entry: {
       DBG_VM("entry\n");
       VirtualMachineStackState vmss = vm.save();
+      uint8_t n = read_uint8(pc);
       call_with_tagbody([&](TagbodyDynEnv_sp tde, size_t index) {
         if (index == 0) // first iteration
-          vm.push(tde.raw_());
+          vm.setreg(n, tde.raw_());
         else
           vm.load(vmss);
         bytecode_vm(++pc, vm, literals, nlocals, closure, lcc_nargs, lcc_args);
