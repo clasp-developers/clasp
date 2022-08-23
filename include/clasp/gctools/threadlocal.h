@@ -166,6 +166,14 @@ struct VirtualMachine {
     VM_ASSERT_ALIGNED(this->_framePointer);
   }
 
+  inline void setreg(size_t base, core::T_O* value) {
+#ifdef STACK_GROWS_UP
+    *(this->_framePointer + base + 1) = value;
+#else
+    *(this->_framePointer - base) = value;
+#endif
+  }
+
   // Copy N elements from SOURCE into the current frame's register file
   // starting at BASE.
   // If the stack grows up, SOURCE should be a pointer to the first element

@@ -9,7 +9,7 @@
 
 (defmacro logf (message &rest args)
   nil)
-;;;#+(or)
+#+(or)
 (progn
   (defvar *bclog* (progn
                     (format t "!~%!~%!   Opening /tmp/allcode.log - logging all bytecode compilation~%!~%!~%")
@@ -225,8 +225,12 @@
                 (if aok-p (boole boole-ior 128 key-count) key-count)
                 (literal-index (first key-names) context)
                 (frame-end env))
-      (error "Handle more than 127 keyword parameters - you need ~s" key-count)
-      ))
+      (error "Handle more than 127 keyword parameters - you need ~s" key-count)))
+
+(defun emit-bind (context count offset)
+  (cond ((= count 1) (assemble context +set+ offset))
+        ((= count 0))
+        (t (assemble context +bind+ count offset))))
 
 ;;; Different kinds of things can go in the variable namespace and they can
 ;;; all shadow each other, so we use this structure to disambiguate.
@@ -714,7 +718,7 @@
             (incf lexical-count))
           (when lexical-bindings
             ;; ... And use the end of the old env's frame.
-            (assemble context +bind+ lexical-count (frame-end env)))
+            (emit-bind context lexical-count (frame-end env)))
           (dolist (binding special-bindings)
             (compile-form (second binding) new-env (new-context context :receiving 1))
             (assemble context +special-bind+ (literal-index (first binding) context))
@@ -848,7 +852,7 @@
               funs)
         (incf frame-slot)
         (incf fun-count)))
-    (assemble context +bind+ fun-count (frame-end env))
+    (emit-bind context fun-count (frame-end env))
     (let ((env (make-lexical-environment
                 (bind-vars fun-vars env context)
                 :funs (append funs (funs env)))))
@@ -891,7 +895,7 @@
                  (assemble context +make-uninitialized-closure+
                    literal-index))))
         (incf frame-slot))
-      (assemble context +bind+ fun-count frame-start)
+      (emit-bind context fun-count frame-start)
       (dolist (closure closures)
         (dotimes (i (length (cfunction-closed (car closure))))
           (reference-lexical-info (aref (cfunction-closed (car closure)) i)
@@ -1098,11 +1102,9 @@
       (when (go-tag-p statement)
         (push (list* statement dynenv-info (make-label))
               new-tags)))
-    (assemble context +entry+)
     (let ((env (make-lexical-environment env :tags new-tags)))
-      ;; Bind the dynamic environment. We don't need a cell as it is
-      ;; not mutable.
-      (assemble context +set+ (lexical-info-frame-offset dynenv-info))
+      ;; Bind the dynamic environment.
+      (assemble context +entry+ (lexical-info-frame-offset dynenv-info))
       ;; Compile the body, emitting the tag destination labels.
       (dolist (statement statements)
         (if (go-tag-p statement)
@@ -1129,10 +1131,8 @@
          (dynenv-info (nth-value 1 (var-info block-dynenv env)))
          (label (make-label))
          (normal-label (make-label)))
-    (assemble context +entry+)
-    ;; Bind the dynamic environment. We don't need a cell as it is
-    ;; not mutable.
-    (assemble context +set+ (lexical-info-frame-offset dynenv-info))
+    ;; Bind the dynamic environment.
+    (assemble context +entry+ (lexical-info-frame-offset dynenv-info))
     (let ((env (make-lexical-environment
                 env
                 :blocks (acons name (cons dynenv-info label) (blocks env)))))
@@ -1420,7 +1420,7 @@
         ;; Now just install the bytecode and Bob's your uncle.
         (core:bytecode-module/setf-bytecode bytecode-module bytecode)
         (core:bytecode-module/setf-compile-info bytecode-module compile-info))
-      (log-function cfunction compile-info bytecode)))
+      #+(or)(log-function cfunction compile-info bytecode)))
   (cfunction-info cfunction))
 
 ;;; --------------------------------------------------

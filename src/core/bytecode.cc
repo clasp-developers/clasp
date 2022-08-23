@@ -218,7 +218,7 @@ void vm_record_playback(void* value, const char* name) {
 
 __attribute__((optnone))
 static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
-                                        SimpleVector_sp literals,
+                                        T_O** literals,
                                         size_t nlocals, Closure_O* closure,
                                         size_t lcc_nargs,
                                         core::T_O** lcc_args) {
@@ -252,7 +252,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_const: {
       uint8_t n = read_uint8(pc);
       DBG_VM1("const %" PRIu8 "\n", n);
-      T_O* value = literals->rowMajorAref(n).raw_();
+      T_O* value = literals[n];
       vm.push(value);
       VM_RECORD_PLAYBACK(value,"const");
       pc++;
@@ -331,8 +331,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_set: {
       uint8_t n = read_uint8(pc);
       DBG_VM("set %" PRIu8 "\n", n);
-      vm.copytoreg(vm.stackref(0), 1, n);
-      vm.drop(1);
+      vm.setreg(n, vm.pop());
       pc++;
       break;
     }
@@ -364,8 +363,9 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_make_closure: {
       uint8_t c = read_uint8(pc);
       DBG_VM("make-closure %" PRIu8 "\n", c);
+      T_sp fn_sp((gctools::Tagged)literals[c]);
       GlobalBytecodeEntryPoint_sp fn
-        = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(c));
+        = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       Closure_sp closure
@@ -380,8 +380,9 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_make_uninitialized_closure: {
       uint8_t c = read_uint8(pc);
       DBG_VM("make-uninitialized-closure %" PRIu8 "\n", c);
+      T_sp fn_sp((gctools::Tagged)literals[c]);
       GlobalBytecodeEntryPoint_sp fn
-        = gc::As<GlobalBytecodeEntryPoint_sp>(literals->rowMajorAref(c));
+        = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       Closure_sp closure
@@ -480,7 +481,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
             if (!seen_aokp) aokp = value.notnilp();
           }
           for (size_t key_id = 0; key_id < key_count; ++key_id) {
-            T_O* ckey = literals->rowMajorAref(key_id + key_literal_start).raw_();
+            T_O* ckey = literals[key_id + key_literal_start];
             if (key == ckey) {
               valid_key_p = true;
               *vm.reg(key_frame_start + key_id) = lcc_args[arg_index];
@@ -673,9 +674,10 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_entry: {
       DBG_VM("entry\n");
       VirtualMachineStackState vmss = vm.save();
+      uint8_t n = read_uint8(pc);
       call_with_tagbody([&](TagbodyDynEnv_sp tde, size_t index) {
         if (index == 0) // first iteration
-          vm.push(tde.raw_());
+          vm.setreg(n, tde.raw_());
         else
           vm.load(vmss);
         bytecode_vm(++pc, vm, literals, nlocals, closure, lcc_nargs, lcc_args);
@@ -717,18 +719,20 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       uint8_t c = read_uint8(pc);
       DBG_VM("special-bind %" PRIu8 "\n", c);
       T_sp value((gctools::Tagged)(vm.pop()));
-      call_with_variable_bound(literals->rowMajorAref(c), value,
-                               [&]() { return bytecode_vm(++pc, vm, literals,
+      pc++;
+      T_sp symbol((gctools::Tagged)literals[c]);
+      call_with_variable_bound(symbol, value,
+                               [&]() { return bytecode_vm(pc, vm, literals,
                                                           nlocals, closure,
                                                           lcc_nargs, lcc_args);
                                });
-      pc++;
       break;
     }
     case vm_symbol_value: {
       uint8_t c = read_uint8(pc);
       DBG_VM("symbol-value %" PRIu8 "\n", c);
-      Symbol_sp sym = gc::As<Symbol_sp>(literals->rowMajorAref(c));
+      T_sp sym_sp((gctools::Tagged)literals[c]);
+      Symbol_sp sym = gc::As<Symbol_sp>(sym_sp);
       vm.push(sym->symbolValue().raw_());
       pc++;
       break;
@@ -736,7 +740,8 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_symbol_value_set: {
       uint8_t c = read_uint8(pc);
       DBG_VM("symbol-value-set %" PRIu8 "\n", c);
-      Symbol_sp sym = gc::As<Symbol_sp>(literals->rowMajorAref(c));
+      T_sp sym_sp((gctools::Tagged)literals[c]);
+      Symbol_sp sym = gc::As<Symbol_sp>(sym_sp);
       T_sp value((gctools::Tagged)(vm.pop()));
       sym->setf_symbolValue(value);
       pc++;
@@ -744,6 +749,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     }
     case vm_unbind: {
       DBG_VM("unbind\n");
+      pc++;
       // This return value is not actually used - we're just returning from
       // a bytecode_vm recursively invoked by vm_special_bind above.
       return gctools::return_type(nil<T_O>().raw_(), 0);
@@ -751,7 +757,8 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_fdefinition: {
       uint8_t c = read_uint8(pc);
       DBG_VM1("fdefinition %" PRIu8 "\n", c);
-      vm.push(cl__fdefinition(literals->rowMajorAref(c)).raw_());
+      T_sp sym((gctools::Tagged)literals[c]);
+      vm.push(cl__fdefinition(sym).raw_());
       pc++;
       break;
     }
@@ -784,7 +791,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
         uint8_t low = *(++pc);
         uint16_t n = low + (*(++pc) << 8);
         DBG_VM1("long const %" PRIu16 "\n", n);
-        T_O* value = literals->rowMajorAref(n).raw_();
+        T_O* value = literals[n];
         vm.push(value);
         VM_RECORD_PLAYBACK(value,"long const");
         pc++;
@@ -794,7 +801,8 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
         uint8_t low = *(++pc);
         uint16_t n = low + (*(++pc) << 8);
         DBG_VM1("long fdefinition %" PRIu16 "\n", n);
-        vm.push(cl__fdefinition(literals->rowMajorAref(n)).raw_());
+        T_sp sym((gctools::Tagged)literals[n]);
+        vm.push(cl__fdefinition(sym).raw_());
         pc++;
         break;
       }
@@ -831,7 +839,8 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   //DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
   size_t nlocals = entryPoint->localsFrameSize();
   BytecodeModule_sp module = entryPoint->code();
-  SimpleVector_sp literals = gc::As<SimpleVector_sp>(module->literals());
+  T_O** literals = ((T_O**)gc::As<SimpleVector_sp>(module->literals())->
+                    rowMajorAddressOfElement_(0));
 
   VirtualMachine& vm = my_thread->_VM;
   VMFramePusher vmfp(vm, nlocals);
