@@ -1,5 +1,15 @@
+
+;;;
+;;; The following features are important
+;;; #+bytecode - use on the bytecode compiler
+;;; #-bytecode - use the bclasp compiler
+;;; #-bytecodelike - use bclasp special operators
+;;; #+bytecodelike - use macros and functions instead of special operators
+
+
+
 (eval-when (:execute)
-  (setq *load-print* t)
+  #+(or)(setq *load-print* t)
   (setq *load-verbose* t))
 (load "src/lisp/kernel/tag/start.lisp")
 (load "src/lisp/kernel/lsp/prologue.lisp")
@@ -48,17 +58,20 @@
 (load "src/lisp/kernel/cmp/cmpliteral.lisp")
 (load "src/lisp/kernel/cmp/typeq.lisp")
 (load "src/lisp/kernel/cmp/codegen-special-form.lisp")
-;;;(load "src/lisp/kernel/cmp/codegen.lisp")
-;;;(load "src/lisp/kernel/cmp/compile.lisp")
-;;;(load "src/lisp/kernel/cmp/codegen-toplevel.lisp")
+#-bytecode(load "src/lisp/kernel/cmp/codegen.lisp")
+#-bytecode(load "src/lisp/kernel/cmp/compile.lisp")
+#-bytecode(load "src/lisp/kernel/cmp/codegen-toplevel.lisp")
 (load "src/lisp/kernel/cmp/compile-file.lisp")
 (load "src/lisp/kernel/cmp/external-clang.lisp")
 (load "src/lisp/kernel/cmp/cmpname.lisp")
 (load "src/lisp/kernel/cmp/cmpbundle.lisp")
-;;;(load "src/lisp/kernel/cmp/cmprepl.lisp")
-(load "src/lisp/kernel/cmp/bytecode-compile.lisp")   ;; bytecode-compile
-(load "src/lisp/kernel/cmp/cmprepl-bytecode.lisp")   ;; modified cmprepl
-(load "src/lisp/kernel/cmp/bytecode-compile.lisp")   ;; bytecode-compile again
+
+#-bytecode(load "src/lisp/kernel/cmp/cmprepl.lisp")
+
+#+bytecode(load "src/lisp/kernel/cmp/bytecode-compile.lisp")   ;; bytecode-compile
+#+bytecode(load "src/lisp/kernel/cmp/cmprepl-bytecode.lisp")   ;; modified cmprepl
+#+bytecode(load "src/lisp/kernel/cmp/bytecode-compile.lisp")   ;; bytecode-compile again
+
 (load "src/lisp/kernel/tag/min-pre-epilogue.lisp")
 (load "src/lisp/kernel/lsp/epilogue-aclasp.lisp")
 (load "src/lisp/kernel/tag/min-end.lisp")
@@ -71,8 +84,11 @@
 
 (load "SYS:SRC;LISP;KERNEL;TAG;START.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;PROLOGUE.LISP")
-;;;(load "SYS:SRC;LISP;KERNEL;LSP;DIRECT-CALLS.LISP")
-;;;(load "SYS:GENERATED;CL-WRAPPERS.LISP")
+;;;
+;;; bytecode compiler won't support these two
+#-bytecode(load "SYS:SRC;LISP;KERNEL;LSP;DIRECT-CALLS.LISP")
+#-bytecode(load "SYS:GENERATED;CL-WRAPPERS.LISP")
+
 (load "SYS:SRC;LISP;KERNEL;TAG;MIN-START.LISP")
 (load "SYS:SRC;LISP;KERNEL;INIT.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;AFTER-INIT.LISP")
@@ -163,8 +179,6 @@
   (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;FLAG.LISP")
   (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;CONSTRUCTOR.LISP")
   (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;REINITIALIZER.LISP")
-  (setf *features* (remove :static-gfs *features*))
-
   ;; DEFUN invalidate-designated-changers
   (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;CHANGER.LISP")
   )
@@ -174,7 +188,15 @@
 (load "SYS:SRC;LISP;KERNEL;CLOS;SLOT.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;BOOT.LISP")
 
+;;
 ;; DEFUN (setf find-class) that invokes invalidate-designated-changers because #+static-gfs is a *feature*
+;;
+;; So I turn off :static-gfs here
+;;
+(format t "Before loading KERNEL.LISP *features* -> ~s~%" *features*)
+#+bytecode(setf *features* (remove :static-gfs *features*))
+
+
 (load "SYS:SRC;LISP;KERNEL;CLOS;KERNEL.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;OUTCOME.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;DISCRIMINATE.LISP")
@@ -196,37 +218,46 @@
 ;; Invoke (setf find-class) - this will invoke invalidate-designated-changers
 (load "SYS:SRC;LISP;KERNEL;CLOS;FIXUP.LISP")
 (progn
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;CELL.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;EFFECTIVE-METHOD.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;SVUC.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;SHARED-INITIALIZE.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;INITIALIZE-INSTANCE.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;ALLOCATE-INSTANCE.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;MAKE-INSTANCE.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;COMPUTE-CONSTRUCTOR.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;DEPENDENTS.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;COMPILER-MACROS.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;REINITIALIZE-INSTANCE.LISP")
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;UPDATE-INSTANCE-FOR-DIFFERENT-CLASS.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;CELL.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;EFFECTIVE-METHOD.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;SVUC.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;SHARED-INITIALIZE.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;INITIALIZE-INSTANCE.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;ALLOCATE-INSTANCE.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;MAKE-INSTANCE.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;COMPUTE-CONSTRUCTOR.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;DEPENDENTS.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;COMPILER-MACROS.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;REINITIALIZE-INSTANCE.LISP")
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;UPDATE-INSTANCE-FOR-DIFFERENT-CLASS.LISP")
 
-        ;; DEFUN invalidate-changer  for the first time
+  ;; DEFUN invalidate-changer  for the first time
 
-        (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;CHANGE-CLASS.LISP")
-        )
+  (load "SYS:SRC;LISP;KERNEL;CLOS;STATIC-GFS;CHANGE-CLASS.LISP")
+  )
 (load "SYS:SRC;LISP;KERNEL;LSP;SOURCE-LOCATION.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;DEFVIRTUAL.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;CONDITIONS.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;PRINT.LISP")
-(load "SYS:SRC;LISP;KERNEL;CLOS;STREAMS.LISP")
+;;;
+;;; package-iterator fails
+;;;
+;;;(load "SYS:SRC;LISP;KERNEL;CLOS;STREAMS.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;SEQUENCES.LISP")
-(load "SYS:SRC;LISP;KERNEL;LSP;PPRINT.LISP")
+;;; Something else fails
+;;;(load "SYS:SRC;LISP;KERNEL;LSP;PPRINT.LISP")
 (load "SYS:SRC;LISP;KERNEL;CMP;COMPILER-CONDITIONS.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;PACKLIB2.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;INSPECT.LISP")
-(load "SYS:SRC;LISP;KERNEL;LSP;FLI.LISP")
+;;; Another broken compilation that segfaults
+;;;(load "SYS:SRC;LISP;KERNEL;LSP;FLI.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;POSIX.LISP")
-(load "SYS:SRC;LISP;MODULES;SOCKETS;SOCKETS.LISP")
+;;; Another broken compilation that segfaults
+;;;(load "SYS:SRC;LISP;MODULES;SOCKETS;SOCKETS.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;TOP.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;PRE-EPILOGUE-BCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;EPILOGUE-BCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;BCLASP.LISP")
+(format t "Done building bclasp - now the stack will overflow (sigh)~%")
+(core:quit)
+

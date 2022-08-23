@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>
 
@@ -751,6 +752,22 @@ CL_DEFUN T_sp core__class_stamp_for_instances(Instance_sp c) {
   }
   TYPE_ERROR(c,cl::_sym_class);
 };
+};
+
+
+#define READ_RACK_STAMP
+#include <clasp/llvmo/read-stamp.cc>
+#undef READ_RACK_STAMP
+
+namespace core {
+CL_DEFUN T_sp core__rack_stamp(core::T_sp obj) {
+  General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)obj.raw_());
+  uintptr_t stamp = (uintptr_t)(llvmo::template_read_rack_stamp(client_ptr));
+  //core::write_bf_stream(fmt::sprintf("%s:%d:%s stamp = %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
+  T_sp result((gctools::Tagged)stamp);
+  return result;
+}
+
 
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__name_of_class(Instance_sp c) {

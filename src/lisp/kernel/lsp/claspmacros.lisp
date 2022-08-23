@@ -90,10 +90,24 @@
 ;;;;;;;;
 
 
+#+bytecodelike
 (defmacro cleavir-primop:eq (xx yy)  `(eq ,xx ,yy))
 
+#+bytecodelike
 (defmacro cleavir-primop:typeq (object type) `(typep ,object ',type))
 
+#+bytecodelike
+(defmacro cleavir-primop:car (obj) `(car ,obj))
+#+bytecodelike
+(defmacro cleavir-primop:cdr (obj) `(cdr ,obj))
+
+#+(and bytecodelike (not clasp-min))
+(defmacro core::header-stamp-case (stamp derivable rack wrapped header)
+  `(case (logand (ash ,stamp 2) ,cmp:+where-tag-mask+)
+     (,cmp:+derivable-where-tag+ ,derivable)
+     (,cmp:+rack-where-tag+ ,rack)
+     (,cmp:+wrapped-where-tag+ ,wrapped)
+     (,cmp:+header-where-tag+ ,header)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

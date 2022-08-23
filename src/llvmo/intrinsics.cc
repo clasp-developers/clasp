@@ -879,7 +879,9 @@ ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
 // builtins.cc moved here.
 //
 
+#define TEMPLATE_READ_STAMP
 #include <clasp/llvmo/read-stamp.cc>
+#undef TEMPLATE_READ_STAMP
 
 extern "C" {
 uint64_t cx_read_stamp(core::T_O* obj, uint64_t stamp)

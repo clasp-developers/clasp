@@ -29,9 +29,22 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/derivableCxxObject.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
+#define READ_DERIVED_STAMP
+#include <clasp/llvmo/read-stamp.cc>
+#undef READ_DERIVED_STAMP
+
 namespace core {
+
+CL_DEFUN T_sp core__derivable_stamp(T_sp obj) {
+  General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)obj.raw_());
+  uintptr_t stamp = (uintptr_t)(llvmo::template_read_derived_stamp(client_ptr));
+//  core::write_bf_stream(fmt::sprintf("%s:%d:%s stamp = %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
+  T_sp result((gctools::Tagged)stamp);
+  return result;
+};
 
 };

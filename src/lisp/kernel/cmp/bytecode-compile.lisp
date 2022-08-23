@@ -498,11 +498,14 @@
 (defun bytecompile (lambda-expression
                     &optional (env (make-null-lexical-environment)))
   (check-type lambda-expression lambda-expression)
-  (logf "------- bytecompile ~%Form: ~s~%" lambda-expression)
+  (logf "vvvvvvvv bytecompile ~%Form: ~s~%" lambda-expression)
   (let* ((module (make-cmodule (make-array 0 :fill-pointer 0 :adjustable t)))
          (lambda-list (cadr lambda-expression))
          (body (cddr lambda-expression)))
-    (link-function (compile-lambda lambda-list body env module) (cons lambda-expression env))))
+    (logf "-------- About to link~%")
+    (multiple-value-prog1
+        (link-function (compile-lambda lambda-list body env module) (cons lambda-expression env))
+      (logf "^^^^^^^^^ Compile done~%"))))
 
 (defun compile-form (form env context)
   (when *code-walker*
@@ -927,7 +930,7 @@
         (multiple-value-bind (kind data) (fun-info fnameoid env)
           (cond
             ((member kind '(:global-function nil))
-             (when (null kind) (warn "Unknown function ~a" fnameoid))
+             #-(or clasp-min aclasp bclasp)(when (null kind) (warn "Unknown function ~a" fnameoid))
              ;;(assemble context +fdefinition+ (literal-index fnameoid context))
              (emit-fdefinition context (literal-index fnameoid context))
              )

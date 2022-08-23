@@ -410,7 +410,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       DBG_VM1("return\n");
 #ifdef DBG_VM1
       if (vm.npushed(nlocals) != 0)
-        SIMPLE_ERROR("Help");
+        SIMPLE_ERROR("In vm_return - vm.npushed(nlocals) = %lu   nlocals = %lu", vm.npushed(nlocals), nlocals);
 #endif
       core::MultipleValues &mv = core::lisp_multipleValues();
       size_t nvalues = mv.getSize();

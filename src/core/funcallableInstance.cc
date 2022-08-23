@@ -265,7 +265,17 @@ CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_
 }
 }
 
+#define READ_RACK_STAMP
+#define READ_WRAPPED_STAMP
+#define READ_RACK_STAMP
+#define READ_DERIVED_STAMP
+#define READ_GENERAL_STAMP
 #include <clasp/llvmo/read-stamp.cc>
+#undef READ_WRAPPED_STAMP
+#undef READ_RACK_STAMP
+#undef READ_DERIVED_STAMP
+#undef READ_GENERAL_STAMP
+#undef READ_RACK_STAMP
 
 namespace core {
 
