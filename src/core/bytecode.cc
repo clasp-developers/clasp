@@ -688,7 +688,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_exit_8: {
       int8_t rel = *(vm._pc + 1);
       DBG_VM("exit %" PRId8 "\n", rel);
-      vm._pc += rel - 1;
+      vm._pc += rel;
       T_sp ttde((gctools::Tagged)(vm.pop()));
       TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
@@ -696,7 +696,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_exit_16: {
       int32_t rel = read_label(vm._pc, 2);
       DBG_VM("exit %" PRId32 "\n", rel);
-      vm._pc += rel - 2;
+      vm._pc += rel - 1;
       T_sp ttde((gctools::Tagged)(vm.pop()));
       TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
@@ -704,7 +704,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_exit_24: {
       int32_t rel = read_label(vm._pc, 3);
       DBG_VM("exit %" PRId32 "\n", rel);
-      vm._pc += rel - 3;
+      vm._pc += rel - 2;
       T_sp ttde((gctools::Tagged)(vm.pop()));
       TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
