@@ -672,9 +672,9 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       break;
     }
     case vm_entry: {
-      DBG_VM("entry\n");
-      VirtualMachineStackState vmss = vm.save();
       uint8_t n = read_uint8(pc);
+      DBG_VM("entry %" PRIu8 "\n", n);
+      VirtualMachineStackState vmss = vm.save();
       call_with_tagbody([&](TagbodyDynEnv_sp tde, size_t index) {
         if (index == 0) // first iteration
           vm.setreg(n, tde.raw_());
