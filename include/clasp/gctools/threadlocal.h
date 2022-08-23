@@ -89,6 +89,9 @@ struct VirtualMachine {
   core::T_O**    _literals;
   unsigned char* _pc;
 
+  unsigned char* getpc() { return _pc; }
+  void setpc(unsigned char* npc) { this->_pc = npc; }
+
   inline void push(core::T_O* value) {
 #ifdef STACK_GROWS_UP
     this->_stackPointer++;

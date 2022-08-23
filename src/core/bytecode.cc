@@ -678,8 +678,10 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
       call_with_tagbody([&](TagbodyDynEnv_sp tde, size_t index) {
         if (index == 0) // first iteration
           vm.setreg(n, tde.raw_());
-        else
+        else {
+          pc = vm.getpc();
           vm.load(vmss);
+        }
         bytecode_vm(++pc, vm, literals, nlocals, closure, lcc_nargs, lcc_args);
       });
       break;
@@ -687,7 +689,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_exit_8: {
       int8_t rel = *(pc + 1);
       DBG_VM("exit %" PRId8 "\n", rel);
-      pc += rel - 1; // why -1?
+      vm.setpc(pc + rel - 1); // -1 since jumps are relative to the opcode
       T_sp ttde((gctools::Tagged)(vm.pop()));
       TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
@@ -695,7 +697,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_exit_16: {
       int32_t rel = read_label(pc, 2);
       DBG_VM("exit %" PRId32 "\n", rel);
-      pc += rel - 3;
+      vm.setpc(pc + rel - 2);
       T_sp ttde((gctools::Tagged)(vm.pop()));
       TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
@@ -703,7 +705,7 @@ static gctools::return_type bytecode_vm(unsigned char*& pc, VirtualMachine& vm,
     case vm_exit_24: {
       int32_t rel = read_label(pc, 3);
       DBG_VM("exit %" PRId32 "\n", rel);
-      pc += rel - 4;
+      vm.setpc(pc + rel - 3);
       T_sp ttde((gctools::Tagged)(vm.pop()));
       TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
