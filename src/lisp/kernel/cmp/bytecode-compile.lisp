@@ -8,6 +8,7 @@
 (setq *print-circle* t)
 
 (defmacro logf (message &rest args)
+  (declare (ignore message args))
   nil)
 #+(or)
 (progn
@@ -91,18 +92,6 @@
   emitter
   ;; How to resize this fixup. Returns the new size.
   resizer)
-
-#+(or)
-(defmethod print-object ((label label) stream)
-  (print-unreadable-object (label stream :identity t)
-    (format stream "LABEL :POSITION ~d" (annotation-position label))))
-
-#+(or)
-(defmethod print-object ((fixup fixup) stream)
-  (print-unreadable-object (fixup stream :identity t)
-    (format stream "FIXUP :POSITION ~d :SIZE ~d"
-            (annotation-position fixup)
-            (fixup-size fixup))))
 
 ;;; Optimistic positioning of ANNOTATION in its module.
 (defun annotation-module-position (annotation)
@@ -224,7 +213,7 @@
                 max-count
                 (if aok-p (boole boole-ior 128 key-count) key-count)
                 (literal-index (first key-names) context)
-                (frame-end env))
+                (core:bytecode-cmp-env/frame-end env))
       (error "Handle more than 127 keyword parameters - you need ~s" key-count)))
 
 (defun emit-bind (context count offset)
@@ -232,65 +221,20 @@
         ((= count 0))
         (t (assemble context +bind+ count offset))))
 
-;;; Different kinds of things can go in the variable namespace and they can
-;;; all shadow each other, so we use this structure to disambiguate.
-#-clasp
-(defstruct (var-info (:constructor make-var-info (kind data)))
-  (kind (error "kind required")
-   :type (member :lexical :special :symbol-macro :constant))
-  data)
-
-#-clasp
-(defstruct (lexical-info (:constructor make-lexical-info (frame-offset function)))
-  frame-offset
-  function
-  (closed-over-p nil)
-  (set-p nil))
-
-#+clasp
-(setf (fdefinition 'lexical-info-frame-offset)
-      #'core:bytecode-cmp-lexical-var-info/frame-index
-      (fdefinition 'lexical-info-function)
-      #'core:bytecode-cmp-lexical-var-info/function
-      (fdefinition 'lexical-info-closed-over-p)
-      #'core:bytecode-cmp-lexical-var-info/closed-over-p
-      (fdefinition '(setf lexical-info-closed-over-p))
-      (lambda (new info)
-        (core:bytecode-cmp-lexical-var-info/setf-closed-over-p info new))
-      (fdefinition 'lexical-info-set-p)
-      #'core:bytecode-cmp-lexical-var-info/set-p
-      (fdefinition '(setf lexical-info-set-p))
-      (lambda (new info)
-        (core:bytecode-cmp-lexical-var-info/setf-set-p info new)))
+(defun (setf core:bytecode-cmp-lexical-var-info/closed-over-p) (new info)
+  (core:bytecode-cmp-lexical-var-info/setf-closed-over-p info new))
+(defun (setf core:bytecode-cmp-lexical-var-info/set-p) (new info)
+  (core:bytecode-cmp-lexical-var-info/setf-set-p info new))
 
 ;;; Does the variable with LEXICAL-INFO need a cell?
 (defun indirect-lexical-p (lexical-info)
-  (and (lexical-info-closed-over-p lexical-info)
-       (lexical-info-set-p lexical-info)))
+  (and (core:bytecode-cmp-lexical-var-info/closed-over-p lexical-info)
+       (core:bytecode-cmp-lexical-var-info/set-p lexical-info)))
 
-(defun make-lexical-var-info (frame-offset function)
-  #+clasp
-  (core:bytecode-cmp-lexical-var-info/make frame-offset function)
-  #-clasp
-  (make-var-info :lexical (make-lexical-info frame-offset function)))
-(defun make-special-var-info ()
-  #+clasp
-  (core:bytecode-cmp-special-var-info/make)
-  #-clasp
-  (make-var-info :special nil))
 (defun make-symbol-macro-var-info (expansion)
-  #+clasp
   (core:bytecode-cmp-symbol-macro-var-info/make
-   (lambda (form env) (declare (ignore form env)) expansion))
-  #-clasp
-  (make-var-info :symbol-macro expansion))
-(defun make-constant-var-info (value)
-  #+clasp
-  (core:bytecode-cmp-constant-var-info/make value)
-  #-clasp
-  (make-var-info :constant value))
+   (lambda (form env) (declare (ignore form env)) expansion)))
 
-#+clasp
 (defun var-info-kind (info)
   (cond ((null info) info)
         ((typep info 'core:bytecode-cmp-lexical-var-info) :lexical)
@@ -299,7 +243,6 @@
         ((typep info 'core:bytecode-cmp-constant-var-info) :constant)
         (t (error "Unknown info ~a" info))))
 
-#+clasp
 (defun var-info-data (info)
   (cond ((null info) info)
         ((typep info 'core:bytecode-cmp-lexical-var-info) info)
@@ -309,34 +252,6 @@
         ((typep info 'core:bytecode-cmp-constant-var-info)
          (core:bytecode-cmp-constant-var-info/value info))
         (t (error "Unknown info ~a" info))))
-
-#-clasp
-(defstruct (fun-info (:constructor make-fun-info (kind data)))
-  (kind (error "kind required")
-   :type (member :global-function :global-macro
-                 :local-function :local-macro))
-  data)
-
-(defun make-global-function-fun-info ()
-  #+clasp
-  (core:bytecode-cmp-global-fun-info/make)
-  #-clasp
-  (make-fun-info :global-function nil))
-(defun make-global-macro-fun-info (expander)
-  #+clasp
-  (core:bytecode-cmp-global-macro-info/make expander)
-  #-clasp
-  (make-fun-info :global-macro expander))
-(defun make-local-function-fun-info (fun-var)
-  #+clasp
-  (core:bytecode-cmp-local-fun-info/make fun-var)
-  #-clasp
-  (make-fun-info :local-function fun-var))
-(defun make-local-macro-fun-info (expander)
-  #+clasp
-  (core:bytecode-cmp-local-macro-info/make expander)
-  #-clasp
-  (make-fun-info :local-macro expander))
 
 (defun fun-info-kind (info)
   (cond ((null info) nil)
@@ -357,49 +272,21 @@
          (core:bytecode-cmp-local-macro-info/expander info))
         (t (error "Unknown info ~a" info))))
 
-#-clasp
-(defstruct (lexical-environment (:constructor make-null-lexical-environment)
-                                (:constructor %make-lexical-environment)
-                                (:conc-name nil))
-  ;; An alist of (var . var-info) in the current environment.
-  (vars nil :type list)
-  ;; An alist of (tag tag-dynenv . label) in the current environment.
-  (tags nil :type list)
-  ;; An alist of (block block-dynenv . label) in the current environment.
-  (blocks nil :type list)
-  ;; An alist of (fun . fun-var) in the current environment.
-  (funs nil :type list)
-  ;; The current end of the frame.
-  (frame-end 0 :type integer))
-
-#+clasp
-(progn
-  (setf (fdefinition 'vars) #'core:bytecode-cmp-env/vars
-        (fdefinition 'funs) #'core:bytecode-cmp-env/funs
-        (fdefinition 'tags) #'core:bytecode-cmp-env/tags
-        (fdefinition 'blocks) #'core:bytecode-cmp-env/blocks
-        (fdefinition 'frame-end) #'core:bytecode-cmp-env/frame-end))
-
-#+clasp
 (defun make-null-lexical-environment ()
   (core:bytecode-cmp-env/make nil nil nil nil 0))
 
-(defun make-lexical-environment (parent &key (vars (vars parent))
-                                          (tags (tags parent))
-                                          (blocks (blocks parent))
-                                          (frame-end (frame-end parent))
-                                          (funs (funs parent)))
-  #+clasp
-  (core:bytecode-cmp-env/make vars tags blocks funs frame-end)
-  #-clasp
-  (%make-lexical-environment
-   :vars vars :tags tags :blocks blocks :frame-end frame-end :funs funs))
+(defun make-lexical-environment (parent &key (vars (core:bytecode-cmp-env/vars parent))
+                                          (tags (core:bytecode-cmp-env/tags parent))
+                                          (blocks (core:bytecode-cmp-env/blocks parent))
+                                          (frame-end (core:bytecode-cmp-env/frame-end parent))
+                                          (funs (core:bytecode-cmp-env/funs parent)))
+  (core:bytecode-cmp-env/make vars tags blocks funs frame-end))
 
 ;;; Bind each variable to a stack location, returning a new lexical
 ;;; environment. The max local count in the current function is also
 ;;; updated.
 (defun bind-vars (vars env context)
-  (let* ((frame-start (frame-end env))
+  (let* ((frame-start (core:bytecode-cmp-env/frame-end env))
          (var-count (length vars))
          (frame-end (+ frame-start var-count))
          (function (context-function context)))
@@ -407,8 +294,8 @@
           (max (cfunction-nlocals function) frame-end))
     (do ((index frame-start (1+ index))
          (vars vars (rest vars))
-         (new-vars (vars env)
-                   (acons (first vars) (make-lexical-var-info index function) new-vars)))
+         (new-vars (core:bytecode-cmp-env/vars env)
+                   (acons (first vars) (core:bytecode-cmp-lexical-var-info/make index function) new-vars)))
         ((>= index frame-end)
          (make-lexical-environment env :vars new-vars :frame-end frame-end))
       (when (constantp (first vars))
@@ -425,7 +312,7 @@
 ;;; If the first value is NIL, the variable is unknown, and the second
 ;;; value is NIL.
 (defun var-info (symbol env)
-  (let ((info (cdr (assoc symbol (vars env)))))
+  (let ((info (cdr (assoc symbol (core:bytecode-cmp-env/vars env)))))
     (cond (info (values (var-info-kind info) (var-info-data info)))
           ((ext:symbol-macro symbol) (values :symbol-macro (ext:symbol-macro symbol)))
           ((constantp symbol nil) (values :constant (symbol-value symbol)))
@@ -434,7 +321,7 @@
 
 ;;; Like the above. Check the struct for details.
 (defun fun-info (name env)
-  (let ((info (cdr (assoc name (funs env)))))
+  (let ((info (cdr (assoc name (core:bytecode-cmp-env/funs env)))))
     (cond (info (values (fun-info-kind info) (fun-info-data info)))
           ((and (symbolp name) (macro-function name nil))
            (values :global-macro (macro-function name nil)))
@@ -551,7 +438,7 @@
 ;;; FIXME: This is probably a good candidate for a specialized
 ;;; instruction.
 (defun maybe-emit-encage (lexical-info context)
-  (let ((index (lexical-info-frame-offset lexical-info)))
+  (let ((index (core:bytecode-cmp-lexical-var-info/frame-index lexical-info)))
     (flet ((emitter (fixup position code)
              #+clasp-min (declare (ignore fixup))
              #-clasp-min
@@ -564,7 +451,7 @@
       (emit-fixup context (make-fixup lexical-info 0 #'emitter #'resizer)))))
 
 (defun emit-lexical-set (lexical-info context)
-  (let ((index (lexical-info-frame-offset lexical-info)))
+  (let ((index (core:bytecode-cmp-lexical-var-info/frame-index lexical-info)))
     (flet ((emitter (fixup position code)
              (if (= (fixup-size fixup) 3)
                  (assemble-into code position +ref+ index +cell-set+)
@@ -586,10 +473,10 @@
           (t
            (cond
              ((eq kind :lexical)
-              (cond ((eq (lexical-info-function data) (context-function context))
-                     (assemble context +ref+ (lexical-info-frame-offset data)))
+              (cond ((eq (core:bytecode-cmp-lexical-var-info/function data) (context-function context))
+                     (assemble context +ref+ (core:bytecode-cmp-lexical-var-info/frame-index data)))
                     (t
-                     (setf (lexical-info-closed-over-p data) t)
+                     (setf (core:bytecode-cmp-lexical-var-info/closed-over-p data) t)
                      (assemble context +closure+ (closure-index data context))))
               (maybe-emit-cell-ref data context))
              ((eq kind :special) (assemble context +symbol-value+
@@ -673,9 +560,9 @@
   (make-lexical-environment
    env
    :vars (append (mapcar (lambda (var)
-                           (cons var (make-special-var-info)))
+                           (cons var (core:bytecode-cmp-special-var-info/make)))
                          vars)
-                 (vars env))))
+                 (core:bytecode-cmp-env/vars env))))
 
 (defun compile-locally (body env context)
   (multiple-value-bind (decls body docs specials)
@@ -718,7 +605,7 @@
             (incf lexical-count))
           (when lexical-bindings
             ;; ... And use the end of the old env's frame.
-            (emit-bind context lexical-count (frame-end env)))
+            (emit-bind context lexical-count (core:bytecode-cmp-env/frame-end env)))
           (dolist (binding special-bindings)
             (compile-form (second binding) new-env (new-context context :receiving 1))
             (assemble context +special-bind+ (literal-index (first binding) context))
@@ -742,11 +629,11 @@
                  (incf special-binding-count)
                  (setq env (make-lexical-environment
                             env
-                            :vars (acons var (make-special-var-info)
-                                         (vars env))))
+                            :vars (acons var (core:bytecode-cmp-special-var-info/make)
+                                         (core:bytecode-cmp-env/vars env))))
                  (assemble context +special-bind+ (literal-index var context)))
                 (t
-                 (let ((frame-start (frame-end env)))
+                 (let ((frame-start (core:bytecode-cmp-env/frame-end env)))
                    (setq env (bind-vars (list var) env context))
                    (maybe-emit-make-cell (nth-value 1 (var-info var env))
                                          context)
@@ -792,7 +679,7 @@
        ;; variable, do the set, then return the lexical variable.
        ;; We can't just read from the special, since some other thread may
        ;; alter it.
-       (let ((index (frame-end env)))
+       (let ((index (core:bytecode-cmp-env/frame-end env)))
          (unless (eql (context-receiving context) 0)
            (assemble context +set+ index +ref+ index)
            ;; called for effect, i.e. to keep frame size correct
@@ -803,12 +690,12 @@
            (when (eql (context-receiving context) t)
              (assemble context +pop+)))))
       ((eq kind :lexical)
-       (let ((localp (eq (lexical-info-function data)
+       (let ((localp (eq (core:bytecode-cmp-lexical-var-info/function data)
                          (context-function context)))
-             (index (frame-end env)))
+             (index (core:bytecode-cmp-env/frame-end env)))
          (unless localp
-           (setf (lexical-info-closed-over-p data) t))
-         (setf (lexical-info-set-p data) t)
+           (setf (core:bytecode-cmp-lexical-var-info/closed-over-p data) t))
+         (setf (core:bytecode-cmp-lexical-var-info/set-p data) t)
          (compile-form valf env (new-context context :receiving 1))
          ;; similar concerns to specials above.
          (unless (eql (context-receiving context) 0)
@@ -837,7 +724,7 @@
         (funs '())
         (fun-count 0)
         ;; HACK FIXME
-        (frame-slot (frame-end env)))
+        (frame-slot (core:bytecode-cmp-env/frame-end env)))
     (dolist (definition definitions)
       (let ((name (first definition))
             (fun-var (gensym "FLET-FUN")))
@@ -846,16 +733,16 @@
                                (locally ,@(cddr definition))))
                           env (new-context context :receiving 1))
         (push fun-var fun-vars)
-        (push (cons name (make-local-function-fun-info
-                          (make-lexical-var-info frame-slot
+        (push (cons name (core:bytecode-cmp-local-fun-info/make
+                          (core:bytecode-cmp-lexical-var-info/make frame-slot
                                                  (context-function context))))
               funs)
         (incf frame-slot)
         (incf fun-count)))
-    (emit-bind context fun-count (frame-end env))
+    (emit-bind context fun-count (core:bytecode-cmp-env/frame-end env))
     (let ((env (make-lexical-environment
                 (bind-vars fun-vars env context)
-                :funs (append funs (funs env)))))
+                :funs (append funs (core:bytecode-cmp-env/funs env)))))
       (compile-locally body env context))))
 
 (defun compile-labels (definitions body env context)
@@ -864,22 +751,22 @@
         (fun-vars '())
         (closures '())
         (env env)
-        (frame-start (frame-end env))
-        (frame-slot (frame-end env)))
+        (frame-start (core:bytecode-cmp-env/frame-end env))
+        (frame-slot (core:bytecode-cmp-env/frame-end env)))
     (dolist (definition definitions)
       (let ((name (first definition))
             (fun-var (gensym "LABELS-FUN")))
         (push fun-var fun-vars)
-        (push (cons name (make-local-function-fun-info
-                          (make-lexical-var-info frame-slot
+        (push (cons name (core:bytecode-cmp-local-fun-info/make
+                          (core:bytecode-cmp-lexical-var-info/make frame-slot
                                                  (context-function context))))
               funs)
         (incf frame-slot)
         (incf fun-count)))
-    (let ((frame-slot (frame-end env))
+    (let ((frame-slot (core:bytecode-cmp-env/frame-end env))
           (env (make-lexical-environment
                 (bind-vars fun-vars env context)
-                :funs (append funs (funs env)))))
+                :funs (append funs (core:bytecode-cmp-env/funs env)))))
       (dolist (definition definitions)
         (let* ((name (first definition))
                (fun (compile-lambda (second definition)
@@ -916,8 +803,8 @@
 
 ;;; Push the immutable value or cell of lexical in CONTEXT.
 (defun reference-lexical-info (info context)
-  (if (eq (lexical-info-function info) (context-function context))
-      (assemble context +ref+ (lexical-info-frame-offset info))
+  (if (eq (core:bytecode-cmp-lexical-var-info/function info) (context-function context))
+      (assemble context +ref+ (core:bytecode-cmp-lexical-var-info/frame-index info))
       (assemble context +closure+ (closure-index info context))))
 
 (defun compile-function (fnameoid env context)
@@ -987,7 +874,7 @@
             (push (car opts) vars))))
       (when rest
         (assemble context +listify-rest-args+ max-count)
-        (assemble context +set+ (frame-end env))
+        (assemble context +set+ (core:bytecode-cmp-env/frame-end env))
         (setq env (bind-vars (list rest) env context))
         (maybe-emit-encage (nth-value 1 (var-info rest env)) context))
       (when key-flag
@@ -1048,13 +935,13 @@
                   (compile-form defaulting-form env
                                 (new-context context :receiving 1))
                   (maybe-emit-make-cell info context)
-                  (assemble context +set+ (lexical-info-frame-offset info)))))
+                  (assemble context +set+ (core:bytecode-cmp-lexical-var-info/frame-index info)))))
          (supply (suppliedp info)
            (if suppliedp
                (compile-literal t env (new-context context :receiving 1))
                (assemble context +nil+))
            (maybe-emit-make-cell info context)
-           (assemble context +set+ (lexical-info-frame-offset info))))
+           (assemble context +set+ (core:bytecode-cmp-lexical-var-info/frame-index info))))
     (let ((supplied-label (make-label))
           (var-info (nth-value 1 (var-info var env))))
       (multiple-value-bind (env supplied-var-info)
@@ -1062,7 +949,7 @@
               (let ((env (bind-vars (list supplied-var) env context)))
                 (values env (nth-value 1 (var-info supplied-var env))))
               (values env nil))
-        (emit-jump-if-supplied context (lexical-info-frame-offset var-info) supplied-label)
+        (emit-jump-if-supplied context (core:bytecode-cmp-lexical-var-info/frame-index var-info) supplied-label)
         (default nil var-info)
         (when supplied-var
           (supply nil supplied-var-info))
@@ -1094,7 +981,7 @@
 (defun go-tag-p (object) (typep object '(or symbol integer)))
 
 (defun compile-tagbody (statements env context)
-  (let* ((new-tags (tags env))
+  (let* ((new-tags (core:bytecode-cmp-env/tags env))
          (tagbody-dynenv (gensym "TAG-DYNENV"))
          (env (bind-vars (list tagbody-dynenv) env context))
          (dynenv-info (nth-value 1 (var-info tagbody-dynenv env))))
@@ -1104,11 +991,11 @@
               new-tags)))
     (let ((env (make-lexical-environment env :tags new-tags)))
       ;; Bind the dynamic environment.
-      (assemble context +entry+ (lexical-info-frame-offset dynenv-info))
+      (assemble context +entry+ (core:bytecode-cmp-lexical-var-info/frame-index dynenv-info))
       ;; Compile the body, emitting the tag destination labels.
       (dolist (statement statements)
         (if (go-tag-p statement)
-            (emit-label context (cddr (assoc statement (tags env))))
+            (emit-label context (cddr (assoc statement (core:bytecode-cmp-env/tags env))))
             (compile-form statement env (new-context context :receiving 0))))))
   (assemble context +entry-close+)
   ;; return nil if we really have to
@@ -1118,7 +1005,7 @@
       (assemble context +pop+))))
 
 (defun compile-go (tag env context)
-  (let ((pair (assoc tag (tags env))))
+  (let ((pair (assoc tag (core:bytecode-cmp-env/tags env))))
     (if pair
         (destructuring-bind (dynenv-info . tag-label) (cdr pair)
           (reference-lexical-info dynenv-info context)
@@ -1132,10 +1019,10 @@
          (label (make-label))
          (normal-label (make-label)))
     ;; Bind the dynamic environment.
-    (assemble context +entry+ (lexical-info-frame-offset dynenv-info))
+    (assemble context +entry+ (core:bytecode-cmp-lexical-var-info/frame-index dynenv-info))
     (let ((env (make-lexical-environment
                 env
-                :blocks (acons name (cons dynenv-info label) (blocks env)))))
+                :blocks (acons name (cons dynenv-info label) (core:bytecode-cmp-env/blocks env)))))
       ;; Force single values into multiple so that we can uniformly PUSH afterward.
       (compile-progn body env context))
     (when (eql (context-receiving context) 1)
@@ -1150,7 +1037,7 @@
 
 (defun compile-return-from (name value env context)
   (compile-form value env (new-context context :receiving t))
-  (let ((pair (assoc name (blocks env))))
+  (let ((pair (assoc name (core:bytecode-cmp-env/blocks env))))
     (if pair
         (destructuring-bind (dynenv-info . block-label) (cdr pair)
           (reference-lexical-info dynenv-info context)
@@ -1184,7 +1071,7 @@
             smacros))
     (compile-locally body (make-lexical-environment
                            env
-                           :vars (append (nreverse smacros) (vars env)))
+                           :vars (append (nreverse smacros) (core:bytecode-cmp-env/vars env)))
                      context)))
 
 (defun lexenv-for-macrolet (env)
@@ -1198,12 +1085,12 @@
   (make-lexical-environment
    env
    :vars (let ((cpairs nil))
-           (dolist (pair (vars env) (nreverse cpairs))
+           (dolist (pair (core:bytecode-cmp-env/vars env) (nreverse cpairs))
              (let ((info (cdr pair)))
                (when (member (var-info-kind info) '(:constant :symbol-macro))
                  (push pair cpairs)))))
    :funs (let ((cpairs nil))
-           (dolist (pair (funs env) (nreverse cpairs))
+           (dolist (pair (core:bytecode-cmp-env/funs env) (nreverse cpairs))
              (let ((info (cdr pair)))
                (when (member (fun-info-kind info) '(:global-macro :local-macro))
                  (push pair cpairs)))))
@@ -1218,10 +1105,10 @@
              (eform (ext:parse-macro name lambda-list body env))
              (aenv (lexenv-for-macrolet env))
              (expander (bytecompile eform aenv))
-             (info (make-local-macro-fun-info expander)))
+             (info (core:bytecode-cmp-local-macro-info/make expander)))
         (push (cons name info) macros)))
     (compile-locally body (make-lexical-environment
-                           env :funs (append macros (funs env)))
+                           env :funs (append macros (core:bytecode-cmp-env/funs env)))
                      context)))
 
 (defun compile-multiple-value-call (function-form forms env context)
