@@ -118,7 +118,6 @@ static inline uint8_t read_uint8( unsigned char*& pc ) {
   return *(++pc);
 }
 
-__attribute__((optnone))
 static inline int32_t read_label(unsigned char*& pc, size_t nbytes) {
   // Labels are stored little-endian.
   uint32_t result = 0;
@@ -216,7 +215,6 @@ void vm_record_playback(void* value, const char* name) {
 # define VM_RECORD_PLAYBACK(value,name)
 #endif
 
-__attribute__((optnone))
 static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         T_O** literals,
                                         size_t nlocals, Closure_O* closure,
