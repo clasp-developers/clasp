@@ -492,7 +492,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
           }
         }
       }
-      if (unknown_key_p && !aokp & !ll_aokp) {
+      if (unknown_key_p && !aokp && !ll_aokp) {
         T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
         T_sp tunknown((gctools::Tagged)unknown_key);
         throwUnrecognizedKeywordArgumentError(tclosure, tunknown);
