@@ -118,7 +118,7 @@ static inline uint8_t read_uint8( unsigned char*& pc ) {
   return *(++pc);
 }
 
-static inline int32_t read_label(unsigned char*& pc, size_t nbytes) {
+static inline int32_t read_label(unsigned char* pc, size_t nbytes) {
   // Labels are stored little-endian.
   uint32_t result = 0;
   for (size_t i = 0; i < nbytes - 1; ++i) result |= *(++pc) << i * 8;
@@ -509,14 +509,13 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_jump_16: {
       int32_t rel = read_label(vm._pc, 2);
       DBG_VM("jump %" PRId32 "\n", rel);
-      // jumps are relative to the first byte of the label, not the last.
-      vm._pc += rel - 2;
+      vm._pc += rel;
       break;
     }
     case vm_jump_24: {
       int32_t rel = read_label(vm._pc, 3);
       DBG_VM("jump %" PRId32 "\n", rel);
-      vm._pc += rel - 3;
+      vm._pc += rel;
       break;
     }
     case vm_jump_if_8: {
@@ -532,16 +531,16 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       int32_t rel = read_label(vm._pc, 2);
       DBG_VM("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
-      if (tval.notnilp()) vm._pc += rel - 2;
-      else vm._pc++;
+      if (tval.notnilp()) vm._pc += rel;
+      else vm._pc += 3;
       break;
     }
     case vm_jump_if_24: {
       int32_t rel = read_label(vm._pc, 3);
       DBG_VM("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
-      if (tval.notnilp()) vm._pc += rel - 3;
-      else vm._pc++;
+      if (tval.notnilp()) vm._pc += rel;
+      else vm._pc += 4;
       break;
     }
     case vm_jump_if_supplied_8: {
@@ -558,8 +557,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       int32_t rel = read_label(vm._pc, 2);
       DBG_VM("jump-if-supplied %" PRIu8 " %" PRId32 "\n", slot, rel);
       T_sp tval((gctools::Tagged)(*(vm.reg(slot))));
-      if (tval.unboundp()) vm._pc++;
-      else vm._pc += rel - 3;
+      if (tval.unboundp()) vm._pc += 4;
+      else vm._pc += rel - 1;
       break;
     }
     case vm_check_arg_count_LE_: {
@@ -703,7 +702,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_exit_16: {
       int32_t rel = read_label(vm._pc, 2);
       DBG_VM("exit %" PRId32 "\n", rel);
-      vm._pc += rel - 2;
+      vm._pc += rel;
       T_sp ttde((gctools::Tagged)(vm.pop()));
       TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
@@ -711,7 +710,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_exit_24: {
       int32_t rel = read_label(vm._pc, 3);
       DBG_VM("exit %" PRId32 "\n", rel);
-      vm._pc += rel - 3;
+      vm._pc += rel;
       T_sp ttde((gctools::Tagged)(vm.pop()));
       TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
