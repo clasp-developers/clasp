@@ -17,8 +17,9 @@ DynEnv_O::SearchStatus sjlj_unwind_search(LexDynEnv_sp dest) {
   for (T_sp iter = my_thread->dynEnvStackGet();;) {
     if (iter.nilp()) return DynEnv_O::OutOfExtent;
     else {
-      Cons_sp c = gc::As<Cons_sp>(iter);
-      DynEnv_sp diter = gc::As<DynEnv_sp>(ENSURE_VALID_OBJECT(CONS_CAR(c)));
+      Cons_sp c = gc::As_unsafe<Cons_sp>(iter);
+      ASSERT(gc::IsA<DynEnv_sp>(ENSURE_VALID_OBJECT(CONS_CAR(c))));
+      DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(ENSURE_VALID_OBJECT(CONS_CAR(c)));
       if (diter == dest) break;
       auto dstatus = diter->search();
       /* If we get a FallBack, we don't want to return that
@@ -39,8 +40,9 @@ DynEnv_O::SearchStatus sjlj_throw_search(T_sp tag, CatchDynEnv_sp& dest) {
   for (T_sp iter = my_thread->dynEnvStackGet();;) {
     if (iter.nilp()) return DynEnv_O::OutOfExtent;
     else {
-      Cons_sp c = gc::As<Cons_sp>(iter);
-      DynEnv_sp diter = gc::As<DynEnv_sp>(CONS_CAR(c));
+      Cons_sp c = gc::As_unsafe<Cons_sp>(iter);
+      ASSERT(gc::IsA<DynEnv_sp>(CONS_CAR(c)));
+      DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(CONS_CAR(c));
       if (gc::IsA<CatchDynEnv_sp>(diter)) {
         CatchDynEnv_sp catc = gc::As_unsafe<CatchDynEnv_sp>(diter);
         if (tag == catc->tag) {
@@ -73,7 +75,10 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
   // We must have already searched, so we know this is a dynenv
   // and not the NIL sentinel.
   for (T_sp iter = here; ; iter = CONS_CDR(iter)) {
-    DynEnv_sp diter = gc::As<DynEnv_sp>(CONS_CAR(iter));
+    if (!iter.consp()) {
+      SIMPLE_ERROR("In sjlj_unwind_proceed iter is NIL");
+    }
+    DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(CONS_CAR(iter));
     if (diter == dest) {
       // Now actually jump. We need to replace the dynEnvStackGet(), but what we
       // switch it to depends on whether it's a tagbody or block.
@@ -157,7 +162,8 @@ CL_DEFUN T_mv core__sjlj_call_with_current_dynenv(Function_sp function) {
 // Check the search status for a single dynenv.
 CL_UNWIND_COOP(true);
 CL_DEFUN int core__sjlj_dynenv_search_one(T_sp tde) {
-  DynEnv_sp de = gc::As<DynEnv_sp>(tde);
+  ASSERT(gc::IsA<DynEnv_sp>(tde));
+  DynEnv_sp de = gc::As_unsafe<DynEnv_sp>(tde);
   switch (de->search()) {
   case DynEnv_O::Continue: return 0;
   case DynEnv_O::Proceed: return 1;
