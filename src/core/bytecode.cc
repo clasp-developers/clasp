@@ -408,8 +408,10 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_return: {
       DBG_VM1("return\n");
 #ifdef DBG_VM1
-      if (vm.npushed(nlocals) != 0)
+      if (vm.npushed(nlocals) != 0) {
+        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %lu   nlocals = %lu", vm.npushed(nlocals), nlocals).c_str());
         SIMPLE_ERROR("In vm_return - vm.npushed(nlocals) = %lu   nlocals = %lu", vm.npushed(nlocals), nlocals);
+      }
 #endif
       core::MultipleValues &mv = core::lisp_multipleValues();
       size_t nvalues = mv.getSize();

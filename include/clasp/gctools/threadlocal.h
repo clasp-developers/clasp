@@ -67,11 +67,11 @@ struct VirtualMachineStackState {
 };
 
 #define STACK_GROWS_UP 1
-#define DEBUG_VIRTUAL_MACHINE 0
+//#define DEBUG_VIRTUAL_MACHINE 0
 #ifdef DEBUG_VIRTUAL_MACHINE
 #define VM_ASSERT_ALIGNED(ptr) if (((uintptr_t)(ptr))&0x7) { printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr)); abort(); }
-#define VM_STACK_POINTER_CHECK(vm) if ((vm)._stackPointer&&!((vm)._stackBottom<=(vm)._stackPointer && (vm)._stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); abort(); }
-#define VM_FRAME_POINTER_CHECK(vm) if ((vm)._framePointer&&!((vm)._stackBottom<=(vm)._framePointer && (vm)._framePointer<=(vm)._stackTop) ) { printf("%s:%d:%s _framePointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._framePointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); abort(); }
+#define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._stackPointer&&!((vm)._stackBottom<=(vm)._stackPointer && (vm)._stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); abort(); }
+#define VM_FRAME_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._framePointer&&!((vm)._stackBottom<=(vm)._framePointer && (vm)._framePointer<=(vm)._stackTop) ) { printf("%s:%d:%s _framePointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._framePointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); abort(); }
 #define VM_CHECK(vm) VM_STACK_POINTER_CHECK(vm); VM_FRAME_POINTER_CHECK(vm)
 #else
 #define VM_ASSERT_ALIGNED(ptr)
@@ -80,6 +80,7 @@ struct VirtualMachineStackState {
 
 struct VirtualMachine {
   static constexpr size_t MaxStackWords = 16384; // 16K words for now.
+  bool           _Running;
   core::T_O*     _stackBottom[MaxStackWords];
   size_t         _stackBytes;
   core::T_O**    _stackTop;
@@ -89,6 +90,9 @@ struct VirtualMachine {
   core::T_O**    _literals;
   unsigned char* _pc;
 
+  inline void shutdown() {
+    this->_Running = false;
+  }
   inline void push(core::T_O* value) {
 #ifdef STACK_GROWS_UP
     this->_stackPointer++;

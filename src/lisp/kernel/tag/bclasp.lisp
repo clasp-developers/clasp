@@ -1,5 +1,5 @@
                                         ; nothing
 
 
-(defun bclasp-dummp ()
+(defun bclasp-dump ()
   (format t "Started bclasp~%"))

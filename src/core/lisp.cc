@@ -1520,6 +1520,8 @@ CL_DEFUN void core__exit(int exitValue) {
   if (getenv("CLASP_TIME_EXIT")) {
     atexit(first_exit);
   }
+  VirtualMachine& vm = my_thread->_VM;
+  vm.shutdown();
   throw(ExitProgramException(exitValue));
 };
 
@@ -2103,6 +2105,7 @@ DOCGROUP(clasp)
 #else
     printf("%s:%d:%s Figure out how to generate a break/int $03\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
+    gctools::wait_for_user_signal("nested errors are too deep");
   }
   call_with_variable_bound(_sym_STARnestedErrorDepthSTAR,
                            make_fixnum(nestedErrorDepth + 1),

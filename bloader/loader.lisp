@@ -242,7 +242,7 @@
 ;;;
 ;;; package-iterator fails
 ;;;
-;;;(load "SYS:SRC;LISP;KERNEL;CLOS;STREAMS.LISP")
+(load "SYS:SRC;LISP;KERNEL;CLOS;STREAMS.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;SEQUENCES.LISP")
 ;;; Something else fails
 ;;;(load "SYS:SRC;LISP;KERNEL;LSP;PPRINT.LISP")
@@ -250,14 +250,13 @@
 (load "SYS:SRC;LISP;KERNEL;LSP;PACKLIB2.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;INSPECT.LISP")
 ;;; Another broken compilation that segfaults
-;;;(load "SYS:SRC;LISP;KERNEL;LSP;FLI.LISP")
+(load "SYS:SRC;LISP;KERNEL;LSP;FLI.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;POSIX.LISP")
 ;;; Another broken compilation that segfaults
-;;;(load "SYS:SRC;LISP;MODULES;SOCKETS;SOCKETS.LISP")
+(load "SYS:SRC;LISP;MODULES;SOCKETS;SOCKETS.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;TOP.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;PRE-EPILOGUE-BCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;EPILOGUE-BCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;BCLASP.LISP")
 (format t "Done building bclasp - now the stack will overflow (sigh)~%")
-(core:quit)
-
+;;;(gctools:wait-for-user-signal "Done")

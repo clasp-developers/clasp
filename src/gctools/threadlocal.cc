@@ -135,7 +135,7 @@ ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
 namespace core {
 
 
-VirtualMachine::VirtualMachine() {
+VirtualMachine::VirtualMachine() : _Running(true) {
 #if 0
   size_t pageSize = getpagesize();
   void* mem;
