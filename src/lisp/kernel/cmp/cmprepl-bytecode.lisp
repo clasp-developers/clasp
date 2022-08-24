@@ -112,7 +112,72 @@
 ;;; 
 #-(or no-implicit-compilation)
 (setq *implicit-compile-hook* 'bytecode-implicit-compile-repl-form)
-(setq *eval-with-env-hook* 'bytecode-implicit-compile-repl-form)
+
+(defun bytecode-toplevel-progn (forms env)
+  (if (null forms)
+      nil
+      (do ((forms forms (cdr forms)))
+          ((null (cdr forms))
+           (return-from bytecode-toplevel-progn
+             (bytecode-toplevel-eval (car forms) env)))
+        (bytecode-toplevel-eval (car forms) env))))
+
+(defun bytecode-toplevel-eval-when (situations forms env)
+  (if (or (member :execute situations) (member 'cl:eval situations))
+      (bytecode-toplevel-progn forms env)
+      nil))
+
+(defun bytecode-toplevel-locally (body env)
+  (multiple-value-bind (decls body docs specials)
+      (core:process-declarations body nil)
+    (declare (ignore decls docs))
+    (let* ((env (or env (make-null-lexical-environment)))
+           (new-env
+             (if specials
+                 (add-specials specials env)
+                 env)))
+      (bytecode-toplevel-progn body new-env))))
+
+(defun bytecode-toplevel-macrolet (bindings body env)
+  (let ((macros nil)
+        (env (or env (make-null-lexical-environment))))
+    (dolist (binding bindings)
+      (let* ((name (car binding)) (lambda-list (cadr binding))
+             (body (cddr binding))
+             (eform (ext:parse-macro name lambda-list body env))
+             (aenv (lexenv-for-macrolet env))
+             (expander (bytecompile eform aenv))
+             (info (core:bytecode-cmp-local-macro-info/make expander)))
+        (push (cons name info) macros)))
+    (bytecode-toplevel-locally
+     body (make-lexical-environment
+           env :funs (append macros (core:bytecode-cmp-env/funs env))))))
+
+(defun bytecode-toplevel-symbol-macrolet (bindings body env)
+  (let ((smacros nil) (env (or env (make-null-lexical-environment))))
+    (dolist (binding bindings)
+      (push (cons (car binding) (make-symbol-macro-var-info (cadr binding)))
+            smacros))
+    (bytecode-toplevel-locally
+     body (make-lexical-environment
+           env
+           :vars (append (nreverse smacros) (core:bytecode-cmp-env/vars env))))))
+
+(defun bytecode-toplevel-eval (form env)
+  (let ((form (macroexpand form env)))
+    (if (consp form)
+        (case (car form)
+          ((progn) (bytecode-toplevel-progn (cdr form) env))
+          ((eval-when) (bytecode-toplevel-eval-when (cadr form) (cddr form) env))
+          ((locally) (bytecode-toplevel-locally (cdr form) env))
+          ((macrolet) (bytecode-toplevel-macrolet (cadr form) (cddr form) env))
+          ((symbol-macrolet)
+           (bytecode-toplevel-symbol-macrolet (cadr form) (cddr form) env))
+          (otherwise
+           (bytecode-implicit-compile-repl-form form env)))
+        (bytecode-implicit-compile-repl-form form env))))
+
+(setq *eval-with-env-hook* 'bytecode-toplevel-eval)
 
 ;;#+(and clasp-min (not no-implicit-compilation))
 #+(or)
