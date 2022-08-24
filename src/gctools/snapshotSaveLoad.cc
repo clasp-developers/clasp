@@ -638,7 +638,10 @@ void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
     }
   } else if (gc::IsA<llvmo::Library_sp>(codebase)) {
     encodeEntryPointInLibrary(fixup,ptrptr);
+  } else if (gc::IsA<core::BytecodeModule_sp>(codebase)) {
+    encodeEntryPointInLibrary(fixup,ptrptr);
   } else {
+    printf("%s:%d:%s The codebase must be a Code_sp or a Library_sp it is %s\n" , __FILE__, __LINE__, __FUNCTION__, _rep_(codebase).c_str());
     SIMPLE_ERROR(("The codebase must be a Code_sp or a Library_sp it is %s") , _rep_(codebase) );
   }
 }
@@ -652,6 +655,9 @@ void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
       decodeEntryPointInLibrary( fixup, ptrptr );
     }
   } else if (gc::IsA<llvmo::Library_sp>(codebase)) {
+    llvmo::Library_sp library = gc::As_unsafe<llvmo::Library_sp>(codebase);
+    decodeEntryPointInLibrary(fixup,ptrptr);
+  } else if (gc::IsA<core::BytecodeModule_sp>(codebase)) {
     llvmo::Library_sp library = gc::As_unsafe<llvmo::Library_sp>(codebase);
     decodeEntryPointInLibrary(fixup,ptrptr);
   } else {
@@ -2419,7 +2425,7 @@ void* snapshot_save_impl(void* data) {
     if (!snapshot_data->_Executable) {
       char cwdbuffer[1024];
       printf("%s:%d:%s getcwd -> %s\n", __FILE__, __LINE__, __FUNCTION__, getcwd(cwdbuffer,1023) );
-      filedes = open(snapshot_data->_FileName.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IWUSR );
+      filedes = open(snapshot_data->_FileName.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IWUSR|S_IRUSR );
       if (filedes<0) {
         printf("Cannot open file %s\n", snapshot_data->_FileName.c_str());
         return NULL;
@@ -2734,6 +2740,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       memory = mmap(NULL, fsize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FILE, fd, 0);
       if (memory==MAP_FAILED) {
         close(fd);
+        printf("%s:%d:%s Could not mmap %s because of %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str(), strerror(errno));
         SIMPLE_ERROR(("Could not mmap %s because of %s") , filename , strerror(errno));
       }
     } else if (maybeStartOfSnapshot && maybeEndOfSnapshot && (maybeStartOfSnapshot<maybeEndOfSnapshot)) {
