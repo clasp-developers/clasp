@@ -337,7 +337,7 @@
 
 ;;; Like the above. Check the struct for details.
 (defun fun-info (name env)
-  (let ((info (cdr (assoc name (core:bytecode-cmp-env/funs env)))))
+  (let ((info (cdr (assoc name (core:bytecode-cmp-env/funs env) :test 'equal))))
     (cond (info (values (fun-info-kind info) (fun-info-data info)))
           ((and (symbolp name) (macro-function name nil))
            (values :global-macro (macro-function name nil)))
