@@ -123,6 +123,8 @@ CL_DEFUN T_sp core__cas_rack(T_sp order, T_sp old, T_sp newval, Rack_sp rack, si
   return old;
 }
 
+
+
 CL_LAMBDA(instance class)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(instanceClassSet)dx")
@@ -260,6 +262,13 @@ CL_DEFUN void core__instance_rack_set(T_sp instance, Rack_sp rack) {
     gc::As_unsafe<FuncallableInstance_sp>(instance)->_Rack = rack;
   }
   TYPE_ERROR(instance,Cons_O::createList(core::_sym_Instance_O,core::_sym_FuncallableInstance_O));
+}
+
+DOCGROUP(clasp)
+CL_LAMBDA(old nv instance index)
+CL_DEFUN T_sp core__instance_cas(T_sp old, T_sp newval, T_sp instance, size_t index) {
+  Rack_sp rack = core__instance_rack(instance);
+  return core__cas_rack(kw::_sym_SequentiallyConsistent,old,newval,rack,index);
 }
 
 size_t Instance_O::rack_stamp_offset() {
