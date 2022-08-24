@@ -1055,15 +1055,17 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
       if (dname.consp()) {
         Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
         if (name.notnilp() && oCdr(dname).nilp()) {
-          if (!name->fboundp_setf())
+          if (!name->fboundp_setf()) {
             ERROR_UNDEFINED_FUNCTION(functionName);
+          }
           return name->getSetfFdefinition();
         }
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
-    if (!sym->fboundp())
+    if (!sym->fboundp()) {
       ERROR_UNDEFINED_FUNCTION(functionName);
+    }
     return sym->symbolFunction();
   }
   TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
