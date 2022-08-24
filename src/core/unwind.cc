@@ -75,9 +75,8 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
   // We must have already searched, so we know this is a dynenv
   // and not the NIL sentinel.
   for (T_sp iter = here; ; iter = CONS_CDR(iter)) {
-    if (!iter.consp()) {
-      SIMPLE_ERROR("In sjlj_unwind_proceed iter is NIL");
-    }
+    ASSERT(iter.consp());
+    ASSERT(gc::IsA<DynEnv_sp>(CONS_CAR(iter)));
     DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(CONS_CAR(iter));
     if (diter == dest) {
       // Now actually jump. We need to replace the dynEnvStackGet(), but what we
