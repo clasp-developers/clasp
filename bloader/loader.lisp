@@ -264,7 +264,7 @@
 
 
 ;;; cclasp
-#||
+
 (load "src/lisp/kernel/contrib/Acclimation/packages")
 (load "src/lisp/kernel/contrib/Acclimation/locale")
 (load "src/lisp/kernel/contrib/Acclimation/date")
@@ -381,6 +381,7 @@
 (load "src/lisp/kernel/contrib/Cleavir/Ctype/other-functions")
 (load "src/lisp/kernel/contrib/Cleavir/Ctype/default")
 (load "src/lisp/kernel/contrib/Cleavir/BIR/packages")
+(setf *load-print* t)
 (load "src/lisp/kernel/contrib/Cleavir/BIR/structure")
 (load "src/lisp/kernel/contrib/Cleavir/BIR/instructions")
 (load "src/lisp/kernel/contrib/Cleavir/BIR/map")
@@ -513,4 +514,4 @@
 (load "SYS:SRC;LISP;KERNEL;TAG;PRE-EPILOGUE-CCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;EPILOGUE-CCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;CCLASP.LISP")
-||#
+
