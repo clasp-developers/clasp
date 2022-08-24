@@ -674,13 +674,22 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("entry %" PRIu8 "\n", n);
       VirtualMachineStackState vmss = vm.save();
       vm._pc++;
-      call_with_tagbody([&](TagbodyDynEnv_sp tde, size_t index) {
-        if (index == 0) // first iteration
-          vm.setreg(n, tde.raw_());
-        else
-          vm.load(vmss);
-        bytecode_vm(vm, literals, nlocals, closure, lcc_nargs, lcc_args);
-      });
+      jmp_buf target;
+      void* frame = __builtin_frame_address(0);
+      TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
+      vm.setreg(n, env.raw_());
+      gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
+      DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
+      if (setjmp(target)) vm.load(vmss);
+      again:
+      try { bytecode_vm(vm, literals, nlocals, closure, lcc_nargs, lcc_args); }
+      catch (Unwind &uw) {
+        if (uw.getFrame() == frame) {
+          my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
+          goto again;
+        }
+        else throw;
+      }
       break;
     }
     case vm_exit_8: {
