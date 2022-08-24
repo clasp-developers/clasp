@@ -830,17 +830,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
   }
 }
 
-struct VMFramePusher {
-  VirtualMachine& vm;
-  size_t nlocals;
-  VMFramePusher(VirtualMachine& nvm, size_t nl) : vm(nvm), nlocals(nl) {
-    vm.push_frame(nlocals);
-  }
-  ~VMFramePusher() {
-    vm.pop_frame(nlocals);
-  }
-};
-
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
@@ -857,11 +846,15 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   unsigned char* old_pc = vm._pc;
   vm._pc = pc;
   // The frame itself we do even if we do exit.
-  VMFramePusher vmfp(vm, nlocals);
+  T_O** old_fp = vm.push_frame(nlocals);
   try {
-    gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure, lcc_nargs, lcc_args);
-    vm._pc = old_pc;
-    return res;
+    T_mv res = funwind_protect([&] {
+      gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure, lcc_nargs, lcc_args);
+      vm._pc = old_pc;
+      return T_mv(res);
+    },
+      [&] { vm.pop_frame(old_fp); });
+    return res.as_return_type();
   } catch (VM_error& err) {
     printf("%s:%d:%s Recovering from VM_error\n", __FILE__, __LINE__, __FUNCTION__ );
     return gctools::return_type(nil<T_O>().raw_(), 0 );

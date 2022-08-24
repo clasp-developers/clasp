@@ -138,27 +138,6 @@ struct VirtualMachine {
     VM_ASSERT_ALIGNED(this->_stackPointer);
   }
 
-  // Push a new frame with NLOCALS local variables.
-  inline void push_frame(size_t nlocals) {
-    this->push((T_O*)this->_framePointer);
-    this->_framePointer = this->_stackPointer;
-#ifdef STACK_GROWS_UP
-    this->_stackPointer += nlocals;
-#else
-    this->_stackPointer -= nlocals;
-#endif
-    VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_stackPointer);
-  }
-
-  // Pop a frame that had NLOCALS local variables.
-  inline void pop_frame(size_t nlocals) {
-    this->drop(nlocals);
-    this->_framePointer = (core::T_O**)(this->pop());
-    VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_framePointer);
-  }
-
   inline VirtualMachineStackState save() {
     return VirtualMachineStackState(this->_framePointer, this->_stackPointer);
   }
@@ -168,6 +147,26 @@ struct VirtualMachine {
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(this->_stackPointer);
     VM_ASSERT_ALIGNED(this->_framePointer);
+  }
+
+  // Push a new frame with NLOCALS local variables.
+  // Return the old frame pointer.
+  inline T_O** push_frame(size_t nlocals) {
+    T_O** ret = this->_framePointer;
+    this->_framePointer = this->_stackPointer;
+#ifdef STACK_GROWS_UP
+    this->_stackPointer += nlocals;
+#else
+    this->_stackPointer -= nlocals;
+#endif
+    VM_CHECK(*this);
+    VM_ASSERT_ALIGNED(this->_stackPointer);
+    return ret;
+  }
+
+  inline void pop_frame(T_O** old_fp) {
+    this->_stackPointer = this->_framePointer;
+    this->_framePointer = old_fp;
   }
 
   inline void setreg(size_t base, core::T_O* value) {
