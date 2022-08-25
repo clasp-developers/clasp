@@ -110,13 +110,33 @@
     (setf (label-index label)
           (vector-push-extend label (cfunction-annotations function)))))
 
-(defun assemble (context &rest values)
+(defun long-values-p (values)
+  (dolist (value values)
+    (if (< value 0)
+        (error "Value ~a is not a positive integer" value)
+        (if (> value 255) (return-from long-values-p t))))
+  nil)
+
+(defun assemble-maybe-long (context opcode &rest values)
   (let ((assembly (context-assembly context)))
+    (if (long-values-p values)
+        (progn                          ; Arguments are long values
+          (vector-push-extend +long+ assembly)
+          (vector-push-extend opcode assembly)
+          (dolist (value values)
+            (vector-push-extend (logand value #xff) assembly)
+            (vector-push-extend (logand (ash value -8) #xff) assembly)))
+        (progn                       ; Arguments all fit within 0..255
+          (vector-push-extend opcode assembly)
+          (dolist (value values)
+            (vector-push-extend value assembly))))))
+
+(defun assemble (context opcode &rest values)
+  (when (long-values-p values)
+    (error "Bad value in assemble ~s" values))
+  (let ((assembly (context-assembly context)))
+    (vector-push-extend opcode assembly)
     (dolist (value values)
-      (if (integerp value)
-          (if (or (< value 0) (> value 255))
-              (error "The value ~a is outside of the range 0..255" value))
-          (error "The value ~s is not an integer 0..255" value))
       (vector-push-extend value assembly))))
 
 (defun assemble-into (code position &rest values)
@@ -495,8 +515,8 @@
                      (setf (core:bytecode-cmp-lexical-var-info/closed-over-p data) t)
                      (assemble context +closure+ (closure-index data context))))
               (maybe-emit-cell-ref data context))
-             ((eq kind :special) (assemble context +symbol-value+
-                           (literal-index form context)))
+             ((eq kind :special) (assemble-maybe-long context +symbol-value+
+                                                      (literal-index form context)))
              ((eq kind :constant) (return-from compile-symbol ; don't pop again.
                             (compile-literal data env context)))
              ((null kind)
@@ -697,7 +717,7 @@
            (assemble context +set+ index +ref+ index)
            ;; called for effect, i.e. to keep frame size correct
            (bind-vars (list var) env context))
-         (assemble context +symbol-value-set+ (literal-index var context))
+         (assemble-maybe-long context +symbol-value-set+ (literal-index var context))
          (unless (eql (context-receiving context) 0)
            (assemble context +ref+ index)
            (when (eql (context-receiving context) t)

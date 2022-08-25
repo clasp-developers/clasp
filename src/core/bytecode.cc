@@ -815,6 +815,29 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         vm._pc++;
         break;
       }
+      case vm_symbol_value: {
+        uint8_t low = *(++vm._pc);
+        uint16_t n = low + (*(++vm._pc) << 8);
+        DBG_VM1("long symbol-value %" PRIu16 "\n", n);
+        T_sp sym_sp((gctools::Tagged)literals[n]);
+        ASSERT(gc::IsA<Symbol_sp>(sym_sp));
+        Symbol_sp sym = gc::As_unsafe<Symbol_sp>(sym_sp);
+        vm.push(sym->symbolValue().raw_());
+        vm._pc++;
+        break;
+      }
+      case vm_symbol_value_set: {
+        uint8_t low = *(++vm._pc);
+        uint16_t n = low + (*(++vm._pc) << 8);
+        DBG_VM1("long symbol-value %" PRIu16 "\n", n);
+        T_sp sym_sp((gctools::Tagged)literals[n]);
+        ASSERT(gc::IsA<Symbol_sp>(sym_sp));
+        Symbol_sp sym = gc::As_unsafe<Symbol_sp>(sym_sp);
+        T_sp value((gctools::Tagged)(vm.pop()));
+        sym->setf_symbolValue(value);
+        vm._pc++;
+        break;
+      }
       default:
           SIMPLE_ERROR("Unknown LONG sub_opcode %hu", sub_opcode);
       }
