@@ -583,6 +583,11 @@ void tsymbol(void* ptr)
   printf("      Result -> %s\n", _rep_(result).c_str());
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,primitive_print_backtrace);
+void dbg_primitive_print_backtrace() {
+  core::eval::funcall(core::_sym_primitive_print_backtrace);
+}
+
 void dbg_safe_backtrace() {
   printf("%s:%d:%s This is where we would have clasp dump a backtrace that doesn't use the printer or allocate memory\n",
          __FILE__, __LINE__, __FUNCTION__ );

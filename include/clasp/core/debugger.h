@@ -139,6 +139,7 @@ extern "C" {
 void dbg_safe_print(uintptr_t raw);
 void dbg_safe_println(uintptr_t raw);
 void dbg_safe_backtrace();
+void dbg_primitive_print_backtrace();
 };
 
 #if 0
