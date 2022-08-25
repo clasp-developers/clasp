@@ -63,7 +63,7 @@ Returns T if walked, NIL if not (e.g. because the compiler signaled an error)."
   (let ((*code-walking* t))
     (if (not core:*use-cleavir-compiler*)
         (if (eq cmp::*implicit-compile-hook* 'cmp::bytecode-implicit-compile-repl-form)
-            (code-walk-using-bytecode code-walker-function form env)
+            (code-walk-using-bytecode code-walker-function form (or env #+bytecode(make-null-lexical-environment)))
             (code-walk-using-bclasp code-walker-function form env))
         (let* ((clasp-cleavir-pkg (find-package :clasp-cleavir))
                (code-walk-using-cleavir-symbol (find-symbol "CODE-WALK-USING-CLEAVIR" clasp-cleavir-pkg)))
