@@ -796,6 +796,14 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_long: {
       uint8_t sub_opcode = *++vm._pc;
       switch (sub_opcode) {
+      case vm_ref: {
+        uint8_t low = *(vm._pc + 1);
+        uint16_t n = low + (*(vm._pc + 2) << 8);
+        DBG_VM1("long ref %" PRIu16 "\n", n);
+        vm.push(*(vm.reg(n)));
+        vm._pc += 3;
+        break;
+      }
       case vm_const: {
         uint8_t low = *(++vm._pc);
         uint16_t n = low + (*(++vm._pc) << 8);
@@ -804,6 +812,33 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         vm.push(value);
         VM_RECORD_PLAYBACK(value,"long const");
         vm._pc++;
+        break;
+      }
+      case vm_closure: {
+        uint8_t low = *(vm._pc + 1);
+        uint16_t n = low + (*(vm._pc + 2) << 8);
+        DBG_VM1("long closure %" PRIu16 "\n", n);
+        vm.push((*closure)[n].raw_());
+        vm._pc += 3;
+        break;
+      }
+      case vm_bind: {
+        uint8_t low_count = *(vm._pc + 1);
+        uint16_t count = low_count + (*(vm._pc + 2) << 8);
+        uint8_t low_offset = *(vm._pc + 3);
+        uint16_t offset = low_offset + (*(vm._pc + 4) << 8);
+        DBG_VM1("long bind %" PRIu16 " %" PRIu16 "\n", count, offset);
+        vm.copytoreg(vm.stackref(count-1), count, offset);
+        vm.drop(count);
+        vm._pc += 5;
+        break;
+      }
+      case vm_set: {
+        uint8_t low = *(vm._pc + 1);
+        uint16_t n = low + (*(vm._pc + 2) << 8);
+        DBG_VM("long set %" PRIu16 "\n", n);
+        vm.setreg(n, vm.pop());
+        vm._pc += 3;
         break;
       }
       case vm_fdefinition: {

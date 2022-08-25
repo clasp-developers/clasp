@@ -237,9 +237,16 @@
       (error "Handle more than 127 keyword parameters - you need ~s" key-count)))
 
 (defun emit-bind (context count offset)
-  (cond ((= count 1) (assemble context +set+ offset))
+  (cond ((= count 1)
+         (emit-simple-lexical-set offset context))
         ((= count 0))
-        (t (assemble context +bind+ count offset))))
+        ((and (< count #.(ash 1 8)) (< offset #.(ash 1 8)))
+         (assemble context +bind+ count offset))
+        ((and (< count #.(ash 1 16)) (< offset #.(ash 1 16)))
+         (assemble context +long+ +bind+
+                   (ldb (byte 8 0) count) (ldb (byte 16 8) count)
+                   (ldb (byte 8 0) offset) (ldb (byte 16 8) offset)))
+        (t (error "Too many lexicals: ~d ~d" count offset))))
 
 (defun emit-call (context count)
   (let ((receiving (context-receiving context)))
@@ -476,25 +483,63 @@
 (defun maybe-emit-encage (lexical-info context)
   (let ((index (core:bytecode-cmp-lexical-var-info/frame-index lexical-info)))
     (flet ((emitter (fixup position code)
-             #+clasp-min (declare (ignore fixup))
-             #-clasp-min
-             (assert (= (fixup-size fixup) 5))
-             (assemble-into code position
-                            +ref+ index +make-cell+ +set+ index))
+             (cond ((= (fixup-size fixup) 5)
+                    (assemble-into code position
+                                   +ref+ index +make-cell+ +set+ index))
+                   ((= (fixup-size fixup) 9)
+                    (let ((low (ldb (byte 8 0) index))
+                          (high (ldb (byte 16 8) index)))
+                      (assemble-into code position
+                                     +long+ +ref+ low high +make-cell+ +long+ +set+ low high)))
+                   (t (error "Unknown fixup size ~d" (fixup-size fixup)))))
            (resizer (fixup)
              (declare (ignore fixup))
-             (if (indirect-lexical-p lexical-info) 5 0)))
+             (cond ((not (indirect-lexical-p lexical-info)) 0)
+                   ((< index #.(ash 1 8)) 5)
+                   ((< index #.(ash 1 16)) 9)
+                   (t (error "Too many lexicals: ~d" index)))))
       (emit-fixup context (make-fixup lexical-info 0 #'emitter #'resizer)))))
+
+(defun emit-simple-lexical-ref (index context)
+  (cond ((< index #.(ash 1 8))
+         (assemble context +ref+ index))
+        ((< index #.(ash 1 16))
+         (assemble context +long+ +ref+ (ldb (byte 8 0) index) (ldb (byte 16 8) index)))
+        (t
+         (error "Too many lexicals: ~d" index))))
+
+(defun emit-simple-lexical-set (index context)
+  (cond ((< index #.(ash 1 8)) (assemble context +set+ index))
+        ((< index #.(ash 1 16))
+         (assemble context +long+ +set+ (ldb (byte 8 0) index) (ldb (byte 16 8) index)))
+        (t (error "Too many lexicals: ~d" index))))
+
+(defun emit-simple-closure (index context)
+  (cond ((< index #.(ash 1 8)) (assemble context +closure+ index))
+        ((< index #.(ash 1 16))
+         (assemble context +long+ +set+ (ldb (byte 8 0) index) (ldb (byte 16 8) index)))
+        (t (error "Too many lexicals: ~d" index))))
 
 (defun emit-lexical-set (lexical-info context)
   (let ((index (core:bytecode-cmp-lexical-var-info/frame-index lexical-info)))
     (flet ((emitter (fixup position code)
-             (if (= (fixup-size fixup) 3)
-                 (assemble-into code position +ref+ index +cell-set+)
-                 (assemble-into code position +set+ index)))
+             (let ((size (fixup-size fixup)))
+               (cond ((= size 2)
+                      (assemble-into code position +set+ index))
+                     ((= size 3)
+                      (assemble-into code position +ref+ index +cell-set+))
+                     ((= size 5)
+                      (assemble-into code position
+                                     +long+ +ref+
+                                     (ldb (byte 8 0) index) (ldb (byte 16 8) index)
+                                     +cell-set+))
+                     (t (error "Unknown fixup size ~d" size)))))
            (resizer (fixup)
              (declare (ignore fixup))
-             (if (indirect-lexical-p lexical-info) 3 2)))
+             (cond ((not (indirect-lexical-p lexical-info)) 2)
+                   ((< index #.(ash 1 8)) 3)
+                   ((< index #.(ash 1 16)) 5)
+                   (t (error "Too many lexicals: ~d" index)))))
       (emit-fixup context (make-fixup lexical-info 2 #'emitter #'resizer)))))
 
 (defun compile-symbol (form env context)
@@ -509,11 +554,14 @@
           (t
            (cond
              ((eq kind :lexical)
-              (cond ((eq (core:bytecode-cmp-lexical-var-info/function data) (context-function context))
-                     (assemble context +ref+ (core:bytecode-cmp-lexical-var-info/frame-index data)))
+              (cond ((eq (core:bytecode-cmp-lexical-var-info/function data)
+                         (context-function context))
+                     (emit-simple-lexical-ref
+                      (core:bytecode-cmp-lexical-var-info/frame-index data)
+                      context))
                     (t
                      (setf (core:bytecode-cmp-lexical-var-info/closed-over-p data) t)
-                     (assemble context +closure+ (closure-index data context))))
+                     (emit-simple-closure (closure-index data context) context)))
               (maybe-emit-cell-ref data context))
              ((eq kind :special) (assemble-maybe-long context +symbol-value+
                                                       (literal-index form context)))
@@ -670,7 +718,7 @@
                    (setq env (bind-vars (list var) env context))
                    (maybe-emit-make-cell (nth-value 1 (var-info var env))
                                          context)
-                   (assemble context +set+ frame-start))))))
+                   (emit-simple-lexical-set frame-start context))))))
       (compile-progn body
                      (if specials
                          ;; We do this to make sure special declarations get
@@ -714,12 +762,13 @@
        ;; alter it.
        (let ((index (core:bytecode-cmp-env/frame-end env)))
          (unless (eql (context-receiving context) 0)
-           (assemble context +set+ index +ref+ index)
+           (emit-simple-lexical-set index context)
+           (emit-simple-lexical-ref index context)
            ;; called for effect, i.e. to keep frame size correct
            (bind-vars (list var) env context))
          (assemble-maybe-long context +symbol-value-set+ (literal-index var context))
          (unless (eql (context-receiving context) 0)
-           (assemble context +ref+ index)
+           (emit-simple-lexical-ref index context)
            (when (eql (context-receiving context) t)
              (assemble context +pop+)))))
       ((eq kind :lexical)
@@ -732,16 +781,17 @@
          (compile-form valf env (new-context context :receiving 1))
          ;; similar concerns to specials above.
          (unless (eql (context-receiving context) 0)
-           (assemble context +set+ index +ref+ index)
+           (emit-simple-lexical-set index context)
+           (emit-simple-lexical-ref index context)
            (bind-vars (list var) env context))
          (cond (localp
                 (emit-lexical-set data context))
                ;; Don't emit a fixup if we already know we need a cell.
                (t
-                (assemble context +closure+ (closure-index data context))
+                (emit-simple-closure (closure-index data context) context)
                 (assemble context +cell-set+)))
          (unless (eql (context-receiving context) 0)
-           (assemble context +ref+ index)
+           (emit-simple-lexical-ref index context)
            (when (eql (context-receiving context) t)
              (assemble context +pop+)))))
       (t (error "Unknown kind ~a" kind)))))
@@ -837,8 +887,8 @@
 ;;; Push the immutable value or cell of lexical in CONTEXT.
 (defun reference-lexical-info (info context)
   (if (eq (core:bytecode-cmp-lexical-var-info/function info) (context-function context))
-      (assemble context +ref+ (core:bytecode-cmp-lexical-var-info/frame-index info))
-      (assemble context +closure+ (closure-index info context))))
+      (emit-simple-lexical-ref (core:bytecode-cmp-lexical-var-info/frame-index info) context)
+      (emit-simple-closure (closure-index info context) context)))
 
 (defun compile-function (fnameoid env context)
   (unless (eql (context-receiving context) 0)
