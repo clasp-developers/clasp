@@ -249,10 +249,10 @@
 (defun emit-call (context count)
   (let ((receiving (context-receiving context)))
     (cond ((or (eql receiving t) (eql receiving 0))
-           (assemble context +call+ count))
+           (assemble-maybe-long context +call+ count))
           ((eql receiving 1)
-           (assemble context +call-receive-one+ count))
-          (t (assemble context +call-receive-fixed+ count receiving)))))
+           (assemble-maybe-long context +call-receive-one+ count))
+          (t (assemble-maybe-long context +call-receive-fixed+ count receiving)))))
 
 (defun emit-mv-call (context)
   (let ((receiving (context-receiving context)))
@@ -260,7 +260,7 @@
            (assemble context +mv-call+))
           ((eql receiving 1)
            (assemble context +mv-call-receive-one+))
-          (t (assemble context +mv-call-receive-fixed+ receiving)))))
+          (t (assemble-maybe-long context +mv-call-receive-fixed+ receiving)))))
 
 (defun (setf core:bytecode-cmp-lexical-var-info/closed-over-p) (new info)
   (core:bytecode-cmp-lexical-var-info/setf-closed-over-p info new))

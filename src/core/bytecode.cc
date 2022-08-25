@@ -822,6 +822,64 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         vm._pc += 3;
         break;
       }
+      case vm_call: {
+        uint8_t low = *(vm._pc + 1);
+        uint16_t nargs = low + (*(vm._pc + 2) << 8);
+        DBG_VM1("long call %" PRIu16 "\n", nargs);
+#ifdef DBG_VM1
+        if (nargs + 1 > vm.npushed(nlocals))
+          SIMPLE_ERROR("Help");
+#endif
+        T_O* func = *(vm.stackref(nargs));
+        T_O** args = vm.stackref(nargs-1);
+        T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+        res.saveToMultipleValue0();
+        vm.drop(nargs+1);
+        vm._pc += 3;
+        break;
+      }
+      case vm_call_receive_one: {
+        uint8_t low = *(vm._pc + 1);
+        uint16_t nargs = low + (*(vm._pc + 2) << 8);
+        DBG_VM1("long call-receive-one %" PRIu16 "\n", nargs);
+        T_O* func = *(vm.stackref(nargs));
+        VM_RECORD_PLAYBACK(func,"vm_call_receive_one_func");
+        VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs,"vm_call_receive_one_nargs");
+        T_O** args = vm.stackref(nargs-1);
+#if DEBUG_VM_RECORD_PLAYBACK==1
+        for ( size_t ii=0; ii<nargs; ii++ ) {
+          stringstream name_args;
+          name_args << "vm_call_receive_one_arg" << ii;
+          VM_RECORD_PLAYBACK(args[ii],name_args.str().c_str() );
+        }
+#endif
+        T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+        vm.drop(nargs+1);
+        vm.push(res.raw_());
+        VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
+        vm._pc += 3;
+        break;
+      }
+      case vm_call_receive_fixed: {
+        uint8_t low_nargs = *(vm._pc + 1);
+        uint16_t nargs = low_nargs + (*(vm._pc + 2) << 8);
+        uint8_t low_nvals = *(vm._pc + 3);
+        uint16_t nvals = low_nvals + (*(vm._pc + 4) << 8);
+        DBG_VM("long call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
+        T_O* func = *(vm.stackref(nargs));
+        T_O** args = vm.stackref(nargs-1);
+        T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+        vm.drop(nargs+1);
+        if (nvals != 0) {
+          MultipleValues &mv = lisp_multipleValues();
+          vm.push(res.raw_()); // primary
+          size_t svalues = mv.getSize();
+          for (size_t i = 1; i < svalues; ++i)
+            vm.push(mv.valueGet(i, svalues).raw_());
+        }
+        vm._pc += 5;
+        break;
+      }
       case vm_bind: {
         uint8_t low_count = *(vm._pc + 1);
         uint16_t count = low_count + (*(vm._pc + 2) << 8);
@@ -871,7 +929,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       case vm_make_uninitialized_closure: {
         uint8_t low = *(vm._pc + 1);
         uint16_t c = low + (*(vm._pc + 2) << 8);
-        DBG_VM("make-uninitialized-closure %" PRIu8 "\n", c);
+        DBG_VM("long make-uninitialized-closure %" PRIu16 "\n", c);
         T_sp fn_sp((gctools::Tagged)literals[c]);
         GlobalBytecodeEntryPoint_sp fn
           = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
@@ -886,7 +944,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       case vm_initialize_closure: {
         uint8_t low = *(vm._pc + 1);
         uint16_t c = low + (*(vm._pc + 2) << 8);
-        DBG_VM("initialize-closure %" PRIu8 "\n", c);
+        DBG_VM("long initialize-closure %" PRIu16 "\n", c);
         T_sp tclosure((gctools::Tagged)(*(vm.reg(c))));
         Closure_sp closure = gc::As<Closure_sp>(tclosure);
       // FIXME: We ought to be able to get the closure size directly
@@ -897,6 +955,25 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         DBG_VM("  nclosed = %zu\n", nclosed);
         vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
         vm.drop(nclosed);
+        vm._pc += 3;
+        break;
+      }
+      case vm_mv_call_receive_fixed: {
+        uint8_t low = *(vm._pc + 1);
+        uint16_t nvals = low + (*(vm._pc + 2) << 8);
+        DBG_VM("long mv-call-receive-fixed %" PRIu16 "\n", nvals);
+        T_O* func = vm.pop();
+        MultipleValues& mv = lisp_multipleValues();
+        size_t nargs = mv.getSize();
+        T_O* args[nargs];
+        multipleValuesSaveToTemp(nargs, args);
+        T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+        if (nvals != 0) {
+          vm.push(res.raw_()); // primary
+          size_t svalues = mv.getSize();
+          for (size_t i = 1; i < svalues; ++i)
+            vm.push(mv.valueGet(i, svalues).raw_());
+        }
         vm._pc += 3;
         break;
       }
