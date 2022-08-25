@@ -849,7 +849,7 @@
         (dotimes (i (length (cfunction-closed (car closure))))
           (reference-lexical-info (aref (cfunction-closed (car closure)) i)
                                   context))
-        (assemble-maybe-long context +initialize-closure+ (car closure)))
+        (assemble-maybe-long context +initialize-closure+ (cdr closure)))
       (compile-progn body env context))))
 
 (defun compile-if (condition then else env context)
