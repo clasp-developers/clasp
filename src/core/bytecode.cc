@@ -850,6 +850,56 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         vm._pc++;
         break;
       }
+      case vm_make_closure: {
+        uint8_t low = *(vm._pc + 1);
+        uint16_t c = low + (*(vm._pc + 2) << 8);
+        DBG_VM("long make-closure %" PRIu16 "\n", c);
+        T_sp fn_sp((gctools::Tagged)literals[c]);
+        GlobalBytecodeEntryPoint_sp fn
+          = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
+        size_t nclosed = fn->environmentSize();
+        DBG_VM("  nclosed = %zu\n", nclosed);
+        Closure_sp closure
+          = Closure_O::make_bytecode_closure(fn, nclosed);
+      // FIXME: Can we use some more abstracted access?
+        vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
+        vm.drop(nclosed);
+        vm.push(closure.raw_());
+        vm._pc += 3;
+        break;
+      }
+      case vm_make_uninitialized_closure: {
+        uint8_t low = *(vm._pc + 1);
+        uint16_t c = low + (*(vm._pc + 2) << 8);
+        DBG_VM("make-uninitialized-closure %" PRIu8 "\n", c);
+        T_sp fn_sp((gctools::Tagged)literals[c]);
+        GlobalBytecodeEntryPoint_sp fn
+          = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
+        size_t nclosed = fn->environmentSize();
+        DBG_VM("  nclosed = %zu\n", nclosed);
+        Closure_sp closure
+          = Closure_O::make_bytecode_closure(fn, nclosed);
+        vm.push(closure.raw_());
+        vm._pc += 3;
+        break;
+      }
+      case vm_initialize_closure: {
+        uint8_t low = *(vm._pc + 1);
+        uint16_t c = low + (*(vm._pc + 2) << 8);
+        DBG_VM("initialize-closure %" PRIu8 "\n", c);
+        T_sp tclosure((gctools::Tagged)(*(vm.reg(c))));
+        Closure_sp closure = gc::As<Closure_sp>(tclosure);
+      // FIXME: We ought to be able to get the closure size directly
+      // from the closure through some nice method.
+        GlobalBytecodeEntryPoint_sp fn
+          = gc::As<GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
+        size_t nclosed = fn->environmentSize();
+        DBG_VM("  nclosed = %zu\n", nclosed);
+        vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
+        vm.drop(nclosed);
+        vm._pc += 3;
+        break;
+      }
       case vm_symbol_value: {
         uint8_t low = *(++vm._pc);
         uint16_t n = low + (*(++vm._pc) << 8);

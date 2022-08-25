@@ -110,29 +110,27 @@
     (setf (label-index label)
           (vector-push-extend label (cfunction-annotations function)))))
 
-(defun long-values-p (values)
-  (dolist (value values)
-    (if (< value 0)
-        (error "Value ~a is not a positive integer" value)
-        (if (> value 255) (return-from long-values-p t))))
-  nil)
+(defun values-less-than-p (values max)
+  (dolist (value values t)
+    (unless (<= value (1- max)) (return-from values-less-than-p nil))))
 
 (defun assemble-maybe-long (context opcode &rest values)
   (let ((assembly (context-assembly context)))
-    (if (long-values-p values)
-        (progn                          ; Arguments are long values
-          (vector-push-extend +long+ assembly)
-          (vector-push-extend opcode assembly)
-          (dolist (value values)
-            (vector-push-extend (logand value #xff) assembly)
-            (vector-push-extend (logand (ash value -8) #xff) assembly)))
-        (progn                       ; Arguments all fit within 0..255
-          (vector-push-extend opcode assembly)
-          (dolist (value values)
-            (vector-push-extend value assembly))))))
+    (cond ((values-less-than-p values #.(ash 1 8))
+           (vector-push-extend opcode assembly)
+           (dolist (value values)
+             (vector-push-extend value assembly)))
+          ((values-less-than-p values #.(ash 1 16))
+           (vector-push-extend +long+ assembly)
+           (vector-push-extend opcode assembly)
+           (dolist (value values)
+             (vector-push-extend (ldb (byte 8  0) value) assembly)
+             (vector-push-extend (ldb (byte 16 8) value) assembly)))
+          (t
+           (error "Bytecode compiler limit reached: Indices too large! ~a" values)))))
 
 (defun assemble (context opcode &rest values)
-  (when (long-values-p values)
+  (unless (values-less-than-p values #.(ash 1 8))
     (error "Bad value in assemble ~s" values))
   (let ((assembly (context-assembly context)))
     (vector-push-extend opcode assembly)
@@ -238,7 +236,7 @@
 
 (defun emit-bind (context count offset)
   (cond ((= count 1)
-         (emit-simple-lexical-set offset context))
+         (assemble-maybe-long context +set+ offset))
         ((= count 0))
         ((and (< count #.(ash 1 8)) (< offset #.(ash 1 8)))
          (assemble context +bind+ count offset))
@@ -500,26 +498,6 @@
                    (t (error "Too many lexicals: ~d" index)))))
       (emit-fixup context (make-fixup lexical-info 0 #'emitter #'resizer)))))
 
-(defun emit-simple-lexical-ref (index context)
-  (cond ((< index #.(ash 1 8))
-         (assemble context +ref+ index))
-        ((< index #.(ash 1 16))
-         (assemble context +long+ +ref+ (ldb (byte 8 0) index) (ldb (byte 16 8) index)))
-        (t
-         (error "Too many lexicals: ~d" index))))
-
-(defun emit-simple-lexical-set (index context)
-  (cond ((< index #.(ash 1 8)) (assemble context +set+ index))
-        ((< index #.(ash 1 16))
-         (assemble context +long+ +set+ (ldb (byte 8 0) index) (ldb (byte 16 8) index)))
-        (t (error "Too many lexicals: ~d" index))))
-
-(defun emit-simple-closure (index context)
-  (cond ((< index #.(ash 1 8)) (assemble context +closure+ index))
-        ((< index #.(ash 1 16))
-         (assemble context +long+ +set+ (ldb (byte 8 0) index) (ldb (byte 16 8) index)))
-        (t (error "Too many lexicals: ~d" index))))
-
 (defun emit-lexical-set (lexical-info context)
   (let ((index (core:bytecode-cmp-lexical-var-info/frame-index lexical-info)))
     (flet ((emitter (fixup position code)
@@ -556,12 +534,13 @@
              ((eq kind :lexical)
               (cond ((eq (core:bytecode-cmp-lexical-var-info/function data)
                          (context-function context))
-                     (emit-simple-lexical-ref
-                      (core:bytecode-cmp-lexical-var-info/frame-index data)
-                      context))
+                     (assemble-maybe-long
+                      context +ref+
+                      (core:bytecode-cmp-lexical-var-info/frame-index data)))
                     (t
                      (setf (core:bytecode-cmp-lexical-var-info/closed-over-p data) t)
-                     (emit-simple-closure (closure-index data context) context)))
+                     (assemble-maybe-long context
+                                          +closure+ (closure-index data context))))
               (maybe-emit-cell-ref data context))
              ((eq kind :special) (assemble-maybe-long context +symbol-value+
                                                       (literal-index form context)))
@@ -686,7 +665,8 @@
             (incf lexical-count))
           (when lexical-bindings
             ;; ... And use the end of the old env's frame.
-            (emit-bind context lexical-count (core:bytecode-cmp-env/frame-end env)))
+            (assemble-maybe-long context +bind+
+                                 lexical-count (core:bytecode-cmp-env/frame-end env)))
           (dolist (binding special-bindings)
             (compile-form (second binding) new-env (new-context context :receiving 1))
             (assemble context +special-bind+ (literal-index (first binding) context))
@@ -718,7 +698,7 @@
                    (setq env (bind-vars (list var) env context))
                    (maybe-emit-make-cell (nth-value 1 (var-info var env))
                                          context)
-                   (emit-simple-lexical-set frame-start context))))))
+                   (assemble-maybe-long context +set+ frame-start))))))
       (compile-progn body
                      (if specials
                          ;; We do this to make sure special declarations get
@@ -762,13 +742,13 @@
        ;; alter it.
        (let ((index (core:bytecode-cmp-env/frame-end env)))
          (unless (eql (context-receiving context) 0)
-           (emit-simple-lexical-set index context)
-           (emit-simple-lexical-ref index context)
+           (assemble-maybe-long context +set+ index)
+           (assemble-maybe-long context +ref+ index)
            ;; called for effect, i.e. to keep frame size correct
            (bind-vars (list var) env context))
          (assemble-maybe-long context +symbol-value-set+ (literal-index var context))
          (unless (eql (context-receiving context) 0)
-           (emit-simple-lexical-ref index context)
+           (assemble-maybe-long context +ref+ index)
            (when (eql (context-receiving context) t)
              (assemble context +pop+)))))
       ((eq kind :lexical)
@@ -781,17 +761,17 @@
          (compile-form valf env (new-context context :receiving 1))
          ;; similar concerns to specials above.
          (unless (eql (context-receiving context) 0)
-           (emit-simple-lexical-set index context)
-           (emit-simple-lexical-ref index context)
+           (assemble-maybe-long context +set+ index)
+           (assemble-maybe-long context +ref+ index)
            (bind-vars (list var) env context))
          (cond (localp
                 (emit-lexical-set data context))
                ;; Don't emit a fixup if we already know we need a cell.
                (t
-                (emit-simple-closure (closure-index data context) context)
+                (assemble-maybe-long context +closure+ (closure-index data context))
                 (assemble context +cell-set+)))
          (unless (eql (context-receiving context) 0)
-           (emit-simple-lexical-ref index context)
+           (assemble-maybe-long context +ref+ index)
            (when (eql (context-receiving context) t)
              (assemble context +pop+)))))
       (t (error "Unknown kind ~a" kind)))))
@@ -862,15 +842,15 @@
                  (emit-const context literal-index))
                 (t
                  (push (cons fun frame-slot) closures)
-                 (assemble context +make-uninitialized-closure+
-                   literal-index))))
+                 (assemble-maybe-long context
+                                      +make-uninitialized-closure+ literal-index))))
         (incf frame-slot))
       (emit-bind context fun-count frame-start)
       (dolist (closure closures)
         (dotimes (i (length (cfunction-closed (car closure))))
           (reference-lexical-info (aref (cfunction-closed (car closure)) i)
                                   context))
-        (assemble context +initialize-closure+ (cdr closure)))
+        (assemble-maybe-long context +initialize-closure+ (car closure)))
       (compile-progn body env context))))
 
 (defun compile-if (condition then else env context)
@@ -887,8 +867,9 @@
 ;;; Push the immutable value or cell of lexical in CONTEXT.
 (defun reference-lexical-info (info context)
   (if (eq (core:bytecode-cmp-lexical-var-info/function info) (context-function context))
-      (emit-simple-lexical-ref (core:bytecode-cmp-lexical-var-info/frame-index info) context)
-      (emit-simple-closure (closure-index info context) context)))
+      (assemble-maybe-long context +ref+
+                           (core:bytecode-cmp-lexical-var-info/frame-index info))
+      (assemble-maybe-long context +closure+ (closure-index info context) context)))
 
 (defun compile-function (fnameoid env context)
   (unless (eql (context-receiving context) 0)
@@ -900,7 +881,8 @@
             (reference-lexical-info (aref closed i) context))
           (if (zerop (length closed))
               (emit-const context (literal-index cfunction context))
-              (assemble context +make-closure+ (literal-index cfunction context))))
+              (assemble-maybe-long context +make-closure+
+                                   (literal-index cfunction context))))
         (multiple-value-bind (kind data) (fun-info fnameoid env)
           (cond
             ((member kind '(:global-function nil))
