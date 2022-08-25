@@ -1030,7 +1030,7 @@
            (cond (suppliedp
                   (cond (specialp
                          (assemble-maybe-long
-                          +ref+
+                          context +ref+
                           (core:bytecode-cmp-lexical-var-info/frame-index info))
                          (emit-special-bind context var))
                         (t
