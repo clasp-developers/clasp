@@ -23,6 +23,7 @@
            #~"debugger2.cc"
            #~"backtrace.cc"
            #~"bytecode.cc"
+           #~"bytecode_compiler.cc"
            #~"debug_unixes.cc"
            #~"debug_macosx.cc"
            #~"smallMap.cc"

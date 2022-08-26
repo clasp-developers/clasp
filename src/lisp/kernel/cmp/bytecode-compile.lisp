@@ -110,29 +110,27 @@
     (setf (label-index label)
           (vector-push-extend label (cfunction-annotations function)))))
 
-(defun long-values-p (values)
-  (dolist (value values)
-    (if (< value 0)
-        (error "Value ~a is not a positive integer" value)
-        (if (> value 255) (return-from long-values-p t))))
-  nil)
+(defun values-less-than-p (values max)
+  (dolist (value values t)
+    (unless (<= 0 value (1- max)) (return-from values-less-than-p nil))))
 
 (defun assemble-maybe-long (context opcode &rest values)
   (let ((assembly (context-assembly context)))
-    (if (long-values-p values)
-        (progn                          ; Arguments are long values
-          (vector-push-extend +long+ assembly)
-          (vector-push-extend opcode assembly)
-          (dolist (value values)
-            (vector-push-extend (logand value #xff) assembly)
-            (vector-push-extend (logand (ash value -8) #xff) assembly)))
-        (progn                       ; Arguments all fit within 0..255
-          (vector-push-extend opcode assembly)
-          (dolist (value values)
-            (vector-push-extend value assembly))))))
+    (cond ((values-less-than-p values #.(ash 1 8))
+           (vector-push-extend opcode assembly)
+           (dolist (value values)
+             (vector-push-extend value assembly)))
+          ((values-less-than-p values #.(ash 1 16))
+           (vector-push-extend +long+ assembly)
+           (vector-push-extend opcode assembly)
+           (dolist (value values)
+             (vector-push-extend (ldb (byte 8 0) value) assembly)
+             (vector-push-extend (ldb (byte 8 8) value) assembly)))
+          (t
+           (error "Bytecode compiler limit reached: Indices too large! ~a" values)))))
 
 (defun assemble (context opcode &rest values)
-  (when (long-values-p values)
+  (unless (values-less-than-p values #.(ash 1 8))
     (error "Bad value in assemble ~s" values))
   (let ((assembly (context-assembly context)))
     (vector-push-extend opcode assembly)
@@ -228,26 +226,45 @@
 
 
 (defun emit-parse-key-args (context max-count key-count key-names env aok-p)
-  (if (<= key-count 127)
-      (assemble context +parse-key-args+
-                max-count
-                (if aok-p (boole boole-ior 128 key-count) key-count)
-                (literal-index (first key-names) context)
-                (core:bytecode-cmp-env/frame-end env))
-      (error "Handle more than 127 keyword parameters - you need ~s" key-count)))
+  (let* ((keystart (literal-index (first key-names) context))
+         (index (core:bytecode-cmp-env/frame-end env))
+         (all (list max-count key-count keystart index)))
+    (cond ((values-less-than-p all 127)
+           (assemble context +parse-key-args+
+                     max-count
+                     (if aok-p (logior #x80 key-count) key-count)
+                     keystart index))
+          ((values-less-than-p all 32767)
+           (assemble context +long+ +parse-key-args+
+                     (ldb (byte 8 0) max-count) (ldb (byte 8 8) max-count)
+                     (ldb (byte 8 0) key-count)
+                     (if aok-p
+                         (logior #x80 (ldb (byte 7 8) key-count))
+                         (ldb (byte 7 8) key-count))
+                     (ldb (byte 8 0) keystart) (ldb (byte 8 8) keystart)
+                     (ldb (byte 8 0) index) (ldb (byte 8 8) index)))
+          (t
+           (error "Handle more than 32767 keyword parameters - you need ~s" key-count)))))
 
 (defun emit-bind (context count offset)
-  (cond ((= count 1) (assemble context +set+ offset))
+  (cond ((= count 1)
+         (assemble-maybe-long context +set+ offset))
         ((= count 0))
-        (t (assemble context +bind+ count offset))))
+        ((and (< count #.(ash 1 8)) (< offset #.(ash 1 8)))
+         (assemble context +bind+ count offset))
+        ((and (< count #.(ash 1 16)) (< offset #.(ash 1 16)))
+         (assemble context +long+ +bind+
+                   (ldb (byte 8 0) count) (ldb (byte 8 8) count)
+                   (ldb (byte 8 0) offset) (ldb (byte 8 8) offset)))
+        (t (error "Too many lexicals: ~d ~d" count offset))))
 
 (defun emit-call (context count)
   (let ((receiving (context-receiving context)))
     (cond ((or (eql receiving t) (eql receiving 0))
-           (assemble context +call+ count))
+           (assemble-maybe-long context +call+ count))
           ((eql receiving 1)
-           (assemble context +call-receive-one+ count))
-          (t (assemble context +call-receive-fixed+ count receiving)))))
+           (assemble-maybe-long context +call-receive-one+ count))
+          (t (assemble-maybe-long context +call-receive-fixed+ count receiving)))))
 
 (defun emit-mv-call (context)
   (let ((receiving (context-receiving context)))
@@ -255,7 +272,13 @@
            (assemble context +mv-call+))
           ((eql receiving 1)
            (assemble context +mv-call-receive-one+))
-          (t (assemble context +mv-call-receive-fixed+ receiving)))))
+          (t (assemble-maybe-long context +mv-call-receive-fixed+ receiving)))))
+
+(defun emit-special-bind (context symbol)
+  (assemble-maybe-long context +special-bind+ (literal-index symbol context)))
+
+(defun emit-unbind (context count)
+  (dotimes (_ count) (assemble context +unbind+)))
 
 (defun (setf core:bytecode-cmp-lexical-var-info/closed-over-p) (new info)
   (core:bytecode-cmp-lexical-var-info/setf-closed-over-p info new))
@@ -476,25 +499,43 @@
 (defun maybe-emit-encage (lexical-info context)
   (let ((index (core:bytecode-cmp-lexical-var-info/frame-index lexical-info)))
     (flet ((emitter (fixup position code)
-             #+clasp-min (declare (ignore fixup))
-             #-clasp-min
-             (assert (= (fixup-size fixup) 5))
-             (assemble-into code position
-                            +ref+ index +make-cell+ +set+ index))
+             (cond ((= (fixup-size fixup) 5)
+                    (assemble-into code position
+                                   +ref+ index +make-cell+ +set+ index))
+                   ((= (fixup-size fixup) 9)
+                    (let ((low (ldb (byte 8 0) index))
+                          (high (ldb (byte 8 8) index)))
+                      (assemble-into code position
+                                     +long+ +ref+ low high +make-cell+ +long+ +set+ low high)))
+                   (t (error "Unknown fixup size ~d" (fixup-size fixup)))))
            (resizer (fixup)
              (declare (ignore fixup))
-             (if (indirect-lexical-p lexical-info) 5 0)))
+             (cond ((not (indirect-lexical-p lexical-info)) 0)
+                   ((< index #.(ash 1 8)) 5)
+                   ((< index #.(ash 1 16)) 9)
+                   (t (error "Too many lexicals: ~d" index)))))
       (emit-fixup context (make-fixup lexical-info 0 #'emitter #'resizer)))))
 
 (defun emit-lexical-set (lexical-info context)
   (let ((index (core:bytecode-cmp-lexical-var-info/frame-index lexical-info)))
     (flet ((emitter (fixup position code)
-             (if (= (fixup-size fixup) 3)
-                 (assemble-into code position +ref+ index +cell-set+)
-                 (assemble-into code position +set+ index)))
+             (let ((size (fixup-size fixup)))
+               (cond ((= size 2)
+                      (assemble-into code position +set+ index))
+                     ((= size 3)
+                      (assemble-into code position +ref+ index +cell-set+))
+                     ((= size 5)
+                      (assemble-into code position
+                                     +long+ +ref+
+                                     (ldb (byte 8 0) index) (ldb (byte 8 8) index)
+                                     +cell-set+))
+                     (t (error "Unknown fixup size ~d" size)))))
            (resizer (fixup)
              (declare (ignore fixup))
-             (if (indirect-lexical-p lexical-info) 3 2)))
+             (cond ((not (indirect-lexical-p lexical-info)) 2)
+                   ((< index #.(ash 1 8)) 3)
+                   ((< index #.(ash 1 16)) 5)
+                   (t (error "Too many lexicals: ~d" index)))))
       (emit-fixup context (make-fixup lexical-info 2 #'emitter #'resizer)))))
 
 (defun compile-symbol (form env context)
@@ -509,11 +550,15 @@
           (t
            (cond
              ((eq kind :lexical)
-              (cond ((eq (core:bytecode-cmp-lexical-var-info/function data) (context-function context))
-                     (assemble context +ref+ (core:bytecode-cmp-lexical-var-info/frame-index data)))
+              (cond ((eq (core:bytecode-cmp-lexical-var-info/function data)
+                         (context-function context))
+                     (assemble-maybe-long
+                      context +ref+
+                      (core:bytecode-cmp-lexical-var-info/frame-index data)))
                     (t
                      (setf (core:bytecode-cmp-lexical-var-info/closed-over-p data) t)
-                     (assemble context +closure+ (closure-index data context))))
+                     (assemble-maybe-long context
+                                          +closure+ (closure-index data context))))
               (maybe-emit-cell-ref data context))
              ((eq kind :special) (assemble-maybe-long context +symbol-value+
                                                       (literal-index form context)))
@@ -608,44 +653,35 @@
       (compile-progn body env context)
       (compile-literal nil env context)))
 
-(defun parse-let (bindings env)
-  (let ((lexical-bindings '())
-        (special-bindings '()))
-    (dolist (binding bindings)
-      (if (symbolp binding)
-          (if (eq (var-info binding env) :special)
-              (push (cons binding nil) special-bindings)
-              (push (cons binding nil) lexical-bindings))
-          (if (eq (var-info (first binding) env) :special)
-              (push binding special-bindings)
-              (push binding lexical-bindings))))
-    (values (nreverse lexical-bindings) (nreverse special-bindings))))
+(defun canonicalize-binding (binding)
+  (if (consp binding)
+      (values (first binding) (second binding))
+      (values binding nil)))
 
 (defun compile-let (bindings body env context)
   (multiple-value-bind (decls body docs specials)
       (core:process-declarations body nil)
     (declare (ignore decls docs))
-    (let ((env (add-specials specials env))
-          (lexical-count 0))
-      (multiple-value-bind (lexical-bindings special-bindings)
-          (parse-let bindings env)
-        (let ((new-env (bind-vars (mapcar #'first lexical-bindings) env context))
-              (special-count 0))
-          (dolist (binding lexical-bindings)
-            ;; Make sure we compile the forms in the old env.
-            (compile-form (second binding) env (new-context context :receiving 1))
-            (maybe-emit-make-cell (nth-value 1 (var-info (first binding) new-env)) context)
-            (incf lexical-count))
-          (when lexical-bindings
-            ;; ... And use the end of the old env's frame.
-            (emit-bind context lexical-count (core:bytecode-cmp-env/frame-end env)))
-          (dolist (binding special-bindings)
-            (compile-form (second binding) new-env (new-context context :receiving 1))
-            (assemble context +special-bind+ (literal-index (first binding) context))
-            (incf special-count))
-          (compile-progn body new-env context)
-          (dotimes (_ special-count)
-            (assemble context +unbind+)))))))
+    (let ((lexical-binding-count 0)
+          (special-binding-count 0)
+          (post-binding-env (add-specials specials env)))
+      (dolist (binding bindings)
+        (multiple-value-bind (var valf) (canonicalize-binding binding)
+          (compile-form valf env (new-context context :receiving 1))
+          (cond ((or (member var specials)
+                     (eq (var-info var env) :special))
+                 (incf special-binding-count)
+                 (emit-special-bind context var))
+                (t
+                 (setq post-binding-env
+                       (bind-vars (list var) post-binding-env context))
+                 (incf lexical-binding-count)
+                 (maybe-emit-make-cell
+                  (nth-value 1 (var-info var post-binding-env)) context)))))
+      (emit-bind context lexical-binding-count
+                 (core:bytecode-cmp-env/frame-end env))
+      (compile-progn body post-binding-env context)
+      (emit-unbind context special-binding-count))))
 
 (defun compile-let* (bindings body env context)
   (multiple-value-bind (decls body docs specials)
@@ -660,17 +696,14 @@
           (compile-form valf env (new-context context :receiving 1))
           (cond ((or (member var specials) (ext:specialp var))
                  (incf special-binding-count)
-                 (setq env (make-lexical-environment
-                            env
-                            :vars (acons var (core:bytecode-cmp-special-var-info/make)
-                                         (core:bytecode-cmp-env/vars env))))
-                 (assemble context +special-bind+ (literal-index var context)))
+                 (setq env (add-specials (list var) env))
+                 (emit-special-bind context var))
                 (t
                  (let ((frame-start (core:bytecode-cmp-env/frame-end env)))
                    (setq env (bind-vars (list var) env context))
                    (maybe-emit-make-cell (nth-value 1 (var-info var env))
                                          context)
-                   (assemble context +set+ frame-start))))))
+                   (assemble-maybe-long context +set+ frame-start))))))
       (compile-progn body
                      (if specials
                          ;; We do this to make sure special declarations get
@@ -680,10 +713,7 @@
                          (add-specials specials env)
                          env)
                      context)
-      (dotimes (_ special-binding-count)
-        #-clasp
-        (declare (ignore _))
-        (assemble context +unbind+)))))
+      (emit-unbind context special-binding-count))))
 
 (defun compile-setq (pairs env context)
   (if (null pairs)
@@ -714,12 +744,13 @@
        ;; alter it.
        (let ((index (core:bytecode-cmp-env/frame-end env)))
          (unless (eql (context-receiving context) 0)
-           (assemble context +set+ index +ref+ index)
+           (assemble-maybe-long context +set+ index)
+           (assemble-maybe-long context +ref+ index)
            ;; called for effect, i.e. to keep frame size correct
            (bind-vars (list var) env context))
          (assemble-maybe-long context +symbol-value-set+ (literal-index var context))
          (unless (eql (context-receiving context) 0)
-           (assemble context +ref+ index)
+           (assemble-maybe-long context +ref+ index)
            (when (eql (context-receiving context) t)
              (assemble context +pop+)))))
       ((eq kind :lexical)
@@ -732,16 +763,17 @@
          (compile-form valf env (new-context context :receiving 1))
          ;; similar concerns to specials above.
          (unless (eql (context-receiving context) 0)
-           (assemble context +set+ index +ref+ index)
+           (assemble-maybe-long context +set+ index)
+           (assemble-maybe-long context +ref+ index)
            (bind-vars (list var) env context))
          (cond (localp
                 (emit-lexical-set data context))
                ;; Don't emit a fixup if we already know we need a cell.
                (t
-                (assemble context +closure+ (closure-index data context))
+                (assemble-maybe-long context +closure+ (closure-index data context))
                 (assemble context +cell-set+)))
          (unless (eql (context-receiving context) 0)
-           (assemble context +ref+ index)
+           (assemble-maybe-long context +ref+ index)
            (when (eql (context-receiving context) t)
              (assemble context +pop+)))))
       (t (error "Unknown kind ~a" kind)))))
@@ -812,15 +844,15 @@
                  (emit-const context literal-index))
                 (t
                  (push (cons fun frame-slot) closures)
-                 (assemble context +make-uninitialized-closure+
-                   literal-index))))
+                 (assemble-maybe-long context
+                                      +make-uninitialized-closure+ literal-index))))
         (incf frame-slot))
       (emit-bind context fun-count frame-start)
       (dolist (closure closures)
         (dotimes (i (length (cfunction-closed (car closure))))
           (reference-lexical-info (aref (cfunction-closed (car closure)) i)
                                   context))
-        (assemble context +initialize-closure+ (cdr closure)))
+        (assemble-maybe-long context +initialize-closure+ (cdr closure)))
       (compile-progn body env context))))
 
 (defun compile-if (condition then else env context)
@@ -837,8 +869,9 @@
 ;;; Push the immutable value or cell of lexical in CONTEXT.
 (defun reference-lexical-info (info context)
   (if (eq (core:bytecode-cmp-lexical-var-info/function info) (context-function context))
-      (assemble context +ref+ (core:bytecode-cmp-lexical-var-info/frame-index info))
-      (assemble context +closure+ (closure-index info context))))
+      (assemble-maybe-long context +ref+
+                           (core:bytecode-cmp-lexical-var-info/frame-index info))
+      (assemble-maybe-long context +closure+ (closure-index info context))))
 
 (defun compile-function (fnameoid env context)
   (unless (eql (context-receiving context) 0)
@@ -850,7 +883,8 @@
             (reference-lexical-info (aref closed i) context))
           (if (zerop (length closed))
               (emit-const context (literal-index cfunction context))
-              (assemble context +make-closure+ (literal-index cfunction context))))
+              (assemble-maybe-long context +make-closure+
+                                   (literal-index cfunction context))))
         (multiple-value-bind (kind data) (fun-info fnameoid env)
           (cond
             ((member kind '(:global-function nil))
@@ -864,140 +898,227 @@
     (when (eql (context-receiving context) t)
       (assemble context +pop+))))
 
-;;; Deal with lambda lists. Return the new environment resulting from
-;;; binding these lambda vars.
-;;; Optional/key handling is done in two steps:
-;;;
-;;; 1. Bind any supplied optional/key vars to the passed values.
-;;;
-;;; 2. Default any unsupplied optional/key values and set the
-;;; corresponding suppliedp var for each optional/key.
-(defun compile-lambda-list (lambda-list env context)
-  (multiple-value-bind (required optionals rest key-flag keys aok-p aux)
-      (core:process-lambda-list lambda-list 'function)
-    (let* ((function (context-function context))
-           (entry-point (cfunction-entry-point function))
-           (min-count (car required))
-           (optional-count (car optionals))
-           (max-count (+ min-count optional-count))
-           (key-count (car keys))
-           (more-p (or rest key-flag))
-           (env (bind-vars (cdr required) env context)))
-      (emit-label context entry-point)
-      ;; Check that a valid number of arguments have been
-      ;; supplied to this function.
-      (cond ((and required (= min-count max-count) (not more-p))
-             (assemble context +check-arg-count=+ min-count))
-            (t
-             (when required
-               (assemble context +check-arg-count>=+ min-count))
-             (when (not more-p)
-               (assemble context +check-arg-count<=+ max-count))))
-      (unless (zerop min-count)
-        (assemble context +bind-required-args+ min-count)
-        (dolist (var (cdr required))
-          (maybe-emit-encage (nth-value 1 (var-info var env)) context)))
-      (unless (zerop optional-count)
-        (assemble context +bind-optional-args+
-          min-count
-          optional-count)
-        (let ((vars nil))
-          (do ((opts (cdr optionals) (cdddr opts)))
-              ((endp opts) (setq env (bind-vars (nreverse vars) env context)))
-            (push (car opts) vars))))
-      (when rest
-        (assemble context +listify-rest-args+ max-count)
-        (assemble context +set+ (core:bytecode-cmp-env/frame-end env))
-        (setq env (bind-vars (list rest) env context))
-        (maybe-emit-encage (nth-value 1 (var-info rest env)) context))
-      (when key-flag
-        (let ((key-names nil))
-          (do ((keys (cdr keys) (cddddr keys)))
-              ((endp keys))
-            (push (car keys) key-names))
-          (setq key-names (nreverse key-names))
-          (emit-parse-key-args context max-count key-count key-names env aok-p)
-          (dolist (key-name (rest key-names))
-            (literal-index key-name context)))
-        (let ((keyvars nil))
-          (do ((keys (cdr keys) (cddddr keys)))
-              ((endp keys)
-               (setq env (bind-vars (nreverse keyvars) env context)))
-            (push (cadr keys) keyvars))))
-      (unless (zerop optional-count)
-        (do ((optionals (cdr optionals) (cdddr optionals))
-             (optional-label (make-label) next-optional-label)
-             (next-optional-label (make-label) (make-label)))
-            ((null optionals)
-             (emit-label context optional-label))
-          (emit-label context optional-label)
-          (let ((optional-var (car optionals))
-                (defaulting-form (cadr optionals))
-                (supplied-var (caddr optionals)))
-            (setq env
-                  (compile-optional/key-item optional-var defaulting-form supplied-var
-                                             next-optional-label context env)))))
-      (when key-flag
-        (do ((keys (cdr keys) (cddddr keys))
-             (key-label (make-label) next-key-label)
-             (next-key-label (make-label) (make-label)))
-            ((null keys)
-             (emit-label context key-label))
-          (emit-label context key-label)
-          (let ((key-name (car keys)) (key-var (cadr keys))
-                (defaulting-form (caddr keys)) (supplied-var (cadddr keys)))
-            (declare (ignore key-name))
-            (setq env
-                  (compile-optional/key-item key-var defaulting-form supplied-var
-                                             next-key-label context env)))))
-      (values
-       ;; convert from process-lambda-list's aux format (var val var val) to bindings.
-       (let ((bindings nil))
-         (do ((aux aux (cddr aux)))
-             ((endp aux) (nreverse bindings))
-           (push (list (car aux) (cadr aux)) bindings)))
-       env))))
+;;; (list (car list) (car (FUNC list)) (car (FUNC (FUNC list))) ...)
+(defun collect-by (func list)
+  (let ((col nil))
+    (do ((list list (funcall func list)))
+        ((endp list) (nreverse col))
+      (push (car list) col))))
+
+(defun compile-with-lambda-list (lambda-list body env context)
+  (multiple-value-bind (decls body docs specials)
+      (core:process-declarations body t)
+    (declare (ignore docs decls))
+    (multiple-value-bind (required optionals rest key-flag keys aok-p aux)
+        (core:process-lambda-list lambda-list 'function)
+      (let* ((function (context-function context))
+             (entry-point (cfunction-entry-point function))
+             (min-count (first required))
+             (optional-count (first optionals))
+             (max-count (+ min-count optional-count))
+             (key-count (first keys))
+             (more-p (or rest key-flag))
+             (new-env (bind-vars (cdr required) env context))
+             (special-binding-count 0)
+             ;; An alist from optional and key variables to their local indices.
+             ;; This is needed so that we can properly mark any that are special as
+             ;; such while leaving them temporarily "lexically" bound during
+             ;; argument parsing.
+             (opt-key-indices nil))
+        (emit-label context entry-point)
+        ;; Generate argument count check.
+        (cond ((and (> min-count 0) (= min-count max-count) (not more-p))
+               (assemble-maybe-long context +check-arg-count=+ min-count))
+              (t
+               (when (> min-count 0)
+                 (assemble-maybe-long context +check-arg-count>=+ min-count))
+               (unless more-p
+                 (assemble-maybe-long context +check-arg-count<=+ max-count))))
+        (unless (zerop min-count)
+          ;; Bind the required arguments.
+          (assemble-maybe-long context +bind-required-args+ min-count)
+          (dolist (var (cdr required))
+            ;; We account for special declarations in outer environments/globally
+            ;; by checking the original environment - not our new one - for info.
+            (cond ((or (member var specials) (eq :special (var-info var env)))
+                   (let ((info (nth-value 1 (var-info var new-env))))
+                     (assemble-maybe-long
+                      context +ref+
+                      (core:bytecode-cmp-lexical-var-info/frame-index info)))
+                   (emit-special-bind context var))
+                  (t
+                   (maybe-emit-encage (nth-value 1 (var-info var new-env)) context))))
+          (setq new-env (add-specials (intersection specials (cdr required)) new-env)))
+        (unless (zerop optional-count)
+          ;; Generate code to bind the provided optional args; unprovided args will
+          ;; be initialized with the unbound marker.
+          (assemble-maybe-long context +bind-optional-args+ min-count optional-count)
+          (let ((optvars (collect-by #'cdddr (cdr optionals))))
+            ;; Mark the locations of each optional. Note that we do this even if
+            ;; the variable will be specially bound.
+            (setq new-env (bind-vars optvars new-env context))
+            ;; Add everything to opt-key-indices.
+            (dolist (var optvars)
+              (let ((info (nth-value 1 (var-info var new-env))))
+                (push (cons var (core:bytecode-cmp-lexical-var-info/frame-index info))
+                      opt-key-indices)))
+            ;; Re-mark anything that's special in the outer context as such, so that
+            ;; default initforms properly treat them as special.
+            (let ((specials (remove-if-not (lambda (sym)
+                                             (eq :special (var-info sym env)))
+                                           optvars)))
+              (when specials
+                (setq new-env (add-specials specials new-env))))))
+        (when key-flag
+          ;; Generate code to parse the key args. As with optionals, we don't do
+          ;; defaulting yet.
+          (let ((key-names (collect-by #'cddddr (cdr keys))))
+            (emit-parse-key-args context max-count key-count key-names new-env aok-p)
+            ;; emit-parse-key-args establishes the first key in the literals.
+            ;; now do the rest.
+            (dolist (key-name (rest key-names))
+              (literal-index key-name context)))
+          (let ((keyvars (collect-by #'cddddr (cddr keys))))
+            (setq new-env (bind-vars keyvars new-env context))
+            (dolist (var keyvars)
+              (let ((info (nth-value 1 (var-info var new-env))))
+                (push (cons var (core:bytecode-cmp-lexical-var-info/frame-index info))
+                      opt-key-indices)))
+            (let ((specials (remove-if-not (lambda (sym)
+                                             (eq :special (var-info sym env)))
+                                           keyvars)))
+              (when specials
+                (setq new-env (add-specials specials new-env))))))
+        ;; Generate defaulting code for optional args, and special-bind them
+        ;; if necessary.
+        (unless (zerop optional-count)
+          (do ((optionals (cdr optionals) (cdddr optionals))
+               (optional-label (make-label) next-optional-label)
+               (next-optional-label (make-label) (make-label)))
+              ((endp optionals) (emit-label context optional-label))
+            (emit-label context optional-label)
+            (let* ((optional-var (car optionals))
+                   (defaulting-form (cadr optionals)) (supplied-var (caddr optionals))
+                   (optional-special-p (or (member optional-var specials)
+                                           (eq :special (var-info optional-var env))))
+                   (index (cdr (assoc optional-var opt-key-indices)))
+                   (supplied-special-p (and supplied-var
+                                            (or (member supplied-var specials)
+                                                (eq :special (var-info supplied-var env))))))
+              (setq new-env
+                    (compile-optional/key-item optional-var defaulting-form index
+                                               supplied-var next-optional-label
+                                               optional-special-p supplied-special-p
+                                               context new-env))
+              (when optional-special-p (incf special-binding-count))
+              (when supplied-special-p (incf special-binding-count)))))
+        ;; &rest
+        (when rest
+          (assemble-maybe-long context +listify-rest-args+ max-count)
+          (assemble-maybe-long context +set+ (frame-end new-env))
+          (setq new-env (bind-vars (list rest) new-env context))
+          (cond ((or (member rest specials)
+                     (eq :special (var-info rest env)))
+                 (assemble-maybe-long
+                  +ref+ (nth-value 1 (var-info rest new-env)) context)
+                 (emit-special-bind context rest)
+                 (incf special-binding-count 1)
+                 (setq new-env (add-specials (list rest) new-env)))
+                (t (maybe-emit-encage (nth-value 1 (var-info rest new-env)) context))))
+        ;; Generate defaulting code for key args, and special-bind them if necessary.
+        (when key-flag
+          (do ((keys (cdr keys) (cddddr keys))
+               (key-label (make-label) next-key-label)
+               (next-key-label (make-label) (make-label)))
+              ((endp keys) (emit-label context key-label))
+            (emit-label context key-label)
+            (let* ((key-var (cadr keys)) (defaulting-form (caddr keys))
+                   (index (cdr (assoc key-var opt-key-indices)))
+                   (supplied-var (cadddr keys))
+                   (key-special-p (or (member key-var specials)
+                                      (eq :special (var-info key-var env))))
+                   (supplied-special-p (and supplied-var
+                                            (or (member supplied-var specials)
+                                                (eq :special (var-info key-var env))))))
+              (setq new-env
+                    (compile-optional/key-item key-var defaulting-form index
+                                               supplied-var next-key-label
+                                               key-special-p supplied-special-p
+                                               context new-env))
+              (when key-special-p (incf special-binding-count))
+              (when supplied-special-p (incf special-binding-count)))))
+        ;; Generate aux and the body as a let*.
+        ;; We have to convert from process-lambda-list's aux format
+        ;; (var val var val) to let* bindings.
+        ;; We repeat the special declarations so that let* will know the auxs
+        ;; are special, and so that any free special declarations are processed.
+        (let ((bindings nil))
+          (do ((aux aux (cddr aux)))
+              ((endp aux)
+               (compile-let* (nreverse bindings)
+                             `((declare (special ,@specials)) ,@body)
+                             new-env context))
+            (push (list (car aux) (cadr aux)) bindings)))
+        ;; Finally, clean up any special bindings.
+        (emit-unbind context special-binding-count)))))
 
 ;;; Compile an optional/key item and return the resulting environment.
-(defun compile-optional/key-item (var defaulting-form supplied-var next-label
-                                  context env)
-  (flet ((default (suppliedp info)
+(defun compile-optional/key-item (var defaulting-form var-index supplied-var next-label
+                                  var-specialp supplied-specialp context env)
+  (flet ((default (suppliedp specialp var info)
            (cond (suppliedp
-                  (maybe-emit-encage info context))
+                  (cond (specialp
+                         (assemble-maybe-long context +ref+ var-index)
+                         (emit-special-bind context var))
+                        (t
+                         (maybe-emit-encage info context))))
                  (t
                   (compile-form defaulting-form env
                                 (new-context context :receiving 1))
-                  (maybe-emit-make-cell info context)
-                  (assemble context +set+ (core:bytecode-cmp-lexical-var-info/frame-index info)))))
-         (supply (suppliedp info)
+                  (cond (specialp
+                         (emit-special-bind context var))
+                        (t
+                         (maybe-emit-make-cell info context)
+                         (assemble-maybe-long context +set+ var-index))))))
+         (supply (suppliedp specialp var info)
            (if suppliedp
                (compile-literal t env (new-context context :receiving 1))
                (assemble context +nil+))
-           (maybe-emit-make-cell info context)
-           (assemble context +set+ (core:bytecode-cmp-lexical-var-info/frame-index info))))
+           (cond (specialp
+                  (emit-special-bind context var))
+                 (t
+                  (maybe-emit-make-cell info context)
+                  (assemble-maybe-long
+                   context +set+
+                   (core:bytecode-cmp-lexical-var-info/frame-index info))))))
     (let ((supplied-label (make-label))
           (var-info (nth-value 1 (var-info var env))))
-      (multiple-value-bind (env supplied-var-info)
-          (if supplied-var
-              (let ((env (bind-vars (list supplied-var) env context)))
-                (values env (nth-value 1 (var-info supplied-var env))))
-              (values env nil))
-        (emit-jump-if-supplied context (core:bytecode-cmp-lexical-var-info/frame-index var-info) supplied-label)
-        (default nil var-info)
+      (when supplied-var
+        (setq env (bind-vars (list supplied-var) env context)))
+      (let ((supplied-info (nth-value 1 (var-info supplied-var env))))
+        (emit-jump-if-supplied context var-index supplied-label)
+        (default nil var-specialp var var-info)
         (when supplied-var
-          (supply nil supplied-var-info))
+          (supply nil supplied-specialp supplied-var supplied-info))
         (emit-jump context next-label)
         (emit-label context supplied-label)
-        (default t var-info)
+        (default t var-specialp var var-info)
         (when supplied-var
-          (supply t supplied-var-info))
+          (supply t supplied-specialp supplied-var supplied-info))
+        (when var-specialp
+          (setq env (add-specials (list var) env)))
+        (when supplied-specialp
+          (setq env (add-specials (list supplied-var) env)))
         env))))
 
 ;;; Compile the lambda in MODULE, returning the resulting
 ;;; CFUNCTION.
 (defun compile-lambda (lambda-list body env module)
-  (multiple-value-bind (decls body docs)
+  (multiple-value-bind (decls sub-body docs)
       (core:process-declarations body t)
+    ;; we pass the original body w/declarations to compile-with-lambda-list
+    ;; so that it can do its own special handling.
+    (declare (ignore sub-body))
     (let* ((name (or (core:extract-lambda-name-from-declares decls)
                      `(lambda ,(lambda-list-for-name lambda-list))))
            (function (make-cfunction module :name name :doc docs))
@@ -1005,9 +1126,7 @@
            (env (make-lexical-environment env :frame-end 0)))
       (setf (cfunction-index function)
             (vector-push-extend function (cmodule-cfunctions module)))
-      (multiple-value-bind (aux-bindings env)
-          (compile-lambda-list lambda-list env context)
-        (compile-let* aux-bindings body env context))
+      (compile-with-lambda-list lambda-list body env context)
       (assemble context +return+)
       function)))
 
@@ -1095,7 +1214,7 @@
   (compile-form values env (new-context context :receiving 1))
   (assemble context +progv+)
   (compile-progn body env context)
-  (assemble context +unbind+))
+  (emit-unbind context 1))
 
 (defun compile-symbol-macrolet (bindings body env context)
   (let ((smacros nil))

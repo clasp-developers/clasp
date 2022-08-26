@@ -42,7 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/environment.h>
-#include <clasp/core/bytecode.h> // BytecodeCmpEnv
+#include <clasp/core/bytecode_compiler.h> // BytecodeCmpEnv
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/bignum.h>

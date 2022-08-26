@@ -12,8 +12,6 @@
 #include <clasp/core/array.h>
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/primitives.h> // cl__fdefinition
-#include <clasp/core/evaluator.h> // af_interpreter_lookup_macro
-#include <clasp/core/sysprop.h> // core__get_sysprop
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
 
@@ -67,51 +65,6 @@ T_sp BytecodeModule_O::compileInfo() const {
 CL_DEFMETHOD
 void BytecodeModule_O::setf_compileInfo(T_sp o) {
   this->_CompileInfo = o;
-}
-
-T_sp BytecodeCmpEnv_O::variableInfo(T_sp varname) {
-  T_sp vars = this->vars();
-  if (vars.nilp()) return vars;
-  else {
-    T_sp pair = gc::As<Cons_sp>(vars)->assoc(varname, nil<T_O>(),
-                                             cl::_sym_eq, nil<T_O>());
-    if (pair.nilp()) return pair;
-    else return oCdr(pair);
-  }
-}
-
-T_sp BytecodeCmpEnv_O::lookupSymbolMacro(T_sp sname) {
-  T_sp info = this->variableInfo(sname);
-  if (gc::IsA<BytecodeCmpSymbolMacroVarInfo_sp>(info))
-    return gc::As_unsafe<BytecodeCmpSymbolMacroVarInfo_sp>(info)->expander();
-  else if (info.notnilp()) { // global?
-    T_mv result = core__get_sysprop(sname, ext::_sym_symbolMacro);
-    if (gc::As<T_sp>(result.valueGet_(1)).notnilp()) {
-      return result;
-    } else return nil<T_O>();
-  } else return nil<T_O>();
-}
-
-T_sp BytecodeCmpEnv_O::functionInfo(T_sp funname) {
-  T_sp funs = this->funs();
-  if (funs.nilp()) return funs;
-  else {
-    T_sp pair = gc::As<Cons_sp>(funs)->assoc(funname, nil<T_O>(),
-                                             cl::_sym_equal, nil<T_O>());
-    if (pair.nilp()) return pair;
-    else return oCdr(pair);
-  }
-}
-
-T_sp BytecodeCmpEnv_O::lookupMacro(T_sp macroname) {
-  T_sp info = this->functionInfo(macroname);
-  if (gc::IsA<BytecodeCmpGlobalMacroInfo_sp>(info))
-    return gc::As_unsafe<BytecodeCmpGlobalMacroInfo_sp>(info)->expander();
-  else if (gc::IsA<BytecodeCmpLocalMacroInfo_sp>(info))
-    return gc::As_unsafe<BytecodeCmpLocalMacroInfo_sp>(info)->expander();
-  else if (info.nilp()) // could be global
-    return af_interpreter_lookup_macro(macroname, nil<T_O>());
-  else return nil<T_O>();
 }
 
 static inline uint8_t read_uint8( unsigned char*& pc ) {
@@ -214,6 +167,11 @@ void vm_record_playback(void* value, const char* name) {
 #else
 # define VM_RECORD_PLAYBACK(value,name)
 #endif
+
+
+static void bytecode_vm_long(VirtualMachine&, T_O**, size_t, Closure_O*,
+                             size_t, core::T_O**,
+                             uint8_t);
 
 static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         T_O** literals,
@@ -792,55 +750,10 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       vm._pc++;
       break;
     }
-    // FIXME: Put this in its own function for better icache utilization.
     case vm_long: {
-      uint8_t sub_opcode = *++vm._pc;
-      switch (sub_opcode) {
-      case vm_const: {
-        uint8_t low = *(++vm._pc);
-        uint16_t n = low + (*(++vm._pc) << 8);
-        DBG_VM1("long const %" PRIu16 "\n", n);
-        T_O* value = literals[n];
-        vm.push(value);
-        VM_RECORD_PLAYBACK(value,"long const");
-        vm._pc++;
-        break;
-      }
-      case vm_fdefinition: {
-        uint8_t low = *(++vm._pc);
-        uint16_t n = low + (*(++vm._pc) << 8);
-        DBG_VM1("long fdefinition %" PRIu16 "\n", n);
-        T_sp sym((gctools::Tagged)literals[n]);
-        vm.push(cl__fdefinition(sym).raw_());
-        vm._pc++;
-        break;
-      }
-      case vm_symbol_value: {
-        uint8_t low = *(++vm._pc);
-        uint16_t n = low + (*(++vm._pc) << 8);
-        DBG_VM1("long symbol-value %" PRIu16 "\n", n);
-        T_sp sym_sp((gctools::Tagged)literals[n]);
-        ASSERT(gc::IsA<Symbol_sp>(sym_sp));
-        Symbol_sp sym = gc::As_unsafe<Symbol_sp>(sym_sp);
-        vm.push(sym->symbolValue().raw_());
-        vm._pc++;
-        break;
-      }
-      case vm_symbol_value_set: {
-        uint8_t low = *(++vm._pc);
-        uint16_t n = low + (*(++vm._pc) << 8);
-        DBG_VM1("long symbol-value %" PRIu16 "\n", n);
-        T_sp sym_sp((gctools::Tagged)literals[n]);
-        ASSERT(gc::IsA<Symbol_sp>(sym_sp));
-        Symbol_sp sym = gc::As_unsafe<Symbol_sp>(sym_sp);
-        T_sp value((gctools::Tagged)(vm.pop()));
-        sym->setf_symbolValue(value);
-        vm._pc++;
-        break;
-      }
-      default:
-          SIMPLE_ERROR("Unknown LONG sub_opcode %hu", sub_opcode);
-      }
+      // In a separate function to facilitate better icache utilization
+      // by bytecode_vm (hopefully)
+      bytecode_vm_long(vm, literals, nlocals, closure, lcc_nargs, lcc_args, *++vm._pc);
       break;
     }
     default:
@@ -850,6 +763,358 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         unsigned char* codeEnd = codeStart + gc::As<Array_sp>(bcm->_Bytecode)->arrayTotalSize();
         SIMPLE_ERROR("Unknown opcode %hu pc: %p  module: %p - %p", *vm._pc, vm._pc, codeStart, codeEnd );
     };
+  }
+}
+
+static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
+                             Closure_O* closure, size_t lcc_nargs, core::T_O** lcc_args,
+                             uint8_t sub_opcode) {
+  switch (sub_opcode) {
+  case vm_ref: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t n = low + (*(vm._pc + 2) << 8);
+    DBG_VM1("long ref %" PRIu16 "\n", n);
+    vm.push(*(vm.reg(n)));
+    vm._pc += 3;
+    break;
+  }
+  case vm_const: {
+    uint8_t low = *(++vm._pc);
+    uint16_t n = low + (*(++vm._pc) << 8);
+    DBG_VM1("long const %" PRIu16 "\n", n);
+    T_O* value = literals[n];
+    vm.push(value);
+    VM_RECORD_PLAYBACK(value,"long const");
+    vm._pc++;
+    break;
+  }
+  case vm_closure: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t n = low + (*(vm._pc + 2) << 8);
+    DBG_VM1("long closure %" PRIu16 "\n", n);
+    vm.push((*closure)[n].raw_());
+    vm._pc += 3;
+    break;
+  }
+  case vm_call: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t nargs = low + (*(vm._pc + 2) << 8);
+    DBG_VM1("long call %" PRIu16 "\n", nargs);
+#ifdef DBG_VM1
+    if (nargs + 1 > vm.npushed(nlocals))
+      SIMPLE_ERROR("Help");
+#endif
+    T_O* func = *(vm.stackref(nargs));
+    T_O** args = vm.stackref(nargs-1);
+    T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    res.saveToMultipleValue0();
+    vm.drop(nargs+1);
+    vm._pc += 3;
+    break;
+  }
+  case vm_call_receive_one: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t nargs = low + (*(vm._pc + 2) << 8);
+    DBG_VM1("long call-receive-one %" PRIu16 "\n", nargs);
+    T_O* func = *(vm.stackref(nargs));
+    VM_RECORD_PLAYBACK(func,"vm_call_receive_one_func");
+    VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs,"vm_call_receive_one_nargs");
+    T_O** args = vm.stackref(nargs-1);
+#if DEBUG_VM_RECORD_PLAYBACK==1
+    for ( size_t ii=0; ii<nargs; ii++ ) {
+      stringstream name_args;
+      name_args << "vm_call_receive_one_arg" << ii;
+      VM_RECORD_PLAYBACK(args[ii],name_args.str().c_str() );
+    }
+#endif
+    T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    vm.drop(nargs+1);
+    vm.push(res.raw_());
+    VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
+    vm._pc += 3;
+    break;
+  }
+  case vm_call_receive_fixed: {
+    uint8_t low_nargs = *(vm._pc + 1);
+    uint16_t nargs = low_nargs + (*(vm._pc + 2) << 8);
+    uint8_t low_nvals = *(vm._pc + 3);
+    uint16_t nvals = low_nvals + (*(vm._pc + 4) << 8);
+    DBG_VM("long call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
+    T_O* func = *(vm.stackref(nargs));
+    T_O** args = vm.stackref(nargs-1);
+    T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    vm.drop(nargs+1);
+    if (nvals != 0) {
+      MultipleValues &mv = lisp_multipleValues();
+      vm.push(res.raw_()); // primary
+      size_t svalues = mv.getSize();
+      for (size_t i = 1; i < svalues; ++i)
+        vm.push(mv.valueGet(i, svalues).raw_());
+    }
+    vm._pc += 5;
+    break;
+  }
+  case vm_bind: {
+    uint8_t low_count = *(vm._pc + 1);
+    uint16_t count = low_count + (*(vm._pc + 2) << 8);
+    uint8_t low_offset = *(vm._pc + 3);
+    uint16_t offset = low_offset + (*(vm._pc + 4) << 8);
+    DBG_VM1("long bind %" PRIu16 " %" PRIu16 "\n", count, offset);
+    vm.copytoreg(vm.stackref(count-1), count, offset);
+    vm.drop(count);
+    vm._pc += 5;
+    break;
+  }
+  case vm_set: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t n = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long set %" PRIu16 "\n", n);
+    vm.setreg(n, vm.pop());
+    vm._pc += 3;
+    break;
+  }
+  case vm_fdefinition: {
+    uint8_t low = *(++vm._pc);
+    uint16_t n = low + (*(++vm._pc) << 8);
+    DBG_VM1("long fdefinition %" PRIu16 "\n", n);
+    T_sp sym((gctools::Tagged)literals[n]);
+    vm.push(cl__fdefinition(sym).raw_());
+    vm._pc++;
+    break;
+  }
+  case vm_make_closure: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t c = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long make-closure %" PRIu16 "\n", c);
+    T_sp fn_sp((gctools::Tagged)literals[c]);
+    GlobalBytecodeEntryPoint_sp fn
+      = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
+    size_t nclosed = fn->environmentSize();
+    DBG_VM("  nclosed = %zu\n", nclosed);
+    Closure_sp closure
+      = Closure_O::make_bytecode_closure(fn, nclosed);
+      // FIXME: Can we use some more abstracted access?
+    vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
+    vm.drop(nclosed);
+    vm.push(closure.raw_());
+    vm._pc += 3;
+    break;
+  }
+  case vm_make_uninitialized_closure: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t c = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long make-uninitialized-closure %" PRIu16 "\n", c);
+    T_sp fn_sp((gctools::Tagged)literals[c]);
+    GlobalBytecodeEntryPoint_sp fn
+      = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
+    size_t nclosed = fn->environmentSize();
+    DBG_VM("  nclosed = %zu\n", nclosed);
+    Closure_sp closure
+      = Closure_O::make_bytecode_closure(fn, nclosed);
+    vm.push(closure.raw_());
+    vm._pc += 3;
+    break;
+  }
+  case vm_initialize_closure: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t c = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long initialize-closure %" PRIu16 "\n", c);
+    T_sp tclosure((gctools::Tagged)(*(vm.reg(c))));
+    Closure_sp closure = gc::As<Closure_sp>(tclosure);
+      // FIXME: We ought to be able to get the closure size directly
+      // from the closure through some nice method.
+    GlobalBytecodeEntryPoint_sp fn
+      = gc::As<GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
+    size_t nclosed = fn->environmentSize();
+    DBG_VM("  nclosed = %zu\n", nclosed);
+    vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
+    vm.drop(nclosed);
+    vm._pc += 3;
+    break;
+  }
+  case vm_bind_required_args: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t nargs = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long bind-required-args %" PRIu16 "\n", nargs);
+    vm.copytoreg(lcc_args, nargs, 0);
+    vm._pc += 3;
+    break;
+  }
+  case vm_bind_optional_args: {
+    uint8_t nreq_low = *(vm._pc + 1);
+    uint16_t nreq = nreq_low + (*(vm._pc + 2) << 8);
+    uint8_t nopt_low = *(vm._pc + 3);
+    uint16_t nopt = nopt_low + (*(vm._pc + 4) << 8);
+    DBG_VM("long bind-optional-args %" PRIu16 " %" PRIu16 "\n", nreq, nopt);
+    if (lcc_nargs >= nreq + nopt) {
+      DBG_VM("  enough args\n");
+      vm.copytoreg(lcc_args + nreq, nopt, nreq);
+    } else {
+      DBG_VM("  not enough args\n");
+      vm.copytoreg(lcc_args + nreq, lcc_nargs - nreq, nreq);
+      vm.fillreg(unbound<T_O>().raw_(), nreq + nopt - lcc_nargs, lcc_nargs);
+    }
+    vm._pc += 5;
+    break;
+  }
+  case vm_listify_rest_args: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t start = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long listify-rest-args %" PRIu16 "\n", start);
+    ql::list rest;
+    for (size_t i = start; i < lcc_nargs; ++i) {
+      T_sp tobj((gctools::Tagged)lcc_args[i]);
+      rest << tobj;
+    }
+    vm.push(rest.cons().raw_());
+    vm._pc += 3;
+    break;
+  }
+  case vm_parse_key_args: {
+    uint8_t more_start_low = *(vm._pc + 1);
+    uint16_t more_start = more_start_low + (*(vm._pc + 2) << 8);
+    uint8_t key_count_info_low = *(vm._pc + 3);
+    uint16_t key_count_info = key_count_info_low + (*(vm._pc + 4) << 8);
+    uint8_t key_literal_start_low = *(vm._pc + 5);
+    uint16_t key_literal_start = key_literal_start_low + (*(vm._pc + 6) << 8);
+    uint8_t key_frame_start_low = *(vm._pc + 7);
+    uint16_t key_frame_start = key_frame_start_low + (*(vm._pc + 8) << 8);
+    DBG_VM("long parse-key-args %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 "\n",
+           more_start, key_count_info, key_literal_start, key_frame_start);
+    uint16_t key_count = key_count_info & 0x7fff;
+    bool ll_aokp = key_count_info & 0x8000;
+    bool seen_aokp = false;
+    bool aokp = false;
+    bool unknown_key_p = false;
+    T_O* unknown_key = unbound<T_O>().raw_();
+      // Set keyword arguments to unbound.
+    vm.fillreg(unbound<T_O>().raw_(), key_count, key_frame_start);
+    if (lcc_nargs > more_start) {
+      // FIXME: Check for odd keyword portion
+      // KLUDGE: We use a signed type so that if more_start is zero we don't
+      // wrap arg_index around. There's probably a cleverer solution.
+      ptrdiff_t arg_index;
+      for (arg_index = lcc_nargs - 1; arg_index >= more_start;
+           arg_index -= 2) {
+        bool valid_key_p = false;
+        T_O* key = lcc_args[arg_index - 1];
+        if (key == kw::_sym_allow_other_keys.raw_()) {
+          valid_key_p = true; // aok is always valid.
+          T_sp value((gctools::Tagged)(lcc_args[arg_index]));
+          if (!seen_aokp) aokp = value.notnilp();
+        }
+        for (size_t key_id = 0; key_id < key_count; ++key_id) {
+          T_O* ckey = literals[key_id + key_literal_start];
+          if (key == ckey) {
+            valid_key_p = true;
+            *vm.reg(key_frame_start + key_id) = lcc_args[arg_index];
+            break;
+          }
+        }
+        if (!valid_key_p) {
+          if (!unknown_key_p) unknown_key = key;
+          unknown_key_p = true;
+        }
+      }
+    }
+    if (unknown_key_p && !aokp && !ll_aokp) {
+      T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
+      T_sp tunknown((gctools::Tagged)unknown_key);
+      throwUnrecognizedKeywordArgumentError(tclosure, tunknown);
+    }
+    vm._pc += 9;
+  }
+  case vm_check_arg_count_LE_ : {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t max_nargs = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long check-arg-count<= %" PRIu16 "\n", max_nargs);
+    if (lcc_nargs > max_nargs) {
+      T_sp tclosure((gctools::Tagged)(gctools::tag_general(closure)));
+      throwTooManyArgumentsError(tclosure, lcc_nargs, max_nargs);
+    }
+    vm._pc += 3;
+    break;
+  }
+  case vm_check_arg_count_GE_: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t min_nargs = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long check-arg-count>= %" PRIu16 "\n", min_nargs);
+    if (lcc_nargs < min_nargs) {
+      T_sp tclosure((gctools::Tagged)(gctools::tag_general(closure)));
+      throwTooFewArgumentsError(tclosure, lcc_nargs, min_nargs);
+    }
+    vm._pc += 3;
+    break;
+  }
+  case vm_check_arg_count_EQ_: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t req_nargs = low + (*(vm._pc + 2) << 8);
+    DBG_VM1("long check-arg-count= %" PRIu16 "\n", req_nargs);
+    if (lcc_nargs != req_nargs) {
+      T_sp tclosure((gctools::Tagged)(gctools::tag_general(closure)));
+      wrongNumberOfArguments(tclosure, lcc_nargs, req_nargs);
+    }
+    vm._pc += 3;
+    break;
+  }
+  case vm_mv_call_receive_fixed: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t nvals = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long mv-call-receive-fixed %" PRIu16 "\n", nvals);
+    T_O* func = vm.pop();
+    MultipleValues& mv = lisp_multipleValues();
+    size_t nargs = mv.getSize();
+    T_O* args[nargs];
+    multipleValuesSaveToTemp(nargs, args);
+    T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    if (nvals != 0) {
+      vm.push(res.raw_()); // primary
+      size_t svalues = mv.getSize();
+      for (size_t i = 1; i < svalues; ++i)
+        vm.push(mv.valueGet(i, svalues).raw_());
+    }
+    vm._pc += 3;
+    break;
+  }
+  case vm_special_bind: {
+    uint8_t low = *(vm._pc + 1);
+    uint16_t c = low + (*(vm._pc + 2) << 8);
+    DBG_VM("long special-bind %" PRIu16 "\n", c);
+    T_sp value((gctools::Tagged)(vm.pop()));
+    vm._pc += 3;
+    T_sp symbol((gctools::Tagged)literals[c]);
+    call_with_variable_bound(symbol, value,
+                             [&]() { return bytecode_vm(vm, literals,
+                                                        nlocals, closure,
+                                                        lcc_nargs, lcc_args);
+                             });
+    break;
+  }
+  case vm_symbol_value: {
+    uint8_t low = *(++vm._pc);
+    uint16_t n = low + (*(++vm._pc) << 8);
+    DBG_VM1("long symbol-value %" PRIu16 "\n", n);
+    T_sp sym_sp((gctools::Tagged)literals[n]);
+    ASSERT(gc::IsA<Symbol_sp>(sym_sp));
+    Symbol_sp sym = gc::As_unsafe<Symbol_sp>(sym_sp);
+    vm.push(sym->symbolValue().raw_());
+    vm._pc++;
+    break;
+  }
+  case vm_symbol_value_set: {
+    uint8_t low = *(++vm._pc);
+    uint16_t n = low + (*(++vm._pc) << 8);
+    DBG_VM1("long symbol-value %" PRIu16 "\n", n);
+    T_sp sym_sp((gctools::Tagged)literals[n]);
+    ASSERT(gc::IsA<Symbol_sp>(sym_sp));
+    Symbol_sp sym = gc::As_unsafe<Symbol_sp>(sym_sp);
+    T_sp value((gctools::Tagged)(vm.pop()));
+    sym->setf_symbolValue(value);
+    vm._pc++;
+    break;
+  }
+  default:
+      SIMPLE_ERROR("Unknown LONG sub_opcode %hu", sub_opcode);
   }
 }
 

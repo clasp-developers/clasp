@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/specialForm.h>
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
-#include <clasp/core/bytecode.h> // BytecodeCmpEnv
+#include <clasp/core/bytecode_compiler.h> // BytecodeCmpEnv
 #include <clasp/core/designators.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/predicates.h>
