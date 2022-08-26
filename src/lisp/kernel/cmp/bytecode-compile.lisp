@@ -124,8 +124,8 @@
            (vector-push-extend +long+ assembly)
            (vector-push-extend opcode assembly)
            (dolist (value values)
-             (vector-push-extend (ldb (byte 8  0) value) assembly)
-             (vector-push-extend (ldb (byte 16 8) value) assembly)))
+             (vector-push-extend (ldb (byte 8 0) value) assembly)
+             (vector-push-extend (ldb (byte 8 8) value) assembly)))
           (t
            (error "Bytecode compiler limit reached: Indices too large! ~a" values)))))
 
@@ -226,13 +226,25 @@
 
 
 (defun emit-parse-key-args (context max-count key-count key-names env aok-p)
-  (if (<= key-count 127)
-      (assemble context +parse-key-args+
-                max-count
-                (if aok-p (boole boole-ior 128 key-count) key-count)
-                (literal-index (first key-names) context)
-                (core:bytecode-cmp-env/frame-end env))
-      (error "Handle more than 127 keyword parameters - you need ~s" key-count)))
+  (let* ((keystart (literal-index (first key-names) context))
+         (index (core:bytecode-cmp-env/frame-end env))
+         (all (list max-count key-count keystart index)))
+    (cond ((values-less-than-p all 127)
+           (assemble context +parse-key-args+
+                     max-count
+                     (if aok-p (logior #x80 key-count) key-count)
+                     keystart index))
+          ((values-less-than-p all 32767)
+           (assemble context +long+ +parse-key-args+
+                     (ldb (byte 8 0) max-count) (ldb (byte 8 8) max-count)
+                     (ldb (byte 8 0) key-count)
+                     (if aok-p
+                         (logior #x80 (ldb (byte 7 8) key-count))
+                         (ldb (byte 7 8) key-count))
+                     (ldb (byte 8 0) keystart) (ldb (byte 8 8) keystart)
+                     (ldb (byte 8 0) index) (ldb (byte 8 8) index)))
+          (t
+           (error "Handle more than 32767 keyword parameters - you need ~s" key-count)))))
 
 (defun emit-bind (context count offset)
   (cond ((= count 1)
@@ -242,8 +254,8 @@
          (assemble context +bind+ count offset))
         ((and (< count #.(ash 1 16)) (< offset #.(ash 1 16)))
          (assemble context +long+ +bind+
-                   (ldb (byte 8 0) count) (ldb (byte 16 8) count)
-                   (ldb (byte 8 0) offset) (ldb (byte 16 8) offset)))
+                   (ldb (byte 8 0) count) (ldb (byte 8 8) count)
+                   (ldb (byte 8 0) offset) (ldb (byte 8 8) offset)))
         (t (error "Too many lexicals: ~d ~d" count offset))))
 
 (defun emit-call (context count)
@@ -492,7 +504,7 @@
                                    +ref+ index +make-cell+ +set+ index))
                    ((= (fixup-size fixup) 9)
                     (let ((low (ldb (byte 8 0) index))
-                          (high (ldb (byte 16 8) index)))
+                          (high (ldb (byte 8 8) index)))
                       (assemble-into code position
                                      +long+ +ref+ low high +make-cell+ +long+ +set+ low high)))
                    (t (error "Unknown fixup size ~d" (fixup-size fixup)))))
@@ -515,7 +527,7 @@
                      ((= size 5)
                       (assemble-into code position
                                      +long+ +ref+
-                                     (ldb (byte 8 0) index) (ldb (byte 16 8) index)
+                                     (ldb (byte 8 0) index) (ldb (byte 8 8) index)
                                      +cell-set+))
                      (t (error "Unknown fixup size ~d" size)))))
            (resizer (fixup)
@@ -925,15 +937,15 @@
         (emit-label context entry-point)
         ;; Generate argument count check.
         (cond ((and (> min-count 0) (= min-count max-count) (not more-p))
-               (assemble context +check-arg-count=+ min-count))
+               (assemble-maybe-long context +check-arg-count=+ min-count))
               (t
                (when (> min-count 0)
-                 (assemble context +check-arg-count>=+ min-count))
+                 (assemble-maybe-long context +check-arg-count>=+ min-count))
                (unless more-p
-                 (assemble context +check-arg-count<=+ max-count))))
+                 (assemble-maybe-long context +check-arg-count<=+ max-count))))
         (unless (zerop min-count)
           ;; Bind the required arguments.
-          (assemble context +bind-required-args+ min-count)
+          (assemble-maybe-long context +bind-required-args+ min-count)
           (dolist (var (cdr required))
             ;; We account for special declarations in outer environments/globally
             ;; by checking the original environment - not our new one - for info.
@@ -949,7 +961,7 @@
         (unless (zerop optional-count)
           ;; Generate code to bind the provided optional args; unprovided args will
           ;; be initialized with the unbound marker.
-          (assemble context +bind-optional-args+ min-count optional-count)
+          (assemble-maybe-long context +bind-optional-args+ min-count optional-count)
           (let ((optvars (collect-by #'cdddr (cdr optionals))))
             ;; Mark the locations of each optional. Note that we do this even if
             ;; the variable will be specially bound.
@@ -1011,7 +1023,7 @@
               (when supplied-special-p (incf special-binding-count)))))
         ;; &rest
         (when rest
-          (assemble context +listify-rest-args+ max-count)
+          (assemble-maybe-long context +listify-rest-args+ max-count)
           (assemble-maybe-long context +set+ (frame-end new-env))
           (setq new-env (bind-vars (list rest) new-env context))
           (cond ((or (member rest specials)
