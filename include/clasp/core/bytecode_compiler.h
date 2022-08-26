@@ -198,6 +198,25 @@ public:
 */
 };
 
+FORWARD(BytecodeCmpModule);
+ class BytecodeCmpModule_O : public General_O {
+   LISP_CLASS(core, CorePkg, BytecodeCmpModule_O, "BytecodeCmpModule", General_O);
+ public:
+   ComplexVector_T_sp _cfunctions;
+   ComplexVector_T_sp _literals;
+ public:
+   BytecodeCmpModule_O()
+     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
+     _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
+   CL_LISPIFY_NAME(BytecodeCmpModule/make)
+     CL_DEF_CLASS_METHOD
+     static BytecodeCmpModule_sp make() {
+     return gctools::GC<BytecodeCmpModule_O>::allocate<gctools::RuntimeStage>();
+   }
+   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
+   CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
+ };
+
 }; // namespace core
 
 #endif /* guard */

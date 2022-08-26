@@ -416,11 +416,6 @@
   ;; Stuff for the function description
   name doc)
 
-(defstruct (cmodule (:constructor make-cmodule (literals))
-                    (:type vector))
-  (cfunctions (make-array 1 :fill-pointer 0 :adjustable t))
-  literals)
-
 ;;; The context contains information about what the current form needs
 ;;; to know about what it is enclosed by.
 (defstruct (context (:type vector)) receiving function)
@@ -432,7 +427,7 @@
   (cfunction-bytecode (context-function context)))
 
 (defun literal-index (literal context)
-  (let ((literals (cmodule-literals (context-module context))))
+  (let ((literals (core:bytecode-cmp-module/literals (context-module context))))
     (or (position literal literals)
         (vector-push-extend literal literals))))
 
@@ -449,7 +444,7 @@
                     &optional (env (make-null-lexical-environment)))
   (check-type lambda-expression lambda-expression)
   (logf "vvvvvvvv bytecompile ~%Form: ~s~%" lambda-expression)
-  (let* ((module (make-cmodule (make-array 0 :fill-pointer 0 :adjustable t)))
+  (let* ((module (core:bytecode-cmp-module/make))
          (lambda-list (cadr lambda-expression))
          (body (cddr lambda-expression)))
     (logf "-------- About to link~%")
@@ -1125,7 +1120,8 @@
            (context (make-context :receiving t :function function))
            (env (make-lexical-environment env :frame-end 0)))
       (setf (cfunction-index function)
-            (vector-push-extend function (cmodule-cfunctions module)))
+            (vector-push-extend function
+                                (core:bytecode-cmp-module/cfunctions module)))
       (compile-with-lambda-list lambda-list body env context)
       (assemble context +return+)
       function)))
@@ -1293,8 +1289,8 @@
 ;;; Use the optimistic bytecode vector sizes to initialize the optimistic cfunction position.
 (defun initialize-cfunction-positions (cmodule)
   (let ((position 0))
-    (dotimes (i (length (cmodule-cfunctions cmodule)))
-      (let ((function (aref (cmodule-cfunctions cmodule) i)))
+    (dotimes (i (length (core:bytecode-cmp-module/cfunctions cmodule)))
+      (let ((function (aref (core:bytecode-cmp-module/cfunctions cmodule) i)))
         (setf (cfunction-position function) position)
         (incf position (length (cfunction-bytecode function)))))))
 
@@ -1312,7 +1308,7 @@
     ;; Increase the size of this function to account for fixup growth.
     (incf (cfunction-extra function) increase)
     ;; Update module offsets for affected functions.
-    (let ((functions (cmodule-cfunctions (cfunction-cmodule function))))
+    (let ((functions (core:bytecode-cmp-module/cfunctions (cfunction-cmodule function))))
       (do ((index (1+ (cfunction-index function)) (1+ index)))
           ((= index (length functions)))
         (let ((function (aref functions index)))
@@ -1323,7 +1319,7 @@
 (defun resolve-fixup-sizes (cmodule)
   (loop
     (let ((changed-p nil)
-          (functions (cmodule-cfunctions cmodule)))
+          (functions (core:bytecode-cmp-module/cfunctions cmodule)))
       (dotimes (i (length functions))
         (dotimes (j (length (cfunction-annotations (aref functions i))))
           (let ((annotation (aref (cfunction-annotations (aref functions i)) j)))
@@ -1341,7 +1337,7 @@
 
 ;;; The size of the module bytecode vector.
 (defun module-bytecode-size (cmodule)
-  (let* ((cfunctions (cmodule-cfunctions cmodule))
+  (let* ((cfunctions (core:bytecode-cmp-module/cfunctions cmodule))
          (last-cfunction (aref cfunctions (1- (length cfunctions)))))
     (+ (cfunction-position last-cfunction)
        (length (cfunction-bytecode last-cfunction))
@@ -1353,8 +1349,8 @@
   (let ((bytecode (make-array (module-bytecode-size cmodule)
                               :element-type '(unsigned-byte 8)))
         (index 0))
-    (dotimes (i (length (cmodule-cfunctions cmodule)))
-      (let* ((function (aref (cmodule-cfunctions cmodule) i))
+    (dotimes (i (length (core:bytecode-cmp-module/cfunctions cmodule)))
+      (let* ((function (aref (core:bytecode-cmp-module/cfunctions cmodule) i))
              (cfunction-bytecode (cfunction-bytecode function))
              (position 0))
         (dotimes (i (length (cfunction-annotations function)))
@@ -1410,7 +1406,7 @@
   (let ((cmodule (cfunction-cmodule cfunction)))
     (initialize-cfunction-positions cmodule)
     (resolve-fixup-sizes cmodule)
-    (let* ((cmodule-literals (cmodule-literals cmodule))
+    (let* ((cmodule-literals (core:bytecode-cmp-module/literals cmodule))
            (literal-length (length cmodule-literals))
            (literals (make-array literal-length))
            (bytecode (create-module-bytecode cmodule))
@@ -1422,8 +1418,8 @@
              #+clasp
              (core:bytecode-module/make)))
       ;; Create the real function objects.
-      (dotimes (i (length (cmodule-cfunctions cmodule)))
-        (let ((cfunction (aref (cmodule-cfunctions cmodule) i)))
+      (dotimes (i (length (core:bytecode-cmp-module/cfunctions cmodule)))
+        (let ((cfunction (aref (core:bytecode-cmp-module/cfunctions cmodule) i)))
           (setf (cfunction-info cfunction)
                 #-clasp
                 (vm::make-bytecode-function
