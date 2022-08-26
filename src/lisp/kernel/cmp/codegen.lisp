@@ -273,7 +273,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'cleavir-primop:unreachable) t)
          ((eq sym 'cleavir-primop:case) t)
 
-;;; batch 6
+;;; batch 7
          #-bytecodelike((eq sym 'core::header-stamp) t)
          #-bytecodelike((eq sym 'core::derivable-stamp) t)
          #-bytecodelike((eq sym 'core::wrapped-stamp) t)
@@ -282,7 +282,9 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 ;;; batch 6
          #-bytecodelike((eq sym 'core::header-stamp-case) t)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; batch 5
+         ;;; Still need to run these
          #-bytecodelike((eq sym 'cleavir-primop:car) t)
          #-bytecodelike((eq sym 'cleavir-primop:cdr) t)
          #-bytecodelike((eq sym 'core::car-atomic) t)
@@ -300,9 +302,9 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          #-bytecodelike((eq sym 'core::local-block) t)
          #-bytecodelike((eq sym 'core::local-tagbody) t)
 ;;; batch 2
-         #-bytecodelike ((eq sym 'core:instance-ref) t)
-         #-bytecodelike ((eq sym 'core:instance-set) t)
-         #-bytecodelike ((eq sym 'core::instance-cas) t)
+         #-bytecodelike((eq sym 'core:instance-ref) t)
+         #-bytecodelike((eq sym 'core:instance-set) t)
+         #-bytecodelike((eq sym 'core::instance-cas) t)
          #-bytecodelike((eq sym 'core:instance-rack) t)
          #-bytecodelike((eq sym 'core:instance-rack-set) t)
          #-bytecodelike((eq sym 'core:rack-ref) t)
