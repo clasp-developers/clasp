@@ -258,8 +258,10 @@ DOCGROUP(clasp)
 CL_DEFUN void core__instance_rack_set(T_sp instance, Rack_sp rack) {
   if (gc::IsA<Instance_sp>(instance)) {
     gc::As_unsafe<Instance_sp>(instance)->_Rack = rack;
+    return;
   } else if (gc::IsA<FuncallableInstance_sp>(instance)) {
     gc::As_unsafe<FuncallableInstance_sp>(instance)->_Rack = rack;
+    return;
   }
   TYPE_ERROR(instance,Cons_O::createList(core::_sym_Instance_O,core::_sym_FuncallableInstance_O));
 }
