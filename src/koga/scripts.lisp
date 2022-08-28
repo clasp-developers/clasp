@@ -103,6 +103,17 @@
 (core:compile-eclasp :reproducible ~s)
 (core:quit)" (jobs configuration) (reproducible-build configuration)))
 
+(defmethod print-prologue (configuration (name (eql :load-vclasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(core:load-vclasp :reproducible ~s)" (jobs configuration) (reproducible-build configuration)))
+
+(defmethod print-prologue (configuration (name (eql :compile-vclasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(core:compile-vclasp :reproducible ~s)
+(core:quit)" (jobs configuration) (reproducible-build configuration)))
+
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (write-string "(setq *features* (cons :aclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")

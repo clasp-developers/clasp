@@ -480,8 +480,8 @@
 
 (flet ((maybe-emit (lexical-info opcode context)
          (flet ((emitter (fixup position code)
-                  #+clasp-min (declare (ignore fixup))
-                  #-clasp-min
+                  (declare (ignorable fixup))
+                  #+(or)
                   (assert (= (fixup-size fixup) 1))
                   (setf (aref code position) opcode))
                 (resizer (fixup)
