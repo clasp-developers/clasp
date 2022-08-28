@@ -244,8 +244,8 @@ namespace gctools {
       The (header) uintptr_t is a tagged value where the
       two least significant bits are the tag.
 
-                         stamp value   where-tag    mtag
-      64 bits total -> |    60 bits |   2 bits  | 2 bits
+                        badge  | stamp-value| where-tag |   mtag
+      64 bits total -> 32 bits |    28 bits |   2 bits  | 2 bits
 
       The 'mtag' - two least-significant bits of the header uintptr_t value describe
       what the rest of the header data means.  This is used for General_O and derived objects.
@@ -615,6 +615,7 @@ public:
   ConsHeader_s(const StampWtagMtag& k) : BaseHeader_s(k) {};
 public:
   static constexpr size_t size() { return sizeof(ConsHeader_s); };
+  bool isValidConsObject() const;
 };
 
 
@@ -639,6 +640,7 @@ public:
 #endif
 
 public:
+  bool isValidGeneralObject() const;
   void validate() const;
   void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE
@@ -1293,9 +1295,9 @@ struct MarkNode {
 };
 
 struct GatherObjects {
-  std::set<Header_s*> _Marked;
+  std::set<BaseHeader_s*> _Marked;
   MarkNode*          _Stack;
-  std::map<Header_s*,std::vector<uintptr_t>> _corruptObjects;
+  std::map<BaseHeader_s*,std::vector<uintptr_t>> _corruptObjects;
 
   GatherObjects() : _Stack(NULL) {};
   
@@ -1316,13 +1318,13 @@ struct GatherObjects {
     this->_Marked.insert(header);
   }
 
-  bool markedP(Header_s* header) {
+  bool markedP(BaseHeader_s* header) {
     return this->_Marked.find(header)!=this->_Marked.end();
   }
 };
 
 void gatherAllObjects(GatherObjects& gather);
-size_t objectSize(Header_s* header);
+size_t objectSize(BaseHeader_s* header);
 
 };
 //#endif // _clasp_memoryManagement_H

@@ -32,6 +32,7 @@
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/core/sort.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_boot.h>
@@ -331,10 +332,10 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #ifdef USE_PRECISE_GC
 
 // #define DEBUG_SL 1
-#if 0
-#define DBG_SL(_fmt_) { printf("%s:%d:%s DBG_SL: ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#if 1
+#define DBG_SL(...) { printf("%s:%d:%s DBG_SL: ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__ ); }
 #else
-#define DBG_SL(_fmt_)
+#define DBG_SL(...)
 #endif
 
 #if 0
@@ -727,7 +728,7 @@ struct ISLInfo {
   FixupOperation_ _operation;
   uintptr_t _islStart;
   uintptr_t _islEnd;
-  std::map<gctools::Header_s*,core::T_O*> _forwarding;
+  std::map<gctools::BaseHeader_s*,core::T_O*> _forwarding;
   ISLInfo( FixupOperation_ op, uintptr_t s=0, uintptr_t e=0) :
     _operation(op),
     _islStart(s),
@@ -762,7 +763,7 @@ ForwardingEnum global_forwardingKind = undef;
 }
 
 
-void set_forwarding_pointer(gctools::Header_s* header, char* new_client, ISLInfo* info ) {
+void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISLInfo* info ) {
   if (global_forwardingKind == testStomp) {
     info->_forwarding[header] = (core::T_O*)new_client;
     if ((intptr_t)new_client < 0) {
@@ -782,7 +783,7 @@ void set_forwarding_pointer(gctools::Header_s* header, char* new_client, ISLInfo
   }
 }
 
-bool is_forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
+bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
   if (global_forwardingKind == testStomp) {
     auto result = info->_forwarding.find(header);
     bool noStompResult = (result != info->_forwarding.end());
@@ -826,16 +827,16 @@ uintptr_t forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
 struct walker_callback_t {
   bool     _debug;
   ISLInfo* _info;
-  virtual void callback(gctools::Header_s* header) = 0;
+  virtual void callback(gctools::BaseHeader_s* header) = 0;
   walker_callback_t(ISLInfo* info) : _debug(false), _info(info) {};
 };
 
 
 struct test_objects_t : public walker_callback_t {
-  std::map<gctools::Header_s*,std::vector<uintptr_t>> _corruptObjects;
+  std::map<gctools::BaseHeader_s*,std::vector<uintptr_t>> _corruptObjects;
 public:  
   test_objects_t( ISLInfo* info ) : walker_callback_t(info) {};
-  void callback(gctools::Header_s* header);
+  void callback(gctools::BaseHeader_s* header);
 };
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
@@ -1237,7 +1238,7 @@ struct ISLRootHeader_s : public ISLHeader_s {
 struct ISLConsHeader_s : public ISLHeader_s {
   gctools::Header_s::StampWtagMtag _stamp_wtag_mtag;
   ISLConsHeader_s(ISLKind k, size_t s, gctools::Header_s::StampWtagMtag swm) : ISLHeader_s(k,s), _stamp_wtag_mtag(swm) {};
-  gctools::Header_s* header() const { return (gctools::Header_s*)((char*)this + offsetof(ISLConsHeader_s,_stamp_wtag_mtag)); }
+  gctools::ConsHeader_s* header() const { return (gctools::ConsHeader_s*)((char*)this + offsetof(ISLConsHeader_s,_stamp_wtag_mtag)); }
 };
 
 struct ISLWeakHeader_s : public ISLHeader_s {
@@ -1293,7 +1294,7 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
 
 
 struct ensure_forward_t : public walker_callback_t {
-  void callback(gctools::Header_s* header) {
+  void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (!is_forwarding_pointer(header,this->_info)) {
       if (header->_stamp_wtag_mtag.stampP()) {
@@ -1313,7 +1314,7 @@ struct ensure_forward_t : public walker_callback_t {
 struct gather_info_for_snapshot_save_t : public walker_callback_t {
   // Run fixupInternalsForSnapshotSaveLoad with fixup._operation = InfoOp;
   Fixup* _fixup;
-  void callback(gctools::Header_s* header) {
+  void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_stamp_wtag_mtag.stampP()) {
       if (header->preciseIsPolymorphic()) {
@@ -1335,7 +1336,7 @@ struct gather_info_for_snapshot_save_t : public walker_callback_t {
 
 struct prepare_for_snapshot_save_t : public walker_callback_t {
   Fixup* _fixup;
-  void callback(gctools::Header_s* header) {
+  void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_stamp_wtag_mtag.stampP()) {
       //
@@ -1370,8 +1371,8 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
 
 
 struct prepare_test_t : public walker_callback_t {
-  std::set<gctools::Header_s*> _seen;
-  void callback(gctools::Header_s* header) {
+  std::set<gctools::BaseHeader_s*> _seen;
+  void callback(gctools::BaseHeader_s* header) {
     this->_seen.insert(header);
   }
 
@@ -1389,7 +1390,7 @@ struct calculate_size_t : public walker_callback_t {
   size_t _weak_count;
   size_t _ObjectFileCount;
   size_t _CodeCount;
-  void callback(gctools::Header_s* header) {
+  void callback(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_stamp_wtag_mtag.stampP()) {
@@ -1481,7 +1482,7 @@ struct copy_objects_t : public walker_callback_t {
       _NumberOfObjects(0),
       walker_callback_t(info) {};
   
-  void callback(gctools::Header_s* header) {
+  void callback(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_stamp_wtag_mtag.stampP()) {
@@ -1501,7 +1502,7 @@ struct copy_objects_t : public walker_callback_t {
         gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart,false,generalSize);
         if (generalSize==0) ISL_ERROR(fmt::sprintf("A zero size general at %p was encountered", (void*)clientStart ));
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)clientStart;
-        ISLGeneralHeader_s islheader( General, code->frontSize()+code->literalsSize(), header );
+        ISLGeneralHeader_s islheader( General, code->frontSize()+code->literalsSize(), (gctools::Header_s*)header );
         char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLGeneralHeader_s)); 
         char* new_client = this->_objects->write_buffer((char*)clientStart, code->frontSize() );
         llvmo::ObjectFile_O* newObjectFile = (llvmo::ObjectFile_O*)new_client;
@@ -1551,7 +1552,7 @@ struct copy_objects_t : public walker_callback_t {
         gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart,false,generalSize);
         if (generalSize==0) ISL_ERROR(fmt::sprintf("A zero size general at %p was encountered", (void*)clientStart ));
         gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
-        ISLGeneralHeader_s islheader( General, clientEnd-clientStart, header );
+        ISLGeneralHeader_s islheader( General, clientEnd-clientStart, (gctools::Header_s*)header );
         char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLGeneralHeader_s)); 
         char* new_client = this->_objects->write_buffer((char*)clientStart, clientEnd-clientStart);
         DBG_SAVECOPY(BF("   copied general header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
@@ -1580,7 +1581,7 @@ struct copy_objects_t : public walker_callback_t {
       gctools::clasp_ptr_t dummyNextClient = isl_weak_skip(clientStart,false,weakSize);
       if (weakSize==0) ISL_ERROR(fmt::sprintf("A zero size weak object at %p was encountered" , (void*)clientStart ));
       gctools::clasp_ptr_t clientEnd = clientStart + weakSize;
-      ISLWeakHeader_s islheader( Weak, clientEnd-clientStart, header );
+      ISLWeakHeader_s islheader( Weak, clientEnd-clientStart, (gctools::Header_s*)header );
       char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLWeakHeader_s)); 
       char* new_addr = this->_objects->write_buffer((char*)clientStart, clientEnd-clientStart);
       DBG_SAVECOPY(BF("   copied weak header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
@@ -1608,7 +1609,7 @@ void walk_snapshot_save_load_objects( ISLHeader_s* start, Walker& walker) {
       walker.callback(header);
     } else if (cur->_Kind == Cons) {
       ISLConsHeader_s* consCur = (ISLConsHeader_s*)cur;
-      gctools::Header_s* header = consCur->header();
+      gctools::ConsHeader_s* header = consCur->header();
       DBG_SL_WALK_SL(BF("cons header: %p %s  next: %p\n") % header % header->description() % (void*)consCur->next<ISLConsHeader_s>() );
       walker.callback(header);
     } else if (cur->_Kind == Weak) {
@@ -1633,7 +1634,7 @@ struct fixup_objects_t : public walker_callback_t {
   fixup_objects_t(FixupOperation_ op, gctools::clasp_ptr_t buffer, ISLInfo* info) :
     walker_callback_t(info), _operation(op), _buffer(buffer) {};
 
-  void callback(gctools::Header_s* header) {
+  void callback(gctools::BaseHeader_s* header) {
     if (header->_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
@@ -1667,7 +1668,7 @@ struct fixup_internals_t : public walker_callback_t {
   fixup_internals_t(Fixup* fixup, ISLInfo* info) :
     walker_callback_t(info), _fixup(fixup) {};
 
-  void callback(gctools::Header_s* header) {
+  void callback(gctools::BaseHeader_s* header) {
     if (header->_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
@@ -1721,14 +1722,14 @@ struct fixup_vtables_t : public walker_callback_t {
     }
   }
   
-  void callback(gctools::Header_s* header) {
+  void callback(gctools::BaseHeader_s* header) {
     uintptr_t new_vtable;
     if (header->_stamp_wtag_mtag.stampP()) {
       if (header->preciseIsPolymorphic()) {
         uintptr_t client = (uintptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
         uintptr_t vtable;
         uintptr_t new_vtable;
-        this->do_vtable(header,(core::T_O*)client,vtable,new_vtable);
+        this->do_vtable((gctools::Header_s*)header,(core::T_O*)client,vtable,new_vtable);
         DBG_SL_VTABLE(BF(" wrote general base %p vtable in memory at %p value: %p to %p %s\n") % (void*)this->_vtableRegionStart % (void*)client % (void*)vtable % (void*)new_vtable % header->description() );
       }
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
@@ -1738,7 +1739,7 @@ struct fixup_vtables_t : public walker_callback_t {
         uintptr_t client = (uintptr_t)HEADER_PTR_TO_WEAK_PTR(header);
         uintptr_t vtable;
         uintptr_t new_vtable;
-        this->do_vtable(header,(core::T_O*)client,vtable,new_vtable);
+        this->do_vtable((gctools::Header_s*)header,(core::T_O*)client,vtable,new_vtable);
         DBG_SL_VTABLE(BF(" wrote weak base %p vtable in memory at %p value: %p to %p %s\n") % (void*)this->_vtableRegionStart % (void*)client % (void*)vtable % (void*)new_vtable % header->description() );
       }
     }
@@ -2014,11 +2015,10 @@ void dump_test_results(FILE* fout, const gctools::GatherObjects& gather )
         std::vector<uintptr_t>& badPointers = cur.second;
         gctools::Header_s* header = (gctools::Header_s*)cur.first;
         gctools::GCStampEnum stamp = header->_stamp_wtag_mtag.stamp_();
-        std::string stampName = global_unshifted_nowhere_stamp_names[stamp];
-        fprintf( fout, "#%lu -> %p[stamp:%lu] %s\n -- addresses: ", idx, (void*)cur.first, (uintptr_t)stamp, stampName.c_str() );
+        fprintf( fout, "#%lu -> header-pointer: %p[stamp:%lu]  -- addresses: \n", idx, (void*)cur.first, (uintptr_t)stamp );
         idx++;
         for ( auto ptr : badPointers ) {
-          fprintf( fout,  " [+%lu]%p(%p)", ((uintptr_t)ptr-((uintptr_t)cur.first+sizeof(void*))), (void*)ptr, *((void**)ptr) );
+          fprintf( fout,  " address of slot: %p  contents of slot: %p\n", (void*)ptr, *((void**)ptr) );
         }
         fprintf( fout, "\n");
       }
@@ -2027,7 +2027,7 @@ void dump_test_results(FILE* fout, const gctools::GatherObjects& gather )
 }
 
 #if 0
-void test_objects_t::callback(gctools::Header_s* header) {
+void test_objects_t::callback(gctools::BaseHeader_s* header) {
   if (header->_stamp_wtag_mtag.stampP()) {
     gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
     size_t objectSize;
@@ -2172,7 +2172,7 @@ void* snapshot_save_impl(void* data) {
            __FILE__, __LINE__, __FUNCTION__ );
     abort();
   }
-  DBG_SL(BF("1 Entered\n" ));
+  DBG_SL("1 Entered\n" );
   //
   // For real save-lisp-and-die do the following (a simple 19 step plan)
   //
@@ -2242,7 +2242,7 @@ void* snapshot_save_impl(void* data) {
 
 #if 0
   // I'm going to try this right before I fixup the vtables
-  DBG_SL(BF("3 Prepare objects for snapshot save\n"));
+  DBG_SL("3 Prepare objects for snapshot save\n");
   prepare_for_snapshot_save_t prepare(&islInfo);
   walk_gathered_objects( prepare, allObjects );
 #endif
@@ -2281,7 +2281,7 @@ void* snapshot_save_impl(void* data) {
   //     (a) copy them to next position in intermediate-buffer
   //     (b) Set a forwarding pointer in the original object
   //
-  DBG_SL(BF("5  snapshot._Memory->_BufferStart = %p\n") % (void*)snapshot._Memory->_BufferStart );
+  DBG_SL("5  snapshot._Memory->_BufferStart = %p\n", (void*)snapshot._Memory->_BufferStart );
   copy_objects_t copy_objects( snapshot._Memory, snapshot._ObjectFiles, &islInfo );
   walk_gathered_objects( copy_objects, allObjects );
 
@@ -2314,7 +2314,7 @@ void* snapshot_save_impl(void* data) {
   //
   // 5. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
   //
-  DBG_SL(BF("6  Fixing objects starting at %p\n") % (void*)snapshot._Memory->_BufferStart);
+  DBG_SL("6  Fixing objects starting at %p\n", (void*)snapshot._Memory->_BufferStart);
   {
     fixup_objects_t fixup_objects(SaveOp, (gctools::clasp_ptr_t)snapshot._Memory->_BufferStart, &islInfo );
     globalPointerFix = maybe_follow_forwarding_pointer;
@@ -2341,12 +2341,12 @@ void* snapshot_save_impl(void* data) {
   // Last thing - fixup vtables
   //
   // I'm going to try this right before I fixup the vtables
-  DBG_SL(BF("7 Prepare objects for snapshot save\n"));
+  DBG_SL("7 Prepare objects for snapshot save\n");
   prepare_for_snapshot_save_t prepare(&fixup,&islInfo);
   walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart,prepare);
 
   {
-    DBG_SL(BF("8 snapshot_save fixing up vtable pointers\n"));
+    DBG_SL("8 snapshot_save fixing up vtable pointers\n");
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
     core::executableVtableSectionRange(start,end);
@@ -2672,7 +2672,7 @@ gctools::clasp_ptr_t relocate_pointer(gctools::clasp_ptr_t* clientAddress, gctoo
 
 struct relocate_objects_t : public walker_callback_t {
   relocate_objects_t( ISLInfo* info) : walker_callback_t(info) {};
-  void callback(gctools::Header_s* header) {
+  void callback(gctools::BaseHeader_s* header) {
     if (header->_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
@@ -2725,8 +2725,8 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     size_t loadTimeID = 0;
     globalFwdMustBeInGCMemory = true;
     core::FunctionDescription_O funcdes;
-    DBG_SL(BF("1 FunctionDescription_O vtable pointer is: %p\n") % *(void**)&funcdes );
-    DBG_SL(BF("     snapshot_load entered\n"));
+    DBG_SL("1 FunctionDescription_O vtable pointer is: %p\n" , *(void**)&funcdes );
+    DBG_SL("     snapshot_load entered\n");
     if (filename.size() == 0 && maybeStartOfSnapshot == NULL) {
       printf("You must specify a snapshot with -i or one must be embedded within the executable\n");
       std::exit(1);
@@ -2856,7 +2856,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // Fixup the vtables
   //
-    DBG_SL(BF("2 snapshot_load fixing up vtable pointers\n"));
+    DBG_SL("2 snapshot_load fixing up vtable pointers\n");
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
     core::executableVtableSectionRange(start,end);
@@ -2872,10 +2872,10 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
 
     {
       MaybeTimeStartup time4("Relocate addresses\n");
-      DBG_SL(BF("3 snapshot_load relocating addresses\n"));
+      DBG_SL("3 snapshot_load relocating addresses\n");
       globalSavedBase = (intptr_t)fileHeader->_SaveTimeMemoryAddress;
       globalLoadedBase = (intptr_t)islbuffer;
-      DBG_SL(BF("4  Starting   globalSavedBase %p    globalLoadedBase  %p\n") % (void*)globalSavedBase % (void*)globalLoadedBase );
+      DBG_SL("4  Starting   globalSavedBase %p    globalLoadedBase  %p\n", (void*)globalSavedBase , (void*)globalLoadedBase );
       globalPointerFix = relocate_pointer;
       relocate_objects_t relocate_objects(&islInfo);
       walk_snapshot_save_load_objects( (ISLHeader_s*)islbuffer, relocate_objects );
@@ -2891,11 +2891,11 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // Fixup the CodeBase_O objects
   //
-    DBG_SL(BF("5 Fixup the Library_O objects\n"));
+    DBG_SL("5 Fixup the Library_O objects\n");
     struct fixup_CodeBase_t : public walker_callback_t {
       fixup_CodeBase_t( ISLInfo* info) : walker_callback_t(info) {};
     
-      void callback(gctools::Header_s* header) {
+      void callback(gctools::BaseHeader_s* header) {
         if (header->_stamp_wtag_mtag.stampP() && header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
           llvmo::Library_O* lib = (llvmo::Library_O*)(HEADER_PTR_TO_GENERAL_PTR(header));
           core::SimpleBaseString_sp name = lib->_Name;
@@ -2927,7 +2927,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // Allocate new objects for everything we just loaded and set the forwarding pointers
   //
-    DBG_SL(BF("6 Allocate objects\n"));
+    DBG_SL("6 Allocate objects\n");
     {
       ISLHeader_s* start_header = reinterpret_cast<ISLHeader_s*>(islbuffer);
       gctools::clasp_ptr_t startVtables;
@@ -2944,7 +2944,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // Now we have the Lisp
     //
     // Move the Lisp object into GC managed memory
-      DBG_SL(BF("7.1 Move lisp into main memory\n"));
+      DBG_SL("7.1 Move lisp into main memory\n");
 
       gctools::Header_s* lisp_source_header = NULL;
       {
@@ -2971,7 +2971,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // Initialize the ClaspJIT_O object
     //
-      DBG_SL(BF("7.2 Initialize ClaspJIT_O object\n"));
+      DBG_SL("7.2 Initialize ClaspJIT_O object\n");
       core::core__update_max_jit_compile_counter(fileHeader->_global_JITCompileCounter);
       llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
       llvmo::JITDylib_O* mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(claspJIT->_MainJITDylib.raw_());
@@ -2986,7 +2986,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // We need to handle the NIL object specially, we need to allocate it in GC memory first
     //
-      DBG_SL(BF("7.3 Handle NIL\n"));
+      DBG_SL("7.3 Handle NIL\n");
       gctools::Header_s* nil_source_header = NULL;
       {
         core::T_sp theNil = ::_lisp->_Roots._NilObject;
@@ -3017,7 +3017,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       using Jit = llvmo::ClaspJIT_sp;
 //      printf("%s:%d:%s Use the ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
       core::T_sp tjit = ::_lisp->_Roots._ClaspJIT;
-      DBG_SL(BF("7.4 Handle JITDylibs\n"));
+      DBG_SL("7.4 Handle JITDylibs\n");
       Jit jit;
       if (tjit.notnilp()) {
         jit = gc::As_unsafe<Jit>(tjit);
@@ -3044,11 +3044,11 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       }
 
       std::vector<CodeFixup_t> codeFixups;
-      DBG_SL(BF("7.5 Link all the ObjectFiles\n"));
+      DBG_SL("7.5 Link all the ObjectFiles\n");
     
       size_t countNullObjects = 0;
       size_t objectFileCount = 0;
-      std::map<gctools::Header_s*,char*> objectFileForwards;
+      std::map<gctools::BaseHeader_s*,char*> objectFileForwards;
       {
       // Link all the code objects
         MaybeTimeStartup time5("Object file linking");
@@ -3189,7 +3189,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         gctools::setup_user_signal();
         gctools::wait_for_user_signal("Paused at startup after object files added");
 #endif
-        DBG_SL(BF("8 Done working ObjectFiles\n"));
+        DBG_SL("8 Done working ObjectFiles\n");
 
 #if 0
         {
@@ -3262,7 +3262,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         gctools::setup_user_signal();
         gctools::wait_for_user_signal("Paused at startup after object files added");
       }
-      DBG_SL(BF("9 Allocate all other objects\n"));
+      DBG_SL("9 Allocate all other objects\n");
 
       {
       // Allocate all other objects
@@ -3314,7 +3314,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             ISLConsHeader_s* consHeader = (ISLConsHeader_s*)cur_header;
             gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(consHeader+1);
             gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
-            gctools::Header_s* header = consHeader->header();
+            gctools::ConsHeader_s* header = consHeader->header();
             core::Cons_O* cons = (core::Cons_O*)clientStart;
             auto obj = gctools::ConsAllocator<gctools::RuntimeStage,core::Cons_O,gctools::DoRegister>::snapshot_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
             gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
@@ -3412,7 +3412,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         }
       }
 
-      DBG_SL(BF("10 Fixup objects codeFixups.size() -> %lu\n") % codeFixups.size() );
+      DBG_SL("10 Fixup objects codeFixups.size() -> %lu\n", codeFixups.size() );
       
       //
       // Fixup all the code objects now
@@ -3507,7 +3507,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                "Figure out why there are more than one Null_O objects\n", __FILE__, __LINE__, __FUNCTION__, countNullObjects);
         abort();
       }
-      DBG_SL(BF("11 Done working with all objects cur_header@%p\n") % (void*)cur_header );
+      DBG_SL("11 Done working with all objects cur_header@%p\n", (void*)cur_header );
     }
 
   //
@@ -3521,14 +3521,23 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // Walk all the objects and fixup all the pointers
   //
-    
-    DBG_SL(BF("12 ======================= fixup pointers\n"));
+
+    DBG_SL("12 ============== fixup pointers\n");
     {
       fixup_objects_t fixup_objects( LoadOp, (gctools::clasp_ptr_t)islbuffer, &islInfo );
       globalPointerFix = maybe_follow_forwarding_pointer;
       globalPointerFixStage = "snapshot_load/fixupObjects";
       walk_temporary_root_objects(root_holder,fixup_objects);
     }
+
+#ifdef DEBUG_GUARD
+    // only works when DEBUG_GUARD is on
+    printf("%s:%d:%s Testing snapshot load memory\n", __FILE__, __LINE__, __FUNCTION__ );
+    gctools::GatherObjects gather;
+    gctools::gatherAllObjects(gather);
+    printf("%s:%d:%s snapshot load memory test report\n", __FILE__, __LINE__, __FUNCTION__  );
+    dump_test_results(stdout,gather);
+#endif
 
   //
   // Fixup the roots

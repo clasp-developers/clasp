@@ -61,18 +61,17 @@ static gctools::ReachableClassMap *static_ReachableClassKinds;
 static size_t invalidHeaderTotalSize = 0;
 
 extern "C" {
-void callback_reachable_object( gctools::Header_s* ptr, void *client_data) {
-  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
+void callback_reachable_object( gctools::BaseHeader_s* ptr, void *client_data) {
   gctools::GCStampEnum stamp;
-  if (h->_stamp_wtag_mtag.consObjectP()) {
+  if (ptr->_stamp_wtag_mtag.consObjectP()) {
     stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
   } else {
-    stamp = h->_stamp_wtag_mtag.stamp_();
+    stamp = ptr->_stamp_wtag_mtag.stamp_();
     if (!valid_stamp(stamp)) {
       printf("%s:%d:%s Invalid stamp\n", __FILE__, __LINE__, __FUNCTION__ );
     }
   }
-  size_t sz = objectSize(h);
+  size_t sz = objectSize(ptr);
   gctools::ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
   if (it == static_ReachableClassKinds->end()) {
     gctools::ReachableClass reachableClass(stamp);
