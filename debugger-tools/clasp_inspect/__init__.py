@@ -21,8 +21,12 @@ def load_clasp_layout():
     exec(code)
     SetupGlobals()
 
+def shallowString(obj):
+    if (obj):
+        return obj.shallowString()
+    return "%s" % obj
 
-global_ints = {}    
+global_ints = {}
 global_dataTypes = {}
 global_kinds = {}
 global_structs = {}
@@ -238,7 +242,7 @@ def untag_vaslist(tptr):
 
 def read_unsigned_at_offset(debugger,verbose,base,offset):
     tptr = debugger.read_memory(base+offset,8)
-    if (verbose): dbg_print("read_unsigned_at_offset offset: %x" % (base+offset))
+    dbg_print("read_unsigned_at_offset offset: %x" % (base+offset))
     return tptr
     
 def print_object_type(debugger,verbose,obj,type_=0):
@@ -320,6 +324,8 @@ class Fixnum:
         return self._Value
     def __repr__(self):
         return str(self._Value)
+    def shallowString(self):
+        return self.__repr__()
     def consp(self):
         return False
 
@@ -334,6 +340,8 @@ class Character:
         return self._Value
     def __repr__(self):
         return "#\[%s]" % str(self._Value)
+    def shallowString(self):
+        return self.__repr__()
     def consp(self):
         return False
     
@@ -357,6 +365,8 @@ class Vaslist:
             val = self._debugger.read_memory(rgp,8)
             out.write("     farg%d = 0x%x\n" % (index,val))
         return out.getvalue()
+    def shallowString(self):
+        return self.__repr__()
     def consp(self):
         return False
     def generalp(self):
@@ -371,6 +381,8 @@ class T_O:
         return False
     def fixnump(self):
         return False
+    def shallowString(self):
+        return self.__repr__()
     
 class Cons_O(T_O):
     def __init__(self,debugger,address):
@@ -384,9 +396,18 @@ class Cons_O(T_O):
     def car(self):
         return self._debugger.read_memory(self._address,8)
     def cdr(self):
-        return self._debugger.read_memory(self._address+8,8) 
+        return self._debugger.read_memory(self._address+8,8)
+    def inspectString(self):
+        return "( 0x%x . 0x%x )" % (self.car(), self.cdr())
+    def shallowString(self):
+        return self.inspectString()
     def __repr__(self):
-        return ( "(0x%x . 0x%x )" % (self.car(), self.cdr()))
+        carObj = translate_tagged_ptr(self._debugger,self.car())
+        carStr = carObj.__repr__()
+        cdrObj = translate_tagged_ptr(self._debugger,self.cdr())
+        cdrStr = cdrObj.__repr__()
+        return "( %s . %s )" % ( carStr, cdrStr )
+#        return ( "(0x%x . 0x%x )" % (self.car(), self.cdr()))
         
 class General_O(T_O):
     def __init__(self,debugger,tclient):
@@ -476,7 +497,7 @@ class SimpleVector_O(Array_O):
         start = max(0,start);
         for x in range(start,end):
            val = self._debugger.read_memory(self._data_offset+self._address+(x*self._element_size),self._element_size);
-           out.write("[%d] = %s\n" % (x,any_tagged_ptr(val).str()))
+           out.write("[%d] = %s\n" % (x,inspect_tagged_ptr(val).str()))
         return out.getvalue();
     def __repr__(self):
         return self.str()
@@ -538,6 +559,13 @@ class Rack_O(General_O):
     def __repr__(self):
         return "#<Rack>"
 
+class JITDylib_O(General_O):
+    def __init__(self,debugger,tptr):
+        General_O.__init__(self,debugger,tptr)
+        self._name = translate_tagged_ptr(self._debugger,self.field_tagged_ptr("_name"))
+    def __repr__(self):
+        return "#<JITDylib %s @ 0x%x>" % (self._name.__repr__(), self._address )
+
 class Instance_O(General_O):
     def __init__(self,debugger,tptr):
         General_O.__init__(self,debugger,tptr)
@@ -570,7 +598,7 @@ class GodObject_O(General_O):
         self._Ptr = tptr
         self._debugger = debugger
 
-    def __repr__(self):
+    def inspectString(self):
         # dump all fields from general object
         out = StringIO()
         out.write("Dump %s at 0x%x\n" % (self._class._name, self._Ptr))
@@ -593,12 +621,14 @@ class GodObject_O(General_O):
                     addr = self._address+cur._field_offset
                     tptr = self._debugger.read_memory(addr,8)
                     obj = translate_tagged_ptr(self._debugger,tptr)
-                    out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" %(cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, obj))
+                    out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" %(cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, shallowString(obj)))
                 else:
                     out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" % (cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, tptr ))
             self._debugger.set_convenience_variable("%c%d" % (convchar, idx), tptr )
             idx += 1
         return out.getvalue()
+    def __repr__(self):
+        return self.inspectString()
 
 def read_stamp_mtag(debugger,tclient):
     base = untag(tclient)-info["stampWtagMtagStruct"]._sizeof
@@ -642,6 +672,8 @@ def translate_tagged_ptr(debugger,tptr):
                     return Instance_O(debugger,tptr)
                 if (name=="core::Rack_O"):
                     return Rack_O(debugger,tptr)
+                if (name=="llvmo::JITDylib_O"):
+                    return JITDylib_O(debugger,tptr)
                 return General_O(debugger,tptr)
         return
     if (consp(tptr)):
@@ -654,8 +686,8 @@ def translate_tagged_ptr(debugger,tptr):
         return Vaslist(debugger,tptr)
 
     
-def any_tagged_ptr(debugger,tptr):
-    dbg_print("In any_tagged_ptr 0x%x" % tptr)
+def inspect_tagged_ptr(debugger,tptr):
+    dbg_print("In inspect_tagged_ptr 0x%x" % tptr)
     if (generalp(tptr)):
         base = untag_general(tptr)
         dbg_print("global_headerStruct in translate -> %s" % info["headerStruct"])
@@ -708,14 +740,15 @@ def do_lisp_print(debugger_mod,arg):
     tptr = arg_to_tptr(debugger_mod,arg)
     obj = translate_tagged_ptr(debugger_mod,tptr)
     print( obj.__repr__())
-    print( "translate_tagged_ptr returned: %s" % obj.__repr__())
+    dbg_print( "in do_lisp_print: %s" % obj.__repr__())
     return obj
 
 def do_lisp_inspect(debugger_mod,arg):
-    #print( "In inspect args: %s" % arg )
+    dbg_print( "In inspect args: %s" % arg )
     tptr = arg_to_tptr(debugger_mod,arg)
-    obj = any_tagged_ptr(debugger_mod,tptr)
-    print( "any_tagged_ptr returned:\n %s" % obj.__repr__())
+    obj = inspect_tagged_ptr(debugger_mod,tptr)
+    print(obj.inspectString())
+    dbg_print( "inspect_tagged_ptr returned:\n %s" % obj.__repr__())
     return obj
 
 

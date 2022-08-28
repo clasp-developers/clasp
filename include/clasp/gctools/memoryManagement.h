@@ -245,15 +245,15 @@ namespace gctools {
       two least significant bits are the tag.
 
                         badge  | stamp-value| where-tag |   mtag
-      64 bits total -> 32 bits |    28 bits |   2 bits  | 2 bits
+      64 bits total -> 32 bits |    27 bits |   2 bits  | 2 bits
 
-      The 'mtag' - two least-significant bits of the header uintptr_t value describe
+      The 'mtag' - three least-significant bits of the header uintptr_t value describe
       what the rest of the header data means.  This is used for General_O and derived objects.
-      #B00 == THIS MUST ALWAYS BE #B00 !!!!!!! EXCEPT MPS WILL CHANGE THEM FOR ITS PURPOSES.
+      #B00 == 'stamp-tag' THIS MUST ALWAYS BE #B00 !!!!!!! EXCEPT MPS WILL CHANGE THEM FOR ITS PURPOSES.
               To be a valid Clasp object they must be #B00  The header MUST look like a FIXNUM
               This is the 'stamp_tag' and indicates that the other bits in the header
-              represent a stamp value that indicate 
-              whether there is an extended-stamp and where to find the extended-stamp.
+              represent a stamp value that indicate whether there is an extended-stamp 
+              and where to find the extended-stamp.
       #B01 == (unused) This is an illegal value for the two lsbs,
               it indictates that this is not a valid header.
               This pattern is used to indicate a CONS header
@@ -272,7 +272,7 @@ namespace gctools {
           it looks like it's shifted >>2
 
 
-      If the tag is a 'stamp_tag' then the data bits have this meaning...
+      If the mtag is a 'stamp_tag' then the data bits have this meaning...
                               stamp   where_tag
       64 bits total -> |    60 bits | 2 bits |
       
@@ -491,7 +491,11 @@ namespace gctools {
       bool generalObjectP() const { return this->stampP(); };
       bool weakObjectP() const { return (this->_value & mtag_mask) == weak_mtag; };
       bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
-      bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
+      bool fwdP() const {
+        printf("%s:%d:%s this->_value = %u\n mtag_mask = %u\n fwd_mtag = %u\n",
+               __FILE__, __LINE__, __FUNCTION__, this->_value, mtag_mask, fwd_mtag );
+        return (this->_value & mtag_mask) == fwd_mtag; };
+      bool fwdV() const { return (this->_value & mtag_mask); };
       bool padP() const { return (this->_value & mtag_mask) == pad_mtag; };
       bool pad1P() const { return (this->_value & mtag_mask) == pad1_mtag; };
       bool anyPadP() const { return this->padP() || this->pad1P(); };

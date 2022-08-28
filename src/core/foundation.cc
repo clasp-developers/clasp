@@ -254,9 +254,26 @@ void lisp_errorDereferencedUnbound() {
   SIMPLE_ERROR(("Tried to dereference unbound"));
 }
 
+
 DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, size_t from, core::T_O *objP) {
 #if 1
-  printf("%s:%d:%s to = %lu  from = %lu   objP = %p\n", __FILE__, __LINE__, __FUNCTION__, (size_t)to, (size_t)from, (void*)objP);
+# if 0
+  stringstream sfrom;
+  if (gctools::tagged_generalp(objP)) {
+    sfrom << "General tagged object of with header stamp ";
+    T_O* client = gctools::untag_general(objP);
+    const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr((void*)client));
+    const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
+    size_t stamp_index = header._stamp_wtag_mtag.stamp_();
+    sfrom << stamp_index;
+    sfrom << " " << global_unshifted_nowhere_stamp_names[stamp_index];
+  } else {
+    sfrom << "Handle describing the tagged pointer " << (void*)objP;
+  }
+# endif
+  printf("%s:%d:%s expected type = %lu %s\n", __FILE__, __LINE__, __FUNCTION__, (size_t)to, global_unshifted_nowhere_stamp_names[to].c_str());
+  printf("Actual type:\n");
+  dbg_describe_tagged_T_Optr(objP);
   SIMPLE_ERROR("Unexpected type in lisp_errorUnexpectedTypeStampWtag");
 #else
   if (expected_class_id >= _lisp->classSymbolsHolder().size()) {

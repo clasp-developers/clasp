@@ -1223,6 +1223,7 @@ struct ISLHeader_s {
   size_t      _Size;
   ISLHeader_s(ISLKind k, size_t s) : _Kind(k), _Size(s) {};
   ISLHeader_s* next(ISLKind k) const;
+  gctools::BaseHeader_s::StampWtagMtag stamp_wtag_mtag(ISLKind k) const;
 };
 
 struct ISLEndHeader_s : public ISLHeader_s {
@@ -1273,6 +1274,10 @@ size_t ISLLibrary::writeSize() {
   
 
 ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
+  if (k != this->_Kind) {
+    printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n",
+           __FILE__, __LINE__, __FUNCTION__, k, this->_Kind );
+  }
   size_t headerSize = 0;
   if (k==General) {
     headerSize = sizeof(ISLGeneralHeader_s);
@@ -1284,6 +1289,27 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
     SIMPLE_ERROR(("Add support to calculate size of ISLKind %d") , k );
   }
   return (ISLHeader_s*)((char*)this + headerSize + this->_Size);
+}
+
+gctools::BaseHeader_s::StampWtagMtag ISLHeader_s::stamp_wtag_mtag(ISLKind k) const {
+  if (k != this->_Kind) {
+    printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n",
+           __FILE__, __LINE__, __FUNCTION__, k, this->_Kind );
+  }
+  if (k==General) {
+    ISLGeneralHeader_s* generalCur = (ISLGeneralHeader_s*)this;
+    gctools::Header_s* header = generalCur->header();
+    return header->_stamp_wtag_mtag;
+  } else if (k==Cons) {
+    ISLConsHeader_s* consCur = (ISLConsHeader_s*)this;
+    gctools::ConsHeader_s* header = consCur->header();
+    return header->_stamp_wtag_mtag;
+  } else if (k==Weak) {
+    ISLWeakHeader_s* weakCur = (ISLWeakHeader_s*)this;
+    gctools::Header_s* header = (gctools::Header_s*)((char*)this + offsetof(ISLWeakHeader_s,_Header));
+    return header->_stamp_wtag_mtag;
+  }
+  SIMPLE_ERROR(("Add support to get _stamp_wtag_mtag of ISLKind %d") , k );
 }
 
 
@@ -1569,10 +1595,10 @@ struct copy_objects_t : public walker_callback_t {
       char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLConsHeader_s));
       char* new_addr = this->_objects->write_buffer((char*)client, consSize);
       core::Cons_O* cons = (core::Cons_O*)client;
+      set_forwarding_pointer(header, new_addr, this->_info );
       DBG_SAVECOPY(BF("   copied cons header %p to %p - %p | CAR: %p CDR: %p\n") %
                    header % (void*)islh % (void*)this->_buffer
                    % (void*)cons->_Car.load().raw_() % (void*)cons->_Cdr.load().raw_() );
-      set_forwarding_pointer(header, new_addr, this->_info );
       DBG_SL_FWD(BF("setFwdPointer cons header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
 //      printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -1584,8 +1610,8 @@ struct copy_objects_t : public walker_callback_t {
       ISLWeakHeader_s islheader( Weak, clientEnd-clientStart, (gctools::Header_s*)header );
       char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLWeakHeader_s)); 
       char* new_addr = this->_objects->write_buffer((char*)clientStart, clientEnd-clientStart);
-      DBG_SAVECOPY(BF("   copied weak header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
       set_forwarding_pointer(header, new_addr, this->_info );
+      DBG_SAVECOPY(BF("   copied weak header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
       DBG_SL_FWD(BF("setFwdPointer weak header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
     }
     this->_NumberOfObjects++;
@@ -2703,6 +2729,7 @@ struct CodeFixup_t {
 
 int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
   global_InSnapshotLoad = true;
+  // Keep track of objects that we have already allocated
   
 //  printf("%s:%d:%s  Starting snapshot_load\n", __FILE__, __LINE__, __FUNCTION__ );
   //
@@ -2733,6 +2760,10 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     }
     off_t fsize = 0;
     void* memory = NULL;
+    //
+    // mmap the snapshot into memory
+    //    OR copy it from the executable memory
+    //
     if ( filename.size() != 0) {
       int fd = open(filename.c_str(),O_RDONLY);
       fsize = lseek(fd, 0, SEEK_END);
@@ -2866,10 +2897,9 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,fixup_vtables);
     }
 
-  //
-  // Let's fix the pointers so that they are correct for the loaded location in memory
-  //
-
+    //
+    // Let's fix the pointers so that they are correct for the loaded location in memory
+    //
     {
       MaybeTimeStartup time4("Relocate addresses\n");
       DBG_SL("3 snapshot_load relocating addresses\n");
@@ -2880,21 +2910,19 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       relocate_objects_t relocate_objects(&islInfo);
       walk_snapshot_save_load_objects( (ISLHeader_s*)islbuffer, relocate_objects );
     }
-  // Do the roots as well
-  // After this they will be internally consistent with the loaded objects
-  
+    // Do the roots as well
+    // After this they will be internally consistent with the loaded objects
     gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
     relocateLoadedRootPointers(lispRoot,1, (void*)&islInfo );
     gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
     relocateLoadedRootPointers( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo  );
-    
+
   //
   // Fixup the CodeBase_O objects
   //
     DBG_SL("5 Fixup the Library_O objects\n");
     struct fixup_CodeBase_t : public walker_callback_t {
       fixup_CodeBase_t( ISLInfo* info) : walker_callback_t(info) {};
-    
       void callback(gctools::BaseHeader_s* header) {
         if (header->_stamp_wtag_mtag.stampP() && header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
           llvmo::Library_O* lib = (llvmo::Library_O*)(HEADER_PTR_TO_GENERAL_PTR(header));
@@ -2943,25 +2971,22 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // Now we have the Lisp
     //
-    // Move the Lisp object into GC managed memory
+    // Allocate JUST the Lisp object into GC managed memory
       DBG_SL("7.1 Move lisp into main memory\n");
-
-      gctools::Header_s* lisp_source_header = NULL;
+      gctools::Header_s* snapshot_lisp_header = NULL;
       {
-        lisp_source_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(theLoadedLisp);
+        snapshot_lisp_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(theLoadedLisp);
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(theLoadedLisp);
         if (((uintptr_t)clientStart&0x7) != 0) {
           printf("%s:%d:%s The Lisp pointer %p must be word aligned\n", __FILE__, __LINE__, __FUNCTION__, clientStart );
           abort();
         }
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Lisp);
-        snapshot_save_load_init_s init(lisp_source_header,clientStart,clientEnd);
+        snapshot_save_load_init_s init(snapshot_lisp_header,clientStart,clientEnd);
         core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
         gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-        DBG_SL_ALLOCATE(BF("allocated Lisp general %p fwd: %p\n")
-                        % (void*) obj.raw_()
-                        % (void*)fwd);
-        set_forwarding_pointer( lisp_source_header, (char*)fwd, &islInfo );
+        set_forwarding_pointer( snapshot_lisp_header, (char*)fwd, &islInfo );
+        DBG_SL_ALLOCATE(BF("allocated Lisp general %p fwd: %p\n") % (void*) obj.raw_() % (void*)fwd);
         root_holder.add((void*)obj.raw_());
         ::_lisp.thePointer = (core::Lisp*)obj.theObject;
       // Now the global _lisp is defined - don't change it below when we look at roots
@@ -2973,9 +2998,58 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
       DBG_SL("7.2 Initialize ClaspJIT_O object\n");
       core::core__update_max_jit_compile_counter(fileHeader->_global_JITCompileCounter);
-      llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
-      llvmo::JITDylib_O* mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(claspJIT->_MainJITDylib.raw_());
+      llvmo::ClaspJIT_O* temp_claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
+      llvmo::JITDylib_O* snapshot_mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(temp_claspJIT->_MainJITDylib.raw_());
+      llvmo::JITDylib_sp obj_mainJITDylib;
+      gctools::Header_s* snapshot_mainJITDylib_header = NULL;
+      {
+        ASSERT(!tagged_generalp(snapshot_mainJITDylib));
+        snapshot_mainJITDylib_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(snapshot_mainJITDylib);
+        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(snapshot_mainJITDylib);
+        if (((uintptr_t)clientStart&0x7) != 0) {
+          printf("%s:%d:%s The mainJITDylib pointer %p must be word aligned\n", __FILE__, __LINE__, __FUNCTION__, clientStart );
+          abort();
+        }
+        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::JITDylib_O);
+        snapshot_save_load_init_s init(snapshot_mainJITDylib_header,clientStart,clientEnd);
+        obj_mainJITDylib = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
+        gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj_mainJITDylib.raw_());
+        set_forwarding_pointer( snapshot_mainJITDylib_header, (char*)fwd, &islInfo );
+        DBG_SL_ALLOCATE(BF("allocated mainJITDylib general %p fwd: %p\n")
+                        % (void*) obj_mainJITDylib.raw_()
+                        % (void*)fwd);
+        root_holder.add((void*)obj_mainJITDylib.raw_());
+        printf("%s:%d:%s snapshot_mainJITDylib = %p   obj_mainJITDylib.raw_() = %p\n",
+               __FILE__, __LINE__, __FUNCTION__, snapshot_mainJITDylib, obj_mainJITDylib.raw_());
+      }
+      llvmo::JITDylib_O* mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(obj_mainJITDylib.raw_());
+      llvmo::ClaspJIT_O* snapshot_claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
+      core::T_sp obj_claspJIT;
+      gctools::Header_s* snapshot_claspJIT_header = NULL;
+      {
+        ASSERT(!tagged_generalp(snapshot_claspJIT));
+        snapshot_claspJIT_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(snapshot_claspJIT);
+        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(snapshot_claspJIT);
+        if (((uintptr_t)clientStart&0x7) != 0) {
+          printf("%s:%d:%s The claspJIT pointer %p must be word aligned\n", __FILE__, __LINE__, __FUNCTION__, clientStart );
+          abort();
+        }
+        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::JITDylib_O);
+        snapshot_save_load_init_s init(snapshot_claspJIT_header,clientStart,clientEnd);
+        obj_claspJIT = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
+        gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj_claspJIT.raw_());
+        set_forwarding_pointer( snapshot_claspJIT_header, (char*)fwd, &islInfo );
+        DBG_SL_ALLOCATE(BF("allocated claspJIT general %p fwd: %p\n")
+                        % (void*) obj_claspJIT.raw_()
+                        % (void*)fwd);
+        root_holder.add((void*)obj_claspJIT.raw_());
+        printf("%s:%d:%s snapshot_claspJIT = %p   obj_claspJIT.raw_() = %p\n", __FILE__, __LINE__, __FUNCTION__, snapshot_claspJIT, obj_claspJIT.raw_());
+      }
+      llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(obj_claspJIT.raw_());
       new (claspJIT) llvmo::ClaspJIT_O(true,mainJITDylib);
+      printf("%s:%d:%s Here check if mainJITDylib contained pointer is defined\n", __FILE__, __LINE__, __FUNCTION__ );
+      gctools::wait_for_user_signal("Check if we can do addGenerator");
+      gc::As<llvmo::ClaspJIT_sp>(obj_claspJIT)->registerJITDylibAfterLoad(&*obj_mainJITDylib);
       //llvm_sys__create_lljit_thread_pool();
       if (mainJITDylib->_Id != 0) {
         printf("%s:%d:%s The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n", __FILE__, __LINE__, __FUNCTION__, mainJITDylib->_Id);
@@ -2987,7 +3061,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // We need to handle the NIL object specially, we need to allocate it in GC memory first
     //
       DBG_SL("7.3 Handle NIL\n");
-      gctools::Header_s* nil_source_header = NULL;
+      gctools::Header_s* snapshot_nil_header = NULL;
       {
         core::T_sp theNil = ::_lisp->_Roots._NilObject;
         core::General_O* generalNil = theNil.unsafe_general();
@@ -2997,11 +3071,11 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         snapshot_save_load_init_s init(source_header,clientStart,clientEnd);
         core::T_sp nil = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
         gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)nil.raw_());
+        set_forwarding_pointer(source_header,((char*)fwd), &islInfo );
         DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
                         % (void*) nil.raw_()
                         % (void*)fwd);
-        set_forwarding_pointer(source_header,((char*)fwd), &islInfo );
-        nil_source_header = source_header;
+        snapshot_nil_header = source_header;
         root_holder.add((void*)nil.raw_());
         my_thread->finish_initialization_main_thread(nil);
       // Now we have NIL in 'nil' - use it to initialize a few things.
@@ -3013,27 +3087,88 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // Initialize the JITDylibs
     // We can't use gc::As<xxx>(...) at this point because we are working in the snapshot save/load buffer
     //  and the headers aren't the same as in main memory
-    //
+    //        
       using Jit = llvmo::ClaspJIT_sp;
-//      printf("%s:%d:%s Use the ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::T_sp tjit = ::_lisp->_Roots._ClaspJIT;
+      printf("%s:%d:%s Use the ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
+      core::T_sp tjit = obj_claspJIT; // Used to be ::_lisp->_Roots._ClaspJIT;
       DBG_SL("7.4 Handle JITDylibs\n");
       Jit jit;
       if (tjit.notnilp()) {
         jit = gc::As_unsafe<Jit>(tjit);
         core::T_sp cur = ::_lisp->_Roots._JITDylibs.load();
         while (cur.consp()) {
-          llvmo::JITDylib_sp dy = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
-          jit->registerJITDylibAfterLoad(&*dy);
-          DBG_OF(
-              printf("%s:%d:%s dy->_Id = %lu dy->_name = %s  dy.raw_() = %p\n",
-                     __FILE__, __LINE__, __FUNCTION__,
-                     dy->_Id,
-                     _rep_(dy->_name).c_str(),
-                     dy.raw_() );
-                 );
-          if (dy->_Id == 0 && dy->_name->get_std_string() != "main") {
-            printf("%s:%d:%s The JITDylib _Id must NOT be zero - that is reserved for the main JITDylib - name is %s!!\n", __FILE__, __LINE__, __FUNCTION__, _rep_(dy->_name).c_str() );
+          llvmo::JITDylib_sp snapshot_JITDylib_sp_ = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
+          llvmo::JITDylib_O* snapshot_JITDylib_O_ = &*snapshot_JITDylib_sp_;
+          gctools::Header_s* snapshot_JITDylib_O_header = GENERAL_PTR_TO_HEADER_PTR(snapshot_JITDylib_O_);
+          llvmo::JITDylib_sp obj_jd;
+          printf(R"str(%s:%d:%s   examine 
+ snapshot_JITDylib_O_header %p,
+ *(void**)snapshot_JITDylib_O_header %p,
+ snapshot_JITDylib_O_header->_stamp_wtag_mtag._value 0x%x,
+ snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV() %u,
+ snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() %d
+)str",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 snapshot_JITDylib_O_header,
+                 *(void**)snapshot_JITDylib_O_header,
+                 snapshot_JITDylib_O_header->_stamp_wtag_mtag._value,
+                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV(),
+                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
+          bool notFwd = !snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP();
+          printf("      notFwd = %d\n", notFwd );
+          printf(R"str(%s:%d:%s   examine2
+ snapshot_JITDylib_O_header %p,
+ *(void**)snapshot_JITDylib_O_header %p,
+ snapshot_JITDylib_O_header->_stamp_wtag_mtag._value 0x%x,
+ snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV() %u,
+ snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() %d
+)str",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 snapshot_JITDylib_O_header,
+                 *(void**)snapshot_JITDylib_O_header,
+                 snapshot_JITDylib_O_header->_stamp_wtag_mtag._value,
+                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV(),
+                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
+          printf(" before if     notFwd = %d\n", notFwd );
+          if (notFwd) {
+            printf(" after if     notFwd = %d\n", notFwd );
+            printf(R"str(%s:%d:%s   examine after if
+ snapshot_JITDylib_O_header %p,
+ *(void**)snapshot_JITDylib_O_header %p,
+ snapshot_JITDylib_O_header->_stamp_wtag_mtag._value 0x%x,
+ snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV() %u,
+ snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() %d
+)str",
+                   __FILE__, __LINE__, __FUNCTION__,
+                 snapshot_JITDylib_O_header,
+                 *(void**)snapshot_JITDylib_O_header,
+                 snapshot_JITDylib_O_header->_stamp_wtag_mtag._value,
+                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV(),
+                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
+            gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(snapshot_JITDylib_O_);
+            gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::JITDylib_O);
+            snapshot_save_load_init_s init(snapshot_JITDylib_O_header,clientStart,clientEnd);
+            obj_jd = gctools::GCObjectAllocator<llvmo::JITDylib_O>::snapshot_save_load_allocate(&init);
+            core::SimpleBaseString_sp name = snapshot_JITDylib_O_->_name;
+            std::string sname = name->get_std_string();
+            llvmo::JITDylib* llvm_jitdylib = &*jit->_LLJIT->createJITDylib(sname);
+            new (&*obj_jd) llvmo::JITDylib_O(name,llvm_jitdylib);
+            DBG_SL("   Register JITDylib %p snapshot_JITDylib_O_header %p val %p fwdP() %d\n", obj_jd.raw_(), snapshot_JITDylib_O_header, *(void**)snapshot_JITDylib_O_header, snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
+            gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj_jd.raw_());
+            set_forwarding_pointer( snapshot_JITDylib_O_header, (char*)fwd, &islInfo );
+            root_holder.add((void*)obj_jd.raw_());
+            jit->registerJITDylibAfterLoad(&*obj_jd);
+            // Do this for the main JITDylib
+            llvm_jitdylib->addGenerator(llvm::cantFail(llvmo::DynamicLibrarySearchGenerator::GetForCurrentProcess(jit->_LLJIT->getDataLayout().getGlobalPrefix())));
+          }
+          DBG_OF( printf("%s:%d:%s obj_jd->_Id = %lu obj_jd->_name = %s  obj_jd.raw_() = %p\n",
+                         __FILE__, __LINE__, __FUNCTION__,
+                         obj_jd->_Id,
+                         _rep_(obj_jd->_name).c_str(),
+                         obj_jd.raw_() );
+                  );
+          if (obj_jd->_Id == 0 && obj_jd->_name->get_std_string() != "main") {
+            printf("%s:%d:%s The JITDylib _Id must NOT be zero - that is reserved for the main JITDylib - name is %s!!\n", __FILE__, __LINE__, __FUNCTION__, _rep_(obj_jd->_name).c_str() );
             abort();
           }
           cur = CONS_CDR(cur);
@@ -3280,34 +3415,37 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                             % generalHeader->_stamp_wtag_mtag._value
                             % generalHeader->_Size
                             % source_header->description().c_str());
-            if (source_header == lisp_source_header) {
-//          printf("%s:%d:%s About to skip allocation of the Lisp object - this is just for information - delete this message\n", __FILE__, __LINE__, __FUNCTION__ );
-            } else if (source_header == nil_source_header) {
-          // Skip the NIL object we handled above
+            if (source_header == snapshot_nil_header) {
+              // Skip the NIL object we handled above
               countNullObjects++; // It's a Null_O object but its header has been obliterated by a fwd
+            } else if ( source_header->_stamp_wtag_mtag.fwdP() ) {
+              printf("%s:%d:%s About to skip allocation of the object in snapshot at snapshot_header %p - fwdPointer() = %p\n",
+                     __FILE__, __LINE__, __FUNCTION__, source_header, source_header->_stamp_wtag_mtag.fwdPointer() );
             } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
-            // Set the forwarding pointer defined above.
+              // Set the forwarding pointer defined above.
               gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
               char* fwd = objectFileForwards[source_header];
+              set_forwarding_pointer( source_header, fwd, &islInfo );
               if (!fwd) {
                 printf("%s:%d:%s Got NULL fwd for source_header %p\n", __FILE__, __LINE__, __FUNCTION__, source_header );
                 abort();
               }
-              set_forwarding_pointer( source_header, fwd, &islInfo );
             } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Null_O) ) {
-          // Don't do anything with the only Null_O object - it was allocated above when we fished it out
-          // of the Lisp object and allocated it.
+              // This may be redundant because of the test above (source_header == snapshot_nil_header)
+             // Don't do anything with the only Null_O object - it was allocated above when we fished it out
+              // of the Lisp object and allocated it.
               DBG_OF(
                   printf("%s:%d:%s Skip the Null_O object\n", __FILE__, __LINE__, __FUNCTION__ );
                      );
               countNullObjects++;
             } else {
+              printf("%s:%d:%s Copy/allocate snapshot object %p\n", __FILE__, __LINE__, __FUNCTION__, init._headStart );
               core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              set_forwarding_pointer(source_header,((char*)fwd), &islInfo);
               DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
                               % (void*) obj.raw_()
                               % (void*)fwd);
-              set_forwarding_pointer(source_header,((char*)fwd), &islInfo);
               root_holder.add((void*)obj.raw_());
             }
           } else if (cur_header->_Kind == Cons ) {
@@ -3318,11 +3456,11 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             core::Cons_O* cons = (core::Cons_O*)clientStart;
             auto obj = gctools::ConsAllocator<gctools::RuntimeStage,core::Cons_O,gctools::DoRegister>::snapshot_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
             gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+            set_forwarding_pointer(header,((char*)fwd), &islInfo);
             DBG_SL_ALLOCATE(BF("---- Allocated Cons %p copy from %p header: %p  set fwd to %p\n")
                             % (void*)obj.raw_()
                             % (void*) header
                             % (void*)clientStart % (void*)fwd );
-            set_forwarding_pointer(header,((char*)fwd), &islInfo);
             root_holder.add((void*)obj.raw_());
           } else if (cur_header->_Kind == Weak ) {
             ISLWeakHeader_s* weakHeader = (ISLWeakHeader_s*)cur_header;
@@ -3336,24 +3474,24 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             case gctools::Header_s::WeakBucketKind: {
               auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              set_forwarding_pointer(header,((char*)fwd), &islInfo);
               DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
                               % (void*) obj.raw_()
                               % (void*) header
                               % (uintptr_t)kind
                               % (void*)fwd );
-              set_forwarding_pointer(header,((char*)fwd), &islInfo);
               root_holder.add((void*)obj.raw_());
               break;
             }
             case gctools::Header_s::StrongBucketKind: {
               auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              set_forwarding_pointer(header,((char*)fwd), &islInfo);
               DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
                               % (void*) obj.raw_()
                               % (void*) header
                               % (uintptr_t)kind
                               % (void*)fwd );
-              set_forwarding_pointer(header,((char*)fwd), &islInfo);
               root_holder.add((void*)obj.raw_());
               break;
             }
@@ -3362,24 +3500,24 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             case gctools::Header_s::WeakMappingKind: {
               auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              set_forwarding_pointer(header,((void*)fwd),this->_info);
               DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
                               % (void*) obj.raw_()
                               % (void*) header
                               % (uintptr_t)kind
                               % (void*)fwd );
-              set_forwarding_pointer(header,((void*)fwd),this->_info);
               root_holder.add((void*)obj.raw_());
               break;
             }
             case gctools::Header_s::StrongBucketKind: {
               auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              set_forwarding_pointer(header,((void*)fwd),this->_info);
               DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
                               % (void*) obj.raw_()
                               % (void*) header
                               % (uintptr_t)kind
                               % (void*)fwd );
-              set_forwarding_pointer(header,((void*)fwd),this->_info);
               root_holder.add((void*)obj.raw_());
               break;
             }
@@ -3388,12 +3526,12 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             case gctools::Header_s::WeakPointerKind: {
               auto obj = gctools::GCWeakPointerAllocator<gctools::WeakPointer>::snapshot_save_load_allocate(&init);
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              set_forwarding_pointer(header,((void*)fwd),this->_info);
               DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
                               % (void*) obj.raw_()
                               % (void*) header
                               % (uintptr_t)kind
                               % (void*)fwd );
-              set_forwarding_pointer(header,((void*)fwd),this->_info);
               root_holder.add((void*)obj.raw_());
               break;
             }
@@ -3405,6 +3543,19 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           } else {
             printf("%s:%d:%s Unknown header at offset 0x%lx qword: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, (uintptr_t)cur_header - (uintptr_t)fileHeader, *(uintptr_t*)cur_header );
           }
+          next_header = cur_header->next(cur_header->_Kind);
+          size_t size = cur_header->_Size;
+          DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
+          cur_header = next_header;
+        }
+      }
+      {
+        // Check if all snapshot objects have been allocated and have forwarding pointers
+        for ( cur_header = start_header; cur_header->_Kind != End; ) {
+          if (!cur_header->stamp_wtag_mtag(cur_header->_Kind).fwdP()) {
+            printf("%s:%d:%s cur_header @%p is not forwarded\n", __FILE__, __LINE__, __FUNCTION__, cur_header );
+          }
+          
           next_header = cur_header->next(cur_header->_Kind);
           size_t size = cur_header->_Size;
           DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
@@ -3521,8 +3672,8 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // Walk all the objects and fixup all the pointers
   //
-
-    DBG_SL("12 ============== fixup pointers\n");
+    
+    DBG_SL("12 ======================= fixup pointers\n");
     {
       fixup_objects_t fixup_objects( LoadOp, (gctools::clasp_ptr_t)islbuffer, &islInfo );
       globalPointerFix = maybe_follow_forwarding_pointer;

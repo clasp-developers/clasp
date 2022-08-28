@@ -946,20 +946,9 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 
 
 void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
-  core::SimpleBaseString_sp name = jitDylib->_name;
-  std::string sname = name->get_std_string();
-  auto dy = this->_LLJIT->getJITDylibByName(sname);
-  if (!dy) {
-    auto edy = this->_LLJIT->createJITDylib(sname);
-    if (edy) dy = &*edy;
-    else SIMPLE_ERROR(("Could not create JITDylib with name: %s") , sname );
-  }
-  JITDylib& dylib(*dy);
   if ( jitDylib->_Id >= global_JITDylibCounter.load() ) {
     global_JITDylibCounter.store(jitDylib->_Id+1);
   }
-  dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-  new (jitDylib) JITDylib_O(name,&dylib);
 }
 
 
