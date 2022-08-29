@@ -83,18 +83,21 @@ and not a simple-function so return (values name class::name nil)"
 (defun extract-method-name-from-signature (sig)
   (declare (optimize (debug 3)))
   (let* ((tsig (maybe-remove-one-prefix-from-start sig '("virtual" "inline")))
-         (first-sep (position-if
-                     (lambda (c) (or (char= c #\newline)
-                                     (char= c #\space)
-                                     (char= c #\tab)))
-                     tsig))
-         (first-name-char (position-if
-                           (lambda (c) (not (or (char= c #\newline)
-                                                (char= c #\space)
-                                                (char= c #\tab)
-                                                (char= c #\*)))) ;; skip *
-                           tsig
-                           :start first-sep))
+         (first-sep (or (position-if
+                         (lambda (c) (or (char= c #\newline)
+                                         (char= c #\space)
+                                         (char= c #\tab)))
+                         tsig)
+                        (error "Bad signature: ~a" sig)))
+         (first-name-char (or
+                           (position-if
+                            (lambda (c) (not (or (char= c #\newline)
+                                                 (char= c #\space)
+                                                 (char= c #\tab)
+                                                 (char= c #\*)))) ;; skip *
+                            tsig
+                            :start first-sep)
+                           (error "Bad signature: ~a" sig)))
          (open-paren (position #\( tsig :test #'char= :start first-name-char))
          (class-method (string-left-trim '(#\newline #\space #\tab #\*) (string-right-trim '(#\newline #\space #\tab) (subseq tsig first-name-char open-paren))))
          (colon-colon-pos (search "::" class-method)))
