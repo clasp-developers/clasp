@@ -68,6 +68,7 @@
                 ?:                      prints this.~%~%"))
 
 (defun read-inspect-command (label object allow-recursive)
+  (declare (special *quit-tag* *quit-tags*))
   (unless *inspect-mode*
     ;; This is "describe" mode. So we stay non-interactive.
     (inspect-indent-1)
@@ -77,7 +78,6 @@
     (return-from read-inspect-command nil))
   (let* ((*quit-tags* (cons *quit-tag* *quit-tag*)) ;; as seen in top.lisp
 	 (*quit-tag* *quit-tags*))
-    (declare (special *quit-tag* *quit-tags*))
     (loop
        (when
 	   (catch *quit-tag* ;; as seen in top.lisp
