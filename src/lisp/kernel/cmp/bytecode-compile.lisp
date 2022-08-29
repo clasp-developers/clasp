@@ -105,7 +105,7 @@
 
 (defun emit-label (context label)
   (setf (label-position label) (length (context-assembly context)))
-  (let ((function (context-function context)))
+  (let ((function (core:bytecode-cmp-context/cfunction context)))
     (setf (label-function label) function)
     (setf (label-index label)
           (vector-push-extend label (cfunction-annotations function)))))
@@ -154,7 +154,7 @@
 ;;; Emit FIXUP into CONTEXT.
 (defun emit-fixup (context fixup)
   (let* ((assembly (context-assembly context))
-         (cfunction (context-function context))
+         (cfunction (core:bytecode-cmp-context/cfunction context))
          (position (length assembly)))
     (setf (fixup-function fixup) cfunction)
     (setf (fixup-initial-position fixup) position)
@@ -259,7 +259,7 @@
         (t (error "Too many lexicals: ~d ~d" count offset))))
 
 (defun emit-call (context count)
-  (let ((receiving (context-receiving context)))
+  (let ((receiving (core:bytecode-cmp-context/receiving context)))
     (cond ((or (eql receiving t) (eql receiving 0))
            (assemble-maybe-long context +call+ count))
           ((eql receiving 1)
@@ -267,7 +267,7 @@
           (t (assemble-maybe-long context +call-receive-fixed+ count receiving)))))
 
 (defun emit-mv-call (context)
-  (let ((receiving (context-receiving context)))
+  (let ((receiving (core:bytecode-cmp-context/receiving context)))
     (cond ((or (eql receiving t) (eql receiving 0))
            (assemble context +mv-call+))
           ((eql receiving 1)
@@ -348,7 +348,7 @@
   (let* ((frame-start (core:bytecode-cmp-env/frame-end env))
          (var-count (length vars))
          (frame-end (+ frame-start var-count))
-         (function (context-function context)))
+         (function (core:bytecode-cmp-context/cfunction context)))
     (setf (cfunction-nlocals function)
           (max (cfunction-nlocals function) frame-end))
     (do ((index frame-start (1+ index))
@@ -416,15 +416,11 @@
   ;; Stuff for the function description
   name doc)
 
-;;; The context contains information about what the current form needs
-;;; to know about what it is enclosed by.
-(defstruct (context (:type vector)) receiving function)
-
 (defun context-module (context)
-  (cfunction-cmodule (context-function context)))
+  (cfunction-cmodule (core:bytecode-cmp-context/cfunction context)))
 
 (defun context-assembly (context)
-  (cfunction-bytecode (context-function context)))
+  (cfunction-bytecode (core:bytecode-cmp-context/cfunction context)))
 
 (defun literal-index (literal context)
   (let ((literals (core:bytecode-cmp-module/literals (context-module context))))
@@ -432,13 +428,9 @@
         (vector-push-extend literal literals))))
 
 (defun closure-index (info context)
-  (let ((closed (cfunction-closed (context-function context))))
+  (let ((closed (cfunction-closed (core:bytecode-cmp-context/cfunction context))))
     (or (position info closed)
         (vector-push-extend info closed))))
-
-(defun new-context (parent &key (receiving (context-receiving parent))
-                                (function (context-function parent)))
-  (make-context :receiving receiving :function function))
 
 (defun bytecompile (lambda-expression
                     &optional (env (make-null-lexical-environment)))
@@ -461,10 +453,10 @@
 
 (defun compile-literal (form env context)
   (declare (ignore env))
-  (unless (eql (context-receiving context) 0)
+  (unless (eql (core:bytecode-cmp-context/receiving context) 0)
     (cond ((null form) (assemble context +nil+))
           (t (emit-const context (literal-index form context))))
-    (when (eql (context-receiving context) t)
+    (when (eql (core:bytecode-cmp-context/receiving context) t)
       (assemble context +pop+))))
 
 (defun compile-load-time-value (form env context)
@@ -541,12 +533,12 @@
           ;; A symbol macro could expand into something with arbitrary side
           ;; effects so we always have to compile that, but otherwise, if no
           ;; values are wanted, we want to not compile anything.
-          ((eql (context-receiving context) 0))
+          ((eql (core:bytecode-cmp-context/receiving context) 0))
           (t
            (cond
              ((eq kind :lexical)
               (cond ((eq (core:bytecode-cmp-lexical-var-info/function data)
-                         (context-function context))
+                         (core:bytecode-cmp-context/cfunction context))
                      (assemble-maybe-long
                       context +ref+
                       (core:bytecode-cmp-lexical-var-info/frame-index data)))
@@ -564,7 +556,7 @@
               (assemble context +symbol-value+
                         (literal-index form context)))
              (t (error "Unknown kind ~a" kind)))
-           (when (eq (context-receiving context) t)
+           (when (eq (core:bytecode-cmp-context/receiving context) t)
              (assemble context +pop+))))))
 
 (defun compile-cons (head rest env context)
@@ -614,19 +606,19 @@
          ((member kind '(:global-function :local-function nil))
           ;; unknown function warning handled by compile-function
           ;; note we do a double lookup, which is inefficient
-          (compile-function head env (new-context context :receiving 1))
+          (compile-function head env (core:new-context context :receiving 1))
           (do ((args rest (rest args))
                (arg-count 0 (1+ arg-count)))
               ((endp args)
                (emit-call context arg-count))
-            (compile-form (first args) env (new-context context :receiving 1))))
+            (compile-form (first args) env (core:new-context context :receiving 1))))
          (t (error "Unknown kind ~a" kind)))))))
 
 (defun compile-progn (forms env context)
   (do ((forms forms (rest forms)))
       ((null (rest forms))
        (compile-form (first forms) env context))
-    (compile-form (first forms) env (new-context context :receiving 0))))
+    (compile-form (first forms) env (core:new-context context :receiving 0))))
 
 ;;; Add VARS as specials in ENV.
 (defun add-specials (vars env)
@@ -662,7 +654,7 @@
           (post-binding-env (add-specials specials env)))
       (dolist (binding bindings)
         (multiple-value-bind (var valf) (canonicalize-binding binding)
-          (compile-form valf env (new-context context :receiving 1))
+          (compile-form valf env (core:new-context context :receiving 1))
           (cond ((or (member var specials)
                      (eq (var-info var env) :special))
                  (incf special-binding-count)
@@ -688,7 +680,7 @@
               (valf (if (and (consp binding) (consp (cdr binding)))
                         (cadr binding)
                         'nil)))
-          (compile-form valf env (new-context context :receiving 1))
+          (compile-form valf env (core:new-context context :receiving 1))
           (cond ((or (member var specials) (ext:specialp var))
                  (incf special-binding-count)
                  (setq env (add-specials (list var) env))
@@ -712,7 +704,7 @@
 
 (defun compile-setq (pairs env context)
   (if (null pairs)
-      (unless (eql (context-receiving context) 0)
+      (unless (eql (core:bytecode-cmp-context/receiving context) 0)
         (assemble context +nil+))
       (do ((pairs pairs (cddr pairs)))
           ((endp pairs))
@@ -721,7 +713,7 @@
               (rest (cddr pairs)))
           (compile-setq-1 var valf env
                           (if rest
-                              (new-context context :receiving 0)
+                              (core:new-context context :receiving 0)
                               context))))))
 
 (defun compile-setq-1 (var valf env context)
@@ -732,32 +724,32 @@
       ((or (eq kind :special) (null kind))
        (when (null kind)
          (warn "Unknown variable ~a: treating as special" var))
-       (compile-form valf env (new-context context :receiving 1))
+       (compile-form valf env (core:new-context context :receiving 1))
        ;; If we need to return the new value, stick it into a new local
        ;; variable, do the set, then return the lexical variable.
        ;; We can't just read from the special, since some other thread may
        ;; alter it.
        (let ((index (core:bytecode-cmp-env/frame-end env)))
-         (unless (eql (context-receiving context) 0)
+         (unless (eql (core:bytecode-cmp-context/receiving context) 0)
            (assemble-maybe-long context +set+ index)
            (assemble-maybe-long context +ref+ index)
            ;; called for effect, i.e. to keep frame size correct
            (bind-vars (list var) env context))
          (assemble-maybe-long context +symbol-value-set+ (literal-index var context))
-         (unless (eql (context-receiving context) 0)
+         (unless (eql (core:bytecode-cmp-context/receiving context) 0)
            (assemble-maybe-long context +ref+ index)
-           (when (eql (context-receiving context) t)
+           (when (eql (core:bytecode-cmp-context/receiving context) t)
              (assemble context +pop+)))))
       ((eq kind :lexical)
        (let ((localp (eq (core:bytecode-cmp-lexical-var-info/function data)
-                         (context-function context)))
+                         (core:bytecode-cmp-context/cfunction context)))
              (index (core:bytecode-cmp-env/frame-end env)))
          (unless localp
            (setf (core:bytecode-cmp-lexical-var-info/closed-over-p data) t))
          (setf (core:bytecode-cmp-lexical-var-info/set-p data) t)
-         (compile-form valf env (new-context context :receiving 1))
+         (compile-form valf env (core:new-context context :receiving 1))
          ;; similar concerns to specials above.
-         (unless (eql (context-receiving context) 0)
+         (unless (eql (core:bytecode-cmp-context/receiving context) 0)
            (assemble-maybe-long context +set+ index)
            (assemble-maybe-long context +ref+ index)
            (bind-vars (list var) env context))
@@ -767,9 +759,9 @@
                (t
                 (assemble-maybe-long context +closure+ (closure-index data context))
                 (assemble context +cell-set+)))
-         (unless (eql (context-receiving context) 0)
+         (unless (eql (core:bytecode-cmp-context/receiving context) 0)
            (assemble-maybe-long context +ref+ index)
-           (when (eql (context-receiving context) t)
+           (when (eql (core:bytecode-cmp-context/receiving context) t)
              (assemble context +pop+)))))
       (t (error "Unknown kind ~a" kind)))))
 
@@ -791,11 +783,11 @@
         (compile-function `(lambda ,(second definition)
                              (block ,(fun-name-block-name name)
                                (locally ,@(cddr definition))))
-                          env (new-context context :receiving 1))
+                          env (core:new-context context :receiving 1))
         (push fun-var fun-vars)
         (push (cons name (core:bytecode-cmp-local-fun-info/make
                           (core:bytecode-cmp-lexical-var-info/make frame-slot
-                                                 (context-function context))))
+                                                 (core:bytecode-cmp-context/cfunction context))))
               funs)
         (incf frame-slot)
         (incf fun-count)))
@@ -819,7 +811,7 @@
         (push fun-var fun-vars)
         (push (cons name (core:bytecode-cmp-local-fun-info/make
                           (core:bytecode-cmp-lexical-var-info/make frame-slot
-                                                 (context-function context))))
+                                                 (core:bytecode-cmp-context/cfunction context))))
               funs)
         (incf frame-slot)
         (incf fun-count)))
@@ -851,7 +843,7 @@
       (compile-progn body env context))))
 
 (defun compile-if (condition then else env context)
-  (compile-form condition env (new-context context :receiving 1))
+  (compile-form condition env (core:new-context context :receiving 1))
   (let ((then-label (make-label))
         (done-label (make-label)))
     (emit-jump-if context then-label)
@@ -863,13 +855,13 @@
 
 ;;; Push the immutable value or cell of lexical in CONTEXT.
 (defun reference-lexical-info (info context)
-  (if (eq (core:bytecode-cmp-lexical-var-info/function info) (context-function context))
+  (if (eq (core:bytecode-cmp-lexical-var-info/function info) (core:bytecode-cmp-context/cfunction context))
       (assemble-maybe-long context +ref+
                            (core:bytecode-cmp-lexical-var-info/frame-index info))
       (assemble-maybe-long context +closure+ (closure-index info context))))
 
 (defun compile-function (fnameoid env context)
-  (unless (eql (context-receiving context) 0)
+  (unless (eql (core:bytecode-cmp-context/receiving context) 0)
     (if (typep fnameoid 'lambda-expression)
         (let* ((cfunction (compile-lambda (cadr fnameoid) (cddr fnameoid)
                                           env (context-module context)))
@@ -890,7 +882,7 @@
             ((member kind '(:local-function))
              (reference-lexical-info data context))
             (t (error "Unknown kind ~a" kind)))))
-    (when (eql (context-receiving context) t)
+    (when (eql (core:bytecode-cmp-context/receiving context) t)
       (assemble context +pop+))))
 
 ;;; (list (car list) (car (FUNC list)) (car (FUNC (FUNC list))) ...)
@@ -906,7 +898,7 @@
     (declare (ignore docs decls))
     (multiple-value-bind (required optionals rest key-flag keys aok-p aux)
         (core:process-lambda-list lambda-list 'function)
-      (let* ((function (context-function context))
+      (let* ((function (core:bytecode-cmp-context/cfunction context))
              (entry-point (cfunction-entry-point function))
              (min-count (first required))
              (optional-count (first optionals))
@@ -1069,7 +1061,7 @@
                          (maybe-emit-encage info context))))
                  (t
                   (compile-form defaulting-form env
-                                (new-context context :receiving 1))
+                                (core:new-context context :receiving 1))
                   (cond (specialp
                          (emit-special-bind context var))
                         (t
@@ -1077,7 +1069,7 @@
                          (assemble-maybe-long context +set+ var-index))))))
          (supply (suppliedp specialp var info)
            (if suppliedp
-               (compile-literal t env (new-context context :receiving 1))
+               (compile-literal t env (core:new-context context :receiving 1))
                (assemble context +nil+))
            (cond (specialp
                   (emit-special-bind context var))
@@ -1117,7 +1109,7 @@
     (let* ((name (or (core:extract-lambda-name-from-declares decls)
                      `(lambda ,(lambda-list-for-name lambda-list))))
            (function (make-cfunction module :name name :doc docs))
-           (context (make-context :receiving t :function function))
+           (context (core:bytecode-cmp-context/make t function))
            (env (make-lexical-environment env :frame-end 0)))
       (setf (cfunction-index function)
             (vector-push-extend function
@@ -1144,12 +1136,12 @@
       (dolist (statement statements)
         (if (go-tag-p statement)
             (emit-label context (cddr (assoc statement (core:bytecode-cmp-env/tags env))))
-            (compile-form statement env (new-context context :receiving 0))))))
+            (compile-form statement env (core:new-context context :receiving 0))))))
   (assemble context +entry-close+)
   ;; return nil if we really have to
-  (unless (eql (context-receiving context) 0)
+  (unless (eql (core:bytecode-cmp-context/receiving context) 0)
     (assemble context +nil+)
-    (when (eql (context-receiving context) t)
+    (when (eql (core:bytecode-cmp-context/receiving context) t)
       (assemble context +pop+))))
 
 (defun compile-go (tag env context)
@@ -1173,18 +1165,18 @@
                 :blocks (acons name (cons dynenv-info label) (core:bytecode-cmp-env/blocks env)))))
       ;; Force single values into multiple so that we can uniformly PUSH afterward.
       (compile-progn body env context))
-    (when (eql (context-receiving context) 1)
+    (when (eql (core:bytecode-cmp-context/receiving context) 1)
       (emit-jump context normal-label))
     (emit-label context label)
     ;; When we need 1 value, we have to make sure that the
     ;; "exceptional" case pushes a single value onto the stack.
-    (when (eql (context-receiving context) 1)
+    (when (eql (core:bytecode-cmp-context/receiving context) 1)
       (assemble context +push+)
       (emit-label context normal-label))
     (assemble context +entry-close+)))
 
 (defun compile-return-from (name value env context)
-  (compile-form value env (new-context context :receiving t))
+  (compile-form value env (core:new-context context :receiving t))
   (let ((pair (assoc name (core:bytecode-cmp-env/blocks env))))
     (if pair
         (destructuring-bind (dynenv-info . block-label) (cdr pair)
@@ -1193,7 +1185,7 @@
         (error "The block ~a does not exist." name))))
 
 (defun compile-catch (tag body env context)
-  (compile-form tag env (new-context context :receiving 1))
+  (compile-form tag env (core:new-context context :receiving 1))
   (let ((target (make-label)))
     (emit-catch context target)
     (compile-progn body env context)
@@ -1201,13 +1193,13 @@
     (emit-label context target)))
 
 (defun compile-throw (tag result env context)
-  (compile-form tag env (new-context context :receiving 1))
-  (compile-form result env (new-context context :receiving t))
+  (compile-form tag env (core:new-context context :receiving 1))
+  (compile-form result env (core:new-context context :receiving t))
   (assemble context +throw+))
 
 (defun compile-progv (symbols values body env context)
-  (compile-form symbols env (new-context context :receiving 1))
-  (compile-form values env (new-context context :receiving 1))
+  (compile-form symbols env (core:new-context context :receiving 1))
+  (compile-form values env (core:new-context context :receiving 1))
   (assemble context +progv+)
   (compile-progn body env context)
   (emit-unbind context 1))
@@ -1260,25 +1252,25 @@
                      context)))
 
 (defun compile-multiple-value-call (function-form forms env context)
-  (compile-form function-form env (new-context context :receiving 1))
+  (compile-form function-form env (core:new-context context :receiving 1))
   (let ((first (first forms))
         (rest (rest forms)))
-    (compile-form first env (new-context context :receiving t))
+    (compile-form first env (core:new-context context :receiving t))
     (when rest
       (assemble context +push-values+)
       (dolist (form rest)
-        (compile-form form env (new-context context :receiving t))
+        (compile-form form env (core:new-context context :receiving t))
         (assemble context +append-values+))
       (assemble context +pop-values+)))
   (emit-mv-call context))
 
 (defun compile-multiple-value-prog1 (first-form forms env context)
   (compile-form first-form env context)
-  (unless (member (context-receiving context) '(0 1))
+  (unless (member (core:bytecode-cmp-context/receiving context) '(0 1))
     (assemble context +push-values+))
   (dolist (form forms)
-    (compile-form form env (new-context context :receiving 0)))
-  (unless (member (context-receiving context) '(0 1))
+    (compile-form form env (core:new-context context :receiving 0)))
+  (unless (member (core:bytecode-cmp-context/receiving context) '(0 1))
     (assemble context +pop-values+)))
 
 ;;;; linkage

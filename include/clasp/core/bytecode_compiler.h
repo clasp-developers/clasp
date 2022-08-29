@@ -198,6 +198,26 @@ public:
 */
 };
 
+// Context contains information about what the current form needs
+// to know about what it is enclosed by.
+ FORWARD(BytecodeCmpContext);
+ class BytecodeCmpContext_O : public General_O {
+   LISP_CLASS(core, CorePkg, BytecodeCmpContext_O, "BytecodeCmpContext", General_O);
+ public:
+   T_sp _receiving;
+   T_sp _cfunction;
+ public:
+   BytecodeCmpContext_O(T_sp receiving, T_sp cfunction)
+     : _receiving(receiving), _cfunction(cfunction) {}
+   CL_LISPIFY_NAME(BytecodeCmpContext/make)
+     CL_DEF_CLASS_METHOD
+     static BytecodeCmpContext_sp make(T_sp receiving, T_sp cfunction) {
+     return gctools::GC<BytecodeCmpContext_O>::allocate<gctools::RuntimeStage>(receiving, cfunction);
+   }
+   CL_DEFMETHOD T_sp receiving() { return this->_receiving; }
+   CL_DEFMETHOD T_sp cfunction() { return this->_cfunction; }
+ };
+
 FORWARD(BytecodeCmpModule);
  class BytecodeCmpModule_O : public General_O {
    LISP_CLASS(core, CorePkg, BytecodeCmpModule_O, "BytecodeCmpModule", General_O);

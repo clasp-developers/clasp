@@ -49,4 +49,11 @@ T_sp BytecodeCmpEnv_O::lookupMacro(T_sp macroname) {
   else return nil<T_O>();
 }
 
+CL_LAMBDA(context &key (receiving (bytecode-cmp-context/receiving context)) (cfunction (bytecode-cmp-context/cfunction context)))
+CL_DEFUN BytecodeCmpContext_sp new_context(BytecodeCmpContext_sp parent,
+                                           T_sp receiving,
+                                           T_sp cfunction) {
+  return BytecodeCmpContext_O::make(receiving, cfunction);
+}
+
 }; //namespace core
