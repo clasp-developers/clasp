@@ -218,6 +218,103 @@ public:
    CL_DEFMETHOD T_sp cfunction() { return this->_cfunction; }
  };
 
+ FORWARD(BytecodeCmpAnnotation);
+ class BytecodeCmpAnnotation_O : public General_O {
+   LISP_ABSTRACT_CLASS(core, CorePkg, BytecodeCmpAnnotation_O, "BytecodeCmpAnnotation", General_O);
+ public:
+   // The cfunction containing this annotation.
+   T_sp _function;
+   // The index of this annotation in its function's annotations.
+   size_t _index;
+   // The current (optimistic) position of this annotation in this function.
+   size_t _position;
+   // The initial position of this annotation in this function.
+   size_t _initial_position;
+ public:
+   BytecodeCmpAnnotation_O() : _function(unbound<T_O>()) {}
+   CL_DEFMETHOD T_sp function() { return this->_function; }
+   CL_LISPIFY_NAME(BytecodeCmpAnnotation/setf-function)
+     CL_DEFMETHOD T_sp setFunction(T_sp nfun) {
+     this->_function = nfun;
+     return nfun;
+   }
+   // Calling these "index" or "position" directly
+   // seems to cause inscrutable issues in exposeClasses that I
+   // do not want to deal with.
+   CL_LISPIFY_NAME(BytecodeCmpAnnotation/index)
+   CL_DEFMETHOD size_t iindex() { return this->_index; }
+   CL_LISPIFY_NAME(BytecodeCmpAnnotation/setf-index)
+     CL_DEFMETHOD size_t setIndex(size_t nind) {
+     this->_index = nind;
+     return nind;
+   }
+   CL_LISPIFY_NAME(BytecodeCmpAnnotation/position)
+   CL_DEFMETHOD size_t pposition() { return this->_position; }
+   CL_LISPIFY_NAME(BytecodeCmpAnnotation/setf-position)
+     CL_DEFMETHOD size_t setPosition(size_t npos) {
+     this->_position = npos;
+     return npos;
+   }
+   CL_DEFMETHOD size_t initial_position() { return this->_initial_position; }
+   CL_LISPIFY_NAME(BytecodeCmpAnnotation/setf-initial-position)
+     CL_DEFMETHOD size_t setInitialPosition(size_t npos) {
+     this->_initial_position = npos;
+     return npos;
+   }
+ };
+
+ FORWARD(BytecodeCmpLabel);
+ class BytecodeCmpLabel_O : public BytecodeCmpAnnotation_O {
+   LISP_CLASS(core, CorePkg, BytecodeCmpLabel_O, "BytecodeCmpLabel", BytecodeCmpAnnotation_O);
+ public:
+ BytecodeCmpLabel_O() : BytecodeCmpAnnotation_O() {}
+   CL_LISPIFY_NAME(BytecodeCmpLabel/make)
+     CL_DEF_CLASS_METHOD
+     static BytecodeCmpLabel_sp make() {
+     return gctools::GC<BytecodeCmpLabel_O>::allocate<gctools::RuntimeStage>();
+   }
+ };
+
+ FORWARD(BytecodeCmpFixup);
+ class BytecodeCmpFixup_O : public BytecodeCmpAnnotation_O {
+   LISP_CLASS(core, CorePkg, BytecodeCmpFixup_O, "BytecodeCmpFixup", BytecodeCmpAnnotation_O);
+ public:
+   // The label this fixup references.
+   // i think the bytecode compiler puts lexical infos here sometimes?
+   T_sp _label;
+   // The current (optimistic) size of this fixup in bytes.
+   size_t _size;
+   // The initial size of this fixup in bytes.
+   size_t _initial_size;
+   // How to emit this fixup once sizes are resolved.
+   // These two are functions, but that will have to change in the C++ port
+   // probably, since we don't have closures.
+   T_sp _emitter;
+   // How to resize this fixup. Returns the new size.
+   T_sp _resizer;
+ public:
+   BytecodeCmpFixup_O(T_sp label, size_t initial_size,
+                      T_sp emitter, T_sp resizer)
+     : BytecodeCmpAnnotation_O(), _label(label), _size(initial_size),
+     _initial_size(initial_size), _emitter(emitter), _resizer(resizer) {}
+   CL_LISPIFY_NAME(BytecodeCmpFixup/make)
+     CL_DEF_CLASS_METHOD
+     static BytecodeCmpFixup_sp make(T_sp label, size_t initial_size,
+                                     T_sp emitter, T_sp resizer) {
+     return gctools::GC<BytecodeCmpFixup_O>::allocate<gctools::RuntimeStage>(label, initial_size, emitter, resizer);
+   }
+   CL_DEFMETHOD T_sp label() { return this->_label; }
+   CL_DEFMETHOD size_t size() { return this->_size; }
+   CL_LISPIFY_NAME(BytecodeCmpFixup/setf-size)
+     CL_DEFMETHOD size_t setSize(size_t nsize) {
+     this->_size = nsize;
+     return nsize;
+   }
+   CL_DEFMETHOD size_t initial_size() { return this->_initial_size; }
+   CL_DEFMETHOD T_sp emitter() { return this->_emitter; }
+   CL_DEFMETHOD T_sp resizer() { return this->_resizer; }
+ };
+
 FORWARD(BytecodeCmpModule);
  class BytecodeCmpModule_O : public General_O {
    LISP_CLASS(core, CorePkg, BytecodeCmpModule_O, "BytecodeCmpModule", General_O);
@@ -236,6 +333,71 @@ FORWARD(BytecodeCmpModule);
    CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
    CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
  };
+
+ /*
+ FORWARD(BytecodeCmpFunction);
+ class BytecodeCmpFunction_O : public General_O {
+   LISP_CLASS(core, CorePkg, BytecodeCmpFunction_O, "BytecodeCmpFunction", General_O);
+ public:
+   BytecodeCmpModule_sp _module;
+   // Bytecode vector for this function.
+   ComplexVector_byte8_t_sp _bytecode;
+   // An ordered vector of annotations emitted in this function.
+   ComplexVector_T_sp _annotations;
+   size_t _nlocals;
+   ComplexVector_T_sp _closed;
+   T_sp _entry_point; // FIXME: should be a label once those are in C++
+   // The position of the start of this function in this module (optimistic).
+   size_t _position;
+   // How much to add to the bytecode vector length for increased fixup
+   // sizes for the true length.
+   size_t _extra;
+   // The index of this function in the containing module's function vector.
+   size_t _index;
+   // The runtime function, used during link.
+   GlobalBytecodeEntryPoint_sp _info;
+   // Stuff for the function description.
+   T_sp _name;
+   T_sp _doc;
+ public:
+ BytecodeCmpFunction_O(BytecodeCmpModule_sp module, T_sp name, T_sp doc)
+   : _module(module),
+     // A zero-length adjustable vector with fill pointer.
+     _bytecode(ComplexVector_byte8_T_O::make_vector(0, 0, false,
+                                                    clasp_make_fixnum(0),
+                                                    nil<T_O>(), false, 0)),
+     _annotations(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
+     _closed(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
+     // Not sure if we have to initialize the T_sp fields, but let's be safe.
+     _entry_point(unbound<T_O>()),
+     _info(unbound<GlobalBytecodeEntryPoint_O>()),
+     _name(name), _doc(doc)
+   {}
+   CL_LISPIFY_NAME(BytecodeCmpFunction/make)
+     CL_DEF_CLASS_METHOD
+     static BytecodeCmpFunction_sp make(BytecodeCmpModule_sp module,
+                                        T_sp name, T_sp doc) {
+     return gctools::GC<BytecodeCmpFunction_O>::allocate<gctools::RuntimeStage>(module, name, doc);
+   }
+   CL_DEFMETHOD BytecodeCmpModule_sp module() { return _module; }
+   CL_DEFMETHOD ComplexVector_byte8_t_sp bytecode() { return _bytecode; }
+   CL_DEFMETHOD ComplexVector_T_sp annotations() { return _annotations; }
+   CL_DEFMETHOD size_t nlocals() { return _nlocals; }
+   CL_LISPIFY_NAME(BytecodeCmpFunction/setf-closed)
+     CL_DEFMETHOD size_t setNlocals(size_t new_nlocals) {
+     _nlocals = new_nlocals;
+     return _nlocals;
+   }
+   CL_DEFMETHOD ComplexVector_T_sp closed() { return _closed; }
+   CL_DEFMETHOD T_sp entry_point() { return _entry_point; }
+   CL_DEFMETHOD size_t position() { return _position; }
+   CL_DEFMETHOD size_t extra() { return _extra; }
+   CL_DEFMETHOD size_t index() { return _index; }
+   CL_DEFMETHOD GlobalBytecodeEntryPoint_sp info() { return _info; }
+   CL_DEFMETHOD T_sp name() { return _name; }
+   CL_DEFMETHOD T_sp doc() { return _doc; }
+ };
+ */
 
 }; // namespace core
 

@@ -65,50 +65,24 @@
 
 ;;;
 
-;; An annotation in the function.
-(defstruct (annotation (:type vector))
-  ;; The function containing this annotation.
-  function
-  ;; The index of this annotation in its function's annotations.
-  index
-  ;; The current (optimistic) position of this annotation in this function.
-  position
-  ;; The initial position of this annotaiton in this function.
-  initial-position)
-
-(defstruct (label (:include annotation) (:type vector)))
-
-(defstruct (fixup (:include annotation)
-                  (:type vector) :named
-                  (:constructor make-fixup (label initial-size emitter resizer
-                                            &aux (size initial-size))))
-  ;; The label this fixup references.
-  label
-  ;; The current (optimistic) size of this fixup in bytes.
-  size
-  ;; The initial size of this fixup in bytes.
-  initial-size
-  ;; How to emit this fixup once sizes are resolved.
-  emitter
-  ;; How to resize this fixup. Returns the new size.
-  resizer)
-
 ;;; Optimistic positioning of ANNOTATION in its module.
 (defun annotation-module-position (annotation)
-  (+ (cfunction-position (annotation-function annotation))
-     (annotation-position annotation)))
+  (+ (cfunction-position (core:bytecode-cmp-annotation/function annotation))
+     (core:bytecode-cmp-annotation/position annotation)))
 
 ;;; The (module) displacement from this fixup to its label,
 (defun fixup-delta (fixup)
-  (- (annotation-module-position (fixup-label fixup))
+  (- (annotation-module-position (core:bytecode-cmp-fixup/label fixup))
      (annotation-module-position fixup)))
 
 (defun emit-label (context label)
-  (setf (label-position label) (length (context-assembly context)))
+  (core:bytecode-cmp-annotation/setf-position
+   label (length (context-assembly context)))
   (let ((function (core:bytecode-cmp-context/cfunction context)))
-    (setf (label-function label) function)
-    (setf (label-index label)
-          (vector-push-extend label (cfunction-annotations function)))))
+    (core:bytecode-cmp-annotation/setf-function label function)
+    (core:bytecode-cmp-annotation/setf-index
+     label
+     (vector-push-extend label (cfunction-annotations function)))))
 
 (defun values-less-than-p (values max)
   (dolist (value values t)
@@ -156,18 +130,18 @@
   (let* ((assembly (context-assembly context))
          (cfunction (core:bytecode-cmp-context/cfunction context))
          (position (length assembly)))
-    (setf (fixup-function fixup) cfunction)
-    (setf (fixup-initial-position fixup) position)
-    (setf (fixup-position fixup) position)
-    (setf (fixup-index fixup)
-          (vector-push-extend fixup (cfunction-annotations cfunction)))
-    (dotimes (i (fixup-initial-size fixup))
+    (core:bytecode-cmp-annotation/setf-function fixup cfunction)
+    (core:bytecode-cmp-annotation/setf-initial-position fixup position)
+    (core:bytecode-cmp-annotation/setf-position fixup position)
+    (core:bytecode-cmp-annotation/setf-index
+     fixup (vector-push-extend fixup (cfunction-annotations cfunction)))
+    (dotimes (i (core:bytecode-cmp-fixup/initial-size fixup))
       (vector-push-extend 0 assembly))))
 
 ;;; Emit OPCODE and then a label reference.
 (defun emit-control+label (context opcode8 opcode16 opcode24 label)
   (flet ((emitter (fixup position code)
-           (let* ((size (fixup-size fixup))
+           (let* ((size (core:bytecode-cmp-fixup/size fixup))
                   (offset (unsigned (fixup-delta fixup) (* 8 (1- size)))))
              (setf (aref code position)
                    (cond ((eql size 2) opcode8)
@@ -181,7 +155,7 @@
                    ((typep delta '(signed-byte 16)) 3)
                    ((typep delta '(signed-byte 24)) 4)
                    (t (error "???? PC offset too big ????"))))))
-    (emit-fixup context (make-fixup label 2 #'emitter #'resizer))))
+    (emit-fixup context (core:bytecode-cmp-fixup/make label 2 #'emitter #'resizer))))
 
 (defun emit-jump (context label)
   (emit-control+label context +jump-8+ +jump-16+ +jump-24+ label))
@@ -194,7 +168,7 @@
 
 (defun emit-jump-if-supplied (context index label)
   (flet ((emitter (fixup position code)
-           (let* ((size (fixup-size fixup))
+           (let* ((size (core:bytecode-cmp-fixup/size fixup))
                   (offset (unsigned (fixup-delta fixup) (* 8 (1- size)))))
              (setf (aref code position)
                    (cond
@@ -208,7 +182,7 @@
              (cond ((typep delta '(signed-byte 8)) 3)
                    ((typep delta '(signed-byte 16)) 4)
                    (t (error "???? PC offset too big ????"))))))
-    (emit-fixup context (make-fixup label 3 #'emitter #'resizer))))
+    (emit-fixup context (core:bytecode-cmp-fixup/make label 3 #'emitter #'resizer))))
 
 (defun emit-const (context index)
   (if (> index 255)
@@ -401,7 +375,7 @@
   (annotations (make-array 0 :fill-pointer 0 :adjustable t))
   (nlocals 0)
   (closed (make-array 0 :fill-pointer 0 :adjustable t))
-  (entry-point (make-label))
+  (entry-point (core:bytecode-cmp-label/make))
   ;; The position of the start of this function in this module
   ;; (optimistic).
   position
@@ -469,13 +443,13 @@
          (flet ((emitter (fixup position code)
                   #+clasp-min (declare (ignore fixup))
                   #-clasp-min
-                  (assert (= (fixup-size fixup) 1))
+                  (assert (= (core:bytecode-cmp-fixup/size fixup) 1))
                   (setf (aref code position) opcode))
                 (resizer (fixup)
                   (declare (ignore fixup))
                   (if (indirect-lexical-p lexical-info) 1 0)))
            (emit-fixup context
-                       (make-fixup lexical-info 0 #'emitter #'resizer)))))
+                       (core:bytecode-cmp-fixup/make lexical-info 0 #'emitter #'resizer)))))
   (defun maybe-emit-make-cell (lexical-info context)
     (maybe-emit lexical-info +make-cell+ context))
   (defun maybe-emit-cell-ref (lexical-info context)
@@ -486,27 +460,27 @@
 (defun maybe-emit-encage (lexical-info context)
   (let ((index (core:bytecode-cmp-lexical-var-info/frame-index lexical-info)))
     (flet ((emitter (fixup position code)
-             (cond ((= (fixup-size fixup) 5)
+             (cond ((= (core:bytecode-cmp-fixup/size fixup) 5)
                     (assemble-into code position
                                    +ref+ index +make-cell+ +set+ index))
-                   ((= (fixup-size fixup) 9)
+                   ((= (core:bytecode-cmp-fixup/size fixup) 9)
                     (let ((low (ldb (byte 8 0) index))
                           (high (ldb (byte 8 8) index)))
                       (assemble-into code position
                                      +long+ +ref+ low high +make-cell+ +long+ +set+ low high)))
-                   (t (error "Unknown fixup size ~d" (fixup-size fixup)))))
+                   (t (error "Unknown fixup size ~d" (core:bytecode-cmp-fixup/size fixup)))))
            (resizer (fixup)
              (declare (ignore fixup))
              (cond ((not (indirect-lexical-p lexical-info)) 0)
                    ((< index #.(ash 1 8)) 5)
                    ((< index #.(ash 1 16)) 9)
                    (t (error "Too many lexicals: ~d" index)))))
-      (emit-fixup context (make-fixup lexical-info 0 #'emitter #'resizer)))))
+      (emit-fixup context (core:bytecode-cmp-fixup/make lexical-info 0 #'emitter #'resizer)))))
 
 (defun emit-lexical-set (lexical-info context)
   (let ((index (core:bytecode-cmp-lexical-var-info/frame-index lexical-info)))
     (flet ((emitter (fixup position code)
-             (let ((size (fixup-size fixup)))
+             (let ((size (core:bytecode-cmp-fixup/size fixup)))
                (cond ((= size 2)
                       (assemble-into code position +set+ index))
                      ((= size 3)
@@ -523,7 +497,7 @@
                    ((< index #.(ash 1 8)) 3)
                    ((< index #.(ash 1 16)) 5)
                    (t (error "Too many lexicals: ~d" index)))))
-      (emit-fixup context (make-fixup lexical-info 2 #'emitter #'resizer)))))
+      (emit-fixup context (core:bytecode-cmp-fixup/make lexical-info 2 #'emitter #'resizer)))))
 
 (defun compile-symbol (form env context)
   (multiple-value-bind (kind data) (var-info form env)
@@ -844,8 +818,8 @@
 
 (defun compile-if (condition then else env context)
   (compile-form condition env (core:new-context context :receiving 1))
-  (let ((then-label (make-label))
-        (done-label (make-label)))
+  (let ((then-label (core:bytecode-cmp-label/make))
+        (done-label (core:bytecode-cmp-label/make)))
     (emit-jump-if context then-label)
     (compile-form else env context)
     (emit-jump context done-label)
@@ -980,8 +954,8 @@
         ;; if necessary.
         (unless (zerop optional-count)
           (do ((optionals (cdr optionals) (cdddr optionals))
-               (optional-label (make-label) next-optional-label)
-               (next-optional-label (make-label) (make-label)))
+               (optional-label (core:bytecode-cmp-label/make) next-optional-label)
+               (next-optional-label (core:bytecode-cmp-label/make) (core:bytecode-cmp-label/make)))
               ((endp optionals) (emit-label context optional-label))
             (emit-label context optional-label)
             (let* ((optional-var (car optionals))
@@ -1015,8 +989,8 @@
         ;; Generate defaulting code for key args, and special-bind them if necessary.
         (when key-flag
           (do ((keys (cdr keys) (cddddr keys))
-               (key-label (make-label) next-key-label)
-               (next-key-label (make-label) (make-label)))
+               (key-label (core:bytecode-cmp-label/make) next-key-label)
+               (next-key-label (core:bytecode-cmp-label/make) (core:bytecode-cmp-label/make)))
               ((endp keys) (emit-label context key-label))
             (emit-label context key-label)
             (let* ((key-var (cadr keys)) (defaulting-form (caddr keys))
@@ -1078,7 +1052,7 @@
                   (assemble-maybe-long
                    context +set+
                    (core:bytecode-cmp-lexical-var-info/frame-index info))))))
-    (let ((supplied-label (make-label))
+    (let ((supplied-label (core:bytecode-cmp-label/make))
           (var-info (nth-value 1 (var-info var env))))
       (when supplied-var
         (setq env (bind-vars (list supplied-var) env context)))
@@ -1127,7 +1101,7 @@
          (dynenv-info (nth-value 1 (var-info tagbody-dynenv env))))
     (dolist (statement statements)
       (when (go-tag-p statement)
-        (push (list* statement dynenv-info (make-label))
+        (push (list* statement dynenv-info (core:bytecode-cmp-label/make))
               new-tags)))
     (let ((env (make-lexical-environment env :tags new-tags)))
       ;; Bind the dynamic environment.
@@ -1156,8 +1130,8 @@
   (let* ((block-dynenv (gensym "BLOCK-DYNENV"))
          (env (bind-vars (list block-dynenv) env context))
          (dynenv-info (nth-value 1 (var-info block-dynenv env)))
-         (label (make-label))
-         (normal-label (make-label)))
+         (label (core:bytecode-cmp-label/make))
+         (normal-label (core:bytecode-cmp-label/make)))
     ;; Bind the dynamic environment.
     (assemble context +entry+ (core:bytecode-cmp-lexical-var-info/frame-index dynenv-info))
     (let ((env (make-lexical-environment
@@ -1186,7 +1160,7 @@
 
 (defun compile-catch (tag body env context)
   (compile-form tag env (core:new-context context :receiving 1))
-  (let ((target (make-label)))
+  (let ((target (core:bytecode-cmp-label/make)))
     (emit-catch context target)
     (compile-progn body env context)
     (assemble context +catch-close+)
@@ -1290,13 +1264,14 @@
 ;;; from the effect of increasing the size of FIXUP by INCREASE. The
 ;;; resizer has already updated the size of the the fixup.
 (defun update-positions (fixup increase)
-  (let ((function (fixup-function fixup)))
+  (let ((function (core:bytecode-cmp-annotation/function fixup)))
     ;; Update affected annotation positions in this function.
     (let ((annotations (cfunction-annotations function)))
-      (do ((index (1+ (fixup-index fixup)) (1+ index)))
+      (do ((index (1+ (core:bytecode-cmp-annotation/index fixup)) (1+ index)))
           ((= index (length annotations)))
-        (let ((annotation (aref annotations index)))
-          (incf (annotation-position annotation) increase))))
+        (let* ((annotation (aref annotations index))
+               (pos (core:bytecode-cmp-annotation/position annotation)))
+          (core:bytecode-cmp-annotation/setf-position annotation (+ pos increase)))))
     ;; Increase the size of this function to account for fixup growth.
     (incf (cfunction-extra function) increase)
     ;; Update module offsets for affected functions.
@@ -1315,13 +1290,13 @@
       (dotimes (i (length functions))
         (dotimes (j (length (cfunction-annotations (aref functions i))))
           (let ((annotation (aref (cfunction-annotations (aref functions i)) j)))
-            (when (fixup-p annotation)
-              (let ((old-size (fixup-size annotation))
-                    (new-size (funcall (fixup-resizer annotation) annotation)))
+            (when (typep annotation 'core:bytecode-cmp-fixup)
+              (let ((old-size (core:bytecode-cmp-fixup/size annotation))
+                    (new-size (funcall (core:bytecode-cmp-fixup/resizer annotation) annotation)))
                 (unless (= old-size new-size)
                   #+(or)
                   (assert (>= new-size old-size))
-                  (setf (fixup-size annotation) new-size)
+                  (core:bytecode-cmp-fixup/setf-size annotation new-size)
                   (setq changed-p t)
                   (update-positions annotation (- new-size old-size))))))))
       (unless changed-p
@@ -1347,25 +1322,25 @@
              (position 0))
         (dotimes (i (length (cfunction-annotations function)))
           (let ((annotation (aref (cfunction-annotations function) i)))
-            (when (fixup-p annotation)
-              (unless (zerop (fixup-size annotation))
+            (when (typep annotation 'core:bytecode-cmp-fixup)
+              (unless (zerop (core:bytecode-cmp-fixup/size annotation))
                 #+(or)
               (assert (= (fixup-size annotation)
                          (funcall (fixup-resizer annotation) annotation)))
               ;; Copy bytes in this segment.
-              (let ((end (fixup-initial-position annotation)))
+              (let ((end (core:bytecode-cmp-annotation/initial-position annotation)))
                 (replace bytecode cfunction-bytecode :start1 index :start2 position :end2 end)
                 (incf index (- end position))
                 (setf position end))
               #+(or)
               (assert (= index (annotation-module-position annotation)))
               ;; Emit fixup.
-              (funcall (fixup-emitter annotation)
+              (funcall (core:bytecode-cmp-fixup/emitter annotation)
                        annotation
                        index
                        bytecode)
-              (incf position (fixup-initial-size annotation))
-              (incf index (fixup-size annotation))))))
+              (incf position (core:bytecode-cmp-fixup/initial-size annotation))
+              (incf index (core:bytecode-cmp-fixup/size annotation))))))
         ;; Copy any remaining bytes from this function to the module.
         (let ((end (length cfunction-bytecode)))
           (replace bytecode cfunction-bytecode :start1 index :start2 position :end2 end)
