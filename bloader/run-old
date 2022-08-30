@@ -1,5 +1,4 @@
 #! /bin/bash
 export CLASP_DEBUGGER_SUPPORT=1
 export CLASP_DONT_HANDLE_CRASH_SIGNALS=1
-cd $HOME/Development/clasp-vm
-$HOME/Development/clasp-vm/build/boehmprecise/iclasp-boehmprecise -I -f clasp-min -l $HOME/Development/clasp-vm/bloader/loader.lisp
+build/boehmprecise/iclasp-boehmprecise -I -f clasp-min -l bloader/loader.lisp
