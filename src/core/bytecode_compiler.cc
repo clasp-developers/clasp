@@ -1,4 +1,5 @@
 #include <clasp/core/bytecode_compiler.h>
+#include <clasp/core/virtualMachine.h>
 #include <clasp/core/evaluator.h> // af_interpreter_lookup_macro
 #include <clasp/core/sysprop.h> // core__get_sysprop
 
@@ -49,11 +50,58 @@ T_sp BytecodeCmpEnv_O::lookupMacro(T_sp macroname) {
   else return nil<T_O>();
 }
 
-CL_LAMBDA(context &key (receiving (bytecode-cmp-context/receiving context)) (cfunction (bytecode-cmp-context/cfunction context)))
+CL_LAMBDA(context &key (receiving (bytecode-cmp-context/receiving context)) (cfunction (bytecode-cmp-context/function context)))
 CL_DEFUN BytecodeCmpContext_sp new_context(BytecodeCmpContext_sp parent,
                                            T_sp receiving,
                                            T_sp cfunction) {
   return BytecodeCmpContext_O::make(receiving, cfunction);
+}
+
+CL_LAMBDA(context opcode &rest operands)
+CL_DEFUN void core__bytecode_cmp_assemble(BytecodeCmpContext_sp context,
+                                          uint8_t opcode, List_sp operands) {
+  BytecodeCmpFunction_sp func = context->function();
+  ComplexVector_byte8_t_sp bytecode = func->bytecode();
+  bytecode->vectorPushExtend(opcode);
+  for (auto cur : operands) {
+    bytecode->vectorPushExtend(clasp_to_integral<uint8_t>(oCar(cur)));
+  }
+}
+
+CL_LAMBDA(code position &rest values)
+CL_DEFUN void core__bytecode_cmp_assemble_into(SimpleVector_byte8_t_sp code,
+                                               size_t position, List_sp values) {
+  for (auto cur : values)
+    (*code)[position++] = clasp_to_integral<uint8_t>(oCar(cur));
+}
+
+CL_LAMBDA(context opcode &rest operands)
+CL_DEFUN void core__bytecode_cmp_assemble_maybe_long(BytecodeCmpContext_sp context,
+                                                     uint8_t opcode,
+                                                     List_sp operands) {
+  BytecodeCmpFunction_sp func = context->function();
+  ComplexVector_byte8_t_sp bytecode = func->bytecode();
+  // Check for long operands. Also signal an error if something''s over 16 bits.
+  bool longp = false;
+  for (auto cur : operands) {
+    if (clasp_to_integral<uint16_t>(oCar(cur)) > 255) {
+      longp = true;
+      break;
+    }
+  }
+  if (longp) {
+    bytecode->vectorPushExtend(vm_long);
+    bytecode->vectorPushExtend(opcode);
+    for (auto cur : operands) {
+      uint16_t operand = clasp_to_integral<uint16_t>(oCar(cur));
+      bytecode->vectorPushExtend(operand & 0xff); // low
+      bytecode->vectorPushExtend(operand >> 8); // high
+    }
+  } else { // normal/short
+    bytecode->vectorPushExtend(opcode);
+    for (auto cur : operands)
+      bytecode->vectorPushExtend(clasp_to_integral<uint8_t>(oCar(cur)));
+  }
 }
 
 }; //namespace core

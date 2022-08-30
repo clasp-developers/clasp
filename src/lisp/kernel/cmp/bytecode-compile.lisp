@@ -78,7 +78,7 @@
 (defun emit-label (context label)
   (core:bytecode-cmp-annotation/setf-position
    label (length (context-assembly context)))
-  (let ((function (core:bytecode-cmp-context/cfunction context)))
+  (let ((function (core:bytecode-cmp-context/function context)))
     (core:bytecode-cmp-annotation/setf-function label function)
     (core:bytecode-cmp-annotation/setf-index
      label
@@ -89,6 +89,8 @@
     (unless (<= 0 value (1- max)) (return-from values-less-than-p nil))))
 
 (defun assemble-maybe-long (context opcode &rest values)
+  (apply #'core:bytecode-cmp-assemble-maybe-long context opcode values)
+  #+(or)
   (let ((assembly (context-assembly context)))
     (cond ((values-less-than-p values #.(ash 1 8))
            (vector-push-extend opcode assembly)
@@ -104,14 +106,16 @@
            (error "Bytecode compiler limit reached: Indices too large! ~a" values)))))
 
 (defun assemble (context opcode &rest values)
-  (unless (values-less-than-p values #.(ash 1 8))
-    (error "Bad value in assemble ~s" values))
+  (apply #'core:bytecode-cmp-assemble context opcode values)
+  #+(or)
   (let ((assembly (context-assembly context)))
     (vector-push-extend opcode assembly)
     (dolist (value values)
       (vector-push-extend value assembly))))
 
 (defun assemble-into (code position &rest values)
+  (apply #'core:bytecode-cmp-assemble-into code position values)
+  #+(or)
   (do ((values values (rest values))
        (position position (1+ position)))
       ((null values))
@@ -128,7 +132,7 @@
 ;;; Emit FIXUP into CONTEXT.
 (defun emit-fixup (context fixup)
   (let* ((assembly (context-assembly context))
-         (cfunction (core:bytecode-cmp-context/cfunction context))
+         (cfunction (core:bytecode-cmp-context/function context))
          (position (length assembly)))
     (core:bytecode-cmp-annotation/setf-function fixup cfunction)
     (core:bytecode-cmp-annotation/setf-initial-position fixup position)
@@ -322,7 +326,7 @@
   (let* ((frame-start (core:bytecode-cmp-env/frame-end env))
          (var-count (length vars))
          (frame-end (+ frame-start var-count))
-         (function (core:bytecode-cmp-context/cfunction context)))
+         (function (core:bytecode-cmp-context/function context)))
     (core:bytecode-cmp-function/setf-nlocals
      function
      (max (core:bytecode-cmp-function/nlocals function) frame-end))
@@ -372,10 +376,10 @@
   name doc)
 
 (defun context-module (context)
-  (core:bytecode-cmp-function/module (core:bytecode-cmp-context/cfunction context)))
+  (core:bytecode-cmp-function/module (core:bytecode-cmp-context/function context)))
 
 (defun context-assembly (context)
-  (core:bytecode-cmp-function/bytecode (core:bytecode-cmp-context/cfunction context)))
+  (core:bytecode-cmp-function/bytecode (core:bytecode-cmp-context/function context)))
 
 (defun literal-index (literal context)
   (let ((literals (core:bytecode-cmp-module/literals (context-module context))))
@@ -383,7 +387,7 @@
         (vector-push-extend literal literals))))
 
 (defun closure-index (info context)
-  (let ((closed (core:bytecode-cmp-function/closed (core:bytecode-cmp-context/cfunction context))))
+  (let ((closed (core:bytecode-cmp-function/closed (core:bytecode-cmp-context/function context))))
     (or (position info closed)
         (vector-push-extend info closed))))
 
@@ -493,7 +497,7 @@
            (cond
              ((eq kind :lexical)
               (cond ((eq (core:bytecode-cmp-lexical-var-info/function data)
-                         (core:bytecode-cmp-context/cfunction context))
+                         (core:bytecode-cmp-context/function context))
                      (assemble-maybe-long
                       context +ref+
                       (core:bytecode-cmp-lexical-var-info/frame-index data)))
@@ -697,7 +701,7 @@
              (assemble context +pop+)))))
       ((eq kind :lexical)
        (let ((localp (eq (core:bytecode-cmp-lexical-var-info/function data)
-                         (core:bytecode-cmp-context/cfunction context)))
+                         (core:bytecode-cmp-context/function context)))
              (index (core:bytecode-cmp-env/frame-end env)))
          (unless localp
            (setf (core:bytecode-cmp-lexical-var-info/closed-over-p data) t))
@@ -742,7 +746,7 @@
         (push fun-var fun-vars)
         (push (cons name (core:bytecode-cmp-local-fun-info/make
                           (core:bytecode-cmp-lexical-var-info/make frame-slot
-                                                 (core:bytecode-cmp-context/cfunction context))))
+                                                 (core:bytecode-cmp-context/function context))))
               funs)
         (incf frame-slot)
         (incf fun-count)))
@@ -766,7 +770,7 @@
         (push fun-var fun-vars)
         (push (cons name (core:bytecode-cmp-local-fun-info/make
                           (core:bytecode-cmp-lexical-var-info/make frame-slot
-                                                 (core:bytecode-cmp-context/cfunction context))))
+                                                 (core:bytecode-cmp-context/function context))))
               funs)
         (incf frame-slot)
         (incf fun-count)))
@@ -810,7 +814,7 @@
 
 ;;; Push the immutable value or cell of lexical in CONTEXT.
 (defun reference-lexical-info (info context)
-  (if (eq (core:bytecode-cmp-lexical-var-info/function info) (core:bytecode-cmp-context/cfunction context))
+  (if (eq (core:bytecode-cmp-lexical-var-info/function info) (core:bytecode-cmp-context/function context))
       (assemble-maybe-long context +ref+
                            (core:bytecode-cmp-lexical-var-info/frame-index info))
       (assemble-maybe-long context +closure+ (closure-index info context))))
@@ -853,7 +857,7 @@
     (declare (ignore docs decls))
     (multiple-value-bind (required optionals rest key-flag keys aok-p aux)
         (core:process-lambda-list lambda-list 'function)
-      (let* ((function (core:bytecode-cmp-context/cfunction context))
+      (let* ((function (core:bytecode-cmp-context/function context))
              (entry-point (core:bytecode-cmp-function/entry-point function))
              (min-count (first required))
              (optional-count (first optionals))

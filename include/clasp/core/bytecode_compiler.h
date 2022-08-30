@@ -205,17 +205,17 @@ public:
    LISP_CLASS(core, CorePkg, BytecodeCmpContext_O, "BytecodeCmpContext", General_O);
  public:
    T_sp _receiving;
-   T_sp _cfunction;
+   T_sp _function;
  public:
-   BytecodeCmpContext_O(T_sp receiving, T_sp cfunction)
-     : _receiving(receiving), _cfunction(cfunction) {}
+   BytecodeCmpContext_O(T_sp receiving, T_sp function)
+     : _receiving(receiving), _function(function) {}
    CL_LISPIFY_NAME(BytecodeCmpContext/make)
      CL_DEF_CLASS_METHOD
-     static BytecodeCmpContext_sp make(T_sp receiving, T_sp cfunction) {
-     return gctools::GC<BytecodeCmpContext_O>::allocate<gctools::RuntimeStage>(receiving, cfunction);
+     static BytecodeCmpContext_sp make(T_sp receiving, T_sp function) {
+     return gctools::GC<BytecodeCmpContext_O>::allocate<gctools::RuntimeStage>(receiving, function);
    }
    CL_DEFMETHOD T_sp receiving() { return this->_receiving; }
-   CL_DEFMETHOD T_sp cfunction() { return this->_cfunction; }
+   CL_DEFMETHOD T_sp function() { return this->_function; }
  };
 
  FORWARD(BytecodeCmpAnnotation);
