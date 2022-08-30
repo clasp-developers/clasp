@@ -334,7 +334,6 @@ FORWARD(BytecodeCmpModule);
    CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
  };
 
- /*
  FORWARD(BytecodeCmpFunction);
  class BytecodeCmpFunction_O : public General_O {
    LISP_CLASS(core, CorePkg, BytecodeCmpFunction_O, "BytecodeCmpFunction", General_O);
@@ -346,7 +345,7 @@ FORWARD(BytecodeCmpModule);
    ComplexVector_T_sp _annotations;
    size_t _nlocals;
    ComplexVector_T_sp _closed;
-   T_sp _entry_point; // FIXME: should be a label once those are in C++
+   BytecodeCmpLabel_sp _entry_point;
    // The position of the start of this function in this module (optimistic).
    size_t _position;
    // How much to add to the bytecode vector length for increased fixup
@@ -363,13 +362,14 @@ FORWARD(BytecodeCmpModule);
  BytecodeCmpFunction_O(BytecodeCmpModule_sp module, T_sp name, T_sp doc)
    : _module(module),
      // A zero-length adjustable vector with fill pointer.
-     _bytecode(ComplexVector_byte8_T_O::make_vector(0, 0, false,
+     _bytecode(ComplexVector_byte8_t_O::make_vector(0, 0,
                                                     clasp_make_fixnum(0),
-                                                    nil<T_O>(), false, 0)),
+                                                    nil<T_O>(), false,
+                                                    clasp_make_fixnum(0))),
      _annotations(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
      _closed(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
-     // Not sure if we have to initialize the T_sp fields, but let's be safe.
-     _entry_point(unbound<T_O>()),
+     _entry_point(BytecodeCmpLabel_O::make()),
+     // not sure this has to be initialized, but just in case
      _info(unbound<GlobalBytecodeEntryPoint_O>()),
      _name(name), _doc(doc)
    {}
@@ -383,21 +383,43 @@ FORWARD(BytecodeCmpModule);
    CL_DEFMETHOD ComplexVector_byte8_t_sp bytecode() { return _bytecode; }
    CL_DEFMETHOD ComplexVector_T_sp annotations() { return _annotations; }
    CL_DEFMETHOD size_t nlocals() { return _nlocals; }
-   CL_LISPIFY_NAME(BytecodeCmpFunction/setf-closed)
+   CL_LISPIFY_NAME(BytecodeCmpFunction/setf-nlocals)
      CL_DEFMETHOD size_t setNlocals(size_t new_nlocals) {
-     _nlocals = new_nlocals;
-     return _nlocals;
+     this->_nlocals = new_nlocals;
+     return new_nlocals;
    }
    CL_DEFMETHOD ComplexVector_T_sp closed() { return _closed; }
    CL_DEFMETHOD T_sp entry_point() { return _entry_point; }
-   CL_DEFMETHOD size_t position() { return _position; }
+   CL_LISPIFY_NAME(BytecodeCmpFunction/position)
+     CL_DEFMETHOD size_t pposition() { return _position; }
+   CL_LISPIFY_NAME(BytecodeCmpFunction/setf-position)
+   CL_DEFMETHOD size_t setPosition(size_t npos) {
+     this->_position = npos;
+     return npos;
+   }
    CL_DEFMETHOD size_t extra() { return _extra; }
-   CL_DEFMETHOD size_t index() { return _index; }
+   CL_LISPIFY_NAME(BytecodeCmpFunction/setf-extra)
+   CL_DEFMETHOD size_t setExtra(size_t next) {
+     this->_extra = next;
+     return next;
+   }
+   CL_LISPIFY_NAME(BytecodeCmpFunction/index)
+   CL_DEFMETHOD size_t iindex() { return _index; }
+   CL_LISPIFY_NAME(BytecodeCmpFunction/setf-index)
+     CL_DEFMETHOD size_t setIndex(size_t nindex) {
+     this->_index = nindex;
+     return nindex;
+   }
    CL_DEFMETHOD GlobalBytecodeEntryPoint_sp info() { return _info; }
-   CL_DEFMETHOD T_sp name() { return _name; }
+   CL_LISPIFY_NAME(BytecodeCmpFunction/setf-info)
+     CL_DEFMETHOD GlobalBytecodeEntryPoint_sp setInfo(GlobalBytecodeEntryPoint_sp gbep) {
+     this->_info = gbep;
+     return gbep;
+   }
+   CL_LISPIFY_NAME(BytecodeCmpFunction/name)
+     CL_DEFMETHOD T_sp nname() { return _name; }
    CL_DEFMETHOD T_sp doc() { return _doc; }
  };
- */
 
 }; // namespace core
 

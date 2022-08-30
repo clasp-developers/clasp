@@ -16,7 +16,7 @@
                     (format t "!~%!~%!   Opening /tmp/allcode.log - logging all bytecode compilation~%!~%!~%")
                     (open "/tmp/allcode.log" :direction :output :if-exists :supersede)))
   (defun log-function (cfunction compile-info bytecode)
-    (format *bclog* "Name: ~s~%" (cfunction-name cfunction))
+    (format *bclog* "Name: ~s~%" (core:bytecode-cmp-function/name cfunction))
     (let ((*print-circle* t))
       (format *bclog* "Form: ~s~%" (car compile-info))
       (format *bclog* "Bytecode: ~s~%" bytecode)
@@ -67,7 +67,7 @@
 
 ;;; Optimistic positioning of ANNOTATION in its module.
 (defun annotation-module-position (annotation)
-  (+ (cfunction-position (core:bytecode-cmp-annotation/function annotation))
+  (+ (core:bytecode-cmp-function/position (core:bytecode-cmp-annotation/function annotation))
      (core:bytecode-cmp-annotation/position annotation)))
 
 ;;; The (module) displacement from this fixup to its label,
@@ -82,7 +82,7 @@
     (core:bytecode-cmp-annotation/setf-function label function)
     (core:bytecode-cmp-annotation/setf-index
      label
-     (vector-push-extend label (cfunction-annotations function)))))
+     (vector-push-extend label (core:bytecode-cmp-function/annotations function)))))
 
 (defun values-less-than-p (values max)
   (dolist (value values t)
@@ -134,7 +134,7 @@
     (core:bytecode-cmp-annotation/setf-initial-position fixup position)
     (core:bytecode-cmp-annotation/setf-position fixup position)
     (core:bytecode-cmp-annotation/setf-index
-     fixup (vector-push-extend fixup (cfunction-annotations cfunction)))
+     fixup (vector-push-extend fixup (core:bytecode-cmp-function/annotations cfunction)))
     (dotimes (i (core:bytecode-cmp-fixup/initial-size fixup))
       (vector-push-extend 0 assembly))))
 
@@ -323,8 +323,9 @@
          (var-count (length vars))
          (frame-end (+ frame-start var-count))
          (function (core:bytecode-cmp-context/cfunction context)))
-    (setf (cfunction-nlocals function)
-          (max (cfunction-nlocals function) frame-end))
+    (core:bytecode-cmp-function/setf-nlocals
+     function
+     (max (core:bytecode-cmp-function/nlocals function) frame-end))
     (do ((index frame-start (1+ index))
          (vars vars (rest vars))
          (new-vars (core:bytecode-cmp-env/vars env)
@@ -367,34 +368,14 @@
 
 (defstruct (cfunction (:constructor make-cfunction (cmodule &key name doc))
                       (:type vector) :named)
-  cmodule
-  ;; Bytecode vector for this function.
-  (bytecode (make-array 0 :element-type '(unsigned-byte 8)
-                          :fill-pointer 0 :adjustable t))
-  ;; An ordered vector of annotations emitted in this function.
-  (annotations (make-array 0 :fill-pointer 0 :adjustable t))
-  (nlocals 0)
-  (closed (make-array 0 :fill-pointer 0 :adjustable t))
-  (entry-point (core:bytecode-cmp-label/make))
-  ;; The position of the start of this function in this module
-  ;; (optimistic).
-  position
-  ;; How much to add to the bytecode vector length for increased fixup
-  ;; sizes for the true length.
-  (extra 0)
-  ;; The index of this function in the containing module's function
-  ;; vector.
-  index
-  ;; The runtime function, used during link.
-  info
   ;; Stuff for the function description
   name doc)
 
 (defun context-module (context)
-  (cfunction-cmodule (core:bytecode-cmp-context/cfunction context)))
+  (core:bytecode-cmp-function/module (core:bytecode-cmp-context/cfunction context)))
 
 (defun context-assembly (context)
-  (cfunction-bytecode (core:bytecode-cmp-context/cfunction context)))
+  (core:bytecode-cmp-function/bytecode (core:bytecode-cmp-context/cfunction context)))
 
 (defun literal-index (literal context)
   (let ((literals (core:bytecode-cmp-module/literals (context-module context))))
@@ -402,7 +383,7 @@
         (vector-push-extend literal literals))))
 
 (defun closure-index (info context)
-  (let ((closed (cfunction-closed (core:bytecode-cmp-context/cfunction context))))
+  (let ((closed (core:bytecode-cmp-function/closed (core:bytecode-cmp-context/cfunction context))))
     (or (position info closed)
         (vector-push-extend info closed))))
 
@@ -801,7 +782,7 @@
                                     env
                                     (context-module context)))
                (literal-index (literal-index fun context)))
-          (cond ((zerop (length (cfunction-closed fun)))
+          (cond ((zerop (length (core:bytecode-cmp-function/closed fun)))
                  (emit-const context literal-index))
                 (t
                  (push (cons fun frame-slot) closures)
@@ -810,8 +791,8 @@
         (incf frame-slot))
       (emit-bind context fun-count frame-start)
       (dolist (closure closures)
-        (dotimes (i (length (cfunction-closed (car closure))))
-          (reference-lexical-info (aref (cfunction-closed (car closure)) i)
+        (dotimes (i (length (core:bytecode-cmp-function/closed (car closure))))
+          (reference-lexical-info (aref (core:bytecode-cmp-function/closed (car closure)) i)
                                   context))
         (assemble-maybe-long context +initialize-closure+ (cdr closure)))
       (compile-progn body env context))))
@@ -839,7 +820,7 @@
     (if (typep fnameoid 'lambda-expression)
         (let* ((cfunction (compile-lambda (cadr fnameoid) (cddr fnameoid)
                                           env (context-module context)))
-               (closed (cfunction-closed cfunction)))
+               (closed (core:bytecode-cmp-function/closed cfunction)))
           (dotimes (i (length closed))
             (reference-lexical-info (aref closed i) context))
           (if (zerop (length closed))
@@ -873,7 +854,7 @@
     (multiple-value-bind (required optionals rest key-flag keys aok-p aux)
         (core:process-lambda-list lambda-list 'function)
       (let* ((function (core:bytecode-cmp-context/cfunction context))
-             (entry-point (cfunction-entry-point function))
+             (entry-point (core:bytecode-cmp-function/entry-point function))
              (min-count (first required))
              (optional-count (first optionals))
              (max-count (+ min-count optional-count))
@@ -1082,12 +1063,13 @@
     (declare (ignore sub-body))
     (let* ((name (or (core:extract-lambda-name-from-declares decls)
                      `(lambda ,(lambda-list-for-name lambda-list))))
-           (function (make-cfunction module :name name :doc docs))
+           (function (core:bytecode-cmp-function/make module name docs))
            (context (core:bytecode-cmp-context/make t function))
            (env (make-lexical-environment env :frame-end 0)))
-      (setf (cfunction-index function)
-            (vector-push-extend function
-                                (core:bytecode-cmp-module/cfunctions module)))
+      (core:bytecode-cmp-function/setf-index
+       function
+       (vector-push-extend function
+                           (core:bytecode-cmp-module/cfunctions module)))
       (compile-with-lambda-list lambda-list body env context)
       (assemble context +return+)
       function)))
@@ -1257,8 +1239,8 @@
   (let ((position 0))
     (dotimes (i (length (core:bytecode-cmp-module/cfunctions cmodule)))
       (let ((function (aref (core:bytecode-cmp-module/cfunctions cmodule) i)))
-        (setf (cfunction-position function) position)
-        (incf position (length (cfunction-bytecode function)))))))
+        (core:bytecode-cmp-function/setf-position function position)
+        (incf position (length (core:bytecode-cmp-function/bytecode function)))))))
 
 ;;; Update the positions of all affected functions and annotations
 ;;; from the effect of increasing the size of FIXUP by INCREASE. The
@@ -1266,20 +1248,24 @@
 (defun update-positions (fixup increase)
   (let ((function (core:bytecode-cmp-annotation/function fixup)))
     ;; Update affected annotation positions in this function.
-    (let ((annotations (cfunction-annotations function)))
+    (let ((annotations (core:bytecode-cmp-function/annotations function)))
       (do ((index (1+ (core:bytecode-cmp-annotation/index fixup)) (1+ index)))
           ((= index (length annotations)))
         (let* ((annotation (aref annotations index))
                (pos (core:bytecode-cmp-annotation/position annotation)))
           (core:bytecode-cmp-annotation/setf-position annotation (+ pos increase)))))
     ;; Increase the size of this function to account for fixup growth.
-    (incf (cfunction-extra function) increase)
+    (core:bytecode-cmp-function/setf-extra
+     function
+     (+ (core:bytecode-cmp-function/extra function) increase))
     ;; Update module offsets for affected functions.
-    (let ((functions (core:bytecode-cmp-module/cfunctions (cfunction-cmodule function))))
-      (do ((index (1+ (cfunction-index function)) (1+ index)))
+    (let ((functions (core:bytecode-cmp-module/cfunctions (core:bytecode-cmp-function/module function))))
+      (do ((index (1+ (core:bytecode-cmp-function/index function)) (1+ index)))
           ((= index (length functions)))
         (let ((function (aref functions index)))
-          (incf (cfunction-position function) increase))))))
+          (core:bytecode-cmp-function/setf-position
+           function
+           (+ (core:bytecode-cmp-function/position function) increase)))))))
 
 ;;; With all functions and annotations initialized with optimistic
 ;;; sizes, resize fixups until no more expansion is needed.
@@ -1288,8 +1274,8 @@
     (let ((changed-p nil)
           (functions (core:bytecode-cmp-module/cfunctions cmodule)))
       (dotimes (i (length functions))
-        (dotimes (j (length (cfunction-annotations (aref functions i))))
-          (let ((annotation (aref (cfunction-annotations (aref functions i)) j)))
+        (dotimes (j (length (core:bytecode-cmp-function/annotations (aref functions i))))
+          (let ((annotation (aref (core:bytecode-cmp-function/annotations (aref functions i)) j)))
             (when (typep annotation 'core:bytecode-cmp-fixup)
               (let ((old-size (core:bytecode-cmp-fixup/size annotation))
                     (new-size (funcall (core:bytecode-cmp-fixup/resizer annotation) annotation)))
@@ -1306,9 +1292,9 @@
 (defun module-bytecode-size (cmodule)
   (let* ((cfunctions (core:bytecode-cmp-module/cfunctions cmodule))
          (last-cfunction (aref cfunctions (1- (length cfunctions)))))
-    (+ (cfunction-position last-cfunction)
-       (length (cfunction-bytecode last-cfunction))
-       (cfunction-extra last-cfunction))))
+    (+ (core:bytecode-cmp-function/position last-cfunction)
+       (length (core:bytecode-cmp-function/bytecode last-cfunction))
+       (core:bytecode-cmp-function/extra last-cfunction))))
 
 ;;; Create the bytecode module vector. We scan over the fixups in the
 ;;; module and copy segments of bytecode between fixup positions.
@@ -1318,10 +1304,10 @@
         (index 0))
     (dotimes (i (length (core:bytecode-cmp-module/cfunctions cmodule)))
       (let* ((function (aref (core:bytecode-cmp-module/cfunctions cmodule) i))
-             (cfunction-bytecode (cfunction-bytecode function))
+             (cfunction-bytecode (core:bytecode-cmp-function/bytecode function))
              (position 0))
-        (dotimes (i (length (cfunction-annotations function)))
-          (let ((annotation (aref (cfunction-annotations function) i)))
+        (dotimes (i (length (core:bytecode-cmp-function/annotations function)))
+          (let ((annotation (aref (core:bytecode-cmp-function/annotations function) i)))
             (when (typep annotation 'core:bytecode-cmp-fixup)
               (unless (zerop (core:bytecode-cmp-fixup/size annotation))
                 #+(or)
@@ -1370,7 +1356,7 @@
 ;;; bytecode function corresponding to CFUNCTION.
 (defun link-function (cfunction compile-info)
   (declare (optimize debug))
-  (let ((cmodule (cfunction-cmodule cfunction)))
+  (let ((cmodule (core:bytecode-cmp-function/module cfunction)))
     (initialize-cfunction-positions cmodule)
     (resolve-fixup-sizes cmodule)
     (let* ((cmodule-literals (core:bytecode-cmp-module/literals cmodule))
@@ -1387,31 +1373,25 @@
       ;; Create the real function objects.
       (dotimes (i (length (core:bytecode-cmp-module/cfunctions cmodule)))
         (let ((cfunction (aref (core:bytecode-cmp-module/cfunctions cmodule) i)))
-          (setf (cfunction-info cfunction)
-                #-clasp
-                (vm::make-bytecode-function
-                 bytecode-module
-                 (cfunction-nlocals cfunction)
-                 (length (cfunction-closed cfunction))
-                 (annotation-module-position (cfunction-entry-point cfunction)))
-                #+clasp
-                (core:global-bytecode-entry-point/make
-                 (core:function-description/make
-                  :function-name (cfunction-name cfunction)
-                  :docstring (cfunction-doc cfunction))
-                 bytecode-module
-                 (cfunction-nlocals cfunction)
-                 0 0 0 0 nil 0          ; unused at the moment
-                 (length (cfunction-closed cfunction))
-                 (make-list 7 :initial-element
-                            (annotation-module-position (cfunction-entry-point cfunction)))))))
+          (core:bytecode-cmp-function/setf-info
+           cfunction
+           (core:global-bytecode-entry-point/make
+            (core:function-description/make
+             :function-name (core:bytecode-cmp-function/name cfunction)
+             :docstring (core:bytecode-cmp-function/doc cfunction))
+            bytecode-module
+            (core:bytecode-cmp-function/nlocals cfunction)
+            0 0 0 0 nil 0          ; unused at the moment
+            (length (core:bytecode-cmp-function/closed cfunction))
+            (make-list 7 :initial-element
+                       (annotation-module-position (core:bytecode-cmp-function/entry-point cfunction)))))))
       ;; Now replace the cfunctions in the cmodule literal vector with
       ;; real bytecode functions.
       (dotimes (index literal-length)
         (setf (aref literals index)
               (let ((literal (aref cmodule-literals index)))
-                (if (cfunction-p literal)
-                    (cfunction-info literal)
+                (if (typep literal 'core:bytecode-cmp-function)
+                    (core:bytecode-cmp-function/info literal)
                     literal))))
       #+clasp
       (progn
@@ -1420,7 +1400,7 @@
         (core:bytecode-module/setf-bytecode bytecode-module bytecode)
         (core:bytecode-module/setf-compile-info bytecode-module compile-info))
       #+(or)(log-function cfunction compile-info bytecode)))
-  (cfunction-info cfunction))
+  (core:bytecode-cmp-function/info cfunction))
 
 ;;; --------------------------------------------------
 ;;;
