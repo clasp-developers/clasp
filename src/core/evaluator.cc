@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/specialForm.h>
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
-#include <clasp/core/bytecode_compiler.h> // BytecodeCmpEnv
+#include <clasp/core/bytecode_compiler.h> // Lexenv
 #include <clasp/core/designators.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/predicates.h>
@@ -946,8 +946,8 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
     bool found = Environment_O::clasp_findSymbolMacro(env, sym, depth, level, shadowed, macro);
     if (found)
       return macro;
-  } else if (gc::IsA<BytecodeCmpEnv_sp>(env)) {
-    return gc::As_unsafe<BytecodeCmpEnv_sp>(env)->lookupSymbolMacro(sym);
+  } else if (gc::IsA<comp::Lexenv_sp>(env)) {
+    return gc::As_unsafe<comp::Lexenv_sp>(env)->lookupSymbolMacro(sym);
   } else { // pass to cleavir (which also checks global environment)
     SYMBOL_EXPORT_SC_(CorePkg, cleavirSymbolMacro);
     return eval::funcall(core::_sym_cleavirSymbolMacro, sym, env);

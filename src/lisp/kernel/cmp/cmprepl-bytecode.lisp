@@ -147,11 +147,11 @@
              (eform (ext:parse-macro name lambda-list body env))
              (aenv (lexenv-for-macrolet env))
              (expander (bytecompile eform aenv))
-             (info (core:bytecode-cmp-local-macro-info/make expander)))
+             (info (cmp:local-macro-info/make expander)))
         (push (cons name info) macros)))
     (bytecode-toplevel-locally
      body (make-lexical-environment
-           env :funs (append macros (core:bytecode-cmp-env/funs env))))))
+           env :funs (append macros (cmp:lexenv/funs env))))))
 
 (defun bytecode-toplevel-symbol-macrolet (bindings body env)
   (let ((smacros nil) (env (or env (make-null-lexical-environment))))
@@ -161,7 +161,7 @@
     (bytecode-toplevel-locally
      body (make-lexical-environment
            env
-           :vars (append (nreverse smacros) (core:bytecode-cmp-env/vars env))))))
+           :vars (append (nreverse smacros) (cmp:lexenv/vars env))))))
 
 (defun bytecode-toplevel-eval (form env)
   (let ((form (macroexpand form env)))
