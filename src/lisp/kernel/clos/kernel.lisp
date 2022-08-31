@@ -12,6 +12,8 @@
 
 (in-package "CLOS")
 
+#+bytecode (setq *features* (core:remove-equal :static-gfs *features*))
+
 #+(or)(eval-when (:execute)
         (setq core:*echo-repl-read* t))
 
