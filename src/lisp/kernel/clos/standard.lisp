@@ -21,7 +21,7 @@
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
 ;;;
 
-(defmethod initialize-instance ((instance T) core:&va-rest initargs)
+(defmethod initialize-instance ((instance T) #-varest &rest #+varest core:&va-rest initargs)
   (dbg-standard "standard.lisp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
   (apply #'shared-initialize instance 'T initargs))
 
@@ -37,7 +37,7 @@
            (list #'shared-initialize (list instance t)))))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance T) slot-names &rest #+(or)core:&va-rest initargs)
+(defmethod shared-initialize ((instance T) slot-names &rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set
@@ -124,7 +124,7 @@
   (core:allocate-raw-general-instance class (make-rack-for-class class)))
 
 (defun uninitialized-funcallable-instance-closure (funcallable-instance)
-  (lambda (core:&va-rest args)
+  (lambda (#-varest &rest #+varest core:&va-rest args)
     (declare (core:lambda-name uninitialized-funcallable-instance))
     (declare (ignore args))
     (error "The funcallable instance ~a has not been initialized with a function"
@@ -534,7 +534,7 @@ because it contains a reference to the undefined class~%  ~A"
 ;;; IMPORTANT: The following implementation of ENSURE-CLASS-USING-CLASS is
 ;;; shared by the metaclasses STANDARD-CLASS and STRUCTURE-CLASS.
 ;;;
-(defmethod ensure-class-using-class ((class class) name core:&va-rest rest
+(defmethod ensure-class-using-class ((class class) name #-varest &rest #+varest core:&va-rest rest
 				     &key direct-slots direct-default-initargs
                                        &allow-other-keys)
   (declare (ignore direct-default-initargs direct-slots))

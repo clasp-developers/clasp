@@ -129,14 +129,14 @@
                 (case item
                   ((&optional &rest)
                    (setf state item))
-                  ((core:&va-rest)
-                   (setf state '&rest va-rest-p t))
+                  #+varest((core:&va-rest)
+                           (setf state '&rest va-rest-p t))
                   ((&key) (setf state item keyp t))
                   (otherwise (push item required))))
                ((&optional)
                 (case item
                   ((&rest) (setf state item))
-                  ((core:&va-rest) (setf state '&rest va-rest-p t))
+                  #+varest((core:&va-rest) (setf state '&rest va-rest-p t))
                   ((&key) (setf state item keyp t))
                   (otherwise (push item optional))))
                ((&rest)
@@ -152,6 +152,7 @@
 
 ;;; given a vaslist of arguments, an env, and the shredded viscera of a lambda list,
 ;;; fill the env with the appropriate bindings.
+#+varest
 (defun bind-list (arguments env required optional rest va-rest-p keyp key aok-p)
   (declare (ignore aok-p))
   (loop for r in required
@@ -174,11 +175,42 @@
       (error "Odd number of keyword arguments")))
   (when (and (not rest) (not keyp) (plusp (core:vaslist-length arguments)))
     (error "Too many arguments"))
-  (loop with indicator = (list nil) ; arbitrary unique thing
+  (loop with indicator = (list nil)     ; arbitrary unique thing
         with arguments = (core:list-from-vaslist arguments)
         for (k var var-p) in key
         for value = (getf arguments k indicator)
-        if (eq value indicator) ; not present
+        if (eq value indicator)         ; not present
+          do (bind-variable var-p nil env)
+        else do (bind-variable var value env)
+                (bind-variable var-p t env))
+  ;; TODO: aokp check blabla
+  (values))
+
+
+#-varest
+(defun bind-list (arguments env required optional rest va-rest-p keyp key aok-p)
+  (declare (ignore aok-p))
+  (unless (null va-rest-p) (error "va-rest-p MUST always be NIL arguments: ~s" arguments))
+  (loop for r in required
+        if (zerop (length arguments))
+          do (error "Not enough arguments") ; FIXME: message
+        else do (bind-variable r (pop arguments) env))
+  (loop for (ovar o-p) in optional
+        if (zerop (length arguments))
+          do (bind-variable o-p nil env)
+        else do (bind-variable ovar (pop arguments) env)
+                (bind-variable o-p t env))
+  (when rest
+    (bind-variable rest arguments env))
+  (when keyp
+    (unless (evenp (length arguments))
+      (error "Odd number of keyword arguments")))
+  (when (and (not rest) (not keyp) (plusp (length arguments)))
+    (error "Too many arguments"))
+  (loop with indicator = (list nil)     ; arbitrary unique thing
+        for (k var var-p) in key
+        for value = (getf arguments k indicator)
+        if (eq value indicator)         ; not present
           do (bind-variable var-p nil env)
         else do (bind-variable var value env)
                 (bind-variable var-p t env))
@@ -191,7 +223,7 @@
         (ll (cleavir-ast:lambda-list ast)))
     (multiple-value-bind (required optional rest va-rest-p keyp key aok-p)
         (parse-lambda-list ll)
-      (lambda (core:&va-rest arguments)
+      (lambda (#-varest &rest #+varest core:&va-rest arguments)
         (declare (core:lambda-name ast-interpreted-closure))
         (bind-list arguments env
                    required optional rest va-rest-p keyp key aok-p)
@@ -457,7 +489,8 @@
 ;; The array access ASTs, like vector-length, are annoying to do non-metacircularly, so we don't.
 
 #-cst (defcan cc-ast:bind-vaslist-ast)
-#-cst ; bind-vaslist doesn't inline right - FIXME
+; bind-vaslist doesn't inline right - FIXME
+#-cst
 (defmethod interpret-ast ((ast cc-ast:bind-vaslist-ast) env)
   (let ((lambda-list (cleavir-ast:lambda-list ast))
         (vaslist-ast (cc-ast:vaslist-ast ast))
@@ -466,11 +499,12 @@
         (parse-lambda-list lambda-list)
       ;; We need to copy the vaslist for bind-vaslist semantics.
       ;; This is the only way I know how, and yes, it's kind of silly.
-      (core:bind-vaslist (core:&va-rest vaslist-copy)
-          (interpret-ast vaslist-ast env)
-        (bind-list vaslist-copy env
-                   required optional rest va-rest-p keyp key aok-p)
-        (interpret-ast body-ast env)))))
+      #-varest (error "This defmethod needs to be removed because bind-vaslist is going away")
+      #+varest(core:bind-vaslist (core:&va-rest vaslist-copy)
+                                 (interpret-ast vaslist-ast env)
+                                 (bind-list vaslist-copy env
+                                            required optional rest va-rest-p keyp key aok-p)
+                                 (interpret-ast body-ast env)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

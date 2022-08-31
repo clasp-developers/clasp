@@ -463,7 +463,7 @@
          (required-args (loop repeat nreq
                               collect (gensym "DISCRIMINATION-ARG"))))
     `(lambda (,@required-args
-              ,@(when more-args `(core:&va-rest ,more-args)))
+              ,@(when more-args `(&rest ,more-args)))
        ,@(when generic-function-name
            `((declare (core:lambda-name ,generic-function-name))))
        (with-effective-method-parameters ((,@required-args) ,more-args)
@@ -471,7 +471,7 @@
            (let ((.generic-function. ,generic-function-form))
              ,(when (and more-args max-nargs) ; Check argcount.
                 ;; FIXME: Should be possible to not check, on low safety.
-                `(let ((nmore (core:vaslist-length ,more-args)))
+                `(let ((nmore (length ,more-args)))
                    (if (cleavir-primop:fixnum-less ,(- max-nargs nreq) nmore)
                        (error 'core:wrong-number-of-arguments
                               :called-function .generic-function.
@@ -484,7 +484,7 @@
                    (.method-args.
                      (list* ,@required-args
                             ,(if more-args
-                                 `(core:list-from-vaslist ,more-args)
+                                 more-args
                                  nil))))
                ,(generate-discrimination
                  call-history specializer-profile

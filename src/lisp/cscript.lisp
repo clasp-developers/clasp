@@ -6,10 +6,6 @@
              #~"kernel/stage/2-begin.lisp"
              #~"kernel/stage/3-begin.lisp"
              #~"kernel/lsp/prologue.lisp")
-  (when wrappers
-    (k:sources target
-               #~"kernel/lsp/direct-calls.lisp"
-               #@"cl-wrappers.lisp"))
   (k:sources target
              #~"kernel/tag/min-start.lisp"
              #~"kernel/init.lisp"

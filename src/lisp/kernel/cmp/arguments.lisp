@@ -556,7 +556,7 @@ a_p = a_p_temp; a = a_temp;
       (case item
         ((&optional) #|ignore|#)
         ((&key) (setf key-flag t))
-        ((&rest core:&va-rest) (setf rest-type item))
+        ((&rest #+varest core:&va-rest) (setf rest-type item))
         ((&allow-other-keys) (setf aok-p t))
         (t (if (listp item)
                (cond ((= (length item) 2)
@@ -598,7 +598,7 @@ a_p = a_p_temp; a = a_temp;
        :key-count (cons key-count (nreverse key))
        :aok-p aok-p
        :aux-p nil                       ; aux-p; unused here
-       :va-rest-p (if (eq rest-type 'core:&va-rest) t nil)))))
+       :va-rest-p #-varest nil #+varest (if (eq rest-type 'core:&va-rest) t nil)))))
 
 
 

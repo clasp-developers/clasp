@@ -92,12 +92,12 @@
     (set-funcallable-instance-function
      %nnmc
      (if (null method)
-         (lambda (core:&va-rest args)
+         (lambda (#+varest core:&va-rest #-varest &rest args)
            (declare (core:lambda-name %no-next-method-continuation.slow.bad)
                     (ignore args))
            (error "No next method"))
          (let ((gf (method-generic-function method)))
-           (lambda (core:&va-rest args)
+           (lambda (#-varest &rest #+varest core:&va-rest args)
              (declare (core:lambda-name %no-next-method-continuation.lambda))
              (apply #'no-next-method gf method args)))))
     %nnmc))
@@ -166,7 +166,7 @@
         (core:process-lambda-list lambda-list 'function)
       (declare (ignore keys aok-p))
       (if (or (not (zerop (car opt))) rest keyf)
-          `(lambda (,contsym core:&va-rest .method-args.)
+          `(lambda (,contsym #-varest &rest #+varest core:&va-rest .method-args.)
              (declare (core:lambda-name ,lambda-name))
              ,@(when doc (list doc))
              ,(wrap-contf-lexical-function-binds

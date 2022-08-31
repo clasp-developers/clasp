@@ -23,7 +23,7 @@
 ;;; Returns a closure usable as a discriminating function
 ;;; when the generic function is in the invalidated state.
 (defun invalidated-discriminating-function-closure (gf)
-  (lambda (core:&va-rest args)
+  (lambda (#-varest &rest #+varest core:&va-rest args)
     (declare (core:lambda-name invalidated-discriminating-function))
     (invalidated-dispatch-function gf args)))
 

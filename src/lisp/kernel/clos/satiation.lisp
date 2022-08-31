@@ -299,7 +299,7 @@
              :methods ',(outcome-methods outcome)
              :form ',form
              :function (lambda (,@required
-                                ,@(when rest `(core:&va-rest ,rest)))
+                                ,@(when rest `(#-varest &rest #+varest core:&va-rest ,rest)))
                          (with-effective-method-parameters
                              ((,@required) ,rest)
                            ,form)))))

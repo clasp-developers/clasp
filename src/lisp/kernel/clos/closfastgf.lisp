@@ -349,7 +349,7 @@
       (make-effective-method-outcome
        :methods nil
        :form '(em-apply #'no-applicable-method .generic-function.)
-       :function (lambda (core:&va-rest vaslist-args)
+       :function (lambda (#-varest &rest #+varest core:&va-rest vaslist-args)
                    (apply #'no-applicable-method generic-function vaslist-args)))))
   (let* ((em (compute-effective-method generic-function method-combination methods))
          ;; will be NIL unless em = (call-method METHOD ()) or (call-method METHOD)
@@ -388,7 +388,7 @@
                   (let ((group-name (second em)))
                     (make-effective-method-outcome
                      :methods methods :form em
-                     :function (lambda (core:&va-rest vaslist-args)
+                     :function (lambda (#-varest &rest #+varest core:&va-rest vaslist-args)
                                  (apply #'no-required-method
                                         generic-function group-name vaslist-args)))))
                  (t

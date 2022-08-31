@@ -90,7 +90,7 @@
   (values))
 
 (defmethod change-class ((instance standard-object) (new-class standard-class)
-                         core:&va-rest initargs)
+                         #-varest &rest #+varest core:&va-rest initargs)
   (let* ((old-rack (core:instance-rack instance))
          (old-class (class-of instance))
          (copy (core:allocate-raw-instance old-class old-rack))
@@ -114,7 +114,7 @@
 
 (defmethod change-class ((instance funcallable-standard-object)
                          (new-class funcallable-standard-class)
-                         core:&va-rest initargs)
+                         #-varest &rest #+varest core:&va-rest initargs)
   (let* ((old-rack (core:instance-rack instance))
          (old-class (class-of instance))
          (copy (core:allocate-raw-funcallable-instance old-class old-rack))
