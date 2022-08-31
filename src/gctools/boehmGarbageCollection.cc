@@ -68,7 +68,7 @@ void callback_reachable_object( gctools::BaseHeader_s* ptr, void *client_data) {
   } else {
     stamp = ptr->_stamp_wtag_mtag.stamp_();
     if (!valid_stamp(stamp)) {
-      printf("%s:%d:%s Invalid stamp\n", __FILE__, __LINE__, __FUNCTION__ );
+      printf("%s:%d:%s Invalid stamp %u\n", __FILE__, __LINE__, __FUNCTION__, stamp );
     }
   }
   size_t sz = objectSize(ptr);

@@ -561,25 +561,24 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
       break;
   case candoGlobals: {
     initialize_llvm();
-    
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
 #ifdef USE_JITLINKER
-    #error "Define a different code-model"
+#error "Define a different code-model"
 #else
-    #ifdef _TARGET_OS_DARWIN
+#ifdef _TARGET_OS_DARWIN
   // This is from Lang Hames who said on Discord #llvm channel:
   // @drmeister Regarding code models: I would switch your code model and custom linking layer together:
   // If Darwin then use ObjectLinkingLayer and Small, otherwise RTDyldObjectLinkingLayer and Large.
   // Also see llvmoExpose.cc
   //     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Small);
-    #else
+#else
     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
-    #endif
 #endif
-    auto jit_engine = gctools::GC<ClaspJIT_O>::allocate(false);
+#endif
+    auto jit_engine = gctools::GC<ClaspJIT_O>::allocate( false, (llvmo::JITDylib_O*)NULL );
     //llvm_sys__create_lljit_thread_pool();
     _lisp->_Roots._ClaspJIT = jit_engine;
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));

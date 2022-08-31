@@ -57,7 +57,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 #endif
         gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
         const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
-        if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__DerivableCxxObject_O ) ) {
+        if ( stamp_index == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__DerivableCxxObject_O ) ) { // wasMTAG
           // If this is true then I think we need to call virtual functions on the client
           // to determine the Instance_O offset and the total size of the object.
           printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
@@ -70,7 +70,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         if ( stamp_layout.field_layout_start ) {
           // Handle Lisp object specially because it's bitmask will be too large
 #ifdef USE_PRECISE_GC
-          if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__Lisp) ) {
+          if ( stamp_index == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Lisp) ) { // wasMTAG
             int num_fields = stamp_layout.number_of_fields;
             const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
             for ( int i=0; i<num_fields; ++i ) {
@@ -224,9 +224,11 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           break;
         }
 #endif // USE_MPS
-        case gctools::Header_s::invalid_mtag: {
-          throw_hard_error_bad_client((void*)client);
-        }
+        case gctools::Header_s::invalid0_mtag:
+        case gctools::Header_s::invalid1_mtag:
+          {
+            throw_hard_error_bad_client((void*)client);
+          }
         }
       }
     }
@@ -238,7 +240,6 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 
 
 #ifdef OBJECT_SKIP
-__attribute__((optnone))
 ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
   ADDR_T oldClient = client;
   const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(GENERAL_PTR_TO_HEADER_PTR(client));
@@ -368,7 +369,8 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.padSize());
       break;
     }
-    case gctools::Header_s::invalid_mtag: {
+    case gctools::Header_s::invalid0_mtag: 
+    case gctools::Header_s::invalid1_mtag: {
       throw_hard_error_bad_client((void*)client);
       break;
     }

@@ -263,7 +263,7 @@ public:
     //
     // Create the codeObject and add it to the global AllObjectFiles
     //
-      core::SimpleBaseString_sp codeName = createSimpleBaseStringForStage(G.getName());
+#if 0
       core::List_sp jitdylibs = _lisp->_Roots._JITDylibs.load();
       JITDylib_sp theJITDylib = unbound<JITDylib_O>();
       core::T_sp cur = jitdylibs;
@@ -279,12 +279,14 @@ public:
         printf("%s:%d:%s Could not identify the JITDylib_sp for JITLinkDylib* %p\n", __FILE__, __LINE__, __FUNCTION__, JD );
         abort();
       }
+#endif
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating JD = %p \n", __FILE__, __LINE__, __FUNCTION__, JD ));
       ObjectFile_sp codeObject;
       size_t objectId = objectIdFromName(G.getName());
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to allocate ObjectFile_sp with name %s  objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str(), objectId ));
       codeObject = lookupObjectFile(G.getName());
       codeObject->_CodeBlock = codeBlock;
+      core::SimpleBaseString_sp codeName = createSimpleBaseStringForStage(G.getName());
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s looked up codeObject = %p with name: %s\n", __FILE__, __LINE__, __FUNCTION__, &*codeObject, _rep_(codeName).c_str() ));
     } else {
       for ( auto& KV : BL.segments() ) {
@@ -690,49 +692,52 @@ CL_DEFUN void llvm_sys__create_lljit_thread_pool() {
 
 
 ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
-        llvm::ExitOnError ExitOnErr;
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Initializing ClaspJIT_O\n", __FILE__, __LINE__, __FUNCTION__));
-        auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
-        TargetOptions to;
-        to.FunctionSections = false;
-        JTMB.setOptions(to);
-        JTMB.setCodeModel(CodeModel::Small);
-        JTMB.setRelocationModel(Reloc::Model::PIC_);
-        auto TPC = ExitOnErr(orc::SelfExecutorProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
-        auto J = ExitOnErr(
-            LLJITBuilder()
-            .setExecutionSession(std::make_unique<ExecutionSession>(std::move(TPC)))
-            .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
-            .setJITTargetMachineBuilder(std::move(JTMB))
-            .setObjectLinkingLayerCreator([this,&ExitOnErr,mainJITDylib](ExecutionSession &ES, const Triple &TT) {
-              auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
-              ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
-              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
-              ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
+  llvm::ExitOnError ExitOnErr;
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Initializing ClaspJIT_O\n", __FILE__, __LINE__, __FUNCTION__));
+  auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
+  TargetOptions to;
+  to.FunctionSections = false;
+  JTMB.setOptions(to);
+  JTMB.setCodeModel(CodeModel::Small);
+  JTMB.setRelocationModel(Reloc::Model::PIC_);
+  auto TPC = ExitOnErr(orc::SelfExecutorProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
+  auto J = ExitOnErr(
+      LLJITBuilder()
+      .setExecutionSession(std::make_unique<ExecutionSession>(std::move(TPC)))
+      .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
+      .setJITTargetMachineBuilder(std::move(JTMB))
+      .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
+        auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
+        ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
+        ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
                        // GDB registrar isn't working at the moment
-              if (!getenv("CLASP_NO_JIT_GDB")) {
-                ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
-                if (TT.isOSBinFormatMachO()) {
-                  ObjLinkingLayer->addPlugin(std::make_unique<GDBJITDebugInfoRegistrationPlugin>(llvm::orc::ExecutorAddr::fromPtr(&llvm_orc_registerJITLoaderGDBWrapper)));
-                }
-              }
-              ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
-              return ObjLinkingLayer;
-            })
-            .create());
+        if (!getenv("CLASP_NO_JIT_GDB")) {
+          ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
+          if (TT.isOSBinFormatMachO()) {
+            ObjLinkingLayer->addPlugin(std::make_unique<GDBJITDebugInfoRegistrationPlugin>(llvm::orc::ExecutorAddr::fromPtr(&llvm_orc_registerJITLoaderGDBWrapper)));
+          }
+        }
+        ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
+        return ObjLinkingLayer;
+      })
+      .create());
   this->_LLJIT = std::move(J);
   if (loading) {
     // Fixup the JITDylib_sp object in place
-    JITDylib& dylib = this->_LLJIT->getMainJITDylib();
-    dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
     if (!mainJITDylib) {
       printf("%s:%d:%s the jitdylib @%p is null!\n", __FILE__, __LINE__, __FUNCTION__, &this->_MainJITDylib );
       abort();
     }
+    JITDylib& dylib = this->_LLJIT->getMainJITDylib();
     core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(dylib.getName());
     new (mainJITDylib) JITDylib_O(sname,&dylib);
     this->_MainJITDylib.rawRef_() = (llvmo::JITDylib_O*)gctools::tag_general<llvmo::JITDylib_O*>(mainJITDylib);
   } else {
+    if (mainJITDylib) {
+      printf("%s:%d:%s the jitdylib @%p must null!\n", __FILE__, __LINE__, __FUNCTION__, &mainJITDylib );
+      abort();
+    }
     // Create a new JITDylib_sp object
     core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(this->_LLJIT->getMainJITDylib().getName());
     this->_MainJITDylib = gc::GC<JITDylib_O>::allocate(sname,&this->_LLJIT->getMainJITDylib());
@@ -965,7 +970,7 @@ DOCGROUP(clasp)
 CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 {
   printf("%s:%d:%s Creating JIT - we did this already at startup!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
-  auto cj = gctools::GC<ClaspJIT_O>::allocate(false);
+  auto cj = gctools::GC<ClaspJIT_O>::allocate(false,(llvmo::JITDylib_O*)NULL);
   return cj;
 }
 

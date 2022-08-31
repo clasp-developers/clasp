@@ -77,6 +77,7 @@
 (load "src/lisp/kernel/tag/min-end.lisp")
 (format t "Loaded aclasp~%")
 
+
 (setq *features* (remove :clasp-min *features*))
 
 (push :clos *features*)
@@ -645,7 +646,6 @@
 (load "SYS:SRC;LISP;KERNEL;CLEAVIR;INLINE-PREP.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLEAVIR;AUTO-COMPILE.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLEAVIR;INLINE.LISP")
-#|
 (load "SYS:SRC;LISP;KERNEL;LSP;QUEUE.LISP")
 (load "SYS:SRC;LISP;KERNEL;CMP;COMPILE-FILE-PARALLEL.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;GENERATED-ENCODINGS.LISP")
@@ -653,8 +653,9 @@
 (load "SYS:SRC;LISP;KERNEL;LSP;ENCODINGS.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;CLTL2.LISP")
 (load "SYS:GENERATED;CCLASP-IMMUTABLE.LISP")
-|#
 (load "SYS:SRC;LISP;KERNEL;TAG;PRE-EPILOGUE-CCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;EPILOGUE-CCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;CCLASP.LISP")
 
+(gctools:save-lisp-and-die "/tmp/cclasp.snapshot")
+(core:quit)

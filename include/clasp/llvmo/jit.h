@@ -137,7 +137,7 @@ public:
         llvm_sys__jitFinalizeReplFunction needs to build a closure over it
    */
   void* runStartupCode(JITDylib_sp dylib, const std::string& startupName, core::T_sp initialDataOrUnbound );
-  ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib = NULL);
+  ClaspJIT_O( bool loading, JITDylib_O* mainJITDylib );
   ~ClaspJIT_O();
 public:
   JITDylib_sp _MainJITDylib;

@@ -2996,35 +2996,47 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // Initialize the ClaspJIT_O object
     //
-      DBG_SL("7.2 Initialize ClaspJIT_O object\n");
-      core::core__update_max_jit_compile_counter(fileHeader->_global_JITCompileCounter);
-      llvmo::ClaspJIT_O* temp_claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
-      llvmo::JITDylib_O* snapshot_mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(temp_claspJIT->_MainJITDylib.raw_());
+
+      DBG_SL("7.2.0 Handle creation of JITDylib_O's from _lisp->_Roots._JITDylibs\n");
+      // The _lisp->_Roots._JITDylibs CONS cells are left in the snapshot memory for later forwarding.
       llvmo::JITDylib_sp obj_mainJITDylib;
-      gctools::Header_s* snapshot_mainJITDylib_header = NULL;
       {
-        ASSERT(!tagged_generalp(snapshot_mainJITDylib));
-        snapshot_mainJITDylib_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(snapshot_mainJITDylib);
-        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(snapshot_mainJITDylib);
-        if (((uintptr_t)clientStart&0x7) != 0) {
-          printf("%s:%d:%s The mainJITDylib pointer %p must be word aligned\n", __FILE__, __LINE__, __FUNCTION__, clientStart );
-          abort();
+        core::T_sp cur = ::_lisp->_Roots._JITDylibs.load();
+        while (cur.consp()) {
+          llvmo::JITDylib_sp snapshot_JITDylib_sp_ = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
+          llvmo::JITDylib_O* snapshot_JITDylib_O_ = &*snapshot_JITDylib_sp_;
+          gctools::Header_s* snapshot_JITDylib_O_header = GENERAL_PTR_TO_HEADER_PTR(snapshot_JITDylib_O_);
+          gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(snapshot_JITDylib_O_);
+          gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::JITDylib_O);
+          snapshot_save_load_init_s init(snapshot_JITDylib_O_header,clientStart,clientEnd);
+          llvmo::JITDylib_sp obj_jd = gctools::GCObjectAllocator<llvmo::JITDylib_O>::snapshot_save_load_allocate(&init);
+          core::SimpleBaseString_sp name = snapshot_JITDylib_O_->_name;
+          std::string sname = name->get_std_string();
+          if (sname == "main") {
+            printf("%s:%d:%s !!!!!!!!!!!!!! main - save it\n", __FILE__, __LINE__, __FUNCTION__ );
+            obj_mainJITDylib = obj_jd;
+          }
+#if 0
+          // This is where we create the llvm::JITDylib and stick it into the JITDylib_O
+          llvmo::JITDylib* llvm_jitdylib = &*(obj_claspJIT->_LLJIT->createJITDylib(sname));
+          printf("%s:%d:%s !!!!!!!!!!!!!! stick llvm_jitdylib %p into JITDylib_O* \n", __FILE__, __LINE__, __FUNCTION__ );
+          obj_claspJIT->registerJITDylibAfterLoad(&*obj_jd);
+          llvm_jitdylib->addGenerator(llvm::cantFail(llvmo::DynamicLibrarySearchGenerator::GetForCurrentProcess(obj_claspJIT->_LLJIT->getDataLayout().getGlobalPrefix())));
+#endif
+          // new (&*obj_jd) llvmo::JITDylib_O(name,llvm_jitdylib);
+          DBG_SL("   Write forward ptr JITDylib_sp %p into snapshot_JITDylib_O_header %p val %p fwdP() %d\n", obj_jd.raw_(), snapshot_JITDylib_O_header, *(void**)snapshot_JITDylib_O_header, snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
+          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj_jd.raw_());
+          set_forwarding_pointer( snapshot_JITDylib_O_header, (char*)fwd, &islInfo );
+          root_holder.add((void*)obj_jd.raw_());
+          cur = CONS_CDR(cur);
         }
-        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::JITDylib_O);
-        snapshot_save_load_init_s init(snapshot_mainJITDylib_header,clientStart,clientEnd);
-        obj_mainJITDylib = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
-        gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj_mainJITDylib.raw_());
-        set_forwarding_pointer( snapshot_mainJITDylib_header, (char*)fwd, &islInfo );
-        DBG_SL_ALLOCATE(BF("allocated mainJITDylib general %p fwd: %p\n")
-                        % (void*) obj_mainJITDylib.raw_()
-                        % (void*)fwd);
-        root_holder.add((void*)obj_mainJITDylib.raw_());
-        printf("%s:%d:%s snapshot_mainJITDylib = %p   obj_mainJITDylib.raw_() = %p\n",
-               __FILE__, __LINE__, __FUNCTION__, snapshot_mainJITDylib, obj_mainJITDylib.raw_());
       }
+
+      DBG_SL("7.2.1 Initialize ClaspJIT_O object\n");
+      core::core__update_max_jit_compile_counter(fileHeader->_global_JITCompileCounter);
       llvmo::JITDylib_O* mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(obj_mainJITDylib.raw_());
       llvmo::ClaspJIT_O* snapshot_claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
-      core::T_sp obj_claspJIT;
+      llvmo::ClaspJIT_sp obj_claspJIT;
       gctools::Header_s* snapshot_claspJIT_header = NULL;
       {
         ASSERT(!tagged_generalp(snapshot_claspJIT));
@@ -3034,9 +3046,9 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           printf("%s:%d:%s The claspJIT pointer %p must be word aligned\n", __FILE__, __LINE__, __FUNCTION__, clientStart );
           abort();
         }
-        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::JITDylib_O);
+        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::ClaspJIT_O);
         snapshot_save_load_init_s init(snapshot_claspJIT_header,clientStart,clientEnd);
-        obj_claspJIT = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
+        obj_claspJIT = gc::As<llvmo::ClaspJIT_sp>(gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init));
         gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj_claspJIT.raw_());
         set_forwarding_pointer( snapshot_claspJIT_header, (char*)fwd, &islInfo );
         DBG_SL_ALLOCATE(BF("allocated claspJIT general %p fwd: %p\n")
@@ -3046,17 +3058,13 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         printf("%s:%d:%s snapshot_claspJIT = %p   obj_claspJIT.raw_() = %p\n", __FILE__, __LINE__, __FUNCTION__, snapshot_claspJIT, obj_claspJIT.raw_());
       }
       llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(obj_claspJIT.raw_());
-      new (claspJIT) llvmo::ClaspJIT_O(true,mainJITDylib);
-      printf("%s:%d:%s Here check if mainJITDylib contained pointer is defined\n", __FILE__, __LINE__, __FUNCTION__ );
-      gctools::wait_for_user_signal("Check if we can do addGenerator");
+      new (claspJIT) llvmo::ClaspJIT_O( true, mainJITDylib );
       gc::As<llvmo::ClaspJIT_sp>(obj_claspJIT)->registerJITDylibAfterLoad(&*obj_mainJITDylib);
       //llvm_sys__create_lljit_thread_pool();
       if (mainJITDylib->_Id != 0) {
         printf("%s:%d:%s The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n", __FILE__, __LINE__, __FUNCTION__, mainJITDylib->_Id);
         abort();
       }
-//      printf("%s:%d:%s Add the ClaspLinkerJIT\n", __FILE__, __LINE__, __FUNCTION__ );
-
     //
     // We need to handle the NIL object specially, we need to allocate it in GC memory first
     //
@@ -3082,105 +3090,45 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         _lisp->_Roots._AllObjectFiles.store(nil);
         _lisp->_Roots._AllCodeBlocks.store(nil);
       }
-    
-    //
-    // Initialize the JITDylibs
-    // We can't use gc::As<xxx>(...) at this point because we are working in the snapshot save/load buffer
-    //  and the headers aren't the same as in main memory
-    //        
-      using Jit = llvmo::ClaspJIT_sp;
+
+      //
+      // Initialize the llvm::JITDylib
+      // We can't use gc::As<xxx>(...) at this point because we are working in the snapshot save/load buffer
+      //  and the headers aren't the same as in main memory
+      //
       printf("%s:%d:%s Use the ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::T_sp tjit = obj_claspJIT; // Used to be ::_lisp->_Roots._ClaspJIT;
       DBG_SL("7.4 Handle JITDylibs\n");
-      Jit jit;
-      if (tjit.notnilp()) {
-        jit = gc::As_unsafe<Jit>(tjit);
-        core::T_sp cur = ::_lisp->_Roots._JITDylibs.load();
-        while (cur.consp()) {
-          llvmo::JITDylib_sp snapshot_JITDylib_sp_ = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
-          llvmo::JITDylib_O* snapshot_JITDylib_O_ = &*snapshot_JITDylib_sp_;
-          gctools::Header_s* snapshot_JITDylib_O_header = GENERAL_PTR_TO_HEADER_PTR(snapshot_JITDylib_O_);
-          llvmo::JITDylib_sp obj_jd;
-          printf(R"str(%s:%d:%s   examine 
- snapshot_JITDylib_O_header %p,
- *(void**)snapshot_JITDylib_O_header %p,
- snapshot_JITDylib_O_header->_stamp_wtag_mtag._value 0x%x,
- snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV() %u,
- snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() %d
-)str",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 snapshot_JITDylib_O_header,
-                 *(void**)snapshot_JITDylib_O_header,
-                 snapshot_JITDylib_O_header->_stamp_wtag_mtag._value,
-                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV(),
-                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
-          bool notFwd = !snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP();
-          printf("      notFwd = %d\n", notFwd );
-          printf(R"str(%s:%d:%s   examine2
- snapshot_JITDylib_O_header %p,
- *(void**)snapshot_JITDylib_O_header %p,
- snapshot_JITDylib_O_header->_stamp_wtag_mtag._value 0x%x,
- snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV() %u,
- snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() %d
-)str",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 snapshot_JITDylib_O_header,
-                 *(void**)snapshot_JITDylib_O_header,
-                 snapshot_JITDylib_O_header->_stamp_wtag_mtag._value,
-                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV(),
-                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
-          printf(" before if     notFwd = %d\n", notFwd );
-          if (notFwd) {
-            printf(" after if     notFwd = %d\n", notFwd );
-            printf(R"str(%s:%d:%s   examine after if
- snapshot_JITDylib_O_header %p,
- *(void**)snapshot_JITDylib_O_header %p,
- snapshot_JITDylib_O_header->_stamp_wtag_mtag._value 0x%x,
- snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV() %u,
- snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() %d
-)str",
-                   __FILE__, __LINE__, __FUNCTION__,
-                 snapshot_JITDylib_O_header,
-                 *(void**)snapshot_JITDylib_O_header,
-                 snapshot_JITDylib_O_header->_stamp_wtag_mtag._value,
-                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdV(),
-                 snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
-            gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(snapshot_JITDylib_O_);
-            gctools::clasp_ptr_t clientEnd = clientStart + sizeof(llvmo::JITDylib_O);
-            snapshot_save_load_init_s init(snapshot_JITDylib_O_header,clientStart,clientEnd);
-            obj_jd = gctools::GCObjectAllocator<llvmo::JITDylib_O>::snapshot_save_load_allocate(&init);
-            core::SimpleBaseString_sp name = snapshot_JITDylib_O_->_name;
-            std::string sname = name->get_std_string();
-            llvmo::JITDylib* llvm_jitdylib = &*jit->_LLJIT->createJITDylib(sname);
-            new (&*obj_jd) llvmo::JITDylib_O(name,llvm_jitdylib);
-            DBG_SL("   Register JITDylib %p snapshot_JITDylib_O_header %p val %p fwdP() %d\n", obj_jd.raw_(), snapshot_JITDylib_O_header, *(void**)snapshot_JITDylib_O_header, snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
-            gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj_jd.raw_());
-            set_forwarding_pointer( snapshot_JITDylib_O_header, (char*)fwd, &islInfo );
-            root_holder.add((void*)obj_jd.raw_());
-            jit->registerJITDylibAfterLoad(&*obj_jd);
-            // Do this for the main JITDylib
-            llvm_jitdylib->addGenerator(llvm::cantFail(llvmo::DynamicLibrarySearchGenerator::GetForCurrentProcess(jit->_LLJIT->getDataLayout().getGlobalPrefix())));
-          }
-          DBG_OF( printf("%s:%d:%s obj_jd->_Id = %lu obj_jd->_name = %s  obj_jd.raw_() = %p\n",
-                         __FILE__, __LINE__, __FUNCTION__,
-                         obj_jd->_Id,
-                         _rep_(obj_jd->_name).c_str(),
-                         obj_jd.raw_() );
-                  );
-          if (obj_jd->_Id == 0 && obj_jd->_name->get_std_string() != "main") {
-            printf("%s:%d:%s The JITDylib _Id must NOT be zero - that is reserved for the main JITDylib - name is %s!!\n", __FILE__, __LINE__, __FUNCTION__, _rep_(obj_jd->_name).c_str() );
-            abort();
-          }
-          cur = CONS_CDR(cur);
-        }
-      } else {
+      if (obj_claspJIT.nilp()) {
         printf("%s:%d:%s Could not find the LLJIT!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
         abort();
+      }
+      core::T_sp cur = ::_lisp->_Roots._JITDylibs.load();
+      while (cur.consp()) {
+        llvmo::JITDylib_sp snapshot_JITDylib_sp_ = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
+        llvmo::JITDylib_O* snapshot_JITDylib_O_ = &*snapshot_JITDylib_sp_;
+        gctools::Header_s* snapshot_JITDylib_O_header = GENERAL_PTR_TO_HEADER_PTR(snapshot_JITDylib_O_);
+        llvmo::JITDylib_O* memory_JITDylib_O_ = (llvmo::JITDylib_O*)snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdPointer();
+        llvmo::JITDylib_sp memory_JITDylib_sp_((gctools::Tagged)gctools::tag_general<llvmo::JITDylib_O*>(memory_JITDylib_O_));
+        core::SimpleBaseString_sp sbs_name = memory_JITDylib_sp_->_name;
+        std::string name = sbs_name->get_std_string();
+        llvmo::JITDylib* llvm_jitdylib;
+        if (name=="main") {
+          llvm_jitdylib = &obj_claspJIT->_LLJIT->getMainJITDylib(); // Main JITDylib we get from the LLJIT
+          printf("%s:%d:%s Setting JITDylib %p into %s JITDylib_sp_ %p\n", __FILE__, __LINE__, __FUNCTION__, llvm_jitdylib, name.c_str(), memory_JITDylib_sp_.raw_() );
+          memory_JITDylib_sp_->_ptr = llvm_jitdylib;
+          auto rt = llvm_jitdylib->getDefaultResourceTracker();
+            // addGenerator was done in ClaspJIT_O
+        } else {
+          llvm_jitdylib = &*(obj_claspJIT->_LLJIT->createJITDylib(name)); // Every other one we need to create
+          printf("%s:%d:%s Setting JITDylib %p into JITDylib_sp_ %p = %s\n", __FILE__, __LINE__, __FUNCTION__, llvm_jitdylib, memory_JITDylib_sp_.raw_(), name.c_str() );
+          memory_JITDylib_sp_->_ptr = llvm_jitdylib;
+          llvm_jitdylib->addGenerator(llvm::cantFail(llvmo::DynamicLibrarySearchGenerator::GetForCurrentProcess(obj_claspJIT->_LLJIT->getDataLayout().getGlobalPrefix())));
+        }
+        cur = CONS_CDR(cur);
       }
 
       std::vector<CodeFixup_t> codeFixups;
       DBG_SL("7.5 Link all the ObjectFiles\n");
-    
       size_t countNullObjects = 0;
       size_t objectFileCount = 0;
       std::map<gctools::BaseHeader_s*,char*> objectFileForwards;
@@ -3248,7 +3196,12 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                      );
               registerObjectFile<gctools::SnapshotLoadStage>(allocatedObjectFile);
               codeFixups.emplace_back(CodeFixup_t(loadedObjectFile,&*allocatedObjectFile));
-              llvmo::JITDylib_sp jitdylib = allocatedObjectFile->_TheJITDylib;
+              llvmo::JITDylib_sp snapshot_JITDylib_sp_ = allocatedObjectFile->_TheJITDylib;
+              llvmo::JITDylib_O* snapshot_JITDylib_O_ = &*snapshot_JITDylib_sp_;
+              gctools::Header_s* snapshot_JITDylib_O_header = GENERAL_PTR_TO_HEADER_PTR(snapshot_JITDylib_O_);
+              llvmo::JITDylib_O* memory_JITDylib_O_ = (llvmo::JITDylib_O*)snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdPointer();
+              llvmo::JITDylib_sp memory_JITDylib_sp_((gctools::Tagged)gctools::tag_general<llvmo::JITDylib_O*>(memory_JITDylib_O_));
+              llvmo::JITDylib_sp jitdylib = memory_JITDylib_sp_;
               DBG_OF(
                   printf("%s:%d:%s About to pass a freshly allocated ObjectFile_O %p  name: %s  to the LLJIT\n"
                          "    loadedObjectFile %p\n"
@@ -3267,7 +3220,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 printf("%s:%d:%s JITDylib* is NULL\n", __FILE__, __LINE__, __FUNCTION__ );
                 abort();
               }
-              ExitOnErr(jit->_LLJIT->addObjectFile( *jd, std::move(allocatedObjectFile->_MemoryBuffer)) );
+              ExitOnErr(obj_claspJIT->_LLJIT->addObjectFile( *jd, std::move(allocatedObjectFile->_MemoryBuffer)) );
               
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
               DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p  for source_header: %p\n")
@@ -3301,12 +3254,12 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           // lookup will cause multicore linking and with multicore linking we have to do things after this in a thread safe way
               size_t objectId = allocatedObjectFile->_ObjectId;
               pool.push_task(
-                  [&jit, jitdylib, objectId ]() {
+                  [&obj_claspJIT, jitdylib, objectId ]() {
                     std::string start;
                     std::string shutdown;
                     core::startup_shutdown_names( objectId, "", start, shutdown );
                     void* ptr;
-                    bool found = jit->do_lookup( jitdylib, start, ptr );
+                    bool found = obj_claspJIT->do_lookup( jitdylib, start, ptr );
                     DBG_OF(
                         printf("%s:%d:%s Ran lookup of objectId: %lu name %s jitdylib %p in thread pool found = %d\n", __FILE__, __LINE__, __FUNCTION__, objectId, start.c_str(), jitdylib.raw_(), found );
                            );
@@ -3439,7 +3392,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                      );
               countNullObjects++;
             } else {
-              printf("%s:%d:%s Copy/allocate snapshot object %p\n", __FILE__, __LINE__, __FUNCTION__, init._headStart );
+//              printf("%s:%d:%s Copy/allocate snapshot object %p\n", __FILE__, __LINE__, __FUNCTION__, init._headStart );
               core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
               set_forwarding_pointer(source_header,((char*)fwd), &islInfo);

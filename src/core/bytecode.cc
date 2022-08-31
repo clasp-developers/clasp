@@ -178,6 +178,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         size_t nlocals, Closure_O* closure,
                                         size_t lcc_nargs,
                                         core::T_O** lcc_args) {
+  if (lcc_nargs> 65536) {
+    printf("%s:%d:%s A very large number of arguments %lu are being passed - check if there is a problem\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs );
+  }
   while (1) {
 #if DEBUG_VM_RECORD_PLAYBACK==1
     global_counter++;

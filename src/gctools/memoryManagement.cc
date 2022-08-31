@@ -242,7 +242,8 @@ namespace gctools {
 void rawHeaderDescribe(const uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
   switch (headerTag) {
-  case Header_s::invalid_mtag: {
+  case Header_s::invalid0_mtag:
+  case Header_s::invalid1_mtag:{
       printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
       printf(" Not an object header!\n");
       break;
@@ -374,7 +375,7 @@ void BaseHeader_s::validate() const {
   if ( this->_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
     uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
+    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) { // wasMTAG
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }
@@ -416,7 +417,7 @@ bool Header_s::isValidGeneralObject() const {
   if ( this->_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
     uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) goto bad;
+    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) goto bad; // wasMTAG
 #endif // USE_PRECISE_GC
 #ifdef DEBUG_GUARD    
     if ( this->_guard != GUARD1) goto bad;
@@ -451,7 +452,7 @@ void Header_s::validate() const {
   if ( this->_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
     uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
+    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) { // wasMTAG
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }

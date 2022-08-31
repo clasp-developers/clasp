@@ -204,13 +204,13 @@ void initialize_typeq_map() {
   core::HashTableEq_sp theTypeqMap = core::HashTableEq_O::create_default();
 #define ADD_SINGLE_TYPEQ_TEST(type,stamp) { \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_classSymbol()); \
-    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type>())); \
+    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateTypeqHeaderValue<type>())); \
   }
 #define ADD_RANGE_TYPEQ_TEST(type_low,type_high,stamp_low,stamp_high) { \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_classSymbol()); \
     theTypeqMap->setf_gethash(type_low::static_classSymbol(), \
-                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_low>()), \
-                                                   core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_high>()))); \
+                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateTypeqHeaderValue<type_low>()), \
+                                                   core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateTypeqHeaderValue<type_high>()))); \
   }
 #ifndef SCRAPING
  #if !defined(USE_PRECISE_GC)
