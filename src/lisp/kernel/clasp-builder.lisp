@@ -969,6 +969,75 @@ been initialized with install path versus the build path of the source code file
     (prepare-metadata system installed-system)
     (compile-cclasp* output-file system t)))
 
+(defun pprint-features ()
+  (message :info "Features {}" *features*))
+
+(export 'pprint-features)
+
+(defun load-stage (system stage)
+  (let ((files (select-source-files (make-pathname :host "sys"
+                                                   :directory '(:absolute "src" "lisp" "kernel" "stage")
+                                                   :name (core:fmt nil "{:d}-begin" stage)
+                                                   :type "lisp")
+                                    (make-pathname :host "sys"
+                                                   :directory '(:absolute "src" "lisp" "kernel" "stage")
+                                                   :name (core:fmt nil "{:d}-end" stage)
+                                                   :type "lisp")
+                                    :system system))
+        (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword)))
+    (setq *features* (cons stage-keyword *features*))
+    (message :emph "Loading stage {:d}..." stage)
+    (tagbody
+     next
+      (if files
+          (progn
+            (load (car files))
+            (setq files (cdr files))
+            (go next))))
+    (setq *features* (core:remove-equal stage-keyword *features*))))
+
+(defvar +stage-features+ '(:clasp-min :clos :aclasp :bclasp :cclasp :eclasp))
+
+(defun stage-features (&rest rest &aux (features +stage-features+))
+  (tagbody
+   next
+   (if features
+       (progn
+         (setq *features* (core:remove-equal (car features) *features*)
+               features (cdr features))
+         (go next))))
+  (setq *features* (append rest *features*))
+  (pprint-features))
+
+(defun load-vclasp (&key reproducible clean (output-file (build-common-lisp-bitcode-pathname))
+                         (system (command-line-arguments-as-list))
+                         (stage-count 4)
+                    &aux installed-system)
+  (if reproducible
+      (setq installed-system (extract-installed-system system)))
+  (let ((*target-backend* (default-target-backend))
+        (*trace-output* *standard-output*)
+        (*load-verbose* t)
+        (stage 0))
+    (setq *features* (list* :staging :bytecode :bytecodelike *features*))
+    (tagbody
+     next
+      (load-stage system stage)
+      (setq stage (1+ stage))
+      (if (< stage stage-count)
+          (go next)))
+    (setq *features* (core:remove-equal :staging *features*))
+    (prepare-metadata system installed-system)
+    system))
+
+(defun compile-vclasp (&rest rest)
+  (let ((system (apply #'load-vclasp rest)))
+    (handler-bind
+        ((error #'build-failure))
+      (compile-system system :reload nil :file-order (calculate-file-order system) :total-files (length system)))))
+
+(export '(load-vclasp compile-vclasp))
+      
 #+(or bclasp cclasp eclasp)
 (defun bclasp-repl ()
   (let ((cmp:*cleavir-compile-hook* nil)

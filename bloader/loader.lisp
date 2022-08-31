@@ -346,6 +346,10 @@
   )
 (load "SYS:SRC;LISP;KERNEL;LSP;SOURCE-LOCATION.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;DEFVIRTUAL.LISP")
+;;; VM error was surfacing when compiling pprint.lisp
+;;; because (subtypep 'unknown-type t) should return T but VM bug prevented that
+(load "SYS:SRC;LISP;KERNEL;LSP;PPRINT.LISP")
+(load "SYS:SRC;LISP;KERNEL;LSP;FORMAT-PPRINT.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;CONDITIONS.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;PRINT.LISP")
 ;;;
@@ -353,9 +357,6 @@
 ;;;
 (load "SYS:SRC;LISP;KERNEL;CLOS;STREAMS.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;SEQUENCES.LISP")
-;;; VM error was surfacing when compiling pprint.lisp
-;;; because (subtypep 'unknown-type t) should return T but VM bug prevented that
-(load "SYS:SRC;LISP;KERNEL;LSP;PPRINT.LISP")
 (load "SYS:SRC;LISP;KERNEL;CMP;COMPILER-CONDITIONS.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;PACKLIB2.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;INSPECT.LISP")
@@ -368,7 +369,7 @@
 ;;;
 ;;; Load FORMAT again because it references pprint macros
 ;;;
-(load "SYS:SRC;LISP;KERNEL;LSP;FORMAT.LISP")
+;(load "SYS:SRC;LISP;KERNEL;LSP;FORMAT.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;TOP.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;PRE-EPILOGUE-BCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;EPILOGUE-BCLASP.LISP")
