@@ -280,46 +280,7 @@
       (when (constantp (first vars))
         (error "Cannot bind constant value ~a!" (first vars))))))
 
-;;; Get information about a variable.
-;;; Returns two values.
-;;; The first is :LEXICAL, :SPECIAL, :CONSTANT, :SYMBOL-MACRO, or NIL.
-;;; If the variable is lexical, the first is :LEXICAL and the second is more info.
-;;; If the variable is special, the first is :SPECIAL and the second is NIL.
-;;; If the variable is a macro, the first is :SYMBOL-MACRO and the second is
-;;; the expander.
-;;; If the variable is a constant, :CONSTANT and the value.
-;;; If the first value is NIL, the variable is unknown, and the second
-;;; value is NIL.
-(defun var-info (symbol env)
-  (let ((info (cdr (assoc symbol (core:bytecode-cmp-env/vars env)))))
-    (cond (info)
-          ((ext:symbol-macro symbol)
-           (core:bytecode-cmp-symbol-macro-var-info/make
-            (ext:symbol-macro symbol)))
-          ((constantp symbol nil)
-           (core:bytecode-cmp-constant-var-info/make (symbol-value symbol)))
-          ((ext:specialp symbol) ; globally special
-           (core:bytecode-cmp-special-var-info/make))
-          (t nil))))
-
-;;; Like the above. Check the struct for details.
-(defun fun-info (name env)
-  (let ((info (cdr (assoc name (core:bytecode-cmp-env/funs env) :test 'equal))))
-    (cond (info)
-          ((and (symbolp name) (macro-function name nil))
-           (core:bytecode-cmp-global-macro-info/make
-            (macro-function name nil)))
-          ((and (symbolp name) (special-operator-p name))
-           (error "Tried to get FUN-INFO for special operator ~s - that's impossible" name))
-          ((fboundp name) (core:bytecode-cmp-global-fun-info/make))
-          (t (values nil nil)))))
-
 (deftype lambda-expression () '(cons (eql lambda) (cons list list)))
-#+(or)
-(defstruct (cfunction (:constructor make-cfunction (cmodule &key name doc))
-                      (:type vector) :named)
-  ;; Stuff for the function description
-  name doc)
 
 (defun context-module (context)
   (core:bytecode-cmp-function/module (core:bytecode-cmp-context/function context)))
@@ -431,7 +392,7 @@
       (emit-fixup context (core:bytecode-cmp-fixup/make lexical-info 2 #'emitter #'resizer)))))
 
 (defun compile-symbol (form env context)
-  (let ((info (var-info form env)))
+  (let ((info (core:bytecode-cmp-var-info form env)))
     (cond ((typep info 'core:bytecode-cmp-symbol-macro-var-info)
            (let ((expander
                    (core:bytecode-cmp-symbol-macro-var-info/expander info)))
@@ -508,7 +469,7 @@
     ((eq head 'the) ; don't do anything.
      (compile-form (second rest) env context))
     (t ; function call or macro
-     (let ((info (fun-info head env)))
+     (let ((info (core:bytecode-cmp-fun-info head env)))
        (cond
          ((typep info 'core:bytecode-cmp-global-macro-info)
           (let* ((expander
@@ -578,7 +539,7 @@
         (multiple-value-bind (var valf) (canonicalize-binding binding)
           (compile-form valf env (core:new-context context :receiving 1))
           (cond ((or (member var specials)
-                     (typep (var-info var env)
+                     (typep (core:bytecode-cmp-var-info var env)
                             'core:bytecode-cmp-special-var-info))
                  (incf special-binding-count)
                  (emit-special-bind context var))
@@ -587,7 +548,7 @@
                        (bind-vars (list var) post-binding-env context))
                  (incf lexical-binding-count)
                  (maybe-emit-make-cell
-                  (var-info var post-binding-env) context)))))
+                  (core:bytecode-cmp-var-info var post-binding-env) context)))))
       (emit-bind context lexical-binding-count
                  (core:bytecode-cmp-env/frame-end env))
       (compile-progn body post-binding-env context)
@@ -611,7 +572,7 @@
                 (t
                  (let ((frame-start (core:bytecode-cmp-env/frame-end env)))
                    (setq env (bind-vars (list var) env context))
-                   (maybe-emit-make-cell (var-info var env) context)
+                   (maybe-emit-make-cell (core:bytecode-cmp-var-info var env) context)
                    (assemble-maybe-long context +set+ frame-start))))))
       (compile-progn body
                      (if specials
@@ -639,7 +600,7 @@
                               context))))))
 
 (defun compile-setq-1 (var valf env context)
-  (let ((info (var-info var env)))
+  (let ((info (core:bytecode-cmp-var-info var env)))
     (cond
       ((typep info 'core:bytecode-cmp-symbol-macro-var-info)
        (let ((expansion
@@ -802,7 +763,7 @@
                                    +const+ (literal-index cfunction context))
               (assemble-maybe-long context +make-closure+
                                    (literal-index cfunction context))))
-        (let ((info (fun-info fnameoid env)))
+        (let ((info (core:bytecode-cmp-fun-info fnameoid env)))
           (cond
             ((typep info '(or core:bytecode-cmp-global-fun-info null))
              #-(or clasp-min aclasp bclasp)
@@ -859,15 +820,15 @@
             ;; We account for special declarations in outer environments/globally
             ;; by checking the original environment - not our new one - for info.
             (cond ((or (member var specials)
-                       (typep (var-info var env)
+                       (typep (core:bytecode-cmp-var-info var env)
                               'core:bytecode-cmp-special-var-info))
-                   (let ((info (var-info var new-env)))
+                   (let ((info (core:bytecode-cmp-var-info var new-env)))
                      (assemble-maybe-long
                       context +ref+
                       (core:bytecode-cmp-lexical-var-info/frame-index info)))
                    (emit-special-bind context var))
                   (t
-                   (maybe-emit-encage (var-info var new-env) context))))
+                   (maybe-emit-encage (core:bytecode-cmp-var-info var new-env) context))))
           (setq new-env (add-specials (intersection specials (cdr required)) new-env)))
         (unless (zerop optional-count)
           ;; Generate code to bind the provided optional args; unprovided args will
@@ -879,14 +840,14 @@
             (setq new-env (bind-vars optvars new-env context))
             ;; Add everything to opt-key-indices.
             (dolist (var optvars)
-              (let ((info (var-info var new-env)))
+              (let ((info (core:bytecode-cmp-var-info var new-env)))
                 (push (cons var (core:bytecode-cmp-lexical-var-info/frame-index info))
                       opt-key-indices)))
             ;; Re-mark anything that's special in the outer context as such, so that
             ;; default initforms properly treat them as special.
             (let ((specials (remove-if-not
                              (lambda (sym)
-                               (typep (var-info sym env)
+                               (typep (core:bytecode-cmp-var-info sym env)
                                       'core:bytecode-cmp-special-var-info))
                              optvars)))
               (when specials
@@ -903,12 +864,12 @@
           (let ((keyvars (collect-by #'cddddr (cddr keys))))
             (setq new-env (bind-vars keyvars new-env context))
             (dolist (var keyvars)
-              (let ((info (var-info var new-env)))
+              (let ((info (core:bytecode-cmp-var-info var new-env)))
                 (push (cons var (core:bytecode-cmp-lexical-var-info/frame-index info))
                       opt-key-indices)))
             (let ((specials (remove-if-not
                              (lambda (sym)
-                               (typep (var-info sym env)
+                               (typep (core:bytecode-cmp-var-info sym env)
                                       'core:bytecode-cmp-special-var-info))
                              keyvars)))
               (when specials
@@ -925,13 +886,13 @@
                    (defaulting-form (cadr optionals)) (supplied-var (caddr optionals))
                    (optional-special-p
                      (or (member optional-var specials)
-                         (typep (var-info optional-var env)
+                         (typep (core:bytecode-cmp-var-info optional-var env)
                                 'core:bytecode-cmp-special-var-info)))
                    (index (cdr (assoc optional-var opt-key-indices)))
                    (supplied-special-p
                      (and supplied-var
                           (or (member supplied-var specials)
-                              (typep (var-info supplied-var env)
+                              (typep (core:bytecode-cmp-var-info supplied-var env)
                                      'core:bytecode-cmp-special-var-info)))))
               (setq new-env
                     (compile-optional/key-item optional-var defaulting-form index
@@ -946,14 +907,14 @@
           (assemble-maybe-long context +set+ (frame-end new-env))
           (setq new-env (bind-vars (list rest) new-env context))
           (cond ((or (member rest specials)
-                     (typep (var-info rest env)
+                     (typep (core:bytecode-cmp-var-info rest env)
                             'core:bytecode-cmp-special-var-info))
                  (assemble-maybe-long
-                  +ref+ (var-info rest new-env) context)
+                  +ref+ (core:bytecode-cmp-var-info rest new-env) context)
                  (emit-special-bind context rest)
                  (incf special-binding-count 1)
                  (setq new-env (add-specials (list rest) new-env)))
-                (t (maybe-emit-encage (var-info rest new-env) context))))
+                (t (maybe-emit-encage (core:bytecode-cmp-var-info rest new-env) context))))
         ;; Generate defaulting code for key args, and special-bind them if necessary.
         (when key-flag
           (do ((keys (cdr keys) (cddddr keys))
@@ -966,12 +927,12 @@
                    (supplied-var (cadddr keys))
                    (key-special-p
                      (or (member key-var specials)
-                         (typep (var-info key-var env)
+                         (typep (core:bytecode-cmp-var-info key-var env)
                                 'core:bytecode-cmp-special-var-info)))
                    (supplied-special-p
                      (and supplied-var
                           (or (member supplied-var specials)
-                              (typep (var-info key-var env)
+                              (typep (core:bytecode-cmp-var-info key-var env)
                                      'core:bytecode-cmp-special-var-info)))))
               (setq new-env
                     (compile-optional/key-item key-var defaulting-form index
@@ -1025,17 +986,17 @@
                    context +set+
                    (core:bytecode-cmp-lexical-var-info/frame-index info))))))
     (let ((supplied-label (core:bytecode-cmp-label/make))
-          (var-info (var-info var env)))
+          (varinfo (core:bytecode-cmp-var-info var env)))
       (when supplied-var
         (setq env (bind-vars (list supplied-var) env context)))
-      (let ((supplied-info (var-info supplied-var env)))
+      (let ((supplied-info (core:bytecode-cmp-var-info supplied-var env)))
         (emit-jump-if-supplied context var-index supplied-label)
-        (default nil var-specialp var var-info)
+        (default nil var-specialp var varinfo)
         (when supplied-var
           (supply nil supplied-specialp supplied-var supplied-info))
         (emit-jump context next-label)
         (emit-label context supplied-label)
-        (default t var-specialp var var-info)
+        (default t var-specialp var varinfo)
         (when supplied-var
           (supply t supplied-specialp supplied-var supplied-info))
         (when var-specialp
@@ -1071,7 +1032,7 @@
   (let* ((new-tags (core:bytecode-cmp-env/tags env))
          (tagbody-dynenv (gensym "TAG-DYNENV"))
          (env (bind-vars (list tagbody-dynenv) env context))
-         (dynenv-info (var-info tagbody-dynenv env)))
+         (dynenv-info (core:bytecode-cmp-var-info tagbody-dynenv env)))
     (dolist (statement statements)
       (when (go-tag-p statement)
         (push (list* statement dynenv-info (core:bytecode-cmp-label/make))
@@ -1102,7 +1063,7 @@
 (defun compile-block (name body env context)
   (let* ((block-dynenv (gensym "BLOCK-DYNENV"))
          (env (bind-vars (list block-dynenv) env context))
-         (dynenv-info (var-info block-dynenv env))
+         (dynenv-info (core:bytecode-cmp-var-info block-dynenv env))
          (label (core:bytecode-cmp-label/make))
          (normal-label (core:bytecode-cmp-label/make)))
     ;; Bind the dynamic environment.

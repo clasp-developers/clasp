@@ -104,4 +104,60 @@ CL_DEFUN void core__bytecode_cmp_assemble_maybe_long(BytecodeCmpContext_sp conte
   }
 }
 
+CL_DEFUN T_sp core__bytecode_cmp_var_info(Symbol_sp sym,
+                                          BytecodeCmpEnv_sp env) {
+  // Local?
+  T_sp info = env->variableInfo(sym);
+  if (info.notnilp()) return info;
+  // Constant?
+  // Constants are also specialP, so we have to check this first.
+  if (cl__keywordp(sym) || sym->getReadOnly())
+    return BytecodeCmpConstantVarInfo_O::make(sym->symbolValue());
+  // Globally special?
+  if (sym->specialP())
+    return BytecodeCmpSpecialVarInfo_O::make();
+  // Global symbol macro?
+  T_mv symmac = core__get_sysprop(sym, ext::_sym_symbolMacro);
+  if (gc::As<T_sp>(symmac.valueGet_(1)).notnilp())
+    return BytecodeCmpSymbolMacroVarInfo_O::make(symmac);
+  // Unknown.
+  return nil<T_O>();
+}
+
+CL_DEFUN T_sp core__bytecode_cmp_fun_info(T_sp name,
+                                          BytecodeCmpEnv_sp env) {
+  // Local?
+  T_sp info = env->functionInfo(name);
+  if (info.notnilp()) return info;
+  // Split into setf and not versions.
+  if (name.consp()) {
+    List_sp cname = name;
+    if (oCar(cname) == cl::_sym_setf) {
+      // take care of (setf . bar) or (setf bar foo) or (setf bar .foo)
+      // so don't go directly for the cadr
+      T_sp dname = oCdr(cname);
+      if (dname.consp()) {
+        Symbol_sp fname = gc::As<Symbol_sp>(oCar(dname));
+        if (fname.notnilp() && oCdr(dname).nilp()) {
+          if (!fname->fboundp_setf())
+            return nil<T_O>();
+          if (fname->macroP())
+            return BytecodeCmpGlobalMacroInfo_O::make(fname->getSetfFdefinition());
+          else
+            return BytecodeCmpGlobalFunInfo_O::make();
+        }
+      }
+    }
+    // Bad function name.
+    return nil<T_O>();
+  } else {
+    Symbol_sp fname = gc::As<Symbol_sp>(name);
+    if (!fname->fboundp()) return nil<T_O>();
+    else if (fname->macroP())
+      return BytecodeCmpGlobalMacroInfo_O::make(fname->symbolFunction());
+    else
+      return BytecodeCmpGlobalFunInfo_O::make();
+  }
+}
+
 }; //namespace core
