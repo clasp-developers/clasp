@@ -1449,7 +1449,10 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
       (let ((sorted-header-list (sort header-list #'string<)))
         (with-output-to-string (sout)
           (loop for header in sorted-header-list
-                do (format sout "#include \"~a\"~%" header)))))))
+                do (format sout "#include \"~a\"~%"
+                           (if (uiop:absolute-pathname-p header)
+                               (merge-pathnames (enough-namestring header *clasp-sys*) *clasp-code*)
+                               header))))))))
 
 (defun generate-code
     (packages-to-create normal-functions setf-functions symbols classes gc-managed-types enums
