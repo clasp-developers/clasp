@@ -318,7 +318,7 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
 void dbg_Vaslist_sp_describe(T_sp obj) {
     // Convert the T_sp object into a Vaslist_sp object
   Vaslist_sp vl = Vaslist_sp((gc::Tagged)obj.raw_());
-  printf("Original vaslist at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_args);
+  printf("Original vaslist at: %p\n", &*((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_()))));
     // Create a copy of the Vaslist with a va_copy of the vaslist
   Vaslist vlcopy_s(*vl);
   Vaslist_sp vlcopy(&vlcopy_s);

@@ -652,7 +652,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         // Use the pass_args here because it points to the original arguments
         DTILOG("About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        return func->entry()(func.raw_(), pass_args->_nargs, pass_args->_args);
+        return func->entry()(func.raw_(), pass_args->remaining_nargs(), pass_args->args());
       }
     default:
         SIMPLE_ERROR(("%zu is not a valid dtree opcode") , op);

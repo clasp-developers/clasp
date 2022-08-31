@@ -125,57 +125,57 @@ struct Vaslist {
   /* WARNING WARNING WARNING WARNING
 DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vaslist+ in cmpintrinsics.lisp
 */
-  mutable T_O**   _args;
-  mutable size_t  _nargs;
+  mutable T_O**   _Args;
+  mutable size_t  _Nargs;
 
 #ifdef _DEBUG_BUILD
-  inline void check_nargs() const {
-    if (this->_nargs >CALL_ARGUMENTS_LIMIT) {
-      printf("%s:%d  this->_nargs has bad value %lu\n", __FILE__, __LINE__, this->_nargs);
+  inline void check_Nargs() const {
+    if (this->_Nargs >CALL_ARGUMENTS_LIMIT) {
+      printf("%s:%d  this->_Nargs has bad value %lu\n", __FILE__, __LINE__, this->_Nargs);
     }
   }
 #else
   inline void check_nargs() const {};
 #endif
 
-  inline size_t total_nargs() const { return this->_nargs; };
+  inline size_t total_nargs() const { return this->_Nargs; };
   inline core::T_O *asTaggedPtr() {
     return gctools::tag_vaslist<core::T_O *>(this);
   }
-  Vaslist(size_t nargs, gc::Frame* frame) : _args(frame->arguments(0)), _nargs(nargs) {
+  Vaslist(size_t nargs, gc::Frame* frame) : _Args(frame->arguments(0)), _Nargs(nargs) {
     this->check_nargs();
   };
 
-  Vaslist(size_t nargs, T_O** args) : _args(args), _nargs(nargs) {
+  Vaslist(size_t nargs, T_O** args) : _Args(args), _Nargs(nargs) {
     this->check_nargs();
   };
   // The Vaslist._Args must be initialized immediately after this
   //    using va_start(xxxx._Args,FIRST_ARG)
   //    See lispCallingConvention.h INITIALIZE_VASLIST
   Vaslist(size_t nargs) {
-    this->_nargs = nargs;
+    this->_Nargs = nargs;
     this->check_nargs();
   };
-  Vaslist(const Vaslist &other) : _args(other._args), _nargs(other._nargs) {
+  Vaslist(const Vaslist &other) : _Args(other._Args), _Nargs(other._Nargs) {
     this->check_nargs();
   }
 
   Vaslist(){};
   ~Vaslist() {}
 
-  T_O* operator[](size_t index) { return this->_args[index]; };
+  T_O* operator[](size_t index) { return this->_Args[index]; };
 
   inline core::T_sp next_arg() {
-    core::T_sp obj((gctools::Tagged)(*this->_args));
-    this->_args++;
-    this->_nargs--;
+    core::T_sp obj((gctools::Tagged)(*this->_Args));
+    this->_Args++;
+    this->_Nargs--;
     return obj;
   }
 
   inline core::T_O* next_arg_raw() {
-    core::T_O* obj = *this->_args;
-    this->_args++;
-    this->_nargs--;
+    core::T_O* obj = *this->_Args;
+    this->_Args++;
+    this->_Nargs--;
     return obj;
   }
 
@@ -185,23 +185,32 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
   }
 
   void set_from_other_Vaslist(Vaslist *other,size_t arg_idx) {
-    this->_nargs = other->_nargs-arg_idx; // remaining arguments
-    this->_args = other->_args+arg_idx; // advance to start on remaining args
+    this->_Nargs = other->_Nargs-arg_idx; // remaining arguments
+    this->_Args = other->_Args+arg_idx; // advance to start on remaining args
     this->check_nargs();
   }
 
-  inline const size_t& remaining_nargs() const {
-    return this->_nargs;
+  inline size_t remaining_nargs() const {
+    return this->_Nargs;
   }
-  inline size_t& remaining_nargs() {
-    return this->_nargs;
+
+  inline size_t nargs() const {
+    return this->_Nargs;
   }
+
   inline core::T_O** args() const {
-    return this->_args;
+    return this->_Args;
+  }
+
+  static size_t nargs_offset() {
+    return offsetof(Vaslist,_Nargs);
+  }
+  static size_t args_offset() {
+    return offsetof(Vaslist,_Args);
   }
   
   inline core::T_O *relative_indexed_arg(size_t idx) const {
-    return this->_args[idx];
+    return this->_Args[idx];
   }
 
 };
@@ -257,7 +266,7 @@ public:
 
 inline void fill_frame_vaslist(Frame* frame, size_t& idx, const core::Vaslist_sp vaslist) {
   core::Vaslist* vas = vaslist.unsafe_valist();
-  fill_frame_nargs_args( frame, idx, vas->_nargs, vas->_args );
+  fill_frame_nargs_args( frame, idx, vas->remaining_nargs(), vas->args() );
 }
 
 };

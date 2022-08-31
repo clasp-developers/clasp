@@ -510,7 +510,7 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
     }
     if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(var);
   }
-  size_t nargs = lenRest + fixed->_nargs + 4;
+  size_t nargs = lenRest + fixed->remaining_nargs() + 4;
   MAKE_STACK_FRAME( frame, nargs );
   size_t idx(0);
   gctools::fill_frame_one( frame, idx, a0 );
@@ -528,11 +528,11 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
  * we end up here with var = var, lenFixed = n, fixed = the apply valist.
  * When var is a Vaslist, naturally. */
 T_mv apply_inner_valist(Function_sp func, size_t lenFixed, Vaslist_sp fixed, Vaslist_sp var) {
-  size_t nargs_var = var->_nargs;
+  size_t nargs_var = var->remaining_nargs();
   size_t total_args = lenFixed + nargs_var;
   MAKE_STACK_FRAME( frame, total_args );
   size_t idx(0);
-  gctools::fill_frame_nargs_args( frame, idx, lenFixed, fixed->_args );
+  gctools::fill_frame_nargs_args( frame, idx, lenFixed, fixed->args() );
   gctools::fill_frame_vaslist( frame, idx, var );
   CHECK_FRAME( frame, idx, total_args );
   return (*func).entry()(func.raw_(),total_args,frame->arguments());
@@ -543,7 +543,7 @@ T_mv apply_inner_list(Function_sp func, size_t lenFixed, Vaslist_sp fixed, List_
   size_t total_args = lenFixed + nargs_var;
   MAKE_STACK_FRAME( frame, total_args );
   size_t idx(0);
-  gctools::fill_frame_nargs_args( frame, idx, lenFixed, fixed->_args );
+  gctools::fill_frame_nargs_args( frame, idx, lenFixed, fixed->args() );
   gctools::fill_frame_list( frame, idx, var );
   CHECK_FRAME( frame, idx, total_args );
   return (*func).entry()(func.raw_(),total_args,frame->arguments());
@@ -557,7 +557,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
   Function_sp func = coerce::functionDesignator( head );
   if (args->total_nargs() == 0) eval::errorApplyZeroArguments();
-  size_t lenArgs = args->_nargs;
+  size_t lenArgs = args->remaining_nargs();
   T_O* lastArgRaw = (*args)[lenArgs - 1];
   if (gctools::tagged_vaslistp(lastArgRaw)) {
     Vaslist_sp valast((gc::Tagged)lastArgRaw);
@@ -1770,7 +1770,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             }
             Vaslist valist_struct(idx,fargs);
             Vaslist_sp valist(&valist_struct); // = valist_struct.fargs.setupVaslist(valist_struct);
-            return funcall_general<core::Function_O>(func.tagged_(), valist_struct._nargs, valist_struct._args );
+            return funcall_general<core::Function_O>(func.tagged_(), valist_struct.remaining_nargs(), valist_struct.args() );
         }
 
 
@@ -2395,7 +2395,7 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif
             Vaslist valist_struct(nargs,callArgs);
             Vaslist_sp valist(&valist_struct); // = callArgs.setupVaslist(valist_struct);
-            return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
+            return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct.remaining_nargs(), valist_struct.args() );
           }
           SIMPLE_ERROR(("Illegal form %s") , _rep_(exp));
         }

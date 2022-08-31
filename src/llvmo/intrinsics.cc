@@ -127,10 +127,8 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
 
 ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(Vaslist* vaslist, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
-  untagged_vargs_rest[0]._args = vaslist->_args;
-  untagged_vargs_rest[1]._args = vaslist->_args;
-  untagged_vargs_rest[0]._nargs = nargs;
-  untagged_vargs_rest[1]._nargs = nargs;
+  new(&untagged_vargs_rest[0]) Vaslist(nargs, vaslist->args());
+  new(&untagged_vargs_rest[1]) Vaslist(nargs, vaslist->args());
   T_O* result = untagged_vargs_rest->asTaggedPtr();
 #ifdef DEBUG_VASLIST
   if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
