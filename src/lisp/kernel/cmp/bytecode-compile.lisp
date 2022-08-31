@@ -188,21 +188,6 @@
                    (t (error "???? PC offset too big ????"))))))
     (emit-fixup context (core:bytecode-cmp-fixup/make label 3 #'emitter #'resizer))))
 
-(defun emit-const (context index)
-  (if (> index 255)
-      (assemble context
-        +long+ +const+
-        (logand index #xff) (logand (ash index -8) #xff))
-      (assemble context +const+ index)))
-
-(defun emit-fdefinition (context index)
-  (if (> index 255)
-      (assemble context
-        +long+ +fdefinition+
-        (logand index #xff) (logand (ash index -8) #xff))
-      (assemble context +fdefinition+ index)))
-
-
 (defun emit-parse-key-args (context max-count key-count key-names env aok-p)
   (let* ((keystart (literal-index (first key-names) context))
          (index (core:bytecode-cmp-env/frame-end env))
@@ -225,16 +210,9 @@
            (error "Handle more than 32767 keyword parameters - you need ~s" key-count)))))
 
 (defun emit-bind (context count offset)
-  (cond ((= count 1)
-         (assemble-maybe-long context +set+ offset))
+  (cond ((= count 1) (assemble-maybe-long context +set+ offset))
         ((= count 0))
-        ((and (< count #.(ash 1 8)) (< offset #.(ash 1 8)))
-         (assemble context +bind+ count offset))
-        ((and (< count #.(ash 1 16)) (< offset #.(ash 1 16)))
-         (assemble context +long+ +bind+
-                   (ldb (byte 8 0) count) (ldb (byte 8 8) count)
-                   (ldb (byte 8 0) offset) (ldb (byte 8 8) offset)))
-        (t (error "Too many lexicals: ~d ~d" count offset))))
+        (t (assemble-maybe-long context +bind+ count offset))))
 
 (defun emit-call (context count)
   (let ((receiving (core:bytecode-cmp-context/receiving context)))
@@ -382,7 +360,7 @@
   (declare (ignore env))
   (unless (eql (core:bytecode-cmp-context/receiving context) 0)
     (cond ((null form) (assemble context +nil+))
-          (t (emit-const context (literal-index form context))))
+          (t (assemble-maybe-long context +const+ (literal-index form context))))
     (when (eql (core:bytecode-cmp-context/receiving context) t)
       (assemble context +pop+))))
 
@@ -778,7 +756,7 @@
                                     (context-module context)))
                (literal-index (literal-index fun context)))
           (cond ((zerop (length (core:bytecode-cmp-function/closed fun)))
-                 (emit-const context literal-index))
+                 (assemble-maybe-long context +const+ literal-index))
                 (t
                  (push (cons fun frame-slot) closures)
                  (assemble-maybe-long context
@@ -820,7 +798,8 @@
           (dotimes (i (length closed))
             (reference-lexical-info (aref closed i) context))
           (if (zerop (length closed))
-              (emit-const context (literal-index cfunction context))
+              (assemble-maybe-long context
+                                   +const+ (literal-index cfunction context))
               (assemble-maybe-long context +make-closure+
                                    (literal-index cfunction context))))
         (let ((info (fun-info fnameoid env)))
@@ -828,7 +807,8 @@
             ((typep info '(or core:bytecode-cmp-global-fun-info null))
              #-(or clasp-min aclasp bclasp)
              (when (null info) (warn "Unknown function ~a" fnameoid))
-             (emit-fdefinition context (literal-index fnameoid context)))
+             (assemble-maybe-long context +fdefinition+
+                                  (literal-index fnameoid context)))
             ((typep info 'core:bytecode-cmp-local-fun-info)
              (reference-lexical-info
               (core:bytecode-cmp-local-fun-info/fun-var info) context))
