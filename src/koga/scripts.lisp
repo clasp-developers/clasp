@@ -106,7 +106,8 @@
 (defmethod print-prologue (configuration (name (eql :load-vclasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:load-vclasp :reproducible ~s)" (jobs configuration) (reproducible-build configuration)))
+(defvar *system* (core:load-vclasp :reproducible ~s))
+(core:top-level)" (jobs configuration) (reproducible-build configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-vclasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
