@@ -1151,14 +1151,11 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-vaslist-args-address (vaslist-v &optional (label "vaslist_address"))
   (c++-field-ptr info.%vaslist% vaslist-v :args label))
 
-(defun irc-vaslist-nargs-address (vaslist-v
-                                  &optional (label "vaslist_remaining_nargs_address"))
-  (c++-field-ptr info.%vaslist% vaslist-v :nargs label))
-
 (defun irc-make-vaslist (nvals vals &optional (label "saved-values"))
   (let* ((undef (llvm-sys:undef-value-get %vaslist%))
          (s1 (llvm-sys:create-insert-value *irbuilder* undef vals '(0) label))
-         (s2 (llvm-sys:create-insert-value *irbuilder* s1 nvals '(1)
+         (shifted-nvals (irc-lsh nvals +vaslist-nvals-shift+))
+         (s2 (llvm-sys:create-insert-value *irbuilder* s1 shifted-nvals '(1)
                                            label)))
     (unless (llvm-sys:type-equal (llvm-sys:get-type s2) %vaslist%)
       (error "s2 is a ~a and it must be a %vaslist%" s2))
@@ -1172,7 +1169,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-vaslist-nvals (vaslist &optional (label "nvals"))
   (unless (llvm-sys:type-equal (llvm-sys:get-type vaslist) %vaslist%)
     (error "You must pass a %vaslist% to irc-vaslist-nvals - you passed a ~a" vaslist))
-  (irc-extract-value vaslist '(1) label))
+  (let ((shifted-nvals (irc-extract-value vaslist '(1) label)))
+    (irc-lshr shifted-nvals +vaslist-nvals-shift+)))
 
 ;;; Get the nth value of a vaslist. This entails checking the number
 ;;; of values and possibly returning a constant nil if needed.
