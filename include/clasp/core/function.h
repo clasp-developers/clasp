@@ -163,7 +163,9 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
 
 
     CL_DEFMETHOD EntryPoint_sp entryPoint() const {
-      return this->_TheEntryPoint.load();
+      EntryPoint_sp ep = this->_TheEntryPoint.load();
+      ASSERT(ep.generalp());
+      return ep;
     }
 
     CL_DEFMETHOD void setEntryPoint(EntryPoint_sp ep) {
