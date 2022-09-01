@@ -146,7 +146,7 @@ bool character_comparison(int s, int t, Character_sp x, Character_sp y,
 bool monotonic(int s, int t, Vaslist_sp args, bool preserve_case = true) {
   Character_sp x = gc::As<Character_sp>(args->next_arg());
   Character_sp y;
-  while (args->remaining_nargs() != 0) {
+  while (args->nargs() != 0) {
     y = gc::As<Character_sp>(args->next_arg());
     // If we find a false comparison we exit immediately.
     if (!(character_comparison(s, t, x, y, preserve_case)))
@@ -169,7 +169,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_LT_(Vaslist_sp args) {
-  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs() == 0) PROGRAM_ERROR();
   else return monotonic(-1, 1, args);
 };
 
@@ -186,7 +186,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_GT_(Vaslist_sp args) {
-  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs() == 0) PROGRAM_ERROR();
   else return monotonic(1, 1, args);
 };
 
@@ -203,7 +203,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_LE_(Vaslist_sp args) {
-  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs() == 0) PROGRAM_ERROR();
   else return monotonic(-1, 0, args);
 };
 
@@ -220,7 +220,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_GE_(Vaslist_sp args) {
-  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs() == 0) PROGRAM_ERROR();
   else return monotonic(1, 0, args);
 };
 
@@ -237,7 +237,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing, ignore case)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_lessp(Vaslist_sp args) {
-  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs() == 0) PROGRAM_ERROR();
   else return monotonic(-1, 1, args, false);
 };
 
@@ -254,7 +254,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing, ignore case)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_greaterp(Vaslist_sp args) {
-  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs() == 0) PROGRAM_ERROR();
   else return monotonic(1, 1, args, false);
 };
 
@@ -271,7 +271,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing, ignore case)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_not_greaterp(Vaslist_sp args) {
-  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs() == 0) PROGRAM_ERROR();
   else return monotonic(-1, 0, args, false);
 };
 
@@ -288,7 +288,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing, ignore case)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_not_lessp(Vaslist_sp args) {
-  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs() == 0) PROGRAM_ERROR();
   else return monotonic(1, 0, args, false);
 };
 
@@ -298,7 +298,7 @@ CL_DOCSTRING(R"dx(NE_)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__char_NE_(Vaslist_sp args) {
   // Just like cl___NE_
-  switch (args->remaining_nargs()) {
+  switch (args->nargs()) {
     /* I expect the order of likelihood is 2, 3, 1, >3, 0.
      * I don't think the compiler takes the order in a switch
      * very seriously, though, so it's just in order. */
@@ -345,7 +345,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(EQ_)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__char_EQ_(Vaslist_sp args) {
-  switch (args->remaining_nargs()) {
+  switch (args->nargs()) {
   case 0:
       PROGRAM_ERROR();
   case 1: {
@@ -360,7 +360,7 @@ CL_DEFUN T_sp cl__char_EQ_(Vaslist_sp args) {
   }
   default: {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
-    while (args->remaining_nargs()) {
+    while (args->nargs()) {
       claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
       if (a!=b) {
         return ((nil<T_O>()));
@@ -416,7 +416,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(EQ_)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__char_equal(Vaslist_sp chars) {
-  switch (chars->remaining_nargs()) {
+  switch (chars->nargs()) {
   case 0:
       PROGRAM_ERROR();
   case 1: {
@@ -434,7 +434,7 @@ CL_DEFUN T_sp cl__char_equal(Vaslist_sp chars) {
   default: {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
     a = char_upcase(a);
-    while (chars->remaining_nargs()) {
+    while (chars->nargs()) {
       claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
       b = char_upcase(b);
       if (a!=b) {

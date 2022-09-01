@@ -473,7 +473,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   T_sp arg;
   uintptr_t stamp;
   size_t ip = 0; // instruction pointer
-  size_t nargs = dispatch_args->remaining_nargs(); // used in error signalling
+  size_t nargs = dispatch_args->nargs(); // used in error signalling
   while (1) {
     size_t op = (*program)[ip].unsafe_fixnum();
     DTILOG("ip[%lu]: %lu/%s\n" , ip , op , dtree_op_name(op));
@@ -484,7 +484,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
       DTILOG("About to read arg dispatch_args-> %p\n" , dispatch_args.raw_());
       DTILOG("About to dump dispatch_args Vaslist\n");
       DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
-      if (dispatch_args->remaining_nargs() == 0)
+      if (dispatch_args->nargs() == 0)
           // we use an intermediate function, in lisp, to get a nice error message.
         return core::eval::funcall(clos::_sym_interp_wrong_nargs,
                                    generic_function, make_fixnum(nargs));
@@ -652,7 +652,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         // Use the pass_args here because it points to the original arguments
         DTILOG("About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        return func->entry()(func.raw_(), pass_args->remaining_nargs(), pass_args->args());
+        return func->entry()(func.raw_(), pass_args->nargs(), pass_args->args());
       }
     default:
         SIMPLE_ERROR(("%zu is not a valid dtree opcode") , op);

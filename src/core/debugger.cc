@@ -100,8 +100,8 @@ CL_DEFUN Vaslist_sp core__vaslist_rewind(Vaslist_sp v)
 DOCGROUP(clasp)
 CL_DEFUN size_t core__vaslist_length(Vaslist_sp v)
 {
-//  printf("%s:%d vaslist length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
-  return v->remaining_nargs();
+//  printf("%s:%d vaslist length %" PRu "\n", __FILE__, __LINE__, v->nargs());
+  return v->nargs();
 }
 
 DOCGROUP(clasp)
@@ -134,7 +134,7 @@ CL_DEFUN List_sp core__list_from_vaslist(Vaslist_sp vorig)
   Vaslist valist_copy(*vorig);
   Vaslist_sp valist(&valist_copy);
   ql::list l;
-  size_t nargs = valist->remaining_nargs();
+  size_t nargs = valist->nargs();
 //  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
   for ( size_t i=0; i<nargs; ++i ) {
     T_sp one = valist->next_arg_indexed(i);
@@ -325,7 +325,7 @@ void dbg_Vaslist_sp_describe(T_sp obj) {
   printf("Calling dump_Vaslist_ptr\n");
   bool atHead = dump_Vaslist_ptr(stdout,&vlcopy_s);
   if (atHead) {
-    for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
+    for (size_t i(0), iEnd(vlcopy->nargs()); i < iEnd; ++i) {
       T_sp v = vlcopy->next_arg_indexed(i);
       printf("entry@%p %3zu --> %s\n", v.raw_(), i, _rep_(v).c_str());
     }
@@ -529,9 +529,9 @@ std::string dbg_safe_repr(uintptr_t raw) {
     ss  << " :args @" << (void*)vaslist->_args;
     ;
 #endif
-    ss << ":nargs " << vaslist->remaining_nargs();
+    ss << ":nargs " << vaslist->nargs();
     ss << " :contents (";
-    for ( size_t ii=0; ii<vaslist->remaining_nargs(); ii++ ) {
+    for ( size_t ii=0; ii<vaslist->nargs(); ii++ ) {
       ss << dbg_safe_repr((uintptr_t)vaslist->relative_indexed_arg(ii)) << " ";
     }
     ss << ")$>";

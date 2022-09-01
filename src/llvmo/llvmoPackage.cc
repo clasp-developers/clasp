@@ -284,6 +284,9 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-ALIGNMENT"), make_fixnum(VASLIST_ALIGNMENT)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-ARGS-OFFSET"), make_fixnum((int)Vaslist::args_offset())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-OFFSET"), make_fixnum((int)Vaslist::nargs_offset())),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-DECREMENT"), make_fixnum((int)Vaslist::NargsDecrement)),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-MASK"), make_fixnum((int)Vaslist::NargsMask)),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-SHIFT"), make_fixnum((int)Vaslist::NargsShift)),list);
   
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-SIZE"), make_fixnum(sizeof(gctools::Header_s))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-STAMP-OFFSET"), make_fixnum(offsetof(gctools::Header_s,_stamp_wtag_mtag._value))), list);

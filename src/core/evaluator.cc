@@ -148,7 +148,7 @@ extern "C" void cc_protect_alloca(char* ptr);
 
 T_mv apply0_inner_valist(Function_sp func, Vaslist_sp var) {
   T_O *a0, *a1, *a2, *a3;
-  int lenRest = var->remaining_nargs();
+  int lenRest = var->nargs();
   int nargs = lenRest + 0;
   Vaslist* vaslist = &*var;
   switch (lenRest) {
@@ -185,7 +185,7 @@ T_mv apply0_inner_valist(Function_sp func, Vaslist_sp var) {
 
 T_mv apply1_inner_valist(Function_sp func, T_O* a0, Vaslist_sp var) {
   T_O *a1, *a2, *a3;
-  size_t lenRest = var->remaining_nargs();
+  size_t lenRest = var->nargs();
   size_t nargs = lenRest + 1;
   switch (lenRest) {
   case 0: 
@@ -219,7 +219,7 @@ T_mv apply1_inner_valist(Function_sp func, T_O* a0, Vaslist_sp var) {
 
 T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, Vaslist_sp var) {
   T_O *a2, *a3;
-  size_t lenRest = var->remaining_nargs();
+  size_t lenRest = var->nargs();
   size_t nargs = lenRest + 2;
   switch (lenRest) {
   case 0: 
@@ -248,7 +248,7 @@ T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, Vaslist_sp var) {
 
 T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, Vaslist_sp var) {
   T_O *a3;
-  size_t lenRest = var->remaining_nargs();
+  size_t lenRest = var->nargs();
   size_t nargs = lenRest + 3;
   switch (lenRest) {
   case 0: 
@@ -274,8 +274,8 @@ T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, Vaslist_sp
 T_mv apply4_inner_valist(Function_sp func, Vaslist_sp v,
                          T_O* a0, T_O* a1, T_O* a2, T_O *a3,
                          Vaslist_sp var) {
-  size_t lenRest = var->remaining_nargs();
-  size_t nargs = lenRest + 4 + v->remaining_nargs();
+  size_t lenRest = var->nargs();
+  size_t nargs = lenRest + 4 + v->nargs();
   MAKE_STACK_FRAME( frame, nargs );
   size_t idx(0);
   gctools::fill_frame_one( frame, idx, a0 );
@@ -510,7 +510,7 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
     }
     if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(var);
   }
-  size_t nargs = lenRest + fixed->remaining_nargs() + 4;
+  size_t nargs = lenRest + fixed->nargs() + 4;
   MAKE_STACK_FRAME( frame, nargs );
   size_t idx(0);
   gctools::fill_frame_one( frame, idx, a0 );
@@ -528,7 +528,7 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
  * we end up here with var = var, lenFixed = n, fixed = the apply valist.
  * When var is a Vaslist, naturally. */
 T_mv apply_inner_valist(Function_sp func, size_t lenFixed, Vaslist_sp fixed, Vaslist_sp var) {
-  size_t nargs_var = var->remaining_nargs();
+  size_t nargs_var = var->nargs();
   size_t total_args = lenFixed + nargs_var;
   MAKE_STACK_FRAME( frame, total_args );
   size_t idx(0);
@@ -556,8 +556,8 @@ CL_DOCSTRING(R"dx(apply)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
   Function_sp func = coerce::functionDesignator( head );
-  if (args->total_nargs() == 0) eval::errorApplyZeroArguments();
-  size_t lenArgs = args->remaining_nargs();
+  if (args->nargs() == 0) eval::errorApplyZeroArguments();
+  size_t lenArgs = args->nargs();
   T_O* lastArgRaw = (*args)[lenArgs - 1];
   if (gctools::tagged_vaslistp(lastArgRaw)) {
     Vaslist_sp valast((gc::Tagged)lastArgRaw);
@@ -1770,7 +1770,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             }
             Vaslist valist_struct(idx,fargs);
             Vaslist_sp valist(&valist_struct); // = valist_struct.fargs.setupVaslist(valist_struct);
-            return funcall_general<core::Function_O>(func.tagged_(), valist_struct.remaining_nargs(), valist_struct.args() );
+            return funcall_general<core::Function_O>(func.tagged_(), valist_struct.nargs(), valist_struct.args() );
         }
 
 
@@ -2395,7 +2395,7 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif
             Vaslist valist_struct(nargs,callArgs);
             Vaslist_sp valist(&valist_struct); // = callArgs.setupVaslist(valist_struct);
-            return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct.remaining_nargs(), valist_struct.args() );
+            return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct.nargs(), valist_struct.args() );
           }
           SIMPLE_ERROR(("Illegal form %s") , _rep_(exp));
         }

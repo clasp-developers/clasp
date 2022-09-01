@@ -234,7 +234,7 @@ size_t Array_O::arrayRowMajorIndex(List_sp indices) const {
 
 size_t Array_O::arrayRowMajorIndex(Vaslist_sp indices) const {
   size_t rank = this->rank();
-  size_t indices_passed = indices->remaining_nargs();
+  size_t indices_passed = indices->nargs();
   unlikely_if (indices_passed < rank) {
     insufficientIndexListError(core__list_from_vaslist(indices));
   } else {
