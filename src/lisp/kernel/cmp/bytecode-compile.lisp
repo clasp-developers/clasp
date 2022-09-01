@@ -1023,7 +1023,7 @@
         ;; &rest
         (when rest
           (if varest-p
-              (assemble-maybe-long context +valistify-rest-args+ max-count)
+              (assemble-maybe-long context +vaslistify-rest-args+ max-count)
               (assemble-maybe-long context +listify-rest-args+ max-count))
           (assemble-maybe-long context +set+ (frame-end new-env))
           (setq new-env (bind-vars (list rest) new-env context))

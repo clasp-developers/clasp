@@ -178,6 +178,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         size_t nlocals, Closure_O* closure,
                                         size_t lcc_nargs,
                                         core::T_O** lcc_args) {
+  bool vaslistp = false; // true if we need to deallocate a vaslist at the end
   if (lcc_nargs> 65536) {
     printf("%s:%d:%s A very large number of arguments %lu are being passed - check if there is a problem\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs );
   }
@@ -368,6 +369,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     }
     case vm_return: {
       DBG_VM1("return\n");
+      if (vaslistp) vm.drop(2); // deallocate
 #ifdef DBG_VM1
       if (vm.npushed(nlocals) != 0) {
         gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %lu   nlocals = %lu", vm.npushed(nlocals), nlocals).c_str());
@@ -416,6 +418,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t start = read_uint8(vm._pc);
       DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
       vm.push(vm.alloca_vaslist(lcc_args + start, lcc_nargs));
+      vaslistp = true;
       vm._pc++;
       break;
     }
