@@ -1,1 +1,1 @@
-#+stage2 (stage-features :clos :bclasp)
+#+stage2 (stage-features :clasp-min :aclasp)

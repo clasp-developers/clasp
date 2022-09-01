@@ -643,6 +643,18 @@ Return files."
     result))
 (export 'command-line-arguments-as-list)           
 
+(defun command-line-paths (&optional (start 0)
+                           &aux (index (length core:*command-line-arguments*))
+                                paths)
+  (tagbody
+   next
+    (if (> index start)
+        (progn
+          (setq index (- index 1)
+                paths (cons (pathname (elt core:*command-line-arguments* index)) paths))
+          (go next))))
+  paths)
+
 (defun remove-stage-features ()
   (setq *features* (core:remove-equal :clasp-min *features*))
   (setq *features* (core:remove-equal :clos *features*))
@@ -1011,7 +1023,7 @@ been initialized with install path versus the build path of the source code file
 
 (defun load-vclasp (&key reproducible clean (output-file (build-common-lisp-bitcode-pathname))
                          (system (command-line-arguments-as-list))
-                         (stage-count 4)
+                         (stage-count 7)
                     &aux installed-system)
   (if reproducible
       (setq installed-system (extract-installed-system system)))

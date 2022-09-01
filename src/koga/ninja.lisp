@@ -109,6 +109,10 @@
                     :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load load-vclasp.lisp -- $source"
                     :description "Loading vclasp"
                     :pool "console")
+  (ninja:write-rule output-stream :snapshot-vclasp
+                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load snapshot-vclasp.lisp -- $out $source"
+                    :description "Snapshot vclasp"
+                    :pool "console")
   (ninja:write-rule output-stream :compile-vclasp
                     :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load compile-vclasp.lisp -- $source"
                     :description "Compiling vclasp"
@@ -823,6 +827,8 @@
   (let ((vimage (image-source configuration :vclasp))
         (vimage-installed (image-source configuration :vclasp :package-lib))
         (iclasp (make-source (build-name :iclasp) :variant))
+        (vclasp (make-source (build-name :vclasp) :variant))
+        (lib (make-source "libclasp.a" :variant-lib))
         (*root-paths* (list* :variant-stage-bitcode (merge-pathnames (make-pathname :directory (list :relative
                                                                                                      (format nil "vclasp-~a-bitcode"
                                                                                                                  *variant-name*)))
@@ -840,6 +846,16 @@
                        :implicit-inputs (list iclasp
                                               (make-source "tools-for-build/character-names.sexp" :code))
                        :outputs (list (build-name "load_vclasp")))
+    (ninja:write-build output-stream :snapshot-vclasp
+                       :clasp iclasp
+                       :source (make-kernel-source-list configuration sources)
+                       :inputs sources
+                       :implicit-inputs (list iclasp lib
+                                              (make-source "tools-for-build/character-names.sexp" :code))
+                       :outputs (list vclasp))
+    (ninja:write-build output-stream :phony
+                       :inputs (list vclasp)
+                       :outputs (list (build-name "snapshot_vclasp")))
     (ninja:write-build output-stream :compile-vclasp
                        :clasp iclasp
                        :source (make-kernel-source-list configuration sources)

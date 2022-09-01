@@ -612,6 +612,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"compile-eclasp.lisp" :build))
                                                          :load-vclasp
                                                          (list (make-source #P"load-vclasp.lisp" :build))
+                                                         :snapshot-vclasp
+                                                         (list (make-source #P"snapshot-vclasp.lisp" :build))
                                                          :compile-vclasp
                                                          (list (make-source #P"compile-vclasp.lisp" :build))
                                                          :compile-module

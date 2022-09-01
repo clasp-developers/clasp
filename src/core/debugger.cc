@@ -456,9 +456,12 @@ std::string dbg_safe_repr(uintptr_t raw) {
       core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);
       core::Package_sp pkg = gc::As_unsafe<core::Package_sp>(sym->_HomePackage.load());
       if (pkg.generalp() && gc::IsA<core::Package_sp>(pkg)) {
-        ss << pkg->_Name->get_std_string();
+        if (pkg->isKeywordPackage()) {
+          ss << ":";
+        } else {
+          ss << pkg->_Name->get_std_string() << "::";
+        }
       }
-      ss << "::";
       if (sym->_Name.generalp() && gc::IsA<core::String_sp>(sym->_Name)) {
         ss << sym->_Name->get_std_string();
       }

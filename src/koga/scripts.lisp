@@ -109,6 +109,13 @@
 (defvar *system* (core:load-vclasp :reproducible ~s))
 (core:top-level)" (jobs configuration) (reproducible-build configuration)))
 
+(defmethod print-prologue (configuration (name (eql :snapshot-vclasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(defvar *system* (core:load-vclasp :reproducible ~s :system (core::command-line-paths 1)))
+(gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)
+(core:quit)" (jobs configuration) (reproducible-build configuration)))
+
 (defmethod print-prologue (configuration (name (eql :compile-vclasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
