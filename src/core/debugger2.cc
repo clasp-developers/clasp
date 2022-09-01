@@ -31,7 +31,7 @@ static void debugger_helpmsg() {
   // write_bf_stream(fmt::sprintf(":D      - dissasemble current function\n")); // TODO?
   write_bf_stream(fmt::sprintf(":a      - abort\n"));
   write_bf_stream(fmt::sprintf(":g ##   - jump to frame ##\n"));
-
+  write_bf_stream(fmt::sprintf(":q ##   - quit with exit code ##. Default is zero.\n"));
 }
 
 // Return the frame shift frames away from cur. Shift may be positive or
@@ -169,6 +169,11 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
     case 'h': // help
         debugger_helpmsg();
         break;
+    case 'q': { // quit
+        int code;
+        exit(debugger_parse_integer(eline, code) ? code : 0);
+      }
+      break;
     case 'g': { // go to frame
       int new_frame_index;
       if (debugger_parse_integer(eline, new_frame_index)) {
