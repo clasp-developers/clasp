@@ -1124,7 +1124,9 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
+  ASSERT(gc::IsA<core::GlobalBytecodeEntryPoint_sp>(closure->entryPoint()));
+  auto entry = closure->entryPoint();
+  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(entry);
   //DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
   size_t nlocals = entryPoint->localsFrameSize();
   BytecodeModule_sp module = entryPoint->code();

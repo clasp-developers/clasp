@@ -452,8 +452,8 @@ void Lisp::startupLispEnvironment() {
   symbol_nil->fmakunbound();
   symbol_nil->fmakunbound_setf();
   { // Trap symbols as they are interned
-    if (offsetof(Function_O,_EntryPoint)!=offsetof(FuncallableInstance_O,_EntryPoint)) {
-      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,_EntryPoint),offsetof(FuncallableInstance_O,_EntryPoint) );
+    if (offsetof(Function_O,_TheEntryPoint)!=offsetof(FuncallableInstance_O,_TheEntryPoint)) {
+      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,_TheEntryPoint),offsetof(FuncallableInstance_O,_TheEntryPoint) );
       printf("        These must match for Clasp to be able to function\n");
       abort();
     }

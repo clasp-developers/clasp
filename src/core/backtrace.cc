@@ -199,7 +199,7 @@ static T_sp dwarf_ep(size_t frameIndex,
           T_sp literal((gc::Tagged)(rliterals[i]));
           if (gc::IsA<LocalEntryPoint_sp>(literal)) {
             LocalEntryPoint_sp ep = gc::As_unsafe<LocalEntryPoint_sp>(literal);
-            uintptr_t absolute_entry = (uintptr_t)(ep->_EntryPoint);
+            uintptr_t absolute_entry = (uintptr_t)(ep->_Entry);
             D(printf("%s%s:%d:%s LocalEntryPoint_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), (void*)absolute_entry, _rep_(ep->functionDescription()).c_str()););
             for (auto range : ranges) {
               uintptr_t absolute_LowPC = range.LowPC+(uintptr_t)codeStart;
@@ -554,7 +554,7 @@ static bool sanity_check_frame( size_t frameIndex, void* ip, void* fbp) {
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function,
                        int32_t offsetOrSmallConstant, int64_t patchPointId) {
-        if (function.FunctionAddress == (uintptr_t)(localEntryPoint->_EntryPoint)) {
+        if (function.FunctionAddress == (uintptr_t)(localEntryPoint->_Entry)) {
           if (!sanity_check_args(fbp, offsetOrSmallConstant, patchPointId )) result = false;
           return;
         }

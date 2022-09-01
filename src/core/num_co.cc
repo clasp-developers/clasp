@@ -127,14 +127,14 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN SingleFloat_sp core__to_single_float(Real_sp x) {
-  if (x.single_floatp()) return x;
+  if (x.single_floatp()) return gc::As_unsafe<SingleFloat_sp>(x);
   else return clasp_make_single_float(clasp_to_double(x));
 }
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN DoubleFloat_sp core__to_double_float(Real_sp x) {
-  if (gc::IsA<DoubleFloat_sp>(x)) return x;
+  if (gc::IsA<DoubleFloat_sp>(x)) return gc::As_unsafe<DoubleFloat_sp>(x);
   else return clasp_make_double_float(clasp_to_double(x));
 }
 

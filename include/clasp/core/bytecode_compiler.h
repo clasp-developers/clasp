@@ -65,7 +65,7 @@ public:
   Function_sp _expander;
 public:
   BytecodeCmpSymbolMacroVarInfo_O(T_sp n_expander)
-    : BytecodeCmpVarInfo_O(), _expander(n_expander) {};
+      : BytecodeCmpVarInfo_O(), _expander(gc::As<Function_sp>(n_expander)) {};
   CL_LISPIFY_NAME(BytecodeCmpSymbolMacroVarInfo/make)
   CL_DEF_CLASS_METHOD
   static BytecodeCmpSymbolMacroVarInfo_sp make(T_sp expander) {

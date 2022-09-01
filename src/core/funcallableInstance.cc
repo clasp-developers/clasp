@@ -205,14 +205,14 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
     if (gc::IsA<Closure_sp>(function)) {
       Closure_sp closure = gc::As_unsafe<Closure_sp>(function);
       if (closure->openP())
-        this->_EntryPoint.store(closure->_EntryPoint.load());
+        this->setEntryPoint(closure->entryPoint());
       else {
-        GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(gctools::As<GlobalEntryPoint_sp>(this->_EntryPoint.load()));
-        this->_EntryPoint.store(entryPoint);
+        GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(gctools::As<GlobalEntryPoint_sp>(this->entryPoint()));
+        this->setEntryPoint(entryPoint);
       }
     } else {
-      GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(gc::As<GlobalEntryPoint_sp>(this->_EntryPoint.load()));
-      this->_EntryPoint.store(entryPoint);
+      GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(gc::As<GlobalEntryPoint_sp>(this->entryPoint()));
+      this->setEntryPoint(entryPoint);
     }
   } else {
     TYPE_ERROR(function, cl::_sym_function);
