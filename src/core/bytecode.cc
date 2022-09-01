@@ -764,7 +764,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         BytecodeModule_sp bcm = gc::As<GlobalBytecodeEntryPoint_sp>(ep)->code();
         unsigned char* codeStart = (unsigned char*)gc::As<Array_sp>(bcm->_Bytecode)->rowMajorAddressOfElement_(0);
         unsigned char* codeEnd = codeStart + gc::As<Array_sp>(bcm->_Bytecode)->arrayTotalSize();
-        SIMPLE_ERROR("Unknown opcode %hu pc: %p  module: %p - %p", *vm._pc, vm._pc, codeStart, codeEnd );
+        SIMPLE_ERROR("Unknown opcode %hu pc: %p  module: %p - %p", *vm._pc, (void*)vm._pc, (void*)codeStart, (void*)codeEnd );
     };
   }
 }
