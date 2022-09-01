@@ -120,11 +120,11 @@ struct VirtualMachine {
 #ifdef STACK_GROWS_UP
     this->_stackPointer += 2;
     *(this->_stackPointer - 1) = (core::T_O*)args;
-    *(this->_stackPointer - 0) = core::clasp_make_fixnum(nargs).raw_();
+    *(this->_stackPointer - 0) = Vaslist::make_shifted_nargs(nargs);
 #else
     this->_stackPointer -= 2;
     *(this->_stackPointer + 0) = (core::T_O*)args;
-    *(this->_stackPointer + 1) = core::clasp_make_fixnum(nargs).raw_();
+    *(this->_stackPointer + 1) = Vaslist::make_shifted_nargs(nargs);
 #endif
     VM_CHECK(*this);
 #ifdef STACK_GROWS_UP

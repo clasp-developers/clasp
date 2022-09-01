@@ -125,10 +125,10 @@ struct Vaslist {
   /* WARNING WARNING WARNING WARNING
 DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vaslist+ in cmpintrinsics.lisp
 */
-  mutable T_O**   _Args;
-  mutable size_t  _ShiftedNargs;
+  mutable T_O**   _Args;            // MUST be first slot
+  mutable size_t  _ShiftedNargs;    // MUST be second slot
 
-  static constexpr size_t NargsShift = 0;
+  static constexpr size_t NargsShift = 2;
   static constexpr size_t NargsDecrement = 1<<NargsShift;
   static constexpr size_t NargsMask = 0;
   
@@ -200,6 +200,9 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
     return this->_Args;
   }
 
+  static T_O* make_shifted_nargs(size_t nargs) {
+    return (T_O*)(nargs << NargsShift);
+  }
   static size_t nargs_offset() {
     return offsetof(Vaslist,_ShiftedNargs);
   }
