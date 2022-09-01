@@ -1023,7 +1023,9 @@ been initialized with install path versus the build path of the source code file
 
 (defun load-vclasp (&key reproducible clean (output-file (build-common-lisp-bitcode-pathname))
                          (system (command-line-arguments-as-list))
-                         (stage-count 7)
+                         (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
+                                          (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
+                                          7))
                     &aux installed-system)
   (if reproducible
       (setq installed-system (extract-installed-system system)))

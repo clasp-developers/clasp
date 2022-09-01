@@ -107,7 +107,9 @@
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
 (defvar *system* (core:load-vclasp :reproducible ~s))
-(core:top-level)" (jobs configuration) (reproducible-build configuration)))
+(if (fboundp 'core:top-level)
+    (core:top-level)
+    (core:low-level-repl))" (jobs configuration) (reproducible-build configuration)))
 
 (defmethod print-prologue (configuration (name (eql :snapshot-vclasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
