@@ -43,7 +43,7 @@
     +make-closure+ +make-uninitialized-closure+ +initialize-closure+
     +return+
     +bind-required-args+ +bind-optional-args+
-    +listify-rest-args+ +parse-key-args+
+    +listify-rest-args+ +vaslistify-rest-args+ +parse-key-args+
     +jump-8+ +jump-16+ +jump-24+
     +jump-if-8+ +jump-if-16+ +jump-if-24+
     +jump-if-supplied-8+ +jump-if-supplied-16+
@@ -916,7 +916,8 @@
   (multiple-value-bind (decls body docs specials)
       (core:process-declarations body t)
     (declare (ignore docs decls))
-    (multiple-value-bind (required optionals rest key-flag keys aok-p aux)
+    (multiple-value-bind (required optionals rest key-flag keys aok-p aux
+                          varest-p)
         (core:process-lambda-list lambda-list 'function)
       (let* ((function (context-function context))
              (entry-point (cfunction-entry-point function))
@@ -1021,7 +1022,9 @@
               (when supplied-special-p (incf special-binding-count)))))
         ;; &rest
         (when rest
-          (assemble-maybe-long context +listify-rest-args+ max-count)
+          (if varest-p
+              (assemble-maybe-long context +valistify-rest-args+ max-count)
+              (assemble-maybe-long context +listify-rest-args+ max-count))
           (assemble-maybe-long context +set+ (frame-end new-env))
           (setq new-env (bind-vars (list rest) new-env context))
           (cond ((or (member rest specials)

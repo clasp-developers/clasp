@@ -412,6 +412,13 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       vm._pc++;
       break;
     }
+    case vm_vaslistify_rest_args: {
+      uint8_t start = read_uint8(vm._pc);
+      DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
+      vm.push(vm.alloca_vaslist(lcc_args + start, lcc_nargs));
+      vm._pc++;
+      break;
+    }
     case vm_parse_key_args: {
       uint8_t more_start = read_uint8(vm._pc);
       uint8_t key_count_info = read_uint8(vm._pc);

@@ -114,6 +114,25 @@ struct VirtualMachine {
     VM_CHECK(*this);
     return value;
   }
+
+  // Allocate a Vaslist object on the stack.
+  inline core::T_O* alloca_vaslist(core::T_O** args, size_t nargs) {
+#ifdef STACK_GROWS_UP
+    this->_stackPointer += 2;
+    *(this->_stackPointer - 1) = (core::T_O*)args;
+    *(this->_stackPointer - 0) = core::clasp_make_fixnum(nargs).raw_();
+#else
+    this->_stackPointer -= 2;
+    *(this->_stackPointer + 0) = (core::T_O*)args;
+    *(this->_stackPointer + 1) = core::clasp_make_fixnum(nargs).raw_();
+#endif
+    VM_CHECK(*this);
+#ifdef STACK_GROWS_UP
+    return gc::tag_vaslist<core::T_O*>((core::Vaslist*)(this->_stackPointer - 1));
+#else
+    return gc::tag_vaslist<core::T_O*>((core::Vaslist*)(this->_stackPointer));
+#endif
+  }
   
   // Drop NELEMS slots on the stack all in one go.
   inline void drop(size_t nelems) {
