@@ -386,7 +386,8 @@
            (values :global-macro (macro-function name nil)))
           ((and (symbolp name) (special-operator-p name))
            (error "Tried to get FUN-INFO for special operator ~s - that's impossible" name))
-          ((fboundp name) (values :global-function nil))
+          ((fboundp name)
+           (values :global-function (compiler-macro-function name)))
           (t (values nil nil)))))
 
 (deftype lambda-expression () '(cons (eql lambda) (cons list list)))
@@ -617,6 +618,12 @@
           (compile-form (funcall *macroexpand-hook* data (cons head rest) env)
                         env context))
          ((member kind '(:global-function :local-function nil))
+          ;; Try a compiler macroexpansion
+          (when (and (eq kind ':global-function) data)
+            (return-from compile-cons
+              (compile-form
+               (funcall *macroexpand-hook* data (cons head rest) env)
+               env context)))
           ;; unknown function warning handled by compile-function
           ;; note we do a double lookup, which is inefficient
           (compile-function head env (new-context context :receiving 1))
