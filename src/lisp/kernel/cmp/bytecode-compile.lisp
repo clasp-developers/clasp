@@ -69,43 +69,14 @@
                              (cfunction (context/cfunction parent)))
   (context/make receiving cfunction))
 
-(defun emit-label (context label)
-  (cmp:annotation/setf-position
-   label (length (context-assembly context)))
-  (let ((function (cmp:context/cfunction context)))
-    (cmp:annotation/setf-cfunction label function)
-    (cmp:annotation/setf-index
-     label
-     (vector-push-extend label (cmp:cfunction/annotations function)))))
-
 (defun values-less-than-p (values max)
   (dolist (value values t)
     (unless (<= 0 value (1- max)) (return-from values-less-than-p nil))))
 
-;;; Write WORD of bytesize SIZE to VECTOR at POSITION.
-(defun write-le-unsigned (vector word size position)
-  (let ((end (+ position size)))
-    (do ((position position (1+ position))
-         (word word (ash word -8)))
-        ((>= position end))
-      (setf (aref vector position) (logand word #xff)))))
-
-;;; Emit FIXUP into CONTEXT.
-(defun emit-fixup (context fixup)
-  (let* ((assembly (context-assembly context))
-         (cfunction (cmp:context/cfunction context))
-         (position (length assembly)))
-    (cmp:annotation/setf-cfunction fixup cfunction)
-    (cmp:annotation/setf-initial-position fixup position)
-    (cmp:annotation/setf-position fixup position)
-    (cmp:annotation/setf-index
-     fixup (vector-push-extend fixup (cmp:cfunction/annotations cfunction)))
-    (dotimes (i (cmp:fixup/initial-size fixup))
-      (vector-push-extend 0 assembly))))
-
 ;;; Emit OPCODE and then a label reference.
 (defun emit-control+label (context opcode8 opcode16 opcode24 label)
-  (emit-fixup context (control-label-fixup/make label opcode8 opcode16 opcode24)))
+  (fixup/contextualize (control-label-fixup/make label opcode8 opcode16 opcode24)
+                       context))
 
 (defun emit-jump (context label)
   (emit-control+label context +jump-8+ +jump-16+ +jump-24+ label))
@@ -117,7 +88,7 @@
   (emit-control+label context +catch-8+ +catch-16+ nil label))
 
 (defun emit-jump-if-supplied (context index label)
-  (emit-fixup context (jump-if-supplied-fixup/make label index)))
+  (fixup/contextualize (jump-if-supplied-fixup/make label index) context))
 
 (defun emit-parse-key-args (context max-count key-count key-names env aok-p)
   (let* ((keystart (literal-index (first key-names) context))
@@ -263,17 +234,17 @@
         (compile-literal value env context))))
 
 (defun maybe-emit-make-cell (lexical-info context)
-  (emit-fixup context (lex-ref-fixup/make lexical-info +make-cell+)))
+  (fixup/contextualize (lex-ref-fixup/make lexical-info +make-cell+) context))
 (defun maybe-emit-cell-ref (lexical-info context)
-  (emit-fixup context (lex-ref-fixup/make lexical-info +cell-ref+)))
+  (fixup/contextualize (lex-ref-fixup/make lexical-info +cell-ref+) context))
 
 ;;; FIXME: This is probably a good candidate for a specialized
 ;;; instruction.
 (defun maybe-emit-encage (lexical-info context)
-  (emit-fixup context (encage-fixup/make lexical-info)))
+  (fixup/contextualize (encage-fixup/make lexical-info) context))
 
 (defun emit-lexical-set (lexical-info context)
-  (emit-fixup context (lex-set-fixup/make lexical-info)))
+  (fixup/contextualize (lex-set-fixup/make lexical-info) context))
 
 (defun compile-symbol (form env context)
   (let ((info (cmp:var-info form env)))
@@ -622,9 +593,9 @@
     (emit-jump-if context then-label)
     (compile-form else env context)
     (emit-jump context done-label)
-    (emit-label context then-label)
+    (label/contextualize then-label context)
     (compile-form then env context)
-    (emit-label context done-label)))
+    (label/contextualize done-label context)))
 
 ;;; Push the immutable value or cell of lexical in CONTEXT.
 (defun reference-lexical-info (info context)
@@ -688,7 +659,7 @@
              ;; such while leaving them temporarily "lexically" bound during
              ;; argument parsing.
              (opt-key-indices nil))
-        (emit-label context entry-point)
+        (label/contextualize entry-point context)
         ;; Generate argument count check.
         (cond ((and (> min-count 0) (= min-count max-count) (not more-p))
                (assemble-maybe-long context +check-arg-count=+ min-count))
@@ -764,8 +735,8 @@
           (do ((optionals (cdr optionals) (cdddr optionals))
                (optional-label (cmp:label/make) next-optional-label)
                (next-optional-label (cmp:label/make) (cmp:label/make)))
-              ((endp optionals) (emit-label context optional-label))
-            (emit-label context optional-label)
+              ((endp optionals) (label/contextualize optional-label context))
+            (label/contextualize optional-label context)
             (let* ((optional-var (car optionals))
                    (defaulting-form (cadr optionals)) (supplied-var (caddr optionals))
                    (optional-special-p
@@ -804,8 +775,8 @@
           (do ((keys (cdr keys) (cddddr keys))
                (key-label (cmp:label/make) next-key-label)
                (next-key-label (cmp:label/make) (cmp:label/make)))
-              ((endp keys) (emit-label context key-label))
-            (emit-label context key-label)
+              ((endp keys) (label/contextualize key-label context))
+            (label/contextualize key-label context)
             (let* ((key-var (cadr keys)) (defaulting-form (caddr keys))
                    (index (cdr (assoc key-var opt-key-indices)))
                    (supplied-var (cadddr keys))
@@ -879,7 +850,7 @@
         (when supplied-var
           (supply nil supplied-specialp supplied-var supplied-info))
         (emit-jump context next-label)
-        (emit-label context supplied-label)
+        (label/contextualize supplied-label context)
         (default t var-specialp var varinfo)
         (when supplied-var
           (supply t supplied-specialp supplied-var supplied-info))
@@ -927,7 +898,7 @@
       ;; Compile the body, emitting the tag destination labels.
       (dolist (statement statements)
         (if (go-tag-p statement)
-            (emit-label context (cddr (assoc statement (cmp:lexenv/tags env))))
+            (label/contextualize (cddr (assoc statement (cmp:lexenv/tags env))) context)
             (compile-form statement env (new-context context :receiving 0))))))
   (assemble context +entry-close+)
   ;; return nil if we really have to
@@ -959,12 +930,12 @@
       (compile-progn body env context))
     (when (eql (cmp:context/receiving context) 1)
       (emit-jump context normal-label))
-    (emit-label context label)
+    (label/contextualize label context)
     ;; When we need 1 value, we have to make sure that the
     ;; "exceptional" case pushes a single value onto the stack.
     (when (eql (cmp:context/receiving context) 1)
       (assemble context +push+)
-      (emit-label context normal-label))
+      (label/contextualize normal-label context))
     (assemble context +entry-close+)))
 
 (defun compile-return-from (name value env context)
@@ -982,7 +953,7 @@
     (emit-catch context target)
     (compile-progn body env context)
     (assemble context +catch-close+)
-    (emit-label context target)))
+    (label/contextualize target context)))
 
 (defun compile-throw (tag result env context)
   (compile-form tag env (new-context context :receiving 1))

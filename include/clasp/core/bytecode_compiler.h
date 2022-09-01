@@ -284,6 +284,8 @@ public:
   static Label_sp make() {
     return gctools::GC<Label_O>::allocate<gctools::RuntimeStage>();
   }
+public:
+  CL_DEFMETHOD void contextualize(Context_sp context);
 };
  
 FORWARD(Fixup);
@@ -306,9 +308,12 @@ public:
   }
   CL_DEFMETHOD size_t initial_size() { return this->_initial_size; }
 public:
-   // Compute the final size (in bytes) for the fixed up code.
+  // Mark the fixup in the instruction stream during assembly.
+  // FIXME: This name sucks, but emit_fixup seems wayy too confusing.
+  CL_DEFMETHOD void contextualize(Context_sp context);
+  // Compute the final size (in bytes) for the fixed up code.
   CL_DEFMETHOD virtual size_t resize() = 0;
-   // Emit the final code into the bytecode vector.
+  // Emit the final code into the bytecode vector.
   CL_DEFMETHOD virtual void emit(size_t position, SimpleVector_byte8_t_sp code) = 0;
 };
 

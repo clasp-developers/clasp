@@ -156,6 +156,29 @@ size_t Annotation_O::module_position() {
   return this->pposition() + gc::As<Cfunction_sp>(this->cfunction())->pposition();
 }
 
+void Label_O::contextualize(Context_sp ctxt) {
+  Cfunction_sp cfunction = ctxt->cfunction();
+  this->setPosition(cfunction->bytecode()->length());
+  this->setCfunction(cfunction);
+  Fixnum_sp nind = cfunction->annotations()->vectorPushExtend(this->asSmartPtr());
+  this->setIndex(nind.unsafe_fixnum());
+}
+
+void Fixup_O::contextualize(Context_sp ctxt) {
+  Cfunction_sp cfunction = ctxt->cfunction();
+  ComplexVector_byte8_t_sp assembly = cfunction->bytecode();
+  size_t position = assembly->length();
+  this->setCfunction(cfunction);
+  this->setInitialPosition(position);
+  this->setPosition(position);
+  Fixnum_sp nind = cfunction->annotations()->vectorPushExtend(this->asSmartPtr());
+  this->setIndex(nind.unsafe_fixnum());
+  for (size_t i = 0; i < this->initial_size(); ++i)
+    // FIXME: Tagging a fixnum here is stupid, but we don't have a lower level
+    // vectorPushExtend that knows about the element type.
+    assembly->vectorPushExtend(clasp_make_fixnum(0));
+}
+
 ptrdiff_t LabelFixup_O::delta() {
   return this->label()->module_position() - this->module_position();
 }
