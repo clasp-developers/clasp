@@ -46,6 +46,10 @@ public:
     this->set_p = n;
     return n;
   }
+  // Does the variable need a cell?
+  bool indirectLexicalP() const {
+    return this->closedOverP() || this->setP();
+  }
 };
 
 FORWARD(SpecialVarInfo);
@@ -142,8 +146,8 @@ public:
  GlobalMacroInfo_O(Function_sp nexpander)
    : FunInfo_O(), _expander(nexpander) {};
   CL_LISPIFY_NAME(GlobalMacroInfo/make)
-    CL_DEF_CLASS_METHOD
-    static GlobalMacroInfo_sp make(Function_sp expander) {
+  CL_DEF_CLASS_METHOD
+  static GlobalMacroInfo_sp make(Function_sp expander) {
     return gctools::GC<GlobalMacroInfo_O>::allocate<gctools::RuntimeStage>(expander);
   }
   CL_DEFMETHOD Function_sp expander() const { return this->_expander; }
@@ -158,8 +162,8 @@ public:
  LocalMacroInfo_O(Function_sp nexpander)
    : FunInfo_O(), _expander(nexpander) {};
   CL_LISPIFY_NAME(LocalMacroInfo/make)
-    CL_DEF_CLASS_METHOD
-    static LocalMacroInfo_sp make(Function_sp expander) {
+  CL_DEF_CLASS_METHOD
+  static LocalMacroInfo_sp make(Function_sp expander) {
     return gctools::GC<LocalMacroInfo_O>::allocate<gctools::RuntimeStage>(expander);
   }
   CL_DEFMETHOD Function_sp expander() const { return this->_expander; }
@@ -176,13 +180,13 @@ public:
   Integer_sp frame_end;
 public:
   Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns,
-                   Integer_sp nframe_end)
+           Integer_sp nframe_end)
     : _vars(nvars), _tags(ntags), _blocks(nblocks), _funs(nfuns),
       frame_end(nframe_end) {};
   CL_LISPIFY_NAME(lexenv/make)
   CL_DEF_CLASS_METHOD
   static Lexenv_sp make(T_sp vars, T_sp tags, T_sp blocks, T_sp funs,
-                                Integer_sp frame_end) {
+                        Integer_sp frame_end) {
     return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, frame_end);
   }
   CL_DEFMETHOD T_sp vars() const { return this->_vars; }
@@ -203,229 +207,345 @@ public:
 
 // Context contains information about what the current form needs
 // to know about what it is enclosed by.
- FORWARD(Context);
- class Context_O : public General_O {
-   LISP_CLASS(comp, CompPkg, Context_O, "Context", General_O);
- public:
-   T_sp _receiving;
-   T_sp _cfunction;
- public:
-   Context_O(T_sp receiving, T_sp cfunction)
-     : _receiving(receiving), _cfunction(cfunction) {}
-   CL_LISPIFY_NAME(Context/make)
-     CL_DEF_CLASS_METHOD
-     static Context_sp make(T_sp receiving, T_sp cfunction) {
-     return gctools::GC<Context_O>::allocate<gctools::RuntimeStage>(receiving, cfunction);
-   }
-   CL_DEFMETHOD T_sp receiving() { return this->_receiving; }
-   CL_DEFMETHOD T_sp cfunction() { return this->_cfunction; }
- };
+FORWARD(Context);
+class Context_O : public General_O {
+  LISP_CLASS(comp, CompPkg, Context_O, "Context", General_O);
+public:
+  T_sp _receiving;
+  T_sp _cfunction;
+public:
+  Context_O(T_sp receiving, T_sp cfunction)
+    : _receiving(receiving), _cfunction(cfunction) {}
+  CL_LISPIFY_NAME(Context/make)
+  CL_DEF_CLASS_METHOD
+  static Context_sp make(T_sp receiving, T_sp cfunction) {
+    return gctools::GC<Context_O>::allocate<gctools::RuntimeStage>(receiving, cfunction);
+  }
+  CL_LISPIFY_NAME(context/receiving)
+  CL_DEFMETHOD T_sp receiving() { return this->_receiving; }
+  CL_DEFMETHOD T_sp cfunction() { return this->_cfunction; }
+};
 
- FORWARD(Annotation);
- class Annotation_O : public General_O {
-   LISP_ABSTRACT_CLASS(comp, CompPkg, Annotation_O, "Annotation", General_O);
- public:
+FORWARD(Annotation);
+class Annotation_O : public General_O {
+  LISP_ABSTRACT_CLASS(comp, CompPkg, Annotation_O, "Annotation", General_O);
+public:
    // The cfunction containing this annotation.
-   T_sp _cfunction;
+  T_sp _cfunction;
    // The index of this annotation in its cfunction's annotations.
-   size_t _index;
+  size_t _index;
    // The current (optimistic) position of this annotation in this cfunction.
-   size_t _position;
+  size_t _position;
    // The initial position of this annotation in this cfunction.
-   size_t _initial_position;
- public:
-   Annotation_O() : _cfunction(unbound<T_O>()) {}
-   CL_DEFMETHOD T_sp cfunction() { return this->_cfunction; }
-   CL_LISPIFY_NAME(Annotation/setf-cfunction)
-     CL_DEFMETHOD T_sp setCfunction(T_sp nfun) {
-     this->_cfunction = nfun;
-     return nfun;
-   }
+  size_t _initial_position;
+public:
+  Annotation_O() : _cfunction(unbound<T_O>()) {}
+  CL_DEFMETHOD T_sp cfunction() { return this->_cfunction; }
+  CL_LISPIFY_NAME(Annotation/setf-cfunction)
+  CL_DEFMETHOD T_sp setCfunction(T_sp nfun) {
+    this->_cfunction = nfun;
+    return nfun;
+  }
    // Calling these "index" or "position" directly
    // seems to cause inscrutable issues in exposeClasses that I
    // do not want to deal with.
-   CL_LISPIFY_NAME(Annotation/index)
-   CL_DEFMETHOD size_t iindex() { return this->_index; }
-   CL_LISPIFY_NAME(Annotation/setf-index)
-     CL_DEFMETHOD size_t setIndex(size_t nind) {
-     this->_index = nind;
-     return nind;
-   }
-   CL_LISPIFY_NAME(Annotation/position)
-   CL_DEFMETHOD size_t pposition() { return this->_position; }
-   CL_LISPIFY_NAME(Annotation/setf-position)
-     CL_DEFMETHOD size_t setPosition(size_t npos) {
-     this->_position = npos;
-     return npos;
-   }
-   CL_DEFMETHOD size_t initial_position() { return this->_initial_position; }
-   CL_LISPIFY_NAME(Annotation/setf-initial-position)
-     CL_DEFMETHOD size_t setInitialPosition(size_t npos) {
-     this->_initial_position = npos;
-     return npos;
-   }
- };
+  CL_LISPIFY_NAME(Annotation/index)
+  CL_DEFMETHOD size_t iindex() { return this->_index; }
+  CL_LISPIFY_NAME(Annotation/setf-index)
+  CL_DEFMETHOD size_t setIndex(size_t nind) {
+    this->_index = nind;
+    return nind;
+  }
+  CL_LISPIFY_NAME(Annotation/position)
+  CL_DEFMETHOD size_t pposition() { return this->_position; }
+  CL_LISPIFY_NAME(Annotation/setf-position)
+  CL_DEFMETHOD size_t setPosition(size_t npos) {
+    this->_position = npos;
+    return npos;
+  }
+  CL_DEFMETHOD size_t initial_position() { return this->_initial_position; }
+  CL_LISPIFY_NAME(Annotation/setf-initial-position)
+  CL_DEFMETHOD size_t setInitialPosition(size_t npos) {
+    this->_initial_position = npos;
+    return npos;
+  }
+public:
+   // Optimistic positioning of this annotation in its module.
+  CL_DEFMETHOD size_t module_position();
+};
 
- FORWARD(Label);
- class Label_O : public Annotation_O {
-   LISP_CLASS(comp, CompPkg, Label_O, "Label", Annotation_O);
- public:
- Label_O() : Annotation_O() {}
-   CL_LISPIFY_NAME(Label/make)
-     CL_DEF_CLASS_METHOD
-     static Label_sp make() {
-     return gctools::GC<Label_O>::allocate<gctools::RuntimeStage>();
-   }
- };
-
- FORWARD(Fixup);
- class Fixup_O : public Annotation_O {
-   LISP_CLASS(comp, CompPkg, Fixup_O, "Fixup", Annotation_O);
- public:
-   // The label this fixup references.
-   // i think the bytecode compiler puts lexical infos here sometimes?
-   T_sp _label;
+FORWARD(Label);
+class Label_O : public Annotation_O {
+  LISP_CLASS(comp, CompPkg, Label_O, "Label", Annotation_O);
+public:
+  Label_O() : Annotation_O() {}
+  CL_LISPIFY_NAME(Label/make)
+  CL_DEF_CLASS_METHOD
+  static Label_sp make() {
+    return gctools::GC<Label_O>::allocate<gctools::RuntimeStage>();
+  }
+};
+ 
+FORWARD(Fixup);
+class Fixup_O : public Annotation_O {
+  LISP_ABSTRACT_CLASS(comp, CompPkg, Fixup_O, "Fixup", Annotation_O);
+public:
    // The current (optimistic) size of this fixup in bytes.
-   size_t _size;
+  size_t _size;
    // The initial size of this fixup in bytes.
-   size_t _initial_size;
-   // How to emit this fixup once sizes are resolved.
-   // These two are functions, but that will have to change in the C++ port
-   // probably, since we don't have closures.
-   T_sp _emitter;
-   // How to resize this fixup. Returns the new size.
-   T_sp _resizer;
- public:
-   Fixup_O(T_sp label, size_t initial_size,
-                      T_sp emitter, T_sp resizer)
-     : Annotation_O(), _label(label), _size(initial_size),
-     _initial_size(initial_size), _emitter(emitter), _resizer(resizer) {}
-   CL_LISPIFY_NAME(Fixup/make)
-     CL_DEF_CLASS_METHOD
-     static Fixup_sp make(T_sp label, size_t initial_size,
-                                     T_sp emitter, T_sp resizer) {
-     return gctools::GC<Fixup_O>::allocate<gctools::RuntimeStage>(label, initial_size, emitter, resizer);
-   }
-   CL_DEFMETHOD T_sp label() { return this->_label; }
-   CL_DEFMETHOD size_t size() { return this->_size; }
-   CL_LISPIFY_NAME(Fixup/setf-size)
-     CL_DEFMETHOD size_t setSize(size_t nsize) {
-     this->_size = nsize;
-     return nsize;
-   }
-   CL_DEFMETHOD size_t initial_size() { return this->_initial_size; }
-   CL_DEFMETHOD T_sp emitter() { return this->_emitter; }
-   CL_DEFMETHOD T_sp resizer() { return this->_resizer; }
- };
+  size_t _initial_size;
+public:
+  Fixup_O() : Annotation_O() {} // default constructor for clasp
+  Fixup_O(size_t initial_size)
+    : Annotation_O(), _size(initial_size), _initial_size(initial_size) {}
+  CL_DEFMETHOD size_t size() { return this->_size; }
+  CL_LISPIFY_NAME(Fixup/setf-size)
+  CL_DEFMETHOD size_t setSize(size_t nsize) {
+    this->_size = nsize;
+    return nsize;
+  }
+  CL_DEFMETHOD size_t initial_size() { return this->_initial_size; }
+public:
+   // Compute the final size (in bytes) for the fixed up code.
+  CL_DEFMETHOD virtual size_t resize() = 0;
+   // Emit the final code into the bytecode vector.
+  CL_DEFMETHOD virtual void emit(size_t position, SimpleVector_byte8_t_sp code) = 0;
+};
 
+// A fixup for a jump, i.e. that is relative to a label.
+FORWARD(LabelFixup);
+class LabelFixup_O : public Fixup_O {
+  LISP_ABSTRACT_CLASS(comp, CompPkg, LabelFixup_O, "LabelFixup", Fixup_O);
+public:
+  Label_sp _label;
+public:
+  LabelFixup_O() : Fixup_O() {}
+  LabelFixup_O(Label_sp label, size_t initial_size)
+    : Fixup_O(initial_size), _label(label) {}
+public:
+  CL_DEFMETHOD Label_sp label() { return this->_label; }
+  // The (module) displacement from this fixup to its label.
+  ptrdiff_t delta();
+};
+
+FORWARD(ControlLabelFixup);
+class ControlLabelFixup_O : public LabelFixup_O {
+  LISP_CLASS(comp, CompPkg, ControlLabelFixup_O, "ControlLabelFixup", LabelFixup_O);
+public:
+  uint8_t _opcode8;
+  uint8_t _opcode16;
+  uint8_t _opcode24;
+public:
+  ControlLabelFixup_O(T_sp label, uint8_t opcode8, uint8_t opcode16, uint8_t opcode24)
+    : LabelFixup_O(label, 2), _opcode8(opcode8), _opcode16(opcode16),
+      _opcode24(opcode24) {}
+  CL_LISPIFY_NAME(ControlLabelFixup/make)
+  CL_DEF_CLASS_METHOD
+  static ControlLabelFixup_sp make(T_sp label, uint8_t opcode8,
+                                   uint8_t opcode16, uint8_t opcode24) {
+    return gctools::GC<ControlLabelFixup_O>::allocate<gctools::RuntimeStage>(label, opcode8, opcode16, opcode24);
+  }
+public:
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+
+FORWARD(JumpIfSuppliedFixup);
+class JumpIfSuppliedFixup_O : public LabelFixup_O {
+  LISP_CLASS(comp, CompPkg, JumpIfSuppliedFixup_O, "JumpIfSuppliedFixup", LabelFixup_O);
+public:
+  uint8_t _index;
+public:
+  JumpIfSuppliedFixup_O(T_sp label, uint8_t index)
+    : LabelFixup_O(label, 3), _index(index) {}
+  CL_LISPIFY_NAME(JumpIfSuppliedFixup/make)
+  CL_DEF_CLASS_METHOD
+  static JumpIfSuppliedFixup_sp make(T_sp label, uint8_t nindex) {
+    return gctools::GC<JumpIfSuppliedFixup_O>::allocate<gctools::RuntimeStage>(label, nindex);
+  }
+public:
+  uint8_t iindex() { return this->_index; }
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+
+// A fixup defined in relation to some lexical variable.
+FORWARD(LexFixup);
+class LexFixup_O : public Fixup_O {
+  LISP_ABSTRACT_CLASS(comp, CompPkg, LexFixup_O, "LexFixup", Fixup_O);
+public:
+  LexicalVarInfo_sp _lex;
+public:
+  LexFixup_O() : Fixup_O() {}
+  LexFixup_O(LexicalVarInfo_sp lex, size_t initial_size)
+    : Fixup_O(initial_size), _lex(lex) {}
+public:
+  LexicalVarInfo_sp lex() { return _lex; }
+};
+
+// Used to add make-cell or cell-ref where needed.
+FORWARD(LexRefFixup);
+class LexRefFixup_O : public LexFixup_O {
+  LISP_CLASS(comp, CompPkg, LexRefFixup_O, "LexRefFixup", LexFixup_O);
+public:
+  uint8_t _opcode;
+public:
+  LexRefFixup_O() : LexFixup_O() {}
+  LexRefFixup_O(LexicalVarInfo_sp lex, uint8_t opcode)
+    : LexFixup_O(lex, 0), _opcode(opcode) {}
+  CL_LISPIFY_NAME(LexRefFixup/make)
+  CL_DEF_CLASS_METHOD
+  static LexRefFixup_sp make(LexicalVarInfo_sp lex, uint8_t opcode) {
+    return gctools::GC<LexRefFixup_O>::allocate<gctools::RuntimeStage>(lex, opcode);
+  }
+public:
+  uint8_t opcode() { return this->_opcode; }
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+
+FORWARD(EncageFixup);
+class EncageFixup_O : public LexFixup_O {
+  LISP_CLASS(comp, CompPkg, EncageFixup_O, "EncageFixup", LexFixup_O);
+public:
+  EncageFixup_O() : LexFixup_O() {}
+  EncageFixup_O(LexicalVarInfo_sp lex)
+    : LexFixup_O(lex, 0) {}
+  CL_LISPIFY_NAME(EncageFixup/make)
+  CL_DEF_CLASS_METHOD
+  static EncageFixup_sp make(LexicalVarInfo_sp lex) {
+    return gctools::GC<EncageFixup_O>::allocate<gctools::RuntimeStage>(lex);
+  }
+public:
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+
+FORWARD(LexSetFixup);
+class LexSetFixup_O : public LexFixup_O {
+  LISP_CLASS(comp, CompPkg, LexSetFixup_O, "LexSetFixup", LexFixup_O);
+public:
+  LexSetFixup_O() : LexFixup_O() {}
+  LexSetFixup_O(LexicalVarInfo_sp lex)
+    : LexFixup_O(lex, 0) {}
+  CL_LISPIFY_NAME(LexSetFixup/make)
+  CL_DEF_CLASS_METHOD
+  static LexSetFixup_sp make(LexicalVarInfo_sp lex) {
+    return gctools::GC<LexSetFixup_O>::allocate<gctools::RuntimeStage>(lex);
+  }
+public:
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+ 
 FORWARD(Module);
- class Module_O : public General_O {
-   LISP_CLASS(comp, CompPkg, Module_O, "Module", General_O);
- public:
-   ComplexVector_T_sp _cfunctions;
-   ComplexVector_T_sp _literals;
- public:
-   Module_O()
-     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
-     _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
-   CL_LISPIFY_NAME(Module/make)
-     CL_DEF_CLASS_METHOD
-     static Module_sp make() {
-     return gctools::GC<Module_O>::allocate<gctools::RuntimeStage>();
-   }
-   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
-   CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
-     CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
- };
+class Module_O : public General_O {
+  LISP_CLASS(comp, CompPkg, Module_O, "Module", General_O);
+public:
+  ComplexVector_T_sp _cfunctions;
+  ComplexVector_T_sp _literals;
+public:
+  Module_O()
+    : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
+      _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
+  CL_LISPIFY_NAME(Module/make)
+  CL_DEF_CLASS_METHOD
+  static Module_sp make() {
+    return gctools::GC<Module_O>::allocate<gctools::RuntimeStage>();
+  }
+  CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
+  CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
+  CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
+};
 
- FORWARD(Cfunction);
- class Cfunction_O : public General_O {
-   LISP_CLASS(comp, CompPkg, Cfunction_O, "Cfunction", General_O);
- public:
-   Module_sp _module;
+FORWARD(Cfunction);
+class Cfunction_O : public General_O {
+  LISP_CLASS(comp, CompPkg, Cfunction_O, "Cfunction", General_O);
+public:
+  Module_sp _module;
    // Bytecode vector for this cfunction.
-   ComplexVector_byte8_t_sp _bytecode;
+  ComplexVector_byte8_t_sp _bytecode;
    // An ordered vector of annotations emitted in this cfunction.
-   ComplexVector_T_sp _annotations;
-   size_t _nlocals;
-   ComplexVector_T_sp _closed;
-   Label_sp _entry_point;
+  ComplexVector_T_sp _annotations;
+  size_t _nlocals;
+  ComplexVector_T_sp _closed;
+  Label_sp _entry_point;
    // The position of the start of this cfunction in this module (optimistic).
-   size_t _position;
+  size_t _position;
    // How much to add to the bytecode vector length for increased fixup
    // sizes for the true length.
-   size_t _extra;
+  size_t _extra;
    // The index of this cfunction in the containing module's cfunction vector.
-   size_t _index;
+  size_t _index;
    // The runtime function, used during link.
-   GlobalBytecodeEntryPoint_sp _info;
+  GlobalBytecodeEntryPoint_sp _info;
    // Stuff for the function description.
-   T_sp _name;
-   T_sp _doc;
- public:
- Cfunction_O(Module_sp module, T_sp name, T_sp doc)
-   : _module(module),
+  T_sp _name;
+  T_sp _doc;
+public:
+  Cfunction_O(Module_sp module, T_sp name, T_sp doc)
+    : _module(module),
      // A zero-length adjustable vector with fill pointer.
-     _bytecode(ComplexVector_byte8_t_O::make_vector(0, 0,
-                                                    clasp_make_fixnum(0),
-                                                    nil<T_O>(), false,
-                                                    clasp_make_fixnum(0))),
-     _annotations(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
-     _closed(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
-     _entry_point(Label_O::make()),
+      _bytecode(ComplexVector_byte8_t_O::make_vector(0, 0,
+                                                     clasp_make_fixnum(0),
+                                                     nil<T_O>(), false,
+                                                     clasp_make_fixnum(0))),
+      _annotations(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
+      _closed(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
+      _entry_point(Label_O::make()),
      // not sure this has to be initialized, but just in case
-     _info(unbound<GlobalBytecodeEntryPoint_O>()),
-     _name(name), _doc(doc)
-   {}
-   CL_LISPIFY_NAME(Cfunction/make)
-     CL_DEF_CLASS_METHOD
-     static Cfunction_sp make(Module_sp module, T_sp name, T_sp doc) {
-     return gctools::GC<Cfunction_O>::allocate<gctools::RuntimeStage>(module, name, doc);
-   }
-   CL_DEFMETHOD Module_sp module() { return _module; }
-   CL_LISPIFY_NAME(cfunction/bytecode)
-     CL_DEFMETHOD ComplexVector_byte8_t_sp bytecode() { return _bytecode; }
-   CL_DEFMETHOD ComplexVector_T_sp annotations() { return _annotations; }
-   CL_DEFMETHOD size_t nlocals() { return _nlocals; }
-   CL_LISPIFY_NAME(Cfunction/setf-nlocals)
-     CL_DEFMETHOD size_t setNlocals(size_t new_nlocals) {
-     this->_nlocals = new_nlocals;
-     return new_nlocals;
-   }
-   CL_DEFMETHOD ComplexVector_T_sp closed() { return _closed; }
-   CL_LISPIFY_NAME(Cfunction/entry-point)
-     CL_DEFMETHOD T_sp entry_point() { return _entry_point; }
-   CL_LISPIFY_NAME(Cfunction/position)
-     CL_DEFMETHOD size_t pposition() { return _position; }
-   CL_LISPIFY_NAME(Cfunction/setf-position)
-   CL_DEFMETHOD size_t setPosition(size_t npos) {
-     this->_position = npos;
-     return npos;
-   }
-   CL_DEFMETHOD size_t extra() { return _extra; }
-   CL_LISPIFY_NAME(Cfunction/setf-extra)
-     CL_LAMBDA(cfunction new) // avoid name conflict with next
-     CL_DEFMETHOD size_t setExtra(size_t next) {
-     this->_extra = next;
-     return next;
-   }
-   CL_LISPIFY_NAME(Cfunction/index)
-   CL_DEFMETHOD size_t iindex() { return _index; }
-   CL_LISPIFY_NAME(Cfunction/setf-index)
-     CL_DEFMETHOD size_t setIndex(size_t nindex) {
-     this->_index = nindex;
-     return nindex;
-   }
-   CL_DEFMETHOD GlobalBytecodeEntryPoint_sp info() { return _info; }
-   CL_LISPIFY_NAME(Cfunction/setf-info)
-     CL_DEFMETHOD GlobalBytecodeEntryPoint_sp setInfo(GlobalBytecodeEntryPoint_sp gbep) {
-     this->_info = gbep;
-     return gbep;
-   }
-   CL_LISPIFY_NAME(Cfunction/name)
-     CL_DEFMETHOD T_sp nname() { return _name; }
-   CL_DEFMETHOD T_sp doc() { return _doc; }
- };
+      _info(unbound<GlobalBytecodeEntryPoint_O>()),
+      _name(name), _doc(doc)
+  {}
+  CL_LISPIFY_NAME(Cfunction/make)
+  CL_DEF_CLASS_METHOD
+  static Cfunction_sp make(Module_sp module, T_sp name, T_sp doc) {
+    return gctools::GC<Cfunction_O>::allocate<gctools::RuntimeStage>(module, name, doc);
+  }
+  CL_DEFMETHOD Module_sp module() { return _module; }
+  CL_LISPIFY_NAME(cfunction/bytecode)
+  CL_DEFMETHOD ComplexVector_byte8_t_sp bytecode() { return _bytecode; }
+  CL_DEFMETHOD ComplexVector_T_sp annotations() { return _annotations; }
+  CL_DEFMETHOD size_t nlocals() { return _nlocals; }
+  CL_LISPIFY_NAME(Cfunction/setf-nlocals)
+  CL_DEFMETHOD size_t setNlocals(size_t new_nlocals) {
+    this->_nlocals = new_nlocals;
+    return new_nlocals;
+  }
+  CL_DEFMETHOD ComplexVector_T_sp closed() { return _closed; }
+  CL_LISPIFY_NAME(Cfunction/entry-point)
+  CL_DEFMETHOD T_sp entry_point() { return _entry_point; }
+  CL_LISPIFY_NAME(Cfunction/position)
+  CL_DEFMETHOD size_t pposition() { return _position; }
+  CL_LISPIFY_NAME(Cfunction/setf-position)
+  CL_DEFMETHOD size_t setPosition(size_t npos) {
+    this->_position = npos;
+    return npos;
+  }
+  CL_DEFMETHOD size_t extra() { return _extra; }
+  CL_LISPIFY_NAME(Cfunction/setf-extra)
+  CL_LAMBDA(cfunction new) // avoid name conflict with next
+  CL_DEFMETHOD size_t setExtra(size_t next) {
+    this->_extra = next;
+    return next;
+  }
+  CL_LISPIFY_NAME(Cfunction/index)
+  CL_DEFMETHOD size_t iindex() { return _index; }
+  CL_LISPIFY_NAME(Cfunction/setf-index)
+  CL_DEFMETHOD size_t setIndex(size_t nindex) {
+    this->_index = nindex;
+    return nindex;
+  }
+  CL_DEFMETHOD GlobalBytecodeEntryPoint_sp info() { return _info; }
+  CL_LISPIFY_NAME(Cfunction/setf-info)
+  CL_DEFMETHOD GlobalBytecodeEntryPoint_sp setInfo(GlobalBytecodeEntryPoint_sp gbep) {
+    this->_info = gbep;
+    return gbep;
+  }
+  CL_LISPIFY_NAME(Cfunction/name)
+  CL_DEFMETHOD T_sp nname() { return _name; }
+  CL_DEFMETHOD T_sp doc() { return _doc; }
+};
 
 }; // namespace comp
 

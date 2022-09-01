@@ -738,7 +738,7 @@ bool Package_O::usePackage(Package_sp usePackage) {
                     this->asSmartPtr(), usePackage,
                     findConflicts._conflicts);
     else
-      SIMPLE_ERROR(("Conflicts from USE-PACKAGE and name conflict function not yet installed: %s"), _rep_(findConflicts._conflicts));
+      SIMPLE_ERROR(("Conflicts from USE-PACKAGE and name conflict function not yet installed: symbols %s using package %s used package %s"), _rep_(findConflicts._conflicts), _rep_(this->asSmartPtr()), _rep_(usePackage));
     // That function only returns once conflicts are resolved, so go around
     // again (rechecking for conflicts because multithreading makes this hard)
     // FIXME: This doesn't actually perfectly solve multithreading issues.

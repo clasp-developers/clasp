@@ -65,15 +65,9 @@
 
 ;;;
 
-;;; Optimistic positioning of ANNOTATION in its module.
-(defun annotation-module-position (annotation)
-  (+ (cmp:cfunction/position (cmp:annotation/cfunction annotation))
-     (cmp:annotation/position annotation)))
-
-;;; The (module) displacement from this fixup to its label,
-(defun fixup-delta (fixup)
-  (- (annotation-module-position (cmp:fixup/label fixup))
-     (annotation-module-position fixup)))
+(defun new-context (parent &key (receiving (context/receiving parent))
+                             (cfunction (context/cfunction parent)))
+  (context/make receiving cfunction))
 
 (defun emit-label (context label)
   (cmp:annotation/setf-position
@@ -111,22 +105,7 @@
 
 ;;; Emit OPCODE and then a label reference.
 (defun emit-control+label (context opcode8 opcode16 opcode24 label)
-  (flet ((emitter (fixup position code)
-           (let* ((size (cmp:fixup/size fixup))
-                  (offset (unsigned (fixup-delta fixup) (* 8 (1- size)))))
-             (setf (aref code position)
-                   (cond ((eql size 2) opcode8)
-                         ((eql size 3) opcode16)
-                         ((eql size 4) opcode24)
-                         (t (error "Unknown size ~d" size))))
-             (write-le-unsigned code offset (1- size) (1+ position))))
-         (resizer (fixup)
-           (let ((delta (fixup-delta fixup)))
-             (cond ((typep delta '(signed-byte 8)) 2)
-                   ((typep delta '(signed-byte 16)) 3)
-                   ((typep delta '(signed-byte 24)) 4)
-                   (t (error "???? PC offset too big ????"))))))
-    (emit-fixup context (cmp:fixup/make label 2 #'emitter #'resizer))))
+  (emit-fixup context (control-label-fixup/make label opcode8 opcode16 opcode24)))
 
 (defun emit-jump (context label)
   (emit-control+label context +jump-8+ +jump-16+ +jump-24+ label))
@@ -138,22 +117,7 @@
   (emit-control+label context +catch-8+ +catch-16+ nil label))
 
 (defun emit-jump-if-supplied (context index label)
-  (flet ((emitter (fixup position code)
-           (let* ((size (cmp:fixup/size fixup))
-                  (offset (unsigned (fixup-delta fixup) (* 8 (1- size)))))
-             (setf (aref code position)
-                   (cond
-                     ((eql size 3) +jump-if-supplied-8+)
-                     ((eql size 4) +jump-if-supplied-16+)
-                     (t (error "Unknown size ~d" size))))
-             (setf (aref code (1+ position)) index)
-             (write-le-unsigned code offset (- size 2) (+ position 2))))
-         (resizer (fixup)
-           (let ((delta (fixup-delta fixup)))
-             (cond ((typep delta '(signed-byte 8)) 3)
-                   ((typep delta '(signed-byte 16)) 4)
-                   (t (error "???? PC offset too big ????"))))))
-    (emit-fixup context (cmp:fixup/make label 3 #'emitter #'resizer))))
+  (emit-fixup context (jump-if-supplied-fixup/make label index)))
 
 (defun emit-parse-key-args (context max-count key-count key-names env aok-p)
   (let* ((keystart (literal-index (first key-names) context))
@@ -298,65 +262,18 @@
       (let ((value (eval form)))
         (compile-literal value env context))))
 
-(flet ((maybe-emit (lexical-info opcode context)
-         (flet ((emitter (fixup position code)
-                  #+clasp-min (declare (ignore fixup))
-                  #-clasp-min
-                  (assert (= (cmp:fixup/size fixup) 1))
-                  (setf (aref code position) opcode))
-                (resizer (fixup)
-                  (declare (ignore fixup))
-                  (if (indirect-lexical-p lexical-info) 1 0)))
-           (emit-fixup context
-                       (cmp:fixup/make lexical-info 0 #'emitter #'resizer)))))
-  (defun maybe-emit-make-cell (lexical-info context)
-    (maybe-emit lexical-info +make-cell+ context))
-  (defun maybe-emit-cell-ref (lexical-info context)
-    (maybe-emit lexical-info +cell-ref+ context)))
+(defun maybe-emit-make-cell (lexical-info context)
+  (emit-fixup context (lex-ref-fixup/make lexical-info +make-cell+)))
+(defun maybe-emit-cell-ref (lexical-info context)
+  (emit-fixup context (lex-ref-fixup/make lexical-info +cell-ref+)))
 
 ;;; FIXME: This is probably a good candidate for a specialized
 ;;; instruction.
 (defun maybe-emit-encage (lexical-info context)
-  (let ((index (cmp:lexical-var-info/frame-index lexical-info)))
-    (flet ((emitter (fixup position code)
-             (cond ((= (cmp:fixup/size fixup) 5)
-                    (assemble-into code position
-                                   +ref+ index +make-cell+ +set+ index))
-                   ((= (cmp:fixup/size fixup) 9)
-                    (let ((low (ldb (byte 8 0) index))
-                          (high (ldb (byte 8 8) index)))
-                      (assemble-into code position
-                                     +long+ +ref+ low high +make-cell+ +long+ +set+ low high)))
-                   (t (error "Unknown fixup size ~d" (cmp:fixup/size fixup)))))
-           (resizer (fixup)
-             (declare (ignore fixup))
-             (cond ((not (indirect-lexical-p lexical-info)) 0)
-                   ((< index #.(ash 1 8)) 5)
-                   ((< index #.(ash 1 16)) 9)
-                   (t (error "Too many lexicals: ~d" index)))))
-      (emit-fixup context (cmp:fixup/make lexical-info 0 #'emitter #'resizer)))))
+  (emit-fixup context (encage-fixup/make lexical-info)))
 
 (defun emit-lexical-set (lexical-info context)
-  (let ((index (cmp:lexical-var-info/frame-index lexical-info)))
-    (flet ((emitter (fixup position code)
-             (let ((size (cmp:fixup/size fixup)))
-               (cond ((= size 2)
-                      (assemble-into code position +set+ index))
-                     ((= size 3)
-                      (assemble-into code position +ref+ index +cell-set+))
-                     ((= size 5)
-                      (assemble-into code position
-                                     +long+ +ref+
-                                     (ldb (byte 8 0) index) (ldb (byte 8 8) index)
-                                     +cell-set+))
-                     (t (error "Unknown fixup size ~d" size)))))
-           (resizer (fixup)
-             (declare (ignore fixup))
-             (cond ((not (indirect-lexical-p lexical-info)) 2)
-                   ((< index #.(ash 1 8)) 3)
-                   ((< index #.(ash 1 16)) 5)
-                   (t (error "Too many lexicals: ~d" index)))))
-      (emit-fixup context (cmp:fixup/make lexical-info 2 #'emitter #'resizer)))))
+  (emit-fixup context (lex-set-fixup/make lexical-info)))
 
 (defun compile-symbol (form env context)
   (let ((info (cmp:var-info form env)))
@@ -456,19 +373,19 @@
           ;; unknown function warning handled by compile-function
           ;; note we do a double lookup of the fun info,
           ;; which is inefficient in the compiler (generated code is ok)
-          (compile-function head env (cmp:new-context context :receiving 1))
+          (compile-function head env (new-context context :receiving 1))
           (do ((args rest (rest args))
                (arg-count 0 (1+ arg-count)))
               ((endp args)
                (emit-call context arg-count))
-            (compile-form (first args) env (cmp:new-context context :receiving 1))))
+            (compile-form (first args) env (new-context context :receiving 1))))
          (t (error "BUG: Unknown info ~a" info)))))))
 
 (defun compile-progn (forms env context)
   (do ((forms forms (rest forms)))
       ((null (rest forms))
        (compile-form (first forms) env context))
-    (compile-form (first forms) env (cmp:new-context context :receiving 0))))
+    (compile-form (first forms) env (new-context context :receiving 0))))
 
 ;;; Add VARS as specials in ENV.
 (defun add-specials (vars env)
@@ -504,7 +421,7 @@
           (post-binding-env (add-specials specials env)))
       (dolist (binding bindings)
         (multiple-value-bind (var valf) (canonicalize-binding binding)
-          (compile-form valf env (cmp:new-context context :receiving 1))
+          (compile-form valf env (new-context context :receiving 1))
           (cond ((or (member var specials)
                      (typep (cmp:var-info var env)
                             'cmp:special-var-info))
@@ -531,7 +448,7 @@
               (valf (if (and (consp binding) (consp (cdr binding)))
                         (cadr binding)
                         'nil)))
-          (compile-form valf env (cmp:new-context context :receiving 1))
+          (compile-form valf env (new-context context :receiving 1))
           (cond ((or (member var specials) (ext:specialp var))
                  (incf special-binding-count)
                  (setq env (add-specials (list var) env))
@@ -563,7 +480,7 @@
               (rest (cddr pairs)))
           (compile-setq-1 var valf env
                           (if rest
-                              (cmp:new-context context :receiving 0)
+                              (new-context context :receiving 0)
                               context))))))
 
 (defun compile-setq-1 (var valf env context)
@@ -578,7 +495,7 @@
       ((typep info '(or null cmp:special-var-info))
        (when (null info)
          (warn "Unknown variable ~a: treating as special" var))
-       (compile-form valf env (cmp:new-context context :receiving 1))
+       (compile-form valf env (new-context context :receiving 1))
        ;; If we need to return the new value, stick it into a new local
        ;; variable, do the set, then return the lexical variable.
        ;; We can't just read from the special, since some other thread may
@@ -601,7 +518,7 @@
          (unless localp
            (setf (cmp:lexical-var-info/closed-over-p info) t))
          (setf (cmp:lexical-var-info/set-p info) t)
-         (compile-form valf env (cmp:new-context context :receiving 1))
+         (compile-form valf env (new-context context :receiving 1))
          ;; similar concerns to specials above.
          (unless (eql (cmp:context/receiving context) 0)
            (assemble-maybe-long context +set+ index)
@@ -637,7 +554,7 @@
         (compile-function `(lambda ,(second definition)
                              (block ,(fun-name-block-name name)
                                (locally ,@(cddr definition))))
-                          env (cmp:new-context context :receiving 1))
+                          env (new-context context :receiving 1))
         (push fun-var fun-vars)
         (push (cons name (cmp:local-fun-info/make
                           (cmp:lexical-var-info/make
@@ -699,7 +616,7 @@
       (compile-progn body env context))))
 
 (defun compile-if (condition then else env context)
-  (compile-form condition env (cmp:new-context context :receiving 1))
+  (compile-form condition env (new-context context :receiving 1))
   (let ((then-label (cmp:label/make))
         (done-label (cmp:label/make)))
     (emit-jump-if context then-label)
@@ -935,7 +852,7 @@
                          (maybe-emit-encage info context))))
                  (t
                   (compile-form defaulting-form env
-                                (cmp:new-context context :receiving 1))
+                                (new-context context :receiving 1))
                   (cond (specialp
                          (emit-special-bind context var))
                         (t
@@ -943,7 +860,7 @@
                          (assemble-maybe-long context +set+ var-index))))))
          (supply (suppliedp specialp var info)
            (if suppliedp
-               (compile-literal t env (cmp:new-context context :receiving 1))
+               (compile-literal t env (new-context context :receiving 1))
                (assemble context +nil+))
            (cond (specialp
                   (emit-special-bind context var))
@@ -1011,7 +928,7 @@
       (dolist (statement statements)
         (if (go-tag-p statement)
             (emit-label context (cddr (assoc statement (cmp:lexenv/tags env))))
-            (compile-form statement env (cmp:new-context context :receiving 0))))))
+            (compile-form statement env (new-context context :receiving 0))))))
   (assemble context +entry-close+)
   ;; return nil if we really have to
   (unless (eql (cmp:context/receiving context) 0)
@@ -1051,7 +968,7 @@
     (assemble context +entry-close+)))
 
 (defun compile-return-from (name value env context)
-  (compile-form value env (cmp:new-context context :receiving t))
+  (compile-form value env (new-context context :receiving t))
   (let ((pair (assoc name (cmp:lexenv/blocks env))))
     (if pair
         (destructuring-bind (dynenv-info . block-label) (cdr pair)
@@ -1060,7 +977,7 @@
         (error "The block ~a does not exist." name))))
 
 (defun compile-catch (tag body env context)
-  (compile-form tag env (cmp:new-context context :receiving 1))
+  (compile-form tag env (new-context context :receiving 1))
   (let ((target (cmp:label/make)))
     (emit-catch context target)
     (compile-progn body env context)
@@ -1068,13 +985,13 @@
     (emit-label context target)))
 
 (defun compile-throw (tag result env context)
-  (compile-form tag env (cmp:new-context context :receiving 1))
-  (compile-form result env (cmp:new-context context :receiving t))
+  (compile-form tag env (new-context context :receiving 1))
+  (compile-form result env (new-context context :receiving t))
   (assemble context +throw+))
 
 (defun compile-progv (symbols values body env context)
-  (compile-form symbols env (cmp:new-context context :receiving 1))
-  (compile-form values env (cmp:new-context context :receiving 1))
+  (compile-form symbols env (new-context context :receiving 1))
+  (compile-form values env (new-context context :receiving 1))
   (assemble context +progv+)
   (compile-progn body env context)
   (emit-unbind context 1))
@@ -1129,14 +1046,14 @@
                      context)))
 
 (defun compile-multiple-value-call (function-form forms env context)
-  (compile-form function-form env (cmp:new-context context :receiving 1))
+  (compile-form function-form env (new-context context :receiving 1))
   (let ((first (first forms))
         (rest (rest forms)))
-    (compile-form first env (cmp:new-context context :receiving t))
+    (compile-form first env (new-context context :receiving t))
     (when rest
       (assemble context +push-values+)
       (dolist (form rest)
-        (compile-form form env (cmp:new-context context :receiving t))
+        (compile-form form env (new-context context :receiving t))
         (assemble context +append-values+))
       (assemble context +pop-values+)))
   (emit-mv-call context))
@@ -1146,7 +1063,7 @@
   (unless (member (cmp:context/receiving context) '(0 1))
     (assemble context +push-values+))
   (dolist (form forms)
-    (compile-form form env (cmp:new-context context :receiving 0)))
+    (compile-form form env (new-context context :receiving 0)))
   (unless (member (cmp:context/receiving context) '(0 1))
     (assemble context +pop-values+)))
 
@@ -1199,7 +1116,7 @@
           (let ((annotation (aref (cmp:cfunction/annotations (aref functions i)) j)))
             (when (typep annotation 'cmp:fixup)
               (let ((old-size (cmp:fixup/size annotation))
-                    (new-size (funcall (cmp:fixup/resizer annotation) annotation)))
+                    (new-size (cmp:fixup/resize annotation)))
                 (unless (= old-size new-size)
                   #+(or)
                   (assert (>= new-size old-size))
@@ -1242,10 +1159,7 @@
               #+(or)
               (assert (= index (annotation-module-position annotation)))
               ;; Emit fixup.
-              (funcall (cmp:fixup/emitter annotation)
-                       annotation
-                       index
-                       bytecode)
+              (fixup/emit annotation index bytecode)
               (incf position (cmp:fixup/initial-size annotation))
               (incf index (cmp:fixup/size annotation))))))
         ;; Copy any remaining bytes from this function to the module.
@@ -1305,7 +1219,7 @@
             0 0 0 0 nil 0          ; unused at the moment
             (length (cmp:cfunction/closed cfunction))
             (make-list 7 :initial-element
-                       (annotation-module-position (cmp:cfunction/entry-point cfunction)))))))
+                       (annotation/module-position (cmp:cfunction/entry-point cfunction)))))))
       ;; Now replace the cfunctions in the cmodule literal vector with
       ;; real bytecode functions.
       (dotimes (index literal-length)
