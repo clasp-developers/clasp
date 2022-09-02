@@ -1000,23 +1000,24 @@ been initialized with install path versus the build path of the source code file
                                     :system system))
         (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword))
         (stage-time (get-internal-run-time))
-        file-time)
+        file-time file)
     (setq *features* (cons stage-keyword *features*))
     (message :emph "Loading stage {:d}..." stage)
     (tagbody
      next
       (if files
           (progn
-            (setq file-time (get-internal-run-time))
-            (load (car files))
-            (setq file-time (- (get-internal-run-time) file-time)
+            (setq file (car files)
+                  file-time (get-internal-run-time)
                   files (cdr files))
-            (core:hash-table-setf-gethash *system-load-times* (car files)
-                                          (cons file-time (gethash (car files) *system-load-times*)))
-            (message nil ";;; Load time {:.3f} seconds" (float (/ file-time internal-time-units-per-second)))
+            (load file)
+            (setq file-time (- (get-internal-run-time) file-time))
+            (core:hash-table-setf-gethash *system-load-times* file
+                                          (cons file-time (gethash file *system-load-times*)))
+            (message nil ";;; Load time {:.6f} seconds" (float (/ file-time internal-time-units-per-second)))
             (go next))))
     (setq *features* (core:remove-equal stage-keyword *features*))
-    (message :emph "Stage {:d} elapsed time: {:.3f} seconds"
+    (message :emph "Stage {:d} elapsed time: {:.6f} seconds"
              stage
              (float (/ (- (get-internal-run-time) stage-time) internal-time-units-per-second)))))
 
@@ -1037,7 +1038,7 @@ been initialized with install path versus the build path of the source code file
   (let ((times (gethash file *system-load-times*)))
     (if times
         (float (/ (apply #'+ times) (length times)))
-        most-positive-fixnum)))
+        0 #+(or)most-positive-fixnum)))
 
 (defun load-vclasp (&key reproducible clean (output-file (build-common-lisp-bitcode-pathname))
                          (system (command-line-arguments-as-list))
@@ -1056,16 +1057,15 @@ been initialized with install path versus the build path of the source code file
     (setq *features* (list* :staging :bytecode :bytecodelike *features*))
     (tagbody
      next
-      (load-stage system stage)
-      (setq stage (1+ stage))
       (if (< stage stage-count)
-          (go next)))
+          (progn
+            (load-stage system stage)
+            (setq stage (1+ stage))
+            (go next))))
     (setq *features* (core:remove-equal :staging *features*))
     (prepare-metadata system installed-system)
     (if sort-system
-        (sort system
-              (lambda (x y)
-                (> (get-load-time x) (get-load-time y))))
+        (sort system #'> :key #'get-load-time)
         system)))
 
 (defun compile-vclasp (&rest rest)
