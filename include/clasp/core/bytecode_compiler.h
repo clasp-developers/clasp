@@ -208,6 +208,8 @@ public:
 // Context contains information about what the current form needs
 // to know about what it is enclosed by.
 FORWARD(Context);
+FORWARD(Label);
+FORWARD(Cfunction);
 class Context_O : public General_O {
   LISP_CLASS(comp, CompPkg, Context_O, "Context", General_O);
 public:
@@ -223,7 +225,34 @@ public:
   }
   CL_LISPIFY_NAME(context/receiving)
   CL_DEFMETHOD T_sp receiving() { return this->_receiving; }
-  CL_DEFMETHOD T_sp cfunction() { return this->_cfunction; }
+  CL_DEFMETHOD Cfunction_sp cfunction() {
+    return gc::As<Cfunction_sp>(this->_cfunction);
+  }
+public:
+  CL_DEFMETHOD size_t literal_index(T_sp literal);
+  CL_DEFMETHOD size_t closure_index(T_sp info);
+  void assemble0(uint8_t);
+  void assemble1(uint8_t, size_t);
+  void assemble2(uint8_t, size_t, size_t);
+  void emit_control_label(Label_sp,
+                          uint8_t opcode8, uint8_t opcode16, uint8_t opcode24);
+  CL_DEFMETHOD void emit_jump(Label_sp label);
+  CL_DEFMETHOD void emit_jump_if(Label_sp label);
+  CL_DEFMETHOD void emit_exit(Label_sp label);
+  CL_DEFMETHOD void emit_catch(Label_sp label);
+  CL_DEFMETHOD void emit_jump_if_supplied(Label_sp label, size_t indx);
+  CL_DEFMETHOD void maybe_emit_make_cell(LexicalVarInfo_sp info);
+  CL_DEFMETHOD void maybe_emit_cell_ref(LexicalVarInfo_sp info);
+  CL_DEFMETHOD void maybe_emit_encage(LexicalVarInfo_sp info);
+  CL_DEFMETHOD void emit_lexical_set(LexicalVarInfo_sp info);
+  CL_DEFMETHOD void emit_parse_key_args(size_t max_count, size_t key_count,
+                                        size_t key_start, size_t indx,
+                                        bool aokp);
+  CL_DEFMETHOD void emit_bind(size_t count, size_t offset);
+  CL_DEFMETHOD void emit_call(size_t argcount);
+  CL_DEFMETHOD void emit_mv_call();
+  CL_DEFMETHOD void emit_special_bind(Symbol_sp sym);
+  CL_DEFMETHOD void emit_unbind(size_t count);
 };
 
 FORWARD(Annotation);
@@ -274,7 +303,6 @@ public:
   CL_DEFMETHOD size_t module_position();
 };
 
-FORWARD(Label);
 class Label_O : public Annotation_O {
   LISP_CLASS(comp, CompPkg, Label_O, "Label", Annotation_O);
 public:
@@ -463,7 +491,6 @@ public:
   CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
 };
 
-FORWARD(Cfunction);
 class Cfunction_O : public General_O {
   LISP_CLASS(comp, CompPkg, Cfunction_O, "Cfunction", General_O);
 public:

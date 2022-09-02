@@ -69,75 +69,6 @@
                              (cfunction (context/cfunction parent)))
   (context/make receiving cfunction))
 
-(defun values-less-than-p (values max)
-  (dolist (value values t)
-    (unless (<= 0 value (1- max)) (return-from values-less-than-p nil))))
-
-;;; Emit OPCODE and then a label reference.
-(defun emit-control+label (context opcode8 opcode16 opcode24 label)
-  (fixup/contextualize (control-label-fixup/make label opcode8 opcode16 opcode24)
-                       context))
-
-(defun emit-jump (context label)
-  (emit-control+label context +jump-8+ +jump-16+ +jump-24+ label))
-(defun emit-jump-if (context label)
-  (emit-control+label context +jump-if-8+ +jump-if-16+ +jump-if-24+ label))
-(defun emit-exit (context label)
-  (emit-control+label context +exit-8+ +exit-16+ +exit-24+ label))
-(defun emit-catch (context label)
-  (emit-control+label context +catch-8+ +catch-16+ nil label))
-
-(defun emit-jump-if-supplied (context index label)
-  (fixup/contextualize (jump-if-supplied-fixup/make label index) context))
-
-(defun emit-parse-key-args (context max-count key-count key-names env aok-p)
-  (let* ((keystart (literal-index (first key-names) context))
-         (index (cmp:lexenv/frame-end env))
-         (all (list max-count key-count keystart index)))
-    (cond ((values-less-than-p all 127)
-           (assemble context +parse-key-args+
-                     max-count
-                     (if aok-p (logior #x80 key-count) key-count)
-                     keystart index))
-          ((values-less-than-p all 32767)
-           (assemble context +long+ +parse-key-args+
-                     (ldb (byte 8 0) max-count) (ldb (byte 8 8) max-count)
-                     (ldb (byte 8 0) key-count)
-                     (if aok-p
-                         (logior #x80 (ldb (byte 7 8) key-count))
-                         (ldb (byte 7 8) key-count))
-                     (ldb (byte 8 0) keystart) (ldb (byte 8 8) keystart)
-                     (ldb (byte 8 0) index) (ldb (byte 8 8) index)))
-          (t
-           (error "Handle more than 32767 keyword parameters - you need ~s" key-count)))))
-
-(defun emit-bind (context count offset)
-  (cond ((= count 1) (assemble-maybe-long context +set+ offset))
-        ((= count 0))
-        (t (assemble-maybe-long context +bind+ count offset))))
-
-(defun emit-call (context count)
-  (let ((receiving (cmp:context/receiving context)))
-    (cond ((or (eql receiving t) (eql receiving 0))
-           (assemble-maybe-long context +call+ count))
-          ((eql receiving 1)
-           (assemble-maybe-long context +call-receive-one+ count))
-          (t (assemble-maybe-long context +call-receive-fixed+ count receiving)))))
-
-(defun emit-mv-call (context)
-  (let ((receiving (cmp:context/receiving context)))
-    (cond ((or (eql receiving t) (eql receiving 0))
-           (assemble context +mv-call+))
-          ((eql receiving 1)
-           (assemble context +mv-call-receive-one+))
-          (t (assemble-maybe-long context +mv-call-receive-fixed+ receiving)))))
-
-(defun emit-special-bind (context symbol)
-  (assemble-maybe-long context +special-bind+ (literal-index symbol context)))
-
-(defun emit-unbind (context count)
-  (dotimes (_ count) (assemble context +unbind+)))
-
 (defun (setf cmp:lexical-var-info/closed-over-p) (new info)
   (cmp:lexical-var-info/setf-closed-over-p info new))
 (defun (setf cmp:lexical-var-info/set-p) (new info)
@@ -187,19 +118,6 @@
 (defun context-module (context)
   (cmp:cfunction/module (cmp:context/cfunction context)))
 
-(defun context-assembly (context)
-  (cmp:cfunction/bytecode (cmp:context/cfunction context)))
-
-(defun literal-index (literal context)
-  (let ((literals (cmp:module/literals (context-module context))))
-    (or (position literal literals)
-        (vector-push-extend literal literals))))
-
-(defun closure-index (info context)
-  (let ((closed (cmp:cfunction/closed (cmp:context/cfunction context))))
-    (or (position info closed)
-        (vector-push-extend info closed))))
-
 (defun bytecompile (lambda-expression
                     &optional (env (make-null-lexical-environment)))
   (check-type lambda-expression lambda-expression)
@@ -223,7 +141,8 @@
   (declare (ignore env))
   (unless (eql (cmp:context/receiving context) 0)
     (cond ((null form) (assemble context +nil+))
-          (t (assemble-maybe-long context +const+ (literal-index form context))))
+          (t (assemble-maybe-long context +const+
+                                  (context/literal-index context form))))
     (when (eql (cmp:context/receiving context) t)
       (assemble context +pop+))))
 
@@ -232,19 +151,6 @@
       (error "Handle compile-file")
       (let ((value (eval form)))
         (compile-literal value env context))))
-
-(defun maybe-emit-make-cell (lexical-info context)
-  (fixup/contextualize (lex-ref-fixup/make lexical-info +make-cell+) context))
-(defun maybe-emit-cell-ref (lexical-info context)
-  (fixup/contextualize (lex-ref-fixup/make lexical-info +cell-ref+) context))
-
-;;; FIXME: This is probably a good candidate for a specialized
-;;; instruction.
-(defun maybe-emit-encage (lexical-info context)
-  (fixup/contextualize (encage-fixup/make lexical-info) context))
-
-(defun emit-lexical-set (lexical-info context)
-  (fixup/contextualize (lex-set-fixup/make lexical-info) context))
 
 (defun compile-symbol (form env context)
   (let ((info (cmp:var-info form env)))
@@ -268,11 +174,11 @@
                     (t
                      (setf (cmp:lexical-var-info/closed-over-p info) t)
                      (assemble-maybe-long context
-                                          +closure+ (closure-index info context))))
-              (maybe-emit-cell-ref info context))
+                                          +closure+ (context/closure-index context info))))
+              (context/maybe-emit-cell-ref context info))
              ((typep info 'cmp:special-var-info)
               (assemble-maybe-long context +symbol-value+
-                                   (literal-index form context)))
+                                   (context/literal-index context form)))
              ((typep info 'cmp:constant-var-info)
               (return-from compile-symbol ; don't pop again.
                 (compile-literal (cmp:constant-var-info/value info)
@@ -280,7 +186,7 @@
              ((null info)
               (warn "Unknown variable ~a: treating as special" form)
               (assemble context +symbol-value+
-                        (literal-index form context)))
+                        (context/literal-index context form)))
              (t (error "BUG: Unknown info ~a" info)))
            (when (eq (cmp:context/receiving context) t)
              (assemble context +pop+))))))
@@ -348,7 +254,7 @@
           (do ((args rest (rest args))
                (arg-count 0 (1+ arg-count)))
               ((endp args)
-               (emit-call context arg-count))
+               (context/emit-call context arg-count))
             (compile-form (first args) env (new-context context :receiving 1))))
          (t (error "BUG: Unknown info ~a" info)))))))
 
@@ -397,17 +303,17 @@
                      (typep (cmp:var-info var env)
                             'cmp:special-var-info))
                  (incf special-binding-count)
-                 (emit-special-bind context var))
+                 (context/emit-special-bind context var))
                 (t
                  (setq post-binding-env
                        (bind-vars (list var) post-binding-env context))
                  (incf lexical-binding-count)
-                 (maybe-emit-make-cell
-                  (cmp:var-info var post-binding-env) context)))))
-      (emit-bind context lexical-binding-count
+                 (context/maybe-emit-make-cell
+                  context (cmp:var-info var post-binding-env))))))
+      (context/emit-bind context lexical-binding-count
                  (cmp:lexenv/frame-end env))
       (compile-progn body post-binding-env context)
-      (emit-unbind context special-binding-count))))
+      (context/emit-unbind context special-binding-count))))
 
 (defun compile-let* (bindings body env context)
   (multiple-value-bind (decls body docs specials)
@@ -423,11 +329,12 @@
           (cond ((or (member var specials) (ext:specialp var))
                  (incf special-binding-count)
                  (setq env (add-specials (list var) env))
-                 (emit-special-bind context var))
+                 (context/emit-special-bind context var))
                 (t
                  (let ((frame-start (cmp:lexenv/frame-end env)))
                    (setq env (bind-vars (list var) env context))
-                   (maybe-emit-make-cell (cmp:var-info var env) context)
+                   (context/maybe-emit-make-cell
+                    context (cmp:var-info var env))
                    (assemble-maybe-long context +set+ frame-start))))))
       (compile-progn body
                      (if specials
@@ -438,7 +345,7 @@
                          (add-specials specials env)
                          env)
                      context)
-      (emit-unbind context special-binding-count))))
+      (context/emit-unbind context special-binding-count))))
 
 (defun compile-setq (pairs env context)
   (if (null pairs)
@@ -477,7 +384,7 @@
            (assemble-maybe-long context +ref+ index)
            ;; called for effect, i.e. to keep frame size correct
            (bind-vars (list var) env context))
-         (assemble-maybe-long context +symbol-value-set+ (literal-index var context))
+         (assemble-maybe-long context +symbol-value-set+ (context/literal-index context var))
          (unless (eql (cmp:context/receiving context) 0)
            (assemble-maybe-long context +ref+ index)
            (when (eql (cmp:context/receiving context) t)
@@ -496,10 +403,10 @@
            (assemble-maybe-long context +ref+ index)
            (bind-vars (list var) env context))
          (cond (localp
-                (emit-lexical-set info context))
+                (context/emit-lexical-set context info))
                ;; Don't emit a fixup if we already know we need a cell.
                (t
-                (assemble-maybe-long context +closure+ (closure-index info context))
+                (assemble-maybe-long context +closure+ (context/closure-index context info))
                 (assemble context +cell-set+)))
          (unless (eql (cmp:context/receiving context) 0)
            (assemble-maybe-long context +ref+ index)
@@ -534,7 +441,7 @@
               funs)
         (incf frame-slot)
         (incf fun-count)))
-    (emit-bind context fun-count (cmp:lexenv/frame-end env))
+    (context/emit-bind context fun-count (cmp:lexenv/frame-end env))
     (let ((env (make-lexical-environment
                 (bind-vars fun-vars env context)
                 :funs (append funs (cmp:lexenv/funs env)))))
@@ -570,7 +477,7 @@
                                         (locally ,@(cddr definition))))
                                     env
                                     (context-module context)))
-               (literal-index (literal-index fun context)))
+               (literal-index (context/literal-index context fun)))
           (cond ((zerop (length (cmp:cfunction/closed fun)))
                  (assemble-maybe-long context +const+ literal-index))
                 (t
@@ -578,7 +485,7 @@
                  (assemble-maybe-long context
                                       +make-uninitialized-closure+ literal-index))))
         (incf frame-slot))
-      (emit-bind context fun-count frame-start)
+      (context/emit-bind context fun-count frame-start)
       (dolist (closure closures)
         (dotimes (i (length (cmp:cfunction/closed (car closure))))
           (reference-lexical-info (aref (cmp:cfunction/closed (car closure)) i)
@@ -590,9 +497,9 @@
   (compile-form condition env (new-context context :receiving 1))
   (let ((then-label (cmp:label/make))
         (done-label (cmp:label/make)))
-    (emit-jump-if context then-label)
+    (context/emit-jump-if context then-label)
     (compile-form else env context)
-    (emit-jump context done-label)
+    (context/emit-jump context done-label)
     (label/contextualize then-label context)
     (compile-form then env context)
     (label/contextualize done-label context)))
@@ -603,7 +510,7 @@
           (cmp:context/cfunction context))
       (assemble-maybe-long context +ref+
                            (cmp:lexical-var-info/frame-index info))
-      (assemble-maybe-long context +closure+ (closure-index info context))))
+      (assemble-maybe-long context +closure+ (context/closure-index context info))))
 
 (defun compile-function (fnameoid env context)
   (unless (eql (cmp:context/receiving context) 0)
@@ -615,16 +522,16 @@
             (reference-lexical-info (aref closed i) context))
           (if (zerop (length closed))
               (assemble-maybe-long context
-                                   +const+ (literal-index cfunction context))
+                                   +const+ (context/literal-index context cfunction))
               (assemble-maybe-long context +make-closure+
-                                   (literal-index cfunction context))))
+                                   (context/literal-index context cfunction))))
         (let ((info (cmp:fun-info fnameoid env)))
           (cond
             ((typep info '(or cmp:global-fun-info null))
              #-(or clasp-min aclasp bclasp)
              (when (null info) (warn "Unknown function ~a" fnameoid))
              (assemble-maybe-long context +fdefinition+
-                                  (literal-index fnameoid context)))
+                                  (context/literal-index context fnameoid)))
             ((typep info 'cmp:local-fun-info)
              (reference-lexical-info
               (cmp:local-fun-info/fun-var info) context))
@@ -681,9 +588,10 @@
                      (assemble-maybe-long
                       context +ref+
                       (cmp:lexical-var-info/frame-index info)))
-                   (emit-special-bind context var))
+                   (context/emit-special-bind context var))
                   (t
-                   (maybe-emit-encage (cmp:var-info var new-env) context))))
+                   (context/maybe-emit-encage
+                    context (cmp:var-info var new-env)))))
           (setq new-env (add-specials (intersection specials (cdr required)) new-env)))
         (unless (zerop optional-count)
           ;; Generate code to bind the provided optional args; unprovided args will
@@ -711,11 +619,14 @@
           ;; Generate code to parse the key args. As with optionals, we don't do
           ;; defaulting yet.
           (let ((key-names (collect-by #'cddddr (cdr keys))))
-            (emit-parse-key-args context max-count key-count key-names new-env aok-p)
+            (context/emit-parse-key-args
+             context max-count key-count
+             (context/literal-index context (first key-names))
+             (lexenv/frame-end new-env) aok-p)
             ;; emit-parse-key-args establishes the first key in the literals.
             ;; now do the rest.
             (dolist (key-name (rest key-names))
-              (literal-index key-name context)))
+              (context/literal-index context key-name)))
           (let ((keyvars (collect-by #'cddddr (cddr keys))))
             (setq new-env (bind-vars keyvars new-env context))
             (dolist (var keyvars)
@@ -766,10 +677,11 @@
                             'cmp:special-var-info))
                  (assemble-maybe-long
                   +ref+ (cmp:var-info rest new-env) context)
-                 (emit-special-bind context rest)
+                 (context/emit-special-bind context rest)
                  (incf special-binding-count 1)
                  (setq new-env (add-specials (list rest) new-env)))
-                (t (maybe-emit-encage (cmp:var-info rest new-env) context))))
+                (t (context/maybe-emit-encage
+                    context (cmp:var-info rest new-env)))))
         ;; Generate defaulting code for key args, and special-bind them if necessary.
         (when key-flag
           (do ((keys (cdr keys) (cddddr keys))
@@ -809,7 +721,7 @@
                              new-env context))
             (push (list (car aux) (cadr aux)) bindings)))
         ;; Finally, clean up any special bindings.
-        (emit-unbind context special-binding-count)))))
+        (context/emit-unbind context special-binding-count)))))
 
 ;;; Compile an optional/key item and return the resulting environment.
 (defun compile-optional/key-item (var defaulting-form var-index supplied-var next-label
@@ -818,25 +730,25 @@
            (cond (suppliedp
                   (cond (specialp
                          (assemble-maybe-long context +ref+ var-index)
-                         (emit-special-bind context var))
+                         (context/emit-special-bind context var))
                         (t
-                         (maybe-emit-encage info context))))
+                         (context/maybe-emit-encage context info))))
                  (t
                   (compile-form defaulting-form env
                                 (new-context context :receiving 1))
                   (cond (specialp
-                         (emit-special-bind context var))
+                         (context/emit-special-bind context var))
                         (t
-                         (maybe-emit-make-cell info context)
+                         (context/maybe-emit-make-cell context info)
                          (assemble-maybe-long context +set+ var-index))))))
          (supply (suppliedp specialp var info)
            (if suppliedp
                (compile-literal t env (new-context context :receiving 1))
                (assemble context +nil+))
            (cond (specialp
-                  (emit-special-bind context var))
+                  (context/emit-special-bind context var))
                  (t
-                  (maybe-emit-make-cell info context)
+                  (context/maybe-emit-make-cell context info)
                   (assemble-maybe-long
                    context +set+
                    (cmp:lexical-var-info/frame-index info))))))
@@ -845,11 +757,11 @@
       (when supplied-var
         (setq env (bind-vars (list supplied-var) env context)))
       (let ((supplied-info (cmp:var-info supplied-var env)))
-        (emit-jump-if-supplied context var-index supplied-label)
+        (context/emit-jump-if-supplied context supplied-label var-index)
         (default nil var-specialp var varinfo)
         (when supplied-var
           (supply nil supplied-specialp supplied-var supplied-info))
-        (emit-jump context next-label)
+        (context/emit-jump context next-label)
         (label/contextualize supplied-label context)
         (default t var-specialp var varinfo)
         (when supplied-var
@@ -912,7 +824,7 @@
     (if pair
         (destructuring-bind (dynenv-info . tag-label) (cdr pair)
           (reference-lexical-info dynenv-info context)
-          (emit-exit context tag-label))
+          (context/emit-exit context tag-label))
         (error "The GO tag ~a does not exist." tag))))
 
 (defun compile-block (name body env context)
@@ -929,7 +841,7 @@
       ;; Force single values into multiple so that we can uniformly PUSH afterward.
       (compile-progn body env context))
     (when (eql (cmp:context/receiving context) 1)
-      (emit-jump context normal-label))
+      (context/emit-jump context normal-label))
     (label/contextualize label context)
     ;; When we need 1 value, we have to make sure that the
     ;; "exceptional" case pushes a single value onto the stack.
@@ -944,13 +856,13 @@
     (if pair
         (destructuring-bind (dynenv-info . block-label) (cdr pair)
           (reference-lexical-info dynenv-info context)
-          (emit-exit context block-label))
+          (context/emit-exit context block-label))
         (error "The block ~a does not exist." name))))
 
 (defun compile-catch (tag body env context)
   (compile-form tag env (new-context context :receiving 1))
   (let ((target (cmp:label/make)))
-    (emit-catch context target)
+    (context/emit-catch context target)
     (compile-progn body env context)
     (assemble context +catch-close+)
     (label/contextualize target context)))
@@ -965,7 +877,7 @@
   (compile-form values env (new-context context :receiving 1))
   (assemble context +progv+)
   (compile-progn body env context)
-  (emit-unbind context 1))
+  (context/emit-unbind context 1))
 
 (defun compile-symbol-macrolet (bindings body env context)
   (let ((smacros nil))
@@ -1027,7 +939,7 @@
         (compile-form form env (new-context context :receiving t))
         (assemble context +append-values+))
       (assemble context +pop-values+)))
-  (emit-mv-call context))
+  (context/emit-mv-call context))
 
 (defun compile-multiple-value-prog1 (first-form forms env context)
   (compile-form first-form env context)
@@ -1039,9 +951,6 @@
     (assemble context +pop-values+)))
 
 ;;;; linkage
-
-(defun unsigned (x size)
-  (logand x (1- (ash 1 size))))
 
 ;;; Use the optimistic bytecode vector sizes to initialize the optimistic cfunction position.
 (defun initialize-cfunction-positions (cmodule)

@@ -152,6 +152,166 @@ CL_DEFUN T_sp cmp__fun_info(T_sp name, Lexenv_sp env) {
   }
 }
 
+size_t Context_O::literal_index(T_sp literal) {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  // FIXME: Smarter POSITION
+  for (size_t i = 0; i < literals->length(); ++i)
+    if ((*literals)[i] == literal)
+      return i;
+  Fixnum_sp nind = literals->vectorPushExtend(literal);
+  return nind.unsafe_fixnum();
+}
+
+size_t Context_O::closure_index(T_sp info) {
+  ComplexVector_T_sp closed = this->cfunction()->closed();
+  for (size_t i = 0; i < closed->length(); ++i)
+    if ((*closed)[i] == info)
+      return i;
+  Fixnum_sp nind = closed->vectorPushExtend(info);
+  return nind.unsafe_fixnum();
+}
+
+void Context_O::emit_jump(Label_sp label) {
+  ControlLabelFixup_O::make(label, vm_jump_8, vm_jump_16, vm_jump_24)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::emit_jump_if(Label_sp label) {
+  ControlLabelFixup_O::make(label, vm_jump_if_8, vm_jump_if_16, vm_jump_if_24)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::emit_exit(Label_sp label) {
+  ControlLabelFixup_O::make(label, vm_exit_8, vm_exit_16, vm_exit_24)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::emit_catch(Label_sp label) {
+  ControlLabelFixup_O::make(label, vm_catch_8, vm_catch_16, 0)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::emit_jump_if_supplied(Label_sp label, size_t ind) {
+  JumpIfSuppliedFixup_O::make(label, ind)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::maybe_emit_make_cell(LexicalVarInfo_sp info) {
+  LexRefFixup_O::make(info, vm_make_cell)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::maybe_emit_cell_ref(LexicalVarInfo_sp info) {
+  LexRefFixup_O::make(info, vm_cell_ref)->contextualize(this->asSmartPtr());
+}
+
+// FIXME: This is probably a good candidate for a specialized
+// instruction.
+void Context_O::maybe_emit_encage(LexicalVarInfo_sp info) {
+  EncageFixup_O::make(info)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::emit_lexical_set(LexicalVarInfo_sp info) {
+  LexSetFixup_O::make(info)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::emit_parse_key_args(size_t max_count, size_t key_count,
+                                    size_t keystart, size_t indx, bool aokp) {
+  ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
+  if ((max_count < (1<<8)) && (key_count < (1<<8))
+      && (keystart < (1<<8)) && (indx < (1<<8))) {
+    bytecode->vectorPushExtend(vm_parse_key_args);
+    bytecode->vectorPushExtend(max_count);
+    bytecode->vectorPushExtend(key_count | (aokp ? 0x80 : 0));
+    bytecode->vectorPushExtend(keystart);
+    bytecode->vectorPushExtend(indx);
+  } else if ((max_count < (1<<16)) && (key_count < (1<<16))
+             && (keystart < (1<<16)) && (indx < (1<<16))) {
+    bytecode->vectorPushExtend(clasp_make_fixnum(vm_long));
+    bytecode->vectorPushExtend(clasp_make_fixnum(vm_parse_key_args));
+    bytecode->vectorPushExtend(max_count & 0xff);
+    bytecode->vectorPushExtend(max_count >> 8);
+    bytecode->vectorPushExtend(key_count & 0xff);
+    bytecode->vectorPushExtend((key_count >> 8) | (aokp ? 0x80 : 0));
+    bytecode->vectorPushExtend(keystart & 0xff);
+    bytecode->vectorPushExtend(keystart >> 8);
+    bytecode->vectorPushExtend(indx & 0xff);
+    bytecode->vectorPushExtend(indx >> 8);
+  } else SIMPLE_ERROR("Bytecode compiler limit reached: keyarg indices too large: %zu %zu %zu %zu", max_count, key_count, keystart, indx);
+}
+
+void Context_O::assemble0(uint8_t opcode) {
+  this->cfunction()->bytecode()->vectorPushExtend(opcode);
+}
+
+void Context_O::assemble1(uint8_t opcode, size_t operand) {
+  ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
+  if (operand < (1<<8)) {
+    bytecode->vectorPushExtend(opcode);
+    bytecode->vectorPushExtend(operand);
+  } else if (operand < (1<<16)) {
+    bytecode->vectorPushExtend(vm_long);
+    bytecode->vectorPushExtend(opcode);
+    bytecode->vectorPushExtend(operand & 0xff);
+    bytecode->vectorPushExtend(operand >> 8);
+  } else SIMPLE_ERROR("Bytecode compiler limit reached: operand %zu too large", operand);
+}
+
+void Context_O::assemble2(uint8_t opcode, size_t operand1, size_t operand2) {
+  ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
+  if ((operand1 < (1<<8)) && (operand2 < (1<<8))) {
+    bytecode->vectorPushExtend(opcode);
+    bytecode->vectorPushExtend(operand1);
+    bytecode->vectorPushExtend(operand2);
+  } else if ((operand1 < (1<<16)) && (operand2 < (1<<16))) {
+    bytecode->vectorPushExtend(vm_long);
+    bytecode->vectorPushExtend(opcode);
+    bytecode->vectorPushExtend(operand1 & 0xff);
+    bytecode->vectorPushExtend(operand1 >> 8);
+    bytecode->vectorPushExtend(operand2 & 0xff);
+    bytecode->vectorPushExtend(operand2 >> 8);
+    } else SIMPLE_ERROR("Bytecode compiler limit reached: operands %zu %zu too large", operand1, operand2);
+}
+
+void Context_O::emit_bind(size_t count, size_t offset) {
+  switch (count) {
+  case 1: this->assemble1(vm_set, offset); break;
+  case 0: break;
+  default: this->assemble2(vm_bind, count, offset); break;
+  }
+}
+
+void Context_O::emit_call(size_t argcount) {
+  T_sp receiving = this->receiving();
+  if (receiving.fixnump()) {
+    gc::Fixnum freceiving = receiving.unsafe_fixnum();
+    switch (freceiving) {
+    case 1: this->assemble1(vm_call_receive_one, argcount); break;
+    case 0: this->assemble1(vm_call, argcount); break;
+    default:
+        this->assemble2(vm_call_receive_fixed, argcount, freceiving);
+        break;
+    }
+  } else this->assemble1(vm_call, argcount); // must be T
+}
+
+void Context_O::emit_mv_call() {
+  T_sp receiving = this->receiving();
+  if (receiving.fixnump()) {
+    gc::Fixnum freceiving = receiving.unsafe_fixnum();
+    switch (freceiving) {
+    case 1: this->assemble0(vm_mv_call_receive_one); break;
+    case 0: this->assemble0(vm_mv_call); break;
+    default:
+        this->assemble1(vm_mv_call_receive_fixed, freceiving);
+        break;
+    }
+  } else this->assemble0(vm_mv_call); // must be T
+}
+
+void Context_O::emit_special_bind(Symbol_sp sym) {
+  this->assemble1(vm_special_bind, this->literal_index(sym));
+}
+
+void Context_O::emit_unbind(size_t count) {
+  for (size_t i = 0; i < count; ++i)
+    this->assemble0(vm_unbind);
+}
+
 size_t Annotation_O::module_position() {
   return this->pposition() + gc::As<Cfunction_sp>(this->cfunction())->pposition();
 }
@@ -174,9 +334,7 @@ void Fixup_O::contextualize(Context_sp ctxt) {
   Fixnum_sp nind = cfunction->annotations()->vectorPushExtend(this->asSmartPtr());
   this->setIndex(nind.unsafe_fixnum());
   for (size_t i = 0; i < this->initial_size(); ++i)
-    // FIXME: Tagging a fixnum here is stupid, but we don't have a lower level
-    // vectorPushExtend that knows about the element type.
-    assembly->vectorPushExtend(clasp_make_fixnum(0));
+    assembly->vectorPushExtend(0);
 }
 
 ptrdiff_t LabelFixup_O::delta() {
@@ -256,12 +414,12 @@ void EncageFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
       (*code)[position  ] = vm_long;
       (*code)[position+1] = vm_ref;
       (*code)[position+2] = index & 0xff;
-      (*code)[position+3] = index & 0xff00;
+      (*code)[position+3] = index >> 8;
       (*code)[position+4] = vm_make_cell;
       (*code)[position+5] = vm_long;
       (*code)[position+6] = vm_set;
       (*code)[position+7] = index & 0xff;
-      (*code)[position+8] = index & 0xff00;
+      (*code)[position+8] = index >> 8;
       break;
   default: UNREACHABLE();
   }
@@ -295,13 +453,13 @@ void LexSetFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
       (*code)[position  ] = vm_long;
       (*code)[position+1] = vm_set;
       (*code)[position+2] = index & 0xff;
-      (*code)[position+3] = index & 0xff00;
+      (*code)[position+3] = index >> 8;
       break;
   case 5:
       (*code)[position  ] = vm_long;
       (*code)[position+1] = vm_ref;
       (*code)[position+2] = index & 0xff;
-      (*code)[position+3] = index & 0xff00;
+      (*code)[position+3] = index >> 8;
       (*code)[position+4] = vm_cell_set;
       break;
   default: UNREACHABLE();
