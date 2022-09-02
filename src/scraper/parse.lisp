@@ -145,11 +145,15 @@ Trim whitespace from each member of the pair.
 Rudimentarily detects and skips initializers."
   (declare (optimize (speed 3)))
   (let* ((initializer-start (position #\= type-name :from-end t))
-         (name-start (position-if #'(lambda (c)
-                                      (not (or (alphanumericp c) (char= c #\_))))
-                                  type-name
-                                  :end initializer-start
-                                  :from-end t))
+         (name-start
+           (or (position-if #'(lambda (c)
+                                (not (or (alphanumericp c) (char= c #\_))))
+                            type-name
+                            :end initializer-start
+                            :from-end t)
+               (error "Bad type-name ~s for ~a. Should be a C++ type followed by a space followed by a parameter name.
+This may indicate a C++ arglist with type names but without the parameter names the scraper requires."
+                      type-name 'split-type-name)))
          (first (subseq type-name 0 (1+ name-start)))
          (second (subseq type-name (1+ name-start) initializer-start)))
     (values (string-trim +white-space+ first) (string-trim +white-space+ second))))
