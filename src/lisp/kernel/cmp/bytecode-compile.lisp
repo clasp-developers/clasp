@@ -620,10 +620,11 @@
          ((member kind '(:global-function :local-function nil))
           ;; Try a compiler macroexpansion
           (when (and (eq kind ':global-function) data)
-            (return-from compile-cons
-              (compile-form
-               (funcall *macroexpand-hook* data (cons head rest) env)
-               env context)))
+            (let* ((form (cons head rest))
+                   (expansion (funcall *macroexpand-hook* data form env)))
+              (unless (eq form expansion)
+                (return-from compile-cons
+                  (compile-form expansion env context)))))
           ;; unknown function warning handled by compile-function
           ;; note we do a double lookup, which is inefficient
           (compile-function head env (new-context context :receiving 1))
