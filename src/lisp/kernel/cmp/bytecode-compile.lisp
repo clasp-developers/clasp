@@ -65,19 +65,10 @@
 
 ;;;
 
-(defun new-context (parent &key (receiving (context/receiving parent))
-                             (cfunction (context/cfunction parent)))
-  (context/make receiving cfunction))
-
 (defun (setf cmp:lexical-var-info/closed-over-p) (new info)
   (cmp:lexical-var-info/setf-closed-over-p info new))
 (defun (setf cmp:lexical-var-info/set-p) (new info)
   (cmp:lexical-var-info/setf-set-p info new))
-
-;;; Does the variable with LEXICAL-INFO need a cell?
-(defun indirect-lexical-p (lexical-info)
-  (and (cmp:lexical-var-info/closed-over-p lexical-info)
-       (cmp:lexical-var-info/set-p lexical-info)))
 
 (defun make-symbol-macro-var-info (expansion)
   (cmp:symbol-macro-var-info/make
@@ -92,26 +83,6 @@
                                           (frame-end (cmp:lexenv/frame-end parent))
                                           (funs (cmp:lexenv/funs parent)))
   (cmp:lexenv/make vars tags blocks funs frame-end))
-
-;;; Bind each variable to a stack location, returning a new lexical
-;;; environment. The max local count in the current function is also
-;;; updated.
-(defun bind-vars (vars env context)
-  (let* ((frame-start (cmp:lexenv/frame-end env))
-         (var-count (length vars))
-         (frame-end (+ frame-start var-count))
-         (function (cmp:context/cfunction context)))
-    (cmp:cfunction/setf-nlocals
-     function
-     (max (cmp:cfunction/nlocals function) frame-end))
-    (do ((index frame-start (1+ index))
-         (vars vars (rest vars))
-         (new-vars (cmp:lexenv/vars env)
-                   (acons (first vars) (cmp:lexical-var-info/make index function) new-vars)))
-        ((>= index frame-end)
-         (make-lexical-environment env :vars new-vars :frame-end frame-end))
-      (when (constantp (first vars))
-        (error "Cannot bind constant value ~a!" (first vars))))))
 
 (deftype lambda-expression () '(cons (eql lambda) (cons list list)))
 
@@ -250,34 +221,25 @@
           ;; unknown function warning handled by compile-function
           ;; note we do a double lookup of the fun info,
           ;; which is inefficient in the compiler (generated code is ok)
-          (compile-function head env (new-context context :receiving 1))
+          (compile-function head env (context/sub context 1))
           (do ((args rest (rest args))
                (arg-count 0 (1+ arg-count)))
               ((endp args)
                (context/emit-call context arg-count))
-            (compile-form (first args) env (new-context context :receiving 1))))
+            (compile-form (first args) env (context/sub context 1))))
          (t (error "BUG: Unknown info ~a" info)))))))
 
 (defun compile-progn (forms env context)
   (do ((forms forms (rest forms)))
       ((null (rest forms))
        (compile-form (first forms) env context))
-    (compile-form (first forms) env (new-context context :receiving 0))))
-
-;;; Add VARS as specials in ENV.
-(defun add-specials (vars env)
-  (make-lexical-environment
-   env
-   :vars (append (mapcar (lambda (var)
-                           (cons var (cmp:special-var-info/make)))
-                         vars)
-                 (cmp:lexenv/vars env))))
+    (compile-form (first forms) env (context/sub context 0))))
 
 (defun compile-locally (body env context)
   (multiple-value-bind (decls body docs specials)
       (core:process-declarations body nil)
     (declare (ignore decls docs))
-    (compile-progn body (if specials (add-specials specials env) env) context)))
+    (compile-progn body (if specials (lexenv/add-specials env specials) env) context)))
 
 (defun compile-eval-when (situations body env context)
   (if (or (member 'cl:eval situations) (member :execute situations))
@@ -295,10 +257,10 @@
     (declare (ignore decls docs))
     (let ((lexical-binding-count 0)
           (special-binding-count 0)
-          (post-binding-env (add-specials specials env)))
+          (post-binding-env (lexenv/add-specials env specials)))
       (dolist (binding bindings)
         (multiple-value-bind (var valf) (canonicalize-binding binding)
-          (compile-form valf env (new-context context :receiving 1))
+          (compile-form valf env (context/sub context 1))
           (cond ((or (member var specials)
                      (typep (cmp:var-info var env)
                             'cmp:special-var-info))
@@ -306,7 +268,7 @@
                  (context/emit-special-bind context var))
                 (t
                  (setq post-binding-env
-                       (bind-vars (list var) post-binding-env context))
+                       (lexenv/bind-vars post-binding-env (list var) context))
                  (incf lexical-binding-count)
                  (context/maybe-emit-make-cell
                   context (cmp:var-info var post-binding-env))))))
@@ -325,14 +287,14 @@
               (valf (if (and (consp binding) (consp (cdr binding)))
                         (cadr binding)
                         'nil)))
-          (compile-form valf env (new-context context :receiving 1))
+          (compile-form valf env (context/sub context 1))
           (cond ((or (member var specials) (ext:specialp var))
                  (incf special-binding-count)
-                 (setq env (add-specials (list var) env))
+                 (setq env (lexenv/add-specials env (list var)))
                  (context/emit-special-bind context var))
                 (t
                  (let ((frame-start (cmp:lexenv/frame-end env)))
-                   (setq env (bind-vars (list var) env context))
+                   (setq env (lexenv/bind-vars env (list var) context))
                    (context/maybe-emit-make-cell
                     context (cmp:var-info var env))
                    (assemble-maybe-long context +set+ frame-start))))))
@@ -342,7 +304,7 @@
                          ;; through even if this form doesn't bind them.
                          ;; This creates duplicate alist entries for anything
                          ;; that _is_ bound here, but that's not a big deal.
-                         (add-specials specials env)
+                         (lexenv/add-specials env specials)
                          env)
                      context)
       (context/emit-unbind context special-binding-count))))
@@ -358,7 +320,7 @@
               (rest (cddr pairs)))
           (compile-setq-1 var valf env
                           (if rest
-                              (new-context context :receiving 0)
+                              (context/sub context 0)
                               context))))))
 
 (defun compile-setq-1 (var valf env context)
@@ -373,7 +335,7 @@
       ((typep info '(or null cmp:special-var-info))
        (when (null info)
          (warn "Unknown variable ~a: treating as special" var))
-       (compile-form valf env (new-context context :receiving 1))
+       (compile-form valf env (context/sub context 1))
        ;; If we need to return the new value, stick it into a new local
        ;; variable, do the set, then return the lexical variable.
        ;; We can't just read from the special, since some other thread may
@@ -383,7 +345,7 @@
            (assemble-maybe-long context +set+ index)
            (assemble-maybe-long context +ref+ index)
            ;; called for effect, i.e. to keep frame size correct
-           (bind-vars (list var) env context))
+           (lexenv/bind-vars env (list var) context))
          (assemble-maybe-long context +symbol-value-set+ (context/literal-index context var))
          (unless (eql (cmp:context/receiving context) 0)
            (assemble-maybe-long context +ref+ index)
@@ -396,12 +358,12 @@
          (unless localp
            (setf (cmp:lexical-var-info/closed-over-p info) t))
          (setf (cmp:lexical-var-info/set-p info) t)
-         (compile-form valf env (new-context context :receiving 1))
+         (compile-form valf env (context/sub context 1))
          ;; similar concerns to specials above.
          (unless (eql (cmp:context/receiving context) 0)
            (assemble-maybe-long context +set+ index)
            (assemble-maybe-long context +ref+ index)
-           (bind-vars (list var) env context))
+           (lexenv/bind-vars env (list var) context))
          (cond (localp
                 (context/emit-lexical-set context info))
                ;; Don't emit a fixup if we already know we need a cell.
@@ -414,12 +376,6 @@
              (assemble context +pop+)))))
       (t (error "BUG: Unknown var info ~a" info)))))
 
-(defun fun-name-block-name (fun-name)
-  (if (symbolp fun-name)
-      fun-name
-      ;; setf name
-      (second fun-name)))
-
 (defun compile-flet (definitions body env context)
   (let ((fun-vars '())
         (funs '())
@@ -430,9 +386,9 @@
       (let ((name (first definition))
             (fun-var (gensym "FLET-FUN")))
         (compile-function `(lambda ,(second definition)
-                             (block ,(fun-name-block-name name)
+                             (block ,(core:function-block-name name)
                                (locally ,@(cddr definition))))
-                          env (new-context context :receiving 1))
+                          env (context/sub context 1))
         (push fun-var fun-vars)
         (push (cons name (cmp:local-fun-info/make
                           (cmp:lexical-var-info/make
@@ -443,7 +399,7 @@
         (incf fun-count)))
     (context/emit-bind context fun-count (cmp:lexenv/frame-end env))
     (let ((env (make-lexical-environment
-                (bind-vars fun-vars env context)
+                (lexenv/bind-vars env fun-vars context)
                 :funs (append funs (cmp:lexenv/funs env)))))
       (compile-locally body env context))))
 
@@ -468,12 +424,12 @@
         (incf fun-count)))
     (let ((frame-slot (cmp:lexenv/frame-end env))
           (env (make-lexical-environment
-                (bind-vars fun-vars env context)
+                (lexenv/bind-vars env fun-vars context)
                 :funs (append funs (cmp:lexenv/funs env)))))
       (dolist (definition definitions)
         (let* ((name (first definition))
                (fun (compile-lambda (second definition)
-                                    `((block ,(fun-name-block-name name)
+                                    `((block ,(core:function-block-name name)
                                         (locally ,@(cddr definition))))
                                     env
                                     (context-module context)))
@@ -494,7 +450,7 @@
       (compile-progn body env context))))
 
 (defun compile-if (condition then else env context)
-  (compile-form condition env (new-context context :receiving 1))
+  (compile-form condition env (context/sub context 1))
   (let ((then-label (cmp:label/make))
         (done-label (cmp:label/make)))
     (context/emit-jump-if context then-label)
@@ -559,7 +515,7 @@
              (max-count (+ min-count optional-count))
              (key-count (first keys))
              (more-p (or rest key-flag))
-             (new-env (bind-vars (cdr required) env context))
+             (new-env (lexenv/bind-vars env (cdr required) context))
              (special-binding-count 0)
              ;; An alist from optional and key variables to their local indices.
              ;; This is needed so that we can properly mark any that are special as
@@ -592,7 +548,7 @@
                   (t
                    (context/maybe-emit-encage
                     context (cmp:var-info var new-env)))))
-          (setq new-env (add-specials (intersection specials (cdr required)) new-env)))
+          (setq new-env (lexenv/add-specials new-env (intersection specials (cdr required)))))
         (unless (zerop optional-count)
           ;; Generate code to bind the provided optional args; unprovided args will
           ;; be initialized with the unbound marker.
@@ -600,7 +556,7 @@
           (let ((optvars (collect-by #'cdddr (cdr optionals))))
             ;; Mark the locations of each optional. Note that we do this even if
             ;; the variable will be specially bound.
-            (setq new-env (bind-vars optvars new-env context))
+            (setq new-env (lexenv/bind-vars new-env optvars context))
             ;; Add everything to opt-key-indices.
             (dolist (var optvars)
               (let ((info (cmp:var-info var new-env)))
@@ -614,7 +570,7 @@
                                       'cmp:special-var-info))
                              optvars)))
               (when specials
-                (setq new-env (add-specials specials new-env))))))
+                (setq new-env (lexenv/add-specials new-env specials))))))
         (when key-flag
           ;; Generate code to parse the key args. As with optionals, we don't do
           ;; defaulting yet.
@@ -628,7 +584,7 @@
             (dolist (key-name (rest key-names))
               (context/literal-index context key-name)))
           (let ((keyvars (collect-by #'cddddr (cddr keys))))
-            (setq new-env (bind-vars keyvars new-env context))
+            (setq new-env (lexenv/bind-vars new-env keyvars context))
             (dolist (var keyvars)
               (let ((info (cmp:var-info var new-env)))
                 (push (cons var (cmp:lexical-var-info/frame-index info))
@@ -639,7 +595,7 @@
                                       'cmp:special-var-info))
                              keyvars)))
               (when specials
-                (setq new-env (add-specials specials new-env))))))
+                (setq new-env (lexenv/add-specials new-env specials))))))
         ;; Generate defaulting code for optional args, and special-bind them
         ;; if necessary.
         (unless (zerop optional-count)
@@ -671,7 +627,7 @@
         (when rest
           (assemble-maybe-long context +listify-rest-args+ max-count)
           (assemble-maybe-long context +set+ (frame-end new-env))
-          (setq new-env (bind-vars (list rest) new-env context))
+          (setq new-env (lexenv/bind-vars new-env (list rest) context))
           (cond ((or (member rest specials)
                      (typep (cmp:var-info rest env)
                             'cmp:special-var-info))
@@ -679,7 +635,7 @@
                   +ref+ (cmp:var-info rest new-env) context)
                  (context/emit-special-bind context rest)
                  (incf special-binding-count 1)
-                 (setq new-env (add-specials (list rest) new-env)))
+                 (setq new-env (lexenv/add-specials new-env (list rest))))
                 (t (context/maybe-emit-encage
                     context (cmp:var-info rest new-env)))))
         ;; Generate defaulting code for key args, and special-bind them if necessary.
@@ -735,7 +691,7 @@
                          (context/maybe-emit-encage context info))))
                  (t
                   (compile-form defaulting-form env
-                                (new-context context :receiving 1))
+                                (context/sub context 1))
                   (cond (specialp
                          (context/emit-special-bind context var))
                         (t
@@ -743,7 +699,7 @@
                          (assemble-maybe-long context +set+ var-index))))))
          (supply (suppliedp specialp var info)
            (if suppliedp
-               (compile-literal t env (new-context context :receiving 1))
+               (compile-literal t env (context/sub context 1))
                (assemble context +nil+))
            (cond (specialp
                   (context/emit-special-bind context var))
@@ -755,7 +711,7 @@
     (let ((supplied-label (cmp:label/make))
           (varinfo (cmp:var-info var env)))
       (when supplied-var
-        (setq env (bind-vars (list supplied-var) env context)))
+        (setq env (lexenv/bind-vars env (list supplied-var) context)))
       (let ((supplied-info (cmp:var-info supplied-var env)))
         (context/emit-jump-if-supplied context supplied-label var-index)
         (default nil var-specialp var varinfo)
@@ -767,9 +723,9 @@
         (when supplied-var
           (supply t supplied-specialp supplied-var supplied-info))
         (when var-specialp
-          (setq env (add-specials (list var) env)))
+          (setq env (lexenv/add-specials env (list var))))
         (when supplied-specialp
-          (setq env (add-specials (list supplied-var) env)))
+          (setq env (lexenv/add-specials env (list supplied-var))))
         env))))
 
 ;;; Compile the lambda in MODULE, returning the resulting
@@ -798,7 +754,7 @@
 (defun compile-tagbody (statements env context)
   (let* ((new-tags (cmp:lexenv/tags env))
          (tagbody-dynenv (gensym "TAG-DYNENV"))
-         (env (bind-vars (list tagbody-dynenv) env context))
+         (env (lexenv/bind-vars env (list tagbody-dynenv) context))
          (dynenv-info (cmp:var-info tagbody-dynenv env)))
     (dolist (statement statements)
       (when (go-tag-p statement)
@@ -811,7 +767,7 @@
       (dolist (statement statements)
         (if (go-tag-p statement)
             (label/contextualize (cddr (assoc statement (cmp:lexenv/tags env))) context)
-            (compile-form statement env (new-context context :receiving 0))))))
+            (compile-form statement env (context/sub context 0))))))
   (assemble context +entry-close+)
   ;; return nil if we really have to
   (unless (eql (cmp:context/receiving context) 0)
@@ -829,7 +785,7 @@
 
 (defun compile-block (name body env context)
   (let* ((block-dynenv (gensym "BLOCK-DYNENV"))
-         (env (bind-vars (list block-dynenv) env context))
+         (env (lexenv/bind-vars env (list block-dynenv) context))
          (dynenv-info (cmp:var-info block-dynenv env))
          (label (cmp:label/make))
          (normal-label (cmp:label/make)))
@@ -851,7 +807,7 @@
     (assemble context +entry-close+)))
 
 (defun compile-return-from (name value env context)
-  (compile-form value env (new-context context :receiving t))
+  (compile-form value env (context/sub context t))
   (let ((pair (assoc name (cmp:lexenv/blocks env))))
     (if pair
         (destructuring-bind (dynenv-info . block-label) (cdr pair)
@@ -860,7 +816,7 @@
         (error "The block ~a does not exist." name))))
 
 (defun compile-catch (tag body env context)
-  (compile-form tag env (new-context context :receiving 1))
+  (compile-form tag env (context/sub context 1))
   (let ((target (cmp:label/make)))
     (context/emit-catch context target)
     (compile-progn body env context)
@@ -868,13 +824,13 @@
     (label/contextualize target context)))
 
 (defun compile-throw (tag result env context)
-  (compile-form tag env (new-context context :receiving 1))
-  (compile-form result env (new-context context :receiving t))
+  (compile-form tag env (context/sub context 1))
+  (compile-form result env (context/sub context t))
   (assemble context +throw+))
 
 (defun compile-progv (symbols values body env context)
-  (compile-form symbols env (new-context context :receiving 1))
-  (compile-form values env (new-context context :receiving 1))
+  (compile-form symbols env (context/sub context 1))
+  (compile-form values env (context/sub context 1))
   (assemble context +progv+)
   (compile-progn body env context)
   (context/emit-unbind context 1))
@@ -889,30 +845,6 @@
                            :vars (append (nreverse smacros) (cmp:lexenv/vars env)))
                      context)))
 
-(defun lexenv-for-macrolet (env)
-  ;; Macrolet expanders need to be compiled in the local compilation environment,
-  ;; so that e.g. their bodies can use macros defined in outer macrolets.
-  ;; At the same time, they obviously do not have access to any runtime
-  ;; environment. Taking out all runtime information is one way to do this but
-  ;; it's slightly not-nice in that if someone writes a macroexpander that does
-  ;; try to use local runtime information may fail silently by using global info
-  ;; instead. So: KLUDGE.
-  (make-lexical-environment
-   env
-   :vars (let ((cpairs nil))
-           (dolist (pair (cmp:lexenv/vars env) (nreverse cpairs))
-             (let ((info (cdr pair)))
-               (when (typep info '(or cmp:constant-var-info
-                                   cmp:symbol-macro-var-info))
-                 (push pair cpairs)))))
-   :funs (let ((cpairs nil))
-           (dolist (pair (cmp:lexenv/funs env) (nreverse cpairs))
-             (let ((info (cdr pair)))
-               (when (typep info '(or cmp:global-macro-info
-                                   cmp:local-macro-info))
-                 (push pair cpairs)))))
-   :tags nil :blocks nil :frame-end 0))
-
 #+clasp
 (defun compile-macrolet (bindings body env context)
   (let ((macros nil))
@@ -920,7 +852,7 @@
       (let* ((name (car binding)) (lambda-list (cadr binding))
              (body (cddr binding))
              (eform (ext:parse-macro name lambda-list body env))
-             (aenv (lexenv-for-macrolet env))
+             (aenv (lexenv/macroexpansion-environment env))
              (expander (bytecompile eform aenv))
              (info (cmp:local-macro-info/make expander)))
         (push (cons name info) macros)))
@@ -929,14 +861,14 @@
                      context)))
 
 (defun compile-multiple-value-call (function-form forms env context)
-  (compile-form function-form env (new-context context :receiving 1))
+  (compile-form function-form env (context/sub context 1))
   (let ((first (first forms))
         (rest (rest forms)))
-    (compile-form first env (new-context context :receiving t))
+    (compile-form first env (context/sub context t))
     (when rest
       (assemble context +push-values+)
       (dolist (form rest)
-        (compile-form form env (new-context context :receiving t))
+        (compile-form form env (context/sub context t))
         (assemble context +append-values+))
       (assemble context +pop-values+)))
   (context/emit-mv-call context))
@@ -946,7 +878,7 @@
   (unless (member (cmp:context/receiving context) '(0 1))
     (assemble context +push-values+))
   (dolist (form forms)
-    (compile-form form env (new-context context :receiving 0)))
+    (compile-form form env (context/sub context 0)))
   (unless (member (cmp:context/receiving context) '(0 1))
     (assemble context +pop-values+)))
 

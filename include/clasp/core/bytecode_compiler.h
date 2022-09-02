@@ -170,6 +170,7 @@ public:
 };
 
 FORWARD(Lexenv);
+FORWARD(Context);
 class Lexenv_O : public General_O {
   LISP_CLASS(comp, CompPkg, Lexenv_O, "Lexenv", General_O);
 public:
@@ -177,24 +178,40 @@ public:
   T_sp _tags;
   T_sp _blocks;
   T_sp _funs;
-  Integer_sp frame_end;
+  size_t frame_end;
 public:
   Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns,
-           Integer_sp nframe_end)
+           size_t nframe_end)
     : _vars(nvars), _tags(ntags), _blocks(nblocks), _funs(nfuns),
       frame_end(nframe_end) {};
   CL_LISPIFY_NAME(lexenv/make)
   CL_DEF_CLASS_METHOD
   static Lexenv_sp make(T_sp vars, T_sp tags, T_sp blocks, T_sp funs,
-                        Integer_sp frame_end) {
+                        size_t frame_end) {
     return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, frame_end);
   }
   CL_DEFMETHOD T_sp vars() const { return this->_vars; }
   CL_DEFMETHOD T_sp tags() const { return this->_tags; }
   CL_DEFMETHOD T_sp blocks() const { return this->_blocks; }
   CL_DEFMETHOD T_sp funs() const { return this->_funs; }
-  CL_DEFMETHOD Integer_sp frameEnd() const { return this->frame_end; }
+  CL_DEFMETHOD size_t frameEnd() const { return this->frame_end; }
 public:
+  /* Bind each variable to a stack location, returning a new lexical
+   * environment. The max local count in the current function is also
+   * updated.
+   */
+  CL_DEFMETHOD Lexenv_sp bind_vars(List_sp vars, Context_sp context);
+  // Add VARS as special in ENV.
+  CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
+  /* Macrolet expanders need to be compiled in the local compilation environment,
+   * so that e.g. their bodies can use macros defined in outer macrolets.
+   * At the same time, they obviously do not have access to any runtime
+   * environment. Taking out all runtime information is one way to do this but
+   * it's slightly not-nice in that if someone writes a macroexpander that does
+   * try to use local runtime information may fail silently by using global info
+   * instead. So: KLUDGE.
+   */
+  CL_DEFMETHOD Lexenv_sp macroexpansion_environment();
   T_sp variableInfo(T_sp varname);
   T_sp lookupSymbolMacro(T_sp sname);
   T_sp functionInfo(T_sp fname);
@@ -207,7 +224,6 @@ public:
 
 // Context contains information about what the current form needs
 // to know about what it is enclosed by.
-FORWARD(Context);
 FORWARD(Label);
 FORWARD(Cfunction);
 class Context_O : public General_O {
@@ -229,11 +245,17 @@ public:
     return gc::As<Cfunction_sp>(this->_cfunction);
   }
 public:
+  // Make a new context that's like this one but with a possibly-different
+  // RECEIVING.
+  CL_DEFMETHOD Context_sp sub(T_sp receiving) {
+    return Context_O::make(receiving, this->_cfunction);
+  }
   CL_DEFMETHOD size_t literal_index(T_sp literal);
   CL_DEFMETHOD size_t closure_index(T_sp info);
-  void assemble0(uint8_t);
-  void assemble1(uint8_t, size_t);
-  void assemble2(uint8_t, size_t, size_t);
+  CL_DEFMETHOD void assemble0(uint8_t opcode);
+  CL_DEFMETHOD void assemble1(uint8_t opcode, size_t operand1);
+  CL_DEFMETHOD void assemble2(uint8_t opcode,
+                              size_t operand1, size_t operand2);
   void emit_control_label(Label_sp,
                           uint8_t opcode8, uint8_t opcode16, uint8_t opcode24);
   CL_DEFMETHOD void emit_jump(Label_sp label);

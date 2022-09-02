@@ -134,7 +134,7 @@
     (let* ((env (or env (make-null-lexical-environment)))
            (new-env
              (if specials
-                 (add-specials specials env)
+                 (lexenv/add-specials env specials)
                  env)))
       (bytecode-toplevel-progn body new-env))))
 
@@ -145,7 +145,7 @@
       (let* ((name (car binding)) (lambda-list (cadr binding))
              (body (cddr binding))
              (eform (ext:parse-macro name lambda-list body env))
-             (aenv (lexenv-for-macrolet env))
+             (aenv (lexenv/macroexpansion-environment env))
              (expander (bytecompile eform aenv))
              (info (cmp:local-macro-info/make expander)))
         (push (cons name info) macros)))

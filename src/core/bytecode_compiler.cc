@@ -2,6 +2,7 @@
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/evaluator.h> // af_interpreter_lookup_macro
 #include <clasp/core/sysprop.h> // core__get_sysprop
+#include <algorithm> // max
 
 namespace comp {
 
@@ -50,6 +51,60 @@ T_sp Lexenv_O::lookupMacro(T_sp macroname) {
   else if (info.nilp()) // could be global
     return af_interpreter_lookup_macro(macroname, nil<T_O>());
   else return nil<T_O>();
+}
+
+Lexenv_sp Lexenv_O::bind_vars(List_sp vars, Context_sp ctxt) {
+  size_t frame_start = this->frameEnd();
+  size_t frame_end = frame_start
+    + (vars.nilp() ? 0 : vars.unsafe_cons()->length());
+  Cfunction_sp cf = ctxt->cfunction();
+
+  cf->setNlocals(std::max(frame_end, cf->nlocals()));
+  size_t idx = frame_start;
+  List_sp new_vars = this->vars();
+  for (auto cur : vars) {
+    Symbol_sp var = oCar(cur);
+    if (var->getReadOnly())
+      SIMPLE_ERROR("Cannot bind constant value %s!", _rep_(var));
+    auto info = LexicalVarInfo_O::make(idx++, cf);
+    Cons_sp pair = Cons_O::create(var, info);
+    new_vars = Cons_O::create(pair, new_vars);
+  }
+  return Lexenv_O::make(new_vars, this->tags(), this->blocks(),
+                        this->funs(), frame_end);
+}
+
+Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
+  List_sp new_vars = this->vars();
+  for (auto cur : vars) {
+    Symbol_sp var = oCar(cur);
+    auto info = SpecialVarInfo_O::make();
+    Cons_sp pair = Cons_O::create(var, info);
+    new_vars = Cons_O::create(pair, new_vars);
+  }
+  return Lexenv_O::make(new_vars, this->tags(), this->blocks(),
+                        this->funs(), this->frameEnd());
+}
+
+Lexenv_sp Lexenv_O::macroexpansion_environment() {
+  ql::list new_vars;
+  for (auto cur : (List_sp)(this->vars())) {
+    T_sp pair = oCar(cur);
+    T_sp info = oCdr(pair);
+    if (gc::IsA<ConstantVarInfo_sp>(info)
+        || gc::IsA<SymbolMacroVarInfo_sp>(info))
+      new_vars << pair;
+  }
+  ql::list new_funs;
+  for (auto cur : (List_sp)(this->funs())) {
+    T_sp pair = oCar(cur);
+    T_sp info = oCdr(pair);
+    if (gc::IsA<GlobalMacroInfo_sp>(info)
+        || gc::IsA<LocalMacroInfo_sp>(info))
+      new_funs << pair;
+  }
+  return Lexenv_O::make(new_vars.cons(), nil<T_O>(), nil<T_O>(),
+                        new_funs.cons(), 0);
 }
 
 CL_LAMBDA(context opcode &rest operands)
