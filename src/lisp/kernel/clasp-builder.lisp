@@ -986,6 +986,8 @@ been initialized with install path versus the build path of the source code file
 
 (export 'pprint-features)
 
+(defvar *system-load-times*)
+
 (defun load-stage (system stage)
   (let ((files (select-source-files (make-pathname :host "sys"
                                                    :directory '(:absolute "src" "lisp" "kernel" "stage")
@@ -996,17 +998,27 @@ been initialized with install path versus the build path of the source code file
                                                    :name (core:fmt nil "{:d}-end" stage)
                                                    :type "lisp")
                                     :system system))
-        (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword)))
+        (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword))
+        (stage-time (get-internal-run-time))
+        file-time)
     (setq *features* (cons stage-keyword *features*))
     (message :emph "Loading stage {:d}..." stage)
     (tagbody
      next
       (if files
           (progn
+            (setq file-time (get-internal-run-time))
             (load (car files))
-            (setq files (cdr files))
+            (setq file-time (- (get-internal-run-time) file-time)
+                  files (cdr files))
+            (core:hash-table-setf-gethash *system-load-times* (car files)
+                                          (cons file-time (gethash (car files) *system-load-times*)))
+            (message nil ";;; Load time {:.3f} seconds" (float (/ file-time internal-time-units-per-second)))
             (go next))))
-    (setq *features* (core:remove-equal stage-keyword *features*))))
+    (setq *features* (core:remove-equal stage-keyword *features*))
+    (message :emph "Stage {:d} elapsed time: {:.3f} seconds"
+             stage
+             (float (/ (- (get-internal-run-time) stage-time) internal-time-units-per-second)))))
 
 (defvar +stage-features+ '(:clasp-min :clos :aclasp :bclasp :cclasp :eclasp))
 
@@ -1021,12 +1033,20 @@ been initialized with install path versus the build path of the source code file
   (setq *features* (append rest *features*))
   (pprint-features))
 
+(defun get-load-time (file)
+  (let ((times (gethash file *system-load-times*)))
+    (if times
+        (float (/ (apply #'+ times) (length times)))
+        most-positive-fixnum)))
+
 (defun load-vclasp (&key reproducible clean (output-file (build-common-lisp-bitcode-pathname))
                          (system (command-line-arguments-as-list))
                          (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
                                           (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
-                                          7))
-                    &aux installed-system)
+                                        7))
+                         sort-system
+                    &aux installed-system
+                         (*system-load-times* (make-hash-table :test #'eql)))     
   (if reproducible
       (setq installed-system (extract-installed-system system)))
   (let ((*target-backend* (default-target-backend))
@@ -1042,7 +1062,11 @@ been initialized with install path versus the build path of the source code file
           (go next)))
     (setq *features* (core:remove-equal :staging *features*))
     (prepare-metadata system installed-system)
-    system))
+    (if sort-system
+        (sort system
+              (lambda (x y)
+                (> (get-load-time x) (get-load-time y))))
+        system)))
 
 (defun compile-vclasp (&rest rest)
   (let ((system (apply #'load-vclasp rest)))
