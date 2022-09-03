@@ -1184,6 +1184,37 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
                 _lisp->_boolean(restarg.VaRest));
 };
 
+// Given a lambda list, return a lambda list suitable for display purposes.
+// This means only the external interface is required.
+// No default values, no -p variables, no &aux.
+T_sp lambda_list_for_name(T_sp raw_lambda_list) {
+  gctools::Vec0<RequiredArgument> reqs;
+  gctools::Vec0<OptionalArgument> optionals;
+  gctools::Vec0<KeywordArgument> keys;
+  gctools::Vec0<AuxArgument> auxs;
+  RestArgument restarg;
+  T_sp key_flag;
+  T_sp allow_other_keys;
+  parse_lambda_list(raw_lambda_list, cl::_sym_Function_O,
+                    reqs, optionals, restarg,
+                    key_flag, keys, allow_other_keys, auxs);
+  ql::list result;
+  for (auto &it : reqs) result << it._ArgTarget;
+  if (optionals.size() > 0) {
+    result << cl::_sym_AMPoptional;
+    for (auto &it : optionals) result << it._ArgTarget;
+  }
+  if (restarg._ArgTarget.notnilp())
+    result << cl::_sym_AMPrest << restarg._ArgTarget;
+  if (key_flag.notnilp()) {
+    result << cl::_sym_AMPkey;
+    for (auto &it : keys) result << it._Keyword;
+  }
+  if (allow_other_keys.notnilp())
+    result << cl::_sym_AMPallow_other_keys;
+  return result.cons();
+}
+
 /*
  * ------------------------------------------------------------
  * ------------------------------------------------------------

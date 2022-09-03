@@ -365,6 +365,11 @@ public:
   CL_DEFMETHOD virtual size_t resize() = 0;
   // Emit the final code into the bytecode vector.
   CL_DEFMETHOD virtual void emit(size_t position, SimpleVector_byte8_t_sp code) = 0;
+  /* Update the positions of all affected functions and annotations
+   * from the effect of increasing the size of FIXUP by INCREASE. The
+   * resizer has already updated the size of the the fixup.
+   */
+  void update_positions(size_t increase);
 };
 
 // A fixup for a jump, i.e. that is relative to a label.
@@ -511,6 +516,18 @@ public:
   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
   CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
   CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
+public:
+  // Use the optimistic bytecode vector sizes to initialize the optimistic
+  // cfunction position.
+  CL_DEFMETHOD void initialize_cfunction_positions();
+  // With all functions and annotations initialized with optimistic
+  // sizes, resize fixups until no more expansion is needed.
+  CL_DEFMETHOD void resolve_fixup_sizes();
+  // The size of the module bytecode vector.
+  CL_DEFMETHOD size_t bytecode_size();
+  // Create the bytecode module vector. We scan over the fixups in the
+  // module and copy segments of bytecode between fixup positions.
+  CL_DEFMETHOD SimpleVector_byte8_t_sp create_bytecode();
 };
 
 class Cfunction_O : public General_O {
@@ -536,8 +553,9 @@ public:
    // Stuff for the function description.
   T_sp _name;
   T_sp _doc;
+  T_sp _lambda_list;
 public:
-  Cfunction_O(Module_sp module, T_sp name, T_sp doc)
+  Cfunction_O(Module_sp module, T_sp name, T_sp doc, T_sp lambda_list)
     : _module(module),
      // A zero-length adjustable vector with fill pointer.
       _bytecode(ComplexVector_byte8_t_O::make_vector(0, 0,
@@ -549,12 +567,13 @@ public:
       _entry_point(Label_O::make()),
      // not sure this has to be initialized, but just in case
       _info(unbound<GlobalBytecodeEntryPoint_O>()),
-      _name(name), _doc(doc)
+      _name(name), _doc(doc), _lambda_list(lambda_list)
   {}
   CL_LISPIFY_NAME(Cfunction/make)
   CL_DEF_CLASS_METHOD
-  static Cfunction_sp make(Module_sp module, T_sp name, T_sp doc) {
-    return gctools::GC<Cfunction_O>::allocate<gctools::RuntimeStage>(module, name, doc);
+  static Cfunction_sp make(Module_sp module,
+                           T_sp name, T_sp doc, T_sp lambda_list) {
+    return gctools::GC<Cfunction_O>::allocate<gctools::RuntimeStage>(module, name, doc, lambda_list);
   }
   CL_DEFMETHOD Module_sp module() { return _module; }
   CL_LISPIFY_NAME(cfunction/bytecode)
@@ -568,7 +587,7 @@ public:
   }
   CL_DEFMETHOD ComplexVector_T_sp closed() { return _closed; }
   CL_LISPIFY_NAME(Cfunction/entry-point)
-  CL_DEFMETHOD T_sp entry_point() { return _entry_point; }
+  CL_DEFMETHOD Label_sp entry_point() { return _entry_point; }
   CL_LISPIFY_NAME(Cfunction/position)
   CL_DEFMETHOD size_t pposition() { return _position; }
   CL_LISPIFY_NAME(Cfunction/setf-position)
@@ -599,6 +618,12 @@ public:
   CL_LISPIFY_NAME(Cfunction/name)
   CL_DEFMETHOD T_sp nname() { return _name; }
   CL_DEFMETHOD T_sp doc() { return _doc; }
+  CL_DEFMETHOD T_sp lambda_list() { return _lambda_list; }
+public:
+// Run down the hierarchy and link the compile time representations
+// of modules and functions together into runtime objects. Return the
+// bytecode function corresponding to this cfunction.
+  CL_DEFMETHOD GlobalBytecodeEntryPoint_sp link_function(T_sp compile_info);
 };
 
 }; // namespace comp

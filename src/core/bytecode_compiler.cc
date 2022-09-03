@@ -2,6 +2,8 @@
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/evaluator.h> // af_interpreter_lookup_macro
 #include <clasp/core/sysprop.h> // core__get_sysprop
+#include <clasp/core/lambdaListHandler.h> // lambda_list_for_name
+#include <clasp/core/bytecode.h>
 #include <algorithm> // max
 
 namespace comp {
@@ -531,6 +533,161 @@ size_t LexSetFixup_O::resize() {
     if (indirectp) return 5;
     else return 4;
   else SIMPLE_ERROR("Bytecode compiler limit reached: Fixup delta too large");
+}
+
+void Module_O::initialize_cfunction_positions() {
+  size_t position = 0;
+  ComplexVector_T_sp cfunctions = this->cfunctions();
+  for (T_sp tfunction : *cfunctions) {
+    Cfunction_sp cfunction = gc::As<Cfunction_sp>(tfunction);
+    cfunction->setPosition(position);
+    position += cfunction->bytecode()->length();
+  }
+}
+
+void Fixup_O::update_positions(size_t increase) {
+  Cfunction_sp funct = this->cfunction();
+  ComplexVector_T_sp annotations = funct->annotations();
+  size_t nannot = annotations->length();
+  for (size_t idx = this->iindex() + 1; idx < nannot; ++idx)
+    gc::As<Annotation_sp>((*annotations)[idx])->_position += increase;
+  funct->_extra += increase;
+  ComplexVector_T_sp functions = funct->module()->cfunctions();
+  size_t nfuns = functions->length();
+  for (size_t idx = funct->iindex() + 1; idx < nfuns; ++idx)
+    gc::As<Cfunction_sp>((*functions)[idx])->_position += increase;
+}
+
+void Module_O::resolve_fixup_sizes() {
+  bool changedp;
+  ComplexVector_T_sp cfunctions = this->cfunctions();
+  do {
+    changedp = false;
+    for (T_sp tfunction : *cfunctions) {
+      ComplexVector_T_sp annotations = gc::As<Cfunction_sp>(tfunction)->annotations();
+      for (T_sp tannot : *annotations) {
+        if (gc::IsA<Fixup_sp>(tannot)) {
+          Fixup_sp fixup = gc::As_unsafe<Fixup_sp>(tannot);
+          size_t old_size = fixup->size();
+          size_t new_size = fixup->resize();
+          if (old_size != new_size) {
+            ASSERT(new_size >= old_size);
+            fixup->setSize(new_size);
+            fixup->update_positions(new_size - old_size);
+            changedp = true;
+          }
+        }
+      }
+    }
+  } while (changedp);
+}
+
+size_t Module_O::bytecode_size() {
+  ComplexVector_T_sp cfunctions = this->cfunctions();
+  T_sp tlast_cfunction = (*cfunctions)[cfunctions->length() - 1];
+  Cfunction_sp last_cfunction = gc::As<Cfunction_sp>(tlast_cfunction);
+  return last_cfunction->pposition()
+    + last_cfunction->bytecode()->length()
+    + last_cfunction->extra();
+}
+
+// Replacement for CL:REPLACE, which isn't available here.
+static void replace_bytecode(SimpleVector_byte8_t_sp dest,
+                             ComplexVector_byte8_t_sp src,
+                             size_t start1, size_t start2, size_t end2) {
+  size_t index1, index2;
+  for (index1 = start1, index2 = start2;
+       index2 < end2;
+       ++index1, ++index2) {
+    (*dest)[index1] = (*src)[index2];
+  }
+}
+
+SimpleVector_byte8_t_sp Module_O::create_bytecode() {
+  SimpleVector_byte8_t_sp bytecode = SimpleVector_byte8_t_O::make(this->bytecode_size());
+  size_t index = 0;
+  ComplexVector_T_sp cfunctions = this->cfunctions();
+  for (T_sp tfunction : *cfunctions) {
+    Cfunction_sp function = gc::As<Cfunction_sp>(tfunction);
+    ComplexVector_byte8_t_sp cfunction_bytecode = function->bytecode();
+    size_t position = 0;
+    ComplexVector_T_sp annotations = function->annotations();
+    for (T_sp tannot : *annotations) {
+      if (gc::IsA<Fixup_sp>(tannot)) {
+        Fixup_sp annotation = gc::As_unsafe<Fixup_sp>(tannot);
+        if (annotation->size() != 0) {
+          ASSERT(annotation->size() == annotation->resize());
+          // Copy bytes in this segment.
+          size_t end = annotation->initial_position();
+          replace_bytecode(bytecode, cfunction_bytecode,
+                           index, position, end);
+          index += end - position;
+          position = end;
+          ASSERT(index == annotation->module_position());
+          // Emit fixup.
+          annotation->emit(index, bytecode);
+          position += annotation->initial_size();
+          index += annotation->size();
+        }
+      }
+    }
+    // Copy any remaining bytes from this function to the module.
+    size_t end = cfunction_bytecode->length();
+    replace_bytecode(bytecode, cfunction_bytecode,
+                     index, position, end);
+    index += end - position;
+  }
+  return bytecode;
+}
+
+CL_DEFUN T_sp cmp__lambda_list_for_name(T_sp raw_lambda_list) {
+  return lambda_list_for_name(raw_lambda_list);
+}
+
+GlobalBytecodeEntryPoint_sp Cfunction_O::link_function(T_sp compile_info) {
+  Module_sp cmodule = this->module();
+  cmodule->initialize_cfunction_positions();
+  cmodule->resolve_fixup_sizes();
+  ComplexVector_T_sp cmodule_literals = cmodule->literals();
+  size_t literal_length = cmodule_literals->length();
+  SimpleVector_sp literals = SimpleVector_O::make(literal_length);
+  SimpleVector_byte8_t_sp bytecode = cmodule->create_bytecode();
+  BytecodeModule_sp bytecode_module = BytecodeModule_O::make();
+  ComplexVector_T_sp cfunctions = cmodule->cfunctions();
+  // Create the real function objects.
+  for (T_sp tfun : *cfunctions) {
+    Cfunction_sp cfunction = gc::As<Cfunction_sp>(tfun);
+    FunctionDescription_sp fdesc
+      = makeFunctionDescription(cfunction->nname(),
+                                cfunction->lambda_list(),
+                                cfunction->doc());
+    Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
+    GlobalBytecodeEntryPoint_sp func
+      = core__makeGlobalBytecodeEntryPoint(fdesc, bytecode_module,
+                                           cfunction->nlocals(),
+                                          // FIXME: remove
+                                           0, 0, 0, 0, nil<T_O>(), 0,
+                                           cfunction->closed()->length(),
+                                          // FIXME: remove
+                                           cl__make_list(clasp_make_fixnum(7),
+                                                         ep));
+    cfunction->setInfo(func);
+  }
+  // Now replace the cfunctions in the cmodule literal vector with
+  // real bytecode functions in the module vector.
+  for (size_t i = 0; i < literal_length; ++i) {
+    T_sp cfunc_lit = (*cmodule_literals)[i];
+    if (gc::IsA<Cfunction_sp>(cfunc_lit))
+      (*literals)[i] = gc::As_unsafe<Cfunction_sp>(cfunc_lit)->info();
+    else
+      (*literals)[i] = cfunc_lit;
+  }
+  // Now just install the bytecode and Bob's your uncle.
+  bytecode_module->setf_literals(literals);
+  bytecode_module->setf_bytecode(bytecode);
+  bytecode_module->setf_compileInfo(compile_info);
+  // Finally, return the GBEP for the main function.
+  return this->info();
 }
 
 }; //namespace comp

@@ -82,9 +82,7 @@ Could return more functions that provide lambda-list for swank for example"
                                           :local-function local-fn
                                           ))))))
 
-;;; Given a lambda list, return a lambda list suitable for display purposes.
-;;; This means only the external interface is required.
-;;; No default values, no -p variables, no &aux.
+#+(or)
 (defun lambda-list-for-name (raw-lambda-list)
   (multiple-value-bind (req opt rest keyflag keys aok-p)
       (core:process-lambda-list raw-lambda-list 'function)
