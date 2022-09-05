@@ -635,7 +635,7 @@ the stage, the +application-name+ and the +bitcode-name+"
         result))))
 (export '(build-pathname build-extension))
 
-#-staging (eval-when (:execute)
+#+(or) (eval-when (:execute)
   (load #P"sys:src;lisp;kernel;cmp;jit-setup.lisp")
   (load #P"sys:src;lisp;kernel;clsymbols.lisp"))
 
