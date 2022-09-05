@@ -129,7 +129,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
   mutable size_t  _ShiftedNargs;    // MUST be second slot
 
   // fixme2022 - make NargsShift = 2
-  static constexpr size_t NargsShift = 0;
+  static constexpr size_t NargsShift = 2;
   static constexpr size_t NargsDecrement = 1<<NargsShift;
   static constexpr size_t NargsMask = 0;
   
