@@ -105,6 +105,10 @@
                       :description "Compiling eclasp"
                       :restat 1
                       :pool "console"))
+  (ninja:write-rule output-stream :load-mclasp
+                    :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load load-mclasp.lisp -- $source"
+                    :description "Loading mclasp"
+                    :pool "console")
   (ninja:write-rule output-stream :load-vclasp
                     :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load load-vclasp.lisp -- $source"
                     :description "Loading vclasp"
@@ -951,6 +955,18 @@
                                           vimage-installed
                                           kernels)
                            :outputs (list "install_vclasp"))))))
+
+(defmethod print-variant-target-sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :mclasp)) sources
+     &key &allow-other-keys)
+  (let ((iclasp (make-source (build-name :iclasp) :variant)))
+    (ninja:write-build output-stream :load-mclasp
+                       :clasp iclasp
+                       :source (make-kernel-source-list configuration sources)
+                       :inputs sources
+                       :implicit-inputs (list iclasp
+                                              (make-source "tools-for-build/character-names.sexp" :code))
+                       :outputs (list (build-name "load_mclasp")))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :regression-tests)) sources

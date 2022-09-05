@@ -1038,13 +1038,14 @@ been initialized with install path versus the build path of the source code file
 (defun system-load-time (file)
   (gethash file *system-load-times* 0))
 
-(defun load-vclasp (&key (clean (ext:getenv "CLASP_CLEAN"))
+(defun load-vclasp (&key (bytecode t)
+                         (clean (ext:getenv "CLASP_CLEAN"))
                          (output-file (build-common-lisp-bitcode-pathname))
                          reproducible
                          (system-sort (ext:getenv "CLASP_SYSTEM_SORT"))
                          (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
                                           (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
-                                        7))
+                                        6))
                          (system (command-line-arguments-as-list)))
   (let ((installed-system (if reproducible
                               (extract-installed-system system)))
@@ -1052,7 +1053,10 @@ been initialized with install path versus the build path of the source code file
         (*target-backend* (default-target-backend))
         (*load-verbose* t)
         (stage 0))
-    (setq *features* (list* :staging :bytecode :bytecodelike *features*))
+    (setq *features*
+          (if bytecode
+              (list* :bytecode :staging :bytecodelike *features*)
+              (list* :staging *features*)))
     (tagbody
      next
       (if (< stage stage-count)

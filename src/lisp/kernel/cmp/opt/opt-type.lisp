@@ -406,7 +406,7 @@
               (default)))))))))
 
 
-#-bclasp-bytecode
+#-(and bclasp bytecode)
 (define-compiler-macro typep (&whole whole object type &optional environment
                                      &environment macro-env)
   (unless (and (constantp type macro-env) (null environment))

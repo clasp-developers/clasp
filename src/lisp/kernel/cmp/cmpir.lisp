@@ -1228,11 +1228,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     (irc-make-vaslist new-nvals new-vals label)))
 
 (defparameter *default-function-attributes*
-  #+(or cclasp eclasp) '(llvm-sys:attribute-uwtable
-             ("frame-pointer" "all"))
-  #-(or cclasp eclasp) '(llvm-sys:attribute-uwtable
-             ("frame-pointer" "all"))
-  )
+  '(llvm-sys:attribute-uwtable ("frame-pointer" "all")))
 
 (defun setup-wrong-number-of-arguments-xep (arity xep-group calling-convention)
   ;; Remove the xep corresponding to the arity from the xep-group and replace it with a place-holder that the literal compiler will recognize

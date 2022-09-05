@@ -111,6 +111,14 @@
     (core:top-level)
     (core:low-level-repl))" (jobs configuration) (reproducible-build configuration)))
 
+(defmethod print-prologue (configuration (name (eql :load-mclasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(defvar *system* (core:load-vclasp :reproducible ~s :bytecode nil))
+(if (fboundp 'core:top-level)
+    (core:top-level)
+    (core:low-level-repl))" (jobs configuration) (reproducible-build configuration)))
+
 (defmethod print-prologue (configuration (name (eql :snapshot-vclasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)

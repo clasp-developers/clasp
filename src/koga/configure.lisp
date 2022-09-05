@@ -610,6 +610,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"compile-cclasp.lisp" :build))
                                                          :compile-eclasp
                                                          (list (make-source #P"compile-eclasp.lisp" :build))
+                                                         :load-mclasp
+                                                         (list (make-source #P"load-mclasp.lisp" :build))
                                                          :load-vclasp
                                                          (list (make-source #P"load-vclasp.lisp" :build))
                                                          :snapshot-vclasp
@@ -633,7 +635,7 @@ is not compatible with snapshots.")
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
                                                                :bitcode :iclasp :aclasp :bclasp :cclasp
-                                                               :modules :eclasp :sclasp :vclasp :install-bin :install-code
+                                                               :modules :eclasp :sclasp :mclasp :vclasp :install-bin :install-code
                                                                :clasp :regression-tests :static-analyzer
                                                                :tags :install-extension-code)
                                                          :config-h
