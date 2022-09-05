@@ -310,7 +310,7 @@ namespace gctools {
   class BaseHeader_s {
   public:
 // fixme2022
-#if 0
+#if 1
     static const size_t mtag_shift                = 3;  // mtags are 3 bits wide
     static const tagged_stamp_t mtag_mask         = 0b111;
     static const size_t general_mtag_width        = mtag_shift;
