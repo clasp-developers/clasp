@@ -133,7 +133,7 @@
              #~"kernel/lsp/format.lisp"
              #~"kernel/lsp/mp.lisp"
              #~"kernel/lsp/atomics.lisp"
-             #~"kernel/stage/4-end.lisp"
+             ;#~"kernel/stage/4-end.lisp"
              #~"kernel/clos/package.lisp"
              #~"kernel/clos/static-gfs/package.lisp"
              #~"kernel/clos/static-gfs/flag.lisp"
@@ -190,7 +190,8 @@
              #~"kernel/lsp/fli.lisp"
              #~"kernel/lsp/posix.lisp"
              #~"modules/sockets/sockets.lisp"
-             #~"kernel/lsp/top.lisp")
+             #~"kernel/lsp/top.lisp"
+             #~"kernel/stage/4-end.lisp")
   (unless (or neo bytecode)
     (k:sources target
                #~"kernel/tag/pre-epilogue-bclasp.lisp"
