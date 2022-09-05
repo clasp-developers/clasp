@@ -1154,7 +1154,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-make-vaslist (nvals vals &optional (label "saved-values"))
   (let* ((undef (llvm-sys:undef-value-get %vaslist%))
          (s1 (llvm-sys:create-insert-value *irbuilder* undef vals '(0) label))
-         (shifted-nvals (irc-lsh nvals +vaslist-nvals-shift+))
+         (shifted-nvals (irc-shl nvals +vaslist-nargs-shift+))
          (s2 (llvm-sys:create-insert-value *irbuilder* s1 shifted-nvals '(1)
                                            label)))
     (unless (llvm-sys:type-equal (llvm-sys:get-type s2) %vaslist%)
@@ -1170,7 +1170,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (unless (llvm-sys:type-equal (llvm-sys:get-type vaslist) %vaslist%)
     (error "You must pass a %vaslist% to irc-vaslist-nvals - you passed a ~a" vaslist))
   (let ((shifted-nvals (irc-extract-value vaslist '(1) label)))
-    (irc-lshr shifted-nvals +vaslist-nvals-shift+)))
+    (irc-lshr shifted-nvals +vaslist-nargs-shift+)))
 
 ;;; Get the nth value of a vaslist. This entails checking the number
 ;;; of values and possibly returning a constant nil if needed.

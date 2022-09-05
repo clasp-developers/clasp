@@ -357,17 +357,15 @@
                  (bir:policy function)
                  'clasp-cleavir::note-consing-&rest))
               (*failure-reasons* nil))
-          (cond
-            #+varest
-            ((maybe-transform rest)
-             (setf (first llrest) 'core:&va-rest)
-             t)
-            (*record-failures*
-             (cmp:note 'consing-&rest
-                       :origin (origin-source (bir:origin function))
-                       :parameter rest
-                       :reasons *failure-reasons*))
-            (t nil)))
+          (cond ((maybe-transform rest)
+                 (setf (first llrest) 'core:&va-rest)
+                 t)
+                (*record-failures*
+                 (cmp:note 'consing-&rest
+                           :origin (origin-source (bir:origin function))
+                           :parameter rest
+                           :reasons *failure-reasons*))
+                (t nil)))
         nil)))
 
 (defun maybe-transform-module (module)

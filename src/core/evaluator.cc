@@ -556,7 +556,7 @@ CL_DOCSTRING(R"dx(apply)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
   Function_sp func = coerce::functionDesignator( head );
-  if (args->nargs() == 0) eval::errorApplyZeroArguments();
+  if (args->nargs_zero()) eval::errorApplyZeroArguments();
   size_t lenArgs = args->nargs();
   T_O* lastArgRaw = (*args)[lenArgs - 1];
   if (gctools::tagged_vaslistp(lastArgRaw)) {
@@ -1866,7 +1866,7 @@ T_mv sp_go(List_sp args, T_sp env) {
 
         T_mv sp_quote(List_sp args, T_sp environment) {
             ASSERT(environment.generalp());
-            ASSERTF(cl__length(args) == 1, BF("Only one argument allowed for QUOTE"));
+            ASSERTF(cl__length(args) == 1, "Only one argument allowed for QUOTE");
             return (Values(oCar(args)));
         }
 

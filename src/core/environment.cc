@@ -1571,7 +1571,7 @@ void TagbodyEnvironment_O::initialize() {
 CL_LISPIFY_NAME("addTag");
 CL_DEFMETHOD int TagbodyEnvironment_O::addTag(Symbol_sp tag, List_sp ip) {
   _OF();
-  //  ASSERTF(this->_Tags->gethash(tag).second().notnilp(), BF("The tag[%s] has already been defined in this tagbody"));
+  //  ASSERTF(this->_Tags->gethash(tag).second().notnilp(), ("The tag[%s] has already been defined in this tagbody"));
   int index = this->_TagCode.size();
   this->_Tags->hash_table_setf_gethash(tag, make_fixnum(index));
   this->_TagCode.push_back(ip);

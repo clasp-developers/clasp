@@ -131,7 +131,7 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
   public:
     CLASP_DEFAULT_CTOR Function_O() {};
     Function_O(EntryPoint_O* ep) : _TheEntryPoint(EntryPoint_sp((gctools::Tagged)(gctools::tag_general<EntryPoint_O*>(ep)))) {
-      ASSERT(!tagged_general_p<EntryPoint_O>(ep)); // on entry should not be tagged
+      ASSERT(!gctools::tagged_generalp<EntryPoint_O*>(ep)); // on entry should not be tagged
     };
   public:
     std::atomic<EntryPoint_sp>    _TheEntryPoint;

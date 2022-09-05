@@ -900,7 +900,7 @@ void Lisp::addClassSymbol(Symbol_sp classSymbol,
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
   core__setf_find_class(cc, classSymbol);
   cc->addInstanceBaseClass(base1ClassSymbol);
-  ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
+  ASSERTF((bool)alloc, ("_creator for %s is NULL!!!") , _rep_(classSymbol));
   cc->CLASS_set_creator(alloc);
 }
 
@@ -1646,7 +1646,7 @@ CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
 #ifdef SYMBOL_CLASS
   return symbol->find_class_holder();
 #else
-//  ASSERTF(env.nilp(), BF("Handle non nil environment"));
+//  ASSERTF(env.nilp(), ("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
     return _lisp->boot_findClassHolder(symbol,false);
@@ -1672,7 +1672,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(find-class)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
-  //ASSERTF(env.nilp(), BF("Handle non nil environment"));
+  //ASSERTF(env.nilp(), ("Handle non nil environment"));
 //  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
   T_sp ch = core__find_class_holder(symbol,env);
   if (ch.nilp()) {
@@ -2184,7 +2184,7 @@ Instance_sp Lisp::boot_setf_findClass(Symbol_sp className, Instance_sp mc) {
 
 T_sp Lisp::boot_findClassHolder(Symbol_sp className, bool errorp) const {
   ASSERTF(this->_BootClassTableIsValid,
-          BF("Never use Lisp::findClass after boot - use cl::_sym_findClass"));
+          ("Never use Lisp::findClass after boot - use cl::_sym_findClass"));
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
     if (it->symbol == className)
       return it->theClassHolder;
@@ -2197,7 +2197,7 @@ T_sp Lisp::boot_findClassHolder(Symbol_sp className, bool errorp) const {
   until the hash-table class is defined and we need classes in the *class-name-hash-table* once
   CLOS starts up because that is where ECL expects to find them. */
 void Lisp::switchToClassNameHashTable() {
-  ASSERTF(this->_BootClassTableIsValid, BF("switchToClassNameHashTable should only be called once after boot"));
+  ASSERTF(this->_BootClassTableIsValid, ("switchToClassNameHashTable should only be called once after boot"));
   HashTable_sp ht = _lisp->_Roots._ClassTable;
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
     ht->hash_table_setf_gethash(it->symbol, it->theClassHolder);

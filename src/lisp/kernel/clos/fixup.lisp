@@ -286,6 +286,7 @@
   ;; during boot it's a structure accessor
   (declare (notinline method-qualifiers remove-method))
   (declare (notinline reinitialize-instance)) ; bootstrap stuff
+
   ;;
   ;; 1) The method must not be already installed in another generic function.
   ;;
@@ -348,53 +349,6 @@ and cannot be added to ~A." method other-gf gf)))
   (set-funcallable-instance-function gf (compute-discriminating-function gf))
   (update-dependents gf (list 'remove-method method))
   gf)
-
-#+(or)
-(progn
-  (sys:safe-trace instancep maybe-update-instance maybe-update-instances dispatch-miss)
-  (sys:safe-trace perform-outcome)
-  (sys:safe-trace check-gf-argcount dispatch-miss-info memoize-calls memoize-call force-dispatcher)
-  (sys:safe-trace function-to-method safe-gf-specializer-profile safe-gf-call-history
-                  specializer-call-history-generic-functions-push-new
-                  generic-function-call-history)
-  (sys:safe-trace std-compute-applicable-methods)
-  (sys:safe-trace applicable-method-list sort-applicable-methods class-of)
-  (sys:safe-trace generic-function-min-max-args)
-  (sys:safe-trace ensure-generic-function)
-  (sys:safe-trace make-%method-function-fast make-method add-method
-                  make-effective-method-outcome append-generic-function-call-history)
-  (sys:safe-trace setf-lambda-list setf-function-name)
-  (sys:safe-trace (setf fdefinition))
-  (sys:safe-trace invalidated-dispatch-function)
-  (sys:safe-trace initialize-instance)
-  (sys:safe-trace core:list-from-vaslist)
-  (sys:safe-trace apply))
-
-#+(or)
-(progn
-  (sys:safe-trace function-to-method)
-  (sys:safe-trace instancep)
-  (sys:safe-trace maybe-update-instance
-                  maybe-update-instances
-                  dispatch-miss
-                  invalidated-dispatch-function
-                  generate-discriminator-from-data
-                  clos:interpret-dtree-program
-                  interpreted-discriminator
-                  dispatch-miss-va
-                  core:apply0
-                  core:apply1
-                  core:apply2
-                  core:apply3
-                  core:apply4
-                  perform-outcome
-                  )
-  )
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format t "Done remove-method ~a~%" (core:getpid))
-  (y-or-n-p "About to function-to-method")
-  )
 
 ;;(setq cmp:*debug-compiler* t)
 (function-to-method 'add-method '(gf method) '(standard-generic-function standard-method)
@@ -547,14 +501,17 @@ and cannot be added to ~A." method other-gf gf)))
 (%satiate map-dependents (standard-generic-function core:closure)
           (standard-class core:closure))
 
+(mlog "TOP: defgeneric update-dependent%N")
 (defgeneric update-dependent (object dependent &rest initargs))
 
 ;; After this, update-dependents will work
 (setf *clos-booted* 'map-dependents)
 
+(mlog "TOP: (defclass initargs-updater ()%N")
 (defclass initargs-updater ()
   ())
 
+(mlog "TOP: (defun recursively-update-class-initargs-cache (a-class)%N")
 (defun recursively-update-class-initargs-cache (a-class)
   ;; Bug #588: If a class is forward referenced and you define an initialize-instance
   ;; (or whatever) method on it, it got here and tried to compute valid initargs, which
@@ -564,6 +521,7 @@ and cannot be added to ~A." method other-gf gf)))
     (precompute-valid-initarg-keywords a-class)
     (mapc #'recursively-update-class-initargs-cache (class-direct-subclasses a-class))))
 
+(mlog "TOP: (defmethod update-dependent ((object generic-function) (dep initargs-updater)%N")
 (defmethod update-dependent ((object generic-function) (dep initargs-updater)
 			     &rest initargs
                              &key ((add-method added-method) nil am-p)
@@ -583,27 +541,33 @@ and cannot be added to ~A." method other-gf gf)))
 ;; that the loader can't handle yet.
 ;; We could use NOTINLINE now that bclasp handles it,
 ;; but we don't need to go through make-instance's song and dance anyway.
+(mlog "TOP: (let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))%N")
 (let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
 
 ;; can't satiate this one, because the environment class will vary.
+(mlog "TOP: (function-to-method 'make-method-lambda%N")
 (function-to-method 'make-method-lambda
                     '(gf method lambda-form environment)
                     '(standard-generic-function standard-method t t))
 
 ;; ditto
+(mlog "TOP: (function-to-method 'expand-apply-method%N")
 (function-to-method 'expand-apply-method
                     '(method method-arguments arguments env)
                     '(standard-method t t t)
                     nil
                     #'std-expand-apply-method)
 
+(mlog "TOP: (function-to-method 'compute-discriminating-function '(gf)%N")
 (function-to-method 'compute-discriminating-function '(gf)
                     '(standard-generic-function)
                     '((standard-generic-function)))
 
+(mlog "TOP: (function-to-method 'print-object%N")
 (function-to-method 'print-object
                     '(object stream)
                     '(t t))
+

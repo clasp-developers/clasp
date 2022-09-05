@@ -8,7 +8,7 @@
       '(&ALLOW-OTHER-KEYS
         &AUX &BODY &ENVIRONMENT &KEY
         &OPTIONAL &REST
-        #+varest &VA-REST
+        &VA-REST
         &WHOLE) ))
 
 

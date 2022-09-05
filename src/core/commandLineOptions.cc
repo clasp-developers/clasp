@@ -148,6 +148,10 @@ Environment variables:
       of file. <filenames> is separated with spaces or commas.
   CLASP_DEBUGGER_SUPPORT=1
       Generate files that lldb/gdb/udb can use to debug clasp.
+  CLASP_DISABLE_TRAMPOLINES=1
+      Trampoline functions currently break gdb backtraces but they enable
+      good backtraces in the clasp debugger. Set this environment variable
+      if you want good backtraces in gdb/udb - or fix trampolines.
   CLASP_NO_JIT_GDB=1
       Don't register object files with gdb/lldb for source level debugging.
   CLASP_SNAPSHOT=1

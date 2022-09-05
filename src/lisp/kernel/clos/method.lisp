@@ -92,12 +92,12 @@
     (set-funcallable-instance-function
      %nnmc
      (if (null method)
-         (lambda (#+varest core:&va-rest #-varest &rest args)
+         (lambda (core:&va-rest args)
            (declare (core:lambda-name %no-next-method-continuation.slow.bad)
                     (ignore args))
            (error "No next method"))
          (let ((gf (method-generic-function method)))
-           (lambda (#-varest &rest #+varest core:&va-rest args)
+           (lambda (core:&va-rest args)
              (declare (core:lambda-name %no-next-method-continuation.lambda))
              (apply #'no-next-method gf method args)))))
     %nnmc))
@@ -166,7 +166,7 @@
         (core:process-lambda-list lambda-list 'function)
       (declare (ignore keys aok-p))
       (if (or (not (zerop (car opt))) rest keyf)
-          `(lambda (,contsym #-varest &rest #+varest core:&va-rest .method-args.)
+          `(lambda (,contsym core:&va-rest .method-args.)
              (declare (core:lambda-name ,lambda-name))
              ,@(when doc (list doc))
              ,(wrap-contf-lexical-function-binds
@@ -681,8 +681,10 @@ argument was specialized.
     (when (/= (length specializers)
 	      (length (generic-function-argument-precedence-order gf)))
       (error
-       "The specializers list~%~A~%does not match the number of required arguments in ~A"
-       specializers (generic-function-name gf)))
+       "The specializers list~%~A~%does not match the number of required arguments (~a) in ~A"
+       specializers
+       (length (generic-function-argument-precedence-order gf))
+       (generic-function-name gf)))
     (loop with specializers = (mapcar #'filter-specializer specializers)
        for method in (generic-function-methods gf)
        when (and (equal qualifiers (method-qualifiers method))

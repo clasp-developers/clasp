@@ -1,24 +1,19 @@
 (in-package :clasp-cleavir)
 
-#+varest
 (defmethod cst::all-lambda-list-keywords append ((client clasp-64bit))
   '(core:&va-rest))
 
-#+varest
 (defmethod cst::allowed-lambda-list-keywords append
     ((client clasp-64bit) (lambda-list cst:ordinary-lambda-list))
   '(core:&va-rest))
 
-#+varest
 (defmethod concrete-syntax-tree::allowed-lambda-list-keywords append
     ((client clasp-64bit) (lambda-list cst:specialized-lambda-list))
   '(core:&va-rest))
 
 
-(progn
-  (defclass keyword-va-rest (cst:lambda-list-keyword) ())
-  (cst:define-keyword-scanner-action keyword-va-rest core:&va-rest)
-  )
+(defclass keyword-va-rest (cst:lambda-list-keyword) ())
+(cst:define-keyword-scanner-action keyword-va-rest core:&va-rest)
 
 (defclass clasp-ordinary-lambda-list (cst:ordinary-lambda-list) ())
 
@@ -53,7 +48,7 @@
     ((parameter-group clasp-ordinary-rest-parameter-group) entries)
   (cons (etypecase (cst:keyword parameter-group)
           (cst:keyword-rest '&rest)
-          #+varest(keyword-va-rest 'core:&va-rest))
+          (keyword-va-rest 'core:&va-rest))
         entries))
 
 (defun origin-source (origin)

@@ -194,6 +194,13 @@ ALWAYS_INLINE core::T_O* makeBlockFrameSetParent(core::T_O *parentP)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
   core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, nil<core::T_O>()));
+#ifdef DEBUG_ASSERT
+  T_sp p((gctools::Tagged)parentP);
+  bool isNull = (parentP==NULL);
+  bool isNil = p.nilp();
+  bool isFrame = gc::IsA<Environment_sp>(p);
+  ASSERTF(isNull||isNil||isFrame,"The object %p must be NIL or inherit from Environment_O", (void*)p.raw_());
+#endif
   valueFrame->setParentFrame(parentP);
   return valueFrame.raw_();
   NO_UNWIND_END();

@@ -388,7 +388,7 @@ HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecif
   HashTableEq_sp specials(HashTableEq_O::create_default());
   LOG("Processing declareSpecifierList: %s" , _rep_(declareSpecifierList));
   if (declareSpecifierList.notnilp()) {
-    ASSERTF(oCar(declareSpecifierList) != cl::_sym_declare, BF("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") % _rep_(declareSpecifierList));
+    ASSERTF(oCar(declareSpecifierList) != cl::_sym_declare, ("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") , _rep_(declareSpecifierList));
     for (auto cur : declareSpecifierList) {
       T_sp entry = oCar(cur);
       if ((entry).consp() && oCar(entry) == cl::_sym_special) {
@@ -1239,7 +1239,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
     classifier.classifyTarget(req);
   }
   this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-  ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+  ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), ("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") , _rep_(this->_ClassifiedSymbolList));
   this->_NumberOfSpecialVariables = classifier.numberOfSpecialVariables();
   this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
   this->_RequiredLexicalArgumentsOnly = this->requiredLexicalArgumentsOnlyP_();
@@ -1277,7 +1277,7 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
   if (this->_CreatesBindings) {
     this->recursively_build_handlers_count_arguments(declareSpecifierList, context, classifier);
     this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-    ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+    ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), ("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") , _rep_(this->_ClassifiedSymbolList));
   } else {
     this->_ClassifiedSymbolList = nil<T_O>();
   }
@@ -1323,7 +1323,7 @@ CL_DEFMETHOD int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp targ
 	// Slide all the frameIndexPointers up one
 	for ( int i=0; i<arguments.size()-1; i++ )
 	{
-	    ASSERTF((*arguments[i])==i,BF("FrameIndex %d is out of sequence") % i);
+	    ASSERTF((*arguments[i])==i,("FrameIndex %d is out of sequence") , i);
 	    (*arguments[i]) = (*arguments[i])+1;
 	}
 	// Now move the FrameIndex associated with target (the last one) to zero

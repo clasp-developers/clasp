@@ -10,6 +10,7 @@
 #include <clasp/core/lispStream.h>
 #include <clasp/core/bytecode.h>
 #include <clasp/core/array.h>
+#include <clasp/core/primitives.h>
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/primitives.h> // cl__fdefinition
 #include <clasp/core/unwind.h>
@@ -173,11 +174,19 @@ static void bytecode_vm_long(VirtualMachine&, T_O**, size_t, Closure_O*,
                              size_t, core::T_O**,
                              uint8_t);
 
+SYMBOL_EXPORT_SC_(KeywordPkg, name);
+
+//fixme2022   - Remove this because it will slow everything down
+__attribute__((optnone))
 static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         T_O** literals,
                                         size_t nlocals, Closure_O* closure,
                                         size_t lcc_nargs,
                                         core::T_O** lcc_args) {
+  ASSERT( literals==NULL || (uintptr_t)literals>65536);
+  ASSERT((((uintptr_t)literals)&0x7)==0); // must be aligned
+  ASSERT((((uintptr_t)closure)&0x7)==0); // must be aligned
+  ASSERT((((uintptr_t)lcc_args)&0x7)==0); // must be aligned
   bool vaslistp = false; // true if we need to deallocate a vaslist at the end
   if (lcc_nargs> 65536) {
     printf("%s:%d:%s A very large number of arguments %lu are being passed - check if there is a problem\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs );
@@ -234,6 +243,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
 #endif
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
+      ASSERT(gctools::tagged_generalp<T_O*>(func));
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       res.saveToMultipleValue0();
       vm.drop(nargs+1);
@@ -417,7 +427,16 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_vaslistify_rest_args: {
       uint8_t start = read_uint8(vm._pc);
       DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
-      vm.push(vm.alloca_vaslist(lcc_args + start, lcc_nargs));
+      auto theVaslist = vm.alloca_vaslist(lcc_args + start, lcc_nargs - start);
+#if 0
+      printf("%s:%d:%s About to dump vm.alloca_vaslst result\n", __FILE__, __LINE__, __FUNCTION__ );
+      dump_Vaslist_ptr(stdout,gctools::untag_vaslist<T_O*>(theVaslist));
+      Vaslist_sp vl((gctools::Tagged)theVaslist);
+      if ((*vl).nargs() >= 3 && (*vl).iarg(0) == kw::_sym_name && (*vl).iarg(2)==kw::_sym_name) {
+        core::core__gdb(nil<core::T_O>());
+      }
+#endif
+      vm.push(theVaslist);
       vaslistp = true;
       vm._pc++;
       break;

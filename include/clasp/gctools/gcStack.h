@@ -128,7 +128,8 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
   mutable T_O**   _Args;            // MUST be first slot
   mutable size_t  _ShiftedNargs;    // MUST be second slot
 
-  static constexpr size_t NargsShift = 2;
+  // fixme2022 - make NargsShift = 2
+  static constexpr size_t NargsShift = 0;
   static constexpr size_t NargsDecrement = 1<<NargsShift;
   static constexpr size_t NargsMask = 0;
   
@@ -212,6 +213,11 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
 
   inline core::T_O *relative_indexed_arg(size_t idx) const {
     return this->_Args[idx];
+  }
+
+  inline core::T_sp iarg(size_t idx) const {
+    core::T_sp tsp((gctools::Tagged)this->_Args[idx]);
+    return tsp;
   }
 
 };

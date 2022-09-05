@@ -602,7 +602,7 @@ bool Instance_O::isSubClassOf(Instance_sp ancestor) const {
   // TODO: I need to memoize this somehow so that I'm not constantly searching a list in
   // linear time
     List_sp cpl = this->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
-    ASSERTF(!cpl.unboundp(), BF("You tried to use isSubClassOf when the ClassPrecedenceList had not been initialized"));
+    ASSERTF(!cpl.unboundp(), "You tried to use isSubClassOf when the ClassPrecedenceList had not been initialized");
     for (auto cur : cpl) {
       if (CONS_CAR(cur) == ancestor) return true;
     }

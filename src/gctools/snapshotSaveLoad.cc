@@ -3039,7 +3039,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       llvmo::ClaspJIT_sp obj_claspJIT;
       gctools::Header_s* snapshot_claspJIT_header = NULL;
       {
-        ASSERT(!tagged_generalp(snapshot_claspJIT));
+        ASSERT(!gctools::tagged_generalp(snapshot_claspJIT));
         snapshot_claspJIT_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(snapshot_claspJIT);
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(snapshot_claspJIT);
         if (((uintptr_t)clientStart&0x7) != 0) {

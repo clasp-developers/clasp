@@ -463,7 +463,7 @@
                          (1- (format-directive-end directive))))
                    (unless function
                      (error 'format-error
-                            :complaint "Unknown format directive."))
+                            :complaint (format nil "Unknown format directive (~a) in (~a)." directive directives )))
                    (multiple-value-bind
                          (new-directives new-args)
                        (funcall function stream directive
@@ -2301,6 +2301,7 @@
               package))))
 
 ;;; Originally contributed by stassats May 24, 2016
+#-bclasp
 (define-compiler-macro format (&whole whole destination control-string &rest args
                                       &environment env)
   ;; Be especially nice about the common programmer error of

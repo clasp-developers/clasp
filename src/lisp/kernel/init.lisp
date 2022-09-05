@@ -114,6 +114,9 @@
 ;; been bootstrapped
 (setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
 
+;;; fixme2022 - We shouldn't need the varest feature
+(setq *features* (cons :varest *features*))
+
 ;; Set up a few things for the CLOS package
 (export '(clos::standard-class) "CLOS")
 

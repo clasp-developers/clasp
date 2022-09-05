@@ -51,7 +51,7 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
   //validateFunctionDescription(__FILE__,__LINE__, body);
   // method->_name = name;
   // method->_receiver_class = receiverClass;
-  // ASSERTF(body.notnilp(), BF("The body of a method should never be nil"));
+  // ASSERTF(body.notnilp(), ("The body of a method should never be nil"));
   // method->_argument_handler = llh;
   // method->_declares = declares;
   // method->_docstring = docstr;

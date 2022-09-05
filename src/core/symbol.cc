@@ -326,7 +326,7 @@ Symbol_O::Symbol_O() : Base(),
 
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
-  ASSERTF(pkg, BF("The package is UNDEFINED"));
+  ASSERTF(pkg, ("The package is UNDEFINED"));
   this->_HomePackage = pkg;
   if (pkg->actsLikeKeywordPackage())
     this->set_globalValue(this->asSmartPtr());
@@ -349,7 +349,7 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // The following are done in finish_setup
   //  n->fmakunbound();
   //  n->fmakunbound_setf();
-  ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
+  ASSERTF(nm != "", ("You cannot create a symbol without a name"));
   return n;
 };
    
@@ -658,7 +658,7 @@ T_sp Symbol_O::getPackage() const {
 }
 
 void Symbol_O::setPackage(T_sp p) {
-  ASSERTF(p, BF("The package is UNDEFINED"));
+  ASSERTF(p, ("The package is UNDEFINED"));
   ASSERT(p.nilp() || gc::IsA<Package_sp>(p));
   this->_HomePackage.store(p, std::memory_order_relaxed);
 }

@@ -90,7 +90,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp core__backquote_append(Vaslist_sp lists) {
   ql::list list; // (lists);
   LOG("Carrying out append with arguments: %s" , _rep_(lists));
-  unlikely_if (lists->nargs()==0) {
+  unlikely_if (lists->nargs_zero()) {
     SIMPLE_ERROR(("backquote-append was called with zero arguments"));
   }
   size_t nargs = lists->nargs();

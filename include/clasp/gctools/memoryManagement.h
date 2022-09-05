@@ -309,11 +309,19 @@ namespace gctools {
 
   class BaseHeader_s {
   public:
+// fixme2022
+#if 0
     static const size_t mtag_shift                = 3;  // mtags are 3 bits wide
-    static const tagged_stamp_t general_mtag_mask = 0b111;
-    static const size_t general_mtag_width        = 3;
-    static const size_t general_mtag_shift        = 3; // MUST ALWAYS BE >=2 to match Fixnum shift
     static const tagged_stamp_t mtag_mask         = 0b111;
+    static const size_t general_mtag_width        = mtag_shift;
+    static const tagged_stamp_t general_mtag_mask = 0b111;
+#else
+    static const size_t mtag_shift                = 3;  // mtags are 3 bits wide
+    static const tagged_stamp_t mtag_mask         = 0b111;
+    static const size_t general_mtag_width        = 2;
+    static const tagged_stamp_t general_mtag_mask = 0b11;
+#endif
+    static const size_t general_mtag_shift        = general_mtag_width; // MUST ALWAYS BE >=2 to match Fixnum shift
     /*!
      * It is important that weak_mtag is the same value as CHARACTER_TAG so that
      * it looks like an immediate value in AWL pools and doesn't break the
@@ -328,8 +336,7 @@ namespace gctools {
     static const tagged_stamp_t pad_mtag       = 0b110;
     static const tagged_stamp_t pad1_mtag      = 0b111;
     static const tagged_stamp_t stamp_mtag     = general_mtag;
-    static const tagged_stamp_t stamp_mask     = ~(tagged_stamp_t)mtag_mask; // 0b11...111111111111000;
-    static const size_t mtag_width = general_mtag_shift;
+    static const tagged_stamp_t stamp_mask     = ~(tagged_stamp_t)general_mtag_mask; // 0b11...111111111111000;
     static const tagged_stamp_t where_mask     =  0b11<<general_mtag_shift;
     // These MUST match the wtags used in clasp-analyzer.lisp and scraper/code-generator.lisp
     static const tagged_stamp_t derivable_wtag =  0b00<<general_mtag_shift;
@@ -346,7 +353,7 @@ namespace gctools {
     
     // stamp_tag MUST be 00 so that stamps look like FIXNUMs
 //    static const int stamp_shift = general_mtag_shift;
-    static const tagged_stamp_t largest_possible_stamp = stamp_mask>>mtag_shift;
+    static const tagged_stamp_t largest_possible_stamp = stamp_mask>>general_mtag_shift;
 
     //
     // Restrict stamps to specific ranges
@@ -395,7 +402,7 @@ namespace gctools {
 
 // This is so we can find where we shift/unshift/don'tshift
       static UnshiftedStamp first_NextUnshiftedStamp(UnshiftedStamp start) {
-        return (start+(1<<mtag_shift))&(~(uintptr_t)mtag_mask);
+        return (start+(1<<general_mtag_shift))&(~(uintptr_t)general_mtag_mask);
       }
       uintptr_t stamp() const { return this->_value>>(wtag_width+general_mtag_width); };
       static bool is_unshifted_stamp(uint64_t unknown) {
@@ -489,7 +496,11 @@ namespace gctools {
       }
     public:
       inline size_t mtag() const { return (size_t)(this->_value & mtag_mask);};
-      bool invalidP() const { tagged_stamp_t val = (this->_value & mtag_mask); return (val == invalid0_mtag) || (val==invalid1_mtag); };
+      bool invalidP() const {
+        if (!(this->_value&general_mtag_mask)) return false;
+        tagged_stamp_t val = (this->_value & general_mtag_mask);
+        return (val == invalid0_mtag) || (val==invalid1_mtag);
+      };
       bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
       bool generalObjectP() const { return this->stampP(); };
       bool weakObjectP() const { return (this->_value & mtag_mask) == weak_mtag; };
@@ -505,9 +516,8 @@ namespace gctools {
       bool pad1P() const { return (this->_value & mtag_mask) == pad1_mtag; };
       bool anyPadP() const { return this->padP() || this->pad1P(); };
   /*! No sanity checking done - this function assumes kindP == true */
-      ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_value); };
-      GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value>>mtag_shift); };
-      GCStampEnum stamp_() const { return (GCStampEnum)(this->_value>>(wtag_width+mtag_shift)); };
+      GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value>>general_mtag_shift); };
+      GCStampEnum stamp_() const { return (GCStampEnum)(this->_value>>(wtag_width+general_mtag_shift)); };
   /*! No sanity checking done - this function assumes fwdP == true */
       void *fwdPointer() const { return reinterpret_cast<void *>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
   /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
@@ -527,13 +537,13 @@ namespace gctools {
       // GenerateHeaderValue must be passed to make_fixnum and the result exactly matches a header value
       //    Converts a STAMP_WTAG into what it would look like if it was a Fixnum_sp
       template <typename T>
-      static int64_t GenerateHeaderValue() { return (int64_t)(GCStamp<T>::StampWtag) << (mtag_shift-fixnum_shift); };
+      static int64_t GenerateHeaderValue() { return (int64_t)(GCStamp<T>::StampWtag) << (general_mtag_shift-fixnum_shift); };
       //
       //
       // This must coordinate with what core::instance-stamp returns
       //     and what core__shift_stamp_for_compiled_code returns
       template <typename T>
-      static int64_t GenerateTypeqHeaderValue() { return (int64_t)(GCStamp<T>::StampWtag<<mtag_shift-fixnum_shift); };
+      static int64_t GenerateTypeqHeaderValue() { return (int64_t)(GCStamp<T>::StampWtag<<general_mtag_shift-fixnum_shift); };
     public: // header readers
       inline UnshiftedStamp unshifted_stamp() const {
         //        printf("%s:%d  unshifted_stamp() this->_value -> %lu\n", __FILE__, __LINE__, this->_value);
@@ -547,8 +557,8 @@ namespace gctools {
     };
     
     static inline int Stamp(StampWtagMtag::Value stamp_wtag_mtag ) {
-      GCTOOLS_ASSERT((stamp_wtag_mtag&mtag_mask) == general_mtag);
-      return stamp_wtag_mtag >> (general_mtag_shift + wtag_width);
+      GCTOOLS_ASSERT((stamp_wtag_mtag&general_mtag_mask) == general_mtag);
+      return stamp_wtag_mtag >> (wtag_width + general_mtag_shift);
     }
     //
     //
@@ -588,7 +598,7 @@ namespace gctools {
     size_t mtag() const { return (size_t)(this->_stamp_wtag_mtag._value & mtag_mask);};
     constexpr size_t tail_size() const { return 0; };
 
-    ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_stamp_wtag_mtag.shifted_stamp()); };
+    ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_stamp_wtag_mtag._value); };
 
     string description() const {
       if (this->_stamp_wtag_mtag.stampP()) {

@@ -378,7 +378,7 @@ void obj_finalize(mps_addr_t client) {
     #undef GC_OBJ_FINALIZE_TABLE
   #endif // ifndef RUNNING_PRECISEPREP
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(GeneralPtrToHeaderPtr(client)));
-  ASSERTF(header->_stamp_wtag_mtag.stampP(), BF("obj_finalized called without a valid object"));
+  ASSERTF(header->_stamp_wtag_mtag.stampP(), "obj_finalized called without a valid object");
   gctools::GCStampEnum stamp = (GCStampEnum)(header->_stamp_wtag_mtag.stamp_());
   #ifndef RUNNING_PRECISEPREP
   size_t table_index = (size_t)stamp;

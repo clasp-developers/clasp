@@ -1031,7 +1031,7 @@ T_sp Readtable_O::set_dispatch_macro_character_(Character_sp disp_char, Characte
     SIMPLE_ERROR(("%s is not a dispatching macro character") , _rep_(disp_char));
   }
   HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
-  ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
+  ASSERTF(dispatch_table.notnilp(), ("The dispatch table for the character[%s] is nil! - this shouldn't happen") , _rep_(disp_char));
   Character_sp upcase_sub_char = clasp_make_character(char_upcase(sub_char.unsafe_character()));
   if (!(gctools::IsA<core::Symbol_sp>(new_func_desig)||gctools::IsA<core::Function_sp>(new_func_desig))) {
     TYPE_ERROR(new_func_desig,Cons_O::createList(cl::_sym_or,cl::_sym_symbol,cl::_sym_function));

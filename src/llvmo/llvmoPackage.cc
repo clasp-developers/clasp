@@ -252,9 +252,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("WRAPPED-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::wrapped_wtag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::header_wtag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MAX-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::max_wtag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("MTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::mtag_width)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("WTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::wtag_width)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-MTAG-SHIFT"), make_fixnum((int)gctools::Header_s::Header_s::general_mtag_shift)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-MTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::general_mtag_width)), list);
   
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
@@ -324,7 +323,6 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "WRAPPED-WHERE-TAG", make_fixnum(gctools::Header_s::wrapped_wtag));
   ENTRY(list, "HEADER-WHERE-TAG", make_fixnum(gctools::Header_s::header_wtag));
   ENTRY(list, "WHERE-TAG-WIDTH", make_fixnum(gctools::Header_s::where_tag_width));
-  ENTRY(list, "STAMP-MASK", make_fixnum(gctools::Header_s::stamp_mask));
   ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMPWTAG_max));
   ENTRY(list, "CONS-STAMP", make_fixnum(gctools::STAMPWTAG_CONS));
   ENTRY(list, "VASLIST_S-STAMP", make_fixnum(gctools::STAMPWTAG_VASLIST_S));
@@ -611,6 +609,10 @@ void LlvmoExposer_O::shutdown() {
 };
 
 CL_DEFUN core::Pointer_sp llvm_sys__installInterpreterTrampoline() {
+  if (getenv("CLASP_DISABLE_TRAMPOLINES")) {
+    printf("%s:%d:%s CLASP_DISABLE_TRAMPOLINES is set so disabling trampoline\n", __FILE__, __LINE__, __FUNCTION__ );
+    return Pointer_O::create(NULL);
+  }
   std::string trampoline = R"trampoline(
 
 @__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
@@ -680,6 +682,10 @@ attributes #4 = { nounwind "frame-pointer"="all" }
 */
 
 CL_DEFUN core::Pointer_sp llvm_sys__installBytecodeTrampoline() {
+  if (getenv("CLASP_DISABLE_TRAMPOLINES")) {
+    printf("%s:%d:%s CLASP_DISABLE_TRAMPOLINES is set so disabling trampoline\n", __FILE__, __LINE__, __FUNCTION__ );
+    return Pointer_O::create(NULL);
+  }
   std::string trampoline = R"trampoline(
 
 @__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer

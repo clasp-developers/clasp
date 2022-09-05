@@ -78,6 +78,7 @@ void dump_data_types(FILE* fout, const std::string& indent)
   DTNAME(ctype_size_t,"size_t",sizeof(size_t));
   DTNAME(ctype_opaque_ptr,"opaque_ptr",sizeof(void*));
 #define Init_global_ints(_name_,_value_) fprintf(fout,"%sInit_global_ints(name=\"%s\",value=%d)\n", indent.c_str(), _name_,_value_);
+#define Init_global_size_t(_name_,_value_) fprintf(fout,"%sInit_global_ints(name=\"%s\",value=%lu)\n", indent.c_str(), _name_,_value_);
   Init_global_ints("TAG_BITS",TAG_BITS);
   Init_global_ints("IMMEDIATE_MASK",IMMEDIATE_MASK);
   Init_global_ints("FIXNUM_MASK",FIXNUM_MASK);
@@ -94,6 +95,12 @@ void dump_data_types(FILE* fout, const std::string& indent)
   Init_global_ints("GENERAL_MTAG", Header_s::general_mtag );
   Init_global_ints("CONS_MTAG", Header_s::cons_mtag );
   Init_global_ints("WEAK_MTAG", Header_s::weak_mtag );
+
+  Init_global_size_t("VASLIST-ARGS-OFFSET", core::Vaslist::args_offset() );
+  Init_global_size_t("VASLIST-NARGS-OFFSET", core::Vaslist::nargs_offset() );
+  Init_global_size_t("VASLIST-NARGS-DECREMENT", core::Vaslist::NargsDecrement);
+  Init_global_size_t("VASLIST-NARGS-MASK", core::Vaslist::NargsMask);
+  Init_global_size_t("VASLIST-NARGS-SHIFT", core::Vaslist::NargsShift);
 }
 
 inline int bitmap_field_index(size_t start,size_t offset) {

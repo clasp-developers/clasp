@@ -1,6 +1,6 @@
 (in-package :clasp-cleavir)
 
-#+(or)
+;;#+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to T~%")
   (setq core:*echo-repl-read* t))
@@ -1112,7 +1112,6 @@
                (core:eql-underlying x y)
                nil))
           (t nil))))
-
 
 ;;; Type predicates.
 (macrolet ((defpred (name type)

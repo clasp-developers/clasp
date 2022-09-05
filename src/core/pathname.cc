@@ -932,7 +932,7 @@ make_it:
   if (*ep >= end)
     *ep = end;
   Pathname_sp newpath = Pathname_O::makePathname(host, device, path, name, type, version, kw::_sym_local, logical);
-  ASSERTF(core__logical_pathname_p(newpath) == logical, BF("The Class of path(%s) does not match what is specified by logical(%d) - it must match") % _rep_(newpath) % logical);
+  ASSERTF(core__logical_pathname_p(newpath) == logical, ("The Class of path(%s) does not match what is specified by logical(%d) - it must match") , _rep_(newpath) , logical);
   return Pathname_O::tilde_expand(newpath);
 }
 
@@ -1703,7 +1703,7 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
                                      EN_MATCH(path, defaults, _Version),
                                      kw::_sym_local);
   ASSERTF(core__logical_pathname_p(newpath) == core__logical_pathname_p(path),
-          BF("Mismatch between the newpath and path - they must be the same kind and it is the responsibility of makePathname to ensure that they are the same kind"));
+          ("Mismatch between the newpath and path - they must be the same kind and it is the responsibility of makePathname to ensure that they are the same kind"));
   if (newpath.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
   return clasp_namestring(newpath, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 };

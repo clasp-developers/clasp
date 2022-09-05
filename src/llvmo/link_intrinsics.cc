@@ -1250,7 +1250,7 @@ void cc_initialize_closure(core::T_O* functoid,
 }
 
 LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gctools::return_type ret0 ) {
-  ASSERTF(gctools::tagged_generalp(tfunc), BF("The argument %p does not have a general tag!") % (void*)tfunc);
+  ASSERTF(gctools::tagged_generalp(tfunc), ("The argument %p does not have a general tag!") , (void*)tfunc);
   MAKE_STACK_FRAME( callargs, ret0.nvals);
   size_t idx(0);
   gctools::fill_frame_multiple_value_return( callargs, idx, ret0 );

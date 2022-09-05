@@ -21,7 +21,7 @@
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
 ;;;
 
-(defmethod initialize-instance ((instance T) #-varest &rest #+varest core:&va-rest initargs)
+(defmethod initialize-instance ((instance T) core:&va-rest initargs)
   (dbg-standard "standard.lisp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
   (apply #'shared-initialize instance 'T initargs))
 
@@ -37,7 +37,7 @@
            (list #'shared-initialize (list instance t)))))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance T) slot-names &rest initargs)
+(defmethod shared-initialize ((instance T) slot-names core:&va-rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set
@@ -61,7 +61,7 @@
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
     (dolist (slotd (class-slots class))
-      #+(or)(core:vaslist-rewind initargs)
+      (core:vaslist-rewind initargs)
       (let* ((slot-initargs (slot-definition-initargs slotd))
              (slot-name (slot-definition-name slotd)))
         (or
@@ -69,18 +69,18 @@
          (do ((largs initargs)
               initarg
               val)
-           ((null largs) #+(or)(= (core:vaslist-length largs) 0)
+           (#+(or)(null largs) (= (core:vaslist-length largs) 0)
               (progn nil))
-           (setf initarg (pop largs) #+(or)(core:vaslist-pop largs))
-           (when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
-           #+(or)(when (= (core:vaslist-length largs) 0)
+           (setf initarg #+(or)(pop largs) (core:vaslist-pop largs))
+           #+(or)(when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
+           (when (= (core:vaslist-length largs) 0)
              (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
                                    (progn
                                      (core:vaslist-rewind initargs)
                                      (core:list-from-vaslist initargs))))
            (unless (symbolp initarg)
              (simple-program-error "Not a valid initarg: ~A" initarg))
-           (setf val (pop largs) #+(or)(core:vaslist-pop largs))
+           (setf val #+(or)(pop l) (core:vaslist-pop largs))
            (when (member initarg slot-initargs :test #'eq)
              (setf (slot-value instance slot-name) val)
              (return t)))
@@ -124,7 +124,7 @@
   (core:allocate-raw-general-instance class (make-rack-for-class class)))
 
 (defun uninitialized-funcallable-instance-closure (funcallable-instance)
-  (lambda (#-varest &rest #+varest core:&va-rest args)
+  (lambda (core:&va-rest args)
     (declare (core:lambda-name uninitialized-funcallable-instance))
     (declare (ignore args))
     (error "The funcallable instance ~a has not been initialized with a function"
@@ -534,7 +534,7 @@ because it contains a reference to the undefined class~%  ~A"
 ;;; IMPORTANT: The following implementation of ENSURE-CLASS-USING-CLASS is
 ;;; shared by the metaclasses STANDARD-CLASS and STRUCTURE-CLASS.
 ;;;
-(defmethod ensure-class-using-class ((class class) name #-varest &rest #+varest core:&va-rest rest
+(defmethod ensure-class-using-class ((class class) name core:&va-rest rest
 				     &key direct-slots direct-default-initargs
                                        &allow-other-keys)
   (declare (ignore direct-default-initargs direct-slots))

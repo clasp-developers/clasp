@@ -347,6 +347,6 @@
   (let ((program (compute-dispatch-program
                   (safe-gf-call-history generic-function)
                   (safe-gf-specializer-profile generic-function))))
-    (lambda (#+varest core:&va-rest #-varest &rest args)
+    (lambda (core:&va-rest args)
       (declare (core:lambda-name interpreted-discriminating-function))
       (apply #'clos:interpret-dtree-program program generic-function args))))

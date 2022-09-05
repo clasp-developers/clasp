@@ -368,19 +368,19 @@ void DirectoryIterator_O::first() {
 
 void DirectoryIterator_O::next() {
   _OF();
-  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator is NULL - it shouldn't be"));
+  ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator is NULL - it shouldn't be"));
   (*(this->_CurrentIterator._value))++;
 }
 
 bool DirectoryIterator_O::isDone() {
   _OF();
-  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
+  ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   return (*(this->_CurrentIterator._value) == this->_EndIterator._value);
 }
 
 T_sp DirectoryIterator_O::currentObject() {
   _OF();
-  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
+  ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG("The directory iteratory is done - returning nil");
     return nil<DirectoryEntry_O>();
@@ -437,19 +437,19 @@ void RecursiveDirectoryIterator_O::first() {
 
 void RecursiveDirectoryIterator_O::next() {
   _OF();
-  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
+  ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   (*(this->_CurrentIterator._value))++;
 }
 
 bool RecursiveDirectoryIterator_O::isDone() {
   _OF();
-  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
+  ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   return (*(this->_CurrentIterator._value) == this->_EndIterator._value);
 }
 
 T_sp RecursiveDirectoryIterator_O::currentObject() {
   _OF();
-  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
+  ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG("The directory iteratory is done - returning nil");
     return nil<DirectoryEntry_O>();

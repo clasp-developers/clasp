@@ -169,7 +169,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_LT_(Vaslist_sp args) {
-  if (args->nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(-1, 1, args);
 };
 
@@ -186,7 +186,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_GT_(Vaslist_sp args) {
-  if (args->nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(1, 1, args);
 };
 
@@ -203,7 +203,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_LE_(Vaslist_sp args) {
-  if (args->nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(-1, 0, args);
 };
 
@@ -220,7 +220,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_GE_(Vaslist_sp args) {
-  if (args->nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(1, 0, args);
 };
 
@@ -237,7 +237,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing, ignore case)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_lessp(Vaslist_sp args) {
-  if (args->nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(-1, 1, args, false);
 };
 
@@ -254,7 +254,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing, ignore case)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_greaterp(Vaslist_sp args) {
-  if (args->nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(1, 1, args, false);
 };
 
@@ -271,7 +271,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing, ignore case)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_not_greaterp(Vaslist_sp args) {
-  if (args->nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(-1, 0, args, false);
 };
 
@@ -288,7 +288,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing, ignore case)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__char_not_lessp(Vaslist_sp args) {
-  if (args->nargs() == 0) PROGRAM_ERROR();
+  if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(1, 0, args, false);
 };
 

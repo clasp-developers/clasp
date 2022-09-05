@@ -598,7 +598,7 @@ SimpleString_sp tokenStr(T_sp stream, const Token &token, size_t start = 0, size
 
 T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dots_ok) {
   LOG_READ(BF("About to interpret_token_or_throw_reader_error"));
-  ASSERTF(token.size() > 0, BF("The token is empty!"));
+  ASSERTF(token.size() > 0, ("The token is empty!"));
   const trait_chr_type *start = token.data();
   const trait_chr_type *cur = start;
   const trait_chr_type *end = token.data() + token.size();

@@ -610,7 +610,7 @@ Boehm and MPS use a single pointer"
   (when args
     (irc-maybe-check-word-aligned-load %t*% args)
     (irc-store args (vaslist*-args* vaslist*)))
-  (vaslist*-set-nargs (vaslist* nargs)))
+  (vaslist*-set-nargs vaslist* nargs))
 
 ;;; Generate code to read the next argument from the vaslist*
 ;;; The vaslist* argument MUST be an untagged pointer to a %vaslist%

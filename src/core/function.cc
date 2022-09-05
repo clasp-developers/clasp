@@ -441,7 +441,7 @@ struct BytecodeClosureEntryPoint {
     core::BytecodeModule_sp module = gctools::As_unsafe<core::BytecodeModule_sp>(entryPoint->_Code);
     int entryPcOffset = (*entryPoint)._EntryPcs[0]; // FIXME: remove this unused indirection.
     unsigned char* pc =  (unsigned char*)(gc::As<Array_sp>(module->bytecode())->rowMajorAddressOfElement_(0)) + entryPcOffset;
-    //if (bytecode_trampoline) return (bytecode_trampoline)((void*)&bytecode_call,pc,lcc_closure,lcc_nargs,lcc_args);
+    if (bytecode_trampoline) return (bytecode_trampoline)((void*)&bytecode_call,pc,lcc_closure,lcc_nargs,lcc_args);
     return bytecode_call(pc,lcc_closure,lcc_nargs,lcc_args);
   }
 
@@ -852,7 +852,7 @@ gctools::return_type interpreter_call(core::T_O* lcc_closure, size_t lcc_nargs, 
 
 struct InterpretedClosureEntryPoint {
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    //if (interpreter_trampoline) return (interpreter_trampoline)((void*)&interpreter_call,lcc_closure,lcc_nargs,lcc_args);
+    if (interpreter_trampoline) return (interpreter_trampoline)((void*)&interpreter_call,lcc_closure,lcc_nargs,lcc_args);
     return interpreter_call(lcc_closure,lcc_nargs,lcc_args);
   }
   static inline LISP_ENTRY_0() {

@@ -45,7 +45,7 @@
 (defun emf-default (form &optional (arg-info '(t)))
   (let ((restp (car arg-info)) (vars (cdr arg-info)))
     (emf-maybe-compile
-     `(lambda (,@vars ,@(when restp '(#-varest &rest #+varest core:&va-rest emf-more)))
+     `(lambda (,@vars ,@(when restp '(core:&va-rest emf-more)))
         (declare (core:lambda-name effective-method-function.lambda))
         (with-effective-method-parameters ((,@vars) ,(if restp 'emf-more nil))
           ,form)))))
@@ -72,7 +72,7 @@
                   (emf-call-method
                    (first next-methods) (list (rest next-methods))
                    arg-info))))
-    (lambda (#-varest &rest #+varest core:&va-rest .method-args.)
+    (lambda (core:&va-rest .method-args.)
       (declare (core:lambda-name emf-from-contf.lambda))
       (apply contf next .method-args.))))
 
@@ -117,7 +117,7 @@
                   (make-%no-next-method-continuation method)
                   (early-emf-call-method
                    (first next-methods) (rest next-methods)))))
-    (lambda (#-varest &rest #+varest core:&va-rest .method-args.)
+    (lambda (core:&va-rest .method-args.)
       (declare (core:lambda-name emf-from-contf.lambda))
       (apply contf next .method-args.))))
 

@@ -23,7 +23,7 @@
 ;;; Returns a closure usable as a discriminating function
 ;;; when the generic function is in the invalidated state.
 (defun invalidated-discriminating-function-closure (gf)
-  (lambda (#-varest &rest #+varest core:&va-rest args)
+  (lambda (core:&va-rest args)
     (declare (core:lambda-name invalidated-discriminating-function))
     (invalidated-dispatch-function gf args)))
 
@@ -199,7 +199,7 @@
                                      (values nil nil)))
                                  nil)
                                 ((si::subclassp class spec))))))
-      (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf classes)
+      (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf (length classes))
       (let ((result (sort-applicable-methods
                      gf
                      (loop for method in (generic-function-methods gf)
@@ -213,7 +213,7 @@
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors (+eql-specializer-slots+ +standard-generic-function-slots+)
-    (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf classes)
+    (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" (core:safe-repr gf) (length classes))
     (flet ((applicable-method-p (method classes)
 	     (loop for spec in (safe-method-specializers method)
 		for class in classes

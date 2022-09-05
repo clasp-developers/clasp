@@ -241,11 +241,11 @@
 
 
 (defparameter *wtag-shift*    cmp::+wtag-width+)
-(defparameter *derivable-wtag* (ash cmp::+derivable-wtag+ (- cmp::+mtag-width+)))
-(defparameter *rack-wtag*      (ash cmp::+rack-wtag+ (- cmp::+mtag-width+)))
-(defparameter *wrapped-wtag*   (ash cmp::+wrapped-wtag+ (- cmp::+mtag-width+)))
-(defparameter *header-wtag*    (ash cmp::+header-wtag+ (- cmp::+mtag-width+)))
-(defparameter *max-wtag*       (ash cmp::+max-wtag+ (- cmp::+mtag-width+)))
+(defparameter *derivable-wtag* (ash cmp::+derivable-wtag+ (- cmp::+general-mtag-width+)))
+(defparameter *rack-wtag*      (ash cmp::+rack-wtag+ (- cmp::+general-mtag-width+)))
+(defparameter *wrapped-wtag*   (ash cmp::+wrapped-wtag+ (- cmp::+general-mtag-width+)))
+(defparameter *header-wtag*    (ash cmp::+header-wtag+ (- cmp::+general-mtag-width+)))
+(defparameter *max-wtag*       (ash cmp::+max-wtag+ (- cmp::+general-mtag-width+)))
 
 #+(or)
 (defmethod stamp-value ((class gc-managed-type) &optional stamp)

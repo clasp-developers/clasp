@@ -436,8 +436,8 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 }
 
 extern "C" {
-#define REPR_ADDR(addr) << "@" << (void*)addr
-//#define REPR_ADDR(addr)
+//#define REPR_ADDR(addr) << "@" << (void*)addr
+#define REPR_ADDR(addr)
 
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */

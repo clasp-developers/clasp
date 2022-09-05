@@ -264,8 +264,11 @@ Not a valid documentation object ~A"
   (remf args :declare)
   (remf args :environment)
   (remf args :delete-methods)
+  (mlog "In ensure-generic-function-using-class B%N")
+
   (when (symbolp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
+  (mlog "In ensure-generic-function-using-class C%N")
   (when gfcp
     ;; ANSI DEFGENERIC talks about the possibility of change-class-ing a
     ;; generic function, but AMOP specifically rules this possibility out.
@@ -273,14 +276,18 @@ Not a valid documentation object ~A"
     (unless (eq generic-function-class (class-of gfun))
       (error "Cannot change the class of generic function ~a from ~a to ~a. See AMOP, ENSURE-GENERIC-FUNCTION-USING-CLASS."
              name (class-name (class-of gfun)) (class-name generic-function-class))))
+  (mlog "In ensure-generic-function-using-class D%N")
   (when (and method-class-p (symbolp method-class))
     (setf args (list* :method-class (find-class method-class) args)))
+  (mlog "In ensure-generic-function-using-class E%N")
   (when delete-methods
     (dolist (m (copy-list (generic-function-methods gfun)))
       (when (getf (method-plist m) :method-from-defgeneric-p)
 	(remove-method gfun m))))
+  (mlog "In ensure-generic-function-using-class F%N")
   (if (eq (class-of gfun) generic-function-class)
       (progn
+        (mlog "In ensure-generic-function-using-class F: About to reainitialize-instance%N")
 	(apply #'reinitialize-instance gfun :name name args))
       (progn
 	(apply #'change-class gfun generic-function-class :name name args))))
@@ -292,7 +299,7 @@ Not a valid documentation object ~A"
                                    (delete-methods nil)
                                    &allow-other-keys)
   (declare (ignore delete-methods gfun))
-  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> {}  name -> {} args -> {}%N" gfun name args)
+  (mlog "In ensure-generic-function-using-class (gfun null) gfun -> {}  name -> {} args -> {}%N" gfun name args)
   ;; else create a new generic function object
   (setf args (copy-list args))
   (remf args :generic-function-class)

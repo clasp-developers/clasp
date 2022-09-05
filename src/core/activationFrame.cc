@@ -128,7 +128,7 @@ string ValueFrame_O::asString() const {
 }
 
 void ValueFrame_O::fillRestOfEntries(int istart, List_sp values) {
-  ASSERTF((istart + cl__length(values)) == this->length(), BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart + cl__length(values)));
+  ASSERTF((istart + cl__length(values)) == this->length(), "Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it",  this->length() , (istart + cl__length(values)));
   int iend = this->length();
   ASSERT(values.consp());
   List_sp cur = values;

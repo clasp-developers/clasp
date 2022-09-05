@@ -67,7 +67,6 @@ struct VirtualMachineStackState {
 };
 
 #define STACK_GROWS_UP 1
-//#define DEBUG_VIRTUAL_MACHINE 0
 #ifdef DEBUG_VIRTUAL_MACHINE
 #define VM_ASSERT_ALIGNED(ptr) if (((uintptr_t)(ptr))&0x7) { printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr)); abort(); }
 #define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._stackPointer&&!((vm)._stackBottom<=(vm)._stackPointer && (vm)._stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); abort(); }
@@ -79,7 +78,7 @@ struct VirtualMachineStackState {
 #endif
 
 struct VirtualMachine {
-  static constexpr size_t MaxStackWords = 16384; // 16K words for now.
+  static constexpr size_t MaxStackWords = 32768; // 32K words for now.
   bool           _Running;
   core::T_O*     _stackBottom[MaxStackWords];
   size_t         _stackBytes;
