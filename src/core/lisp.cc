@@ -1961,19 +1961,19 @@ public:
 CL_LAMBDA(sequence predicate &key key)
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(Like CLHS: sort but does not support key)dx")
+CL_DOCSTRING(R"dx(Like CLHS: sort but the sequence is not destructively sorted. Instead a new sequence is returned.)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
   gctools::Vec0<T_sp> sorted;
   Function_sp sortProc = coerce::functionDesignator(predicate);
-  LOG("Unsorted data: %s" , _rep_(sequence));
+  LOG("Unsorted data: %s", _rep_(sequence));
   if (cl__length(sequence) == 0)
     return nil<T_O>();
   fillVec0FromCons(sorted, sequence);
-  LOG("Sort function: %s" , _rep_(sortProc));
-  OrderBySortFunction orderer(sortProc,gc::As<Function_sp>(key));
-//  sort::quickSort(sorted.begin(), sorted.end(), orderer);
-  sort::quickSortVec0(sorted,0,sorted.size(),orderer);
+  LOG("Sort function: %s", _rep_(sortProc));
+  OrderBySortFunction orderer(sortProc,
+                              key.nilp() ? coerce::functionDesignator(cl::_sym_identity) : coerce::functionDesignator(key));
+  sort::quickSortVec0(sorted, 0, sorted.size(), orderer);
   List_sp result = asCons(sorted);
   return result;
 }

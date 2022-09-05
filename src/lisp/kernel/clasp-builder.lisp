@@ -986,6 +986,10 @@ been initialized with install path versus the build path of the source code file
 
 (export 'pprint-features)
 
+(defvar *system-load-times*)
+(defvar +stage-features+ '(:clasp-min :clos :aclasp :bclasp :cclasp :eclasp))
+(defvar +load-weight+ 0.5d0)
+
 (defun load-stage (system stage)
   (let ((files (select-source-files (make-pathname :host "sys"
                                                    :directory '(:absolute "src" "lisp" "kernel" "stage")
@@ -996,19 +1000,29 @@ been initialized with install path versus the build path of the source code file
                                                    :name (core:fmt nil "{:d}-end" stage)
                                                    :type "lisp")
                                     :system system))
-        (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword)))
+        (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword))
+        (stage-time (get-internal-run-time))
+        file-time file)
     (setq *features* (cons stage-keyword *features*))
     (message :emph "Loading stage {:d}..." stage)
     (tagbody
      next
       (if files
           (progn
-            (load (car files))
-            (setq files (cdr files))
+            (setq file (car files)
+                  file-time (get-internal-run-time)
+                  files (cdr files))
+            (load file)
+            (setq file-time (- (get-internal-run-time) file-time))
+            (core:hash-table-setf-gethash *system-load-times* file
+                                          (+ (* +load-weight+ file-time)
+                                             (* (- 1 +load-weight+) (gethash file *system-load-times* 0))))
+            (message nil ";;; Load time {:.6f} seconds" (float (/ file-time internal-time-units-per-second)))
             (go next))))
-    (setq *features* (core:remove-equal stage-keyword *features*))))
-
-(defvar +stage-features+ '(:clasp-min :clos :aclasp :bclasp :cclasp :eclasp))
+    (setq *features* (core:remove-equal stage-keyword *features*))
+    (message :emph "Stage {:d} elapsed time: {:.6f} seconds"
+             stage
+             (float (/ (- (get-internal-run-time) stage-time) internal-time-units-per-second)))))
 
 (defun stage-features (&rest rest &aux (features +stage-features+))
   (tagbody
@@ -1021,28 +1035,36 @@ been initialized with install path versus the build path of the source code file
   (setq *features* (append rest *features*))
   (pprint-features))
 
-(defun load-vclasp (&key reproducible clean (output-file (build-common-lisp-bitcode-pathname))
-                         (system (command-line-arguments-as-list))
+(defun system-load-time (file)
+  (gethash file *system-load-times* 0))
+
+(defun load-vclasp (&key (clean (ext:getenv "CLASP_CLEAN"))
+                         (output-file (build-common-lisp-bitcode-pathname))
+                         reproducible
+                         (system-sort (ext:getenv "CLASP_SYSTEM_SORT"))
                          (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
                                           (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
-                                          7))
-                    &aux installed-system)
-  (if reproducible
-      (setq installed-system (extract-installed-system system)))
-  (let ((*target-backend* (default-target-backend))
-        (*trace-output* *standard-output*)
+                                        7))
+                         (system (command-line-arguments-as-list)))
+  (let ((installed-system (if reproducible
+                              (extract-installed-system system)))
+        (*system-load-times* (make-hash-table :test #'eql))
+        (*target-backend* (default-target-backend))
         (*load-verbose* t)
         (stage 0))
     (setq *features* (list* :staging :bytecode :bytecodelike *features*))
     (tagbody
      next
-      (load-stage system stage)
-      (setq stage (1+ stage))
       (if (< stage stage-count)
-          (go next)))
+          (progn
+            (load-stage system stage)
+            (setq stage (+ 1 stage))
+            (go next))))
     (setq *features* (core:remove-equal :staging *features*))
     (prepare-metadata system installed-system)
-    system))
+    (if system-sort
+        (sort system #'> :key #'system-load-time)
+        system)))
 
 (defun compile-vclasp (&rest rest)
   (let ((system (apply #'load-vclasp rest)))
