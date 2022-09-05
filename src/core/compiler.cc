@@ -1242,7 +1242,8 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
                                                                         nil<T_O>(),
                                                                         code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
-  return (thunk->entry())(thunk.raw_(),0,NULL);
+  T_O* closure = (core::T_O*)thunk.raw_();
+  return (thunk->entry())(closure,0,NULL);
   //  return eval::funcall(thunk);
 };
 
