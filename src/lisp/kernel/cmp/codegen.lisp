@@ -354,8 +354,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   ;;
   ;; If a *code-walker* is defined then invoke the code-walker
   ;; with the current form and environment
-  (when *code-walker*
-    (setq form (funcall *code-walker* form env)))
+  (when cmp:*code-walker*
+    (setq form (funcall cmp:*code-walker* form env)))
   (cond ((symbolp form) (codegen-symbol-value result form env))
         ((consp form) (codegen-cons result form env))
         (t (codegen-literal result form env))))

@@ -101,11 +101,12 @@
         (link-function (compile-lambda lambda-list body env module) (cons lambda-expression env))
       (logf "^^^^^^^^^ Compile done~%"))))
 
+#+(or)
 (defun compile-form (form env context)
   (when *code-walker*
-    (setq form (funcall sys:*code-walker* form env)))
+    (setq form (funcall *code-walker* form env)))
   (cond ((symbolp form) (compile-symbol form env context))
-        ((consp form) (compile-cons (car form) (cdr form) env context))
+        ((consp form) (compile-combination (car form) (cdr form) env context))
         (t (compile-literal form env context))))
 
 (defun compile-load-time-value (form env context)
@@ -153,8 +154,8 @@
            (when (eq (cmp:context/receiving context) t)
              (assemble context +pop+))))))
 
-(defun compile-cons (head rest env context)
-  (logf "compile-cons ~s~%" (list* head rest))
+(defun compile-combination (head rest env context)
+  (logf "compile-combination ~s~%" (list* head rest))
   (cond
     ((eq head 'progn) (compile-progn rest env context))
     ((eq head 'let) (compile-let (first rest) (rest rest) env context))

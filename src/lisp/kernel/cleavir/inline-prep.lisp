@@ -26,18 +26,16 @@
       ;; Add other clauses here
       (t #+(or)(warn "Add support for proclaim ~s~%" decl)))))
 
-(defvar *code-walker* nil)
-
 (defmethod cleavir-cst-to-ast:convert :before (cst environment (system clasp-64bit))
   (declare (ignore system))
-  (when *code-walker*
+  (when cmp:*code-walker*
     (let ((form (cst:raw cst)))
-      (funcall *code-walker* form environment))))
+      (funcall cmp:*code-walker* form environment))))
 
 (defun code-walk-using-cleavir (code-walker-function form env)
   (let* ((cleavir-cst-to-ast:*compiler* 'cl:compile)
          (core:*use-cleavir-compiler* t)
-         (*code-walker* code-walker-function))
+         (cmp:*code-walker* code-walker-function))
     (handler-bind
         ((cleavir-cst-to-ast:no-variable-info
            (lambda (condition)
@@ -148,8 +146,6 @@
                        :value (eval (cleavir-ast:form ast))))))
    ast)
   ast)
-
-(export '(*code-walker*))
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*proclaim-hook* 'proclaim-hook))

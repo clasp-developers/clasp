@@ -621,7 +621,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARbuild_linkflagsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuild_cppflagsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
 SYMBOL_SC_(CorePkg, STARdebugMacroexpandSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, T);
 SYMBOL_EXPORT_SC_(ClPkg, method);
@@ -1054,7 +1053,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(nil<T_O>());
   _lisp->_Roots._ClassTable = HashTable_O::create_thread_safe(cl::_sym_eq,SimpleBaseString_O::make("CLTBLRD"),SimpleBaseString_O::make("CLTBLWR"));
-  _sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
   _sym_STARsharpEqContextSTAR->defparameter(nil<T_O>());
   cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_single_float);
   _sym_STARnestedErrorDepthSTAR->defparameter(make_fixnum(0));

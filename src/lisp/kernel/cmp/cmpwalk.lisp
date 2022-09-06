@@ -51,7 +51,7 @@
 
 
 (defun code-walk-using-bytecode (code-walker-function form env)
-  (let* ((sys:*code-walker* code-walker-function)
+  (let* ((*code-walker* code-walker-function)
          (module (cmp:module/make)))
     (compile-lambda nil `(progn ,form) env module)))
 

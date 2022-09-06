@@ -77,6 +77,7 @@ Lexenv_sp Lexenv_O::bind_vars(List_sp vars, Context_sp ctxt) {
 }
 
 Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
+  if (vars.nilp()) return this->asSmartPtr();
   List_sp new_vars = this->vars();
   for (auto cur : vars) {
     Symbol_sp var = oCar(cur);
@@ -709,6 +710,21 @@ CL_DEFUN void cmp__compile_literal(T_sp literal, Lexenv_sp env,
     else context->assemble1(vm_const, context->literal_index(literal));
     context->assemble0(vm_pop);
   }
+}
+
+SYMBOL_EXPORT_SC_(CompPkg, compile_symbol);
+SYMBOL_EXPORT_SC_(CompPkg, compile_combination);
+CL_DEFUN void cmp__compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
+  // Code walk if we're doing that
+  if (_sym_STARcodeWalkerSTAR->boundP()
+      && _sym_STARcodeWalkerSTAR->symbolValue().notnilp())
+    form = eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), form, env);
+  // Compile
+  if (gc::IsA<Symbol_sp>(form))
+    eval::funcall(_sym_compile_symbol, form, env, context);
+  else if (form.consp())
+    eval::funcall(_sym_compile_combination, oCar(form), oCdr(form), env, context);
+  else cmp__compile_literal(form, env, context);
 }
 
 }; //namespace comp
