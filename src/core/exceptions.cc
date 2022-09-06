@@ -151,7 +151,7 @@ CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage
   printf("%s:%d  About to try and FORMAT the error\n", __FILE__, __LINE__);
   cl__format(_lisp->_true(), formatControl, formatArgs);
   dbg_hook("core__signal_simple_error");
-  core__invoke_internal_debugger(nil<core::T_O>());
+  core__invoke_internal_debugger(baseCondition);
   printf("%s:%d  Continuing...\n", __FILE__, __LINE__);
   return nil<T_O>();
 };
