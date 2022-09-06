@@ -17,8 +17,7 @@
          (k:sources target
                     #~"kernel/stage/2-end.lisp"
                     #~"kernel/stage/0-begin.lisp"
-                    #~"kernel/stage/4-begin.lisp"
-                    #~"kernel/stage/5-begin.lisp"))
+                    #~"kernel/stage/4-begin.lisp"))
         (t
          (k:sources target
                     #~"kernel/tag/start.lisp")))
@@ -201,6 +200,7 @@
 (defun add-cclasp-sources (&rest rest &key target neo bytecode &allow-other-keys)
   (apply #'add-bclasp-sources rest)
   (k:sources target
+             #~"kernel/stage/5-begin.lisp"  
              (k:make-source "cclasp-translations.lisp" :variant-generated)
              :clasp-cleavir
              #~"kernel/cleavir/auto-compile.lisp"
