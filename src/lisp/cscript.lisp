@@ -79,7 +79,7 @@
              #~"kernel/cmp/cmpliteral.lisp"
              #~"kernel/cmp/typeq.lisp"
              #~"kernel/cmp/codegen-special-form.lisp")
-  (unless bytecode
+  (unless nil;bytecode
     (k:sources target
                #~"kernel/cmp/codegen.lisp"
                #~"kernel/cmp/compile.lisp"
