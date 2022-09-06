@@ -242,6 +242,14 @@
       (values (first binding) (second binding))
       (values binding nil)))
 
+(defun special-binding-p (var specials env)
+  ;; A binding of VAR is special if either it is locally declared special,
+  ;; or if the variable is globally special.
+  (or (member var specials)
+      (let ((info (cmp:var-info var env)))
+        (and (typep info 'cmp:special-var-info)
+             (special-var-info/globalp info)))))
+
 (defun compile-let (bindings body env context)
   (multiple-value-bind (decls body docs specials)
       (core:process-declarations body nil)
@@ -252,9 +260,7 @@
       (dolist (binding bindings)
         (multiple-value-bind (var valf) (canonicalize-binding binding)
           (compile-form valf env (context/sub context 1))
-          (cond ((or (member var specials)
-                     (typep (cmp:var-info var env)
-                            'cmp:special-var-info))
+          (cond ((special-binding-p var specials env)
                  (incf special-binding-count)
                  (context/emit-special-bind context var))
                 (t
@@ -528,9 +534,7 @@
           (dolist (var (cdr required))
             ;; We account for special declarations in outer environments/globally
             ;; by checking the original environment - not our new one - for info.
-            (cond ((or (member var specials)
-                       (typep (cmp:var-info var env)
-                              'cmp:special-var-info))
+            (cond ((special-binding-p var specials env)
                    (let ((info (cmp:var-info var new-env)))
                      (assemble-maybe-long
                       context +ref+
@@ -598,15 +602,11 @@
             (let* ((optional-var (car optionals))
                    (defaulting-form (cadr optionals)) (supplied-var (caddr optionals))
                    (optional-special-p
-                     (or (member optional-var specials)
-                         (typep (cmp:var-info optional-var env)
-                                'cmp:special-var-info)))
+                     (special-binding-p optional-var specials env))
                    (index (cdr (assoc optional-var opt-key-indices)))
                    (supplied-special-p
                      (and supplied-var
-                          (or (member supplied-var specials)
-                              (typep (cmp:var-info supplied-var env)
-                                     'cmp:special-var-info)))))
+                          (special-binding-p supplied-var specials env))))
               (setq new-env
                     (compile-optional/key-item optional-var defaulting-form index
                                                supplied-var next-optional-label
@@ -619,9 +619,7 @@
           (assemble-maybe-long context +listify-rest-args+ max-count)
           (assemble-maybe-long context +set+ (frame-end new-env))
           (setq new-env (lexenv/bind-vars new-env (list rest) context))
-          (cond ((or (member rest specials)
-                     (typep (cmp:var-info rest env)
-                            'cmp:special-var-info))
+          (cond ((special-binding-p rest specials env)
                  (assemble-maybe-long
                   +ref+ (cmp:var-info rest new-env) context)
                  (context/emit-special-bind context rest)
@@ -640,14 +638,10 @@
                    (index (cdr (assoc key-var opt-key-indices)))
                    (supplied-var (cadddr keys))
                    (key-special-p
-                     (or (member key-var specials)
-                         (typep (cmp:var-info key-var env)
-                                'cmp:special-var-info)))
+                     (special-binding-p key-var specials env))
                    (supplied-special-p
                      (and supplied-var
-                          (or (member supplied-var specials)
-                              (typep (cmp:var-info key-var env)
-                                     'cmp:special-var-info)))))
+                          (special-binding-p supplied-var specials env))))
               (setq new-env
                     (compile-optional/key-item key-var defaulting-form index
                                                supplied-var next-key-label

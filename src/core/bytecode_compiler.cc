@@ -80,7 +80,7 @@ Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
   List_sp new_vars = this->vars();
   for (auto cur : vars) {
     Symbol_sp var = oCar(cur);
-    auto info = SpecialVarInfo_O::make();
+    auto info = SpecialVarInfo_O::make(var->specialP());
     Cons_sp pair = Cons_O::create(var, info);
     new_vars = Cons_O::create(pair, new_vars);
   }
@@ -165,7 +165,7 @@ CL_DEFUN T_sp cmp__var_info(Symbol_sp sym, Lexenv_sp env) {
     return ConstantVarInfo_O::make(sym->symbolValue());
   // Globally special?
   if (sym->specialP())
-    return SpecialVarInfo_O::make();
+    return SpecialVarInfo_O::make(true);
   // Global symbol macro?
   T_mv symmac = core__get_sysprop(sym, ext::_sym_symbolMacro);
   if (gc::As<T_sp>(symmac.valueGet_(1)).notnilp())

@@ -56,13 +56,20 @@ FORWARD(SpecialVarInfo);
 class SpecialVarInfo_O : public VarInfo_O {
   LISP_CLASS(comp, CompPkg, SpecialVarInfo_O, "SpecialVarInfo", VarInfo_O);
 public:
-  SpecialVarInfo_O() : VarInfo_O() {};
+  // global specials are different in that they apply to inner bindings.
+  // e.g., if x is globally special than (let ((x ...)) ...) is a special binding,
+  // but that's not the case if x is only special outside the let because of
+  // a local declaration.
+  bool _globalp;
+public:
+  SpecialVarInfo_O(bool globalp) : VarInfo_O(), _globalp(globalp) {};
   CL_LISPIFY_NAME(SpecialVarInfo/make)
   CL_DEF_CLASS_METHOD
-  static SpecialVarInfo_sp make() {
-    SpecialVarInfo_sp info = gctools::GC<SpecialVarInfo_O>::allocate<gctools::RuntimeStage>();
+  static SpecialVarInfo_sp make(bool globalp) {
+    SpecialVarInfo_sp info = gctools::GC<SpecialVarInfo_O>::allocate<gctools::RuntimeStage>(globalp);
     return info;
   }
+  CL_DEFMETHOD bool globalp() const { return this->_globalp; }
 };
 
 FORWARD(SymbolMacroVarInfo);
