@@ -239,6 +239,7 @@ T_mv early_debug(T_sp condition, bool can_continue) {
   if (condition.notnilp()) {
     write_bf_stream(fmt::sprintf("Debugger entered with condition: %s\n", _rep_(condition)));
   }
+  DynamicScopeManager scope(core::_sym_STARdebugConditionSTAR, condition);
   return call_with_frame([=](auto frame){return early_debug_inner(frame, can_continue);});
 }
 
