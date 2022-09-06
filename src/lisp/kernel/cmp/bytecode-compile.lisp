@@ -108,15 +108,6 @@
         ((consp form) (compile-cons (car form) (cdr form) env context))
         (t (compile-literal form env context))))
 
-(defun compile-literal (form env context)
-  (declare (ignore env))
-  (unless (eql (cmp:context/receiving context) 0)
-    (cond ((null form) (assemble context +nil+))
-          (t (assemble-maybe-long context +const+
-                                  (context/literal-index context form))))
-    (when (eql (cmp:context/receiving context) t)
-      (assemble context +pop+))))
-
 (defun compile-load-time-value (form env context)
   (if *generate-compile-file-load-time-values*
       (error "Handle compile-file")

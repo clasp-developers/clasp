@@ -690,4 +690,25 @@ GlobalBytecodeEntryPoint_sp Cfunction_O::link_function(T_sp compile_info) {
   return this->info();
 }
 
+CL_DEFUN void cmp__compile_literal(T_sp literal, Lexenv_sp env,
+                                   Context_sp context) {
+  (void)env;
+  T_sp rec = context->receiving();
+  if (rec.fixnump()) {
+    gc::Fixnum frec = rec.unsafe_fixnum();
+    switch (frec) {
+    case 0: return; // No value required, so do nothing
+    case 1:
+        if (literal.nilp()) context->assemble0(vm_nil);
+        else context->assemble1(vm_const, context->literal_index(literal));
+        return;
+    default: SIMPLE_ERROR("BUG: Don't know how to compile literal returning %" PFixnum " values", frec);
+    }
+  } else { // must be T, i.e. values
+    if (literal.nilp()) context->assemble0(vm_nil);
+    else context->assemble1(vm_const, context->literal_index(literal));
+    context->assemble0(vm_pop);
+  }
+}
+
 }; //namespace comp
