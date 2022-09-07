@@ -98,6 +98,24 @@ CL_DEFUN Vaslist_sp core__vaslist_rewind(Vaslist_sp v)
 }
 
 DOCGROUP(clasp)
+CL_DEFUN Vaslist_sp core__do_validate_vaslist(Vaslist_sp v)
+{
+  if (!gctools::tagged_vaslistp<T_O*>(v.raw_())) {
+    printf("%s:%d:%s vaslist is not tagged properly %p\n", __FILE__, __LINE__, __FUNCTION__, v.raw_());
+    abort();
+  }
+  if (v->nargs()>2048) {
+    printf("%s:%d:%s vaslist nargs = %lu\n", __FILE__, __LINE__, __FUNCTION__, v->nargs() );
+    abort();
+  }
+  if (((uintptr_t)v->args()) & 0x7) {
+    printf("%s:%d:%s vaslist args is not aligned %p\n", __FILE__, __LINE__, __FUNCTION__, v->args() );
+    abort();
+  }
+  return v;
+}
+
+DOCGROUP(clasp)
 CL_DEFUN size_t core__vaslist_length(Vaslist_sp v)
 {
 //  printf("%s:%d vaslist length %" PRu "\n", __FILE__, __LINE__, v->nargs());

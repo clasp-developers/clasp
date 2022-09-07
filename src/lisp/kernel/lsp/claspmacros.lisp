@@ -86,6 +86,22 @@
 (defmacro cl:progv (symbols values &rest forms)
   `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
 
+
+;;;;;;;;
+;;;  Validate vaslists
+;;;;;;;;
+
+#+validate-vaslists
+(defmacro validate-vaslist (vaslist)
+  `(core:do-validate-vaslist ,vaslist))
+
+#-validate-vaslists
+(defmacro validate-vaslist (vaslist)
+  `(progn
+     ,vaslist))
+
+(export 'validate-vaslist :core)
+
 ;;;;;;;;
 ;;;;;;;;
 

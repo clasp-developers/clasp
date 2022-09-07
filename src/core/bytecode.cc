@@ -16,10 +16,14 @@
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
 
-#if 0
-# define DBG_printf printf
-# define DBG_VM(...) {printf("%s:%d:%s pc %p : stack %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)vm._pc, (uintptr_t)(vm)._stackPointer-(uintptr_t)(vm)._stackBottom ); printf(__VA_ARGS__); }
-# if 0
+extern "C" {
+bool global_debug_vm = false;
+}
+
+#if 1
+# define DBG_printf(...) { if (global_debug_vm) { printf(__VA_ARGS__); } }
+# define DBG_VM(...) {if (global_debug_vm) {printf("%s:%6d pc: %p sp: %p fp: %p | ", __FILE__, __LINE__, (void*)vm._pc, (void*)(vm)._stackPointer, (void*)(vm)._framePointer); printf(__VA_ARGS__);} }
+# if 1
 #  define DBG_VM1(...) DBG_VM(__VA_ARGS__)
 # else
 #  define DBG_VM1(...)
@@ -379,7 +383,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     }
     case vm_return: {
       DBG_VM1("return\n");
-      if (vaslistp) vm.drop(2); // deallocate
+      if (vaslistp) vm.drop(4); // deallocate
 #ifdef DBG_VM1
       if (vm.npushed(nlocals) != 0) {
         gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %lu   nlocals = %lu", vm.npushed(nlocals), nlocals).c_str());
@@ -425,9 +429,13 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       break;
     }
     case vm_vaslistify_rest_args: {
+      //
+      // This pushes two vaslist structures (each two words that look like fixnums)
+      // onto the stack.  the theVaslist_backup is used by vaslist_rewind
+      //
       uint8_t start = read_uint8(vm._pc);
       DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
-      auto theVaslist = vm.alloca_vaslist(lcc_args + start, lcc_nargs - start);
+      auto theVaslist = vm.alloca_vaslist2(lcc_args + start, lcc_nargs - start);
 #if 0
       printf("%s:%d:%s About to dump vm.alloca_vaslst result\n", __FILE__, __LINE__, __FUNCTION__ );
       dump_Vaslist_ptr(stdout,gctools::untag_vaslist<T_O*>(theVaslist));
@@ -1156,7 +1164,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   ASSERT(gc::IsA<core::GlobalBytecodeEntryPoint_sp>(closure->entryPoint()));
   auto entry = closure->entryPoint();
   core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(entry);
-  //DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
+  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
   size_t nlocals = entryPoint->localsFrameSize();
   BytecodeModule_sp module = entryPoint->code();
   T_O** literals = ((T_O**)gc::As<SimpleVector_sp>(module->literals())->
