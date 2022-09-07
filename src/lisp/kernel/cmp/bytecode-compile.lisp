@@ -174,22 +174,11 @@
             (compile-form (first args) env (context/sub context 1))))
          (t (error "BUG: Unknown info ~a" info)))))))
 
-(defun compile-progn (forms env context)
-  (do ((forms forms (rest forms)))
-      ((null (rest forms))
-       (compile-form (first forms) env context))
-    (compile-form (first forms) env (context/sub context 0))))
-
 (defun compile-locally (body env context)
   (multiple-value-bind (decls body docs specials)
       (core:process-declarations body nil)
     (declare (ignore decls docs))
     (compile-progn body (if specials (lexenv/add-specials env specials) env) context)))
-
-(defun compile-eval-when (situations body env context)
-  (if (or (member 'cl:eval situations) (member :execute situations))
-      (compile-progn body env context)
-      (compile-literal nil env context)))
 
 (defun canonicalize-binding (binding)
   (if (consp binding)
@@ -399,17 +388,6 @@
                                   context))
         (assemble-maybe-long context +initialize-closure+ (cdr closure)))
       (compile-progn body env context))))
-
-(defun compile-if (condition then else env context)
-  (compile-form condition env (context/sub context 1))
-  (let ((then-label (cmp:label/make))
-        (done-label (cmp:label/make)))
-    (context/emit-jump-if context then-label)
-    (compile-form else env context)
-    (context/emit-jump context done-label)
-    (label/contextualize then-label context)
-    (compile-form then env context)
-    (label/contextualize done-label context)))
 
 ;;; Push the immutable value or cell of lexical in CONTEXT.
 (defun reference-lexical-info (info context)
@@ -754,26 +732,6 @@
           (context/emit-exit context block-label))
         (error "The block ~a does not exist." name))))
 
-(defun compile-catch (tag body env context)
-  (compile-form tag env (context/sub context 1))
-  (let ((target (cmp:label/make)))
-    (context/emit-catch context target)
-    (compile-progn body env context)
-    (assemble context +catch-close+)
-    (label/contextualize target context)))
-
-(defun compile-throw (tag result env context)
-  (compile-form tag env (context/sub context 1))
-  (compile-form result env (context/sub context t))
-  (assemble context +throw+))
-
-(defun compile-progv (symbols values body env context)
-  (compile-form symbols env (context/sub context 1))
-  (compile-form values env (context/sub context 1))
-  (assemble context +progv+)
-  (compile-progn body env context)
-  (context/emit-unbind context 1))
-
 (defun compile-symbol-macrolet (bindings body env context)
   (let ((smacros nil))
     (dolist (binding bindings)
@@ -798,25 +756,3 @@
     (compile-locally body (make-lexical-environment
                            env :funs (append macros (cmp:lexenv/funs env)))
                      context)))
-
-(defun compile-multiple-value-call (function-form forms env context)
-  (compile-form function-form env (context/sub context 1))
-  (let ((first (first forms))
-        (rest (rest forms)))
-    (compile-form first env (context/sub context t))
-    (when rest
-      (assemble context +push-values+)
-      (dolist (form rest)
-        (compile-form form env (context/sub context t))
-        (assemble context +append-values+))
-      (assemble context +pop-values+)))
-  (context/emit-mv-call context))
-
-(defun compile-multiple-value-prog1 (first-form forms env context)
-  (compile-form first-form env context)
-  (unless (member (cmp:context/receiving context) '(0 1))
-    (assemble context +push-values+))
-  (dolist (form forms)
-    (compile-form form env (context/sub context 0)))
-  (unless (member (cmp:context/receiving context) '(0 1))
-    (assemble context +pop-values+)))

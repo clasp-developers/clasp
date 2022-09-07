@@ -762,6 +762,102 @@ CL_DEFUN void cmp__compile_symbol(Symbol_sp sym,
   }
 }
 
+CL_DEFUN void cmp__compile_progn(List_sp forms, Lexenv_sp env, Context_sp ctxt) {
+  if (forms.nilp())
+    cmp__compile_literal(nil<T_O>(), env, ctxt);
+  else
+    for (auto cur : forms) {
+      if (oCdr(cur).notnilp()) // compile for effect
+        cmp__compile_form(oCar(cur), env, ctxt->sub(clasp_make_fixnum(0)));
+      else // compile for value
+        cmp__compile_form(oCar(cur), env, ctxt);
+    }
+}
+
+CL_DEFUN void cmp__compile_eval_when(List_sp situations, List_sp body,
+                                     Lexenv_sp env, Context_sp ctxt) {
+  for (auto cur : situations) {
+    T_sp situation = oCar(cur);
+    if ((situation == cl::_sym_eval) || (situation == kw::_sym_execute)) {
+      cmp__compile_progn(body, env, ctxt);
+      return;
+    }
+  }
+  // no eval or execute, so
+  cmp__compile_literal(nil<T_O>(), env, ctxt);
+}
+
+CL_DEFUN void cmp__compile_if(T_sp cond, T_sp thn, T_sp els,
+                              Lexenv_sp env, Context_sp ctxt) {
+  cmp__compile_form(cond, env, ctxt->sub(clasp_make_fixnum(1)));
+  Label_sp then_label = Label_O::make();
+  Label_sp done_label = Label_O::make();
+  ctxt->emit_jump_if(then_label);
+  cmp__compile_form(els, env, ctxt);
+  ctxt->emit_jump(done_label);
+  then_label->contextualize(ctxt);
+  cmp__compile_form(thn, env, ctxt);
+  done_label->contextualize(ctxt);
+}
+
+// catch, throw, and progv are actually handled by macros right now,
+// so these aren't used, but maybe will be in the future.
+CL_DEFUN void cmp__compile_catch(T_sp tag, List_sp body,
+                                 Lexenv_sp env, Context_sp ctxt) {
+  cmp__compile_form(tag, env, ctxt->sub(clasp_make_fixnum(1)));
+  Label_sp target = Label_O::make();
+  ctxt->emit_catch(target);
+  // FIXME: maybe should be a T context to match throw
+  cmp__compile_progn(body, env, ctxt);
+  ctxt->assemble0(vm_catch_close);
+  target->contextualize(ctxt);
+}
+
+CL_DEFUN void cmp__compile_throw(T_sp tag, T_sp rform,
+                                 Lexenv_sp env, Context_sp ctxt) {
+  cmp__compile_form(tag, env, ctxt->sub(clasp_make_fixnum(1)));
+  cmp__compile_form(rform, env, ctxt->sub(cl::_sym_T_O));
+  ctxt->assemble0(vm_throw);
+}
+
+CL_DEFUN void cmp__compile_progv(T_sp syms, T_sp vals, List_sp body,
+                                 Lexenv_sp env, Context_sp ctxt) {
+  cmp__compile_form(syms, env, ctxt->sub(clasp_make_fixnum(1)));
+  cmp__compile_form(vals, env, ctxt->sub(clasp_make_fixnum(1)));
+  ctxt->assemble0(vm_progv);
+  cmp__compile_progn(body, env, ctxt);
+  ctxt->emit_unbind(1);
+}
+
+CL_DEFUN void cmp__compile_multiple_value_call(T_sp fform, List_sp aforms,
+                                               Lexenv_sp env, Context_sp ctxt) {
+  cmp__compile_form(fform, env, ctxt->sub(clasp_make_fixnum(1)));
+  T_sp first = oCar(aforms);
+  List_sp rest = gc::As<List_sp>(oCdr(aforms));
+  cmp__compile_form(first, env, ctxt->sub(cl::_sym_T_O));
+  if (rest.notnilp()) {
+    ctxt->assemble0(vm_push_values);
+    for (auto cur : rest) {
+      cmp__compile_form(oCar(cur), env, ctxt->sub(cl::_sym_T_O));
+      ctxt->assemble0(vm_append_values);
+    }
+    ctxt->assemble0(vm_pop_values);
+  }
+  ctxt->emit_mv_call();
+}
+
+CL_DEFUN void cmp__compile_multiple_value_prog1(T_sp fform, List_sp forms,
+                                                Lexenv_sp env, Context_sp ctxt) {
+  cmp__compile_form(fform, env, ctxt);
+  // Don't need to save anything with fixed value returns
+  if (!ctxt->receiving().fixnump())
+    ctxt->assemble0(vm_push_values);
+  for (auto cur : forms)
+    cmp__compile_form(oCar(cur), env, ctxt->sub(clasp_make_fixnum(0)));
+  if (!ctxt->receiving().fixnump())
+    ctxt->assemble0(vm_pop_values);
+}
+
 SYMBOL_EXPORT_SC_(CompPkg, compile_combination);
 CL_DEFUN void cmp__compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
   // Code walk if we're doing that

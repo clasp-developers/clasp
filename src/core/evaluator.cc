@@ -1430,7 +1430,7 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
   for ( auto cur : situations ) {
     T_sp sit = CONS_CAR(cur);
     if ( !(sit == kw::_sym_execute ||
-           sit == kw::_sym_eval ||
+           sit == cl::_sym_eval ||
            sit == kw::_sym_load_toplevel ||
            sit == cl::_sym_load ||
            sit == kw::_sym_compile_toplevel ||
