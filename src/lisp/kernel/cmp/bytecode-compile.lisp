@@ -3,6 +3,7 @@
   (:use #:cl)
   (:shadow #:compile))
 
+#-sbcl
 (in-package #:cmp)
 
 (setq *print-circle* t)
@@ -33,9 +34,10 @@
                         ((endp names) forms)
                       (push `(defconstant ,(first names) ,i) forms)))
                 (defparameter *codes* '(,@names))
-                #-clasp ; collides with core:decode, and we don't need it.
-                (defun decode (code)
-                  (nth code '(,@names))))))
+                (defun decode-instr (code)
+                  code)
+                (defun encode-instr (code)
+                  (nth code '(,@names)))                )))
   (defcodes +ref+ +const+ +closure+
     +call+ +call-receive-one+ +call-receive-fixed+
     +bind+ +set+
@@ -1469,6 +1471,230 @@
         (core:bytecode-module/setf-compile-info bytecode-module compile-info))
       #+(or)(log-function cfunction compile-info bytecode)))
   (cfunction-info cfunction))
+
+
+
+;;; ------------------------------------------------------------
+;;;
+;;; disassembler
+;;;
+;;;
+
+
+
+(defun early-mask-field (size position integer)
+  (logand (ash (lognot (ash -1 size))
+	       position)
+	  integer))
+
+(defun dis-signed (x size)
+  (logior x (- (early-mask-field 1 (1- size) x))))
+
+-(defun disassemble-instruction (bytecode &key (ip 0))
+  (declare (optimize (debug 3)))
+  (flet ((fixed (n) (let ((bytes nil))
+                      (dotimes (i n)
+                        (push (aref bytecode (incf ip)) bytes))
+                      (nreverse bytes))) ;;(loop repeat n collect (aref bytecode (incf ip))))
+         (this-signed (n)
+           (dis-signed (do* ((ncur n (1- n))
+                             (s 0 (+ 8 s))
+                             (sum 0))
+                            ((= ncur 0) sum)
+                         (setq sum (+ sum (ash (aref bytecode (incf ip)) s))))
+                       (* n 8))))
+    (macrolet ((dfixed (n)
+                 `(prog1 (list* op (fixed ,n)) (incf ip)))
+               (dsigned (n)
+                 `(prog1 (list op (this-signed ,n)) (incf ip))))
+      (let ((op (decode-instr (aref bytecode ip))))
+        (block test
+          (if (member op (list +make-cell+ +cell-ref+ +cell-set+
+                               +return+
+                               +entry-close+ +unbind+
+                               +catch-close+
+                               +throw+
+                               +progv+
+                               +nil+ +eq+
+                               +push-values+ +pop-values+
+                               +append-values+
+                               +mv-call+
+                               +mv-call-receive-one+
+                               +pop+
+                               +push+
+                               +long+))
+              (return-from test (dfixed 0)))
+          (if (member op (list +ref+ +const+ +closure+
+                               +listify-rest-args+
+                               +vaslistify-rest-args+
+                               +call+ +call-receive-one+
+                               +set+ +make-closure+ +make-uninitialized-closure+ +initialize-closure+
+                               +check-arg-count=+ +check-arg-count<=+ +check-arg-count>=+
+                               +bind-required-args+
+                               +special-bind+ +symbol-value+ +symbol-value-set+
+                               +entry+
+                               +fdefinition+ +mv-call-receive-fixed+))
+              (return-from test (dfixed 1)))
+          (if (member op (list +jump-8+ +jump-if-8+ +exit-8+ +catch-8+))
+              (return-from test (dsigned 1)))
+          (if (member op (list +jump-16+ +jump-if-16+ +exit-16+ +catch-16+)) (return-from test (dsigned 2)))
+          (if (member op (list +jump-24+ +jump-if-24+ +exit-24+)) (return-from test (dsigned 3)))
+          (if (member op (list +jump-if-supplied-8+))
+              (return-from test (prog1 (list op (aref bytecode (incf ip)) (this-signed 1)) (incf ip))))
+          (if (member op (list +jump-if-supplied-16+))
+              (return-from test (prog1 (list op (aref bytecode (incf ip)) (this-signed 2)) (incf ip))))
+          (if (member op (list +call-receive-fixed+ +bind+ +bind-optional-args+))
+              (return-from test (dfixed 2)))
+          (if (member op (list +parse-key-args+)) (return-from test (dfixed 4)))
+          (error "Illegal op ~a" op)
+          )))))
+
+(defun instruction-length (name)
+  (if (member name (load-time-value (list +make-cell+ +cell-ref+ +cell-set+
+                                          +return+
+                                          +entry-close+ +unbind+
+                                          +catch-close+ +throw+ +progv+
+                                          +nil+ +eq+ +push-values+ +pop-values+
+                                          +append-values+
+                                          +mv-call+ +mv-call-receive-one+
+                                          +pop+ +push+ +long+)))
+      1
+      (if (member name (list +ref+ +const+ +closure+
+                             +listify-rest-args+
+                             +vaslistify-rest-args+
+                             +call+ +call-receive-one+
+                             +set+ +make-closure+
+                             +make-uninitialized-closure+ +initialize-closure+
+                             +check-arg-count=+ +check-arg-count<=+ +check-arg-count>=+
+                             +bind-required-args+
+                             +special-bind+ +symbol-value+ +symbol-value-set+
+                             +entry+ +catch-8+
+                             +jump-if-8+ +jump-8+
+                             +exit-8+
+                             +fdefinition+ +mv-call-receive-fixed+))
+          2
+          (if (member name (list +call-receive-fixed+ +bind+ +bind-optional-args+
+                                 +jump-16+ +jump-if-16+ +exit-16+ +catch-16+
+                                 +jump-if-supplied-8+))
+              3
+              (if (member name (list +jump-24+ +jump-if-24+ +exit-24+
+                                     +jump-if-supplied-16+))
+                  4
+                  (if (member name (list +parse-key-args+))
+                      5
+                      (error "Unknown length for instruction ~a" name)))))))
+
+(defun %disassemble-bytecode (bytecode)
+  ;; First pass: Go through the bytecode storing all labels
+  ;; (i.e. positions that are jumped to)
+  (let* ((length (length bytecode))
+         (labels
+             (flet ((this-signed (ip n)
+                      (dis-signed (do* ((i 0 (1+ i))
+                                        (s 0 (+ 8 s))
+                                        (sum 0))
+                                       ((= i n) (progn
+                                                  sum))
+                                    (setq sum (+ sum (ash (aref bytecode (+ ip i)) s))))
+                                  (* n 8))))
+               (let ((ip 0)
+                     (result nil)
+                     op)
+                 (loop (setq op (decode-instr (aref bytecode ip)))
+                       (if (member op (list +jump-8+ +jump-if-8+ +exit-8+ +catch-8+))
+                           (push (+ ip (this-signed (+ ip 1) 1)) result))
+                       (if (member op (list +jump-16+ +jump-if-16+
+                                        +exit-16+ +catch-16+))
+                           (push (+ ip (this-signed (+ ip 1) 2)) result))
+                       (if (member op (list +jump-24+ +jump-if-24+
+                                        +exit-24+))
+                           (push (+ ip (this-signed (+ ip 1) 3)) result))
+                       (if (member op (list +jump-if-supplied-8+))
+                           (push (+ ip (this-signed (+ ip 2) 1)) result))
+                       (if (member op (list +jump-if-supplied-16+))
+                           (push (+ ip (this-signed (+ ip 2) 2)) result))
+                       (incf ip (instruction-length op))
+                       (if (>= ip length) (return (nreverse result))))))))
+    ;; now actually output, putting in the labels appropriately
+    (let ((ip 0)
+          (result nil)
+          op)
+      (loop (setq op (decode-instr (aref bytecode ip)))
+            (if (position ip labels)
+                (push (write-to-string (position ip labels)) result))
+            (push (labels ((fixed (n &optional (offset 1))
+                             (let ((result nil))
+                               (dotimes (i n)
+                                 (push (aref bytecode (+ ip i offset)) result))
+                               (nreverse result)))
+                           (label-aux (n offset)
+                             (dis-signed
+                              (do* ((i 0 (1+ i))
+                                    (s 0 (+ 8 s))
+                                    (byte (aref bytecode (+ ip i offset)) (aref bytecode (+ ip i offset)))
+                                    (sum 0))
+                                   ((= i n) (return sum))
+                                (setq sum (+ sum (ash byte s))))
+                              (* 8 n)))
+                           (label (n &optional (offset 1))
+                             (let ((pos (+ ip (label-aux n offset))))
+                               (or (write-to-string (position pos labels))
+                                   (error "bug: no label for ~d" pos)))))
+                    (cons
+                     ip
+                     (block test
+                       (if (member op (list +make-cell+ +cell-ref+ +cell-set+ +return+
+                                            +entry-close+ +unbind+ +catch-close+
+                                            +throw+ +progv+ +nil+ +eq+ +push-values+
+                                            +pop-values+ +append-values+ +mv-call+
+                                            +mv-call-receive-one+ +pop+ +push+ +long+))
+                           (return-from test (list op)))
+                       (if (member op (list +ref+ +const+ +closure+ +listify-rest-args+
+                                            +vaslistify-rest-args+ +call+
+                                            +call-receive-one+ +set+ +make-closure+
+                                            +make-uninitialized-closure+ +initialize-closure+
+                                            +check-arg-count=+ +check-arg-count<=+
+                                            +check-arg-count>=+ +bind-required-args+
+                                            +special-bind+ +symbol-value+ +symbol-value-set+
+                                            +entry+ +catch-8+
+                                            +fdefinition+ +mv-call-receive-fixed+))
+                           (return-from test (list* op (fixed 1))))
+                       (if (member op (list +call-receive-fixed+ +bind+ +bind-optional-args+))
+                           (return-from test (list* op (fixed 2))))
+                       (if (member op (list +parse-key-args+))
+                           (return-from test (list* op (fixed 4))))
+                       (if (member op (list +jump-8+ +jump-if-8+ +exit-8+ +catch-8+))
+                           (return-from test (list op (label 1))))
+                       (if (member op (list +jump-16+ +jump-if-16+ +exit-16+ +catch-16+))
+                           (return-from test (list op (label 2))))
+                       (if (member op (list +jump-24+ +jump-if-24+ +exit-24+))
+                           (return-from test (list op (label 3))))
+                       (if (member op (list +jump-if-supplied-8+))
+                           (return-from test `(,op ,@(fixed 1) ,(label 1 2))))
+                       (if (member op (list +jump-if-supplied-16+))
+                           (return-from test `(,op ,@(fixed 1) ,(label 2 2))))
+                       (error "Illegal op ~a" op))))
+                  result)
+            (incf ip (instruction-length op))
+            (if (>= ip length) (return (nreverse result)))))))
+
+(defun disassemble-bytecode (bytecode &key (address 0))
+  (let ((dis (%disassemble-bytecode bytecode)))
+    (flet ((textify-operand-or-label (thing)
+             (if (integerp thing)
+                 (write-to-string thing)
+                 (concatenate 'string "L" (string thing)))))
+      (format t "~&---module---~%")
+      (dolist (item dis)
+        (if (consp item)
+            (format t "~&0x~8,'0x:  ~a~{ ~a~}~%"
+                    (+ address (car item))
+                    (string-trim "+" (symbol-name (cadr item)))
+                    (mapcar #'textify-operand-or-label (cddr item)))
+            (if (or (stringp item) (symbolp item))
+                (format t "~&; ~a:~%" (textify-operand-or-label item))
+                (error "Illegal item ~a" item))))))
+  (values))
 
 ;;; --------------------------------------------------
 ;;;
