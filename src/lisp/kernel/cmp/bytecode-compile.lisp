@@ -146,33 +146,44 @@
     ((eq head 'the) ; don't do anything.
      (compile-form (second rest) env context))
     (t ; function call or macro
-     (let ((info (cmp:fun-info head env)))
-       (cond
-         ((typep info 'cmp:global-macro-info)
-          (let* ((expander
-                   (cmp:global-macro-info/expander info))
-                 (expanded
-                   (funcall *macroexpand-hook* expander (cons head rest) env)))
-            (compile-form expanded env context)))
-         ((typep info 'cmp:local-macro-info)
-          (let* ((expander
-                   (cmp:local-macro-info/expander info))
-                 (expanded
-                   (funcall *macroexpand-hook* expander (cons head rest) env)))
-            (compile-form expanded env context)))
-         ((typep info '(or cmp:global-fun-info
-                        cmp:local-fun-info
-                        null))
-          ;; unknown function warning handled by compile-function
-          ;; note we do a double lookup of the fun info,
-          ;; which is inefficient in the compiler (generated code is ok)
-          (compile-function head env (context/sub context 1))
-          (do ((args rest (rest args))
-               (arg-count 0 (1+ arg-count)))
-              ((endp args)
-               (context/emit-call context arg-count))
-            (compile-form (first args) env (context/sub context 1))))
-         (t (error "BUG: Unknown info ~a" info)))))))
+     (cond
+       ((symbolp head)
+        (let ((info (cmp:fun-info head env)))
+          (cond
+            ((typep info 'cmp:global-macro-info)
+             (let* ((expander
+                      (cmp:global-macro-info/expander info))
+                    (expanded
+                      (funcall *macroexpand-hook* expander (cons head rest) env)))
+               (compile-form expanded env context)))
+            ((typep info 'cmp:local-macro-info)
+             (let* ((expander
+                      (cmp:local-macro-info/expander info))
+                    (expanded
+                      (funcall *macroexpand-hook* expander (cons head rest) env)))
+               (compile-form expanded env context)))
+            ((typep info '(or cmp:global-fun-info
+                           cmp:local-fun-info
+                           null))
+             ;; unknown function warning handled by compile-function
+             ;; note we do a double lookup of the fun info,
+             ;; which is inefficient in the compiler (generated code is ok)
+             (compile-function head env (context/sub context 1))
+             (do ((args rest (rest args))
+                  (arg-count 0 (1+ arg-count)))
+                 ((endp args)
+                  (context/emit-call context arg-count))
+               (compile-form (first args) env (context/sub context 1))))
+            (t (error "BUG: Unknown info ~a" info)))))
+       ((and (consp head) (eq (car head) 'cl:lambda))
+        ;; lambda form
+        (compile-function head env (context/sub context 1))
+        (do ((args rest (rest args))
+             (arg-count 0 (1+ arg-count)))
+            ((endp args)
+             (context/emit-call context arg-count))
+          (compile-form (first args) env (context/sub context 1))))
+       (t (error "Illegal combination: ~a" (cons head rest)))))))
 
 (defun canonicalize-binding (binding)
   (if (consp binding)
@@ -498,12 +509,12 @@
           (let ((key-names (collect-by #'cddddr (cdr keys))))
             (context/emit-parse-key-args
              context max-count key-count
-             (context/literal-index context (first key-names))
+             (context/new-literal-index context (first key-names))
              (lexenv/frame-end new-env) aok-p)
             ;; emit-parse-key-args establishes the first key in the literals.
             ;; now do the rest.
             (dolist (key-name (rest key-names))
-              (context/literal-index context key-name)))
+              (context/new-literal-index context key-name)))
           (let ((keyvars (collect-by #'cddddr (cddr keys))))
             (setq new-env (lexenv/bind-vars new-env keyvars context))
             (dolist (var keyvars)

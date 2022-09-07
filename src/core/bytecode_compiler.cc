@@ -221,6 +221,14 @@ size_t Context_O::literal_index(T_sp literal) {
   return nind.unsafe_fixnum();
 }
 
+// Like literal-index, but forces insertion. This is used when generating
+// a keyword argument parser, since the keywords must be sequential even if
+// they've previously appeared in the literals vector.
+size_t Context_O::new_literal_index(T_sp literal) {
+  Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(literal);
+  return nind.unsafe_fixnum();
+}
+
 size_t Context_O::closure_index(T_sp info) {
   ComplexVector_T_sp closed = this->cfunction()->closed();
   for (size_t i = 0; i < closed->length(); ++i)

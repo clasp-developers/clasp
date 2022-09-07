@@ -258,6 +258,7 @@ public:
     return Context_O::make(receiving, this->_cfunction);
   }
   CL_DEFMETHOD size_t literal_index(T_sp literal);
+  CL_DEFMETHOD size_t new_literal_index(T_sp literal);
   CL_DEFMETHOD size_t closure_index(T_sp info);
   CL_DEFMETHOD void assemble0(uint8_t opcode);
   CL_DEFMETHOD void assemble1(uint8_t opcode, size_t operand1);
