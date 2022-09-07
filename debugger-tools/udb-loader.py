@@ -60,13 +60,24 @@ class LispTest (gdb.Command):
     maybeReloadModules()
     inspector_mod.do_lisp_test(debugger_mod,arg)
     
+class LispVm (gdb.Command):
+  def __init__ (self):
+    super (LispVm, self).__init__ ("lvm", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+    global inspector_mod, debugger_mod
+    maybeReloadModules()
+    inspector_mod.do_lisp_vm(debugger_mod,arg)
+    
 LispInspect()
 LispPrint()
 LispHead()
 LispTest()
+LispVm()
 
-print("lprint <address> - print lisp object in compact form")
+print("lprint <address>   - print lisp object in compact form")
 print("linspect <address> - inspect lisp object - all fields")
-print("lhead <address> - dump the clients header")
-print("ltest <address> - test module reloading")
+print("lhead <address>    - dump the clients header")
+print("ltest <address>    - test module reloading")
+print("lvm                - Dump current vm status")
 print("python-interactive <expr> - (or pi) interactive Python session\n")

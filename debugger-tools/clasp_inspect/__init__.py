@@ -195,7 +195,7 @@ def Init__variable_field(stamp,index,data_type,field_name,field_offset):
 
 def verify_not_tagged(address):
     if (taggedp(address)):
-        raise "The address %x is still tagged" % address
+        raise Exception("The address %x is still tagged" % address)
 
 def valid_tptr(val):
     return "0x%x" % val
@@ -319,7 +319,7 @@ class Fixnum:
             else:
                 self._Value = val
             return
-        raise("%x is not a fixnum" % address)
+        raise Exception("%x is not a fixnum" % address)
     def value(self):
         return self._Value
     def __repr__(self):
@@ -335,7 +335,7 @@ class Character:
             val = address >> 3
             self._Value = val
             return
-        raise("%x is not a character" % address)
+        raise Exception("%x is not a character" % address)
     def value(self):
         return self._Value
     def __repr__(self):
@@ -354,12 +354,14 @@ class Vaslist:
             self._args = debugger.read_memory(self._address+0,8)
             self._nargs = debugger.read_memory(self._address+8,8)>>info["ints"]["VASLIST-NARGS-SHIFT"]
             return
-        raise("%x is not a vaslist" % address)
+        raise Exception("%x is not a vaslist" % address)
     def value(self):
         return self._Value
     def __repr__(self):
         out = StringIO()
         out.write("Vaslist: 0x%x args: 0x%x  nargs: %d\n" % (self._Value,self._args, self._nargs))
+        if (self._nargs>2048):
+            raise Exception("%x is not a proper vaslist - it has %d values" % (self._address, self._nargs))
         for index in range(0,self._nargs):
             rgp = self._args+8*index
             val = self._debugger.read_memory(rgp,8)
@@ -758,6 +760,73 @@ def arg_to_tptr(debugger,args):
     else:
         tptr = int(debugger.evaluate(arg))
     return tptr
+
+codes = [
+    "vm_ref",
+    "vm_const",
+    "vm_closure",
+    "vm_call",
+    "vm_call_receive_one",
+    "vm_call_receive_fixed",
+    "vm_bind",
+    "vm_set",
+    "vm_make_cell",
+    "vm_cell_ref",
+    "vm_cell_set",
+    "vm_make_closure",
+    "vm_make_uninitialized_closure",
+    "vm_initialize_closure",
+    "vm_return",
+    "vm_bind_required_args",
+    "vm_bind_optional_args",
+    "vm_listify_rest_args",
+    "vm_vaslistify_rest_args",
+    "vm_parse_key_args",
+    "vm_jump_8",
+    "vm_jump_16",
+    "vm_jump_24",
+    "vm_jump_if_8",
+    "vm_jump_if_16",
+    "vm_jump_if_24",
+    "vm_jump_if_supplied_8",
+    "vm_jump_if_supplied_16",
+    "vm_check_arg_count_LE_",
+    "vm_check_arg_count_GE_",
+    "vm_check_arg_count_EQ_",
+    "vm_push_values",
+    "vm_append_values",
+    "vm_pop_values",
+    "vm_mv_call",
+    "vm_mv_call_receive_one",
+    "vm_mv_call_receive_fixed",
+    "vm_entry",
+    "vm_exit_8",
+    "vm_exit_16",
+    "vm_exit_24",
+    "vm_entry_close",
+    "vm_catch_8",
+    "vm_catch_16",
+    "vm_throw",
+    "vm_catch_close",
+    "vm_special_bind",
+    "vm_symbol_value",
+    "vm_symbol_value_set",
+    "vm_unbind",
+    "vm_progv",
+    "vm_fdefinition",
+    "vm_nil",
+    "vm_eq",
+    "vm_push",
+    "vm_pop",
+    "vm_long" ]
+
+def do_lisp_vm(debugger,arg):
+    fp = debugger.evaluate("vm._framePointer")
+    sp = debugger.evaluate("vm._stackPointer")
+    pc = debugger.evaluate("vm._pc")
+    instr = debugger.evaluate("*(unsigned char*)(vm._pc)")
+    print("0x%x [%2d] %-20s | sp=0x%x fp=0x%x\n" % (pc, instr, codes[instr], sp, fp ))
+
 
 def do_lisp_test(debugger,arg):
     print("  In do_test arg: %s" % arg)
