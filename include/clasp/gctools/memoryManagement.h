@@ -310,14 +310,12 @@ namespace gctools {
   class BaseHeader_s {
   public:
 // fixme2022
-#if 1
     static const size_t mtag_shift                = 3;  // mtags are 3 bits wide
     static const tagged_stamp_t mtag_mask         = 0b111;
+#if  1
     static const size_t general_mtag_width        = mtag_shift;
     static const tagged_stamp_t general_mtag_mask = 0b111;
 #else
-    static const size_t mtag_shift                = 3;  // mtags are 3 bits wide
-    static const tagged_stamp_t mtag_mask         = 0b111;
     static const size_t general_mtag_width        = 2;
     static const tagged_stamp_t general_mtag_mask = 0b11;
 #endif
@@ -345,7 +343,7 @@ namespace gctools {
     static const tagged_stamp_t header_wtag    =  0b11<<general_mtag_shift;
     static const tagged_stamp_t max_wtag       =  0b11<<general_mtag_shift;
     static const tagged_stamp_t wtag_width     = 2;
-    static const size_t general_stamp_shift    = general_mtag_width+wtag_width; // MUST ALWAYS BE 2 to match Fixnum shift
+    static const size_t general_stamp_shift    = general_mtag_width+wtag_width;
     
 // Must match the number of bits to describe where_mask from the 0th bit
     // This is the width of integer that llvm needs to represent the masked off part of a header stamp
