@@ -1,6 +1,6 @@
 #include <clasp/core/bytecode_compiler.h>
 #include <clasp/core/virtualMachine.h>
-#include <clasp/core/evaluator.h> // af_interpreter_lookup_macro
+#include <clasp/core/evaluator.h> // af_interpreter_lookup_macro, extract_decl...
 #include <clasp/core/sysprop.h> // core__get_sysprop
 #include <clasp/core/lambdaListHandler.h> // lambda_list_for_name
 #include <clasp/core/designators.h> // functionDesignator
@@ -772,6 +772,17 @@ CL_DEFUN void cmp__compile_progn(List_sp forms, Lexenv_sp env, Context_sp ctxt) 
       else // compile for value
         cmp__compile_form(oCar(cur), env, ctxt);
     }
+}
+
+CL_DEFUN void cmp__compile_locally(List_sp body, Lexenv_sp env, Context_sp ctxt) {
+  List_sp declares = nil<T_O>();
+  gc::Nilable<String_sp> docstring;
+  List_sp code;
+  List_sp specials;
+  eval::extract_declares_docstring_code_specials(body, declares,
+                                                 false, docstring, code, specials);
+  Lexenv_sp inner = env->add_specials(specials);
+  cmp__compile_progn(code, inner, ctxt);
 }
 
 CL_DEFUN void cmp__compile_eval_when(List_sp situations, List_sp body,

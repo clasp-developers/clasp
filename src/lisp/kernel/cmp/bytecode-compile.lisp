@@ -174,12 +174,6 @@
             (compile-form (first args) env (context/sub context 1))))
          (t (error "BUG: Unknown info ~a" info)))))))
 
-(defun compile-locally (body env context)
-  (multiple-value-bind (decls body docs specials)
-      (core:process-declarations body nil)
-    (declare (ignore decls docs))
-    (compile-progn body (if specials (lexenv/add-specials env specials) env) context)))
-
 (defun canonicalize-binding (binding)
   (if (consp binding)
       (values (first binding) (second binding))
