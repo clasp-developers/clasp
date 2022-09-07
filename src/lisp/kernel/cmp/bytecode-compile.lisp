@@ -101,58 +101,11 @@
         (link-function (compile-lambda lambda-list body env module) (cons lambda-expression env))
       (logf "^^^^^^^^^ Compile done~%"))))
 
-#+(or)
-(defun compile-form (form env context)
-  (when *code-walker*
-    (setq form (funcall *code-walker* form env)))
-  (cond ((symbolp form) (compile-symbol form env context))
-        ((consp form) (compile-combination (car form) (cdr form) env context))
-        (t (compile-literal form env context))))
-
 (defun compile-load-time-value (form env context)
   (if *generate-compile-file-load-time-values*
       (error "Handle compile-file")
       (let ((value (eval form)))
         (compile-literal value env context))))
-
-(defun compile-symbol (form env context)
-  (let ((info (cmp:var-info form env)))
-    (cond ((typep info 'cmp:symbol-macro-var-info)
-           (let ((expander
-                   (cmp:symbol-macro-var-info/expander info)))
-             (compile-form (funcall *macroexpand-hook* expander form env)
-                           env context)))
-          ;; A symbol macro could expand into something with arbitrary side
-          ;; effects so we always have to compile that, but otherwise, if no
-          ;; values are wanted, we want to not compile anything.
-          ((eql (cmp:context/receiving context) 0))
-          (t
-           (cond
-             ((typep info 'cmp:lexical-var-info)
-              (cond ((eq (cmp:lexical-var-info/cfunction info)
-                         (cmp:context/cfunction context))
-                     (assemble-maybe-long
-                      context +ref+
-                      (cmp:lexical-var-info/frame-index info)))
-                    (t
-                     (setf (cmp:lexical-var-info/closed-over-p info) t)
-                     (assemble-maybe-long context
-                                          +closure+ (context/closure-index context info))))
-              (context/maybe-emit-cell-ref context info))
-             ((typep info 'cmp:special-var-info)
-              (assemble-maybe-long context +symbol-value+
-                                   (context/literal-index context form)))
-             ((typep info 'cmp:constant-var-info)
-              (return-from compile-symbol ; don't pop again.
-                (compile-literal (cmp:constant-var-info/value info)
-                                 env context)))
-             ((null info)
-              (warn "Unknown variable ~a: treating as special" form)
-              (assemble context +symbol-value+
-                        (context/literal-index context form)))
-             (t (error "BUG: Unknown info ~a" info)))
-           (when (eq (cmp:context/receiving context) t)
-             (assemble context +pop+))))))
 
 (defun compile-combination (head rest env context)
   (logf "compile-combination ~s~%" (list* head rest))

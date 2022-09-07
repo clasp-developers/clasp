@@ -3,6 +3,7 @@
 #include <clasp/core/evaluator.h> // af_interpreter_lookup_macro
 #include <clasp/core/sysprop.h> // core__get_sysprop
 #include <clasp/core/lambdaListHandler.h> // lambda_list_for_name
+#include <clasp/core/designators.h> // functionDesignator
 #include <clasp/core/bytecode.h>
 #include <algorithm> // max
 
@@ -712,7 +713,55 @@ CL_DEFUN void cmp__compile_literal(T_sp literal, Lexenv_sp env,
   }
 }
 
-SYMBOL_EXPORT_SC_(CompPkg, compile_symbol);
+void cmp__compile_form(T_sp, Lexenv_sp, Context_sp);
+
+CL_DEFUN void cmp__compile_symbol(Symbol_sp sym,
+                                  Lexenv_sp env, Context_sp context) {
+  T_sp info = cmp__var_info(sym, env);
+  if (gc::IsA<SymbolMacroVarInfo_sp>(info)) {
+    // Expand the macro and compile that.
+    // This is copied from cl__macroexpand. I guess eval::funcall doesn't do the
+    // coercion itself?
+    Function_sp expander = gc::As_unsafe<SymbolMacroVarInfo_sp>(info)->expander();
+    T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
+    Function_sp hook = coerce::functionDesignator(macroexpandHook);
+    T_sp expansion = eval::funcall(hook, expander, sym, env);
+    cmp__compile_form(expansion, env, context);
+    return;
+  } else if (context->receiving().fixnump()
+             && (context->receiving().unsafe_fixnum() == 0)) {
+    // A symbol macro could expand into something with arbitrary side effects
+    // so we always have to compile that, but otherwise, if no values are
+    // wanted, we want to not compile anything.
+    return;
+  } else {
+    if (gc::IsA<LexicalVarInfo_sp>(info)) {
+      LexicalVarInfo_sp lvinfo = gc::As_unsafe<LexicalVarInfo_sp>(info);
+      if (lvinfo->funct() == context->cfunction())
+        // Local variable, just read it.
+        context->assemble1(vm_ref, lvinfo->frameIndex());
+      else { // closed over
+        lvinfo->setClosedOverP(true);
+        context->assemble1(vm_closure, context->closure_index(lvinfo));
+      }
+      context->maybe_emit_cell_ref(lvinfo);
+    } else if (gc::IsA<SpecialVarInfo_sp>(info))
+      context->assemble1(vm_symbol_value, context->literal_index(sym));
+    else if (gc::IsA<ConstantVarInfo_sp>(info)) {
+      cmp__compile_literal(gc::As_unsafe<ConstantVarInfo_sp>(info)->value(),
+                           env, context);
+      // Avoid the pop code below - compile-literal handles it.
+      return;
+    } else if (info.nilp()) {
+      // FIXME: Warn that the variable is unknown and we're assuming special.
+      context->assemble1(vm_symbol_value, context->literal_index(sym));
+    }
+    if (!(context->receiving().fixnump()))
+      // Not a fixnum, so must be T - put value in mv vector.
+      context->assemble0(vm_pop);
+  }
+}
+
 SYMBOL_EXPORT_SC_(CompPkg, compile_combination);
 CL_DEFUN void cmp__compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
   // Code walk if we're doing that
@@ -721,7 +770,7 @@ CL_DEFUN void cmp__compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
     form = eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), form, env);
   // Compile
   if (gc::IsA<Symbol_sp>(form))
-    eval::funcall(_sym_compile_symbol, form, env, context);
+    cmp__compile_symbol(gc::As_unsafe<Symbol_sp>(form), env, context);
   else if (form.consp())
     eval::funcall(_sym_compile_combination, oCar(form), oCdr(form), env, context);
   else cmp__compile_literal(form, env, context);
