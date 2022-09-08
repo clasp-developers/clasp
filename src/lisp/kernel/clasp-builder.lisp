@@ -1002,7 +1002,7 @@ been initialized with install path versus the build path of the source code file
                                     :system system))
         (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword))
         (stage-time (get-internal-run-time))
-        file-time file)
+        file-time file prev-file-time)
     (setq *features* (cons stage-keyword *features*))
     (message :emph "Loading stage {:d}..." stage)
     (tagbody
@@ -1013,14 +1013,18 @@ been initialized with install path versus the build path of the source code file
                   file-time (get-internal-run-time)
                   files (cdr files))
             (load file)
-            (setq file-time (- (get-internal-run-time) file-time))
+            (setq file-time (- (get-internal-run-time) file-time)
+                  prev-file-time (gethash file *system-load-times*))
             (core:hash-table-setf-gethash *system-load-times* file
-                                          (+ (* +load-weight+ file-time)
-                                             (* (- 1 +load-weight+) (gethash file *system-load-times* 0))))
-            (message nil ";;; Load time {:.6f} seconds" (float (/ file-time internal-time-units-per-second)))
+                                          (if prev-file-time
+                                              (+ (* +load-weight+ file-time)
+                                                 (* (- 1 +load-weight+) prev-file-time))
+                                              prev-file-time))
+            (if (>= file-time internal-time-units-per-second)
+                (message nil ";;; Load time {:.1f} seconds" (float (/ file-time internal-time-units-per-second))))
             (go next))))
     (setq *features* (core:remove-equal stage-keyword *features*))
-    (message :emph "Stage {:d} elapsed time: {:.6f} seconds"
+    (message :emph "Stage {:d} elapsed time: {:.1f} seconds"
              stage
              (float (/ (- (get-internal-run-time) stage-time) internal-time-units-per-second)))))
 
@@ -1038,20 +1042,21 @@ been initialized with install path versus the build path of the source code file
 (defun system-load-time (file)
   (gethash file *system-load-times* 0))
 
-(defun load-vclasp (&key (bytecode t)
+(defun load-vclasp (&key backend
+                         (bytecode t)
                          (clean (ext:getenv "CLASP_CLEAN"))
+                         ((:load-verbose *load-verbose*) (ext:getenv "CLASP_LOAD_VERBOSE"))
                          (output-file (build-common-lisp-bitcode-pathname))
                          reproducible
                          (system-sort (ext:getenv "CLASP_SYSTEM_SORT"))
                          (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
                                           (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
-                                        6))
+                                          6))
                          (system (command-line-arguments-as-list)))
   (let ((installed-system (if reproducible
                               (extract-installed-system system)))
         (*system-load-times* (make-hash-table :test #'eql))
-        (*target-backend* (default-target-backend))
-        (*load-verbose* t)
+        (*target-backend* (default-target-backend backend))
         (stage 0))
     (setq *features*
           (if bytecode
