@@ -206,8 +206,6 @@
              #~"kernel/cleavir/auto-compile.lisp"
              #~"kernel/cleavir/bytecode-adaptor.lisp"
              #~"kernel/cleavir/inline.lisp"
-             #~"kernel/lsp/queue.lisp" ;; cclasp sources
-             #~"kernel/cmp/compile-file-parallel.lisp"
              #~"kernel/lsp/generated-encodings.lisp"
              #~"kernel/lsp/process.lisp"
              #~"kernel/lsp/encodings.lisp"
@@ -217,7 +215,9 @@
                (k:make-source "cclasp-immutable.lisp" :variant-generated)))
   (if (or neo bytecode)
       (k:sources target
-                 #~"kernel/stage/5-end.lisp")
+                 #~"kernel/stage/5-end.lisp"
+                 #~"kernel/lsp/queue.lisp" ;; cclasp sources
+                 #~"kernel/cmp/compile-file-parallel.lisp")
       (k:sources target
                  #~"kernel/tag/pre-epilogue-cclasp.lisp"))
   (k:sources target
