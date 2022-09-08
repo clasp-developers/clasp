@@ -981,31 +981,11 @@ been initialized with install path versus the build path of the source code file
     (prepare-metadata system installed-system)
     (compile-cclasp* output-file system t)))
 
-(defun pprint-features (new-features old-features)
-  (if (null old-features)
-      (message :info "Features {}" *features*)
-      (let ((added-features nil)
-            (cur new-features))
-        (tagbody
-         top
-           (let ((new-feat (car cur)))
-             (if (null (member new-feat old-features))
-                 (setq added-features (cons new-feat added-features))))
-           (setq cur (cdr cur))
-           (if cur (go top)))
-        (let ((removed-features nil)
-              (cur old-features))
-          (tagbody
-           top
-             (let ((old-feat (car cur)))
-               (if (null (member old-feat new-features))
-                   (setq (removed-features (cons old-feat removed-features)))))
-             (setq cur (cdr cur))
-             (if cur (go top)))
-          (if removed-features
-              (message :info "Removed features {}" removed-features))
-          (if added-features
-              (message :info "Added features {}" added-features))))))
+(defun pprint-features (added-features removed-features)
+  (if removed-features
+      (message :info "Removed features {}" removed-features))
+  (if added-features
+      (message :info "Added features {}" added-features)))
 
 (export 'pprint-features)
 
@@ -1051,17 +1031,30 @@ been initialized with install path versus the build path of the source code file
              stage
              (float (/ (- (get-internal-run-time) stage-time) internal-time-units-per-second)))))
 
-(defun stage-features (&rest rest &aux (features +stage-features+))
+(defun stage-features (&rest new-features
+                       &aux (features +stage-features+)
+                       feature added-features removed-features) 
   (tagbody
-   next
-     (if features
-         (progn
-           (setq *features* (core:remove-equal (car features) *features*)
-                 features (cdr features))
-           (go next))))
-  (let ((old-features (copy-seq *features*)))
-    (setq *features* (append rest *features*))
-    (pprint-features *features* old-features)))
+   remove-feature
+    (if features
+        (progn
+          (setq feature (car features)
+                features (cdr features))
+          (if (and (not (member feature new-features))
+                   (member feature *features*))
+              (setq *features* (core:remove-equal feature *features*)
+                    removed-features (cons feature removed-features)))
+          (go remove-feature)))
+   add-feature
+    (if new-features
+        (progn
+          (setq feature (car new-features)
+                new-features (cdr new-features))
+          (if (not (member feature *features*))
+              (setq *features* (cons feature *features*)
+                    added-features (cons feature added-features)))
+          (go add-feature))))
+  (pprint-features added-features removed-features))
 
 (defun system-load-time (file)
   (gethash file *system-load-times* 0))
