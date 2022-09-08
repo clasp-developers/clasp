@@ -828,7 +828,7 @@ def do_lisp_vm(debugger,arg):
     print("0x%x [%2d] %-20s | sp=0x%x fp=0x%x\n" % (pc, instr, codes[instr], sp, fp ))
 
 
-def do_lisp_test(debugger,arg):
+def do_lisp_frame(debugger,arg):
     frame_args = debugger.lisp_selected_frame()
     closure = frame_args[0]
     oclosure = translate_tagged_ptr(debugger,closure)
@@ -840,7 +840,12 @@ def do_lisp_test(debugger,arg):
         tone_arg = translate_tagged_ptr(debugger,one_arg)
         call.append( tone_arg.__repr__() )
     print("%s" % call)
-    
+
+def do_lisp_test(debugger,arg):
+    tptr = arg_to_tptr(debugger_mod,arg)
+    obj = translate_tagged_ptr(debugger_mod,tptr)
+    print( obj.__repr__())
+
 def do_lisp_print(debugger_mod,arg):
     #print "In inspect args: %s" % args
     tptr = arg_to_tptr(debugger_mod,arg)
