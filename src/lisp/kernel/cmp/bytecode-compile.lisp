@@ -86,9 +86,6 @@
 
 (deftype lambda-expression () '(cons (eql lambda) (cons list list)))
 
-(defun context-module (context)
-  (cmp:cfunction/module (cmp:context/cfunction context)))
-
 (defun bytecompile (lambda-expression
                     &optional (env (make-null-lexical-environment)))
   (check-type lambda-expression lambda-expression)
@@ -185,95 +182,14 @@
           (compile-form (first args) env (context/sub context 1))))
        (t (error "Illegal combination: ~a" (cons head rest)))))))
 
-(defun compile-flet (definitions body env context)
-  (let ((fun-vars '())
-        (funs '())
-        (fun-count 0)
-        ;; HACK FIXME
-        (frame-slot (cmp:lexenv/frame-end env)))
-    (dolist (definition definitions)
-      (let ((name (first definition))
-            (fun-var (gensym "FLET-FUN")))
-        (compile-function `(lambda ,(second definition)
-                             (block ,(core:function-block-name name)
-                               (locally ,@(cddr definition))))
-                          env (context/sub context 1))
-        (push fun-var fun-vars)
-        (push (cons name (cmp:local-fun-info/make
-                          (cmp:lexical-var-info/make
-                           frame-slot
-                           (cmp:context/cfunction context))))
-              funs)
-        (incf frame-slot)
-        (incf fun-count)))
-    (context/emit-bind context fun-count (cmp:lexenv/frame-end env))
-    (let ((env (make-lexical-environment
-                (lexenv/bind-vars env fun-vars context)
-                :funs (append funs (cmp:lexenv/funs env)))))
-      (compile-locally body env context))))
-
-(defun compile-labels (definitions body env context)
-  (let ((fun-count 0)
-        (funs '())
-        (fun-vars '())
-        (closures '())
-        (env env)
-        (frame-start (cmp:lexenv/frame-end env))
-        (frame-slot (cmp:lexenv/frame-end env)))
-    (dolist (definition definitions)
-      (let ((name (first definition))
-            (fun-var (gensym "LABELS-FUN")))
-        (push fun-var fun-vars)
-        (push (cons name (cmp:local-fun-info/make
-                          (cmp:lexical-var-info/make
-                           frame-slot
-                           (cmp:context/cfunction context))))
-              funs)
-        (incf frame-slot)
-        (incf fun-count)))
-    (let ((frame-slot (cmp:lexenv/frame-end env))
-          (env (make-lexical-environment
-                (lexenv/bind-vars env fun-vars context)
-                :funs (append funs (cmp:lexenv/funs env)))))
-      (dolist (definition definitions)
-        (let* ((name (first definition))
-               (fun (compile-lambda (second definition)
-                                    `((block ,(core:function-block-name name)
-                                        (locally ,@(cddr definition))))
-                                    env
-                                    (context-module context)))
-               (literal-index (context/literal-index context fun)))
-          (cond ((zerop (length (cmp:cfunction/closed fun)))
-                 (assemble-maybe-long context +const+ literal-index))
-                (t
-                 (push (cons fun frame-slot) closures)
-                 (assemble-maybe-long context
-                                      +make-uninitialized-closure+ literal-index))))
-        (incf frame-slot))
-      (context/emit-bind context fun-count frame-start)
-      (dolist (closure closures)
-        (dotimes (i (length (cmp:cfunction/closed (car closure))))
-          (reference-lexical-info (aref (cmp:cfunction/closed (car closure)) i)
-                                  context))
-        (assemble-maybe-long context +initialize-closure+ (cdr closure)))
-      (compile-progn body env context))))
-
-;;; Push the immutable value or cell of lexical in CONTEXT.
-(defun reference-lexical-info (info context)
-  (if (eq (cmp:lexical-var-info/cfunction info)
-          (cmp:context/cfunction context))
-      (assemble-maybe-long context +ref+
-                           (cmp:lexical-var-info/frame-index info))
-      (assemble-maybe-long context +closure+ (context/closure-index context info))))
-
 (defun compile-function (fnameoid env context)
   (unless (eql (cmp:context/receiving context) 0)
     (if (typep fnameoid 'lambda-expression)
         (let* ((cfunction (compile-lambda (cadr fnameoid) (cddr fnameoid)
-                                          env (context-module context)))
+                                          env (context/module context)))
                (closed (cmp:cfunction/closed cfunction)))
           (dotimes (i (length closed))
-            (reference-lexical-info (aref closed i) context))
+            (context/reference-lexical-info context (aref closed i)))
           (if (zerop (length closed))
               (assemble-maybe-long context
                                    +const+ (context/literal-index context cfunction))
@@ -287,8 +203,8 @@
              (assemble-maybe-long context +fdefinition+
                                   (context/literal-index context fnameoid)))
             ((typep info 'cmp:local-fun-info)
-             (reference-lexical-info
-              (cmp:local-fun-info/fun-var info) context))
+             (context/reference-lexical-info
+              context (cmp:local-fun-info/fun-var info)))
             (t (error "BUG: Unknown fun info ~a" info)))))
     (when (eql (cmp:context/receiving context) t)
       (assemble context +pop+))))
@@ -565,7 +481,7 @@
   (let ((pair (assoc tag (cmp:lexenv/tags env))))
     (if pair
         (destructuring-bind (dynenv-info . tag-label) (cdr pair)
-          (reference-lexical-info dynenv-info context)
+          (context/reference-lexical-info context dynenv-info)
           (context/emit-exit context tag-label))
         (error "The GO tag ~a does not exist." tag))))
 
@@ -597,7 +513,7 @@
   (let ((pair (assoc name (cmp:lexenv/blocks env))))
     (if pair
         (destructuring-bind (dynenv-info . block-label) (cdr pair)
-          (reference-lexical-info dynenv-info context)
+          (context/reference-lexical-info context dynenv-info)
           (context/emit-exit context block-label))
         (error "The block ~a does not exist." name))))
 

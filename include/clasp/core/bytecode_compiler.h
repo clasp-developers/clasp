@@ -233,6 +233,7 @@ public:
 // to know about what it is enclosed by.
 FORWARD(Label);
 FORWARD(Cfunction);
+FORWARD(Module);
 class Context_O : public General_O {
   LISP_CLASS(comp, CompPkg, Context_O, "Context", General_O);
 public:
@@ -251,6 +252,7 @@ public:
   CL_DEFMETHOD Cfunction_sp cfunction() {
     return gc::As<Cfunction_sp>(this->_cfunction);
   }
+  CL_DEFMETHOD Module_sp module();
 public:
   // Make a new context that's like this one but with a possibly-different
   // RECEIVING.
@@ -271,6 +273,7 @@ public:
   CL_DEFMETHOD void emit_exit(Label_sp label);
   CL_DEFMETHOD void emit_catch(Label_sp label);
   CL_DEFMETHOD void emit_jump_if_supplied(Label_sp label, size_t indx);
+  CL_DEFMETHOD void reference_lexical_info(LexicalVarInfo_sp info);
   CL_DEFMETHOD void maybe_emit_make_cell(LexicalVarInfo_sp info);
   CL_DEFMETHOD void maybe_emit_cell_ref(LexicalVarInfo_sp info);
   CL_DEFMETHOD void maybe_emit_encage(LexicalVarInfo_sp info);
@@ -506,7 +509,6 @@ public:
   virtual size_t resize();
 };
  
-FORWARD(Module);
 class Module_O : public General_O {
   LISP_CLASS(comp, CompPkg, Module_O, "Module", General_O);
 public:

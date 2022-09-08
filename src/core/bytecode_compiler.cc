@@ -4,6 +4,7 @@
 #include <clasp/core/sysprop.h> // core__get_sysprop
 #include <clasp/core/lambdaListHandler.h> // lambda_list_for_name
 #include <clasp/core/designators.h> // functionDesignator
+#include <clasp/core/primitives.h> // gensym, function_block_name
 #include <clasp/core/bytecode.h>
 #include <algorithm> // max
 
@@ -212,6 +213,9 @@ CL_DEFUN T_sp cmp__fun_info(T_sp name, Lexenv_sp env) {
   }
 }
 
+// declared out of line for circularity reasons
+Module_sp Context_O::module() { return this->cfunction()->module(); }
+
 size_t Context_O::literal_index(T_sp literal) {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   // FIXME: Smarter POSITION
@@ -257,6 +261,14 @@ void Context_O::emit_catch(Label_sp label) {
 
 void Context_O::emit_jump_if_supplied(Label_sp label, size_t ind) {
   JumpIfSuppliedFixup_O::make(label, ind)->contextualize(this->asSmartPtr());
+}
+
+// Push the immutable value or cell of lexical in CONTEXT.
+void Context_O::reference_lexical_info(LexicalVarInfo_sp info) {
+  if (info->funct() == this->cfunction())
+    this->assemble1(vm_ref, info->frameIndex());
+  else
+    this->assemble1(vm_closure, this->closure_index(info));
 }
 
 void Context_O::maybe_emit_make_cell(LexicalVarInfo_sp info) {
@@ -887,6 +899,109 @@ CL_DEFUN void cmp__compile_letSTAR(List_sp bindings, List_sp body,
   // here, but that's not a big deal.
   cmp__compile_progn(code, new_env->add_specials(specials), ctxt);
   ctxt->emit_unbind(special_binding_count);
+}
+
+SYMBOL_EXPORT_SC_(CompPkg, compile_function);
+CL_DEFUN void compile_flet(List_sp definitions, List_sp body,
+                           Lexenv_sp env, Context_sp ctxt) {
+  ql::list fun_vars;
+  ql::list funs;
+  size_t fun_count = 0;
+  size_t frame_slot = env->frameEnd(); // HACK FIXME
+  for (auto cur : definitions) {
+    Cons_sp definition = gc::As<Cons_sp>(oCar(cur));
+    T_sp name = oCar(definition);
+    Symbol_sp fun_var = cl__gensym(SimpleBaseString_O::make("FLET-FUN"));
+    // Build up a lambda expression for the function.
+    // FIXME: Probably need to parse declarations so they can refer
+    // to the parameters.
+    T_sp locally = Cons_O::create(cl::_sym_locally, oCddr(definition));
+    T_sp block = Cons_O::createList(cl::_sym_block,
+                                    core__function_block_name(name),
+                                    locally);
+    T_sp lambda = Cons_O::createList(cl::_sym_lambda,
+                                     oCadr(definition),
+                                     block);
+    eval::funcall(_sym_compile_function,
+                  lambda, env, ctxt->sub(clasp_make_fixnum(1)));
+    fun_vars << fun_var;
+    funs << Cons_O::create(name,
+                           LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++,
+                                                                       ctxt->cfunction())));
+    ++fun_count;
+  }
+  ctxt->emit_bind(fun_count, env->frameEnd());
+  // KLUDGEy - we could do this in one new environment
+  Lexenv_sp new_env1 = env->bind_vars(fun_vars.cons(), ctxt);
+  Lexenv_sp new_env2 = Lexenv_O::make(new_env1->vars(),
+                                      new_env1->tags(),
+                                      new_env1->blocks(),
+                                      Cons_O::append(funs.cons(),
+                                                     new_env1->funs()),
+                                      new_env1->frameEnd());
+  cmp__compile_locally(body, new_env2, ctxt);
+}
+
+SYMBOL_EXPORT_SC_(CompPkg, compile_lambda);
+CL_DEFUN void cmp__compile_labels(List_sp definitions, List_sp body,
+                                  Lexenv_sp env, Context_sp ctxt) {
+  size_t fun_count = 0;
+  ql::list funs;
+  ql::list fun_vars;
+  ql::list closures;
+  size_t frame_start = env->frameEnd();
+  size_t frame_slot = env->frameEnd();
+  for (auto cur : definitions) {
+    Cons_sp definition = gc::As<Cons_sp>(oCar(cur));
+    T_sp name = oCar(definition);
+    T_sp fun_var = cl__gensym(SimpleBaseString_O::make("LABELS-FUN"));
+    fun_vars << fun_var;
+    funs << Cons_O::create(name,
+                           LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++,
+                                                                       ctxt->cfunction())));
+    ++fun_count;
+  }
+  frame_slot = frame_start;
+  Lexenv_sp new_env1 = env->bind_vars(fun_vars.cons(), ctxt);
+  Lexenv_sp new_env2 = Lexenv_O::make(new_env1->vars(),
+                                      new_env1->tags(),
+                                      new_env1->blocks(),
+                                      Cons_O::append(funs.cons(),
+                                                     new_env1->funs()),
+                                      new_env1->frameEnd());
+  for (auto cur : definitions) {
+    Cons_sp definition = gc::As_unsafe<Cons_sp>(oCar(cur));
+    T_sp name = oCar(definition);
+    T_sp locally = Cons_O::create(cl::_sym_locally, oCddr(definition));
+    T_sp block = Cons_O::createList(cl::_sym_block,
+                                    core__function_block_name(name),
+                                    locally);
+    T_sp tfun = eval::funcall(_sym_compile_lambda,
+                              oCadr(definition),
+                              Cons_O::createList(block),
+                              new_env2, ctxt->module());
+    size_t literal_index = ctxt->literal_index(tfun);
+    Cfunction_sp fun = gc::As<Cfunction_sp>(tfun);
+    if (fun->closed()->length() == 0) // not a closure- easy
+      ctxt->assemble1(vm_const, literal_index);
+    else {
+      closures << Cons_O::create(fun, clasp_make_fixnum(frame_slot));
+      ctxt->assemble1(vm_make_uninitialized_closure, literal_index);
+    }
+    ++frame_slot;
+  }
+  ctxt->emit_bind(fun_count, frame_start);
+  // Make the closures
+  for (auto cur : gc::As<List_sp>(closures.cons())) {
+    Cfunction_sp cf = gc::As_unsafe<Cfunction_sp>(oCaar(cur));
+    ComplexVector_T_sp closed = cf->closed();
+    for (size_t i = 0; i < closed->length(); ++i) {
+      LexicalVarInfo_sp info = gc::As<LexicalVarInfo_sp>((*closed)[i]);
+      ctxt->reference_lexical_info(info);
+    }
+    ctxt->assemble1(vm_initialize_closure, oCdar(cur).unsafe_fixnum());
+  }
+  cmp__compile_locally(body, new_env2, ctxt);
 }
 
 static void compile_setq_1(Symbol_sp var, T_sp valf,
