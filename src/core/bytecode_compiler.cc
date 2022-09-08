@@ -1108,8 +1108,120 @@ CL_DEFUN void cmp__compile_if(T_sp cond, T_sp thn, T_sp els,
   done_label->contextualize(ctxt);
 }
 
+static bool go_tag_p(T_sp object) {
+  return object.fixnump() || gc::IsA<Integer_sp>(object)
+    || gc::IsA<Symbol_sp>(object);
+}
+
+CL_DEFUN void cmp__compile_tagbody(List_sp statements,
+                                   Lexenv_sp env, Context_sp ctxt) {
+  List_sp new_tags = gc::As<List_sp>(env->tags());
+  Symbol_sp tagbody_dynenv = cl__gensym(SimpleBaseString_O::make("TAG-DYNENV"));
+  Lexenv_sp nenv = env->bind_vars(Cons_O::createList(tagbody_dynenv), ctxt);
+  LexicalVarInfo_sp dynenv_info
+    = gc::As<LexicalVarInfo_sp>(cmp__var_info(tagbody_dynenv, nenv));
+  for (auto cur : statements) {
+    T_sp statement = oCar(cur);
+    if (go_tag_p(statement))
+      new_tags = Cons_O::create(Cons_O::create(statement,
+                                               Cons_O::create(dynenv_info,
+                                                              Label_O::make())),
+                                new_tags);
+  }
+  Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), new_tags, nenv->blocks(),
+                                   nenv->funs(), nenv->frameEnd());
+  // Bind the dynamic environment.
+  ctxt->assemble1(vm_entry, dynenv_info->frameIndex());
+  // Compile the body, emitting the tag destination labels.
+  for (auto cur : statements) {
+    T_sp statement = oCar(cur);
+    if (go_tag_p(statement)) {
+      T_sp info = nnenv->tags().unsafe_cons()->assoc(statement, nil<T_O>(),
+                                                     cl::_sym_eql, nil<T_O>());
+      Label_sp lab = gc::As<Label_sp>(oCddr(info));
+      lab->contextualize(ctxt);
+    } else
+      cmp__compile_form(statement, nnenv, ctxt->sub(clasp_make_fixnum(0)));
+  }
+  ctxt->assemble0(vm_entry_close);
+  // return nil if we really have to
+  if (!(ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 0))) {
+    ctxt->assemble0(vm_nil);
+    if (!(ctxt->receiving().fixnump()))
+      ctxt->assemble0(vm_pop);
+  }
+}
+
+CL_DEFUN void cmp__compile_go(T_sp tag, Lexenv_sp env, Context_sp ctxt) {
+  T_sp tags = env->tags();
+  if (!(tags.nilp())) {
+    // tags must be a cons now
+    T_sp pair = tags.unsafe_cons()->assoc(tag, nil<T_O>(),
+                                          cl::_sym_eql, nil<T_O>());
+    if (!(pair.nilp())) {
+      Cons_sp rpair = gc::As<Cons_sp>(oCdr(pair));
+      ctxt->reference_lexical_info(gc::As<LexicalVarInfo_sp>(oCar(rpair)));
+      ctxt->emit_exit(gc::As<Label_sp>(oCdr(rpair)));
+      return;
+    }
+  }
+  SIMPLE_ERROR("The GO tag %s does not exist.", _rep_(tag));
+}
+
+CL_DEFUN void cmp__compile_block(Symbol_sp name, List_sp body,
+                                 Lexenv_sp env, Context_sp ctxt) {
+  Symbol_sp block_dynenv = cl__gensym(SimpleBaseString_O::make("BLOCK-DYNENV"));
+  Lexenv_sp nenv = env->bind_vars(Cons_O::createList(block_dynenv), ctxt);
+  LexicalVarInfo_sp dynenv_info
+    = gc::As<LexicalVarInfo_sp>(cmp__var_info(block_dynenv, nenv));
+  Label_sp label = Label_O::make();
+  Label_sp normal_label = Label_O::make();
+  // Bind the dynamic environment.
+  ctxt->assemble1(vm_entry, dynenv_info->frameIndex());
+  Cons_sp new_pair = Cons_O::create(name, Cons_O::create(dynenv_info, label));
+  Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), nenv->tags(),
+                                   Cons_O::create(new_pair, nenv->blocks()),
+                                   nenv->funs(), nenv->frameEnd());
+  // We force single values into multiple so that we can uniformly PUSH afterward.
+  // Specifically: if we're returning 0 values, there's no problem anyway.
+  // If we're returning multiple values, the local and nonlocal returns just
+  // store into the multiple values, so no problem there.
+  // If we're returning exactly one value, the nonlocal just pushes one, and
+  // the nonlocal stores into the MV which is then vm_push'd to the stack.
+  cmp__compile_progn(body, nnenv, ctxt);
+  bool r1p = ctxt->receiving().fixnump()
+    && (ctxt->receiving().unsafe_fixnum() == 1);
+  if (r1p) ctxt->emit_jump(normal_label);
+  label->contextualize(ctxt);
+  // When we need 1 value, we have to make sure that the
+  // "exceptional" case pushes a single value onto the stack.
+  if (r1p) {
+    ctxt->assemble0(vm_push);
+    normal_label->contextualize(ctxt);
+  }
+  ctxt->assemble0(vm_entry_close);
+}
+
+CL_DEFUN void cmp__compile_return_from(T_sp name, T_sp valuef,
+                                       Lexenv_sp env, Context_sp ctxt) {
+  cmp__compile_form(valuef, env, ctxt->sub(cl::_sym_T_O));
+  T_sp blocks = env->blocks();
+  if (!(blocks.nilp())) {
+    // blocks must be a cons now
+    T_sp pair = blocks.unsafe_cons()->assoc(name, nil<T_O>(),
+                                            cl::_sym_eq, nil<T_O>());
+    if (!(pair.nilp())) {
+      Cons_sp rpair = gc::As<Cons_sp>(oCdr(pair));
+      ctxt->reference_lexical_info(gc::As<LexicalVarInfo_sp>(oCar(rpair)));
+      ctxt->emit_exit(gc::As<Label_sp>(oCdr(rpair)));
+      return;
+    }
+  }
+  SIMPLE_ERROR("The block %s does not exist.", _rep_(name));
+}
+
 // catch, throw, and progv are actually handled by macros right now,
-// so these aren't used, but maybe will be in the future.
+// so these aren't used, but maybe will be in the fture.
 CL_DEFUN void cmp__compile_catch(T_sp tag, List_sp body,
                                  Lexenv_sp env, Context_sp ctxt) {
   cmp__compile_form(tag, env, ctxt->sub(clasp_make_fixnum(1)));
