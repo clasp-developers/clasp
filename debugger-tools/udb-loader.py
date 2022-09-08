@@ -88,7 +88,7 @@ LispVm()
 print("lprint <address>   - print lisp object in compact form")
 print("linspect <address> - inspect lisp object - all fields")
 print("lhead <address>    - dump the clients header")
-print("lframe             - Dump the function name and args for a lisp frame trampoline"
+print("lframe             - Dump the function name and args for a lisp frame trampoline")
 print("ltest <address>    - test module reloading")
 print("lvm                - Dump current vm status")
 print("python-interactive <expr> - (or pi) interactive Python session\n")
