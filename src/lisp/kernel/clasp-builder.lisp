@@ -981,8 +981,31 @@ been initialized with install path versus the build path of the source code file
     (prepare-metadata system installed-system)
     (compile-cclasp* output-file system t)))
 
-(defun pprint-features ()
-  (message :info "Features {}" *features*))
+(defun pprint-features (new-features old-features)
+  (if (null old-features)
+      (message :info "Features {}" *features*)
+      (let ((added-features nil)
+            (cur new-features))
+        (tagbody
+         top
+           (let ((new-feat (car cur)))
+             (if (null (member new-feat old-features))
+                 (setq added-features (cons new-feat added-features))))
+           (setq cur (cdr cur))
+           (if cur (go top)))
+        (let ((removed-features nil)
+              (cur old-features))
+          (tagbody
+           top
+             (let ((old-feat (car cur)))
+               (if (null (member old-feat new-features))
+                   (setq (removed-features (cons old-feat removed-features)))))
+             (setq cur (cdr cur))
+             (if cur (go top)))
+          (if removed-features
+              (message :info "Removed features {}" removed-features))
+          (if added-features
+              (message :info "Added features {}" added-features))))))
 
 (export 'pprint-features)
 
@@ -1020,7 +1043,7 @@ been initialized with install path versus the build path of the source code file
                                               (+ (* +load-weight+ file-time)
                                                  (* (- 1 +load-weight+) prev-file-time))
                                               prev-file-time))
-            (if (>= file-time internal-time-units-per-second)
+            (if (and *load-verbose* (>= file-time internal-time-units-per-second))
                 (message nil ";;; Load time {:.1f} seconds" (float (/ file-time internal-time-units-per-second))))
             (go next))))
     (setq *features* (core:remove-equal stage-keyword *features*))
@@ -1031,29 +1054,31 @@ been initialized with install path versus the build path of the source code file
 (defun stage-features (&rest rest &aux (features +stage-features+))
   (tagbody
    next
-   (if features
-       (progn
-         (setq *features* (core:remove-equal (car features) *features*)
-               features (cdr features))
-         (go next))))
-  (setq *features* (append rest *features*))
-  (pprint-features))
+     (if features
+         (progn
+           (setq *features* (core:remove-equal (car features) *features*)
+                 features (cdr features))
+           (go next))))
+  (let ((old-features (copy-seq *features*)))
+    (setq *features* (append rest *features*))
+    (pprint-features *features* old-features)))
 
 (defun system-load-time (file)
   (gethash file *system-load-times* 0))
 
 (defun load-vclasp (&key backend
                          (bytecode t)
-                         (clean (ext:getenv "CLASP_CLEAN"))
-                         ((:load-verbose *load-verbose*) (ext:getenv "CLASP_LOAD_VERBOSE"))
-                         (output-file (build-common-lisp-bitcode-pathname))
+                      (clean (ext:getenv "CLASP_CLEAN"))
+                      (load-verbose (ext:getenv "CLASP_LOAD_VERBOSE"))
+                      (output-file (build-common-lisp-bitcode-pathname))
                          reproducible
                          (system-sort (ext:getenv "CLASP_SYSTEM_SORT"))
                          (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
                                           (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
                                           6))
                          (system (command-line-arguments-as-list)))
-  (let ((installed-system (if reproducible
+  (let ((*load-verbose* load-verbose)
+        (installed-system (if reproducible
                               (extract-installed-system system)))
         (*system-load-times* (make-hash-table :test #'eql))
         (*target-backend* (default-target-backend backend))
