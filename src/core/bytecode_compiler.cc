@@ -723,17 +723,20 @@ CL_DEFUN void cmp__compile_literal(T_sp literal, Lexenv_sp env,
 
 void cmp__compile_form(T_sp, Lexenv_sp, Context_sp);
 
+static T_sp expand_macro(Function_sp expander, T_sp form, Lexenv_sp env) {
+  // This is copied from cl__macroexpand. I guess eval::funcall doesn't do the
+  // coercion itself?
+  T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
+  Function_sp hook = coerce::functionDesignator(macroexpandHook);
+  return eval::funcall(hook, expander, form, env);
+}
+
 CL_DEFUN void cmp__compile_symbol(Symbol_sp sym,
                                   Lexenv_sp env, Context_sp context) {
   T_sp info = cmp__var_info(sym, env);
   if (gc::IsA<SymbolMacroVarInfo_sp>(info)) {
-    // Expand the macro and compile that.
-    // This is copied from cl__macroexpand. I guess eval::funcall doesn't do the
-    // coercion itself?
     Function_sp expander = gc::As_unsafe<SymbolMacroVarInfo_sp>(info)->expander();
-    T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-    Function_sp hook = coerce::functionDesignator(macroexpandHook);
-    T_sp expansion = eval::funcall(hook, expander, sym, env);
+    T_sp expansion = expand_macro(expander, sym, env);
     cmp__compile_form(expansion, env, context);
     return;
   } else if (context->receiving().fixnump()
@@ -791,6 +794,84 @@ CL_DEFUN void cmp__compile_locally(List_sp body, Lexenv_sp env, Context_sp ctxt)
                                                  false, docstring, code, specials);
   Lexenv_sp inner = env->add_specials(specials);
   cmp__compile_progn(code, inner, ctxt);
+}
+
+static void compile_setq_1(Symbol_sp var, T_sp valf,
+                           Lexenv_sp env, Context_sp ctxt) {
+  T_sp info = cmp__var_info(var, env);
+  if (gc::IsA<SymbolMacroVarInfo_sp>(info)) {
+    Function_sp expander = gc::As_unsafe<SymbolMacroVarInfo_sp>(info)->expander();
+    T_sp expansion = expand_macro(expander, var, env);
+    T_sp setform = Cons_O::createList(cl::_sym_setf, expansion, valf);
+    cmp__compile_form(setform, env, ctxt);
+  } else if (info.nilp() || gc::IsA<SpecialVarInfo_sp>(info)) {
+    // TODO: Warn on unknown variable
+    cmp__compile_form(valf, env, ctxt->sub(clasp_make_fixnum(1)));
+    // If we need to return the new value, stick it into a new local
+    // variable, do the set, then return the lexical variable.
+    // We can't just read from the special, since some other thread may
+    // alter it.
+    size_t index = env->frameEnd();
+    // but if we're not returning a value we don't actually have to do that crap.
+    if (!(ctxt->receiving().fixnump()
+          && (ctxt->receiving().unsafe_fixnum() == 0))) {
+      ctxt->assemble1(vm_set, index);
+      ctxt->assemble1(vm_ref, index);
+      // called for effect, i.e. to keep frame size correct
+      // FIXME: This is super kludgey.
+      env->bind_vars(Cons_O::createList(var), ctxt);
+    }
+    ctxt->assemble1(vm_symbol_value_set, ctxt->literal_index(var));
+    if (!(ctxt->receiving().fixnump()
+          && (ctxt->receiving().unsafe_fixnum() == 0))) {
+      ctxt->assemble1(vm_ref, index);
+      if (!(ctxt->receiving().fixnump())) // need values
+        ctxt->assemble0(vm_pop);
+    }
+  } else if (gc::IsA<LexicalVarInfo_sp>(info)) {
+    LexicalVarInfo_sp lvinfo = gc::As_unsafe<LexicalVarInfo_sp>(info);
+    bool localp = (lvinfo->funct() == ctxt->cfunction());
+    size_t index = env->frameEnd();
+    if (!localp) lvinfo->setClosedOverP(true);
+    lvinfo->setSetP(true);
+    cmp__compile_form(valf, env, ctxt->sub(clasp_make_fixnum(1)));
+    // Similar concerns to specials above (for closure variables)
+    if (!(ctxt->receiving().fixnump()
+          && (ctxt->receiving().unsafe_fixnum() == 0))) {
+      ctxt->assemble1(vm_set, index);
+      ctxt->assemble1(vm_ref, index);
+      env->bind_vars(Cons_O::createList(var), ctxt);
+    }
+    if (localp)
+      ctxt->emit_lexical_set(lvinfo);
+    else { // we already know we need a cell, so don't bother w/ a fixup.
+      ctxt->assemble1(vm_closure, ctxt->closure_index(lvinfo));
+      ctxt->assemble0(vm_cell_set);
+    }
+    if (!(ctxt->receiving().fixnump()
+          && (ctxt->receiving().unsafe_fixnum() == 0))) {
+      ctxt->assemble1(vm_ref, index);
+      if (!(ctxt->receiving().fixnump()))
+        ctxt->assemble0(vm_pop);
+    }
+  } else SIMPLE_ERROR("BUG: Unknown info %s", _rep_(info));
+}
+
+CL_DEFUN void cmp__compile_setq(List_sp pairs, Lexenv_sp env, Context_sp ctxt) {
+  if (pairs.nilp()) {
+    // degenerate case
+    if (!(ctxt->receiving().fixnump()
+          && (ctxt->receiving().unsafe_fixnum() == 0)))
+      ctxt->assemble0(vm_nil);
+  } else {
+    do {
+      Symbol_sp var = gc::As<Symbol_sp>(oCar(pairs));
+      T_sp valf = oCadr(pairs);
+      pairs = gc::As<List_sp>(oCddr(pairs));
+      compile_setq_1(var, valf, env,
+                     pairs.notnilp() ? ctxt->sub(clasp_make_fixnum(0)) : ctxt);
+    } while (pairs.notnilp());
+  }
 }
 
 CL_DEFUN void cmp__compile_eval_when(List_sp situations, List_sp body,
