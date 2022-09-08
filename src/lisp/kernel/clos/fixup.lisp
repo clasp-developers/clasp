@@ -23,7 +23,7 @@
 ;;; (Which happens a fair amount, because it's where CLOS begins use.)
 
 ;;; This will print every form as its compiled
-#+(or)
+#+mlog
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (format t "Starting fixup.lisp")
   (setq *echo-repl-tpl-read* t)
@@ -287,6 +287,7 @@
   (declare (notinline method-qualifiers remove-method))
   (declare (notinline reinitialize-instance)) ; bootstrap stuff
 
+  (mlog "fixup.lisp::add-method entered for gf {}%N" (core:safe-repr gf))
   ;;
   ;; 1) The method must not be already installed in another generic function.
   ;;
@@ -301,15 +302,19 @@ and cannot be added to ~A." method other-gf gf)))
   ;;    function does.
   ;;
   (let ((new-lambda-list (method-lambda-list method)))
+    (mlog "fixup.lisp::add-method (slot-boundp gf 'lambda-list) -> {}%N" (slot-boundp gf 'lambda-list))
     (if (slot-boundp gf 'lambda-list)
 	(let ((old-lambda-list (generic-function-lambda-list gf)))
 	  (unless (congruent-lambda-p old-lambda-list new-lambda-list)
 	    (error "Cannot add the method ~A to the generic function ~A because their lambda lists ~A and ~A are not congruent."
 		   method gf new-lambda-list old-lambda-list))
           ;; Add any keywords from the method to the gf display lambda list.
+          (mlog "fixup.lisp::add-method About to call maybe-augment-generic-function-lambda-list new-lambda-list->{}%N" (core:safe-repr new-lambda-list))
           (maybe-augment-generic-function-lambda-list gf new-lambda-list))
-	(reinitialize-instance
-         gf :lambda-list (method-lambda-list-for-gf new-lambda-list))))
+	(progn
+          (mlog "fixup.lisp::add-method About to call reinitialize-instance lambda-list ->{}%N" (core:safe-repr (method-lambda-list-for-gf new-lambda-list)))
+          (reinitialize-instance
+           gf :lambda-list (method-lambda-list-for-gf new-lambda-list)))))
   ;;
   ;; 3) Finally, it is inserted in the list of methods, and the method is
   ;;    marked as belonging to a generic function.

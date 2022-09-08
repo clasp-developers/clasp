@@ -443,7 +443,6 @@ SYMBOL_EXPORT_SC_(ClosPkg, compile_discriminating_function);
 CL_LAMBDA(program gf core:&va-rest args)
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
-__attribute__((optnone))
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function, Vaslist_sp pass_args) {
   DTIDO_ALWAYS(
       FILE* DTILOG_fout = monitor_file("dtree-interp");

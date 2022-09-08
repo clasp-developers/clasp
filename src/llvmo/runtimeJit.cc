@@ -854,7 +854,6 @@ ObjectFile_sp ClaspJIT_O::addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm
 /*
  * runLoadtimeCode 
  */
-__attribute__((optnone))
 void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startupName, core::T_sp initialDataOrUnbound )
 {
   JITDylib& dylib = *dylibsp->wrappedPtr();

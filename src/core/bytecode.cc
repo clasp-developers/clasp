@@ -20,7 +20,7 @@ extern "C" {
 bool global_debug_vm = false;
 }
 
-#if 1
+#if 0
 # define DBG_printf(...) { if (global_debug_vm) { printf(__VA_ARGS__); } }
 # define DBG_VM(...) {if (global_debug_vm) {printf("%s:%6d pc: %p sp: %p fp: %p | ", __FILE__, __LINE__, (void*)vm._pc, (void*)(vm)._stackPointer, (void*)(vm)._framePointer); printf(__VA_ARGS__);} }
 # if 1
@@ -181,7 +181,6 @@ static void bytecode_vm_long(VirtualMachine&, T_O**, size_t, Closure_O*,
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
 
 //fixme2022   - Remove this because it will slow everything down
-__attribute__((optnone))
 static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         T_O** literals,
                                         size_t nlocals, Closure_O* closure,

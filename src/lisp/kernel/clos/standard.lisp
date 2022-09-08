@@ -23,6 +23,7 @@
 
 (defmethod initialize-instance ((instance T) core:&va-rest initargs)
   (dbg-standard "standard.lisp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
+  (mlog "standard.lisp:26 about to apply shared-initialize%N")
   (apply #'shared-initialize instance 'T initargs))
 
 (defmethod reinitialize-instance ((instance T ) &rest initargs)
@@ -30,11 +31,13 @@
   ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY
   ;; does not reuse rest lists. If it did, a method on #'shared-initialize,
   ;; or whatever, could potentially let the rest list escape.
+  (mlog "standard.lisp::reinitialize-instance instance initargs -> {}%N" (core:safe-repr initargs))
   (when initargs
     (check-initargs-uncached
      (class-of instance) initargs
      (list (list #'reinitialize-instance (list instance))
            (list #'shared-initialize (list instance t)))))
+  (mlog "standard.lisp:40 about to apply shared-initialize initargs -> {}%N" (core:safe-repr initargs))
   (apply #'shared-initialize instance '() initargs))
 
 (defmethod shared-initialize ((instance T) slot-names core:&va-rest initargs)
@@ -58,7 +61,7 @@
   ;;       ()
   ;;            no slots are set from initforms
   ;;
-;;; PUTMEBACK  (mlog "standard.lisp::shared-initialize instance -> {} initargs -> {}%N" (core:safe-repr instance) (core:list-from-vaslist initargs))
+  (mlog "standard.lisp::shared-initialize instance -> {} initargs -> {}%N" (core:safe-repr instance) (core:list-from-vaslist initargs))
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
     (dolist (slotd (class-slots class))

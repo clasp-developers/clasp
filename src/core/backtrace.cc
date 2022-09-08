@@ -398,7 +398,6 @@ static bool args_for_function(size_t fi, void* ip, const char* string,
   return args_available;
 }
 
-__attribute__((optnone))
 static DebuggerFrame_sp make_lisp_frame(size_t frameIndex,
                                         void* absolute_ip,
                                         const char* string,
@@ -525,7 +524,6 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring)
                                false);
 }
 
-__attribute__((optnone))
 static DebuggerFrame_sp make_frame(size_t fi, void* absolute_ip, const char* string, void* fbp) {
   MaybeTrace trace(__FUNCTION__);
   T_sp of = llvmo::only_object_file_for_instruction_pointer(absolute_ip);

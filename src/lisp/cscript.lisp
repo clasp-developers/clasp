@@ -204,6 +204,7 @@
              (k:make-source "cclasp-translations.lisp" :variant-generated)
              :clasp-cleavir
              #~"kernel/cleavir/auto-compile.lisp"
+             #~"kernel/cleavir/bytecode-adaptor.lisp"
              #~"kernel/cleavir/inline.lisp"
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
              #~"kernel/cmp/compile-file-parallel.lisp"

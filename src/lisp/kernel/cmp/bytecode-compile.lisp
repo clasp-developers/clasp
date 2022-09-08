@@ -228,7 +228,7 @@
 
 
 (defun emit-parse-key-args (context max-count key-count key-names env aok-p)
-  (let* ((keystart (literal-index (first key-names) context))
+  (let* ((keystart (new-literal-index (first key-names) context))
          (index (core:bytecode-cmp-env/frame-end env))
          (all (list max-count key-count keystart index)))
     (cond ((values-less-than-p all 127)
@@ -439,6 +439,11 @@
     (or (position literal literals)
         (vector-push-extend literal literals))))
 
+;;; Force a literal into the end of the literals even if it's already
+;;; there. This is used in keyword argument parsing.
+(defun new-literal-index (literal context)
+  (vector-push-extend literal (cmodule-literals (context-module context))))
+
 (defun closure-index (info context)
   (let ((closed (cfunction-closed (context-function context))))
     (or (position info closed)
@@ -614,28 +619,38 @@
     ((eq head 'the) ; don't do anything.
      (compile-form (second rest) env context))
     (t ; function call or macro
-     (multiple-value-bind (kind data) (fun-info head env)
-       (cond
-         ((member kind '(:global-macro :local-macro))
-          (compile-form (funcall *macroexpand-hook* data (cons head rest) env)
-                        env context))
-         ((member kind '(:global-function :local-function nil))
-          ;; Try a compiler macroexpansion
-          (when (and (eq kind ':global-function) data)
-            (let* ((form (cons head rest))
-                   (expansion (funcall *macroexpand-hook* data form env)))
-              (unless (eq form expansion)
-                (return-from compile-cons
-                  (compile-form expansion env context)))))
-          ;; unknown function warning handled by compile-function
-          ;; note we do a double lookup, which is inefficient
-          (compile-function head env (new-context context :receiving 1))
-          (do ((args rest (rest args))
-               (arg-count 0 (1+ arg-count)))
-              ((endp args)
-               (emit-call context arg-count))
-            (compile-form (first args) env (new-context context :receiving 1))))
-         (t (error "Unknown kind ~a" kind)))))))
+     (cond
+       ((symbolp head)
+        (multiple-value-bind (kind data) (fun-info head env)
+          (cond
+            ((member kind '(:global-macro :local-macro))
+             (compile-form (funcall *macroexpand-hook* data (cons head rest) env)
+                           env context))
+            ((member kind '(:global-function :local-function nil))
+             ;; Try a compiler macroexpansion
+             (when (and (eq kind ':global-function) data)
+               (let* ((form (cons head rest))
+                      (expansion (funcall *macroexpand-hook* data form env)))
+                 (unless (eq form expansion)
+                   (return-from compile-cons
+                     (compile-form expansion env context)))))
+             ;; unknown function warning handled by compile-function
+             ;; note we do a double lookup, which is inefficient
+             (compile-function head env (new-context context :receiving 1))
+             (do ((args rest (rest args))
+                  (arg-count 0 (1+ arg-count)))
+                 ((endp args)
+                  (emit-call context arg-count))
+               (compile-form (first args) env (new-context context :receiving 1))))
+            (t (error "Unknown kind ~a" kind)))))
+       ((and (consp head) (eq (car head) 'cl:lambda))
+        ;; lambda form
+        (compile-function head env (new-context context :receiving 1))
+        (do ((args rest (rest args))
+             (arg-count 0 (1+ arg-count)))
+            ((endp args) (emit-call context arg-count))
+          (compile-form (first args) env (new-context context :receiving 1))))
+       (t (error "Illegal form: ~s" (cons head rest)))))))
 
 (defun compile-progn (forms env context)
   (do ((forms forms (rest forms)))
@@ -988,7 +1003,7 @@
             ;; emit-parse-key-args establishes the first key in the literals.
             ;; now do the rest.
             (dolist (key-name (rest key-names))
-              (literal-index key-name context)))
+              (new-literal-index key-name context)))
           (let ((keyvars (collect-by #'cddddr (cddr keys))))
             (setq new-env (bind-vars keyvars new-env context))
             (dolist (var keyvars)

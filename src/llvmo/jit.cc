@@ -713,7 +713,6 @@ void ClaspLinkerJIT_O::addObjectFile(llvm::orc::JITDylib& jitdylib, std::unique_
 /*
  * runLoadtimeCode 
  */
-__attribute__((optnone))
 void* ClaspLinkerJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, ObjectFile_sp& codeObject )
 {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));

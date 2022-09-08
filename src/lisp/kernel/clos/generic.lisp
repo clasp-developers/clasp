@@ -132,6 +132,7 @@
      &aux (gfun-name (or (core:function-name gfun) name :anonymous)))
   (declare (ignore slot-names))
   ;; Check the validity of several fields.
+  (mlog "standard.lisp::shared-initialize:before instance -> {} l-l-p -> {}  lambda-list -> {}%N" (core:safe-repr gfun) l-l-p (core:safe-repr lambda-list))
   (when a-o-p
     (unless l-l-p
       (simple-program-error "When defining generic function ~A
@@ -183,13 +184,16 @@ Not a valid documentation object ~A"
        &allow-other-keys)
   (declare (ignore slot-names argument-precedence-order)
            (core:lambda-name shared-initialize.generic-function))
+  (mlog "generic.lisp::shared-initialize :after entered gfun -> {} lambda-list -> {}%N" (core:safe-repr gfun) (core:safe-repr lambda-list))
   ;; Coerce a method combination if required.
   (let ((combination (generic-function-method-combination gfun)))
     (unless (typep combination 'method-combination)
       (setf (%generic-function-method-combination gfun)
 	    (find-method-combination gfun (first combination) (rest combination)))))
   ;; If we have a new lambda list but no argument precedence, default the latter.
+  (mlog "generic.lisp::shared-initialize :after l-l-p -> {}  (not a-o-p) -> {}%N" (core:safe-repr l-l-p) (core:safe-repr (not a-o-p)))
   (when (and l-l-p (not a-o-p))
+    (mlog "generic.lisp::shared-initialize :after (lambda-list-required-arguments lambda-list)->{}%N" (core:safe-repr (lambda-list-required-arguments lambda-list)))
     (setf (%generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
   ;; If we have a new name, set the internal name.
@@ -227,6 +231,7 @@ Not a valid documentation object ~A"
   (invalidate-discriminating-function gfun))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
+  (mlog "generic.lisp::reinitialize-instance :after initargs -> {}%N" (core:safe-repr initargs))
   (update-dependents gfun initargs)
   ;; Check if the redefinition is trivial.
   ;; I am not sure of the fine details here. What happens if you reinitialize-instance
@@ -287,7 +292,7 @@ Not a valid documentation object ~A"
   (mlog "In ensure-generic-function-using-class F%N")
   (if (eq (class-of gfun) generic-function-class)
       (progn
-        (mlog "In ensure-generic-function-using-class F: About to reainitialize-instance%N")
+        (mlog "In ensure-generic-function-using-class F: About to reinitialize-instance args->{}%N" (core:safe-repr args))
 	(apply #'reinitialize-instance gfun :name name args))
       (progn
 	(apply #'change-class gfun generic-function-class :name name args))))
