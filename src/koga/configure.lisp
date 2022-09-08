@@ -235,7 +235,7 @@
                     :documentation "print messages about stackmap registration")
    (debug-assert :accessor debug-assert
                  :initarg :debug-assert
-                 :initform t
+                 :initform nil
                  :type boolean
                  :documentation "Turn on DEBUG_ASSERT")
    (debug-assert-type-cast :accessor debug-assert-type-cast
