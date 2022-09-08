@@ -600,7 +600,7 @@ void lisp_setStaticClass(gctools::Header_s::StampWtagMtag::Value header, Instanc
     _lisp->_Roots.staticClassesUnshiftedNowhere.resize(stamp+1);
   }
   size_t stamp = gctools::Header_s::Stamp(header);
-  printf("%s:%d:%s header: %u  stamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header, stamp, _rep_(value).c_str());
+//  printf("%s:%d:%s header: %u  stamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header, stamp, _rep_(value).c_str());
   _lisp->_Roots.staticClassesUnshiftedNowhere[stamp] = value;
 }
 
