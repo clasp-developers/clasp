@@ -57,6 +57,7 @@ T_sp Lexenv_O::lookupMacro(T_sp macroname) {
 }
 
 Lexenv_sp Lexenv_O::bind_vars(List_sp vars, Context_sp ctxt) {
+  if (vars.nilp()) return this->asSmartPtr();
   size_t frame_start = this->frameEnd();
   size_t frame_end = frame_start
     + (vars.nilp() ? 0 : vars.unsafe_cons()->length());
@@ -794,6 +795,98 @@ CL_DEFUN void cmp__compile_locally(List_sp body, Lexenv_sp env, Context_sp ctxt)
                                                  false, docstring, code, specials);
   Lexenv_sp inner = env->add_specials(specials);
   cmp__compile_progn(code, inner, ctxt);
+}
+
+CL_DEFUN bool cmp__special_binding_p(Symbol_sp sym, List_sp specials,
+                                     Lexenv_sp env) {
+  if (specials.notnilp()
+      && specials.unsafe_cons()->memberEq(sym).notnilp())
+    return true;
+  else {
+    T_sp info = cmp__var_info(sym, env);
+    if (gc::IsA<SpecialVarInfo_sp>(info))
+      return gc::As_unsafe<SpecialVarInfo_sp>(info)->globalp();
+    else return false;
+  }
+}
+
+CL_DEFUN void cmp__compile_let(List_sp bindings, List_sp body,
+                               Lexenv_sp env, Context_sp ctxt) {
+  List_sp declares = nil<T_O>();
+  gc::Nilable<String_sp> docstring;
+  List_sp code;
+  List_sp specials;
+  eval::extract_declares_docstring_code_specials(body, declares,
+                                                 false, docstring, code, specials);
+  size_t lexical_binding_count = 0;
+  size_t special_binding_count = 0;
+  Lexenv_sp post_binding_env = env->add_specials(specials);
+  for (auto cur : bindings) {
+    T_sp binding = oCar(cur);
+    Symbol_sp var;
+    T_sp valf;
+    if (binding.consp()) {
+      var = gc::As<Symbol_sp>(oCar(binding));
+      valf = oCadr(binding);
+    } else {
+      var = gc::As<Symbol_sp>(binding);
+      valf = nil<T_O>();
+    }
+    cmp__compile_form(valf, env, ctxt->sub(clasp_make_fixnum(1)));
+    if (cmp__special_binding_p(var, specials, env)) {
+      ++special_binding_count;
+      ctxt->emit_special_bind(var);
+    } else {
+      post_binding_env = post_binding_env->bind_vars(Cons_O::createList(var),
+                                                     ctxt);
+      ++lexical_binding_count;
+      ctxt->maybe_emit_make_cell(cmp__var_info(var, post_binding_env));
+    }
+  }
+  ctxt->emit_bind(lexical_binding_count, env->frameEnd());
+  cmp__compile_progn(code, post_binding_env, ctxt);
+  ctxt->emit_unbind(special_binding_count);
+}
+
+CL_DEFUN void cmp__compile_letSTAR(List_sp bindings, List_sp body,
+                                   Lexenv_sp env, Context_sp ctxt) {
+  List_sp declares = nil<T_O>();
+  gc::Nilable<String_sp> docstring;
+  List_sp code;
+  List_sp specials;
+  eval::extract_declares_docstring_code_specials(body, declares,
+                                                 false, docstring, code, specials);
+  size_t special_binding_count = 0;
+  Lexenv_sp new_env = env;
+  for (auto cur : bindings) {
+    T_sp binding = oCar(cur);
+    Symbol_sp var;
+    T_sp valf;
+    if (binding.consp()) {
+      var = gc::As<Symbol_sp>(oCar(binding));
+      valf = oCadr(binding);
+    } else {
+      var = gc::As<Symbol_sp>(binding);
+      valf = nil<T_O>();
+    }
+    cmp__compile_form(valf, new_env, ctxt->sub(clasp_make_fixnum(1)));
+    if (cmp__special_binding_p(var, specials, env)) {
+      ++special_binding_count;
+      new_env = new_env->add_specials(Cons_O::createList(var));
+      ctxt->emit_special_bind(var);
+    } else {
+      size_t frame_start = new_env->frameEnd();
+      new_env = new_env->bind_vars(Cons_O::createList(var), ctxt);
+      ctxt->maybe_emit_make_cell(cmp__var_info(var, new_env));
+      ctxt->assemble1(vm_set, frame_start);
+    }
+  }
+  // We make a new environment to make sure free special declarations get
+  // through even if this let* doesn't bind them.
+  // This creates duplicate alist entries for anything that _is_ bound
+  // here, but that's not a big deal.
+  cmp__compile_progn(code, new_env->add_specials(specials), ctxt);
+  ctxt->emit_unbind(special_binding_count);
 }
 
 static void compile_setq_1(Symbol_sp var, T_sp valf,
