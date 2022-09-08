@@ -215,12 +215,12 @@
                (k:make-source "cclasp-immutable.lisp" :variant-generated)))
   (if (or neo bytecode)
       (k:sources target
-                 #~"kernel/stage/5-end.lisp"
-                 #~"kernel/lsp/queue.lisp" ;; cclasp sources
-                 #~"kernel/cmp/compile-file-parallel.lisp")
+                 #~"kernel/stage/5-end.lisp")
       (k:sources target
                  #~"kernel/tag/pre-epilogue-cclasp.lisp"))
   (k:sources target
+             #~"kernel/lsp/queue.lisp" ;; cclasp sources
+             #~"kernel/cmp/compile-file-parallel.lisp"
              #~"kernel/lsp/epilogue-cclasp.lisp")
   (unless (or neo bytecode)
     (k:sources target
