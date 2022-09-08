@@ -47,8 +47,8 @@
             ;; end up here recursively, which ends quite badly.
             ;; So fall back to the bclasp compiler which does not use gfs.
             (cmp:*cleavir-compile-hook* nil))
-        (cmp::bytecompile form)
-        #+(or)(compile nil form))))
+        #+bytecompile(cmp::bytecompile form)
+        #-bytecompile(compile nil form))))
 
 (defun emf-default (form &optional (arg-info '(t)))
   (let ((restp (car arg-info)) (vars (cdr arg-info)))
