@@ -829,9 +829,18 @@ def do_lisp_vm(debugger,arg):
 
 
 def do_lisp_test(debugger,arg):
-    print("  In do_test arg: %s" % arg)
-    print("    to tptr: %d" % arg_to_tptr(debugger,arg) )
-
+    frame_args = debugger.lisp_selected_frame()
+    closure = frame_args[0]
+    oclosure = translate_tagged_ptr(debugger,closure)
+    nargs = frame_args[1]
+    args = frame_args[2]
+    call = [ oclosure.__repr__() ]
+    for iarg in range(0,nargs):
+        one_arg = debugger.read_memory(args+(8*iarg),len=8)
+        tone_arg = translate_tagged_ptr(debugger,one_arg)
+        call.append( tone_arg.__repr__() )
+    print("%s" % call)
+    
 def do_lisp_print(debugger_mod,arg):
     #print "In inspect args: %s" % args
     tptr = arg_to_tptr(debugger_mod,arg)
