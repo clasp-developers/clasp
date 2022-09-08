@@ -901,7 +901,39 @@ CL_DEFUN void cmp__compile_letSTAR(List_sp bindings, List_sp body,
   ctxt->emit_unbind(special_binding_count);
 }
 
-SYMBOL_EXPORT_SC_(CompPkg, compile_function);
+SYMBOL_EXPORT_SC_(CompPkg, compile_lambda);
+CL_DEFUN void compile_function(T_sp fnameoid, Lexenv_sp env, Context_sp ctxt) {
+  bool mvp;
+  if (!(ctxt->receiving().fixnump())) mvp = true;
+  else if (ctxt->receiving().unsafe_fixnum() == 0) return;
+  else mvp = false;
+  if (gc::IsA<Cons_sp>(fnameoid) && oCar(fnameoid) == cl::_sym_lambda) {
+    T_sp tfun = eval::funcall(_sym_compile_lambda,
+                              oCadr(fnameoid), oCddr(fnameoid),
+                              env, ctxt->module());
+    Cfunction_sp fun = gc::As<Cfunction_sp>(tfun);
+    ComplexVector_T_sp closed = fun->closed();
+    for (size_t i = 0; i < closed->length(); ++i)
+      ctxt->reference_lexical_info(gc::As<LexicalVarInfo_sp>((*closed)[i]));
+    if (closed->length() == 0) // don't need to actually close
+      ctxt->assemble1(vm_const, ctxt->literal_index(fun));
+    else
+      ctxt->assemble1(vm_make_closure, ctxt->literal_index(fun));
+  } else { // ought to be a function name
+    T_sp info = cmp__fun_info(fnameoid, env);
+    if (gc::IsA<GlobalFunInfo_sp>(info) || info.nilp()) {
+      // TODO: Warn on unknown (nil)
+      ctxt->assemble1(vm_fdefinition, ctxt->literal_index(fnameoid));
+    } else if (gc::IsA<LocalFunInfo_sp>(info)) {
+      LocalFunInfo_sp lfinfo = gc::As_unsafe<LocalFunInfo_sp>(info);
+      LexicalVarInfo_sp lvinfo = gc::As<LexicalVarInfo_sp>(lfinfo->funVar());
+      ctxt->reference_lexical_info(lvinfo);
+    } else SIMPLE_ERROR("BUG: Unknown fun info %s", _rep_(info));
+  }
+  // Coerce to values if necessary.
+  if (mvp) ctxt->assemble0(vm_pop);
+}
+
 CL_DEFUN void compile_flet(List_sp definitions, List_sp body,
                            Lexenv_sp env, Context_sp ctxt) {
   ql::list fun_vars;
@@ -922,8 +954,7 @@ CL_DEFUN void compile_flet(List_sp definitions, List_sp body,
     T_sp lambda = Cons_O::createList(cl::_sym_lambda,
                                      oCadr(definition),
                                      block);
-    eval::funcall(_sym_compile_function,
-                  lambda, env, ctxt->sub(clasp_make_fixnum(1)));
+    compile_function(lambda, env, ctxt->sub(clasp_make_fixnum(1)));
     fun_vars << fun_var;
     funs << Cons_O::create(name,
                            LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++,
@@ -942,7 +973,6 @@ CL_DEFUN void compile_flet(List_sp definitions, List_sp body,
   cmp__compile_locally(body, new_env2, ctxt);
 }
 
-SYMBOL_EXPORT_SC_(CompPkg, compile_lambda);
 CL_DEFUN void cmp__compile_labels(List_sp definitions, List_sp body,
                                   Lexenv_sp env, Context_sp ctxt) {
   size_t fun_count = 0;

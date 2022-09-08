@@ -182,33 +182,6 @@
           (compile-form (first args) env (context/sub context 1))))
        (t (error "Illegal combination: ~a" (cons head rest)))))))
 
-(defun compile-function (fnameoid env context)
-  (unless (eql (cmp:context/receiving context) 0)
-    (if (typep fnameoid 'lambda-expression)
-        (let* ((cfunction (compile-lambda (cadr fnameoid) (cddr fnameoid)
-                                          env (context/module context)))
-               (closed (cmp:cfunction/closed cfunction)))
-          (dotimes (i (length closed))
-            (context/reference-lexical-info context (aref closed i)))
-          (if (zerop (length closed))
-              (assemble-maybe-long context
-                                   +const+ (context/literal-index context cfunction))
-              (assemble-maybe-long context +make-closure+
-                                   (context/literal-index context cfunction))))
-        (let ((info (cmp:fun-info fnameoid env)))
-          (cond
-            ((typep info '(or cmp:global-fun-info null))
-             #-(or clasp-min aclasp bclasp)
-             (when (null info) (warn "Unknown function ~a" fnameoid))
-             (assemble-maybe-long context +fdefinition+
-                                  (context/literal-index context fnameoid)))
-            ((typep info 'cmp:local-fun-info)
-             (context/reference-lexical-info
-              context (cmp:local-fun-info/fun-var info)))
-            (t (error "BUG: Unknown fun info ~a" info)))))
-    (when (eql (cmp:context/receiving context) t)
-      (assemble context +pop+))))
-
 ;;; (list (car list) (car (FUNC list)) (car (FUNC (FUNC list))) ...)
 (defun collect-by (func list)
   (let ((col nil))
