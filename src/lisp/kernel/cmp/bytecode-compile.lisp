@@ -72,8 +72,6 @@
                                           (funs (cmp:lexenv/funs parent)))
   (cmp:lexenv/make vars tags blocks funs frame-end))
 
-(deftype lambda-expression () '(cons (eql lambda) (cons list list)))
-
 ;;; (list (car list) (car (FUNC list)) (car (FUNC (FUNC list))) ...)
 (defun collect-by (func list)
   (let ((col nil))
@@ -294,24 +292,3 @@
         (when supplied-specialp
           (setq env (lexenv/add-specials env (list supplied-var))))
         env))))
-
-;;; Compile the lambda in MODULE, returning the resulting
-;;; CFUNCTION.
-(defun compile-lambda (lambda-list body env module)
-  (multiple-value-bind (decls sub-body docs)
-      (core:process-declarations body t)
-    ;; we pass the original body w/declarations to compile-with-lambda-list
-    ;; so that it can do its own special handling.
-    (declare (ignore sub-body))
-    (let* ((name (or (core:extract-lambda-name-from-declares decls)
-                     `(lambda ,(lambda-list-for-name lambda-list))))
-           (function (cmp:cfunction/make module name docs lambda-list))
-           (context (cmp:context/make t function))
-           (env (make-lexical-environment env :frame-end 0)))
-      (cmp:cfunction/setf-index
-       function
-       (vector-push-extend function
-                           (cmp:module/cfunctions module)))
-      (compile-with-lambda-list lambda-list body env context)
-      (assemble context +return+)
-      function)))

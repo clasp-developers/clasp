@@ -901,17 +901,53 @@ CL_DEFUN void compile_letSTAR(List_sp bindings, List_sp body,
   ctxt->emit_unbind(special_binding_count);
 }
 
-SYMBOL_EXPORT_SC_(CompPkg, compile_lambda);
+// copied from evaluator.cc (on the premise that that will be deleted or
+// heavily rewritten once the bytecode compiler is ported)
+static T_sp extract_lambda_name_from_declares(List_sp declares) {
+  for (auto cur : declares) {
+    List_sp decl = oCar(cur);
+    if (oCar(decl) == core::_sym_lambdaName)
+      return oCadr(decl);
+  }
+  return nil<T_O>();
+}
+
+// Compile the lambda expression in MODULE, returning the resulting CFUNCTION.
+SYMBOL_EXPORT_SC_(CompPkg, compile_with_lambda_list);
+CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body,
+                                     Lexenv_sp env, Module_sp module) {
+  List_sp declares = nil<T_O>();
+  gc::Nilable<String_sp> docstring;
+  List_sp code;
+  List_sp specials;
+  eval::extract_declares_docstring_code_specials(body, declares,
+                                                 true, docstring, code, specials);
+  // We pass the original body w/declarations to compile-with-lambda-list
+  // so that it can do its own handling of specials, etc.
+  T_sp name = extract_lambda_name_from_declares(declares);
+  if (name.nilp())
+    name = Cons_O::createList(cl::_sym_lambda,
+                              comp::lambda_list_for_name(lambda_list));
+  Cfunction_sp function = Cfunction_O::make(module, name, docstring, lambda_list);
+  Context_sp context = Context_O::make(cl::_sym_T_O, function);
+  Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(),
+                                  env->blocks(), env->funs(), 0);
+  Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
+  function->setIndex(ind.unsafe_fixnum());
+  eval::funcall(_sym_compile_with_lambda_list,
+                lambda_list, body, lenv, context);
+  context->assemble0(vm_return);
+  return function;
+}
+
 CL_DEFUN void compile_function(T_sp fnameoid, Lexenv_sp env, Context_sp ctxt) {
   bool mvp;
   if (!(ctxt->receiving().fixnump())) mvp = true;
   else if (ctxt->receiving().unsafe_fixnum() == 0) return;
   else mvp = false;
   if (gc::IsA<Cons_sp>(fnameoid) && oCar(fnameoid) == cl::_sym_lambda) {
-    T_sp tfun = eval::funcall(_sym_compile_lambda,
-                              oCadr(fnameoid), oCddr(fnameoid),
-                              env, ctxt->module());
-    Cfunction_sp fun = gc::As<Cfunction_sp>(tfun);
+    Cfunction_sp fun = compile_lambda(oCadr(fnameoid), oCddr(fnameoid),
+                                      env, ctxt->module());
     ComplexVector_T_sp closed = fun->closed();
     for (size_t i = 0; i < closed->length(); ++i)
       ctxt->reference_lexical_info(gc::As<LexicalVarInfo_sp>((*closed)[i]));
@@ -1006,12 +1042,10 @@ CL_DEFUN void compile_labels(List_sp definitions, List_sp body,
     T_sp block = Cons_O::createList(cl::_sym_block,
                                     core__function_block_name(name),
                                     locally);
-    T_sp tfun = eval::funcall(_sym_compile_lambda,
-                              oCadr(definition),
-                              Cons_O::createList(block),
-                              new_env2, ctxt->module());
-    size_t literal_index = ctxt->literal_index(tfun);
-    Cfunction_sp fun = gc::As<Cfunction_sp>(tfun);
+    Cfunction_sp fun = compile_lambda(oCadr(definition),
+                                      Cons_O::createList(block),
+                                      new_env2, ctxt->module());
+    size_t literal_index = ctxt->literal_index(fun);
     if (fun->closed()->length() == 0) // not a closure- easy
       ctxt->assemble1(vm_const, literal_index);
     else {
@@ -1472,8 +1506,7 @@ CL_DEFUN GlobalBytecodeEntryPoint_sp bytecompile(T_sp lambda_expression,
   Module_sp module = Module_O::make();
   T_sp lambda_list = oCadr(lambda_expression);
   T_sp body = oCddr(lambda_expression);
-  Cfunction_sp cf = eval::funcall(_sym_compile_lambda,
-                                  lambda_list, body, env, module);
+  Cfunction_sp cf = compile_lambda(lambda_list, body, env, module);
   return cf->link_function(Cons_O::create(lambda_expression, env));
 }
 
