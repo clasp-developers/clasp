@@ -76,7 +76,7 @@ Lexenv_sp Lexenv_O::bind_vars(List_sp vars, Context_sp ctxt) {
     new_vars = Cons_O::create(pair, new_vars);
   }
   return Lexenv_O::make(new_vars, this->tags(), this->blocks(),
-                        this->funs(), frame_end);
+                        this->funs(), this->notinlines(), frame_end);
 }
 
 Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
@@ -89,7 +89,15 @@ Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
     new_vars = Cons_O::create(pair, new_vars);
   }
   return Lexenv_O::make(new_vars, this->tags(), this->blocks(),
-                        this->funs(), this->frameEnd());
+                        this->funs(), this->notinlines(), this->frameEnd());
+}
+
+Lexenv_sp Lexenv_O::add_notinlines(List_sp fnames) {
+  if (fnames.nilp()) return this->asSmartPtr();
+  else return Lexenv_O::make(this->vars(), this->tags(), this->blocks(),
+                             this->funs(),
+                             Cons_O::append(fnames, this->notinlines()),
+                             this->frameEnd());
 }
 
 Lexenv_sp Lexenv_O::macroexpansion_environment() {
@@ -110,7 +118,7 @@ Lexenv_sp Lexenv_O::macroexpansion_environment() {
       new_funs << pair;
   }
   return Lexenv_O::make(new_vars.cons(), nil<T_O>(), nil<T_O>(),
-                        new_funs.cons(), 0);
+                        new_funs.cons(), this->notinlines(), 0);
 }
 
 CL_LAMBDA(context opcode &rest operands)
@@ -798,6 +806,20 @@ CL_DEFUN void compile_progn(List_sp forms, Lexenv_sp env, Context_sp ctxt) {
     }
 }
 
+// Given a list of declaration specifiers as returned by extract_declares_etc,
+// return a list of symbols declared notinline.
+static List_sp decl_notinlines(List_sp declares) {
+  ql::list result;
+  for (auto cur : declares) {
+    T_sp spec = oCar(cur);
+    if (gc::IsA<Cons_sp>(spec)
+        && (oCar(spec) == cl::_sym_notinline)) {
+      for (auto dc : gc::As<List_sp>(oCdr(spec))) result << oCar(dc);
+    }
+  }
+  return result.cons();
+}
+
 CL_DEFUN void compile_locally(List_sp body, Lexenv_sp env, Context_sp ctxt) {
   List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
@@ -805,8 +827,9 @@ CL_DEFUN void compile_locally(List_sp body, Lexenv_sp env, Context_sp ctxt) {
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares,
                                                  false, docstring, code, specials);
-  Lexenv_sp inner = env->add_specials(specials);
-  compile_progn(code, inner, ctxt);
+  Lexenv_sp inner1 = env->add_specials(specials);
+  Lexenv_sp inner2 = env->add_notinlines(decl_notinlines(declares));
+  compile_progn(code, inner2, ctxt);
 }
 
 CL_DEFUN bool special_binding_p(Symbol_sp sym, List_sp specials,
@@ -856,6 +879,7 @@ CL_DEFUN void compile_let(List_sp bindings, List_sp body,
     }
   }
   ctxt->emit_bind(lexical_binding_count, env->frameEnd());
+  post_binding_env = post_binding_env->add_notinlines(decl_notinlines(declares));
   compile_progn(code, post_binding_env, ctxt);
   ctxt->emit_unbind(special_binding_count);
 }
@@ -893,6 +917,7 @@ CL_DEFUN void compile_letSTAR(List_sp bindings, List_sp body,
       ctxt->assemble1(vm_set, frame_start);
     }
   }
+  new_env = new_env->add_notinlines(decl_notinlines(declares));
   // We make a new environment to make sure free special declarations get
   // through even if this let* doesn't bind them.
   // This creates duplicate alist entries for anything that _is_ bound
@@ -1163,11 +1188,15 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body,
   // Generate aux and the body as a let*.
   // We repeat the special declarations so that let* will know the auxs are
   // special, and so that any free special declarations are processed.
+  // Similarly for notinline.
   ql::list auxbinds;
   for (auto &it : auxs)
     auxbinds << Cons_O::createList(it._ArgTarget, it._Expression);
   T_sp specialdecl = Cons_O::create(cl::_sym_special, specials);
-  T_sp declexpr = Cons_O::createList(cl::_sym_declare, specialdecl);
+  T_sp notinlinedecl = Cons_O::create(cl::_sym_notinline,
+                                      decl_notinlines(declares));
+  T_sp declexpr = Cons_O::createList(cl::_sym_declare,
+                                     specialdecl, notinlinedecl);
   T_sp lbody = Cons_O::create(declexpr, code);
   compile_letSTAR(auxbinds.cons(), lbody, new_env, context);
   // Finally, clean up any special bindings.
@@ -1192,7 +1221,8 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body,
   Cfunction_sp function = Cfunction_O::make(module, name, docstring, lambda_list);
   Context_sp context = Context_O::make(cl::_sym_T_O, function);
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(),
-                                  env->blocks(), env->funs(), 0);
+                                  env->blocks(), env->funs(),
+                                  env->notinlines(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
   compile_with_lambda_list(lambda_list, body, lenv, context);
@@ -1265,6 +1295,7 @@ CL_DEFUN void compile_flet(List_sp definitions, List_sp body,
                                       new_env1->blocks(),
                                       Cons_O::append(funs.cons(),
                                                      new_env1->funs()),
+                                      new_env1->notinlines(),
                                       new_env1->frameEnd());
   compile_locally(body, new_env2, ctxt);
 }
@@ -1294,6 +1325,7 @@ CL_DEFUN void compile_labels(List_sp definitions, List_sp body,
                                       new_env1->blocks(),
                                       Cons_O::append(funs.cons(),
                                                      new_env1->funs()),
+                                      new_env1->notinlines(),
                                       new_env1->frameEnd());
   for (auto cur : definitions) {
     Cons_sp definition = gc::As_unsafe<Cons_sp>(oCar(cur));
@@ -1453,7 +1485,8 @@ CL_DEFUN void compile_tagbody(List_sp statements,
                                 new_tags);
   }
   Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), new_tags, nenv->blocks(),
-                                   nenv->funs(), nenv->frameEnd());
+                                   nenv->funs(), nenv->notinlines(),
+                                   nenv->frameEnd());
   // Bind the dynamic environment.
   ctxt->assemble1(vm_entry, dynenv_info->frameIndex());
   // Compile the body, emitting the tag destination labels.
@@ -1505,7 +1538,8 @@ CL_DEFUN void compile_block(Symbol_sp name, List_sp body,
   Cons_sp new_pair = Cons_O::create(name, Cons_O::create(dynenv_info, label));
   Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), nenv->tags(),
                                    Cons_O::create(new_pair, nenv->blocks()),
-                                   nenv->funs(), nenv->frameEnd());
+                                   nenv->funs(), nenv->notinlines(),
+                                   nenv->frameEnd());
   // We force single values into multiple so that we can uniformly PUSH afterward.
   // Specifically: if we're returning 0 values, there's no problem anyway.
   // If we're returning multiple values, the local and nonlocal returns just
@@ -1615,7 +1649,8 @@ static void compile_call(T_sp args, Lexenv_sp env, Context_sp context) {
 }
 
 CL_DEFUN Lexenv_sp make_null_lexical_environment() {
-  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
+  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(),
+                        nil<T_O>(), 0);
 }
 
 CL_DEFUN void compile_load_time_value(T_sp form, Lexenv_sp env, Context_sp ctxt) {
@@ -1650,7 +1685,7 @@ CL_DEFUN void compile_symbol_macrolet(List_sp bindings, List_sp body,
     vars = Cons_O::create(Cons_O::create(name, info), vars);
   }
   Lexenv_sp nenv = Lexenv_O::make(vars, env->tags(), env->blocks(), env->funs(),
-                                  env->frameEnd());
+                                  env->notinlines(), env->frameEnd());
   compile_locally(body, nenv, context);
 }
 
@@ -1670,7 +1705,7 @@ CL_DEFUN void compile_macrolet(List_sp bindings, List_sp body,
     funs = Cons_O::create(Cons_O::create(name, info), funs);
   }
   Lexenv_sp nenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(),
-                                  funs, env->frameEnd());
+                                  funs, env->notinlines(), env->frameEnd());
   compile_locally(body, nenv, context);
 }
 
