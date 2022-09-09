@@ -1320,20 +1320,64 @@ static void compile_call(T_sp args, Lexenv_sp env, Context_sp context) {
   context->emit_call(argcount);
 }
 
-// to be replaced with c++ impls
-SYMBOL_EXPORT_SC_(CompPkg, compile_load_time_value);
-static void compile_load_time_value(T_sp form, Lexenv_sp env, Context_sp ctxt) {
-  eval::funcall(_sym_compile_load_time_value, form, env, ctxt);
+CL_DEFUN Lexenv_sp make_null_lexical_environment() {
+  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
 }
-SYMBOL_EXPORT_SC_(CompPkg, compile_symbol_macrolet);
-static void compile_symbol_macrolet(List_sp bindings, List_sp body,
-                                    Lexenv_sp env, Context_sp context) {
-  eval::funcall(_sym_compile_symbol_macrolet, bindings, body, env, context);
+
+CL_DEFUN void compile_load_time_value(T_sp form, Lexenv_sp env, Context_sp ctxt) {
+  // TODO: compile-file semantics?
+  // Here we just use funcall of bytecompile to do eval. In the future we might
+  // want to just call eval, which may or may not go through bytecompilation.
+  Lexenv_sp nenv = make_null_lexical_environment();
+  T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(), form);
+  GlobalBytecodeEntryPoint_sp thunk = bytecompile(lexpr, nenv);
+  T_sp value = eval::funcall(thunk);
+  compile_literal(value, env, ctxt);
 }
-SYMBOL_EXPORT_SC_(CompPkg, compile_macrolet);
-static void compile_macrolet(List_sp bindings, List_sp body,
-                             Lexenv_sp env, Context_sp context) {
-  eval::funcall(_sym_compile_macrolet, bindings, body, env, context);
+
+CL_DEFUN void compile_symbol_macrolet(List_sp bindings, List_sp body,
+                                      Lexenv_sp env, Context_sp context) {
+  T_sp vars = env->vars();
+  Lexenv_sp menv = env->macroexpansion_environment();
+  for (auto cur : bindings) {
+    T_sp binding = oCar(cur);
+    Symbol_sp name = gc::As<Symbol_sp>(oCar(binding));
+    T_sp expansion = oCadr(binding);
+    // FIXME: Compiling a new function for the expander is overkill
+    T_sp formv = cl__gensym(SimpleBaseString_O::make("FORM"));
+    T_sp envv = cl__gensym(SimpleBaseString_O::make("ENV"));
+    T_sp lexpr = Cons_O::createList(cl::_sym_lambda,
+                                    Cons_O::createList(formv, envv),
+                                    Cons_O::createList(cl::_sym_declare,
+                                                       Cons_O::createList(cl::_sym_ignore, formv, envv)),
+                                    Cons_O::createList(cl::_sym_quote, expansion));
+    GlobalBytecodeEntryPoint_sp expander = bytecompile(lexpr, menv);
+    SymbolMacroVarInfo_sp info = SymbolMacroVarInfo_O::make(expander);
+    vars = Cons_O::create(Cons_O::create(name, info), vars);
+  }
+  Lexenv_sp nenv = Lexenv_O::make(vars, env->tags(), env->blocks(), env->funs(),
+                                  env->frameEnd());
+  compile_locally(body, nenv, context);
+}
+
+CL_DEFUN void compile_macrolet(List_sp bindings, List_sp body,
+                               Lexenv_sp env, Context_sp context) {
+  T_sp funs = env->funs();
+  Lexenv_sp menv = env->macroexpansion_environment();
+  for (auto cur : bindings) {
+    T_sp binding = oCar(cur);
+    T_sp name = oCar(binding);
+    T_sp lambda_list = oCadr(binding);
+    T_sp body = oCddr(binding);
+    T_sp eform = eval::funcall(ext::_sym_parse_macro,
+                               name, lambda_list, body, menv);
+    GlobalBytecodeEntryPoint_sp expander = bytecompile(eform, menv);
+    LocalMacroInfo_sp info = LocalMacroInfo_O::make(expander);
+    funs = Cons_O::create(Cons_O::create(name, info), funs);
+  }
+  Lexenv_sp nenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(),
+                                  funs, env->frameEnd());
+  compile_locally(body, nenv, context);
 }
 
 CL_DEFUN void compile_combination(T_sp head, T_sp rest,
@@ -1416,10 +1460,6 @@ CL_DEFUN void compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
   else if (form.consp())
     compile_combination(oCar(form), oCdr(form), env, context);
   else compile_literal(form, env, context);
-}
-
-CL_DEFUN Lexenv_sp make_null_lexical_environment() {
-  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
 }
 
 CL_LAMBDA(lambda-expression &optional (env (make-null-lexical-environment)))

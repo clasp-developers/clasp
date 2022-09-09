@@ -636,6 +636,9 @@ public:
   CL_DEFMETHOD GlobalBytecodeEntryPoint_sp link_function(T_sp compile_info);
 };
 
+// Main entry point
+GlobalBytecodeEntryPoint_sp bytecompile(T_sp, Lexenv_sp);
+
 }; // namespace comp
 
 #endif /* guard */

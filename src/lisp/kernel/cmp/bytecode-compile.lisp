@@ -65,15 +65,6 @@
 
 ;;;
 
-(defun (setf cmp:lexical-var-info/closed-over-p) (new info)
-  (cmp:lexical-var-info/setf-closed-over-p info new))
-(defun (setf cmp:lexical-var-info/set-p) (new info)
-  (cmp:lexical-var-info/setf-set-p info new))
-
-(defun make-symbol-macro-var-info (expansion)
-  (cmp:symbol-macro-var-info/make
-   (lambda (form env) (declare (ignore form env)) expansion)))
-
 (defun make-lexical-environment (parent &key (vars (cmp:lexenv/vars parent))
                                           (tags (cmp:lexenv/tags parent))
                                           (blocks (cmp:lexenv/blocks parent))
@@ -82,24 +73,6 @@
   (cmp:lexenv/make vars tags blocks funs frame-end))
 
 (deftype lambda-expression () '(cons (eql lambda) (cons list list)))
-#+(or)
-(defun bytecompile (lambda-expression
-                    &optional (env (make-null-lexical-environment)))
-  (check-type lambda-expression lambda-expression)
-  (logf "vvvvvvvv bytecompile ~%Form: ~s~%" lambda-expression)
-  (let* ((module (cmp:module/make))
-         (lambda-list (cadr lambda-expression))
-         (body (cddr lambda-expression)))
-    (logf "-------- About to link~%")
-    (multiple-value-prog1
-        (link-function (compile-lambda lambda-list body env module) (cons lambda-expression env))
-      (logf "^^^^^^^^^ Compile done~%"))))
-
-(defun compile-load-time-value (form env context)
-  (if *generate-compile-file-load-time-values*
-      (error "Handle compile-file")
-      (let ((value (eval form)))
-        (compile-literal value env context))))
 
 ;;; (list (car list) (car (FUNC list)) (car (FUNC (FUNC list))) ...)
 (defun collect-by (func list)
@@ -342,28 +315,3 @@
       (compile-with-lambda-list lambda-list body env context)
       (assemble context +return+)
       function)))
-
-(defun compile-symbol-macrolet (bindings body env context)
-  (let ((smacros nil))
-    (dolist (binding bindings)
-      (push (cons (car binding) (make-symbol-macro-var-info (cadr binding)))
-            smacros))
-    (compile-locally body (make-lexical-environment
-                           env
-                           :vars (append (nreverse smacros) (cmp:lexenv/vars env)))
-                     context)))
-
-#+clasp
-(defun compile-macrolet (bindings body env context)
-  (let ((macros nil))
-    (dolist (binding bindings)
-      (let* ((name (car binding)) (lambda-list (cadr binding))
-             (body (cddr binding))
-             (eform (ext:parse-macro name lambda-list body env))
-             (aenv (lexenv/macroexpansion-environment env))
-             (expander (bytecompile eform aenv))
-             (info (cmp:local-macro-info/make expander)))
-        (push (cons name info) macros)))
-    (compile-locally body (make-lexical-environment
-                           env :funs (append macros (cmp:lexenv/funs env)))
-                     context)))
