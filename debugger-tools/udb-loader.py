@@ -62,7 +62,7 @@ class LispFrame (gdb.Command):
     
 class LispDisassemble (gdb.Command):
   def __init__ (self):
-    super (LispTest, self).__init__ ("ldis", gdb.COMMAND_USER)
+    super (LispDisassemble, self).__init__ ("ldis", gdb.COMMAND_USER)
 
   def invoke (self, arg, from_tty):
     global inspector_mod, debugger_mod
