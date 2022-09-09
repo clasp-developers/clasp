@@ -473,17 +473,19 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-host))
 
 (defun default-target-stage ()
-  (let ((stage (if (member :eclasp *features*)
-                   "e"
-                   (if (member :cclasp *features*)
-                       "c"
-                       (if (member :bclasp *features*)
-                           (if (member :compiling-cleavir *features*)
-                               "pre"
-                               "b")
-                           "a")))))
-    stage))
-
+  (if (member :eclasp *features*)
+      "e"
+      (if (member :mclasp *features*)
+          "m"
+          (if (member :vclasp *features*)
+              "v"
+              (if (member :cclasp *features*)
+                  "c"
+                  (if (member :bclasp *features*)
+                      (if (member :compiling-cleavir *features*)
+                          "pre"
+                          "b")
+                      "a"))))))
 
 (defun build-configuration ()
   (let ((gc (cond

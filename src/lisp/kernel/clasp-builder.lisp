@@ -1059,27 +1059,26 @@ been initialized with install path versus the build path of the source code file
 (defun system-load-time (file)
   (gethash file *system-load-times* 0))
 
-(defun load-vclasp (&key backend
-                         (bytecode t)
-                      (clean (ext:getenv "CLASP_CLEAN"))
-                      (load-verbose (ext:getenv "CLASP_LOAD_VERBOSE"))
-                      (output-file (build-common-lisp-bitcode-pathname))
+(defun load-vclasp (&key (bytecode t)
+                         (clean (ext:getenv "CLASP_CLEAN"))
+                         (load-verbose (ext:getenv "CLASP_LOAD_VERBOSE"))
+                         (output-file (build-common-lisp-bitcode-pathname))
                          reproducible
                          (system-sort (ext:getenv "CLASP_SYSTEM_SORT"))
                          (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
                                           (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
                                           6))
                          (system (command-line-arguments-as-list)))
+  (setq *features*
+        (if bytecode
+            (list* :vclasp :bytecode :staging :bytecodelike *features*)
+          (list* :mclasp :staging *features*)))
   (let ((*load-verbose* load-verbose)
         (installed-system (if reproducible
                               (extract-installed-system system)))
         (*system-load-times* (make-hash-table :test #'eql))
-        (*target-backend* (default-target-backend backend))
+        (*target-backend* (default-target-backend))
         (stage 0))
-    (setq *features*
-          (if bytecode
-              (list* :bytecode :staging :bytecodelike *features*)
-              (list* :staging *features*)))
     (tagbody
      next
       (if (< stage stage-count)
