@@ -787,6 +787,9 @@ def do_lisp_frame(debugger,arg):
     print("%s" % call)
 
 def do_lisp_test(debugger,arg):
+    print("Do nothing for test")
+
+def do_lisp_disassemble(debugger,arg):
     tptr = arg_to_tptr(debugger,arg)
     obj = translate_tagged_ptr(debugger,tptr)
     literals = obj.field("_Literals")
@@ -804,7 +807,7 @@ def do_lisp_test(debugger,arg):
     print( "test literals       = %x" % literals_start )
     (vm,instructions,labels) = disassemble_region(debugger,literals_start,bytecode_start,bytecode_end)
     print_disassembly(vm,instructions,labels)
-    
+
 def do_lisp_print(debugger_mod,arg):
     #print "In inspect args: %s" % args
     tptr = arg_to_tptr(debugger_mod,arg)
