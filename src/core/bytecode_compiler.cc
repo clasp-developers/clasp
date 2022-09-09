@@ -2,7 +2,7 @@
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/evaluator.h> // af_interpreter_lookup_macro, extract_decl...
 #include <clasp/core/sysprop.h> // core__get_sysprop
-#include <clasp/core/lambdaListHandler.h> // lambda_list_for_name
+#include <clasp/core/lambdaListHandler.h> // lambda list parsing
 #include <clasp/core/designators.h> // functionDesignator
 #include <clasp/core/primitives.h> // gensym, function_block_name
 #include <clasp/core/bytecode.h>
@@ -810,7 +810,7 @@ CL_DEFUN void compile_locally(List_sp body, Lexenv_sp env, Context_sp ctxt) {
 }
 
 CL_DEFUN bool special_binding_p(Symbol_sp sym, List_sp specials,
-                                     Lexenv_sp env) {
+                                Lexenv_sp env) {
   if (specials.notnilp()
       && specials.unsafe_cons()->memberEq(sym).notnilp())
     return true;
@@ -972,8 +972,209 @@ CL_DEFUN Lexenv_sp compile_optional_or_key_item(Symbol_sp var,
   return env;
 }
 
+CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body,
+                                       Lexenv_sp env, Context_sp context) {
+  List_sp declares = nil<T_O>();
+  gc::Nilable<String_sp> docstring;
+  List_sp code;
+  List_sp specials;
+  eval::extract_declares_docstring_code_specials(body, declares,
+                                                 true, docstring, code, specials);
+  // docstring and declares ignored
+  gctools::Vec0<RequiredArgument> reqs;
+  gctools::Vec0<OptionalArgument> optionals;
+  gctools::Vec0<KeywordArgument> keys;
+  gctools::Vec0<AuxArgument> auxs;
+  RestArgument restarg;
+  T_sp key_flag;
+  T_sp aokp;
+  parse_lambda_list(lambda_list, cl::_sym_Function_O,
+                    reqs, optionals, restarg,
+                    key_flag, keys, aokp, auxs);
+  Cfunction_sp function = context->cfunction();
+  Label_sp entry_point = function->entry_point();
+  size_t min_count = reqs.size();
+  size_t optional_count = optionals.size();
+  size_t max_count = min_count + optional_count;
+  bool morep = restarg._ArgTarget.notnilp() || key_flag.notnilp();
+  ql::list lreqs;
+  for (auto &it : reqs) lreqs << it._ArgTarget;
+  Lexenv_sp new_env = env->bind_vars(lreqs.cons(), context);
+  size_t special_binding_count = 0;
+  // An alist from optional and key variables to their local indices.
+  // This is needed so that we can properly mark any that are special as
+  // such while leaving them temporarily "lexically" bound during
+  // argument parsing.
+  List_sp opt_key_indices = nil<T_O>();
+
+  entry_point->contextualize(context);
+  // Generate argument count check.
+  if ((min_count > 0) && (min_count == max_count) && !morep)
+    context->assemble1(vm_check_arg_count_EQ_, min_count);
+  else {
+    if (min_count > 0)
+      context->assemble1(vm_check_arg_count_GE_, min_count);
+    if (!morep)
+      context->assemble1(vm_check_arg_count_LE_, max_count);
+  }
+  if (min_count > 0) {
+    // Bind the required arguments.
+    context->assemble1(vm_bind_required_args, min_count);
+    ql::list sreqs; // required parameters that are special
+    for (auto &it : reqs) {
+      // We account for special declarations in outer environments/globally
+      // by checking the original environment - not our new one - for info.
+      T_sp var = it._ArgTarget;
+      LexicalVarInfo_sp lvinfo = gc::As<LexicalVarInfo_sp>(var_info(var, new_env));
+      if (special_binding_p(var, specials, env)) {
+        sreqs << var;
+        context->assemble1(vm_ref, lvinfo->frameIndex());
+        context->emit_special_bind(var);
+        ++special_binding_count; // not in lisp - bug?
+      } else
+        context->maybe_emit_encage(gc::As<LexicalVarInfo_sp>(lvinfo));
+    }
+    new_env = new_env->add_specials(sreqs.cons());
+  }
+  if (optional_count > 0) {
+    // Generate code to bind the provided optional args, unprovided args will
+    // be initialized with the unbound marker.
+    context->assemble2(vm_bind_optional_args, min_count, optional_count);
+    // Mark the locations of each optional. Note that we do this even if
+    // the variable will be specially bound.
+    ql::list opts;
+    for (auto &it : optionals) opts << it._ArgTarget;
+    new_env = new_env->bind_vars(opts.cons(), context);
+    // Add everything to opt-key-indices.
+    for (auto &it : optionals) {
+      T_sp var = it._ArgTarget;
+      LexicalVarInfo_sp lvinfo = gc::As<LexicalVarInfo_sp>(var_info(var, new_env));
+      opt_key_indices = Cons_O::create(Cons_O::create(var,
+                                                      clasp_make_fixnum(lvinfo->frameIndex())),
+                                       opt_key_indices);
+    }
+    // Re-mark anything that's special in the outer context as such, so that
+    // default initforms properly treat them as special.
+    ql::list sopts;
+    for (auto &it : optionals)
+      if (gc::IsA<SpecialVarInfo_sp>(var_info(it._ArgTarget, env)))
+        sopts << it._ArgTarget;
+    new_env = new_env->add_specials(sopts.cons());
+  }
+  if (key_flag.notnilp()) {
+    // Generate code to parse the key args. As with optionals, we don't do
+    // defaulting yet.
+    ql::list keynames;
+    // Give each key a literal index. This is always a new one, to ensure that
+    // they are consecutive even if the keyword appeared earlier in the literals.
+    for (auto &it : keys) context->new_literal_index(it._Keyword);
+    // now the actual instruction
+    context->emit_parse_key_args(max_count, keys.size(),
+                                 context->literal_index(keys[0]._Keyword),
+                                 new_env->frameEnd(),
+                                 aokp.notnilp());
+    ql::list keyvars;
+    ql::list skeys;
+    for (auto &it : keys) {
+      keyvars << it._ArgTarget;
+      if (gc::IsA<SpecialVarInfo_sp>(var_info(it._ArgTarget, env)))
+        skeys << it._ArgTarget;
+    }
+    new_env = new_env->bind_vars(keyvars.cons(), context);
+    for (auto &it : keys) {
+      T_sp var = it._ArgTarget;
+      LexicalVarInfo_sp lvinfo = gc::As<LexicalVarInfo_sp>(var_info(var, new_env));
+      opt_key_indices = Cons_O::create(Cons_O::create(var,
+                                                      clasp_make_fixnum(lvinfo->frameIndex())),
+                                       opt_key_indices);
+    }
+    new_env = new_env->add_specials(skeys.cons());
+  }
+  // Generate defaulting code for optional args, and special-bind them
+  // if necessary.
+  if (optional_count > 0) {
+    Label_sp optional_label = Label_O::make();
+    Label_sp next_optional_label = Label_O::make();
+    for (auto &it : optionals) {
+      optional_label->contextualize(context);
+      T_sp optional_var = it._ArgTarget;
+      T_sp defaulting_form = it._Default;
+      T_sp supplied_var = it._Sensor._ArgTarget;
+      bool optional_special_p = special_binding_p(optional_var, specials, env);
+      T_sp pair
+        = opt_key_indices.unsafe_cons()->assoc(optional_var, nil<T_O>(),
+                                               cl::_sym_eq, nil<T_O>());
+      size_t index = oCdr(pair).unsafe_fixnum();
+      bool supplied_special_p
+        = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
+      new_env = compile_optional_or_key_item(optional_var, defaulting_form, index,
+                                             supplied_var, next_optional_label,
+                                             optional_special_p, supplied_special_p,
+                                             context, new_env);
+      if (optional_special_p) ++special_binding_count;
+      if (supplied_special_p) ++special_binding_count;
+      optional_label = next_optional_label;
+      next_optional_label = Label_O::make();
+    }
+    optional_label->contextualize(context);
+  }
+  // &rest
+  if (restarg._ArgTarget.notnilp()) {
+    Symbol_sp rest = restarg._ArgTarget;
+    context->assemble1(vm_listify_rest_args, max_count);
+    context->assemble1(vm_set, new_env->frameEnd());
+    new_env = new_env->bind_vars(Cons_O::createList(rest), context);
+    LexicalVarInfo_sp lvinfo = gc::As<LexicalVarInfo_sp>(var_info(rest, new_env));
+    if (special_binding_p(rest, specials, env)) {
+      context->assemble1(vm_ref, lvinfo->frameIndex());
+      context->emit_special_bind(rest);
+      ++special_binding_count;
+      new_env = new_env->add_specials(Cons_O::createList(rest));
+    } else
+      context->maybe_emit_encage(lvinfo);
+  }
+  // Generate defaulting code for key args, and special-bind them if necessary
+  if (key_flag.notnilp()) {
+    Label_sp key_label = Label_O::make();
+    Label_sp next_key_label = Label_O::make();
+    for (auto &it : keys) {
+      key_label->contextualize(context);
+      T_sp key_var = it._ArgTarget;
+      T_sp defaulting_form = it._Default;
+      T_sp supplied_var = it._Sensor._ArgTarget;
+      bool key_special_p = special_binding_p(key_var, specials, env);
+      T_sp pair
+         = opt_key_indices.unsafe_cons()->assoc(key_var, nil<T_O>(),
+                                                cl::_sym_eq, nil<T_O>());
+      size_t index = oCdr(pair).unsafe_fixnum();
+      bool supplied_special_p
+        = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
+      new_env = compile_optional_or_key_item(key_var, defaulting_form, index,
+                                             supplied_var, next_key_label,
+                                             key_special_p, supplied_special_p,
+                                             context, new_env);
+      if (key_special_p) ++special_binding_count;
+      if (supplied_special_p) ++special_binding_count;
+      key_label = next_key_label;
+      next_key_label = Label_O::make();
+    }
+    key_label->contextualize(context);
+  }
+  // Generate aux and the body as a let*.
+  // We repeat the special declarations so that let* will know the auxs are
+  // special, and so that any free special declarations are processed.
+  ql::list auxbinds;
+  for (auto &it : auxs)
+    auxbinds << Cons_O::createList(it._ArgTarget, it._Expression);
+  T_sp specialdecl = Cons_O::create(cl::_sym_special, specials);
+  T_sp declexpr = Cons_O::createList(cl::_sym_declare, specialdecl);
+  T_sp lbody = Cons_O::create(declexpr, code);
+  compile_letSTAR(auxbinds.cons(), lbody, new_env, context);
+  // Finally, clean up any special bindings.
+  context->emit_unbind(special_binding_count);
+}
+
 // Compile the lambda expression in MODULE, returning the resulting CFUNCTION.
-SYMBOL_EXPORT_SC_(CompPkg, compile_with_lambda_list);
 CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body,
                                      Lexenv_sp env, Module_sp module) {
   List_sp declares = nil<T_O>();
@@ -994,8 +1195,7 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body,
                                   env->blocks(), env->funs(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
-  eval::funcall(_sym_compile_with_lambda_list,
-                lambda_list, body, lenv, context);
+  compile_with_lambda_list(lambda_list, body, lenv, context);
   context->assemble0(vm_return);
   return function;
 }

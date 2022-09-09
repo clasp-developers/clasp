@@ -306,6 +306,10 @@ public:
   virtual ~LambdaListHandler_O(){};
 };
 
+bool parse_lambda_list(List_sp, T_sp, gctools::Vec0<RequiredArgument>&,
+                       gctools::Vec0<OptionalArgument>&, RestArgument&,
+                       T_sp&, gctools::Vec0<KeywordArgument>&,
+                       T_sp&, gctools::Vec0<AuxArgument>&);
 T_sp lambda_list_for_name(T_sp);
  List_sp core__canonicalize_declarations(List_sp declares);
 };
