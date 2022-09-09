@@ -981,31 +981,11 @@ been initialized with install path versus the build path of the source code file
     (prepare-metadata system installed-system)
     (compile-cclasp* output-file system t)))
 
-(defun pprint-features (new-features old-features)
-  (if (null old-features)
-      (message :info "Features {}" *features*)
-      (let ((added-features nil)
-            (cur new-features))
-        (tagbody
-         top
-           (let ((new-feat (car cur)))
-             (if (null (member new-feat old-features))
-                 (setq added-features (cons new-feat added-features))))
-           (setq cur (cdr cur))
-           (if cur (go top)))
-        (let ((removed-features nil)
-              (cur old-features))
-          (tagbody
-           top
-             (let ((old-feat (car cur)))
-               (if (null (member old-feat new-features))
-                   (setq (removed-features (cons old-feat removed-features)))))
-             (setq cur (cdr cur))
-             (if cur (go top)))
-          (if removed-features
-              (message :info "Removed features {}" removed-features))
-          (if added-features
-              (message :info "Added features {}" added-features))))))
+(defun pprint-features (added-features removed-features)
+  (if removed-features
+      (message :info "Removed features {}" removed-features))
+  (if added-features
+      (message :info "Added features {}" added-features)))
 
 (export 'pprint-features)
 
@@ -1051,42 +1031,54 @@ been initialized with install path versus the build path of the source code file
              stage
              (float (/ (- (get-internal-run-time) stage-time) internal-time-units-per-second)))))
 
-(defun stage-features (&rest rest &aux (features +stage-features+))
+(defun stage-features (&rest new-features
+                       &aux (features +stage-features+)
+                       feature added-features removed-features) 
   (tagbody
-   next
-     (if features
-         (progn
-           (setq *features* (core:remove-equal (car features) *features*)
-                 features (cdr features))
-           (go next))))
-  (let ((old-features (copy-seq *features*)))
-    (setq *features* (append rest *features*))
-    (pprint-features *features* old-features)))
+   remove-feature
+    (if features
+        (progn
+          (setq feature (car features)
+                features (cdr features))
+          (if (and (not (member feature new-features))
+                   (member feature *features*))
+              (setq *features* (core:remove-equal feature *features*)
+                    removed-features (cons feature removed-features)))
+          (go remove-feature)))
+   add-feature
+    (if new-features
+        (progn
+          (setq feature (car new-features)
+                new-features (cdr new-features))
+          (if (not (member feature *features*))
+              (setq *features* (cons feature *features*)
+                    added-features (cons feature added-features)))
+          (go add-feature))))
+  (pprint-features added-features removed-features))
 
 (defun system-load-time (file)
   (gethash file *system-load-times* 0))
 
-(defun load-vclasp (&key backend
-                         (bytecode t)
-                      (clean (ext:getenv "CLASP_CLEAN"))
-                      (load-verbose (ext:getenv "CLASP_LOAD_VERBOSE"))
-                      (output-file (build-common-lisp-bitcode-pathname))
+(defun load-vclasp (&key (bytecode t)
+                         (clean (ext:getenv "CLASP_CLEAN"))
+                         (load-verbose (ext:getenv "CLASP_LOAD_VERBOSE"))
+                         (output-file (build-common-lisp-bitcode-pathname))
                          reproducible
                          (system-sort (ext:getenv "CLASP_SYSTEM_SORT"))
                          (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
                                           (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
                                           6))
                          (system (command-line-arguments-as-list)))
+  (setq *features*
+        (if bytecode
+            (list* :vclasp :bytecode :staging :bytecodelike *features*)
+          (list* :mclasp :staging *features*)))
   (let ((*load-verbose* load-verbose)
         (installed-system (if reproducible
                               (extract-installed-system system)))
         (*system-load-times* (make-hash-table :test #'eql))
-        (*target-backend* (default-target-backend backend))
+        (*target-backend* (default-target-backend))
         (stage 0))
-    (setq *features*
-          (if bytecode
-              (list* :bytecode :staging :bytecodelike *features*)
-              (list* :staging *features*)))
     (tagbody
      next
       (if (< stage stage-count)
