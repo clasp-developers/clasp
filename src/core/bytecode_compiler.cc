@@ -1418,4 +1418,23 @@ CL_DEFUN void compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
   else compile_literal(form, env, context);
 }
 
+CL_DEFUN Lexenv_sp make_null_lexical_environment() {
+  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
+}
+
+CL_LAMBDA(lambda-expression &optional (env (make-null-lexical-environment)))
+CL_DEFUN GlobalBytecodeEntryPoint_sp bytecompile(T_sp lambda_expression,
+                                                 Lexenv_sp env) {
+  if (!gc::IsA<Cons_sp>(lambda_expression)
+      || (oCar(lambda_expression) != cl::_sym_lambda))
+    SIMPLE_ERROR("bytecompile passed a non-lambda-expression: %s",
+                 _rep_(lambda_expression));
+  Module_sp module = Module_O::make();
+  T_sp lambda_list = oCadr(lambda_expression);
+  T_sp body = oCddr(lambda_expression);
+  Cfunction_sp cf = eval::funcall(_sym_compile_lambda,
+                                  lambda_list, body, env, module);
+  return cf->link_function(Cons_O::create(lambda_expression, env));
+}
+
 }; //namespace comp

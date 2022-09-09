@@ -74,9 +74,6 @@
   (cmp:symbol-macro-var-info/make
    (lambda (form env) (declare (ignore form env)) expansion)))
 
-(defun make-null-lexical-environment ()
-  (cmp:lexenv/make nil nil nil nil 0))
-
 (defun make-lexical-environment (parent &key (vars (cmp:lexenv/vars parent))
                                           (tags (cmp:lexenv/tags parent))
                                           (blocks (cmp:lexenv/blocks parent))
@@ -85,7 +82,7 @@
   (cmp:lexenv/make vars tags blocks funs frame-end))
 
 (deftype lambda-expression () '(cons (eql lambda) (cons list list)))
-
+#+(or)
 (defun bytecompile (lambda-expression
                     &optional (env (make-null-lexical-environment)))
   (check-type lambda-expression lambda-expression)
