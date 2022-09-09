@@ -188,7 +188,7 @@
                      (and supplied-var
                           (special-binding-p supplied-var specials env))))
               (setq new-env
-                    (compile-optional/key-item optional-var defaulting-form index
+                    (compile-optional-or-key-item optional-var defaulting-form index
                                                supplied-var next-optional-label
                                                optional-special-p supplied-special-p
                                                context new-env))
@@ -223,7 +223,7 @@
                      (and supplied-var
                           (special-binding-p supplied-var specials env))))
               (setq new-env
-                    (compile-optional/key-item key-var defaulting-form index
+                    (compile-optional-or-key-item key-var defaulting-form index
                                                supplied-var next-key-label
                                                key-special-p supplied-special-p
                                                context new-env))
@@ -243,52 +243,3 @@
             (push (list (car aux) (cadr aux)) bindings)))
         ;; Finally, clean up any special bindings.
         (context/emit-unbind context special-binding-count)))))
-
-;;; Compile an optional/key item and return the resulting environment.
-(defun compile-optional/key-item (var defaulting-form var-index supplied-var next-label
-                                  var-specialp supplied-specialp context env)
-  (flet ((default (suppliedp specialp var info)
-           (cond (suppliedp
-                  (cond (specialp
-                         (assemble-maybe-long context +ref+ var-index)
-                         (context/emit-special-bind context var))
-                        (t
-                         (context/maybe-emit-encage context info))))
-                 (t
-                  (compile-form defaulting-form env
-                                (context/sub context 1))
-                  (cond (specialp
-                         (context/emit-special-bind context var))
-                        (t
-                         (context/maybe-emit-make-cell context info)
-                         (assemble-maybe-long context +set+ var-index))))))
-         (supply (suppliedp specialp var info)
-           (if suppliedp
-               (compile-literal t env (context/sub context 1))
-               (assemble context +nil+))
-           (cond (specialp
-                  (context/emit-special-bind context var))
-                 (t
-                  (context/maybe-emit-make-cell context info)
-                  (assemble-maybe-long
-                   context +set+
-                   (cmp:lexical-var-info/frame-index info))))))
-    (let ((supplied-label (cmp:label/make))
-          (varinfo (cmp:var-info var env)))
-      (when supplied-var
-        (setq env (lexenv/bind-vars env (list supplied-var) context)))
-      (let ((supplied-info (cmp:var-info supplied-var env)))
-        (context/emit-jump-if-supplied context supplied-label var-index)
-        (default nil var-specialp var varinfo)
-        (when supplied-var
-          (supply nil supplied-specialp supplied-var supplied-info))
-        (context/emit-jump context next-label)
-        (label/contextualize supplied-label context)
-        (default t var-specialp var varinfo)
-        (when supplied-var
-          (supply t supplied-specialp supplied-var supplied-info))
-        (when var-specialp
-          (setq env (lexenv/add-specials env (list var))))
-        (when supplied-specialp
-          (setq env (lexenv/add-specials env (list supplied-var))))
-        env))))

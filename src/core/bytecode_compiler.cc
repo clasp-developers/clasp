@@ -912,6 +912,66 @@ static T_sp extract_lambda_name_from_declares(List_sp declares) {
   return nil<T_O>();
 }
 
+CL_DEFUN Lexenv_sp compile_optional_or_key_item(Symbol_sp var,
+                                                T_sp defaulting_form,
+                                                size_t var_index,
+                                                Symbol_sp supplied_var,
+                                                Label_sp next_label,
+                                                bool var_specialp,
+                                                bool supplied_specialp,
+                                                Context_sp context,
+                                                Lexenv_sp env) {
+  Label_sp supplied_label = Label_O::make();
+  T_sp varinfo = var_info(var, env);
+  T_sp supinfo = nil<T_O>();
+  if (supplied_var.notnilp()) {
+    env = env->bind_vars(Cons_O::createList(supplied_var), context);
+    supinfo = var_info(supplied_var, env);
+  }
+  context->emit_jump_if_supplied(supplied_label, var_index);
+  // Emit code for the case of the variable not being supplied:
+  // Bind the var to the default, and the suppliedvar to NIL if applicable.
+  compile_form(defaulting_form, env, context->sub(clasp_make_fixnum(1)));
+  if (var_specialp)
+    context->emit_special_bind(var);
+  else {
+    context->maybe_emit_make_cell(gc::As<LexicalVarInfo_sp>(varinfo));
+    context->assemble1(vm_set, var_index);
+  }
+  if (supplied_var.notnilp()) { // bind supplied_var to NIL
+    context->assemble0(vm_nil);
+    if (supplied_specialp)
+      context->emit_special_bind(supplied_var);
+    else {
+      LexicalVarInfo_sp lsinfo = gc::As<LexicalVarInfo_sp>(supinfo);
+      context->maybe_emit_make_cell(lsinfo);
+      context->assemble1(vm_set, lsinfo->frameIndex());
+    }
+  }
+  context->emit_jump(next_label);
+  // Now for when the variable is supplied.
+  supplied_label->contextualize(context);
+  if (var_specialp) { // we have it in a reg, so rebind
+    context->assemble1(vm_ref, var_index);
+    context->emit_special_bind(var);
+  } else // in the reg already, but maybe needs a cell
+    context->maybe_emit_encage(gc::As<LexicalVarInfo_sp>(varinfo));
+  if (supplied_var.notnilp()) {
+    compile_literal(cl::_sym_T_O, env, context->sub(clasp_make_fixnum(1)));
+    if (supplied_specialp)
+      context->emit_special_bind(supplied_var);
+    else {
+      LexicalVarInfo_sp lsinfo = gc::As<LexicalVarInfo_sp>(supinfo);
+      context->maybe_emit_make_cell(lsinfo);
+      context->assemble1(vm_set, lsinfo->frameIndex());
+    }
+  }
+  // That's it for code generation. Now return the new environment.
+  if (var_specialp) env = env->add_specials(Cons_O::createList(var));
+  if (supplied_specialp) env = env->add_specials(Cons_O::createList(supplied_var));
+  return env;
+}
+
 // Compile the lambda expression in MODULE, returning the resulting CFUNCTION.
 SYMBOL_EXPORT_SC_(CompPkg, compile_with_lambda_list);
 CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body,
