@@ -57,6 +57,8 @@ extern "C" {
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/backtrace.h>
+#include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/core/random.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/numbers.h>
@@ -489,8 +491,7 @@ LtvcReturnVoid ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, ch
 LtvcReturnVoid ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t entryPointIndex, const char* name) {
 //  printf("%s:%d:%s make entry-point-index got entryPointIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, entryPointIndex, name );
   core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
-  core::Closure_sp toplevel_closure = core::Closure_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
-  LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
+  LCC_RETURN ret = ep->entry()(ep.raw_(),0,NULL);
 }
 
 // Similar to the above, but puts value in the table.
@@ -499,8 +500,7 @@ LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, 
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
 #endif
-  core::Closure_sp toplevel_closure = core::Closure_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
-  LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
+  LCC_RETURN ret = ep->entry()(ep.raw_(),0,NULL);
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
@@ -511,8 +511,7 @@ LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t en
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
 #endif
-  core::Closure_sp toplevel_closure = core::Closure_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
-  LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
+  LCC_RETURN ret = ep->entry()(ep.raw_(),0,NULL);
 }
 
 };
@@ -785,13 +784,23 @@ __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
   (void)ptr;
 }
 
-void cc_invoke_byte_code_interpreter(gctools::GCRootsInModule* roots, char* byte_code, size_t bytes) {
-//  printf("%s:%d byte_code: %p\n", __FILE__, __LINE__, byte_code);
+void cc_invoke_byte_code_interpreter(gctools::GCRootsInModule* roots, char* byte_code, size_t bytes, void* caller) {
+  printf("%s:%d byte_code interpreter: %p caller: %p\n", __FILE__, __LINE__, byte_code, caller);
   core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(bytes,'\0',false,bytes,(const unsigned char*)byte_code);
   core::T_sp fin = core::cl__make_string_input_stream(str,0,nil<core::T_O>());
   bool log = false;
   if (core::global_debug_byte_code) {
     log = true;
+    llvmo::ObjectFile_sp objectFile;
+    bool found = lookupObjectFileFromEntryPoint( (uintptr_t)caller, objectFile);
+    if (found) {
+      llvmo::SectionedAddress_sp sa = object_file_sectioned_address( caller, objectFile, false);
+      llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(objectFile);
+      const char* functionName = getFunctionNameForAddress(dcontext,sa);
+      printf("%s:%d:%s start-code interpreter from caller %p  %s\n", __FILE__, __LINE__, __FUNCTION__, caller, functionName );
+    } else {
+      printf("%s:%d:%s for caller %p - could not match to ObjectFile_O object\n", __FILE__, __LINE__, __FUNCTION__, caller );
+    }
   }
   byte_code_interpreter(roots,fin,log);
 }

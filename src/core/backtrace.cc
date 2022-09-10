@@ -145,7 +145,7 @@ static T_sp getSourcePosInfoForAddress(llvmo::DWARFContext_sp dcontext, llvmo::S
   return core__makeSourcePosInfo(source_path, true, 0, false, info.Line, true, info.Column, true);
 }
 
-static T_sp dwarf_ep(size_t frameIndex,
+T_sp dwarf_ep(size_t frameIndex,
                      llvmo::ObjectFile_sp ofi,
                      llvmo::DWARFContext_sp dcontext,
                      llvmo::SectionedAddress_sp sa,
