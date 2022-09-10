@@ -806,6 +806,9 @@ def do_lisp_disassemble(debugger,arg):
     print( "test bytecode_len   = %d" % bytecode_len)
     print( "test literals       = %x" % literals_start )
     (vm,instructions,labels) = disassemble_region(debugger,literals_start,bytecode_start,bytecode_end)
+    print("labels = %s" % labels)
+    for label in labels.values():
+        print( "label: 0x%x %s" % (label._address, label._name))
     print_disassembly(vm,instructions,labels)
 
 def do_lisp_print(debugger_mod,arg):
@@ -1126,7 +1129,7 @@ def expand_arg(vm,arg_index,instr,labels):
         label_address = instr._address+arg
         if (label_address in labels):
             label = labels[label_address]
-            arg_str = label._name
+            arg_str = "%s[%d]" % (label._name, arg)
         else:
             arg_str = "<Illegal label address 0x%8x>" % label_address
     else:
