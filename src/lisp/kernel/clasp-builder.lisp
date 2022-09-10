@@ -107,10 +107,13 @@ Return files."
      done)
     (nreverse files)))
 
-(defun select-source-files (first-file last-file &key system)
-  (or first-file (error "You must provide first-file to select-source-files"))
+(defun select-source-files (first-file last-file &key system
+                            &aux file files)
+  ;(or first-file (error "You must provide first-file to select-source-files"))
   (or system (error "You must provide system to select-source-files"))
-  (let ((cur (member first-file system :test #'equal))
+  (let ((cur (if first-file
+                 (member first-file system :test #'equal)
+                 system))
         (last (if last-file
                   (let ((llast (member last-file system :test #'equal)))
                     (or llast (error "last-file ~a was not a member of ~a" last-file system))
@@ -1005,7 +1008,7 @@ been initialized with install path versus the build path of the source code file
                                     :system system))
         (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword))
         (stage-time (get-internal-run-time))
-        file-time file prev-file-time)
+        file-time file prev-file-time bytes)
     (setq *features* (cons stage-keyword *features*))
     (message :emph "Loading stage {:d}..." stage)
     (tagbody
@@ -1014,7 +1017,8 @@ been initialized with install path versus the build path of the source code file
           (progn
             (setq file (car files)
                   file-time (get-internal-run-time)
-                  files (cdr files))
+                  files (cdr files)
+                  bytes (gctools:bytes-allocated))
             (load file)
             (setq file-time (- (get-internal-run-time) file-time)
                   prev-file-time (gethash file *system-load-times*))
@@ -1024,10 +1028,12 @@ been initialized with install path versus the build path of the source code file
                                                  (* (- 1 +load-weight+) prev-file-time))
                                               prev-file-time))
             (if (and *load-verbose* (>= file-time internal-time-units-per-second))
-                (message nil ";;; Load time {:.1f} seconds" (float (/ file-time internal-time-units-per-second))))
+                (message nil ";;; Load time({:.1f} seconds) consed({} bytes)"
+                         (float (/ file-time internal-time-units-per-second))
+                         (- (gctools:bytes-allocated) bytes)))
             (go next))))
     (setq *features* (core:remove-equal stage-keyword *features*))
-    (message :emph "Stage {:d} elapsed time: {:.1f} seconds"
+    (message :emph "Stage {:d} time({:.1f} seconds)"
              stage
              (float (/ (- (get-internal-run-time) stage-time) internal-time-units-per-second)))))
 
@@ -1069,6 +1075,8 @@ been initialized with install path versus the build path of the source code file
                                           (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
                                           6))
                          (system (command-line-arguments-as-list)))
+  (if clean
+      (clean-system nil :no-prompt t :system system))
   (setq *features*
         (if bytecode
             (list* :vclasp :bytecode :staging :bytecodelike *features*)
