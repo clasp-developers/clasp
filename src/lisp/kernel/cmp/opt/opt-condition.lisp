@@ -2,7 +2,7 @@
 
 ;;; This macro basically exists to reduce code size in several very heavily used
 ;;; functions, such as CAR, which in cclasp will be inlined just about everywhere.
-#-(and bclasp bytecode)
+#-(and (or cclasp bclasp) bytecode)
 (define-compiler-macro error (&whole whole datum &rest arguments &environment env)
   (let ((datum (and (constantp datum env) (ext:constant-form-value datum env)))
         ;; This is special cased instead of relying on a type declaration, because

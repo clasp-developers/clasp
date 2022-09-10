@@ -1247,13 +1247,30 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
 
 /*! Trivial initializers are atomic values that aren't non-keyword symbols
 */
-bool initializerIsTrivial(T_sp initializer) {
+bool initializerIsTrivial(T_sp lambda_list, List_sp seen, T_sp initializer) {
   if (initializer.consp()) {
-    return false;
+    Cons_sp cinit = gc::As_unsafe<Cons_sp>(initializer);
+    for ( auto cur : (List_sp)seen ) {
+      T_sp oseen = CONS_CAR(cur);
+      if (cinit->memberEq(oseen).notnilp()) {
+        if (!_lisp->_Roots._TheSystemIsUp) {
+          printf("%s:%d:%s\n  In lambda-list %s\n    the initializer %s is a list\n    and references the seen symbol %s \n    - so it is not trivial and needs a ValueEnvironment_O\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lambda_list).c_str(), _rep_(initializer).c_str(), _rep_(oseen).c_str() );
+        }
+        return false;
+      }
+    }
+    return true;
   } else if (gc::IsA<Symbol_sp>(initializer)) {
-    Symbol_sp sdefault = gc::As_unsafe<Symbol_sp>(initializer);
-    if (!sdefault->isKeywordSymbol()) {
-      return false;
+    if (seen.consp()) {
+      Cons_sp cseen = gc::As_unsafe<Cons_sp>(seen);
+      Symbol_sp sdefault = gc::As_unsafe<Symbol_sp>(initializer);
+      T_sp result = cseen->memberEq(sdefault);
+      if (result.notnilp()) {
+        if (!_lisp->_Roots._TheSystemIsUp) {
+          printf("%s:%d:%s default initializer: %s\n   lambda-list: %s\n   references a seen symbol: %s\n    - needs a ValueEnvironment_O\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sdefault).c_str(), _rep_(lambda_list).c_str(), _rep_(seen).c_str() );
+        }
+        return false;
+      }
     }
   }
   return true;
@@ -1284,22 +1301,32 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
   //
   // Calculate if the LambdaListHandler will need a ValueEnvironment_O for evaluation or not.
   //
+  List_sp seen = nil<T_O>();
+  { // optional arguments   opts = (num opt1 init1 flag1 ...)
+    for (auto it = this->_RequiredArguments.begin();
+         it != this->_RequiredArguments.end(); it++) {
+      seen = Cons_O::create(it->symbol(),seen);
+    }
+  }
   { // optional arguments   opts = (num opt1 init1 flag1 ...)
     for (auto it = this->_OptionalArguments.begin();
          it != this->_OptionalArguments.end(); it++) {
-      if (!initializerIsTrivial(it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
+      if (!initializerIsTrivial(lambda_list,seen,it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
+      seen = Cons_O::create(it->symbol(),seen);
     }
   }
   { // optional arguments   keys = (num key1 var1 init1 flag1 ...)
     for ( auto it = this->_KeywordArguments.begin();
           it != this->_KeywordArguments.end(); it++) {
-      if (!initializerIsTrivial(it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
+      if (!initializerIsTrivial(lambda_list,seen,it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
+      seen = Cons_O::create(it->symbol(),seen);
     }
   }
   { // auxes arguments   auxs = (num aux1 init1 ...)
     for ( auto it = this->_AuxArguments.begin();
           it != this->_AuxArguments.end(); it++) {
-      if (!initializerIsTrivial(it->_Expression)) goto NEEDS_VALUE_ENVIRONMENT;
+      if (!initializerIsTrivial(lambda_list,seen,it->_Expression)) goto NEEDS_VALUE_ENVIRONMENT;
+      seen = Cons_O::create(it->symbol(),seen);
     }
   }
   return;
