@@ -785,7 +785,7 @@ __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
 }
 
 void cc_invoke_start_code_interpreter(gctools::GCRootsInModule* roots, char* start_code, size_t bytes, void* caller) {
-  printf("%s:%d start_code interpreter: %p caller: %p\n", __FILE__, __LINE__, start_code, caller);
+  //printf("%s:%d start_code interpreter: %p caller: %p\n", __FILE__, __LINE__, start_code, caller);
   core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(bytes,'\0',false,bytes,(const unsigned char*)start_code);
   core::T_sp fin = core::cl__make_string_input_stream(str,0,nil<core::T_O>());
   bool log = false;
@@ -797,7 +797,7 @@ void cc_invoke_start_code_interpreter(gctools::GCRootsInModule* roots, char* sta
       llvmo::SectionedAddress_sp sa = object_file_sectioned_address( caller, objectFile, false);
       llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(objectFile);
       const char* functionName = getFunctionNameForAddress(dcontext,sa);
-      printf("%s:%d:%s start-code interpreter from caller %p  %s\n", __FILE__, __LINE__, __FUNCTION__, caller, functionName );
+      printf("%s:%d:%s start-code interpreter from caller %p -------------------------\n -------- Running start-code for %s\n", __FILE__, __LINE__, __FUNCTION__, caller, functionName );
     } else {
       printf("%s:%d:%s for caller %p - could not match to ObjectFile_O object\n", __FILE__, __LINE__, __FUNCTION__, caller );
     }
