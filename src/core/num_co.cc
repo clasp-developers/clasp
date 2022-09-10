@@ -846,7 +846,12 @@ int clasp_signbit(Number_sp x) {
   SIMPLE_ERROR(("Illegal argument for clasp_signbit: %s") , _rep_(x));
 }
 
-CL_LAMBDA(x &optional (y x yp))
+/*
+  The CL_LAMBDA used to be: (x &optional (y x yp))
+  but that requires a ValueEnvironment_O in lambda-list handling and that adds GC pressure.
+  So handle it at runtime by checking yp
+*/
+CL_LAMBDA(x &optional (y nil yp))
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(floatSign)dx")

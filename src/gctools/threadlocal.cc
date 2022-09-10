@@ -24,6 +24,11 @@ THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 namespace core {
+
+void VirtualMachine::error() {
+  printf("%s:%d:%s There was an error encountered in the vm - put a breakpoint here to trap it\n", __FILE__, __LINE__, __FUNCTION__ );
+};
+
 unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nail) {
   size_t size = _lisp->integer_ordering()._mpz_import_size;
   size_t numb = (size << 3) - nail; // *8

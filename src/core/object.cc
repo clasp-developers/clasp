@@ -596,7 +596,7 @@ void lisp_setStaticClass(gctools::Header_s::StampWtagMtag::Value header, Instanc
   if (_lisp->_Roots.staticClassesUnshiftedNowhere.size() == 0) {
     ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_max));
     size_t stamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMPWTAG_max);
-    printf("%s:%d:%s allocating %lu entries for stamp classes STAMWTAG_max %lu\n", __FILE__, __LINE__, __FUNCTION__, stamp, (size_t)gctools::STAMPWTAG_max );
+//    printf("%s:%d:%s allocating %lu entries for stamp classes STAMWTAG_max %lu\n", __FILE__, __LINE__, __FUNCTION__, stamp, (size_t)gctools::STAMPWTAG_max );
     _lisp->_Roots.staticClassesUnshiftedNowhere.resize(stamp+1);
   }
   size_t stamp = gctools::Header_s::Stamp(header);
@@ -610,7 +610,7 @@ void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag::Value header, S
   if (_lisp->_Roots.staticClassSymbolsUnshiftedNowhere.size() == 0) {
     ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_max));
     size_t stamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMPWTAG_max);
-    printf("%s:%d:%s allocating %lu entries for stamp classes STAMWTAG_max %lu\n", __FILE__, __LINE__, __FUNCTION__, stamp, (size_t)gctools::STAMPWTAG_max );
+//    printf("%s:%d:%s allocating %lu entries for stamp classes STAMWTAG_max %lu\n", __FILE__, __LINE__, __FUNCTION__, stamp, (size_t)gctools::STAMPWTAG_max );
     _lisp->_Roots.staticClassSymbolsUnshiftedNowhere.resize(stamp+1);
   }
   size_t stamp = gctools::Header_s::Stamp(header);
