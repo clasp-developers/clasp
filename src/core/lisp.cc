@@ -420,9 +420,9 @@ CL_DEFUN void core__monitor_write(const std::string& msg) {
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
-CL_DEFUN void core__set_debug_byte_code(T_sp on)
+CL_DEFUN void core__set_debug_start_code(T_sp on)
 {
-  global_debug_byte_code = on.notnilp();
+  global_debug_start_code = on.notnilp();
 }
 
 void Lisp::initializeMainThread() {
@@ -439,10 +439,10 @@ void Lisp::startupLispEnvironment() {
   
   MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
-  char* debug_byte_code = getenv("CLASP_DEBUG_BYTE_CODE");
-  if (debug_byte_code) {
+  char* debug_start_code = getenv("CLASP_DEBUG_START_CODE");
+  if (debug_start_code) {
     printf("%s:%d Turning on *debug-byte-code*\n", __FILE__, __LINE__);
-    global_debug_byte_code = true;
+    global_debug_start_code = true;
   }
 
   //

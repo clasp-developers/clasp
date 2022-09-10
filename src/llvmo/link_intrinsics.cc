@@ -784,12 +784,12 @@ __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
   (void)ptr;
 }
 
-void cc_invoke_byte_code_interpreter(gctools::GCRootsInModule* roots, char* byte_code, size_t bytes, void* caller) {
-  printf("%s:%d byte_code interpreter: %p caller: %p\n", __FILE__, __LINE__, byte_code, caller);
-  core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(bytes,'\0',false,bytes,(const unsigned char*)byte_code);
+void cc_invoke_start_code_interpreter(gctools::GCRootsInModule* roots, char* start_code, size_t bytes, void* caller) {
+  printf("%s:%d start_code interpreter: %p caller: %p\n", __FILE__, __LINE__, start_code, caller);
+  core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(bytes,'\0',false,bytes,(const unsigned char*)start_code);
   core::T_sp fin = core::cl__make_string_input_stream(str,0,nil<core::T_O>());
   bool log = false;
-  if (core::global_debug_byte_code) {
+  if (core::global_debug_start_code) {
     log = true;
     llvmo::ObjectFile_sp objectFile;
     bool found = lookupObjectFileFromEntryPoint( (uintptr_t)caller, objectFile);
@@ -802,7 +802,7 @@ void cc_invoke_byte_code_interpreter(gctools::GCRootsInModule* roots, char* byte
       printf("%s:%d:%s for caller %p - could not match to ObjectFile_O object\n", __FILE__, __LINE__, __FUNCTION__, caller );
     }
   }
-  byte_code_interpreter(roots,fin,log);
+  start_code_interpreter(roots,fin,log);
 }
 
 

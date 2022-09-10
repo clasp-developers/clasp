@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 namespace core {
 
-bool global_debug_byte_code = false;
+bool global_debug_start_code = false;
 
 const char *help = R"dx(Usage: clasp <options>
 Options:
@@ -172,8 +172,8 @@ Environment variables:
       Trap the intern of the symbol
   CLASP_VERBOSE_BUNDLE_SETUP
       Dump info during bundle setup
-  CLASP_DEBUG_BYTE_CODE
-      Dump info during startup for every byte-code
+  CLASP_DEBUG_START_CODE
+      Dump info during startup for every start-code
   CLASP_DEBUG_SNAPSHOT
       Dump info during snapshot loading
   CLASP_DEBUG_OBJECT_FILES=save
