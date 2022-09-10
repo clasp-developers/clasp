@@ -203,6 +203,7 @@
              #~"kernel/stage/5-begin.lisp"  
              (k:make-source "cclasp-translations.lisp" :variant-generated)
              :clasp-cleavir
+             #~"kernel/lsp/queue.lisp" ;; cclasp sources
              #~"kernel/cleavir/auto-compile.lisp"
              #~"kernel/cleavir/bytecode-adaptor.lisp"
              #~"kernel/cleavir/inline.lisp"
@@ -219,7 +220,6 @@
       (k:sources target
                  #~"kernel/tag/pre-epilogue-cclasp.lisp"))
   (k:sources target
-             #~"kernel/lsp/queue.lisp" ;; cclasp sources
              #~"kernel/cmp/compile-file-parallel.lisp"
              #~"kernel/lsp/epilogue-cclasp.lisp")
   (unless (or neo bytecode)

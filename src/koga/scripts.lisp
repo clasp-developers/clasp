@@ -265,8 +265,8 @@ exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
      (target (eql :cclasp)) sources
      &key &allow-other-keys)
   (print-translations output-stream (if (extensions configuration)
-                                      '(:cclasp :eclasp)
-                                      '(:cclasp))
+                                      '(:cclasp :mclasp :vclasp :eclasp)
+                                      '(:cclasp :mclasp :vclasp))
                                     sources))
 
 (defmethod print-variant-target-sources
