@@ -2,20 +2,6 @@
   (declare (ignore rest))
   (cond ((or neo bytecode)
          (k:sources target
-                    #~"kernel/stage/1-begin.lisp"
-                    #~"kernel/stage/3-begin.lisp")
-         (when bytecode
-           (k:sources target
-                      #~"kernel/cmp/bytecode-compile.lisp"))
-         (k:sources target
-                    #~"kernel/stage/3-end.lisp"
-                    #~"kernel/stage/1-end.lisp"
-                    #~"kernel/stage/2-begin.lisp")
-         (when bytecode
-           (k:sources target
-                      #~"kernel/cmp/cmprepl-bytecode.lisp"))
-         (k:sources target
-                    #~"kernel/stage/2-end.lisp"
                     #~"kernel/stage/0-begin.lisp"
                     #~"kernel/stage/4-begin.lisp"))
         (t
@@ -91,14 +77,28 @@
   (when (or neo (not bytecode))
     (k:sources target
                #~"kernel/cmp/cmprepl.lisp"))
-  (when (or neo bytecode)
-    (k:sources target
-               #~"kernel/stage/0-end.lisp"))
-  (unless (or neo bytecode)
-    (k:sources target
-               #~"kernel/tag/min-pre-epilogue.lisp"
-               #~"kernel/lsp/epilogue-aclasp.lisp"
-               #~"kernel/tag/min-end.lisp")))
+  (cond ((or neo bytecode)
+         (k:sources target
+                    #~"kernel/stage/0-end.lisp"
+                    #~"kernel/stage/1-begin.lisp"
+                    #~"kernel/stage/3-begin.lisp")
+         (when bytecode
+           (k:sources target
+                      #~"kernel/cmp/bytecode-compile.lisp"))
+         (k:sources target
+                    #~"kernel/stage/3-end.lisp"
+                    #~"kernel/stage/1-end.lisp"
+                    #~"kernel/stage/2-begin.lisp")
+         (when bytecode
+           (k:sources target
+                      #~"kernel/cmp/cmprepl-bytecode.lisp"))
+         (k:sources target
+                    #~"kernel/stage/2-end.lisp"))
+        (t
+         (k:sources target
+                    #~"kernel/tag/min-pre-epilogue.lisp"
+                    #~"kernel/lsp/epilogue-aclasp.lisp"
+                    #~"kernel/tag/min-end.lisp"))))
     
 (defun add-bclasp-sources (&rest rest &key target neo bytecode &allow-other-keys)
   (apply #'add-aclasp-sources rest)
