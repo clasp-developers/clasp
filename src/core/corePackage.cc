@@ -409,6 +409,7 @@ SYMBOL_EXPORT_SC_(ClPkg, restartName);
 SYMBOL_EXPORT_SC_(ClPkg, position);
 SYMBOL_EXPORT_SC_(ClPkg, compileFile);
 SYMBOL_EXPORT_SC_(ClPkg, compiler_macro);
+SYMBOL_EXPORT_SC_(ClPkg, compiler_macro_function);
 SYMBOL_EXPORT_SC_(ClPkg, inline);
 SYMBOL_EXPORT_SC_(ClPkg, compilation_speed);
 SYMBOL_EXPORT_SC_(ClPkg, first);

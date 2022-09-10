@@ -204,8 +204,13 @@ CL_DEFUN T_sp fun_info(T_sp name, Lexenv_sp env) {
             return nil<T_O>();
           if (fname->macroP())
             return GlobalMacroInfo_O::make(fname->getSetfFdefinition());
-          else
-            return GlobalFunInfo_O::make();
+          else {
+            if (cl::_sym_compiler_macro_function->fboundp()) {
+              T_sp cmexpander = eval::funcall(cl::_sym_compiler_macro_function,
+                                              name);
+              return GlobalFunInfo_O::make(cmexpander);
+            } else return GlobalFunInfo_O::make(nil<T_O>());
+          }
         }
       }
     }
@@ -216,9 +221,20 @@ CL_DEFUN T_sp fun_info(T_sp name, Lexenv_sp env) {
     if (!fname->fboundp()) return nil<T_O>();
     else if (fname->macroP())
       return GlobalMacroInfo_O::make(fname->symbolFunction());
-    else
-      return GlobalFunInfo_O::make();
+    else {
+      // Look for a compiler macro expander.
+      if (cl::_sym_compiler_macro_function->fboundp()) {
+        T_sp cmexpander = eval::funcall(cl::_sym_compiler_macro_function, fname);
+        return GlobalFunInfo_O::make(cmexpander);
+      } else return GlobalFunInfo_O::make(nil<T_O>());
+    }
   }
+}
+
+bool Lexenv_O::notinlinep(T_sp fname) {
+  for (auto cur : this->notinlines())
+    if (oCar(cur) == fname) return true;
+  return false;
 }
 
 // declared out of line for circularity reasons
@@ -1761,9 +1777,22 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest,
         T_sp expansion = expand_macro(minfo->expander(),
                                       Cons_O::create(head, rest), env);
         compile_form(expansion, env, context);
-      } else if (gc::IsA<GlobalFunInfo_sp>(info)
-                 || gc::IsA<LocalFunInfo_sp>(info)
-                 || info.nilp()) {
+      } else if (gc::IsA<GlobalFunInfo_sp>(info)) {
+        GlobalFunInfo_sp gfinfo = gc::As_unsafe<GlobalFunInfo_sp>(info);
+        T_sp cmexpander = gfinfo->cmexpander();
+        if (cmexpander.notnilp() && !env->notinlinep(head)) {
+          // Compiler macroexpand
+          T_sp form = Cons_O::create(head, rest);
+          T_sp expansion = expand_macro(gc::As<Function_sp>(cmexpander),
+                                        form, env);
+          if (expansion != form) {
+            compile_form(expansion, env, context);
+            return;
+          }
+        } // no compiler macro, or expansion declined: call
+        compile_function(head, env, context->sub(clasp_make_fixnum(1)));
+        compile_call(rest, env, context);
+      } else if (gc::IsA<LocalFunInfo_sp>(info) || info.nilp()) {
         // unknown function warning handled by compile-function (eventually)
         // note we do a double lookup of the fun info,
         // which is inefficient in the compiler (doesn't affect generated code)

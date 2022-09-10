@@ -116,13 +116,17 @@ FORWARD(GlobalFunInfo);
 class GlobalFunInfo_O : public FunInfo_O {
   LISP_CLASS(comp, CompPkg, GlobalFunInfo_O, "GlobalFunInfo", FunInfo_O);
 public:
-  GlobalFunInfo_O() : FunInfo_O() {};
+  T_sp _cmexpander = nil<T_O>(); // compiler macro expander
+public:
+  GlobalFunInfo_O() : FunInfo_O() {}
+  GlobalFunInfo_O(T_sp expander) : FunInfo_O(), _cmexpander(expander) {}
   CL_LISPIFY_NAME(GlobalFunInfo/make)
   CL_DEF_CLASS_METHOD
-  static GlobalFunInfo_sp make() {
-    GlobalFunInfo_sp info = gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>();
+  static GlobalFunInfo_sp make(T_sp expander) {
+    GlobalFunInfo_sp info = gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>(expander);
     return info;
   }
+  CL_DEFMETHOD T_sp cmexpander() const { return this->_cmexpander; }
 };
 
 FORWARD(LocalFunInfo);
@@ -144,6 +148,7 @@ public:
 // We have separate global and local macro classes because it is sometimes
 // important to know that a binding is local - for example, a local binding
 // shadows a global setf expander.
+// FIXME: We could add a slot for a compiler macro function.
 FORWARD(GlobalMacroInfo);
 class GlobalMacroInfo_O : public FunInfo_O {
   LISP_CLASS(comp, CompPkg, GlobalMacroInfo_O, "GlobalMacroInfo", FunInfo_O);
@@ -227,6 +232,7 @@ public:
   T_sp lookupSymbolMacro(T_sp sname);
   T_sp functionInfo(T_sp fname);
   T_sp lookupMacro(T_sp mname);
+  bool notinlinep(T_sp fname);
   /*
   T_sp blockInfo(T_sp bname);
   T_sp tagInfo(T_sp tname);
