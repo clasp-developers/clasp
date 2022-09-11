@@ -1100,17 +1100,20 @@ been initialized with install path versus the build path of the source code file
         (sort system #'> :key #'system-load-time)
         system)))
 
-(defun compile-vclasp (&rest rest)
-  (let ((system (apply #'load-vclasp rest)))
-    ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
-    ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
-    ;; to load inline definitions. We wait for the source code to turn it back on.
-    (setq core:*defun-inline-hook* nil)
-    (handler-bind
-        ((error #'build-failure))
-      (compile-system system :reload nil :file-order (calculate-file-order system) :total-files (length system)))))
+(defun compile-vclasp (system)
+  ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
+  ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
+  ;; to load inline definitions. We wait for the source code to turn it back on.
+  (setq core:*defun-inline-hook* nil)
+  (handler-bind
+      ((error #'build-failure))
+    (compile-system system :reload nil :file-order (calculate-file-order system) :total-files (length system))))
 
-(export '(load-vclasp compile-vclasp))
+(defun load-and-compile-vclasp (&rest rest)
+  (let ((system (apply #'load-vclasp rest)))
+    (compile-vclasp system)))
+
+(export '(load-vclasp compile-vclasp load-and-compile-vclasp))
       
 #+(or bclasp cclasp eclasp)
 (defun bclasp-repl ()
