@@ -29,6 +29,7 @@
 ;; Don't use FORMAT here use core:fmt
 ;; otherwise you will have problems when format.lisp is bootstrapped
 
+
 #+(or)
 (eval-when (:compile-toplevel :execute)
   (setq core:*debug-eval* t))
@@ -72,6 +73,14 @@
 
 (defparameter *print-implicit-compile-form* nil)
 
+
+
+(defun do-bytecompile (form env)
+  #-use-cxxcmp (cmpref:bytecompile form env)
+  #+use-cxxcmp (cmp:bytecompile form env)
+  )
+
+
 #+(or)
 (defun bclasp-implicit-compile-repl-form (form &optional environment)
   (declare (core:lambda-name cmp-repl-implicit-compile))
@@ -92,14 +101,15 @@
   (declare (core:lambda-name cmp-repl-implicit-compile))
   (when (null env)
     (setf env (make-null-lexical-environment)))
-  (when *print-implicit-compile-form* 
+  (when *print-implicit-compile-form*
     (core:fmt t "Compiling form: {}%N" form)
     (core:fmt t "*active-protection* --> {}%N" cmp::*active-protection*))
   (let ((repl-name (intern (core:fmt nil "repl-form-{}" (core:next-number)) :core)))
-    (funcall (bytecompile `(lambda ()
-                             (declare (core:lambda-name ,repl-name))
-                             (progn ,form))
-                          env))))
+    (funcall (do-bytecompile
+              `(lambda ()
+                 (declare (core:lambda-name ,repl-name))
+                 (progn ,form))
+              env))))
 
 ;;;
 ;;; Don't install the bootstrapping compiler as the implicit compiler when compiling cleavir
@@ -146,7 +156,7 @@
              (body (cddr binding))
              (eform (ext:parse-macro name lambda-list body env))
              (aenv (lexenv/macroexpansion-environment env))
-             (expander (bytecompile eform aenv))
+             (expander (do-bytecompile eform aenv))
              (info (cmp:local-macro-info/make expander)))
         (push (cons name info) macros)))
     (bytecode-toplevel-locally

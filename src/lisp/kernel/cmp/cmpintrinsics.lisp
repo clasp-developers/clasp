@@ -588,24 +588,6 @@ Boehm and MPS use a single pointer"
          (shifted-nargs (irc-shl nargs +vaslist-nargs-shift+)))
     (irc-store shifted-nargs pos*)))
 
-(defun vaslist*-get-nargs (vaslist*)
-  (let* ((pos* (vaslist*-shifted-nargs* vaslist*))
-         (shifted-nargs (irc-load pos*))
-         (nargs (irc-lshr shifted-nargs +vaslist-nargs-shift+)))
-    nargs))
-
-
-(defun vaslist*-decr-nargs (vaslist*)
-  (let* ((pos* (vaslist*-shifted-nargs* vaslist*))
-         (shifted-nargs (irc-load pos*))
-         (dec-shifted-nargs (irc-sub +vaslist-nargs-decrement+)))
-    (irc-store dec-shifted-nargs pos*)))
-
-(defun vaslist*-nargs-zero (vaslist*)
-  (let* ((pos* (vaslist*-shifted-nargs* vaslist*))
-         (shifted-nargs (irc-load pos*)))
-    (error "finish implementing me - compare shifted-nargs to zero")))
-
 (defun vaslist-start (vaslist* nargs &optional args)
   (when args
     (irc-maybe-check-word-aligned-load %t*% args)

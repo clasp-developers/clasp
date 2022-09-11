@@ -490,7 +490,12 @@ void Lisp::startupLispEnvironment() {
     _lisp->_Roots._CommonLispPackage = gc::As<Package_sp>(_lisp->findPackage(ClPkg));
     _lisp->_Roots._CorePackage->setSystemLockedP(true);
     _lisp->_Roots._KeywordPackage->setSystemLockedP(true);
-    _lisp->_Roots._CommonLispPackage->setSystemLockedP(true);    
+    _lisp->_Roots._CommonLispPackage->setSystemLockedP(true);
+    //
+    // fixme2022 Rip this package out if we don't need it to store the reference compiler
+    //
+    _lisp->makePackage("CMPREF",{},{"COMMON-LISP"},{});
+    
 #ifdef DEFINE_CL_SYMBOLS
     initializeAllClSymbols(_lisp->_Roots._CommonLispPackage);
 #endif

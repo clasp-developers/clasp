@@ -81,10 +81,13 @@
          (k:sources target
                     #~"kernel/stage/0-end.lisp"
                     #~"kernel/stage/1-begin.lisp"
-                    #~"kernel/stage/3-begin.lisp")
+                    #~"kernel/stage/3-begin.lisp"
+                    )
          (when bytecode
            (k:sources target
-                      #~"kernel/cmp/bytecode-reference.lisp"))
+                      #~"kernel/cmp/bytecode-compile.lisp"
+                      #~"kernel/cmp/bytecode-reference.lisp"
+                      ))
          (k:sources target
                     #~"kernel/stage/3-end.lisp"
                     #~"kernel/stage/1-end.lisp"

@@ -1108,10 +1108,17 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body,
     ql::list keynames;
     // Give each key a literal index. This is always a new one, to ensure that
     // they are consecutive even if the keyword appeared earlier in the literals.
-    for (auto &it : keys) context->new_literal_index(it._Keyword);
+    size_t first_key_index = 0;
+    bool set_first_key_index = false;
+    for (auto &it : keys) {
+      if (!set_first_key_index) {
+        first_key_index = context->new_literal_index(it._Keyword);
+        set_first_key_index = true;
+      } else context->new_literal_index(it._Keyword);
+    }
     // now the actual instruction
     context->emit_parse_key_args(max_count, keys.size(),
-                                 context->literal_index(keys[0]._Keyword),
+                                 first_key_index,
                                  new_env->frameEnd(),
                                  aokp.notnilp());
     ql::list keyvars;
@@ -1162,7 +1169,12 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body,
   // &rest
   if (restarg._ArgTarget.notnilp()) {
     Symbol_sp rest = restarg._ArgTarget;
-    context->assemble1(vm_listify_rest_args, max_count);
+    bool varestp = restarg.VaRest;
+    if (varestp) {
+      context->assemble1(vm_vaslistify_rest_args, max_count);
+    } else {
+      context->assemble1(vm_listify_rest_args, max_count);
+    }
     context->assemble1(vm_set, new_env->frameEnd());
     new_env = new_env->bind_vars(Cons_O::createList(rest), context);
     LexicalVarInfo_sp lvinfo = gc::As<LexicalVarInfo_sp>(var_info(rest, new_env));

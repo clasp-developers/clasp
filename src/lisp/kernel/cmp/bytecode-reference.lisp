@@ -1,12 +1,6 @@
-#+(or)
-(defpackage #:compile-to-vm
-  (:use #:cl)
-  (:shadow #:compile))
 
-#-sbcl
-(in-package #:cmp)
+(in-package :cmpref)
 
-(setq *print-circle* t)
 
 (defmacro logf (message &rest args)
   (declare (ignore message args))
@@ -530,7 +524,7 @@
                                 (function (context-function parent)))
   (make-context :receiving receiving :function function))
 
-(defun reference-bytecompile (lambda-expression
+(defun bytecompile (lambda-expression
                     &optional (env (make-null-lexical-environment)))
   (check-type lambda-expression lambda-expression)
   (logf "vvvvvvvv bytecompile ~%Form: ~s~%" lambda-expression)
@@ -541,6 +535,8 @@
     (multiple-value-prog1
         (link-function (compile-lambda lambda-list body env module) (cons lambda-expression env))
       (logf "^^^^^^^^^ Compile done~%"))))
+
+(export 'bytecompile)
 
 (defun compile-form (form env context)
   (cond ((symbolp form) (compile-symbol form env context))
@@ -556,7 +552,7 @@
       (assemble context +pop+))))
 
 (defun compile-load-time-value (form env context)
-  (if *generate-compile-file-load-time-values*
+  (if cmp::*generate-compile-file-load-time-values*
       (error "Handle compile-file")
       (let ((value (eval form)))
         (compile-literal value env context))))
@@ -738,7 +734,7 @@
   (make-lexical-environment
    env
    :vars (append (mapcar (lambda (var)
-                           (cons var (cmp:special-var-info/make)))
+                           (cons var (cmp:special-var-info/make (ext:specialp var))))
                          vars)
                  (cmp:lexenv/vars env))))
 
@@ -1118,7 +1114,7 @@
           (if varest-p
               (assemble-maybe-long context +vaslistify-rest-args+ max-count)
               (assemble-maybe-long context +listify-rest-args+ max-count))
-          (assemble-maybe-long context +set+ (frame-end new-env))
+          (assemble-maybe-long context +set+ (cmp:lexenv/frame-end new-env))
           (setq new-env (bind-vars (list rest) new-env context))
           (cond ((or (member rest specials)
                      (eq :special (var-info rest env)))
