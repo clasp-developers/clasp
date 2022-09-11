@@ -172,7 +172,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
       arg_idx++;
       if (keyword != kw::_sym_allow_other_keys) {
         LOG("Binding passed keyword[%s] value[%s]" , _rep_(keyword) , _rep_(value));
-        gctools::Vec0<KeywordArgument>::iterator fi;
+        gctools::Vec0<KeywordArgument>::const_iterator fi;
         int ik(0);
         for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {
           if (fi->_Keyword == keyword) {
@@ -200,7 +200,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
   }
   // Now fill in the default values for the missing parameters
   {
-    gctools::Vec0<KeywordArgument>::iterator fi;
+    gctools::Vec0<KeywordArgument>::const_iterator fi;
     int ik(0);
     for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {
       LOG("Checking if keyword[%s] needs default value" , _rep_(fi->_Keyword));

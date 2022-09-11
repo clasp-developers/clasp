@@ -571,7 +571,6 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
   { // optional arguments
     for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
          it != this->_OptionalArguments.end(); it++) {
-      (void)ENSURE_VALID_OBJECT((T_O*)it._Vec.raw_());
       classifier.classifyTarget(*it);
       if (it->_Sensor.isDefined()) classifier.classifyTarget(it->_Sensor);
     }
@@ -611,7 +610,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
 
 void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, ScopeManager &scope) {
   LOG("There are %d aux variables" , auxs.size());
-  gctools::Vec0<AuxArgument>::iterator ci;
+  gctools::Vec0<AuxArgument>::const_iterator ci;
   {
     for (ci = auxs.begin(); ci != auxs.end(); ci++) {
       T_sp expr = ci->_Expression;

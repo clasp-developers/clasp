@@ -47,102 +47,11 @@ public:
   size_t _Capacity; // Index one beyond the total number of elements allocated
   size_t _End;
   T _Data[0]; // Store _Capacity numbers of T structs/classes starting here
-  template <typename Uty>
-  struct GCVector_moveable_iterator {
-    mutable tagged_pointer<GCVector_moveable<T>> _Vec;
-    mutable size_t _Index;
-    typedef GCVector_moveable_iterator<Uty> Iterator;
-    typedef Uty value_type;
-    using iterator_category = std::random_access_iterator_tag;
-    using difference_type = std::ptrdiff_t;
-    using size_type = std::size_t;
-    using pointer = T*;
-    using reference = T&;
-    using const_pointer = const T*;
 
-    GCVector_moveable_iterator() : _Index(0) {};
-    GCVector_moveable_iterator(tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _Vec(vec), _Index(index) {
-      //      printf("%s:%d initializing %p\n", __FILE__, __LINE__, _Vec.raw_() );
-    };
-    GCVector_moveable_iterator(GCVector_moveable<T> *vec, size_t index) : _Vec(gctools::tag_general<GCVector_moveable<T>*>(vec)), _Index(index) {
-    };
-#if 1
-    const Iterator& operator=(const Iterator &other) const {
-      if (&other == this)
-        return *this;
-      this->_Vec = other._Vec;
-      this->_Index = other._Index;
-      return *this;
-    }
-#endif    
-    Uty *operator->() { return &(*this->_Vec)[this->_Index]; };
-    Uty &operator*() { return (*this->_Vec)[this->_Index]; };
-    Uty const *operator->() const { return &(*this->_Vec)[this->_Index]; };
-    Uty const &operator*() const { return (*this->_Vec)[this->_Index]; };
-    size_t operator-(const Iterator &other) const {
-      return (this->_Index - other._Index);
-    }
-    Iterator operator+(size_t num) const {
-      GCVector_moveable_iterator<Uty> clone(*this);
-      clone._Index += num;
-      return clone;
-    }
-    Iterator operator-(size_t num) const {
-      GCVector_moveable_iterator<Uty> clone(*this);
-      clone._Index -= num;
-      return clone;
-    }
-    bool operator==(const GCVector_moveable_iterator<Uty> &other) const {
-      return (this->_Vec == other._Vec) && (this->_Index == other._Index);
-    }
-    bool operator>(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_Index > other._Index;
-    }
-    bool operator>=(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_Index >= other._Index;
-    }
-    bool operator<(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_Index < other._Index;
-    }
-    bool operator<=(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_Index <= other._Index;
-    }
-    bool operator!=(const GCVector_moveable_iterator<Uty> &other) const {
-      return !(*this == other);
-    }
-    const GCVector_moveable_iterator<Uty> &operator++() const {
-      ++this->_Index;
-      return *this;
-    }
-    
-    GCVector_moveable_iterator<Uty> operator++(int) const {
-      GCVector_moveable_iterator<Uty> clone(*this);
-      ++this->_Index;
-      return clone;
-    }
-    GCVector_moveable_iterator<Uty> &operator--() {
-      --this->_Index;
-      return *this;
-    }
-    const GCVector_moveable_iterator<Uty> &operator--() const {
-      --this->_Index;
-      return *this;
-    }
-    GCVector_moveable_iterator<Uty> operator--(int) const {
-      GCVector_moveable_iterator<Uty> clone(*this);
-      --this->_Index;
-      return clone;
-    }
-    GCVector_moveable_iterator<Uty>& operator+=(const difference_type& n) {
-      this->_Index += n;
-      return *this;
-    }
-
-  };
 
 public:
-  typedef GCVector_moveable_iterator<T> iterator;
-  typedef GCVector_moveable_iterator<T> const const_iterator;
+  typedef T *iterator;
+  typedef T const *const_iterator;
 
 private:
   GCVector_moveable<T>(const GCVector_moveable<T> &that);        // disable copy ctor
@@ -155,10 +64,10 @@ public:
   size_t capacity() const { return this->_Capacity; };
   inline value_type &operator[](size_t i) { return this->_Data[i]; };
   const value_type &operator[](size_t i) const { return this->_Data[i]; };
-  iterator begin() { return iterator(this, 0); };
-  iterator end() { return iterator(this, this->_End); };
-  const_iterator begin() const { return iterator(this, 0); };
-  const_iterator end() const { return iterator(this, this->_End); };
+ iterator begin() { return &this->_Data[0]; };
+  iterator end() { return &this->_Data[this->size()]; };
+  const_iterator begin() const { return &this->_Data[0]; };
+  const_iterator end() const { return &this->_Data[this->size()]; };
 };
 };
 
@@ -198,8 +107,8 @@ public:
       implAddress->_End = 0;
       this->_Contents = implAddress;
       new (&*implAddress) GCVector_moveable<T>(that._Contents->_Capacity);
-      for (iterator that_it(that.begin()), this_it(this->begin()); that_it != that.end(); ++that_it, ++this_it) {
-        alloc.construct(&*this_it, *that_it);
+      for (const_iterator that_it(that.begin()), this_it(this->begin()); that_it != that.end(); ++that_it, ++this_it) {
+        alloc.construct(this_it, *that_it);
       }
       this->_Contents->_End = that._Contents->_End;
     } else {
@@ -436,7 +345,7 @@ public:
   }
 
   template <typename... ARGS>
-    iterator emplace(iterator position, ARGS &&... args) {
+  const_iterator emplace(const_iterator position, ARGS &&... args) {
     Allocator alloc;
     if (!this->_Contents) this->resize(16, value_type());
     if (this->_Contents->_End == this->_Contents->_Capacity) {
@@ -461,7 +370,7 @@ public:
       size_t num = oldVec->_End;
       oldVec->_End = 0;
       alloc.deallocate(oldVec, num);
-      return iterator(this->_Contents, iposition);
+      return &(*this->_Contents)[iposition];
     }
     // slide the elements from position up to the end one element up
     // Use construct/destruct to deal with objects that have complex constructors/destructors
@@ -488,7 +397,7 @@ public:
   // zp element_of (3 4 5 ... N-1 )
   // move 3<4 4<5 5<6 6<7 ... N-2<N-1
   // 0 1 2 4 5 6 7
-  iterator erase(const_iterator position) {
+  iterator erase(iterator position) {
 #ifdef DEBUG_ASSERT
     if (!this->_Contents)
       this->errorEmpty();
@@ -513,12 +422,12 @@ public:
   }
 
   //  pointer_type data() const { return this->_Contents ? this->_Contents->data() : NULL; };
+  iterator begin() { return this->_Contents ? this->_Contents->begin() : NULL; };
+  iterator end() { return this->_Contents ? this->_Contents->end() : NULL; };
 
-  iterator begin() { return this->_Contents ? iterator(this->_Contents, 0) : iterator(); };
-  iterator end() { return this->_Contents ? iterator(this->_Contents, this->_Contents->_End) : iterator(); };
+  const_iterator begin() const { return this->_Contents ? this->_Contents->begin() : NULL; };
+  const_iterator end() const { return this->_Contents ? this->_Contents->end() : NULL; };
 
-  const_iterator begin() const { return this->_Contents ? iterator(this->_Contents, 0) : iterator(); };
-  const_iterator end() const { return this->_Contents ? iterator(this->_Contents, this->_Contents->_End) : iterator(); };
 };
 
 template <typename Vector>

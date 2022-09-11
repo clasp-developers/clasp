@@ -975,7 +975,7 @@ public:
 
   // initialize elements of allocated storage p with value value
   template <typename... ARGS>
-  void construct(pointer p, ARGS &&... args) {
+  void construct(const_pointer p, ARGS &&... args) {
     // initialize memory with placement new
     new ((void *)p) value_type(std::forward<ARGS>(args)...);
   }
