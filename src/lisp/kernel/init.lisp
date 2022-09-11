@@ -4,8 +4,7 @@
 
 
 ;;#+(or)
-(llvm-sys:install-interpreter-trampoline)
-(llvm-sys:install-bytecode-trampoline)
+(llvm-sys:install-backtrace-trampoline)
 
 #+(or)
 (eval-when (:compile-toplevel :execute)
@@ -75,10 +74,12 @@
 ;;;
 
 (eval-when (:compile-toplevel :execute)
-  (let* ((obj "asdf")
+  (let* ((obj "dummy-object-string")
+         (obj-class (core:instance-class obj))
+         (obj-class-name (core:name-of-class obj-class))
          (stamp (core:instance-stamp obj))
-         (class-stamp (core:class-stamp-for-instances (core:instance-class obj)))
-         (map-stamp (gethash (core:name-of-class (core:instance-class obj)) core:+type-header-value-map+)))
+         (class-stamp (core:class-stamp-for-instances obj-class))
+         (map-stamp (gethash obj-class-name core:+type-header-value-map+)))
     (if (not (numberp stamp))
         (progn
           (core:fmt t "Sanity check failure stamp {} must be a number%N" stamp)
@@ -94,14 +95,14 @@
                   (core:cabort)))))
     (if (not (= stamp class-stamp))
         (progn
-          (core:fmt t "For object {} there is a mismatch between the stamp {} and the class-stamp {}%N"
-                        obj stamp class-stamp)
+          (core:fmt t "For object {} class {} class-name {} there is a mismatch between the stamp {} and the class-stamp {}%N"
+                    obj obj-class obj-class-name stamp class-stamp)
           (finish-output)
           (core:cabort))
         (if (not (= stamp map-stamp))
             (progn
-              (core:fmt t "For object {} there is a mismatch between the stamp {} and the class-stamp {}%N"
-                            obj stamp class-stamp)
+              (core:fmt t "For object {} class {} class-name {} there is a mismatch between the stamp {} and the map-stamp {}%N"
+                        obj obj-class obj-class-name stamp map-stamp)
               (finish-output)
               (core:cabort))))))
 
@@ -111,6 +112,9 @@
 ;; Turn this off and recompile everything once the system has
 ;; been bootstrapped
 (setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
+
+;;; fixme2022 - We shouldn't need the varest feature
+(setq *features* (cons :varest *features*))
 
 ;; Set up a few things for the CLOS package
 (export '(clos::standard-class) "CLOS")
@@ -469,17 +473,19 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-host))
 
 (defun default-target-stage ()
-  (let ((stage (if (member :eclasp *features*)
-                   "e"
-                   (if (member :cclasp *features*)
-                       "c"
-                       (if (member :bclasp *features*)
-                           (if (member :compiling-cleavir *features*)
-                               "pre"
-                               "b")
-                           "a")))))
-    stage))
-
+  (if (member :eclasp *features*)
+      "e"
+      (if (member :mclasp *features*)
+          "m"
+          (if (member :vclasp *features*)
+              "v"
+              (if (member :cclasp *features*)
+                  "c"
+                  (if (member :bclasp *features*)
+                      (if (member :compiling-cleavir *features*)
+                          "pre"
+                          "b")
+                      "a"))))))
 
 (defun build-configuration ()
   (let ((gc (cond
@@ -630,7 +636,7 @@ the stage, the +application-name+ and the +bitcode-name+"
         result))))
 (export '(build-pathname build-extension))
 
-(eval-when (:execute)
+#-staging (eval-when (:execute)
   (load #P"sys:src;lisp;kernel;cmp;jit-setup.lisp")
   (load #P"sys:src;lisp;kernel;clsymbols.lisp"))
 

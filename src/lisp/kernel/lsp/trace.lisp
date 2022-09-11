@@ -184,7 +184,7 @@ all functions."
 (defun make-trace-closure (fname oldf safe)
   (if safe
       (lambda (&rest args)
-        (declare (core:lambda-name trace-lambda))
+        (declare (core:lambda-name safe-trace-lambda))
         (let ((*trace-level* (1+ *trace-level*)))
           (if *inside-trace*
               (apply oldf args)

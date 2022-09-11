@@ -129,7 +129,7 @@ bool valid_stamp(gctools::stamp_t stamp) {
   if (stamp_index<global_stamp_max) return true;
   return false;
 #elif defined(USE_BOEHM)
-  if (stamp<=global_unshifted_nowhere_stamp_names.size()) {
+  if (stamp<=STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) {
     return true;
   }
   return false;
@@ -142,7 +142,7 @@ const char *obj_name(gctools::stamp_t stamp) {
   if (stamp == (gctools::stamp_t)STAMPWTAG_null) {
     return "UNDEFINED";
   }
-  if ( stamp > STAMPWTAG_max ) stamp = gctools::GCStamp<core::Instance_O>::StampWtag;
+  if ( stamp > (STAMPWTAG_max ) stamp = gctools::GCStamp<core::Instance_O>::StampWtag;
   size_t stamp_index = (size_t)stamp;
   ASSERT(stamp_index<=global_stamp_max);
 //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
@@ -227,13 +227,13 @@ mps_addr_t obj_skip(mps_addr_t client) {
   return obj_skip_debug(client,false,objectSize);
 }
 
-__attribute__((noinline))  mps_addr_t obj_skip_debug_wrong_size(mps_addr_t client,
-                                                            void* header,
-                                                            size_t stamp_wtag_mtag,
-                                                            size_t stamp,
-                                                            size_t allocate_size,
-                                                            size_t skip_size,
-                                                            int delta) {
+mps_addr_t obj_skip_debug_wrong_size(mps_addr_t client,
+                                     void* header,
+                                     size_t stamp_wtag_mtag,
+                                     size_t stamp,
+                                     size_t allocate_size,
+                                     size_t skip_size,
+                                     int delta) {
   printf("%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %lu) allocate_size -> %lu  obj_skip -> %lu delta -> %d\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
          __FILE__, __LINE__, (void*)header, stamp_wtag_mtag, stamp, allocate_size, skip_size, delta );
   size_t objectSize;
@@ -378,7 +378,7 @@ void obj_finalize(mps_addr_t client) {
     #undef GC_OBJ_FINALIZE_TABLE
   #endif // ifndef RUNNING_PRECISEPREP
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(GeneralPtrToHeaderPtr(client)));
-  ASSERTF(header->_stamp_wtag_mtag.stampP(), BF("obj_finalized called without a valid object"));
+  ASSERTF(header->_stamp_wtag_mtag.stampP(), "obj_finalized called without a valid object");
   gctools::GCStampEnum stamp = (GCStampEnum)(header->_stamp_wtag_mtag.stamp_());
   #ifndef RUNNING_PRECISEPREP
   size_t table_index = (size_t)stamp;

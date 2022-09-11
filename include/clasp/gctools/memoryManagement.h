@@ -84,8 +84,8 @@ extern const char* _global_stack_marker;
 extern size_t _global_stack_max_size;
 };
 
-#define FWD_MTAG            0b010
-#define MASK_MTAG           0b111
+//#define FWD_MTAG            0b010
+//#define MASK_MTAG           0b111
 #define DO_SHIFT_STAMP(unshifted_stamp) ((unshifted_stamp<<gctools::Header_s::general_mtag_shift)|gctools::Header_s::general_mtag)
 
 #define STAMP_UNSHIFT_WTAG(stampwtag) (((size_t)stampwtag)>>gctools::Header_s::wtag_width)
@@ -244,23 +244,28 @@ namespace gctools {
       The (header) uintptr_t is a tagged value where the
       two least significant bits are the tag.
 
-                         stamp value   where-tag    mtag
-      64 bits total -> |    60 bits |   2 bits  | 2 bits
+                        badge  | stamp-value| where-tag |   mtag
+      64 bits total -> 32 bits |    27 bits |   2 bits  | 3 bits
 
-      The 'mtag' - two least-significant bits of the header uintptr_t value describe
+      The 'mtag' - three least-significant bits of the header uintptr_t value describe
       what the rest of the header data means.  This is used for General_O and derived objects.
-      #B00 == THIS MUST ALWAYS BE #B00 !!!!!!! EXCEPT MPS WILL CHANGE THEM FOR ITS PURPOSES.
-              To be a valid Clasp object they must be #B00  The header MUST look like a FIXNUM
+      #B000 == 'stamp-tag' THIS MUST ALWAYS BE #B000 !!!!!!! EXCEPT MPS WILL CHANGE THEM FOR ITS PURPOSES.
+              To be a valid Clasp object they must be #B000  The header value MUST look like a FIXNUM
               This is the 'stamp_tag' and indicates that the other bits in the header
-              represent a stamp value that indicate 
-              whether there is an extended-stamp and where to find the extended-stamp.
-      #B01 == (unused) This is an illegal value for the two lsbs,
+              represent a stamp value that indicate whether there is an extended-stamp 
+              and where to find the extended-stamp.
+      #B001 == invalid0_mtag This is an illegal value for the two lsbs,
               it indictates that this is not a valid header.
               This pattern is used to indicate a CONS header
-      #B10 == (MPS specific) FWD_MTAG - This tag indicates that the remaining data bits in the header contains a forwarding
+      #B010 == (MPS specific) weak_mtag - A weak object
+      #B011 == cons_mtag  This indicates that what follows is a cons cell.
+      #B100 == invalid1_mtag
+      #B101 == fwd_mtag - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
-      #B11 == (MPS specific) This indicates that the header contains a pad; check the
+      #B110   contains a pad; check the
+              bit at #B100 to see if the pad is a pad1 (==0) or a pad (==1)
+      #B111 == (MPS specific) This indicates that the header contains a pad; check the
               bit at #B100 to see if the pad is a pad1 (==0) or a pad (==1)
 
       IMPORTANT!!!!!:
@@ -272,9 +277,9 @@ namespace gctools {
           it looks like it's shifted >>2
 
 
-      If the tag is a 'stamp_tag' then the data bits have this meaning...
+      If the mtag is a 'stamp_tag' then the data bits have this meaning...
                               stamp   where_tag
-      64 bits total -> |    60 bits | 2 bits |
+      64 bits total -> |    27 bits | 2 bits |
       
       The 'stamp' is a 60 bit value (zero extended) that tells
       the MPS GC and the TYPEQ machinery what the layout of the object is and is used to determine
@@ -304,27 +309,32 @@ namespace gctools {
 
   class BaseHeader_s {
   public:
-    static const size_t mtag_shift = 3;  // mtags are 3 bits wide
-    static const tagged_stamp_t mask_general_mtag = 0b011;
-    static const tagged_stamp_t general_mtag_mask = 0b011;
-    static const tagged_stamp_t general_mtag      = 0b00;
+// fixme2022
+    static const size_t mtag_shift                = 3;  // mtags are 3 bits wide
+    static const tagged_stamp_t mtag_mask         = 0b111;
+#if  1
+    static const size_t general_mtag_width        = mtag_shift;
+    static const tagged_stamp_t general_mtag_mask = 0b111;
+#else
     static const size_t general_mtag_width        = 2;
-    static const size_t general_mtag_shift        = 2; // MUST ALWAYS BE 2 to match Fixnum shift
-    static const tagged_stamp_t mtag_mask      = 0b111;
-    static const tagged_stamp_t invalid_mtag   = 0b001;
-    static const tagged_stamp_t cons_mtag      = 0b011;
+    static const tagged_stamp_t general_mtag_mask = 0b11;
+#endif
+    static const size_t general_mtag_shift        = general_mtag_width; // MUST ALWAYS BE >=2 to match Fixnum shift
     /*!
      * It is important that weak_mtag is the same value as CHARACTER_TAG so that
      * it looks like an immediate value in AWL pools and doesn't break the
      * MPS invariant that only valid tagged pointers are allowed in AWL pools.
      */
+    static const tagged_stamp_t general_mtag   = 0b000;
+    static const tagged_stamp_t invalid0_mtag  = 0b001;
     static const tagged_stamp_t weak_mtag      = 0b010;
-    static const tagged_stamp_t stamp_mtag     =  general_mtag;
+    static const tagged_stamp_t cons_mtag      = 0b011;
+    static const tagged_stamp_t invalid1_mtag  = 0b100;
     static const tagged_stamp_t fwd_mtag       = 0b101;
     static const tagged_stamp_t pad_mtag       = 0b110;
     static const tagged_stamp_t pad1_mtag      = 0b111;
-    static const tagged_stamp_t stamp_mask     = ~(tagged_stamp_t)mtag_mask; // 0b11...111111111111000;
-    static const size_t mtag_width = general_mtag_shift;
+    static const tagged_stamp_t stamp_mtag     = general_mtag;
+    static const tagged_stamp_t stamp_mask     = ~(tagged_stamp_t)general_mtag_mask; // 0b11...111111111111000;
     static const tagged_stamp_t where_mask     =  0b11<<general_mtag_shift;
     // These MUST match the wtags used in clasp-analyzer.lisp and scraper/code-generator.lisp
     static const tagged_stamp_t derivable_wtag =  0b00<<general_mtag_shift;
@@ -333,7 +343,7 @@ namespace gctools {
     static const tagged_stamp_t header_wtag    =  0b11<<general_mtag_shift;
     static const tagged_stamp_t max_wtag       =  0b11<<general_mtag_shift;
     static const tagged_stamp_t wtag_width     = 2;
-    static const size_t general_stamp_shift    = general_mtag_width+wtag_width; // MUST ALWAYS BE 2 to match Fixnum shift
+    static const size_t general_stamp_shift    = general_mtag_width+wtag_width;
     
 // Must match the number of bits to describe where_mask from the 0th bit
     // This is the width of integer that llvm needs to represent the masked off part of a header stamp
@@ -341,7 +351,7 @@ namespace gctools {
     
     // stamp_tag MUST be 00 so that stamps look like FIXNUMs
 //    static const int stamp_shift = general_mtag_shift;
-    static const tagged_stamp_t largest_possible_stamp = stamp_mask>>mtag_shift;
+    static const tagged_stamp_t largest_possible_stamp = stamp_mask>>general_mtag_shift;
 
     //
     // Restrict stamps to specific ranges
@@ -389,11 +399,8 @@ namespace gctools {
 
 
 // This is so we can find where we shift/unshift/don'tshift
-      static UnshiftedStamp leave_unshifted_stamp(UnshiftedStamp us) {
-        return (us);
-      }
       static UnshiftedStamp first_NextUnshiftedStamp(UnshiftedStamp start) {
-        return (start+(1<<mtag_shift))&(~(uintptr_t)mtag_mask);
+        return (start+(1<<general_mtag_shift))&(~(uintptr_t)general_mtag_mask);
       }
       uintptr_t stamp() const { return this->_value>>(wtag_width+general_mtag_width); };
       static bool is_unshifted_stamp(uint64_t unknown) {
@@ -404,8 +411,9 @@ namespace gctools {
         if (sm<unknown && unknown<global_NextUnshiftedStamp) return true;
         return false;
       }
+      
       static bool is_shifted_stamp(uint64_t unknown) {
-        return (unknown&general_mtag_mask)==general_mtag; // Low two bits must be zero
+        return (unknown&general_mtag_mask)==general_mtag; // mtag must be zero
       }
       static bool is_header_shifted_stamp(uint64_t unknown) {
         if ((unknown&general_mtag_mask)!=general_mtag) return false;
@@ -424,13 +432,13 @@ namespace gctools {
         return (stamp == STAMPWTAG_core__DerivableCxxObject_O);
       }
       static bool is_rack_shifted_stamp(uint64_t header_word) {
-        return ((header_word&general_mtag_mask)==general_mtag)&&((header_word&where_mask)==rack_wtag); // Low two bits must be zero
+        return ((header_word&general_mtag_mask)==general_mtag)&&((header_word&where_mask)==rack_wtag); // mtag must be zero and wtag = rack_wtag
       }
       static bool is_wrapped_shifted_stamp(uint64_t header_word) {
-        return ((header_word&general_mtag_mask)==general_mtag)&&((header_word&where_mask)==wrapped_wtag); // Low two bits must be zero
+        return ((header_word&general_mtag_mask)==general_mtag)&&((header_word&where_mask)==wrapped_wtag); // mtag must be zero and wtag = wrapped_wtag
       }
       static bool is_derivable_shifted_stamp(uint64_t header_word) {
-        return ((header_word&general_mtag_mask)==general_mtag)&&((header_word&where_mask)==derivable_wtag); // Low two bits must be zero
+        return ((header_word&general_mtag_mask)==general_mtag)&&((header_word&where_mask)==derivable_wtag); // mtag must be zero and wtag = derivable_wtag
       }
       static bool is_header_stamp(uint64_t header_word) {
         return is_header_shifted_stamp(shift_unshifted_stamp(header_word));
@@ -451,7 +459,7 @@ namespace gctools {
         // Remove the where part of the unshifted stamp
         // The resulting value will be unique to the class and adjacent to each other
         //    andsuitable for indices into an array
-        return (size_t)(us>>general_mtag_shift);
+        return (size_t)(us>>wtag_width);
       }
       static size_t get_stamp_where(UnshiftedStamp us) {
         return (size_t)((us&where_mask)>>general_mtag_shift);
@@ -486,19 +494,28 @@ namespace gctools {
       }
     public:
       inline size_t mtag() const { return (size_t)(this->_value & mtag_mask);};
-      bool invalidP() const { return (this->_value & mtag_mask) == invalid_mtag; };
+      bool invalidP() const {
+        if (!(this->_value&general_mtag_mask)) return false;
+        tagged_stamp_t val = (this->_value & general_mtag_mask);
+        return (val == invalid0_mtag) || (val==invalid1_mtag);
+      };
       bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
       bool generalObjectP() const { return this->stampP(); };
       bool weakObjectP() const { return (this->_value & mtag_mask) == weak_mtag; };
       bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
-      bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
+      bool fwdP() const {
+#if 0
+        printf("%s:%d:%s this->_value = %u\n mtag_mask = %u\n fwd_mtag = %u\n",
+               __FILE__, __LINE__, __FUNCTION__, this->_value, mtag_mask, fwd_mtag );
+#endif
+        return (this->_value & mtag_mask) == fwd_mtag; };
+      bool fwdV() const { return (this->_value & mtag_mask); };
       bool padP() const { return (this->_value & mtag_mask) == pad_mtag; };
       bool pad1P() const { return (this->_value & mtag_mask) == pad1_mtag; };
       bool anyPadP() const { return this->padP() || this->pad1P(); };
   /*! No sanity checking done - this function assumes kindP == true */
-      ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_value); };
-      GCStampEnum stamp_wtag() const { return (GCStampEnum)(value_to_stamp(this->_value)); };
-      GCStampEnum stamp_() const { return (GCStampEnum)(value_to_stamp(this->_value)>>(mtag_width)); };
+      GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value>>general_mtag_shift); };
+      GCStampEnum stamp_() const { return (GCStampEnum)(this->_value>>(wtag_width+general_mtag_shift)); };
   /*! No sanity checking done - this function assumes fwdP == true */
       void *fwdPointer() const { return reinterpret_cast<void *>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
   /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
@@ -516,8 +533,15 @@ namespace gctools {
       void setPadSize(size_t sz) { this->_header_data[1] = sz; };
     public:
       // GenerateHeaderValue must be passed to make_fixnum and the result exactly matches a header value
+      //    Converts a STAMP_WTAG into what it would look like if it was a Fixnum_sp
       template <typename T>
-      static int64_t GenerateHeaderValue() { return (int64_t)GCStamp<T>::StampWtag; };
+      static int64_t GenerateHeaderValue() { return (int64_t)(GCStamp<T>::StampWtag) << (general_mtag_shift-fixnum_shift); };
+      //
+      //
+      // This must coordinate with what core::instance-stamp returns
+      //     and what core__shift_stamp_for_compiled_code returns
+      template <typename T>
+      static int64_t GenerateTypeqHeaderValue() { return (int64_t)(GCStamp<T>::StampWtag<<general_mtag_shift-fixnum_shift); };
     public: // header readers
       inline UnshiftedStamp unshifted_stamp() const {
         //        printf("%s:%d  unshifted_stamp() this->_value -> %lu\n", __FILE__, __LINE__, this->_value);
@@ -531,8 +555,8 @@ namespace gctools {
     };
     
     static inline int Stamp(StampWtagMtag::Value stamp_wtag_mtag ) {
-      GCTOOLS_ASSERT((stamp_wtag_mtag&0x3) == 0);
-      return stamp_wtag_mtag >> (general_mtag_shift + wtag_width);
+      GCTOOLS_ASSERT((stamp_wtag_mtag&general_mtag_mask) == general_mtag);
+      return stamp_wtag_mtag >> (wtag_width + general_mtag_shift);
     }
     //
     //
@@ -565,12 +589,14 @@ namespace gctools {
     BaseHeader_s(BaseHeader_s* headptr) :
       _stamp_wtag_mtag(headptr->_stamp_wtag_mtag)
     {};
+#if 0
     static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)(StampWtagMtag::unshift_shifted_stamp(value)); };
+#endif
   public:
     size_t mtag() const { return (size_t)(this->_stamp_wtag_mtag._value & mtag_mask);};
     constexpr size_t tail_size() const { return 0; };
 
-    ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_stamp_wtag_mtag.shifted_stamp()); };
+    ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_stamp_wtag_mtag._value); };
 
     string description() const {
       if (this->_stamp_wtag_mtag.stampP()) {
@@ -615,6 +641,7 @@ public:
   ConsHeader_s(const StampWtagMtag& k) : BaseHeader_s(k) {};
 public:
   static constexpr size_t size() { return sizeof(ConsHeader_s); };
+  bool isValidConsObject() const;
 };
 
 
@@ -639,6 +666,7 @@ public:
 #endif
 
 public:
+  bool isValidGeneralObject() const;
   void validate() const;
   void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE
@@ -1293,9 +1321,9 @@ struct MarkNode {
 };
 
 struct GatherObjects {
-  std::set<Header_s*> _Marked;
+  std::set<BaseHeader_s*> _Marked;
   MarkNode*          _Stack;
-  std::map<Header_s*,std::vector<uintptr_t>> _corruptObjects;
+  std::map<BaseHeader_s*,std::vector<uintptr_t>> _corruptObjects;
 
   GatherObjects() : _Stack(NULL) {};
   
@@ -1316,13 +1344,13 @@ struct GatherObjects {
     this->_Marked.insert(header);
   }
 
-  bool markedP(Header_s* header) {
+  bool markedP(BaseHeader_s* header) {
     return this->_Marked.find(header)!=this->_Marked.end();
   }
 };
 
 void gatherAllObjects(GatherObjects& gather);
-size_t objectSize(Header_s* header);
+size_t objectSize(BaseHeader_s* header);
 
 };
 //#endif // _clasp_memoryManagement_H

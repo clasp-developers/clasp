@@ -780,12 +780,13 @@ Return the index of the load-time-value"
                    (byte-code-length (length byte-code-string))
                    (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string
                                                                   (core:fmt nil "startup-byte-code-{}" id))))
-              (cmp:irc-intrinsic-call "cc_invoke_byte_code_interpreter"
+              (cmp:irc-intrinsic-call "cc_invoke_start_code_interpreter"
                                       (list *gcroots-in-module*
                                             (cmp:irc-bit-cast (cmp:irc-typed-gep (llvm-sys:array-type-get cmp:%i8% (1+ byte-code-length))
                                                                            byte-code-global (list 0 0))
                                                               cmp:%i8*%)
-                                            (cmp:jit-constant-size_t byte-code-length)))
+                                            (cmp:jit-constant-size_t byte-code-length)
+                                            (cmp:irc-bit-cast cmp::*current-function* cmp:%i8*%)))
               (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*)))))
       (let ((literal-entries (literal-machine-table-index *literal-machine*)))
         (when t ;; (> literal-entries 0)

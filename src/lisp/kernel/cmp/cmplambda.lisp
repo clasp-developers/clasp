@@ -68,7 +68,7 @@ Return (values cleavir-lambda-list wrapped-code rest-alloc)."
             (let* ((cleavir-lambda-list
                      `(,@creqs
                        ,@(if copts (list* '&optional copts) nil)
-                       ,@(if crest (list (if varest-p 'core:&va-rest '&rest) crest) nil)
+                       ,@(if crest (list #-varest '&rest #+varest (if varest-p 'core:&va-rest '&rest) crest) nil)
                        ,@(if key-flag (list* '&key ckeys) nil)
                        ,@(if allow-other-keys (list '&allow-other-keys) nil)))
                    (assignments (append

@@ -242,7 +242,8 @@ namespace gctools {
 void rawHeaderDescribe(const uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
   switch (headerTag) {
-  case Header_s::invalid_mtag: {
+  case Header_s::invalid0_mtag:
+  case Header_s::invalid1_mtag:{
       printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
       printf(" Not an object header!\n");
       break;
@@ -374,7 +375,7 @@ void BaseHeader_s::validate() const {
   if ( this->_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
     uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
+    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) { // wasMTAG
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }
@@ -383,6 +384,59 @@ void BaseHeader_s::validate() const {
   } else {
     signal_invalid_object(this,"Not a normal object");
   }
+}
+
+bool ConsHeader_s::isValidConsObject() const {
+  if (((uintptr_t)this&ptag_mask)!=0) {
+    printf("%s:%d The cons header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
+  void* gcBase = GC_base((void*)this);
+  if (gcBase!=(void*)this) goto bad;
+  if ( this->_stamp_wtag_mtag._value == 0 ) goto bad;
+  if ( this->_stamp_wtag_mtag.invalidP() ) goto bad;
+  if ( !this->_stamp_wtag_mtag.consObjectP() ) goto bad;
+  return true;
+ bad:
+  return false;
+}
+
+
+bool Header_s::isValidGeneralObject() const {
+  if (((uintptr_t)this&ptag_mask)!=0) {
+    printf("%s:%d The general header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
+  void* gcBase = GC_base((void*)this);
+  if (gcBase!=(void*)this) goto bad;
+  if ( this->_stamp_wtag_mtag._value == 0 ) goto bad;
+  #ifdef DEBUG_GUARD  
+  if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) goto bad;
+#endif
+  if ( this->_stamp_wtag_mtag.invalidP() ) goto bad;
+  if ( this->_stamp_wtag_mtag.stampP() ) {
+#if defined(USE_PRECISE_GC)
+    uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
+    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) goto bad; // wasMTAG
+#endif // USE_PRECISE_GC
+#ifdef DEBUG_GUARD    
+    if ( this->_guard != GUARD1) goto bad;
+    if ( this->_guard2!= GUARD2) goto bad;
+#endif
+    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) goto bad;
+#ifdef DEBUG_GUARD
+    for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
+            *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
+      if (*cp!=0xcc) goto bad;
+    }
+#endif
+  } else if (!this->_stamp_wtag_mtag.weakObjectP()) {
+    goto bad;
+  }
+  return true;
+ bad:
+  printf("%s:%d:%s Encountered a bad general object at %p value: 0x%x\n", __FILE__, __LINE__, __FUNCTION__, this, this->_stamp_wtag_mtag._value );
+  return false;
 }
 
 void Header_s::validate() const {
@@ -398,7 +452,7 @@ void Header_s::validate() const {
   if ( this->_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
     uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
+    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) { // wasMTAG
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }
@@ -876,17 +930,50 @@ PointerFix globalMemoryWalkPointerFix;
 
 void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* userData ) {
   GatherObjects* gather = (GatherObjects*)userData;
-  Header_s* header;
+  BaseHeader_s* base;
   if (tag == gctools::general_tag) {
-    header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
+    Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
+    base = header;
+    if (!header->isValidGeneralObject()) {
+      auto ii = gather->_corruptObjects.find(header);
+      if ( ii == gather->_corruptObjects.end() ) {
+        std::vector<uintptr_t> badPointers;
+        badPointers.push_back((uintptr_t)clientAddress);
+        gather->_corruptObjects[header] = badPointers;
+      } else {
+        std::vector<uintptr_t>& badPointers = ii->second;
+        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)clientAddress) != badPointers.end() ) {
+          badPointers.push_back((uintptr_t)clientAddress);
+        }
+      }
+      return;
+    }
   } else if (tag==gctools::cons_tag) {
-    header = (Header_s*)ConsPtrToHeaderPtr((void*)client);
+    ConsHeader_s* consHeader = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
+    base = consHeader;
+    if (!consHeader->isValidConsObject()) {
+      auto ii = gather->_corruptObjects.find(consHeader);
+      if ( ii == gather->_corruptObjects.end() ) {
+        std::vector<uintptr_t> badPointers;
+        badPointers.push_back((uintptr_t)clientAddress);
+        gather->_corruptObjects[consHeader] = badPointers;
+      } else {
+        std::vector<uintptr_t>& badPointers = ii->second;
+        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)clientAddress) != badPointers.end() ) {
+          badPointers.push_back((uintptr_t)clientAddress);
+        }
+      }
+      return;
+    }
   } else {
 #ifdef RUNNING_PRECISEPREP
     Header_s* base = NULL;
 #else
     Header_s* base = (Header_s*)GC_base(clientAddress);
 #endif
+    if (base==NULL) {
+      printf("%s:%d:%s Hit NULL base pointer for %p\n", __FILE__, __LINE__, __FUNCTION__, clientAddress );
+    }
     auto ii = gather->_corruptObjects.find(base);
     if ( ii == gather->_corruptObjects.end() ) {
       std::vector<uintptr_t> badPointers;
@@ -900,8 +987,12 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
            __FILE__, __LINE__, __FUNCTION__, (void*)clientAddress, (void*)(client|tag));
     return; // It's an immediate - it shouldn't have gotten here
   }
+  //
+  // It's a good object maybe mark it
+  //
+  //
   // If it's marked already then return
-  if (gather->markedP(header)) return;
+  if (gather->markedP(base)) return;
   //
   // It hasn't been seen - mark it for scanning
   //
@@ -982,6 +1073,7 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
 
 
 void gatherAllObjects(GatherObjects& gather) {
+  printf("%s:%d:%s entered \n", __FILE__, __LINE__, __FUNCTION__ );
 
   globalMemoryWalkPointerFix = gatherObjects;
   
@@ -1045,7 +1137,7 @@ void gatherAllObjects(GatherObjects& gather) {
 
 
 /* Return the size of the object */
-size_t objectSize( Header_s* header ) {
+size_t objectSize( BaseHeader_s* header ) {
   if (header->_stamp_wtag_mtag.consObjectP() ) {
       // It's a cons object
     size_t consSize;

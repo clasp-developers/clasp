@@ -1238,22 +1238,6 @@ jump to blocks within this tagbody."
 ;;; Without DEBUG_BUILD, does not actually check if there is an element to pop.
 ;;; Use caution.
 
-#+(or)
-(defun gen-vaslist-pop (vaslist)
-  ;; We need to decrement the remaining nargs, then return va_arg.
-  (let* ((nargs* (irc-vaslist-nargs-address vaslist))
-         (nargs (irc-t*-load nargs*))
-         (nargs-- (irc-sub nargs (jit-constant-size_t 1))))
-    ;; Decrement.
-    (irc-store nargs-- nargs*)
-    (let* ((args* (irc-vaslist-args-address vaslist))
-           (args (irc-t*-load args*))
-           (args++ (irc-typed-gep %t***% args (list 1) "gen-vaslist-pop")))
-      ;; Increment
-      (irc-store args++ args*)
-      ;; va_arg.
-      (irc-t*-load args))))
-
 (defun codegen-vaslist-pop (result rest env)
   (let ((form (car rest))
         (vaslist-tagged (alloca-t* "vaslist-pop-vaslist")))

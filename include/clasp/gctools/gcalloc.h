@@ -295,10 +295,10 @@ struct ConsAllocator {
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::StampWtagMtag the_header, core::T_sp car, core::T_sp cdr ) {
 # if defined(USE_BOEHM)
-    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons),global_cons_kind,&global_cons_kind));
+    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons),global_cons_kind,&global_cons_kind)); // wasMTAG
     header->_stamp_wtag_mtag = the_header;
 # elif defined(USE_MMTK)
-    Header_s* header = reinterpret_cast<Header_s*>do_mmtk_allocate_cons(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons));
+    Header_s* header = reinterpret_cast<Header_s*>do_mmtk_allocate_cons(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons)); // wasMTAG
     header->_stamp_wtag_mtag = the_header;
 # else
     MISSING_GC_SUPPORT();

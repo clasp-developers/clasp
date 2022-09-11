@@ -23,6 +23,7 @@
 
 (defmethod initialize-instance ((instance T) core:&va-rest initargs)
   (dbg-standard "standard.lisp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
+  (mlog "standard.lisp:26 about to apply shared-initialize%N")
   (apply #'shared-initialize instance 'T initargs))
 
 (defmethod reinitialize-instance ((instance T ) &rest initargs)
@@ -30,14 +31,16 @@
   ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY
   ;; does not reuse rest lists. If it did, a method on #'shared-initialize,
   ;; or whatever, could potentially let the rest list escape.
+  (mlog "standard.lisp::reinitialize-instance instance initargs -> {}%N" (core:safe-repr initargs))
   (when initargs
     (check-initargs-uncached
      (class-of instance) initargs
      (list (list #'reinitialize-instance (list instance))
            (list #'shared-initialize (list instance t)))))
+  (mlog "standard.lisp:40 about to apply shared-initialize initargs -> {}%N" (core:safe-repr initargs))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance T) slot-names &rest #+(or)core:&va-rest initargs)
+(defmethod shared-initialize ((instance T) slot-names core:&va-rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set
@@ -58,29 +61,33 @@
   ;;       ()
   ;;            no slots are set from initforms
   ;;
+  (mlog "standard.lisp::shared-initialize instance -> {} initargs -> {}%N" (core:safe-repr instance) (core:list-from-vaslist initargs))
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
     (dolist (slotd (class-slots class))
-      #+(or)(core:vaslist-rewind initargs)
+      (core:vaslist-rewind (core:validate-vaslist initargs))
+      (core:validate-vaslist initargs)
       (let* ((slot-initargs (slot-definition-initargs slotd))
              (slot-name (slot-definition-name slotd)))
         (or
          ;; Try to initialize the slot from one of the initargs.
-         (do ((largs initargs)
+         (do ((largs (core:validate-vaslist initargs))
               initarg
               val)
-           ((null largs) #+(or)(= (core:vaslist-length largs) 0)
+             ((progn
+                (= (core:vaslist-length (core:validate-vaslist largs)) 0))
               (progn nil))
-           (setf initarg (pop largs) #+(or)(core:vaslist-pop largs))
-           (when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
-           #+(or)(when (= (core:vaslist-length largs) 0)
+           (setf initarg (core:vaslist-pop (core:validate-vaslist largs)))
+           (core:validate-vaslist largs)
+           #+(or)(when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
+           (when (= (core:vaslist-length (core:validate-vaslist largs)) 0)
              (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
                                    (progn
                                      (core:vaslist-rewind initargs)
                                      (core:list-from-vaslist initargs))))
            (unless (symbolp initarg)
              (simple-program-error "Not a valid initarg: ~A" initarg))
-           (setf val (pop largs) #+(or)(core:vaslist-pop largs))
+           (setf val #+(or)(pop l) (core:vaslist-pop (core:validate-vaslist largs)))
            (when (member initarg slot-initargs :test #'eq)
              (setf (slot-value instance slot-name) val)
              (return t)))

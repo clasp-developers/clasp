@@ -157,7 +157,7 @@ void derivable_class_registration::register_() const {
       // the baseclass' class_rep structure
       ClassRep_sp bcrep = registry->find_class(i->first);
 //      printf("%s:%d         %s inherits from %s\n", __FILE__, __LINE__, _rep_(className).c_str(), _rep_(bcrep).c_str());
-      ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
+      ASSERTF(bcrep.notnilp(), ("Could not find base class %s") , i->first.name());
       // Add it to the DirectSuperClass list
       crep->addInstanceBaseClass(bcrep->_className());
       crep->addInstanceAsSubClass(bcrep->_className());

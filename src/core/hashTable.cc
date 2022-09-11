@@ -920,9 +920,9 @@ CL_DEFUN T_sp core__hash_table_setf_gethash(HashTableBase_sp hash_table, T_sp ke
 KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
   DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d rehash_no_lock\n" , __FILE__ , __LINE__ ));});
-  ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
+  ASSERTF(!clasp_zerop(this->_RehashSize), "RehashSize is zero - it shouldn't be");
   gc::Fixnum curSize = this->_Table.size();
-  ASSERTF(this->_Table.size() != 0, BF("HashTable is empty in expandHashTable curSize=%ld  this->_Table.size()= %lu this shouldn't be") % curSize % this->_Table.size());
+  ASSERTF(this->_Table.size() != 0, ("HashTable is empty in expandHashTable curSize=%ld  this->_Table.size()= %lu this shouldn't be") , curSize , this->_Table.size());
   KeyValuePair* foundKeyValuePair = nullptr;
   LOG("At start of expandHashTable current hash table size: %d" , this->_Table.size());
   gc::Fixnum newSize = 0;

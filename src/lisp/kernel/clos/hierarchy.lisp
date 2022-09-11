@@ -26,7 +26,7 @@
   (push :mlog *features*)
   (defmacro mlog (fmt &rest fmtargs)
     `(core:fmt *error-output* ,fmt ,@fmtargs)))
-;;#+(or)
+;;;#+(or)
 (defmacro mlog (fmt &rest fmtargs) (declare (ignore fmt fmtargs)))
 
 ;;; ----------------------------------------------------------------------

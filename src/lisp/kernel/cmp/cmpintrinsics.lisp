@@ -567,7 +567,7 @@ Boehm and MPS use a single pointer"
 
   (define-c++-struct %vaslist% +vaslist0-tag+  ;; TODO - there is going to be a problem here becaues of +vaslist1-tag+
     ((%t**% :args)     ; This is a pointer to T*
-     (%size_t% :nargs)))
+     (%uintptr_t% :nargs)))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
 ;;;    "Function prototype for generic functions")
@@ -579,9 +579,55 @@ Boehm and MPS use a single pointer"
   (ensure-opaque-or-pointee-type-matches vaslist* %vaslist%)
   (irc-struct-gep %vaslist% vaslist* 0 label))
 
-(defun vaslist*-nargs* (vaslist* &optional (label "nargs*"))
+(defun vaslist*-shifted-nargs* (vaslist* &optional (label "nargs*"))
   (ensure-opaque-or-pointee-type-matches vaslist* %vaslist%)
   (irc-struct-gep %vaslist% vaslist* 1 label))
+
+(defun vaslist*-set-nargs (vaslist* nargs)
+  (let* ((pos* (vaslist*-shifted-nargs* vaslist*))
+         (shifted-nargs (irc-shl nargs +vaslist-nargs-shift+)))
+    (irc-store shifted-nargs pos*)))
+
+(defun vaslist*-get-nargs (vaslist*)
+  (let* ((pos* (vaslist*-shifted-nargs* vaslist*))
+         (shifted-nargs (irc-load pos*))
+         (nargs (irc-lshr shifted-nargs +vaslist-nargs-shift+)))
+    nargs))
+
+
+(defun vaslist*-decr-nargs (vaslist*)
+  (let* ((pos* (vaslist*-shifted-nargs* vaslist*))
+         (shifted-nargs (irc-load pos*))
+         (dec-shifted-nargs (irc-sub +vaslist-nargs-decrement+)))
+    (irc-store dec-shifted-nargs pos*)))
+
+(defun vaslist*-nargs-zero (vaslist*)
+  (let* ((pos* (vaslist*-shifted-nargs* vaslist*))
+         (shifted-nargs (irc-load pos*)))
+    (error "finish implementing me - compare shifted-nargs to zero")))
+
+(defun vaslist-start (vaslist* nargs &optional args)
+  (when args
+    (irc-maybe-check-word-aligned-load %t*% args)
+    (irc-store args (vaslist*-args* vaslist*)))
+  (vaslist*-set-nargs vaslist* nargs))
+
+;;; Generate code to read the next argument from the vaslist*
+;;; The vaslist* argument MUST be an untagged pointer to a %vaslist%
+(defun gen-vaslist-pop (vaslist*)
+  (irc-maybe-check-word-aligned-load %vaslist% vaslist*)
+  (let* ((args* (vaslist*-args* vaslist* "gvp-args*"))
+         (args (irc-typed-load %t**% args* "gvp-args"))
+         (val (irc-t*-load args "gvp-val"))
+         (args-next (irc-typed-gep %t*% args (list 1)))
+         (shifted-nargs* (vaslist*-shifted-nargs* vaslist* "gvp-nargs*"))
+         (shifted-nargs (irc-typed-load %i64% shifted-nargs*))
+         (shifted-nargs-next (irc-sub shifted-nargs (jit-constant-i64 +vaslist-nargs-decrement+))))
+    (irc-maybe-check-word-aligned-load %t*% args-next)
+    (irc-store args-next args*)
+    (irc-store shifted-nargs-next shifted-nargs*)
+    val))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -633,28 +679,6 @@ Boehm and MPS use a single pointer"
                                     :register-args register-args
                                     :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
                                     :rest-alloc rest-alloc)))))))
-
-(defun vaslist-start (vaslist* nargs &optional args)
-  (when args
-    (irc-maybe-check-word-aligned-load %t*% args)
-    (irc-store args (vaslist*-args* vaslist*)))
-  (irc-store nargs (vaslist*-nargs* vaslist*)))
-
-;;; Generate code to read the next argument from the vaslist*
-;;; The vaslist* argument MUST be an untagged pointer to a %vaslist%
-(defun gen-vaslist-pop (vaslist*)
-  (irc-maybe-check-word-aligned-load %vaslist% vaslist*)
-  (let* ((args* (vaslist*-args* vaslist* "gvp-args*"))
-         (args (irc-typed-load %t**% args* "gvp-args"))
-         (val (irc-t*-load args "gvp-val"))
-         (args-next (irc-typed-gep %t*% args (list 1)))
-         (nargs* (vaslist*-nargs* vaslist* "gvp-nargs*"))
-         (nargs (irc-typed-load %i64% nargs*))
-         (nargs-next (irc-sub nargs (jit-constant-i64 1))))
-    (irc-maybe-check-word-aligned-load %t*% args-next)
-    (irc-store args-next args*)
-    (irc-store nargs-next nargs*)
-    val))
 
 ;;;
 ;;; Read the next argument from the vaslist

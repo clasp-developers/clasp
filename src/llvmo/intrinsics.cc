@@ -127,10 +127,8 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
 
 ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(Vaslist* vaslist, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
-  untagged_vargs_rest[0]._args = vaslist->_args;
-  untagged_vargs_rest[1]._args = vaslist->_args;
-  untagged_vargs_rest[0]._nargs = nargs;
-  untagged_vargs_rest[1]._nargs = nargs;
+  new(&untagged_vargs_rest[0]) Vaslist(nargs, vaslist->args());
+  new(&untagged_vargs_rest[1]) Vaslist(nargs, vaslist->args());
   T_O* result = untagged_vargs_rest->asTaggedPtr();
 #ifdef DEBUG_VASLIST
   if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
@@ -196,6 +194,13 @@ ALWAYS_INLINE core::T_O* makeBlockFrameSetParent(core::T_O *parentP)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
   core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, nil<core::T_O>()));
+#ifdef DEBUG_ASSERT
+  T_sp p((gctools::Tagged)parentP);
+  bool isNull = (parentP==NULL);
+  bool isNil = p.nilp();
+  bool isFrame = gc::IsA<Environment_sp>(p);
+  ASSERTF(isNull||isNil||isFrame,"The object %p must be NIL or inherit from Environment_O", (void*)p.raw_());
+#endif
   valueFrame->setParentFrame(parentP);
   return valueFrame.raw_();
   NO_UNWIND_END();

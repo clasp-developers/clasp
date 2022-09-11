@@ -165,7 +165,7 @@ void ValueEnvironmentDynamicScopeManager::va_rest_binding(const Argument &argume
   if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
     SIMPLE_ERROR(("You cannot bind &VA-REST argument to a special"));
   }
-  ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
+  ASSERTF(argument._ArgTargetFrameIndex >= 0, ("Illegal ArgTargetIndex[%d] for lexical variable[%s]") , argument._ArgTargetFrameIndex , _rep_(argument._ArgTarget));
   Vaslist_sp valist(&this->valist());
   T_sp argTarget = argument._ArgTarget;
   this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, valist);
@@ -176,7 +176,7 @@ void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp 
   if (type == ext::_sym_lexicalVar) {
     Symbol_sp sym = gc::As<Symbol_sp>(oCadr(classified));
     int idx = unbox_fixnum(gc::As<Fixnum_sp>(oCddr(classified)));
-    ASSERTF(idx >= 0, BF("Illegal target index[%d] for lexical variable[%s]") % idx % _rep_(sym));
+    ASSERTF(idx >= 0, ("Illegal target index[%d] for lexical variable[%s]") , idx , _rep_(sym));
     this->_Environment->new_binding(sym, idx, val);
     return;
   } else if (type == ext::_sym_specialVar) {
@@ -199,7 +199,7 @@ void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, 
     this->new_special_binding(sym, val);
     return;
   }
-  ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
+  ASSERTF(argument._ArgTargetFrameIndex >= 0, ("Illegal ArgTargetIndex[%d] for lexical variable[%s]") , argument._ArgTargetFrameIndex , _rep_(argument._ArgTarget));
   T_sp argTarget = argument._ArgTarget;
   this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, val);
 }
@@ -210,7 +210,7 @@ void StackFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp v
     this->new_special_binding(sym, val);
     return;
   }
-  ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
+  ASSERTF(argument._ArgTargetFrameIndex >= 0, ("Illegal ArgTargetIndex[%d] for lexical variable[%s]") , argument._ArgTargetFrameIndex , _rep_(argument._ArgTarget));
   gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, val.raw_() );
   if (this->_Environment.notnilp()) this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val );
 }
@@ -219,7 +219,7 @@ void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
   if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
     SIMPLE_ERROR(("You cannot bind &VA-REST argument to a special"));
   }
-  ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
+  ASSERTF(argument._ArgTargetFrameIndex >= 0, ("Illegal ArgTargetIndex[%d] for lexical variable[%s]") , argument._ArgTargetFrameIndex , _rep_(argument._ArgTarget));
   Vaslist_sp valist(&this->valist());
   gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, valist.raw_() );
   T_sp val((gctools::Tagged)valist.raw_());

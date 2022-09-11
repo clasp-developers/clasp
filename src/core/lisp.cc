@@ -420,9 +420,9 @@ CL_DEFUN void core__monitor_write(const std::string& msg) {
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
-CL_DEFUN void core__set_debug_byte_code(T_sp on)
+CL_DEFUN void core__set_debug_start_code(T_sp on)
 {
-  global_debug_byte_code = on.notnilp();
+  global_debug_start_code = on.notnilp();
 }
 
 void Lisp::initializeMainThread() {
@@ -439,10 +439,10 @@ void Lisp::startupLispEnvironment() {
   
   MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
-  char* debug_byte_code = getenv("CLASP_DEBUG_BYTE_CODE");
-  if (debug_byte_code) {
+  char* debug_start_code = getenv("CLASP_DEBUG_START_CODE");
+  if (debug_start_code) {
     printf("%s:%d Turning on *debug-byte-code*\n", __FILE__, __LINE__);
-    global_debug_byte_code = true;
+    global_debug_start_code = true;
   }
 
   //
@@ -452,8 +452,8 @@ void Lisp::startupLispEnvironment() {
   symbol_nil->fmakunbound();
   symbol_nil->fmakunbound_setf();
   { // Trap symbols as they are interned
-    if (offsetof(Function_O,_EntryPoint)!=offsetof(FuncallableInstance_O,_EntryPoint)) {
-      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,_EntryPoint),offsetof(FuncallableInstance_O,_EntryPoint) );
+    if (offsetof(Function_O,_TheEntryPoint)!=offsetof(FuncallableInstance_O,_TheEntryPoint)) {
+      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,_TheEntryPoint),offsetof(FuncallableInstance_O,_TheEntryPoint) );
       printf("        These must match for Clasp to be able to function\n");
       abort();
     }
@@ -900,7 +900,7 @@ void Lisp::addClassSymbol(Symbol_sp classSymbol,
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
   core__setf_find_class(cc, classSymbol);
   cc->addInstanceBaseClass(base1ClassSymbol);
-  ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
+  ASSERTF((bool)alloc, ("_creator for %s is NULL!!!") , _rep_(classSymbol));
   cc->CLASS_set_creator(alloc);
 }
 
@@ -1646,7 +1646,7 @@ CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
 #ifdef SYMBOL_CLASS
   return symbol->find_class_holder();
 #else
-//  ASSERTF(env.nilp(), BF("Handle non nil environment"));
+//  ASSERTF(env.nilp(), ("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
     return _lisp->boot_findClassHolder(symbol,false);
@@ -1672,7 +1672,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(find-class)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
-  //ASSERTF(env.nilp(), BF("Handle non nil environment"));
+  //ASSERTF(env.nilp(), ("Handle non nil environment"));
 //  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
   T_sp ch = core__find_class_holder(symbol,env);
   if (ch.nilp()) {
@@ -1961,19 +1961,19 @@ public:
 CL_LAMBDA(sequence predicate &key key)
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(Like CLHS: sort but does not support key)dx")
+CL_DOCSTRING(R"dx(Like CLHS: sort but the sequence is not destructively sorted. Instead a new sequence is returned.)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
   gctools::Vec0<T_sp> sorted;
   Function_sp sortProc = coerce::functionDesignator(predicate);
-  LOG("Unsorted data: %s" , _rep_(sequence));
+  LOG("Unsorted data: %s", _rep_(sequence));
   if (cl__length(sequence) == 0)
     return nil<T_O>();
   fillVec0FromCons(sorted, sequence);
-  LOG("Sort function: %s" , _rep_(sortProc));
-  OrderBySortFunction orderer(sortProc,gc::As<Function_sp>(key));
-//  sort::quickSort(sorted.begin(), sorted.end(), orderer);
-  sort::quickSortVec0(sorted,0,sorted.size(),orderer);
+  LOG("Sort function: %s", _rep_(sortProc));
+  OrderBySortFunction orderer(sortProc,
+                              key.nilp() ? coerce::functionDesignator(cl::_sym_identity) : coerce::functionDesignator(key));
+  sort::quickSortVec0(sorted, 0, sorted.size(), orderer);
   List_sp result = asCons(sorted);
   return result;
 }
@@ -2184,7 +2184,7 @@ Instance_sp Lisp::boot_setf_findClass(Symbol_sp className, Instance_sp mc) {
 
 T_sp Lisp::boot_findClassHolder(Symbol_sp className, bool errorp) const {
   ASSERTF(this->_BootClassTableIsValid,
-          BF("Never use Lisp::findClass after boot - use cl::_sym_findClass"));
+          ("Never use Lisp::findClass after boot - use cl::_sym_findClass"));
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
     if (it->symbol == className)
       return it->theClassHolder;
@@ -2197,7 +2197,7 @@ T_sp Lisp::boot_findClassHolder(Symbol_sp className, bool errorp) const {
   until the hash-table class is defined and we need classes in the *class-name-hash-table* once
   CLOS starts up because that is where ECL expects to find them. */
 void Lisp::switchToClassNameHashTable() {
-  ASSERTF(this->_BootClassTableIsValid, BF("switchToClassNameHashTable should only be called once after boot"));
+  ASSERTF(this->_BootClassTableIsValid, ("switchToClassNameHashTable should only be called once after boot"));
   HashTable_sp ht = _lisp->_Roots._ClassTable;
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
     ht->hash_table_setf_gethash(it->symbol, it->theClassHolder);

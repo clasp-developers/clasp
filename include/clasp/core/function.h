@@ -130,17 +130,17 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
     CLASP_DEFAULT_CTOR Function_O() {};
-    Function_O(EntryPoint_O* ep) : _EntryPoint(EntryPoint_sp((gctools::Tagged)(gctools::tag_general<EntryPoint_O*>(ep)))) {
-      ASSERT(!tagged_general_p<EntryPoint_O>(ep)); // on entry should not be tagged
+    Function_O(EntryPoint_O* ep) : _TheEntryPoint(EntryPoint_sp((gctools::Tagged)(gctools::tag_general<EntryPoint_O*>(ep)))) {
+      ASSERT(!gctools::tagged_generalp<EntryPoint_O*>(ep)); // on entry should not be tagged
     };
   public:
-    std::atomic<EntryPoint_sp>    _EntryPoint;
+    std::atomic<EntryPoint_sp>    _TheEntryPoint;
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
-  Function_O(GlobalEntryPoint_sp ptr)
-      : _EntryPoint(ptr)
+  Function_O(EntryPoint_sp ptr)
+      : _TheEntryPoint(ptr)
     {
 #ifdef _DEBUG_BUILD
       if (!ptr.generalp()) {
@@ -162,8 +162,15 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     //  virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
 
 
-    CL_DEFMETHOD T_sp entryPoint() const {
-      return this->_EntryPoint.load();
+    CL_DEFMETHOD EntryPoint_sp entryPoint() const {
+      EntryPoint_sp ep = this->_TheEntryPoint.load();
+      ASSERT(ep.generalp());
+      return ep;
+    }
+
+    CL_DEFMETHOD void setEntryPoint(EntryPoint_sp ep) {
+      ASSERT(ep.generalp());
+      return this->_TheEntryPoint.store(ep);
     }
 
     CL_LISPIFY_NAME("core:functionName");
@@ -265,7 +272,7 @@ namespace core {
  class LocalEntryPoint_O : public CodeEntryPoint_O {
    LISP_CLASS(core,CorePkg,LocalEntryPoint_O,"LocalEntryPoint",CodeEntryPoint_O);
  public:
-   ClaspLocalFunction _EntryPoint;
+   ClaspLocalFunction _Entry;
  public:
   // Accessors
    LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code );
@@ -490,9 +497,9 @@ namespace core {
   public:
     LambdaListHandler_sp _lambdaListHandler;
   public:
-  BuiltinClosure_O(GlobalEntryPoint_sp ep)
+  BuiltinClosure_O(EntryPoint_sp ep)
     : Function_O(ep), _lambdaListHandler(unbound<LambdaListHandler_O>())  {};
-  BuiltinClosure_O(GlobalEntryPoint_sp ep, LambdaListHandler_sp llh)
+  BuiltinClosure_O(EntryPoint_sp ep, LambdaListHandler_sp llh)
     : Function_O(ep), _lambdaListHandler(llh)  {};
     void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
@@ -541,7 +548,7 @@ namespace core {
     static Closure_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column );
   public:
     Closure_O(size_t capacity,
-                       GlobalEntryPoint_sp ep,
+                       EntryPoint_sp ep,
                        ClosureType nclosureType)
         : Base(ep),
           closureType(nclosureType),

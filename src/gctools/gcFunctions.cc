@@ -192,7 +192,7 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   SIMPLE_ERROR(("The object %s is not a general object and doesn't have a header-value") , _rep_(obj));
 }
 
-
+#if 0
 CL_DOCSTRING(R"dx(Return the header value for the object)dx")
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
@@ -202,6 +202,8 @@ CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
   }
   TYPE_ERROR(value,cl::_sym_fixnum);
 }
+#endif
+
 
 DOCGROUP(clasp)
 CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test()
@@ -238,15 +240,22 @@ CL_DOCSTRING(R"dx(Return the index part of the stamp.  Stamp indices are adjacen
 DOCGROUP(clasp)
 CL_DEFUN size_t core__stamp_index(size_t stamp)
 {
-  return stamp>>(gctools::Header_s::wtag_width+gctools::Header_s::mtag_width);
+  return stamp>>(gctools::Header_s::wtag_width+gctools::Header_s::general_mtag_width);
 }
 
 CL_DOCSTRING(R"dx(Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting)dx")
 DOCGROUP(clasp)
-CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t unshifted_stamp)
+CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t stamp_wtagx2)
 {
-  return core::make_fixnum((unshifted_stamp << gctools::Header_s::general_mtag_shift)
-                           | gctools::Header_s::general_mtag);
+  // This assumes the stamp_wtagx2 is a stamp_wtag shifted * 2
+  // This shift must coordinate with the shift in GenerateTypeqHeaderValue
+  // so that the returned result, when written into llvm-IR matches exactly the bit patterns
+  // in the header._value
+  //  If a stamp_wtag is 4
+  //     then stamp_wtagx2 is 8
+  //     This returns 32
+  //     The bit pattern in a header._value will be 32
+  return core::make_fixnum(stamp_wtagx2<<fixnum_shift);
 }
 
 CL_DOCSTRING(R"dx(Return the stamp for the object, the flags and the header stamp)dx")

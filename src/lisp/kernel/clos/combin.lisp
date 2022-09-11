@@ -31,7 +31,14 @@
 ;; The ARG-INFO threaded throughout here is used to skip some APPLYing.
 ;; See closfastgf.lisp, gf-arg-info function.
 
+#|
+(defvar *avoid-compiling*
+  #+(and staging bytecode) t
+  #-(and staging bytecode) nil)
+|#
+
 (defvar *avoid-compiling* nil)
+
 (defun emf-maybe-compile (form)
   (if *avoid-compiling*
       (coerce form 'function)
@@ -40,7 +47,8 @@
             ;; end up here recursively, which ends quite badly.
             ;; So fall back to the bclasp compiler which does not use gfs.
             (cmp:*cleavir-compile-hook* nil))
-        (compile nil form))))
+        #+bytecompile(cmp::bytecompile form)
+        #-bytecompile(compile nil form))))
 
 (defun emf-default (form &optional (arg-info '(t)))
   (let ((restp (car arg-info)) (vars (cdr arg-info)))
@@ -176,6 +184,11 @@
         collect (call-method-aux gf nmethod)))
 
 (defun std-expand-apply-method (method method-arguments arguments env)
+  (mlog "combin.lisp:std-expand-apply-method method -> {} method-arguments -> {} arguments -> {} env -> {}%N"
+        (core:safe-repr method)
+        (core:safe-repr method-arguments)
+        (core:safe-repr arguments)
+        (core:safe-repr env))
   (destructuring-bind (&optional ((&rest next-methods))) method-arguments
     (let ((arg-info (argforms-to-arg-info arguments env)))
       (cond

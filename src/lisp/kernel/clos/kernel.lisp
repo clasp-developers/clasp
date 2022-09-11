@@ -12,6 +12,12 @@
 
 (in-package "CLOS")
 
+;;; Turned this off when I was first starting with bloader/loader.lisp
+;;; because it broke the build.   Disable on Sep 7, 2022
+#+bytecode (setq *features* (core:remove-equal :static-gfs *features*))
+
+
+
 #+(or)(eval-when (:execute)
         (setq core:*echo-repl-read* t))
 
@@ -75,6 +81,7 @@
 
 (defun install-method (name qualifiers specializers lambda-list fun &rest options)
   (declare (notinline ensure-generic-function))
+  (mlog "kernel.lisp::install-method  name -> {}  lambda-list -> {} %N" (core:safe-repr name) (core:safe-repr lambda-list))
 ;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
   (let* ((gf (ensure-generic-function name))
 	 (method (make-method (generic-function-method-class gf)
@@ -197,7 +204,7 @@
                                      (values nil nil)))
                                  nil)
                                 ((si::subclassp class spec))))))
-      (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf classes)
+      (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf (length classes))
       (let ((result (sort-applicable-methods
                      gf
                      (loop for method in (generic-function-methods gf)
@@ -211,7 +218,7 @@
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors (+eql-specializer-slots+ +standard-generic-function-slots+)
-    (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf classes)
+    (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" (core:safe-repr gf) (length classes))
     (flet ((applicable-method-p (method classes)
 	     (loop for spec in (safe-method-specializers method)
 		for class in classes

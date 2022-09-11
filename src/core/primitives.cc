@@ -541,7 +541,7 @@ CL_DOCSTRING(R"dx(values)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
   // returns multiple values
-  size_t nargs = vargs->remaining_nargs();
+  size_t nargs = vargs->nargs();
   SUPPRESS_GC();
 #ifdef DEBUG_VALUES
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
@@ -1485,7 +1485,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp cl__append(Vaslist_sp args) {
   ql::list list;
   LOG("Carrying out append with arguments: %s" , _rep_(lists));
-  size_t lenArgs = args->total_nargs();
+  size_t lenArgs = args->nargs();
   unlikely_if (lenArgs==0) return nil<T_O>();
   T_O* lastArg = (*args)[lenArgs-1];
   for ( int i(0),iEnd(lenArgs-1);i<iEnd; ++i ) {

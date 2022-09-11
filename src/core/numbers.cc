@@ -996,7 +996,7 @@ T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
   Real_sp c = gc::As<Real_sp>(args->next_arg());
   Real_sp d;
   int dir;
-  while (args->remaining_nargs()>0) {
+  while (args->nargs()>0) {
     d = gc::As<Real_sp>(args->next_arg());
     dir = s * basic_compare(c, d);
     if (dir < t) return _lisp->_false();
@@ -1037,7 +1037,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___LT_(Vaslist_sp args) {
-  if (args->remaining_nargs()<1) {
+  if (args->nargs_zero()) {
     SIMPLE_ERROR(("< needs at least one argument"));
   }
   return numbers_monotonic_vaslist(-1, 1, args);
@@ -1047,7 +1047,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___GT_(Vaslist_sp args) {
-  if (args->remaining_nargs()<1) {
+  if (args->nargs_zero()) {
     SIMPLE_ERROR(("> needs at least one argument"));
   }
   return numbers_monotonic_vaslist(1, 1, args);
@@ -1057,7 +1057,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___LE_(Vaslist_sp args) {
-  if (args->remaining_nargs()<1) {
+  if (args->nargs_zero()) {
     SIMPLE_ERROR(("> needs at least one argument"));
   }
   return numbers_monotonic_vaslist(-1, 0, args);
@@ -1067,7 +1067,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___GE_(Vaslist_sp args) {
-  if (args->remaining_nargs()<1) {
+  if (args->nargs_zero()) {
     SIMPLE_ERROR((">= needs at least one argument"));
   }
   return numbers_monotonic_vaslist(1, 0, args);
@@ -1200,7 +1200,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp cl___NE_(Vaslist_sp args) {
   /* Unlike variable-argument =, this takes a quadratic number of
    * comparisons, as every pair must be unequal. */
-  switch (args->remaining_nargs()) {
+  switch (args->nargs()) {
     /* I expect the order of likelihood is 2, 3, 1, >3, 0.
      * I don't think the compiler takes the order in a switch
      * very seriously, though, so it's just in order. */

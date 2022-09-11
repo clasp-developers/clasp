@@ -681,8 +681,10 @@ argument was specialized.
     (when (/= (length specializers)
 	      (length (generic-function-argument-precedence-order gf)))
       (error
-       "The specializers list~%~A~%does not match the number of required arguments in ~A"
-       specializers (generic-function-name gf)))
+       "The specializers list~%~A~%does not match the number of required arguments (~a) in ~A"
+       specializers
+       (length (generic-function-argument-precedence-order gf))
+       (generic-function-name gf)))
     (loop with specializers = (mapcar #'filter-specializer specializers)
        for method in (generic-function-methods gf)
        when (and (equal qualifiers (method-qualifiers method))

@@ -234,7 +234,7 @@ size_t Array_O::arrayRowMajorIndex(List_sp indices) const {
 
 size_t Array_O::arrayRowMajorIndex(Vaslist_sp indices) const {
   size_t rank = this->rank();
-  size_t indices_passed = indices->_nargs;
+  size_t indices_passed = indices->nargs();
   unlikely_if (indices_passed < rank) {
     insufficientIndexListError(core__list_from_vaslist(indices));
   } else {
@@ -619,8 +619,8 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
   size_t iLen = unbox_fixnum(len);
   if (iLen == 0)
     return;
-  ASSERTF(dest->rank() == 1, BF("dest array must be rank 1 - instead it is %d") % dest->rank());
-  ASSERTF(orig->rank() == 1, BF("orig array must be rank 1 - instead it is %d") % orig->rank());
+  ASSERTF(dest->rank() == 1, ("dest array must be rank 1 - instead it is %d") , dest->rank());
+  ASSERTF(orig->rank() == 1, ("orig array must be rank 1 - instead it is %d") , orig->rank());
   size_t iDestStart = unbox_fixnum(destStart);
   size_t iOrigStart = unbox_fixnum(origStart);
   if ((iLen + iDestStart) >= dest->arrayTotalSize()) iLen = dest->arrayTotalSize()-iDestStart;

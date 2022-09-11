@@ -10,15 +10,20 @@
 #include <clasp/core/lispStream.h>
 #include <clasp/core/bytecode.h>
 #include <clasp/core/array.h>
+#include <clasp/core/primitives.h>
 #include <clasp/core/virtualMachine.h>
 #include <clasp/core/primitives.h> // cl__fdefinition
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
 
+extern "C" {
+bool global_debug_vm = false;
+}
+
 #if 0
-# define DBG_printf printf
-# define DBG_VM(...) {printf("%s:%d:%s pc %p : stack %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)vm._pc, (uintptr_t)(vm)._stackPointer-(uintptr_t)(vm)._stackBottom ); printf(__VA_ARGS__); }
-# if 0
+# define DBG_printf(...) { if (global_debug_vm) { printf(__VA_ARGS__); } }
+# define DBG_VM(...) {if (global_debug_vm) {printf("%s:%6d pc: %p sp: %p fp: %p | ", __FILE__, __LINE__, (void*)vm._pc, (void*)(vm)._stackPointer, (void*)(vm)._framePointer); printf(__VA_ARGS__);} }
+# if 1
 #  define DBG_VM1(...) DBG_VM(__VA_ARGS__)
 # else
 #  define DBG_VM1(...)
@@ -173,12 +178,31 @@ static void bytecode_vm_long(VirtualMachine&, T_O**, size_t, Closure_O*,
                              size_t, core::T_O**,
                              uint8_t);
 
+SYMBOL_EXPORT_SC_(KeywordPkg, name);
+
+//fixme2022   - Remove this because it will slow everything down
 static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         T_O** literals,
                                         size_t nlocals, Closure_O* closure,
                                         size_t lcc_nargs,
                                         core::T_O** lcc_args) {
+  ASSERT( literals==NULL || (uintptr_t)literals>65536);
+  ASSERT((((uintptr_t)literals)&0x7)==0); // must be aligned
+  ASSERT((((uintptr_t)closure)&0x7)==0); // must be aligned
+  ASSERT((((uintptr_t)lcc_args)&0x7)==0); // must be aligned
+  bool vaslistp = false; // true if we need to deallocate a vaslist at the end
+  if (lcc_nargs> 65536) {
+    printf("%s:%d:%s A very large number of arguments %lu are being passed - check if there is a problem\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs );
+  }
+#ifdef DEBUG_VIRTUAL_MACHINE
+  GlobalBytecodeEntryPoint_sp ep = gc::As<GlobalBytecodeEntryPoint_sp>(closure->_TheEntryPoint.load());
+  BytecodeModule_sp bm = gc::As<BytecodeModule_sp>(ep->_Code);
+  BytecodeModule_O::Bytecode_sp_Type bc = bm->bytecode();
+  uintptr_t bytecode_start = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(0);
+  uintptr_t bytecode_end = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(cl__length(bc));
+#endif
   while (1) {
+    VM_PC_CHECK(vm,bytecode_start,bytecode_end);
 #if DEBUG_VM_RECORD_PLAYBACK==1
     global_counter++;
     size_t stackHeight = (uintptr_t)(vm)._stackPointer-(uintptr_t)(vm)._stackBottom;
@@ -230,7 +254,10 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
 #endif
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
+      ASSERT(gctools::tagged_generalp<T_O*>(func));
+      unsigned char* pc = vm._pc;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm._pc = pc;
       res.saveToMultipleValue0();
       vm.drop(nargs+1);
       vm._pc++;
@@ -250,7 +277,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         VM_RECORD_PLAYBACK(args[ii],name_args.str().c_str() );
       }
 #endif
+      unsigned char* pc = vm._pc;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm._pc = pc;
       vm.drop(nargs+1);
       vm.push(res.raw_());
       VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
@@ -263,7 +292,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("call-receive-fixed %" PRIu8 " %" PRIu8 "\n", nargs, nvals);
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
+      unsigned char* pc = vm._pc;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm._pc = pc;
       vm.drop(nargs+1);
       if (nvals != 0) {
         MultipleValues &mv = lisp_multipleValues();
@@ -309,7 +340,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_cell_set: {
       DBG_VM("cell-set\n");
       T_sp cons((gctools::Tagged)vm.pop());
-      Cons_sp ccons = gc::As<Cons_sp>(cons);
+      ASSERT(gc::IsA<Cons_sp>(cons));
+      Cons_sp ccons = gc::As_unsafe<Cons_sp>(cons);
       T_O* val = vm.pop();
       T_sp tval((gctools::Tagged)val);
       ccons->rplaca(tval);
@@ -320,8 +352,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t c = read_uint8(vm._pc);
       DBG_VM("make-closure %" PRIu8 "\n", c);
       T_sp fn_sp((gctools::Tagged)literals[c]);
-      GlobalBytecodeEntryPoint_sp fn
-        = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
+      ASSERT(gc::IsA<GlobalBytecodeEntryPoint_sp>(fn_sp));
+      GlobalBytecodeEntryPoint_sp fn = gc::As_unsafe<GlobalBytecodeEntryPoint_sp>(fn_sp);
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       Closure_sp closure
@@ -337,8 +369,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t c = read_uint8(vm._pc);
       DBG_VM("make-uninitialized-closure %" PRIu8 "\n", c);
       T_sp fn_sp((gctools::Tagged)literals[c]);
-      GlobalBytecodeEntryPoint_sp fn
-        = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
+      ASSERT(gc::IsA<GlobalBytecodeEntryPoint_sp>(fn_sp));
+      GlobalBytecodeEntryPoint_sp fn = gc::As_unsafe<GlobalBytecodeEntryPoint_sp>(fn_sp);
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       Closure_sp closure
@@ -351,11 +383,12 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t c = read_uint8(vm._pc);
       DBG_VM("initialize-closure %" PRIu8 "\n", c);
       T_sp tclosure((gctools::Tagged)(*(vm.reg(c))));
-      Closure_sp closure = gc::As<Closure_sp>(tclosure);
+      ASSERT(gc::IsA<Closure_sp>(tclosure));
+      Closure_sp closure = gc::As_unsafe<Closure_sp>(tclosure);
       // FIXME: We ought to be able to get the closure size directly
       // from the closure through some nice method.
-      GlobalBytecodeEntryPoint_sp fn
-        = gc::As<GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
+      ASSERT(gc::IsA<GlobalBytecodeEntryPoint_sp>(closure->entryPoint()));
+      GlobalBytecodeEntryPoint_sp fn = gc::As_unsafe<GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
       vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
@@ -365,6 +398,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     }
     case vm_return: {
       DBG_VM1("return\n");
+      if (vaslistp) vm.drop(4); // deallocate
 #ifdef DBG_VM1
       if (vm.npushed(nlocals) != 0) {
         gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %lu   nlocals = %lu", vm.npushed(nlocals), nlocals).c_str());
@@ -406,6 +440,27 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         rest << tobj;
       }
       vm.push(rest.cons().raw_());
+      vm._pc++;
+      break;
+    }
+    case vm_vaslistify_rest_args: {
+      //
+      // This pushes two vaslist structures (each two words that look like fixnums)
+      // onto the stack.  the theVaslist_backup is used by vaslist_rewind
+      //
+      uint8_t start = read_uint8(vm._pc);
+      DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
+      auto theVaslist = vm.alloca_vaslist2(lcc_args + start, lcc_nargs - start);
+#if 0
+      printf("%s:%d:%s About to dump vm.alloca_vaslst result\n", __FILE__, __LINE__, __FUNCTION__ );
+      dump_Vaslist_ptr(stdout,gctools::untag_vaslist<T_O*>(theVaslist));
+      Vaslist_sp vl((gctools::Tagged)theVaslist);
+      if ((*vl).nargs() >= 3 && (*vl).iarg(0) == kw::_sym_name && (*vl).iarg(2)==kw::_sym_name) {
+        core::core__gdb(nil<core::T_O>());
+      }
+#endif
+      vm.push(theVaslist);
+      vaslistp = true;
       vm._pc++;
       break;
     }
@@ -594,7 +649,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       size_t nargs = lisp_multipleValues().getSize();
       T_O* args[nargs];
       multipleValuesSaveToTemp(nargs, args);
+      unsigned char* pc = vm._pc;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm._pc = pc;
       res.saveToMultipleValue0();
       vm._pc++;
       break;
@@ -605,7 +662,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       size_t nargs = lisp_multipleValues().getSize();
       T_O* args[nargs];
       multipleValuesSaveToTemp(nargs, args);
+      unsigned char* pc = vm._pc;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm._pc = pc;
       vm.push(res.raw_());
       vm._pc++;
       break;
@@ -618,7 +677,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       size_t nargs = mv.getSize();
       T_O* args[nargs];
       multipleValuesSaveToTemp(nargs, args);
+      unsigned char* pc = vm._pc;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm._pc = pc;
       if (nvals != 0) {
         vm.push(res.raw_()); // primary
         size_t svalues = mv.getSize();
@@ -656,7 +717,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("exit %" PRId8 "\n", rel);
       vm._pc += rel;
       T_sp ttde((gctools::Tagged)(vm.pop()));
-      TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
+      ASSERT(gc::IsA<TagbodyDynEnv_sp>(ttde));
+      TagbodyDynEnv_sp tde = gc::As_unsafe<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
     case vm_exit_16: {
@@ -664,7 +726,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("exit %" PRId32 "\n", rel);
       vm._pc += rel;
       T_sp ttde((gctools::Tagged)(vm.pop()));
-      TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
+      ASSERT(gc::IsA<TagbodyDynEnv_sp>(ttde));
+      TagbodyDynEnv_sp tde = gc::As_unsafe<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
     case vm_exit_24: {
@@ -672,7 +735,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("exit %" PRId32 "\n", rel);
       vm._pc += rel;
       T_sp ttde((gctools::Tagged)(vm.pop()));
-      TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(ttde);
+      ASSERT(gc::IsA<TagbodyDynEnv_sp>(ttde));
+      TagbodyDynEnv_sp tde = gc::As_unsafe<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
     case vm_entry_close: {
@@ -699,7 +763,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t c = read_uint8(vm._pc);
       DBG_VM("symbol-value %" PRIu8 "\n", c);
       T_sp sym_sp((gctools::Tagged)literals[c]);
-      Symbol_sp sym = gc::As<Symbol_sp>(sym_sp);
+      ASSERT(gc::IsA<Symbol_sp>(sym_sp));
+      Symbol_sp sym = gc::As_unsafe<Symbol_sp>(sym_sp);
       vm.push(sym->symbolValue().raw_());
       vm._pc++;
       break;
@@ -708,7 +773,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t c = read_uint8(vm._pc);
       DBG_VM("symbol-value-set %" PRIu8 "\n", c);
       T_sp sym_sp((gctools::Tagged)literals[c]);
-      Symbol_sp sym = gc::As<Symbol_sp>(sym_sp);
+      ASSERT(gc::IsA<Symbol_sp>(sym_sp));
+      Symbol_sp sym = gc::As_unsafe<Symbol_sp>(sym_sp);
       T_sp value((gctools::Tagged)(vm.pop()));
       sym->setf_symbolValue(value);
       vm._pc++;
@@ -761,7 +827,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         BytecodeModule_sp bcm = gc::As<GlobalBytecodeEntryPoint_sp>(ep)->code();
         unsigned char* codeStart = (unsigned char*)gc::As<Array_sp>(bcm->_Bytecode)->rowMajorAddressOfElement_(0);
         unsigned char* codeEnd = codeStart + gc::As<Array_sp>(bcm->_Bytecode)->arrayTotalSize();
-        SIMPLE_ERROR("Unknown opcode %hu pc: %p  module: %p - %p", *vm._pc, vm._pc, codeStart, codeEnd );
+        SIMPLE_ERROR("Unknown opcode %hu pc: %p  module: %p - %p", *vm._pc, (void*)vm._pc, (void*)codeStart, (void*)codeEnd );
     };
   }
 }
@@ -806,7 +872,9 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
 #endif
     T_O* func = *(vm.stackref(nargs));
     T_O** args = vm.stackref(nargs-1);
+    unsigned char* pc = vm._pc;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    vm._pc = pc;
     res.saveToMultipleValue0();
     vm.drop(nargs+1);
     vm._pc += 3;
@@ -827,7 +895,9 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
       VM_RECORD_PLAYBACK(args[ii],name_args.str().c_str() );
     }
 #endif
+    unsigned char* pc = vm._pc;
     T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    vm._pc = pc;
     vm.drop(nargs+1);
     vm.push(res.raw_());
     VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
@@ -842,7 +912,9 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     DBG_VM("long call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
     T_O* func = *(vm.stackref(nargs));
     T_O** args = vm.stackref(nargs-1);
+    unsigned char* pc = vm._pc;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    vm._pc = pc;
     vm.drop(nargs+1);
     if (nvals != 0) {
       MultipleValues &mv = lisp_multipleValues();
@@ -887,8 +959,9 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     uint16_t c = low + (*(vm._pc + 2) << 8);
     DBG_VM("long make-closure %" PRIu16 "\n", c);
     T_sp fn_sp((gctools::Tagged)literals[c]);
+    ASSERT(gc::IsA<GlobalBytecodeEntryPoint_sp>(fn_sp));
     GlobalBytecodeEntryPoint_sp fn
-      = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
+      = gc::As_unsafe<GlobalBytecodeEntryPoint_sp>(fn_sp);
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
     Closure_sp closure
@@ -905,8 +978,9 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     uint16_t c = low + (*(vm._pc + 2) << 8);
     DBG_VM("long make-uninitialized-closure %" PRIu16 "\n", c);
     T_sp fn_sp((gctools::Tagged)literals[c]);
+    ASSERT(gc::IsA<GlobalBytecodeEntryPoint_sp>(fn_sp));
     GlobalBytecodeEntryPoint_sp fn
-      = gc::As<GlobalBytecodeEntryPoint_sp>(fn_sp);
+      = gc::As_unsafe<GlobalBytecodeEntryPoint_sp>(fn_sp);
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
     Closure_sp closure
@@ -920,11 +994,13 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     uint16_t c = low + (*(vm._pc + 2) << 8);
     DBG_VM("long initialize-closure %" PRIu16 "\n", c);
     T_sp tclosure((gctools::Tagged)(*(vm.reg(c))));
-    Closure_sp closure = gc::As<Closure_sp>(tclosure);
+    ASSERT(gc::IsA<Closure_sp>(tclosure));
+    Closure_sp closure = gc::As_unsafe<Closure_sp>(tclosure);
       // FIXME: We ought to be able to get the closure size directly
       // from the closure through some nice method.
+    ASSERT(gc::IsA<GlobalBytecodeEntryPoint_sp>(closure->entryPoint()));
     GlobalBytecodeEntryPoint_sp fn
-      = gc::As<GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
+      = gc::As_unsafe<GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
     vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
@@ -1066,7 +1142,9 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     size_t nargs = mv.getSize();
     T_O* args[nargs];
     multipleValuesSaveToTemp(nargs, args);
+    unsigned char* pc = vm._pc;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    vm._pc = pc;
     if (nvals != 0) {
       vm.push(res.raw_()); // primary
       size_t svalues = mv.getSize();
@@ -1121,11 +1199,14 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
   Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->_EntryPoint.load());
-  //DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
+  ASSERT(gc::IsA<core::GlobalBytecodeEntryPoint_sp>(closure->entryPoint()));
+  auto entry = closure->entryPoint();
+  core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(entry);
+  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
   size_t nlocals = entryPoint->localsFrameSize();
   BytecodeModule_sp module = entryPoint->code();
-  T_O** literals = ((T_O**)gc::As<SimpleVector_sp>(module->literals())->
+  ASSERT(gc::IsA<SimpleVector_sp>(module->literals()));
+  T_O** literals = ((T_O**)gc::As_unsafe<SimpleVector_sp>(module->literals())->
                     rowMajorAddressOfElement_(0));
 
   VirtualMachine& vm = my_thread->_VM;

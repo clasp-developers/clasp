@@ -103,6 +103,41 @@
 (core:compile-eclasp :reproducible ~s)
 (core:quit)" (jobs configuration) (reproducible-build configuration)))
 
+(defmethod print-prologue (configuration (name (eql :load-vclasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(defvar *system* (core:load-vclasp :reproducible ~s))
+(if (fboundp 'core:top-level)
+    (core:top-level)
+    (core:low-level-repl))" (jobs configuration) (reproducible-build configuration)))
+
+(defmethod print-prologue (configuration (name (eql :load-mclasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(defvar *system* (core:load-vclasp :reproducible ~s :bytecode nil))
+(if (fboundp 'core:top-level)
+    (core:top-level)
+    (core:low-level-repl))" (jobs configuration) (reproducible-build configuration)))
+
+(defmethod print-prologue (configuration (name (eql :snapshot-vclasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(defvar *system* (core:load-vclasp :reproducible ~s :system (core::command-line-paths 1)))
+(gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)
+(core:quit)" (jobs configuration) (reproducible-build configuration)))
+
+(defmethod print-prologue (configuration (name (eql :compile-vclasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(core:compile-vclasp :reproducible ~s)
+(core:quit)" (jobs configuration) (reproducible-build configuration)))
+
+(defmethod print-prologue (configuration (name (eql :compile-mclasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(core:compile-vclasp :reproducible ~s :bytecode nil)
+(core:quit)" (jobs configuration) (reproducible-build configuration)))
+
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (write-string "(setq *features* (cons :aclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
@@ -230,8 +265,8 @@ exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
      (target (eql :cclasp)) sources
      &key &allow-other-keys)
   (print-translations output-stream (if (extensions configuration)
-                                      '(:cclasp :eclasp)
-                                      '(:cclasp))
+                                      '(:cclasp :mclasp :vclasp :eclasp)
+                                      '(:cclasp :mclasp :vclasp))
                                     sources))
 
 (defmethod print-variant-target-sources

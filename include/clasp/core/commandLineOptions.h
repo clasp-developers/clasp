@@ -33,7 +33,7 @@ class CommandLineOptions;
 
 typedef void (*process_arguments_callback)(CommandLineOptions *);
 
-extern bool global_debug_byte_code;
+extern bool global_debug_start_code;
 
 typedef enum { cloLoad, cloEval, cloScript } LoadEvalEnum;
 

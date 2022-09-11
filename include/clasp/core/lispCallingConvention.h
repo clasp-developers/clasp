@@ -178,11 +178,11 @@ std::string dbg_safe_repr(uintptr_t raw);
 // Return true if the Vaslist is at the head of the list and false if it is used up
 inline bool dump_Vaslist_ptr(FILE* fout, Vaslist* args) {
   fprintf(fout,"Vaslist dump @%p\n", (void*)args);
-  fprintf(fout,"Vaslist nargs = %lu\n", args->_nargs);
-  int iEnd = args->_nargs;
+  fprintf(fout,"Vaslist nargs = %lu\n", args->nargs());
+  int iEnd = args->nargs();
   if (iEnd>CALL_ARGUMENTS_LIMIT) {
     iEnd = 0;
-    fprintf(fout,"%s:%d      args->_nargs -> %lu !!!!  A BAD VALUE\n", __FILE__, __LINE__, args->_nargs);
+    fprintf(fout,"%s:%d      args->_nargs -> %lu !!!!  A BAD VALUE\n", __FILE__, __LINE__, args->nargs());
   }
   for ( int i=0; i<iEnd; ++i ) {
     T_O* arg = (*args)[i];

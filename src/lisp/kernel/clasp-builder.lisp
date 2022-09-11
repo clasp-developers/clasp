@@ -107,10 +107,13 @@ Return files."
      done)
     (nreverse files)))
 
-(defun select-source-files (first-file last-file &key system)
-  (or first-file (error "You must provide first-file to select-source-files"))
+(defun select-source-files (first-file last-file &key system
+                            &aux file files)
+  ;(or first-file (error "You must provide first-file to select-source-files"))
   (or system (error "You must provide system to select-source-files"))
-  (let ((cur (member first-file system :test #'equal))
+  (let ((cur (if first-file
+                 (member first-file system :test #'equal)
+                 system))
         (last (if last-file
                   (let ((llast (member last-file system :test #'equal)))
                     (or llast (error "last-file ~a was not a member of ~a" last-file system))
@@ -643,6 +646,18 @@ Return files."
     result))
 (export 'command-line-arguments-as-list)           
 
+(defun command-line-paths (&optional (start 0)
+                           &aux (index (length core:*command-line-arguments*))
+                                paths)
+  (tagbody
+   next
+    (if (> index start)
+        (progn
+          (setq index (- index 1)
+                paths (cons (pathname (elt core:*command-line-arguments* index)) paths))
+          (go next))))
+  paths)
+
 (defun remove-stage-features ()
   (setq *features* (core:remove-equal :clasp-min *features*))
   (setq *features* (core:remove-equal :clos *features*))
@@ -969,6 +984,134 @@ been initialized with install path versus the build path of the source code file
     (prepare-metadata system installed-system)
     (compile-cclasp* output-file system t)))
 
+(defun pprint-features (added-features removed-features)
+  (if removed-features
+      (message :info "Removed features {}" removed-features))
+  (if added-features
+      (message :info "Added features {}" added-features)))
+
+(export 'pprint-features)
+
+(defvar *system-load-times*)
+(defvar +stage-features+ '(:clasp-min :clos :aclasp :bclasp :cclasp :eclasp))
+(defvar +load-weight+ 0.5d0)
+
+(defun load-stage (system stage)
+  (let ((files (select-source-files (make-pathname :host "sys"
+                                                   :directory '(:absolute "src" "lisp" "kernel" "stage")
+                                                   :name (core:fmt nil "{:d}-begin" stage)
+                                                   :type "lisp")
+                                    (make-pathname :host "sys"
+                                                   :directory '(:absolute "src" "lisp" "kernel" "stage")
+                                                   :name (core:fmt nil "{:d}-end" stage)
+                                                   :type "lisp")
+                                    :system system))
+        (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword))
+        (stage-time (get-internal-run-time))
+        file-time file prev-file-time bytes)
+    (setq *features* (cons stage-keyword *features*))
+    (message :emph "Loading stage {:d}..." stage)
+    (tagbody
+     next
+      (if files
+          (progn
+            (setq file (car files)
+                  file-time (get-internal-run-time)
+                  files (cdr files)
+                  bytes (gctools:bytes-allocated))
+            (load file)
+            (setq file-time (- (get-internal-run-time) file-time)
+                  prev-file-time (gethash file *system-load-times*))
+            (core:hash-table-setf-gethash *system-load-times* file
+                                          (if prev-file-time
+                                              (+ (* +load-weight+ file-time)
+                                                 (* (- 1 +load-weight+) prev-file-time))
+                                              prev-file-time))
+            (if (and *load-verbose* (>= file-time internal-time-units-per-second))
+                (message nil ";;; Load time({:.1f} seconds) consed({} bytes)"
+                         (float (/ file-time internal-time-units-per-second))
+                         (- (gctools:bytes-allocated) bytes)))
+            (go next))))
+    (setq *features* (core:remove-equal stage-keyword *features*))
+    (message :emph "Stage {:d} time({:.1f} seconds)"
+             stage
+             (float (/ (- (get-internal-run-time) stage-time) internal-time-units-per-second)))))
+
+(defun stage-features (&rest new-features
+                       &aux (features +stage-features+)
+                       feature added-features removed-features) 
+  (tagbody
+   remove-feature
+    (if features
+        (progn
+          (setq feature (car features)
+                features (cdr features))
+          (if (and (not (member feature new-features))
+                   (member feature *features*))
+              (setq *features* (core:remove-equal feature *features*)
+                    removed-features (cons feature removed-features)))
+          (go remove-feature)))
+   add-feature
+    (if new-features
+        (progn
+          (setq feature (car new-features)
+                new-features (cdr new-features))
+          (if (not (member feature *features*))
+              (setq *features* (cons feature *features*)
+                    added-features (cons feature added-features)))
+          (go add-feature))))
+  (pprint-features added-features removed-features))
+
+(defun system-load-time (file)
+  (gethash file *system-load-times* 0))
+
+(defun load-vclasp (&key (bytecode t)
+                         (clean (ext:getenv "CLASP_CLEAN"))
+                         (load-verbose (ext:getenv "CLASP_LOAD_VERBOSE"))
+                         (output-file (build-common-lisp-bitcode-pathname))
+                         reproducible
+                         (system-sort (ext:getenv "CLASP_SYSTEM_SORT"))
+                         (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
+                                          (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))
+                                          6))
+                         (system (command-line-arguments-as-list)))
+  (if clean
+      (clean-system nil :no-prompt t :system system))
+  (setq *features*
+        (if bytecode
+            (list* :vclasp :bytecode :staging :bytecodelike *features*)
+          (list* :mclasp :staging *features*)))
+  (let ((*load-verbose* load-verbose)
+        (installed-system (if reproducible
+                              (extract-installed-system system)))
+        (*system-load-times* (make-hash-table :test #'eql))
+        (*target-backend* (default-target-backend))
+        (stage 0))
+    (tagbody
+     next
+      (if (< stage stage-count)
+          (progn
+            (load-stage system stage)
+            (setq stage (+ 1 stage))
+            (go next))))
+    (setq *features* (core:remove-equal :staging *features*))
+    (prepare-metadata system installed-system)
+    (if system-sort
+        (sort system #'> :key #'system-load-time)
+        system)))
+
+(defun compile-vclasp (&rest rest)
+  (let ((system (apply #'load-vclasp rest)))
+    ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
+    ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
+    ;; to load inline definitions. We wait for the source code to turn it back on.
+    (setq core:*defun-inline-hook* nil)
+    (handler-bind
+        ((error #'build-failure))
+      (compile-system system :reload nil :file-order (calculate-file-order system) :total-files (length system)))))
+
+(export '(load-vclasp compile-vclasp))
+      
 #+(or bclasp cclasp eclasp)
 (defun bclasp-repl ()
   (let ((cmp:*cleavir-compile-hook* nil)

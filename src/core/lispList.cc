@@ -340,7 +340,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(list* see CLHS)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__listSTAR(Vaslist_sp vargs) {
-  size_t nargs = vargs->remaining_nargs();
+  size_t nargs = vargs->nargs();
   if (nargs == 0) throwTooFewArgumentsError(nil<T_O>(),
                                             clasp_make_fixnum(0),
                                             clasp_make_fixnum(1));

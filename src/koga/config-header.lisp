@@ -55,6 +55,7 @@
                  "DEBUG_DTRACE_LOCK_PROBE" (debug-dtrace-lock-probe configuration)
                  "DEBUG_STACKMAPS" (debug-stackmaps configuration)
                  "DEBUG_ASSERT_TYPE_CAST" (debug-assert-type-cast configuration)
+                 "DEBUG_ASSERT" (debug-assert configuration)
                  "SOURCE_DEBUG" (source-debug configuration)
                  "DEBUG_JIT_LOG_SYMBOLS" (debug-jit-log-symbols configuration)
                  "DEBUG_GUARD" (debug-guard configuration)

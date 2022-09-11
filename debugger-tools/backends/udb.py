@@ -35,3 +35,21 @@ def convenience_variable(name):
 def set_convenience_variable(name,val):
     gdb.set_convenience_variable(name,val)
 
+
+# ---- new functionality
+
+def selected_frame():
+    return gdb.selected_frame()
+
+def block(frame):
+    return frame.block()
+
+def lisp_selected_frame():
+    frame = gdb.selected_frame()
+    block = frame.block()
+    sa = []
+    for symbol in block:
+        if (symbol.name == "sa"):
+            sa = symbol.value(frame)
+    result = (sa[0],sa[1],sa[2])
+    return result

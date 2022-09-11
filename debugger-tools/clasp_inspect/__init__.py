@@ -21,8 +21,12 @@ def load_clasp_layout():
     exec(code)
     SetupGlobals()
 
+def shallowString(obj):
+    if (obj):
+        return obj.shallowString()
+    return "%s" % obj
 
-global_ints = {}    
+global_ints = {}
 global_dataTypes = {}
 global_kinds = {}
 global_structs = {}
@@ -191,7 +195,7 @@ def Init__variable_field(stamp,index,data_type,field_name,field_offset):
 
 def verify_not_tagged(address):
     if (taggedp(address)):
-        raise "The address %x is still tagged" % address
+        raise Exception("The address %x is still tagged" % address)
 
 def valid_tptr(val):
     return "0x%x" % val
@@ -238,7 +242,7 @@ def untag_vaslist(tptr):
 
 def read_unsigned_at_offset(debugger,verbose,base,offset):
     tptr = debugger.read_memory(base+offset,8)
-    if (verbose): dbg_print("read_unsigned_at_offset offset: %x" % (base+offset))
+    dbg_print("read_unsigned_at_offset offset: %x" % (base+offset))
     return tptr
     
 def print_object_type(debugger,verbose,obj,type_=0):
@@ -315,11 +319,13 @@ class Fixnum:
             else:
                 self._Value = val
             return
-        raise("%x is not a fixnum" % address)
+        raise Exception("%x is not a fixnum" % address)
     def value(self):
         return self._Value
     def __repr__(self):
         return str(self._Value)
+    def shallowString(self):
+        return self.__repr__()
     def consp(self):
         return False
 
@@ -329,11 +335,13 @@ class Character:
             val = address >> 3
             self._Value = val
             return
-        raise("%x is not a character" % address)
+        raise Exception("%x is not a character" % address)
     def value(self):
         return self._Value
     def __repr__(self):
         return "#\[%s]" % str(self._Value)
+    def shallowString(self):
+        return self.__repr__()
     def consp(self):
         return False
     
@@ -344,19 +352,25 @@ class Vaslist:
             self._Value = address
             self._address = untag_vaslist(address)
             self._args = debugger.read_memory(self._address+0,8)
-            self._nargs = debugger.read_memory(self._address+8,8)
+            self._nargs = debugger.read_memory(self._address+8,8)>>info["ints"]["VASLIST-NARGS-SHIFT"]
             return
-        raise("%x is not a vaslist" % address)
+        raise Exception("%x is not a vaslist" % address)
     def value(self):
         return self._Value
     def __repr__(self):
         out = StringIO()
         out.write("Vaslist: 0x%x args: 0x%x  nargs: %d\n" % (self._Value,self._args, self._nargs))
+        if (self._nargs>2048):
+            raise Exception("%x is not a proper vaslist - it has %d values" % (self._address, self._nargs))
         for index in range(0,self._nargs):
             rgp = self._args+8*index
             val = self._debugger.read_memory(rgp,8)
             out.write("     farg%d = 0x%x\n" % (index,val))
         return out.getvalue()
+    def inspectString(self):
+        return self.__repr__()
+    def shallowString(self):
+        return self.__repr__()
     def consp(self):
         return False
     def generalp(self):
@@ -371,6 +385,8 @@ class T_O:
         return False
     def fixnump(self):
         return False
+    def shallowString(self):
+        return self.__repr__()
     
 class Cons_O(T_O):
     def __init__(self,debugger,address):
@@ -384,9 +400,18 @@ class Cons_O(T_O):
     def car(self):
         return self._debugger.read_memory(self._address,8)
     def cdr(self):
-        return self._debugger.read_memory(self._address+8,8) 
+        return self._debugger.read_memory(self._address+8,8)
+    def inspectString(self):
+        return "( 0x%x . 0x%x )" % (self.car(), self.cdr())
+    def shallowString(self):
+        return self.inspectString()
     def __repr__(self):
-        return ( "(0x%x . 0x%x )" % (self.car(), self.cdr()))
+        carObj = translate_tagged_ptr(self._debugger,self.car())
+        carStr = carObj.__repr__()
+        cdrObj = translate_tagged_ptr(self._debugger,self.cdr())
+        cdrStr = cdrObj.__repr__()
+        return "( %s . %s )" % ( carStr, cdrStr )
+#        return ( "(0x%x . 0x%x )" % (self.car(), self.cdr()))
         
 class General_O(T_O):
     def __init__(self,debugger,tclient):
@@ -444,7 +469,11 @@ class General_O(T_O):
                 offset = field_._field_offset
                 tptr = self._debugger.read_memory(self._address+offset,8)
                 return translate_tagged_ptr(self._debugger,tptr)
-            raise Exception("Handle _data_type %d for %s" % (field_._data_type, cur._field_name))
+            if (field_._data_type == 7):
+                offset = field_._field_offset
+                val = self._debugger.read_memory(self._address+offset,8)
+                return val
+            raise Exception("Handle _data_type %d for %s" % (field_._data_type, field_._field_name))
         raise Exception("There is no field named %s in %s" % ( name, self._className))
     def nilp(self):
         result = (self._className == "core::Null_O")
@@ -476,7 +505,7 @@ class SimpleVector_O(Array_O):
         start = max(0,start);
         for x in range(start,end):
            val = self._debugger.read_memory(self._data_offset+self._address+(x*self._element_size),self._element_size);
-           out.write("[%d] = %s\n" % (x,any_tagged_ptr(val).str()))
+           out.write("[%d] = %s\n" % (x,inspect_tagged_ptr(val).str()))
         return out.getvalue();
     def __repr__(self):
         return self.str()
@@ -519,6 +548,28 @@ class Package_O(General_O):
     def __repr__(self):
         return "Package[%s]" % (self._Name.str())
 
+class Function_O(General_O):
+    def __init__(self,debugger,tptr):
+        General_O.__init__(self,debugger,tptr)
+        self._TheEntryPoint = self.field("_TheEntryPoint")
+        self._FunctionDescription = self._TheEntryPoint.field("_FunctionDescription")
+        self._Name = self._FunctionDescription.field("_functionName")
+    def name(self):
+        return self._Name
+    def __repr__(self):
+        return "Function[:name %s]" % self.name()
+
+class EntryPoint_O(General_O):
+    def __init__(self,debugger,tptr):
+        General_O.__init__(self,debugger,tptr)
+        self._FunctionDescription = self.field("_FunctionDescription")
+        self._Name = self._FunctionDescription.field("_functionName")
+    def name(self):
+        return self._Name
+    def __repr__(self):
+        return "Function[:name %s]" % self.name()
+
+
 class Symbol_O(General_O):
     def __init__(self,debugger,tptr):
         General_O.__init__(self,debugger,tptr)
@@ -537,6 +588,13 @@ class Rack_O(General_O):
         General_O.__init__(self,debugger,tptr)
     def __repr__(self):
         return "#<Rack>"
+
+class JITDylib_O(General_O):
+    def __init__(self,debugger,tptr):
+        General_O.__init__(self,debugger,tptr)
+        self._name = translate_tagged_ptr(self._debugger,self.field_tagged_ptr("_name"))
+    def __repr__(self):
+        return "#<JITDylib %s @ 0x%x>" % (self._name.__repr__(), self._address )
 
 class Instance_O(General_O):
     def __init__(self,debugger,tptr):
@@ -570,7 +628,7 @@ class GodObject_O(General_O):
         self._Ptr = tptr
         self._debugger = debugger
 
-    def __repr__(self):
+    def inspectString(self):
         # dump all fields from general object
         out = StringIO()
         out.write("Dump %s at 0x%x\n" % (self._class._name, self._Ptr))
@@ -593,12 +651,14 @@ class GodObject_O(General_O):
                     addr = self._address+cur._field_offset
                     tptr = self._debugger.read_memory(addr,8)
                     obj = translate_tagged_ptr(self._debugger,tptr)
-                    out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" %(cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, obj))
+                    out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" %(cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, shallowString(obj)))
                 else:
                     out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" % (cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, tptr ))
             self._debugger.set_convenience_variable("%c%d" % (convchar, idx), tptr )
             idx += 1
         return out.getvalue()
+    def __repr__(self):
+        return self.inspectString()
 
 def read_stamp_mtag(debugger,tclient):
     base = untag(tclient)-info["stampWtagMtagStruct"]._sizeof
@@ -642,6 +702,12 @@ def translate_tagged_ptr(debugger,tptr):
                     return Instance_O(debugger,tptr)
                 if (name=="core::Rack_O"):
                     return Rack_O(debugger,tptr)
+                if (name in ["core::Function_O", "core::FuncallableInstance_O", "core::Closure_O", "core::BuiltinClosure_O"]):
+                    return Function_O(debugger,tptr)
+                if (name in ["core::GlobalBytecodeEntryPoint_O", "core::GlobalEntryPoint_O"]):
+                    return EntryPoint_O(debugger,tptr)
+                if (name=="llvmo::JITDylib_O"):
+                    return JITDylib_O(debugger,tptr)
                 return General_O(debugger,tptr)
         return
     if (consp(tptr)):
@@ -654,8 +720,8 @@ def translate_tagged_ptr(debugger,tptr):
         return Vaslist(debugger,tptr)
 
     
-def any_tagged_ptr(debugger,tptr):
-    dbg_print("In any_tagged_ptr 0x%x" % tptr)
+def inspect_tagged_ptr(debugger,tptr):
+    dbg_print("In inspect_tagged_ptr 0x%x" % tptr)
     if (generalp(tptr)):
         base = untag_general(tptr)
         dbg_print("global_headerStruct in translate -> %s" % info["headerStruct"])
@@ -699,23 +765,67 @@ def arg_to_tptr(debugger,args):
         tptr = int(debugger.evaluate(arg))
     return tptr
 
+def do_lisp_vm(debugger,arg):
+    fp = debugger.evaluate("vm._framePointer")
+    sp = debugger.evaluate("vm._stackPointer")
+    pc = debugger.evaluate("vm._pc")
+    instr = debugger.evaluate("*(unsigned char*)(vm._pc)")
+    print("0x%x [%2d] %-20s | sp=0x%x fp=0x%x\n" % (pc, instr, global_codes[instr]._name, sp, fp ))
+
+
+def do_lisp_frame(debugger,arg):
+    frame_args = debugger.lisp_selected_frame()
+    closure = frame_args[0]
+    oclosure = translate_tagged_ptr(debugger,closure)
+    nargs = frame_args[1]
+    args = frame_args[2]
+    call = [ oclosure.__repr__() ]
+    for iarg in range(0,nargs):
+        one_arg = debugger.read_memory(args+(8*iarg),len=8)
+        tone_arg = translate_tagged_ptr(debugger,one_arg)
+        call.append( tone_arg.__repr__() )
+    print("%s" % call)
+
 def do_lisp_test(debugger,arg):
-    print("  In do_test arg: %s" % arg)
-    print("    to tptr: %d" % arg_to_tptr(debugger,arg) )
+    print("Do nothing for test")
+
+def do_lisp_disassemble(debugger,arg):
+    tptr = arg_to_tptr(debugger,arg)
+    obj = translate_tagged_ptr(debugger,tptr)
+    literals = obj.field("_Literals")
+    literals_address = literals._address
+    literals_class_size = literals._classSize
+    literals_start = literals_address + literals_class_size
+    bytecode = obj.field("_Bytecode")
+    bytecode_address = bytecode._address
+    bytecode_len = bytecode.field("_Length")
+    bytecode_class_size = bytecode._classSize
+    bytecode_start = bytecode_address + bytecode_class_size
+    bytecode_end = bytecode_start + bytecode_len
+    print( "test bytecode_start = %x" % bytecode_start)
+    print( "test bytecode_len   = %d" % bytecode_len)
+    print( "test literals       = %x" % literals_start )
+    (vm,instructions,labels) = disassemble_region(debugger,literals_start,bytecode_start,bytecode_end)
+    print("labels = %s" % labels)
+    for label in labels.values():
+        print( "label: 0x%x %s" % (label._address, label._name))
+    print_disassembly(vm,instructions,labels)
 
 def do_lisp_print(debugger_mod,arg):
     #print "In inspect args: %s" % args
     tptr = arg_to_tptr(debugger_mod,arg)
     obj = translate_tagged_ptr(debugger_mod,tptr)
     print( obj.__repr__())
-    print( "translate_tagged_ptr returned: %s" % obj.__repr__())
+    dbg_print( "in do_lisp_print: %s" % obj.__repr__())
     return obj
 
 def do_lisp_inspect(debugger_mod,arg):
-    #print( "In inspect args: %s" % arg )
+    dbg_print( "In inspect args: %s" % arg )
     tptr = arg_to_tptr(debugger_mod,arg)
-    obj = any_tagged_ptr(debugger_mod,tptr)
-    print( "any_tagged_ptr returned:\n %s" % obj.__repr__())
+    print("inspect tptr 0x%x" % tptr)
+    obj = inspect_tagged_ptr(debugger_mod,tptr)
+    print("%s" % obj.inspectString())
+    dbg_print( "inspect_tagged_ptr returned:\n %s" % obj.__repr__())
     return obj
 
 
@@ -752,6 +862,312 @@ def do_(debugger_mod,arg):
 
 def dome():
     print("In dome")
+
+
+
+
+
+
+print("Loading disassembler")
+
+class label():
+    def __init__(self,address,name):
+        self._address = address
+        self._name = name
+
+class instruction_description():
+    def __init__(self,name,val,arguments=[],long_arguments=[]):
+        self._name = name
+        self._value = val
+        self._arguments = arguments
+        self._long_arguments = long_arguments
+
+    def arguments(self,isLong):
+        if (isLong):
+            return self._long_arguments
+        else:
+            return self._arguments
+
+class instruction():
+    def __init__(self,address,isLong,description,args):
+        self._address = address
+        self._isLong = isLong
+        self._description = description
+        self._args = args
+
+    def maybe_label_addresses(self):
+        labels = []
+        arginfos = self._description.arguments(self._isLong)
+        for argi in range(0,len(arginfos)):
+            arginfo = arginfos[argi]
+            arg = self._args[argi]
+            if (arginfo & const_argtype_mask == const_label_arg):
+                labels.append(self._address+arg)
+        if (len(labels)==0):
+            return None
+        else:
+            return labels
+
+#
+# Instruction arguments are ( argtype | argvalue)
+#
+const_arglength_mask   = 0b000111
+const_argtype_mask     = 0b111000
+const_constant_arg     = 0b001000
+const_keys_arg         = 0b011000
+const_label_arg        = 0b010000
+
+def new_instr(name, code, args=[], long_args=[]):
+    instr = instruction_description(name,code,args,long_args)
+    global_codes[instr._value] = instr
+    global_names[instr._name] = instr
+
+def constant_arg(index):
+    return const_constant_arg|index
+
+def keys_arg(index):
+    return const_keys_arg|index
+
+def label_arg(index):
+    return const_label_arg|index
+
+global_vm_long = 56
+global_codes = [None] * (global_vm_long+1)
+global_names = {}
+
+new_instr("ref",0,[1],[2])
+new_instr("const",1,[constant_arg(1)],[constant_arg(2)])
+new_instr("closure",2,[1],[2])
+new_instr("call",3,[1],[2])
+new_instr("call_receive_one",4,[1],[2])
+new_instr("call_receive_fixed",5,[1,1],[2,2])
+new_instr("bind",6,[1,1],[2,2])
+new_instr("set",7,[1],[2])
+new_instr("make_cell",8)
+new_instr("cell_ref",9)
+new_instr("cell_set",10)
+new_instr("make_closure",11,[constant_arg(1)],[constant_arg(2)])
+new_instr("make_uninitialized_closure",12,[constant_arg(1)],[constant_arg(2)])
+new_instr("initialize_closure",13,[1],[2])
+new_instr("return",14)
+new_instr("bind_required_args",15,[1],[2])
+new_instr("bind_optional_args",16,[1,1],[2,2])
+new_instr("listify_rest_args",17,[1],[2])
+new_instr("vaslistify_rest_args",18,[1])
+new_instr("parse_key_args",19,[1,1,keys_arg(1),1],[2,2,keys_arg(2),2])
+new_instr("jump_8",20,[label_arg(1)])
+new_instr("jump_16",21,[label_arg(2)])
+new_instr("jump_24",22,[label_arg(3)])
+new_instr("jump_if_8",23,[label_arg(1)])
+new_instr("jump_if_16",24,[label_arg(2)])
+new_instr("jump_if_24",25,[label_arg(3)])
+new_instr("jump_if_supplied_8",26,[1,label_arg(1)])
+new_instr("jump_if_supplied_16",27,[1,label_arg(2)])
+new_instr("check_arg_count_LE_",28,[1],[2])
+new_instr("check_arg_count_GE_",29,[1],[2])
+new_instr("check_arg_count_EQ_",30,[1],[2])
+new_instr("push_values",31)
+new_instr("append_values",32)
+new_instr("pop_values",33)
+new_instr("mv_call",34)
+new_instr("mv_call_receive_one",35)
+new_instr("mv_call_receive_fixed",36,[1],[2])
+new_instr("entry",37,[1])
+new_instr("exit_8",38,[label_arg(1)])
+new_instr("exit_16",39,[label_arg(2)])
+new_instr("exit_24",40,[label_arg(3)])
+new_instr("entry_close",41)
+new_instr("catch_8",42)
+new_instr("catch_16",43)
+new_instr("throw",44)
+new_instr("catch_close",45)
+new_instr("special_bind",46,[constant_arg(1)],[constant_arg(2)])
+new_instr("symbol_value",47,[constant_arg(1)],[constant_arg(2)])
+new_instr("symbol_value_set",48,[constant_arg(1)],[constant_arg(2)])
+new_instr("unbind",49)
+new_instr("progv",50)
+new_instr("fdefinition",51,[constant_arg(1)],[constant_arg(2)])
+new_instr("nil",52)
+new_instr("eq",53)
+new_instr("push",54)
+new_instr("pop",55)
+new_instr("long",56)
+
+
+
+class virtual_machine():
+    def __init__(self,debugger,pc,literals):
+        self._pc = pc
+        self._debugger = debugger
+        self._literals = literals
+
+    def next_uint8(self):
+        val = self._debugger.read_memory(self._pc,len=1)
+        self.incf(1)
+        return val
+
+    def next_uint16(self):
+        byte0 = self._debugger.read_memory(self._pc,len=1)
+        byte1 = self._debugger.read_memory(self._pc+1,len=1)
+        val = byte0 + ash(byte1,8)
+        self.incf(2)
+        return val
+
+    def next_int8(self):
+        byte0 = self._debugger.read_memory(self._pc,len=1)
+        self.incf()
+        if (byte0>=128):
+            return 256-byte0
+        return byte0
+
+    def next_int16(self):
+        byte0 = self._debugger.read_memory(self._pc,len=1)
+        byte1 = self._debugger.read_memory(self._pc+1,len=1)
+        word = byte0+ash(byte1,-8)
+        self.incf(2)
+        if (word>=32768):
+            return 65536-word
+        return word
+
+    def next_int24(self):
+        byte0 = self._debugger.read_memory(self._pc,len=1)
+        byte1 = self._debugger.read_memory(self._pc+1,len=1)
+        byte2 = self._debugger.read_memory(self._pc+2,len=1)
+        word = byte0+ash(byte1,-8)+ash(byte2,-16)
+        self.incf(3)
+        if (word>=8388608):
+            return 16777216-word
+        return word
     
+    def incf(self,num=1):
+        self._pc = self._pc + num
+
+
+def ash( val, count ):
+    if (count>0):
+        return val << count
+    else:
+        return val >> (- count )
+
+def logand( x, y ):
+    return x & y
+
+def logior( x, y ):
+    return x | y
+
+def lognot(x):
+    return ~x
+
+def early_mask_field( size, position, integer ):
+    return logand(ash(lognot(ash(-1,size)), position), integer)
+
+def dis_signed(x, size):
+    return logior(x,- early_mask_field(1,(size-1),x))
+
+
+def next_arg(pc,arginfo):
+    argtype = const_argtype_mask & arginfo
+    arglength = const_arglength_mask & arginfo
+    if (argtype!=const_label_arg):
+        if (arglength==1):
+            arg = pc.next_uint8()
+            return arg
+        if (arglength==2):
+            arg = pc.next_uint16()
+            return arg
+    else:
+        if (arglength==1):
+            return pc.next_int8()
+        if (arglength==2):
+            return pc.next_int16()
+        if (arglength==3):
+            return pc.next_int24()
+    raise Exception("Bad argument info %d" % arginfo)
+
+
+
+def disassemble_instruction(vm):
+    address = vm._pc
+    isLong = False
+    code_or_long = vm.next_uint8()
+#    print("Instruction 0x%x  %d" % (address,code_or_long))
+    if (code_or_long==global_vm_long):
+        isLong = True
+        code = vm.next_uint8()
+        code_name = global_codes[code]._name
+        code_arg_types = global_codes[code]._long_arguments
+    else:
+        code = code_or_long
+        code_name = global_codes[code]._name
+        code_arg_types = global_codes[code]._arguments
+    args = [ next_arg(vm,arg_type) for arg_type in code_arg_types ]
+    instr = instruction(address,isLong,global_codes[code],args)
+    return instr
+
+def expand_arg(vm,arg_index,instr,labels):
+    description = instr._description
+    arginfos = description.arguments(instr._isLong)
+    arginfo = arginfos[arg_index]
+#    print("expand_arg arg_index = %d arginfo = %d" % (arg_index,arginfo))
+    arg = instr._args[arg_index]
+    argtype = arginfo & const_argtype_mask
+#    print("expand_arg arg_type = %d " % argtype )
+    if (argtype==const_constant_arg):
+        arg_tptr = vm._debugger.read_memory(vm._literals+arg*8,len=8)
+        arg_object = translate_tagged_ptr(vm._debugger,arg_tptr)
+        arg_str = "%s" % arg_object.__repr__()
+    elif (argtype==const_keys_arg):
+        keys_count = instr._args[arg_index-1]
+        keys = []
+        for keyi in range(0,keys_count):
+            key_tptr = vm._debugger.read_memory(vm._literals+(arg+keyi)*8,len=8)
+            key_object = translate_tagged_ptr(vm._debugger,arg_tptr)
+            key_str = "%s" % arg_object.__repr__()
+            keys.append(key_str)
+        arg_str = "%s" % keys
+    elif (argtype==const_label_arg):
+        label_address = instr._address+arg
+        if (label_address in labels):
+            label = labels[label_address]
+            arg_str = "%s[%d]" % (label._name, arg)
+        else:
+            arg_str = "<Illegal label address 0x%8x>" % label_address
+    else:
+        arg_str = "%d" % arg
+    return arg_str
+
+def print_instruction(vm,instr,labels):
+    expanded_args = [ expand_arg(vm,argi,instr,labels) for argi in range(0,len(instr._args)) ]
+    print(" 0x%8x %20s %s" % (instr._address, instr._description._name, expanded_args) )
+
+def disassemble_region(debugger,literals,start_address,end_address):
+    vm = virtual_machine(debugger,start_address,literals)
+    # gather all the disassembled instructions
+    instructions = []
+    while vm._pc<end_address:
+        instruction = disassemble_instruction(vm)
+        instructions.append(instruction)
+    # Gather any special addresses/labels
+    label_index = 0
+    labels = {}
+    for instr in instructions:
+        maybe_label_addresses = instr.maybe_label_addresses()
+        if (maybe_label_addresses):
+            for label_address in maybe_label_addresses:
+                onelabel = label(label_address,"L%d" % label_index)
+                labels[label_address] = onelabel
+                label_index = label_index + 1
+    return (vm,instructions, labels)
+
+def print_disassembly(vm,instructions,labels):
+#    for key,label in labels.items():
+#        print("label = 0x%x %s" % (label._address,label._name))
+    for instr in instructions:
+        if (instr._address in labels):
+            print("%s:" % labels[instr._address]._name)
+        print_instruction(vm,instr,labels)
+
+
+
 load_clasp_layout()
 

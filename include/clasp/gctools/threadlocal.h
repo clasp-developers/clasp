@@ -67,19 +67,20 @@ struct VirtualMachineStackState {
 };
 
 #define STACK_GROWS_UP 1
-//#define DEBUG_VIRTUAL_MACHINE 0
 #ifdef DEBUG_VIRTUAL_MACHINE
-#define VM_ASSERT_ALIGNED(ptr) if (((uintptr_t)(ptr))&0x7) { printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr)); abort(); }
-#define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._stackPointer&&!((vm)._stackBottom<=(vm)._stackPointer && (vm)._stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); abort(); }
-#define VM_FRAME_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._framePointer&&!((vm)._stackBottom<=(vm)._framePointer && (vm)._framePointer<=(vm)._stackTop) ) { printf("%s:%d:%s _framePointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._framePointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); abort(); }
-#define VM_CHECK(vm) VM_STACK_POINTER_CHECK(vm); VM_FRAME_POINTER_CHECK(vm)
+#define VM_ASSERT_ALIGNED(vm,ptr) if (((uintptr_t)(ptr))&0x7) { printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr)); (vm).error(); }
+#define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._stackPointer&&!((vm)._stackBottom<=(vm)._stackPointer && (vm)._stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
+#define VM_FRAME_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._framePointer&&!((vm)._stackBottom<=(vm)._framePointer && (vm)._framePointer<=(vm)._stackTop) ) { printf("%s:%d:%s _framePointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._framePointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
+#define VM_PC_CHECK(vm,bytecode_start,bytecode_end) if ((uintptr_t)(vm)._pc<(uintptr_t)bytecode_start || (uintptr_t)(vm)._pc>=(uintptr_t)bytecode_end) {printf("%s:%d:%s vm._pc %p is outside of the bytecode vector range [ %p - %p ]\n", __FILE__, __LINE__, __FUNCTION__, (void*)(vm)._pc, (void*)bytecode_start,(void*)bytecode_end);(vm).error();}
+#define VM_CHECK(vm) VM_STACK_POINTER_CHECK(vm); VM_FRAME_POINTER_CHECK(vm);
 #else
-#define VM_ASSERT_ALIGNED(ptr)
+#define VM_ASSERT_ALIGNED(vm,ptr)
 #define VM_CHECK(vm)
+#define VM_PC_CHECK(vm,start,end)
 #endif
 
 struct VirtualMachine {
-  static constexpr size_t MaxStackWords = 16384; // 16K words for now.
+  static constexpr size_t MaxStackWords = 32768; // 32K words for now.
   bool           _Running;
   core::T_O*     _stackBottom[MaxStackWords];
   size_t         _stackBytes;
@@ -90,6 +91,8 @@ struct VirtualMachine {
   core::T_O**    _literals;
   unsigned char* _pc;
 
+  void error();
+  
   inline void shutdown() {
     this->_Running = false;
   }
@@ -100,7 +103,7 @@ struct VirtualMachine {
     this->_stackPointer--;
 #endif
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_stackPointer);
+    VM_ASSERT_ALIGNED(*this,this->_stackPointer);
     *this->_stackPointer = value;
   }
 
@@ -114,7 +117,37 @@ struct VirtualMachine {
     VM_CHECK(*this);
     return value;
   }
-  
+
+  // Allocate a Vaslist object on the stack.
+  inline core::T_O* alloca_vaslist1(core::T_O** args, size_t nargs) {
+#ifdef STACK_GROWS_UP
+    this->_stackPointer += 2;
+    *(this->_stackPointer - 1) = (core::T_O*)args;
+    *(this->_stackPointer - 0) = Vaslist::make_shifted_nargs(nargs);
+#else
+    this->_stackPointer -= 2;
+    *(this->_stackPointer + 0) = (core::T_O*)args;
+    *(this->_stackPointer + 1) = Vaslist::make_shifted_nargs(nargs);
+#endif
+    VM_CHECK(*this);
+#ifdef STACK_GROWS_UP
+    return gc::tag_vaslist<core::T_O*>((core::Vaslist*)(this->_stackPointer - 1));
+#else
+    return gc::tag_vaslist<core::T_O*>((core::Vaslist*)(this->_stackPointer));
+#endif
+  }
+
+  inline core::T_O* alloca_vaslist2(core::T_O** args, size_t nargs) {
+#ifdef STACK_GROWS_UP
+    core::T_O* vl = this->alloca_vaslist1(args,nargs);
+    core::T_O* vl_backup = this->alloca_vaslist1(args,nargs);
+#else
+    core::T_O* vl_backup = this->alloca_vaslist1(args,nargs);
+    core::T_O* vl = this->alloca_vaslist1(args,nargs);
+#endif
+    return vl;
+  }
+    
   // Drop NELEMS slots on the stack all in one go.
   inline void drop(size_t nelems) {
 #ifdef STACK_GROWS_UP
@@ -123,7 +156,7 @@ struct VirtualMachine {
     this->_stackPointer += nelems;
 #endif
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_stackPointer);
+    VM_ASSERT_ALIGNED(*this,this->_stackPointer);
   }
 
   // Get a pointer to the nth element from the stack
@@ -135,7 +168,7 @@ struct VirtualMachine {
     return this->_stackPointer + n;
 #endif
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_stackPointer);
+    VM_ASSERT_ALIGNED(*this,this->_stackPointer);
   }
 
   inline VirtualMachineStackState save() {
@@ -145,8 +178,8 @@ struct VirtualMachine {
     this->_framePointer = vmss._framePointer;
     this->_stackPointer = vmss._stackPointer;
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_stackPointer);
-    VM_ASSERT_ALIGNED(this->_framePointer);
+    VM_ASSERT_ALIGNED(*this,this->_stackPointer);
+    VM_ASSERT_ALIGNED(*this,this->_framePointer);
   }
 
   // Push a new frame with NLOCALS local variables.
@@ -160,7 +193,7 @@ struct VirtualMachine {
     this->_stackPointer -= nlocals;
 #endif
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_stackPointer);
+    VM_ASSERT_ALIGNED(*this,this->_stackPointer);
     return ret;
   }
 
@@ -184,7 +217,7 @@ struct VirtualMachine {
   inline void copytoreg(core::T_O** source, size_t n, size_t base) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(source);
+    VM_ASSERT_ALIGNED(*this,source);
     std::copy(source, source + n, this->_framePointer + base + 1);
 #else
     std::copy_backward(source - n, source, this->_framePointer - base);
@@ -195,7 +228,7 @@ struct VirtualMachine {
   inline void fillreg(core::T_O* object, size_t n, size_t base) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_framePointer+base+1);
+    VM_ASSERT_ALIGNED(*this,this->_framePointer+base+1);
     std::fill(this->_framePointer + base + 1, this->_framePointer + base + n + 1,
               object);
 #else
@@ -208,7 +241,7 @@ struct VirtualMachine {
   inline core::T_O** reg(size_t n) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_framePointer+n+1);
+    VM_ASSERT_ALIGNED(*this,this->_framePointer+n+1);
     return this->_framePointer + n + 1;
 #else
     return this->_framePointer - n;
@@ -220,8 +253,8 @@ struct VirtualMachine {
   inline size_t npushed(size_t nlocals) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_stackPointer);
-    VM_ASSERT_ALIGNED(this->_framePointer);
+    VM_ASSERT_ALIGNED(*this,this->_stackPointer);
+    VM_ASSERT_ALIGNED(*this,this->_framePointer);
     return this->_stackPointer - nlocals - this->_framePointer;
 #else
     return this->_framePointer - nlocals - this->_stackPointer;
@@ -236,7 +269,7 @@ struct VirtualMachine {
   inline void copyto(size_t n, OutputIter dest) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(this->_stackPointer+1-n);
+    VM_ASSERT_ALIGNED(*this,this->_stackPointer+1-n);
     std::copy(this->_stackPointer + 1 - n, this->_stackPointer + 1, dest);
 #else
     std::copy(this->_stackPointer, this->_stackPointer + n, dest);

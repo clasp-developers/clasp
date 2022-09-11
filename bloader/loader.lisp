@@ -77,6 +77,7 @@
 (load "src/lisp/kernel/tag/min-end.lisp")
 (format t "Loaded aclasp~%")
 
+
 (setq *features* (remove :clasp-min *features*))
 
 (push :clos *features*)
@@ -195,8 +196,8 @@
 ;;;
 ;;;
 ;;; bytecode compiler won't support these two
-#-bytecode(load "SYS:SRC;LISP;KERNEL;LSP;DIRECT-CALLS.LISP")
-#-bytecode(load "SYS:GENERATED;CL-WRAPPERS.LISP")
+;;;#-bytecode(load "SYS:SRC;LISP;KERNEL;LSP;DIRECT-CALLS.LISP")
+;;;#-bytecode(load "SYS:GENERATED;CL-WRAPPERS.LISP")
 
 (load "SYS:SRC;LISP;KERNEL;TAG;MIN-START.LISP")
 (load "SYS:SRC;LISP;KERNEL;INIT.LISP")
@@ -278,7 +279,6 @@
 (load "SYS:SRC;LISP;KERNEL;LSP;ASSORTED.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;PACKLIB.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;DEFPACKAGE.LISP")
-(load "SYS:SRC;LISP;KERNEL;LSP;FORMAT.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;MP.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;ATOMICS.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;PACKAGE.LISP")
@@ -347,6 +347,10 @@
   )
 (load "SYS:SRC;LISP;KERNEL;LSP;SOURCE-LOCATION.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;DEFVIRTUAL.LISP")
+;;; VM error was surfacing when compiling pprint.lisp
+;;; because (subtypep 'unknown-type t) should return T but VM bug prevented that
+(load "SYS:SRC;LISP;KERNEL;LSP;PPRINT.LISP")
+(load "SYS:SRC;LISP;KERNEL;LSP;FORMAT-PPRINT.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;CONDITIONS.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;PRINT.LISP")
 ;;;
@@ -354,9 +358,6 @@
 ;;;
 (load "SYS:SRC;LISP;KERNEL;CLOS;STREAMS.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;SEQUENCES.LISP")
-;;; VM error was surfacing when compiling pprint.lisp
-;;; because (subtypep 'unknown-type t) should return T but VM bug prevented that
-(load "SYS:SRC;LISP;KERNEL;LSP;PPRINT.LISP")
 (load "SYS:SRC;LISP;KERNEL;CMP;COMPILER-CONDITIONS.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;PACKLIB2.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLOS;INSPECT.LISP")
@@ -365,6 +366,11 @@
 (load "SYS:SRC;LISP;KERNEL;LSP;POSIX.LISP")
 ;;; Another broken compilation that segfaults
 (load "SYS:SRC;LISP;MODULES;SOCKETS;SOCKETS.LISP")
+
+;;;
+;;; Load FORMAT again because it references pprint macros
+;;;
+;(load "SYS:SRC;LISP;KERNEL;LSP;FORMAT.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;TOP.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;PRE-EPILOGUE-BCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;EPILOGUE-BCLASP.LISP")
@@ -640,8 +646,6 @@
 (load "SYS:SRC;LISP;KERNEL;CLEAVIR;DEFINE-UNICODE-TABLES.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLEAVIR;INLINE-PREP.LISP")
 (load "SYS:SRC;LISP;KERNEL;CLEAVIR;AUTO-COMPILE.LISP")
-(setf *load-print* t)
-(gctools:wait-for-user-signal "about to inline.lisp")
 (load "SYS:SRC;LISP;KERNEL;CLEAVIR;INLINE.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;QUEUE.LISP")
 (load "SYS:SRC;LISP;KERNEL;CMP;COMPILE-FILE-PARALLEL.LISP")
@@ -653,3 +657,6 @@
 (load "SYS:SRC;LISP;KERNEL;TAG;PRE-EPILOGUE-CCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;LSP;EPILOGUE-CCLASP.LISP")
 (load "SYS:SRC;LISP;KERNEL;TAG;CCLASP.LISP")
+
+(gctools:save-lisp-and-die "/tmp/cclasp.snapshot")
+(core:quit)

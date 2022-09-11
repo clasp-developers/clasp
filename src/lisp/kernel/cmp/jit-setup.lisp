@@ -77,8 +77,13 @@
 
 (defun invoke-save-hooks ()
   (format t "Running ~d sys:*save-hooks*~%" (length sys:*save-hook*))
-  (dolist (entry sys:*save-hook*)
-    (funcall entry))
+  (let ((cur sys:*save-hook*))
+    (tagbody
+     top (if (consp cur)
+             (progn
+               (funcall (car cur))
+               (setq cur (cdr cur))
+               (go top)))))
   (format t "Finished cmp:invoke-save-hooks~%"))
 
 (defun snapshot-load-restore ()

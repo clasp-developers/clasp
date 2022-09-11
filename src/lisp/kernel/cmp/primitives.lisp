@@ -301,7 +301,7 @@
          (primitive         "cc_finish_gcroots_in_module" :void (list :gcroots-in-module*))
          (primitive         "cc_remove_gcroots_in_module" :void (list :gcroots-in-module* ))
          (primitive-unwinds "cc_invoke_sub_run_all_function" :void (list :fn-start-up*))
-         (primitive-unwinds "cc_invoke_byte_code_interpreter" :void (list :gcroots-in-module* :i8* :size_t))
+         (primitive-unwinds "cc_invoke_start_code_interpreter" :void (list :gcroots-in-module* :i8* :size_t :i8*))
 
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
 

@@ -1242,7 +1242,8 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
                                                                         nil<T_O>(),
                                                                         code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
-  return (thunk->entry())(thunk.raw_(),0,NULL);
+  T_O* closure = (core::T_O*)thunk.raw_();
+  return (thunk->entry())(closure,0,NULL);
   //  return eval::funcall(thunk);
 };
 
@@ -1790,7 +1791,7 @@ void ltvc_mlf_init_basic_call_varargs(gctools::GCRootsInModule* holder,
 }
 
 
-void dump_byte_code(T_sp fin, size_t length, bool useFrom=false, size_t from=0) {
+void dump_start_code(T_sp fin, size_t length, bool useFrom=false, size_t from=0) {
   StringInputStream_sp sis = gc::As<StringInputStream_sp>(fin);
   string peer;
   if (useFrom) {
@@ -1818,7 +1819,7 @@ void dump_byte_code(T_sp fin, size_t length, bool useFrom=false, size_t from=0) 
 #include "byte-code-interpreter.cc"
 #undef DEFINE_PARSERS
 
-void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
+void start_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
 {
   volatile uint32_t i=0x01234567;
     // return 0 for big endian, 1 for little endian.
@@ -1834,7 +1835,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
       printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__ );
       printf("%s:%d byte_index = %zu\n",__FILE__, __LINE__,  byte_index);
     }
-    // dump_byte_code(fin,32);
+    // dump_start_code(fin,32);
     char c = ltvc_read_char(fin,log,byte_index);
     switch (c) {
     case 0: goto DONE;
