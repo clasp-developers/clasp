@@ -1026,7 +1026,7 @@ been initialized with install path versus the build path of the source code file
                                           (if prev-file-time
                                               (+ (* +load-weight+ file-time)
                                                  (* (- 1 +load-weight+) prev-file-time))
-                                              prev-file-time))
+                                              file-time))
             (if (and *load-verbose* (>= file-time internal-time-units-per-second))
                 (message nil ";;; Load time({:.1f} seconds) consed({} bytes)"
                          (float (/ file-time internal-time-units-per-second))
