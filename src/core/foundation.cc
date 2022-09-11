@@ -255,46 +255,14 @@ void lisp_errorDereferencedUnbound() {
 }
 
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, size_t from, core::T_O *objP) {
-#if 1
-# if 0
-  stringstream sfrom;
-  if (gctools::tagged_generalp(objP)) {
-    sfrom << "General tagged object of with header stamp ";
-    T_O* client = gctools::untag_general(objP);
-    const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr((void*)client));
-    const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-    size_t stamp_index = header._stamp_wtag_mtag.stamp_();
-    sfrom << stamp_index;
-    sfrom << " " << global_unshifted_nowhere_stamp_names[stamp_index];
-  } else {
-    sfrom << "Handle describing the tagged pointer " << (void*)objP;
-  }
-# endif
-  printf("%s:%d:%s expected type = %lu %s\n", __FILE__, __LINE__, __FUNCTION__, (size_t)to, global_unshifted_nowhere_stamp_names[to].c_str());
-  printf("Actual type:\n");
-  dbg_describe_tagged_T_Optr(objP);
+DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O *objP) {
+  size_t expectedStamp = STAMP_UNSHIFT_WTAG(to);
+  const char* expectedName = obj_name(expectedStamp);
+  printf("%s:%d:%s ----- Unexpected type error! ------\n", __FILE__, __LINE__, __FUNCTION__ );
+  printf(" EXPECTED stamp_wtag = %4lu name: %s\n", (size_t)to, expectedName );
+  printf(" the actual object with tagged pointer %p has the header:\n", objP );
+  client_describe(objP);
   SIMPLE_ERROR("Unexpected type in lisp_errorUnexpectedTypeStampWtag");
-#else
-  if (expected_class_id >= _lisp->classSymbolsHolder().size()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("expected class_id %d out of range max[%d]" , expected_class_id , _lisp->classSymbolsHolder().size()));
-  }
-  core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expected_class_id];
-  if (expectedSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("unexpected class_id for object %p (given_class_id %d / expected_class_id %d) could not lookup expected_class_id symbol" , (void*)objP , given_class_id , expected_class_id));
-  }
-
-  if (givenTyp >= _lisp->classSymbolsHolder().size()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("given class_id %d out of range max[%d]" , givenTyp , _lisp->classSymbolsHolder().size()));
-  }
-  core::Symbol_sp givenSym = _lisp->classSymbolsHolder()[givenTyp];
-  if (givenSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("given class_id %d symbol was not defined" , givenTyp));
-  }
-
-  gctools::smart_ptr<core::T_O> obj((gc::Tagged)objP);
-  TYPE_ERROR(obj, expectedSym);
-#endif
 }
 
 DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O *objP) {
@@ -328,8 +296,8 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, 
 }
 
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, size_t from, core::T_O *objP) {
-  lisp_errorUnexpectedTypeStampWtag((size_t)to, (size_t)from, objP);
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, core::T_O *objP) {
+  lisp_errorUnexpectedTypeStampWtag((size_t)to, objP);
   abort();
 }
 

@@ -1352,6 +1352,8 @@ struct GatherObjects {
 void gatherAllObjects(GatherObjects& gather);
 size_t objectSize(BaseHeader_s* header);
 
+bool is_memory_readable(const void* address, size_t bytes=8);
+
 };
 //#endif // _clasp_memoryManagement_H
 

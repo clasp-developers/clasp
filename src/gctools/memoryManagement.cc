@@ -28,6 +28,8 @@ THE SOFTWARE.
 
 #define DEBUG_LEVEL_NONE
 
+#include <unistd.h>
+#include <fcntl.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcalloc.h>
 #include <clasp/core/object.h>
@@ -239,6 +241,19 @@ void clasp_dealloc(char* buffer) {
 
 
 namespace gctools {
+
+bool is_memory_readable(const void* address,size_t bytes) {
+  int filedes = open("/dev/null", O_WRONLY);
+  if (filedes<0) {
+    printf("%s:%d:%s Could not open /dev/null\n", __FILE__, __LINE__, __FUNCTION__);
+    abort();
+  }
+  ssize_t wrote = write( filedes, address, bytes );
+  close(filedes);
+  return (wrote!=-1);
+}
+
+
 void rawHeaderDescribe(const uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
   switch (headerTag) {
@@ -249,18 +264,27 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
       break;
   }
   case Header_s::stamp_mtag: {
-    printf("  %p : %" PRIuPTR " (%p)\n", headerP, *headerP, (void*)*headerP);
-    printf("  %p : %" PRIuPTR " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
-#ifdef DEBUG_GUARD
-    printf("  %p : %p\n", (headerP+2), (void*)*(headerP+2));
-    printf("  %p : %p\n", (headerP+3), (void*)*(headerP+3));
-    printf("  %p : %p\n", (headerP+4), (void*)*(headerP+4));
-    printf("  %p : %p\n", (headerP+5), (void*)*(headerP+5));
-#endif    
-    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP))._stamp_wtag_mtag.stamp_());
-    printf(" stamp tag - stamp: %d", kind);
+    if (is_memory_readable(headerP)) {
+      printf("   %p : %18p <- header\n", headerP, (void*)*headerP);
+    } else {
+      printf("   %p : <<<<< The address is NOT readable\n", headerP );
+      return;
+    }
+#ifndef DEBUG_GUARD
+    printf("   %p : %18p <- vtable\n", (headerP+1), (void*)*(headerP+1));
     fflush(stdout);
-    printf("     %s\n", obj_name(kind));
+#else
+    printf("   %p : %18p\n", (headerP+1), (void*)*(headerP+1));
+    printf("   %p : %18p\n", (headerP+2), (void*)*(headerP+2));
+    printf("   %p : %18p\n", (headerP+3), (void*)*(headerP+3));
+    printf("   %p : %18p\n", (headerP+4), (void*)*(headerP+4));
+    printf("   %p : %18p\n", (headerP+5), (void*)*(headerP+5));
+#endif    
+    size_t stamp_wtag = (GCStampEnum)((*((Header_s*)headerP))._stamp_wtag_mtag.stamp_wtag());
+    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP))._stamp_wtag_mtag.stamp());
+    printf(" ACTUAL stamp_wtag   = %4zu", stamp_wtag);
+    fflush(stdout);
+    printf(" name: %s\n", obj_name(kind));
   } break;
   case Header_s::fwd_mtag: {
     Header_s *hdr = (Header_s *)headerP;
@@ -291,7 +315,6 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
 extern "C" {
 void client_describe(void *taggedClient) {
   if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
-    printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
     // conses may be moved into a separate pool and dealt with in a different way
