@@ -360,7 +360,7 @@ void dbg_lowLevelDescribe(T_sp obj) {
   } else if (obj.characterp()) {
     printf("character: %d #\\%c\n", obj.unsafe_character(), obj.unsafe_character());
   } else if (obj.generalp()) {
-    printf("vtable-ptr: %p  typeid: %s\n", &*obj, typeid(obj.unsafe_general()).name());
+    printf("    vtable-ptr: %p  typeid: %s\n", &*obj, typeid(obj.unsafe_general()).name());
     printf("className-> %s\n", obj.unsafe_general()->className().c_str());
     printf("contents-> [%s]\n", _rep_(obj).c_str());
     if ( Function_sp closure = obj.asOrNull<Function_O>() ) {
@@ -381,8 +381,6 @@ void dbg_lowLevelDescribe(T_sp obj) {
 
 void dbg_describe_tagged_T_Optr(T_O *p) {
   client_describe(p);
-  T_sp obj((gctools::Tagged) reinterpret_cast<T_O *>(p));
-  dbg_lowLevelDescribe(obj);
 }
 
 void dbg_describe_tagged_T_Optr_header(T_O *p) {
