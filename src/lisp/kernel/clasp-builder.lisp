@@ -1102,6 +1102,10 @@ been initialized with install path versus the build path of the source code file
 
 (defun compile-vclasp (&rest rest)
   (let ((system (apply #'load-vclasp rest)))
+    ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
+    ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
+    ;; to load inline definitions. We wait for the source code to turn it back on.
+    (setq core:*defun-inline-hook* nil)
     (handler-bind
         ((error #'build-failure))
       (compile-system system :reload nil :file-order (calculate-file-order system) :total-files (length system)))))
