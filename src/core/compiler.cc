@@ -2003,7 +2003,7 @@ CL_DEFUN GlobalBytecodeEntryPoint_sp core__test_wrap(T_sp lambda_list) {
   form << lambda_list;
   form << Cons_O::create(cl::_sym_funcall,Cons_O::create(entryPoint, vars));
   printf("%s:%d:%s wrapper: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form.cons()).c_str() );
-  return comp::bytecompile(form.cons(),comp::Lexenv_O::make());
+  return comp::bytecompile(form.cons(),comp::Lexenv_O::make_top_level());
 };
 
 
