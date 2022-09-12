@@ -160,7 +160,7 @@ public:
 
   /*! Create a simple LambdaListHandler that takes a fixed number of required arguments */
   static LambdaListHandler_sp create(int numArgs, const std::set<int> &pureOutValues = std::set<int>());
- public:
+public:
   void dump_keywords();
 public: // set up argument handling by hand
   /*! Use the declares to adjust the behavior of the LambdaListHandler.
@@ -215,32 +215,32 @@ public:
 
   /*! Return true if the LambdaListHandler only has required arguments */
   bool requiredLexicalArgumentsOnlyP_() const;
-CL_LISPIFY_NAME("lambdaListHandlerRequiredLexicalArgumentsOnlyP");
-CL_DEFMETHOD   inline bool requiredLexicalArgumentsOnlyP() const { return this->_RequiredLexicalArgumentsOnly; };
+  CL_LISPIFY_NAME("lambdaListHandlerRequiredLexicalArgumentsOnlyP");
+  CL_DEFMETHOD   inline bool requiredLexicalArgumentsOnlyP() const { return this->_RequiredLexicalArgumentsOnly; };
 
-CL_LISPIFY_NAME("numberOfRequiredArguments");
-CL_DEFMETHOD   inline int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
-CL_LISPIFY_NAME("numberOfOptionalArguments");
-CL_DEFMETHOD   int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
-CL_LISPIFY_NAME("numberOfRestArguments");
-CL_DEFMETHOD   int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
+  CL_LISPIFY_NAME("numberOfRequiredArguments");
+  CL_DEFMETHOD   inline int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
+  CL_LISPIFY_NAME("numberOfOptionalArguments");
+  CL_DEFMETHOD   int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
+  CL_LISPIFY_NAME("numberOfRestArguments");
+  CL_DEFMETHOD   int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
   bool hasKeyFlag() const { return this->_KeyFlag.isTrue(); };
-CL_LISPIFY_NAME("numberOfKeyArguments");
-CL_DEFMETHOD   int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
-CL_LISPIFY_NAME("numberOfAuxArguments");
-CL_DEFMETHOD   int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
-CL_LISPIFY_NAME("allowOtherKeys");
-CL_DEFMETHOD   bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
+  CL_LISPIFY_NAME("numberOfKeyArguments");
+  CL_DEFMETHOD   int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
+  CL_LISPIFY_NAME("numberOfAuxArguments");
+  CL_DEFMETHOD   int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
+  CL_LISPIFY_NAME("allowOtherKeys");
+  CL_DEFMETHOD   bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
 
   //	uint _numberOfRequiredArguments() const;
 
   /*! The total number of arguments that will be bound by this handler in a lexical ActivationFrame */
-CL_LISPIFY_NAME("numberOfLexicalVariables");
-CL_DEFMETHOD   int numberOfLexicalVariables() const { return this->_NumberOfLexicalVariables; };
+  CL_LISPIFY_NAME("numberOfLexicalVariables");
+  CL_DEFMETHOD   int numberOfLexicalVariables() const { return this->_NumberOfLexicalVariables; };
 
   /*! Return all of the symbols that this LambdaListHandler will fill classified as to whether they are special-var or lexical-var's */
-CL_LISPIFY_NAME("classifiedSymbols");
-CL_DEFMETHOD   List_sp classifiedSymbols() const { return this->_ClassifiedSymbolList; };
+  CL_LISPIFY_NAME("classifiedSymbols");
+  CL_DEFMETHOD   List_sp classifiedSymbols() const { return this->_ClassifiedSymbolList; };
 
   /*! Return a Cons of all lexical variable names extracted from this->_ClassifiedSymbolList
 	  in the order that they appear in _ClassifiedSymbolList - this is used for
@@ -310,8 +310,15 @@ bool parse_lambda_list(List_sp, T_sp, gctools::Vec0<RequiredArgument>&,
                        gctools::Vec0<OptionalArgument>&, RestArgument&,
                        T_sp&, gctools::Vec0<KeywordArgument>&,
                        T_sp&, gctools::Vec0<AuxArgument>&);
+
+List_sp lexical_variable_names(gctools::Vec0<RequiredArgument> &reqs,
+                               gctools::Vec0<OptionalArgument> &optionals,
+                               RestArgument &restarg,
+                               gctools::Vec0<KeywordArgument> &keys,
+                               gctools::Vec0<AuxArgument> &auxs);
+
 T_sp lambda_list_for_name(T_sp);
- List_sp core__canonicalize_declarations(List_sp declares);
+List_sp core__canonicalize_declarations(List_sp declares);
 };
 TRANSLATE(core::LambdaListHandler_O);
 

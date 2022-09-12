@@ -1118,7 +1118,41 @@ DONE:
   return true;
 }
 
-  
+
+
+
+List_sp lexical_variable_names(gctools::Vec0<RequiredArgument> &reqs,
+                               gctools::Vec0<OptionalArgument> &optionals,
+                               RestArgument &restarg,
+                               gctools::Vec0<KeywordArgument> &keys,
+                               gctools::Vec0<AuxArgument> &auxs) {
+  ql::list result;
+  // required arguments  req = ( num req1 req2 ...)
+  for (auto &it : reqs) result << it._ArgTarget;
+  // optional arguments   opts = (num opt1 init1 flag1 ...)
+  for (auto &it : optionals) {
+    result << it._ArgTarget;
+    if (it._Sensor._ArgTarget.notnilp()) {
+      result << it._Sensor._ArgTarget;
+    }
+  }
+  if (restarg._ArgTarget.notnilp()) {
+    result << restarg._ArgTarget;
+  }
+  // optional arguments   keys = (num key1 var1 init1 flag1 ...)
+  for (auto &it : keys) {
+    result << it._ArgTarget;
+    if (it._Sensor._ArgTarget.notnilp()) {
+      result << it._Sensor._ArgTarget;
+    }
+  }
+  //	    lauxs << make_fixnum((int)auxs.size());
+  for (auto &it : auxs) {
+    result << it._ArgTarget;
+  }
+  return result.cons();
+}
+
 CL_LAMBDA(vl context)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(This is like ECL::process-lambda-list)dx")
