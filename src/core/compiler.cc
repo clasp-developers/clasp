@@ -69,6 +69,7 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/activationFrame.h>
+#include <clasp/core/bytecode_compiler.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
@@ -1925,6 +1926,86 @@ void expect_offset(T_sp key, T_sp alist, size_t expected) {
     SIMPLE_ERROR(("The value %s in alist %s at key %s must match the C++ tagged offset of %d") , _rep_(value) , _rep_(alist) , _rep_(key) , expected);
   }
 }
+
+};
+
+
+namespace core {
+
+SYMBOL_EXPORT_SC_(CorePkg,two_arg_STAR);
+
+struct WrapEntryPoint {
+  
+  static inline LCC_RETURN wrap_enter(T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
+    printf("%s:%d:%s In wrap_enter lcc_closure %p  lcc_nargs %lu  lcc_args %p\n",
+           __FILE__, __LINE__, __FUNCTION__, lcc_closure, lcc_nargs, lcc_args );
+    for (size_t ii = 0; ii< lcc_nargs; ii++ ) {
+      T_sp val((gctools::Tagged)lcc_args[ii]);
+      printf("%s:%d:%s  arg[%lu] = %s\n", __FILE__, __LINE__, __FUNCTION__, ii, _rep_(val).c_str());
+    }
+    return gctools::return_type();
+  }
+
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    return wrap_enter( lcc_closure, lcc_nargs, lcc_args );
+  }
+
+  static inline LISP_ENTRY_0() {
+    return wrap_enter( lcc_closure, 0, NULL );
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return wrap_enter( lcc_closure, 1, args );
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return wrap_enter( lcc_closure, 2, args );
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return wrap_enter( lcc_closure, 3, args );
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return wrap_enter( lcc_closure, 4, args );
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return wrap_enter( lcc_closure, 5, args );
+  }
+};
+
+CL_DEFUN GlobalBytecodeEntryPoint_sp core__test_wrap(T_sp lambda_list) {
+  gctools::Vec0<RequiredArgument> reqs;
+  gctools::Vec0<OptionalArgument> optionals;
+  gctools::Vec0<KeywordArgument> keys;
+  gctools::Vec0<AuxArgument> auxs;
+  RestArgument restarg;
+  T_sp key_flag;
+  T_sp allow_other_keys;
+  T_sp decl_dict = nil<T_O>();
+  parse_lambda_list(lambda_list,
+                    cl::_sym_function,
+                    reqs,
+                    optionals,
+                    restarg,
+                    key_flag,
+                    keys,
+                    allow_other_keys,
+                    auxs);
+  T_sp vars = lexical_variable_names(reqs,optionals,restarg,keys,auxs);
+  ClaspXepFunction xep;
+  xep.setup<WrapEntryPoint>();
+  FunctionDescription_sp fdesc = makeFunctionDescription(INTERN_(core,test_wrapper));
+  auto entryPoint = gctools::GC<GlobalEntryPoint_O>::allocate( fdesc, xep, nil<T_O>(), nil<T_O>());
+  ql::list form;
+  form << cl::_sym_lambda;
+  form << lambda_list;
+  form << Cons_O::create(cl::_sym_funcall,Cons_O::create(entryPoint, vars));
+  printf("%s:%d:%s wrapper: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form.cons()).c_str() );
+  return comp::bytecompile(form.cons(),comp::Lexenv_O::make());
+};
+
 
 };
 
