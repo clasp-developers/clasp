@@ -211,9 +211,9 @@
                      ((eql-specializer-p argspec)
                       ;; This is (typep (e-s-o ...) spec) but we know spec is
                       ;; a class so we skip to this.
-                      (subclassp (class-of (eql-specializer-object argspec))
+                      (si:subclassp (class-of (eql-specializer-object argspec))
                                  spec))
-                     (t (subclassp argspec spec)))))
+                     (t (si:subclassp argspec spec)))))
 
 ;;; This "fuzzed" applicable-method-p is used in
 ;;; update-call-history-for-add-method, below, to handle added EQL-specialized
@@ -225,12 +225,12 @@
                       (if (eql-specializer-p argspec)
                           (eql (eql-specializer-object argspec)
                                (eql-specializer-object spec))
-                          (subclassp argspec
+                          (si:subclassp argspec
                                      (class-of (eql-specializer-object spec)))))
                      ((eql-specializer-p argspec)
-                      (subclassp (class-of (eql-specializer-object argspec))
+                      (si:subclassp (class-of (eql-specializer-object argspec))
                                  spec))
-                     (t (subclassp argspec spec)))))
+                     (t (si:subclassp argspec spec)))))
 
 (defun applicable-method-list-using-specializers (gf specializers)
   (declare (optimize (speed 3)))

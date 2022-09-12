@@ -200,12 +200,12 @@ Not a valid documentation object ~A"
   ;; If there's no new name, but the old name isn't set, set it to the default LAMBDA.
   ;; NOTE: MOP says it should be NIL, but we use LAMBDA elsewhere. Could fix that.
   (if name-p
-      (setf-function-name gfun name)
+      (core:setf-function-name gfun name)
       (when (eq (core:function-name gfun) (core:unbound))
-        (setf-function-name gfun 'cl:lambda)))
+        (core:setf-function-name gfun 'cl:lambda)))
   ;; If we have a new lambda list, set the display lambda list.
   (when l-l-p
-    (setf-lambda-list gfun lambda-list))
+    (core:setf-lambda-list gfun lambda-list))
   ;; Ditto docstring.
   (when documentation-p
     (setf (core:function-docstring gfun) documentation))

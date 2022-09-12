@@ -126,7 +126,7 @@
   ;; So we don't finalize here.
   (core:allocate-raw-instance class (make-rack-for-class class)))
 
-(defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
+(defmethod allocate-instance ((class core:derivable-cxx-class) &rest initargs)
   (declare (ignore initargs))
   (core:allocate-raw-general-instance class (make-rack-for-class class)))
 
@@ -629,7 +629,7 @@ because it contains a reference to the undefined class~%  ~A"
 	(cond ((not (eq (slot-definition-allocation slotd) :class)))
 	      ((find name direct-slots :key #'slot-definition-name) ; new shared slot
 	       (let* ((initfunc (slot-definition-initfunction slotd))
-	              (value (if initfunc (funcall initfunc) (unbound))))
+	              (value (if initfunc (funcall initfunc) (si:unbound))))
 	         (setf (%slot-definition-location slotd) (list value))))
 	      (t			; inherited shared slot
 	       (dolist (c (class-precedence-list class))

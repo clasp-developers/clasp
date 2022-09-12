@@ -201,7 +201,7 @@
                 (sname (slot-definition-name
                         (accessor-method-slot-definition method)))
                 (valuef
-                  (cond ((fixnump location)
+                  (cond ((si:fixnump location)
                          ;; instance location- easy
                          `(core:instance-ref ,(first arguments) ',location))
                         ((consp location)
@@ -223,7 +223,7 @@
                (sname (slot-definition-name
                        (accessor-method-slot-definition method)))
                (class (second (method-specializers method))))
-           (cond ((fixnump location)
+           (cond ((si:fixnump location)
                   `(si:instance-set ,(second arguments) ,location ,(first arguments)))
                  ((consp location)
                   ;; class location

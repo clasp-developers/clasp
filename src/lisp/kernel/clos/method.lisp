@@ -51,7 +51,7 @@
   (with-early-make-funcallable-instance +%method-function-slots+
     (%mf (find-class '%method-function)
          :fmf fmf)
-    (setf-function-name %mf 'slow-method-function)
+    (core:setf-function-name %mf 'slow-method-function)
     (set-funcallable-instance-function
      %mf
      (lambda (arguments next-methods)
@@ -106,7 +106,7 @@
   (with-early-make-funcallable-instance +%method-function-slots+
     (%mf (find-class '%method-function)
          :contf contf)
-    (setf-function-name %mf 'slow-method-function)
+    (core:setf-function-name %mf 'slow-method-function)
     (set-funcallable-instance-function
      %mf
      (let (;; FIXME: Method not available yet :(
@@ -208,7 +208,7 @@
 in the generic function lambda-list to the generic function lambda-list"
   (let ((gf-lambda-list-all (ext:function-lambda-list gf)))
     (if (eq gf-lambda-list-all (core:unbound)) ; uninitialized
-        (setf-lambda-list gf method-lambda-list)
+        (core:setf-lambda-list gf method-lambda-list)
         (let* ((has-aok (member '&allow-other-keys gf-lambda-list-all))
                (gf-lambda-list (if has-aok
                                    (butlast gf-lambda-list-all 1)
@@ -232,7 +232,7 @@ in the generic function lambda-list to the generic function lambda-list"
                   (when append-keys
                     (let ((new-ll (append gf-lambda-list append-keys
                                           (if has-aok (list '&allow-other-keys) nil))))
-                      (setf-lambda-list gf new-ll)))))))))))
+                      (core:setf-lambda-list gf new-ll)))))))))))
 
 (defun prototypes-for-make-method-lambda (name)
   (if (not *clos-booted*)
@@ -441,7 +441,7 @@ in the generic function lambda-list to the generic function lambda-list"
           *next-method-p-p* next-method-p-p)
     (let ((leaf-method-p (null (or call-next-method-p next-method-p-p))))
       (multiple-value-bind (declarations body doc)
-          (process-declarations (cddr method-lambda) t) ; We expect docstring
+          (si:process-declarations (cddr method-lambda) t) ; We expect docstring
         ;; source location here?
         (let ((lambda-list (second method-lambda))
               (lambda-name-declaration (or (find 'core::lambda-name declarations :key #'car)

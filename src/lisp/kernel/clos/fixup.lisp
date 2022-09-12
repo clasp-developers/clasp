@@ -71,10 +71,10 @@
           finally (append-generic-function-call-history f new-call-history))
     ;; Finish setup
     (mlog "function-to-method: installed method%N")
-    (setf-lambda-list f lambda-list) ; hook up the introspection
+    (core:setf-lambda-list f lambda-list) ; hook up the introspection
     ;; (setf generic-function-name) itself goes through here, so to minimize
     ;; bootstrap headaches we use the underlying writer directly.
-    (setf-function-name f name)
+    (core:setf-function-name f name)
     (setf (fdefinition name) f)
     (when (boundp '*early-methods*)
       (push (cons name (list method)) *early-methods*)))

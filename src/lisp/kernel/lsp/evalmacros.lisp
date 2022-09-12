@@ -26,7 +26,7 @@ last FORM.  If not, simply returns NIL."
      ;; (as the eval-when :compile-toplevel is executed)
      ;; Need a more comprehensive solution though, since the actual macro
      ;; lambda will be compiled twice anyway.
-     (setf-lambda-list
+     (core:setf-lambda-list
       (funcall #'(setf macro-function)
                #',(ext:parse-macro name lambda-list body env)
                ',name)
@@ -119,7 +119,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 (defmacro defun (name lambda-list &body body &environment env)
    ;; Documentation in help.lisp
    (multiple-value-bind (decls body doc-string) 
-       (process-declarations body t)
+       (si:process-declarations body t)
      (let* ((doclist (when doc-string (list doc-string)))
             (global-function
               `#'(lambda ,lambda-list

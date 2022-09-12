@@ -350,7 +350,7 @@
     (unless (>= (length arguments) 1)
       (error "BUG: SLOT-READ effective method has insufficient required parameters"))
     (let ((valuef
-            (cond ((fixnump location)
+            (cond ((si:fixnump location)
                    ;; instance location- easy
                    `(core:instance-ref ,(first arguments) ',location))
                   ((consp location)
@@ -372,7 +372,7 @@
     (declare (ignore rest))
     (unless (>= (length arguments) 2)
       (error "BUG: SLOT-WRITE effective method has insufficient required parameters"))
-    (cond ((fixnump location)
+    (cond ((si:fixnump location)         ;
            `(si:instance-set ,(second arguments) ,location ,(first arguments)))
           ((consp location)
            ;; class location

@@ -21,7 +21,7 @@
 
 
 #+clasp (in-package "CLOS")
-#+clasp (use-package '(:CORE) :clos)
+;;;#+clasp (use-package '(:CORE) :clos)
 
 #+clasp
 (export '(WITH-SLOTS WITH-ACCESSORS UPDATE-INSTANCE-FOR-REDEFINED-CLASS

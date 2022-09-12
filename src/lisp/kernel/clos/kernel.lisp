@@ -110,7 +110,7 @@
 	      :a-p-o-function nil
 	      :declarations nil
 	      :dependents nil)
-        (setf-function-name gfun name)
+        (core:setf-function-name gfun name)
         (setf (generic-function-method-combination gfun)
               (find-method-combination gfun 'standard nil))
         (invalidate-discriminating-function gfun)
@@ -125,7 +125,7 @@
   (declare (notinline reinitialize-instance)) ; bootstrapping
   (if *clos-booted*
       (reinitialize-instance gf :name new-name)
-      (setf-function-name gf new-name))
+      (core:setf-function-name gf new-name))
   new-name)
 
 ;;; Will be the standard method after fixup.
