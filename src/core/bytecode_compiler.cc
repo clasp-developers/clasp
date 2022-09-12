@@ -1737,6 +1737,12 @@ CL_DEFUN void compile_macrolet(List_sp bindings, List_sp body,
   compile_locally(body, nenv, context);
 }
 
+CL_DEFUN void compile_funcall(T_sp callee, List_sp args,
+                              Lexenv_sp env, Context_sp context) {
+  compile_form(callee, env, context->sub(clasp_make_fixnum(1)));
+  compile_call(args, env, context);
+}
+
 CL_DEFUN void compile_combination(T_sp head, T_sp rest,
                                   Lexenv_sp env, Context_sp context) {
   if (head == cl::_sym_progn) compile_progn(rest, env, context);
@@ -1775,6 +1781,10 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest,
     compile_eval_when(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_the) // skip
     compile_form(oCadr(rest), env, context);
+  // extension
+  else if (head == cleavirPrimops::_sym_funcall)
+    compile_funcall(oCar(rest), oCdr(rest), env, context);
+  // not a special form
   else {
     if (gc::IsA<Symbol_sp>(head)) {
       Symbol_sp shead = gc::As_unsafe<Symbol_sp>(head);
@@ -1832,7 +1842,7 @@ CL_DEFUN void compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
   else compile_literal(form, env, context);
 }
 
-CL_LAMBDA(lambda-expression &optional (env (make-null-lexical-environment)))
+CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment)))
 CL_DEFUN GlobalBytecodeEntryPoint_sp bytecompile(T_sp lambda_expression,
                                                  Lexenv_sp env) {
   if (!gc::IsA<Cons_sp>(lambda_expression)
