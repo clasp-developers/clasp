@@ -152,6 +152,22 @@ Return files."
           sources)
     (nreverse out-of-dates)))
 
+(defun out-of-date-system (system &aux out-of-date file (write-date 0) bitcode)
+  (tagbody
+   next
+    (if system
+        (progn
+          (setq file (car system)
+                system (cdr system)
+                write-date (max write-date (file-write-date file))
+                bitcode (bitcode-pathname file))
+          (if (or (not (probe-file bitcode))
+                  (< (file-write-date bitcode)
+                     write-date))
+              (setq out-of-date (cons file out-of-date)))
+          (go next))))
+  (nreverse out-of-date))
+
 (defun source-file-names (start end)
   (let ((sout (make-string-output-stream))
         (cur (select-source-files :start end))
@@ -1097,8 +1113,8 @@ been initialized with install path versus the build path of the source code file
     (setq *features* (core:remove-equal :staging *features*))
     (prepare-metadata system installed-system)
     (if system-sort
-        (sort system #'> :key #'system-load-time)
-        system)))
+        (sort (out-of-date-system system) #'> :key #'system-load-time)
+        (out-of-date-system system))))
 
 (defun compile-vclasp (system)
   ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
@@ -1107,11 +1123,12 @@ been initialized with install path versus the build path of the source code file
   (setq core:*defun-inline-hook* nil)
   (handler-bind
       ((error #'build-failure))
-    (compile-system system :reload nil :file-order (calculate-file-order system) :total-files (length system))))
+    (compile-system system
+                    :reload nil :file-order (calculate-file-order system)
+                    :total-files (length system))))
 
 (defun load-and-compile-vclasp (&rest rest)
-  (let ((system (apply #'load-vclasp rest)))
-    (compile-vclasp system)))
+  (compile-vclasp (apply #'load-vclasp rest)))
 
 (export '(load-vclasp compile-vclasp load-and-compile-vclasp))
       

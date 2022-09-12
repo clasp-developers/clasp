@@ -231,16 +231,20 @@ exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
 (let ((sys (translate-logical-pathname \"SYS:\"))
       (lib (translate-logical-pathname \"SYS:LIB;\"))
       (generated (translate-logical-pathname \"SYS:GENERATED;\")))
-  (declare (ignorable sys lib generated))")
+  (declare (ignorable sys lib generated))
+  (setf (logical-pathname-translations \"SYS\")
+        (list* ")
   (flet ((print-translation (translation root
                              &aux (prefix (root-to-prefix root)))
-           (format output-stream "~%  (push (list ~s~%              (merge-pathnames ~s ~a))~%        (logical-pathname-translations \"SYS\"))"
+           (format output-stream "(list ~s
+                      (merge-pathnames ~s ~a))
+               "
                    (ninja:make-logical-pathname-representation "SYS" translation
                                                                :prefix prefix
                                                                :version :wild)
                    translation (or prefix "sys"))))
     (loop with translations = (make-hash-table :test #'equal)
-          for source in sources
+          for source in (reverse sources)
           for translation = (ninja:find-minimal-pathname-translation (source-path source))
           when (and translation
                     (not (member (source-root source) '(:code :variant-generated))))
@@ -258,7 +262,7 @@ exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
                                                           :name (pathname-name translation)
                                                           :type (pathname-type translation))
                                            :variant-lib))))
-  (format output-stream ")~%"))
+  (format output-stream "(logical-pathname-translations \"SYS\"))))~%"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :cclasp-translations)) output-stream
