@@ -413,7 +413,7 @@ LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
 
 GlobalEntryPoint_sp makeGlobalEntryPoint( FunctionDescription_sp fdesc,
                                           const ClaspXepFunction& entry_point,
-                                          T_sp lep
+                                          T_sp lep=nil<core::T_O>()
                                           );
 
 template <typename Wrapper>
