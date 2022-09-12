@@ -76,8 +76,8 @@
 
 
 (defun do-bytecompile (form env)
-  #-use-cxxcmp (cmpref:bytecompile form env)
-  #+use-cxxcmp (cmp:bytecompile form env)
+  #-use-cmpref (cmp:bytecompile form env)
+  #+use-cmpref (cmpref:bytecompile form env)
   )
 
 
