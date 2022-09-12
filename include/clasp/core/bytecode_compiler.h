@@ -199,8 +199,8 @@ public:
       _notinlines(nnotinlines), frame_end(nframe_end) {};
   CL_LISPIFY_NAME(lexenv/make)
   CL_DEF_CLASS_METHOD
-  static Lexenv_sp make(T_sp vars, T_sp tags, T_sp blocks, T_sp funs,
-                        T_sp notinlines, size_t frame_end) {
+  static Lexenv_sp make(T_sp vars=nil<core::T_O>(), T_sp tags=nil<core::T_O>(), T_sp blocks=nil<core::T_O>(), T_sp funs=nil<core::T_O>(),
+                        T_sp notinlines=nil<core::T_O>(), size_t frame_end=0) {
     return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, notinlines, frame_end);
   }
   CL_DEFMETHOD List_sp vars() const { return this->_vars; }
