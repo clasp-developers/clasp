@@ -405,14 +405,55 @@
        result))
     (env::entry (cleavir-env->interpreter (env::next env)))))
 
+(defun cleavir-env->bytecode (env)
+  ;; Convert a cleavir ENTRY (or null) into an environment clasp's bytecode compiler
+  ;; can use. Only for compile time environments, so it's symbol macros, macros, and
+  ;; declarations. The bytecode compiler doesn't use any declarations besides
+  ;; SPECIAL and NOTINLINE.
+  (etypecase env
+    ((or clasp-global-environment null) (cmp:make-null-lexical-environment))
+    (env:special-variable
+     (cmp:add-specials (cleavir-env->bytecode (env::next env))
+                       (list (env:name env))))
+    (env:symbol-macro
+     (let ((next (cleavir-env->bytecode (env::next env))))
+       (cmp:lexenv/make
+        (acons (env:name env)
+               (cmp:symbol-macro-var-info/make (constantly (env:expansion env)))
+               (cmp:lexenv/vars next))
+        (cmp:lexenv/tags next) (cmp:lexenv/blocks next) (cmp:lexenv/funs next)
+        (cmp:lexenv/notinlines next) (cmp:lexenv/frame-end next))))
+    (env:macro
+     (let ((next (cleavir-env->bytecode (env::next env))))
+       (cmp:lexenv/make
+        (cmp:lexenv/vars next) (cmp:lexenv/tags next) (cmp:lexenv/blocks next)
+        (acons (env:name env) (cmp:local-macro-info/make (env:expander env))
+               (cmp:lexenv/funs next))
+        (cmp:lexenv/notinlines next) (cmp:lexenv/frame-end next))))
+    (env:inline
+     (let ((next (cleavir-env->bytecode (env::next env))))
+       (if (eq (env:inline env) 'cl:notinline)
+           (cmp:lexenv/make
+            (cmp:lexenv/vars next) (cmp:lexenv/tags next) (cmp:lexenv/blocks next)
+            (cmp:lexenv/funs next) (cons (env:name env) (cmp:lexenv/notinlines next))
+            (cmp:lexenv/frame-end next))
+           next)))
+    (env::entry (cleavir-env->bytecode (env::next env)))))
+
 (defvar *use-ast-interpreter* t)
+
+(defvar *use-bytecompiler* nil)
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
   (cleavir-environment:eval form env *clasp-env*))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (cleavir-environment:cst-eval (cst:cst-from-expression form) env dispatch-env nil))
+  (if *use-bytecompiler*
+      (let ((cmp:*cleavir-compile-hook* nil)) ; disable compiler macros
+           (funcall (cmp:bytecompile `(lambda () (progn ,form))
+                                     (cleavir-env->bytecode env))))
+      (cleavir-environment:cst-eval (cst:cst-from-expression form) env dispatch-env nil)))
 
 (defvar *use-cst-eval* t)
 
@@ -427,18 +468,23 @@
   ;; That is mainly when saving inline definitions.
   ;; At the moment, only simple-eval-cst and ast-interpret-cst actually deal with the CST,
   ;; so we want to be using one of those cases when saving definitions.
-  (if *use-cst-eval*
-      (simple-eval-cst cst env
+  (cond #+(or)
+        (*use-bytecompiler*
+         (let ((cmp:*cleavir-compile-hook* nil)) ; disable compiler macros
+           (funcall (cmp:bytecompile `(lambda () (progn ,(cst:raw cst)))
+                                     (cleavir-env->bytecode env)))))
+        (*use-cst-eval*
+         (simple-eval-cst cst env
                        (cond (core:*use-interpreter-for-eval*
                               (lambda (cst env)
                                 (core:interpret (cst:raw cst) (cleavir-env->interpreter env))))
                              (*use-ast-interpreter* #'ast-interpret-cst)
                              (t (lambda (cst env)
-                                  (funcall (bir-compile-cst-in-env (wrap-cst cst) env))))))
-      (cond (core:*use-interpreter-for-eval*
-             (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
-            (*use-ast-interpreter* (ast-interpret-cst cst env))
-            (t (funcall (bir-compile-cst-in-env (wrap-cst cst) env))))))
+                                  (funcall (bir-compile-cst-in-env (wrap-cst cst) env)))))))
+        (core:*use-interpreter-for-eval*
+         (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
+        (*use-ast-interpreter* (ast-interpret-cst cst env))
+        (t (funcall (bir-compile-cst-in-env (wrap-cst cst) env)))))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
   (cleavir-environment:cst-eval cst env *clasp-env* system))
