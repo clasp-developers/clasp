@@ -42,9 +42,10 @@
   (let ((designator (macroexpand designator env)))
     (cond ((function-form-p designator) designator)
           ((constantp designator env)
-           (if (symbolp (ext:constant-form-value designator env))
-               `(fdefinition ,designator)
-               form))
+           (let ((value (ext:constant-form-value designator env)))
+             (cond ((symbolp value) `(fdefinition ,designator))
+                   ((functionp value) value)
+                   (t form))))
           (t form))))
 
 (define-compiler-macro not (objectf)
