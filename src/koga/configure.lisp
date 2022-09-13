@@ -600,26 +600,28 @@ is not compatible with snapshots.")
                                                                :scraper)
                                                          :update-unicode
                                                          (list (make-source #P"update-unicode.lisp" :build))
-                                                         :run-aclasp
-                                                         (list (make-source #P"run-aclasp.lisp" :build))
-                                                         :compile-aclasp
-                                                         (list (make-source #P"compile-aclasp.lisp" :build))
-                                                         :compile-bclasp
-                                                         (list (make-source #P"compile-bclasp.lisp" :build))
+                                                         ;:run-aclasp
+                                                         ;(list (make-source #P"run-aclasp.lisp" :build))
+                                                         ;:compile-aclasp
+                                                         ;(list (make-source #P"compile-aclasp.lisp" :build))
+                                                         ;:compile-bclasp
+                                                         ;(list (make-source #P"compile-bclasp.lisp" :build))
+                                                         ;:compile-cclasp
+                                                         ;(list (make-source #P"compile-cclasp.lisp" :build))
+                                                         ;:compile-eclasp
+                                                         ;(list (make-source #P"compile-eclasp.lisp" :build))
+                                                         ;:load-mclasp
+                                                         ;(list (make-source #P"load-mclasp.lisp" :build))
+                                                         :load-cclasp
+                                                         (list (make-source #P"load-cclasp.lisp" :build))
+                                                         :snapshot-vclasp
+                                                         (list (make-source #P"snapshot-cclasp.lisp" :build))
+                                                         ;:compile-mclasp
+                                                         ;(list (make-source #P"compile-mclasp.lisp" :build))
                                                          :compile-cclasp
                                                          (list (make-source #P"compile-cclasp.lisp" :build))
                                                          :compile-eclasp
                                                          (list (make-source #P"compile-eclasp.lisp" :build))
-                                                         :load-mclasp
-                                                         (list (make-source #P"load-mclasp.lisp" :build))
-                                                         :load-vclasp
-                                                         (list (make-source #P"load-vclasp.lisp" :build))
-                                                         :snapshot-vclasp
-                                                         (list (make-source #P"snapshot-vclasp.lisp" :build))
-                                                         :compile-mclasp
-                                                         (list (make-source #P"compile-mclasp.lisp" :build))
-                                                         :compile-vclasp
-                                                         (list (make-source #P"compile-vclasp.lisp" :build))
                                                          :compile-module
                                                          (list (make-source #P"compile-module.lisp" :build))
                                                          :link-fasl
