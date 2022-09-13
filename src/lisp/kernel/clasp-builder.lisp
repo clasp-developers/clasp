@@ -132,7 +132,6 @@ Return files."
      done)
     (nreverse files)))
 
-
 (defun output-object-pathnames (start end &key system (output-type core:*clasp-build-mode*))
   (let ((sources (select-source-files start end :system system)))
     (mapcar #'(lambda (f &aux (fn (entry-filename f))) (bitcode-pathname fn output-type)) sources)))
@@ -152,21 +151,14 @@ Return files."
           sources)
     (nreverse out-of-dates)))
 
-(defun out-of-date-system (system &aux out-of-date file (write-date 0) bitcode)
-  (tagbody
-   next
-    (if system
-        (progn
-          (setq file (car system)
-                system (cdr system)
-                write-date (max write-date (file-write-date file))
-                bitcode (bitcode-pathname file))
-          (if (or (not (probe-file bitcode))
-                  (< (file-write-date bitcode)
-                     write-date))
-              (setq out-of-date (cons file out-of-date)))
-          (go next))))
-  (nreverse out-of-date))
+(defun out-of-date-system (system &aux (write-date 0))
+  (mapcan #'(lambda (file &aux (bitcode (bitcode-pathname file)))
+              (setq write-date (max write-date (file-write-date file)))
+              (if (or (not (probe-file bitcode))
+                      (< (file-write-date bitcode)
+                         write-date))
+                  (list file)))
+          system))
 
 (defun source-file-names (start end)
   (let ((sout (make-string-output-stream))
