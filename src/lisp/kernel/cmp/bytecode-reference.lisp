@@ -689,6 +689,8 @@
     ((eq head 'eval-when) (compile-eval-when (first rest) (rest rest) env context))
     ((eq head 'the) ; don't do anything.
      (compile-form (second rest) env context))
+    ((eq head 'cleavir-primop::funcall)
+     (compile-funcall (second rest) env context))
     (t ; function call or macro
      (cond
        ((symbolp head)
@@ -743,6 +745,10 @@
       (core:process-declarations body nil)
     (declare (ignore decls docs))
     (compile-progn body (if specials (add-specials specials env) env) context)))
+
+(defun compile-funcall (callee args env context)
+  (compile-form callee env (context/sub context 1))
+  (compile-call args env context))
 
 (defun compile-eval-when (situations body env context)
   (if (or (member 'cl:eval situations) (member :execute situations))

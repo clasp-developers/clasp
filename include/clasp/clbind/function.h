@@ -81,7 +81,10 @@ private:
 
 namespace clbind {
 
-template <typename FunctionPtrType, typename Policies, typename PureOuts>
+struct LambdaListHandler {};
+struct Simple {};
+
+template <typename FunctionPtrType, typename Policies, typename PureOuts, typename ArgumentHandling=LambdaListHandler>
 class TEMPLATED_FUNCTION_VariadicFunctor : public core::BuiltinClosure_O {
 public:
   typedef core::BuiltinClosure_O TemplatedBase;
@@ -104,9 +107,9 @@ class my_tuple : public std::tuple<Types...> {
 };
 
 template <typename Pols, typename RT, typename...ARGS, typename...PUREOUTS>
-class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>,LambdaListHandler> : public core::BuiltinClosure_O {
 public:
-  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>> MyType;
+  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, LambdaListHandler> MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -174,9 +177,9 @@ public:
 
 
   template <typename RT  ,typename...ARGS>
-  class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>> : public core::BuiltinClosure_O {
+  class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,LambdaListHandler> : public core::BuiltinClosure_O {
 public:
-    typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>> MyType;
+    typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,LambdaListHandler> MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -239,6 +242,75 @@ public:
   }
 
 };
+
+
+
+//
+//
+// Simple wrapper, no LambdaListHandler
+//
+//
+  template <typename RT  ,typename...ARGS>
+  class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,Simple> : public core::BuiltinClosure_O {
+public:
+    typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,Simple> MyType;
+  typedef core::BuiltinClosure_O TemplatedBase;
+public:
+  typedef RT(*FuncType)(ARGS...);
+  FuncType fptr;
+public:
+  virtual const char* describe() const { return "VariadicFunctor"; };
+  enum { NumParams = sizeof...(ARGS)};
+    TEMPLATED_FUNCTION_VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr) : core::BuiltinClosure_O(ep), fptr(ptr) {
+        this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
+    };
+  virtual size_t templatedSizeof() const { return sizeof(*this);};
+    virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup ) {
+    this->fixupOneCodePointer( fixup, (void**)&this->fptr, sizeof(this->fptr) );
+  }
+  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+  {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    core::MultipleValues& returnValues = core::lisp_multipleValues();
+    std::tuple<translate::from_object<ARGS>...> all_args(arg_tuple<0,policies<>,ARGS...>::goFrame(lcc_args));
+    return clasp_apply_and_return<RT,core::policy::clasp,decltype(closure->fptr),decltype(all_args)>::go(returnValues,std::move(closure->fptr),std::move(all_args));
+  }
+      static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
+};
+
+
+
+
+
+
+
+
+
+
 };
 
 namespace clbind {
@@ -246,9 +318,15 @@ namespace clbind {
 };
 
 template <typename FunctionPtrType, typename Policies, typename PureOutsPack>
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack>> {
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::LambdaListHandler>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack>::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::LambdaListHandler >::TemplatedBase>::StampWtag;
+};
+
+template <typename FunctionPtrType, typename Policies, typename PureOutsPack>
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::Simple>> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::Simple>::TemplatedBase>::StampWtag;
 };
 
 namespace clbind {

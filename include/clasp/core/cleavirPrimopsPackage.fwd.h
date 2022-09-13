@@ -28,6 +28,6 @@ THE SOFTWARE.
 #define cleavirPrimopsPackage_fwd_H
 
 //PACKAGE_USE("COMMON-LISP");
-NAMESPACE_PACKAGE_ASSOCIATION(cleavirPrimops, CleavirPrimopsPkg, "CLEAVIR-PRIMOP")
+NAMESPACE_PACKAGE_ASSOCIATION(cleavirPrimop, CleavirPrimopPkg, "CLEAVIR-PRIMOP")
 
 #endif

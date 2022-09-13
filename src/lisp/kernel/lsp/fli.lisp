@@ -52,7 +52,7 @@
   (cond
     ((not ptr)
      (format t "#'ensure-core-pointer *** Illegal argument value: PTR may not be NIL - fn = ~a info = ~a!~%" fn info)
-     (gctools:wait-for-user-signal "Send SIGUSR1 to continue")
+     (gctools:wait-for-user-signal "Bad ensure-core-pointer Send SIGUSR1 to continue")
      (error "#'ensure-core-ptr *** Illegal argument value: PTR may not be NIL!"))
     ((eql (type-of ptr) 'CLASP-FFI::FOREIGN-DATA) (%core-pointer-from-foreign-data ptr ))
     ((eql (type-of ptr) 'CORE::POINTER) ptr)

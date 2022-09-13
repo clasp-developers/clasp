@@ -698,6 +698,22 @@ CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
   return nil<T_O>();
 }
 
+CL_UNWIND_COOP(true);
+DOCGROUP(clasp)
+CL_DEFUN List_sp core__alist_assoc_equal(List_sp alist, T_sp key) {
+  if (alist.consp()) {
+    for ( auto cur : alist ) {
+      T_sp pair = CONS_CAR(cur);
+      if (pair.consp()) {
+        if (cl__equal(CONS_CAR(pair),key)) return pair;
+      } else {
+        not_alist_error(alist);
+      }
+    }
+  }
+  return nil<T_O>();
+}
+
 
 SYMBOL_EXPORT_SC_(CorePkg, cons_length);
 SYMBOL_EXPORT_SC_(ClPkg, make_list);

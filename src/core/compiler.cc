@@ -1866,7 +1866,7 @@ void initialize_compiler_primitives(LispPtr lisp) {
   llvmo::initialize_raw_translators(); // See file intrinsics.cc!
 
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default);
-  cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
+  cleavirPrimop::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
   comp::_sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
 
   return;
@@ -1975,7 +1975,35 @@ struct WrapEntryPoint {
   }
 };
 
-CL_DEFUN GlobalBytecodeEntryPoint_sp core__test_wrap(T_sp lambda_list) {
+#if 0
+template <typename RT, typename ... ARGS>
+void my_wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), List_sp lambda_list, List_sp vars ) {
+   maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
+   Symbol_sp symbol = _lisp->intern(name, packageName);
+   using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp,clbind::pureOutsPack<>,clbind::Simple>;
+   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>( symbol ,nil<core::T_O>());
+   BuiltinClosure_sp entry = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
+   lisp_bytecode_defun(symbol, packageName, entry, t, "", "", 0, sizeof...(ARGS));
+   validateFunctionDescription( __FILE__, __LINE__, func );
+ }
+
+
+List_sp core__my_make_list(size_t osize, T_sp initial_element) {
+  // Might be a negative Fixnum, take the right type, size_t is unsigned
+  T_sp result = nil<T_O>();
+  for (size_t i = 0; i < osize; i++) {
+    result = gctools::ConsAllocator<gctools::RuntimeStage,Cons_O,gctools::DontRegister>::allocate(initial_element,result);
+  }
+  size_t cons_size = gctools::ConsSizeCalculator<gctools::RuntimeStage,Cons_O,gctools::DontRegister>::value();
+  my_thread_low_level->_Allocations.registerAllocation(gctools::STAMPWTAG_CONS,osize*cons_size);
+  return result;
+};
+
+CL_DEFUN void core__test_wrap() {
+
+  List_sp lambda_list = Cons_O::createList(INTERN_(core,thesize), cl::_sym_AMPoptional, Cons_O::createList(INTERN_(core,theinitial),core::clasp_make_fixnum(1234)));
+  printf("%s:%d:%s lambda_list = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lambda_list).c_str() );
+  
   gctools::Vec0<RequiredArgument> reqs;
   gctools::Vec0<OptionalArgument> optionals;
   gctools::Vec0<KeywordArgument> keys;
@@ -1994,17 +2022,33 @@ CL_DEFUN GlobalBytecodeEntryPoint_sp core__test_wrap(T_sp lambda_list) {
                     allow_other_keys,
                     auxs);
   T_sp vars = lexical_variable_names(reqs,optionals,restarg,keys,auxs);
+
+  my_wrap_function("CORE","MY-MAKE-LIST", core__my_make_list, lambda_list, vars );
+  
+#if 0
   ClaspXepFunction xep;
   xep.setup<WrapEntryPoint>();
   FunctionDescription_sp fdesc = makeFunctionDescription(INTERN_(core,test_wrapper));
   auto entryPoint = gctools::GC<GlobalEntryPoint_O>::allocate( fdesc, xep, nil<T_O>(), nil<T_O>());
+
+
+
+  using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp,clbind::pureOutsPack<>,clbind::Simple>;
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>( INTERN_(core,test_wrapper), nil<core::T_O>());
+  BuiltinClosure_sp f = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
+
+
+
+  
   ql::list form;
   form << cl::_sym_lambda;
   form << lambda_list;
   form << Cons_O::create(cl::_sym_funcall,Cons_O::create(entryPoint, vars));
   printf("%s:%d:%s wrapper: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form.cons()).c_str() );
   return comp::bytecompile(form.cons(),comp::Lexenv_O::make_top_level());
+#endif
 };
+#endif
 
 
 };

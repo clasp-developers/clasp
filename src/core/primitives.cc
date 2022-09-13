@@ -154,7 +154,7 @@ CL_DEFUN T_sp core__interpreter_symbols() {
 #define ServeEventPkg_SYMBOLS
 #define CompPkg_SYMBOLS
 #define CleavirEnvPkg_SYMBOLS
-#define CleavirPrimopsPkg_SYMBOLS
+#define CleavirPrimopPkg_SYMBOLS
 #define ClosPkg_SYMBOLS
 #define GrayPkg_SYMBOLS
 #define ClcenvPkg_SYMBOLS
@@ -175,7 +175,7 @@ CL_DEFUN T_sp core__interpreter_symbols() {
 #undef ServeEventPkg_SYMBOLS
 #undef CompPkg_SYMBOLS
 #undef CleavirEnvPkg_SYMBOLS
-#undef CleavirPrimopsPkg_SYMBOLS
+#undef CleavirPrimopPkg_SYMBOLS
 #undef ClosPkg_SYMBOLS
 #undef GrayPkg_SYMBOLS
 #undef ClcenvPkg_SYMBOLS

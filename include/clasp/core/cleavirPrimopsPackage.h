@@ -30,9 +30,9 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/cleavirPrimopsPackage.fwd.h>
 
-namespace cleavirPrimops {
+namespace cleavirPrimop {
 
-void initialize_cleavirPrimopsPackage();
+void initialize_cleavirPrimopPackage();
 };
 
 #endif

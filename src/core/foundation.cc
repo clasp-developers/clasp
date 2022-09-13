@@ -61,6 +61,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/array.h>
+#include <clasp/core/bytecode_compiler.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/wrappedPointer.h>
@@ -895,9 +896,22 @@ void lisp_addClass(Symbol_sp classSymbol) {
   //	_lisp->addClass(classSymbol);
 }
 
-List_sp lisp_parse_arguments(const string &packageName, const string &args) {
-  if (args == "")
-    return nil<T_O>();
+List_sp lisp_parse_arguments(const string &packageName, const string &args, int number_of_required_arguments, const std::set<int> skip_indices ) {
+  if (args == "") {
+    // If args is "" then cook up arguments using number_of_required_arguments and skip_indices
+    ql::list args;
+    int num = 0;
+    for ( int idx=0; idx< number_of_required_arguments; idx++) {
+      if (!skip_indices.contains(idx)) {
+        stringstream ss;
+        ss << "ARG" << num;
+        num++;
+        Symbol_sp arg_sym = _lisp->intern(ss.str(),packageName);
+        args << arg_sym;
+      }
+    }
+    return args.cons();
+  }
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(args);
@@ -911,6 +925,29 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   List_sp sscons = osscons;
   return sscons;
 }
+
+List_sp lisp_lexical_variable_names(List_sp lambda_list) {
+  gctools::Vec0<RequiredArgument> reqs;
+  gctools::Vec0<OptionalArgument> optionals;
+  gctools::Vec0<KeywordArgument> keys;
+  gctools::Vec0<AuxArgument> auxs;
+  RestArgument restarg;
+  T_sp key_flag;
+  T_sp allow_other_keys;
+  T_sp decl_dict = nil<T_O>();
+  parse_lambda_list(lambda_list,
+                    cl::_sym_function,
+                    reqs,
+                    optionals,
+                    restarg,
+                    key_flag,
+                    keys,
+                    allow_other_keys,
+                    auxs);
+  T_sp vars = lexical_variable_names(reqs,optionals,restarg,keys,auxs);
+  return vars;
+}
+
 
 List_sp lisp_parse_declares(const string &packageName, const string &declarestring) {
   if (declarestring == "")
@@ -1105,15 +1142,49 @@ void lisp_defun_setf(Symbol_sp sym,
   }
   fc->finishSetup(llh);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
-  T_sp tdocstring = nil<T_O>();
-  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
-  fc->setf_sourcePathname(nil<T_O>());
-  fc->setf_lambdaList(llh->lambdaList());
-  fc->setf_docstring(tdocstring);
   Function_sp func = fc;
   sym->setSetfFdefinition(func);
   sym->exportYourself();
+  T_sp tdocstring = nil<T_O>();
+  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
+  fc->setf_lambdaList(llh->lambdaList());
+  fc->setf_docstring(tdocstring);
 }
+
+
+void lisp_bytecode_defun(SymbolFunctionEnum kind,
+                         Symbol_sp sym,
+                         const string &packageName,
+                         BuiltinClosure_sp entry,
+                         const string& arguments,
+                         const string& declares,
+                         const string &docstring,
+                         const string &sourceFile,
+                         int lineNumber,
+                         int numberOfRequiredArguments,
+                         const std::set<int> &skipIndices)
+{
+  List_sp lambda_list = lisp_parse_arguments(packageName, arguments,numberOfRequiredArguments,skipIndices);
+  List_sp vars = lisp_lexical_variable_names(lambda_list);
+  List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ) );
+//  printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
+  List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,funcall_form);
+//  printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
+  auto func = comp::bytecompile( form,comp::Lexenv_O::make_top_level());
+  func->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
+  if (kind==symbol_function) {
+    sym->setf_symbolFunction(func);
+  } else if (kind==symbol_function_setf) {
+    sym->setSetfFdefinition(func);
+  }
+  sym->exportYourself();
+  T_sp tdocstring = nil<T_O>();
+  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
+  func->setf_lambdaList(lambda_list);
+  func->setf_docstring(tdocstring);
+  validateFunctionDescription( __FILE__, __LINE__, func );
+}
+
 
 void lisp_defmacro(Symbol_sp sym,
                    const string &packageName,
