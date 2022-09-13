@@ -628,15 +628,13 @@ CL_DEFUN core::T_mv llvm_sys__installBacktraceTrampoline() {
 
 
 
-
-; ModuleID = 'tramp.bc'
-source_filename = "tramp.cc"
+; ModuleID = 'trampoline.bc'
+source_filename = "trampoline.cc"
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-pc-linux-gnu"
 
 @__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
 @__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
-
 @_ZL16global_save_args = internal unnamed_addr global i64* null, align 8, !dbg !0
 
 ; Function Attrs: mustprogress uwtable
@@ -648,7 +646,7 @@ define dso_local { i8*, i64 } @interpreter_trampoline_with_stackmap({ i8*, i64 }
   call void @llvm.dbg.value(metadata i64 %2, metadata !119, metadata !DIExpression()), !dbg !125
   call void @llvm.dbg.value(metadata i8** %3, metadata !120, metadata !DIExpression()), !dbg !125
   %6 = bitcast [3 x i64]* %5 to i8*, !dbg !126
-  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %6) #4, !dbg !126
+  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %6) #5, !dbg !126
   call void @llvm.dbg.declare(metadata [3 x i64]* %5, metadata !121, metadata !DIExpression()), !dbg !127
   %7 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 0, !dbg !128
   %8 = ptrtoint i8* %1 to i64, !dbg !134
@@ -659,7 +657,7 @@ define dso_local { i8*, i64 } @interpreter_trampoline_with_stackmap({ i8*, i64 }
   %11 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 2, !dbg !141
   store i64 %10, i64* %11, align 16, !dbg !142, !tbaa !136
   %12 = call { i8*, i64 } %0(i8* noundef %1, i64 noundef %2, i8** noundef %3), !dbg !143
-  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %6) #4, !dbg !144
+  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %6) #5, !dbg !144
   ret { i8*, i64 } %12, !dbg !144
 }
 
@@ -673,56 +671,57 @@ declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #2
 declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #2
 
 ; Function Attrs: mustprogress uwtable
-define dso_local { i8*, i64 } @bytecode_trampoline_with_stackmap({ i8*, i64 } (i64, i8*, i64, i8**)* nocapture noundef readonly %0, i64 noundef %1, i8* noundef %2, i64 noundef %3, i8** noundef %4) local_unnamed_addr #0 !dbg !145 {
-  %6 = alloca [3 x i64], align 16
-  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %6)
-  call void @llvm.dbg.value(metadata { i8*, i64 } (i64, i8*, i64, i8**)* %0, metadata !153, metadata !DIExpression()), !dbg !159
-  call void @llvm.dbg.value(metadata i64 %1, metadata !154, metadata !DIExpression()), !dbg !159
-  call void @llvm.dbg.value(metadata i8* %2, metadata !155, metadata !DIExpression()), !dbg !159
-  call void @llvm.dbg.value(metadata i64 %3, metadata !156, metadata !DIExpression()), !dbg !159
-  call void @llvm.dbg.value(metadata i8** %4, metadata !157, metadata !DIExpression()), !dbg !159
-  %7 = bitcast [3 x i64]* %6 to i8*, !dbg !160
-  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %7) #4, !dbg !160
-  call void @llvm.dbg.declare(metadata [3 x i64]* %6, metadata !158, metadata !DIExpression()), !dbg !161
-  %8 = getelementptr inbounds [3 x i64], [3 x i64]* %6, i64 0, i64 0, !dbg !162
-  store i64* %8, i64** @_ZL16global_save_args, align 8, !dbg !163, !tbaa !130
-  %9 = ptrtoint i8* %2 to i64, !dbg !164
-  store i64 %9, i64* %8, align 16, !dbg !165, !tbaa !136
-  %10 = getelementptr inbounds [3 x i64], [3 x i64]* %6, i64 0, i64 1, !dbg !166
-  store i64 %3, i64* %10, align 8, !dbg !167, !tbaa !136
-  %11 = ptrtoint i8** %4 to i64, !dbg !168
-  %12 = getelementptr inbounds [3 x i64], [3 x i64]* %6, i64 0, i64 2, !dbg !169
-  store i64 %11, i64* %12, align 16, !dbg !170, !tbaa !136
-  %13 = call { i8*, i64 } %0(i64 noundef %1, i8* noundef %2, i64 noundef %3, i8** noundef %4), !dbg !171
-  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %7) #4, !dbg !172
-  ret { i8*, i64 } %13, !dbg !172
+define dso_local { i8*, i64 } @bytecode_trampoline_with_stackmap(i64 noundef %0, i8* noundef %1, i64 noundef %2, i8** noundef %3) local_unnamed_addr #0 !dbg !145 {
+  %5 = alloca [3 x i64], align 16
+  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %5)
+  call void @llvm.dbg.value(metadata i64 %0, metadata !149, metadata !DIExpression()), !dbg !154
+  call void @llvm.dbg.value(metadata i8* %1, metadata !150, metadata !DIExpression()), !dbg !154
+  call void @llvm.dbg.value(metadata i64 %2, metadata !151, metadata !DIExpression()), !dbg !154
+  call void @llvm.dbg.value(metadata i8** %3, metadata !152, metadata !DIExpression()), !dbg !154
+  %6 = bitcast [3 x i64]* %5 to i8*, !dbg !155
+  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %6) #5, !dbg !155
+  call void @llvm.dbg.declare(metadata [3 x i64]* %5, metadata !153, metadata !DIExpression()), !dbg !156
+  %7 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 0, !dbg !157
+  %8 = ptrtoint i8* %1 to i64, !dbg !159
+  store i64 %8, i64* %7, align 16, !dbg !160, !tbaa !136
+  %9 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 1, !dbg !161
+  store i64 %2, i64* %9, align 8, !dbg !162, !tbaa !136
+  %10 = ptrtoint i8** %3 to i64, !dbg !163
+  %11 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 2, !dbg !164
+  store i64 %10, i64* %11, align 16, !dbg !165, !tbaa !136
+  %12 = call { i8*, i64 } @bytecode_call(i64 noundef %0, i8* noundef %1, i64 noundef %2, i8** noundef %3), !dbg !166
+  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %6) #5, !dbg !167
+  ret { i8*, i64 } %12, !dbg !167
 }
 
+declare !dbg !168 { i8*, i64 } @bytecode_call(i64 noundef, i8* noundef, i64 noundef, i8** noundef) local_unnamed_addr #3
+
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind readnone uwtable willreturn
-define dso_local void @"CLASP_STARTUP_trampoline"() local_unnamed_addr #3 !dbg !173 {
-  ret void, !dbg !177
+define dso_local void @"CLASP_STARTUP_trampoline"() local_unnamed_addr #4 !dbg !170 {
+  ret void, !dbg !173
 }
+
+declare void @llvm.experimental.stackmap(i64, i32, ...) #6
 
 ; Function Attrs: nofree nosync nounwind readnone speculatable willreturn
 declare void @llvm.dbg.value(metadata, metadata, metadata) #1
 
-declare void @llvm.experimental.stackmap(i64, i32, ...) #5
-
 attributes #0 = { mustprogress uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 attributes #1 = { nofree nosync nounwind readnone speculatable willreturn }
 attributes #2 = { argmemonly nofree nosync nounwind willreturn }
-attributes #3 = { mustprogress nofree norecurse nosync nounwind readnone uwtable willreturn "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #4 = { nounwind }
-attributes #5 = { nofree nosync willreturn }
+attributes #3 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #4 = { mustprogress nofree norecurse nosync nounwind readnone uwtable willreturn "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #5 = { nounwind }
+attributes #6 = { nofree nosync willreturn }
 
 !llvm.dbg.cu = !{!2}
 !llvm.module.flags = !{!96, !97, !98, !99, !100, !101, !102}
 !llvm.ident = !{!103}
 
 !0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
-!1 = distinct !DIGlobalVariable(name: "global_save_args", linkageName: "_ZL16global_save_args", scope: !2, file: !3, line: 16, type: !95, isLocal: true, isDefinition: true)
-!2 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus_14, file: !3, producer: "Debian clang version 14.0.5-1", isOptimized: true, runtimeVersion: 0, emissionKind: FullDebug, retainedTypes: !4, globals: !8, imports: !9, splitDebugInlining: false, nameTableKind: None)
-!3 = !DIFile(filename: "tramp.cc", directory: "/home/meister/Development/test", checksumkind: CSK_MD5, checksum: "49060c7d2e01d12d9ead23bfc349ca08")
+!1 = distinct !DIGlobalVariable(name: "global_save_args", linkageName: "_ZL16global_save_args", scope: !2, file: !3, line: 104, type: !95, isLocal: true, isDefinition: true)
+!2 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus_14, file: !3, producer: "Debian clang version 14.0.6-2", isOptimized: true, runtimeVersion: 0, emissionKind: FullDebug, retainedTypes: !4, globals: !8, imports: !9, splitDebugInlining: false, nameTableKind: None)
+!3 = !DIFile(filename: "trampoline.cc", directory: "/home/meister/Development/clasp-vm/src/core/trampoline", checksumkind: CSK_MD5, checksum: "f8b494ea176a734cff65e2a2727ff77f")
 !4 = !{!5}
 !5 = !DIDerivedType(tag: DW_TAG_typedef, name: "uintptr_t", file: !6, line: 90, baseType: !7)
 !6 = !DIFile(filename: "/usr/include/stdint.h", directory: "", checksumkind: CSK_MD5, checksum: "8e56ab3ccd56760d8ae9848ebf326071")
@@ -736,7 +735,7 @@ attributes #5 = { nofree nosync willreturn }
 !14 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int8_t", file: !15, line: 37, baseType: !16)
 !15 = !DIFile(filename: "/usr/include/x86_64-linux-gnu/bits/types.h", directory: "", checksumkind: CSK_MD5, checksum: "58b79843d97f4309eefa4aa722dac91e")
 !16 = !DIBasicType(name: "signed char", size: 8, encoding: DW_ATE_signed_char)
-!17 = !DIFile(filename: "/usr/bin/../lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/cstdint", directory: "")
+!17 = !DIFile(filename: "/usr/bin/../lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/cstdint", directory: "")
 !18 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !19, file: !17, line: 48)
 !19 = !DIDerivedType(tag: DW_TAG_typedef, name: "int16_t", file: !13, line: 25, baseType: !20)
 !20 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int16_t", file: !15, line: 39, baseType: !21)
@@ -822,83 +821,77 @@ attributes #5 = { nofree nosync willreturn }
 !100 = !{i32 7, !"PIE Level", i32 2}
 !101 = !{i32 7, !"uwtable", i32 1}
 !102 = !{i32 7, !"frame-pointer", i32 2}
-!103 = !{!"Debian clang version 14.0.5-1"}
-!104 = distinct !DISubprogram(name: "interpreter_trampoline_with_stackmap", scope: !3, file: !3, line: 21, type: !105, scopeLine: 21, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !2, retainedNodes: !116)
+!103 = !{!"Debian clang version 14.0.6-2"}
+!104 = distinct !DISubprogram(name: "interpreter_trampoline_with_stackmap", scope: !3, file: !3, line: 109, type: !105, scopeLine: 109, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !2, retainedNodes: !116)
 !105 = !DISubroutineType(types: !106)
 !106 = !{!107, !108, !112, !113, !115}
-!107 = !DICompositeType(tag: DW_TAG_structure_type, name: "return_type", file: !3, line: 5, size: 128, flags: DIFlagFwdDecl | DIFlagNonTrivial, identifier: "_ZTS11return_type")
+!107 = !DICompositeType(tag: DW_TAG_structure_type, name: "return_type", file: !3, line: 93, size: 128, flags: DIFlagFwdDecl | DIFlagNonTrivial, identifier: "_ZTS11return_type")
 !108 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !109, size: 64)
-!109 = !DIDerivedType(tag: DW_TAG_typedef, name: "interpreter_trampoline_type", file: !3, line: 13, baseType: !110)
+!109 = !DIDerivedType(tag: DW_TAG_typedef, name: "interpreter_trampoline_type", file: !3, line: 101, baseType: !110)
 !110 = !DISubroutineType(types: !111)
 !111 = !{!107, !112, !113, !115}
 !112 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
-!113 = !DIDerivedType(tag: DW_TAG_typedef, name: "size_t", scope: !11, file: !114, line: 280, baseType: !7)
-!114 = !DIFile(filename: "/usr/bin/../lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11/bits/c++config.h", directory: "", checksumkind: CSK_MD5, checksum: "31794b833f20f0d7c3ab3d747015fc6f")
+!113 = !DIDerivedType(tag: DW_TAG_typedef, name: "size_t", scope: !11, file: !114, line: 298, baseType: !7)
+!114 = !DIFile(filename: "/usr/bin/../lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h", directory: "", checksumkind: CSK_MD5, checksum: "e442060cb5d8ef14615f2a1f144d5d0b")
 !115 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !112, size: 64)
 !116 = !{!117, !118, !119, !120, !121}
-!117 = !DILocalVariable(name: "fn", arg: 1, scope: !104, file: !3, line: 21, type: !108)
-!118 = !DILocalVariable(name: "closure", arg: 2, scope: !104, file: !3, line: 21, type: !112)
-!119 = !DILocalVariable(name: "nargs", arg: 3, scope: !104, file: !3, line: 21, type: !113)
-!120 = !DILocalVariable(name: "args", arg: 4, scope: !104, file: !3, line: 21, type: !115)
-!121 = !DILocalVariable(name: "sa", scope: !104, file: !3, line: 22, type: !122)
+!117 = !DILocalVariable(name: "fn", arg: 1, scope: !104, file: !3, line: 109, type: !108)
+!118 = !DILocalVariable(name: "closure", arg: 2, scope: !104, file: !3, line: 109, type: !112)
+!119 = !DILocalVariable(name: "nargs", arg: 3, scope: !104, file: !3, line: 109, type: !113)
+!120 = !DILocalVariable(name: "args", arg: 4, scope: !104, file: !3, line: 109, type: !115)
+!121 = !DILocalVariable(name: "trampoline_save_args", scope: !104, file: !3, line: 110, type: !122)
 !122 = !DICompositeType(tag: DW_TAG_array_type, baseType: !69, size: 192, elements: !123)
 !123 = !{!124}
 !124 = !DISubrange(count: 3)
 !125 = !DILocation(line: 0, scope: !104)
-!126 = !DILocation(line: 22, column: 5, scope: !104)
-!127 = !DILocation(line: 22, column: 14, scope: !104)
-!128 = !DILocation(line: 23, column: 24, scope: !104)
-!129 = !DILocation(line: 23, column: 22, scope: !104)
+!126 = !DILocation(line: 110, column: 5, scope: !104)
+!127 = !DILocation(line: 110, column: 14, scope: !104)
+!128 = !DILocation(line: 111, column: 24, scope: !104)
+!129 = !DILocation(line: 111, column: 22, scope: !104)
 !130 = !{!131, !131, i64 0}
 !131 = !{!"any pointer", !132, i64 0}
 !132 = !{!"omnipotent char", !133, i64 0}
 !133 = !{!"Simple C++ TBAA"}
-!134 = !DILocation(line: 24, column: 13, scope: !104)
-!135 = !DILocation(line: 24, column: 11, scope: !104)
+!134 = !DILocation(line: 112, column: 31, scope: !104)
+!135 = !DILocation(line: 112, column: 29, scope: !104)
 !136 = !{!137, !137, i64 0}
 !137 = !{!"long", !132, i64 0}
-!138 = !DILocation(line: 25, column: 5, scope: !104)
-!139 = !DILocation(line: 25, column: 11, scope: !104)
-!140 = !DILocation(line: 26, column: 13, scope: !104)
-!141 = !DILocation(line: 26, column: 5, scope: !104)
-!142 = !DILocation(line: 26, column: 11, scope: !104)
-!143 = !DILocation(line: 27, column: 12, scope: !104)
-!144 = !DILocation(line: 28, column: 3, scope: !104)
-!145 = distinct !DISubprogram(name: "bytecode_trampoline_with_stackmap", scope: !3, file: !3, line: 30, type: !146, scopeLine: 30, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !2, retainedNodes: !152)
+!138 = !DILocation(line: 113, column: 5, scope: !104)
+!139 = !DILocation(line: 113, column: 29, scope: !104)
+!140 = !DILocation(line: 114, column: 31, scope: !104)
+!141 = !DILocation(line: 114, column: 5, scope: !104)
+!142 = !DILocation(line: 114, column: 29, scope: !104)
+!143 = !DILocation(line: 115, column: 12, scope: !104)
+!144 = !DILocation(line: 116, column: 3, scope: !104)
+!145 = distinct !DISubprogram(name: "bytecode_trampoline_with_stackmap", scope: !3, file: !3, line: 120, type: !146, scopeLine: 120, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !2, retainedNodes: !148)
 !146 = !DISubroutineType(types: !147)
-!147 = !{!107, !148, !69, !112, !113, !115}
-!148 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !149, size: 64)
-!149 = !DIDerivedType(tag: DW_TAG_typedef, name: "bytecode_trampoline_type", file: !3, line: 14, baseType: !150)
-!150 = !DISubroutineType(types: !151)
-!151 = !{!107, !69, !112, !113, !115}
-!152 = !{!153, !154, !155, !156, !157, !158}
-!153 = !DILocalVariable(name: "fn", arg: 1, scope: !145, file: !3, line: 30, type: !148)
-!154 = !DILocalVariable(name: "pc", arg: 2, scope: !145, file: !3, line: 30, type: !69)
-!155 = !DILocalVariable(name: "closure", arg: 3, scope: !145, file: !3, line: 30, type: !112)
-!156 = !DILocalVariable(name: "nargs", arg: 4, scope: !145, file: !3, line: 30, type: !113)
-!157 = !DILocalVariable(name: "args", arg: 5, scope: !145, file: !3, line: 30, type: !115)
-!158 = !DILocalVariable(name: "sa", scope: !145, file: !3, line: 31, type: !122)
-!159 = !DILocation(line: 0, scope: !145)
-!160 = !DILocation(line: 31, column: 5, scope: !145)
-!161 = !DILocation(line: 31, column: 14, scope: !145)
-!162 = !DILocation(line: 32, column: 24, scope: !145)
-!163 = !DILocation(line: 32, column: 22, scope: !145)
-!164 = !DILocation(line: 33, column: 13, scope: !145)
-!165 = !DILocation(line: 33, column: 11, scope: !145)
-!166 = !DILocation(line: 34, column: 5, scope: !145)
-!167 = !DILocation(line: 34, column: 11, scope: !145)
-!168 = !DILocation(line: 35, column: 13, scope: !145)
-!169 = !DILocation(line: 35, column: 5, scope: !145)
-!170 = !DILocation(line: 35, column: 11, scope: !145)
-!171 = !DILocation(line: 36, column: 12, scope: !145)
-!172 = !DILocation(line: 37, column: 3, scope: !145)
-!173 = distinct !DISubprogram(name: "CLASP_STARTUP_trampoline", scope: !3, file: !3, line: 40, type: !174, scopeLine: 41, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !2, retainedNodes: !176)
-!174 = !DISubroutineType(types: !175)
-!175 = !{null}
-!176 = !{}
-!177 = !DILocation(line: 42, column: 3, scope: !173)
-
-
+!147 = !{!107, !69, !112, !113, !115}
+!148 = !{!149, !150, !151, !152, !153}
+!149 = !DILocalVariable(name: "pc", arg: 1, scope: !145, file: !3, line: 120, type: !69)
+!150 = !DILocalVariable(name: "closure", arg: 2, scope: !145, file: !3, line: 120, type: !112)
+!151 = !DILocalVariable(name: "nargs", arg: 3, scope: !145, file: !3, line: 120, type: !113)
+!152 = !DILocalVariable(name: "args", arg: 4, scope: !145, file: !3, line: 120, type: !115)
+!153 = !DILocalVariable(name: "trampoline_save_args", scope: !145, file: !3, line: 121, type: !122)
+!154 = !DILocation(line: 0, scope: !145)
+!155 = !DILocation(line: 121, column: 5, scope: !145)
+!156 = !DILocation(line: 121, column: 14, scope: !145)
+!157 = !DILocation(line: 122, column: 24, scope: !145)
+!158 = !DILocation(line: 122, column: 22, scope: !145)
+!159 = !DILocation(line: 123, column: 31, scope: !145)
+!160 = !DILocation(line: 123, column: 29, scope: !145)
+!161 = !DILocation(line: 124, column: 5, scope: !145)
+!162 = !DILocation(line: 124, column: 29, scope: !145)
+!163 = !DILocation(line: 125, column: 31, scope: !145)
+!164 = !DILocation(line: 125, column: 5, scope: !145)
+!165 = !DILocation(line: 125, column: 29, scope: !145)
+!166 = !DILocation(line: 126, column: 12, scope: !145)
+!167 = !DILocation(line: 127, column: 3, scope: !145)
+!168 = !DISubprogram(name: "bytecode_call", scope: !3, file: !3, line: 118, type: !146, flags: DIFlagPrototyped, spFlags: DISPFlagOptimized, retainedNodes: !169)
+!169 = !{}
+!170 = distinct !DISubprogram(name: "CLASP_STARTUP_trampoline", scope: !3, file: !3, line: 130, type: !171, scopeLine: 131, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !2, retainedNodes: !169)
+!171 = !DISubroutineType(types: !172)
+!172 = !{null}
+!173 = !DILocation(line: 132, column: 3, scope: !170)
 
 
 

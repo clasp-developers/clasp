@@ -495,9 +495,8 @@ struct constructor_registration_base : public registration {
     core::Symbol_sp sym = core::lisp_intern(tname, core::lisp_currentPackageName());
     using VariadicType = VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>;
     core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription<VariadicType>(sym,nil<core::T_O>());
-    core::BuiltinClosure_sp func = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(ep));
-    lisp_defun(sym, core::lisp_currentPackageName(),func, m_arguments, m_declares, m_doc_string, "=external=", 0, CountConstructorArguments<Signature>::value);
-    core::validateFunctionDescription( __FILE__, __LINE__, func );
+    core::BuiltinClosure_sp entry = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(ep));
+    lisp_bytecode_defun( core::symbol_function, sym, core::lisp_currentPackageName(), entry, m_arguments, m_declares, m_doc_string, "=external=", 0, CountConstructorArguments<Signature>::value);
   }
   virtual std::string name() const { return this->m_name;}
   virtual std::string kind() const { return "constructor_registration_base"; };

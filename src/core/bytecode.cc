@@ -1195,40 +1195,46 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
       SIMPLE_ERROR("Unknown LONG sub_opcode %hu", sub_opcode);
   }
 }
+};
 
+extern "C" {
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
 {
-  Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
+  core::Closure_O* closure = gctools::untag_general<core::Closure_O*>((core::Closure_O*)lcc_closure);
   ASSERT(gc::IsA<core::GlobalBytecodeEntryPoint_sp>(closure->entryPoint()));
   auto entry = closure->entryPoint();
   core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(entry);
   DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
   size_t nlocals = entryPoint->localsFrameSize();
-  BytecodeModule_sp module = entryPoint->code();
+  core::BytecodeModule_sp module = entryPoint->code();
   ASSERT(gc::IsA<SimpleVector_sp>(module->literals()));
-  T_O** literals = ((T_O**)gc::As_unsafe<SimpleVector_sp>(module->literals())->
+  core::T_O** literals = ((core::T_O**)gc::As_unsafe<core::SimpleVector_sp>(module->literals())->
                     rowMajorAddressOfElement_(0));
 
-  VirtualMachine& vm = my_thread->_VM;
+  core::VirtualMachine& vm = my_thread->_VM;
   // We save the old PC for returns. We do _not_ do this for nonlocal exits,
   // since in that case the NLXing VM invocation sets the PC before escaping.
   unsigned char* old_pc = vm._pc;
   vm._pc = pc;
   // The frame itself we do even if we do exit.
-  T_O** old_fp = vm.push_frame(nlocals);
+  core::T_O** old_fp = vm.push_frame(nlocals);
   try {
-    T_mv res = funwind_protect([&] {
+    core::T_mv res = core::funwind_protect([&] {
       gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure, lcc_nargs, lcc_args);
       vm._pc = old_pc;
-      return T_mv(res);
+      return core::T_mv(res);
     },
       [&] { vm.pop_frame(old_fp); });
     return res.as_return_type();
-  } catch (VM_error& err) {
+  } catch (core::VM_error& err) {
     printf("%s:%d:%s Recovering from VM_error\n", __FILE__, __LINE__, __FUNCTION__ );
-    return gctools::return_type(nil<T_O>().raw_(), 0 );
+    return gctools::return_type(nil<core::T_O>().raw_(), 0 );
   }
 }
+
+};
+
+namespace core {
 
 
 CL_DEFUN Integer_sp core__side_stack_pointer() {

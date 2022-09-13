@@ -466,7 +466,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   //
   // Disable this for now
   // fixme2022
-#if 0
+#if 1
   if (calls == COMPILE_TRIGGER) {
     eval::funcall(clos::_sym_compile_discriminating_function, generic_function);
   }

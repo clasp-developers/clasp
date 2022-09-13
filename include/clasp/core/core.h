@@ -925,7 +925,7 @@ uint64_t lisp_nameword(T_sp name);
   string lisp_convertCNameToLispName(string const &cname, bool convertUnderscoreToDash = true);
   T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp args);
 List_sp lisp_parse_arguments(const string &packageName, const string &args, int numberOfRequiredArguments=0, const std::set<int> skip_indices = std::set<int>() );
-  List_sp lisp_lexical_variable_names(List_sp lambda_list);
+List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
   List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
   LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
 size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp llh);
@@ -944,15 +944,12 @@ size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp llh);
                                        std::set<int> pureOutIndices = std::set<int>());
 
 
-  void lisp_defmacro(Symbol_sp name, const string &packageName,
+#if 0
+void lisp_defmacro(Symbol_sp name, const string &packageName,
                      BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
                      const string &docstring = "");
-  void lisp_defun(Symbol_sp name, const string &packageName,
-                  BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
-                  const string &docstring = "", const string &sourceFile = "",
-                  int sourceLine = 0, int number_of_required_arguments = 0,
-                  const std::set<int> &skipIndices = std::set<int>());
-  typedef enum { symbol_function, symbol_function_setf } SymbolFunctionEnum;
+#endif
+  typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
   void lisp_bytecode_defun(SymbolFunctionEnum kind,
                            Symbol_sp sym,
                            const string &packageName,
@@ -965,11 +962,6 @@ size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp llh);
                            int numberOfRequiredArguments = 0,
                            const std::set<int> &skipIndices = std::set<int>() );
 
-  void lisp_defun_setf(Symbol_sp name, const string &packageName,
-                       BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
-                       const string &docstring = "", const string &sourceFile = "",
-                       int sourceLine = 0, int number_of_required_arguments = 0,
-                       const std::set<int> &skipIndices = std::set<int>());
   void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);
 
   void lisp_defsetfSingleDispatchMethod(LispPtr lisp, const string &name, Symbol_sp classSymbol,

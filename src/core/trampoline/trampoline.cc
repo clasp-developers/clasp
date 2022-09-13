@@ -49,8 +49,14 @@ meister@zeus:~/Development/test$ diff -u trampoline.ll trampoline-done.ll
    call void @llvm.dbg.value(metadata { i8*, i64 } (i64, i8*, i64, i8**)* %0, metadata !153, metadata !DIExpression()), !dbg !159
    call void @llvm.dbg.value(metadata i64 %1, metadata !154, metadata !DIExpression()), !dbg !159
    call void @llvm.dbg.value(metadata i8* %2, metadata !155, metadata !DIExpression()), !dbg !159
+
+...
+
+-  store i64* %7, i64** @_ZL16global_save_args, align 8, !dbg !129, !tbaa !130
+
 @@ -64,18 +70,21 @@
  }
+
  
  ; Function Attrs: mustprogress nofree norecurse nosync nounwind readnone uwtable willreturn
 -define dso_local void @CLASP_STARTUP_trampoline() local_unnamed_addr #3 !dbg !173 {
@@ -108,14 +114,16 @@ extern "C" {
     trampoline_save_args[2] = (uintptr_t)args;
     return (fn)(closure,nargs,args);
   }
-  
-  return_type bytecode_trampoline_with_stackmap(bytecode_trampoline_type fn, uint64_t pc, void* closure, std::size_t nargs, void** args) {
+
+  return_type bytecode_call( uint64_t pc, void* closure, std::size_t nargs, void** args);
+
+  return_type bytecode_trampoline_with_stackmap( uint64_t pc, void* closure, std::size_t nargs, void** args) {
     uint64_t trampoline_save_args[3];
     global_save_args = trampoline_save_args;
     trampoline_save_args[0] = (uintptr_t)closure;
     trampoline_save_args[1] = (uintptr_t)nargs;
     trampoline_save_args[2] = (uintptr_t)args;
-    return (fn)(pc,closure,nargs,args);
+    return bytecode_call(pc,closure,nargs,args);
   }
 
 

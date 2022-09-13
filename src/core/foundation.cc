@@ -902,7 +902,7 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args, int 
     ql::list args;
     int num = 0;
     for ( int idx=0; idx< number_of_required_arguments; idx++) {
-      if (!skip_indices.contains(idx)) {
+      if (skip_indices.count(idx)==0) {
         stringstream ss;
         ss << "ARG" << num;
         num++;
@@ -926,7 +926,7 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args, int 
   return sscons;
 }
 
-List_sp lisp_lexical_variable_names(List_sp lambda_list) {
+List_sp lisp_lexical_variable_names( List_sp lambda_list, bool& trivial_wrapper ) {
   gctools::Vec0<RequiredArgument> reqs;
   gctools::Vec0<OptionalArgument> optionals;
   gctools::Vec0<KeywordArgument> keys;
@@ -944,6 +944,16 @@ List_sp lisp_lexical_variable_names(List_sp lambda_list) {
                     keys,
                     allow_other_keys,
                     auxs);
+  //
+  // trivial_wrapper is true if only required arguments are in lambda_list
+  //
+  trivial_wrapper = true;
+  if (optionals.size()>0) trivial_wrapper = false;
+  if (keys.size()>0) trivial_wrapper = false;
+  if (auxs.size()>0) trivial_wrapper = false;
+  if (restarg.isDefined()) trivial_wrapper = false;
+  if (allow_other_keys.notnilp()) trivial_wrapper = false;
+  if (key_flag.notnilp()) trivial_wrapper = false;
   T_sp vars = lexical_variable_names(reqs,optionals,restarg,keys,auxs);
   return vars;
 }
@@ -1090,67 +1100,6 @@ Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, b
   return sym;
 }
 
-void lisp_defun(Symbol_sp sym,
-                const string &packageName,
-                BuiltinClosure_sp fc,
-                const string &arguments,
-                const string &declarestring,
-                const string &docstring,
-                const string &sourceFile,
-                int lineNumber,
-                int number_of_required_arguments,
-                const std::set<int> &skipIndices) {
-  List_sp ldeclares = lisp_parse_declares(packageName, declarestring); // get the declares but ignore them for now
-  (void)ldeclares;                                                     // suppress warning
-  LambdaListHandler_sp llh;
-  if ((arguments == "" || arguments == "()") && number_of_required_arguments >= 0) {
-    llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
-  } else {
-    List_sp ll = lisp_parse_arguments(packageName, arguments);
-    llh = lisp_function_lambda_list_handler(ll, nil<T_O>(), skipIndices);
-  }
-  fc->finishSetup(llh);
-  fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
-  Function_sp func = fc;
-  sym->setf_symbolFunction(func);
-  sym->exportYourself();
-  T_sp tdocstring = nil<T_O>();
-  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
-  fc->setf_lambdaList(llh->lambdaList());
-  fc->setf_docstring(tdocstring);
-}
-
-// identical to above except for using setSetfFdefinition.
-void lisp_defun_setf(Symbol_sp sym,
-                     const string &packageName,
-                     BuiltinClosure_sp fc,
-                     const string &arguments,
-                     const string &declarestring,
-                     const string &docstring,
-                     const string &sourceFile,
-                     int lineNumber,
-                     int number_of_required_arguments,
-                     const std::set<int> &skipIndices) {
-  List_sp ldeclares = lisp_parse_declares(packageName, declarestring); // get the declares but ignore them for now
-  (void)ldeclares;                                                     // suppress warning
-  LambdaListHandler_sp llh;
-  if ((arguments == "" || arguments == "()") && number_of_required_arguments >= 0) {
-    llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
-  } else {
-    List_sp ll = lisp_parse_arguments(packageName, arguments);
-    llh = lisp_function_lambda_list_handler(ll, nil<T_O>(), skipIndices);
-  }
-  fc->finishSetup(llh);
-  fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
-  Function_sp func = fc;
-  sym->setSetfFdefinition(func);
-  sym->exportYourself();
-  T_sp tdocstring = nil<T_O>();
-  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
-  fc->setf_lambdaList(llh->lambdaList());
-  fc->setf_docstring(tdocstring);
-}
-
 
 void lisp_bytecode_defun(SymbolFunctionEnum kind,
                          Symbol_sp sym,
@@ -1165,15 +1114,25 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
                          const std::set<int> &skipIndices)
 {
   List_sp lambda_list = lisp_parse_arguments(packageName, arguments,numberOfRequiredArguments,skipIndices);
-  List_sp vars = lisp_lexical_variable_names(lambda_list);
+  bool trivial_wrapper;
+  List_sp vars = lisp_lexical_variable_names( lambda_list, trivial_wrapper );
   List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ) );
 //  printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
   List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,funcall_form);
 //  printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
-  auto func = comp::bytecompile( form,comp::Lexenv_O::make_top_level());
+  Function_sp func;
+  if (trivial_wrapper) {
+    func = entry;
+  } else {
+    func = comp::bytecompile( form,comp::Lexenv_O::make_top_level());
+//    printf("%s:%d:%s compiled a non-trivial wrapper for %s %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sym).c_str(), _rep_(lambda_list).c_str() );
+  }
   func->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   if (kind==symbol_function) {
     sym->setf_symbolFunction(func);
+  } else if (kind==symbol_function_macro) {
+    sym->setf_symbolFunction(func);
+    sym->setf_macroP(true);
   } else if (kind==symbol_function_setf) {
     sym->setSetfFdefinition(func);
   }
@@ -1185,7 +1144,7 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
   validateFunctionDescription( __FILE__, __LINE__, func );
 }
 
-
+#if 0
 void lisp_defmacro(Symbol_sp sym,
                    const string &packageName,
                    BuiltinClosure_sp f,
@@ -1193,11 +1152,12 @@ void lisp_defmacro(Symbol_sp sym,
                    const string &declarestring,
                    const string &docstring) {
   LOG("Adding form[%s] with arguments[%s]" , name , arguments);
-  List_sp ll = lisp_parse_arguments(packageName, arguments);
   List_sp ldeclares = lisp_parse_declares(packageName, declarestring);
   (void)ldeclares;
+  List_sp ll = lisp_parse_arguments(packageName, arguments);
   LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, nil<T_O>());
   f->finishSetup(llh);
+
   sym->setf_macroP(true);
   f->setf_sourcePathname(nil<T_O>());
   f->setf_lambdaList(llh->lambdaList());
@@ -1210,7 +1170,7 @@ void lisp_defmacro(Symbol_sp sym,
   sym->setf_symbolFunction(func);
   sym->exportYourself();
 }
-
+#endif
 
 Symbol_sp lisp_internKeyword(const string &name) {
   if (name == "")

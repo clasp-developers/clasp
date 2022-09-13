@@ -217,7 +217,7 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     virtual void __write__(T_sp) const;
     
     Pointer_sp function_pointer() const;
-    virtual bool compiledP() const { return false; };
+    virtual bool compiledP() const;
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return nil<T_O>(); };
@@ -349,7 +349,7 @@ FORWARD(GlobalBytecodeEntryPoint);
    unsigned int     _EnvironmentSize;
   // Entry points into the bytes vector in the containing module.
   // These are offsets instead of an interior pointers to make dumping/loading/GC considerations easier.
-   unsigned int     _EntryPcs[NUMBER_OF_ENTRY_POINTS];
+   unsigned int     _EntryPcN;
  public:
   // Accessors
    GlobalBytecodeEntryPoint_O(FunctionDescription_sp fdesc,
@@ -363,7 +363,7 @@ FORWARD(GlobalBytecodeEntryPoint);
                               T_sp keyConsts,
                               unsigned char flags,
                               unsigned int environmentSize,
-                              unsigned int entryPcs[NUMBER_OF_ENTRY_POINTS] );
+                              unsigned int entryPcN );
 
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
@@ -379,7 +379,7 @@ FORWARD(GlobalBytecodeEntryPoint);
    CL_DEFMETHOD T_sp keyConsts() const { return this->_KeyConsts; };
    CL_DEFMETHOD Fixnum flags() const { return this->_Flags; };
    CL_DEFMETHOD Fixnum environmentSize() const { return this->_EnvironmentSize; };
-   SimpleVector_byte32_t_sp entryPcs() const;
+   size_t entryPcN() const;
 
  };
 
@@ -614,7 +614,7 @@ namespace core {
 typedef gctools::return_type (*trampoline_function)(void* fn, core::T_O* closure, size_t nargs, core::T_O** args );
 extern trampoline_function interpreter_trampoline;
 
-typedef gctools::return_type (*bytecode_trampoline_function)(void* fn, unsigned char* pc, core::T_O* closure, size_t nargs, core::T_O** args );
+typedef gctools::return_type (*bytecode_trampoline_function)(unsigned char* pc, core::T_O* closure, size_t nargs, core::T_O** args );
 extern bytecode_trampoline_function bytecode_trampoline;
 
 };

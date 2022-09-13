@@ -56,7 +56,7 @@ THE SOFTWARE.
 namespace core {
 
 trampoline_function interpreter_trampoline = NULL;
-bytecode_trampoline_function bytecode_trampoline = NULL;
+bytecode_trampoline_function bytecode_trampoline = bytecode_call; // default
 
 
 // Keep track of how many interpreted closure calls there are
@@ -100,7 +100,7 @@ GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fd
                                                        T_sp keyConsts,
                                                        unsigned char flags,
                                                        unsigned int environmentSize,
-                                                       unsigned int entryPcs[NUMBER_OF_ENTRY_POINTS] )
+                                                       unsigned int entryPcN )
 : CodeEntryPoint_O(fdesc, module), _EntryPoints(entry_point),
   _LocalsFrameSize(localsFrameSize),
   _Required(required),
@@ -110,14 +110,14 @@ GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fd
   _KeyConsts(keyConsts),
   _Flags(flags),
   _EnvironmentSize(environmentSize),
-  _EntryPcs{entryPcs[0],entryPcs[1],entryPcs[2],entryPcs[3],entryPcs[4],entryPcs[5],entryPcs[6]}
+  _EntryPcN(entryPcN)
 {
   llvmo::validateEntryPoint( module, entry_point );
 };
 
 
-CL_DEFMETHOD SimpleVector_byte32_t_sp GlobalBytecodeEntryPoint_O::entryPcs() const {
-  return SimpleVector_byte32_t_O::make(NUMBER_OF_ENTRY_POINTS,0,false,NUMBER_OF_ENTRY_POINTS,this->_EntryPcs);
+CL_DEFMETHOD size_t GlobalBytecodeEntryPoint_O::entryPcN() const {
+  return this->_EntryPcN;
 }
 
 
@@ -438,11 +438,12 @@ struct BytecodeClosureEntryPoint {
   static inline LCC_RETURN bytecode_enter(T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
     Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
     core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
+    ASSERT(gc::IsA<core::BytecodeModule_sp>(entryPoint->_Code));
     core::BytecodeModule_sp module = gctools::As_unsafe<core::BytecodeModule_sp>(entryPoint->_Code);
-    int entryPcOffset = (*entryPoint)._EntryPcs[0]; // FIXME: remove this unused indirection.
-    unsigned char* pc =  (unsigned char*)(gc::As<Array_sp>(module->bytecode())->rowMajorAddressOfElement_(0)) + entryPcOffset;
-    if (bytecode_trampoline) return (bytecode_trampoline)((void*)&bytecode_call,pc,lcc_closure,lcc_nargs,lcc_args);
-    return bytecode_call(pc,lcc_closure,lcc_nargs,lcc_args);
+    int entryPcOffset = (*entryPoint)._EntryPcN;
+    ASSERT(gc::IsA<Array_sp>(module->bytecode()));
+    unsigned char* pc =  (unsigned char*)&(gc::As_unsafe<SimpleVector_byte8_t_sp>(module->bytecode())->_Data[0]) + entryPcOffset;
+    return (bytecode_trampoline)( pc, lcc_closure, lcc_nargs, lcc_args );
   }
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
@@ -494,13 +495,7 @@ GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescripti
   }
   unsigned int entryPcs[NUMBER_OF_ENTRY_POINTS];
   size_t idx = 0;
-  for ( auto cur : pcIndices ) {
-    T_sp num = CONS_CAR(cur);
-    if (!num.fixnump()) {
-      SIMPLE_ERROR("Bad pc index %s", _rep_(pcIndices).c_str());
-    }
-    entryPcs[idx++] = num.unsafe_fixnum();
-  }
+  int entryPcN = oCar(pcIndices).unsafe_fixnum();
   ClaspXepFunction xep;
   xep.setup<BytecodeClosureEntryPoint>();
   auto entryPoint = gctools::GC<GlobalBytecodeEntryPoint_O>::allocate( fdesc,
@@ -514,7 +509,7 @@ GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescripti
                                                                        keyConsts,
                                                                        flags,
                                                                        environmentSize,
-                                                                       entryPcs);
+                                                                       entryPcN);
   return entryPoint;
 }
 
@@ -983,6 +978,10 @@ CL_DEFUN size_t core__function_call_counter(Function_sp f)
 }
 #endif
 
+bool Function_O::compiledP() const {
+  return !gc::IsA<GlobalBytecodeEntryPoint_sp>(this->entryPoint());
+}
+  
 CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile,
                                                size_t filePos, int lineno, int column) {
   T_mv sfi_mv = core__file_scope(sourceFile);

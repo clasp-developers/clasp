@@ -54,6 +54,9 @@ public:
   BytecodeModule_O() {};
 };
 
+};
+
+extern "C" {
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure,
                                    size_t lcc_nargs, core::T_O** lcc_args);
 
