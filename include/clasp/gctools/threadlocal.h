@@ -210,6 +210,22 @@ struct VirtualMachine {
 #endif
   }
 
+  inline void savesp(size_t base) {
+#ifdef STACK_GROWS_UP
+    *(this->_framePointer + base + 1) = (core::T_O*)this->_stackPointer;
+#else
+    *(this->_framePointer - base) = (core::T_O*)this->_stackPointer;
+#endif
+  }
+
+  inline void restoresp(size_t base) {
+#ifdef STACK_GROWS_UP
+    this->_stackPointer = (core::T_O**)(*(this->_framePointer + base + 1));
+#else
+    this->_stackPointer = (core::T_O**)(*(this->_framePointer - base));
+#endif
+  }
+
   // Copy N elements from SOURCE into the current frame's register file
   // starting at BASE.
   // If the stack grows up, SOURCE should be a pointer to the first element

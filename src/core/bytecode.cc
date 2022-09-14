@@ -689,6 +689,20 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       vm._pc++;
       break;
     }
+    case vm_save_sp: {
+      uint8_t n = read_uint8(vm._pc);
+      DBG_VM("save sp %" PRIu8 "\n", n);
+      vm.savesp(n);
+      vm._pc++;
+      break;
+    }
+    case vm_restore_sp: {
+      uint8_t n = read_uint8(vm._pc);
+      DBG_VM("restore sp %" PRIu8 "\n", n);
+      vm.restoresp(n);
+      vm._pc++;
+      break;
+    }
     case vm_entry: {
       uint8_t n = read_uint8(vm._pc);
       DBG_VM("entry %" PRIu8 "\n", n);
