@@ -76,8 +76,9 @@
 
 
 (defun do-bytecompile (form env)
-  #-use-cmpref (cmp:bytecompile form env)
-  #+use-cmpref (cmpref:bytecompile form env)
+  (cmp:bytecompile form env)
+  ;;#-use-cmpref (cmp:bytecompile form env)
+;;  #+use-cmpref (cmpref:bytecompile form env)
   )
 
 
@@ -105,11 +106,13 @@
     (core:fmt t "Compiling form: {}%N" form)
     (core:fmt t "*active-protection* --> {}%N" cmp::*active-protection*))
   (let ((repl-name (intern (core:fmt nil "repl-form-{}" (core:next-number)) :core)))
-    (funcall (do-bytecompile
+    (funcall (bytecompile ;do-bytecompile
               `(lambda ()
                  (declare (core:lambda-name ,repl-name))
                  (progn ,form))
-              env))))
+              (if (null env)
+                  (lexenv/make nil nil nil nil nil 0)
+                  env)))))
 
 ;;;
 ;;; Don't install the bootstrapping compiler as the implicit compiler when compiling cleavir
@@ -122,7 +125,7 @@
 ;;; 
 #-(or no-implicit-compilation)
 (setq *implicit-compile-hook* 'bytecode-implicit-compile-repl-form)
-
+#+(or)
 (defun bytecode-toplevel-progn (forms env)
   (if (null forms)
       nil
@@ -131,12 +134,12 @@
            (return-from bytecode-toplevel-progn
              (bytecode-toplevel-eval (car forms) env)))
         (bytecode-toplevel-eval (car forms) env))))
-
+#+(or)
 (defun bytecode-toplevel-eval-when (situations forms env)
   (if (or (member :execute situations) (member 'cl:eval situations))
       (bytecode-toplevel-progn forms env)
       nil))
-
+#+(or)
 (defun bytecode-toplevel-locally (body env)
   (multiple-value-bind (decls body docs specials)
       (core:process-declarations body nil)
@@ -147,7 +150,7 @@
                  (lexenv/add-specials env specials)
                  env)))
       (bytecode-toplevel-progn body new-env))))
-
+#+(or)
 (defun bytecode-toplevel-macrolet (bindings body env)
   (let ((macros nil)
         (env (or env (make-null-lexical-environment))))
@@ -162,7 +165,7 @@
     (bytecode-toplevel-locally
      body (make-lexical-environment
            env :funs (append macros (cmp:lexenv/funs env))))))
-
+#+(or)
 (defun bytecode-toplevel-symbol-macrolet (bindings body env)
   (let ((smacros nil) (env (or env (make-null-lexical-environment))))
     (dolist (binding bindings)
@@ -172,7 +175,7 @@
      body (make-lexical-environment
            env
            :vars (append (nreverse smacros) (cmp:lexenv/vars env))))))
-
+#+(or)
 (defun bytecode-toplevel-eval (form env)
   (let ((form (macroexpand form env)))
     (if (consp form)

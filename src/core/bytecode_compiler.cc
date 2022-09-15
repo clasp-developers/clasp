@@ -1501,17 +1501,20 @@ CL_DEFUN void compile_setq(List_sp pairs, Lexenv_sp env, Context_sp ctxt) {
   }
 }
 
-CL_DEFUN void compile_eval_when(List_sp situations, List_sp body,
-                                     Lexenv_sp env, Context_sp ctxt) {
+static bool eval_when_execp(List_sp situations) {
   for (auto cur : situations) {
     T_sp situation = oCar(cur);
-    if ((situation == cl::_sym_eval) || (situation == kw::_sym_execute)) {
-      compile_progn(body, env, ctxt);
-      return;
-    }
+    if ((situation == cl::_sym_eval) || (situation == kw::_sym_execute))
+      return true;
   }
-  // no eval or execute, so
-  compile_literal(nil<T_O>(), env, ctxt);
+  return false;
+}
+
+CL_DEFUN void compile_eval_when(List_sp situations, List_sp body,
+                                Lexenv_sp env, Context_sp ctxt) {
+  if (eval_when_execp(situations))
+    compile_progn(body, env, ctxt);
+  else compile_literal(nil<T_O>(), env, ctxt);
 }
 
 CL_DEFUN void compile_if(T_sp cond, T_sp thn, T_sp els,
@@ -1736,10 +1739,8 @@ CL_DEFUN void compile_load_time_value(T_sp form, Lexenv_sp env, Context_sp ctxt)
   compile_literal(value, env, ctxt);
 }
 
-CL_DEFUN void compile_symbol_macrolet(List_sp bindings, List_sp body,
-                                      Lexenv_sp env, Context_sp context) {
-  T_sp vars = env->vars();
-  Lexenv_sp menv = env->macroexpansion_environment();
+static T_sp symbol_macrolet_bindings(Lexenv_sp menv, List_sp bindings,
+                                     T_sp vars) {
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
     ASSERT(gc::IsA<Symbol_sp>(oCar(binding)));
@@ -1757,15 +1758,21 @@ CL_DEFUN void compile_symbol_macrolet(List_sp bindings, List_sp body,
     SymbolMacroVarInfo_sp info = SymbolMacroVarInfo_O::make(expander);
     vars = Cons_O::create(Cons_O::create(name, info), vars);
   }
+  return vars;
+}
+
+CL_DEFUN void compile_symbol_macrolet(List_sp bindings, List_sp body,
+                                      Lexenv_sp env, Context_sp context) {
+  T_sp vars = symbol_macrolet_bindings(env->macroexpansion_environment(),
+                                       bindings, env->vars());
   Lexenv_sp nenv = Lexenv_O::make(vars, env->tags(), env->blocks(), env->funs(),
                                   env->notinlines(), env->frameEnd());
   compile_locally(body, nenv, context);
 }
 
-CL_DEFUN void compile_macrolet(List_sp bindings, List_sp body,
-                               Lexenv_sp env, Context_sp context) {
-  T_sp funs = env->funs();
-  Lexenv_sp menv = env->macroexpansion_environment();
+// Given a macroexpansion environment, a alist of macrolet bindings, and the
+// funs() of a lexenv, return new funs() with macro infos prepended.
+static T_sp macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp funs) {
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
     T_sp name = oCar(binding);
@@ -1777,6 +1784,13 @@ CL_DEFUN void compile_macrolet(List_sp bindings, List_sp body,
     LocalMacroInfo_sp info = LocalMacroInfo_O::make(expander);
     funs = Cons_O::create(Cons_O::create(name, info), funs);
   }
+  return funs;
+}
+
+CL_DEFUN void compile_macrolet(List_sp bindings, List_sp body,
+                               Lexenv_sp env, Context_sp context) {
+  T_sp funs = macrolet_bindings(env->macroexpansion_environment(),
+                                bindings, env->funs());
   Lexenv_sp nenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(),
                                   funs, env->notinlines(), env->frameEnd());
   compile_locally(body, nenv, context);
@@ -1900,6 +1914,91 @@ CL_DEFUN GlobalBytecodeEntryPoint_sp bytecompile(T_sp lambda_expression,
   T_sp body = oCddr(lambda_expression);
   Cfunction_sp cf = compile_lambda(lambda_list, body, env, module);
   return cf->link_function(Cons_O::create(lambda_expression, env));
+}
+
+static Lexenv_sp coerce_lexenv_desig(T_sp env) {
+  if (env.nilp())
+    return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
+  else return gc::As<Lexenv_sp>(env);
+}
+
+CL_LAMBDA(form &optional env)
+CL_DEFUN T_mv bytecode_implicit_compile_form(T_sp form, T_sp env) {
+  T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(),
+                                  Cons_O::createList(cl::_sym_declare),
+                                  Cons_O::createList(cl::_sym_progn, form));
+  Function_sp thunk = bytecompile(lexpr, coerce_lexenv_desig(env));
+  return eval::funcall(thunk);
+}
+
+T_mv bytecode_toplevel_eval(T_sp, T_sp);
+
+CL_DEFUN T_mv bytecode_toplevel_progn(List_sp forms, Lexenv_sp env) {
+  for (auto cur : forms)
+    if (oCdr(cur).nilp()) // done
+      return bytecode_toplevel_eval(oCar(cur), env);
+    else bytecode_toplevel_eval(oCar(cur), env);
+  // If there are no forms, return NIL.
+  return Values(nil<T_O>());
+}
+
+CL_DEFUN T_mv bytecode_toplevel_eval_when(List_sp situations, List_sp forms,
+                                          Lexenv_sp env) {
+  if (eval_when_execp(situations))
+    return bytecode_toplevel_progn(forms, env);
+  else return nil<T_O>();
+}
+
+CL_DEFUN T_mv bytecode_toplevel_locally(List_sp body, Lexenv_sp env) {
+  List_sp declares = nil<T_O>();
+  gc::Nilable<String_sp> docstring;
+  List_sp code;
+  List_sp specials;
+  eval::extract_declares_docstring_code_specials(body, declares,
+                                                 false, docstring, code, specials);
+  Lexenv_sp inner1 = env->add_specials(specials);
+  Lexenv_sp inner2 = env->add_notinlines(decl_notinlines(declares));
+  return bytecode_toplevel_progn(code, inner2);
+}
+
+CL_DEFUN T_mv bytecode_toplevel_macrolet(List_sp bindings, List_sp body,
+                                         Lexenv_sp env) {
+  // FIXME: We can maybe skip macroexpansion_environment,
+  // assuming bytecode_toplevel_eval was originally actually called
+  // with an empty lexenv as it ought to be.
+  T_sp funs = macrolet_bindings(env->macroexpansion_environment(),
+                                bindings, env->funs());
+  Lexenv_sp nenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(),
+                                  funs, env->notinlines(), env->frameEnd());
+  return bytecode_toplevel_locally(body, nenv);
+}
+
+CL_DEFUN T_mv bytecode_toplevel_symbol_macrolet(List_sp bindings, List_sp body,
+                                                Lexenv_sp env) {
+  T_sp vars = symbol_macrolet_bindings(env->macroexpansion_environment(),
+                                       bindings, env->vars());
+  Lexenv_sp nenv = Lexenv_O::make(vars, env->tags(), env->blocks(), env->funs(),
+                                  env->notinlines(), env->frameEnd());
+  return bytecode_toplevel_locally(body, nenv);
+}
+
+CL_DEFUN T_mv bytecode_toplevel_eval(T_sp form, T_sp tenv) {
+  Lexenv_sp env = coerce_lexenv_desig(tenv);
+  T_sp eform = cl__macroexpand(form, env);
+  if (gc::IsA<Cons_sp>(eform)) {
+    T_sp head = oCar(eform);
+    if (head == cl::_sym_progn)
+      return bytecode_toplevel_progn(oCdr(eform), env);
+    else if (head == cl::_sym_eval_when)
+      return bytecode_toplevel_eval_when(oCadr(eform), oCddr(eform), env);
+    else if (head == cl::_sym_locally)
+      return bytecode_toplevel_locally(oCdr(eform), env);
+    else if (head == cl::_sym_macrolet)
+      return bytecode_toplevel_macrolet(oCadr(eform), oCddr(eform), env);
+    else if (head == cl::_sym_symbol_macrolet)
+      return bytecode_toplevel_symbol_macrolet(oCadr(eform), oCddr(eform), env);
+    else return bytecode_implicit_compile_form(eform, env);
+  } else return bytecode_implicit_compile_form(eform, env);
 }
 
 }; //namespace comp
