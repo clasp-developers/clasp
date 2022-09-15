@@ -68,6 +68,7 @@ THE SOFTWARE.
 #include <clasp/core/bformat.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEqual.h>
+#include <clasp/core/hashTableEqualp.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/specialForm.h>
@@ -216,7 +217,6 @@ Lisp::GCRoots::GCRoots() :
 #endif
   _SpecialForms(unbound<HashTableEq_O>()),
   _NullStream(nil<T_O>()),
-  _ThePathnameTranslations(nil<T_O>()),
   _UnixSignalHandlers(nil<T_O>()),
   _PrintSymbolsProperly(false),
   _TheSystemIsUp(false),
@@ -259,6 +259,7 @@ void Lisp::initialize() {
   this->_Roots.charInfo.initialize();
   this->_Roots._SourceFileIndices = HashTableEqual_O::create_default();
   this->_Roots._PackageNameIndexMap = HashTableEqual_O::create_default();
+  this->_Roots._ThePathnameTranslations = HashTableEqualp_O::create_default();
 }
 
 template <class oclass>

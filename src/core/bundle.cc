@@ -280,10 +280,11 @@ string Bundle::describe() {
 void create_translation(const std::filesystem::path &path, const std::string &translation) {
   if (!path.empty()) {
     T_sp name = SimpleBaseString_O::make("SYS");
-    core__pathname_translations(name, _lisp->_true(),
+    cl__setf_logical_pathname_translations(
         Cons_O::create(Cons_O::createList(SimpleBaseString_O::make("SYS:" + translation),
                                               cl__pathname(SimpleBaseString_O::make(path / "**" / "*.*"))),
-                        core__pathname_translations(name, _lisp->_true(), _lisp->_false())));
+                        cl__logical_pathname_translations(name)),
+        name);
   }
 }
 

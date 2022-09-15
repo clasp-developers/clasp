@@ -49,9 +49,9 @@ namespace core {
 
 FORWARD(Pathname);
 Pathname_sp cl__pathname(T_sp x);
- Pathname_sp core__safe_default_pathname_defaults();
- Pathname_sp core__safe_default_pathname_defaults_host_only();
- Pathname_sp cl__merge_pathnames(T_sp arg, T_sp defaultPathname = core__safe_default_pathname_defaults(), T_sp defaultVersion = kw::_sym_newest);
+Pathname_sp core__safe_default_pathname_defaults();
+Pathname_sp core__safe_default_pathname_defaults_host_only();
+Pathname_sp cl__merge_pathnames(T_sp arg, T_sp defaultPathname = core__safe_default_pathname_defaults(), T_sp defaultVersion = kw::_sym_newest);
 
 T_mv cl__parse_namestring(T_sp thing,
                           T_sp host = nil<T_O>(),
@@ -173,7 +173,8 @@ T_sp cl__directory_namestring(T_sp tpname);
 T_sp cl__host_namestring(T_sp tpname);
 T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults);
 
-T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set);
+T_sp cl__logical_pathname_translations(String_sp host);
+T_sp cl__setf_logical_pathname_translations(List_sp translations, String_sp host);
 
 /* If you want to call makePathname use:
 		Pathname_sp backupPathname = af_makePathname(_Nil<T_O>(), // host 
