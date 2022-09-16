@@ -250,13 +250,18 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM1("call %" PRIu8 "\n", nargs);
 #ifdef DBG_VM1
       if (nargs + 1 > vm.npushed(nlocals))
-        SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %zu", nargs + 1, vm.npushed(nlocals));
+        SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %td", nargs + 1, vm.npushed(nlocals));
 #endif
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
       ASSERT(gctools::tagged_generalp<T_O*>(func));
       unsigned char* pc = vm._pc;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+#ifdef DBG_VM1
+      if (nargs + 1 > vm.npushed(nlocals))
+        SIMPLE_ERROR("VM BUG: Mismatch after call: nargs+1 %" PRIu8 " npushed %td",
+                     nargs + 1, vm.npushed(nlocals));
+#endif
       vm._pc = pc;
       res.saveToMultipleValue0();
       vm.drop(nargs+1);
@@ -401,8 +406,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       if (vaslistp) vm.drop(4); // deallocate
 #ifdef DBG_VM1
       if (vm.npushed(nlocals) != 0) {
-        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %lu   nlocals = %lu", vm.npushed(nlocals), nlocals).c_str());
-        SIMPLE_ERROR("In vm_return - vm.npushed(nlocals) = %lu   nlocals = %lu", vm.npushed(nlocals), nlocals);
+        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   nlocals = %lu", vm.npushed(nlocals), nlocals).c_str());
+        SIMPLE_ERROR("In vm_return - vm.npushed(nlocals) = %td   nlocals = %lu", vm.npushed(nlocals), nlocals);
       }
 #endif
       core::MultipleValues &mv = core::lisp_multipleValues();
@@ -882,7 +887,7 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     DBG_VM1("long call %" PRIu16 "\n", nargs);
 #ifdef DBG_VM1
     if (nargs + 1 > vm.npushed(nlocals))
-      SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %zu", nargs + 1, vm.npushed(nlocals));
+      SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %td", nargs + 1, vm.npushed(nlocals));
 #endif
     T_O* func = *(vm.stackref(nargs));
     T_O** args = vm.stackref(nargs-1);

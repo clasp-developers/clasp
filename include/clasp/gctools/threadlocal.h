@@ -266,7 +266,7 @@ struct VirtualMachine {
 
   // Compute how many elements are on the stack in the current frame
   // but which are not part of the register file.
-  inline size_t npushed(size_t nlocals) {
+  inline ptrdiff_t npushed(size_t nlocals) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,this->_stackPointer);
