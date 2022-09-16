@@ -49,7 +49,7 @@ public:
 public:
   void clear() { this->Base::clear(); };
   const_iterator find(Key k) const {
-    iterator it;
+    const_iterator it;
     for (it = this->begin(); it != this->end(); ++it) {
       if (it->first == k) {
         return it;
