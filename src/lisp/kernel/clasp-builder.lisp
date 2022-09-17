@@ -1094,6 +1094,7 @@ been initialized with install path versus the build path of the source code file
                               (extract-installed-system system)))
         (*system-load-times* (make-hash-table :test #'eql))
         (*target-backend* (default-target-backend))
+        (file-order (calculate-file-order system))
         (stage 0))
     (tagbody
      next
@@ -1104,9 +1105,10 @@ been initialized with install path versus the build path of the source code file
             (go next))))
     (setq *features* (core:remove-equal :staging *features*))
     (prepare-metadata system installed-system)
-    (if system-sort
-        (sort (out-of-date-system system) #'> :key #'system-load-time)
-        (out-of-date-system system))))
+    (values (if system-sort
+                (sort (out-of-date-system system) #'> :key #'system-load-time)
+                (out-of-date-system system))
+            file-order)))
 
 (defun compile-vclasp (system file-order)
   ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
@@ -1119,9 +1121,8 @@ been initialized with install path versus the build path of the source code file
                     :reload nil :file-order file-order
                     :total-files (length system))))
 
-(defun load-and-compile-vclasp (&rest rest &key (system (command-line-arguments-as-list)) &allow-other-keys
-                                &aux (file-order (calculate-file-order system)))
-  (compile-vclasp (apply #'load-vclasp rest) file-order))
+(defun load-and-compile-vclasp (&rest rest)
+  (multiple-value-call #'compile-vclasp (apply #'load-vclasp rest)))
 
 (export '(load-vclasp compile-vclasp load-and-compile-vclasp))
       
