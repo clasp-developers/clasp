@@ -839,7 +839,8 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
   } else {
     T_mv version_mv = cl__parse_integer(gc::As<String_sp>(aux), 0, nil<T_O>(), 10, _lisp->_true());
     T_sp tversion = version_mv;
-    Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet_(1));
+    MultipleValues& mvn = core::lisp_multipleValues();
+    Fixnum_sp parsed_length = gc::As<Fixnum_sp>(mvn.valueGet(1,version_mv.number_of_values()));
     if (unbox_fixnum(parsed_length) == cl__length(aux) &&
         cl__integerp(tversion) && clasp_plusp(gc::As<Integer_sp>(tversion))) {
       version = gc::As<Integer_sp>(tversion);

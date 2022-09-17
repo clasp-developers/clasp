@@ -244,17 +244,19 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor,
   case_Bignum_v_Fixnum: {
       Bignum_sp bdividend = gc::As_unsafe<Bignum_sp>(dividend);
       Fixnum fdivisor = divisor.unsafe_fixnum();
-      T_mv mv = core__next_ftruncate(bdividend, fdivisor);
-      quotient = gc::As_unsafe<Integer_sp>(mv);
-      remainder = gc::As_unsafe<Integer_sp>(mv.valueGet_(1));
+      T_mv rmv = core__next_ftruncate(bdividend, fdivisor);
+      quotient = gc::As_unsafe<Integer_sp>(rmv);
+      MultipleValues& mvn = core::lisp_multipleValues();
+      remainder = gc::As_unsafe<Integer_sp>(mvn.valueGet(1,rmv.number_of_values()));
       return;
     }
   case_Bignum_v_Bignum: {
       Bignum_sp bdividend = gc::As_unsafe<Bignum_sp>(dividend);
       Bignum_sp bdivisor = gc::As_unsafe<Bignum_sp>(divisor);
-      T_mv mv = core__next_truncate(bdividend, bdivisor);
-      quotient = gc::As_unsafe<Integer_sp>(mv);
-      remainder = gc::As_unsafe<Integer_sp>(mv.valueGet_(1));
+      T_mv mvr = core__next_truncate(bdividend, bdivisor);
+      quotient = gc::As_unsafe<Integer_sp>(mvr);
+      MultipleValues& mvn = core::lisp_multipleValues();
+      remainder = gc::As_unsafe<Integer_sp>(mvn.valueGet(1,mvr.number_of_values()));
       return;
     }
   // case_Bignum_v_Ratio: above

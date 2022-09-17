@@ -998,7 +998,8 @@ CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage(size_t id,
 {
   T_mv result = core__startup_linkage_shutdown_names(id,prefix);
   T_sp result1 = result;
-  T_sp result2 = result.second();
+  MultipleValues& mvn = core::lisp_multipleValues();
+  T_sp result2 = mvn.second(result.number_of_values());
   return Values(result1,result2);
 }
 
@@ -1378,7 +1379,8 @@ CL_DOCSTRING(R"dx(Like CL:THROW, but takes a thunk)dx")
 DOCGROUP(clasp)
 CL_DEFUN void core__throw_function(T_sp tag, Function_sp result_form) {
   T_mv result = eval::funcall(result_form);
-  result.saveToMultipleValue0();
+  MultipleValues& mv = lisp_multipleValues();
+  mv.saveToMultipleValue0(result);
   sjlj_throw(tag);
 }
 

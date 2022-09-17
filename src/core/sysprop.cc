@@ -46,7 +46,8 @@ CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   bool foundHashTable = false;
   T_mv values = sysprops->gethash(area);
   T_sp area_hash_table = values;
-  foundHashTable = values.valueGet_(1).isTrue();
+  MultipleValues& mvn = core::lisp_multipleValues();
+  foundHashTable = mvn.valueGet(1,values.number_of_values()).isTrue();
   T_sp retval;
   if (foundHashTable) {
     retval = gc::As<HashTableEql_sp>(area_hash_table)->hash_table_setf_gethash(key, value);
@@ -68,7 +69,8 @@ CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   if (sysprops.notnilp()) {
     T_mv values = sysprops->gethash(area, nil<T_O>());
     T_sp hashTable = values;
-    bool foundHashTable = gc::As<T_sp>(values.valueGet_(1)).isTrue();
+    MultipleValues& mvn = core::lisp_multipleValues();
+    bool foundHashTable = gc::As<T_sp>(mvn.valueGet(1,values.number_of_values())).isTrue();
     if (foundHashTable) {
       return gc::As<HashTableEql_sp>(hashTable)->gethash(key, nil<T_O>());
     }
@@ -85,7 +87,8 @@ CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
   T_mv mv_values = sysprops->gethash(area, nil<T_O>());
   HashTableEql_sp hashTable = gc::As<HashTableEql_sp>(mv_values);
-  bool foundHashTable = gc::As<T_sp>(mv_values.valueGet_(1)).isTrue();
+  MultipleValues& mvn = core::lisp_multipleValues();
+  bool foundHashTable = gc::As<T_sp>(mvn.valueGet(1,mv_values.number_of_values())).isTrue();
   if (foundHashTable) {
     bool found = hashTable->remhash(key);
     return _lisp->_boolean(found);

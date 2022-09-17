@@ -86,6 +86,8 @@ THE SOFTWARE.
 #include <clasp/core/null.h>
 #include <clasp/core/wrappers.h>
 
+
+
 namespace reg {
 
 typedef std::map<type_id, class_id> map_type;
@@ -1031,8 +1033,9 @@ void lisp_defineSingleDispatchMethod(T_sp name,
     List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments);
     T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw, true);
     T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
-    Symbol_sp sd_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet_(1));
-    Symbol_sp specializer_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet_(2));
+    MultipleValues& mvn = core::lisp_multipleValues();
+    Symbol_sp sd_symbol = gc::As<Symbol_sp>(mvn.valueGet(1,mv_llprocessed.number_of_values()));
+    Symbol_sp specializer_symbol = gc::As<Symbol_sp>(mvn.valueGet(2,mv_llprocessed.number_of_values()));
     List_sp llproc = coerce_to_list(tllproc);
     if (specializer_symbol.notnilp() && specializer_symbol != classSymbol) {
       SIMPLE_ERROR(("Mismatch between hard coded class[%s] and"
@@ -1370,7 +1373,8 @@ SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos
   SimpleBaseString_sp fn = SimpleBaseString_O::make(fileName);
   T_mv sfi_mv = core__file_scope(fn);
   FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
-  Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet_(1));
+  MultipleValues& mvn = core::lisp_multipleValues();
+  Fixnum_sp handle = gc::As<Fixnum_sp>(mvn.valueGet(1,sfi_mv.number_of_values()));
   int sfindex = unbox_fixnum(handle);
   return SourcePosInfo_O::create(sfindex, filePos, lineno, 0);
 }

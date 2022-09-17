@@ -29,7 +29,8 @@ T_sp Lexenv_O::lookupSymbolMacro(T_sp sname) {
     return gc::As_unsafe<SymbolMacroVarInfo_sp>(info)->expander();
   else if (info.notnilp()) { // global?
     T_mv result = core__get_sysprop(sname, ext::_sym_symbolMacro);
-    if (gc::As_unsafe<T_sp>(result.valueGet_(1)).notnilp()) {
+    MultipleValues& mvn = core::lisp_multipleValues();
+    if (gc::As_unsafe<T_sp>(mvn.valueGet(1,result.number_of_values())).notnilp()) {
       return result;
     } else return nil<T_O>();
   } else return nil<T_O>();
@@ -180,7 +181,8 @@ CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
     return SpecialVarInfo_O::make(true);
   // Global symbol macro?
   T_mv symmac = core__get_sysprop(sym, ext::_sym_symbolMacro);
-  if (gc::As_unsafe<T_sp>(symmac.valueGet_(1)).notnilp())
+  MultipleValues& mvn = core::lisp_multipleValues();
+  if (gc::As_unsafe<T_sp>(mvn.valueGet(1,symmac.number_of_values())).notnilp())
     return SymbolMacroVarInfo_O::make(symmac);
   // Unknown.
   return nil<T_O>();

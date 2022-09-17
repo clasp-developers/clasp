@@ -786,10 +786,11 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     string packageName = packageSin.string()->get_std_string();
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
     Symbol_sp sym;
+    MultipleValues& mvn = core::lisp_multipleValues();
     if (separator == 1) { // Asking for external symbol
-      Symbol_mv sym_mv = pkg->findSymbol_SimpleString(symbol_name_str);
-      sym = sym_mv;
-      T_sp status = sym_mv.second();
+      Symbol_mv symmv = pkg->findSymbol_SimpleString(symbol_name_str);
+      sym = symmv;
+      T_sp status = mvn.second(symmv.number_of_values());
       if (status != kw::_sym_external) {
         READER_ERROR(SimpleBaseString_O::make("Cannot find the external symbol ~a in ~a"),
                      Cons_O::createList(symbol_name_str, pkg), sin);

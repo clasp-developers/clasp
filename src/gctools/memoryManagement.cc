@@ -537,9 +537,10 @@ CL_DEFUN core::T_mv gctools__multiple_values_ensure_valid(core::T_mv obj) {
   } else if (obj.consp()) {
     client_validate_Cons_O_ptr(obj.unsafe_cons());
   }
+  core::MultipleValues& mvn = core::lisp_multipleValues();
   for ( size_t ii = 1; ii<obj.number_of_values(); ++ii ) {
-    if (obj.valueGet_(ii).generalp()) {
-      client_validate_General_O_ptr(obj.valueGet_(ii).unsafe_general());
+    if (mvn.valueGet(ii,obj.number_of_values()).generalp()) {
+      client_validate_General_O_ptr(mvn.valueGet(ii,obj.number_of_values()).unsafe_general());
     }
   }
   return obj;

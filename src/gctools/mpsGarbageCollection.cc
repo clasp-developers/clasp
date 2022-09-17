@@ -735,7 +735,8 @@ size_t processMpsMessages(size_t& finalizations) {
         WITH_READ_LOCK(globals_->_FinalizersMutex);
         auto ht = _lisp->_Roots._Finalizers;
         core::T_mv res = ht->gethash(obj);
-        if (res.second().notnilp()) {
+        MultipleValues& mvn = core::lisp_multipleValues();
+        if (mvn.second(res.number_of_values()).notnilp()) {
           printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());
           core::List_sp finalizers = res;
           for ( auto cur : finalizers ) {

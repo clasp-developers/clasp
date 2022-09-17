@@ -79,10 +79,9 @@ public:
                                               sizeof...(ARGS)+1);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
     DEBUG_DUMP_FRAME(frame,lcc_nargs);
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT* otep  = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::goFrame(frame->arguments(0));
-    return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),otep,std::move(all_args));
+    return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),otep,std::move(all_args));
   }
   static inline LISP_ENTRY_0() {
     return general_entry_point_redirect_0(lcc_closure);
@@ -139,10 +138,9 @@ public:
                                               sizeof...(ARGS)+1);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope, lcc_nargs, lcc_args );
     DEBUG_DUMP_FRAME(frame,lcc_nargs);
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT* otep = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::goFrame(frame->arguments(0));
-    return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),otep,std::move(all_args));
+    return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),otep,std::move(all_args));
   }
   static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);

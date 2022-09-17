@@ -778,7 +778,8 @@ List_sp LexicalEnvironment_O::gather_metadata(Symbol_sp key) const {
     parentGathered = clasp_gather_metadata(this->getParentEnvironment(), key);
   }
   T_mv value = this->_Metadata->gethash(key);
-  if (value.second().notnilp()) {
+  MultipleValues& mv = core::lisp_multipleValues();
+  if (mv.second(value.number_of_values()).notnilp()) {
     return Cons_O::create(value, parentGathered);
   }
   return parentGathered;
@@ -792,7 +793,8 @@ List_sp LexicalEnvironment_O::push_metadata(Symbol_sp key, T_sp val) {
 
 T_mv LexicalEnvironment_O::localMetadata(Symbol_sp key) const {
   T_mv it = this->_Metadata->gethash(key);
-  if (it.second().nilp()) {
+  MultipleValues& mv = core::lisp_multipleValues();
+  if (mv.second(it.number_of_values()).nilp()) {
     return (Values(nil<T_O>(), nil<T_O>()));
   }
   return (Values(it, _lisp->_true()));
@@ -800,7 +802,8 @@ T_mv LexicalEnvironment_O::localMetadata(Symbol_sp key) const {
 
 T_mv LexicalEnvironment_O::lookupMetadata(Symbol_sp key) const {
   T_mv it = this->_Metadata->gethash(key);
-  if (it.second().nilp()) {
+  MultipleValues& mv = core::lisp_multipleValues();
+  if (mv.second(it.number_of_values()).nilp()) {
     if (this->_ParentEnvironment.nilp()) {
       return (Values(nil<T_O>(), nil<T_O>(), nil<T_O>()));
     }
@@ -1190,9 +1193,10 @@ T_sp FunctionValueEnvironment_O::getActivationFrame() const {
 bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &value, T_sp& functionEnv) const {
   LOG("Looking for binding for function name[%s]" , _rep_(functionName));
   //    LOG("The frame stack is %d deep" , this->depth() );
-  T_mv mv = this->_FunctionIndices->gethash(functionName, nil<T_O>());
-  T_sp val = mv;
-  bool foundp = mv.valueGet_(1).isTrue();
+  T_mv mval = this->_FunctionIndices->gethash(functionName, nil<T_O>());
+  T_sp val = mval;
+  MultipleValues& mv = core::lisp_multipleValues();
+  bool foundp = mv.second(mval.number_of_values()).isTrue();
   if (!foundp)
     return this->Base::_findFunction(functionName, depth, index, value, functionEnv );
   index = unbox_fixnum(gc::As<Fixnum_sp>(val));
@@ -1570,8 +1574,6 @@ void TagbodyEnvironment_O::initialize() {
 
 CL_LISPIFY_NAME("addTag");
 CL_DEFMETHOD int TagbodyEnvironment_O::addTag(Symbol_sp tag, List_sp ip) {
-  _OF();
-  //  ASSERTF(this->_Tags->gethash(tag).second().notnilp(), ("The tag[%s] has already been defined in this tagbody"));
   int index = this->_TagCode.size();
   this->_Tags->hash_table_setf_gethash(tag, make_fixnum(index));
   this->_TagCode.push_back(ip);
@@ -1600,7 +1602,8 @@ T_sp TagbodyEnvironment_O::getActivationFrame() const {
 bool TagbodyEnvironment_O::_findTag(Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const {
   //	printf("%s:%d searched through TagbodyEnvironment_O\n", __FILE__, __LINE__ );
   T_mv it = this->_Tags->gethash(sym);
-  if (it.second().notnilp()) {
+  MultipleValues& mv = core::lisp_multipleValues();
+  if (mv.second(it.number_of_values()).notnilp()) {
     index = unbox_fixnum(gc::As<Fixnum_sp>(it));
     tagbodyEnv = this->asSmartPtr();
     return true;
@@ -1620,7 +1623,8 @@ List_sp TagbodyEnvironment_O::codePos(int index) const {
 T_sp TagbodyEnvironment_O::find_tagbody_tag_environment(Symbol_sp tag) const {
   _OF();
   T_mv it = this->_Tags->gethash(tag);
-  if (it.second().notnilp()) {
+  MultipleValues& mv = core::lisp_multipleValues();
+  if (mv.second(it.number_of_values()).notnilp()) {
     return this->const_sharedThis<TagbodyEnvironment_O>();
   }
   return clasp_find_tagbody_tag_environment(this->getParentEnvironment(), tag);
@@ -1679,7 +1683,8 @@ bool MacroletEnvironment_O::_findMacro(Symbol_sp sym, int &depth, int &index, Fu
   LOG("Looking for binding for symbol(%s)" , _rep_(sym));
   //    LOG("The frame stack is %d deep" , this->depth() );
   T_mv fi = this->_Macros->gethash(sym);
-  if (fi.second().nilp()) {
+  MultipleValues& mvn = core::lisp_multipleValues();
+  if (mvn.second(fi.number_of_values()).nilp()) {
     return this->Base::_findMacro(sym, depth, index, value);
   }
   LOG(" Found binding %s" , _rep_(fi));
@@ -1704,7 +1709,8 @@ bool SymbolMacroletEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, in
   LOG("Looking for binding for symbol(%s)" , _rep_(sym));
   //    LOG("The frame stack is %d deep" , this->depth() );
   T_mv fi = this->_Macros->gethash(sym);
-  if (fi.second().nilp()) {
+  MultipleValues& mvn = core::lisp_multipleValues();
+  if (mvn.second(fi.number_of_values()).nilp()) {
     return this->Base::_findSymbolMacro(sym, depth, index, shadowed, value);
   }
   LOG(" Found binding %s" , _rep_(fi));

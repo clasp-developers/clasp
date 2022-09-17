@@ -41,6 +41,7 @@ THE SOFTWARE.
 //#define DEBUG_DYN_ENV_STACK 1
 //#define DEBUG_DTREE_INTERPRETER
 //#define DEBUG_VIRTUAL_MACHINE 1
+//#define DEBUG_SLOW_DOWN_CXX_CALLS 1 // Slows down all calls in CXX wrappers - study impact
 #define DEBUG_FRAME() 0
 // If ANY flags above are set - then set this one to print a message at startup
 #define DEBUG_FLAGS_SET 1
@@ -297,7 +298,5 @@ ENTRY_POINT_MAX_ARGS_IN_REGISTER_SAVE_AREA includes the closure
 // On linux and OS X we have mkstemp so use it
 #define HAVE_MKSTEMP
 #define HAVE_MKDTEMP
-
-
 
 #endif // __CORE_CONFIG_H__

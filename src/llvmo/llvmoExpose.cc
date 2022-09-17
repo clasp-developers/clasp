@@ -1626,7 +1626,8 @@ void ExecutionEngine_O::removeNamedModule(const string &name) {
   core::SimpleBaseString_sp key = core::SimpleBaseString_O::make(name);
   core::T_mv mi = this->_DependentModules->gethash(key);
   //	core::StringMap<Module_O>::iterator mi = this->_DependentModules.find(name);
-  if (mi.valueGet_(1).nilp()) // == this->_DependentModules.end() )
+  core::MultipleValues& mvn = core::lisp_multipleValues();
+  if (mvn.valueGet(1,mi.number_of_values()).nilp()) // == this->_DependentModules.end() )
   {
     SIMPLE_ERROR(("Could not find named module %s") , name);
   }

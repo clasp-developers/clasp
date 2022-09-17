@@ -45,6 +45,22 @@ THE SOFTWARE.
 #include <clasp/clbind/cl_include.h>
 #include <memory>
 
+
+
+
+#ifdef DEBUG_SLOW_DOWN_CXX_CALLS
+extern "C" {
+extern size_t global_slow_down_cxx_calls_delay;
+void slow_down_function();
+
+};
+#define SLOW_DOWN_CALL() { for ( int zzz = 0; zzz<global_slow_down_cxx_calls_delay; zzz++ ) slow_down_function(); }
+#else
+#define SLOW_DOWN_CALL()
+#endif
+
+
+
 namespace clbind {
 
 struct scope_;
@@ -147,12 +163,12 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    SLOW_DOWN_CALL();
     MAKE_STACK_FRAME(frame,sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
     core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler, numSpecialBindings,specialBindingsVLA,frame,sizeof...(ARGS));
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope, lcc_nargs, lcc_args  );
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
 #ifdef DEBUG_EVALUATE
     if (core::_sym_STARdebugEvalSTAR && core::_sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
       for (size_t ia=0; ia<sizeof...(ARGS); ++ia) {
@@ -162,7 +178,7 @@ public:
     }
 #endif
     std::tuple<translate::from_object<ARGS,PUREOUTS>...> all_args(arg_tuple<0,Pols,ARGS...>::goFrame(frame->arguments()));
-    return apply_and_return<RT,Pols,decltype(closure->fptr),decltype(all_args)>::go(returnValues,std::move(closure->fptr),std::move(all_args));
+    return apply_and_return<RT,Pols,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
   }
   static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
@@ -213,6 +229,7 @@ public:
   {
 //    printf("%s:%d Entered entry_point of a VariadicFunctor\n", __FILE__, __LINE__ );
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    SLOW_DOWN_CALL();
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     MAKE_STACK_FRAME(frame,sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
@@ -228,9 +245,8 @@ public:
       }
     }
 #endif
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
     std::tuple<translate::from_object<ARGS>...> all_args(arg_tuple<0,policies<>,ARGS...>::goFrame(frame->arguments()));
-    return clasp_apply_and_return<RT,core::policy::clasp,decltype(closure->fptr),decltype(all_args)>::go(returnValues,std::move(closure->fptr),std::move(all_args));
+    return clasp_apply_and_return<RT,core::policy::clasp,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
   }
       static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
@@ -289,10 +305,10 @@ public:
   static inline gctools::return_type entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    SLOW_DOWN_CALL();
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
     std::tuple<translate::from_object<ARGS,PUREOUTS>...> all_args(arg_tuple<0,Pols,ARGS...>::goFrame(lcc_args));
-    return apply_and_return<RT,Pols,decltype(closure->fptr),decltype(all_args)>::go(returnValues,std::move(closure->fptr),std::move(all_args));
+    return apply_and_return<RT,Pols,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
   }
   static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
@@ -346,10 +362,10 @@ public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    SLOW_DOWN_CALL();
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
     std::tuple<translate::from_object<ARGS>...> all_args(arg_tuple<0,policies<>,ARGS...>::goFrame(lcc_args));
-    return clasp_apply_and_return<RT,core::policy::clasp,decltype(closure->fptr),decltype(all_args)>::go(returnValues,std::move(closure->fptr),std::move(all_args));
+    return clasp_apply_and_return<RT,core::policy::clasp,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
   }
   static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);

@@ -46,6 +46,7 @@ public:
   template <class Y>
   multiple_values(const multiple_values<Y> &yy) : smart_ptr<T>(yy), _number_of_values(yy.number_of_values()){};
 
+#if 0
   static multiple_values<T> createFromValues() {
     core::MultipleValues &mv = core::lisp_multipleValues();
     multiple_values<T> result(mv.getSize() == 0 ? nil<core::T_O>() : mv.valueGet(0, mv.getSize()), mv.getSize());
@@ -63,17 +64,18 @@ public:
     mv.setSize(this->number_of_values());
   };
 
-  void set_number_of_values(size_t num) { this->_number_of_values = num; };
-  return_type as_return_type() const {
-    return return_type(this->raw_(), this->_number_of_values);
-  }
-
   // Read this T_mv from the multiple value vector.
   void readFromMultipleValue0() {
     core::MultipleValues &mv = core::lisp_multipleValues();
     this->setRaw_(reinterpret_cast<gc::Tagged>(mv[0]));
     this->_number_of_values = mv.getSize();
   };
+#endif
+
+  void set_number_of_values(size_t num) { this->_number_of_values = num; };
+  return_type as_return_type() const {
+    return return_type(this->raw_(), this->_number_of_values);
+  }
 
   operator bool() const {
     return this->theObject != NULL;
@@ -86,25 +88,6 @@ public:
       number_of_values() const {
     return this->_number_of_values;
   };
-
-  // NOTE: For valueSet_ and valueGet_, idx must be > 0,
-  // as the primary value is stored in the T_mv itself.
-  inline void valueSet_(int idx, core::T_sp val) {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    mv.valueSet(idx, val);
-  }
-
-  inline core::T_sp valueGet_(int idx) const {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    return mv.valueGet(idx, this->_number_of_values);
-  };
-
-  core::T_sp second() const {
-    return this->valueGet_(1);
-  }
-  core::T_sp third() const {
-    return this->valueGet_(2);
-  }
 
   void dump() {
     if (this->_number_of_values > 0) {
@@ -124,56 +107,6 @@ public:
 };
 
 
-namespace core {
- typedef gctools::multiple_values<T_O> T_mv;
-
- /* Save a return_type (in the form of a primary value and number of values)
-  * into an array of T_O*. Values past the first are taken from lisp_multipleValues.
-  * This is intended to be used in a pattern like the following:
-  * { T_mv result = whatever;
-  *   size_t nvals = whatever.number_of_values();
-  *   T_O* mv_temp[nvals];
-  *   returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
-  *   ... stuff that messes with values ...
-  *   return returnTypeLoadFromTemp(nvals, mv_temp);
-  * }
-  * FIXME: Formalize with a macro or templates or something? */
- inline void returnTypeSaveToTemp(size_t nvals, T_O* primary, T_O** temp) {
-   if (nvals > 0) { // don't store even the primary unless the space actually exists
-     core::MultipleValues& mv = core::lisp_multipleValues();
-     temp[0] = primary;
-     for (size_t i = 1; i < nvals; ++i) {
-       temp[i] = mv._Values[i];
-     }
-   }
- }
- // Build and return a return_type from a temporary vector. See above.
- inline gctools::return_type returnTypeLoadFromTemp(size_t nvals, T_O** temp) {
-   core::MultipleValues& mv = core::lisp_multipleValues();
-   for (size_t i = 1; i < nvals; ++i) {
-     mv._Values[i] = temp[i];
-   }
-   return gctools::return_type(nvals == 0 ? nil<core::T_O>().raw_() : temp[0], nvals);
- }
-
- // Similar to returnTypeSaveToTemp, but saves only from lisp_multipleValues.
- inline void multipleValuesSaveToTemp(size_t nvals, T_O** temp) {
-   core::MultipleValues& mv = core::lisp_multipleValues();
-   for (size_t i = 0; i < nvals; ++i) {
-     temp[i] = mv._Values[i];
-   }
- }
- // Similar to returnTypeLoadFromTemp, but just writes into lisp_multipleValues.
- inline void multipleValuesLoadFromTemp(size_t nvals, T_O** temp) {
-   core::MultipleValues& mv = core::lisp_multipleValues();
-   mv.setSize(nvals);
-   for (size_t i = 0; i < nvals; ++i) {
-     mv._Values[i] = temp[i];
-   }
- }
-};
-
-extern core::T_mv ValuesFromCons(core::List_sp vals);
 
 namespace gctools { 
 
@@ -192,5 +125,11 @@ namespace gctools {
   };
 #endif
 };
+
+namespace core {
+ typedef gctools::multiple_values<T_O> T_mv;
+};
+
+extern core::T_mv ValuesFromCons(core::List_sp vals);
 
 #endif

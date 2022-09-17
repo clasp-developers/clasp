@@ -223,10 +223,11 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
     bool print_package = false;
     if ((forced_package = forced_print_package(package)))
       print_package = true;
+    MultipleValues& mvn = core::lisp_multipleValues();
     if (!print_package) {
       T_mv symbol_mv = cl__find_symbol(name, _lisp->getCurrentPackage());
       Symbol_sp sym = symbol_mv;
-      Symbol_sp intern_flag = gc::As<Symbol_sp>(symbol_mv.valueGet_(1));
+      Symbol_sp intern_flag = gc::As<Symbol_sp>(mvn.valueGet(1,symbol_mv.number_of_values()));
       if ((sym != x) || intern_flag.nilp())
         print_package = true;
     }
@@ -238,7 +239,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
       if (!x.nilp()) {
         Symbol_mv sym2_mv = cl__find_symbol(x->symbolName(), package);
         Symbol_sp sym2 = sym2_mv;
-        Symbol_sp intern_flag2 = gc::As<Symbol_sp>(sym2_mv.valueGet_(1));
+        Symbol_sp intern_flag2 = gc::As<Symbol_sp>(mvn.valueGet(1,sym2_mv.number_of_values()));
         if (sym2 != x) {
           clasp_write_string("<UNPRINTABLE-SYMBOL@", stream);
           stringstream ss;

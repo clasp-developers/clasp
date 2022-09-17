@@ -1135,7 +1135,8 @@ void debugFileScopeHandle(int *sourceFileInfoHandleP)
 extern "C" {
 void saveToMultipleValue0(core::T_mv *mvP)
 {NO_UNWIND_BEGIN();
-  mvP->saveToMultipleValue0();
+  MultipleValues& mv = lisp_multipleValues();
+  mv.saveToMultipleValue0(*mvP);
   NO_UNWIND_END();
 }
 
@@ -1325,7 +1326,8 @@ T_O **cc_multipleValuesArrayAddress()
 
 void cc_saveMultipleValue0(core::T_mv result)
 {NO_UNWIND_BEGIN();
-  result.saveToMultipleValue0();
+  MultipleValues& mv = lisp_multipleValues();
+  mv.saveToMultipleValue0(result);
   NO_UNWIND_END();
 }
 

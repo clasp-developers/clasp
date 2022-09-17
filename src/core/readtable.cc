@@ -77,7 +77,8 @@ CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromCha
     core__setf_syntax_type(syntax,toReadTable,toChar);
     T_mv macro = cl__get_macro_character(fromChar,tfromReadTable);
     if (macro.notnilp()) {
-      T_sp nonTerminating = macro.second();
+      MultipleValues& mvn = core::lisp_multipleValues();
+      T_sp nonTerminating = mvn.second(macro.number_of_values());
       toReadTable->set_macro_character_(toChar, macro, nonTerminating);
     }
     gc::Nilable<HashTable_sp> fromTable = fromReadTable->DispatchMacroCharacters_->gethash(fromChar);

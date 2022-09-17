@@ -246,8 +246,12 @@ template <typename Blockf>
 T_mv call_with_escape(Blockf&& block) {
   jmp_buf target;
   void* frame = __builtin_frame_address(0);
-  if (setjmp(target)) return T_mv::createFromValues(); // abnormal return
-  else
+  if (setjmp(target)) {
+    core::MultipleValues& mv = core::lisp_multipleValues();
+    T_mv result = mv.readFromMultipleValue0(mv.getSize());
+    return result;
+    // checkme    return T_mv::createFromValues(); // abnormal return
+  }  else
     try {
       // the block dynenv is heap allocated, so that functions closing over it
       // can escape, and get a nice out-of-extent if they use it.
@@ -260,7 +264,12 @@ T_mv call_with_escape(Blockf&& block) {
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       return block(env);
     } catch (Unwind& uw) {
-      if (uw.getFrame() == frame) return T_mv::createFromValues();
+      if (uw.getFrame() == frame) {
+        core::MultipleValues& mv = core::lisp_multipleValues();
+        T_mv result = mv.readFromMultipleValue0(mv.getSize());
+        return result;
+    // checkme return T_mv::createFromValues();
+      }
       else throw;
     }
 }
@@ -293,8 +302,12 @@ void call_with_tagbody(Tagbodyf&& tagbody) {
 template <typename Catchf>
 T_mv call_with_catch(T_sp tag, Catchf&& cf) {
   jmp_buf target;
-  if (setjmp(target))
-    return T_mv::createFromValues(); // abnormal return
+  if (setjmp(target)) {
+    core::MultipleValues& mv = core::lisp_multipleValues();
+    T_mv result = mv.readFromMultipleValue0(mv.getSize());
+    return result;
+    // checkme return T_mv::createFromValues(); // abnormal return
+  }
   else
     try {
       gctools::StackAllocate<CatchDynEnv_O> env(&target, tag);
@@ -303,7 +316,12 @@ T_mv call_with_catch(T_sp tag, Catchf&& cf) {
       return cf();
     } catch (CatchThrow& ct) {
       if (ct.getTag() != tag) throw;
-      else return T_mv::createFromValues();
+      else {
+        core::MultipleValues& mv = core::lisp_multipleValues();
+        T_mv result = mv.readFromMultipleValue0(mv.getSize());
+        return result;
+        // checkme return T_mv::createFromValues();
+      }
     }
 }
 

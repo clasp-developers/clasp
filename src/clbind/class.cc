@@ -68,6 +68,30 @@ THE SOFTWARE.
 #include <cstring>
 #include <iostream>
 
+
+
+
+#ifdef DEBUG_SLOW_DOWN_CXX_CALLS
+extern "C" {
+size_t global_slow_down_cxx_calls_delay = 0;
+
+void slow_down_function() {
+  // Do nothing
+};
+
+};
+#endif
+
+namespace core {
+
+CL_DEFUN void core__set_slow_down_cxx_calls_delay(size_t num) {
+#ifdef DEBUG_SLOW_DOWN_CXX_CALLS
+  global_slow_down_cxx_calls_delay = num;
+#endif
+};
+
+};
+
 namespace clbind {
 CLBIND_API detail::nil_type nil;
 default_constructor globalDefaultConstructorSignature;

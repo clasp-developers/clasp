@@ -956,7 +956,8 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   SYMBOL_SC_(ExtPkg, symbolMacro);
   T_sp fn = nil<T_O>();
   T_mv result = core__get_sysprop(sym, ext::_sym_symbolMacro);
-  if (gc::As<T_sp>(result.valueGet_(1)).notnilp()) {
+  MultipleValues& mvn = core::lisp_multipleValues();
+  if (gc::As<T_sp>(mvn.valueGet(1,result.number_of_values())).notnilp()) {
     fn = gc::As<Function_sp>(result);
   }
   return fn;
@@ -1225,8 +1226,9 @@ namespace core {
             T_sp form = oCadr(args);
             T_mv result = eval::evaluate(form, environment);
             T_O* primary = result.raw_(); // save for return
-            result.saveToMultipleValue0(); // save to iterate over below
             MultipleValues& values = lisp_multipleValues();
+            values.saveToMultipleValue0(result);
+            // checkme result.saveToMultipleValue0();
             Cons_sp skipFirst = Cons_O::create(nil<T_O>(), nil<T_O>());
             Cons_sp add = skipFirst;
             // Assemble a Cons for sp_setq
@@ -1512,7 +1514,8 @@ T_mv sp_go(List_sp args, T_sp env) {
             List_sp assignments = oCar(args);
             T_mv pairOfLists = core__separate_pair_list(assignments);
             List_sp variables = coerce_to_list(pairOfLists);
-            List_sp expressions = pairOfLists.valueGet_(1);
+            MultipleValues& mvn = core::lisp_multipleValues();
+            List_sp expressions = mvn.valueGet(1,pairOfLists.number_of_values());
             List_sp body = oCdr(args);
             //    LOG("Extended the environment - result -->\n%s" , newEnvironment->__repr__() );
             //    LOG("Evaluating code in this new lexical environment: %s" , body->__repr__() );
@@ -1523,9 +1526,9 @@ T_mv sp_go(List_sp args, T_sp env) {
             extract_declares_docstring_code_specials(body, declares, false, docstring, code, declaredSpecials);
             LOG("Assignment part=%s" , assignments->__repr__());
             T_mv classifiedAndCount = core__classify_let_variables_and_declares(variables, declaredSpecials);
-            size_t totalSpecials = classifiedAndCount.third().unsafe_fixnum();
+            size_t totalSpecials = mvn.third(classifiedAndCount.number_of_values()).unsafe_fixnum();
             List_sp classified = coerce_to_list(classifiedAndCount);
-            int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet_(1)));
+            int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(mvn.valueGet(1,classifiedAndCount.number_of_values())));
             ValueEnvironment_sp newEnvironment =
                 ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
             MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
@@ -1586,7 +1589,8 @@ T_mv sp_go(List_sp args, T_sp env) {
             List_sp assignments = oCar(args);
             T_mv pairOfLists = core__separate_pair_list(assignments);
             List_sp variables = coerce_to_list(pairOfLists);
-            List_sp expressions = pairOfLists.valueGet_(1);
+            MultipleValues& mvn = core::lisp_multipleValues();
+            List_sp expressions = mvn.valueGet(1,pairOfLists.number_of_values());
             List_sp body = oCdr(args);
             //    LOG("Extended the environment - result -->\n%s" , newEnvironment->__repr__() );
             //    LOG("Evaluating code in this new lexical environment: %s" , body->__repr__() );
@@ -1597,9 +1601,9 @@ T_mv sp_go(List_sp args, T_sp env) {
             extract_declares_docstring_code_specials(body, declares, false, docstring, code, declaredSpecials);
             LOG("Assignment part=%s" , assignments->__repr__());
             T_mv classifiedAndCount = core__classify_let_variables_and_declares(variables, declaredSpecials);
-            size_t totalSpecials = classifiedAndCount.third().unsafe_fixnum();
+            size_t totalSpecials = mvn.third(classifiedAndCount.number_of_values()).unsafe_fixnum();
             List_sp classified = coerce_to_list(classifiedAndCount);
-            int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet_(1)));
+            int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(mvn.valueGet(1,classifiedAndCount.number_of_values())));
             ValueEnvironment_sp newEnvironment =
                 ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
             MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
@@ -1697,7 +1701,9 @@ T_mv sp_go(List_sp args, T_sp env) {
             BlockEnvironment_sp blockEnv = gc::As_unsafe<BlockEnvironment_sp>(tblockEnv);
             T_mv result = Values(nil<T_O>());
             if (oCdr(args).notnilp()) result = eval::evaluate(oCadr(args), environment);
-            result.saveToMultipleValue0();
+            MultipleValues& values = lisp_multipleValues();
+            values.saveToMultipleValue0(result);
+            // checkme result.saveToMultipleValue0();
             T_sp handle = gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0);
             BlockDynEnv_sp bde = gc::As_unsafe<BlockDynEnv_sp>(handle);
             sjlj_unwind(bde, 1); // index irrelevant
@@ -1718,7 +1724,8 @@ T_mv sp_go(List_sp args, T_sp env) {
           ASSERT(environment.generalp());
           T_sp throwTag = eval::evaluate(oCar(args), environment);
           T_mv result = eval::evaluate(oCadr(args), environment);
-          result.saveToMultipleValue0();
+          MultipleValues& mv = lisp_multipleValues();
+          mv.saveToMultipleValue0(result);
           sjlj_throw(throwTag);
         }
 
@@ -2255,6 +2262,7 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif
             //            printf("    environment: %s\n", _rep_(environment).c_str() );
           ASSERT(environment.generalp());
+          MultipleValues& mvn = core::lisp_multipleValues();
           T_mv result;
           List_sp form;
           T_sp head;
@@ -2351,9 +2359,9 @@ T_mv sp_go(List_sp args, T_sp env) {
                     /* macros are expanded again and again and again */
               if (_sym_STARcache_macroexpandSTAR->symbolValue().notnilp()) {
                 HashTableEqual_sp ht = gc::As<HashTableEqual_sp>(_sym_STARcache_macroexpandSTAR->symbolValue());
-                T_mv expanded_mv = ht->gethash(form);
-                if (expanded_mv.second().notnilp()) {
-                  expanded = expanded_mv;
+                T_mv expandedmv = ht->gethash(form);
+                if (mvn.second(expandedmv.number_of_values()).notnilp()) {
+                  expanded = expandedmv;
                 } else {
                   expanded = cl__macroexpand(form,environment);
                   ht->setf_gethash(form,expanded);

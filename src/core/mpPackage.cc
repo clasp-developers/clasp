@@ -180,11 +180,12 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
     }
     ql::list return_values;
     int nv = result_mv.number_of_values();
+    core::MultipleValues& mv = core::lisp_multipleValues();
     if (nv > 0) {
       core::T_sp result0 = result_mv;
       return_values << result0;
       for (int i = 1; i < nv; ++i)
-        return_values << result_mv.valueGet_(i);
+        return_values << mv.valueGet(i,result_mv.number_of_values());
     }
     process->_ReturnValuesList = return_values.result();
   }

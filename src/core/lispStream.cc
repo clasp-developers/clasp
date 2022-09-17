@@ -3233,7 +3233,8 @@ io_file_length(T_sp strm) {
     Real_mv output_mv = clasp_floor2(gc::As_unsafe<Integer_sp>(output), make_fixnum(bs / 8));
     // and now lets use the calculated value
     output = output_mv;
-    Fixnum_sp fn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
+    MultipleValues& mvn = core::lisp_multipleValues();
+    Fixnum_sp fn1 = gc::As<Fixnum_sp>(mvn.valueGet(1,output_mv.number_of_values()));
     unlikely_if(unbox_fixnum(fn1) != 0) {
       FEerror("File length is not on byte boundary", 0);
     }
@@ -4108,7 +4109,8 @@ io_stream_length(T_sp strm) {
     T_mv output_mv = clasp_floor2(gc::As_unsafe<Integer_sp>(output), make_fixnum(bs / 8));
      // and now lets use the calculated value
     output = output_mv;
-    Fixnum_sp ofn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
+    MultipleValues& mvn = core::lisp_multipleValues();
+    Fixnum_sp ofn1 = gc::As<Fixnum_sp>(mvn.valueGet(1,output_mv.number_of_values()));
     Fixnum fn = unbox_fixnum(ofn1);
     unlikely_if(fn != 0) {
       FEerror("File length is not on byte boundary", 0);
@@ -6495,7 +6497,8 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
   sin = coerce::inputStreamDesignator(sin);
   if (!AnsiStreamP(sin)) {
     T_mv results = eval::funcall(gray::_sym_stream_read_line, sin);
-    if (results.second().isTrue()) {
+    MultipleValues& mvn = core::lisp_multipleValues();
+    if (mvn.second(results.number_of_values()).isTrue()) {
       if (eof_error_p.notnilp()) {
         ERROR_END_OF_FILE(sin);
       } else {

@@ -213,7 +213,9 @@ CL_UNWIND_COOP(true);
   // Call the thunk to get the return values.
   T_mv result = eval::funcall(thunk);
   // Save the return values.
-  result.saveToMultipleValue0();
+  core::MultipleValues& mv = core::lisp_multipleValues();
+  mv.saveToMultipleValue0(result);
+  // checkme result.saveToMultipleValue0();
   // Go. Index is ignored for blocks.
   sjlj_unwind(escape, 1);
 }
@@ -247,7 +249,9 @@ CL_DEFUN T_mv core__sjlj_catch_function(T_sp tag, Function_sp thunk) {
 CL_UNWIND_COOP(true);
 [[noreturn]] CL_DEFUN void core__sjlj_throw(T_sp tag, Function_sp thunk) {
   T_mv result = eval::funcall(thunk);
-  result.saveToMultipleValue0();
+  core::MultipleValues& mv = core::lisp_multipleValues();
+  mv.saveToMultipleValue0(result);
+  // checkme result.saveToMultipleValue0();
   sjlj_throw(tag);
 }
 

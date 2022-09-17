@@ -157,7 +157,8 @@ CL_DEFMETHOD
 T_sp GlobalEntryPoint_O::lineTable() const {
   T_mv saCode = this->sectionedEntryInfo();
   llvmo::SectionedAddress_sp sa = gc::As<llvmo::SectionedAddress_sp>(saCode);
-  llvmo::ObjectFile_sp of = gc::As<llvmo::ObjectFile_sp>(saCode.second());
+  MultipleValues& mvn = core::lisp_multipleValues();
+  llvmo::ObjectFile_sp of = gc::As<llvmo::ObjectFile_sp>(mvn.second(saCode.number_of_values()));
   llvmo::DWARFContext_sp dwarfContext = llvmo::DWARFContext_O::createDWARFContext(of);
   auto addressRanges = getAddressRangesForAddressInner(dwarfContext, sa );
   if (addressRanges) {

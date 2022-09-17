@@ -174,7 +174,8 @@ void vm_record_playback(void* value, const char* name) {
 #endif
 
 
-static void bytecode_vm_long(VirtualMachine&, T_O**, size_t, Closure_O*,
+static void bytecode_vm_long(VirtualMachine&, MultipleValues& multipleValues,
+                             T_O**, size_t, Closure_O*,
                              size_t, core::T_O**,
                              uint8_t);
 
@@ -201,6 +202,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
   uintptr_t bytecode_start = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(0);
   uintptr_t bytecode_end = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(cl__length(bc));
 #endif
+  MultipleValues& multipleValues = core::lisp_multipleValues();
   while (1) {
     VM_PC_CHECK(vm,bytecode_start,bytecode_end);
 #if DEBUG_VM_RECORD_PLAYBACK==1
@@ -263,7 +265,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
                      nargs + 1, vm.npushed(nlocals));
 #endif
       vm._pc = pc;
-      res.saveToMultipleValue0();
+      multipleValues.setN(res.raw_(),res.number_of_values());
       vm.drop(nargs+1);
       vm._pc++;
       break;
@@ -285,6 +287,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       unsigned char* pc = vm._pc;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       vm._pc = pc;
+      multipleValues.set1(res);
       vm.drop(nargs+1);
       vm.push(res.raw_());
       VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
@@ -300,13 +303,13 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       unsigned char* pc = vm._pc;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       vm._pc = pc;
+      multipleValues.setN(res.raw_(),res.number_of_values());
       vm.drop(nargs+1);
       if (nvals != 0) {
-        MultipleValues &mv = lisp_multipleValues();
         vm.push(res.raw_()); // primary
-        size_t svalues = mv.getSize();
+        size_t svalues = multipleValues.getSize();
         for (size_t i = 1; i < svalues; ++i)
-          vm.push(mv.valueGet(i, svalues).raw_());
+          vm.push(multipleValues.valueGet(i, svalues).raw_());
       }
       vm._pc++;
       break;
@@ -410,9 +413,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         SIMPLE_ERROR("In vm_return - vm.npushed(nlocals) = %td   nlocals = %lu", vm.npushed(nlocals), nlocals);
       }
 #endif
-      core::MultipleValues &mv = core::lisp_multipleValues();
-      size_t nvalues = mv.getSize();
-      return gctools::return_type(mv.valueGet(0, nvalues).raw_(), nvalues);
+      size_t nvalues = multipleValues.getSize();
+      return gctools::return_type(multipleValues.valueGet(0, nvalues).raw_(), nvalues);
     }
     case vm_bind_required_args: {
       uint8_t nargs = read_uint8(vm._pc);
@@ -614,10 +616,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_push_values: {
       // TODO: Direct copy?
       DBG_VM("push-values\n");
-      MultipleValues &mv = lisp_multipleValues();
-      size_t nvalues = mv.getSize();
+      size_t nvalues = multipleValues.getSize();
       DBG_VM("  nvalues = %zu\n", nvalues);
-      for (size_t i = 0; i < nvalues; ++i) vm.push(mv.valueGet(i, nvalues).raw_());
+      for (size_t i = 0; i < nvalues; ++i) vm.push(multipleValues.valueGet(i, nvalues).raw_());
       // We could skip tagging this, but that's error-prone.
       vm.push(make_fixnum(nvalues).raw_());
       vm._pc++;
@@ -628,22 +629,20 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       T_sp texisting_values((gctools::Tagged)vm.pop());
       size_t existing_values = texisting_values.unsafe_fixnum();
       DBG_VM("  existing-values = %zu\n", existing_values);
-      MultipleValues &mv = lisp_multipleValues();
-      size_t nvalues = mv.getSize();
+      size_t nvalues = multipleValues.getSize();
       DBG_VM("  nvalues = %zu\n", nvalues);
-      for (size_t i = 0; i < nvalues; ++i) vm.push(mv.valueGet(i, nvalues).raw_());
+      for (size_t i = 0; i < nvalues; ++i) vm.push(multipleValues.valueGet(i, nvalues).raw_());
       vm.push(make_fixnum(nvalues + existing_values).raw_());
       vm._pc++;
       break;
     }
     case vm_pop_values: {
       DBG_VM("pop-values\n");
-      MultipleValues &mv = lisp_multipleValues();
       T_sp texisting_values((gctools::Tagged)vm.pop());
       size_t existing_values = texisting_values.unsafe_fixnum();
       DBG_VM("  existing-values = %zu\n", existing_values);
       vm.copyto(existing_values, &my_thread->_MultipleValues._Values[0]);
-      mv.setSize(existing_values);
+      multipleValues.setSize(existing_values);
       vm.drop(existing_values);
       vm._pc++;
       break;
@@ -657,7 +656,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       unsigned char* pc = vm._pc;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       vm._pc = pc;
-      res.saveToMultipleValue0();
+      multipleValues.setN(res.raw_(),res.number_of_values());
       vm._pc++;
       break;
     }
@@ -670,6 +669,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       unsigned char* pc = vm._pc;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       vm._pc = pc;
+      multipleValues.set1(res);
       vm.push(res.raw_());
       vm._pc++;
       break;
@@ -678,18 +678,18 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t nvals = read_uint8(vm._pc);
       DBG_VM("mv-call-receive-fixed %" PRIu8 "\n", nvals);
       T_O* func = vm.pop();
-      MultipleValues& mv = lisp_multipleValues();
-      size_t nargs = mv.getSize();
+      size_t nargs = multipleValues.getSize();
       T_O* args[nargs];
       multipleValuesSaveToTemp(nargs, args);
       unsigned char* pc = vm._pc;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       vm._pc = pc;
+      multipleValues.setN(res.raw_(),res.number_of_values());
       if (nvals != 0) {
         vm.push(res.raw_()); // primary
-        size_t svalues = mv.getSize();
+        size_t svalues = multipleValues.getSize();
         for (size_t i = 1; i < svalues; ++i)
-          vm.push(mv.valueGet(i, svalues).raw_());
+          vm.push(multipleValues.valueGet(i, svalues).raw_());
       }
       vm._pc++;
       break;
@@ -821,24 +821,21 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         break;
     case vm_push: {
       DBG_VM1("push\n");
-      MultipleValues &mv = lisp_multipleValues();
-      vm.push(mv.valueGet(0, mv.getSize()).raw_());
+      vm.push(multipleValues.valueGet(0, multipleValues.getSize()).raw_());
       vm._pc++;
       break;
     }
     case vm_pop:{
       DBG_VM1("pop\n");
       T_sp obj((gctools::Tagged)vm.pop());
-      core::MultipleValues &mv = core::lisp_multipleValues();
-      mv.setSize(1);
-      mv.valueSet(0, obj);
+      multipleValues.set1(obj);
       vm._pc++;
       break;
     }
     case vm_long: {
       // In a separate function to facilitate better icache utilization
       // by bytecode_vm (hopefully)
-      bytecode_vm_long(vm, literals, nlocals, closure, lcc_nargs, lcc_args, *++vm._pc);
+      bytecode_vm_long(vm, multipleValues, literals, nlocals, closure, lcc_nargs, lcc_args, *++vm._pc);
       break;
     }
     default:
@@ -851,7 +848,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
   }
 }
 
-static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
+static void bytecode_vm_long(VirtualMachine& vm, MultipleValues& multipleValues,
+                             T_O** literals, size_t nlocals,
                              Closure_O* closure, size_t lcc_nargs, core::T_O** lcc_args,
                              uint8_t sub_opcode) {
   switch (sub_opcode) {
@@ -894,7 +892,7 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     unsigned char* pc = vm._pc;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
     vm._pc = pc;
-    res.saveToMultipleValue0();
+    multipleValues.setN(res.raw_(),res.number_of_values());
     vm.drop(nargs+1);
     vm._pc += 3;
     break;
@@ -917,6 +915,7 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     unsigned char* pc = vm._pc;
     T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
     vm._pc = pc;
+    multipleValues.set1(res);
     vm.drop(nargs+1);
     vm.push(res.raw_());
     VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
@@ -934,13 +933,13 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     unsigned char* pc = vm._pc;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
     vm._pc = pc;
+    multipleValues.setN(res.raw_(),res.number_of_values());
     vm.drop(nargs+1);
     if (nvals != 0) {
-      MultipleValues &mv = lisp_multipleValues();
       vm.push(res.raw_()); // primary
-      size_t svalues = mv.getSize();
+      size_t svalues = multipleValues.getSize();
       for (size_t i = 1; i < svalues; ++i)
-        vm.push(mv.valueGet(i, svalues).raw_());
+        vm.push(multipleValues.valueGet(i, svalues).raw_());
     }
     vm._pc += 5;
     break;
@@ -1157,18 +1156,18 @@ static void bytecode_vm_long(VirtualMachine& vm, T_O** literals, size_t nlocals,
     uint16_t nvals = low + (*(vm._pc + 2) << 8);
     DBG_VM("long mv-call-receive-fixed %" PRIu16 "\n", nvals);
     T_O* func = vm.pop();
-    MultipleValues& mv = lisp_multipleValues();
-    size_t nargs = mv.getSize();
+    size_t nargs = multipleValues.getSize();
     T_O* args[nargs];
     multipleValuesSaveToTemp(nargs, args);
     unsigned char* pc = vm._pc;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
     vm._pc = pc;
+    multipleValues.setN(res.raw_(),res.number_of_values());
     if (nvals != 0) {
       vm.push(res.raw_()); // primary
-      size_t svalues = mv.getSize();
+      size_t svalues = multipleValues.getSize();
       for (size_t i = 1; i < svalues; ++i)
-        vm.push(mv.valueGet(i, svalues).raw_());
+        vm.push(multipleValues.valueGet(i, svalues).raw_());
     }
     vm._pc += 3;
     break;

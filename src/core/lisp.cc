@@ -1277,6 +1277,7 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
 
 T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prompt) {
   T_mv result = Values(nil<T_O>());
+  MultipleValues& mvn = core::lisp_multipleValues();
   while (1) {
     try {
       if (prompt) {
@@ -1323,7 +1324,7 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
           vresults[0] = result;
           if (result.number_of_values() > 1) {
             for (int i(1); i < result.number_of_values(); ++i) {
-              vresults[i] = result.valueGet_(i);
+              vresults[i] = mvn.valueGet(i,result.number_of_values());
             }
           }
         }
@@ -1661,7 +1662,8 @@ CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
   ClassHolder_sp cell;
   HashTable_sp classNames = _lisp->_Roots._ClassTable;
   T_mv mc = classNames->gethash(symbol, nil<T_O>());
-  foundp = mc.valueGet_(1).notnilp();
+  MultipleValues& mvn = core::lisp_multipleValues();
+  foundp = mvn.valueGet(1,mc.number_of_values()).notnilp();
   if (!foundp) {
     cell = ClassHolder_O::create(unbound<Instance_O>());
     classNames->setf_gethash(symbol,cell);
@@ -1853,11 +1855,12 @@ CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
   if (_sym_STARdebugMacroexpandSTAR->symbolValue().isTrue()) {
     printf("%s:%d - macroexpanding --> %s\n", __FILE__, 2551, _rep_(form).c_str());
   }
+  MultipleValues& mvn = core::lisp_multipleValues();
   T_sp cur = form;
   do {
-    T_mv mv = cl__macroexpand_1(cur, env);
-    cur = mv;
-    sawAMacro = gc::As<T_sp>(mv.valueGet_(1)).isTrue();
+    T_mv rmv = cl__macroexpand_1(cur, env);
+    cur = rmv;
+    sawAMacro = gc::As<T_sp>(mvn.valueGet(1,rmv.number_of_values())).isTrue();
     expandedMacro |= sawAMacro;
     macroExpansionCount++;
     if (macroExpansionCount > 100) {
@@ -2265,7 +2268,8 @@ Symbol_mv Lisp::intern(const string &name, T_sp optionalPackageDesignator) {
   SimpleBaseString_sp sname = SimpleBaseString_O::make(symbolName);
   T_mv symStatus = package->intern(sname);
   Symbol_sp sym = gc::As<Symbol_sp>(symStatus);
-  T_sp status = symStatus.second();
+  MultipleValues& mvn = core::lisp_multipleValues();
+  T_sp status = mvn.second(symStatus.number_of_values());
   return Values(sym, status);
 }
 
@@ -2387,6 +2391,7 @@ int Lisp::run() {
   _lisp->_Roots._TheSystemIsUp = true;
   Package_sp cluser = gc::As<Package_sp>(_lisp->findPackage("COMMON-LISP-USER"));
   cl::_sym_STARpackageSTAR->defparameter(cluser);
+  MultipleValues& mvn = core::lisp_multipleValues();
   try {
     if (!global_options->_IgnoreInitImage) {
       if ( startup_functions_are_waiting() ) {
@@ -2401,7 +2406,7 @@ int Lisp::run() {
         global_startupSourceName = gc::As<String_sp>(cl__namestring(initPathname))->get_std_string();
         T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
         if (result.nilp()) {
-          T_sp err = result.second();
+          T_sp err = mvn.second(result.number_of_values());
           printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
         }
         char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
@@ -2421,7 +2426,7 @@ int Lisp::run() {
         }
         T_mv result = core__load_no_package_set(initPathname);
         if (result.nilp()) {
-          T_sp err = result.second();
+          T_sp err = mvn.second(result.number_of_values());
           printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
         }
       }

@@ -92,10 +92,11 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
   gctools::gctools__garbage_collect();
   gctools::gctools__garbage_collect();
   gctools::gctools__garbage_collect();
+  MultipleValues& mvn = core::lisp_multipleValues();
   for (size_t it(0), itEnd(cl__length(keys)); it<itEnd; ++it ) {
     T_sp key = keys->rowMajorAref(it);
     T_mv lookup = ht->gethash(key,nil<core::T_O>());
-    if (lookup.second().nilp()) {
+    if (mvn.second(lookup.number_of_values()).nilp()) {
       if (print) {
         ss << filename << ":" << line << " Could not find key " << _rep_(key) << "\n";
       } else {
@@ -710,7 +711,8 @@ CL_DEFUN uint cl__hash_table_size(HashTableBase_sp ht) {
 T_sp HashTable_O::operator[](const std::string& key) {
   T_sp tkey = _lisp->internKeyword(key);
   T_mv val = this->gethash(tkey);
-  if (val.second().nilp()) {
+  MultipleValues& mvn = core::lisp_multipleValues();
+  if (mvn.second(val.number_of_values()).nilp()) {
     SIMPLE_ERROR(("Could not find key: %s") , tkey);
   }
   return val;
