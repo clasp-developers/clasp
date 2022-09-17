@@ -1102,6 +1102,7 @@ Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, b
 
 
 void lisp_bytecode_defun(SymbolFunctionEnum kind,
+                         int bytecodep,
                          Symbol_sp sym,
                          const string &packageName,
                          BuiltinClosure_sp entry,
@@ -1116,16 +1117,22 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
   List_sp lambda_list = lisp_parse_arguments(packageName, arguments,numberOfRequiredArguments,skipIndices);
   bool trivial_wrapper;
   List_sp vars = lisp_lexical_variable_names( lambda_list, trivial_wrapper );
-  List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ) );
-//  printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
-  List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,funcall_form);
-//  printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
   Function_sp func;
-  if (trivial_wrapper) {
+  if (!bytecodep) {
     func = entry;
+    LambdaListHandler_sp llh = lisp_function_lambda_list_handler( lambda_list, nil<T_O>(), skipIndices );
+    gc::As<BuiltinClosure_sp>(func)->_lambdaListHandler = llh;
   } else {
-    func = comp::bytecompile( form,comp::Lexenv_O::make_top_level());
+    List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ) );
+//  printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
+    List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,funcall_form);
+//  printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
+    if (trivial_wrapper) {
+      func = entry;
+    } else {
+      func = comp::bytecompile( form,comp::Lexenv_O::make_top_level());
 //    printf("%s:%d:%s compiled a non-trivial wrapper for %s %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sym).c_str(), _rep_(lambda_list).c_str() );
+    }
   }
   func->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   if (kind==symbol_function) {

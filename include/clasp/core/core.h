@@ -951,6 +951,7 @@ void lisp_defmacro(Symbol_sp name, const string &packageName,
 #endif
   typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
   void lisp_bytecode_defun(SymbolFunctionEnum kind,
+                           int bytecodep,
                            Symbol_sp sym,
                            const string &packageName,
                            BuiltinClosure_sp fc,

@@ -185,6 +185,19 @@ NOINLINE void expose_function(const std::string& pkg_sym,
 }
 
 template <typename RT, typename...ARGS>
+NOINLINE void expose_function_special_wrapper(const std::string& pkg_sym,
+                                              RT (*fp)(ARGS...),
+                                              const std::string& lambdaList)
+{
+  maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),pkg_sym);
+  std::string pkgName;
+  std::string symbolName;
+  core::colon_split(pkg_sym,pkgName,symbolName);
+  //printf("%s:%d  expose_function_special_wrapper   pkgName=%s  symbolName=%s\n", __FILE__, __LINE__, pkgName.c_str(), symbolName.c_str() );
+  core::wrap_function_special_wrapper(pkgName,symbolName,fp,lambdaList);
+}
+
+template <typename RT, typename...ARGS>
 NOINLINE void expose_function_setf(const std::string& pkg_sym,
                                    RT (*fp)(ARGS...),
                                    const std::string& lambdaList)
