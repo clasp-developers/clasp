@@ -81,8 +81,23 @@ private:
 
 namespace clbind {
 
-struct LambdaListHandler {};
-struct Simple {};
+struct LambdaListHandler {
+  enum { BytecodeP = 0 };
+};
+struct BytecodeWrapper {
+  enum { BytecodeP = 1 };
+};
+
+#if 1
+// Use LambdaListHandler wrappers for all exposed functions
+using DefaultWrapper = LambdaListHandler;
+using SpecialWrapper = BytecodeWrapper;
+#else
+// Use bytecode wrappers for all exposed functions
+using DefaultWrapper = BytecodeWrapper;
+using SpecialWrapper = LambdaListHandler;
+#endif
+
 
 template <typename FunctionPtrType, typename Policies, typename PureOuts, typename ArgumentHandling=LambdaListHandler>
 class TEMPLATED_FUNCTION_VariadicFunctor : public core::BuiltinClosure_O {
@@ -106,7 +121,6 @@ class my_tuple : public std::tuple<Types...> {
   }
 };
 
-#if 0
 template <typename Pols, typename RT, typename...ARGS, typename...PUREOUTS>
 class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>,LambdaListHandler> : public core::BuiltinClosure_O {
 public:
@@ -123,7 +137,6 @@ public:
   TEMPLATED_FUNCTION_VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr)
     : core::BuiltinClosure_O(ep)
     , fptr(ptr) {
-    printf("%s:%d:%s OLD Ctor - stop using and get rid of this class\n", __FILE__, __LINE__, __FUNCTION__ );
     this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -176,14 +189,12 @@ public:
   }
 
 };
-#endif
 
 
-#if 0
-  template <typename RT  ,typename...ARGS>
-  class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,LambdaListHandler> : public core::BuiltinClosure_O {
+template <typename RT  ,typename...ARGS>
+class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,LambdaListHandler> : public core::BuiltinClosure_O {
 public:
-    typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,LambdaListHandler> MyType;
+  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,LambdaListHandler> MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -192,7 +203,6 @@ public:
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
     TEMPLATED_FUNCTION_VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr) : core::BuiltinClosure_O(ep), fptr(ptr) {
-      printf("%s:%d:%s Ctor\n", __FILE__, __LINE__, __FUNCTION__ );
       this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
     };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -247,19 +257,18 @@ public:
   }
 
 };
-#endif
 
 
 //
 //
-// External Simple wrapper, no LambdaListHandler
+// External BytecodeWrapper wrapper, no LambdaListHandler
 //
 //
 
 template <typename Pols, typename RT, typename...ARGS, typename...PUREOUTS>
-class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, Simple> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, BytecodeWrapper> : public core::BuiltinClosure_O {
 public:
-  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, Simple > MyType;
+  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, BytecodeWrapper > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -313,13 +322,13 @@ public:
 
 //
 //
-// Simple wrapper, no LambdaListHandler
+// BytecodeWrapper wrapper, no LambdaListHandler
 //
 //
 template <typename RT  ,typename...ARGS>
-class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,Simple> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,BytecodeWrapper> : public core::BuiltinClosure_O {
 public:
-  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,Simple> MyType;
+  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,BytecodeWrapper> MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -383,18 +392,16 @@ namespace clbind {
 //#include <clasp/clbind/clbind_functoids.h>
 };
 
-#if 0
 template <typename FunctionPtrType, typename Policies, typename PureOutsPack>
 class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::LambdaListHandler>> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::LambdaListHandler >::TemplatedBase>::StampWtag;
 };
-#endif
 
 template <typename FunctionPtrType, typename Policies, typename PureOutsPack>
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::Simple>> {
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::BytecodeWrapper>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::Simple>::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::BytecodeWrapper>::TemplatedBase>::StampWtag;
 };
 
 namespace clbind {
@@ -424,10 +431,10 @@ struct function_registration : registration {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp symbol = core::lisp_intern(m_name, core::lisp_currentPackageName());
     using inValuePack = clbind::inValueTrueFalseMaskPack<FunctionArgCount<FunctionPointerType>::value,Policies>;
-    using VariadicType = TEMPLATED_FUNCTION_VariadicFunctor<FunctionPointerType, Policies, typename inValuePack::type, Simple >;
+    using VariadicType = TEMPLATED_FUNCTION_VariadicFunctor<FunctionPointerType, Policies, typename inValuePack::type, DefaultWrapper >;
     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
     core::BuiltinClosure_sp entry = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,functionPtr));
-    core::lisp_bytecode_defun( core::symbol_function, symbol, core::lisp_currentPackageName(), entry, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
+    core::lisp_bytecode_defun( core::symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, core::lisp_currentPackageName(), entry, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
   }
 
   virtual std::string name() const { return this->m_name;}
