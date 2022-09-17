@@ -84,17 +84,17 @@ namespace clbind {
 struct LambdaListHandler {
   enum { BytecodeP = 0 };
 };
-struct ABytecodeWrapper {
+struct BytecodeWrapper {
   enum { BytecodeP = 1 };
 };
 
 #if 1
 // Use LambdaListHandler wrappers for all exposed functions
 using DefaultWrapper = LambdaListHandler;
-using SpecialWrapper = ABytecodeWrapper;
+using SpecialWrapper = BytecodeWrapper;
 #else
 // Use bytecode wrappers for all exposed functions
-using DefaultWrapper = ABytecodeWrapper;
+using DefaultWrapper = BytecodeWrapper;
 using SpecialWrapper = LambdaListHandler;
 #endif
 
@@ -266,9 +266,9 @@ public:
 //
 
 template <typename Pols, typename RT, typename...ARGS, typename...PUREOUTS>
-class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, ABytecodeWrapper> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, BytecodeWrapper> : public core::BuiltinClosure_O {
 public:
-  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, ABytecodeWrapper > MyType;
+  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, BytecodeWrapper > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -322,13 +322,13 @@ public:
 
 //
 //
-// ABytecodeWrapper wrapper, no LambdaListHandler
+// BytecodeWrapper wrapper, no LambdaListHandler
 //
 //
 template <typename RT  ,typename...ARGS>
-class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,ABytecodeWrapper> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,BytecodeWrapper> : public core::BuiltinClosure_O {
 public:
-  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,ABytecodeWrapper> MyType;
+  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,BytecodeWrapper> MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -399,9 +399,9 @@ public:
 };
 
 template <typename FunctionPtrType, typename Policies, typename PureOutsPack>
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::ABytecodeWrapper>> {
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::BytecodeWrapper>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::ABytecodeWrapper>::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::BytecodeWrapper>::TemplatedBase>::StampWtag;
 };
 
 namespace clbind {

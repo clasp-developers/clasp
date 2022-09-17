@@ -1123,10 +1123,11 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
     LambdaListHandler_sp llh = lisp_function_lambda_list_handler( lambda_list, nil<T_O>(), skipIndices );
     gc::As<BuiltinClosure_sp>(func)->_lambdaListHandler = llh;
   } else {
-    List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ) );
-//  printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
+//    List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ));
+    List_sp funcall_form = Cons_O::create( cl::_sym_apply, Cons_O::create( entry, Cons_O::append(vars,Cons_O::create(nil<T_O>(),nil<T_O>()) ) ));
+    //printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
     List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,funcall_form);
-//  printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
+    printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
     if (trivial_wrapper) {
       func = entry;
     } else {

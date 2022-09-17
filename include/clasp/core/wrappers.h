@@ -250,14 +250,25 @@ namespace core {
 
 // this is used in gc_interface.cc expose_function
  template <typename RT, typename... ARGS>
-void wrap_function_special_wrapper(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
+void wrap_function_LambdaListHandler(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
    maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
    Symbol_sp symbol = _lisp->intern(name, packageName);
    printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
-   using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp,clbind::pureOutsPack<>,clbind::SpecialWrapper>;
+   using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp,clbind::pureOutsPack<>,clbind::LambdaListHandler>;
    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>( symbol ,nil<core::T_O>());
    BuiltinClosure_sp entry = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
-   lisp_bytecode_defun( core::symbol_function, clbind::SpecialWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
+   lisp_bytecode_defun( core::symbol_function, clbind::LambdaListHandler::BytecodeP, symbol, packageName, entry, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
+ }
+
+ template <typename RT, typename... ARGS>
+void wrap_function_BytecodeWrapper(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
+   maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
+   Symbol_sp symbol = _lisp->intern(name, packageName);
+   printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
+   using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp,clbind::pureOutsPack<>,clbind::BytecodeWrapper>;
+   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>( symbol ,nil<core::T_O>());
+   BuiltinClosure_sp entry = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
+   lisp_bytecode_defun( core::symbol_function, clbind::BytecodeWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
  }
 
  template <typename RT, typename... ARGS>
