@@ -381,6 +381,11 @@
             phi block))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
+
+;; fixme2022 simple-unwinding screws up the VM so we disable it everywhere
+(defmethod bir-transformations:simple-unwinding-p :around (instruction system)
+  nil)
+
 (defun translate-come-from (come-from successors)
   (let* ((simplep (bir-transformations:simple-unwinding-p
                    come-from *clasp-system*))

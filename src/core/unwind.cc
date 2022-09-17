@@ -102,6 +102,7 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
 }
 
 [[noreturn]] void sjlj_unwind(LexDynEnv_sp dest, size_t index) {
+  VM_INC_UNWIND_COUNTER(my_thread->_VM);
   switch (sjlj_unwind_search(dest)) {
   case DynEnv_O::OutOfExtent:
       NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
@@ -126,6 +127,7 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
 }
 
 [[noreturn]] void sjlj_throw(T_sp tag) {
+  VM_INC_THROW_COUNTER(my_thread->_VM);
   CatchDynEnv_sp dest;
   switch (sjlj_throw_search(tag, dest)) {
   case DynEnv_O::OutOfExtent:

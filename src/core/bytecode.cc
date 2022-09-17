@@ -181,7 +181,6 @@ static void bytecode_vm_long(VirtualMachine&, MultipleValues& multipleValues,
 
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
 
-//fixme2022   - Remove this because it will slow everything down
 static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         T_O** literals,
                                         size_t nlocals, Closure_O* closure,
@@ -409,7 +408,11 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       if (vaslistp) vm.drop(4); // deallocate
 #ifdef DBG_VM1
       if (vm.npushed(nlocals) != 0) {
-        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   nlocals = %lu", vm.npushed(nlocals), nlocals).c_str());
+#ifdef DEBUG_VIRTUAL_MACHINE
+        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   \n   nlocals = %lu  _framePointer %p  _stackPointer %p vm._unwind_counter %lu  vm._throw_counter %lu", vm.npushed(nlocals), nlocals, (void*)vm._framePointer, (void*)vm._stackPointer, vm._unwind_counter, vm._throw_counter ).c_str());
+#else
+        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   \n   nlocals = %lu  _framePointer %p  _stackPointer %p", vm.npushed(nlocals), nlocals, (void*)vm._framePointer, (void*)vm._stackPointer).c_str());
+#endif
         SIMPLE_ERROR("In vm_return - vm.npushed(nlocals) = %td   nlocals = %lu", vm.npushed(nlocals), nlocals);
       }
 #endif
@@ -1230,6 +1233,9 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
                     rowMajorAddressOfElement_(0));
 
   core::VirtualMachine& vm = my_thread->_VM;
+  VM_CURRENT_DATA(vm, (lcc_nargs>=2) ? lcc_args[1] : NULL);
+  VM_CURRENT_DATA1(vm, (lcc_nargs>=3) ? lcc_args[2] : NULL);
+  VM_INC_COUNTER0(vm);
   // We save the old PC for returns. We do _not_ do this for nonlocal exits,
   // since in that case the NLXing VM invocation sets the PC before escaping.
   unsigned char* old_pc = vm._pc;

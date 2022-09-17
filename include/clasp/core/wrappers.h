@@ -288,7 +288,7 @@ void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>( symbol ,nil<core::T_O>());
     BuiltinClosure_sp f = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
     lisp_bytecode_defun( core::symbol_function_setf, clbind::DefaultWrapper::BytecodeP, symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
-    validateFunctionDescription(__FILE__,__LINE__,f);
+//    validateFunctionDescription(__FILE__,__LINE__,f);
   }
 
 

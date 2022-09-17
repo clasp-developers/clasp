@@ -105,13 +105,13 @@ struct BytecodeWrapper {
 };
 
 #if 1
-// Use LambdaListHandler wrappers for all exposed functions
-using DefaultWrapper = LambdaListHandler;
-using SpecialWrapper = BytecodeWrapper;
-#else
 // Use bytecode wrappers for all exposed functions
 using DefaultWrapper = BytecodeWrapper;
 using SpecialWrapper = LambdaListHandler;
+#else
+// Use LambdaListHandler wrappers for all exposed functions
+using DefaultWrapper = LambdaListHandler;
+using SpecialWrapper = BytecodeWrapper;
 #endif
 
 

@@ -20,10 +20,26 @@
 #include <clasp/gctools/boehmGarbageCollection.h> // DynEnv stuff
 
 
+
+
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 namespace core {
+
+#ifdef DEBUG_VIRTUAL_MACHINE
+int global_debug_virtual_machine = 0;
+
+CL_LAMBDA(val reset-counters);
+CL_DEFUN void core__debug_virtual_machine(int val, bool reset_counters) {
+  global_debug_virtual_machine = val;
+  if (reset_counters) {
+    VM_RESET_COUNTERS(my_thread->_VM);
+  }
+}
+
+#endif
+
 
 void VirtualMachine::error() {
   printf("%s:%d:%s There was an error encountered in the vm - put a breakpoint here to trap it\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -140,7 +156,14 @@ ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
 namespace core {
 
 
-VirtualMachine::VirtualMachine() : _Running(true) {
+VirtualMachine::VirtualMachine() :
+    _Running(true)
+#ifdef DEBUG_VIRTUAL_MACHINE
+    ,_counter0(0)
+    ,_unwind_counter(0)
+    ,_throw_counter(0)
+#endif
+{
 #if 0
   size_t pageSize = getpagesize();
   void* mem;

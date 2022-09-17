@@ -40,7 +40,7 @@ THE SOFTWARE.
 //#define DEBUG_DTORS 1
 //#define DEBUG_DYN_ENV_STACK 1
 //#define DEBUG_DTREE_INTERPRETER
-//#define DEBUG_VIRTUAL_MACHINE 1
+#define DEBUG_VIRTUAL_MACHINE 1
 //#define DEBUG_SLOW_DOWN_CXX_CALLS 1 // Slows down all calls in CXX wrappers - study impact
 #define DEBUG_FRAME() 0
 // If ANY flags above are set - then set this one to print a message at startup
