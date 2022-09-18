@@ -1121,9 +1121,8 @@ def expand_arg(vm,arg_index,instr,labels):
         keys = []
         for keyi in range(0,keys_count):
             key_tptr = vm._debugger.read_memory(vm._literals+(arg+keyi)*8,len=8)
-            key_object = translate_tagged_ptr(vm._debugger,arg_tptr)
-            key_str = "%s" % arg_object.__repr__()
-            keys.append(key_str)
+            key_object = translate_tagged_ptr(vm._debugger,key_tptr)
+            keys.append(key_object.__str__())
         arg_str = "%s" % keys
     elif (argtype==const_label_arg):
         label_address = instr._address+arg
