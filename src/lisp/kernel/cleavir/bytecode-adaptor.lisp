@@ -103,6 +103,7 @@
 (defun compile-wrappers ()
   (dolist (name sys:*builtin-function-names*)
     (when (cmp:builtin-wrapper-form name)
+      (format t "Compiling wrapper for ~a ~a~%" name (cmp:builtin-wrapper-form name))
       (compile name))))
 
 #-(and)
