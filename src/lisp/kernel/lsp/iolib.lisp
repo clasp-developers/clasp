@@ -121,14 +121,14 @@ object's representation."
 
 (defun stringify (object)
   (when (and (not *print-escape*) (not *print-readably*) (not *print-pretty*))
-    (typecase object
-      (symbol
+    (cond
+      ((symbolp object)
        (return-from stringify
          (printcasify (symbol-name object)
                       (readtable-case *readtable*)
                       *print-case*)))
-      (string (return-from stringify (copy-seq object)))
-      (character (return-from stringify (string object)))))
+      ((stringp object) (return-from stringify (copy-seq object)))
+      ((characterp object) (return-from stringify (string object)))))
   ;; By not making a fresh stream every time, we save some time.
   (let ((stream (core:thread-local-write-to-string-output-stream)))
     (write-object object stream)
