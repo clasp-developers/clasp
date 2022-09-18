@@ -260,12 +260,23 @@ void lisp_errorDereferencedUnbound() {
 
 DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O *objP) {
   size_t expectedStamp = STAMP_UNSHIFT_WTAG(to);
+#ifdef DEBUG_RUNTIME
+  // This is a really low level debug code appropriate when debugging the runtime
   const char* expectedName = obj_name(expectedStamp);
   printf("%s:%d:%s ----- Unexpected type error! ------\n", __FILE__, __LINE__, __FUNCTION__ );
   printf(" EXPECTED stamp_wtag = %4lu name: %s\n", (size_t)to, expectedName );
   printf(" the actual object with tagged pointer %p has the header:\n", objP );
   client_describe(objP);
-  SIMPLE_ERROR("Unexpected type in lisp_errorUnexpectedTypeStampWtag");
+# if 0
+  for ( size_t ii=0; ii<_lisp->_Roots.staticClassSymbolsUnshiftedNowhere.size(); ii++ ) {
+    Symbol_sp ssym = _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[ii];
+    printf("%s:%d:%s _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[%lu] -> %s\n", __FILE__, __LINE__, __FUNCTION__, ii, _rep_(ssym).c_str() );
+  }
+# endif
+#endif
+  Symbol_sp expectedClassSymbol = _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[expectedStamp];
+  T_sp obj((gctools::Tagged)objP);
+  TYPE_ERROR(obj,expectedClassSymbol);
 }
 
 DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O *objP) {
