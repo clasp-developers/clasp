@@ -129,7 +129,7 @@ Pointer_sp GlobalEntryPoint_O::defaultEntryAddress() const {
   return Pointer_O::create((void*)this->_EntryPoints[0]);
 };
 
-CL_LISPIFY_NAME("global-entry-point-code");
+CL_LISPIFY_NAME("global-entry-point/code");
 CL_DEFMETHOD
 llvmo::ObjectFile_sp GlobalEntryPoint_O::code() const {
   llvmo::ObjectFile_sp code = gc::As<llvmo::ObjectFile_sp>(this->_Code);
@@ -217,7 +217,7 @@ Pointer_sp GlobalBytecodeEntryPoint_O::defaultEntryAddress() const {
   return Pointer_O::create((void*)this->_EntryPoints[0]);
 };
 
-CL_LISPIFY_NAME("global-entry-point-code");
+CL_LISPIFY_NAME("global-bytecode-entry-point/code");
 CL_DEFMETHOD
 BytecodeModule_sp GlobalBytecodeEntryPoint_O::code() const {
   BytecodeModule_sp code = gc::As<BytecodeModule_sp>(this->_Code);

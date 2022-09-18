@@ -52,6 +52,16 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
   (multiple-value-bind (function warnp failp)
       ;; Get the actual compiled function and warnp+failp.
       (cond
+        ((and (null definition)
+              (fboundp name)
+              (functionp (fdefinition name))
+              (null (compiled-function-p (fdefinition name)))
+              (typep (sys:function/entry-point (fdefinition name)) 'sys:global-bytecode-entry-point))
+         (let* ((entry-point (sys:function/entry-point (fdefinition name)))
+                (module (sys:global-bytecode-entry-point/code entry-point))
+                (compile-info (sys:bytecode-module/compile-info module))
+                (code (car compile-info)))
+           (compile nil code)))
         ((compiled-function-p definition)
          (values definition nil nil))
         ((interpreted-function-p definition)

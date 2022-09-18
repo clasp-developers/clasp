@@ -1129,7 +1129,7 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
     gc::As<BuiltinClosure_sp>(func)->_lambdaListHandler = llh;
   } else {
     List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ));
-    List_sp declare_form = Cons_O::createList( cl::_sym_declare, Cons_O::createList (core::_sym_lambdaName, core::_sym_bytecode_wrapper));
+    List_sp declare_form = Cons_O::createList( cl::_sym_declare, Cons_O::createList (core::_sym_lambdaName, sym ));
     //printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
     List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,declare_form, funcall_form);
     //printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
@@ -1143,11 +1143,20 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
   func->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   if (kind==symbol_function) {
     sym->setf_symbolFunction(func);
+    List_sp names = core::_sym_STARbuiltin_function_namesSTAR->symbolValue();
+    names = Cons_O::create(sym,names);
+    core::_sym_STARbuiltin_function_namesSTAR->setf_symbolValue(names);
   } else if (kind==symbol_function_macro) {
     sym->setf_symbolFunction(func);
     sym->setf_macroP(true);
+    List_sp names = core::_sym_STARbuiltin_macro_function_namesSTAR->symbolValue();
+    names = Cons_O::create(sym,names);
+    core::_sym_STARbuiltin_macro_function_namesSTAR->setf_symbolValue(names);
   } else if (kind==symbol_function_setf) {
     sym->setSetfFdefinition(func);
+    List_sp names = core::_sym_STARbuiltin_setf_function_namesSTAR->symbolValue();
+    names = Cons_O::create(sym,names);
+    core::_sym_STARbuiltin_setf_function_namesSTAR->setf_symbolValue(names);
   }
   sym->exportYourself();
   T_sp tdocstring = nil<T_O>();
