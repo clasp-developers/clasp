@@ -774,10 +774,10 @@ string LexicalEnvironment_O::summaryOfContents() const {
 
 List_sp LexicalEnvironment_O::gather_metadata(Symbol_sp key) const {
   List_sp parentGathered = nil<List_V>();
-  if (getParentEnvironment().notnilp()) {
-    parentGathered = clasp_gather_metadata(this->getParentEnvironment(), key);
+  if (this->getParentEnvironment().notnilp()) {
+    parentGathered = this->clasp_gather_metadata(this->getParentEnvironment(), key);
   }
-  KeyValuePair* pair = _Metadata->find(key);
+  KeyValuePair* pair = this->_Metadata->find(key);
   return pair ? Cons_O::create(pair->_Value, parentGathered) : parentGathered;
 }
 
@@ -788,17 +788,17 @@ List_sp LexicalEnvironment_O::push_metadata(Symbol_sp key, T_sp val) {
 }
 
 T_mv LexicalEnvironment_O::localMetadata(Symbol_sp key) const {
-  return _Metadata->gethash(key);
+  return this->_Metadata->gethash(key);
 }
 
 T_mv LexicalEnvironment_O::lookupMetadata(Symbol_sp key) const {
-  KeyValuePair* pair = _Metadata->find(key);
+  KeyValuePair* pair = this->_Metadata->find(key);
   if (pair)
-    return Values(pair->_Value, _lisp->_true(), const_sharedThis<Environment_O>());
+    return Values(pair->_Value, _lisp->_true(), this->const_sharedThis<Environment_O>());
 
   return this->_ParentEnvironment.nilp()
       ? Values(nil<T_O>(), nil<T_O>(), nil<T_O>())
-      : gc::As<Environment_sp>(_ParentEnvironment)->lookupMetadata(key);
+      : gc::As<Environment_sp>(this->_ParentEnvironment)->lookupMetadata(key);
 }
 
 
@@ -1607,8 +1607,8 @@ List_sp TagbodyEnvironment_O::codePos(int index) const {
 
 T_sp TagbodyEnvironment_O::find_tagbody_tag_environment(Symbol_sp tag) const {
   _OF();
-  if (_Tags->contains(tag))
-    return const_sharedThis<TagbodyEnvironment_O>();
+  if (this->_Tags->contains(tag))
+    return this->const_sharedThis<TagbodyEnvironment_O>();
 
   return clasp_find_tagbody_tag_environment(getParentEnvironment(), tag);
 }
