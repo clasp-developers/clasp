@@ -88,3 +88,23 @@
         whole))
 )
 |#
+
+
+;;; --------------------------------------------------
+;;;
+;;; Compile the builtin function wrappers
+;;;
+;;;
+
+(defun describe-wrappers()
+  (dolist (name sys:*builtin-function-names*)
+    (format t "About to compile ~a ~a~%" name (cmp:builtin-wrapper-form name))))
+
+(defun compile-wrappers ()
+  (dolist (name sys:*builtin-function-names*)
+    (when (cmp:builtin-wrapper-form name)
+      (compile name))))
+
+#-(and)
+(eval-when (:compile-toplevel :execute)
+  (compile-wrappers))

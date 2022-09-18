@@ -48,6 +48,20 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
         (let ((pathname (if *load-pathname* (namestring *load-pathname*) "repl-code")))
           (compile-with-hook compile-hook definition env pathname :linkage linkage :name name))))))
 
+(defun builtin-wrapper-form (name)
+  (when (and (fboundp name)
+             (functionp (fdefinition name))
+             (null (compiled-function-p (fdefinition name)))
+             (typep (sys:function/entry-point (fdefinition name)) 'sys:global-bytecode-entry-point))
+    (let* ((function (fdefinition name))
+           (entry-point (sys:function/entry-point function))
+           (module (sys:global-bytecode-entry-point/code entry-point))
+           (compile-info (sys:bytecode-module/compile-info module))
+           (code (car compile-info)))
+      code)))
+
+(export 'builtin-wrapper-form :cmp)
+
 (defun compile (name &optional definition)
   (multiple-value-bind (function warnp failp)
       ;; Get the actual compiled function and warnp+failp.
@@ -57,10 +71,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (functionp (fdefinition name))
               (null (compiled-function-p (fdefinition name)))
               (typep (sys:function/entry-point (fdefinition name)) 'sys:global-bytecode-entry-point))
-         (let* ((entry-point (sys:function/entry-point (fdefinition name)))
-                (module (sys:global-bytecode-entry-point/code entry-point))
-                (compile-info (sys:bytecode-module/compile-info module))
-                (code (car compile-info)))
+         (let ((code (builtin-wrapper-form name)))
            (compile nil code)))
         ((compiled-function-p definition)
          (values definition nil nil))
