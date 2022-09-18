@@ -71,11 +71,11 @@ THE SOFTWARE.
 
 
 
-#ifdef DEBUG_SLOW_DOWN_CXX_CALLS
+#ifdef DEBUG_DRAG_CXX_CALLS
 extern "C" {
-size_t global_slow_down_cxx_calls_delay = 0;
+size_t global_drag_cxx_calls_delay = 0;
 
-void slow_down_function() {
+void drag_function() {
   // Do nothing
 };
 
@@ -84,9 +84,9 @@ void slow_down_function() {
 
 namespace core {
 
-CL_DEFUN void core__set_slow_down_cxx_calls_delay(size_t num) {
-#ifdef DEBUG_SLOW_DOWN_CXX_CALLS
-  global_slow_down_cxx_calls_delay = num;
+CL_DEFUN void core__set_drag_cxx_calls_delay(size_t num) {
+#ifdef DEBUG_DRAG_CXX_CALLS
+  global_drag_cxx_calls_delay = num;
 #endif
 };
 

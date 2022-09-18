@@ -48,15 +48,15 @@ THE SOFTWARE.
 
 
 
-#ifdef DEBUG_SLOW_DOWN_CXX_CALLS
+#ifdef DEBUG_DRAG_CXX_CALLS
 extern "C" {
-extern size_t global_slow_down_cxx_calls_delay;
-void slow_down_function();
+extern size_t global_drag_cxx_calls_delay;
+void drag_function();
 
 };
-#define SLOW_DOWN_CALL() { for ( int zzz = 0; zzz<global_slow_down_cxx_calls_delay; zzz++ ) slow_down_function(); }
+#define DRAG_CALL() { for ( int zzz = 0; zzz<global_drag_cxx_calls_delay; zzz++ ) drag_function(); }
 #else
-#define SLOW_DOWN_CALL()
+#define DRAG_CALL()
 #endif
 
 
@@ -163,7 +163,7 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    SLOW_DOWN_CALL();
+    DRAG_CALL();
     MAKE_STACK_FRAME(frame,sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
@@ -229,7 +229,7 @@ public:
   {
 //    printf("%s:%d Entered entry_point of a VariadicFunctor\n", __FILE__, __LINE__ );
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    SLOW_DOWN_CALL();
+    DRAG_CALL();
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     MAKE_STACK_FRAME(frame,sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
@@ -305,7 +305,7 @@ public:
   static inline gctools::return_type entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    SLOW_DOWN_CALL();
+    DRAG_CALL();
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     std::tuple<translate::from_object<ARGS,PUREOUTS>...> all_args(arg_tuple<0,Pols,ARGS...>::goFrame(lcc_args));
     return apply_and_return<RT,Pols,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
@@ -362,7 +362,7 @@ public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    SLOW_DOWN_CALL();
+    DRAG_CALL();
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     std::tuple<translate::from_object<ARGS>...> all_args(arg_tuple<0,policies<>,ARGS...>::goFrame(lcc_args));
     return clasp_apply_and_return<RT,core::policy::clasp,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
