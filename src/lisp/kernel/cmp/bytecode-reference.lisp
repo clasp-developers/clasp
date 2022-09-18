@@ -91,12 +91,14 @@
     (new-instr "push" 56)
     (new-instr "pop" 57)
     (new-instr "long" 58)
-    (defparameter *full-codes* (nreverse rev-codes))
-    (defparameter *codes* (mapcar #'first (nreverse rev-codes)))
+    (let ((codes (nreverse rev-codes)))
+      (defparameter *full-codes* codes)
+      (defparameter *codes* (mapcar #'first codes)))
     (eval `(progn ,@forms))
     (defun decode-instr (code)
       code)
     ))
+
 
 #+(or)
 (macrolet ((defcodes (&rest names)
@@ -1840,6 +1842,44 @@
                 (error "Illegal item ~a" item))))))
   (values))
 
+
+;;; --------------------------------------------------------------
+;;;
+;;; Generate Python code for the VM bytecodes
+;;;
+;;;
+
+
+(defun pythonify-arguments (args)
+  (declare (optimize (debug 3)))
+  (loop for arg in args
+        when (integerp arg)
+          collect (format nil "~d" arg)
+        when (consp arg)
+          collect (let* ((fn-name (string-downcase (car arg)))
+                         (fn-underscore-name (substitute #\_ #\- fn-name))
+                         (num-arg (second arg)))
+                    (format nil "~a(~d)" fn-underscore-name num-arg))))
+
+(defun generate-python-bytecode-table (fout)
+  (format fout "#ifdef PYTHON_OPCODES~%")
+  (format fout "R\"opcodes(~%")
+  (loop for full-code in *full-codes*
+        do (destructuring-bind (name code arguments long-arguments)
+               full-code
+             (let ((python-arguments (pythonify-arguments arguments))
+                   (python-long-arguments (pythonify-arguments long-arguments)))
+               (format fout "new_instr( ~s, ~d, [~{ ~a~^, ~}], [~{ ~a~^, ~}] )~%"
+                       name
+                       code
+                       python-arguments
+                       python-long-arguments))))
+  (format fout ")opcodes\"~%")
+  (format fout "#endif~%")
+  (format t "Generated python table~%")
+  )
+
+
 ;;; --------------------------------------------------
 ;;;
 ;;; Generate C++ code for the VM bytecodes
@@ -1875,44 +1915,20 @@
 
 (defun generate-header (&optional (file-name "virtualMachine.h"))
   (with-open-file (fout file-name :direction :output :if-exists :supersede)
-    (write-string "#ifndef virtualMachine_H" fout) (terpri fout)
-    (write-string "#define virtualMachine_H" fout) (terpri fout) (terpri fout)
-    (let ((enums (loop for sym in *codes*
+    (write-string "#ifdef VM_CODES" fout) (terpri fout) (terpri fout)
+    (let ((enums (loop for name in *codes*
                        for index from 0
-                       for trimmed-sym-name = (string-downcase (string-trim "+" (symbol-name sym)))
-                       for sym-name = (format nil "vm_~a" (c++ify trimmed-sym-name))
+                       for sym-name = (format nil "vm_~a" (c++ify name))
                        collect (format nil "~a=~a" sym-name index))))
       (format fout "enum vm_codes {~%~{   ~a~^,~^~%~} };~%" enums))
     (terpri fout)
-    (write-string "#endif /*guard */" fout) (terpri fout)))
+    (write-string "#endif" fout)
+    (terpri fout)
+    (terpri fout)
+    (terpri fout)
+    (generate-python-bytecode-table fout)
+    (format t "Generated header in file: ~s~%" file-name)
+    ))
 
 
-;;; --------------------------------------------------------------
-;;;
-;;; Generate Python code for the VM bytecodes
-;;;
-;;;
-
-(defun pythonify-arguments (args)
-  (declare (optimize (debug 3)))
-  (loop for arg in args
-        when (integerp arg)
-          collect (format nil "~d" arg)
-        when (consp arg)
-          collect (let* ((fn-name (string-downcase (car arg)))
-                         (fn-underscore-name (substitute #\- #\_ fn-name))
-                         (num-arg (second arg)))
-                    (format nil "~a(~d)" fn-underscore-name num-arg))))
-
-(defun generate-python-bytecode-table (&optional (file-name "virtualMachine.py"))
-  (with-open-file (fout file-name :direction :output :if-exists :supersede)
-    (loop for full-code in *full-codes*
-          do (destructuring-bind (name code arguments long-arguments)
-                 full-code
-               (let ((python-arguments (pythonify-arguments arguments))
-                     (python-long-arguments (pythonify-arguments long-arguments)))
-                 (format fout "new_instr( ~s, ~d, [~{ ~a~^, ~}], [~{ ~a~^, ~}] )~%"
-                         name
-                         code
-                         python-arguments
-                         python-long-arguments))))))
+(export 'generate-header :cmpref)

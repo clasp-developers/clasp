@@ -203,7 +203,7 @@ namespace gctools {
 };
 
 namespace core {
-void registerOrDumpDtreeInfo(FILE* fout);
+void registerOrDumpDtreeInfo(std::ostream& fout);
 };
 
 #endif /* _core_funcallable_instance_H_ */

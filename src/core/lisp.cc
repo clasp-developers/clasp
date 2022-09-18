@@ -1207,20 +1207,37 @@ uint Lisp::nextEnvironmentId() {
   return this->_EnvironmentId;
 }
 
+unsigned char global_python_vm_codes_literal[] =
+#define PYTHON_OPCODES
+# include "clasp/core/virtualMachine.h"
+    ;
+#undef PYTHON_OPCODES
+
+extern "C" {
+unsigned char* global_python_virtual_machine_codes;
+uintptr_t      global_python_virtual_machine_codes_size;
+unsigned char* global_python_class_layouts;
+uintptr_t      global_python_class_layouts_size;
+};
+
+
 void dumpDebuggingLayouts(const std::string& filename) {
-  #if defined(USE_PRECISE_GC)
-  FILE* fout = fopen(filename.c_str(),"w");
+  global_python_virtual_machine_codes = (unsigned char*)global_python_vm_codes_literal;
+  global_python_virtual_machine_codes_size = sizeof(global_python_vm_codes_literal);
+  stringstream fout;
+#if defined(USE_PRECISE_GC)
   gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
-  llvmo::dump_objects_for_lldb(fout,"");
-  fclose(fout);
-  printf("Wrote class layouts for lldb interface to %s\n", filename.c_str());
+  llvmo::dump_objects_for_debugger(fout,"");
 #else
-  FILE* fout = fopen(filename.c_str(),"w");
   dumpBoehmLayoutTables(fout);
-  llvmo::dump_objects_for_lldb(fout,"");
-  fclose(fout);
-  printf("Wrote class layouts for lldb interface to %s\n", filename.c_str());
+  llvmo::dump_objects_for_debugger(fout,"");
 #endif
+  size_t sz = fout.str().size();
+  global_python_class_layouts = (unsigned char*)malloc(sz+1);
+  memcpy( global_python_class_layouts, fout.str().c_str(), sz );
+  global_python_class_layouts[sz] = '\0';
+  global_python_class_layouts_size = fout.str().size();
+  printf("Wrote VM codes and class layouts for udb/gdb/lldb interface to access from memory\n");
 }
 
 void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {

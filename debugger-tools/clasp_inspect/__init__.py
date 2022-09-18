@@ -13,14 +13,6 @@ def dbg_print(msg):
     if (verbose):
         print(msg)
 
-def load_clasp_layout():
-    #print( "Loading /tmp/clasp_layout.py 2")
-    filename = "/tmp/clasp_layout_%s.py" % os.getenv("USER")
-    with open(filename, "rb") as source_file:
-        code = compile(source_file.read(), filename, "exec")
-    exec(code)
-    SetupGlobals()
-
 def shallowString(obj):
     if (obj):
         return obj.shallowString()
@@ -787,7 +779,9 @@ def do_lisp_frame(debugger,arg):
     print("%s" % call)
 
 def do_lisp_test(debugger,arg):
-    print("Do nothing for test")
+    obj = global_names["long"]
+    print("obj._name = %s" % obj._name)
+    print("obj._value = %s" % obj._value)
 
 def do_lisp_disassemble(debugger,arg):
     tptr = arg_to_tptr(debugger,arg)
@@ -931,68 +925,16 @@ def keys_arg(index):
 def label_arg(index):
     return const_label_arg|index
 
-global_vm_long = 56
-global_codes = [None] * (global_vm_long+1)
+global_codes = [None] * (256)
 global_names = {}
 
-new_instr("ref",0,[1],[2])
-new_instr("const",1,[constant_arg(1)],[constant_arg(2)])
-new_instr("closure",2,[1],[2])
-new_instr("call",3,[1],[2])
-new_instr("call_receive_one",4,[1],[2])
-new_instr("call_receive_fixed",5,[1,1],[2,2])
-new_instr("bind",6,[1,1],[2,2])
-new_instr("set",7,[1],[2])
-new_instr("make_cell",8)
-new_instr("cell_ref",9)
-new_instr("cell_set",10)
-new_instr("make_closure",11,[constant_arg(1)],[constant_arg(2)])
-new_instr("make_uninitialized_closure",12,[constant_arg(1)],[constant_arg(2)])
-new_instr("initialize_closure",13,[1],[2])
-new_instr("return",14)
-new_instr("bind_required_args",15,[1],[2])
-new_instr("bind_optional_args",16,[1,1],[2,2])
-new_instr("listify_rest_args",17,[1],[2])
-new_instr("vaslistify_rest_args",18,[1])
-new_instr("parse_key_args",19,[1,1,keys_arg(1),1],[2,2,keys_arg(2),2])
-new_instr("jump_8",20,[label_arg(1)])
-new_instr("jump_16",21,[label_arg(2)])
-new_instr("jump_24",22,[label_arg(3)])
-new_instr("jump_if_8",23,[label_arg(1)])
-new_instr("jump_if_16",24,[label_arg(2)])
-new_instr("jump_if_24",25,[label_arg(3)])
-new_instr("jump_if_supplied_8",26,[1,label_arg(1)])
-new_instr("jump_if_supplied_16",27,[1,label_arg(2)])
-new_instr("check_arg_count_LE_",28,[1],[2])
-new_instr("check_arg_count_GE_",29,[1],[2])
-new_instr("check_arg_count_EQ_",30,[1],[2])
-new_instr("push_values",31)
-new_instr("append_values",32)
-new_instr("pop_values",33)
-new_instr("mv_call",34)
-new_instr("mv_call_receive_one",35)
-new_instr("mv_call_receive_fixed",36,[1],[2])
-new_instr("entry",37,[1])
-new_instr("exit_8",38,[label_arg(1)])
-new_instr("exit_16",39,[label_arg(2)])
-new_instr("exit_24",40,[label_arg(3)])
-new_instr("entry_close",41)
-new_instr("catch_8",42)
-new_instr("catch_16",43)
-new_instr("throw",44)
-new_instr("catch_close",45)
-new_instr("special_bind",46,[constant_arg(1)],[constant_arg(2)])
-new_instr("symbol_value",47,[constant_arg(1)],[constant_arg(2)])
-new_instr("symbol_value_set",48,[constant_arg(1)],[constant_arg(2)])
-new_instr("unbind",49)
-new_instr("progv",50)
-new_instr("fdefinition",51,[constant_arg(1)],[constant_arg(2)])
-new_instr("nil",52)
-new_instr("eq",53)
-new_instr("push",54)
-new_instr("pop",55)
-new_instr("long",56)
+## opcodes are loaded by load_clasp_layout
 
+def load_clasp_layout(thedebugger):
+    (vm_opcodes, class_layouts) = thedebugger.clasp_python_info()
+    exec(vm_opcodes)
+    exec(class_layouts)
+    SetupGlobals()
 
 
 class virtual_machine():
@@ -1035,6 +977,7 @@ class virtual_machine():
         byte2 = self._debugger.read_memory(self._pc+2,len=1)
         word = byte0+ash(byte1,-8)+ash(byte2,-16)
         self.incf(3)
+        print("Read int24 %d %d %d -> %d" % (byte0, byte1, byte2, word))
         if (word>=8388608):
             return 16777216-word
         return word
@@ -1045,9 +988,9 @@ class virtual_machine():
 
 def ash( val, count ):
     if (count>0):
-        return val << count
+        return val >> count
     else:
-        return val >> (- count )
+        return val << (- count )
 
 def logand( x, y ):
     return x & y
@@ -1166,7 +1109,4 @@ def print_disassembly(vm,instructions,labels):
             print("%s:" % labels[instr._address]._name)
         print_instruction(vm,instr,labels)
 
-
-
-load_clasp_layout()
 

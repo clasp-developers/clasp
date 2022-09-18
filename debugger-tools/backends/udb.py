@@ -1,5 +1,7 @@
 import gdb
 import struct
+from io import StringIO
+
 
 ByteOrder = 'little'
 
@@ -53,3 +55,20 @@ def lisp_selected_frame():
             sa = symbol.value(frame)
     result = (sa[0],sa[1],sa[2])
     return result
+
+def global_variable_string(name):
+    object = gdb.parse_and_eval(name)
+    return object.string()
+
+def global_variable_string(name):
+    object = gdb.parse_and_eval(name)
+    return "%s" % object.string()
+
+def global_variable_int(name):
+    object = gdb.parse_and_eval(name)
+    return int("%s" % object.string())
+
+def clasp_python_info():
+    vm_opcodes = global_variable_string("global_python_virtual_machine_codes")
+    class_layouts = global_variable_string("global_python_class_layouts")
+    return (vm_opcodes, class_layouts)

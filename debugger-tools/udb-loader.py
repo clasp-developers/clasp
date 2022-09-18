@@ -23,6 +23,8 @@ def maybeReloadModules():
       debugger_mod = importlib.import_module("backends.udb")
     else:
       importlib.reload(debugger_mod)
+    print(" About to load the clasp_layout")
+    inspector_mod.load_clasp_layout(debugger_mod)
   
 class LispPrint (gdb.Command):
   def __init__ (self):

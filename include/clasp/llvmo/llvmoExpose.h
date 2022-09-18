@@ -4676,7 +4676,7 @@ namespace llvmo {
 extern std::atomic<size_t> global_JITDylibCounter;
 
 
-void dump_objects_for_lldb(FILE* fout,std::string indent);
+void dump_objects_for_debugger(std::ostream& fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 
 std::string ensureUniqueMemoryBufferName(const std::string& prefix );

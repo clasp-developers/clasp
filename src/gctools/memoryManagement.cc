@@ -803,9 +803,8 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   //
   // Walk the stamp field layout tables.
   //
-  
-  walk_stamp_field_layout_tables(precise_info);
-  
+  stringstream ssdummy;
+  walk_stamp_field_layout_tables(precise_info,ssdummy);
 #ifdef SIGRTMIN
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
 #else

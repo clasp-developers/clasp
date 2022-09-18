@@ -85,7 +85,7 @@ extern uintptr_t global_strong_weak_kind;
 
 extern int              global_container_proc_index;
 
-extern void dump_data_types(FILE* fout, const std::string& indent);
+extern void dump_data_types(std::ostream& fout, const std::string& indent);
 
 
 enum Layout_cmd {
@@ -222,7 +222,7 @@ extern Field_layout*    global_field_layout;
 
 
 typedef enum { precise_info, lldb_info } WalkKind;
-void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout=NULL);
+void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& stream);
 
 
 #define FRIEND_GC_INTERFACE() friend gctools::Layout_code* gctools::get_stamp_layout_codes()

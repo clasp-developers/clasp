@@ -1,5 +1,4 @@
 #include <clasp/core/bytecode_compiler.h>
-#include <clasp/core/virtualMachine.h>
 #include <clasp/core/evaluator.h> // af_interpreter_lookup_macro, extract_decl...
 #include <clasp/core/sysprop.h> // core__get_sysprop
 #include <clasp/core/lambdaListHandler.h> // lambda list parsing
@@ -7,6 +6,11 @@
 #include <clasp/core/primitives.h> // gensym, function_block_name
 #include <clasp/core/bytecode.h>
 #include <algorithm> // max
+
+
+#define VM_CODES
+#include <clasp/core/virtualMachine.h>
+#undef VM_CODES
 
 namespace comp {
 
@@ -1076,12 +1080,12 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body,
   entry_point->contextualize(context);
   // Generate argument count check.
   if ((min_count > 0) && (min_count == max_count) && !morep)
-    context->assemble1(vm_check_arg_count_EQ_, min_count);
+    context->assemble1(vm_check_arg_count_EQ, min_count);
   else {
     if (min_count > 0)
-      context->assemble1(vm_check_arg_count_GE_, min_count);
+      context->assemble1(vm_check_arg_count_GE, min_count);
     if (!morep)
-      context->assemble1(vm_check_arg_count_LE_, max_count);
+      context->assemble1(vm_check_arg_count_LE, max_count);
   }
   if (min_count > 0) {
     // Bind the required arguments.

@@ -73,12 +73,20 @@ namespace llvmo {
 };
 
 
+extern "C" {
+extern unsigned char* global_python_virtual_machine_codes;
+extern uintptr_t      global_python_virtual_machine_codes_size;
+extern unsigned char* global_python_class_layouts;
+extern uintptr_t      global_python_class_layouts_size;
+};
+
+
 namespace core {
 
 
   extern CommandLineOptions *global_options;
   extern bool global_initialize_builtin_classes;
-  
+
 class Bundle;
 class CallStack;
 SMART(Intrinsic);

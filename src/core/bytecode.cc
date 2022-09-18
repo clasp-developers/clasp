@@ -11,10 +11,15 @@
 #include <clasp/core/bytecode.h>
 #include <clasp/core/array.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/virtualMachine.h>
 #include <clasp/core/primitives.h> // cl__fdefinition
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
+
+
+
+#define VM_CODES
+#include <clasp/core/virtualMachine.h>
+#undef VM_CODES
 
 extern "C" {
 bool global_debug_vm = false;
@@ -586,7 +591,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       else vm._pc += rel - 1;
       break;
     }
-    case vm_check_arg_count_LE_: {
+    case vm_check_arg_count_LE: {
       uint8_t max_nargs = read_uint8(vm._pc);
       DBG_VM("check-arg-count<= %" PRIu8 "\n", max_nargs);
       if (lcc_nargs > max_nargs) {
@@ -596,7 +601,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       vm._pc++;
       break;
     }
-    case vm_check_arg_count_GE_: {
+    case vm_check_arg_count_GE: {
       uint8_t min_nargs = read_uint8(vm._pc);
       DBG_VM("check-arg-count>= %" PRIu8 "\n", min_nargs);
       if (lcc_nargs < min_nargs) {
@@ -606,7 +611,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       vm._pc++;
       break;
     }
-    case vm_check_arg_count_EQ_: {
+    case vm_check_arg_count_EQ: {
       uint8_t req_nargs = read_uint8(vm._pc);
       DBG_VM1("check-arg-count= %" PRIu8 "\n", req_nargs);
       if (lcc_nargs != req_nargs) {
@@ -1121,7 +1126,7 @@ static void bytecode_vm_long(VirtualMachine& vm, MultipleValues& multipleValues,
     }
     vm._pc += 9;
   }
-  case vm_check_arg_count_LE_ : {
+  case vm_check_arg_count_LE : {
     uint8_t low = *(vm._pc + 1);
     uint16_t max_nargs = low + (*(vm._pc + 2) << 8);
     DBG_VM("long check-arg-count<= %" PRIu16 "\n", max_nargs);
@@ -1132,7 +1137,7 @@ static void bytecode_vm_long(VirtualMachine& vm, MultipleValues& multipleValues,
     vm._pc += 3;
     break;
   }
-  case vm_check_arg_count_GE_: {
+  case vm_check_arg_count_GE: {
     uint8_t low = *(vm._pc + 1);
     uint16_t min_nargs = low + (*(vm._pc + 2) << 8);
     DBG_VM("long check-arg-count>= %" PRIu16 "\n", min_nargs);
@@ -1143,7 +1148,7 @@ static void bytecode_vm_long(VirtualMachine& vm, MultipleValues& multipleValues,
     vm._pc += 3;
     break;
   }
-  case vm_check_arg_count_EQ_: {
+  case vm_check_arg_count_EQ: {
     uint8_t low = *(vm._pc + 1);
     uint16_t req_nargs = low + (*(vm._pc + 2) << 8);
     DBG_VM1("long check-arg-count= %" PRIu16 "\n", req_nargs);
