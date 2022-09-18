@@ -774,15 +774,11 @@ string LexicalEnvironment_O::summaryOfContents() const {
 
 List_sp LexicalEnvironment_O::gather_metadata(Symbol_sp key) const {
   List_sp parentGathered = nil<List_V>();
-  if (this->getParentEnvironment().notnilp()) {
+  if (getParentEnvironment().notnilp()) {
     parentGathered = clasp_gather_metadata(this->getParentEnvironment(), key);
   }
-  T_mv value = this->_Metadata->gethash(key);
-  MultipleValues& mv = core::lisp_multipleValues();
-  if (mv.second(value.number_of_values()).notnilp()) {
-    return Cons_O::create(value, parentGathered);
-  }
-  return parentGathered;
+  KeyValuePair* pair = _Metadata->find(key);
+  return pair ? Cons_O::create(pair->_Value, parentGathered) : parentGathered;
 }
 
 List_sp LexicalEnvironment_O::push_metadata(Symbol_sp key, T_sp val) {
@@ -792,24 +788,17 @@ List_sp LexicalEnvironment_O::push_metadata(Symbol_sp key, T_sp val) {
 }
 
 T_mv LexicalEnvironment_O::localMetadata(Symbol_sp key) const {
-  T_mv it = this->_Metadata->gethash(key);
-  MultipleValues& mv = core::lisp_multipleValues();
-  if (mv.second(it.number_of_values()).nilp()) {
-    return (Values(nil<T_O>(), nil<T_O>()));
-  }
-  return (Values(it, _lisp->_true()));
+  return _Metadata->gethash(key);
 }
 
 T_mv LexicalEnvironment_O::lookupMetadata(Symbol_sp key) const {
-  T_mv it = this->_Metadata->gethash(key);
-  MultipleValues& mv = core::lisp_multipleValues();
-  if (mv.second(it.number_of_values()).nilp()) {
-    if (this->_ParentEnvironment.nilp()) {
-      return (Values(nil<T_O>(), nil<T_O>(), nil<T_O>()));
-    }
-    return gc::As<Environment_sp>(this->_ParentEnvironment)->lookupMetadata(key);
-  }
-  return (Values(it, _lisp->_true(), this->const_sharedThis<Environment_O>()));
+  KeyValuePair* pair = _Metadata->find(key);
+  if (pair)
+    return Values(pair->_Value, _lisp->_true(), const_sharedThis<Environment_O>());
+
+  return this->_ParentEnvironment.nilp()
+      ? Values(nil<T_O>(), nil<T_O>(), nil<T_O>())
+      : gc::As<Environment_sp>(_ParentEnvironment)->lookupMetadata(key);
 }
 
 
@@ -1193,13 +1182,10 @@ T_sp FunctionValueEnvironment_O::getActivationFrame() const {
 bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &value, T_sp& functionEnv) const {
   LOG("Looking for binding for function name[%s]" , _rep_(functionName));
   //    LOG("The frame stack is %d deep" , this->depth() );
-  T_mv mval = this->_FunctionIndices->gethash(functionName, nil<T_O>());
-  T_sp val = mval;
-  MultipleValues& mv = core::lisp_multipleValues();
-  bool foundp = mv.second(mval.number_of_values()).isTrue();
-  if (!foundp)
-    return this->Base::_findFunction(functionName, depth, index, value, functionEnv );
-  index = unbox_fixnum(gc::As<Fixnum_sp>(val));
+  KeyValuePair* pair = this->_FunctionIndices->find(functionName);
+  if (!pair)
+    return this->Base::_findFunction(functionName, depth, index, value, functionEnv);
+  index = unbox_fixnum(gc::As<Fixnum_sp>(pair->_Value));
   functionEnv = this->asSmartPtr();
   LOG(" Found binding %d" , index);
   T_sp tvalue = this->_FunctionFrame->entry(index);
@@ -1601,10 +1587,9 @@ T_sp TagbodyEnvironment_O::getActivationFrame() const {
 
 bool TagbodyEnvironment_O::_findTag(Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const {
   //	printf("%s:%d searched through TagbodyEnvironment_O\n", __FILE__, __LINE__ );
-  T_mv it = this->_Tags->gethash(sym);
-  MultipleValues& mv = core::lisp_multipleValues();
-  if (mv.second(it.number_of_values()).notnilp()) {
-    index = unbox_fixnum(gc::As<Fixnum_sp>(it));
+  KeyValuePair* pair = this->_Tags->find(sym);
+  if (pair) {
+    index = unbox_fixnum(gc::As<Fixnum_sp>(pair->_Value));
     tagbodyEnv = this->asSmartPtr();
     return true;
   }
@@ -1622,12 +1607,10 @@ List_sp TagbodyEnvironment_O::codePos(int index) const {
 
 T_sp TagbodyEnvironment_O::find_tagbody_tag_environment(Symbol_sp tag) const {
   _OF();
-  T_mv it = this->_Tags->gethash(tag);
-  MultipleValues& mv = core::lisp_multipleValues();
-  if (mv.second(it.number_of_values()).notnilp()) {
-    return this->const_sharedThis<TagbodyEnvironment_O>();
-  }
-  return clasp_find_tagbody_tag_environment(this->getParentEnvironment(), tag);
+  if (_Tags->contains(tag))
+    return const_sharedThis<TagbodyEnvironment_O>();
+
+  return clasp_find_tagbody_tag_environment(getParentEnvironment(), tag);
 }
 
 GlueEnvironment_sp GlueEnvironment_O::create(List_sp parts) {
@@ -1682,13 +1665,12 @@ string MacroletEnvironment_O::summaryOfContents() const {
 bool MacroletEnvironment_O::_findMacro(Symbol_sp sym, int &depth, int &index, Function_sp &value) const {
   LOG("Looking for binding for symbol(%s)" , _rep_(sym));
   //    LOG("The frame stack is %d deep" , this->depth() );
-  T_mv fi = this->_Macros->gethash(sym);
-  MultipleValues& mvn = core::lisp_multipleValues();
-  if (mvn.second(fi.number_of_values()).nilp()) {
+  KeyValuePair* pair = this->_Macros->find(sym);
+  if (!pair) {
     return this->Base::_findMacro(sym, depth, index, value);
   }
-  LOG(" Found binding %s" , _rep_(fi));
-  value = gc::As<Function_sp>(fi);
+  LOG(" Found binding %s" , _rep_(pair->_Value));
+  value = gc::As<Function_sp>(pair->_Value);
   return true;
 }
 
@@ -1708,13 +1690,12 @@ CL_DEFUN SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(T_sp par
 bool SymbolMacroletEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &value) const {
   LOG("Looking for binding for symbol(%s)" , _rep_(sym));
   //    LOG("The frame stack is %d deep" , this->depth() );
-  T_mv fi = this->_Macros->gethash(sym);
-  MultipleValues& mvn = core::lisp_multipleValues();
-  if (mvn.second(fi.number_of_values()).nilp()) {
+  KeyValuePair* pair = this->_Macros->find(sym);
+  if (!pair) {
     return this->Base::_findSymbolMacro(sym, depth, index, shadowed, value);
   }
-  LOG(" Found binding %s" , _rep_(fi));
-  value = gc::As<Function_sp>(fi);
+  LOG(" Found binding %s" , _rep_(pair->_Value));
+  value = gc::As<Function_sp>(pair->_Value);
   shadowed = false;
   return true;
 }
