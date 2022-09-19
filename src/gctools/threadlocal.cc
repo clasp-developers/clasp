@@ -181,21 +181,15 @@ VirtualMachine::VirtualMachine() :
   memset(this->_stackBottom,0,stackSpace);
   int mprotectResult = mprotect(this->_stackTop-pageSize,pageSize,PROT_READ);
   gctools::clasp_gc_registerRoots((this->_stackBottom),(this->_stackBytes-pageSize)/sizeof(T_O*));
-  this->_framePointer = NULL;
   this->_stackPointer = this->_stackBottom;
   (*this->_stackPointer) = NULL;
-  this->push((core::T_O*)this->_framePointer);
-  this->_framePointer = this->_stackPointer;
 #else
   size_t stackSpace = VirtualMachine::MaxStackWords*sizeof(T_O*);
   this->_stackTop = this->_stackBottom+VirtualMachine::MaxStackWords-1;
   this->_stackBytes = stackSpace;
   memset(this->_stackBottom,0,stackSpace);
-  this->_framePointer = NULL;
   this->_stackPointer = this->_stackBottom;
   (*this->_stackPointer) = NULL;
-  this->push((core::T_O*)this->_framePointer);
-  this->_framePointer = this->_stackPointer;
 #endif
 }
 

@@ -60,10 +60,9 @@ namespace core {
 
 // Used to save a bit of the state for use in nonlocal exits.
 struct VirtualMachineStackState {
-  core::T_O**    _framePointer;
   core::T_O**    _stackPointer;
-  VirtualMachineStackState(core::T_O** fp, core::T_O** sp)
-    : _framePointer(fp), _stackPointer(sp) {};
+  VirtualMachineStackState(core::T_O** sp)
+    : _stackPointer(sp) {};
 };
 
 #define STACK_GROWS_UP 1
@@ -73,7 +72,7 @@ extern int global_debug_virtual_machine;
 
 #define VM_ASSERT_ALIGNED(vm,ptr) if (((uintptr_t)(ptr))&0x7) { printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr)); (vm).error(); }
 #define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._stackPointer&&!((vm)._stackBottom<=(vm)._stackPointer && (vm)._stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
-#define VM_FRAME_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._framePointer&&!((vm)._stackBottom<=(vm)._framePointer && (vm)._framePointer<=(vm)._stackTop) ) { printf("%s:%d:%s _framePointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._framePointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
+#define VM_FRAME_POINTER_CHECK(vm) if ((vm)._Running&&framePointer&&!((vm)._stackBottom<=framePointer && framePointer<=(vm)._stackTop) ) { printf("%s:%d:%s framePointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(framePointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
 #define VM_PC_CHECK(vm,bytecode_start,bytecode_end) if ((uintptr_t)(vm)._pc<(uintptr_t)bytecode_start || (uintptr_t)(vm)._pc>=(uintptr_t)bytecode_end) {printf("%s:%d:%s vm._pc %p is outside of the bytecode vector range [ %p - %p ]\n", __FILE__, __LINE__, __FUNCTION__, (void*)(vm)._pc, (void*)bytecode_start,(void*)bytecode_end);(vm).error();}
 #define VM_CHECK(vm) VM_STACK_POINTER_CHECK(vm); VM_FRAME_POINTER_CHECK(vm);
 #define VM_CURRENT_DATA(vm,data) { (vm)._data = data; }
@@ -84,6 +83,7 @@ extern int global_debug_virtual_machine;
 #define VM_RESET_COUNTERS(vm) { (vm)._unwind_counter=0; (vm)._throw_counter=0; (vm)._counter0=0; }
 #else
 #define VM_ASSERT_ALIGNED(vm,ptr)
+#define VM_STACK_POINTER_CHECK(vm)
 #define VM_CHECK(vm)
 #define VM_PC_CHECK(vm,start,end)
 #define VM_CURRENT_DATA(vm,data)
@@ -100,7 +100,6 @@ struct VirtualMachine {
   core::T_O*     _stackBottom[MaxStackWords];
   size_t         _stackBytes;
   core::T_O**    _stackTop;
-  core::T_O**    _framePointer;
   core::T_O**    _stackPointer;
 #ifdef DEBUG_VIRTUAL_MACHINE
   core::T_O*     _data;
@@ -193,24 +192,21 @@ struct VirtualMachine {
   }
 
   inline VirtualMachineStackState save() {
-    return VirtualMachineStackState(this->_framePointer, this->_stackPointer);
+    return VirtualMachineStackState(this->_stackPointer);
   }
   inline void load(VirtualMachineStackState vmss) {
-    this->_framePointer = vmss._framePointer;
     this->_stackPointer = vmss._stackPointer;
-    VM_CHECK(*this);
+    VM_STACK_POINTER_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,this->_stackPointer);
-    VM_ASSERT_ALIGNED(*this,this->_framePointer);
   }
 
   // Push a new frame with NLOCALS local variables.
-  // Return the old frame pointer.
+  // Return the new frame pointer.
   inline T_O** push_frame(size_t nlocals) {
-    T_O** ret = this->_framePointer;
-    this->_framePointer = this->_stackPointer;
+    T_O** ret = this->_stackPointer;
 #ifdef DEBUG_VIRTUAL_MACHINE
     if (global_debug_virtual_machine&DVM_TRACE_FRAME) {
-      printf("\nFRAME PUSH %p %p %p %lu unwind_counter %lu throw_counter %lu\n", this->_framePointer, this->_data, this->_data1, this->_counter0, this->_unwind_counter, this->_throw_counter);
+      printf("\nFRAME PUSH %p %p %p %lu unwind_counter %lu throw_counter %lu\n", framePointer, this->_data, this->_data1, this->_counter0, this->_unwind_counter, this->_throw_counter);
     }
 #endif
 #ifdef STACK_GROWS_UP
@@ -218,42 +214,32 @@ struct VirtualMachine {
 #else
     this->_stackPointer -= nlocals;
 #endif
-    VM_CHECK(*this);
+    VM_STACK_POINTER_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,this->_stackPointer);
     return ret;
   }
 
-  inline void pop_frame(T_O** old_fp) {
-#ifdef DEBUG_VIRTUAL_MACHINE
-    if (global_debug_virtual_machine&DVM_TRACE_FRAME) {
-      printf("\nFRAME POP %p %lu\n", this->_framePointer, this->_unwind_counter );
-    }
-#endif
-    this->_stackPointer = this->_framePointer;
-    this->_framePointer = old_fp;
-  }
-
-  inline void setreg(size_t base, core::T_O* value) {
+  inline void setreg(T_O** framePointer, size_t base, core::T_O* value) {
 #ifdef STACK_GROWS_UP
-    *(this->_framePointer + base + 1) = value;
+    *(framePointer + base + 1) = value;
 #else
-    *(this->_framePointer - base) = value;
+    *(framePointer - base) = value;
 #endif
   }
 
-  inline void savesp(size_t base) {
+  inline void savesp(T_O** framePointer, size_t base) {
 #ifdef STACK_GROWS_UP
-    *(this->_framePointer + base + 1) = (core::T_O*)this->_stackPointer;
+    *(framePointer + base + 1) = (core::T_O*)this->_stackPointer;
 #else
-    *(this->_framePointer - base) = (core::T_O*)this->_stackPointer;
+    *(framePointer - base) = (core::T_O*)this->_stackPointer;
 #endif
   }
 
-  inline void restoresp(size_t base) {
+  inline void restoresp(T_O** framePointer, size_t base) {
 #ifdef STACK_GROWS_UP
-    this->_stackPointer = (core::T_O**)(*(this->_framePointer + base + 1));
+    this->_stackPointer = (core::T_O**)(*(framePointer + base + 1));
 #else
-    this->_stackPointer = (core::T_O**)(*(this->_framePointer - base));
+    this->_stackPointer = (core::T_O**)(*(framePointer - base));
 #endif
   }
 
@@ -261,50 +247,50 @@ struct VirtualMachine {
   // starting at BASE.
   // If the stack grows up, SOURCE should be a pointer to the first element
   // of the source data; otherwise the last.
-  inline void copytoreg(core::T_O** source, size_t n, size_t base) {
+  inline void copytoreg(core::T_O** framePointer, core::T_O** source,
+                        size_t n, size_t base) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,source);
-    std::copy(source, source + n, this->_framePointer + base + 1);
+    std::copy(source, source + n, framePointer + base + 1);
 #else
-    std::copy_backward(source - n, source, this->_framePointer - base);
+    std::copy_backward(source - n, source, framePointer - base);
 #endif
   }
 
   // Fill OBJECT into N registers starting at BASE.
-  inline void fillreg(core::T_O* object, size_t n, size_t base) {
+  inline void fillreg(core::T_O** framePointer, core::T_O* object,
+                      size_t n, size_t base) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,this->_framePointer+base+1);
-    std::fill(this->_framePointer + base + 1, this->_framePointer + base + n + 1,
-              object);
+    VM_ASSERT_ALIGNED(*this,framePointer+base+1);
+    std::fill(framePointer + base + 1, framePointer + base + n + 1, object);
 #else
-    std::fill(this->_framePointer - base, this->_framePointer - base + n,
-              object);
+    std::fill(framePointer - base, framePointer - base + n, object);
 #endif
   }
 
   // Get a pointer to the nth register in the current frame.
-  inline core::T_O** reg(size_t n) {
+  inline core::T_O** reg(core::T_O** framePointer, size_t n) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
-    VM_ASSERT_ALIGNED(*this,this->_framePointer+n+1);
-    return this->_framePointer + n + 1;
+    VM_ASSERT_ALIGNED(*this,framePointer+n+1);
+    return framePointer + n + 1;
 #else
-    return this->_framePointer - n;
+    return framePointer - n;
 #endif
   }
 
   // Compute how many elements are on the stack in the current frame
   // but which are not part of the register file.
-  inline ptrdiff_t npushed(size_t nlocals) {
+  inline ptrdiff_t npushed(T_O** framePointer, size_t nlocals) {
 #ifdef STACK_GROWS_UP
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,this->_stackPointer);
-    VM_ASSERT_ALIGNED(*this,this->_framePointer);
-    return this->_stackPointer - nlocals - this->_framePointer;
+    VM_ASSERT_ALIGNED(*this,framePointer);
+    return this->_stackPointer - nlocals - framePointer;
 #else
-    return this->_framePointer - nlocals - this->_stackPointer;
+    return framePointer - nlocals - this->_stackPointer;
 #endif
   }
 
