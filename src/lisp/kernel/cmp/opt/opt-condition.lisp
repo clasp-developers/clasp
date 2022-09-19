@@ -2,15 +2,9 @@
 
 ;;; This macro basically exists to reduce code size in several very heavily used
 ;;; functions, such as CAR, which in cclasp will be inlined just about everywhere.
-#-(and (or cclasp bclasp) bytecode)
 (define-compiler-macro error (&whole whole datum &rest arguments &environment env)
   (let ((datum (and (constantp datum env) (ext:constant-form-value datum env)))
-        ;; This is special cased instead of relying on a type declaration, because
-        ;; a function declared to not return may proceed in safe code to a
-        ;; call to ERROR, which certainly does not return.
-        (default `(locally (declare (notinline error))
-                    ,whole
-                    (cleavir-primop:unreachable))))
+        (default whole))
     (case datum
       ((type-error)
        ;; FIXME: If the initargs are bad, don't err here in the compiler.
