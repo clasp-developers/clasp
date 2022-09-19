@@ -561,12 +561,21 @@ inline To_SP As(const return_type &rhs) {
 }
 
  // Cast the type without any concern if it is appropriate
- // This is only used for loading objects and patching
- // See src/core/record.h
  template <typename To_SP, typename From_SP>
-   inline To_SP As_unsafe(From_SP const &rhs) {
+ inline To_SP As_unsafe(From_SP const &rhs) {
 #ifdef DEBUG_ASSERT
 //   GCTOOLS_ASSERT(TaggedCast<typename To_SP::Type*, typename From_SP::Type*>::isA(rhs));
+#endif
+   To_SP ret((Tagged)rhs.raw_());
+   return ret;
+ }
+
+ // Cast the type without any concern if it is appropriate
+ // If DEBUG_ASSERT then check if the type is appropriate.
+ template <typename To_SP, typename From_SP>
+ inline To_SP As_assert(From_SP const &rhs) {
+#ifdef DEBUG_ASSERT
+   GCTOOLS_ASSERT(TaggedCast<typename To_SP::Type*, typename From_SP::Type*>::isA(rhs));
 #endif
    To_SP ret((Tagged)rhs.raw_());
    return ret;
