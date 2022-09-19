@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -35,7 +35,6 @@ THE SOFTWARE.
 
 namespace core {
 
-
 CL_LAMBDA(key area value)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(put_sysprop - returns value)dx")
@@ -43,20 +42,14 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  bool foundHashTable = false;
-  T_mv values = sysprops->gethash(area);
-  T_sp area_hash_table = values;
-  MultipleValues& mvn = core::lisp_multipleValues();
-  foundHashTable = mvn.valueGet(1,values.number_of_values()).isTrue();
-  T_sp retval;
-  if (foundHashTable) {
-    retval = gc::As<HashTableEql_sp>(area_hash_table)->hash_table_setf_gethash(key, value);
-  } else {
-    HashTableEql_sp new_hash_table = gc::As<HashTableEql_sp>(HashTable_O::create_thread_safe(cl::_sym_eql,SimpleBaseString_O::make("SYSPRRD"),SimpleBaseString_O::make("SYSPRWR")));
-    new_hash_table->hash_table_setf_gethash(key, value);
-    retval = gc::As<HashTableEql_sp>(sysprops)->hash_table_setf_gethash(area, new_hash_table);
-  }
-  return (retval);
+  KeyValuePair *area_pair = sysprops->find(area);
+  if (area_pair)
+    return gc::As<HashTableEql_sp>(area_pair->_Value)->hash_table_setf_gethash(key, value);
+
+  HashTableEql_sp new_hash_table = gc::As<HashTableEql_sp>(
+      HashTable_O::create_thread_safe(cl::_sym_eql, SimpleBaseString_O::make("SYSPRRD"), SimpleBaseString_O::make("SYSPRWR")));
+  sysprops->hash_table_setf_gethash(area, new_hash_table);
+  return new_hash_table->hash_table_setf_gethash(key, value);
 }
 
 CL_LAMBDA(key area)
@@ -66,38 +59,26 @@ DOCGROUP(clasp)
 CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  if (sysprops.notnilp()) {
-    T_mv values = sysprops->gethash(area, nil<T_O>());
-    T_sp hashTable = values;
-    MultipleValues& mvn = core::lisp_multipleValues();
-    bool foundHashTable = gc::As<T_sp>(mvn.valueGet(1,values.number_of_values())).isTrue();
-    if (foundHashTable) {
-      return gc::As<HashTableEql_sp>(hashTable)->gethash(key, nil<T_O>());
-    }
-  }
-  return (Values(nil<T_O>(), nil<T_O>()));
+  KeyValuePair *area_pair = sysprops->find(area);
+  if (area_pair)
+    return gc::As<HashTableEql_sp>(area_pair->_Value)->gethash(key);
+
+  return Values(nil<T_O>(), nil<T_O>());
 }
 
 CL_LAMBDA(key area)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(rem_sysprop)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
+CL_DEFUN bool core__rem_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  T_mv mv_values = sysprops->gethash(area, nil<T_O>());
-  HashTableEql_sp hashTable = gc::As<HashTableEql_sp>(mv_values);
-  MultipleValues& mvn = core::lisp_multipleValues();
-  bool foundHashTable = gc::As<T_sp>(mvn.valueGet(1,mv_values.number_of_values())).isTrue();
-  if (foundHashTable) {
-    bool found = hashTable->remhash(key);
-    return _lisp->_boolean(found);
-  }
-  return nil<T_O>();
+  KeyValuePair *area_pair = sysprops->find(area);
+  return area_pair && gc::As<HashTableEql_sp>(area_pair->_Value)->remhash(key);
 }
 
-  SYMBOL_SC_(CorePkg, put_sysprop);
-  SYMBOL_SC_(CorePkg, get_sysprop);
-  SYMBOL_SC_(CorePkg, rem_sysprop);
+SYMBOL_SC_(CorePkg, put_sysprop);
+SYMBOL_SC_(CorePkg, get_sysprop);
+SYMBOL_SC_(CorePkg, rem_sysprop);
 
-};
+}; // namespace core
