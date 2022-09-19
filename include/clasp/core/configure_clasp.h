@@ -32,14 +32,14 @@ THE SOFTWARE.
 // Set system wide debug flags here
 // ----------------------------------------------------------------------------
 #if 0
-/* 0 == no CHECK_FRAME, 1 == fast CHECK_FRAME, 2 == slow CHECK_FRAME */
-#define DEBUG_FRAME() 0
 //#define DEBUG_OBJECT_FILES 1
 //#define DEBUG_VALUES 1
 //#define DEBUG_VASLIST 1
 //#define DEBUG_EVALUATE 1
 //#define DEBUG_DTORS 1
 //#define DEBUG_DYN_ENV_STACK 1
+/* 0 == no CHECK_FRAME, 1 == fast CHECK_FRAME, 2 == slow CHECK_FRAME */
+#define DEBUG_FRAME() 0
 // If ANY flags above are set - then set this one to print a message at startup
 #define DEBUG_FLAGS_SET 1
 #else
