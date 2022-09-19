@@ -4686,7 +4686,7 @@ void dump_objects_for_debugger(std::ostream& fout,std::string indent)
   python_dump_field(fout,"_guard",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard),sizeof(gctools::Header_s::_guard));
   python_dump_field(fout,"_source",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_source),sizeof(gctools::Header_s::_source));
   python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2),sizeof(gctools::Header_s::_guard2));
-  python_dump_field(fout,"_dup_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_stamp_wtag_mtag),sizeof(gctools::Header_s::_dup_stamp_wtag_mtag));
+  python_dump_field(fout,"_dup_badge_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_badge_stamp_wtag_mtag),sizeof(gctools::Header_s::_dup_badge_stamp_wtag_mtag));
 #endif
   fmt::fprintf(fout,"] )\n");
 #if 0
