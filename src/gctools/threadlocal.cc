@@ -379,7 +379,7 @@ uint32_t ThreadLocalState::random() {
     this->_xorshf_x = this->_xorshf_y;
     this->_xorshf_y = this->_xorshf_z;
     this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
-  } while (this->_xorshf_z==0);
+  } while (this->_xorshf_z==gctools::BaseHeader_s::BadgeStampWtagMtag::IllegalBadge || this->_xorshf_z==gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge);
   uint32_t rnd = this->_xorshf_z&0xFFFFFFFF;
   // printf("%s:%d:%s rnd = %u\n", __FILE__, __LINE__, __FUNCTION__, rnd );
   return rnd;

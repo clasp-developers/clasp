@@ -1796,7 +1796,7 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 
 
 
-uint32_t lisp_random()
+uint32_t lisp_calculate_heap_badge()
 {
   if (!my_thread) return 123456;
   return my_thread->random();

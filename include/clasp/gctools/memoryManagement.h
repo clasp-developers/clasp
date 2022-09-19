@@ -207,7 +207,7 @@ inline constexpr uintptr_t AlignDown(uintptr_t size, size_t alignment) { return 
 
 namespace core {
   class ThreadLocalState;
-  uint32_t lisp_random();
+  uint32_t lisp_calculate_heap_badge();
 };
 
 /*! Declare this in the top namespace */
@@ -217,12 +217,16 @@ extern THREAD_LOCAL core::ThreadLocalState *my_thread;
 
 namespace gctools {
 
+#define NO_BADGE 1
+#define ILLEGAL_BADGE 0
+
+
 inline uint32_t lisp_heap_badge() {
-  return core::lisp_random();
+  return NO_BADGE;
 }
 
 inline uint32_t lisp_stack_badge() {
-  return 0;
+  return NO_BADGE;
 }
 
 
@@ -544,11 +548,15 @@ inline uint32_t lisp_stack_badge() {
       }
     };
 
-
-
-    
     struct BadgeStampWtagMtag : public StampWtagMtag {
-      badge_t     _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
+      static constexpr badge_t IllegalBadge = ILLEGAL_BADGE;
+      static constexpr badge_t NoBadge = NO_BADGE;
+
+      /* _header_badge starts out being NoBadge but when the object is hashed - then it is assigned a badge
+          that is not IllegalBadge or NoBadge.   This defers random number generation for hashing until it is
+          needed. 
+       */
+      mutable badge_t  _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
                                  /* will treat it like a unused object residing on a free list          */
 
       BadgeStampWtagMtag() : StampWtagMtag(), _header_badge(0xDEADBEEF) {};

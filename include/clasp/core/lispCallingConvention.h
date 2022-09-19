@@ -35,8 +35,9 @@ namespace gctools {
 #endif
     void* ret0[LCC_RETURN_VALUES_IN_REGISTERS()];  // One for every LCC_RETURN_VALUES_IN_REGISTERS
     size_t nvals;
-  return_type() : ret0{NULL}, nvals(0){};
-  return_type(core::T_O *r0, size_t nv) : ret0{r0}, nvals(nv) {};
+    
+    return_type() : ret0{NULL}, nvals(0){};
+    return_type(core::T_O *r0, size_t nv) : ret0{r0}, nvals(nv) {};
     template <typename T>
     return_type(T* r0, size_t nv) : ret0{reinterpret_cast<void*>(r0)}, nvals(nv) {};
   };

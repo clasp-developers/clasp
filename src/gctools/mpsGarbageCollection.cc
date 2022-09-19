@@ -617,9 +617,9 @@ extern "C" {
 std::atomic<size_t> global_finalization_requests;
   void my_mps_finalize(core::T_O* tclient) {
     core::T_sp tsp((gctools::Tagged)tclient);
-    size_t badge = core::lisp_badge(tsp);
     void* client = reinterpret_cast<void*>(gctools::untag_object(tclient));
 #ifdef DEBUG_FINALIZERS
+    size_t badge = core::lisp_badge(tsp);
     printf("%s:%d register mps_finalize of tagged: %p client: %p badge: 0x%zx\n", __FILE__, __LINE__, tclient, client, badge);
 #endif
     mps_finalize(global_arena,&client);
