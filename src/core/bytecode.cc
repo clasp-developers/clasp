@@ -77,7 +77,7 @@ void BytecodeModule_O::setf_compileInfo(T_sp o) {
   this->_CompileInfo = o;
 }
 
-static inline int32_t read_s16(unsigned char* pc) {
+static inline int16_t read_s16(unsigned char* pc) {
   uint8_t byte0 = *pc;
   uint8_t byte1 = *(pc + 1);
   int32_t nibble = byte0 | (byte1 << 8);
@@ -543,8 +543,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       break;
     }
     case vm_jump_16: {
-      int32_t rel = read_s16(vm._pc + 1);
-      DBG_VM("jump %" PRId32 "\n", rel);
+      int16_t rel = read_s16(vm._pc + 1);
+      DBG_VM("jump %" PRId16 "\n", rel);
       vm._pc += rel;
       break;
     }
@@ -564,8 +564,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       break;
     }
     case vm_jump_if_16: {
-      int32_t rel = read_s16(vm._pc + 1);
-      DBG_VM("jump-if %" PRId32 "\n", rel);
+      int16_t rel = read_s16(vm._pc + 1);
+      DBG_VM("jump-if %" PRId16 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop());
       if (tval.notnilp()) vm._pc += rel;
       else vm._pc += 3;
@@ -590,8 +590,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     }
     case vm_jump_if_supplied_16: {
       uint8_t slot = *(++vm._pc);
-      int32_t rel = read_s16(vm._pc + 1);
-      DBG_VM("jump-if-supplied %" PRIu8 " %" PRId32 "\n", slot, rel);
+      int16_t rel = read_s16(vm._pc + 1);
+      DBG_VM("jump-if-supplied %" PRIu8 " %" PRId16 "\n", slot, rel);
       T_sp tval((gctools::Tagged)(*(vm.reg(slot))));
       if (tval.unboundp()) vm._pc += 4;
       else vm._pc += rel - 1;
@@ -755,8 +755,8 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       sjlj_unwind(tde, 1);
     }
     case vm_exit_16: {
-      int32_t rel = read_s16(vm._pc + 1);
-      DBG_VM("exit %" PRId32 "\n", rel);
+      int16_t rel = read_s16(vm._pc + 1);
+      DBG_VM("exit %" PRId16 "\n", rel);
       vm._pc += rel;
       T_sp ttde((gctools::Tagged)(vm.pop()));
       ASSERT(gc::IsA<TagbodyDynEnv_sp>(ttde));
