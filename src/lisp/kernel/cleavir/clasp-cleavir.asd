@@ -50,6 +50,7 @@
                (:file "activate-clasp-readtables-for-eclector")
                (:file "define-unicode-tables")
                (:file "inline-prep")
+               (:file "proclamations")
                ;;                 (:file "auto-compile")
                ;;                 (:file "inline")
                ))
