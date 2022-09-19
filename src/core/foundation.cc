@@ -1662,15 +1662,106 @@ void throwIfClassesNotInitialized(const LispPtr &lisp) {
 
 };
 
+
+extern "C" {
+size_t global_drag_native_calls_delay = 0;
+size_t global_drag_cxx_calls_delay = 0;
+size_t global_drag_interpret_dtree_delay = 0;
+size_t global_drag_cons_allocation_delay = 0;
+size_t global_drag_general_allocation_delay = 0;
+
+__attribute__((noinline)) void drag_delay() {};
+
+void drag_native_calls() {
+  for (size_t ii=0; ii<global_drag_native_calls_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+void drag_cxx_calls() {
+  for (size_t ii=0; ii<global_drag_cxx_calls_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+void drag_interpret_dtree() {
+  for (size_t ii=0; ii<global_drag_interpret_dtree_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+void drag_cons_allocation() {
+  for (size_t ii=0; ii<global_drag_cons_allocation_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+
+void drag_general_allocation() {
+  for (size_t ii=0; ii<global_drag_general_allocation_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+};
+
+namespace core {
+
+CL_DEFUN void core__set_drag_cxx_calls_delay(size_t num) {
+  global_drag_cxx_calls_delay = num;
+#ifndef DEBUG_DRAG_CXX_CALLS
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_CXX_CALLS is off");
+#endif
+};
+
+CL_DEFUN void core__set_drag_native_calls_delay(size_t num) {
+  global_drag_native_calls_delay = num;
+#ifndef DEBUG_DRAG_NATIVE_CALLS
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_NATIVE_CALLS is off");
+#endif
+};
+
+CL_DEFUN void core__set_drag_interpret_dtree_delay(size_t num) {
+  global_drag_interpret_dtree_delay = num;
+#ifndef DEBUG_DRAG_INTERPRET_DTREE
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_INTERPRET_DTREE is off");
+#endif
+};
+
+CL_DEFUN void core__set_drag_cons_allocation_delay(size_t num) {
+  global_drag_cons_allocation_delay = num;
+#ifndef DEBUG_DRAG_CONS_ALLOCATION
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_CONS_ALLOCATION is off");
+#endif
+};
+
+CL_DEFUN void core__set_drag_general_allocation_delay(size_t num) {
+  global_drag_general_allocation_delay = num;
+#ifndef DEBUG_DRAG_GENERAL_ALLOCATION
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_GENERAL_ALLOCATION is off");
+#endif
+};
+
+};
+
+
+
+
 namespace core {
 
 uint32_t lisp_general_badge(General_sp object) {
   const gctools::Header_s* header = gctools::header_pointer(object.unsafe_general());
+  if (header->_badge_stamp_wtag_mtag._header_badge == gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge) {
+    header->_badge_stamp_wtag_mtag._header_badge = lisp_calculate_heap_badge();
+  }
   return header->_badge_stamp_wtag_mtag._header_badge;
 }
 
 uint32_t lisp_cons_badge(Cons_sp object) {
   const gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(object.unsafe_cons());
+  if (header->_badge_stamp_wtag_mtag._header_badge == gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge) {
+    header->_badge_stamp_wtag_mtag._header_badge = lisp_calculate_heap_badge();
+  }
   return header->_badge_stamp_wtag_mtag._header_badge;
 }
 

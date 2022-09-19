@@ -269,6 +269,7 @@ struct ConsAllocator {
   inline
 #endif
   static smart_ptr<Cons> allocate(ARGS &&... args) {
+    DO_DRAG_CONS_ALLOCATION();
 #if defined(USE_BOEHM)
     Cons* cons;
     size_t cons_size = ConsSizeCalculator<Stage,Cons,Register>::value();
@@ -319,6 +320,7 @@ namespace gctools {
       typedef smart_ptr<OT> smart_pointer_type;
     template <typename Stage,typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
+      DO_DRAG_GENERAL_ALLOCATION();
 #if defined(USE_BOEHM)
         Header_s* base = do_boehm_general_allocation<Stage>(the_header,size);
         pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
@@ -343,6 +345,7 @@ namespace gctools {
 
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
         size_t sizeWithHeader = sizeof(Header_s)+(snapshot_save_load_init->_clientEnd-snapshot_save_load_init->_clientStart);
+      DO_DRAG_GENERAL_ALLOCATION();
 #if defined(USE_BOEHM)
         Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,sizeWithHeader);
 # ifdef DEBUG_GUARD
@@ -478,6 +481,7 @@ When would I ever want the GC to automatically collect objects but not move them
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename Stage,typename... ARGS>
     static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
+      DO_DRAG_GENERAL_ALLOCATION();
 #if defined(USE_BOEHM)
       Header_s* base = do_boehm_general_allocation<Stage>(the_header,size);
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
@@ -505,6 +509,7 @@ When would I ever want the GC to automatically collect objects but not move them
     };
 
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
+      DO_DRAG_GENERAL_ALLOCATION();
 #if defined(USE_BOEHM)
       Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,size);
 # ifdef DEBUG_GUARD
@@ -951,6 +956,7 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_type num, const void * = 0) {
+      DO_DRAG_GENERAL_ALLOCATION();
 #if defined(USE_BOEHM)
     size_t size = sizeof_container_with_header<TY>(num);
     Header_s* base = do_boehm_general_allocation(the_header,size);
@@ -1058,6 +1064,7 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   gctools::tagged_pointer<container_type> allocate_kind( const Header_s::BadgeStampWtagMtag& the_header, size_type num, const void * = 0) {
+      DO_DRAG_GENERAL_ALLOCATION();
 #if defined(USE_BOEHM)
     size_t size = sizeof_container_with_header<TY>(num);
     // prepend a one pointer header with a pointer to the typeinfo.name

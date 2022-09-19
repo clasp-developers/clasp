@@ -68,30 +68,6 @@ THE SOFTWARE.
 #include <cstring>
 #include <iostream>
 
-
-
-
-#ifdef DEBUG_DRAG_CXX_CALLS
-extern "C" {
-size_t global_drag_cxx_calls_delay = 0;
-
-void drag_function() {
-  // Do nothing
-};
-
-};
-#endif
-
-namespace core {
-
-CL_DEFUN void core__set_drag_cxx_calls_delay(size_t num) {
-#ifdef DEBUG_DRAG_CXX_CALLS
-  global_drag_cxx_calls_delay = num;
-#endif
-};
-
-};
-
 namespace clbind {
 CLBIND_API detail::nil_type nil;
 default_constructor globalDefaultConstructorSignature;

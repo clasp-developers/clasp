@@ -43,6 +43,10 @@ THE SOFTWARE.
 //#define DEBUG_DTREE_INTERPRETER
 //#define DEBUG_VIRTUAL_MACHINE 1
 #define DEBUG_DRAG_CXX_CALLS 1 // Slows down all calls in CXX wrappers - study impact
+#define DEBUG_DRAG_NATIVE_CALLS 1
+#define DEBUG_DRAG_INTERPRET_DTREE 1
+#define DEBUG_DRAG_CONS_ALLOCATION 1
+#define DEBUG_DRAG_GENERAL_ALLOCATION 1
 /* 0 == no CHECK_FRAME, 1 == fast CHECK_FRAME, 2 == slow CHECK_FRAME */
 #define DEBUG_FRAME() 0
 // If ANY flags above are set - then set this one to print a message at startup

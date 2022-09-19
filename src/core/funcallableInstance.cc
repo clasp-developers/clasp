@@ -444,6 +444,7 @@ CL_LAMBDA(program gf core:&va-rest args)
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function, Vaslist_sp pass_args) {
+  DO_DRAG_INTERPRET_DTREE();
   DTIDO_ALWAYS(
       FILE* DTILOG_fout = monitor_file("dtree-interp");
                );
