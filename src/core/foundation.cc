@@ -1670,8 +1670,6 @@ size_t global_drag_interpret_dtree_delay = 0;
 size_t global_drag_cons_allocation_delay = 0;
 size_t global_drag_general_allocation_delay = 0;
 
-__attribute__((noinline)) void drag_delay() {};
-
 void drag_native_calls() {
   for (size_t ii=0; ii<global_drag_native_calls_delay; ii++ ) {
     drag_delay();

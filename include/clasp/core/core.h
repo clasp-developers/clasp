@@ -530,38 +530,40 @@ namespace core {
 
 extern "C" {
 
+void drag_delay();
 void drag_native_calls();
+void drag_cxx_calls();
 void drag_interpret_dtree();
 void drag_cons_allocation();
 void drag_general_allocation();
 
 };
 
-#ifdef DRAG_NATIVE_CALLS
+#ifdef DEBUG_DRAG_NATIVE_CALLS
 # define DO_DRAG_NATIVE_CALLS() drag_native_calls()
 #else
 # define DO_DRAG_NATIVE_CALLS()
 #endif
 
-#ifdef DRAG_CXX_CALLS
+#ifdef DEBUG_DRAG_CXX_CALLS
 # define DO_DRAG_CXX_CALLS() drag_cxx_calls()
 #else
 # define DO_DRAG_CXX_CALLS()
 #endif
 
-#ifdef DRAG_INTERPRET_DTREE
+#ifdef DEBUG_DRAG_INTERPRET_DTREE
 # define DO_DRAG_INTERPRET_DTREE() drag_interpret_dtree()
 #else
 # define DO_DRAG_INTERPRET_DTREE()
 #endif
 
-#ifdef DRAG_CONS_ALLOCATION
+#ifdef DEBUG_DRAG_CONS_ALLOCATION
 # define DO_DRAG_CONS_ALLOCATION() drag_cons_allocation()
 #else
 # define DO_DRAG_CONS_ALLOCATION()
 #endif
 
-#ifdef DRAG_GENERAL_ALLOCATION
+#ifdef DEBUG_DRAG_GENERAL_ALLOCATION
 # define DO_DRAG_GENERAL_ALLOCATION() drag_general_allocation()
 #else
 # define DO_DRAG_GENERAL_ALLOCATION()

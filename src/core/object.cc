@@ -68,6 +68,12 @@ bool low_level_equal(core::T_O* a, core::T_O* b) {
   
 };
 
+
+extern "C" {
+__attribute__((noinline)) void drag_delay() {};
+
+};
+
 namespace core {
 
 uint __nextGlobalClassSymbol = 1;
