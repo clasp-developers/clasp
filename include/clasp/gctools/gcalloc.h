@@ -179,11 +179,11 @@ template <class T>
 struct RootClassAllocator {
   template <class... ARGS>
   static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
-    return allocate_kind(Header_s::StampWtagMtag::make_Value<T>(),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
+    return allocate_kind(Header_s::BadgeStampWtagMtag::make<T>(lisp_heap_badge()),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
   };
 
   template <class... ARGS>
-  static gctools::tagged_pointer<T> allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+  static gctools::tagged_pointer<T> allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
     Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
     T *obj = HeaderPtrToGeneralPtr<T>(base);
@@ -293,13 +293,13 @@ struct ConsAllocator {
 
 
 #ifdef USE_PRECISE_GC
-  static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::StampWtagMtag the_header, core::T_sp car, core::T_sp cdr ) {
+  static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag the_header, core::T_sp car, core::T_sp cdr ) {
 # if defined(USE_BOEHM)
     Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons),global_cons_kind,&global_cons_kind)); // wasMTAG
-    header->_stamp_wtag_mtag = the_header;
+    header->_badge_stamp_wtag_mtag = the_header;
 # elif defined(USE_MMTK)
     Header_s* header = reinterpret_cast<Header_s*>do_mmtk_allocate_cons(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons)); // wasMTAG
-    header->_stamp_wtag_mtag = the_header;
+    header->_badge_stamp_wtag_mtag = the_header;
 # else
     MISSING_GC_SUPPORT();
 # endif
@@ -318,7 +318,7 @@ namespace gctools {
       typedef OT *pointer_type;
       typedef smart_ptr<OT> smart_pointer_type;
     template <typename Stage,typename... ARGS>
-      static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
         Header_s* base = do_boehm_general_allocation<Stage>(the_header,size);
         pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
@@ -344,7 +344,7 @@ namespace gctools {
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
         size_t sizeWithHeader = sizeof(Header_s)+(snapshot_save_load_init->_clientEnd-snapshot_save_load_init->_clientStart);
 #if defined(USE_BOEHM)
-        Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
+        Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,sizeWithHeader);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
@@ -368,7 +368,7 @@ namespace gctools {
         smart_pointer_type sp = smart_ptr<value_type>(ptr);
         return sp;
 #elif defined(USE_MMTK)
-        Header_s* base = do_mmtk_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
+        Header_s* base = do_mmtk_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,sizeWithHeader);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
@@ -409,7 +409,7 @@ namespace gctools {
     typedef OT *pointer_type;
     typedef smart_ptr<OT> smart_pointer_type;
     template <typename Stage,typename... ARGS>
-      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
     // Atomic objects (do not contain pointers) are allocated in separate pool
       Header_s* base = do_boehm_atomic_allocation<Stage>(the_header,size);
@@ -440,7 +440,7 @@ namespace gctools {
 
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
 #if defined(USE_BOEHM)
-      Header_s* base = do_boehm_atomic_allocation<SnapshotLoadStage>(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_atomic_allocation<SnapshotLoadStage>(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,size);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
@@ -451,7 +451,7 @@ namespace gctools {
       smart_pointer_type sp = smart_ptr<value_type>(ptr);
       return sp;
 #elif defined(USE_MMTK)
-      Header_s* base = do_mmtk_atomic_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_mmtk_atomic_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,size);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
@@ -477,7 +477,7 @@ When would I ever want the GC to automatically collect objects but not move them
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename Stage,typename... ARGS>
-    static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+    static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
       Header_s* base = do_boehm_general_allocation<Stage>(the_header,size);
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
@@ -506,7 +506,7 @@ When would I ever want the GC to automatically collect objects but not move them
 
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
 #if defined(USE_BOEHM)
-      Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,size);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
@@ -517,7 +517,7 @@ When would I ever want the GC to automatically collect objects but not move them
       smart_pointer_type sp = smart_ptr<value_type>(ptr);
       return sp;
 #elif defined(USE_MMTK)
-      Header_s* base = do_mmtk_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_mmtk_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,size);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
@@ -543,7 +543,7 @@ should not be managed by the GC */
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename Stage,typename... ARGS>
-      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       OT *obj = HeaderPtrToGeneralPtr<OT>(base);
@@ -570,7 +570,7 @@ should not be managed by the GC */
 
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
 #if defined(USE_BOEHM)
-      Header_s* base = do_boehm_uncollectable_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_uncollectable_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,size);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
@@ -581,7 +581,7 @@ should not be managed by the GC */
       smart_pointer_type sp = smart_ptr<value_type>(ptr);
       return sp;
 #elif defined(USE_MMTK)
-      Header_s* base = do_mmtk_uncollectable_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_mmtk_uncollectable_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,size);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
@@ -676,7 +676,7 @@ namespace gctools {
       return root_allocate_kind(GCStamp<OT>::Stamp,sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
     template <typename... ARGS>
-      static smart_pointer_type root_allocate_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type root_allocate_kind( const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
@@ -703,7 +703,7 @@ namespace gctools {
     };
 
     template <typename... ARGS>
-    static smart_pointer_type allocate_kind_partial_scan(size_t scanSize, const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+    static smart_pointer_type allocate_kind_partial_scan(size_t scanSize, const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind_partial_scan(scanSize,the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
@@ -714,7 +714,7 @@ namespace gctools {
 
 
     template <typename Stage,typename... ARGS>
-      static smart_pointer_type allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::template allocate_in_appropriate_pool_kind<Stage>(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
@@ -734,7 +734,7 @@ namespace gctools {
 
     
     template <typename... ARGS>
-    static smart_pointer_type static_allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+    static smart_pointer_type static_allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::template allocate_in_appropriate_pool_kind<gctools::RuntimeStage>(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
@@ -748,7 +748,7 @@ namespace gctools {
     static smart_pointer_type register_class_with_redeye() {
       throw_hard_error("Never call this - it's only used to register with the redeye static analyzer");
     }
-    static smart_pointer_type copy_kind(const Header_s::StampWtagMtag& the_header, size_t size, const OT &that) {
+    static smart_pointer_type copy_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, const OT &that) {
 #if defined(USE_BOEHM)
     // Copied objects must be allocated in the appropriate pool
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::template allocate_in_appropriate_pool_kind<gctools::RuntimeStage>(  the_header, size, that);
@@ -778,7 +778,7 @@ namespace gctools {
 
   template <class OT>
     struct GCObjectDefaultConstructorAllocator<OT,true> {
-    static smart_ptr<OT> allocate(const Header_s::StampWtagMtag& kind) {
+    static smart_ptr<OT> allocate(const Header_s::BadgeStampWtagMtag& kind) {
       // FIXSTAMP
       return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind, sizeof_with_header<OT>());
     }
@@ -786,7 +786,7 @@ namespace gctools {
 
   template <class OT>
     struct GCObjectDefaultConstructorAllocator<OT,false> {
-    [[noreturn]] static smart_ptr<OT> allocate(const Header_s::StampWtagMtag& kind) {
+    [[noreturn]] static smart_ptr<OT> allocate(const Header_s::BadgeStampWtagMtag& kind) {
       lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_classSymbol());
     }
   };
@@ -803,12 +803,12 @@ namespace gctools {
   public:
     template <typename... ARGS>
       static smart_pointer_type root_allocate(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
       static smart_pointer_type root_allocate_with_stamp(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
@@ -818,25 +818,25 @@ namespace gctools {
     }
 
     template <typename... ARGS>
-      static smart_pointer_type allocate_kind( const Header_s::StampWtagMtag& kind, ARGS &&... args) {
+      static smart_pointer_type allocate_kind( const Header_s::BadgeStampWtagMtag& kind, ARGS &&... args) {
       size_t size = sizeof_with_header<OT>();
       return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
-      static smart_pointer_type allocate_instance(const Header_s::StampWtagMtag& kind, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_instance(const Header_s::BadgeStampWtagMtag& kind, size_t size, ARGS &&... args) {
       return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind,size, std::forward<ARGS>(args)...);
     }
 
     template <typename Stage=RuntimeStage, typename... ARGS>
       static smart_pointer_type allocate( ARGS &&... args) {
-      auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
+      auto kind = Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag, lisp_heap_badge());
       size_t size = sizeof_with_header<OT>();
       return GCObjectAllocator<OT>::template allocate_kind<Stage>(kind,size, std::forward<ARGS>(args)...);
     }
 
     static smart_pointer_type allocate_with_default_constructor() {
-      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag));
+      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag, lisp_heap_badge()));
     }
 
     /*! Allocate enough space for capacity elements, but set the length to length */
@@ -848,8 +848,8 @@ namespace gctools {
     static smart_pointer_type allocate_container( bool static_container_p, int64_t length, ARGS &&... args) {
       size_t capacity = std::abs(length);
       size_t size = sizeof_container_with_header<OT>(capacity);
-      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
-      return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
+      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag,lisp_heap_badge()),size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::BadgeStampWtagMtag(OT::static_ValueStampWtagMtag,lisp_heap_badge()),size,length,std::forward<ARGS>(args)...);
     }
 
 
@@ -859,10 +859,10 @@ namespace gctools {
       size_t capacity = length+1;
       size_t size = sizeof_container_with_header<OT>(capacity);
       if (static_container_p)
-        return GCObjectAllocator<OT>::template static_allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
+        return GCObjectAllocator<OT>::template static_allocate_kind(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag,lisp_heap_badge()), size, length,
                                                            std::forward<ARGS>(args)...);
       else
-        return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
+        return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag,lisp_heap_badge()), size, length,
                                                     std::forward<ARGS>(args)...);
     }
 
@@ -876,7 +876,7 @@ namespace gctools {
       size_t capacity = std::abs(length);
       size_t size = sizeof_container_with_header<OT>(capacity);
       size_t scanSize = sizeof_container_with_header<OT>(dataScanSize);
-      return GCObjectAllocator<OT>::allocate_kind_partial_scan(scanSize,Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::allocate_kind_partial_scan(scanSize,Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
     }
 
 
@@ -890,10 +890,10 @@ namespace gctools {
 #endif
       smart_pointer_type result;
       if (static_container_p)
-        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),size,length,
+        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),size,length,
                                                              std::forward<ARGS>(args)...);
       else
-        result = GCObjectAllocator<OT>::template allocate_kind<RuntimeStage>(Header_s::StampWtagMtag::make_Value<OT>(),size,length,
+        result = GCObjectAllocator<OT>::template allocate_kind<RuntimeStage>(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),size,length,
                                                       std::forward<ARGS>(args)...);
 #if DEBUG_BITUNIT_CONTAINER
       {
@@ -906,7 +906,7 @@ namespace gctools {
     }
     
     static smart_pointer_type copy(const OT &that) {
-      return GCObjectAllocator<OT>::copy_kind(Header_s::StampWtagMtag::make_Value<OT>(),sizeof_with_header<OT>(),that);
+      return GCObjectAllocator<OT>::copy_kind(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),sizeof_with_header<OT>(),that);
     }
 
     static void deallocate_unmanaged_instance(OT* obj) {
@@ -946,11 +946,11 @@ public:
 
     // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
-    return allocate_kind(Header_s::StampWtagMtag::make_Value<TY>(),num);
+    return allocate_kind(Header_s::BadgeStampWtagMtag::make<TY>(lisp_heap_badge()),num);
   }
 
   // allocate but don't initialize num elements of type value_type
-  gc::tagged_pointer<container_type> allocate_kind(const Header_s::StampWtagMtag& the_header, size_type num, const void * = 0) {
+  gc::tagged_pointer<container_type> allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_type num, const void * = 0) {
 #if defined(USE_BOEHM)
     size_t size = sizeof_container_with_header<TY>(num);
     Header_s* base = do_boehm_general_allocation(the_header,size);
@@ -1057,7 +1057,7 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-  gctools::tagged_pointer<container_type> allocate_kind( const Header_s::StampWtagMtag& the_header, size_type num, const void * = 0) {
+  gctools::tagged_pointer<container_type> allocate_kind( const Header_s::BadgeStampWtagMtag& the_header, size_type num, const void * = 0) {
 #if defined(USE_BOEHM)
     size_t size = sizeof_container_with_header<TY>(num);
     // prepend a one pointer header with a pointer to the typeinfo.name
@@ -1170,7 +1170,7 @@ struct StrongWeakAllocationPoint<WeakLinks> {
   }
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<container_type> allocate(Header_s::StampWtagMtag the_header, size_type num, const void * = 0) {
+  static gctools::tagged_pointer<container_type> allocate(Header_s::BadgeStampWtagMtag the_header, size_type num, const void * = 0) {
     size_t size = sizeof_container_with_header<container_type>(num);
 #if defined(USE_BOEHM)
     Header_s* base = do_boehm_weak_allocation(the_header,size);
@@ -1204,7 +1204,7 @@ struct StrongWeakAllocationPoint<WeakLinks> {
    static gctools::tagged_pointer<container_type> snapshot_save_load_allocate( snapshotSaveLoad::snapshot_save_load_init_s* init ) {
     size_t size = (init->_clientEnd-init->_clientStart)+SizeofWeakHeader();
 #if defined(USE_BOEHM)
-    Header_s* base = do_boehm_weak_allocation(init->_headStart->_stamp_wtag_mtag, size);
+    Header_s* base = do_boehm_weak_allocation(init->_headStart->_badge_stamp_wtag_mtag, size);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = init->_headStart->_source;
@@ -1213,7 +1213,7 @@ struct StrongWeakAllocationPoint<WeakLinks> {
     new (myAddress) container_type(init);
     return gctools::tagged_pointer<container_type>(myAddress);
 #elif defined(USE_MMTK)
-    Header_s* base = do_mmtk_weak_allocation(init->_headStart->_stamp_wtag_mtag, size);
+    Header_s* base = do_mmtk_weak_allocation(init->_headStart->_badge_stamp_wtag_mtag, size);
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = init->_headStart->_source;
@@ -1277,7 +1277,7 @@ public:
   ~GCMappingAllocator() throw() {}
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<container_type> allocate(Header_s::StampWtagMtag the_header, const VT &val) {
+  static gctools::tagged_pointer<container_type> allocate(Header_s::BadgeStampWtagMtag the_header, const VT &val) {
     size_t size = sizeof_with_header<container_type>();
 #if defined(USE_BOEHM)
     Header_s* base = do_boehm_weak_allocation(the_header,size);
@@ -1322,7 +1322,7 @@ public:
   ~GCWeakPointerAllocator() throw() {}
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<value_type> allocate(Header_s::StampWtagMtag the_header, const contained_type &val) {
+  static gctools::tagged_pointer<value_type> allocate(Header_s::BadgeStampWtagMtag the_header, const contained_type &val) {
     size_t size = sizeof_with_header<VT>();
 #if defined(USE_BOEHM)
 # ifdef DEBUG_GCWEAK

@@ -697,7 +697,7 @@ gctools::Header_s* generalPointerToHeaderPointer(gctools::clasp_ptr_t general)
 #if 0
   // we used to only save the StampWtagMtag - but now save the whole header for debugging.
   if (globalISLBufferRange.contains(general)) {
-    return (gctools::Header_s*)(general - sizeof(gctools::Header_s::StampWtagMtag));
+    return (gctools::Header_s*)(general - sizeof(gctools::Header_s::BadgeStampWtagMtag));
   }
 #endif
   return (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(general);
@@ -708,7 +708,7 @@ gctools::clasp_ptr_t headerPointerToGeneralPointer(gctools::Header_s* header)
 #if 0
   // we used to only save the StampWtagMtag - but now save the whole header for debugging.
   if (globalISLBufferRange.contains((gctools::clasp_ptr_t)header)) {
-    return (gctools::clasp_ptr_t)((const char*)header + sizeof(gctools::Header_s::StampWtagMtag));
+    return (gctools::clasp_ptr_t)((const char*)header + sizeof(gctools::Header_s::BadgeStampWtagMtag));
   }
 #endif
   return (gctools::clasp_ptr_t)gctools::HeaderPtrToGeneralPtr<core::General_O>((void*)header);
@@ -769,15 +769,15 @@ void set_forwarding_pointer(gctools::BaseHeader_s* header, char* new_client, ISL
     if ((intptr_t)new_client < 0) {
       printf("%s:%d:%s Writing a bad forwarding pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)new_client);
     }
-    header->_stamp_wtag_mtag.setFwdPointer(new_client);
-    if ((uintptr_t)header->_stamp_wtag_mtag.fwdPointer() != (uintptr_t)new_client) {
+    header->_badge_stamp_wtag_mtag.setFwdPointer(new_client);
+    if ((uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer() != (uintptr_t)new_client) {
       printf("%s:%d:%s Forwarding pointer written and read don't match\n", __FILE__, __LINE__, __FUNCTION__);
       abort();
     }
   } else if (global_forwardingKind == noStomp) {
     info->_forwarding[header] = (core::T_O*)new_client;
   } else if (global_forwardingKind == stomp) {
-    header->_stamp_wtag_mtag.setFwdPointer(new_client);
+    header->_badge_stamp_wtag_mtag.setFwdPointer(new_client);
   } else {
     errorBadForwardingKind();
   }
@@ -787,7 +787,7 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
   if (global_forwardingKind == testStomp) {
     auto result = info->_forwarding.find(header);
     bool noStompResult = (result != info->_forwarding.end());
-    bool stompResult = header->_stamp_wtag_mtag.fwdP();
+    bool stompResult = header->_badge_stamp_wtag_mtag.fwdP();
     if (noStompResult!=stompResult) {
       printf("%s:%d:%s results don't match\n", __FILE__, __LINE__, __FUNCTION__);
       abort();
@@ -798,7 +798,7 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
     bool noStompResult = (result != info->_forwarding.end());
     return noStompResult;
   } else if (global_forwardingKind == stomp) {
-    bool stompResult = header->_stamp_wtag_mtag.fwdP();
+    bool stompResult = header->_badge_stamp_wtag_mtag.fwdP();
     return stompResult;
   } else {
     errorBadForwardingKind();
@@ -808,7 +808,7 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
 uintptr_t forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
   if (global_forwardingKind == testStomp) {
     uintptr_t noStompResult =  (uintptr_t)info->_forwarding[header];
-    uintptr_t stompResult = (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
+    uintptr_t stompResult = (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
     if (noStompResult!=stompResult) {
       printf("%s:%d:%s results don't match\n", __FILE__, __LINE__, __FUNCTION__);
       abort();
@@ -817,7 +817,7 @@ uintptr_t forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
   } else if (global_forwardingKind == noStomp) {
     return (uintptr_t)info->_forwarding[header];
   } else if (global_forwardingKind == stomp) {
-    return (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
+    return (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
   } else {
     errorBadForwardingKind();
   }
@@ -1223,7 +1223,7 @@ struct ISLHeader_s {
   size_t      _Size;
   ISLHeader_s(ISLKind k, size_t s) : _Kind(k), _Size(s) {};
   ISLHeader_s* next(ISLKind k) const;
-  gctools::BaseHeader_s::StampWtagMtag stamp_wtag_mtag(ISLKind k) const;
+  gctools::BaseHeader_s::BadgeStampWtagMtag stamp_wtag_mtag(ISLKind k) const;
 };
 
 struct ISLEndHeader_s : public ISLHeader_s {
@@ -1237,9 +1237,9 @@ struct ISLRootHeader_s : public ISLHeader_s {
 };
   
 struct ISLConsHeader_s : public ISLHeader_s {
-  gctools::Header_s::StampWtagMtag _stamp_wtag_mtag;
-  ISLConsHeader_s(ISLKind k, size_t s, gctools::Header_s::StampWtagMtag swm) : ISLHeader_s(k,s), _stamp_wtag_mtag(swm) {};
-  gctools::ConsHeader_s* header() const { return (gctools::ConsHeader_s*)((char*)this + offsetof(ISLConsHeader_s,_stamp_wtag_mtag)); }
+  gctools::Header_s::BadgeStampWtagMtag _badge_stamp_wtag_mtag;
+  ISLConsHeader_s(ISLKind k, size_t s, gctools::Header_s::BadgeStampWtagMtag swm) : ISLHeader_s(k,s), _badge_stamp_wtag_mtag(swm) {};
+  gctools::ConsHeader_s* header() const { return (gctools::ConsHeader_s*)((char*)this + offsetof(ISLConsHeader_s,_badge_stamp_wtag_mtag)); }
 };
 
 struct ISLWeakHeader_s : public ISLHeader_s {
@@ -1291,7 +1291,7 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
   return (ISLHeader_s*)((char*)this + headerSize + this->_Size);
 }
 
-gctools::BaseHeader_s::StampWtagMtag ISLHeader_s::stamp_wtag_mtag(ISLKind k) const {
+gctools::BaseHeader_s::BadgeStampWtagMtag ISLHeader_s::stamp_wtag_mtag(ISLKind k) const {
   if (k != this->_Kind) {
     printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n",
            __FILE__, __LINE__, __FUNCTION__, k, this->_Kind );
@@ -1299,17 +1299,17 @@ gctools::BaseHeader_s::StampWtagMtag ISLHeader_s::stamp_wtag_mtag(ISLKind k) con
   if (k==General) {
     ISLGeneralHeader_s* generalCur = (ISLGeneralHeader_s*)this;
     gctools::Header_s* header = generalCur->header();
-    return header->_stamp_wtag_mtag;
+    return header->_badge_stamp_wtag_mtag;
   } else if (k==Cons) {
     ISLConsHeader_s* consCur = (ISLConsHeader_s*)this;
     gctools::ConsHeader_s* header = consCur->header();
-    return header->_stamp_wtag_mtag;
+    return header->_badge_stamp_wtag_mtag;
   } else if (k==Weak) {
     ISLWeakHeader_s* weakCur = (ISLWeakHeader_s*)this;
     gctools::Header_s* header = (gctools::Header_s*)((char*)this + offsetof(ISLWeakHeader_s,_Header));
-    return header->_stamp_wtag_mtag;
+    return header->_badge_stamp_wtag_mtag;
   }
-  SIMPLE_ERROR(("Add support to get _stamp_wtag_mtag of ISLKind %d") , k );
+  SIMPLE_ERROR(("Add support to get _badge_stamp_wtag_mtag of ISLKind %d") , k );
 }
 
 
@@ -1323,11 +1323,11 @@ struct ensure_forward_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (!is_forwarding_pointer(header,this->_info)) {
-      if (header->_stamp_wtag_mtag.stampP()) {
+      if (header->_badge_stamp_wtag_mtag.stampP()) {
         printf("%s:%d:%s The ISL general %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str());
-      } else if (header->_stamp_wtag_mtag.consObjectP()) {
+      } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
         printf("%s:%d:%s The ISL cons %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str());
-      } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+      } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
         printf("%s:%d:%s The ISL weak %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str());
       }
     }
@@ -1342,7 +1342,7 @@ struct gather_info_for_snapshot_save_t : public walker_callback_t {
   Fixup* _fixup;
   void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.stampP()) {
       if (header->preciseIsPolymorphic()) {
         core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
         if (cast::Cast<core::General_O*,core::T_O*>::isA(client)) {
@@ -1350,9 +1350,9 @@ struct gather_info_for_snapshot_save_t : public walker_callback_t {
           generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
         }
       }
-    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       // Nothing
-    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       // Nothing
     }
   }
@@ -1364,11 +1364,11 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
   Fixup* _fixup;
   void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.stampP()) {
       //
       // Fixup general objects that need it
       //
-      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
+      if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
 //        printf("%s:%d:%s save_snapshot saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__ );
         gctools::GCVector_moveable<clbind::detail::edge>* edges = (gctools::GCVector_moveable<clbind::detail::edge>*)HEADER_PTR_TO_GENERAL_PTR(header);
 //        printf("%s:%d:%s save_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
@@ -1386,9 +1386,9 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
           generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
         }
       }
-    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       // Nothing
-    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       // Nothing
     }
   }
@@ -1419,11 +1419,11 @@ struct calculate_size_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.stampP()) {
       this->_general_count++;
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
-      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
+      if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
         this->_CodeCount++;
         //
         // Calculate the size of a Code_O object keeping only the literals vector
@@ -1447,19 +1447,19 @@ struct calculate_size_t : public walker_callback_t {
         size_t delta = isl_obj_skip(client,false,objectSize)-client;
         DBG_SL1(BF("   general header@%p value: 0x%x badge: 0x%x  sz = %lu  obj_skip = %lu\n")
                 % header
-                % header->_stamp_wtag_mtag._value
-                % header->_stamp_wtag_mtag._header_badge
+                % header->_badge_stamp_wtag_mtag._value
+                % header->_badge_stamp_wtag_mtag._header_badge
                 % objectSize % delta );
         this->_TotalSize += sizeof(ISLGeneralHeader_s) + objectSize;
       }
-    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       DBG_SL1(BF("   cons header@%p -> %p\n") % header % *(void**)header );
       this->_cons_count++;
       size_t consSize;
       isl_cons_skip(client,consSize);
       this->_TotalSize += sizeof(ISLConsHeader_s) + consSize;
-    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       this->_weak_count++;
       DBG_SL1(BF("weak object header %p   client: %p\n") % (void*)header % (void*)client );
@@ -1511,16 +1511,16 @@ struct copy_objects_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_stamp_wtag_mtag.stampP()) {
-      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp)) {
+    if (header->_badge_stamp_wtag_mtag.stampP()) {
+      if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp)) {
 //        printf("%s:%d:%s About to save Lisp object\n", __FILE__, __LINE__, __FUNCTION__ );
       }
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
-      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
+      if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
         llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)clientStart;
         size_t objectFileSize = objectFile->objectFileSizeAlignedUp();
         DBG_OF(
-            printf("%s:%d:%s Saving object file %p with badge 0x%0x name: %s\n", __FILE__, __LINE__, __FUNCTION__, objectFile, header->_stamp_wtag_mtag._header_badge, _rep_(objectFile->_CodeName).c_str() );
+            printf("%s:%d:%s Saving object file %p with badge 0x%0x name: %s\n", __FILE__, __LINE__, __FUNCTION__, objectFile, header->_badge_stamp_wtag_mtag._header_badge, _rep_(objectFile->_CodeName).c_str() );
             printf("%s:%d:%s _ObjectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_ObjectId );
             printf("%s:%d:%s TheJITDylib = %p\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_TheJITDylib.raw_() );
                );
@@ -1586,12 +1586,12 @@ struct copy_objects_t : public walker_callback_t {
         DBG_SL_FWD(BF("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n")
                    % (void*)header % (void*)new_client % (void*)forwarding_pointer(header,this->_info));
       }
-    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
       size_t consSize;
       isl_cons_skip(client,consSize);
       if (consSize==0) ISL_ERROR(fmt::sprintf("A zero size cons at %p was encountered" , (void*)client ));
-      ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O), header->_stamp_wtag_mtag );
+      ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O), header->_badge_stamp_wtag_mtag );
       char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLConsHeader_s));
       char* new_addr = this->_objects->write_buffer((char*)client, consSize);
       core::Cons_O* cons = (core::Cons_O*)client;
@@ -1600,7 +1600,7 @@ struct copy_objects_t : public walker_callback_t {
                    header % (void*)islh % (void*)this->_buffer
                    % (void*)cons->_Car.load().raw_() % (void*)cons->_Cdr.load().raw_() );
       DBG_SL_FWD(BF("setFwdPointer cons header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
-    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
 //      printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       size_t weakSize;
@@ -1661,7 +1661,7 @@ struct fixup_objects_t : public walker_callback_t {
     walker_callback_t(info), _operation(op), _buffer(buffer) {};
 
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
       isl_obj_skip(client,false,objectSize);
@@ -1673,12 +1673,12 @@ struct fixup_objects_t : public walker_callback_t {
       // 2. entry points to ObjectFile_O objects -> offset
 
       isl_obj_scan( 0, client, client_limit, (void*)this->_info );
-    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       size_t consSkip;
       gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client,consSkip);
       isl_cons_scan( 0, client, client_limit, (void*)this->_info );
-    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       size_t objectSize;
       gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart,false,objectSize);
@@ -1695,9 +1695,9 @@ struct fixup_internals_t : public walker_callback_t {
     walker_callback_t(info), _fixup(fixup) {};
 
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
-      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
+      if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
 //        printf("%s:%d:%s load_snapshot saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__  );
         gctools::GCVector_moveable<clbind::detail::edge>* edges = (gctools::GCVector_moveable<clbind::detail::edge>*)HEADER_PTR_TO_GENERAL_PTR(header);
 //        printf("%s:%d:%s load_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
@@ -1716,8 +1716,8 @@ struct fixup_internals_t : public walker_callback_t {
           generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
         }
       }
-    } else if (header->_stamp_wtag_mtag.consObjectP()) {
-    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
     }
   }
 };
@@ -1750,7 +1750,7 @@ struct fixup_vtables_t : public walker_callback_t {
   
   void callback(gctools::BaseHeader_s* header) {
     uintptr_t new_vtable;
-    if (header->_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.stampP()) {
       if (header->preciseIsPolymorphic()) {
         uintptr_t client = (uintptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
         uintptr_t vtable;
@@ -1758,9 +1758,9 @@ struct fixup_vtables_t : public walker_callback_t {
         this->do_vtable((gctools::Header_s*)header,(core::T_O*)client,vtable,new_vtable);
         DBG_SL_VTABLE(BF(" wrote general base %p vtable in memory at %p value: %p to %p %s\n") % (void*)this->_vtableRegionStart % (void*)client % (void*)vtable % (void*)new_vtable % header->description() );
       }
-    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       // Do nothing
-    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       if (header->preciseIsPolymorphic()) {
         uintptr_t client = (uintptr_t)HEADER_PTR_TO_WEAK_PTR(header);
         uintptr_t vtable;
@@ -2040,7 +2040,7 @@ void dump_test_results(FILE* fout, const gctools::GatherObjects& gather )
       for ( auto cur : gather._corruptObjects ) {
         std::vector<uintptr_t>& badPointers = cur.second;
         gctools::Header_s* header = (gctools::Header_s*)cur.first;
-        gctools::GCStampEnum stamp = header->_stamp_wtag_mtag.stamp_();
+        gctools::GCStampEnum stamp = header->_badge_stamp_wtag_mtag.stamp_();
         fprintf( fout, "#%lu -> header-pointer: %p[stamp:%lu]  -- addresses: \n", idx, (void*)cur.first, (uintptr_t)stamp );
         idx++;
         for ( auto ptr : badPointers ) {
@@ -2054,7 +2054,7 @@ void dump_test_results(FILE* fout, const gctools::GatherObjects& gather )
 
 #if 0
 void test_objects_t::callback(gctools::BaseHeader_s* header) {
-  if (header->_stamp_wtag_mtag.stampP()) {
+  if (header->_badge_stamp_wtag_mtag.stampP()) {
     gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
     size_t objectSize;
     isl_obj_skip(client,false,objectSize);
@@ -2066,12 +2066,12 @@ void test_objects_t::callback(gctools::BaseHeader_s* header) {
       // 2. entry points to ObjectFile_O objects -> offset
 
     isl_obj_scan( 0, client, client_limit, (void*)this->_info );
-  } else if (header->_stamp_wtag_mtag.consObjectP()) {
+  } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
     gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
     size_t consSkip;
     gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client,consSkip);
     isl_cons_scan( 0, client, client_limit, (void*)this->_info );
-  } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+  } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
     gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
     size_t objectSize;
     gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart,false,objectSize);
@@ -2699,18 +2699,18 @@ gctools::clasp_ptr_t relocate_pointer(gctools::clasp_ptr_t* clientAddress, gctoo
 struct relocate_objects_t : public walker_callback_t {
   relocate_objects_t( ISLInfo* info) : walker_callback_t(info) {};
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
       gctools::clasp_ptr_t client_limit = isl_obj_skip(client,false,objectSize);
       isl_obj_scan( 0, client, client_limit, (void*)this->_info );
-    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
       size_t consSize;
       gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client,consSize);
       isl_cons_scan( 0, client, client_limit, (void*)this->_info );
       // printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic());
-    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+    } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       size_t objectSize;
       gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart,false,objectSize);
@@ -2924,7 +2924,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     struct fixup_CodeBase_t : public walker_callback_t {
       fixup_CodeBase_t( ISLInfo* info) : walker_callback_t(info) {};
       void callback(gctools::BaseHeader_s* header) {
-        if (header->_stamp_wtag_mtag.stampP() && header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
+        if (header->_badge_stamp_wtag_mtag.stampP() && header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
           llvmo::Library_O* lib = (llvmo::Library_O*)(HEADER_PTR_TO_GENERAL_PTR(header));
           core::SimpleBaseString_sp name = lib->_Name;
           std::string libraryPath = name->get_std_string();
@@ -3024,7 +3024,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           llvm_jitdylib->addGenerator(llvm::cantFail(llvmo::DynamicLibrarySearchGenerator::GetForCurrentProcess(obj_claspJIT->_LLJIT->getDataLayout().getGlobalPrefix())));
 #endif
           // new (&*obj_jd) llvmo::JITDylib_O(name,llvm_jitdylib);
-          DBG_SL("   Write forward ptr JITDylib_sp %p into snapshot_JITDylib_O_header %p val %p fwdP() %d\n", obj_jd.raw_(), snapshot_JITDylib_O_header, *(void**)snapshot_JITDylib_O_header, snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdP() );
+          DBG_SL("   Write forward ptr JITDylib_sp %p into snapshot_JITDylib_O_header %p val %p fwdP() %d\n", obj_jd.raw_(), snapshot_JITDylib_O_header, *(void**)snapshot_JITDylib_O_header, snapshot_JITDylib_O_header->_badge_stamp_wtag_mtag.fwdP() );
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj_jd.raw_());
           set_forwarding_pointer( snapshot_JITDylib_O_header, (char*)fwd, &islInfo );
           root_holder.add((void*)obj_jd.raw_());
@@ -3107,7 +3107,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         llvmo::JITDylib_sp snapshot_JITDylib_sp_ = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
         llvmo::JITDylib_O* snapshot_JITDylib_O_ = &*snapshot_JITDylib_sp_;
         gctools::Header_s* snapshot_JITDylib_O_header = GENERAL_PTR_TO_HEADER_PTR(snapshot_JITDylib_O_);
-        llvmo::JITDylib_O* memory_JITDylib_O_ = (llvmo::JITDylib_O*)snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdPointer();
+        llvmo::JITDylib_O* memory_JITDylib_O_ = (llvmo::JITDylib_O*)snapshot_JITDylib_O_header->_badge_stamp_wtag_mtag.fwdPointer();
         llvmo::JITDylib_sp memory_JITDylib_sp_((gctools::Tagged)gctools::tag_general<llvmo::JITDylib_O*>(memory_JITDylib_O_));
         core::SimpleBaseString_sp sbs_name = memory_JITDylib_sp_->_name;
         std::string name = sbs_name->get_std_string();
@@ -3148,10 +3148,10 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             snapshot_save_load_init_s init(&generalHeader->_Header,clientStart,clientEnd);
             DBG_SL_ALLOCATE(BF("  source_header %p  stamp: %u  size: %lu kind: %s\n")
                             % (void*) source_header
-                            % generalHeader->_stamp_wtag_mtag._value
+                            % generalHeader->_badge_stamp_wtag_mtag._value
                             % generalHeader->_Size
                             % source_header->description().c_str());
-            if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
+            if ( generalHeader->_Header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
               // printf("%s:%d:%s  cur_header = %p  cur_header->_Kind -> %p\n", __FILE__, __LINE__, __FUNCTION__, cur_header, (void*)cur_header->_Kind );
           // Handle the ObjectFile_O objects - pass them to the LLJIT
               llvmo::ObjectFile_O* loadedObjectFile = (llvmo::ObjectFile_O*)clientStart;
@@ -3161,7 +3161,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               char* loadedObjectFileStart = objectFilesStartAddress + loadedObjectFile->_ObjectFileOffset;
               size_t objectFileSize = loadedObjectFile->_ObjectFileSize;
               DBG_OF(
-                  printf("%s:%d:%s ----------Loading ObjectFile_O file with badge 0x%x\n", __FILE__, __LINE__, __FUNCTION__, generalHeader->_Header._stamp_wtag_mtag._header_badge );
+                  printf("%s:%d:%s ----------Loading ObjectFile_O file with badge 0x%x\n", __FILE__, __LINE__, __FUNCTION__, generalHeader->_Header._badge_stamp_wtag_mtag._header_badge );
                   printf("%s:%d:%s  TheJITDylib = %p objectFileSize: %lu\n", __FILE__, __LINE__, __FUNCTION__, loadedObjectFile->_TheJITDylib.raw_(), objectFileSize  );
                      );
 
@@ -3199,7 +3199,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               llvmo::JITDylib_sp snapshot_JITDylib_sp_ = allocatedObjectFile->_TheJITDylib;
               llvmo::JITDylib_O* snapshot_JITDylib_O_ = &*snapshot_JITDylib_sp_;
               gctools::Header_s* snapshot_JITDylib_O_header = GENERAL_PTR_TO_HEADER_PTR(snapshot_JITDylib_O_);
-              llvmo::JITDylib_O* memory_JITDylib_O_ = (llvmo::JITDylib_O*)snapshot_JITDylib_O_header->_stamp_wtag_mtag.fwdPointer();
+              llvmo::JITDylib_O* memory_JITDylib_O_ = (llvmo::JITDylib_O*)snapshot_JITDylib_O_header->_badge_stamp_wtag_mtag.fwdPointer();
               llvmo::JITDylib_sp memory_JITDylib_sp_((gctools::Tagged)gctools::tag_general<llvmo::JITDylib_O*>(memory_JITDylib_O_));
               llvmo::JITDylib_sp jitdylib = memory_JITDylib_sp_;
               DBG_OF(
@@ -3365,16 +3365,16 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             snapshot_save_load_init_s init(&generalHeader->_Header,clientStart,clientEnd);
             DBG_SL_ALLOCATE(BF("  source_header %p  stamp: %u  size: %lu kind: %s\n")
                             % (void*) source_header
-                            % generalHeader->_stamp_wtag_mtag._value
+                            % generalHeader->_badge_stamp_wtag_mtag._value
                             % generalHeader->_Size
                             % source_header->description().c_str());
             if (source_header == snapshot_nil_header) {
               // Skip the NIL object we handled above
               countNullObjects++; // It's a Null_O object but its header has been obliterated by a fwd
-            } else if ( source_header->_stamp_wtag_mtag.fwdP() ) {
+            } else if ( source_header->_badge_stamp_wtag_mtag.fwdP() ) {
               printf("%s:%d:%s About to skip allocation of the object in snapshot at snapshot_header %p - fwdPointer() = %p\n",
-                     __FILE__, __LINE__, __FUNCTION__, source_header, source_header->_stamp_wtag_mtag.fwdPointer() );
-            } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
+                     __FILE__, __LINE__, __FUNCTION__, source_header, source_header->_badge_stamp_wtag_mtag.fwdPointer() );
+            } else if ( generalHeader->_Header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
               // Set the forwarding pointer defined above.
               gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
               char* fwd = objectFileForwards[source_header];
@@ -3383,7 +3383,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 printf("%s:%d:%s Got NULL fwd for source_header %p\n", __FILE__, __LINE__, __FUNCTION__, source_header );
                 abort();
               }
-            } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Null_O) ) {
+            } else if ( generalHeader->_Header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Null_O) ) {
               // This may be redundant because of the test above (source_header == snapshot_nil_header)
              // Don't do anything with the only Null_O object - it was allocated above when we fished it out
               // of the Lisp object and allocated it.
@@ -3407,7 +3407,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
             gctools::ConsHeader_s* header = consHeader->header();
             core::Cons_O* cons = (core::Cons_O*)clientStart;
-            auto obj = gctools::ConsAllocator<gctools::RuntimeStage,core::Cons_O,gctools::DoRegister>::snapshot_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
+            auto obj = gctools::ConsAllocator<gctools::RuntimeStage,core::Cons_O,gctools::DoRegister>::snapshot_save_load_allocate(header->_badge_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
             gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
             set_forwarding_pointer(header,((char*)fwd), &islInfo);
             DBG_SL_ALLOCATE(BF("---- Allocated Cons %p copy from %p header: %p  set fwd to %p\n")
@@ -3421,7 +3421,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(weakHeader+1);
             gctools::clasp_ptr_t clientEnd = clientStart + weakHeader->_Size;
             snapshot_save_load_init_s init(header,clientStart,clientEnd);
-            gctools::Header_s::WeakKinds kind = (gctools::Header_s::WeakKinds)header->_stamp_wtag_mtag._value;
+            gctools::Header_s::WeakKinds kind = (gctools::Header_s::WeakKinds)header->_badge_stamp_wtag_mtag._value;
             switch (kind) {
 #if 1
             case gctools::Header_s::WeakBucketKind: {

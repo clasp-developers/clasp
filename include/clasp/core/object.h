@@ -297,12 +297,12 @@ public:
 
 
 namespace core {
-Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag::Value);
-void lisp_setStaticClass(gctools::Header_s::StampWtagMtag::Value value, Instance_sp class_);
-Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag::Value value);
-void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag::Value value, Symbol_sp class_);
-Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value value);
-void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value value, Creator_sp creator);
+Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag);
+void lisp_setStaticClass(gctools::Header_s::StampWtagMtag value, Instance_sp class_);
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag value);
+void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag value, Symbol_sp class_);
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag value);
+void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag value, Creator_sp creator);
 };
 
 
@@ -331,7 +331,7 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value value
   typedef oClass my_type;                                               \
   typedef gctools::smart_ptr<oClass> smart_ptr_type;                 \
  public:                                                                \
- static gctools::Header_s::StampWtagMtag::Value static_ValueStampWtagMtag; \
+ static gctools::Header_s::StampWtagMtag static_ValueStampWtagMtag; \
  public:                                                                \
  static void set_static_class_symbol(core::Symbol_sp symbol)                \
  { core::lisp_setStaticClassSymbol(oClass::static_ValueStampWtagMtag,symbol); }; \

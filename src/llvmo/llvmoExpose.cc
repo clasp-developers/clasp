@@ -4675,11 +4675,11 @@ void dump_objects_for_debugger(std::ostream& fout,std::string indent)
 {
   fmt::fprintf(fout, "%sInit_struct(\"gctools::Header_s::StampWtagMtag\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s::StampWtagMtag));
   python_dump_field(fout,"_value",false,gctools::ctype_int,offsetof(gctools::Header_s::StampWtagMtag,_value),sizeof(gctools::Header_s::StampWtagMtag::_value));
-  python_dump_field(fout,"_header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s::StampWtagMtag,_header_badge),sizeof(gctools::Header_s::StampWtagMtag::_header_badge));
+  python_dump_field(fout,"_header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s::BadgeStampWtagMtag,_header_badge),sizeof(gctools::Header_s::BadgeStampWtagMtag::_header_badge));
   fmt::fprintf(fout,"] )\n");
   fmt::fprintf(fout,"%sInit_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
-  python_dump_field(fout,"_stamp_wtag_mtag._value",false,gctools::ctype_int,offsetof(gctools::Header_s,_stamp_wtag_mtag._value),sizeof(gctools::Header_s::_stamp_wtag_mtag._value));
-  python_dump_field(fout,"_stamp_wtag_mtag._header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s,_stamp_wtag_mtag._header_badge),sizeof(gctools::Header_s::_stamp_wtag_mtag._header_badge));
+  python_dump_field(fout,"_badge_stamp_wtag_mtag._value",false,gctools::ctype_int,offsetof(gctools::Header_s,_badge_stamp_wtag_mtag._value),sizeof(gctools::Header_s::_badge_stamp_wtag_mtag._value));
+  python_dump_field(fout,"_stamp_wtag_mtag._header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s,_badge_stamp_wtag_mtag._header_badge),sizeof(gctools::Header_s::_badge_stamp_wtag_mtag._header_badge));
 #ifdef DEBUG_GUARD
   python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start),sizeof(gctools::Header_s::_tail_start));
   python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size),sizeof(gctools::Header_s::_tail_size));

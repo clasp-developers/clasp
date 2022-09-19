@@ -147,14 +147,13 @@ void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, T_sp sig,
 //  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
 }
 
-void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
-  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(s));
-  T_sp stamp((gctools::Tagged)s);
+void Instance_O::CLASS_set_stamp_for_instances(gctools::BaseHeader_s::StampWtagMtag s) {
+  T_sp stamp((gctools::Tagged)s.as_fixnum());
   this->instanceSet(REF_CLASS_STAMP_FOR_INSTANCES_,stamp); // write shifted stamp - it's automatically a fixnum
 };
 
 // NOT called by regular CL allocate instance. FIXME, find a way to remove this if possible.
-void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
+void Instance_O::initializeClassSlots(Creator_sp creator, gctools::BaseHeader_s::StampWtagMtag stamp) {
   // Should match clos/hierarchy.lisp
   ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
   SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
@@ -444,8 +443,7 @@ Instance_sp Instance_O::create(Symbol_sp symbol, Instance_sp metaClass, Creator_
   DEPRECATED();
 };
 
-Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, Instance_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
-  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
+Instance_sp Instance_O::createClassUncollectable(gctools::BaseHeader_s::StampWtagMtag stamp, Instance_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
 #if 0  
   printf("%s:%d:%s stamp -> %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   if (!metaClass.unboundp()) {

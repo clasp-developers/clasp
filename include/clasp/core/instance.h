@@ -131,7 +131,7 @@ namespace core {
     Instance_sp _Class;
     Rack_sp _Rack;
   public:
-    static Instance_sp createClassUncollectable(gctools::ShiftedStamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
+    static Instance_sp createClassUncollectable(gctools::BaseHeader_s::StampWtagMtag is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
   
   /*! Setup the instance nil value */
@@ -151,7 +151,7 @@ namespace core {
       ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(result));
       return result;
     };
-    void CLASS_set_stamp_for_instances(gctools::UnshiftedStamp s);
+    void CLASS_set_stamp_for_instances(gctools::BaseHeader_s::StampWtagMtag s);
 
     string dumpInfo();
 
@@ -204,7 +204,7 @@ namespace core {
     void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots) {
       initializeSlots(is, unbound<T_O>(), numberOfSlots);
     }
-    void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
+    void initializeClassSlots(Creator_sp creator, gctools::BaseHeader_s::StampWtagMtag class_stamp);
   public:
     static size_t rack_stamp_offset();
   public: // Functions here

@@ -100,8 +100,8 @@ namespace core {
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::ShiftedStamp is, T_sp sig, size_t numberOfSlots);
-    void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
+    void initializeSlots(gctools::BaseHeader_s::StampWtagMtag is, T_sp sig, size_t numberOfSlots);
+    void initializeClassSlots(Creator_sp creator, gctools::BaseHeader_s::StampWtagMtag class_stamp);
   public:
     static size_t rack_stamp_offset();
 

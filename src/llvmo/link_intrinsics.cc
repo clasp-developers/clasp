@@ -1010,7 +1010,7 @@ template<typename Ty_O, class...ARGS>
 gctools::smart_ptr<Ty_O> InitObject(void* space, ARGS&&...args) {
   ASSERT(((uintptr_t)(space)&0x7)==0); // copied from cc_stack_enclose
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(space);
-  const gctools::Header_s::StampWtagMtag c_header = gctools::Header_s::StampWtagMtag::make_Value<Ty_O>();
+  const gctools::Header_s::BadgeStampWtagMtag c_header = gctools::Header_s::BadgeStampWtagMtag::make<Ty_O>(gctools::lisp_stack_badge());
 #ifdef DEBUG_GUARD
   size_t size = gctools::sizeof_with_header<Ty_O>();
   new (header) (typename gctools::GCHeader<Ty_O>::HeaderType)(c_header, size, 0, size);

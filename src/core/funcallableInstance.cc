@@ -51,18 +51,18 @@ THE SOFTWARE.
 namespace core {
 
 
-void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp,
+void FuncallableInstance_O::initializeSlots(gctools::BaseHeader_s::StampWtagMtag stamp,
                                             T_sp sig, size_t numberOfSlots) {
-  ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
+  ASSERT(gctools::BaseHeader_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
   this->_Rack = Rack_O::make(numberOfSlots,sig,unbound<T_O>());
-  this->stamp_set(stamp);
+  this->stamp_set(stamp.as_fixnum());
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(rack());
 #endif
 }
 
-void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
-  ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
+void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::BaseHeader_s::StampWtagMtag stamp) {
+  ASSERT(gctools::Header_s::BaseHeader_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
   DEPRECATED();
 }
 

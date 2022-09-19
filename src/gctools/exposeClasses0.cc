@@ -59,7 +59,7 @@ template <class TheClass>
 NOINLINE void set_one_static_class_Header() {
   gctools::ShiftedStamp the_stamp = gctools::NextStampWtag(0 /* Get from the Stamp */,gctools::GCStamp<TheClass>::StampWtag);
   if (gctools::GCStamp<TheClass>::StampWtag!=0) {
-    TheClass::static_ValueStampWtagMtag = gctools::Header_s::StampWtagMtag::make_Value<TheClass>();
+    TheClass::static_ValueStampWtagMtag = gctools::Header_s::StampWtagMtag::make<TheClass>();
   } else {
 #ifdef USE_MPS
     if (core::global_initialize_builtin_classes) {

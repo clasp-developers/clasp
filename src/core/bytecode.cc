@@ -196,13 +196,13 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
   ASSERT((((uintptr_t)closure)&0x7)==0); // must be aligned
   ASSERT((((uintptr_t)lcc_args)&0x7)==0); // must be aligned
   bool vaslistp = false; // true if we need to deallocate a vaslist at the end
+#ifdef DEBUG_VIRTUAL_MACHINE
   if (lcc_nargs> 65536) {
     printf("%s:%d:%s A very large number of arguments %lu are being passed - check if there is a problem\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs );
   }
-#ifdef DEBUG_VIRTUAL_MACHINE
   GlobalBytecodeEntryPoint_sp ep = gc::As<GlobalBytecodeEntryPoint_sp>(closure->_TheEntryPoint.load());
   BytecodeModule_sp bm = gc::As<BytecodeModule_sp>(ep->_Code);
-  BytecodeModule_O::Bytecode_sp_Type bc = bm->bytecode();
+  BytecodeModule_O::Bytecode_sp_Type bc = bm->_Bytecode;
   uintptr_t bytecode_start = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(0);
   uintptr_t bytecode_end = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(cl__length(bc));
 #endif
@@ -1231,12 +1231,11 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   auto entry = closure->entryPoint();
   core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(entry);
   DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
-  size_t nlocals = entryPoint->localsFrameSize();
-  core::BytecodeModule_sp module = entryPoint->code();
-  ASSERT(gc::IsA<SimpleVector_sp>(module->literals()));
-  core::T_O** literals = ((core::T_O**)gc::As_unsafe<core::SimpleVector_sp>(module->literals())->
-                    rowMajorAddressOfElement_(0));
-
+  size_t nlocals = entryPoint->_LocalsFrameSize;
+  ASSERT(gc::IsA<core::BytecodeModule_sp>(entryPoint->_Code));
+  core::BytecodeModule_sp module = gc::As_unsafe<core::BytecodeModule_sp>(entryPoint->_Code);
+  ASSERT(gc::IsA<SimpleVector_sp>(module->_Literals));
+  core::T_O** literals = (core::T_O**)&gc::As_unsafe<core::SimpleVector_sp>(module->_Literals)->_Data[0];
   core::VirtualMachine& vm = my_thread->_VM;
   VM_CURRENT_DATA(vm, (lcc_nargs>=2) ? lcc_args[1] : NULL);
   VM_CURRENT_DATA1(vm, (lcc_nargs>=3) ? lcc_args[2] : NULL);

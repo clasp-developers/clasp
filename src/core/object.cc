@@ -591,7 +591,7 @@ SYMBOL_EXPORT_SC_(ClPkg, equalp);
 
 namespace core {
 
-void lisp_setStaticClass(gctools::Header_s::StampWtagMtag::Value header, Instance_sp value)
+void lisp_setStaticClass(gctools::Header_s::StampWtagMtag header, Instance_sp value)
 {
   if (_lisp->_Roots.staticClassesUnshiftedNowhere.size() == 0) {
     ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_max));
@@ -604,7 +604,7 @@ void lisp_setStaticClass(gctools::Header_s::StampWtagMtag::Value header, Instanc
   _lisp->_Roots.staticClassesUnshiftedNowhere[stamp] = value;
 }
 
-void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag::Value header, Symbol_sp value)
+void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag header, Symbol_sp value)
 {
 //  printf("%s:%d:%s  gctools::STAMP_max -> %u\n", __FILE__, __LINE__, __FUNCTION__, gctools::STAMP_max);
   if (_lisp->_Roots.staticClassSymbolsUnshiftedNowhere.size() == 0) {
@@ -617,7 +617,7 @@ void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag::Value header, S
   _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[stamp] = value;
   //  printf("%s:%d:%s stamp: %lu  value: %s@%p\n", __FILE__, __LINE__, __FUNCTION__, stamp, _rep_(value).c_str(), &_lisp->_Roots.staticClassSymbolsUnshiftedNowhere[stamp]);
 }
-Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag::Value header)
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag header)
 {
   size_t stamp = gctools::Header_s::Stamp(header);
   T_sp value = _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[stamp];
@@ -627,7 +627,7 @@ Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag::Value head
 }
 
 
-void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value header, Creator_sp value)
+void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag header, Creator_sp value)
 { 
   if (_lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere.size() == 0) {
     size_t stamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMPWTAG_max);
@@ -637,14 +637,14 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value heade
   _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere[stamp] = value;
 }
 
-Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag::Value header)
+Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag header)
 {
   size_t stamp = gctools::Header_s::Stamp(header);
   Instance_sp class_ = _lisp->_Roots.staticClassesUnshiftedNowhere[stamp];
   //printf("%s:%d:%s stamp = %lu   class_ = %s\n", __FILE__, __LINE__, __FUNCTION__, stamp, _rep_(class_).c_str());
   return class_;
 }
-Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value header)
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag header)
 {
   size_t stamp = gctools::Header_s::Stamp(header);
   return _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere[stamp];

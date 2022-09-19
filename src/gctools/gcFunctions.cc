@@ -173,7 +173,7 @@ CL_DEFUN core::T_sp core__header_stamp(core::T_sp obj) {
   if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
-    uintptr_t stamp = 0xFFFFFFFF&(header->_stamp_wtag_mtag._value);
+    uintptr_t stamp = 0xFFFFFFFF&(header->_badge_stamp_wtag_mtag._value);
 //    core::write_bf_stream(fmt::sprintf("%s:%d:%s stamp = %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
     core::T_sp result((gctools::Tagged)stamp);
     return result;;
@@ -187,7 +187,7 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
-    return core::clasp_make_integer(header->_stamp_wtag_mtag._value);
+    return core::clasp_make_integer(header->_badge_stamp_wtag_mtag._value);
   }
   SIMPLE_ERROR(("The object %s is not a general object and doesn't have a header-value") , _rep_(obj));
 }
@@ -223,7 +223,7 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   } else if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
-    gctools::GCStampEnum stamp = header->_stamp_wtag_mtag.stamp_();
+    gctools::GCStampEnum stamp = header->_badge_stamp_wtag_mtag.stamp_();
     return (Fixnum)stamp;
   } else if (obj.single_floatp()) {
     return gctools::STAMPWTAG_SINGLE_FLOAT;

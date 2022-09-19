@@ -791,7 +791,7 @@ public:
     (when (is-exposed-class exposed-class)
       (let ((class-tag (class-tag% exposed-class)))
         (format stream "namespace ~a {
-  gctools::Header_s::StampWtagMtag::Value ~a::static_ValueStampWtagMtag;
+  gctools::Header_s::StampWtagMtag ~a::static_ValueStampWtagMtag;
 };~%"
                 (tags:namespace% class-tag) (tags:name% class-tag)))))
   (format stream "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))

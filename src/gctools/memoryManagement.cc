@@ -280,8 +280,8 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
     printf("   %p : %18p\n", (headerP+4), (void*)*(headerP+4));
     printf("   %p : %18p\n", (headerP+5), (void*)*(headerP+5));
 #endif    
-    size_t stamp_wtag = (GCStampEnum)((*((Header_s*)headerP))._stamp_wtag_mtag.stamp_wtag());
-    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP))._stamp_wtag_mtag.stamp());
+    size_t stamp_wtag = (GCStampEnum)((*((Header_s*)headerP))._badge_stamp_wtag_mtag.stamp_wtag());
+    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP))._badge_stamp_wtag_mtag.stamp());
     printf(" ACTUAL stamp_wtag   = %4zu", stamp_wtag);
     fflush(stdout);
     printf(" name: %s\n", obj_name(kind));
@@ -290,7 +290,7 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
     Header_s *hdr = (Header_s *)headerP;
     printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
     printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::mtag_mask);
-    printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->_stamp_wtag_mtag.fwdSize(), hdr->_stamp_wtag_mtag.fwdSize());
+    printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->_badge_stamp_wtag_mtag.fwdSize(), hdr->_badge_stamp_wtag_mtag.fwdSize());
   } break;
   case Header_s::pad1_mtag:
       printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
@@ -350,7 +350,7 @@ void client_validate_General_O_ptr(const core::General_O* client_ptr) {
 
 void client_validate_Cons_O_ptr(const core::Cons_O* client_ptr) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ConsPtrToHeaderPtr(reinterpret_cast<const void*>(client_ptr)));
-  if (!header->_stamp_wtag_mtag.consObjectP()) {
+  if (!header->_badge_stamp_wtag_mtag.consObjectP()) {
     printf("%s:%d The header %p is not a cons header and it must be\n", __FILE__, __LINE__, (void*)client_ptr);
     abort();
   }
@@ -393,17 +393,17 @@ void BaseHeader_s::validate() const {
     printf("%s:%d The header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
-  if ( this->_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
-  if ( this->_stamp_wtag_mtag.stampP() ) {
+  if ( this->_badge_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
+  if ( this->_badge_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
+  if ( this->_badge_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
-    uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
+    uintptr_t stamp_index = (uintptr_t)this->_badge_stamp_wtag_mtag.stamp_();
     if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) { // wasMTAG
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }
 #endif // USE_PRECISE_GC
-    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
+    if ( !(gctools::BaseHeader_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
   } else {
     signal_invalid_object(this,"Not a normal object");
   }
@@ -416,9 +416,9 @@ bool ConsHeader_s::isValidConsObject() const {
   }
   void* gcBase = GC_base((void*)this);
   if (gcBase!=(void*)this) goto bad;
-  if ( this->_stamp_wtag_mtag._value == 0 ) goto bad;
-  if ( this->_stamp_wtag_mtag.invalidP() ) goto bad;
-  if ( !this->_stamp_wtag_mtag.consObjectP() ) goto bad;
+  if ( this->_badge_stamp_wtag_mtag._value == 0 ) goto bad;
+  if ( this->_badge_stamp_wtag_mtag.invalidP() ) goto bad;
+  if ( !this->_badge_stamp_wtag_mtag.consObjectP() ) goto bad;
   return true;
  bad:
   return false;
@@ -432,33 +432,33 @@ bool Header_s::isValidGeneralObject() const {
   }
   void* gcBase = GC_base((void*)this);
   if (gcBase!=(void*)this) goto bad;
-  if ( this->_stamp_wtag_mtag._value == 0 ) goto bad;
+  if ( this->_badge_stamp_wtag_mtag._value == 0 ) goto bad;
   #ifdef DEBUG_GUARD  
-  if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) goto bad;
+  if ( this->_badge_stamp_wtag_mtag._value != this->_dup_badge_stamp_wtag_mtag._value ) goto bad;
 #endif
-  if ( this->_stamp_wtag_mtag.invalidP() ) goto bad;
-  if ( this->_stamp_wtag_mtag.stampP() ) {
+  if ( this->_badge_stamp_wtag_mtag.invalidP() ) goto bad;
+  if ( this->_badge_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
-    uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
+    uintptr_t stamp_index = (uintptr_t)this->_badge_stamp_wtag_mtag.stamp_();
     if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) goto bad; // wasMTAG
 #endif // USE_PRECISE_GC
 #ifdef DEBUG_GUARD    
     if ( this->_guard != GUARD1) goto bad;
     if ( this->_guard2!= GUARD2) goto bad;
 #endif
-    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) goto bad;
+    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value))) goto bad;
 #ifdef DEBUG_GUARD
     for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
             *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) goto bad;
     }
 #endif
-  } else if (!this->_stamp_wtag_mtag.weakObjectP()) {
+  } else if (!this->_badge_stamp_wtag_mtag.weakObjectP()) {
     goto bad;
   }
   return true;
  bad:
-  printf("%s:%d:%s Encountered a bad general object at %p value: 0x%x\n", __FILE__, __LINE__, __FUNCTION__, this, this->_stamp_wtag_mtag._value );
+  printf("%s:%d:%s Encountered a bad general object at %p value: 0x%x\n", __FILE__, __LINE__, __FUNCTION__, this, this->_badge_stamp_wtag_mtag._value );
   return false;
 }
 
@@ -467,14 +467,14 @@ void Header_s::validate() const {
     printf("%s:%d The header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
+  if ( this->_badge_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
 #ifdef DEBUG_GUARD  
-  if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");
+  if ( this->_badge_stamp_wtag_mtag._value != this->_dup_badge_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");
 #endif
-  if ( this->_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
-  if ( this->_stamp_wtag_mtag.stampP() ) {
+  if ( this->_badge_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
+  if ( this->_badge_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
-    uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
+    uintptr_t stamp_index = (uintptr_t)this->_badge_stamp_wtag_mtag.stamp_();
     if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) { // wasMTAG
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
@@ -484,7 +484,7 @@ void Header_s::validate() const {
     if ( this->_guard != GUARD1) signal_invalid_object(this,"normal object bad header guard");
     if ( this->_guard2!= GUARD2) signal_invalid_object(this,"normal object bad header guard2");
 #endif
-    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
+    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD
     for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
             *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
@@ -506,17 +506,17 @@ void Header_s::validate() const {
 //
 // Return true if the object represented by this header is polymorphic
 bool BaseHeader_s::preciseIsPolymorphic() const {
-  if (this->_stamp_wtag_mtag.stampP()) {
-    uintptr_t stamp = this->_stamp_wtag_mtag.stamp();
+  if (this->_badge_stamp_wtag_mtag.stampP()) {
+    uintptr_t stamp = this->_badge_stamp_wtag_mtag.stamp();
     return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;
-  } else if (this->_stamp_wtag_mtag.consObjectP()) {
+  } else if (this->_badge_stamp_wtag_mtag.consObjectP()) {
     return false;
-  } else if (this->_stamp_wtag_mtag.weakObjectP()) {
-    if (this->_stamp_wtag_mtag._value == WeakBucketKind) {
+  } else if (this->_badge_stamp_wtag_mtag.weakObjectP()) {
+    if (this->_badge_stamp_wtag_mtag._value == WeakBucketKind) {
       return std::is_polymorphic<WeakBucketsObjectType>();
-    } else if (this->_stamp_wtag_mtag._value == StrongBucketKind ) {
+    } else if (this->_badge_stamp_wtag_mtag._value == StrongBucketKind ) {
       return std::is_polymorphic<StrongBucketsObjectType>();
-    } else if (this->_stamp_wtag_mtag._value == WeakPointerKind  ) {
+    } else if (this->_badge_stamp_wtag_mtag._value == WeakPointerKind  ) {
       return std::is_polymorphic<WeakPointer>();
     }
   }
@@ -1132,7 +1132,7 @@ void gatherAllObjects(GatherObjects& gather) {
       // headers are guaranteed to be the same size
       Header_s* generalOrWeakHeader = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
       gather.mark(generalOrWeakHeader);
-      if (!generalOrWeakHeader->_stamp_wtag_mtag.weakObjectP()) {
+      if (!generalOrWeakHeader->_badge_stamp_wtag_mtag.weakObjectP()) {
         // It's a general object - walk it
         size_t objectSize;
         LOG("Mark/scan client: %p\n", *(void**)client );
@@ -1161,13 +1161,13 @@ void gatherAllObjects(GatherObjects& gather) {
 
 /* Return the size of the object */
 size_t objectSize( BaseHeader_s* header ) {
-  if (header->_stamp_wtag_mtag.consObjectP() ) {
+  if (header->_badge_stamp_wtag_mtag.consObjectP() ) {
       // It's a cons object
     size_t consSize;
     uintptr_t client = (uintptr_t)HeaderPtrToConsPtr(header);
     uintptr_t clientLimit = mw_cons_skip(client,consSize);
     return consSize;
-  } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+  } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
          // It's a weak object
     size_t objectSize;
     uintptr_t client = (uintptr_t)HeaderPtrToWeakPtr(header);

@@ -441,9 +441,9 @@ struct BytecodeClosureEntryPoint {
     core::GlobalBytecodeEntryPoint_sp entryPoint = gctools::As_unsafe<core::GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
     ASSERT(gc::IsA<core::BytecodeModule_sp>(entryPoint->_Code));
     core::BytecodeModule_sp module = gctools::As_unsafe<core::BytecodeModule_sp>(entryPoint->_Code);
-    int entryPcOffset = (*entryPoint)._EntryPcN;
-    ASSERT(gc::IsA<Array_sp>(module->bytecode()));
-    unsigned char* pc =  (unsigned char*)&(gc::As_unsafe<SimpleVector_byte8_t_sp>(module->bytecode())->_Data[0]) + entryPcOffset;
+    int entryPcOffset = entryPoint->_EntryPcN;
+    ASSERT(gc::IsA<Array_sp>(module->_Bytecode));
+    unsigned char* pc =  (unsigned char*)&(gc::As_unsafe<SimpleVector_byte8_t_sp>(module->_Bytecode)->_Data[0]) + entryPcOffset;
     return (bytecode_trampoline)( pc, lcc_closure, lcc_nargs, lcc_args );
   }
 

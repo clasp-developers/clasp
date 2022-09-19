@@ -63,10 +63,10 @@ static size_t invalidHeaderTotalSize = 0;
 extern "C" {
 void callback_reachable_object( gctools::BaseHeader_s* ptr, void *client_data) {
   gctools::GCStampEnum stamp;
-  if (ptr->_stamp_wtag_mtag.consObjectP()) {
+  if (ptr->_badge_stamp_wtag_mtag.consObjectP()) {
     stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
   } else {
-    stamp = ptr->_stamp_wtag_mtag.stamp_();
+    stamp = ptr->_badge_stamp_wtag_mtag.stamp_();
     if (!valid_stamp(stamp)) {
       printf("%s:%d:%s Invalid stamp %u\n", __FILE__, __LINE__, __FUNCTION__, stamp );
     }
@@ -91,7 +91,7 @@ void callback_reachable_object( gctools::BaseHeader_s* ptr, void *client_data) {
 void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *client_data) {
   gctools::FindStamp* findStamp = (gctools::FindStamp*)client_data;
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
+  gctools::GCStampEnum stamp = h->_badge_stamp_wtag_mtag.stamp_();
   if (!valid_stamp(stamp)) {
     if (sz==32) {
       stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
