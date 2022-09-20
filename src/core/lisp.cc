@@ -526,7 +526,7 @@ void Lisp::startupLispEnvironment() {
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
     initialize_functions();
 #ifdef USE_IMPLICIT_BYTECODE_COMPILE
-    core::_sym_STAReval_with_env_hookSTAR->defparameter(comp::_sym_bytecode_eval_with_env->symbolFunction());
+    core::_sym_STAReval_with_env_hookSTAR->defparameter(comp::_sym_bytecode_toplevel_eval->symbolFunction());
 #else
     core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_interpret_eval_with_env->symbolFunction());
 #endif

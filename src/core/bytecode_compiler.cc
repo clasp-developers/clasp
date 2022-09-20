@@ -1929,20 +1929,9 @@ static Lexenv_sp coerce_lexenv_desig(T_sp env) {
 }
 
 SYMBOL_EXPORT_SC_(CompPkg, bytecode_implicit_compile_form);
-SYMBOL_EXPORT_SC_(CompPkg, bytecode_eval_with_env);
 
 CL_LAMBDA(form &optional env)
 CL_DEFUN T_mv cmp__bytecode_implicit_compile_form(T_sp form, T_sp env) {
-  T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(),
-                                  Cons_O::createList(cl::_sym_declare),
-                                  Cons_O::createList(cl::_sym_progn, form));
-//  printf("%s:%d:%s lexpr = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lexpr).c_str());
-  Function_sp thunk = bytecompile(lexpr, coerce_lexenv_desig(env));
-  return eval::funcall(thunk);
-}
-
-CL_LAMBDA(form &optional env)
-CL_DEFUN T_mv cmp__bytecode_eval_with_env(T_sp form, T_sp env) {
   T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(),
                                   Cons_O::createList(cl::_sym_declare),
                                   Cons_O::createList(cl::_sym_progn, form));
@@ -2002,6 +1991,9 @@ CL_DEFUN T_mv bytecode_toplevel_symbol_macrolet(List_sp bindings, List_sp body,
   return bytecode_toplevel_locally(body, nenv);
 }
 
+SYMBOL_EXPORT_SC_(CompPkg, bytecode_toplevel_eval);
+
+CL_LAMBDA(form &optional env)
 CL_DEFUN T_mv bytecode_toplevel_eval(T_sp form, T_sp tenv) {
   Lexenv_sp env = coerce_lexenv_desig(tenv);
   T_sp eform = cl__macroexpand(form, env);
