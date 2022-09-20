@@ -911,10 +911,13 @@ const_constant_arg     = 0b001000
 const_keys_arg         = 0b011000
 const_label_arg        = 0b010000
 
+global_vm_long = 0
 def new_instr(name, code, args=[], long_args=[]):
     instr = instruction_description(name,code,args,long_args)
     global_codes[instr._value] = instr
     global_names[instr._name] = instr
+    if (instr._name == "long"):
+        global_vm_long = instr._value
 
 def constant_arg(index):
     return const_constant_arg|index
