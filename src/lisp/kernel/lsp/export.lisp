@@ -207,3 +207,16 @@
   (si::fset 'do f t '(vars test &body body))
   (si::fset 'do* f t '(vars test &body body)))
 
+(si::fset 'prog1 #'(lambda (whole env)
+                     (declare (ignore env))
+                     (let ((sym (gensym))
+                           (first (cadr whole))
+                           (body (cddr whole)))
+                       (if body
+                           `(let ((,sym ,first))
+                              ,@body
+                              ,sym)
+                           first)))
+          t)
+
+
