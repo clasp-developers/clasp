@@ -361,7 +361,7 @@ void registerOneDtreeInfo(const std::string& name, int val ) {
 }
 
 void registerOrDumpDtreeInfo(std::ostream& fout) {
-#define DTREE_EXPOSE(_name_) if (fout) fmt::fprintf(fout,"Init_global_ints(name=\"%s\",value=%d);\n", #_name_, _name_); else registerOneDtreeInfo(#_name_,_name_);
+#define DTREE_EXPOSE(_name_) if (fout) fmt::print(fout,"Init_global_ints(name=\"{}\",value={:d});\n", #_name_, _name_); else registerOneDtreeInfo(#_name_,_name_);
    DTREE_EXPOSE(DTREE_OP_MISS);
    DTREE_EXPOSE(DTREE_OP_ADVANCE);
    DTREE_EXPOSE(DTREE_OP_TAG_TEST);

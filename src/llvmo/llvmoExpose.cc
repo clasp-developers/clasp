@@ -4667,17 +4667,17 @@ std::string SectionedAddress_O::__repr__() const {
 
 void python_dump_field(std::ostream& fout, const char* name, bool comma, gctools::Data_types dt, size_t offset, size_t sz=0)
 {
-  if (comma) fmt::fprintf(fout, ",");
-  fmt::fprintf(fout, "[ \"%s\", %d, %lu, %lu ]\n", name, dt, offset, sz );
+  if (comma) fmt::print(fout, ",");
+  fmt::print(fout, "[ \"{}\", {:d}, {:d}, {:d} ]\n", name, dt, offset, sz );
 }
 
 void dump_objects_for_debugger(std::ostream& fout,std::string indent)
 {
-  fmt::fprintf(fout, "%sInit_struct(\"gctools::Header_s::StampWtagMtag\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s::StampWtagMtag));
+  fmt::print(fout, "{}Init_struct(\"gctools::Header_s::StampWtagMtag\",sizeof={:d},fields=[ \n", indent.c_str(), sizeof(gctools::Header_s::StampWtagMtag));
   python_dump_field(fout,"_value",false,gctools::ctype_int,offsetof(gctools::Header_s::StampWtagMtag,_value),sizeof(gctools::Header_s::StampWtagMtag::_value));
   python_dump_field(fout,"_header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s::BadgeStampWtagMtag,_header_badge),sizeof(gctools::Header_s::BadgeStampWtagMtag::_header_badge));
-  fmt::fprintf(fout,"] )\n");
-  fmt::fprintf(fout,"%sInit_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
+  fmt::print(fout,"] )\n");
+  fmt::print(fout,"{}Init_struct(\"gctools::Header_s\",sizeof={:d},fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
   python_dump_field(fout,"_badge_stamp_wtag_mtag._value",false,gctools::ctype_int,offsetof(gctools::Header_s,_badge_stamp_wtag_mtag._value),sizeof(gctools::Header_s::_badge_stamp_wtag_mtag._value));
   python_dump_field(fout,"_stamp_wtag_mtag._header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s,_badge_stamp_wtag_mtag._header_badge),sizeof(gctools::Header_s::_badge_stamp_wtag_mtag._header_badge));
 #ifdef DEBUG_GUARD
@@ -4688,7 +4688,7 @@ void dump_objects_for_debugger(std::ostream& fout,std::string indent)
   python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2),sizeof(gctools::Header_s::_guard2));
   python_dump_field(fout,"_dup_badge_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_badge_stamp_wtag_mtag),sizeof(gctools::Header_s::_dup_badge_stamp_wtag_mtag));
 #endif
-  fmt::fprintf(fout,"] )\n");
+  fmt::print(fout,"] )\n");
 #if 0
   fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
   python_dump_field(fout,"_faso_filename",false,gctools::ctype_const_char_ptr,offsetof(ObjectFileInfo,_faso_filename));
@@ -4699,7 +4699,7 @@ void dump_objects_for_debugger(std::ostream& fout,std::string indent)
   python_dump_field(fout,"_stackmap_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_stackmap_start));
   python_dump_field(fout,"_stackmap_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_stackmap_size));
   python_dump_field(fout,"_next",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_next));
-  fprintf(fout,"] )\n");
+  fmt::print(fout,"] )\n");
 #endif
 };
   

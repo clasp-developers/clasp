@@ -42,6 +42,7 @@ THE SOFTWARE.
 // We are using the fmt formatting library as an intermediate to std::format when it becomes available
 
 #include <fmt/printf.h>
+#include <fmt/ostream.h>
 
 
 
