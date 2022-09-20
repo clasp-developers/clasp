@@ -682,8 +682,9 @@ the stage, the +application-name+ and the +bitcode-name+"
 (export '(build-pathname build-extension))
 
 #-staging (eval-when (:execute)
-  (load #P"sys:src;lisp;kernel;cmp;jit-setup.lisp")
-  (load #P"sys:src;lisp;kernel;clsymbols.lisp"))
+            (load #P"sys:src;lisp;kernel;lsp;export.lisp")
+            (load #P"sys:src;lisp;kernel;cmp;jit-setup.lisp")
+            (load #P"sys:src;lisp;kernel;clsymbols.lisp"))
 
 (defun entry-filename (filename-or-cons)
   "If filename-or-cons is a list then the first entry is a filename"
@@ -802,3 +803,5 @@ the stage, the +application-name+ and the +bitcode-name+"
 #-(or aclasp bclasp cclasp eclasp)
 (eval-when (:execute :load-toplevel)
   (core:fmt t "init.lisp  %N!\n!\n! Hello from the bottom of init.lisp - for some reason execution is passing through here\n!\n!\n"))
+
+

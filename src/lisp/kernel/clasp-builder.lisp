@@ -972,9 +972,10 @@ been initialized with install path versus the build path of the source code file
          (pop *features*))
        (push :cleavir *features*)
        (prepare-metadata system installed-system)
-       (handler-bind
-           ((error #'build-failure))
-         (compile-cclasp* output-file system nil))))))
+       #-clasp-min(handler-bind
+                      ((error #'build-failure))
+                    (compile-cclasp* output-file system nil))
+       #+clasp-min(compile-cclasp* output-file system nil)))))
 
 (defun compile-eclasp (&key reproducible clean (output-file (build-common-lisp-bitcode-pathname))
                             (system (command-line-arguments-as-list))
@@ -1115,11 +1116,15 @@ been initialized with install path versus the build path of the source code file
   ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
   ;; to load inline definitions. We wait for the source code to turn it back on.
   (setq core:*defun-inline-hook* nil)
-  (handler-bind
-      ((error #'build-failure))
-    (compile-system system
-                    :reload nil :file-order file-order
-                    :total-files (length system))))
+  #-clasp-min(handler-bind
+                 ((error #'build-failure))
+               (compile-system system
+                               :reload nil :file-order file-order
+                               :total-files (length system)))
+  #+clasp-min
+  (compile-system system
+                  :reload nil :file-order file-order
+                  :total-files (length system)))
 
 (defun load-and-compile-vclasp (&rest rest)
   (multiple-value-call #'compile-vclasp (apply #'load-vclasp rest)))

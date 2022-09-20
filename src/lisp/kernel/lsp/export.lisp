@@ -31,6 +31,75 @@
 ;; defmacro.lisp.
 ;;
 
+;; Required by REGISTER-GLOBAL in cmp/cmpvar.lisp
+(si::fset 'pushnew #'(lambda (w e)
+                       (declare (ignore e))
+                       (let ((item (cadr w))
+                             (place (caddr w)))
+                         `(setq ,place (adjoin ,item ,place))))
+          t)
+
+(si::fset 'push #'(lambda (w e)
+                       (declare (ignore e))
+                       (let ((item (cadr w))
+                             (place (caddr w)))
+                         `(setq ,place (cons ,item ,place))))
+          t)
+
+
+
+(fset 'when #'(lambda (def env)
+                (declare (ignore env))
+                `(if ,(cadr def) (progn ,@(cddr def))))
+      t)
+
+
+(fset 'unless #'(lambda (def env)
+                  (declare (ignore env))
+                  `(if ,(cadr def) nil (progn ,@(cddr def))))
+      t)
+
+
+(defun si::while-until (test body jmp-op)
+  (let ((label (gensym))
+        (exit (gensym)))
+    `(TAGBODY
+        (GO ,exit)
+      ,label
+        ,@body
+      ,exit
+        (,jmp-op ,test (GO ,label)))))
+
+(fset 'si::while #'(lambda (def env)
+                     (declare (ignore env))
+                     (si::while-until (cadr def) (cddr def) 'when))
+      t)
+
+
+(fset 'si::until #'(lambda (def env)
+                     (declare (ignore env))
+                     (si::while-until (cadr def) (cddr def) 'unless))
+      t)
+
+
+;; We do not use this macroexpansion, and thus we do not care whether
+;; it is efficiently compiled by ECL or not.
+(core:fset 'multiple-value-bind
+           #'(lambda (whole env)
+               (declare (core:lambda-name multiple-value-bind-macro))
+               (declare (ignore env))
+               (let ((vars (cadr whole))
+                     (form (caddr whole))
+                     (body (cdddr whole))
+                     (restvar (gensym)))
+                 `(multiple-value-call
+                      #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
+                          (declare (ignore ,restvar))
+                          ,@body)
+                    ,form)))
+           t)
+
+
 (defun filter-dolist-declarations (declarations)
   (let ((a nil))
     (mapc #'(lambda (clause)
@@ -117,14 +186,15 @@
                (setq result (rest test) test (first test))
                (dolist (c control)
                  (when (symbolp c) (setq c (list c)))
-                 (case (length c)
-                   ((1 2)
-                    (setq vlexport (cons c vlexport)))
-                   (3
-                    (setq vlexport (cons (butlast c) vlexport)
-                          step (list* (third c) (first c) step)))
-                   (t
-                    (simple-program-error "Syntax error (length not 1,2,3 - its ~a and c is ~s) in ~A:~%~A" (length c) c do/do* whole))))
+                 (let ((lenc (length c)))
+                   (cond
+                     ((or (eql lenc 1) (eql lenc 2))
+                      (setq vlexport (cons c vlexport)))
+                     ((eql lenc 3)
+                      (setq vlexport (cons (butlast c) vlexport)
+                            step (list* (third c) (first c) step)))
+                     (t
+                      (simple-program-error "Syntax error (length not 1,2,3 - its ~a and c is ~s) in ~A:~%~A" (length c) c do/do* whole)))))
                (multiple-value-bind (declarations real-body)
                    (process-declarations body nil)
                  `(BLOCK NIL
@@ -136,3 +206,4 @@
                       ,@(or result '(nil)))))))))
   (si::fset 'do f t '(vars test &body body))
   (si::fset 'do* f t '(vars test &body body)))
+
