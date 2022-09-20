@@ -11,13 +11,13 @@
 
 (defun message (level control-string &rest args)
   (core:fmt t "%e[{:d}m"
-            (case level
-              (:err  31)
-              (:warn 33)
-              (:emph 32)
-              (:debug 36)
-              (:info 37)
-              (otherwise 0)))
+            (cond
+              ((eq level :err)  31)
+              ((eq level :warn) 33)
+              ((eq level :emph) 32)
+              ((eq level :debug) 36)
+              ((eq level :info) 37)
+              (t 0)))
   (apply #'core:fmt t control-string args)
   (core:fmt t "%e[0m%n")
   (if (eq level :err)
