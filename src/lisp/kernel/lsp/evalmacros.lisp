@@ -265,21 +265,19 @@ TESTs evaluates to non-NIL."
 
 ; program feature
 
-(defmacro prog (vl &rest body &aux (decl nil))
+(defmacro prog (vl &rest body)
   "Syntax: (prog ({var | (var [init])}*) {decl}* {tag | statement}*)
 Establishes a NIL block, binds each VAR to the value of INIT (which defaults
 to NIL) in parallel, and executes STATEMENTs.  Returns NIL."
-  (multiple-value-setq (decl body)
-    (find-declarations body))
-  `(BLOCK NIL (LET ,vl ,@decl (TAGBODY ,@body))))
+  (multiple-value-bind (decl body) (find-declarations body)
+    `(BLOCK NIL (LET ,vl ,@decl (TAGBODY ,@body)))))
 
-(defmacro prog* (vl &rest body &aux (decl nil))
+(defmacro prog* (vl &rest body)
   "Syntax: (prog* ({var | (var [init])}*) {decl}* {tag | statement}*)
 Establishes a NIL block, binds each VAR to the value of INIT (which defaults
 to NIL) sequentially, and executes STATEMENTs.  Returns NIL."
-  (multiple-value-setq (decl body)
-    (find-declarations body))
-  `(BLOCK NIL (LET* ,vl ,@decl (TAGBODY ,@body))))
+  (multiple-value-bind (decl body) (find-declarations body)
+    `(BLOCK NIL (LET* ,vl ,@decl (TAGBODY ,@body)))))
 
 ; sequencing
 
@@ -290,7 +288,6 @@ Evaluates FIRST-FORM and FORMs in order.  Returns the primary value of FIRST-FOR
       `(values ,first)
       `(LET ((,sym ,first))
          ,@body ,sym)))
-
 
 
 (defmacro prog2 (first second &rest body &aux (sym (gensym)))

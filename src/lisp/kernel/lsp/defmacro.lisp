@@ -34,28 +34,6 @@
                     v)))
 	  t)
 
-#+clasp-min
-(si::fset 'incf
-	   #'(lambda (args env)
-               (declare (core:lambda-name incf))
-               (let* ((where (second args))
-                      (what (caddr args)))
-                 (if what
-                     `(setq ,where (+ ,where ,what))
-                     `(setq ,where (1+ ,where)))))
-	  t)
-
-#+clasp-min
-(si::fset 'decf
-	   #'(lambda (args env)
-               (declare (core:lambda-name decf))
-               (let* ((where (second args))
-                      (what (caddr args)))
-                 (if what
-                     `(setq ,where (- ,where ,what))
-                     `(setq ,where (1- ,where)))))
-	  t)
-
 (defun sys::search-keyword (list key)
   (cond ((atom list) 'missing-keyword)
 	((atom (cdr list)) 'missing-keyword)

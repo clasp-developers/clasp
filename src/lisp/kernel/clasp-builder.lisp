@@ -467,8 +467,10 @@ Return files."
                (mmsg "In report-stream%N")
                (let* ((buffer (read-fd-into-buffer fd))
                       (sin (make-string-input-stream buffer)))
-                 (do ((line (read-line sin nil nil) (read-line sin nil nil)))
-                     ((null line))
+                 ;; We use DO* instead of DO because the latter uses psetq,
+                 ;; which is not defined early.
+                 (do* ((line (read-line sin nil nil) (read-line sin nil nil)))
+                      ((null line))
                    (message level "  {}" line)
                    (finish-output))))
              (report-child-exited (child-pid child-stdout child-stderr)
@@ -512,6 +514,10 @@ Return files."
            (if (> job-counter parallel-jobs)
                (progn
                  (mmsg "Going into wait-for-child-to-exit%N")
+                 (multiple-value-bind (vwpid vstatus vchild-died)
+                     (wait-for-child-to-exit jobs)
+                   (setq wpid vwpid status vstatus child-died vchild-died))
+                 #+(or)
                  (multiple-value-setq (wpid status child-died)
                    (wait-for-child-to-exit jobs))
                  (mmsg "Exited from wait-for-child-to-exit%N")

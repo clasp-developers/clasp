@@ -27,7 +27,7 @@
 ;;;
 ;;; Set *echo-repl-read* to t to print each repl form
 ;;;
-(setq *echo-repl-read* t)
+(setq *echo-repl-read* nil)
 
 ;;; ------------------------------------------------------------
 ;;; Turn on printing messages as object files are converted to runnable code
@@ -508,6 +508,29 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            t )
 (export '(and or))
 
+;;; These definitions do not use setf, and are replaced in setf.lisp.
+#+clasp-min
+(si::fset 'incf
+	   #'(lambda (args env)
+               (declare (core:lambda-name incf))
+               (let* ((where (second args))
+                      (what (caddr args)))
+                 (if what
+                     `(setq ,where (+ ,where ,what))
+                     `(setq ,where (1+ ,where)))))
+	  t)
+
+#+clasp-min
+(si::fset 'decf
+	   #'(lambda (args env)
+               (declare (core:lambda-name decf))
+               (let* ((where (second args))
+                      (what (caddr args)))
+                 (if what
+                     `(setq ,where (- ,where ,what))
+                     `(setq ,where (1- ,where)))))
+	  t)
+
 (defun build-target-dir (type &optional stage)
   (declare (ignore type))
   (let* ((stage (if stage
@@ -762,9 +785,6 @@ the stage, the +application-name+ and the +bitcode-name+"
                        (si::while-until (cadr def) (cddr def) 'unless))
         t)
 
-
-  ;; We do not use this macroexpansion, and thus we do not care whether
-  ;; it is efficiently compiled by ECL or not.
   (core:fset 'multiple-value-bind
              #'(lambda (whole env)
                  (declare (core:lambda-name multiple-value-bind-macro))
