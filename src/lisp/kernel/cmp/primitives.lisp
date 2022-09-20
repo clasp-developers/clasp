@@ -252,7 +252,9 @@
 
          (primitive         "llvm.umin.i64" :i64 (list :i64 :i64))
          (primitive         "llvm.umax.i64" :i64 (list :i64 :i64))
-         
+
+         (primitive         "drag_native_calls" :void nil)
+
          (primitive         "llvm.experimental.stackmap" :void (list :i64 :i32) :varargs t)
          (primitive         "llvm.va_copy" :void (list :i8* :i8*))
          (primitive         "llvm.va_start" :void (list :i8*))

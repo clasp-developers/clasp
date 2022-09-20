@@ -1992,6 +1992,8 @@
                                                         cmp:*irbuilder-function-alloca*)
                   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
                     (cmp:with-debug-info-source-position (source-pos-info)
+                      (if sys:*drag-native-calls*
+                          (cmp::irc-intrinsic "drag_native_calls"))
                       (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
                              (calling-convention
                                (cmp:setup-calling-convention xep-arity-function

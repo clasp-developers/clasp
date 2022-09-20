@@ -171,6 +171,7 @@ SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_hash_tableSTAR)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
+SYMBOL_EXPORT_SC_(CorePkg, STARdrag_native_callsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_function_namesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_setf_function_namesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_macro_function_namesSTAR);
@@ -1194,6 +1195,11 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   core::_sym__PLUS_literals_name_PLUS_->defparameter(SimpleBaseString_O::make(LITERALS_NAME));
   _sym_STARdebug_threadsSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_fastgfSTAR->defparameter(nil<core::T_O>());
+#ifdef DEBUG_DRAG_NATIVE_CALLS
+  _sym_STARdrag_native_callsSTAR->defparameter(_lisp->_true());
+#else
+  _sym_STARdrag_native_callsSTAR->defparameter(nil<core::T_O>());
+#endif
   _sym_STARbuiltin_function_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_macro_function_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_setf_function_namesSTAR->defparameter(nil<core::T_O>());
