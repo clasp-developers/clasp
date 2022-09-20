@@ -3,7 +3,7 @@
 ;;
 
 
-;;#+(or)
+#-darwin
 (llvm-sys:install-backtrace-trampoline)
 
 #+(or)

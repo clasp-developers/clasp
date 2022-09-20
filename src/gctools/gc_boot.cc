@@ -52,7 +52,7 @@ Container_info*  global_container_info;
 
 void dump_data_types(std::ostream& fout, const std::string& indent)
 {
-#define DTNAME(_type_,_name_,_sz_) fmt::fprintf(fout,"%sInit_data_type( data_type=%d, name=\"%s\",sizeof=%lu)\n", indent.c_str(), _type_, _name_, _sz_)
+#define DTNAME(_type_,_name_,_sz_) fmt::print(fout,"{}Init_data_type( data_type={:d}, name=\"{}\",sizeof={:d})\n", indent.c_str(), _type_, _name_, _sz_)
   DTNAME(SMART_PTR_OFFSET,"smart_ptr",sizeof(void*));
   DTNAME(ATOMIC_SMART_PTR_OFFSET,"atomic_smart_ptr",sizeof(void*));
   DTNAME(TAGGED_POINTER_OFFSET,"tagged_ptr",sizeof(void*));
@@ -77,8 +77,8 @@ void dump_data_types(std::ostream& fout, const std::string& indent)
   DTNAME(ctype_const_char_ptr,"const_char_ptr",sizeof(const char*));
   DTNAME(ctype_size_t,"size_t",sizeof(size_t));
   DTNAME(ctype_opaque_ptr,"opaque_ptr",sizeof(void*));
-#define Init_global_ints(_name_,_value_) fmt::fprintf(fout,"%sInit_global_ints(name=\"%s\",value=%d)\n", indent.c_str(), _name_,_value_);
-#define Init_global_size_t(_name_,_value_) fmt::fprintf(fout,"%sInit_global_ints(name=\"%s\",value=%lu)\n", indent.c_str(), _name_,_value_);
+#define Init_global_ints(_name_,_value_) fmt::print(fout,"{}Init_global_ints(name=\"{}\",value={:d})\n", indent.c_str(), _name_,_value_);
+#define Init_global_size_t(_name_,_value_) fmt::print(fout,"{}Init_global_ints(name=\"{}\",value={:d})\n", indent.c_str(), _name_,_value_);
   Init_global_ints("TAG_BITS",TAG_BITS);
   Init_global_ints("IMMEDIATE_MASK",IMMEDIATE_MASK);
   Init_global_ints("FIXNUM_MASK",FIXNUM_MASK);
@@ -214,7 +214,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
       local_stamp_info[cur_stamp].field_info_ptr = NULL;
       local_stamp_info[cur_stamp].container_info_ptr = NULL;
       fixed_index = 0;
-      if (walk == lldb_info) fmt::fprintf(fout, "%sInit_class_kind( stamp=%d, name=\"%s\", size=%d )\n",
+      if (walk == lldb_info) fmt::print(fout, "{}Init_class_kind( stamp={:d}, name=\"{}\", size={:d} )\n",
                                      indent.c_str(),
                                      cur_stamp,
                                      codes[idx].description,
@@ -227,7 +227,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
         const char* field_name = codes[idx].description;
         size_t field_offset = codes[idx].data2;
         if (walk == lldb_info) {
-          fmt::fprintf(fout,"%sInit__fixed_field( stamp=%d, index=%lu, data_type=%lu, field_name=\"%s\", field_offset=%lu)\n",
+          fmt::print(fout,"{}Init__fixed_field( stamp={:d}, index={:d}, data_type={:d}, field_name=\"{}\", field_offset={:d})\n",
                   indent.c_str(),
                   cur_stamp,
                   fixed_index++, // index,
@@ -296,7 +296,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
       local_stamp_info[cur_stamp].container_info_ptr = NULL;
       fixed_index = 0;
       container_variable_index = 0;
-      if (walk == lldb_info) fmt::fprintf(fout, "%sInit_container_kind( stamp=%d, name=\"%s\", size=%d )\n",
+      if (walk == lldb_info) fmt::print(fout, "{}Init_container_kind( stamp={:d}, name=\"{}\", size={:d} )\n",
                                      indent.c_str(),
                                      cur_stamp,
                                      local_stamp_info[cur_stamp].name,
@@ -317,7 +317,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
       local_stamp_info[cur_stamp].container_info_ptr = NULL;
       fixed_index = 0;
       container_variable_index = 0;
-      if (walk == lldb_info) fmt::fprintf(fout, "%sInit_bitunit_container_kind( stamp=%d, name=\"%s\", size=%d, bits_per_bitunit=%d )\n",
+      if (walk == lldb_info) fmt::print(fout, "{}Init_bitunit_container_kind( stamp={:d}, name=\"{}\", size={:d}, bits_per_bitunit={:d} )\n",
                                      indent.c_str(),
                                      cur_stamp,
                                      local_stamp_info[cur_stamp].name,
@@ -330,7 +330,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
       GCTOOLS_ASSERT(cur_container_layout_idx<=number_of_containers);
       local_stamp_layout[cur_stamp].data_offset = codes[idx].data2;
       container_variable_index = 0;
-      if (walk == lldb_info) fmt::fprintf(fout, "%sInit__variable_array0( stamp=%d, name=\"%s\", offset=%d )\n",
+      if (walk == lldb_info) fmt::print(fout, "{}Init__variable_array0( stamp={:d}, name=\"{}\", offset={:d} )\n",
                                      indent.c_str(),
                                      cur_stamp,
                                      codes[idx].description,
@@ -350,7 +350,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
       local_stamp_layout[cur_stamp].container_layout->number_of_fields = 0;
       local_stamp_layout[cur_stamp].end_offset = codes[idx].data1;
       local_stamp_layout[cur_stamp].capacity_offset = codes[idx].data2;
-      if (walk == lldb_info) fmt::fprintf(fout, "%sInit__variable_capacity( stamp=%d, element_size=%d, end_offset=%d, capacity_offset=%d )\n",
+      if (walk == lldb_info) fmt::print(fout, "{}Init__variable_capacity( stamp={:d}, element_size={:d}, end_offset={:d}, capacity_offset={:d} )\n",
                                      indent.c_str(),
                                      cur_stamp,
                                      local_stamp_layout[cur_stamp].element_size,
@@ -363,7 +363,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
         size_t index = local_stamp_layout[cur_stamp].container_layout->number_of_fields;
         size_t field_offset = codes[idx].data2;
         const char* field_name = codes[idx].description;
-        if (walk == lldb_info) fmt::fprintf(fout, "%sInit__variable_field( stamp=%d, index=%lu, data_type=%lu, field_name=\"%s\", field_offset=%lu )\n",
+        if (walk == lldb_info) fmt::print(fout, "{}Init__variable_field( stamp={:d}, index={:d}, data_type={:d}, field_name=\"{}\", field_offset={:d} )\n",
                                        indent.c_str(),
                                        cur_stamp,
                                        container_variable_index++, // index,
@@ -406,7 +406,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
         cur_stamp = STAMP(codes[idx].data0);
         size_t size = codes[idx].data1;
         const char* name = codes[idx].description;
-        if (walk == lldb_info) fmt::fprintf(fout, "%sInit_templated_kind( stamp=%d, name=\"%s\", size=%lu )\n",
+        if (walk == lldb_info) fmt::print(fout, "{}Init_templated_kind( stamp={:d}, name=\"{}\", size={:d} )\n",
                                        indent.c_str(),
                                        cur_stamp,
                                        name,
