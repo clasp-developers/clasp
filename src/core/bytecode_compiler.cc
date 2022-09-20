@@ -1891,7 +1891,7 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest,
       // Lambda form
       compile_function(head, env, context->sub(clasp_make_fixnum(1)));
       compile_call(rest, env, context);
-    } else SIMPLE_ERROR("Illegal combination %s %s", _rep_(head), _rep_(rest));
+    } else SIMPLE_ERROR("Illegal combination head: %s rest: %s", _rep_(head), _rep_(rest));
   }
 }
 
@@ -1928,11 +1928,25 @@ static Lexenv_sp coerce_lexenv_desig(T_sp env) {
   else return gc::As<Lexenv_sp>(env);
 }
 
+SYMBOL_EXPORT_SC_(CompPkg, bytecode_implicit_compile_form);
+SYMBOL_EXPORT_SC_(CompPkg, bytecode_eval_with_env);
+
 CL_LAMBDA(form &optional env)
-CL_DEFUN T_mv bytecode_implicit_compile_form(T_sp form, T_sp env) {
+CL_DEFUN T_mv cmp__bytecode_implicit_compile_form(T_sp form, T_sp env) {
   T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(),
                                   Cons_O::createList(cl::_sym_declare),
                                   Cons_O::createList(cl::_sym_progn, form));
+//  printf("%s:%d:%s lexpr = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lexpr).c_str());
+  Function_sp thunk = bytecompile(lexpr, coerce_lexenv_desig(env));
+  return eval::funcall(thunk);
+}
+
+CL_LAMBDA(form &optional env)
+CL_DEFUN T_mv cmp__bytecode_eval_with_env(T_sp form, T_sp env) {
+  T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(),
+                                  Cons_O::createList(cl::_sym_declare),
+                                  Cons_O::createList(cl::_sym_progn, form));
+//  printf("%s:%d:%s lexpr = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lexpr).c_str());
   Function_sp thunk = bytecompile(lexpr, coerce_lexenv_desig(env));
   return eval::funcall(thunk);
 }
@@ -2003,8 +2017,8 @@ CL_DEFUN T_mv bytecode_toplevel_eval(T_sp form, T_sp tenv) {
       return bytecode_toplevel_macrolet(oCadr(eform), oCddr(eform), env);
     else if (head == cl::_sym_symbol_macrolet)
       return bytecode_toplevel_symbol_macrolet(oCadr(eform), oCddr(eform), env);
-    else return bytecode_implicit_compile_form(eform, env);
-  } else return bytecode_implicit_compile_form(eform, env);
+    else return cmp__bytecode_implicit_compile_form(eform, env);
+  } else return cmp__bytecode_implicit_compile_form(eform, env);
 }
 
 }; //namespace comp
