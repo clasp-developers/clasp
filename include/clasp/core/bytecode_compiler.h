@@ -651,6 +651,9 @@ public:
 
 // Main entry point
 GlobalBytecodeEntryPoint_sp bytecompile(T_sp, Lexenv_sp);
+// main entry point for using the evaluator
+T_mv cmp__bytecode_implicit_compile_form(T_sp, T_sp);
+T_mv bytecode_toplevel_eval(T_sp, T_sp);
 
 }; // namespace comp
 

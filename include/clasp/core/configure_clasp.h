@@ -309,7 +309,7 @@ ENTRY_POINT_MAX_ARGS_IN_REGISTER_SAVE_AREA includes the closure
 // Use the bytecode compiler right from startup
 // Turned off right now until we fix some bootstrapping code
 //
-//#define USE_IMPLICIT_BYTECODE_COMPILE
+#define USE_IMPLICIT_BYTECODE_COMPILE
 
 
 #endif // __CORE_CONFIG_H__
