@@ -735,18 +735,18 @@ void initialize_classes_and_methods()
 void dumpBoehmLayoutTables(std::ostream& fout) {
   fmt::print(fout, "# dumpBoehmLayoutTables when static analyzer output is not available\n" );
 #define Init_class_kind(_class_) \
-  fmt::print(fout, "Init_class_kind( stamp={:d}, name=\"{}\", size={:d})\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
+  fmt::print(fout, "Init_class_kind( stamp={}, name=\"{}\", size={})\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
 #define Init_templated_kind(_class_) \
-  fmt::print(fout, "Init_templated_kind( stamp={:d}, name=\"{}\", size={:d})\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
+  fmt::print(fout, "Init_templated_kind( stamp={}, name=\"{}\", size={})\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
 #define Init__fixed_field(_class_,_index_,_type_,_field_name_) \
-  fmt::print(fout, "Init__fixed_field( stamp={:d}, index={:d}, data_type={:d},field_name=\"{}\",field_offset={:d});\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
+  fmt::print(fout, "Init__fixed_field( stamp={}, index={}, data_type={},field_name=\"{}\",field_offset={});\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
 #define Init__variable_array0(_class_,_data_field_) \
-  fmt::print(fout,"Init__variable_array0( stamp={:d}, name=\"{}\", offset={:d} );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_data_field_,offsetof(_class_,_data_field_));
+  fmt::print(fout,"Init__variable_array0( stamp={}, name=\"{}\", offset={} );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_data_field_,offsetof(_class_,_data_field_));
 #define Init__variable_capacity(_class_,_value_type_,_end_,_capacity_) \
-  fmt::print(fout,"Init__variable_capacity( stamp={:d}, element_size={:d}, end_offset={:d}, capacity_offset={:d} );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
+  fmt::print(fout,"Init__variable_capacity( stamp={}, element_size={}, end_offset={}, capacity_offset={} );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
 #define Init__variable_field(_class_,_data_type_,_index_,_field_name_,_field_offset_) \
-  fmt::print(fout,"Init__variable_field( stamp={:d}, index={:d}, data_type={:d}, field_name=\"{}\", field_offset={:d} );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_data_type_,_field_name_,_field_offset_);
-#define Init_global_ints(_name_,_value_) fmt::print(fout,"Init_global_ints(name=\"{}\",value={:d})\n", _name_,_value_);
+  fmt::print(fout,"Init__variable_field( stamp={}, index={}, data_type={}, field_name=\"{}\", field_offset={} );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_data_type_,_field_name_,_field_offset_);
+#define Init_global_ints(_name_,_value_) fmt::print(fout,"Init_global_ints(name=\"{}\",value={})\n", _name_,_value_);
   printf("Dumping interface\n");
   gctools::dump_data_types(fout,"");
   core::registerOrDumpDtreeInfo(fout);
