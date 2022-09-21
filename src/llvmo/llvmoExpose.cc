@@ -4668,16 +4668,16 @@ std::string SectionedAddress_O::__repr__() const {
 void python_dump_field(std::ostream& fout, const char* name, bool comma, gctools::Data_types dt, size_t offset, size_t sz=0)
 {
   if (comma) fmt::print(fout, ",");
-  fmt::print(fout, "[ \"{}\", {:d}, {:d}, {:d} ]\n", name, dt, offset, sz );
+  fmt::print(fout, "[ \"{}\", {}, {}, {} ]\n", name, dt, offset, sz );
 }
 
 void dump_objects_for_debugger(std::ostream& fout,std::string indent)
 {
-  fmt::print(fout, "{}Init_struct(\"gctools::Header_s::StampWtagMtag\",sizeof={:d},fields=[ \n", indent.c_str(), sizeof(gctools::Header_s::StampWtagMtag));
+  fmt::print(fout, "{}Init_struct(\"gctools::Header_s::StampWtagMtag\",sizeof={},fields=[ \n", indent.c_str(), sizeof(gctools::Header_s::StampWtagMtag));
   python_dump_field(fout,"_value",false,gctools::ctype_int,offsetof(gctools::Header_s::StampWtagMtag,_value),sizeof(gctools::Header_s::StampWtagMtag::_value));
   python_dump_field(fout,"_header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s::BadgeStampWtagMtag,_header_badge),sizeof(gctools::Header_s::BadgeStampWtagMtag::_header_badge));
   fmt::print(fout,"] )\n");
-  fmt::print(fout,"{}Init_struct(\"gctools::Header_s\",sizeof={:d},fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
+  fmt::print(fout,"{}Init_struct(\"gctools::Header_s\",sizeof={},fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
   python_dump_field(fout,"_badge_stamp_wtag_mtag._value",false,gctools::ctype_int,offsetof(gctools::Header_s,_badge_stamp_wtag_mtag._value),sizeof(gctools::Header_s::_badge_stamp_wtag_mtag._value));
   python_dump_field(fout,"_stamp_wtag_mtag._header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s,_badge_stamp_wtag_mtag._header_badge),sizeof(gctools::Header_s::_badge_stamp_wtag_mtag._header_badge));
 #ifdef DEBUG_GUARD
