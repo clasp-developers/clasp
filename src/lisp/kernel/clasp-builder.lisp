@@ -540,7 +540,7 @@ been initialized with install path versus the build path of the source code file
              stage
              (float (/ (- (get-internal-run-time) stage-time) internal-time-units-per-second)))))
 
-(defun stage-features (&rest new-features)
+(defun stage-features (&rest new-features &aux added-features removed-features)
   (dolist (feature +stage-features+)
     (when (and (not (member feature new-features))
                (member feature *features*))
