@@ -807,14 +807,6 @@ CL_DOCSTRING(R"dx(Returns the macro expansion function for a symbol if it exists
 DOCGROUP(clasp)
 CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   if (env.nilp()) { // nothing
-  } else if (gc::IsA<Environment_sp>(env)) {
-    int depth = 0;
-    int level = 0;
-    bool shadowed = false;
-    Function_sp macro;
-    bool found = Environment_O::clasp_findSymbolMacro(env, sym, depth, level, shadowed, macro);
-    if (found)
-      return macro;
   } else if (gc::IsA<comp::Lexenv_sp>(env)) {
     return gc::As_unsafe<comp::Lexenv_sp>(env)->lookupSymbolMacro(sym);
   } else { // pass to cleavir (which also checks global environment)
@@ -831,55 +823,6 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   }
   return fn;
 };
-CL_LAMBDA(variables declared-specials)
-CL_DECLARE();
-CL_DOCSTRING(R"dx(classifyLetVariablesAndDeclares - return (values classified-variables num-lexicals) - For each variable name in variables and declared-specials classify each as special-var, lexical-var or declared-special using the declared-specials list)dx")
-DOCGROUP(clasp)
-CL_DEFUN
-T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declaredSpecials) {
-  HashTableEq_sp specialsSet = HashTableEq_O::create_default();
-  for (auto cur : declaredSpecials)
-    specialsSet->insert(oCar(cur)); //make(declaredSpecials);
-  HashTableEq_sp specialInVariables(HashTableEq_O::create_default());
-  HashTable_sp indices = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(cl::_sym_eq, make_fixnum(8),
-                                                                         DoubleFloat_O::create(1.5),
-                                                                         DoubleFloat_O::create(1.0)));
-  ql::list classified;
-  size_t indicesSize = 0;
-  size_t totalSpecials = 0;
-  for (auto cur : variables) {
-    Symbol_sp sym = gc::As<Symbol_sp>(oCar(cur));
-    if (specialsSet->contains(sym)) {
-      classified << Cons_O::create(ext::_sym_specialVar, sym);
-      specialInVariables->insert(sym);
-      totalSpecials++;
-    } else if (sym->specialP()) {
-      classified << Cons_O::create(ext::_sym_specialVar, sym);
-      specialInVariables->insert(sym);
-      totalSpecials++;
-    } else {
-      Fixnum idx;
-      T_sp fi = indices->gethash(sym, unbound<T_O>());
-      if (fi.fixnump()) {
-        idx = fi.unsafe_fixnum();
-      } else {
-        idx = indicesSize;
-        indices->hash_table_setf_gethash(sym, make_fixnum(idx));
-        ++indicesSize;
-      }
-      classified << Cons_O::create(ext::_sym_lexicalVar,
-                                   Cons_O::create(sym, make_fixnum(idx)));
-    }
-  }
-  specialsSet->maphash([&totalSpecials,&classified, &specialInVariables](T_sp s, T_sp val) {
-      if ( !specialInVariables->contains(s) ) {
-        classified << Cons_O::create(core::_sym_declaredSpecial,s);
-        totalSpecials++;
-      }
-    });
-  T_sp tclassified = classified.cons();
-  return Values(tclassified, make_fixnum((int)indicesSize), make_fixnum(totalSpecials));
-}
 
 CL_LAMBDA(arg)
 CL_DECLARE();
@@ -904,115 +847,6 @@ namespace core {
 
     //void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code);
 
-    List_sp separateTopLevelForms(List_sp accumulated, T_sp possibleForms) {
-        if (Cons_sp cpf = possibleForms.asOrNull<Cons_O>()) {
-            if (gc::As<Symbol_sp>(oCar(cpf)) == cl::_sym_progn) {
-                for (auto cur : (List_sp)oCdr(cpf)) {
-                    accumulated = separateTopLevelForms(accumulated, oCar(cur));
-                }
-                return accumulated;
-            }
-        }
-        accumulated = Cons_O::create(possibleForms, accumulated);
-        return accumulated;
-    }
-
-
-    T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
-        if (env.notnilp()) {
-            int depth, index;
-            bool crossesFunction;
-            Environment_O::ValueKind valueKind;
-            T_sp value;
-            T_sp result_env;
-            bool found = Environment_O::clasp_findValue(env, sym, depth, index, crossesFunction, valueKind, value, result_env);
-            if (found) {
-                switch (valueKind) {
-                case Environment_O::lexicalValue:
-                    return value;
-                case Environment_O::specialValue:
-                    return sym->symbolValue();
-                default:
-                    // do nothing;
-                    break;
-                }
-            }
-        }
-        if (sym->specialP() || sym->boundP()) {
-            return sym->symbolValue();
-        }
-        SIMPLE_ERROR(("Could not find variable %s in lexical/global environment") , _rep_(sym));
-    };
-
-    Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
-        unlikely_if (env.notnilp()) {
-            Function_sp fn;
-            int depth;
-            int index;
-            T_sp functionEnv;
-            if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv)) return fn;
-        }
-        if (name.consp()) {
-            T_sp head = CONS_CAR(name);
-            if (head == cl::_sym_setf) {
-                Symbol_sp sym = oCar(CONS_CDR(name)).template as<Symbol_O>();
-                if (sym->fboundp_setf()) {
-                    return sym->getSetfFdefinition();
-                }
-                SIMPLE_ERROR(("SETF function value for %s is unbound") , _rep_(sym));
-            }
-        }
-        if (gc::IsA<Symbol_sp>(name)) {
-            Symbol_sp sname = gc::As_unsafe<Symbol_sp>(name);
-            return sname->symbolFunction();
-        }
-        ASSERT(gc::IsA<Function_sp>(name));
-        return gc::As_unsafe<Function_sp>(name);
-    };
-
-#define ARGS_af_interpreter_lookup_setf_function "(symbol env)"
-#define DECL_af_interpreter_lookup_setf_function ""
-#define DOCS_af_interpreter_lookup_setf_function "environment_lookup_setf_function"
-    T_sp af_interpreter_lookup_setf_function(List_sp setf_name, T_sp env) {
-        Symbol_sp name = gc::As<Symbol_sp>(oCadr(setf_name));
-        if (env.notnilp()) {
-            Function_sp fn;
-            int depth;
-            int index;
-            T_sp functionEnv;
-            // TODO: This may not work properly - it looks like it will find regular functions
-            if (Environment_O::clasp_findFunction(env, name, depth, index, fn, functionEnv))
-                return fn;
-        }
-        if (name->fboundp_setf())
-            return name->getSetfFdefinition();
-        return nil<T_O>();
-    };
-
-
-#define ARGS_af_interpreter_lookup_macro "(symbol env)"
-#define DECL_af_interpreter_lookup_macro ""
-#define DOCS_af_interpreter_lookup_macro "environment_lookup_macro_definition"
-    T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env) {
-        if (sym.nilp())
-            return nil<T_O>();
-        if (core__lexical_function(sym, env).notnilp())
-            return nil<T_O>();
-        int depth = 0;
-        int level = 0;
-        Function_sp macro;
-        bool found = Environment_O::clasp_findMacro(env, sym, depth, level, macro);
-        if (found)
-            return macro;
-        if (sym->fboundp()) {
-            if (sym->macroP()) {
-                if (Function_sp fn = sym->symbolFunction().asOrNull<Function_O>()) {
-                    return fn;
-                }
-            }
-        }
-        return nil<T_O>();
-    };
 
     namespace interpret {
         SYMBOL_EXPORT_SC_(ClPkg, case);
@@ -1097,16 +931,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, load_toplevel);
 };
 
     namespace eval {
-        /*! Returns NIL if no function is found */
-        T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
-            if (gc::IsA<Symbol_sp>(functionDesignator)) {
-                Symbol_sp shead = gc::As<Symbol_sp>(functionDesignator);
-                T_sp exec = interpreter_lookup_function_or_error(shead, env);
-                return exec;
-            }
-            ASSERT(gc::IsA<Function_sp>(functionDesignator));
-            return functionDesignator;
-        }
 
         SYMBOL_EXPORT_SC_(CompPkg, compileInEnv);
     

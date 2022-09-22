@@ -732,9 +732,8 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
   T_sp func = nil<T_O>();
   if (env.nilp()) {
-    func = af_interpreter_lookup_macro(symbol, env);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    func = af_interpreter_lookup_macro(symbol, eenv);
+    if (symbol->fboundp() && symbol->macroP()) return symbol->symbolFunction();
+    else return nil<T_O>();
   } else if (comp::Lexenv_sp bce = env.asOrNull<comp::Lexenv_O>()) {
     func = bce->lookupMacro(symbol);
 #if 0    
@@ -751,7 +750,8 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
       func = eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
     } else {
       printf("%s:%d Unexpected environment for MACRO-FUNCTION before Cleavir is available - using toplevel environment\n", __FILE__, __LINE__);
-      func = af_interpreter_lookup_macro(symbol, nil<T_O>());
+      if (symbol->fboundp() && symbol->macroP()) return symbol->symbolFunction();
+      else return nil<T_O>();
     }
   }
   return func;

@@ -306,24 +306,6 @@ DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
 }
 
 
-
-
-
-
-#if 0
-    T_sp DirectoryIterator_O::make_init(Function_sp exec, Cons_sp args, T_sp bargs)
-    {
-	Path_sp path = coerce::pathDesignator(af_interpreter_lookup_variable(_sym_path,bargs));
-	if ( path.nilp() )
-	{
-	    SIMPLE_ERROR(("You must specify the path"));
-	}
-	this->setPath(path);
-	this->first();
-	return nil<T_O>();
-    }
-#endif
-
 #define ARGS_af_makeDirectoryIterator "(path)"
 #define DECL_af_makeDirectoryIterator ""
 #define DOCS_af_makeDirectoryIterator "make DirectoryIterator args: path"
