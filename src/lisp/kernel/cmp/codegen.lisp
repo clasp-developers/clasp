@@ -115,32 +115,6 @@ Return the same things that generate-llvm-function-from-code returns"
                                         code
                                         env
                                         :linkage linkage))))
-#+(or)
-(defun generate-llvm-function-from-interpreted-function (fn)
-  "Extract everything necessary to compile an interpreted function and
-then compile it and return (values compiled-llvm-function lambda-name)"
-  (let ((lambda-list (core:lambda-list-handler-lambda-list (function-lambda-list-handler fn)))
-	#+(or)(declares (function-declares fn))
-	(docstring (function-docstring fn))
-	(code (interpreted-source-code fn))
-	(env (closed-environment fn)))
-    (generate-llvm-function-from-code nil lambda-list #|declares|# nil docstring code env :linkage 'llvm-sys:internal-linkage)))
-
-(defun generate-lambda-expression-from-interpreted-function (fn)
-  (let* ((lambda-list-handler (function-lambda-list-handler fn))
-	 (lambda-list (core:lambda-list-handler-lambda-list lambda-list-handler))
-	 #+(or)(declares (function-declares fn))
-	 (docstring (function-docstring fn))
-	 (code (interpreted-source-code fn))
-	 (env (closed-environment fn)))
-    (when docstring (setq docstring (list docstring)))
-    #+(or)(progn
-	    (core:fmt t "lambda-list = {}%N" lambda-list)
-	    #+(or)(core:fmt t "declares    = {}%N" declares)
-	    (core:fmt t "docstring   = {}%N" docstring)
-	    (core:fmt t "code        = {}%N" code)
-	    (core:fmt t "env         = {}%N" env))
-    (values `(lambda ,lambda-list ,@docstring #| (declare ,@declares)|# ,@code) env)))
 
 (defun function-name-from-lambda (name)
     (cond

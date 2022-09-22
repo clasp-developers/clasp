@@ -75,12 +75,6 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
            (compile nil code)))
         ((compiled-function-p definition)
          (values definition nil nil))
-        ((interpreted-function-p definition)
-         ;; Recover the lambda-expression from the interpreted-function
-         (multiple-value-bind (lambda-expression wrapped-env)
-             (generate-lambda-expression-from-interpreted-function definition)
-           (cmp-log "About to compile  name: {}  lambda-expression: {} wrapped-env: {}%N" name lambda-expression wrapped-env)
-           (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage name)))
         ((functionp definition)
          (error "COMPILE doesn't know how to handle this type of function"))
         ((and (consp definition) (eq (car definition) 'lambda))
@@ -91,12 +85,6 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                            ((and (symbolp name) (macro-function name)))
                            (t (error "No definition for ~a" name)))))
            (cond
-             ((interpreted-function-p func)
-              ;; Recover the lambda-expression from the interpreted-function
-              (multiple-value-bind (lambda-expression wrapped-env)
-                  (generate-lambda-expression-from-interpreted-function func)
-                (cmp-log "About to compile  name: {}  lambda-expression: {} wrapped-env: {}%N" name lambda-expression wrapped-env)
-                (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:internal-linkage name)))
              ((compiled-function-p func)
               (values func nil nil))
              ((core:instancep func) ; FIXME: funcallable-instance-p, probably
