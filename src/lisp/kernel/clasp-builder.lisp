@@ -563,7 +563,7 @@ been initialized with install path versus the build path of the source code file
                                          (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))))
                         (system (command-line-arguments-as-list)))
   (unless stage-count
-    (setq stage-count (if extension 1 6)))
+    (setq stage-count (if extension 1 3)))
   (setq *features*
         (if bytecode
             (list* :bytecode :staging :bytecodelike *features*)
