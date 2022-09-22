@@ -188,6 +188,7 @@
              #~"kernel/lsp/posix.lisp"
              #~"modules/sockets/sockets.lisp"
              #~"kernel/lsp/top.lisp"
+             #@"cclasp-translations.lisp"
              #~"kernel/stage/base/4-end.lisp")
   (unless (or neo bytecode)
     (k:sources target
@@ -199,7 +200,6 @@
   (apply #'add-bclasp-sources rest)
   (k:sources target
              #~"kernel/stage/base/5-begin.lisp"  
-             #@"cclasp-translations.lisp"
              :clasp-cleavir
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
              #~"kernel/cleavir/auto-compile.lisp"
