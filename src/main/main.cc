@@ -331,10 +331,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     core::global_initialize_builtin_classes = false;
   }
   
-  {
-    core::dumpDebuggingLayouts();
-  }
-  
   // Do some minimal argument processing
   (core::global_options->_ProcessArguments)(core::global_options);
   ::globals_ = new core::globals_t();
@@ -585,7 +581,6 @@ int main( int argc, char *argv[] )
   fflush( stderr );
 
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-    printf("%s:%d:%s  Setting up clasp for debugging - writing PID to /tmp/clasp_pid\n", __FILE__, __LINE__, __FUNCTION__);
     stringstream ss;
     char* username = getenv("USER");
     if (!username) {
@@ -593,6 +588,7 @@ int main( int argc, char *argv[] )
       exit(1);
     }
     ss << "/tmp/clasp_pid_" << getenv("USER");
+    printf("%s:%d:%s  Setting up clasp for debugging - writing PID to %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str());
     FILE* fout = fopen(ss.str().c_str(),"w");
     if (!fout) {
       printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );

@@ -72,3 +72,43 @@ def clasp_python_info():
     vm_opcodes = global_variable_string("global_python_virtual_machine_codes")
     class_layouts = global_variable_string("global_python_class_layouts")
     return (vm_opcodes, class_layouts)
+
+
+# ------------------------------------------------------------
+#
+# Frame filters
+#
+#
+
+
+class Filter_inline:
+    def __init__(self):
+        self.name = "__invoke_impl"
+        self.enabled = True
+        self.priority = 100
+        gdb.frame_filters[self.name] = self
+
+def filter(self,frame_iterator):
+    return ElidingInlineIterator(frame_iterator)
+
+class ElidingInlineIterator:
+    def __init__(self, ii):
+        self.input_iterator = ii
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        frame = next(self.input_iterator)
+
+        if frame.inferior_frame().type() != gdb.INLINE_FRAME:
+            return frame
+
+        try:
+            eliding_frame = next(self.input_iterator)
+        except StopIteration:
+            return frame
+        return ElidingFrameDecorator(eliding_frame, [frame])
+
+print("Installing filter_inline")
+filter_inline = Filter_inline()
