@@ -66,6 +66,8 @@ Options:
       Don't prompt or print in read-eval loop
   -D, --disable-debugger
       If the default debugger would be entered, Clasp instead quits
+  -G, --dump-debugger-info
+      Dump the info for the gdb/udb/lldb debugger extension.
   --quit
       Don't start a REPL
   -a, --addresses <file>
@@ -233,7 +235,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
                                               "-S",
                                               "--seed",
                                               "-f",
-                                              "--feature"};
+                                                "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
     if (parameter_required.find(*arg) != parameter_required.end() && (arg + 1) == end) {
       std::cerr << "Missing parameter for " << *arg << " option." << std::endl;
@@ -276,6 +278,11 @@ void process_clasp_arguments(CommandLineOptions *options) {
       options->_NoPrint = true;
     } else if (*arg == "-D" || *arg == "--disable-debugger") {
       options->_DebuggerDisabled = true;
+    } else if (*arg == "-G" || *arg == "--dump-debugger-info") {
+      core::dumpDebuggingLayouts();
+      std::cout << global_python_virtual_machine_codes;
+      std::cout << global_python_class_layouts;
+      std::exit(0);
     } else if (*arg == "--quit") {
       options->_Interactive = false;
     } else if (*arg == "-N" || *arg == "--non-interactive") {

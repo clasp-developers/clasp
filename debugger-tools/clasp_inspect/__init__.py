@@ -1112,4 +1112,3 @@ def print_disassembly(vm,instructions,labels):
             print("%s:" % labels[instr._address]._name)
         print_instruction(vm,instr,labels)
 
-

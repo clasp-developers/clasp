@@ -97,6 +97,47 @@ LispTest()
 LispFrame()
 LispVm()
 
+# ------------------------------------------------------------
+#
+# Frame filters
+#
+#
+
+
+class Filter_inline:
+    def __init__(self):
+        self.name = "__invoke_impl"
+        self.enabled = True
+        self.priority = 100
+        gdb.frame_filters[self.name] = self
+
+def filter(self,frame_iterator):
+    return ElidingInlineIterator(frame_iterator)
+
+class ElidingInlineIterator:
+    def __init__(self, ii):
+        self.input_iterator = ii
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        frame = next(self.input_iterator)
+
+        if frame.inferior_frame().type() != gdb.INLINE_FRAME:
+            return frame
+
+        try:
+            eliding_frame = next(self.input_iterator)
+        except StopIteration:
+            return frame
+        return ElidingFrameDecorator(eliding_frame, [frame])
+
+print("")
+print("Installing filter_inline")
+print("")
+filter_inline = Filter_inline()
+
 print("lprint <address>   - print lisp object in compact form")
 print("linspect <address> - inspect lisp object - all fields")
 print("lhead <address>    - dump the clients header")
@@ -105,3 +146,4 @@ print("ldis <bytecode-module-tptr>    - Disassemble a bytecode-module")
 print("ltest <address>    - test module reloading")
 print("lvm                - Dump current vm status")
 print("python-interactive <expr> - (or pi) interactive Python session\n")
+
