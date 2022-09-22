@@ -1,27 +1,10 @@
-(defun add-aclasp-sources (&rest rest &key target neo bytecode wrappers &allow-other-keys)
+(defun add-aclasp-sources (&rest rest &key target &allow-other-keys)
   (declare (ignore rest))
-  (cond ((or neo bytecode)
-         (k:sources target
-                    #~"kernel/stage/base/0-begin.lisp"
-                    #~"kernel/stage/base/4-begin.lisp"))
-        (t
-         (k:sources target
-                    #~"kernel/tag/start.lisp")))
   (k:sources target
-             #~"kernel/lsp/prologue.lisp")
-  (when wrappers
-    (k:sources target
-               #~"kernel/lsp/direct-calls.lisp"
-               #@"cl-wrappers.lisp"))
-  (unless bytecode
-    (k:sources target
-               #~"kernel/tag/min-start.lisp"))
-  (k:sources target
-             #~"kernel/init.lisp")
-  (unless bytecode
-    (k:sources target
-               #~"kernel/tag/after-init.lisp"))
-  (k:sources target
+             #~"kernel/stage/base/0-begin.lisp"
+             #~"kernel/stage/base/1-begin.lisp"
+             #~"kernel/lsp/prologue.lisp"
+             #~"kernel/init.lisp"
              #~"kernel/cmp/runtime-info.lisp"
              #~"kernel/lsp/sharpmacros.lisp"
              #~"kernel/cmp/jit-setup.lisp"
@@ -62,47 +45,21 @@
              #~"kernel/cmp/cmprunall.lisp"
              #~"kernel/cmp/cmpliteral.lisp"
              #~"kernel/cmp/typeq.lisp"
-             #~"kernel/cmp/codegen-special-form.lisp")
-  (unless nil;bytecode
-    (k:sources target
-               #~"kernel/cmp/codegen.lisp"
-               #~"kernel/cmp/compile.lisp"))
-  (k:sources target
+             #~"kernel/cmp/codegen-special-form.lisp"
+             #~"kernel/cmp/codegen.lisp"
+             #~"kernel/cmp/compile.lisp"
              #~"kernel/cmp/compile-file.lisp"
              #~"kernel/cmp/external-clang.lisp"
              #~"kernel/cmp/cmpname.lisp"
-             #~"kernel/cmp/cmpbundle.lisp")
-  (cond ((or neo bytecode)
-         (k:sources target
-                    #~"kernel/stage/base/0-end.lisp"
-                    #~"kernel/stage/base/1-begin.lisp"
-                    #~"kernel/stage/base/3-begin.lisp"
-                    )
-         (when bytecode
-           (k:sources target
-                      #~"kernel/cmp/bytecode-compile.lisp"
-                      #~"kernel/cmp/bytecode-reference.lisp"
-                      ))
-         (k:sources target
-                    #~"kernel/stage/base/3-end.lisp"
-                    #~"kernel/stage/base/1-end.lisp"
-                    #~"kernel/stage/base/2-begin.lisp")
-         (when bytecode
-           (k:sources target
-                      #~"kernel/cmp/cmprepl-bytecode.lisp"))
-         (k:sources target
-                    #~"kernel/stage/base/2-end.lisp"))
-        (t
-         (k:sources target
-                    #~"kernel/tag/min-pre-epilogue.lisp"
-                    #~"kernel/lsp/epilogue-aclasp.lisp"
-                    #~"kernel/tag/min-end.lisp"))))
+             #~"kernel/cmp/cmpbundle.lisp"
+             #~"kernel/cmp/bytecode-compile.lisp"
+             #~"kernel/cmp/bytecode-reference.lisp"
+             #~"kernel/cmp/cmprepl-bytecode.lisp"
+             #@"cclasp-translations.lisp"
+             #~"kernel/stage/base/0-end.lisp"))
     
-(defun add-bclasp-sources (&rest rest &key target neo bytecode &allow-other-keys)
+(defun add-bclasp-sources (&rest rest &key target &allow-other-keys)
   (apply #'add-aclasp-sources rest)
-  (unless (or neo bytecode)
-    (k:sources target
-               #~"kernel/tag/bclasp-start.lisp"))
   (k:sources target
              #~"kernel/cmp/cmpwalk.lisp"
              #~"kernel/lsp/assert.lisp"
@@ -130,7 +87,6 @@
              #~"kernel/lsp/format.lisp"
              #~"kernel/lsp/mp.lisp"
              #~"kernel/lsp/atomics.lisp"
-             ;#~"kernel/stage/base/4-end.lisp"
              #~"kernel/clos/package.lisp"
              #~"kernel/clos/static-gfs/package.lisp"
              #~"kernel/clos/static-gfs/flag.lisp"
@@ -188,18 +144,12 @@
              #~"kernel/lsp/posix.lisp"
              #~"modules/sockets/sockets.lisp"
              #~"kernel/lsp/top.lisp"
-             #@"cclasp-translations.lisp"
-             #~"kernel/stage/base/4-end.lisp")
-  (unless (or neo bytecode)
-    (k:sources target
-               #~"kernel/tag/pre-epilogue-bclasp.lisp"
-               #~"kernel/lsp/epilogue-bclasp.lisp"
-               #~"kernel/tag/bclasp.lisp")))
+             #~"kernel/stage/base/1-end.lisp"))
 
 (defun add-cclasp-sources (&rest rest &key target neo bytecode &allow-other-keys)
   (apply #'add-bclasp-sources rest)
   (k:sources target
-             #~"kernel/stage/base/5-begin.lisp"  
+             #~"kernel/stage/base/2-begin.lisp"  
              :clasp-cleavir
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
              #~"kernel/cleavir/auto-compile.lisp"
@@ -212,17 +162,10 @@
   (when (eq target :cclasp)
     (k:sources target
                #@"cclasp-immutable.lisp"))
-  (if (or neo bytecode)
-      (k:sources target
-                 #~"kernel/stage/base/5-end.lisp")
-      (k:sources target
-                 #~"kernel/tag/pre-epilogue-cclasp.lisp"))
   (k:sources target
+             #~"kernel/stage/base/2-end.lisp"
              #~"kernel/cmp/compile-file-parallel.lisp"
-             #~"kernel/lsp/epilogue-cclasp.lisp")
-  (unless (or neo bytecode)
-    (k:sources target
-               #~"kernel/tag/cclasp.lisp")))
+             #~"kernel/lsp/epilogue-cclasp.lisp"))
 
 (defun add-eclasp-sources (&rest rest &key target &allow-other-keys)
   (apply #'add-cclasp-sources rest)
@@ -237,21 +180,9 @@
              #~"kernel/lsp/epilogue-eclasp.lisp"
              #~"kernel/tag/eclasp.lisp"))
 
-#+(or)(add-aclasp-sources :target :aclasp)
+(add-cclasp-sources :target :cclasp)
 
-#+(or)(add-bclasp-sources :target :bclasp :wrappers t)
-
-#+(or)(add-cclasp-sources :target :cclasp :wrappers t)
-
-#+(or)(add-eclasp-sources :target :eclasp :wrappers t)
-
-#+(or)(add-cclasp-sources :target :mclasp :wrappers nil :neo t)
-
-#+(or)(add-eclasp-sources :target :nclasp :wrappers t :neo t)
-
-(add-cclasp-sources :target :cclasp :wrappers nil :bytecode t)
-
-(add-eclasp-sources :target :eclasp :wrappers nil :bytecode t)
+(add-eclasp-sources :target :eclasp)
 
 (k:sources :eclasp-translations :extension-systems)
 

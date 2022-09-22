@@ -1,1 +1,1 @@
-#+stage2 (core:stage-features :clasp-min :aclasp)
+#+stage2 (core:stage-features :clos :cclasp)
