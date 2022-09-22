@@ -57,7 +57,6 @@
              #~"kernel/cmp/cmpir.lisp"
              #~"kernel/cmp/cmpeh.lisp"
              #~"kernel/cmp/debuginfo.lisp"
-             #~"kernel/cmp/codegen-vars.lisp"
              #~"kernel/cmp/arguments.lisp"
              #~"kernel/cmp/cmplambda.lisp"
              #~"kernel/cmp/cmprunall.lisp"
@@ -67,16 +66,12 @@
   (unless nil;bytecode
     (k:sources target
                #~"kernel/cmp/codegen.lisp"
-               #~"kernel/cmp/compile.lisp"
-               #~"kernel/cmp/codegen-toplevel.lisp"))
+               #~"kernel/cmp/compile.lisp"))
   (k:sources target
              #~"kernel/cmp/compile-file.lisp"
              #~"kernel/cmp/external-clang.lisp"
              #~"kernel/cmp/cmpname.lisp"
              #~"kernel/cmp/cmpbundle.lisp")
-  (when (or neo (not bytecode))
-    (k:sources target
-               #~"kernel/cmp/cmprepl.lisp"))
   (cond ((or neo bytecode)
          (k:sources target
                     #~"kernel/stage/0-end.lisp"

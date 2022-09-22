@@ -42,8 +42,6 @@
    cmp::maybe-spill-to-register-save-area
    cmp::codegen-startup-shutdown
    literal::constants-table-reference
-   cmp::compile-to-module-with-run-time-table
-   cmp::bclasp-compile*
    cmp::compile-with-hook
    cmp::compile-in-env
    compile
@@ -53,18 +51,12 @@
    literal::constants-table-value
    cmp::gen-defcallback
    cmp::irc-rack-slot-address
-   cmp::irc-value-frame-reference
    cmp::irc-array-dimension
    cmp::irc-header-stamp
    cmp::irc-calculate-entry
    cmp::irc-calculate-real-args
    cmp::compile-lambda-list-code
    cmp::c++-field-ptr
-   cmp::layout-xep-function*
-   cmp::layout-xep-function
-   cmp::bclasp-compile-lambda-list-code
-   cmp::layout-xep-group
-   cmp::do-new-function
    literal::do-rtv
    llvm-sys:make-global-variable
    ))

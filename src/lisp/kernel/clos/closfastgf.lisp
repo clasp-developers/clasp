@@ -692,8 +692,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
       (let ((timer-start (get-internal-real-time)))
         (unwind-protect
              (if (or *fastgf-force-compiler* compile)
-                 (cmp:bclasp-compile
-                  nil (generate-discriminator generic-function))
+                 (error "BUG: fastgf compilation disabled for now")
                  (interpreted-discriminator generic-function))
           (let ((delta-seconds (/ (float (- (get-internal-real-time) timer-start) 1d0)
                                   internal-time-units-per-second)))

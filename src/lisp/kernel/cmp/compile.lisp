@@ -2,10 +2,6 @@
 
 ;;;; Top-level interface: CL:COMPILE
 
-;;; Use the *cleavir-compile-hook* to determine which compiler to use
-;;; if nil == bclasp. Code for the bclasp compiler is in codegen.lisp;
-;;; look for bclasp-compile*.
-
 (defparameter *lambda-args-num* 0)
 
 (defmacro with-module (( &key module
@@ -30,7 +26,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
     (if compile-hook
         (funcall compile-hook definition env pathname
                  :linkage linkage :name name)
-        (bclasp-compile* definition env pathname :linkage linkage :name name))))
+        (error "no compile hook available"))))
 
 ;;; NOTE: cclasp may pass a definition that is a CST or AST.
 ;;; As such, this function should probably not examine the definition at all.
@@ -111,13 +107,3 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
   (core:fmt t "Number of compilations {}%N" llvm-sys:*number-of-llvm-finalizations*))
 
 (export 'compiler-stats)
-
-#+(or bclasp cclasp eclasp)
-(progn
-  (defun bclasp-compile (form &optional definition)
-    (let ((cmp:*cleavir-compile-hook* nil)
-          (cmp:*cleavir-compile-file-hook* nil)
-          (core:*use-cleavir-compiler* nil)
-          (core:*eval-with-env-hook* #'core:interpret-eval-with-env))
-      (compile form definition)))
-  (export 'bclasp-compile))

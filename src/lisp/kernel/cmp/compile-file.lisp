@@ -194,29 +194,12 @@ and the pathname of the source file - this will also be used as the module initi
    stream *compile-file-file-scope*
    *compile-file-source-debug-lineno* *compile-file-source-debug-offset*))
 
-(defun bclasp-loop-read-and-compile-file-forms (source-sin environment)
-  (declare (ignore environment))
-  (let ((eof-value (gensym)))
-    (loop
-      ;; Required to update the source pos info. FIXME!?
-      (peek-char t source-sin nil)
-      ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let ((core:*current-source-pos-info* (compile-file-source-pos-info source-sin))
-            (form (read source-sin nil eof-value)))
-        (if (eq form eof-value)
-            (return nil)
-            (progn
-              (when *compile-print* (describe-form form))
-              (when *debug-compile-file* (core:fmt t "compile-file: cf{} -> {}%N" (incf *debug-compile-file-counter*) form))
-              (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (t1expr form))))))))
-
 (defun loop-read-and-compile-file-forms (source-sin environment compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that
   ;; to generate code
   (if compile-file-hook
       (funcall compile-file-hook source-sin environment)
-      (bclasp-loop-read-and-compile-file-forms source-sin environment)))
+      (error "BUG: No compiler in loop-read-and-compile-forms")))
 
 (defun compile-file-to-module (given-input-pathname
                                &key
@@ -513,14 +496,3 @@ Compile a lisp source file into an LLVM module."
 
 (eval-when (:load-toplevel :execute)
   (setf (fdefinition 'compile-file) #'compile-file-serial))
-
-#+(or bclasp cclasp eclasp)
-(progn
-  (defun bclasp-compile-file (input-file &rest args)
-    (let ((cmp:*cleavir-compile-hook* nil)
-          (cmp:*cleavir-compile-file-hook* nil)
-          (core:*use-cleavir-compiler* nil)
-          (cmp:*compile-file-parallel* nil)
-          (core:*eval-with-env-hook* #'core:interpret-eval-with-env))
-      (apply 'compile-file-serial input-file args)))
-  (export 'bclasp-compile-file))
