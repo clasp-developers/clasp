@@ -331,16 +331,8 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     core::global_initialize_builtin_classes = false;
   }
   
-  if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-    printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
-    stringstream ss;
-    char* username = getenv("USER");
-    if (!username) {
-      printf("Could not get USER environment variable\n");
-      exit(1);
-    }
-    ss << "/tmp/clasp_layout_" << getenv("USER") << ".py";
-    core::dumpDebuggingLayouts(ss.str());
+  {
+    core::dumpDebuggingLayouts();
   }
   
   // Do some minimal argument processing
@@ -608,13 +600,8 @@ int main( int argc, char *argv[] )
     }
     fprintf(fout,"%d",getpid());
     fclose(fout);
-    
-    printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
-    stringstream su;
-    su << "/tmp/clasp_layout_" << getenv("USER") << ".py";
-    core::dumpDebuggingLayouts(su.str());
+    core::dumpDebuggingLayouts();
   }
-  
   //
   // Pause before any allocations take place
   //

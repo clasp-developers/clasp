@@ -951,7 +951,7 @@ FILE* monitor_file(const std::string& filename_prefix);
 #endif
 extern bool global_Started;
 
-void dumpDebuggingLayouts(const std::string& filename);
+void dumpDebuggingLayouts();
 T_mv cl__intern(String_sp symbol_name, T_sp package_desig);
 };
 

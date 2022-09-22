@@ -1225,7 +1225,7 @@ uintptr_t      global_python_class_layouts_size;
 };
 
 
-void dumpDebuggingLayouts(const std::string& filename) {
+void dumpDebuggingLayouts() {
   global_python_virtual_machine_codes = (unsigned char*)global_python_vm_codes_literal;
   global_python_virtual_machine_codes_size = sizeof(global_python_vm_codes_literal);
   stringstream fout;
@@ -1241,7 +1241,7 @@ void dumpDebuggingLayouts(const std::string& filename) {
   memcpy( global_python_class_layouts, fout.str().c_str(), sz );
   global_python_class_layouts[sz] = '\0';
   global_python_class_layouts_size = fout.str().size();
-  printf("Wrote VM codes and class layouts for udb/gdb/lldb interface to access from memory\n");
+  printf("%s:%d:%s Wrote VM codes and class layouts for udb/gdb/lldb interface to access from memory\n", __FILE__, __LINE__, __FUNCTION__ );
 }
 
 void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
@@ -1284,9 +1284,7 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
     printf("%s:%d  Lisp smart_ptr width -> %d  sizeof(Lisp) -> %d\n", __FILE__, __LINE__, (int)(sizeof(_lisp->_Roots)/8), (int)sizeof(Lisp));
   }
 
-  if (options._HasDescribeFile) {
-    dumpDebuggingLayouts(options._DescribeFile);
-  }
+  dumpDebuggingLayouts();
     
   if (options._StartupFileP) {
     SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
