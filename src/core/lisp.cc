@@ -675,6 +675,9 @@ void Lisp::startupLispEnvironment() {
 #if TAG_BITS==4
   features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"),features);
 #endif
+#ifdef CLASP_EXTENSIONS
+  features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"),features);
+#endif
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 
   globals_->_InitFileName = "sys:src;lisp;" KERNEL_NAME ";init.lisp";
@@ -1284,7 +1287,7 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
     SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
     _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(SimpleBaseString_O::make(options._StartupFile)));
   } else {
-    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._StartupStage));
+    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._Stage));
   }
 }
 

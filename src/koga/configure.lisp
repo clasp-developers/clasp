@@ -600,14 +600,12 @@ is not compatible with snapshots.")
                                                                :scraper)
                                                          :update-unicode
                                                          (list (make-source #P"update-unicode.lisp" :build))
-                                                         :load-cclasp
-                                                         (list (make-source #P"load-cclasp.lisp" :build))
-                                                         :snapshot-cclasp
-                                                         (list (make-source #P"snapshot-cclasp.lisp" :build))
-                                                         :compile-cclasp
-                                                         (list (make-source #P"compile-cclasp.lisp" :build))
-                                                         :compile-eclasp
-                                                         (list (make-source #P"compile-eclasp.lisp" :build))
+                                                         :load-clasp
+                                                         (list (make-source #P"load-clasp.lisp" :build))
+                                                         :snapshot-clasp
+                                                         (list (make-source #P"snapshot-clasp.lisp" :build))
+                                                         :compile-clasp
+                                                         (list (make-source #P"compile-clasp.lisp" :build))
                                                          :compile-module
                                                          (list (make-source #P"compile-module.lisp" :build))
                                                          :link-fasl
@@ -624,8 +622,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"bench.lisp" :build))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
-                                                               :bitcode :iclasp :cclasp
-                                                               :modules :eclasp :sclasp :install-bin :install-code
+                                                               :bitcode :iclasp :cclasp :modules :eclasp
+                                                               :eclasp-link :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :static-analyzer
                                                                :tags :install-extension-code)
                                                          :config-h
@@ -776,9 +774,8 @@ then they will overide the current variant's corresponding property."
 (defun image-source (configuration target &optional (root :variant-lib))
   "Return the name of an image based on a target name, the bitcode name
 and the build mode."
-  (make-source (format nil "~(~a~)-~a-image.~a"
-                       target *variant-bitcode-name*
-                       (image-fasl-extension configuration))
+  (make-source (format nil "images/~(~a~).~a"
+                       target (image-fasl-extension configuration))
                root))
 
 (defun funcall-variant (configuration func

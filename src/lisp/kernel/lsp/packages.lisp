@@ -13,8 +13,6 @@
             rmdir
             select-source-files
             compile-kernel-file
-            *target-backend*
-            default-target-backend
             load-system
             compile-system
             maybe-load-clasprc

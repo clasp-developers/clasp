@@ -297,13 +297,11 @@
 (defun llvm-link (output-pathname
                   &key (link-type :fasl)
                     (input-type :bitcode)
-                    input-files
-                    (target-backend (default-target-backend)))
+                    input-files)
   "Link a collection of files together into a fasl or executable.
 The input files are passed as a list in **input-files**.
 The type of file generated is specified by **link-type** (:fasl|:executable).
 The type of the files to be linked is defined with **input-type** (:bitcode|:object).
-The **target-backend** indicates if we are linking for aclasp, bclasp or cclasp.
 Return the **output-pathname**."
   (let* ((*target-backend* target-backend)
          (start-time (get-internal-real-time))

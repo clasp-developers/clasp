@@ -342,7 +342,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
       options->_HasDescribeFile = true;
       options->_DescribeFile = *++arg;
     } else if (*arg == "-t" || *arg == "--stage") {
-      options->_StartupStage = (*++arg)[0];
+      options->_Stage = (*++arg)[0];
     } else if (*arg == "-e" || *arg == "--eval") {
       options->_LoadEvalList.push_back(pair<LoadEvalEnum, std::string>(std::make_pair(cloEval, *++arg)));
     } else if (*arg == "-l" || *arg == "--load") {
@@ -363,7 +363,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
 
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     : _ProcessArguments(process_clasp_arguments), _IgnoreInitImage(false), _IgnoreInitLsp(false), _DisableMpi(false),
-      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _StartupStage(DEFAULT_STAGE),
+      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _Stage(DEFAULT_STAGE),
       _StartupFile(""), _DefaultStartupType(cloDefault), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0), _NoInform(false),
       _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
       _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), // FIXME should be initialized later with user-homedir-pathname?

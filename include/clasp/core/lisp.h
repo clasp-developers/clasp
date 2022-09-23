@@ -240,7 +240,6 @@ struct globals_t {
   DebugStream *_DebugStream;
   uint _SingleStepLevel;
   int _TraceLevel;
-  char _Stage;
   std::atomic<int> _DebuggerLevel;
   /*! Global environment initialization hooks can be added until
 	  the environment is started up.

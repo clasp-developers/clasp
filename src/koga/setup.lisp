@@ -83,10 +83,13 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
                                               build-path)
         for variant-lib-path = (merge-pathnames (make-pathname :directory '(:relative "lib"))
                                                 *variant-path*)
+        for variant-lib-generated-path = (merge-pathnames (make-pathname :directory '(:relative "lib" "generated"))
+                                                          *variant-path*)
         for variant-generated-path = (merge-pathnames (make-pathname :directory '(:relative "generated"))
                                                       *variant-path*)
         for *root-paths* = (list* :variant *variant-path*
                                   :variant-lib variant-lib-path
+                                  :variant-lib-generated variant-lib-generated-path
                                   :variant-generated variant-generated-path
                                   root-paths)
         do (funcall func)))
@@ -139,12 +142,15 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
              (*variant-path* (make-pathname :directory (list :relative *variant-bitcode-name*)))
              (variant-lib-path (merge-pathnames (make-pathname :directory '(:relative "lib"))
                                                 *variant-path*))
+             (variant-lib-generated-path (merge-pathnames (make-pathname :directory '(:relative "lib" "generated"))
+                                                          *variant-path*))
              (variant-generated-path (merge-pathnames (make-pathname :directory '(:relative "generated"))
                                                       *variant-path*))
              (*root-paths* (list* :build #P""
                                   :code (make-pathname :directory '(:relative :up))
                                   :variant *variant-path*
                                   :variant-lib variant-lib-path
+                                  :variant-lib-generated variant-lib-generated-path
                                   :variant-generated variant-generated-path
                                   *root-paths*)))
         (unwind-protect

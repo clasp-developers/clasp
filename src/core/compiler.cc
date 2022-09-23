@@ -473,7 +473,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
 std::string startup_snapshot_name(Bundle& bundle) {
 
   stringstream sn;
-  sn << globals_->_Stage << "clasp-" << VARIANT_NAME;
+  sn << global_options->_Stage << "clasp-" << VARIANT_NAME;
   stringstream ss;
   std::string executablePath;
   core::executablePath(executablePath);
@@ -507,7 +507,7 @@ CL_DOCSTRING(R"dx(startupImagePathname - returns a pathname based on *features* 
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   stringstream ss;
-  ss << "sys:lib;" << stage << "clasp-" << VARIANT_NAME << "-image";
+  ss << "sys:lib;images;" << stage << "clasp";
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
   if (mode == kw::_sym_faso) {
     ss << ".fasp";

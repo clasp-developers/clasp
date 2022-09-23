@@ -1818,11 +1818,6 @@ OUTPUT:
 static T_sp
 coerce_to_from_pathname(T_sp x, T_sp host) {
   if (cl__stringp(x)) {
-#ifdef CLASP_UNICODE
-    if (gc::IsA<String_sp>(x)) {
-    x = cl__parse_namestring(x, host);
-  } else
-#endif
     x = cl__parse_namestring(x, host);
   }
   if (Pathname_sp pnx = x.asOrNull<Pathname_O>()) {

@@ -1,5 +1,4 @@
-(defun add-aclasp-sources (&rest rest &key target &allow-other-keys)
-  (declare (ignore rest))
+(defun add-cclasp-sources (target)
   (k:sources target
              #~"kernel/stage/base/0-begin.lisp"
              #~"kernel/stage/base/1-begin.lisp"
@@ -52,11 +51,7 @@
              #~"kernel/cmp/bytecode-reference.lisp"
              #~"kernel/cmp/cmprepl-bytecode.lisp"
              #@"cclasp-translations.lisp"
-             #~"kernel/stage/base/0-end.lisp"))
-    
-(defun add-bclasp-sources (&rest rest &key target &allow-other-keys)
-  (apply #'add-aclasp-sources rest)
-  (k:sources target
+             #~"kernel/stage/base/0-end.lisp"
              #~"kernel/cmp/cmpwalk.lisp"
              #~"kernel/lsp/assert.lisp"
              #~"kernel/lsp/iolib.lisp"
@@ -140,11 +135,7 @@
              #~"kernel/lsp/posix.lisp"
              #~"modules/sockets/sockets.lisp"
              #~"kernel/lsp/top.lisp"
-             #~"kernel/stage/base/1-end.lisp"))
-
-(defun add-cclasp-sources (&rest rest &key target neo bytecode &allow-other-keys)
-  (apply #'add-bclasp-sources rest)
-  (k:sources target
+             #~"kernel/stage/base/1-end.lisp"
              #~"kernel/stage/base/2-begin.lisp"  
              :clasp-cleavir
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
@@ -154,17 +145,14 @@
              #~"kernel/lsp/generated-encodings.lisp"
              #~"kernel/lsp/process.lisp"
              #~"kernel/lsp/encodings.lisp"
-             #~"kernel/lsp/cltl2.lisp")
-  (when (eq target :cclasp)
-    (k:sources target
-               #@"cclasp-immutable.lisp"))
-  (k:sources target
+             #~"kernel/lsp/cltl2.lisp"
+             #@"cclasp-immutable.lisp"
              #~"kernel/stage/base/2-end.lisp"
              #~"kernel/cmp/compile-file-parallel.lisp"
              #~"kernel/lsp/epilogue-cclasp.lisp"))
 
-(defun add-eclasp-sources (&rest rest &key target &allow-other-keys)
-  (apply #'add-cclasp-sources rest)
+(defun add-eclasp-sources (target)
+  (add-cclasp-sources target)
   (k:sources target
              #~"kernel/stage/extension/0-begin.lisp"
              #@"eclasp-immutable.lisp"
@@ -176,9 +164,9 @@
              #~"kernel/lsp/epilogue-eclasp.lisp"
              #~"kernel/tag/eclasp.lisp"))
 
-(add-cclasp-sources :target :cclasp)
+(add-cclasp-sources :cclasp)
 
-(add-eclasp-sources :target :eclasp)
+(add-eclasp-sources :eclasp)
 
 (k:sources :eclasp-translations :extension-systems)
 
