@@ -122,8 +122,6 @@ fields at the same offset as Instance_O.
 
 namespace core {
 
-extern std::atomic<uint64_t> global_interpreted_closure_calls;
-
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
 */
   class Function_O : public General_O {
@@ -218,7 +216,6 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     
     Pointer_sp function_pointer() const;
     virtual bool compiledP() const;
-    virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return nil<T_O>(); };
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
@@ -519,12 +516,8 @@ namespace core {
 
   class Closure_O final : public core::Function_O {
     LISP_CLASS(core,CorePkg,Closure_O,"Closure",core::Function_O);
-    typedef enum { bytecodeClosure, interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
+    typedef enum { bytecodeClosure, bclaspClosure, cclaspClosure } ClosureType;
 #define ENVIRONMENT_SLOT 0
-#define INTERPRETED_CLOSURE_SLOTS  3
-#define INTERPRETED_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
-#define INTERPRETED_CLOSURE_FORM_SLOT 1
-#define INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT 2
 #define BCLASP_CLOSURE_SLOTS  1
 #define BCLASP_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
   public:
@@ -539,8 +532,6 @@ namespace core {
       return gctools::sizeof_container<Closure_O>(this->_Slots.size());
     };
   public:
-    static Closure_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column);
-
     static Closure_sp make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots);
 
     static Closure_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint);
@@ -556,8 +547,6 @@ namespace core {
     virtual string __repr__() const override;
     core::T_sp lambdaListHandler() const override {
       switch (this->closureType) {
-      case interpretedClosure:
-          return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
       case bytecodeClosure:
           return nil<T_O>();
       case bclaspClosure:
@@ -566,7 +555,6 @@ namespace core {
           return nil<T_O>();
       };
     }
-    CL_DEFMETHOD T_sp interpretedSourceCode();
     CL_DEFMETHOD T_sp closedEnvironment() const override {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT];
@@ -576,10 +564,7 @@ namespace core {
       return (*this)[ENVIRONMENT_SLOT].rawRef_();
     };      
     bool compiledP() const override {
-      return (this->closureType!=interpretedClosure);
-    }
-    bool interpretedP() const override {
-      return (this->closureType==interpretedClosure);
+      return true;
     }
     bool openP();
     inline T_sp &operator[](size_t idx) {
@@ -590,7 +575,6 @@ namespace core {
       BOUNDS_ASSERT(idx<this->_Slots.length());
       return this->_Slots[idx];
     };
-    T_sp code() const;
   };
 
 

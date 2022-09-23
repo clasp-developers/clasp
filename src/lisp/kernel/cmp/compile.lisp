@@ -83,12 +83,9 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
            (cond
              ((compiled-function-p func)
               (values func nil nil))
-             ((core:instancep func) ; FIXME: funcallable-instance-p, probably
-              (let ((user-func (clos:get-funcallable-instance-function func)))
-                (when (and user-func (interpreted-function-p user-func))
-                  (let ((compiled-user-func (compile nil user-func)))
-                    (when (not (eq user-func compiled-user-func))
-                      (clos:set-funcallable-instance-function func compiled-user-func)))))
+             #+(or)
+             ((core:instancep func)
+              ;; TODO: Have this force compile the discriminator.
               (values func nil nil))
              (t (error "COMPILE doesn't know how to handle this type of function")))))
         (t (error "Illegal combination of arguments for compile: ~a ~a, class-of definition ~a" name definition (class-of definition))))

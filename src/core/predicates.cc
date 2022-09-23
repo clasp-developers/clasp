@@ -114,18 +114,6 @@ CL_DEFUN bool cl__functionp(T_sp obj) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(interpretedFunctionP)dx")
-DOCGROUP(clasp)
-CL_DEFUN bool core__interpreted_function_p(T_sp arg) {
-  if ( gc::IsA<Closure_sp>(arg)){
-    Closure_sp closure = gc::As_unsafe<Closure_sp>(arg);
-    return closure->closureType == Closure_O::interpretedClosure;
-  }
-  return false;
-};
-
-CL_LAMBDA(arg)
-CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS packagep)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__packagep(T_sp obj) {
