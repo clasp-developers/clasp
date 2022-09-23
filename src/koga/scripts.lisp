@@ -101,9 +101,8 @@
   (write-string "(setq *features* (cons :aclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (load #P\"sys:src;lisp;kernel;cmp;jit-setup.lisp\")
-(let ((args (core:command-line-arguments-as-list)))
-  (core:link-fasl :output-file (car args)
-                  :system (cdr args)))
+(core:link-fasl :output-file (pathname (elt core:*command-line-arguments* 0))
+                :system (core:command-line-paths 1))
 (core:quit)" output-stream))
 
 ;;; TODO The parallel analyzer is disabled below. Enable it once it works.

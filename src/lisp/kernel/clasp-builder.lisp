@@ -11,17 +11,16 @@
 
 (defun message (level control-string &rest args)
   (core:fmt t "%e[{:d}m"
-            (cond
-              ((eq level :err)  31)
-              ((eq level :warn) 33)
-              ((eq level :emph) 32)
-              ((eq level :debug) 36)
-              ((eq level :info) 37)
-              (t 0)))
+            (cond ((eq level :err)  31)
+                  ((eq level :warn) 33)
+                  ((eq level :emph) 32)
+                  ((eq level :debug) 36)
+                  ((eq level :info) 37)
+                  (t 0)))
   (apply #'core:fmt t control-string args)
   (core:fmt t "%e[0m%n")
-  (if (eq level :err)
-      (core:exit 1)))
+  (when (eq level :err)
+    (core:exit 1)))
 
 #+(or)
 (progn
@@ -40,9 +39,7 @@
          t)
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
-  (mmsg "Starting up%N")
-  )
-
+  (mmsg "Starting up%N"))
 
 #-(or bclasp cclasp eclasp)
 (core:fset 'cmp::with-compiler-timer
@@ -57,25 +54,24 @@
 (defun load-kernel-file (path &key (type core:*clasp-build-mode*) silent)
   (let ((filename (make-pathname :type (if (eq type :faso) "faso" "fasl")
                                  :defaults path)))
-    (if (not (or (eq type :bitcode) (eq type :object)
-                 (eq type :fasl) (eq type :faso)))
-        (message :err "Illegal type {} for load-kernel-file {}" type (namestring path)))
-    (if (or (eq type :bitcode)
-            (and (or (eq type :object) (eq type :fasl))
-                 (not (probe-file filename))))
-        (cmp:load-bitcode path :print (not silent))
-        (progn
-          (if (not silent)
-              (message nil "Loading {}" (namestring filename)))
-          (load filename :print nil :verbose nil)))
+    (unless (or (eq type :bitcode) (eq type :object)
+                (eq type :fasl) (eq type :faso))
+      (message :err "Illegal type {} for load-kernel-file {}" type (namestring path)))
+    (cond ((or (eq type :bitcode)
+               (and (or (eq type :object) (eq type :fasl))
+                    (not (probe-file filename))))
+           (cmp:load-bitcode path :print (not silent)))
+          (t
+           (unless silent
+             (message nil "Loading {}" (namestring filename)))
+           (load filename :print nil :verbose nil)))
     path))
 
 (defun compile-kernel-file (entry &rest args
                                   &key reload count (output-type core:*clasp-build-mode*) verbose print silent)
-  #+dbg-print (message :debug "DBG-PRINT compile-kernel-file: {}" entry)
   (let* ((filename (getf entry :source-path))
          (position (getf entry :position))
-         (output-path (getf entry :bitcode-path))
+         (output-path (getf entry :output-path))
          (cmp::*module-startup-prefix* "kernel")
          (compile-file-arguments (list* filename
                                         :source-debug-pathname filename
@@ -87,27 +83,21 @@
                                         :type :kernel ;; (if reload :kernel nil)
                                         :image-startup-position position
                                         (getf entry :compile-file-options))))
-    (cond ((getf entry :out-of-date)
-           (unless silent
-             (message nil "Compiling [{} of {}] {}%N    to {} - will reload: {}"
-                      (getf entry :index) count filename output-path reload))
-           #+dbg-print (message :debug "filename = {}" filename)
-           (if verbose
-               (let ((before-ms (get-internal-run-time))
-                     (before-bytes (gctools:bytes-allocated)))
-                 (apply #'cmp::compile-file-serial compile-file-arguments)
-                 (let ((after-ms (get-internal-run-time))
-                       (after-bytes (gctools:bytes-allocated)))
-                   (message :info "Compile time run({:.3f} secs) consed({} bytes)"
-                            (float (/ (- after-ms before-ms) internal-time-units-per-second))
-                            (- after-bytes before-bytes))))
-             (apply #'cmp::compile-file-serial compile-file-arguments))
-           (if reload
-               (let ((reload-file (make-pathname :type "fasl" :defaults output-path)))
-                 (load-kernel-file reload-file :silent silent))))
-          ((not silent)
-           (message nil "Skipping [{} of {}] {}"
-                    (getf entry :index) count filename)))
+    (unless silent
+      (message nil "Compiling [{} of {}] {}%N    to {} - will reload: {}"
+               (getf entry :index) count filename output-path reload))
+    (if verbose
+        (let ((before-ms (get-internal-run-time))
+              (before-bytes (gctools:bytes-allocated)))
+          (apply #'cmp::compile-file-serial compile-file-arguments)
+          (let ((after-ms (get-internal-run-time))
+                (after-bytes (gctools:bytes-allocated)))
+            (message :info "Compile time run({:.3f} secs) consed({} bytes)"
+                     (float (/ (- after-ms before-ms) internal-time-units-per-second))
+                     (- after-bytes before-bytes))))
+        (apply #'cmp::compile-file-serial compile-file-arguments))
+    (when reload
+      (load-kernel-file (make-pathname :type "fasl" :defaults output-path) :silent silent))
     output-path))
 
 (eval-when (:compile-toplevel :execute)
@@ -121,7 +111,6 @@
 (defun compile-system-serial (system &key reload (output-type core:*clasp-build-mode*) &allow-other-keys
                                      &aux (count (length system)))
   (message :emph "Compiling system serially...")
-  #+dbg-print (message :debug "compile-system files: {}" system)
   (dolist (entry system)
     (compile-kernel-file entry :reload reload :output-type output-type :count count :print t :verbose t)))
 
@@ -189,8 +178,6 @@
 (defun compile-system-parallel (system
                                 &key reload (output-type core:*clasp-build-mode*)
                                 (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 1) &allow-other-keys)
-  #+dbg-print (message :debug "DBG-PRINT compile-system files: {}" system)
-  (mmsg "compile-system-parallel files {}%N" system)
   (message :emph "Compiling system with {:d} parallel jobs..." parallel-jobs)
   (let ((total (length system))
         (job-counter 0)
@@ -199,19 +186,16 @@
         child-died
         (jobs (make-hash-table :test #'eql)))
     (labels ((started-one (entry child-pid)
-               (let* ((filename (getf entry :source-path))
-                      (output-path (bitcode-pathname filename output-type)))
-                 (message nil "Starting {: >3d} of {:d} [pid {:d}] {}"
-                          (getf entry :index) total child-pid (namestring filename)))
+               (message nil "Starting {: >3d} of {:d} [pid {:d}] {}"
+                        (getf entry :index) total child-pid (namestring (getf entry :source-path)))
                (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
                  (format t "CLASP_PAUSE_FORKED_CHILD is set - will pause all children until they receive SIGUSR1~%")))
              (started-some (entries child-pid)
                (dolist (entry entries)
                  (started-one entry child-pid)))
              (finished-report-one (entry child-pid)
-               (let ((filename (getf entry :source-path)))
-                 (message :emph "Finished {: >3d} of {:d} [pid {:d}] {} output follows..."
-                          (getf entry :index) total child-pid (namestring filename))))
+               (message :emph "Finished {: >3d} of {:d} [pid {:d}] {} output follows..."
+                        (getf entry :index) total child-pid (namestring (getf entry :source-path))))
              (read-fd-into-buffer (fd)
                (mmsg "in read-fd-into-buffer {}%N" fd)
                (let ((buffer (make-array 1024 :element-type 'base-char :adjustable nil))
@@ -223,16 +207,14 @@
                       (mmsg "About to read-fd%N")
                       (multiple-value-bind (num-read errno)
                           (core:read-fd fd buffer)
-                        (if (= num-read 0)
-                            (return-from readloop))
-                        (if (< num-read 0)
-                            (progn
-                              (mmsg "Three was an error reading the stream errno {}%N" errno)
-                              (message :warn "There was an error reading the stream errno {}" errno)))
-                        (if (> num-read 0)
-                            (progn
-                              (write-sequence buffer sout :start 0 :end num-read)
-                              (mmsg "Wrote <{}>%N" (subseq buffer 0 num-read)))))
+                          (cond ((zerop num-read)
+                                 (return-from readloop))
+                                ((< num-read 0)
+                                 (mmsg "Three was an error reading the stream errno {}%N" errno)
+                                 (message :warn "There was an error reading the stream errno {}" errno))
+                                (t
+                                 (write-sequence buffer sout :start 0 :end num-read)
+                                 (mmsg "Wrote <{}>%N" (subseq buffer 0 num-read)))))
                       (go top)))
                  (mmsg "Returning with buffer%N")
                  (core:close-fd fd)
@@ -260,9 +242,7 @@
                    (finished-report-one entry child-pid))
                  (report-child-exited child-pid child-stdout child-stderr)))
              (reload-one (entry)
-               (let* ((filename (getf entry :source-path))
-                      (output-path (bitcode-pathname filename output-type)))
-                 (load-kernel-file output-path :silent nil)))
+               (load-kernel-file (getf entry :output-path) :silent nil))
              (reload-some (entries)
                (dolist (entry entries)
                  (reload-one entry)))
@@ -331,7 +311,7 @@
                          (if (= pid 0)
                              (progn
                                (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
-                                 (gctools:wait-for-user-signal (format nil "Child with pid ~a is waiting for SIGUSR1" (core:getpid))))
+                                 (gctools:wait-for-user-signal (core:fmt nil "Child with pid {} is waiting for SIGUSR1" (core:getpid))))
                                #+(or)(progn
                                        (message nil "A child started up with pid {} - sleeping for 10 seconds" (core:getpid))
                                        (sleep 10))
@@ -376,24 +356,24 @@
              'compile-system-serial)
          args))
 
-(defun command-line-arguments-as-list ()
-  (let ((idx (- (length core:*command-line-arguments*) 1))
-        result)
-    (tagbody
-     top
-       (if (>= idx 0)
-           (progn
-             (setq result (cons (pathname (elt core:*command-line-arguments* idx)) result))
-             (setq idx (- idx 1))
-             (go top))))
-    result))
+(defun command-line-paths (&optional (start 0)
+                           &aux (index (length core:*command-line-arguments*))
+                                paths)
+  (tagbody
+   next
+    (if (> index start)
+        (progn
+          (setq index (- index 1)
+                paths (cons (pathname (elt core:*command-line-arguments* index)) paths))
+          (go next))))
+  paths)
 
 (defun build-failure (condition)
   (message :warn "%nBuild aborted.%nReceived condition of type: {}%n{}"
            (type-of condition)
            condition)
-  (if (parallel-build-p)
-      (message :err "About to exit clasp")))
+  (when (parallel-build-p)
+    (message :err "About to exit clasp")))
 
 (defun prepare-metadata (system
                          &aux (make-create-file-args (find-symbol "MAKE-CREATE-FILE-ARGS" "CMP")))
@@ -433,7 +413,7 @@ been initialized with install path versus the build path of the source code file
 
 (defun link-fasl (&key (output-file (build-common-lisp-bitcode-pathname))
                        (target-backend (default-target-backend))
-                       (system (command-line-arguments-as-list)))
+                       (system (command-line-paths)))
   (cond ((eq core:*clasp-build-mode* :bitcode)
          (cmp:link-bitcode-modules output-file system))
         ((eq core:*clasp-build-mode* :object)) ; Do nothing - object files are the result
@@ -450,17 +430,18 @@ been initialized with install path versus the build path of the source code file
         (t
          (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
-(defun construct-system (files reproducible
-                         &aux source-path bitcode-path system last item
-                              new-last (position 0) (*features* (list* :cclasp *features*)))
+(defun construct-system (files extension reproducible
+                         &aux source-path output-path system last item
+                         new-last (position 0)
+                         (*features* (list* (if extension :eclasp :cclasp) *features*)))
   (tagbody
    next
     (when files
       (setq source-path (car files)
-            bitcode-path (bitcode-pathname source-path)
+            output-path (bitcode-pathname source-path)
             item (list :source-path source-path
                        :position position
-                       :bitcode-path bitcode-path)
+                       :output-path output-path)
             position (+ 1 position)
             files (cdr files))
       (when reproducible
@@ -508,33 +489,31 @@ been initialized with install path versus the build path of the source code file
                                    (equal path (getf entry :source-path)))))
     (tagbody
      next
-      (if system
-          (progn
-            (setq entry (car system)
-                  file (getf entry :source-path)
-                  file-time (get-internal-run-time)
-                  bytes (gctools:bytes-allocated))
-            (if (not load-verbose)
-                (message nil ";;; Loading {}" file))
-            (let ((*load-verbose* load-verbose))
-              (load file))
-            (setq file-time (- (get-internal-run-time) file-time)
-                  prev-file-time (getf entry :load-time))
-            (rplaca system
-                    (sys:put-f entry
-                               (if prev-file-time
-                                   (+ (* +load-weight+ file-time)
-                                      (* (- 1 +load-weight+) prev-file-time))
-                                   file-time)
-                               :load-time))
-            (if (and load-verbose (>= file-time internal-time-units-per-second))
-                (message nil ";;; Load time({:.1f} seconds) consed({} bytes)"
-                         (float (/ file-time internal-time-units-per-second))
-                         (- (gctools:bytes-allocated) bytes)))
-            (if (not (equal end file))
-                (progn
-                  (setq system (cdr system))
-                  (go next))))))
+      (when system
+        (setq entry (car system)
+              file (getf entry :source-path)
+              file-time (get-internal-run-time)
+              bytes (gctools:bytes-allocated))
+        (unless load-verbose
+          (message nil ";;; Loading {}" file))
+        (let ((*load-verbose* load-verbose))
+          (load file))
+        (setq file-time (- (get-internal-run-time) file-time)
+              prev-file-time (getf entry :load-time))
+        (rplaca system
+                (sys:put-f entry
+                           (if prev-file-time
+                               (+ (* +load-weight+ file-time)
+                                  (* (- 1 +load-weight+) prev-file-time))
+                               file-time)
+                           :load-time))
+        (when (and load-verbose (>= file-time internal-time-units-per-second))
+          (message nil ";;; Load time({:.1f} seconds) consed({} bytes)"
+                   (float (/ file-time internal-time-units-per-second))
+                   (- (gctools:bytes-allocated) bytes)))
+        (unless (equal end file)
+          (setq system (cdr system))
+          (go next))))
     (setq *features* (core:remove-equal stage-keyword *features*))
     (message :emph "Stage {:d} time({:.1f} seconds)"
              stage
@@ -561,27 +540,24 @@ been initialized with install path versus the build path of the source code file
                         (system-sort (ext:getenv "CLASP_SYSTEM_SORT"))
                         (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
                                          (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))))
-                        (system (command-line-arguments-as-list)))
+                        (system (command-line-paths)))
   (unless stage-count
     (setq stage-count (if extension 1 3)))
-  (setq *features*
-        (if bytecode
-            (list* :bytecode :staging :bytecodelike *features*)
-            (list* :mclasp :staging *features*)))
-  (let ((*target-backend* (default-target-backend (if extension "e" "c")))
+  (setq *features* (list* :bytecode :staging :bytecodelike *features*))
+  (let ((*target-backend* (default-target-backend))
         (write-date 0))
-    (setq system (construct-system system reproducible))
+    (setq system (construct-system system extension reproducible))
     (dotimes (stage stage-count)
       (load-stage system stage extension load-verbose))
     (setq *features* (core:remove-equal :staging *features*))
     (when reproducible
       (prepare-metadata system))
-    (setq system (mapcar #'(lambda (entry &aux (bitcode-path (getf entry :bitcode-path))
+    (setq system (mapcar #'(lambda (entry &aux (output-path (getf entry :output-path))
                                           (source-path (getf entry :source-path)))
                              (setq write-date (max write-date (file-write-date source-path)))
                              (list* :out-of-date (or clean
-                                                     (not (probe-file bitcode-path))
-                                                     (< (file-write-date bitcode-path)
+                                                     (not (probe-file output-path))
+                                                     (< (file-write-date output-path)
                                                         write-date))
                                     entry))
                          system))
@@ -609,7 +585,7 @@ been initialized with install path versus the build path of the source code file
 (defun load-and-compile-clasp (&rest rest)
   (compile-clasp (apply #'load-clasp rest)))
 
-(export '(command-line-arguments-as-list
+(export '(command-line-paths
           compile-kernel-file
           compile-system
           compile-system-parallel

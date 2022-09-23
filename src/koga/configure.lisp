@@ -600,24 +600,10 @@ is not compatible with snapshots.")
                                                                :scraper)
                                                          :update-unicode
                                                          (list (make-source #P"update-unicode.lisp" :build))
-                                                         ;:run-aclasp
-                                                         ;(list (make-source #P"run-aclasp.lisp" :build))
-                                                         ;:compile-aclasp
-                                                         ;(list (make-source #P"compile-aclasp.lisp" :build))
-                                                         ;:compile-bclasp
-                                                         ;(list (make-source #P"compile-bclasp.lisp" :build))
-                                                         ;:compile-cclasp
-                                                         ;(list (make-source #P"compile-cclasp.lisp" :build))
-                                                         ;:compile-eclasp
-                                                         ;(list (make-source #P"compile-eclasp.lisp" :build))
-                                                         ;:load-mclasp
-                                                         ;(list (make-source #P"load-mclasp.lisp" :build))
                                                          :load-cclasp
                                                          (list (make-source #P"load-cclasp.lisp" :build))
-                                                         :snapshot-vclasp
+                                                         :snapshot-cclasp
                                                          (list (make-source #P"snapshot-cclasp.lisp" :build))
-                                                         ;:compile-mclasp
-                                                         ;(list (make-source #P"compile-mclasp.lisp" :build))
                                                          :compile-cclasp
                                                          (list (make-source #P"compile-cclasp.lisp" :build))
                                                          :compile-eclasp
@@ -638,8 +624,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"bench.lisp" :build))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
-                                                               :bitcode :iclasp :aclasp :bclasp :cclasp
-                                                               :modules :eclasp :sclasp :mclasp :vclasp :install-bin :install-code
+                                                               :bitcode :iclasp :cclasp
+                                                               :modules :eclasp :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :static-analyzer
                                                                :tags :install-extension-code)
                                                          :config-h

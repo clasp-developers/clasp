@@ -657,11 +657,17 @@ CL_DOCSTRING(R"dx(Returns the host's list of translations. Each translation is a
 two elements: from-wildcard and to-wildcard. From-wildcard is a logical
 pathname whose host is host. To-wildcard is a pathname.)dx")
 CL_DEFUN T_sp cl__logical_pathname_translations(String_sp host) {
-  return _lisp->pathnameTranslations_()->gethash(host);
+  KeyValuePair *pair = _lisp->pathnameTranslations_()->find(host);
+  if (!pair) // This type error should be (satisfies logical-host-p)
+    TYPE_ERROR(host, cl::_sym_string);
+  return pair->_Value;
 }
 
 CL_LISPIFY_NAME("cl:logical-pathname-translations")
-CL_DOCSTRING(R"dx(List the pathname translations or create one)dx")
+CL_DOCSTRING(R"dx(Sets a logical pathname host's list of translations. If host is a string that has
+not been previously used as a logical pathname host, a new logical
+pathname host is defined; otherwise an existing host's translations are
+replaced. logical pathname host names are compared with string-equal.)dx")
 CL_DEFUN_SETF T_sp cl__setf_logical_pathname_translations(List_sp translations, String_sp host) {
   if (translations.nilp()) {
     _lisp->pathnameTranslations_()->remhash(host);
@@ -671,7 +677,9 @@ CL_DEFUN_SETF T_sp cl__setf_logical_pathname_translations(List_sp translations, 
     _lisp->pathnameTranslations_()->setf_gethash(host, coerced_translations);
 
     while (translations.notnilp()) {
-      coerced_translations = Cons_O::create(Cons_O::create(coerce_to_from_pathname(oCaar(translations), host), Cons_O::create(cl__pathname(oCadar(translations)), nil<T_O>())), coerced_translations);
+      coerced_translations =
+          Cons_O::create(Cons_O::createList(coerce_to_from_pathname(oCaar(translations), host), cl__pathname(oCadar(translations))),
+                         coerced_translations);
       translations = CDR(translations);
     }
 
