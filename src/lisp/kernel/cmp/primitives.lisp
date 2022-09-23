@@ -127,21 +127,7 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" :t* (list :gcroots-in-module* :size_t))
          (primitive         "ltvc_lookup_transient" :t* (list :gcroots-in-module* :i8 :size_t))
-         (primitive         "lexicalValueReference" :t** (list :size_t :size_t :t*))
-         (primitive         "cc_match" :t* (list :t* :t*))
-;;         (primitive         "registerReference" :t** (list :t**))
-;;;    (primitive         "symbolFunctionRead" :t* (list :t*))
-;;;         (primitive         "setfSymbolFunctionRead" :t* (list :t*))
-         (primitive         "setParentOfActivationFrame" :void (list :t* :t*))
-         (primitive         "makeValueFrameSetParent" :t* (list :i64 :t*))
-         (primitive         "invisible_makeValueFrameSetParent" :t* (list :t*))
-         (primitive         "makeBlockFrameSetParent" :t* (list :t*))
-         (primitive         "makeTagbodyFrameSetParent" :t* (list :t*))
-
-;;;         (primitive         "cc_validate_tagged_pointer" :void (list :t*))
-         (primitive-unwinds "makeFunctionFrame" :t* (list :i32 :t*))
-         (primitive-unwinds "functionFrameReference" :t** (list :t* :i32))
-    
+         (primitive         "cc_match" :t* (list :t* :t*))    
          (primitive-unwinds "cc_register_startup_function" :void (list :size_t :fn-start-up*))
          (primitive         "cc_protect_alloca" :void (list :i8*))
 
@@ -172,9 +158,6 @@
          (primitive         "cc_breakstep_after" :void (list :t*))
          (primitive-unwinds "cc_wrong_number_of_arguments" :void (list :t* :size_t :size_t :size_t)
           :does-not-return t)
-
-         (primitive         "va_lexicalFunction" :t* (list :size_t :size_t :t*))
-
          (primitive         "cc_list" :t* (list :size_t) :varargs t)
          (primitive         "cc_mvcGatherRest" :t* (list :size_t :t* :size_t))
          (primitive         "cc_mvcGatherRest2" :t* (list :t** :size_t))
@@ -182,16 +165,6 @@
          (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :vaslist* :size_t :t**))
          (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
-
-         (primitive         "initializeBlockClosure" :t* (list :t** :t*))
-         (primitive         "initializeTagbodyClosure" :t* (list :t** :t*))
-    
-         (primitive-unwinds "throwReturnFrom" :void (list :size_t :t*) :does-not-return t)
-         (primitive-unwinds "throwDynamicGo" :void (list :size_t :size_t :t*) :does-not-return t)
-
-         (primitive-unwinds "blockHandleReturnFrom_or_rethrow" :return-type (list :i8* :i8*))
-         (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" :i32 (list :i8* :i8*))
-         (primitive-unwinds "throwIllegalSwitchValue" :void (list :i32 :size_t) :does-not-return t)
          (primitive-unwinds "cc_error_bugged_come_from" :void (list :size_t) :does-not-return t)
     
          (primitive         "__gxx_personality_v0" :i32 nil :varargs t)
