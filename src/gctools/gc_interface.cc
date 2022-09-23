@@ -733,20 +733,21 @@ void initialize_classes_and_methods()
 
 
 void dumpBoehmLayoutTables(std::ostream& fout) {
+#define LAYOUT_STAMP(_class_) (gctools::GCStamp<_class_>::StampWtag >> gctools::BaseHeader_s::wtag_width)
   fmt::print(fout, "# dumpBoehmLayoutTables when static analyzer output is not available\n" );
 #define Init_class_kind(_class_) \
-  fmt::print(fout, "Init_class_kind( stamp={}, name=\"{}\", size={})\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
+  fmt::print(fout, "Init_class_kind( stamp={}, name=\"{}\", size={});\n", LAYOUT_STAMP(_class_),#_class_,sizeof(*(_class_*)0x0));
 #define Init_templated_kind(_class_) \
-  fmt::print(fout, "Init_templated_kind( stamp={}, name=\"{}\", size={})\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
+  fmt::print(fout, "Init_templated_kind( stamp={}, name=\"{}\", size={});\n", LAYOUT_STAMP(_class_),#_class_,sizeof(*(_class_*)0x0));
 #define Init__fixed_field(_class_,_index_,_type_,_field_name_) \
-  fmt::print(fout, "Init__fixed_field( stamp={}, index={}, data_type={},field_name=\"{}\",field_offset={});\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
+  fmt::print(fout, "Init__fixed_field( stamp={}, index={}, data_type={},field_name=\"{}\",field_offset={});\n", LAYOUT_STAMP(_class_),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
 #define Init__variable_array0(_class_,_data_field_) \
-  fmt::print(fout,"Init__variable_array0( stamp={}, name=\"{}\", offset={} );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_data_field_,offsetof(_class_,_data_field_));
+  fmt::print(fout,"Init__variable_array0( stamp={}, name=\"{}\", offset={} );\n", LAYOUT_STAMP(_class_),#_data_field_,offsetof(_class_,_data_field_));
 #define Init__variable_capacity(_class_,_value_type_,_end_,_capacity_) \
-  fmt::print(fout,"Init__variable_capacity( stamp={}, element_size={}, end_offset={}, capacity_offset={} );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
+  fmt::print(fout,"Init__variable_capacity( stamp={}, element_size={}, end_offset={}, capacity_offset={} );\n", LAYOUT_STAMP(_class_),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
 #define Init__variable_field(_class_,_data_type_,_index_,_field_name_,_field_offset_) \
-  fmt::print(fout,"Init__variable_field( stamp={}, index={}, data_type={}, field_name=\"{}\", field_offset={} );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_data_type_,_field_name_,_field_offset_);
-#define Init_global_ints(_name_,_value_) fmt::print(fout,"Init_global_ints(name=\"{}\",value={})\n", _name_,_value_);
+  fmt::print(fout,"Init__variable_field( stamp={}, index={}, data_type={}, field_name=\"{}\", field_offset={} );\n", LAYOUT_STAMP(_class_),_index_,_data_type_,_field_name_,_field_offset_);
+#define Init_global_ints(_name_,_value_) fmt::print(fout,"Init_global_ints(name=\"{}\",value={});\n", _name_,_value_);
   printf("Dumping interface\n");
   gctools::dump_data_types(fout,"");
   core::registerOrDumpDtreeInfo(fout);
@@ -770,13 +771,33 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::Symbol_O,4,SMART_PTR_OFFSET,_SetfFunction);
   Init__fixed_field(core::Symbol_O,5,SMART_PTR_OFFSET,_PropertyList);
 
+  Init_class_kind(core::BytecodeModule_O);
+  Init__fixed_field(core::BytecodeModule_O,0,SMART_PTR_OFFSET,_Literals);
+  Init__fixed_field(core::BytecodeModule_O,1,SMART_PTR_OFFSET,_Bytecode);
+  Init__fixed_field(core::BytecodeModule_O,2,SMART_PTR_OFFSET,_CompileInfo);
+
   Init_class_kind(core::GlobalEntryPoint_O);
-  Init__fixed_field(core::GlobalEntryPoint_O,0,SMART_PTR_OFFSET,_FunctionDescription );
-  Init__fixed_field(core::GlobalEntryPoint_O,1,RAW_POINTER_OFFSET,_EntryPoints._EntryPoints[0]);
-  Init__fixed_field(core::GlobalEntryPoint_O,1+NUMBER_OF_ENTRY_POINTS,ctype__Bool,_EntryPoints._Defined);
+  Init__fixed_field(core::GlobalEntryPoint_O,0,SMART_PTR_OFFSET,_TheEntryPoint );
+  Init__fixed_field(core::GlobalEntryPoint_O,1,SMART_PTR_OFFSET,_FunctionDescription );
+  Init__fixed_field(core::GlobalEntryPoint_O,2,SMART_PTR_OFFSET,_Code );
+  Init__fixed_field(core::GlobalEntryPoint_O,3,RAW_POINTER_OFFSET,_EntryPoints._EntryPoints[0]);
+  Init__fixed_field(core::GlobalEntryPoint_O,3+NUMBER_OF_ENTRY_POINTS,SMART_PTR_OFFSET,_localEntryPoint);
+
+  Init_class_kind(core::GlobalBytecodeEntryPoint_O);
+  Init__fixed_field(core::GlobalBytecodeEntryPoint_O,0,SMART_PTR_OFFSET,_TheEntryPoint );
+  Init__fixed_field(core::GlobalBytecodeEntryPoint_O,1,SMART_PTR_OFFSET,_FunctionDescription );
+  Init__fixed_field(core::GlobalBytecodeEntryPoint_O,2,SMART_PTR_OFFSET,_Code );
+  Init__fixed_field(core::GlobalBytecodeEntryPoint_O,3,RAW_POINTER_OFFSET,_EntryPoints._EntryPoints[0]);
 
   Init_class_kind(core::FunctionDescription_O);
   Init__fixed_field(core::FunctionDescription_O,0,SMART_PTR_OFFSET,_functionName);
+  Init__fixed_field(core::FunctionDescription_O,1,SMART_PTR_OFFSET,_sourcePathname);
+  Init__fixed_field(core::FunctionDescription_O,2,SMART_PTR_OFFSET,_lambdaList);
+  Init__fixed_field(core::FunctionDescription_O,3,SMART_PTR_OFFSET,_docstring);
+  Init__fixed_field(core::FunctionDescription_O,4,SMART_PTR_OFFSET,_declares);
+  Init__fixed_field(core::FunctionDescription_O,5,ctype_int,lineno);
+  Init__fixed_field(core::FunctionDescription_O,6,ctype_int,column);
+  Init__fixed_field(core::FunctionDescription_O,7,ctype_int,filepos);
   
   Init_class_kind(core::FuncallableInstance_O);
   Init__fixed_field(core::FuncallableInstance_O,0,SMART_PTR_OFFSET,_Rack);
@@ -787,6 +808,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field( core::BuiltinClosure_O, 0,SMART_PTR_OFFSET,_lambdaListHandler);
   
   Init_class_kind(core::Closure_O);
+  Init__fixed_field(core::Closure_O,0,SMART_PTR_OFFSET,_TheEntryPoint );
   Init__variable_array0(core::Closure_O,_Slots._Data);
   Init__variable_capacity(core::Closure_O,value_type,_Slots._MaybeSignedLength,_Slots._MaybeSignedLength);
   Init__variable_field(core::Closure_O,SMART_PTR_OFFSET,0,"only",0);

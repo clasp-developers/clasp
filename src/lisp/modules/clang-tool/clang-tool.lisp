@@ -968,14 +968,14 @@ Code for representing ASTMatchers as s-expressions
 
 |#
 
-
+(defvar *node-matcher-rules* nil)
+(defparameter +narrowing-matcher-hints+ (make-hash-table :test #'eq))
+(defparameter +node-matcher-hints+ (make-hash-table :test #'eq))
 (defparameter +all-matchers+ (append *node-matcher-rules* *narrowing-matcher-rules* *traversal-matcher-rules*))
 
-(defparameter +node-matcher-hints+ (make-hash-table :test #'eq))
 (dolist (i *node-matcher-rules*)
   (setf (gethash (car i) +node-matcher-hints+) (cdr i)))
 
-(defparameter +narrowing-matcher-hints+ (make-hash-table :test #'eq))
 (dolist (i *narrowing-matcher-rules*)
   (setf (gethash (car i) +narrowing-matcher-hints+) (cdr i)))
 

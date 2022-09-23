@@ -25,7 +25,19 @@ def maybeReloadModules():
       importlib.reload(debugger_mod)
     print(" About to load the clasp_layout")
     inspector_mod.load_clasp_layout(debugger_mod)
-  
+    # Tell the debugger_mod about the inspector_mod
+    print("maybeReloadModules: tell debugger_mod %s about inspector_mod %s" % (debugger_mod, inspector_mod ) )
+    debugger_mod.install_debugger_inspector(debugger_mod,inspector_mod)
+
+class LispReload (gdb.Command):
+  def __init__ (self):
+    super (LispReload, self).__init__ ("lreload", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+    global inspector_mod, debugger_mod
+    print("Reloading debugger interface")
+    maybeReloadModules()
+
 class LispPrint (gdb.Command):
   def __init__ (self):
     super (LispPrint, self).__init__ ("lprint", gdb.COMMAND_USER)
@@ -43,7 +55,7 @@ class LispHead (gdb.Command):
     global inspector_mod, debugger_mod
     maybeReloadModules()
     inspector_mod.do_lisp_head(debugger_mod,arg)
-    
+
 class LispInspect (gdb.Command):
   def __init__ (self):
     super (LispInspect, self).__init__ ("linspect", gdb.COMMAND_USER)
@@ -52,7 +64,7 @@ class LispInspect (gdb.Command):
     global inspector_mod, debugger_mod
     maybeReloadModules()
     inspector_mod.do_lisp_inspect(debugger_mod,arg)
-    
+
 class LispFrame (gdb.Command):
   def __init__ (self):
     super (LispFrame, self).__init__ ("lframe", gdb.COMMAND_USER)
@@ -61,7 +73,7 @@ class LispFrame (gdb.Command):
     global inspector_mod, debugger_mod
     maybeReloadModules()
     inspector_mod.do_lisp_frame(debugger_mod,arg)
-    
+
 class LispDisassemble (gdb.Command):
   def __init__ (self):
     super (LispDisassemble, self).__init__ ("ldis", gdb.COMMAND_USER)
@@ -70,7 +82,7 @@ class LispDisassemble (gdb.Command):
     global inspector_mod, debugger_mod
     maybeReloadModules()
     inspector_mod.do_lisp_disassemble(debugger_mod,arg)
-    
+
 class LispTest (gdb.Command):
   def __init__ (self):
     super (LispTest, self).__init__ ("ltest", gdb.COMMAND_USER)
@@ -79,7 +91,7 @@ class LispTest (gdb.Command):
     global inspector_mod, debugger_mod
     maybeReloadModules()
     inspector_mod.do_lisp_test(debugger_mod,arg)
-    
+
 class LispVm (gdb.Command):
   def __init__ (self):
     super (LispVm, self).__init__ ("lvm", gdb.COMMAND_USER)
@@ -88,7 +100,18 @@ class LispVm (gdb.Command):
     global inspector_mod, debugger_mod
     maybeReloadModules()
     inspector_mod.do_lisp_vm(debugger_mod,arg)
-    
+
+class LispBacktrace (gdb.Command):
+  def __init__ (self):
+    super (LispBacktrace, self).__init__ ("lbt", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+    global inspector_mod, debugger_mod
+    maybeReloadModules()
+    gdb.execute("set print frame-arguments all")
+    gdb.execute("bt")
+
+LispReload()
 LispInspect()
 LispPrint()
 LispHead()
@@ -96,48 +119,9 @@ LispDisassemble()
 LispTest()
 LispFrame()
 LispVm()
+LispBacktrace()
 
-# ------------------------------------------------------------
-#
-# Frame filters
-#
-#
-
-
-class Filter_inline:
-    def __init__(self):
-        self.name = "__invoke_impl"
-        self.enabled = True
-        self.priority = 100
-        gdb.frame_filters[self.name] = self
-
-def filter(self,frame_iterator):
-    return ElidingInlineIterator(frame_iterator)
-
-class ElidingInlineIterator:
-    def __init__(self, ii):
-        self.input_iterator = ii
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        frame = next(self.input_iterator)
-
-        if frame.inferior_frame().type() != gdb.INLINE_FRAME:
-            return frame
-
-        try:
-            eliding_frame = next(self.input_iterator)
-        except StopIteration:
-            return frame
-        return ElidingFrameDecorator(eliding_frame, [frame])
-
-print("")
-print("Installing filter_inline")
-print("")
-filter_inline = Filter_inline()
-
+print("lreload            - reload debugger extension")
 print("lprint <address>   - print lisp object in compact form")
 print("linspect <address> - inspect lisp object - all fields")
 print("lhead <address>    - dump the clients header")
@@ -145,5 +129,8 @@ print("lframe             - Dump the function name and args for a lisp frame tra
 print("ldis <bytecode-module-tptr>    - Disassemble a bytecode-module")
 print("ltest <address>    - test module reloading")
 print("lvm                - Dump current vm status")
+print("lbt                - Dump backtrace with arguments")
 print("python-interactive <expr> - (or pi) interactive Python session\n")
+
+debugger_mod = importlib.import_module("backends.udb")
 

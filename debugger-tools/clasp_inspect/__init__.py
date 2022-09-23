@@ -140,7 +140,7 @@ def Init_data_type(data_type,name,sizeof):
 
 def Init_class_kind(stamp, name, size):
     global global_kinds
-    # print("Init__class_kind stamp = %d\n" % stamp)
+    dbg_print("In Init_class_kind stamp = %d name = %s\n" % (stamp, name))
     global_kinds[stamp] = ClassKind(stamp,name,size)
 
 def Init_templated_kind(stamp, name, size):
@@ -156,7 +156,7 @@ def Init_bitunit_container_kind(stamp, name, size, bits_per_bitunit):
     global_kinds[stamp] = BitunitContainerKind(stamp,name,size,bits_per_bitunit)
     
 def Init__fixed_field(stamp,index,data_type,field_name,field_offset):
-    # print("Init__fixed_field stamp = %d field_offset=%d\n" % (stamp, field_offset))
+    dbg_print("In Init__fixed_field stamp = %d field_name = %s field_offset=%d\n" % (stamp, field_name, field_offset))
     classKind = global_kinds[stamp]
     field = FixedField(index,data_type,field_name,field_offset)
     classKind._fields[index] = field
@@ -436,6 +436,8 @@ class General_O(T_O):
                 break
         if (field_):
             return field_
+        dbg_print("In class %s" % self._class)
+        dbg_print("Could not find field %s in %s" % (name, self._class._fields))
         raise Exception("Could not find field named: %s" % name)
 
     def offsetOfFieldWithName(self,name):
@@ -811,7 +813,27 @@ def do_lisp_print(debugger_mod,arg):
     obj = translate_tagged_ptr(debugger_mod,tptr)
     print( obj.__repr__())
     dbg_print( "in do_lisp_print: %s" % obj.__repr__())
-    return obj
+    return obj.__repr__()
+
+def do_lisp_print_value(debugger_mod,arg):
+    #print "In inspect args: %s" % args
+    tptr = arg_to_tptr(debugger_mod,arg)
+    obj = translate_tagged_ptr(debugger_mod,tptr)
+    dbg_print( "in do_lisp_print_value: %s" % obj.__repr__())
+    return obj.__repr__()
+
+#
+# Return the name of a function given a tagged pointer that is a function object
+#
+def function_name(debugger_mod,arg):
+    tptr = arg_to_tptr(debugger_mod,arg)
+    fn = translate_tagged_ptr(debugger_mod,tptr)
+    fn_name = fn.name()
+    if (isinstance(fn_name,Symbol_O)):
+        name = fn_name
+    else:
+        name = "%s" % fn_name
+    return name
 
 def do_lisp_inspect(debugger_mod,arg):
     dbg_print( "In inspect args: %s" % arg )
@@ -937,6 +959,7 @@ def load_clasp_layout(thedebugger):
     (vm_opcodes, class_layouts) = thedebugger.clasp_python_info()
     exec(vm_opcodes)
     exec(class_layouts)
+    if (verbose): print("class_layouts = %s" % class_layouts )
     SetupGlobals()
 
 
