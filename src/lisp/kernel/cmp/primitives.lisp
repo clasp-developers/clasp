@@ -127,17 +127,11 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" :t* (list :gcroots-in-module* :size_t))
          (primitive         "ltvc_lookup_transient" :t* (list :gcroots-in-module* :i8 :size_t))
-         (primitive         "makeCompiledFunction" :t* (list
-                                                        :i8* ; global-entry-point
-                                                        :t* ; environment
-                                                        ))
          (primitive         "lexicalValueReference" :t** (list :size_t :size_t :t*))
          (primitive         "cc_match" :t* (list :t* :t*))
 ;;         (primitive         "registerReference" :t** (list :t**))
 ;;;    (primitive         "symbolFunctionRead" :t* (list :t*))
 ;;;         (primitive         "setfSymbolFunctionRead" :t* (list :t*))
-    
-         (primitive         "activationFrameReferenceFromClosure" :t** (list :t*))
          (primitive         "setParentOfActivationFrame" :void (list :t* :t*))
          (primitive         "makeValueFrameSetParent" :t* (list :i64 :t*))
          (primitive         "invisible_makeValueFrameSetParent" :t* (list :t*))

@@ -163,24 +163,6 @@ ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
 
 extern "C" {
 
-ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, core::T_O *closureRaw)
-{NO_UNWIND_BEGIN();
-//  printf("%s:%d:%s  closureRaw = %p\n", __FILE__, __LINE__, __FUNCTION__, closureRaw);
-  core::T_O* parentP;
-  if (closureRaw != NULL ) {
-    Function_sp closure = Function_sp((gctools::Tagged)closureRaw);
-    T_sp activationFrame = closure->closedEnvironment();
-//    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
-    parentP =  activationFrame.raw_();
-  } else {
-    parentP = nil<core::T_O>().raw_();
-  }
-  ActivationFrame_sp af((gctools::Tagged)resultP);
-  af->setParentFrame(parentP);
-  NO_UNWIND_END();
-}
-
-
 ALWAYS_INLINE core::T_O* makeValueFrameSetParent(size_t numargs, core::T_O *parentP)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
@@ -955,16 +937,6 @@ unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
 void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, unsigned char v) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
   (*array)[index] = v;
-}
-
-core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
-{
-  ASSERT(closureRaw);
-  if (closureRaw!=NULL) {
-    core::Closure_sp closure = core::Closure_sp((gctools::Tagged)closureRaw);
-    return &closure->closedEnvironment_rawRef();
-  }
-  return NULL;
 }
 
 #if 0

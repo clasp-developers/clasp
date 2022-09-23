@@ -745,31 +745,6 @@ void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
 
 extern "C" {
 
-
-core::T_O* makeCompiledFunction(core::T_O* tentrypoint,
-                                core::T_O* frameP
-                                )
-{NO_UNWIND_BEGIN();
-  // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
-  core::T_sp frame((gctools::Tagged)frameP);
-  core::T_sp tep((gctools::Tagged)tentrypoint);
-  core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tep);
-  if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
-    printf("%s:%d:%s You must pass a global-entry-point - you passed a %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(entryPoint).c_str());
-  };
-//  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
-  core::Closure_sp toplevel_closure =
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, BCLASP_CLOSURE_SLOTS,
-                                                                                       entryPoint,
-                                                                                       core::Closure_O::bclaspClosure);
-  (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
-  return toplevel_closure.raw_();
-  NO_UNWIND_END();
-};
-};
-
-extern "C" {
-
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
 Otherwise there is just one. */

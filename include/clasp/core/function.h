@@ -221,7 +221,6 @@ namespace core {
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
     }
-    virtual T_sp closedEnvironment() const {SUBIMP();};
     T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
     virtual T_mv functionSourcePos() const;
     virtual T_sp lambdaListHandler() const {SUBIMP();};
@@ -501,7 +500,6 @@ namespace core {
     void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
     }
-    T_sp closedEnvironment() const override { return nil<T_O>(); };
     virtual size_t templatedSizeof() const override { return sizeof(*this); };
     // Fixup the code pointers
     void fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** address, size_t size );
@@ -516,10 +514,7 @@ namespace core {
 
   class Closure_O final : public core::Function_O {
     LISP_CLASS(core,CorePkg,Closure_O,"Closure",core::Function_O);
-    typedef enum { bytecodeClosure, bclaspClosure, cclaspClosure } ClosureType;
-#define ENVIRONMENT_SLOT 0
-#define BCLASP_CLOSURE_SLOTS  1
-#define BCLASP_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
+    typedef enum { bytecodeClosure, cclaspClosure } ClosureType;
   public:
     //! Slots must be the last field
     typedef core::T_sp value_type;
@@ -534,8 +529,6 @@ namespace core {
   public:
     static Closure_sp make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots);
 
-    static Closure_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint);
-
     static Closure_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column );
   public:
     Closure_O(size_t capacity,
@@ -549,20 +542,10 @@ namespace core {
       switch (this->closureType) {
       case bytecodeClosure:
           return nil<T_O>();
-      case bclaspClosure:
-          return nil<T_O>();
       case cclaspClosure:
           return nil<T_O>();
       };
     }
-    CL_DEFMETHOD T_sp closedEnvironment() const override {
-      ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
-      return (*this)[ENVIRONMENT_SLOT];
-    };
-    CL_DEFMETHOD T_O*& closedEnvironment_rawRef() {
-      ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
-      return (*this)[ENVIRONMENT_SLOT].rawRef_();
-    };      
     bool compiledP() const override {
       return true;
     }

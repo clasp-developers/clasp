@@ -821,22 +821,6 @@ CL_DEFUN void core__verify_global_entry_point(T_sp alist)
   expect_offset(kw::_sym_defined,alist,offsetof(GlobalEntryPoint_O,_EntryPoints._Defined)-gctools::general_tag);
 }
 
-Closure_sp Closure_O::make_bclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint ) {
-  FunctionDescription_sp fdesc = makeFunctionDescription(name,lambda_list);
-  core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPoint(fdesc,fn,localEntryPoint);
-  Closure_sp closure = 
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,
-                                                                                       BCLASP_CLOSURE_SLOTS,
-                                                                                       entryPoint,
-                                                                                       Closure_O::bclaspClosure);
-  (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
-  closure->setf_sourcePathname(nil<T_O>());
-  closure->setf_lambdaList(lambda_list);
-  closure->setf_docstring(nil<T_O>());
-  validateFunctionDescription(__FILE__,__LINE__,closure);
-  return closure;
-}
-
 
 CL_LISPIFY_NAME(bytecode_closure/make);
 CL_DEF_CLASS_METHOD
@@ -870,7 +854,6 @@ Closure_sp Closure_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn,
  * i.e., if the entry point ignores its first argument. */
 bool Closure_O::openP() {
   switch (this->closureType) {
-  case bclaspClosure: return this->closedEnvironment().nilp();
   case cclaspClosure: return (this->_Slots.length() == 0);
   default: return false;
   }
@@ -972,15 +955,8 @@ CL_DEFUN size_t core__closure_size(size_t number_of_slots)
 DOCGROUP(clasp)
 CL_DEFUN size_t core__closure_length(Function_sp tclosure)
 {
-  ASSERT(gc::IsA<Closure_sp>(tclosure));
-  Closure_sp closure = gc::As_unsafe<Closure_sp>(tclosure);
-  if (closure->closureType == Closure_O::cclaspClosure) {
-    return closure->_Slots.length();
-  }
-  if (tclosure->closedEnvironment().notnilp()) {
-    return gc::As<ValueFrame_sp>(tclosure->closedEnvironment())->length();
-  }
-  return 0;
+  Closure_sp closure = gc::As_assert<Closure_sp>(tclosure);
+  return closure->_Slots.length();
 }
 
 string Closure_O::__repr__() const {
@@ -995,9 +971,6 @@ string Closure_O::__repr__() const {
   switch (this->closureType) {
   case bytecodeClosure:
       ss << "bytecode ";
-      break;
-  case bclaspClosure:
-      ss << "bclasp ";
       break;
   case cclaspClosure:
       ss << "cclasp ";
@@ -1019,21 +992,6 @@ CL_DEFUN T_sp core__closure_ref(Function_sp tclosure, size_t index)
 {
   if ( Closure_sp closure = tclosure.asOrNull<Closure_O>() ) {
     switch (closure->closureType) {
-    case Closure_O::bclaspClosure:
-      {
-        T_sp env = closure->closedEnvironment();
-        if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
-          env = ve->getActivationFrame();
-        }
-        if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
-          if ( index >= tvf->length() ) {
-            SIMPLE_ERROR(("Out of bounds closure reference - there are only %d slots") , tvf->length() );
-          }
-          return (*tvf)[index];
-        }
-        SIMPLE_ERROR(("Out of bounds closure reference - there are no slots"));
-      }
-      break;
     case Closure_O::bytecodeClosure:
         printf("%s:%d:%s Add support for looking up slot %lu in bytecodeClosure\n", __FILE__, __LINE__, __FUNCTION__, index );
         return nil<core::T_O>();
