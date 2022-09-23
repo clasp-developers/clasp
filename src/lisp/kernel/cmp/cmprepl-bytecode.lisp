@@ -116,7 +116,7 @@
 ;;;
 ;;; 
 #-(or no-implicit-compilation)
-(setq *implicit-compile-hook* 'bytecode-implicit-compile-repl-form)
+(setq *implicit-compile-hook* 'bytecode-implicit-compile-form)
 #+(or)
 (defun bytecode-toplevel-progn (forms env)
   (if (null forms)

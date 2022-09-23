@@ -292,7 +292,7 @@ Return files."
         (if (probe-file fn)
             (progn
               (message nil "Loading/{} {}"
-                       (if (eq cmp:*implicit-compile-hook* 'cmp:implicit-compile-hook-default)
+                       (if (eq cmp:*implicit-compile-hook* 'cmp:bytecode-implicit-compile-form)
                            "compiling"
                            "interpreting")
                        (namestring fn))

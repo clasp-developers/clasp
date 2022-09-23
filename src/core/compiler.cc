@@ -1226,29 +1226,6 @@ CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
   }
 }
 
-CL_LAMBDA(form &optional env)
-DOCGROUP(clasp)
-CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
-  // Convert the form into a thunk and return like COMPILE does
-  LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
-  Cons_sp code = Cons_O::create(form, nil<T_O>());
-  T_sp sourcePosInfo = nil<T_O>();
-  stringstream ss;
-  ss << "THE-IMPLICIT-COMPILE-REPL"; // << _lisp->nextReplCounter();
-  Symbol_sp name = _lisp->intern(ss.str());
-  Closure_sp ic = Closure_O::make_interpreted_closure(name,
-                                                                        kw::_sym_function,
-                                                                        nil<T_O>(),
-                                                                        llh,
-                                                                        nil<T_O>(),
-                                                                        nil<T_O>(),
-                                                                        code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
-  Function_sp thunk = ic;
-  T_O* closure = (core::T_O*)thunk.raw_();
-  return (thunk->entry())(closure,0,NULL);
-  //  return eval::funcall(thunk);
-};
-
 };
 
 extern "C" {
@@ -1462,7 +1439,6 @@ CL_DEFUN T_sp core__handle_creator( T_sp object ) {
 }
 
  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
- SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
  SYMBOL_SC_(CorePkg, dlopen);
  SYMBOL_SC_(CorePkg, dlsym);
  SYMBOL_SC_(CorePkg, dladdr);
@@ -1867,11 +1843,7 @@ void initialize_compiler_primitives(LispPtr lisp) {
   // Initialize raw object translators needed for Foreign Language Interface support 
   llvmo::initialize_raw_translators(); // See file intrinsics.cc!
 
-#ifdef USE_IMPLICIT_BYTECODE_COMPILE
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_bytecode_implicit_compile_form);
-#else
-  comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default);
-#endif
   cleavirPrimop::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
   comp::_sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
 

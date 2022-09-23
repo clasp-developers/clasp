@@ -525,11 +525,7 @@ void Lisp::startupLispEnvironment() {
     Readtable_sp readtable = Readtable_O::create_standard_readtable();
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
     initialize_functions();
-#ifdef USE_IMPLICIT_BYTECODE_COMPILE
     core::_sym_STAReval_with_env_hookSTAR->defparameter(comp::_sym_bytecode_toplevel_eval->symbolFunction());
-#else
-    core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_interpret_eval_with_env->symbolFunction());
-#endif
     globals_->_Bundle->setup_pathname_translations();
     //    eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
 #ifdef DEBUG_PROGRESS
