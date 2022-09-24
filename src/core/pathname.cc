@@ -674,6 +674,7 @@ CL_DEFUN_SETF T_sp cl__setf_logical_pathname_translations(List_sp translations, 
   } else {
     List_sp coerced_translations = nil<T_O>();
 
+    host = cl__string_upcase(host);
     _lisp->pathnameTranslations_()->setf_gethash(host, coerced_translations);
 
     while (translations.notnilp()) {
