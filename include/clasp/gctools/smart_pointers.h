@@ -1635,23 +1635,14 @@ public:
   fast_iterator_proxy full() { return fast_iterator_proxy(*this); }
 
   smart_ptr<core::List_V> &operator=(const smart_ptr<core::List_V> &other) {
-    if (this == &other)
-      return *this;
     this->theObject = other.theObject;
     return *this;
   };
 
   template <typename From>
   smart_ptr<core::List_V> &operator=(const smart_ptr<From> &other) {
-    if (this == reinterpret_cast<smart_ptr<core::List_V> *>(const_cast<smart_ptr<From> *>(&other)))
-      return *this;
-    if (tagged_consp<From *>(other.theObject)) {
-      this->theObject = other.theObject;
-    } else if (tagged_nilp<From *>(other.theObject)) {
-      this->theObject = other.theObject;
-    } else {
-      lisp_error(cl::_sym_type_error, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expected_type, cl::_sym_list));
-    }
+    ASSERT(gc::IsA<Cons_sp>(other) || gc::IsA<Null_sp>(other));
+    this->theObject = other.theObject;
     return *this;
   };
 };
@@ -1945,18 +1936,10 @@ public:
   }
 
   MyType &operator=(smart_ptr<core::T_O> const &orig) {
-    if (tagged_nilp(orig.theObject)) {
-      this->theObject = reinterpret_cast<Type *>(global_tagged_Symbol_OP_nil);
-      return *this;
-    } else if (Base foo = orig.asOrNull<Type>()) {
-      this->theObject = foo.theObject;
-      return *this;
-    }
-    class_id expected_typ = reg::registered_class<Type>::id;
-    lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(this->theObject));
-    throw_hard_error("Unreachable");
+    ASSERT(tagged_nilp(orig.theObject)|| orig.asOrNull<Type>());
+    this->theObject = foo.theObject;
+    return *this;
   }
-
   inline return_type as_return_type() { return return_type(this->theObject,1);};
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return !tagged_nilp(this->theObject); }
