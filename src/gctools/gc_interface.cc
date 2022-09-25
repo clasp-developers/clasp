@@ -753,16 +753,23 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   core::registerOrDumpDtreeInfo(fout);
   Init_class_kind(core::T_O);
   Init_class_kind(core::General_O);
+
   Init_class_kind(core::Cons_O);
   Init__fixed_field(core::Cons_O,0,SMART_PTR_OFFSET,_Car);
   Init__fixed_field(core::Cons_O,1,SMART_PTR_OFFSET,_Cdr);
+
   Init_class_kind(core::SimpleBaseString_O);
   Init__variable_array0(core::SimpleBaseString_O,_Data._Data);
   Init__variable_capacity(core::SimpleBaseString_O,value_type,_Data._MaybeSignedLength,_Data._MaybeSignedLength);
   Init__variable_field(core::SimpleBaseString_O,gctools::ctype_unsigned_char, 0, "only", 0);
 
-  Init_class_kind(core::Function_O);
+  Init_class_kind(core::SimpleCharacterString_O);
+  Init__variable_array0(core::SimpleCharacterString_O,_Data._Data);
+  Init__variable_capacity(core::SimpleCharacterString_O,value_type,_Data._MaybeSignedLength,_Data._MaybeSignedLength);
+  Init__variable_field(core::SimpleCharacterString_O,gctools::ctype_unsigned_int, 0, "only", 0);
   
+  Init_class_kind(core::Function_O);
+
   Init_class_kind(core::Symbol_O);
   Init__fixed_field(core::Symbol_O,0,SMART_PTR_OFFSET,_Name);
   Init__fixed_field(core::Symbol_O,1,SMART_PTR_OFFSET,_HomePackage);
@@ -770,6 +777,32 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::Symbol_O,3,SMART_PTR_OFFSET,_Function);
   Init__fixed_field(core::Symbol_O,4,SMART_PTR_OFFSET,_SetfFunction);
   Init__fixed_field(core::Symbol_O,5,SMART_PTR_OFFSET,_PropertyList);
+
+  Init_class_kind(core::DestDynEnv_O);
+  Init__fixed_field(core::DestDynEnv_O,0,RAW_POINTER_OFFSET,target);
+
+  Init_class_kind(core::LexDynEnv_O);
+  Init__fixed_field(core::LexDynEnv_O,0,RAW_POINTER_OFFSET,target);
+  Init__fixed_field(core::LexDynEnv_O,1,RAW_POINTER_OFFSET,frame);
+
+  Init_class_kind(core::BlockDynEnv_O);
+  Init__fixed_field(core::BlockDynEnv_O,0,RAW_POINTER_OFFSET,target);
+  Init__fixed_field(core::BlockDynEnv_O,1,RAW_POINTER_OFFSET,frame);
+
+  Init_class_kind(core::TagbodyDynEnv_O);
+  Init__fixed_field(core::TagbodyDynEnv_O,0,RAW_POINTER_OFFSET,target);
+  Init__fixed_field(core::TagbodyDynEnv_O,1,RAW_POINTER_OFFSET,frame);
+
+  Init_class_kind(core::CatchDynEnv_O);
+  Init__fixed_field(core::CatchDynEnv_O,0,RAW_POINTER_OFFSET,target);
+  Init__fixed_field(core::CatchDynEnv_O,0,SMART_PTR_OFFSET,tag);
+
+  Init_class_kind(core::UnwindProtectDynEnv_O);
+  Init__fixed_field(core::UnwindProtectDynEnv_O,0,RAW_POINTER_OFFSET,target);
+
+  Init_class_kind(core::BindingDynEnv_O);
+  Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,sym);
+  Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,old);
 
   Init_class_kind(core::BytecodeModule_O);
   Init__fixed_field(core::BytecodeModule_O,0,SMART_PTR_OFFSET,_Literals);
@@ -780,7 +813,9 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::GlobalEntryPoint_O,0,SMART_PTR_OFFSET,_TheEntryPoint );
   Init__fixed_field(core::GlobalEntryPoint_O,1,SMART_PTR_OFFSET,_FunctionDescription );
   Init__fixed_field(core::GlobalEntryPoint_O,2,SMART_PTR_OFFSET,_Code );
-  Init__fixed_field(core::GlobalEntryPoint_O,3,RAW_POINTER_OFFSET,_EntryPoints._EntryPoints[0]);
+  for (int iii=0; iii<NUMBER_OF_ENTRY_POINTS; iii++ ) {
+    Init__fixed_field(core::GlobalEntryPoint_O,3+iii,RAW_POINTER_OFFSET,_EntryPoints._EntryPoints[iii]);
+  }
   Init__fixed_field(core::GlobalEntryPoint_O,3+NUMBER_OF_ENTRY_POINTS,SMART_PTR_OFFSET,_localEntryPoint);
 
   Init_class_kind(core::GlobalBytecodeEntryPoint_O);
@@ -800,12 +835,14 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::FunctionDescription_O,7,ctype_int,filepos);
   
   Init_class_kind(core::FuncallableInstance_O);
-  Init__fixed_field(core::FuncallableInstance_O,0,SMART_PTR_OFFSET,_Rack);
-  Init__fixed_field(core::FuncallableInstance_O,1,SMART_PTR_OFFSET,_Class);
-  Init__fixed_field(core::FuncallableInstance_O,2,SMART_PTR_OFFSET,_CompiledDispatchFunction);
+  Init__fixed_field(core::FuncallableInstance_O,0,SMART_PTR_OFFSET,_TheEntryPoint );
+  Init__fixed_field(core::FuncallableInstance_O,1,SMART_PTR_OFFSET,_Rack);
+  Init__fixed_field(core::FuncallableInstance_O,2,SMART_PTR_OFFSET,_Class);
+  Init__fixed_field(core::FuncallableInstance_O,3,SMART_PTR_OFFSET,_CompiledDispatchFunction);
 
   Init_templated_kind(core::BuiltinClosure_O);
-  Init__fixed_field( core::BuiltinClosure_O, 0,SMART_PTR_OFFSET,_lambdaListHandler);
+  Init__fixed_field(core::BuiltinClosure_O,0,SMART_PTR_OFFSET,_TheEntryPoint );
+  Init__fixed_field(core::BuiltinClosure_O,1,SMART_PTR_OFFSET,_lambdaListHandler);
   
   Init_class_kind(core::Closure_O);
   Init__fixed_field(core::Closure_O,0,SMART_PTR_OFFSET,_TheEntryPoint );
@@ -824,11 +861,39 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::Package_O, 4, SMART_PTR_OFFSET, _Nicknames);
   Init__fixed_field(core::Package_O, 5, SMART_PTR_OFFSET, _LocalNicknames);
   Init__fixed_field(core::Package_O, 6, SMART_PTR_OFFSET, _Documentation);
-  
 
+  Init_class_kind(core::Instance_O);
+  Init__fixed_field(core::Instance_O, 0, SMART_PTR_OFFSET, _Class );
+  Init__fixed_field(core::Instance_O, 1, SMART_PTR_OFFSET, _Rack );
+
+  Init_class_kind(core::Rack_O);
+  Init__fixed_field(core::Rack_O, 0, ctype_size_t, _ShiftedStamp );
+  Init__fixed_field(core::Rack_O, 1, SMART_PTR_OFFSET, _Sig );
+  Init__variable_array0(core::Rack_O,_Slots);
+  Init__variable_capacity(core::Rack_O,value_type,_Slots._Length,_Slots._Length);
+  Init__variable_field(core::Rack_O,gctools::SMART_PTR_OFFSET, 0, "only", 0);
+  
   Init_class_kind(core::LambdaListHandler_O);
   Init__fixed_field(core::LambdaListHandler_O,0,SMART_PTR_OFFSET,_ClassifiedSymbolList);
   Init__fixed_field(core::LambdaListHandler_O,1,POINTER_OFFSET,_SpecialSymbolSet.theObject);
+
+
+  Init_class_kind(core::Pathname_O);
+  Init__fixed_field(core::Pathname_O,0,SMART_PTR_OFFSET,_Host);
+  Init__fixed_field(core::Pathname_O,1,SMART_PTR_OFFSET,_Device);
+  Init__fixed_field(core::Pathname_O,2,SMART_PTR_OFFSET,_Directory);
+  Init__fixed_field(core::Pathname_O,3,SMART_PTR_OFFSET,_Name);
+  Init__fixed_field(core::Pathname_O,4,SMART_PTR_OFFSET,_Type);
+  Init__fixed_field(core::Pathname_O,5,SMART_PTR_OFFSET,_Version);
+
+  Init_class_kind(core::LogicalPathname_O);
+  Init__fixed_field(core::LogicalPathname_O,0,SMART_PTR_OFFSET,_Host);
+  Init__fixed_field(core::LogicalPathname_O,1,SMART_PTR_OFFSET,_Device);
+  Init__fixed_field(core::LogicalPathname_O,2,SMART_PTR_OFFSET,_Directory);
+  Init__fixed_field(core::LogicalPathname_O,3,SMART_PTR_OFFSET,_Name);
+  Init__fixed_field(core::LogicalPathname_O,4,SMART_PTR_OFFSET,_Type);
+  Init__fixed_field(core::LogicalPathname_O,5,SMART_PTR_OFFSET,_Version);
+  
 #if 0
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_SpecialSymbolSet.theObject), "_SpecialSymbolSet.theObject" }, // atomic: NIL public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_DeclareSpecifierList), "_DeclareSpecifierList" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -946,7 +1011,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_class_kind(core::ComplexVector_int64_t_O);
      Init_class_kind(core::AbstractSimpleVector_O);
      Init_class_kind(core::SimpleString_O);
-     Init_class_kind(core::SimpleCharacterString_O);
      Init_class_kind(core::SimpleVector_int16_t_O);
      Init_class_kind(core::SimpleVector_byte16_t_O);
      Init_class_kind(core::SimpleBitVector_O);
@@ -977,7 +1041,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_class_kind(asttooling::AsttoolingExposer_O);
      Init_class_kind(llvmo::StructLayout_O);
      Init_class_kind(clasp_ffi::ForeignTypeSpec_O);
-     Init_class_kind(core::Instance_O);
      Init_class_kind(core::DerivableCxxObject_O);
      Init_class_kind(clbind::ClassRep_O);
      Init_class_kind(core::SmallMap_O);
@@ -1084,7 +1147,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_class_kind(llvmo::Module_O);
      Init_class_kind(llvmo::Target_O);
      Init_class_kind(llvmo::Linker_O);
-     Init_class_kind(core::Rack_O);
      Init_class_kind(core::SmallMultimap_O);
      Init_class_kind(core::Sigset_O);
      Init_class_kind(core::Environment_O);
@@ -1116,8 +1178,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_class_kind(core::Scope_O);
      Init_class_kind(core::FileScope_O);
      Init_class_kind(core::Path_O);
-     Init_class_kind(core::Pathname_O);
-     Init_class_kind(core::LogicalPathname_O);
      Init_class_kind(core::Number_O);
      Init_class_kind(core::Real_O);
      Init_class_kind(core::Rational_O);
@@ -1156,7 +1216,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_templated_kind(core::WrappedPointer_O);
      Init_templated_kind(core::Creator_O);
      Init_templated_kind(clbind::ConstructorCreator_O);
-     Init_templated_kind(core::BuiltinClosure_O);
 
 };
 

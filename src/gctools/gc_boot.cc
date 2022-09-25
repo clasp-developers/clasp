@@ -56,6 +56,7 @@ void dump_data_types(std::ostream& fout, const std::string& indent)
   DTNAME(SMART_PTR_OFFSET,"smart_ptr",sizeof(void*));
   DTNAME(ATOMIC_SMART_PTR_OFFSET,"atomic_smart_ptr",sizeof(void*));
   DTNAME(TAGGED_POINTER_OFFSET,"tagged_ptr",sizeof(void*));
+  DTNAME(RAW_POINTER_OFFSET,"void*",sizeof(void*));
   DTNAME(ARRAY_OFFSET,"array",sizeof(void*));
   DTNAME(POINTER_OFFSET,"pointer",sizeof(void*));
   DTNAME(CONSTANT_ARRAY_OFFSET,"constant_array",sizeof(void*));
@@ -95,7 +96,8 @@ void dump_data_types(std::ostream& fout, const std::string& indent)
   Init_global_ints("GENERAL_MTAG",(int)Header_s::general_mtag );
   Init_global_ints("CONS_MTAG", (int)Header_s::cons_mtag );
   Init_global_ints("WEAK_MTAG", (int)Header_s::weak_mtag );
-
+  Init_global_ints("REF_CLASS_CLASS_NAME", (int)core::Instance_O::REF_CLASS_CLASS_NAME );
+  
   Init_global_size_t("VASLIST-ARGS-OFFSET", core::Vaslist::args_offset() );
   Init_global_size_t("VASLIST-NARGS-OFFSET", core::Vaslist::nargs_offset() );
   Init_global_size_t("VASLIST-NARGS-DECREMENT", core::Vaslist::NargsDecrement);

@@ -56,8 +56,22 @@ def set_convenience_variable(name,val):
 
 # ---- new functionality
 
+def newest_frame():
+    return gdb.newest_frame()
+
 def selected_frame():
     return gdb.selected_frame()
+
+def older_frame(frame):
+    return frame.older()
+
+def frame_base_pointer(frame):
+    # will this be machine independent?
+    return frame.read_register("rbp")
+
+def frame_stack_pointer(frame):
+    # will this be machine independent?
+    return frame.read_register("rsp")
 
 def block(frame):
     return frame.block()
@@ -146,7 +160,7 @@ class InlinedFrameDecorator(FrameDecorator):
                 try:
                     varg = inspector_mod.do_lisp_print_value(debugger_mod,"%s"%tptr)
                 except:
-                    varg = "BADARG(%s)"%tptr
+                    varg = "BADARG(0x%x)"%tptr
                 args.append( LispArg("a%d" % iarg, "%s"%varg))
             return args
 
@@ -161,5 +175,4 @@ class LispArg:
 
     
 
-print("Installing Clasp backtrace filters")
 filter_inline = InlineFilter()

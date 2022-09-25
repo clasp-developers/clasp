@@ -23,10 +23,8 @@ def maybeReloadModules():
       debugger_mod = importlib.import_module("backends.udb")
     else:
       importlib.reload(debugger_mod)
-    print(" About to load the clasp_layout")
     inspector_mod.load_clasp_layout(debugger_mod)
     # Tell the debugger_mod about the inspector_mod
-    print("maybeReloadModules: tell debugger_mod %s about inspector_mod %s" % (debugger_mod, inspector_mod ) )
     debugger_mod.install_debugger_inspector(debugger_mod,inspector_mod)
 
 class LispReload (gdb.Command):
@@ -101,6 +99,15 @@ class LispVm (gdb.Command):
     maybeReloadModules()
     inspector_mod.do_lisp_vm(debugger_mod,arg)
 
+class LispDynEnvStack (gdb.Command):
+  def __init__ (self):
+    super (LispDynEnvStack, self).__init__ ("lde", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+    global inspector_mod, debugger_mod
+    maybeReloadModules()
+    inspector_mod.do_lisp_dump_dyn_env_stack(debugger_mod,arg)
+
 class LispBacktrace (gdb.Command):
   def __init__ (self):
     super (LispBacktrace, self).__init__ ("lbt", gdb.COMMAND_USER)
@@ -109,7 +116,7 @@ class LispBacktrace (gdb.Command):
     global inspector_mod, debugger_mod
     maybeReloadModules()
     gdb.execute("set print frame-arguments all")
-    gdb.execute("bt")
+    gdb.execute("bt "+arg)
 
 LispReload()
 LispInspect()
@@ -120,6 +127,7 @@ LispTest()
 LispFrame()
 LispVm()
 LispBacktrace()
+LispDynEnvStack()
 
 print("lreload            - reload debugger extension")
 print("lprint <address>   - print lisp object in compact form")
@@ -130,6 +138,7 @@ print("ldis <bytecode-module-tptr>    - Disassemble a bytecode-module")
 print("ltest <address>    - test module reloading")
 print("lvm                - Dump current vm status")
 print("lbt                - Dump backtrace with arguments")
+print("lde                - Dump dynamic environment stack")
 print("python-interactive <expr> - (or pi) interactive Python session\n")
 
 debugger_mod = importlib.import_module("backends.udb")
