@@ -61,9 +61,9 @@
   :commit "f892d0587c7f3a1e6c0899425921b48008c29ee3"
   :extension :cando)
  (:name :bordeaux-threads
-  :repository "https://github.com/yitzchak/bordeaux-threads.git"
+  :repository "https://github.com/sionescu/bordeaux-threads.git"
   :directory "src/lisp/kernel/contrib/bordeaux-threads/"
-  :commit "clasp-atomic"
+  :commit "3d25cd01176f7c9215ebc792c78313cb99ff02f9"
   :extension :cando)
  (:name :cffi ; TODO remove once cando-user no longer needs
   :repository "https://github.com/cffi/cffi.git"
