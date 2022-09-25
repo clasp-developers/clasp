@@ -1641,7 +1641,7 @@ public:
 
   template <typename From>
   smart_ptr<core::List_V> &operator=(const smart_ptr<From> &other) {
-    ASSERT(gc::IsA<Cons_sp>(other) || gc::IsA<Null_sp>(other));
+    GCTOOLS_ASSERT(tagged_consp<From *>(other.theObject) || tagged_nilp<From *>(other.theObject));
     this->theObject = other.theObject;
     return *this;
   };
@@ -1936,8 +1936,8 @@ public:
   }
 
   MyType &operator=(smart_ptr<core::T_O> const &orig) {
-    ASSERT(tagged_nilp(orig.theObject)|| orig.asOrNull<Type>());
-    this->theObject = foo.theObject;
+    GCTOOLS_ASSERT(tagged_nilp(orig.theObject)|| orig.asOrNull<Type>());
+    this->theObject = reinterpret_cast<Type*>(orig.theObject);
     return *this;
   }
   inline return_type as_return_type() { return return_type(this->theObject,1);};
