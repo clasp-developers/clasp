@@ -425,6 +425,7 @@ class Cons_O(T_O):
         
 class General_O(T_O):
     def __init__(self,debugger,tclient):
+        self._tptr = tclient
         if (generalp(tclient)):
             address = untag_general(tclient)
         else:
@@ -510,7 +511,7 @@ class General_O(T_O):
         return result
     
     def __repr__(self):
-        return "a %s" % self._className
+        return "a %s @0x%x" % (self._className, self._tptr) 
    
 
 class Array_O(General_O):
