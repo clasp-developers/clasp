@@ -25,9 +25,9 @@ extern "C" {
 bool global_debug_vm = false;
 }
 
-#if 0
+#ifdef DEBUG_VIRTUAL_MACHINE
 # define DBG_printf(...) { if (global_debug_vm) { printf(__VA_ARGS__); } }
-# define DBG_VM(...) {if (global_debug_vm) {printf("%s:%6d pc: %p sp: %p fp: %p | ", __FILE__, __LINE__, (void*)vm._pc, (void*)(vm)._stackPointer, fp; printf(__VA_ARGS__);} }
+# define DBG_VM(...) {if (global_debug_vm) {printf("%s:%6d pc: %p sp: %p fp: %p | ", __FILE__, __LINE__, (void*)vm._pc, (void*)(vm)._stackPointer, fp); printf(__VA_ARGS__);} }
 # if 1
 #  define DBG_VM1(...) DBG_VM(__VA_ARGS__)
 # else
@@ -107,6 +107,22 @@ static inline int32_t read_label(unsigned char* pc, size_t nbytes) {
 struct VM_error {
 };
 
+#if 0
+
+static FILE* global_bytecode_messages = NULL;
+
+void bytecode_message(const std::string& msg) {
+  if (!global_bytecode_messages) {
+    global_bytecode_messages = fopen("/tmp/bytecode.log","w");
+  }
+  fprintf(global_bytecode_messages,"%s", msg.c_str());
+  fflush(global_bytecode_messages);
+}
+
+#define VM_WRITE(...) {bytecode_message(fmt::format(__VA_ARGS__)); }
+#else
+#define VM_WRITE(...)
+#endif
 
 #if DEBUG_VM_RECORD_PLAYBACK==1
 static size_t global_counter = 0;
@@ -193,7 +209,9 @@ static unsigned char *long_dispatch(VirtualMachine&,
                                     uint8_t);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
-
+#ifdef DEBUG_VIRTUAL_MACHINE
+__attribute__((optnone))
+#endif
 static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         T_O** literals,
                                         size_t nlocals, Closure_O* closure,
@@ -204,6 +222,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
   ASSERT((((uintptr_t)literals)&0x7)==0); // must be aligned
   ASSERT((((uintptr_t)closure)&0x7)==0); // must be aligned
   ASSERT((((uintptr_t)lcc_args)&0x7)==0); // must be aligned
+  VM_WRITE("{}\n", (uintptr_t)vm._stackPointer-(uintptr_t)vm._stackBottom);
   bool vaslistp = false; // true if we need to deallocate a vaslist at the end
 #ifdef DEBUG_VIRTUAL_MACHINE
   if (lcc_nargs> 65536) {
@@ -218,7 +237,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
   MultipleValues& multipleValues = core::lisp_multipleValues();
   unsigned char *pc = vm._pc;
   while (1) {
-    VM_PC_CHECK(vm,bytecode_start,bytecode_end);
+    VM_PC_CHECK(vm,pc,bytecode_start,bytecode_end);
 #if DEBUG_VM_RECORD_PLAYBACK==1
     global_counter++;
     size_t stackHeight = (uintptr_t)(vm)._stackPointer-(uintptr_t)(vm)._stackBottom;
@@ -265,8 +284,11 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t nargs = *(++pc);
       DBG_VM1("call %" PRIu8 "\n", nargs);
 #ifdef DBG_VM1
-      if (nargs + 1 > vm.npushed(fp, nlocals))
-        SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %td", nargs + 1, vm.npushed(fp, nlocals));
+      if (nargs + 1 > vm.npushed(fp, nlocals)) {
+        std::string serr = fmt::format("VM BUG: Mismatch in call: more arguments requested than are on the stack: {} versus {}", nargs + 1, vm.npushed(fp, nlocals));
+        printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, serr.c_str() );
+        gctools::wait_for_user_signal(serr.c_str());
+      }
 #endif
       T_O* func = *(vm.stackref(nargs));
       T_O** args = vm.stackref(nargs-1);
@@ -275,9 +297,11 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       vm.load(vmss);
 #ifdef DBG_VM1
-      if (nargs + 1 > vm.npushed(fp, nlocals))
-        SIMPLE_ERROR("VM BUG: Mismatch after call: nargs+1 %" PRIu8 " npushed %td",
-                     nargs + 1, vm.npushed(fp, nlocals));
+      if (nargs + 1 > vm.npushed(fp, nlocals)) {
+        std::string serr = fmt::format("VM BUG: Mismatch in call: more arguments requested than are on the stack: {} versus {}", nargs + 1, vm.npushed(fp, nlocals));
+        printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, serr.c_str() );
+        gctools::wait_for_user_signal(serr.c_str());
+      }
 #endif
       multipleValues.setN(res.raw_(),res.number_of_values());
       vm.drop(nargs+1);
@@ -418,12 +442,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       if (vaslistp) vm.drop(4); // deallocate
 #ifdef DBG_VM1
       if (vm.npushed(fp, nlocals) != 0) {
-#ifdef DEBUG_VIRTUAL_MACHINE
-        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   \n   nlocals = %lu  framePointer %p  _stackPointer %p vm._unwind_counter %lu  vm._throw_counter %lu", vm.npushed(fp, nlocals), nlocals, fp, (void*)vm._stackPointer, vm._unwind_counter, vm._throw_counter ).c_str());
-#else
         gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   \n   nlocals = %lu  framePointer %p  _stackPointer %p", vm.npushed(fp, nlocals), nlocals, (void*)fp, (void*)vm._stackPointer).c_str());
-#endif
-        SIMPLE_ERROR("In vm_return - vm.npushed(nlocals) = %td   nlocals = %lu", vm.npushed(fp, nlocals), nlocals);
       }
 #endif
       vm.drop(nlocals);
@@ -907,8 +926,11 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call %" PRIu16 "\n", nargs);
 #ifdef DBG_VM1
-    if (nargs + 1 > vm.npushed(fp, nlocals))
-      SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %td", nargs + 1, vm.npushed(fp, nlocals));
+    if (nargs + 1 > vm.npushed(fp, nlocals)) {
+      std::string serr = fmt::format("VM BUG: Mismatch in call: more arguments requested than are on the stack: {} versus {}", nargs + 1, vm.npushed(fp, nlocals));
+      printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, serr.c_str() );
+      gctools::wait_for_user_signal(serr.c_str());
+    }
 #endif
     T_O* func = *(vm.stackref(nargs));
     T_O** args = vm.stackref(nargs-1);
@@ -1254,8 +1276,17 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   vm._pc = pc;
   core::T_O** fp = vm.push_frame(nlocals);
   try {
+#ifdef DEBUG_VIRTUAL_MACHINE_STACK_POINTER
+    core::T_O** save_stackPointer = vm._stackPointer;
+#endif
     gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure, fp, lcc_nargs, lcc_args);
     vm._pc = old_pc;
+#ifdef DEBUG_VIRTUAL_MACHINE_STACK_POINTER
+    intptr_t delta_stackPointer = (intptr_t)save_stackPointer - (intptr_t)vm._stackPointer;
+    if (delta_stackPointer) {
+      printf("%s:%d:%s The stackpointer wasn't restored: nargs: %lu retvals %lu  and %ld words left on stack\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs, res.nvals, delta_stackPointer/sizeof(core::T_O*));
+    }
+#endif
     return res;
   } catch (core::VM_error& err) {
     printf("%s:%d:%s Recovering from VM_error\n", __FILE__, __LINE__, __FUNCTION__ );
