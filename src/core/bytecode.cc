@@ -1276,6 +1276,15 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   vm._pc = pc;
   core::T_O** fp = vm.push_frame(nlocals);
   try {
+#if 0
+    core::T_mv res = core::funwind_protect([&] {
+      gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure, fp, lcc_nargs, lcc_args);
+      vm._pc = old_pc;
+      return core::T_mv(res);
+    },
+      [&] { vm._stackPointer = fp; });
+    return res.as_return_type();
+#else
 #ifdef DEBUG_VIRTUAL_MACHINE_STACK_POINTER
     core::T_O** save_stackPointer = vm._stackPointer;
 #endif
@@ -1284,10 +1293,11 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
 #ifdef DEBUG_VIRTUAL_MACHINE_STACK_POINTER
     intptr_t delta_stackPointer = (intptr_t)save_stackPointer - (intptr_t)vm._stackPointer;
     if (delta_stackPointer) {
-      printf("%s:%d:%s The stackpointer wasn't restored: nargs: %lu retvals %lu  and %ld words left on stack\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs, res.nvals, delta_stackPointer/sizeof(core::T_O*));
+      printf("%s:%d:%s The stackpointer wasn't restored: nargs %lu retvals %lu  and %ld words left on stack\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs, res.nvals, delta_stackPointer/sizeof(core::T_O*));
     }
 #endif
     return res;
+#endif
   } catch (core::VM_error& err) {
     printf("%s:%d:%s Recovering from VM_error\n", __FILE__, __LINE__, __FUNCTION__ );
     return gctools::return_type(nil<core::T_O>().raw_(), 0 );
