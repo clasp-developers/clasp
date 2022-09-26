@@ -118,6 +118,15 @@ class LispBacktrace (gdb.Command):
     gdb.execute("set print frame-arguments all")
     gdb.execute("bt "+arg)
 
+class LispPrintVector (gdb.Command):
+  def __init__ (self):
+    super (LispPrintVector, self).__init__ ("lprve", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+    global inspector_mod, debugger_mod
+    maybeReloadModules()
+    inspector_mod.do_lisp_print_vector(debugger_mod,arg)
+
 LispReload()
 LispInspect()
 LispPrint()
@@ -128,6 +137,7 @@ LispFrame()
 LispVm()
 LispBacktrace()
 LispDynEnvStack()
+LispPrintVector()
 
 print("lreload            - reload debugger extension")
 print("lprint <address>   - print lisp object in compact form")
@@ -137,9 +147,9 @@ print("lframe             - Dump the function name and args for a lisp frame tra
 print("ldis <bytecode-module-tptr>    - Disassemble a bytecode-module")
 print("ltest <address>    - test module reloading")
 print("lvm                - Dump current vm status")
-print("lbt                - Dump backtrace with arguments")
-print("lde                - Dump dynamic environment stack")
-print("python-interactive <expr> - (or pi) interactive Python session\n")
+print("lbt [<num>]        - Dump backtrace with arguments")
+print("lde [<num>]        - Dump dynamic environment stack")
+print("lprve <addr> <num> - Print <num> values for a vector starting at <addr>")
 
 debugger_mod = importlib.import_module("backends.udb")
 

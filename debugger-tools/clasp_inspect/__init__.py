@@ -80,6 +80,9 @@ class TemplatedKind:
         self._name = name
         self._size = size
         self._fields = {}
+        self._variable_array0 = None
+        self._variable_capacity = None
+        self._variable_fields = {}
 
 class ContainerKind:
     def __init__(self,stamp,name,size):
@@ -896,19 +899,20 @@ def stack_address_level(debugger,frames,target):
         level = level + 1
 
 def do_lisp_test(debugger,arg):
-#    obj = global_names["long"]
-#    print("test obj._name = %s" % obj._name)
-#    print("test obj._value = %s" % obj._value)
-    depth = 999999
-    if (arg!=""):
-        depth = int(arg)
-    frames = gather_frame_pointers(debugger)
-    level = 0
-    for frame in frames:
-        if (depth<level):
-            return
-        print("%d 0x%x %s" % (level,debugger.frame_base_pointer(frame),frame))
-        level = level + 1
+    obj = global_names["long"]
+    print("test obj._name = %s" % obj._name)
+    print("test obj._value = %s" % obj._value)
+
+def do_lisp_print_vector(debugger,arg):
+    args = arg.split(" ")
+    print("args = %s" % args)
+    start = arg_to_tptr(debugger,args[0])
+    num = int(args[1])
+    for im in range(0,num):
+        tptr = debugger.read_memory(start,len=8)
+        tptr_obj = translate_tagged_ptr(debugger,tptr)
+        print("0x%x -> %s" % (start, tptr_obj.__repr__()))
+        start = start + 8
 
 def do_lisp_disassemble(debugger,arg):
     tptr = arg_to_tptr(debugger,arg)
