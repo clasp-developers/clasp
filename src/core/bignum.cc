@@ -437,7 +437,7 @@ CL_DEFUN T_mv core__next_ftruncate(Bignum_sp dividend,
                               quotient_limbs),
                 // the remainder is at most the divisor,
                 // but with abs(m-n-fixnum) != m-p-fixnum I wanna be careful.
-                bignum_result((len < 0) ? -1 : 1, &remainder));
+                bignum_result((remainder == 0 || len > 0) ? 1 : -1, &remainder));
 }
 
 Integer_sp fix_divided_by_next(Fixnum dividend, Bignum_sp divisor) {

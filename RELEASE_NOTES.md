@@ -93,6 +93,7 @@
 * Source locations for warnings from errors during constant folding now
   print correctly.
 * Unused calls that must remain in safe code are no longer deleted.
+* Prevent negative zero remainder in core__next_ftruncate. Fixes [#1368][].
 
 # Version 1.0.0 (LLVM13) 2022-03-26
 
@@ -176,3 +177,4 @@
 [ANSI]: https://gitlab.common-lisp.net/ansi-test/ansi-test
 [ECLECTOR]: https://github.com/s-expressionists/Eclector
 [#175]: https://github.com/clasp-developers/clasp/issues/175
+[#1368]: https://github.com/clasp-developers/clasp/issues/1368
