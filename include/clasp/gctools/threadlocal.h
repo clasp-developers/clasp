@@ -100,6 +100,7 @@ struct VirtualMachine {
   core::T_O*     _stackBottom[MaxStackWords];
   size_t         _stackBytes;
   core::T_O**    _stackTop;
+  core::T_O**    _stackGuard;
   core::T_O**    _stackPointer;
 #ifdef DEBUG_VIRTUAL_MACHINE
   core::T_O*     _data;
