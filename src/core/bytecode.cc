@@ -1220,7 +1220,12 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
   }
   return pc;
 }
-};
+
+void VMFrameDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
+  my_thread->_VM._stackPointer = this->old_sp;
+}
+
+}; // namespace core
 
 extern "C" {
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
@@ -1248,10 +1253,13 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   core::T_O** fp = vm._stackPointer;
   core::T_O** sp = vm.push_frame(fp, nlocals);
   try {
+    gctools::StackAllocate<core::VMFrameDynEnv_O> frame(fp);
+    gctools::StackAllocate<core::Cons_O> sa_ec(frame.asSmartPtr(),
+                                               my_thread->dynEnvStackGet());
+    core::DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
     gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure,
                                            fp, sp, lcc_nargs, lcc_args);
     vm._pc = old_pc;
-    vm._stackPointer = fp;
     return res;
   } catch (core::VM_error& err) {
     printf("%s:%d:%s Recovering from VM_error\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -1259,7 +1267,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   }
 }
 
-};
+}; // extern C
 
 namespace core {
 
