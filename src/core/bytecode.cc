@@ -27,7 +27,7 @@ bool global_debug_vm = false;
 
 #if 0
 # define DBG_printf(...) { if (global_debug_vm) { printf(__VA_ARGS__); } }
-# define DBG_VM(...) {if (global_debug_vm) {printf("%s:%6d pc: %p sp: %p fp: %p | ", __FILE__, __LINE__, (void*)vm._pc, (void*)(vm)._stackPointer, fp; printf(__VA_ARGS__);} }
+# define DBG_VM(...) {if (global_debug_vm) {printf("%s:%6d pc: %p sp: %p fp: %p | ", __FILE__, __LINE__, (void*)vm._pc, sp, fp); printf(__VA_ARGS__);} }
 # if 1
 #  define DBG_VM1(...) DBG_VM(__VA_ARGS__)
 # else
@@ -189,7 +189,8 @@ static unsigned char *long_dispatch(VirtualMachine&,
                                     unsigned char*,
                                     MultipleValues& multipleValues,
                                     T_O**, size_t, Closure_O*,
-                                    core::T_O**, size_t, core::T_O**,
+                                    core::T_O**, core::T_O**&,
+                                    size_t, core::T_O**,
                                     uint8_t);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
@@ -198,6 +199,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         T_O** literals,
                                         size_t nlocals, Closure_O* closure,
                                         core::T_O** fp, // frame pointer
+                                        core::T_O**& sp, // stack pointer
                                         size_t lcc_nargs,
                                         core::T_O** lcc_args) {
   ASSERT( literals==NULL || (uintptr_t)literals>65536);
@@ -222,11 +224,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
 #if DEBUG_VM_RECORD_PLAYBACK==1
     global_counter++;
     size_t stackHeight = (uintptr_t)(vm)._stackPointer-(uintptr_t)(vm)._stackBottom;
-#if 0
-    if (global_counter%global_counterStep==0) {
-      printf("%lu %lu\n", global_counter, stackHeight);
-    }
-#endif
     if (stackHeight>global_stackTrigger) {
       printf("%s:%d:%s Exceeded stackTrigger %lu stackHeight = %lu returning\n", __FILE__, __LINE__, __FUNCTION__, global_stackTrigger, stackHeight );
       return gctools::return_type(nil<T_O>().raw_(), 0);
@@ -241,7 +238,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_ref: {
       uint8_t n = *(++pc);
       DBG_VM1("ref %" PRIu8 "\n", n);
-      vm.push(*(vm.reg(fp, n)));
+      vm.push(sp, *(vm.reg(fp, n)));
       pc++;
       break;
     }
@@ -249,7 +246,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t n = *(++pc);
       DBG_VM1("const %" PRIu8 "\n", n);
       T_O* value = literals[n];
-      vm.push(value);
+      vm.push(sp, value);
       VM_RECORD_PLAYBACK(value,"const");
       pc++;
       break;
@@ -257,7 +254,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_closure: {
       uint8_t n = *(++pc);
       DBG_VM("closure %" PRIu8 "\n", n);
-      vm.push((*closure)[n].raw_());
+      vm.push(sp, (*closure)[n].raw_());
       pc++;
       break;
     }
@@ -265,32 +262,31 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t nargs = *(++pc);
       DBG_VM1("call %" PRIu8 "\n", nargs);
 #ifdef DBG_VM1
-      if (nargs + 1 > vm.npushed(fp, nlocals))
-        SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %td", nargs + 1, vm.npushed(fp, nlocals));
+      if (nargs + 1 > vm.npushed(fp, sp, nlocals))
+        SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %td", nargs + 1, vm.npushed(fp, sp, nlocals));
 #endif
-      T_O* func = *(vm.stackref(nargs));
-      T_O** args = vm.stackref(nargs-1);
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs-1);
       ASSERT(gctools::tagged_generalp<T_O*>(func));
-      VirtualMachineStackState vmss = vm.save();
+      vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.load(vmss);
 #ifdef DBG_VM1
-      if (nargs + 1 > vm.npushed(fp, nlocals))
+      if (nargs + 1 > vm.npushed(fp, sp, nlocals))
         SIMPLE_ERROR("VM BUG: Mismatch after call: nargs+1 %" PRIu8 " npushed %td",
-                     nargs + 1, vm.npushed(fp, nlocals));
+                     nargs + 1, vm.npushed(fp, sp, nlocals));
 #endif
       multipleValues.setN(res.raw_(),res.number_of_values());
-      vm.drop(nargs+1);
+      vm.drop(sp, nargs+1);
       pc++;
       break;
     }
     case vm_call_receive_one: {
       uint8_t nargs = *(++pc);
       DBG_VM1("call-receive-one %" PRIu8 "\n", nargs);
-      T_O* func = *(vm.stackref(nargs));
+      T_O* func = *(vm.stackref(sp, nargs));
       VM_RECORD_PLAYBACK(func,"vm_call_receive_one_func");
       VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs,"vm_call_receive_one_nargs");
-      T_O** args = vm.stackref(nargs-1);
+      T_O** args = vm.stackref(sp, nargs-1);
 #if DEBUG_VM_RECORD_PLAYBACK==1
       for ( size_t ii=0; ii<nargs; ii++ ) {
         stringstream name_args;
@@ -298,12 +294,11 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         VM_RECORD_PLAYBACK(args[ii],name_args.str().c_str() );
       }
 #endif
-      VirtualMachineStackState vmss = vm.save();
+      vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.load(vmss);
       multipleValues.set1(res);
-      vm.drop(nargs+1);
-      vm.push(res.raw_());
+      vm.drop(sp, nargs+1);
+      vm.push(sp, res.raw_());
       VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
       pc++;
       break;
@@ -312,18 +307,17 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t nargs = *(++pc);
       uint8_t nvals = *(++pc);
       DBG_VM("call-receive-fixed %" PRIu8 " %" PRIu8 "\n", nargs, nvals);
-      T_O* func = *(vm.stackref(nargs));
-      T_O** args = vm.stackref(nargs-1);
-      VirtualMachineStackState vmss = vm.save();
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs-1);
+      vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.load(vmss);
       multipleValues.setN(res.raw_(),res.number_of_values());
-      vm.drop(nargs+1);
+      vm.drop(sp, nargs+1);
       if (nvals != 0) {
-        vm.push(res.raw_()); // primary
+        vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
         for (size_t i = 1; i < svalues; ++i)
-          vm.push(multipleValues.valueGet(i, svalues).raw_());
+          vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
       }
       pc++;
       break;
@@ -332,38 +326,38 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t nelems = *(++pc);
       uint8_t base = *(++pc);
       DBG_VM1("bind %" PRIu8 " %" PRIu8 "\n", nelems, base);
-      vm.copytoreg(fp, vm.stackref(nelems-1), nelems, base);
-      vm.drop(nelems);
+      vm.copytoreg(fp, vm.stackref(sp, nelems-1), nelems, base);
+      vm.drop(sp, nelems);
       pc++;
       break;
     }
     case vm_set: {
       uint8_t n = *(++pc);
       DBG_VM("set %" PRIu8 "\n", n);
-      vm.setreg(fp, n, vm.pop());
+      vm.setreg(fp, n, vm.pop(sp));
       pc++;
       break;
     }
     case vm_make_cell: {
       DBG_VM1("make-cell\n");
-      T_sp car((gctools::Tagged)(vm.pop()));
+      T_sp car((gctools::Tagged)(vm.pop(sp)));
       T_sp cdr((gctools::Tagged)nil<T_O>().raw_());
-      vm.push(Cons_O::create(car, cdr).raw_());
+      vm.push(sp, Cons_O::create(car, cdr).raw_());
       pc++;
       break;
     }
     case vm_cell_ref: {
       DBG_VM1("cell-ref\n");
-      T_sp cons((gctools::Tagged)vm.pop());
-      vm.push(oCar(cons).raw_());
+      T_sp cons((gctools::Tagged)vm.pop(sp));
+      vm.push(sp, oCar(cons).raw_());
       pc++;
       break;
     }
     case vm_cell_set: {
       DBG_VM("cell-set\n");
-      T_sp cons((gctools::Tagged)vm.pop());
+      T_sp cons((gctools::Tagged)vm.pop(sp));
       Cons_sp ccons = gc::As_assert<Cons_sp>(cons);
-      T_O* val = vm.pop();
+      T_O* val = vm.pop(sp);
       T_sp tval((gctools::Tagged)val);
       ccons->rplaca(tval);
       pc++;
@@ -379,9 +373,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       Closure_sp closure
         = Closure_O::make_bytecode_closure(fn, nclosed);
       // FIXME: Can we use some more abstracted access?
-      vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
-      vm.drop(nclosed);
-      vm.push(closure.raw_());
+      vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
+      vm.drop(sp, nclosed);
+      vm.push(sp, closure.raw_());
       pc++;
       break;
     }
@@ -394,7 +388,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("  nclosed = %zu\n", nclosed);
       Closure_sp closure
         = Closure_O::make_bytecode_closure(fn, nclosed);
-      vm.push(closure.raw_());
+      vm.push(sp, closure.raw_());
       pc++;
       break;
     }
@@ -408,25 +402,25 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       GlobalBytecodeEntryPoint_sp fn = gc::As_assert<GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
-      vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
-      vm.drop(nclosed);
+      vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
+      vm.drop(sp, nclosed);
       pc++;
       break;
     }
     case vm_return: {
       DBG_VM1("return\n");
-      if (vaslistp) vm.drop(4); // deallocate
+      if (vaslistp) vm.drop(sp, 4); // deallocate
 #ifdef DBG_VM1
-      if (vm.npushed(fp, nlocals) != 0) {
+      if (vm.npushed(fp, sp, nlocals) != 0) {
 #ifdef DEBUG_VIRTUAL_MACHINE
-        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   \n   nlocals = %lu  framePointer %p  _stackPointer %p vm._unwind_counter %lu  vm._throw_counter %lu", vm.npushed(fp, nlocals), nlocals, fp, (void*)vm._stackPointer, vm._unwind_counter, vm._throw_counter ).c_str());
+        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   \n   nlocals = %lu  framePointer %p  _stackPointer %p vm._unwind_counter %lu  vm._throw_counter %lu", vm.npushed(fp, sp, nlocals), nlocals, fp, (void*)vm._stackPointer, vm._unwind_counter, vm._throw_counter ).c_str());
 #else
-        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   \n   nlocals = %lu  framePointer %p  _stackPointer %p", vm.npushed(fp, nlocals), nlocals, (void*)fp, (void*)vm._stackPointer).c_str());
+        gctools::wait_for_user_signal(fmt::sprintf("vm_return - vm.npushed(nlocals) = %td   \n   nlocals = %lu  framePointer %p  _stackPointer %p", vm.npushed(fp, sp, nlocals), nlocals, (void*)fp, (void*)vm._stackPointer).c_str());
 #endif
-        SIMPLE_ERROR("In vm_return - vm.npushed(nlocals) = %td   nlocals = %lu", vm.npushed(fp, nlocals), nlocals);
+        SIMPLE_ERROR("In vm_return - vm.npushed(nlocals) = %td   nlocals = %lu", vm.npushed(fp, sp, nlocals), nlocals);
       }
 #endif
-      vm.drop(nlocals);
+      vm.drop(sp, nlocals);
       size_t nvalues = multipleValues.getSize();
       return gctools::return_type(multipleValues.valueGet(0, nvalues).raw_(), nvalues);
     }
@@ -460,7 +454,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         T_sp tobj((gctools::Tagged)lcc_args[i]);
         rest << tobj;
       }
-      vm.push(rest.cons().raw_());
+      vm.push(sp, rest.cons().raw_());
       pc++;
       break;
     }
@@ -471,7 +465,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       //
       uint8_t start = *(++pc);
       DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
-      auto theVaslist = vm.alloca_vaslist2(lcc_args + start, lcc_nargs - start);
+      auto theVaslist = vm.alloca_vaslist2(sp, lcc_args + start, lcc_nargs - start);
 #if 0
       printf("%s:%d:%s About to dump vm.alloca_vaslst result\n", __FILE__, __LINE__, __FUNCTION__ );
       dump_Vaslist_ptr(stdout,gctools::untag_vaslist<T_O*>(theVaslist));
@@ -480,7 +474,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
         core::core__gdb(nil<core::T_O>());
       }
 #endif
-      vm.push(theVaslist);
+      vm.push(sp, theVaslist);
       vaslistp = true;
       pc++;
       break;
@@ -557,7 +551,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_jump_if_8: {
       int8_t rel = *(pc + 1);
       DBG_VM1("jump-if %" PRId8 "\n", rel);
-      T_sp tval((gctools::Tagged)vm.pop());
+      T_sp tval((gctools::Tagged)vm.pop(sp));
       VM_RECORD_PLAYBACK(tval.raw_(),"vm_jump_if_8");
       if (tval.notnilp()) pc += rel;
       else pc += 2;
@@ -566,7 +560,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_jump_if_16: {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("jump-if %" PRId16 "\n", rel);
-      T_sp tval((gctools::Tagged)vm.pop());
+      T_sp tval((gctools::Tagged)vm.pop(sp));
       if (tval.notnilp()) pc += rel;
       else pc += 3;
       break;
@@ -574,7 +568,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_jump_if_24: {
       int32_t rel = read_label(pc, 3);
       DBG_VM("jump-if %" PRId32 "\n", rel);
-      T_sp tval((gctools::Tagged)vm.pop());
+      T_sp tval((gctools::Tagged)vm.pop(sp));
       if (tval.notnilp()) pc += rel;
       else pc += 4;
       break;
@@ -632,78 +626,75 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("push-values\n");
       size_t nvalues = multipleValues.getSize();
       DBG_VM("  nvalues = %zu\n", nvalues);
-      for (size_t i = 0; i < nvalues; ++i) vm.push(multipleValues.valueGet(i, nvalues).raw_());
+      for (size_t i = 0; i < nvalues; ++i) vm.push(sp, multipleValues.valueGet(i, nvalues).raw_());
       // We could skip tagging this, but that's error-prone.
-      vm.push(make_fixnum(nvalues).raw_());
+      vm.push(sp, make_fixnum(nvalues).raw_());
       pc++;
       break;
     }
     case vm_append_values: {
       DBG_VM("append-values\n");
-      T_sp texisting_values((gctools::Tagged)vm.pop());
+      T_sp texisting_values((gctools::Tagged)vm.pop(sp));
       size_t existing_values = texisting_values.unsafe_fixnum();
       DBG_VM("  existing-values = %zu\n", existing_values);
       size_t nvalues = multipleValues.getSize();
       DBG_VM("  nvalues = %zu\n", nvalues);
-      for (size_t i = 0; i < nvalues; ++i) vm.push(multipleValues.valueGet(i, nvalues).raw_());
-      vm.push(make_fixnum(nvalues + existing_values).raw_());
+      for (size_t i = 0; i < nvalues; ++i) vm.push(sp, multipleValues.valueGet(i, nvalues).raw_());
+      vm.push(sp, make_fixnum(nvalues + existing_values).raw_());
       pc++;
       break;
     }
     case vm_pop_values: {
       DBG_VM("pop-values\n");
-      T_sp texisting_values((gctools::Tagged)vm.pop());
+      T_sp texisting_values((gctools::Tagged)vm.pop(sp));
       size_t existing_values = texisting_values.unsafe_fixnum();
       DBG_VM("  existing-values = %zu\n", existing_values);
-      vm.copyto(existing_values, &my_thread->_MultipleValues._Values[0]);
+      vm.copyto(sp, existing_values, &my_thread->_MultipleValues._Values[0]);
       multipleValues.setSize(existing_values);
-      vm.drop(existing_values);
+      vm.drop(sp, existing_values);
       pc++;
       break;
     }
     case vm_mv_call: {
       DBG_VM("mv-call\n");
-      T_O* func = vm.pop();
+      T_O* func = vm.pop(sp);
       size_t nargs = lisp_multipleValues().getSize();
       T_O* args[nargs];
       multipleValuesSaveToTemp(nargs, args);
-      VirtualMachineStackState vmss = vm.save();
+      vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.load(vmss);
       multipleValues.setN(res.raw_(),res.number_of_values());
       pc++;
       break;
     }
     case vm_mv_call_receive_one: {
       DBG_VM("mv-call-receive-one\n");
-      T_O* func = vm.pop();
+      T_O* func = vm.pop(sp);
       size_t nargs = lisp_multipleValues().getSize();
       T_O* args[nargs];
       multipleValuesSaveToTemp(nargs, args);
-      VirtualMachineStackState vmss = vm.save();
+      vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.load(vmss);
       multipleValues.set1(res);
-      vm.push(res.raw_());
+      vm.push(sp, res.raw_());
       pc++;
       break;
     }
     case vm_mv_call_receive_fixed: {
       uint8_t nvals = *(++pc);
       DBG_VM("mv-call-receive-fixed %" PRIu8 "\n", nvals);
-      T_O* func = vm.pop();
+      T_O* func = vm.pop(sp);
       size_t nargs = multipleValues.getSize();
       T_O* args[nargs];
       multipleValuesSaveToTemp(nargs, args);
-      VirtualMachineStackState vmss = vm.save();
+      vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.load(vmss);
       multipleValues.setN(res.raw_(),res.number_of_values());
       if (nvals != 0) {
-        vm.push(res.raw_()); // primary
+        vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
         for (size_t i = 1; i < svalues; ++i)
-          vm.push(multipleValues.valueGet(i, svalues).raw_());
+          vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
       }
       pc++;
       break;
@@ -711,21 +702,21 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_save_sp: {
       uint8_t n = *(++pc);
       DBG_VM("save sp %" PRIu8 "\n", n);
-      vm.savesp(fp, n);
+      vm.savesp(fp, sp, n);
       pc++;
       break;
     }
     case vm_restore_sp: {
       uint8_t n = *(++pc);
       DBG_VM("restore sp %" PRIu8 "\n", n);
-      vm.restoresp(fp, n);
+      vm.restoresp(fp, sp, n);
       pc++;
       break;
     }
     case vm_entry: {
       uint8_t n = *(++pc);
       DBG_VM("entry %" PRIu8 "\n", n);
-      VirtualMachineStackState vmss = vm.save();
+      T_O** old_sp = sp;
       pc++;
       jmp_buf target;
       void* frame = __builtin_frame_address(0);
@@ -734,10 +725,10 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       vm.setreg(fp, n, env.raw_());
       gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
-      if (setjmp(target)) vm.load(vmss);
+      if (setjmp(target)) sp = old_sp;
       again:
       try {
-        bytecode_vm(vm, literals, nlocals, closure, fp, lcc_nargs, lcc_args);
+        bytecode_vm(vm, literals, nlocals, closure, fp, sp, lcc_nargs, lcc_args);
         pc = vm._pc;
       }
       catch (Unwind &uw) {
@@ -753,7 +744,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       int8_t rel = *(pc + 1);
       DBG_VM("exit %" PRId8 "\n", rel);
       vm._pc = pc + rel;
-      T_sp ttde((gctools::Tagged)(vm.pop()));
+      T_sp ttde((gctools::Tagged)(vm.pop(sp)));
       TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
@@ -761,7 +752,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       int16_t rel = read_s16(pc + 1);
       DBG_VM("exit %" PRId16 "\n", rel);
       vm._pc = pc + rel;
-      T_sp ttde((gctools::Tagged)(vm.pop()));
+      T_sp ttde((gctools::Tagged)(vm.pop(sp)));
       TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
@@ -769,7 +760,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       int32_t rel = read_label(pc, 3);
       DBG_VM("exit %" PRId32 "\n", rel);
       vm._pc = pc + rel;
-      T_sp ttde((gctools::Tagged)(vm.pop()));
+      T_sp ttde((gctools::Tagged)(vm.pop(sp)));
       TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
       sjlj_unwind(tde, 1);
     }
@@ -783,13 +774,14 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_special_bind: {
       uint8_t c = *(++pc);
       DBG_VM("special-bind %" PRIu8 "\n", c);
-      T_sp value((gctools::Tagged)(vm.pop()));
+      T_sp value((gctools::Tagged)(vm.pop(sp)));
       pc++;
       T_sp symbol((gctools::Tagged)literals[c]);
       vm._pc = pc;
       call_with_variable_bound(symbol, value,
                                [&]() { return bytecode_vm(vm, literals,
-                                                          nlocals, closure, fp,
+                                                          nlocals, closure,
+                                                          fp, sp,
                                                           lcc_nargs, lcc_args);
                                });
       pc = vm._pc;
@@ -800,7 +792,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("symbol-value %" PRIu8 "\n", c);
       T_sp sym_sp((gctools::Tagged)literals[c]);
       Symbol_sp sym = gc::As_assert<Symbol_sp>(sym_sp);
-      vm.push(sym->symbolValue().raw_());
+      vm.push(sp, sym->symbolValue().raw_());
       pc++;
       break;
     }
@@ -810,7 +802,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       T_sp sym_sp((gctools::Tagged)literals[c]);
       ASSERT(gc::IsA<Symbol_sp>(sym_sp));
       Symbol_sp sym = gc::As_assert<Symbol_sp>(sym_sp);
-      T_sp value((gctools::Tagged)(vm.pop()));
+      T_sp value((gctools::Tagged)(vm.pop(sp)));
       sym->setf_symbolValue(value);
       pc++;
       break;
@@ -826,24 +818,24 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t c = *(++pc);
       DBG_VM1("fdefinition %" PRIu8 "\n", c);
       T_sp sym((gctools::Tagged)literals[c]);
-      vm.push(cl__fdefinition(sym).raw_());
+      vm.push(sp, cl__fdefinition(sym).raw_());
       pc++;
       break;
     }
     case vm_nil:
         DBG_VM("nil\n");
-        vm.push(nil<T_O>().raw_());
+        vm.push(sp, nil<T_O>().raw_());
         pc++;
         break;
     case vm_push: {
       DBG_VM1("push\n");
-      vm.push(multipleValues.valueGet(0, multipleValues.getSize()).raw_());
+      vm.push(sp, multipleValues.valueGet(0, multipleValues.getSize()).raw_());
       pc++;
       break;
     }
     case vm_pop:{
       DBG_VM1("pop\n");
-      T_sp obj((gctools::Tagged)vm.pop());
+      T_sp obj((gctools::Tagged)vm.pop(sp));
       multipleValues.set1(obj);
       pc++;
       break;
@@ -852,7 +844,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       // In a separate function to facilitate better icache utilization
       // by bytecode_vm (hopefully)
       pc++;
-      pc = long_dispatch(vm, pc, multipleValues, literals, nlocals, closure, fp, lcc_nargs, lcc_args, *pc);
+      pc = long_dispatch(vm, pc, multipleValues, literals, nlocals, closure, fp, sp, lcc_nargs, lcc_args, *pc);
       break;
     }
     default:
@@ -872,6 +864,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
                                     size_t nlocals,
                                     Closure_O* closure,
                                     core::T_O** fp,
+                                    core::T_O**& sp,
                                     size_t lcc_nargs,
                                     core::T_O** lcc_args,
                                     uint8_t sub_opcode) {
@@ -880,7 +873,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(pc + 1);
     uint16_t n = low + (*(pc + 2) << 8);
     DBG_VM1("long ref %" PRIu16 "\n", n);
-    vm.push(*(vm.reg(fp, n)));
+    vm.push(sp, *(vm.reg(fp, n)));
     pc += 3;
     break;
   }
@@ -889,7 +882,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long const %" PRIu16 "\n", n);
     T_O* value = literals[n];
-    vm.push(value);
+    vm.push(sp, value);
     VM_RECORD_PLAYBACK(value,"long const");
     pc++;
     break;
@@ -898,7 +891,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(pc + 1);
     uint16_t n = low + (*(pc + 2) << 8);
     DBG_VM1("long closure %" PRIu16 "\n", n);
-    vm.push((*closure)[n].raw_());
+    vm.push(sp, (*closure)[n].raw_());
     pc += 3;
     break;
   }
@@ -907,16 +900,15 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call %" PRIu16 "\n", nargs);
 #ifdef DBG_VM1
-    if (nargs + 1 > vm.npushed(fp, nlocals))
-      SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %td", nargs + 1, vm.npushed(fp, nlocals));
+    if (nargs + 1 > vm.npushed(fp, sp, nlocals))
+      SIMPLE_ERROR("VM BUG: Mismatch in call: more arguments requested than are on the stack: %" PRIu16 " versus %td", nargs + 1, vm.npushed(fp, sp, nlocals));
 #endif
-    T_O* func = *(vm.stackref(nargs));
-    T_O** args = vm.stackref(nargs-1);
-    VirtualMachineStackState vmss = vm.save();
+    T_O* func = *(vm.stackref(sp, nargs));
+    T_O** args = vm.stackref(sp, nargs-1);
+    vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    vm.load(vmss);
     multipleValues.setN(res.raw_(),res.number_of_values());
-    vm.drop(nargs+1);
+    vm.drop(sp, nargs+1);
     pc += 3;
     break;
   }
@@ -924,10 +916,10 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call-receive-one %" PRIu16 "\n", nargs);
-    T_O* func = *(vm.stackref(nargs));
+    T_O* func = *(vm.stackref(sp, nargs));
     VM_RECORD_PLAYBACK(func,"vm_call_receive_one_func");
     VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs,"vm_call_receive_one_nargs");
-    T_O** args = vm.stackref(nargs-1);
+    T_O** args = vm.stackref(sp, nargs-1);
 #if DEBUG_VM_RECORD_PLAYBACK==1
     for ( size_t ii=0; ii<nargs; ii++ ) {
       stringstream name_args;
@@ -935,12 +927,11 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
       VM_RECORD_PLAYBACK(args[ii],name_args.str().c_str() );
     }
 #endif
-    VirtualMachineStackState vmss = vm.save();
+    vm._stackPointer = sp;
     T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    vm.load(vmss);
     multipleValues.set1(res);
-    vm.drop(nargs+1);
-    vm.push(res.raw_());
+    vm.drop(sp, nargs+1);
+    vm.push(sp, res.raw_());
     VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
     pc += 3;
     break;
@@ -951,18 +942,17 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low_nvals = *(pc + 3);
     uint16_t nvals = low_nvals + (*(pc + 4) << 8);
     DBG_VM("long call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
-    T_O* func = *(vm.stackref(nargs));
-    T_O** args = vm.stackref(nargs-1);
-    VirtualMachineStackState vmss = vm.save();
+    T_O* func = *(vm.stackref(sp, nargs));
+    T_O** args = vm.stackref(sp, nargs-1);
+    vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    vm.load(vmss);
     multipleValues.setN(res.raw_(),res.number_of_values());
-    vm.drop(nargs+1);
+    vm.drop(sp, nargs+1);
     if (nvals != 0) {
-      vm.push(res.raw_()); // primary
+      vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
       for (size_t i = 1; i < svalues; ++i)
-        vm.push(multipleValues.valueGet(i, svalues).raw_());
+        vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
     }
     pc += 5;
     break;
@@ -973,8 +963,8 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low_offset = *(pc + 3);
     uint16_t offset = low_offset + (*(pc + 4) << 8);
     DBG_VM1("long bind %" PRIu16 " %" PRIu16 "\n", count, offset);
-    vm.copytoreg(fp, vm.stackref(count-1), count, offset);
-    vm.drop(count);
+    vm.copytoreg(fp, vm.stackref(sp, count-1), count, offset);
+    vm.drop(sp, count);
     pc += 5;
     break;
   }
@@ -982,7 +972,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(pc + 1);
     uint16_t n = low + (*(pc + 2) << 8);
     DBG_VM("long set %" PRIu16 "\n", n);
-    vm.setreg(fp, n, vm.pop());
+    vm.setreg(fp, n, vm.pop(sp));
     pc += 3;
     break;
   }
@@ -991,7 +981,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long fdefinition %" PRIu16 "\n", n);
     T_sp sym((gctools::Tagged)literals[n]);
-    vm.push(cl__fdefinition(sym).raw_());
+    vm.push(sp, cl__fdefinition(sym).raw_());
     pc++;
     break;
   }
@@ -1007,9 +997,9 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     Closure_sp closure
       = Closure_O::make_bytecode_closure(fn, nclosed);
       // FIXME: Can we use some more abstracted access?
-    vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
-    vm.drop(nclosed);
-    vm.push(closure.raw_());
+    vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
+    vm.drop(sp, nclosed);
+    vm.push(sp, closure.raw_());
     pc += 3;
     break;
   }
@@ -1024,7 +1014,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     DBG_VM("  nclosed = %zu\n", nclosed);
     Closure_sp closure
       = Closure_O::make_bytecode_closure(fn, nclosed);
-    vm.push(closure.raw_());
+    vm.push(sp, closure.raw_());
     pc += 3;
     break;
   }
@@ -1040,8 +1030,8 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
       = gc::As_assert<GlobalBytecodeEntryPoint_sp>(closure->entryPoint());
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
-    vm.copyto(nclosed, (T_O**)(closure->_Slots.data()));
-    vm.drop(nclosed);
+    vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
+    vm.drop(sp, nclosed);
     pc += 3;
     break;
   }
@@ -1079,7 +1069,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
       T_sp tobj((gctools::Tagged)lcc_args[i]);
       rest << tobj;
     }
-    vm.push(rest.cons().raw_());
+    vm.push(sp, rest.cons().raw_());
     pc += 3;
     break;
   }
@@ -1174,19 +1164,18 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(pc + 1);
     uint16_t nvals = low + (*(pc + 2) << 8);
     DBG_VM("long mv-call-receive-fixed %" PRIu16 "\n", nvals);
-    T_O* func = vm.pop();
+    T_O* func = vm.pop(sp);
     size_t nargs = multipleValues.getSize();
     T_O* args[nargs];
     multipleValuesSaveToTemp(nargs, args);
-    VirtualMachineStackState vmss = vm.save();
+    vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    vm.load(vmss);
     multipleValues.setN(res.raw_(),res.number_of_values());
     if (nvals != 0) {
-      vm.push(res.raw_()); // primary
+      vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
       for (size_t i = 1; i < svalues; ++i)
-        vm.push(multipleValues.valueGet(i, svalues).raw_());
+        vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
     }
     pc += 3;
     break;
@@ -1195,13 +1184,13 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(pc + 1);
     uint16_t c = low + (*(pc + 2) << 8);
     DBG_VM("long special-bind %" PRIu16 "\n", c);
-    T_sp value((gctools::Tagged)(vm.pop()));
+    T_sp value((gctools::Tagged)(vm.pop(sp)));
     pc += 3;
     T_sp symbol((gctools::Tagged)literals[c]);
     call_with_variable_bound(symbol, value,
                              [&]() { return bytecode_vm(vm, literals,
                                                         nlocals, closure,
-                                                        fp, lcc_nargs, lcc_args);
+                                                        fp, sp, lcc_nargs, lcc_args);
                              });
     break;
   }
@@ -1211,7 +1200,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     DBG_VM1("long symbol-value %" PRIu16 "\n", n);
     T_sp sym_sp((gctools::Tagged)literals[n]);
     Symbol_sp sym = gc::As_assert<Symbol_sp>(sym_sp);
-    vm.push(sym->symbolValue().raw_());
+    vm.push(sp, sym->symbolValue().raw_());
     pc++;
     break;
   }
@@ -1221,7 +1210,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     DBG_VM1("long symbol-value %" PRIu16 "\n", n);
     T_sp sym_sp((gctools::Tagged)literals[n]);
     Symbol_sp sym = gc::As_assert<Symbol_sp>(sym_sp);
-    T_sp value((gctools::Tagged)(vm.pop()));
+    T_sp value((gctools::Tagged)(vm.pop(sp)));
     sym->setf_symbolValue(value);
     pc++;
     break;
@@ -1252,10 +1241,17 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // since in that case the NLXing VM invocation sets the PC before escaping.
   unsigned char* old_pc = vm._pc;
   vm._pc = pc;
-  core::T_O** fp = vm.push_frame(nlocals);
+  // This is the only place we read the vm._stackPointer. Everywhere else we
+  // use a local variable. This means we start new frames appropriately when
+  // we're called from wherever, and also that we use the correct sp when
+  // being unwound to.
+  core::T_O** fp = vm._stackPointer;
+  core::T_O** sp = vm.push_frame(fp, nlocals);
   try {
-    gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure, fp, lcc_nargs, lcc_args);
+    gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure,
+                                           fp, sp, lcc_nargs, lcc_args);
     vm._pc = old_pc;
+    vm._stackPointer = fp;
     return res;
   } catch (core::VM_error& err) {
     printf("%s:%d:%s Recovering from VM_error\n", __FILE__, __LINE__, __FUNCTION__ );
