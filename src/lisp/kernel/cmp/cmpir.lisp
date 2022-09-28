@@ -284,6 +284,12 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-nil ()
   (irc-literal nil "NIL"))
 
+(defvar *current-unwind-landing-pad-dest* nil)
+
+(defmacro with-landing-pad (unwind-landing-pad-dest &rest body)
+  `(let ((*current-unwind-landing-pad-dest* ,unwind-landing-pad-dest))
+     ,@body))
+
 (defun irc-intrinsic-invoke-if-landing-pad-or-call (function-name args &optional (label "") (maybe-landing-pad *current-unwind-landing-pad-dest*))
   ;; FIXME:   If the current function has a landing pad - then use INVOKE
   (if maybe-landing-pad

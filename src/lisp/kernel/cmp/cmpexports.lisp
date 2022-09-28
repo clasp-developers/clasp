@@ -329,7 +329,6 @@
             process-bir-lambda-list
             treat-as-special-operator-p
             typeid-core-unwind
-            with-begin-end-catch
             *dbg-generate-dwarf*
             *dbg-current-function-metadata*
             *dbg-current-function-lineno*

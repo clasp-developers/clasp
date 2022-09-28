@@ -40,6 +40,16 @@
 
 ;;; shared between both
 
+(defmacro with-begin-end-catch ((exn exception-ptr rethrow-bb) &rest body)
+  (let ((exn-gs (gensym)))
+    `(let ((,exn-gs ,exn))
+       (multiple-value-prog1
+           (cmp:with-landing-pad ,rethrow-bb
+             (let ((,exception-ptr (cmp:irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
+               ,@body))
+         (cmp:with-landing-pad nil
+           (cmp:irc-intrinsic "__cxa_end_catch"))))))
+
 ;;; Generates code that checks whether the unwind is to this frame.
 ;;; If it is, it returns the control point index, i.e. which come-from to jump to.
 ;;; Otherwise it rethrows, going to the provided landing pad.
@@ -47,7 +57,7 @@
 ;;; and if so, extract the go-index and jump table and so on in a catch block.
 ;;; Saves a landing pad and my comprehension.
 (defun generate-match-unwind (frame landing-pad-for-unwind-rethrow exn.slot)
-  (cmp:with-begin-end-catch ((cmp:irc-typed-load cmp:%exn% exn.slot "exn") exception-ptr nil)
+  (with-begin-end-catch ((cmp:irc-typed-load cmp:%exn% exn.slot "exn") exception-ptr nil)
     ;; Check if frame is correct against tagbody and jump to jumpid
     (cmp:with-landing-pad landing-pad-for-unwind-rethrow
       (%intrinsic-invoke-if-landing-pad-or-call

@@ -54,7 +54,6 @@
              #~"kernel/cmp/cmpintrinsics.lisp"
              #~"kernel/cmp/primitives.lisp"
              #~"kernel/cmp/cmpir.lisp"
-             #~"kernel/cmp/cmpeh.lisp"
              #~"kernel/cmp/debuginfo.lisp"
              #~"kernel/cmp/arguments.lisp"
              #~"kernel/cmp/cmprunall.lisp"
