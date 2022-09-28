@@ -1410,18 +1410,6 @@ CL_DEFMETHOD int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp targ
     }
   }
   SIMPLE_ERROR(("Could not find single dispatch target symbol[%s]") , _rep_(target));
-#if 0
-	// Slide all the frameIndexPointers up one
-	for ( int i=0; i<arguments.size()-1; i++ )
-	{
-	    ASSERTF((*arguments[i])==i,("FrameIndex %d is out of sequence") , i);
-	    (*arguments[i]) = (*arguments[i])+1;
-	}
-	// Now move the FrameIndex associated with target (the last one) to zero
-	int single_dispatch_argument_index = *(arguments.back());
-	*(arguments.back()) = 0;
-	return single_dispatch_argument_index;
-#endif
 }
 
 string LambdaListHandler_O::partsAsString() const {
