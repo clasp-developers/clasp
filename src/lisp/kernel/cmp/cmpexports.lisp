@@ -327,7 +327,6 @@
             cleavir-lambda-list-analysis-cleavir-lambda-list
             cleavir-lambda-list-analysis-rest
             process-bir-lambda-list
-            treat-as-special-operator-p
             typeid-core-unwind
             *dbg-generate-dwarf*
             *dbg-current-function-metadata*

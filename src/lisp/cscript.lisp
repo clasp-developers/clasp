@@ -62,7 +62,6 @@
              #~"kernel/cmp/codegen-special-form.lisp")
   (unless nil;bytecode
     (k:sources target
-               #~"kernel/cmp/codegen.lisp"
                #~"kernel/cmp/compile.lisp"))
   (k:sources target
              #~"kernel/cmp/compile-file.lisp"
