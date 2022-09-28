@@ -50,7 +50,6 @@
              #~"kernel/lsp/debug.lisp"
              #~"kernel/cmp/cmpexports.lisp"
              #~"kernel/cmp/cmpsetup.lisp"
-             #~"kernel/cmp/cmpglobals.lisp"
              #~"kernel/cmp/cmputil.lisp"
              #~"kernel/cmp/cmpintrinsics.lisp"
              #~"kernel/cmp/primitives.lisp"
