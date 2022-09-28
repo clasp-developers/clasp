@@ -57,7 +57,6 @@
              #~"kernel/cmp/cmpeh.lisp"
              #~"kernel/cmp/debuginfo.lisp"
              #~"kernel/cmp/arguments.lisp"
-             #~"kernel/cmp/cmplambda.lisp"
              #~"kernel/cmp/cmprunall.lisp"
              #~"kernel/cmp/cmpliteral.lisp"
              #~"kernel/cmp/typeq.lisp"
