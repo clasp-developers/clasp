@@ -1228,79 +1228,7 @@ CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
 
 };
 
-extern "C" {
-  __attribute__((noinline)) int callByValue(core::T_sp v1, core::T_sp v2, core::T_sp v3, core::T_sp v4) {
-    ASSERT(v1.fixnump());
-    ASSERT(v2.fixnump());
-    ASSERT(v3.fixnump());
-    ASSERT(v4.fixnump());
-    int f1 = v1.unsafe_fixnum();
-    int f2 = v2.unsafe_fixnum();
-    int f3 = v3.unsafe_fixnum();
-    int f4 = v4.unsafe_fixnum();
-    int res = f1 + f2 + f3 + f4;
-    return res;
-  }
-
-  __attribute__((noinline)) int callByPointer(core::T_O *v1, core::T_O *v2, core::T_O *v3, core::T_O *v4) {
-    ASSERT(gctools::tagged_fixnump(v1));
-    ASSERT(gctools::tagged_fixnump(v2));
-    ASSERT(gctools::tagged_fixnump(v3));
-    ASSERT(gctools::tagged_fixnump(v4));
-    int f1 = gctools::untag_fixnum(v1);
-    int f2 = gctools::untag_fixnum(v2);
-    int f3 = gctools::untag_fixnum(v3);
-    int f4 = gctools::untag_fixnum(v4);
-    int res = f1 + f2 + f3 + f4;
-    return res;
-  }
-
-  __attribute__((noinline)) int callByConstRef(const core::T_sp &v1, const core::T_sp &v2, const core::T_sp &v3, const core::T_sp &v4) {
-    ASSERT(v1.fixnump());
-    ASSERT(v2.fixnump());
-    ASSERT(v3.fixnump());
-    ASSERT(v4.fixnump());
-    int f1 = v1.unsafe_fixnum();
-    int f2 = v2.unsafe_fixnum();
-    int f3 = v3.unsafe_fixnum();
-    int f4 = v4.unsafe_fixnum();
-    int res = f1 + f2 + f3 + f4;
-    return res;
-  }
-};
-
 namespace core {
-
-T_sp allocFixnum() {
-  Fixnum_sp fn = make_fixnum(3);
-  return fn;
-}
-
-void dynamicCastArg(T_sp a) {
-  Cons_sp c = gc::As<Cons_sp>(a);
-  (void)c; // suppress warning
-}
-
-T_sp bitOLogicWithObjects() {
-  T_sp val = _lisp->_true();
-  T_sp val2 = nil<T_O>();
-  if (val2.nilp()) {
-    return val;
-  }
-  return val2;
-};
-
-T_sp allocCons() {
-  Cons_sp fn = Cons_O::create(nil<T_O>(),nil<T_O>());
-  return fn;
-}
-
-T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
-  ASSERT(fr.isA<ActivationFrame_O>());
-  ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<ActivationFrame_O>(fr);
-  T_sp val = core::value_frame_lookup_reference(af, depth, index);
-  return val;
-}
 
 CL_LAMBDA(symbol value thunk)
 CL_DECLARE();
@@ -1907,55 +1835,7 @@ void expect_offset(T_sp key, T_sp alist, size_t expected) {
 
 };
 
-
-namespace core {
-
 SYMBOL_EXPORT_SC_(CorePkg,two_arg_STAR);
-
-struct WrapEntryPoint {
-  
-  static inline LCC_RETURN wrap_enter(T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
-    printf("%s:%d:%s In wrap_enter lcc_closure %p  lcc_nargs %lu  lcc_args %p\n",
-           __FILE__, __LINE__, __FUNCTION__, lcc_closure, lcc_nargs, lcc_args );
-    for (size_t ii = 0; ii< lcc_nargs; ii++ ) {
-      T_sp val((gctools::Tagged)lcc_args[ii]);
-      printf("%s:%d:%s  arg[%lu] = %s\n", __FILE__, __LINE__, __FUNCTION__, ii, _rep_(val).c_str());
-    }
-    return gctools::return_type();
-  }
-
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    return wrap_enter( lcc_closure, lcc_nargs, lcc_args );
-  }
-
-  static inline LISP_ENTRY_0() {
-    return wrap_enter( lcc_closure, 0, NULL );
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return wrap_enter( lcc_closure, 1, args );
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return wrap_enter( lcc_closure, 2, args );
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return wrap_enter( lcc_closure, 3, args );
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return wrap_enter( lcc_closure, 4, args );
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return wrap_enter( lcc_closure, 5, args );
-  }
-};
-
-
-};
-
 
 extern "C" {
 
