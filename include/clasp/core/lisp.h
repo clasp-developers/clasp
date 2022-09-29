@@ -363,7 +363,7 @@ class Lisp {
     DoubleFloat_sp _RehashSize;
     DoubleFloat_sp _RehashThreshold;
     T_sp _NullStream;
-    List_sp _ThePathnameTranslations; /* alist */
+    HashTableEqualp_sp _ThePathnameTranslations;
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
@@ -468,8 +468,8 @@ public:
   //	void catchUnwindTag(List_sp catchStore);
   //	List_sp catchFindTag(T_sp tag);
 public:
-  List_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
-  void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
+  HashTableEqualp_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
+  //void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
   /*! Return the maximum path length for the system */
 public:
   bool bootClassTableIsValid() const { return this->_BootClassTableIsValid; };

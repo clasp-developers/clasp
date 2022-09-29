@@ -63,7 +63,7 @@
  (:name :bordeaux-threads
   :repository "https://github.com/sionescu/bordeaux-threads.git"
   :directory "src/lisp/kernel/contrib/bordeaux-threads/"
-  :commit "39d6790d24002df43e24b3c2d6f41524839b74d5"
+  :commit "3d25cd01176f7c9215ebc792c78313cb99ff02f9"
   :extension :cando)
  (:name :cffi ; TODO remove once cando-user no longer needs
   :repository "https://github.com/cffi/cffi.git"
@@ -194,7 +194,7 @@
  (:name :cando
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
-  :branch "main"
+  :branch "vm"
   :extension :cando)
  (:name :seqan-clasp
   :repository "https://github.com/clasp-developers/seqan-clasp.git"

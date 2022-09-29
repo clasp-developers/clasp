@@ -37,11 +37,12 @@
   #-(and staging bytecode) nil)
 |#
 
-(defvar *avoid-compiling* nil)
+(defvar *avoid-compiling* t)
 
 (defun emf-maybe-compile (form)
   (if *avoid-compiling*
-      (coerce form 'function)
+      (let ((core:*use-interpreter-for-eval* t))
+        (coerce form 'function))
       (let ((*avoid-compiling* t)
             ;; Cleavir itself uses generic functions, and we could therefore
             ;; end up here recursively, which ends quite badly.

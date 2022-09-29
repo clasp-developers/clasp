@@ -61,6 +61,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/hashTable.h>
+#include <clasp/core/hashTableEqualp.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/lispStream.h>
@@ -652,96 +653,45 @@ parse_directories(T_sp s, int flags, size_t start, size_t end,
   return cl__nreverse(path);
 }
 
+CL_DOCSTRING(R"dx(Returns the host's list of translations. Each translation is a list of at least
+two elements: from-wildcard and to-wildcard. From-wildcard is a logical
+pathname whose host is host. To-wildcard is a pathname.)dx")
+CL_DEFUN T_sp cl__logical_pathname_translations(String_sp host) {
+  KeyValuePair *pair = _lisp->pathnameTranslations_()->find(host);
+  if (!pair) // This type error should be (satisfies logical-host-p)
+    TYPE_ERROR(host, cl::_sym_string);
+  return pair->_Value;
+}
 
+CL_LISPIFY_NAME("cl:logical-pathname-translations")
+CL_DOCSTRING(R"dx(Sets a logical pathname host's list of translations. If host is a string that has
+not been previously used as a logical pathname host, a new logical
+pathname host is defined; otherwise an existing host's translations are
+replaced. logical pathname host names are compared with string-equal.)dx")
+CL_DEFUN_SETF T_sp cl__setf_logical_pathname_translations(List_sp translations, String_sp host) {
+  if (translations.nilp()) {
+    _lisp->pathnameTranslations_()->remhash(host);
+  } else {
+    List_sp coerced_translations = nil<T_O>();
 
-CL_LAMBDA(&optional (host nil hostp) translation)
-CL_DECLARE();
-CL_DOCSTRING(R"dx(List the pathname translations or create one)dx")
-CL_DOCSTRING_LONG(R"dx(* Arguments
-- host :: A string or nil.
-- translation :: A list or nil.
-* Description
-If host is nil then return all pathname translations.
-If translation is nil then the pathname translation for the host name is returned.
-If translation is not nil then the pathname translation for the host name is set.)dx")
-DOCGROUP(clasp)
-CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
-  T_sp pair, l;
-  {
-//    printf("%s:%d WITH_READ_LOCK\n", __FILE__, __LINE__ );
-    WITH_READ_LOCK(globals_->_ThePathnameTranslationsMutex);
-    if (hostp.nilp()) return cl__copy_list(_lisp->pathnameTranslations_());
-    size_t parsed_len, len;
-  /* Check that host is a valid host name */
-    if (clasp_unlikely(!cl__stringp(host)))
-      QERROR_WRONG_TYPE_NTH_ARG(1, host, cl::_sym_string);
     host = cl__string_upcase(host);
-    len = cl__length(host);
-    parse_word(host, is_null, WORD_LOGICAL, 0, len, &parsed_len);
-    if (UNLIKELY(parsed_len < len)) {
-      SIMPLE_ERROR(("Wrong host syntax %s") , _rep_(host));
+    _lisp->pathnameTranslations_()->setf_gethash(host, coerced_translations);
+
+    while (translations.notnilp()) {
+      coerced_translations =
+          Cons_O::create(Cons_O::createList(coerce_to_from_pathname(oCaar(translations), host), cl__pathname(oCadar(translations))),
+                         coerced_translations);
+      translations = CDR(translations);
     }
-  /* Find its translation list */
-    if (cl::_sym_assoc->fboundp()) {
-      pair = eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations_(), kw::_sym_test, cl::_sym_string_equal);
-    } else {
-    // If called before _sym_assoc is setup then invoke assoc directly */
-      if (_lisp->pathnameTranslations_().notnilp()) {
-        pair = _lisp->pathnameTranslations_().asCons()->assoc(host, nil<T_O>(), cl::_sym_string_equal, nil<T_O>());
-      } else {
-        pair = nil<T_O>();
-      }
-    }
-    if (set.nilp()) {
-      return (pair.nilp()) ? nil<T_O>() : oCadr(pair);
-    }
-  /* Set the new translation list */
-    if (clasp_unlikely(!cl__listp(set))) {
-      QERROR_WRONG_TYPE_NTH_ARG(2, set, cl::_sym_list);
-    }
+
+    _lisp->pathnameTranslations_()->setf_gethash(host, cl__nreverse(coerced_translations));
   }
-  {
-//    printf("%s:%d WITH_READ_WRITE_LOCK\n", __FILE__, __LINE__ );
-    if (pair.nilp()) {
-      pair = Cons_O::create(host, Cons_O::create(nil<T_O>(), nil<T_O>()));
-      WITH_READ_WRITE_LOCK(globals_->_ThePathnameTranslationsMutex);
-      _lisp->setPathnameTranslations_(Cons_O::create(pair, _lisp->pathnameTranslations_()));
-    }
-    {
-      WITH_READ_LOCK(globals_->_ThePathnameTranslationsMutex);
-      for (l = set, set = nil<T_O>(); !cl__endp(l); l = CDR(l)) {
-        T_sp item = CAR(l);
-        T_sp from = coerce_to_from_pathname(oCar(item), host);
-        T_sp pn = oCadr(item);
-        if (pn.nilp())
-          TYPE_ERROR(pn, Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Pathname_O));
-        T_sp to = cl__pathname(oCadr(item));
-        set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, nil<T_O>())), set);
-      }
-      set = cl__nreverse(set);
-      T_sp savedSet = set;
-    }
-    {
-      WITH_READ_WRITE_LOCK(globals_->_ThePathnameTranslationsMutex);
-      gc::As<Cons_sp>(oCdr(pair))->rplaca(set);
-    }
-    return set;
-  }
+
+  return translations;
 }
 
 bool clasp_logical_hostname_p(T_sp host) {
-//  printf("%s:%d WITH_READ_LOCK\n", __FILE__, __LINE__ );
-  WITH_READ_LOCK(globals_->_ThePathnameTranslationsMutex);
-  if (!cl__stringp(host))
-    return false;
-  if (cl::_sym_assoc->fboundp()) {
-    return T_sp(eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations_(), kw::_sym_test, cl::_sym_string_equal)).notnilp();
-  } else {
-    if (_lisp->pathnameTranslations_().notnilp()) {
-      return _lisp->pathnameTranslations_().asCons()->assoc(host, nil<T_O>(), cl::_sym_string_equal, nil<T_O>()).notnilp();
-    }
-  }
-  return false;
+  return cl__stringp(host) && _lisp->pathnameTranslations_()->contains(host);
 }
 
 
@@ -2141,7 +2091,7 @@ begin:
     //	    printf("%s:%d Returning non-logical pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str() );
     return pathname;
   }
-  List_sp l = eval::funcall(core::_sym_pathnameTranslations, pathname->_Host);
+  List_sp l = cl__logical_pathname_translations(pathname->_Host);
   //  TESTING();
   for (auto cur : l) {     // ; !cl__endp(l); l = CDR(l)) {
     T_sp pair = oCar(cur); // I just noticed that I had oCar(l) in here!!!!!

@@ -1,5 +1,5 @@
 #include <clasp/core/bytecode_compiler.h>
-#include <clasp/core/evaluator.h> // af_interpreter_lookup_macro, extract_decl...
+#include <clasp/core/evaluator.h> // extract_decl...
 #include <clasp/core/sysprop.h> // core__get_sysprop
 #include <clasp/core/lambdaListHandler.h> // lambda list parsing
 #include <clasp/core/designators.h> // functionDesignator
@@ -57,9 +57,11 @@ T_sp Lexenv_O::lookupMacro(T_sp macroname) {
     return gc::As_unsafe<GlobalMacroInfo_sp>(info)->expander();
   else if (gc::IsA<LocalMacroInfo_sp>(info))
     return gc::As_unsafe<LocalMacroInfo_sp>(info)->expander();
-  else if (info.nilp()) // could be global
-    return af_interpreter_lookup_macro(macroname, nil<T_O>());
-  else return nil<T_O>();
+  else if (info.nilp()) {
+    Symbol_sp sym = gc::As<Symbol_sp>(macroname);
+    if (sym->fboundp() && sym->macroP()) return sym->symbolFunction();
+    else return nil<T_O>();
+  } else return nil<T_O>();
 }
 
 Lexenv_sp Lexenv_O::bind_vars(List_sp vars, Context_sp ctxt) {

@@ -64,7 +64,7 @@ public:
   size_t capacity() const { return this->_Capacity; };
   inline value_type &operator[](size_t i) { return this->_Data[i]; };
   const value_type &operator[](size_t i) const { return this->_Data[i]; };
- iterator begin() { return &this->_Data[0]; };
+  iterator begin() { return &this->_Data[0]; };
   iterator end() { return &this->_Data[this->size()]; };
   const_iterator begin() const { return &this->_Data[0]; };
   const_iterator end() const { return &this->_Data[this->size()]; };
@@ -89,6 +89,10 @@ public:
   typedef T *_pointer_type;
   typedef typename impl_type::iterator iterator;
   typedef typename impl_type::const_iterator const_iterator;
+  typedef T* pointer;
+  typedef const T* const_pointer;
+  typedef std::size_t size_type;
+  typedef std::ptrdiff_t difference_type;
 
 public:
   // Only this instance variable is allowed

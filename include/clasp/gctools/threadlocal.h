@@ -72,9 +72,8 @@ extern int global_debug_virtual_machine;
 
 #define VM_ASSERT_ALIGNED(vm,ptr) if (((uintptr_t)(ptr))&0x7) { printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr)); (vm).error(); }
 #define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&(vm)._stackPointer&&!((vm)._stackBottom<=(vm)._stackPointer && (vm)._stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((vm)._stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
-#define VM_FRAME_POINTER_CHECK(vm) if ((vm)._Running&&framePointer&&!((vm)._stackBottom<=framePointer && framePointer<=(vm)._stackTop) ) { printf("%s:%d:%s framePointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(framePointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
-#define VM_PC_CHECK(vm,bytecode_start,bytecode_end) if ((uintptr_t)(vm)._pc<(uintptr_t)bytecode_start || (uintptr_t)(vm)._pc>=(uintptr_t)bytecode_end) {printf("%s:%d:%s vm._pc %p is outside of the bytecode vector range [ %p - %p ]\n", __FILE__, __LINE__, __FUNCTION__, (void*)(vm)._pc, (void*)bytecode_start,(void*)bytecode_end);(vm).error();}
-#define VM_CHECK(vm) VM_STACK_POINTER_CHECK(vm); VM_FRAME_POINTER_CHECK(vm);
+#define VM_PC_CHECK(vm,pc,bytecode_start,bytecode_end) if ((uintptr_t)pc<(uintptr_t)bytecode_start || (uintptr_t)pc>=(uintptr_t)bytecode_end) {printf("%s:%d:%s vm._pc %p is outside of the bytecode vector range [ %p - %p ]\n", __FILE__, __LINE__, __FUNCTION__, (void*)pc, (void*)bytecode_start,(void*)bytecode_end);(vm).error();}
+#define VM_CHECK(vm) VM_STACK_POINTER_CHECK(vm);
 #define VM_CURRENT_DATA(vm,data) { (vm)._data = data; }
 #define VM_CURRENT_DATA1(vm,data) { (vm)._data1 = data; }
 #define VM_INC_COUNTER0(vm) { (vm)._counter0++; }
@@ -85,7 +84,7 @@ extern int global_debug_virtual_machine;
 #define VM_ASSERT_ALIGNED(vm,ptr)
 #define VM_STACK_POINTER_CHECK(vm)
 #define VM_CHECK(vm)
-#define VM_PC_CHECK(vm,start,end)
+#define VM_PC_CHECK(vm,pc,start,end)
 #define VM_CURRENT_DATA(vm,data)
 #define VM_CURRENT_DATA1(vm,data)
 #define VM_INC_COUNTER0(vm)
@@ -100,6 +99,7 @@ struct VirtualMachine {
   core::T_O*     _stackBottom[MaxStackWords];
   size_t         _stackBytes;
   core::T_O**    _stackTop;
+  core::T_O**    _stackGuard;
   core::T_O**    _stackPointer;
 #ifdef DEBUG_VIRTUAL_MACHINE
   core::T_O*     _data;
@@ -206,7 +206,7 @@ struct VirtualMachine {
     T_O** ret = this->_stackPointer;
 #ifdef DEBUG_VIRTUAL_MACHINE
     if (global_debug_virtual_machine&DVM_TRACE_FRAME) {
-      printf("\nFRAME PUSH %p %p %p %lu unwind_counter %lu throw_counter %lu\n", framePointer, this->_data, this->_data1, this->_counter0, this->_unwind_counter, this->_throw_counter);
+      printf("\nFRAME PUSH %p %p %lu unwind_counter %lu throw_counter %lu\n", this->_data, this->_data1, this->_counter0, this->_unwind_counter, this->_throw_counter);
     }
 #endif
 #ifdef STACK_GROWS_UP

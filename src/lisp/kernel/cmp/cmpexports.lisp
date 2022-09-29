@@ -245,7 +245,6 @@
             irc-phi
             irc-personality-function
             irc-phi-add-incoming
-            irc-renv
             irc-ret-void
             irc-ret-null-t*
             irc-ret
@@ -331,12 +330,10 @@
             treat-as-special-operator-p
             typeid-core-unwind
             with-begin-end-catch
-            preserve-exception-info
             *dbg-generate-dwarf*
             *dbg-current-function-metadata*
             *dbg-current-function-lineno*
             *dbg-current-scope*
-            with-new-function
             with-guaranteed-*current-source-pos-info*
             with-dbg-function
             with-dbg-lexical-block
@@ -351,12 +348,9 @@
             c++-struct*-type
             c++-field-ptr
             %closure%.offset-of[n]/t*
-            with-try
-            with-new-function-prepare-for-try
             with-debug-info-generator
             with-irbuilder
             with-landing-pad
-            bclasp-compile
             make-uintptr_t
             +cons-car-offset+
             +cons-cdr-offset+
@@ -435,7 +429,6 @@
           lookup-literal-index
           reference-literal
           load-time-reference-literal
-          codegen-rtv-bclasp
           codegen-rtv-cclasp
           codegen-literal
           codegen-quote

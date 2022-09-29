@@ -26,15 +26,6 @@
 (defun function-lambda-expression (function)
   (values nil t (core:function-name function)))
 
-(defun   logical-pathname-translations (p)
-  (or (si:pathname-translations p)
-      (error 'simple-type-error
-             :datum p
-             :expected-type 'logical-pathname
-             :format-control "logical host not yet defined: ~S"
-             :format-arguments (list p))))
-(defsetf logical-pathname-translations si:pathname-translations)
-
 (defun load-logical-pathname-translations (host)
   "Search for a logical pathname named host, if not already defined. If already
 defined no attempt to find or load a definition is attempted and NIL is
@@ -43,7 +34,7 @@ successfully, T is returned, else error."
   (declare (type string host)
            (ext:check-arguments-type))
   (unless (or (string-equal host "sys")
-              (si::pathname-translations host))
+              (logical-pathname-translations host))
     (with-open-file (in-str (make-pathname :defaults "sys:src;lisp;translations;"
                                            :name (string-downcase host)
                                            :type "translations"))

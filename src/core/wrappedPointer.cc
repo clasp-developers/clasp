@@ -77,6 +77,16 @@ void WrappedPointer_O::_setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
   this->_instanceClassSet(cl);
 }
 
+std::string WrappedPointer_O::__repr__() const {
+  stringstream ss;
+  ss << "#<wrapped-pointer :ptr ";
+  ss << (void*)this->mostDerivedPointer();
+  ss << " @";
+  ss << (void*)this;
+  ss << ">";
+  return ss.str();
+}
+
 bool WrappedPointer_O::eql_(T_sp obj) const {
   if (WrappedPointer_sp wo = obj.asOrNull<WrappedPointer_O>()) {
     return (wo->mostDerivedPointer() == this->mostDerivedPointer());

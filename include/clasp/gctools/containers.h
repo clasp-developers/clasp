@@ -57,11 +57,10 @@ public:
   typedef const value_type &const_reference;
   typedef typename vector_type::iterator iterator;
   typedef typename vector_type::const_iterator const_iterator;
-#if 0
-  typedef typename vector_type::iterator::difference_type difference_type;
-  typedef typename vector_type::iterator::size_type size_type;
-  typedef typename vector_type::iterator::const_pointer const_pointer;
-#endif
+  typedef typename vector_type::difference_type difference_type;
+  typedef typename vector_type::size_type size_type;
+  typedef typename vector_type::pointer pointer;
+  typedef typename vector_type::const_pointer const_pointer;
 public:
   vector_type _Vector;
   Vec0_impl(bool dummy) :_Vector(dummy) {}; // don't allocate GC memory ctor

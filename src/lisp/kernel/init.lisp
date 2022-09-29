@@ -508,6 +508,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            t )
 (export '(and or))
 
+(defun 1- (num) (- num 1))
+(defun 1+ (num) (+ num 1))
+
 ;;; These definitions do not use setf, and are replaced in setf.lisp.
 #+clasp-min
 (si::fset 'incf

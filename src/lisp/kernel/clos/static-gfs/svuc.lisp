@@ -61,7 +61,7 @@ TODO 2: Build a cell system like we do for make-instance.
   (let ((instanceg (gensym "INSTANCE")))
     `(let ((,instanceg ,instancef)
            (sv ,(gen-fast-value-read class instanceg slotd)))
-       (if (cleavir-primop:eq sv (core:unbound))
+       (if (eq sv (core:unbound))
            (slot-unbound ,class ,instanceg ',(clos:slot-definition-name slotd))
            sv))))
 
@@ -72,8 +72,7 @@ TODO 2: Build a cell system like we do for make-instance.
         `(clos:slot-value-using-class ,class ,instance ,slotdf))))
 
 (defun gen-fast-sbuc (class instancef slotd)
-  `(if (cleavir-primop:eq ,(gen-fast-value-read class instancef slotd)
-                          (core:unbound))
+  `(if (eq ,(gen-fast-value-read class instancef slotd) (core:unbound))
        nil t))
 
 (defmacro static-slot-boundp-using-class (class instance slotdf)

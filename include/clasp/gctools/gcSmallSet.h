@@ -40,7 +40,7 @@ public:
 
 public:
   const_iterator find(Key k) const {
-    iterator it;
+    const_iterator it;
     for (it = this->begin(); it != this->end(); ++it) {
       if (*it == k) {
         return it;

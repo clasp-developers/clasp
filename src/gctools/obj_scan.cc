@@ -432,9 +432,9 @@ extern "C" {
 int global_scan_stamp = -1;
 NEVER_OPTIMIZE
 struct GC_ms_entry* Lisp_object_mark(GC_word addr,
-                                       struct GC_ms_entry* msp,
-                                       struct GC_ms_entry* msl,
-                                       GC_word env)
+                                     struct GC_ms_entry* msp,
+                                     struct GC_ms_entry* msl,
+                                     GC_word env)
 {
     // The client must have a valid header
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(addr);

@@ -31,7 +31,7 @@ THE SOFTWARE.
 // ----------------------------------------------------------------------------
 // Set system wide debug flags here
 // ----------------------------------------------------------------------------
-#if 1
+#if 0
 //// DEBUG_RUNTIME defined and type errors print more info
 //#define DEBUG_RUNTIME 1
 //#define DEBUG_OBJECT_FILES 1
@@ -41,7 +41,7 @@ THE SOFTWARE.
 //#define DEBUG_DTORS 1
 //#define DEBUG_DYN_ENV_STACK 1
 //#define DEBUG_DTREE_INTERPRETER
-//#define DEBUG_VIRTUAL_MACHINE 1
+#define DEBUG_VIRTUAL_MACHINE 1
 #define DEBUG_DRAG_CXX_CALLS 1 // Slows down all calls in CXX wrappers - study impact
 #define DEBUG_DRAG_NATIVE_CALLS 1
 #define DEBUG_DRAG_INTERPRET_DTREE 1
@@ -309,7 +309,7 @@ ENTRY_POINT_MAX_ARGS_IN_REGISTER_SAVE_AREA includes the closure
 // Use the bytecode compiler right from startup
 // Turned off right now until we fix some bootstrapping code
 //
-//#define USE_IMPLICIT_BYTECODE_COMPILE
+#define USE_IMPLICIT_BYTECODE_COMPILE
 
 
 #endif // __CORE_CONFIG_H__

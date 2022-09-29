@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/ql.h>
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/activationFrame.h>
+#include <clasp/core/designators.h>
 
 namespace cl {
 extern core::Symbol_sp& _sym_findClass;
@@ -44,9 +45,6 @@ T_mv cl__eval(T_sp form);
 T_mv cl__apply(T_sp head, Vaslist_sp args);
 T_mv core__apply0( Function_sp func, T_sp args);
 
-T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env);
-T_sp af_interpreter_lookup_function(Symbol_sp sym, T_sp env);
-T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env);
 T_sp ext__symbol_macro(Symbol_sp sym, T_sp env);
 
   extern bool cl__functionp(T_sp fn);
@@ -79,62 +77,41 @@ extern void evaluateIntoActivationFrame(ActivationFrame_sp af, List_sp args, T_s
 */
 
 inline LCC_RETURN funcall(T_sp fn) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
-  ASSERT(gc::IsA<Function_sp>(func));
+  Function_sp func = coerce::functionDesignator(fn);
   return func->entry_0()( func.raw_() );
 }
 
 
 inline LCC_RETURN funcall(T_sp fn, T_sp arg0 ) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
-  ASSERT(gc::IsA<Function_sp>(func));
+  Function_sp func = coerce::functionDesignator(fn);
   return func->entry_1()( func.raw_(), arg0.raw_() );
 }
 
 
 inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1 ) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
-  ASSERT(gc::IsA<Function_sp>(func));
+  Function_sp func = coerce::functionDesignator(fn);
   return func->entry_2()( func.raw_(), arg0.raw_(), arg1.raw_() );
 }
 
 inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2 ) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
-  ASSERT(gc::IsA<Function_sp>(func));
+  Function_sp func = coerce::functionDesignator(fn);
   return func->entry_3()( func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_() );
 }
 
 inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3 ) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
-  ASSERT(gc::IsA<Function_sp>(func));
+  Function_sp func = coerce::functionDesignator(fn);
   return func->entry_4()( func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_() );
 }
 
 inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3, T_sp arg4 ) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
-  ASSERT(gc::IsA<Function_sp>(func));
+  Function_sp func = coerce::functionDesignator(fn);
   return func->entry_5()( func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(), arg4.raw_() );
 }
 
 
  template <class... ARGS>
   inline LCC_RETURN funcall(T_sp fn, ARGS &&... args) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
-  ASSERT(gc::IsA<Function_sp>(func));
+   Function_sp func = coerce::functionDesignator(fn);
   size_t nargs = sizeof...(ARGS);
   T_O* aargs[sizeof...(ARGS)] = {args.raw_()...};
   return func->entry()(func.raw_(), nargs, &aargs[0] );

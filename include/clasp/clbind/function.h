@@ -88,7 +88,7 @@ struct BytecodeWrapper {
   enum { BytecodeP = 1 };
 };
 
-#if 1
+#if 0
 // Use bytecode wrappers for all exposed functions
 using DefaultWrapper = BytecodeWrapper;
 using SpecialWrapper = LambdaListHandler;
@@ -119,75 +119,6 @@ class my_tuple : public std::tuple<Types...> {
   my_tuple() {
     printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   }
-};
-
-template <typename Pols, typename RT, typename...ARGS, typename...PUREOUTS>
-class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>,LambdaListHandler> : public core::BuiltinClosure_O {
-public:
-  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Pols, clbind::pureOutsPack<PUREOUTS...>, LambdaListHandler> MyType;
-  typedef core::BuiltinClosure_O TemplatedBase;
-public:
-  typedef RT(*FuncType)(ARGS...);
-  FuncType fptr;
-public:
-  static constexpr auto inValueMask = clbind::inValueMaskMuple<sizeof...(ARGS),Pols>();
-  
-  virtual const char* describe() const { return "VariadicFunctor"; };
-  enum { NumParams = sizeof...(ARGS)};
-  TEMPLATED_FUNCTION_VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr)
-    : core::BuiltinClosure_O(ep)
-    , fptr(ptr) {
-    this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
-  };
-  virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
-    this->fixupOneCodePointer(fixup,(void**)&this->fptr,sizeof(this->fptr));
-  }
-  static inline gctools::return_type entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
-  {
-    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    MAKE_STACK_FRAME(frame,sizeof...(ARGS));
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler, numSpecialBindings,specialBindingsVLA,frame,sizeof...(ARGS));
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope, lcc_nargs, lcc_args  );
-#ifdef DEBUG_EVALUATE
-    if (core::_sym_STARdebugEvalSTAR && core::_sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-      for (size_t ia=0; ia<sizeof...(ARGS); ++ia) {
-        core::T_sp obj = ((frame->arg(ia)));
-        printf("  apply  arg[%lu] -> %s\n", ia, _rep_(obj).c_str());
-      }
-    }
-#endif
-    std::tuple<translate::from_object<ARGS,PUREOUTS>...> all_args(arg_tuple<0,Pols,ARGS...>::goFrame(frame->arguments()));
-    return apply_and_return<RT,Pols,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
-  }
-  static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
-  }
-
 };
 
 
@@ -431,7 +362,7 @@ struct function_registration : registration {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp symbol = core::lisp_intern(m_name, core::lisp_currentPackageName());
     using inValuePack = clbind::inValueTrueFalseMaskPack<FunctionArgCount<FunctionPointerType>::value,Policies>;
-    using VariadicType = TEMPLATED_FUNCTION_VariadicFunctor<FunctionPointerType, Policies, typename inValuePack::type, DefaultWrapper >;
+    using VariadicType = TEMPLATED_FUNCTION_VariadicFunctor<FunctionPointerType, Policies, typename inValuePack::type, clbind::BytecodeWrapper >;
     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
     core::BuiltinClosure_sp entry = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,functionPtr));
     core::lisp_bytecode_defun( core::symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, core::lisp_currentPackageName(), entry, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());

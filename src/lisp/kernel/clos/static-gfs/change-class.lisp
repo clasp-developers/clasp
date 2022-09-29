@@ -135,6 +135,11 @@
 (defun update-class-changer-function (changer)
   (clos:set-funcallable-instance-function
    changer
+   #+(or)
+   (let ((core:*use-interpreter-for-eval* t)
+         (cmp:*cleavir-compile-hook* nil))
+     (coerce (generate-class-changer-function changer) 'function))
+   ;;#+(or)
    (cmp:bclasp-compile nil (generate-class-changer-function changer))))
 
 (defun class-changer-miss (changer instance &rest args)
@@ -214,7 +219,7 @@
     ((f (eql #'shared-initialize)) (updater changer-updater) &rest initargs)
   (declare (ignore initargs))
   (invalidate-all-changers))
-
+#+(or)
 (define-compiler-macro change-class
     (&whole form instancef class-designatorf &rest initargs &environment env)
   (let ((class-designator

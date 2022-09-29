@@ -714,11 +714,12 @@ because it contains a reference to the undefined class~%  ~A"
 	  (unknown-key-names nil))
 	 ((null name-loc)
 	  (when (and (not allow-other-keys) unknown-key-names)
-            (simple-program-error "Unknown initialization options ~S for class ~A."
-                                  (nreverse unknown-key-names) class)))
+            (core:simple-program-error "Unknown initialization options ~S for class ~A."
+                                       (nreverse unknown-key-names) class)))
       (let ((name (first name-loc)))
 	(cond ((null (cdr name-loc))
-	       (simple-program-error "No value supplied for the init-name ~S." name))
+	       (core:simple-program-error
+                "No value supplied for the init-name ~S." name))
 	      ;; This check must be here, because :ALLOW-OTHER-KEYS is a valid
 	      ;; slot-initarg.
 	      ((and (eql name :ALLOW-OTHER-KEYS)

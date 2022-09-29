@@ -842,7 +842,7 @@ gctools::return_type interpreter_call(core::T_O* lcc_closure, size_t lcc_nargs, 
     //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
     //  newValueEnvironment->dump();
     ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
-    return eval::sp_progn((*closure)[INTERPRETED_CLOSURE_FORM_SLOT], newValueEnvironment).as_return_type();
+    return Values(nil<T_O>()); // KILL
 }
 
 

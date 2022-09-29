@@ -270,7 +270,8 @@ void run_finalizers(core::T_sp obj, void* data)
 void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* data)
 {
   gctools::Header_s* header = (gctools::Header_s*)((char*)client - sizeof(gctools::Header_s));
-//  printf("%s:%d:%s for client: %p stamp: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)client, header->_stamp_wtag_mtag.stamp());
+//  printf("%s:%d:%s for client: %p stamp: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)client, header->_badge_stamp_wtag_mtag.stamp());
+//  printf("         obj class from stamp -> %s\n", obj_name(header->_badge_stamp_wtag_mtag.stamp()) );
   if ((uintptr_t)client&gctools::ptag_mask) {
     printf("%s:%d The client pointer %p must NOT BE TAGGED at this point\n", __FILE__, __LINE__, client);
     abort();

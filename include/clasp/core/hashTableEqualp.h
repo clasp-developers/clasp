@@ -44,6 +44,7 @@ class HashTableEqualp_O : public HashTable_O {
 
 public:
   static HashTableEqualp_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
+  static HashTableEqualp_sp create_default();
 
 public:
   //	static int sxhash_equalp(T_sp obj);

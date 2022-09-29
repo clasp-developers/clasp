@@ -960,29 +960,12 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; returns a result.
 ;;;
 
-(defun bclasp-compile-form (form)
-  (let ((fn (cmp:with-new-function (local-fn fn-env fn-result
-                                             :function-name 'bclasp-top-level-form
-                                             :parent-env nil
-                                             :function-info (cmp:make-function-info
-                                                             :function-name 'bclasp-top-level-form
-                                                             :lambda-list nil
-                                                             :docstring nil
-                                                             :declares nil
-                                                             :spi core:*current-source-pos-info*))
-              ;; Map the function argument names
-              (cmp:cmp-log "Creating ltv thunk with name: {}%N" (llvm-sys:get-name local-fn))
-              (cmp:codegen fn-result form fn-env)
-              (cmp:cmp-log-dump-function local-fn)
-              (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function local-fn t)))))
-    fn))
-
 (defun compile-form (form)
   (if core:*use-cleavir-compiler*
       (progn
         (funcall (find-symbol "COMPILE-FORM" "CLASP-CLEAVIR")
                  form))
-      (bclasp-compile-form form)))
+      (error "BUG: no compiler for cmpliteral")))
 
 ;;; ------------------------------------------------------------
 ;;; ------------------------------------------------------------
@@ -1094,21 +1077,6 @@ and  return the sorted values and the constant-table or (values nil nil)."
         (values (constants-table-reference data-or-index) literal-name)
         data-or-index)))
 
-(defun codegen-rtv-bclasp (result obj)
-  "bclasp calls this to get copy the run-time-value for obj into result.
-Returns (value index t) if the value was put in the literal vector or it
-returns (value immediate nil) if the value is an immediate value."
-  (multiple-value-bind (immediate-datum?literal-node-runtime in-array)
-      (run-time-reference-literal obj t)
-    (if in-array
-        (let* ((literal-node-runtime immediate-datum?literal-node-runtime)
-               (index (literal-node-index literal-node-runtime)))
-          (cmp:irc-t*-result (constants-table-value index) result)
-          index)
-        (let ((immediate-datum immediate-datum?literal-node-runtime))
-          (cmp:irc-t*-result (cmp:jit-constant-i64 (immediate-datum-value immediate-datum)) result)
-          :poison-value-from-codegen-rtv-bclasp))))
-
 (defun codegen-rtv-cclasp (obj)
   "bclasp calls this to get copy the run-time-value for obj into result.
 Returns (value index t) if the value was put in the literal vector or it
@@ -1137,23 +1105,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
           (when result
             (cmp:irc-t*-result data-or-index result))
           :poison-value-from-codegen-literal))))
-
-;; Should be bclasp-compile-load-time-value-thunk
-(defun compile-load-time-value-thunk (form)
-  "bclasp compile the form into an llvm function and return that function"
-  (let ((fn (cmp:with-new-function (local-fn fn-env fn-result
-                                             :function-name 'bclasp-top-level-form
-                                             :parent-env nil
-                                             :function-info (cmp:make-function-info
-                                                             :function-name 'bclasp-top-level-form
-                                                             :lambda-list nil
-                                                             :docstring nil
-                                                             :declares nil
-                                                             :spi core:*current-source-pos-info*))
-              (cmp:codegen fn-result form fn-env)
-              (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function local-fn t))
-              )))
-    fn))
 
 ;;; ------------------------------------------------------------
 ;;;
