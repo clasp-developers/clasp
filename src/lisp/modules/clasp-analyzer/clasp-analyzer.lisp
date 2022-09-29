@@ -49,9 +49,13 @@
 ;;; Should not need to modify below here
 ;;; --------------------------------------------------
 ;;; --------------------------------------------------
+;;;#+(or)
 (defmacro gclog (fmt &rest args)
   (declare (ignore fmt args)))
-;;(defmacro gclog (fmt &rest args) `(format *debug-io* ,fmt ,@args))
+#+(or)
+(progn
+  (format t "Turning on gclog~%")
+  (defmacro gclog (fmt &rest args) `(format *debug-io* ,fmt ,@args)))
 
 
 ;; ----------------------------------------------------------------------
@@ -1699,13 +1703,14 @@ can be saved and reloaded within the project for later analysis"
                  ;; Run a matcher to find the base classes and their namespaces
                  ;;
                  (gclog "Starting (ext:do-c++-iterator (it (cast:bases-iterator class-node))~%")
-                 (let* ((start (cast:bases-iterator class-node))
-                        (next1 (sys:iterator-step start))
-                        (next2 (sys:iterator-step next1)))
-                   (declare (ignorable next2))
-                   (gclog "(cast:bases-iterator class-node) start == end -> ~s~%" (core:iterator= start end))
-                   (gclog "(cast:bases-iterator class-node) next1 == end -> ~s~%" (core:iterator= next1 end))
-                   (gclog "(cast:bases-iterator class-node) next2 == end -> ~s~%" (core:iterator= next2 end)))
+                 (multiple-value-bind (start end)
+                     (cast:bases-iterator class-node)
+                   (let* ((next1 (sys:iterator-step start))
+                          (next2 (sys:iterator-step next1)))
+                     (declare (ignorable next2))
+                     (gclog "(cast:bases-iterator class-node) start == end -> ~s~%" (core:iterator= start end))
+                     (gclog "(cast:bases-iterator class-node) next1 == end -> ~s~%" (core:iterator= next1 end))
+                     (gclog "(cast:bases-iterator class-node) next2 == end -> ~s~%" (core:iterator= next2 end))))
                  (ext:do-c++-iterator (it (cast:bases-iterator class-node))
                    (gclog "In do-c++-iterator bases-iterator~%")
                    (gclog "In do-c++-iterator bases-iterator it -> ~s~%" it)
@@ -1742,6 +1747,7 @@ can be saved and reloaded within the project for later analysis"
                  ;; Run a matcher to find the "Base" class as specified in the LISP_CLASS macro
                  ;;
                  (let ((lisp-base "NoLispBase"))
+                   (gclog "About to sub-match-run line 1748~%")
                    (clang-tool:sub-match-run
                     *clasp-base-submatcher*
                     *clasp-base-submatcher-sexp*
@@ -1749,7 +1755,7 @@ can be saved and reloaded within the project for later analysis"
                     (clang-tool:ast-context match-info)
                     (lambda (minfo)
                       (declare (core:lambda-name %%class-base-callback.lambda))
-                      (format t "In clasp-base-submatcher callback~%")
+                      (gclog "In %%clasp-base-callback.lambda callback~%")
                       (let* ((base-type (clang-tool:mtag-node minfo :BaseType)))
                         (format t "Clasp Base class for ~s is ~s  ->" record-key base-type)
                         (let ((name (cond
@@ -1768,6 +1774,7 @@ can be saved and reloaded within the project for later analysis"
                    ;;
                    ;; Run a matcher to find the GC-scannable fields of this class
                    ;;
+                   (gclog "About to sub-match-run line 1775~%")
                    (clang-tool:sub-match-run
                     *field-submatcher*
                     *field-submatcher-sexp*
@@ -1775,6 +1782,7 @@ can be saved and reloaded within the project for later analysis"
                     (clang-tool:ast-context match-info)
                     (lambda (minfo)
                       (declare (core:lambda-name %%new-class-callback.lambda))
+                      (gclog "In %%new-class-callback.lambda~%")
                       (let* ((field-node (clang-tool:mtag-node minfo :field))
                              (type (progn
                                      (or field-node (error "field-node is nil"))
@@ -1795,6 +1803,7 @@ can be saved and reloaded within the project for later analysis"
                    ;;
                    ;; Run a matcher to find the scanGCRoot functions
                    ;;
+                   (gclog "About to sub-match-run line 1804~%")
                    (clang-tool:sub-match-run
                     *method-submatcher*
                     *method-submatcher-sexp*
@@ -1802,9 +1811,11 @@ can be saved and reloaded within the project for later analysis"
                     (clang-tool:ast-context match-info)
                     (lambda (minfo)
                       (declare (core:lambda-name %%new-class-callback-*method-submatcher*.lambda))
+                      (gclog "In %%new-class-callback-*method-submatcher*.lambda~%")
                       (let ((method-name (clang-tool:mtag-name minfo :method)))
                         (gclog "      >> Method: ~30a~%" (clang-tool:mtag-source minfo :method))
                         (push method-name method-names))))
+                   (gclog "About to sub-match-run line 1816~%")
                    (clang-tool:sub-match-run
                     *metadata-submatcher*
                     *metadata-submatcher-sexp*
@@ -1812,26 +1823,35 @@ can be saved and reloaded within the project for later analysis"
                     (clang-tool:ast-context match-info)
                     (lambda (minfo)
                       (declare (core:lambda-name %%new-class-callback-*metadata-submatcher*.lambda))
+                      (gclog "In %%new-class-callback-*metadata-submatcher*.lambda~%")
                       (let* ((metadata-name (string-upcase (clang-tool:mtag-name minfo :metadata))))
+                        (gclog "metadata-name -> ~s~%" metadata-name)
                         (push (intern metadata-name :keyword) metadata))))
-                   (setf (gethash record-key results)
-                         (make-cclass :key record-key
-                                      :template-specializer template-specializer
-                                      :location (clang-tool:mtag-loc-start match-info :whole)
-                                      ;; 
-                                      :definition-data (let ((definitions nil))
-                                                         (when (cast:is-polymorphic class-node)
-                                                           (push :is-polymorphic definitions))
-                                                         ;; There may be more in the future
-                                                         definitions)
-                                      :lisp-base lisp-base
-                                      :bases bases
-                                      :vbases vbases
-                                      :method-names method-names
-                                      :metadata metadata
-                                      :fields fields)))))
+                   (gclog "Storing results~%")
+                   (prog1
+                       (setf (gethash record-key results)
+                             (progn
+                               (gclog "About to make-cclass ~s~%" record-key)
+                               (make-cclass :key record-key
+                                            :template-specializer template-specializer
+                                            :location (clang-tool:mtag-loc-start match-info :whole)
+                                            :definition-data (let ((definitions nil))
+                                                               (gclog "About to cast:is-polymorphic~%")
+                                                               (when (cast:is-polymorphic class-node)
+                                                                 (push :is-polymorphic definitions))
+                                                               ;; There may be more in the future
+                                                               definitions)
+                                            :lisp-base lisp-base
+                                            :bases bases
+                                            :vbases vbases
+                                            :method-names method-names
+                                            :metadata metadata
+                                            :fields fields)))
+                     (gclog "Done storing results - returning~%")
+                     ))))
              (%%class-callback (match-info)
                (declare (core:lambda-name %%class-callback))
+               (gclog "In %%class-callback~%")
                (gclog "MATCH: ------------------~%")
                (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
                (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
@@ -1879,6 +1899,7 @@ and the inheritance hierarchy that the garbage collector will need"
     (flet ((%%lispalloc-matcher-callback (match-info)
              (declare (core:lambda-name %%lispalloc-matcher-callback.lambda))
              "This function can only be called as a ASTMatcher callback"
+             (gclog "Entered %%lispalloc-matcher-callback.lambda~%")
              (let* ((decl (clang-tool:mtag-node match-info :whole))
                     (args (cast:get-template-args decl))
                     (arg (cast:template-argument-list-get args 0))
@@ -1890,7 +1911,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
-                 (gclog "Adding class name: ~a~%" class-name)
+                 (gclog "Adding class name: ~a~%" class-key)
                  ;; (break "Check locations")
                  (let ((lispalloc (make-lispalloc :key class-key
                                                   :name arg-name ;; XXXXXX (clang-tool:mtag-name :whole)
@@ -1932,6 +1953,7 @@ and the inheritance hierarchy that the garbage collector will need"
     (flet ((%%classalloc-matcher-callback (match-info)
              (declare (core:lambda-name %%claspalloc-matcher-callback.lambda))
              "This function can only be called as a ASTMatcher callback"
+             (gclog "Entered %%claspalloc-matcher-callback.lambda~%")
              (let* ((decl (clang-tool:mtag-node match-info :whole))
                     (args (cast:get-template-args decl))
                     (arg (cast:template-argument-list-get args 0))
@@ -1943,7 +1965,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
-                 (gclog "Adding class name: ~a~%" class-name)
+                 (gclog "Adding class name: ~a~%" class-key)
                  (let ((classalloc (make-classalloc :key class-key
                                                   :name arg-name ;;(clang-tool:mtag-name :whole)
                                                   :location arg-location ;;class-location
@@ -1996,7 +2018,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
-                 (gclog "Adding class name: ~a~%" class-name)
+                 (gclog "Adding class name: ~a~%" class-key)
                  (let ((rootclassalloc (make-rootclassalloc :key class-key
                                                   :name arg-name ;;(clang-tool:mtag-name :whole)
                                                   :location arg-location ;;class-location
@@ -2088,7 +2110,6 @@ and the inheritance hierarchy that the garbage collector will need"
                (gclog "VARIABLE MATCH: ------------------~%")
                (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
                (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
-               (gclog "    namespace: ~a~%" (clang-tool:mtag-name match-info :ns))
                (let* ((var-node (clang-tool:mtag-node match-info :whole))
                       (varname (decl-name var-node))
                       (location (clang-tool:mtag-loc-start match-info :whole))
@@ -2227,7 +2248,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
-                 (gclog "Adding class name: ~a~%" class-name)
+                 (gclog "Adding class name: ~a~%" class-key)
                  (let ((gcinfo (make-gcinfo :key class-key
                                             :name arg-name ;;(clang-tool:mtag-name :whole)
                                             :location arg-location ;;class-location
