@@ -101,7 +101,7 @@
          (cmp:*cleavir-compile-hook* nil))
      (coerce (generate-reinitializer-function reinitializer) 'function))
    ;;#+(or)
-   (cmp:bclasp-compile nil (generate-reinitializer-function reinitializer))))
+   (error "BUG: No suitable compiler yet")))
 
 (defun reinitializer-miss (reinitializer instance &rest args)
   (when (clos::maybe-update-instance instance)

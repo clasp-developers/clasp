@@ -43,10 +43,10 @@
   ;; (values function-specifier lambda-list options)
   (let (function-specifier)
     (unless args
-      (simple-program-error "Illegal defgeneric form: missing generic function name"))
+      (core:simple-program-error "Illegal defgeneric form: missing generic function name"))
     (setq function-specifier (pop args))
     (unless args
-      (simple-program-error "Illegal defgeneric form: missing lambda-list"))
+      (core:simple-program-error "Illegal defgeneric form: missing lambda-list"))
     (values function-specifier (first args) (rest args))))
 
 (defun parse-generic-options (options lambda-list)
@@ -65,8 +65,8 @@
                 ((eq option-name 'declare)
                  (setf declarations (append (rest option) declarations)))
                 ((member option-name processed-options)
-                 (simple-program-error "Option ~s specified more than once"
-                                       option-name))
+                 (core:simple-program-error "Option ~s specified more than once"
+                                            option-name))
                 (t
                  (push option-name processed-options)
                  ;; We leave much of the type checking for SHARED-INITIALIZE
@@ -78,12 +78,12 @@
                           (rest option))
                          ((:documentation :generic-function-class :method-class)
                           (unless (endp (cddr option))
-                            (simple-program-error "Too many arguments for option ~A"
-                                                  option-name))
+                            (core:simple-program-error "Too many arguments for option ~A"
+                                                       option-name))
                           (second option))
                          (otherwise
-                          (simple-program-error "~S is not a legal defgeneric option"
-                                                option-name))))
+                          (core:simple-program-error "~S is not a legal defgeneric option"
+                                                     option-name))))
                  (setf arg-list `(',option-name ',option-value ,@arg-list)))))))
     (values `(:lambda-list ',lambda-list ,@arg-list
               ,@(when core:*current-source-pos-info*
@@ -97,7 +97,7 @@
     (let ((arg (car lambda-list)))
       (cond ((null lambda-list))
             ((eq arg '&AUX)
-             (simple-program-error "&aux is not allowed in a generic function lambda-list"))
+             (core:simple-program-error "&aux is not allowed in a generic function lambda-list"))
             ((member arg lambda-list-keywords)
              (parse-lambda-list (cdr lambda-list) t))
             (post-keyword
@@ -105,7 +105,7 @@
              (parse-lambda-list (cdr lambda-list) t))
             (t
              (if (listp arg)
-                 (simple-program-error "the parameters cannot be specialized in generic function lambda-list")
+                 (core:simple-program-error "the parameters cannot be specialized in generic function lambda-list")
                  (parse-lambda-list (cdr lambda-list))))))))
 
 (defun valid-declaration-p (decl)
@@ -135,18 +135,18 @@
   (mlog "standard.lisp::shared-initialize:before instance -> {} l-l-p -> {}  lambda-list -> {}%N" (core:safe-repr gfun) l-l-p (core:safe-repr lambda-list))
   (when a-o-p
     (unless l-l-p
-      (simple-program-error "When defining generic function ~A
+      (core:simple-program-error "When defining generic function ~A
 Supplied :argument-precedence-order, but :lambda-list is missing"
-			    gfun-name))
+			         gfun-name))
     (dolist (l (lambda-list-required-arguments lambda-list))
       (unless (= (count l argument-precedence-order) 1)
-	(simple-program-error "When defining generic function ~A
+	(core:simple-program-error "When defining generic function ~A
 The required argument ~A does not appear exactly once in the ARGUMENT-PRECEDENCE-ORDER list ~A"
-			      gfun-name l argument-precedence-order))))
+			           gfun-name l argument-precedence-order))))
   (unless (every #'valid-declaration-p declarations)
-    (simple-program-error "When defining generic function ~A
+    (core:simple-program-error "When defining generic function ~A
 Not a valid declaration list: ~A"
-                          gfun-name declarations))
+                               gfun-name declarations))
   (unless (typep documentation '(or null string))
     (error 'simple-type-error
 	   :format-control "When defining generic function~A
@@ -155,8 +155,8 @@ Not a valid documentation object ~A"
 	   :datum documentation
 	   :expected-type '(or null string)))
   (unless (or (not m-c-p) (si::subclassp method-class (find-class 'method)))
-    (simple-program-error "When defining generic function~A~%Not a valid method class, ~A"
-                          gfun-name method-class))
+    (core:simple-program-error "When defining generic function~A~%Not a valid method class, ~A"
+                               gfun-name method-class))
   ;; When supplying a new lambda-list, ensure that it is compatible with
   ;; the old list of methods.
   (when (and l-l-p (slot-boundp gfun 'methods))
@@ -164,8 +164,8 @@ Not a valid documentation object ~A"
                        (declare (core:lambda-name shared-initialize.lambda))
 		       (congruent-lambda-p lambda-list x))
 		 (mapcar #'method-lambda-list (generic-function-methods gfun)))
-      (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
-			    gfun lambda-list))))
+      (core:simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
+			         gfun lambda-list))))
 
 (defun initialize-gf-specializer-profile (gfun)
   (when (slot-boundp gfun 'lambda-list)

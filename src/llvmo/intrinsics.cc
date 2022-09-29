@@ -82,35 +82,6 @@ void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis
 
 extern "C" {
 
-ALWAYS_INLINE core::T_O* makeFunctionFrame( int numargs, core::T_O *parentP)
-// was ActivationFrame_sp
-{
-  core::T_sp parent((gctools::Tagged)parentP);
-  core::T_sp functionFrame = core::FunctionFrame_O::create(numargs, parent);
-  return functionFrame.raw_();
-}
-
-ALWAYS_INLINE core::T_O** functionFrameReference(core::T_O* frameP, int idx) {
-  core::FunctionFrame_sp frame((gctools::Tagged)frameP);
-#ifdef DEBUG_ASSERT
-  if (idx < 0 || idx >= frame->length()) {
-    intrinsic_error(llvmo::invalidIndexForFunctionFrame, clasp_make_fixnum(idx), clasp_make_fixnum(frame->length()));
-  }
-#endif
-  core::T_sp& cell = frame->entryReference(idx);
-  return &cell.rawRef_();
-}
-
-ALWAYS_INLINE core::T_O* symbolValueRead(const core::T_O* tsymP) {
-  Symbol_sp sym((gctools::Tagged)(tsymP));
-  T_sp sv = sym->symbolValueUnsafe();
-  if (sv.unboundp()) sym->symbolUnboundError();
-  return sv.raw_();
-}
-};
-
-extern "C" {
-
 ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object)
 {NO_UNWIND_BEGIN();
   return gctools::ensure_valid_object(tagged_object);
@@ -162,67 +133,6 @@ ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
 };
 
 extern "C" {
-
-ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, core::T_O *closureRaw)
-{NO_UNWIND_BEGIN();
-//  printf("%s:%d:%s  closureRaw = %p\n", __FILE__, __LINE__, __FUNCTION__, closureRaw);
-  core::T_O* parentP;
-  if (closureRaw != NULL ) {
-    Function_sp closure = Function_sp((gctools::Tagged)closureRaw);
-    T_sp activationFrame = closure->closedEnvironment();
-//    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
-    parentP =  activationFrame.raw_();
-  } else {
-    parentP = nil<core::T_O>().raw_();
-  }
-  ActivationFrame_sp af((gctools::Tagged)resultP);
-  af->setParentFrame(parentP);
-  NO_UNWIND_END();
-}
-
-
-ALWAYS_INLINE core::T_O* makeValueFrameSetParent(size_t numargs, core::T_O *parentP)
-{NO_UNWIND_BEGIN();
-//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, nil<core::T_O>()));
-  valueFrame->setParentFrame(parentP);
-  return valueFrame.raw_();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE core::T_O* makeBlockFrameSetParent(core::T_O *parentP)
-{NO_UNWIND_BEGIN();
-//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, nil<core::T_O>()));
-#ifdef DEBUG_ASSERT
-  T_sp p((gctools::Tagged)parentP);
-  bool isNull = (parentP==NULL);
-  bool isNil = p.nilp();
-  bool isFrame = gc::IsA<Environment_sp>(p);
-  ASSERTF(isNull||isNil||isFrame,"The object %p must be NIL or inherit from Environment_O", (void*)p.raw_());
-#endif
-  valueFrame->setParentFrame(parentP);
-  return valueFrame.raw_();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE core::T_O* makeTagbodyFrameSetParent(core::T_O *parentP)
-{NO_UNWIND_BEGIN();
-//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, nil<core::T_O>()));
-  valueFrame->setParentFrame(parentP);
-  return valueFrame.raw_();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *parentP)
-{NO_UNWIND_BEGIN();
-  ActivationFrame_sp af((gctools::Tagged)resultP);
-  af->setParentFrame(parentP);
-  return;
-  NO_UNWIND_END();
-}
-
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                           core::T_O* entryPointInfo,
@@ -898,13 +808,6 @@ uint64_t cx_read_stamp(core::T_O* obj, uint64_t stamp)
 };
 
 extern "C" {
-core::T_O** lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)
-{
-  core::ActivationFrame_sp af((gctools::Tagged)frameP);
-  core::T_sp& value_ref = core::value_frame_lookup_reference(af, depth, index);
-  return &value_ref.rawRef_();
-}
-
 
 gctools::ShiftedStamp cc_read_derivable_cxx_stamp_untagged_object(core::T_O* untagged_object)
 {
@@ -955,16 +858,6 @@ unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
 void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, unsigned char v) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
   (*array)[index] = v;
-}
-
-core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
-{
-  ASSERT(closureRaw);
-  if (closureRaw!=NULL) {
-    core::Closure_sp closure = core::Closure_sp((gctools::Tagged)closureRaw);
-    return &closure->closedEnvironment_rawRef();
-  }
-  return NULL;
 }
 
 #if 0

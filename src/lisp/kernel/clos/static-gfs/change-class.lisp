@@ -140,7 +140,7 @@
          (cmp:*cleavir-compile-hook* nil))
      (coerce (generate-class-changer-function changer) 'function))
    ;;#+(or)
-   (cmp:bclasp-compile nil (generate-class-changer-function changer))))
+   (error "BUG: No suitable compiler yet")))
 
 (defun class-changer-miss (changer instance &rest args)
   (when (clos::maybe-update-instance instance)

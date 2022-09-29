@@ -354,11 +354,8 @@
         ;; whether the lambda list contains &aux. Also represents
         ;; the state of having seen &aux.
         (aux nil))
-    ;; Generate a lambda list handler and immediately discard it,
-    ;; to ensure syntactic correctness.
     ;; FIXME: Use an actual lambda list parser for all this.
     ;; We can't use the normal one since it puts in NIL initforms.
-    (make-lambda-list-handler lambda-list nil 'function)
     (do* ((sublist lambda-list (rest sublist))
           (name (first sublist) (first sublist))
           ;; Whether we should modify the lambda list to insert a default initform.
@@ -373,9 +370,9 @@
             ((atom name) ; just a variable.
              (let ((slotd (assoc name slot-descriptions)))
                (when slotd
-                 ;; FIXME: check for duplicated names?
-                 ;; or does lambda list handler catch that.
-                 (push slotd mentioned-slots)
+                 (if (member slotd mentioned-slots)
+                     (warn "Duplicate slot in BOA constructor")
+                     (push slotd mentioned-slots))
                  (unless aux
                    (push slotd initialized-slots))
                  (when modify
@@ -390,7 +387,9 @@
                                    (first name)))
                     (slotd (assoc slot-name slot-descriptions)))
                (when slotd
-                 (push slotd mentioned-slots)
+                 (if (member slotd mentioned-slots)
+                     (warn "Duplicate slot in BOA constructor")
+                     (push slotd mentioned-slots))
                  (if (endp (rest name)) ; like &optional (x)
                      (unless aux
                        (setf (first sublist)

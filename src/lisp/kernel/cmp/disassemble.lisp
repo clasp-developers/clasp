@@ -52,6 +52,12 @@
                   (disassemble-assembly start end))
                 (format t "; could not locate code object (bug?)~%"))))))))
 
+(defun potentially-save-module ()
+  (when *save-module-for-disassemble*
+    (setq *saved-module-from-clasp-jit*
+          (with-output-to-string (*standard-output*)
+            (llvm-sys:dump-module *the-module* *standard-output*)))))
+
 ;;; should work for both lambda expressions and interpreted functions.
 (defun disassemble-to-ir (thing)
   (let* ((*save-module-for-disassemble* t)
@@ -78,8 +84,7 @@ If type is :IR then dump the LLVM-IR for all of the associated functions.
      (core:fmt t "Disassembling function: {}%N" desig)
      ;; This will (correctly) signal an error if the name is unbound.
      (disassemble (fdefinition desig) :type type))
-    ((or (cons (eql lambda)) ; lambda expression (roughly)
-         (satisfies core:interpreted-function-p))
+    ((cons (eql lambda)) ; lambda expression (roughly)
      (ecase type
        ((:ir) (disassemble-to-ir desig))
        ((:asm) (disassemble-function-to-asm (compile nil desig))))))

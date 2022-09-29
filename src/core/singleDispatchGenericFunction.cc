@@ -107,20 +107,18 @@ CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_f
 };
 
 
-CL_LAMBDA("gf gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ")
+CL_LAMBDA("gf gfname receiver-class &key nreq declares (docstring \"\") body ")
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function)dx")
 DOCGROUP(clasp)
-CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp tgfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, T_sp docstring, Function_sp body) {
+CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp tgfname, Instance_sp receiver_class, size_t nreq, List_sp declares, T_sp docstring, Function_sp body) {
   SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(tgfname,
                                                                   receiver_class,
-                                                                  lambda_list_handler,
                                                                   declares,
                                                                   docstring,
                                                                   body);
-  ASSERT(lambda_list_handler.notnilp());
   LambdaListHandler_sp gf_llh = gfunction->lambdaListHandler;
-  if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments()) {
+  if (nreq != gf_llh->numberOfRequiredArguments()) {
     SIMPLE_ERROR(("There is a mismatch between the number of required arguments\n"
                     " between the single-dispatch-generic-function %s which expects %d arguments\n"
                     " for methods: %s\n"
@@ -131,7 +129,7 @@ CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_
                     " --> The solution is to give the most recent Common Lisp method you defined\n"
                     " a new name by prefixing it with the class name\n"
                   " eg: getFilename -> PresumedLoc-getFilename") ,
-                 _rep_(tgfname) , gf_llh->numberOfRequiredArguments() , _rep_(gfunction->callHistory.load(std::memory_order_relaxed)) , _rep_(receiver_class) , lambda_list_handler->numberOfRequiredArguments());
+                 _rep_(tgfname) , gf_llh->numberOfRequiredArguments() , _rep_(gfunction->callHistory.load(std::memory_order_relaxed)) , _rep_(receiver_class) , nreq);
   }
   // Update the methods using CAS
   {

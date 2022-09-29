@@ -518,14 +518,6 @@ LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t en
 
 extern "C" {
 
-LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
-  printf("%s:%d lccSymbolFunction for %s returning NULL for now\n", __FILE__, __LINE__, _rep_(sym).c_str());
-  return NULL;
-}
-};
-
-extern "C" {
-
 const std::type_info &typeidCoreCatchThrow = typeid(core::CatchThrow);
 const std::type_info &typeidCoreUnwind = typeid(core::Unwind);
 
@@ -668,14 +660,6 @@ NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nar
                         kw::_sym_maxNargs, core::make_fixnum(max));
 }
 
-ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* evaluateFrameP)
-{NO_UNWIND_BEGIN();
-  core::ActivationFrame_sp af((gctools::Tagged)evaluateFrameP);
-  core::Function_sp func = gc::As_unsafe<core::Function_sp>(core::function_frame_lookup(af, depth, index));
-  return func.raw_();
-  NO_UNWIND_END();
-}
-
 /* Used in cclasp local calls. */
 T_O* cc_list(size_t nargs, ...) {
   va_list args;
@@ -741,31 +725,6 @@ void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
                             closure->lambdaList());
 }
 
-};
-
-extern "C" {
-
-
-core::T_O* makeCompiledFunction(core::T_O* tentrypoint,
-                                core::T_O* frameP
-                                )
-{NO_UNWIND_BEGIN();
-  // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
-  core::T_sp frame((gctools::Tagged)frameP);
-  core::T_sp tep((gctools::Tagged)tentrypoint);
-  core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tep);
-  if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
-    printf("%s:%d:%s You must pass a global-entry-point - you passed a %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(entryPoint).c_str());
-  };
-//  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
-  core::Closure_sp toplevel_closure =
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, BCLASP_CLOSURE_SLOTS,
-                                                                                       entryPoint,
-                                                                                       core::Closure_O::bclaspClosure);
-  (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
-  return toplevel_closure.raw_();
-  NO_UNWIND_END();
-};
 };
 
 extern "C" {
@@ -958,52 +917,6 @@ void debug_memory(size_t num, core::T_O** vector)
   NO_UNWIND_END();
 }
 
-void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
-  my_thread->_unwinds++;
-  core::ActivationFrame_sp af((gctools::Tagged)(frameP));
-  core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
-  core::BlockDynEnv_sp bde = gc::As<BlockDynEnv_sp>(handle);
-  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  sjlj_unwind(bde, 1); // index is unused here
-}
-};
-
-extern "C" {
-
-gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, void* handle) {
-  core::Unwind &returnFrom = *reinterpret_cast<core::Unwind *>(exceptionP);
-  if (returnFrom.getFrame() == handle) {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    gctools::return_type result(mv.operator[](0),mv.getSize());
-    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
-    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
-    return result;
-  }
-  throw; // throw returnFrom;
-}
-
-};
-
-extern "C" {
-
-core::T_O* initializeBlockClosure(core::T_O** afP, core::T_O* handle)
-{NO_UNWIND_BEGIN();
-  ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-  T_sp unique((gc::Tagged)handle);
-  vf->operator[](0) = unique;
-  return unique.raw_();
-  NO_UNWIND_END();
-}
-
-core::T_O* initializeTagbodyClosure(core::T_O *afP, core::T_O* handle)
-{NO_UNWIND_BEGIN();
-  core::T_sp tagbodyId((gctools::Tagged)afP);
-  core::T_sp thandle((gctools::Tagged)handle);
-  ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-  vf->operator[](0) = thandle;
-  return handle;
-  NO_UNWIND_END();
-}
 };
 
 template<typename Ty_O, class...ARGS>
@@ -1090,36 +1003,9 @@ void* cc_dynenv_frame(T_O* dynenv)
   sjlj_continue_unwinding();
 }
 
-void throwIllegalSwitchValue(size_t val, size_t max) {
-  SIMPLE_ERROR(("Illegal switch value %d - max value is %d") , val , max);
-}
-
 void cc_error_bugged_come_from(size_t id) {
   SIMPLE_ERROR(("BUG: Nonlocal entry frame could not match go-index %d") , id);
 }
-
-void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
-  my_thread->_unwinds++;
-  T_sp af((gctools::Tagged)afP);
-  ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
-  T_sp handle = tagbody->operator[](0);
-  TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(handle);
-  /* This index was passed to us zero-based, as it's stored in the
-   * lexical environment, but for setjmp compatibility it must be
-   * at least 1. */
-  sjlj_unwind(tde, index + 1);
-}
-
-int tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, void* handle) {
-  core::Unwind& goException = *reinterpret_cast<core::Unwind *>(exceptionP);
-  if (goException.getFrame() == handle) {
-    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
-    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
-    return goException.index();
-  }
-  throw;
-}
-
 
 void debugFileScopeHandle(int *sourceFileInfoHandleP)
 {NO_UNWIND_BEGIN();

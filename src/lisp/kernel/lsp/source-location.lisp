@@ -127,17 +127,12 @@
           method-sls))))
 
 (defun special-operator-source-locations (name)
-  (append
-   ;; bclasp
-   (let ((codegen (assoc name cmp::+special-operator-dispatch+)))
-     (when codegen
-       (source-location-impl (second codegen) :function)))
-   ;; cclasp - use a function defined later
-   (let ((p (find-package "CLASP-CLEAVIR")))
-     (when p
-       (let ((s (find-symbol "SPECIAL-OPERATOR-SOURCE-LOCATIONS" p)))
-         (when (and s (fboundp s))
-           (funcall s name)))))))
+  ;; cclasp - use a function defined later
+  (let ((p (find-package "CLASP-CLEAVIR")))
+    (when p
+      (let ((s (find-symbol "SPECIAL-OPERATOR-SOURCE-LOCATIONS" p)))
+        (when (and s (fboundp s))
+          (funcall s name))))))
 
 (defun source-location-impl (name kind)
   "* Arguments

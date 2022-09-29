@@ -1087,7 +1087,7 @@ void lisp_defineSingleDispatchMethod(T_sp name,
 #ifdef DEBUG_PROGRESS
   printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
 #endif
-  core__ensure_single_dispatch_method(gfn, name, receiver_class, llhandler, ldeclares, docStr, method_body);
+  core__ensure_single_dispatch_method(gfn, name, receiver_class, llhandler->numberOfRequiredArguments(), ldeclares, docStr, method_body);
 }
 
 void lisp_throwIfBuiltInClassesNotInitialized() {

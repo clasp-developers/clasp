@@ -956,7 +956,7 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
            (*break-level* (1+ *break-level*))
            (break-level *break-level*)
            (*break-env* nil)
-	   (cmp:*implicit-compile-hook* 'cmp:implicit-compile-hook-default))
+	   (cmp:*implicit-compile-hook* 'cmp:bytecode-implicit-compile-form))
       (declare (ignore break-level))
       (check-default-debugger-runaway)
       #+threads
