@@ -995,6 +995,7 @@ void initialize_clangTooling() {
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp ast_tooling__parse_dynamic_matcher(const string& matcher)
 {
+  printf("%s:%d:%s got matcher %s\n", __FILE__, __LINE__, __FUNCTION__, matcher.c_str());
   llvm::StringRef matchersr(matcher);
   clang::ast_matchers::dynamic::Diagnostics error;
   llvm::Optional<clang::ast_matchers::dynamic::DynTypedMatcher> Matcher =

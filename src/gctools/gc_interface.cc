@@ -142,7 +142,7 @@ const char *obj_name(gctools::stamp_t stamp) {
   if (stamp == (gctools::stamp_t)STAMPWTAG_null) {
     return "UNDEFINED";
   }
-  if ( stamp > (STAMPWTAG_max ) stamp = gctools::GCStamp<core::Instance_O>::StampWtag;
+  if ( stamp > (STAMPWTAG_max ))stamp = gctools::GCStamp<core::Instance_O>::StampWtag;
   size_t stamp_index = (size_t)stamp;
   ASSERT(stamp_index<=global_stamp_max);
 //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);

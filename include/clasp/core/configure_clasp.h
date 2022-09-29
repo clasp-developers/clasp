@@ -31,7 +31,7 @@ THE SOFTWARE.
 // ----------------------------------------------------------------------------
 // Set system wide debug flags here
 // ----------------------------------------------------------------------------
-#if 1
+#if 0
 //// DEBUG_RUNTIME defined and type errors print more info
 //#define DEBUG_RUNTIME 1
 //#define DEBUG_OBJECT_FILES 1

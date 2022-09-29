@@ -1276,7 +1276,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   vm._pc = pc;
   core::T_O** fp = vm.push_frame(nlocals);
   try {
-#if 0
+#if 1
     core::T_mv res = core::funwind_protect([&] {
       gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure, fp, lcc_nargs, lcc_args);
       vm._pc = old_pc;

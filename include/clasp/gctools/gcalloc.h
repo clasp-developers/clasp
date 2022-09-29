@@ -627,7 +627,7 @@ namespace gctools {
 #ifdef USE_BOEHM
 template <class OT>
 void BoehmFinalizer(void *base, void *data) {
-//  printf("%s:%d Finalizing base=%p\n", __FILE__, __LINE__, base);
+//  printf("%s:%d:%s Finalizing base=%p\n", __FILE__, __LINE__, __FUNCTION__, base);
   OT *client = HeaderPtrToGeneralPtr<OT>(base);
   boehm_general_finalizer_from_BoehmFinalizer((void*)client,data);
   client->~OT();

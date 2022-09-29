@@ -58,7 +58,14 @@ typedef int (*MainFunctionType)(int argc, char *argv[], bool &mpiEnabled, int &m
 
 #include <clasp/gctools/hardErrors.h>
 
+#ifdef RUNNING_PRECISEPREP
+typedef uintptr_t GC_word;
+inline void* GC_base(void* v) { return v; };
+#endif
+
 namespace gctools {
+
+typedef enum {room_max, room_default, room_min } RoomVerbosity;
 
   // The clasp pointer type.
   // This was introduced very late - but we can use it to recognize pointers that need fixup in save/load

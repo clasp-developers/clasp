@@ -166,12 +166,12 @@ VirtualMachine::VirtualMachine() :
 {
   size_t stackSpace = VirtualMachine::MaxStackWords*sizeof(T_O*);
   this->_stackTop = this->_stackBottom+VirtualMachine::MaxStackWords-1;
-  printf("%s:%d:%s vm._stackTop = %p\n", __FILE__, __LINE__, __FUNCTION__, this->_stackTop );
+//  printf("%s:%d:%s vm._stackTop = %p\n", __FILE__, __LINE__, __FUNCTION__, this->_stackTop );
   size_t pageSize = getpagesize();
   uintptr_t stackGuardPage = ((uintptr_t)this->_stackTop - pageSize)/pageSize;
   uintptr_t stackGuard = stackGuardPage*pageSize;
   this->_stackGuard = (core::T_O**)stackGuard;
-  printf("%s:%d:%s stackGuard = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackGuard );
+//  printf("%s:%d:%s stackGuard = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackGuard );
   this->_stackBytes = stackSpace;
   memset(this->_stackBottom,0,stackSpace);
 //  int mprotectResult = mprotect((void*)this->_stackGuard,pageSize,PROT_READ);

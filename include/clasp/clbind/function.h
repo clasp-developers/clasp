@@ -88,7 +88,7 @@ struct BytecodeWrapper {
   enum { BytecodeP = 1 };
 };
 
-#if 1
+#if 0
 // Use bytecode wrappers for all exposed functions
 using DefaultWrapper = BytecodeWrapper;
 using SpecialWrapper = LambdaListHandler;
