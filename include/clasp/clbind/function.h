@@ -81,25 +81,9 @@ private:
 
 namespace clbind {
 
-struct LambdaListHandler {
-  enum { BytecodeP = 0 };
-};
-struct BytecodeWrapper {
-  enum { BytecodeP = 1 };
-};
-
-#if 0
-// Use bytecode wrappers for all exposed functions
-using DefaultWrapper = BytecodeWrapper;
-using SpecialWrapper = LambdaListHandler;
-#else
-// Use LambdaListHandler wrappers for all exposed functions
-using DefaultWrapper = LambdaListHandler;
-using SpecialWrapper = BytecodeWrapper;
-#endif
 
 
-template <typename FunctionPtrType, typename Policies, typename PureOuts, typename ArgumentHandling=LambdaListHandler>
+template <typename FunctionPtrType, typename Policies, typename PureOuts, typename ArgumentHandling>
 class TEMPLATED_FUNCTION_VariadicFunctor : public core::BuiltinClosure_O {
 public:
   typedef core::BuiltinClosure_O TemplatedBase;
@@ -123,9 +107,9 @@ class my_tuple : public std::tuple<Types...> {
 
 
 template <typename RT  ,typename...ARGS>
-class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,LambdaListHandler> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>, LambdaListHandlerWrapper> : public core::BuiltinClosure_O {
 public:
-  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,LambdaListHandler> MyType;
+  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp,clbind::pureOutsPack<>,LambdaListHandlerWrapper > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -324,9 +308,9 @@ namespace clbind {
 };
 
 template <typename FunctionPtrType, typename Policies, typename PureOutsPack>
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::LambdaListHandler>> {
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::LambdaListHandlerWrapper>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::LambdaListHandler >::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, clbind::LambdaListHandlerWrapper >::TemplatedBase>::StampWtag;
 };
 
 template <typename FunctionPtrType, typename Policies, typename PureOutsPack>

@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <clasp/clbind/details.h>
 namespace clbind {
 
-template <typename Policies, typename OT, typename MethodPtrType>
+template <typename MethodPtrType, typename Policies, typename Wrapper>
 class TEMPLATED_FUNCTION_IndirectVariadicMethoid : public core::BuiltinClosure_O {
   typedef BuiltinClosure_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
@@ -43,9 +43,9 @@ class TEMPLATED_FUNCTION_IndirectVariadicMethoid : public core::BuiltinClosure_O
 namespace clbind {
 
 template <typename Policies, typename RT, typename OT, typename... ARGS>
-class TEMPLATED_FUNCTION_IndirectVariadicMethoid <Policies, OT, RT(OT::*)(ARGS...)> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_IndirectVariadicMethoid < RT(OT::*)(ARGS...), Policies, LambdaListHandlerWrapper > : public core::BuiltinClosure_O {
 public:
-  typedef TEMPLATED_FUNCTION_IndirectVariadicMethoid<Policies,OT,RT(OT::*)(ARGS...) > MyType;
+  typedef TEMPLATED_FUNCTION_IndirectVariadicMethoid< RT(OT::*)(ARGS...), Policies, LambdaListHandlerWrapper > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
@@ -104,9 +104,9 @@ public:
 };
 
 template <typename Policies, typename RT, typename OT, typename... ARGS>
-class TEMPLATED_FUNCTION_IndirectVariadicMethoid <Policies, OT, RT(OT::*)(ARGS...) const> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_IndirectVariadicMethoid < RT(OT::*)(ARGS...) const, Policies, LambdaListHandlerWrapper > : public core::BuiltinClosure_O {
 public:
-  typedef TEMPLATED_FUNCTION_IndirectVariadicMethoid<Policies,OT,RT(OT::*)(ARGS...) const > MyType;
+  typedef TEMPLATED_FUNCTION_IndirectVariadicMethoid< RT(OT::*)(ARGS...) const, Policies, LambdaListHandlerWrapper > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
@@ -167,10 +167,121 @@ public:
 };
 
 
-template <typename Pols, typename OT, typename MethodPtrType>
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid<Pols, OT, MethodPtrType>> {
+namespace clbind {
+
+template <typename Policies, typename RT, typename OT, typename... ARGS>
+class TEMPLATED_FUNCTION_IndirectVariadicMethoid < RT(OT::*)(ARGS...), Policies, BytecodeWrapper > : public core::BuiltinClosure_O {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid<Pols, OT, MethodPtrType>::TemplatedBase>::StampWtag;
+  typedef TEMPLATED_FUNCTION_IndirectVariadicMethoid< RT(OT::*)(ARGS...), Policies, BytecodeWrapper > MyType;
+  typedef core::BuiltinClosure_O TemplatedBase;
+public:
+  virtual const char* describe() const {return "IndirectVariadicMethoid";};
+  typedef RT(OT::*MethodType)(ARGS...) ;
+  MethodType mptr;
+public:
+  enum { NumParams = sizeof...(ARGS)+1 };
+  TEMPLATED_FUNCTION_IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ep), mptr(ptr) {
+    this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
+  };
+  virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+    this->fixupOneCodePointer( fixup,(void**)&this->mptr,sizeof(this->mptr));
+  }
+  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+  {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    core::T_sp dispatchArg((gctools::Tagged)lcc_args[0]);
+    translate::from_object<OT*> otep(dispatchArg);
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::goFrame(lcc_args);
+    return clbind::clbind_external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT*,decltype(all_args)>::go(std::move(closure->mptr),otep._v,std::move(all_args));
+  }
+  static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
+};
+
+template <typename Policies, typename RT, typename OT, typename... ARGS>
+class TEMPLATED_FUNCTION_IndirectVariadicMethoid < RT(OT::*)(ARGS...) const, Policies, BytecodeWrapper > : public core::BuiltinClosure_O {
+public:
+  typedef TEMPLATED_FUNCTION_IndirectVariadicMethoid< RT(OT::*)(ARGS...) const, Policies, BytecodeWrapper > MyType;
+  typedef core::BuiltinClosure_O TemplatedBase;
+public:
+  virtual const char* describe() const {return "IndirectVariadicMethoid";};
+  typedef RT(OT::*MethodType)(ARGS...) const ;
+  MethodType mptr;
+public:
+  enum { NumParams = sizeof...(ARGS)+1 };
+  TEMPLATED_FUNCTION_IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ep), mptr(ptr) {
+    this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
+  };
+  virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+    this->fixupOneCodePointer( fixup,(void**)&this->mptr,sizeof(this->mptr));
+  }
+  static inline gctools::return_type LISP_CALLING_CONVENTION()
+  {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    core::T_sp dispatchArg((gctools::Tagged)lcc_args[0]);
+    translate::from_object<OT*> otep(dispatchArg);
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::goFrame(lcc_args);
+    return clbind::clbind_external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT*,decltype(all_args)>::go(std::move(closure->mptr),otep._v,std::move(all_args));
+  }
+    static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
+};
+
+};
+
+
+template < typename MethodPtrType, typename Pols, typename ArgumentHandler >
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid< MethodPtrType, Pols, ArgumentHandler >> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid< MethodPtrType, Pols, ArgumentHandler >::TemplatedBase>::StampWtag;
 };
 
 #endif

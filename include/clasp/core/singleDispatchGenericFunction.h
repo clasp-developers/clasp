@@ -48,10 +48,9 @@ public:
       REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS = 4
   } SingleDispatchSlots;
 public:
-  static SingleDispatchGenericFunction_sp create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex);
+  static SingleDispatchGenericFunction_sp create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex, List_sp lambdaList);
 public:
   std::atomic<T_sp> callHistory;
-  LambdaListHandler_sp lambdaListHandler;
   Fixnum_sp argumentIndex;
   std::atomic<T_sp> methods;
 
@@ -113,7 +112,7 @@ public:
                  , _rep_(dispatchArgClass)
                  , _rep_(dispatchArg).c_str());
   }
-    static inline LISP_ENTRY_0() {
+  static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
   }
   static inline LISP_ENTRY_1() {
@@ -144,7 +143,7 @@ public:
 
 
 namespace core {
-SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex);
+SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_function(T_sp gfname, bool autoExport, size_t singleDispatchArgumentIndex, List_sp lambdaList );
 // void core__satiateSingleDispatchGenericFunctions();
 
 };

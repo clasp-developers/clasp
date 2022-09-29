@@ -45,10 +45,11 @@ struct memberpointertraits<M C::*> {
 };
 
   extern void trapGetterMethoid();
+
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
 class TEMPLATED_FUNCTION_GetterMethoid : public core::BuiltinClosure_O {
 public:
-  typedef TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies,OT,VariablePtrType> MyType;
+  typedef TEMPLATED_FUNCTION_GetterMethoid< GetterPolicies, OT, VariablePtrType > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 
 private:
@@ -100,9 +101,9 @@ public:
 
 namespace clbind {
 template <typename GetterPolicies, typename OT, typename MemberType>
-class TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*)> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*) > : public core::BuiltinClosure_O {
  public:
-  typedef TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies,OT,MemberType *const(OT::*)> MyType;
+  typedef TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies,OT,MemberType *const(OT::*) > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 
 private:
@@ -152,17 +153,19 @@ public:
 };
 };
 
-template <typename GetterPolicies, typename OT, typename VariablePtrType>
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType>> {
+template <typename GetterPolicies, typename OT, typename VariablePtrType >
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType >> {
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType >::TemplatedBase>::StampWtag;
 };
 
 
 namespace clbind {
+
+
 template <typename SetterPolicies, typename OT, typename VariablePtrType>
 class SetterMethoid : public core::BuiltinClosure_O {
 public:

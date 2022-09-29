@@ -80,6 +80,28 @@ namespace std {
 class type_info;
 };
 
+namespace clbind {
+
+struct LambdaListHandlerWrapper {
+  enum { BytecodeP = 0 };
+};
+struct BytecodeWrapper {
+  enum { BytecodeP = 1 };
+};
+
+
+#if 0
+// Use bytecode wrappers for all exposed functions
+using DefaultWrapper = BytecodeWrapper;
+using SpecialWrapper = LambdaListHandlerWrapper;
+#else
+// Use LambdaListHandler wrappers for all exposed functions
+using DefaultWrapper = LambdaListHandlerWrapper;
+using SpecialWrapper = BytecodeWrapper;
+#endif
+
+};
+
 //
 // USE_TAGGED_PTR_P0  determines whether a p0 pointer,  the most-derived-pointer is stored
 //         in the tagged_ptr.   If you turn it on then tagged_ptr uses twice as much
@@ -973,17 +995,31 @@ List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
 size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp llh);
 
 
-  void lisp_defineSingleDispatchMethod(T_sp name,
-                                       Symbol_sp classSymbol,
-                                       BuiltinClosure_sp,
-                                       size_t TemplateDispatchOn = 0,
-                                       bool useTemplateDispatchOn = false,
-                                       const string &lambda_list = "",
-                                       const string &declares = "",
-                                       const string &docstring = "",
-                                       bool autoExport = true,
-                                       int number_of_required_arguments = -1,
-                                       std::set<int> pureOutIndices = std::set<int>());
+void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& dummy_specializer,
+                                     T_sp name,
+                                     Symbol_sp classSymbol,
+                                     BuiltinClosure_sp,
+                                     size_t TemplateDispatchOn = 0,
+                                     bool useTemplateDispatchOn = false,
+                                     const string &lambda_list = "",
+                                     const string &declares = "",
+                                     const string &docstring = "",
+                                     bool autoExport = true,
+                                     int number_of_required_arguments = -1,
+                                     std::set<int> pureOutIndices = std::set<int>());
+
+void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specializer,
+                                     T_sp name,
+                                     Symbol_sp classSymbol,
+                                     BuiltinClosure_sp,
+                                     size_t TemplateDispatchOn = 0,
+                                     bool useTemplateDispatchOn = false,
+                                     const string &lambda_list = "",
+                                     const string &declares = "",
+                                     const string &docstring = "",
+                                     bool autoExport = true,
+                                     int number_of_required_arguments = -1,
+                                     std::set<int> pureOutIndices = std::set<int>());
 
 
 #if 0

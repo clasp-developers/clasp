@@ -41,7 +41,7 @@ struct BeginReturnType<T, RT (T::*)()> {
   typedef RT type;
 };
 
-template <typename Pols, typename OT, typename Begin, typename End>
+template <typename Pols, typename OT, typename Begin, typename End >
 class IteratorMethoid : public core::BuiltinClosure_O {
 public:
   typedef core::BuiltinClosure_O TemplatedBase;
@@ -101,10 +101,10 @@ public:
 };
 };
 
-template <typename Pols, typename OT, typename Begin, typename End>
-class gctools::GCStamp<clbind::IteratorMethoid<Pols, OT, Begin, End>> {
+template <typename Pols, typename OT, typename Begin, typename End >
+class gctools::GCStamp<clbind::IteratorMethoid<Pols, OT, Begin, End >> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::IteratorMethoid<Pols, OT, Begin, End>::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::IteratorMethoid< Pols, OT, Begin, End >::TemplatedBase>::StampWtag;
 };
 
 #endif

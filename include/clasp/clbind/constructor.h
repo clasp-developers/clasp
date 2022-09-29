@@ -190,9 +190,9 @@ template <typename ConstructorPtrType, typename Policies, typename Pointer, type
 class VariadicConstructorFunction_O : public core::BuiltinClosure_O {};
 
 template <typename ...ARGS, typename Policies, typename Pointer, typename ConstructType >
-class VariadicConstructorFunction_O < constructor<ARGS...>, Policies, Pointer, ConstructType, LambdaListHandler > : public core::BuiltinClosure_O {
+class VariadicConstructorFunction_O < constructor<ARGS...>, Policies, Pointer, ConstructType, LambdaListHandlerWrapper > : public core::BuiltinClosure_O {
 public:
-  typedef VariadicConstructorFunction_O< constructor<ARGS...>,Policies, Pointer, ConstructType, LambdaListHandler > MyType;
+  typedef VariadicConstructorFunction_O< constructor<ARGS...>,Policies, Pointer, ConstructType, LambdaListHandlerWrapper > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef Wrapper<ConstructType,Pointer>  WrapperType;

@@ -403,10 +403,11 @@ struct memfun_registration : registration {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp symbol = core::lisp_intern(m_name, symbol_packageName(classSymbol));
-    using VariadicType = TEMPLATED_FUNCTION_IndirectVariadicMethoid<Policies, Class, MethodPointerType>;
+    using VariadicType = TEMPLATED_FUNCTION_IndirectVariadicMethoid< MethodPointerType, Policies, clbind::DefaultWrapper >;
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
     core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,methodPtr));
-    lisp_defineSingleDispatchMethod(symbol, classSymbol, ffunc, 0, true,
+    lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), 
+                                    symbol, classSymbol, ffunc, 0, true,
                                     m_arguments, m_declares, m_doc_string,
                                     true,
                                     CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
@@ -434,12 +435,12 @@ struct iterator_registration : registration {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lisp_intern(m_name, symbol_packageName(classSymbol));
-    using VariadicType = IteratorMethoid<Policies, Class, Begin, End>;
+    using VariadicType = IteratorMethoid<Policies, Class, Begin, End >;
     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(sym,nil<core::T_O>());
     core::BuiltinClosure_sp methoid = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, beginPtr, endPtr));
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
-    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_doc_string, true, 1); // one argument required for iterator - the object that has the sequence
+    lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_doc_string, true, 1); // one argument required for iterator - the object that has the sequence
     core::validateFunctionDescription(__FILE__, __LINE__, methoid);
   }
   
@@ -586,12 +587,12 @@ struct property_registration : registration {
     //                printf("%p\n", i);
      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
      core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
-     using VariadicGetterType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get>;
+     using VariadicGetterType = TEMPLATED_FUNCTION_GetterMethoid< reg::null_type, Class, Get >;
      core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicGetterType>( sym ,nil<core::T_O>());
      maybe_register_symbol_using_dladdr( (void*)VariadicGetterType::entry_point );
      auto raw_getter = gc::GC<VariadicGetterType>::allocate( entryPoint, get );
      core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>( raw_getter );
-     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1 );
+     lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1 );
      core::validateFunctionDescription( __FILE__, __LINE__, getter );
      core::T_sp setf_name = core::Cons_O::createList( cl::_sym_setf, sym );
      using VariadicSetterType = SetterMethoid<reg::null_type, Class, Set>;
@@ -599,7 +600,7 @@ struct property_registration : registration {
      maybe_register_symbol_using_dladdr( (void*)VariadicSetterType::entry_point );
      auto raw_setter = gc::GC<VariadicSetterType>::allocate( setterEntryPoint, set );
      core::BuiltinClosure_sp setter = gc::As<core::BuiltinClosure_sp>( raw_setter );
-     lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_doc_string, true, 2);
+     lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_doc_string, true, 2);
      core::validateFunctionDescription(__FILE__,__LINE__,setter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
@@ -638,10 +639,10 @@ struct property_registration : registration {
     //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
-    using VariadicType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get>;
+    using VariadicType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get >;
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<VariadicType>(sym,nil<core::T_O>());
     core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, get));
-    lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1);
+    lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1);
     core::validateFunctionDescription(__FILE__, __LINE__, getter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, m_name);
     // register the getter here

@@ -49,12 +49,11 @@ THE SOFTWARE.
 namespace core {
 
 
-SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex)
+SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex, List_sp lambdaList)
 {
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<SingleDispatchGenericFunction_O>(gfname,nil<T_O>(),llhandler->lambdaList());
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<SingleDispatchGenericFunction_O>(gfname,nil<T_O>(),lambdaList);
   auto gfun = gctools::GC<SingleDispatchGenericFunction_O>::allocate(entryPoint);
   gfun->callHistory = nil<T_O>();
-  gfun->lambdaListHandler = llhandler;
   gfun->argumentIndex = make_fixnum(singleDispatchArgumentIndex);
   gfun->methods = nil<T_O>();
   return gfun;
@@ -65,7 +64,7 @@ SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create_single_
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchGenericFunction)dx")
 DOCGROUP(clasp)
-CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex) {
+CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_function(T_sp gfname, bool autoExport, size_t singleDispatchArgumentIndex, List_sp lambdaList) {
   T_sp tgfn;
   if (!cl__fboundp(gfname)) {
     tgfn = nil<T_O>();
@@ -86,7 +85,7 @@ CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_f
       if (setf_gfname->fboundp_setf()) {
         SIMPLE_ERROR(("The name %s has something bound to its setf function slot but no generic function with that name was found") , _rep_(gfname));
       }
-      gfn = SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(gfname, llhandler,singleDispatchArgumentIndex);
+      gfn = SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(gfname,singleDispatchArgumentIndex, lambdaList );
       setf_gfname->setSetfFdefinition(gfn);
       if (autoExport) setf_gfname->exportYourself();
     } else {
@@ -96,7 +95,7 @@ CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_f
         T_sp symFunc = gfname_symbol->symbolFunction();
         SIMPLE_ERROR(("The symbol %s has something bound to its function slot but not a single dispatch generic function") , _rep_(gfname));
       }
-      gfn = SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(gfname, llhandler,singleDispatchArgumentIndex);
+      gfn = SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(gfname,singleDispatchArgumentIndex, lambdaList);
       gfname_symbol->setf_symbolFunction(gfn);
       if (autoExport) gfname_symbol->exportYourself();
     }
@@ -118,21 +117,6 @@ CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_
                                                                   declares,
                                                                   docstring,
                                                                   body);
-  ASSERT(lambda_list_handler.notnilp());
-  LambdaListHandler_sp gf_llh = gfunction->lambdaListHandler;
-  if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments()) {
-    SIMPLE_ERROR(("There is a mismatch between the number of required arguments\n"
-                    " between the single-dispatch-generic-function %s which expects %d arguments\n"
-                    " for methods: %s\n"
-                    " and another method with the same name in %s which expects %d arguments\n"
-                    " - this is probably due to the way you can overload method names with\n"
-                    " different argument signatures in C++ which does not translate well\n"
-                    " to Common Lisp.\n"
-                    " --> The solution is to give the most recent Common Lisp method you defined\n"
-                    " a new name by prefixing it with the class name\n"
-                  " eg: getFilename -> PresumedLoc-getFilename") ,
-                 _rep_(tgfname) , gf_llh->numberOfRequiredArguments() , _rep_(gfunction->callHistory.load(std::memory_order_relaxed)) , _rep_(receiver_class) , lambda_list_handler->numberOfRequiredArguments());
-  }
   // Update the methods using CAS
   {
     T_sp expected;

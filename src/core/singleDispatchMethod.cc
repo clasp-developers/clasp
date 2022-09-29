@@ -48,13 +48,6 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        gc::Nilable<String_sp> docstr,
                                                        Function_sp body) {
   auto  method = gctools::GC<SingleDispatchMethod_O>::allocate( name,receiverClass,llh,declares,docstr,body);
-  //validateFunctionDescription(__FILE__,__LINE__, body);
-  // method->_name = name;
-  // method->_receiver_class = receiverClass;
-  // ASSERTF(body.notnilp(), ("The body of a method should never be nil"));
-  // method->_argument_handler = llh;
-  // method->_declares = declares;
-  // method->_docstring = docstr;
   return method;
 }
 

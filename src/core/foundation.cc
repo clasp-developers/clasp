@@ -1016,7 +1016,8 @@ string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda)
 SYMBOL_EXPORT_SC_(KeywordPkg, body);
 SYMBOL_EXPORT_SC_(KeywordPkg, lambda_list_handler);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
-void lisp_defineSingleDispatchMethod(T_sp name,
+void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& specializer,
+                                     T_sp name,
                                      Symbol_sp classSymbol,
                                      BuiltinClosure_sp method_body,
                                      size_t TemplateDispatchOn,
@@ -1078,7 +1079,7 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   
   T_sp docStr = nil<T_O>();
   if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
-  SingleDispatchGenericFunction_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
+  SingleDispatchGenericFunction_sp gfn = core__ensure_single_dispatch_generic_function(name, autoExport,single_dispatch_argument_index, llhandler->lambdaList()); // Ensure the single dispatch generic function exists
   method_body->finishSetup(llhandler);
   method_body->setf_sourcePathname(nil<T_O>());
   method_body->setf_lambdaList(llhandler->lambdaList());
@@ -1090,6 +1091,22 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   core__ensure_single_dispatch_method(gfn, name, receiver_class, llhandler, ldeclares, docStr, method_body);
 }
 
+void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer,
+                                     T_sp name,
+                                     Symbol_sp classSymbol,
+                                     BuiltinClosure_sp method_body,
+                                     size_t TemplateDispatchOn,
+                                     bool useTemplateDispatchOn,
+                                     const string &raw_arguments,
+                                     const string &declares,
+                                     const string &docstring,
+                                     bool autoExport,
+                                     int number_of_required_arguments,
+                                     const std::set<int> pureOutIndices) {
+  printf("%s:%d:%s What do I do here\n", __FILE__, __LINE__, __FUNCTION__ );
+  abort();
+}
+
 void lisp_throwIfBuiltInClassesNotInitialized() {
   _lisp->throwIfBuiltInClassesNotInitialized();
 }
@@ -1097,10 +1114,6 @@ void lisp_throwIfBuiltInClassesNotInitialized() {
 Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
   return gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
 }
-
-
-  
-
 
 /*! If the name has the structure XXX:YYY or XXX::YYY then intern YYY in package XXX either
       exported or not respectively.   If there is no package prefix then use the defaultPackageName */
