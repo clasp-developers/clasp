@@ -20,7 +20,7 @@
           `(core:ensure-single-dispatch-method (fdefinition ',name)
                                                ',name
                                                (find-class ',dispatch-class)
-                                               :nreq nreq
+                                               :nreq ,nreq
                                                :docstring ,docstring
                                                :body ,fn)))))
 
