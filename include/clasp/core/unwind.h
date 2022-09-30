@@ -208,11 +208,17 @@ T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
     // We have longjmped here. Clean up.
     // Remember to save return values, in case the cleanup thunk
     // messes with them.
+    // Also save the unwind dest and index, in case the cleanup thunk
+    // itself unwinds.
+    T_sp dest = my_thread->_UnwindDest;
+    size_t dindex = my_thread->_UnwindDestIndex;
     size_t nvals = lisp_multipleValues().getSize();
     T_O* mv_temp[nvals];
     multipleValuesSaveToTemp(nvals, mv_temp);
     cleanup_thunk();
     multipleValuesLoadFromTemp(nvals, mv_temp);
+    my_thread->_UnwindDestIndex = dindex;
+    my_thread->_UnwindDest = dest;
     // Continue unwinding.
     sjlj_continue_unwinding();
   } else {
