@@ -110,10 +110,9 @@ CL_LAMBDA("gf gfname receiver-class &key lambda-list-handler declares (docstring
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function)dx")
 DOCGROUP(clasp)
-CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp tgfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, T_sp docstring, Function_sp body) {
+CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp tgfname, Instance_sp receiver_class, List_sp declares, T_sp docstring, Function_sp body) {
   SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(tgfname,
                                                                   receiver_class,
-                                                                  lambda_list_handler,
                                                                   declares,
                                                                   docstring,
                                                                   body);

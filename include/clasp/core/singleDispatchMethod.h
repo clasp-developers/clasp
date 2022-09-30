@@ -45,7 +45,7 @@ class SingleDispatchMethod_O : public General_O {
 public:
   friend class SingleDispatchGeneralFunction_O;
 public: // Simple default ctor/dtor
- SingleDispatchMethod_O(T_sp name, Instance_sp receiverClass, LambdaListHandler_sp llh, List_sp declares, T_sp docstring, Function_sp body) : _name(name), _receiver_class(receiverClass), _MethodLambdaListHandler(llh), _declares(declares), _docstring(docstring), _function(body) {};
+ SingleDispatchMethod_O(T_sp name, Instance_sp receiverClass, List_sp declares, T_sp docstring, Function_sp body) : _name(name), _receiver_class(receiverClass), _declares(declares), _docstring(docstring), _function(body) {};
  public:
            /*! Store the generic function name */
   T_sp _name;
@@ -53,7 +53,6 @@ public: // Simple default ctor/dtor
   Instance_sp _receiver_class;
   //	BuiltIn_sp	_method_builtin;
   /*! This is the LambdaListHandler for the Builtin method */
-  LambdaListHandler_sp _MethodLambdaListHandler;
   List_sp _declares;
   /*! Store the docstring */
   T_sp _docstring;
@@ -63,7 +62,6 @@ public: // creation function
   // The creates above are depreciated
   static SingleDispatchMethod_sp create(T_sp name,
                                         Instance_sp receiver,
-                                        LambdaListHandler_sp lambda_list_handler,
                                         List_sp declares,
                                         gc::Nilable<String_sp> docstr,
                                         Function_sp body);
@@ -99,7 +97,7 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp gfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, core::T_sp docstring, Function_sp body);
+void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp gfname, Instance_sp receiver_class, List_sp declares, core::T_sp docstring, Function_sp body);
 
 
 };

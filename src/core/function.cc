@@ -544,7 +544,7 @@ GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_
            num, ClaspXepFunction::Entries );
     abort();
   }
-  ClaspXepFunction xepFunction((XepFilling()));
+  ClaspXepFunction xepFunction(XepFilling());
   size_t cur = 0;
   for ( auto entry : epIndices ) {
     T_sp oneEntryPointIndex = CONS_CAR(entry);
