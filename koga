@@ -123,10 +123,5 @@
   (asdf:initialize-source-registry
     `(:source-registry (:tree ,(uiop:getcwd))
                        :inherit-configuration))
-  (asdf:initialize-output-translations
-    `(:output-translations (t (,(merge-pathnames (merge-pathnames #P"host-fasl/" build)
-                                                 (uiop:getcwd))
-                               :implementation))
-                           :inherit-configuration))
   (asdf:load-system :koga)
   (apply #'uiop:symbol-call "KOGA" (if help "HELP" "SETUP") initargs))
