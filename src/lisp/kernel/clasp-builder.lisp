@@ -9,18 +9,36 @@
 
 (defvar *number-of-jobs* 1)
 
-(defun message (level control-string &rest args)
+(defun ansi-control (&optional level)
   (core:fmt t "%e[{:d}m"
             (cond ((eq level :err)  31)
                   ((eq level :warn) 33)
                   ((eq level :emph) 32)
                   ((eq level :debug) 36)
                   ((eq level :info) 37)
-                  (t 0)))
+                  (t 0))))
+
+(defun message (level control-string &rest args)
+  (ansi-control level)
   (apply #'core:fmt t control-string args)
-  (core:fmt t "%e[0m%n")
+  (ansi-control)
+  (terpri)
   (when (eq level :err)
     (core:exit 1)))
+
+(defun message-fd (level fd)
+  (let ((buffer (make-array 1024 :element-type 'base-char :adjustable nil)))
+    (ansi-control level)
+    (core:lseek fd 0 :seek-set)
+    (tagbody
+     top
+      (multiple-value-bind (num-read errno)
+          (core:read-fd fd buffer)
+        (when (> num-read 0)
+          (write-sequence buffer t :start 0 :end num-read)
+          (go top))))
+    (core:close-fd fd)
+    (ansi-control)))
 
 #+(or)
 (progn
@@ -114,238 +132,94 @@
   (dolist (entry system)
     (compile-kernel-file entry :reload reload :output-type output-type :count count :print t :verbose t)))
 
-(defconstant +pjob-slots+ 7)
-(defconstant +done-of+ 0)
-(defconstant +pid-of+ 1)
-(defconstant +signals-of+ 2)
-(defconstant +entries-of+ 3)
-(defconstant +child-stdout-of+ 4)
-(defconstant +child-stderr-of+ 5)
-(defconstant +start-time-of+ 6)
-
-(defun setf-pjob-done (pjob value) (setf-elt pjob +done-of+ value))
-(defun setf-pjob-done (pjob value) (setf-elt pjob +done-of+ value))
-(defun setf-pjob-pid (pjob value) (setf-elt pjob +pid-of+ value))
-(defun setf-pjob-signals (pjob value) (setf-elt pjob +signals-of+ value))
-(defun setf-pjob-entries (pjob value) (setf-elt pjob +entries-of+ value))
-(defun setf-pjob-start-time (pjob value) (setf-elt pjob +start-time-of+ value))
-(defun setf-pjob-child-stdout (pjob value) (setf-elt pjob +child-stdout-of+ value))
-(defun setf-pjob-child-stderr (pjob value) (setf-elt pjob +child-stderr-of+ value))
-
-(defun pjob-done (pjob) (elt pjob +done-of+))
-(defun pjob-pid (pjob) (elt pjob +pid-of+)) 
-(defun pjob-signals (pjob) (elt pjob +signals-of+)) 
-(defun pjob-entries (pjob) (elt pjob +entries-of+)) 
-(defun pjob-child-stdout (pjob) (elt pjob +child-stdout-of+)) 
-(defun pjob-child-stderr (pjob) (elt pjob +child-stderr-of+)) 
-(defun pjob-start-time (pjob) (elt pjob +start-time-of+)) 
-
-(defun make-pjob (&key done pid signals entries child-stdout child-stderr start-time)
-  (let ((pjob (make-array +pjob-slots+)))
-    (setf-pjob-done pjob done)
-    (setf-pjob-pid pjob pid)
-    (setf-pjob-signals pjob signals)
-    (setf-pjob-entries pjob entries)
-    (setf-pjob-child-stdout pjob child-stdout)
-    (setf-pjob-child-stderr pjob child-stderr)
-    (setf-pjob-start-time pjob start-time)
-    pjob))
-
-(defvar *before-ms* 0)
-(defvar *before-bytes* 0)
-
-                            
-(defun wait-for-child-to-exit (jobs)
-  (mmsg "About to waitpid sigchld-count: {}%N"(core:sigchld-count))
-  (multiple-value-bind (wpid status)
-      (core:wait)
-    (mmsg "Returned from waitpid with wpid: {} status:{}%N" wpid status)
-    (if (not (= wpid 0))
-        (progn
-          (if (/= status 0)
-              (message :warn "wpid -> {}  status -> {}" wpid status))
-          (if (core:wifexited status)
-              (progn
-                (mmsg "A child exited wpid: {}  status: {}%N" wpid status)
-                (return-from wait-for-child-to-exit (values wpid status nil))))
-          (if (core:wifsignaled status)
-              (let ((signal (core:wtermsig status)))
-                (mmsg "Child process with pid {} got signal {}%N" wpid signal)
-                (message :warn "Child process with pid {} got signal {}" wpid signal)))))
-    ;; If we drop through to here the child died for some reason - return and inform the parent
-    (values wpid status t)))
-
 (defun compile-system-parallel (system
                                 &key reload (output-type core:*clasp-build-mode*)
-                                (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 1) &allow-other-keys)
+                                     (parallel-jobs *number-of-jobs*)
+                                &allow-other-keys)
   (message :emph "Compiling system with {:d} parallel jobs..." parallel-jobs)
-  (let ((total (length system))
-        (job-counter 0)
-        (batch-size 0)
+  (let ((count (length system))
         (child-count 0)
-        child-died
-        (jobs (make-hash-table :test #'eql)))
-    (labels ((started-one (entry child-pid)
+        (jobs (make-hash-table :test #'eql))
+        entry)
+    (labels ((started-one (entry)
                (message nil "Starting {: >3d} of {:d} [pid {:d}] {}"
-                        (getf entry :index) total child-pid (namestring (getf entry :source-path)))
+                        (getf entry :index) count (getf entry :pid) (namestring (getf entry :source-path)))
                (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
-                 (format t "CLASP_PAUSE_FORKED_CHILD is set - will pause all children until they receive SIGUSR1~%")))
-             (started-some (entries child-pid)
-               (dolist (entry entries)
-                 (started-one entry child-pid)))
-             (finished-report-one (entry child-pid)
-               (message :emph "Finished {: >3d} of {:d} [pid {:d}] {} output follows..."
-                        (getf entry :index) total child-pid (namestring (getf entry :source-path))))
-             (read-fd-into-buffer (fd)
-               (mmsg "in read-fd-into-buffer {}%N" fd)
-               (let ((buffer (make-array 1024 :element-type 'base-char :adjustable nil))
-                     (sout (make-string-output-stream)))
-                 (core:lseek fd 0 :seek-set)
-                 (block readloop
-                   (tagbody
-                    top
-                      (mmsg "About to read-fd%N")
-                      (multiple-value-bind (num-read errno)
-                          (core:read-fd fd buffer)
-                          (cond ((zerop num-read)
-                                 (return-from readloop))
-                                ((< num-read 0)
-                                 (mmsg "Three was an error reading the stream errno {}%N" errno)
-                                 (message :warn "There was an error reading the stream errno {}" errno))
-                                (t
-                                 (write-sequence buffer sout :start 0 :end num-read)
-                                 (mmsg "Wrote <{}>%N" (subseq buffer 0 num-read)))))
-                      (go top)))
-                 (mmsg "Returning with buffer%N")
-                 (core:close-fd fd)
-                 (get-output-stream-string sout)))
-             (report-stream (fd level)
-               (mmsg "In report-stream%N")
-               (let* ((buffer (read-fd-into-buffer fd))
-                      (sin (make-string-input-stream buffer)))
-                 ;; We use DO* instead of DO because the latter uses psetq,
-                 ;; which is not defined early.
-                 (do* ((line (read-line sin nil nil) (read-line sin nil nil)))
-                      ((null line))
-                   (message level "  {}" line)
-                   (finish-output))))
-             (report-child-exited (child-pid child-stdout child-stderr)
-               (mmsg "In report-child-exited: {} {}%N" child-stdout child-stderr)
-               (report-stream child-stdout :info)
-               (report-stream child-stderr :warn))
-             (finished-some (child-pid pjob)
-               (let* ((entries (pjob-entries pjob))
-                      (child-stdout (pjob-child-stdout pjob))
-                      (child-stderr (pjob-child-stderr pjob)))
-                 (setf-pjob-done pjob t)
-                 (dolist (entry entries)
-                   (finished-report-one entry child-pid))
-                 (report-child-exited child-pid child-stdout child-stderr)))
-             (reload-one (entry)
-               (load-kernel-file (getf entry :output-path) :silent nil))
-             (reload-some (entries)
-               (dolist (entry entries)
-                 (reload-one entry)))
-             (one-compile-kernel-file (entry)
-               ;; Don't reload in the child process - there is no point
-               (compile-kernel-file entry :reload nil :output-type output-type :count total :silent t :verbose t))
-             (some-compile-kernel-files (entries)
-               (dolist (entry entries)
-                 (one-compile-kernel-file entry))))
+                 (message :emph "CLASP_PAUSE_FORKED_CHILD is set - will pause all children until they receive SIGUSR1")))
+             (finished-one (entry)
+               (when entry
+                 (message :emph "Finished {: >3d} of {:d} [pid {:d}] {} output follows..."
+                          (getf entry :index) count (getf entry :pid) (namestring (getf entry :source-path)))
+                 (message-fd :info (getf entry :child-stdout))
+                 (message-fd :warn (getf entry :child-stderr)))))
       (gctools:garbage-collect)
-      (let (entries wpid status)
-        (tagbody
-         top
-           (setq batch-size (let ((remaining (length system)))
-                              (min remaining
-                                   batch-max
-                                   (max batch-min
-                                        (ceiling remaining
-                                                 parallel-jobs)))))
-           (setq entries (subseq system 0 batch-size))
-           (setq system (nthcdr batch-size system))
-           (incf job-counter)
-           (if (> job-counter parallel-jobs)
-               (progn
-                 (mmsg "Going into wait-for-child-to-exit%N")
-                 (multiple-value-bind (vwpid vstatus vchild-died)
-                     (wait-for-child-to-exit jobs)
-                   (setq wpid vwpid status vstatus child-died vchild-died))
-                 #+(or)
-                 (multiple-value-setq (wpid status child-died)
-                   (wait-for-child-to-exit jobs))
-                 (mmsg "Exited from wait-for-child-to-exit%N")
-                 (if (null child-died)
-                     (if (and (numberp wpid) (>= wpid 0))
-                         (let* ((pjob (gethash wpid jobs))
-                                (finished-entries (pjob-entries pjob)))
-                           (finished-some wpid pjob)
-                           (if (and (numberp status)
-                                    (not (zerop status)))
-                               (message :err "wait returned for process {:d} status {:d}: exiting compile-system"
-                                        wpid status))
-                           (if reload (reload-some finished-entries))
-                           (let ((after-ms (get-internal-run-time))
-                                 (after-bytes (gctools:bytes-allocated)))
-                             (message :info "Parent time run({:.3f} secs)"
-                                      (float (/ (- after-ms (pjob-start-time pjob)) internal-time-units-per-second))))
-                           (decf child-count))
-                         (error "wait returned ~d  status ~d~%" wpid status))
-                     (if (and (numberp wpid) (>= wpid 0))
-                         (progn
-                           (finished-some wpid (gethash wpid jobs))
-                           (message :err "The child with wpid {} died with status {} - terminating build"
-                                    wpid status))
-                         (message :err "A child died with wpid {} status {}" wpid status)))))
-           (mmsg "child-count: {}%N" child-count)
-           (if entries
-               (let ((child-stdout (core:mkstemp-fd "clasp-build-stdout"))
-                     (child-stderr (core:mkstemp-fd "clasp-build-stderr")))
-                 (setq *before-ms* (get-internal-run-time)
-                       *before-bytes* (gctools:bytes-allocated))
-                 (multiple-value-bind (maybe-error pid-or-error child-stream)
-                     (core:fork-redirect child-stdout child-stderr)
-                   (if maybe-error
-                       (error "Could not fork when trying to build ~a" entries)
-                       (let ((pid pid-or-error))
-                         (if (= pid 0)
-                             (progn
-                               (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
-                                 (gctools:wait-for-user-signal (core:fmt nil "Child with pid {} is waiting for SIGUSR1" (core:getpid))))
-                               #+(or)(progn
-                                       (message nil "A child started up with pid {} - sleeping for 10 seconds" (core:getpid))
-                                       (sleep 10))
-                               (llvm-sys:create-lljit-thread-pool)
-                               (ext:disable-debugger)
-                               (let ((new-sigset (core:make-cxx-object 'core:sigset))
-                                     (old-sigset (core:make-cxx-object 'core:sigset)))
-                                 (core:sigset-sigaddset new-sigset 'core:signal-sigint)
-                                 (core:sigset-sigaddset new-sigset 'core:signal-sigchld)
-                                 (multiple-value-bind (fail errno)
-                                     (core:sigthreadmask :sig-setmask new-sigset old-sigset)
-                                   (some-compile-kernel-files entries)
-                                   (core:sigthreadmask :sig-setmask old-sigset nil)
-                                   (if fail
-                                       (error "sigthreadmask has an error errno = ~a" errno))
-                                   (finish-output)
-                                   (let ((after-ms (get-internal-run-time))
-                                         (after-bytes (gctools:bytes-allocated)))
-                                     (message :info "Child time run({:.3f} secs) consed({} bytes)"
-                                              (float (/ (- after-ms *before-ms*) internal-time-units-per-second))
-                                              (- after-bytes *before-bytes*)))
-                                   (sys:c_exit))))
-                             (let ((one-pjob (make-pjob
-                                              :done nil
-                                              :pid pid
-                                              :signals nil
-                                              :entries entries
-                                              :child-stdout child-stdout
-                                              :child-stderr child-stderr
-                                              :start-time *before-ms*)))
-                               (started-some entries pid)
-                               (core:hash-table-setf-gethash jobs pid one-pjob)
-                               (incf child-count))))))))
-           (if (> child-count 0) (go top)))))))
+      (tagbody
+       top
+        (when (or (and system (= child-count parallel-jobs))
+                  (and (null system) (> child-count 0)))
+          (multiple-value-bind (wpid status)
+              (core:wait)
+            (when (= -1 wpid)                 
+              (message :err "No children left to wait on."))
+            (unless (or (core:wifsignaled status)
+                        (core:wifexited status))
+              (go top))
+            (let ((entry (gethash wpid jobs)))
+              (finished-one entry)
+              (when (core:wifsignaled status)
+                (message :err "The child with wpid {} was terminated with signal {}."
+                         wpid (core:wtermsig status)))
+              (unless (zerop (core:wexitstatus status))
+                (message :err "The child with wpid {} exited with status {}."
+                         wpid (core:wexitstatus status)))
+              (when reload
+                (load-kernel-file (getf entry :output-path) :silent nil))
+              (message :info "Parent time run({:.3f} secs)"
+                       (float (/ (- (get-internal-run-time) (getf entry :start-time))
+                                 internal-time-units-per-second)))
+              (decf child-count))))
+        (when system
+          (setq entry (car system)
+                system (cdr system))
+          (let ((child-stdout (core:mkstemp-fd "clasp-build-stdout"))
+                (child-stderr (core:mkstemp-fd "clasp-build-stderr")))
+            (multiple-value-bind (maybe-error pid child-stream)
+                (core:fork-redirect child-stdout child-stderr)
+              (when maybe-error
+                (message :err "Could not fork when trying to build {}" entry))
+              (cond ((zerop pid)
+                     (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
+                       (gctools:wait-for-user-signal (core:fmt nil "Child with pid {} is waiting for SIGUSR1"
+                                                               (core:getpid))))
+                     (llvm-sys:create-lljit-thread-pool)
+                     (ext:disable-debugger)
+                     (let ((new-sigset (core:make-cxx-object 'core:sigset))
+                           (old-sigset (core:make-cxx-object 'core:sigset))
+                           (start-time (get-internal-run-time))
+                           (start-bytes (gctools:bytes-allocated)))
+                       (core:sigset-sigaddset new-sigset 'core:signal-sigint)
+                       (core:sigset-sigaddset new-sigset 'core:signal-sigchld)
+                       (multiple-value-bind (fail errno)
+                           (core:sigthreadmask :sig-setmask new-sigset old-sigset)
+                         (compile-kernel-file entry :output-type output-type :silent t :verbose t)
+                         (core:sigthreadmask :sig-setmask old-sigset nil)
+                         (when fail
+                           (message :err "sigthreadmask has an error errno = {}" errno))
+                         (message :info "Child time run({:.3f} secs) consed({} bytes)"
+                                  (float (/ (- (get-internal-run-time) start-time)
+                                            internal-time-units-per-second))
+                                  (- (gctools:bytes-allocated) start-bytes))
+                         (sys:c_exit))))
+                    (t
+                     (started-one (core:hash-table-setf-gethash jobs pid
+                                                                (list* :pid pid
+                                                                       :child-stdout child-stdout
+                                                                       :child-stderr child-stderr
+                                                                       :start-time (get-internal-run-time)
+                                                                       entry)))
+                     (incf child-count))))))
+         (when (or system (> child-count 0))
+           (go top))))))
 
 (defun parallel-build-p ()
   (and core:*use-parallel-build* (> *number-of-jobs* 1)))
