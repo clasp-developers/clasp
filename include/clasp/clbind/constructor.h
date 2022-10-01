@@ -187,23 +187,22 @@ namespace clbind {
 template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentHandler> class VariadicConstructorFunction_O;
 
 template <typename ConstructorPtrType, typename Policies, typename Pointer, typename ConstructType, typename ArgumentHandler>
-class VariadicConstructorFunction_O : public core::BuiltinClosure_O {};
+class VariadicConstructorFunction_O : public core::GlobalEntryPointBase_O {};
 
 template <typename ...ARGS, typename Policies, typename Pointer, typename ConstructType >
-class VariadicConstructorFunction_O < constructor<ARGS...>, Policies, Pointer, ConstructType, LambdaListHandlerWrapper > : public core::BuiltinClosure_O {
+class VariadicConstructorFunction_O < constructor<ARGS...>, Policies, Pointer, ConstructType, LambdaListHandlerWrapper > : public core::GlobalEntryPointBase_O {
 public:
   typedef VariadicConstructorFunction_O< constructor<ARGS...>,Policies, Pointer, ConstructType, LambdaListHandlerWrapper > MyType;
-  typedef core::BuiltinClosure_O TemplatedBase;
-public:
+  typedef core::GlobalEntryPointBase_O TemplatedBase;
   typedef Wrapper<ConstructType,Pointer>  WrapperType;
+public:
+  core::LambdaListHandler_sp _lambdaListHandler;
 public:
   virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
-  VariadicConstructorFunction_O(core::GlobalEntryPoint_sp ep) : core::BuiltinClosure_O(ep) {};
+  VariadicConstructorFunction_O(core::FunctionDescription_sp fdesc) : core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),nil<core::T_O>()) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-    // nothing to do - no wrapped functions
-  }
+  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);

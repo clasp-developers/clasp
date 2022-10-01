@@ -866,6 +866,10 @@ typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
 
  class Function_O;
  typedef gctools::smart_ptr<Function_O> Function_sp;
+ class EntryPoint_O;
+ typedef gctools::smart_ptr<EntryPoint_O> EntryPoint_sp;
+ class CodeEntryPoint_O;
+ typedef gctools::smart_ptr<CodeEntryPoint_O> CodeEntryPoint_sp;
  
 class SymbolToEnumConverter_O;
 typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
@@ -1032,7 +1036,7 @@ void lisp_defmacro(Symbol_sp name, const string &packageName,
                            int bytecodep,
                            Symbol_sp sym,
                            const string &packageName,
-                           BuiltinClosure_sp fc,
+                           CodeEntryPoint_sp fc,
                            const string& arguments = "",
                            const string& declares = "",
                            const string &docstring = "",

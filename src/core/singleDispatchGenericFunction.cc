@@ -106,7 +106,7 @@ CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_f
 };
 
 
-CL_LAMBDA("gf gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ")
+CL_LAMBDA("gf gfname receiver-class &key declares (docstring \"\") body ")
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function)dx")
 DOCGROUP(clasp)

@@ -1143,7 +1143,7 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
                          int bytecodep,
                          Symbol_sp sym,
                          const string &packageName,
-                         BuiltinClosure_sp entry,
+                         CodeEntryPoint_sp entry,
                          const string& arguments,
                          const string& declares,
                          const string &docstring,
@@ -1157,9 +1157,9 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
   List_sp vars = lisp_lexical_variable_names( lambda_list, trivial_wrapper );
   Function_sp func;
   if (!bytecodep) {
-    func = entry;
     LambdaListHandler_sp llh = lisp_function_lambda_list_handler( lambda_list, nil<T_O>(), skipIndices );
-    gc::As<BuiltinClosure_sp>(func)->_lambdaListHandler = llh;
+    func = entry;
+    gc::As<CodeEntryPoint_sp>(entry)->setLambdaListHandler(llh);
   } else {
     List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ));
     List_sp declare_form = Cons_O::createList( cl::_sym_declare, Cons_O::createList (core::_sym_lambdaName, sym ));

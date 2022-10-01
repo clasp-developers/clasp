@@ -2160,7 +2160,7 @@ CL_DEFUN void core__withStackCons(T_sp car, T_sp cdr, T_sp fn) {
   printf("%s:%d:%s The ConsSizeCalculator<Cons_O> size is %lu\n", __FILE__, __LINE__, __FUNCTION__, gctools::ConsSizeCalculator<gctools::RuntimeStage,Cons_O>::value());
   eval::funcall(fn,cons.asSmartPtr());
 }
-
+#if 0
 DOCGROUP(clasp)
 CL_DEFUN core::Test_sp core__makeTest() {
   auto tt = new Test();
@@ -2168,6 +2168,7 @@ CL_DEFUN core::Test_sp core__makeTest() {
   t->set_wrapped(tt);
   return t;
 }
+#endif
 
 void Test::setMultiplier(int m) {
   this->multiplier = m;

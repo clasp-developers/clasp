@@ -141,23 +141,6 @@ CLBIND_API void initialize_clbind() {
   ClassRegistry_sp registry = ClassRegistry_O::create();
   _sym_STARtheClassRegistrySTAR->defparameter(registry);
   initializeCastGraph();
-#if 1
-  clbind::package_ pkg("CLBIND-TEST",{"CLBIND-TEST"}, {"CL"});
-  clbind::scope_& m = pkg.scope();
-  class_<Test>(m,"Test")
-      .def_constructor("MAKE-TEST",constructor<>())
-//    .def_readwrite("multiplier",&Test::multiplier)
-      .def("SET-MULTIPLIER",&Test::setMultiplier)
-      .def("set2",&Test::set2)
-    .def("set3",&Test::set3)
-    .def("set4",&Test::set4)
-    .def("set5",&Test::set5)
-    .def("set6",&Test::set6)
-    .def("print-numbers",&Test::print_numbers);
-  class_<TestChild,Test>(m,"TestChild")
-      .def_constructor("MAKE-TEST-CHILD",constructor<>())
-    ;
-#endif
 }
 
 } // namespace clbind

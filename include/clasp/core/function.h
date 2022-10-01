@@ -264,6 +264,7 @@ namespace core {
    CodeEntryPoint_O(FunctionDescription_sp fdesc, T_sp code) : EntryPoint_O(fdesc), _Code(code) {  };
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(("Subclass must implement")); };
+   virtual void setLambdaListHandler(LambdaListHandler_sp llh) {SUBIMP();};
    void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
    CL_DEFMETHOD T_sp EntryPoint_code() const { return this->_Code; };
  };
@@ -295,20 +296,32 @@ class LocalEntryPointGenerator_O : public EntryPoint_O {
   std::string __repr__() const;
  };
 
-FORWARD(GlobalEntryPoint);
- class GlobalEntryPoint_O : public CodeEntryPoint_O {
-   LISP_CLASS(core,CorePkg,GlobalEntryPoint_O,"GlobalEntryPoint",CodeEntryPoint_O);
+FORWARD(GlobalEntryPointBase);
+ class GlobalEntryPointBase_O : public CodeEntryPoint_O {
+   LISP_CLASS(core,CorePkg,GlobalEntryPointBase_O,"GlobalEntryPointBase",CodeEntryPoint_O);
  public:
    /*! A general entry point at 0 and fixed arity entry points from 1...(NUMBER_OF_ENTRY_POINTS-1)
        The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
    */
    ClaspXepFunction _EntryPoints;
+ public:
+  // Accessors
+   GlobalEntryPointBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code );
+   GlobalEntryPointBase_O() {};
+ public:
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
+ };
+
+
+FORWARD(GlobalEntryPoint);
+ class GlobalEntryPoint_O : public GlobalEntryPointBase_O {
+   LISP_CLASS(core,CorePkg,GlobalEntryPoint_O,"GlobalEntryPoint",GlobalEntryPointBase_O);
+ public:
    T_sp _localEntryPoint;
  public:
   // Accessors
    GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp localEntryPoint );
  public:
-   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
    T_mv sectionedEntryInfo() const;
    T_sp lineTable() const;
@@ -320,14 +333,12 @@ FORWARD(GlobalEntryPoint);
 
 // Fulfill the role of bytecode_function
 FORWARD(GlobalBytecodeEntryPoint);
- class GlobalBytecodeEntryPoint_O : public CodeEntryPoint_O {
-   LISP_CLASS(core,CorePkg,GlobalBytecodeEntryPoint_O,"GlobalBytecodeEntryPoint",CodeEntryPoint_O);
+ class GlobalBytecodeEntryPoint_O : public GlobalEntryPointBase_O {
+   LISP_CLASS(core,CorePkg,GlobalBytecodeEntryPoint_O,"GlobalBytecodeEntryPoint",GlobalEntryPointBase_O);
  public:
    /*! A general entry point at 0 and fixed arity entry points from 1...(NUMBER_OF_ENTRY_POINTS-1)
        The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
    */
-   // All code entry points
-   ClaspXepFunction _EntryPoints;
    // The frame size this function needs for local variables.
    unsigned short   _LocalsFrameSize;
   // Number of required args.
@@ -366,7 +377,6 @@ FORWARD(GlobalBytecodeEntryPoint);
                               unsigned int entryPcN );
 
  public:
-   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
    BytecodeModule_sp code() const;
    string __repr__() const;

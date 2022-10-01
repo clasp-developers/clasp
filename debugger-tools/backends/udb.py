@@ -98,6 +98,11 @@ def global_variable_int(name):
     object = gdb.parse_and_eval(name)
     return int("%s" % object.string())
 
+def global_variable_null(name):
+    object = gdb.parse_and_eval(name)
+    object
+
+
 def clasp_python_info():
     vm_opcodes = global_variable_string("global_python_virtual_machine_codes")
     class_layouts = global_variable_string("global_python_class_layouts")

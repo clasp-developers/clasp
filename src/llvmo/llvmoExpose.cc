@@ -2207,18 +2207,6 @@ CL_EXTERN_DEFMETHOD(LandingPadInst_O, &llvm::LandingPadInst::addClause);;
 
 }; // llvmo
 
-#if 0
-namespace translate {
-template <>
-struct from_object< llvm::MaybeAlign, std::true_type> {
-  typedef llvm::MaybeAlign DeclareType;
-  DeclareType _v;
-  from_object(core::T_sp object) : _v((size_t)core::clasp_to_fixnum(object)) {};
-};
-};
-#endif
-
-
 
 namespace llvmo {
 DOCGROUP(clasp)

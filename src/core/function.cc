@@ -85,12 +85,33 @@ CL_DEFMETHOD Pointer_sp EntryPoint_O::defaultEntryAddress() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
+GlobalEntryPointBase_O::GlobalEntryPointBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code) :
+    CodeEntryPoint_O(fdesc,code)
+    , _EntryPoints(entry_point) {
+  if (code.nilp()) {
+    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
+    if (gc::IsA<llvmo::Library_sp>(code)) {
+      for ( size_t ii=0; ii<ClaspXepFunction::Entries; ii++ ) {
+        maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii],sizeof(void*),"GlobalEntryPointBaseName",ii);
+      }
+    }
+  }
+}
 
-GlobalEntryPoint_O::GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp lep ) : CodeEntryPoint_O(fdesc, code), _EntryPoints(entry_point), _localEntryPoint(lep) {
+void GlobalEntryPointBase_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup )
+{
+  for ( size_t ii=0; ii<ClaspXepFunction::Entries; ++ii ) {
+    this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints._EntryPoints[ii]);
+  }
+  this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
+}
+
+GlobalEntryPoint_O::GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp lep ) : GlobalEntryPointBase_O(fdesc, entry_point, code), _localEntryPoint(lep) {
   llvmo::validateEntryPoint( code, entry_point );
 };
 
-GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point,
+GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fdesc,
+                                                       const ClaspXepFunction& entry_point,
                                                        T_sp module,
                                                        uint16_t localsFrameSize,
                                                        uint16_t required,
@@ -101,7 +122,7 @@ GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fd
                                                        unsigned char flags,
                                                        unsigned int environmentSize,
                                                        unsigned int entryPcN )
-: CodeEntryPoint_O(fdesc, module), _EntryPoints(entry_point),
+: GlobalEntryPointBase_O(fdesc, entry_point, module),
   _LocalsFrameSize(localsFrameSize),
   _Required(required),
   _Optional(optional),
@@ -181,36 +202,6 @@ T_sp GlobalEntryPoint_O::lineTable() const {
 
 Pointer_sp LocalEntryPoint_O::defaultEntryAddress() const {
   return Pointer_O::create((void*)this->_Entry);
-};
-
-void GlobalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-#if 0
-  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
-    llvmo::ObjectFile_sp code = gc::As_unsafe<llvmo::ObjectFile_sp>(this->_Code);
-    if ((uintptr_t)this->_EntryPoints[0]<code->codeStart()) {
-      printf("%s:%d:%s Entrypoint %p is before the codeStart %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this->_EntryPoints[0], (void*)code->codeStart() );
-      abort();
-    }
-  }
-#endif
-  for ( size_t ii=0; ii<ClaspXepFunction::Entries; ++ii ) {
-    this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints._EntryPoints[ii]);
-  }
-};
-
-void GlobalBytecodeEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-#if 0
-  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
-    llvmo::ObjectFile_sp code = gc::As_unsafe<llvmo::ObjectFile_sp>(this->_Code);
-    if ((uintptr_t)this->_EntryPoints[0]<code->codeStart()) {
-      printf("%s:%d:%s Entrypoint %p is before the codeStart %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this->_EntryPoints[0], (void*)code->codeStart() );
-      abort();
-    }
-  }
-#endif
-  for ( size_t ii=0; ii<ClaspXepFunction::Entries; ++ii ) {
-    this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints._EntryPoints[ii]);
-  }
 };
 
 Pointer_sp GlobalBytecodeEntryPoint_O::defaultEntryAddress() const {
@@ -544,7 +535,7 @@ GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_
            num, ClaspXepFunction::Entries );
     abort();
   }
-  ClaspXepFunction xepFunction(XepFilling());
+  ClaspXepFunction xepFunction((XepFilling())); // Need extra paranetheses to disambiguate
   size_t cur = 0;
   for ( auto entry : epIndices ) {
     T_sp oneEntryPointIndex = CONS_CAR(entry);

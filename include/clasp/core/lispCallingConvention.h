@@ -147,6 +147,20 @@ struct ClaspXepFunction {
   //! Use this ctor when filling ClaspXepFunction with entry points
   ClaspXepFunction(XepFilling f) : _Defined(true) {};
   template <typename Wrapper>
+  static ClaspXepFunction make() {
+    assert(NUMBER_OF_ENTRY_POINTS==7);
+    ClaspXepFunction me;
+    me._Defined = true;
+    me._EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
+    me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
+    me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
+    me._EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
+    me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
+    me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
+    me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+    return me;
+  }
+  template <typename Wrapper>
   void setup() {
     assert(NUMBER_OF_ENTRY_POINTS==7);
     this->_Defined = true;
@@ -157,6 +171,9 @@ struct ClaspXepFunction {
     this->_EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
     this->_EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
     this->_EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+  }
+  void fixupInternalsForSnapshotSaveLoad(CodeEntryPoint_O* cep, snapshotSaveLoad::Fixup* fixup) {
+    printf("%s:%d:%s See function.h/clbind/line136\n", __FILE__, __LINE__, __FUNCTION__ );
   }
   ClaspXepAnonymousFunction operator[](int index) const { return this->_EntryPoints[index]; };
   inline LCC_RETURN invoke_0(T_O* closure) {

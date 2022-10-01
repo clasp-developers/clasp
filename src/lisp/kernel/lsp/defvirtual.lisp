@@ -20,9 +20,6 @@
           `(core:ensure-single-dispatch-method (fdefinition ',name)
                                                ',name
                                                (find-class ',dispatch-class)
-                                               :lambda-list-handler (make-lambda-list-handler
-                                                                     ',simple-lambda-list
-                                                                     ',declares 'function)
                                                :docstring ,docstring
                                                :body ,fn)))))
 

@@ -495,8 +495,8 @@ struct constructor_registration_base : public registration {
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
     core::Symbol_sp sym = core::lisp_intern(tname, core::lisp_currentPackageName());
     using VariadicType = VariadicConstructorFunction_O<Signature,Policies, Pointer, Class, DefaultWrapper>;
-    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription<VariadicType>(sym,nil<core::T_O>());
-    core::BuiltinClosure_sp entry = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(ep));
+    core::FunctionDescription_sp fdesc = makeFunctionDescription(sym,nil<core::T_O>());
+    auto entry = gctools::GC<VariadicType>::allocate(fdesc);
     lisp_bytecode_defun( core::symbol_function, clbind::DefaultWrapper::BytecodeP, sym, core::lisp_currentPackageName(), entry, m_arguments, m_declares, m_doc_string, "=external=", 0, CountConstructorArguments<Signature>::value);
   }
   virtual std::string name() const { return this->m_name;}
