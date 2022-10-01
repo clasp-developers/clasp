@@ -34,50 +34,49 @@ THE SOFTWARE.
 //#include "clbind.h"
 
 namespace core {
-
 template < typename MethodPtrType, typename Policies, typename OT, typename Wrapper >
-class TEMPLATED_FUNCTION_IndirectMethoid : public BuiltinClosure_O {
-  typedef BuiltinClosure_O TemplatedBase;
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual const char *describe() const { return "IndirectMethoid"; };
-};
+class TEMPLATED_FUNCTION_IndirectMethoid;
 };
 
 namespace core {
-//#include <clasp/core/external_wrappers_indirect_methoids.h>
-
-template <typename Policies, typename RT, typename OT, typename... ARGS>
-class TEMPLATED_FUNCTION_IndirectMethoid < RT(OT::ExternalType::*)(ARGS...), Policies, OT, clbind::LambdaListHandlerWrapper > : public BuiltinClosure_O {
+template <typename RT, typename OT, typename... ARGS, typename Policies >
+class TEMPLATED_FUNCTION_IndirectMethoid < RT(OT::ExternalType::*)(ARGS...), Policies, OT, clbind::LambdaListHandlerWrapper > : public GlobalEntryPointBase_O {
 public:
-  typedef TEMPLATED_FUNCTION_IndirectMethoid< RT(OT::ExternalType::*)(ARGS...), Policies,OT, clbind::LambdaListHandlerWrapper > MyType;
-  typedef BuiltinClosure_O TemplatedBase;
-public:
-  virtual const char* describe() const {return "IndirectVariadicMethoid";};
+  typedef TEMPLATED_FUNCTION_IndirectMethoid< RT(OT::ExternalType::*)(ARGS...), Policies, OT, clbind::LambdaListHandlerWrapper > MyType;
   typedef RT(OT::ExternalType::*MethodType)(ARGS...) ;
-  MethodType mptr;
+  typedef GlobalEntryPointBase_O TemplatedBase;
 public:
+  MethodType           mptr;
+  LambdaListHandler_sp _lambdaListHandler;
+public:
+
   enum { NumParams = sizeof...(ARGS)+1 };
-  TEMPLATED_FUNCTION_IndirectMethoid(GlobalEntryPoint_sp ep, MethodType ptr) : BuiltinClosure_O(ep), mptr(ptr) {
+
+  TEMPLATED_FUNCTION_IndirectMethoid(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code, core::LambdaListHandler_sp llh)
+      : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), _lambdaListHandler(llh)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
+
+  virtual const char* describe() const {return "IndirectVariadicMethoid";};
+
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-    this->fixupOneCodePointer( fixup,(void**)&this->mptr,sizeof(this->mptr));
-  }
-  static inline gctools::return_type LISP_CALLING_CONVENTION()
+
+  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
+
+  void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+    this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
+    this->fixupOneCodePointer( fixup, (void**)&this->mptr );
+  };
+
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler,
-                                              numSpecialBindings,
-                                              specialBindingsVLA,
-                                              frame,
-                                              sizeof...(ARGS)+1);
+    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler, numSpecialBindings, specialBindingsVLA, frame, sizeof...(ARGS)+1);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
-    DEBUG_DUMP_FRAME(frame,lcc_nargs);
     OT* otep  = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::goFrame(frame->arguments(0));
     return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),otep,std::move(all_args));
@@ -100,80 +99,74 @@ public:
   static inline LISP_ENTRY_5() {
     return general_entry_point_redirect_5(lcc_closure,lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4);
   }
-  
-    
-  
+};
 };
 
-template <typename Policies, typename RT, typename OT, typename... ARGS>
-class TEMPLATED_FUNCTION_IndirectMethoid < RT(OT::ExternalType::*)(ARGS...) const, Policies, OT, clbind::LambdaListHandlerWrapper > : public BuiltinClosure_O {
+namespace core {
+template <typename RT, typename OT, typename... ARGS, typename Policies >
+class TEMPLATED_FUNCTION_IndirectMethoid < RT(OT::ExternalType::*)(ARGS...) const, Policies, OT, clbind::LambdaListHandlerWrapper > : public GlobalEntryPointBase_O {
 public:
-  typedef TEMPLATED_FUNCTION_IndirectMethoid<RT(OT::ExternalType::*)(ARGS...) const, Policies,OT, clbind::LambdaListHandlerWrapper > MyType;
-  typedef BuiltinClosure_O TemplatedBase;
+  typedef TEMPLATED_FUNCTION_IndirectMethoid< RT(OT::ExternalType::*)(ARGS...) const, Policies, OT, clbind::LambdaListHandlerWrapper > MyType;
+  typedef RT(OT::ExternalType::*MethodType)(ARGS...) const;
+  typedef GlobalEntryPointBase_O TemplatedBase;
 public:
-  virtual const char* describe() const {return "IndirectVariadicMethoid";};
-  typedef RT(OT::ExternalType::*MethodType)(ARGS...) const ;
-  MethodType mptr;
+  MethodType           mptr;
+  LambdaListHandler_sp _lambdaListHandler;
 public:
+
   enum { NumParams = sizeof...(ARGS)+1 };
-  TEMPLATED_FUNCTION_IndirectMethoid(GlobalEntryPoint_sp ep, MethodType ptr) : BuiltinClosure_O(ep), mptr(ptr) {
+
+  TEMPLATED_FUNCTION_IndirectMethoid(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code, core::LambdaListHandler_sp llh)
+      : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), _lambdaListHandler(llh)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
+
+  virtual const char* describe() const {return "IndirectVariadicMethoid";};
+
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-    this->fixupOneCodePointer( fixup,(void**)&this->mptr,sizeof(this->mptr));
-  }
-  static inline gctools::return_type LISP_CALLING_CONVENTION()
+
+  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
+
+  void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+    this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
+    this->fixupOneCodePointer( fixup, (void**)&this->mptr );
+  };
+
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler,
-                                              numSpecialBindings,
-                                              specialBindingsVLA,
-                                              frame,
-                                              sizeof...(ARGS)+1);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope, lcc_nargs, lcc_args );
-    DEBUG_DUMP_FRAME(frame,lcc_nargs);
-    OT* otep = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
+    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler, numSpecialBindings, specialBindingsVLA, frame, sizeof...(ARGS)+1);
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
+    OT* otep  = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::goFrame(frame->arguments(0));
     return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),otep,std::move(all_args));
   }
   static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
+    return general_entry_point_redirect_0(lcc_closure);
   }
   static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
+    return general_entry_point_redirect_1(lcc_closure,lcc_farg0);
   }
   static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
+    return general_entry_point_redirect_2(lcc_closure,lcc_farg0,lcc_farg1);
   }
   static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
+    return general_entry_point_redirect_3(lcc_closure,lcc_farg0,lcc_farg1,lcc_farg2);
   }
   static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
+    return general_entry_point_redirect_4(lcc_closure,lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3);
   }
   static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
+    return general_entry_point_redirect_5(lcc_closure,lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4);
   }
-
 };
-
 };
-
-
 
 namespace core {
-//#include <clasp/core/external_wrappers_indirect_methoids.h>
-
 template <typename Policies, typename RT, typename OT, typename... ARGS>
 class TEMPLATED_FUNCTION_IndirectMethoid < RT(OT::ExternalType::*)(ARGS...), Policies, OT, clbind::BytecodeWrapper > : public BuiltinClosure_O {
 public:
@@ -220,7 +213,9 @@ public:
     return general_entry_point_redirect_5(lcc_closure,lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4);
   }
 };
+};
 
+namespace core {
 template <typename Policies, typename RT, typename OT, typename... ARGS>
 class TEMPLATED_FUNCTION_IndirectMethoid < RT(OT::ExternalType::*)(ARGS...) const, Policies, OT, clbind::BytecodeWrapper > : public BuiltinClosure_O {
 public:
@@ -390,10 +385,10 @@ public:
       maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
       using VariadicType = TEMPLATED_FUNCTION_VariadicMethoid<0, RT (OT::*)(ARGS...), core::policy::clasp_policy, clbind::DefaultWrapper>;
-      GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
-      BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, mp));
-      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,m);
+      FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+      auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>(),unbound<LambdaListHandler_O>());
+      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }
@@ -405,10 +400,10 @@ public:
       maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
       using VariadicType = TEMPLATED_FUNCTION_VariadicMethoid<0, RT (OT::*)(ARGS...) const, core::policy::clasp_policy, clbind::DefaultWrapper >;
-      GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
-      BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint, mp));
-      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,m);
+      FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+      auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>(),unbound<LambdaListHandler_O>());
+      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }
@@ -420,10 +415,10 @@ public:
       maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
       using VariadicType = TEMPLATED_FUNCTION_IndirectMethoid< RT (OT::ExternalType::*)(ARGS...), clbind::policies<>, OT, clbind::DefaultWrapper>;
-      GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
-      BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint, mp));
-      lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,m);
+      FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+      auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>(),unbound<LambdaListHandler_O>());
+      lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }
@@ -435,10 +430,10 @@ public:
       maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
       Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
       using VariadicType = TEMPLATED_FUNCTION_IndirectMethoid< RT (OT::ExternalType::*)(ARGS...) const, clbind::policies<>, OT, clbind::DefaultWrapper >;
-      GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
-      BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint, mp));
-      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,m);
+      FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+      auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>(),unbound<LambdaListHandler_O>());
+      lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
+      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }

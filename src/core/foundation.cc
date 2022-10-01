@@ -1019,7 +1019,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
 void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& specializer,
                                      T_sp name,
                                      Symbol_sp classSymbol,
-                                     BuiltinClosure_sp method_body,
+                                     Function_sp method_body,
                                      size_t TemplateDispatchOn,
                                      bool useTemplateDispatchOn,
                                      const string &raw_arguments,
@@ -1089,7 +1089,7 @@ void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& spe
   //
   //
   
-  method_body->finishSetup(llhandler); //<<<<< This passes the llhandler to the method function
+  method_body->setLambdaListHandler(llhandler); //<<<<< This passes the llhandler to the method function
   method_body->setf_sourcePathname(nil<T_O>());
   method_body->setf_lambdaList(llhandler->lambdaList());
   method_body->setf_docstring(docStr);
@@ -1103,7 +1103,7 @@ void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& spe
 void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer,
                                      T_sp name,
                                      Symbol_sp classSymbol,
-                                     BuiltinClosure_sp method_body,
+                                     Function_sp method_body,
                                      size_t TemplateDispatchOn,
                                      bool useTemplateDispatchOn,
                                      const string &raw_arguments,

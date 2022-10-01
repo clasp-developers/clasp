@@ -212,6 +212,7 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     virtual int column() const {
       return this->fdesc()->column;
     }
+    virtual void setLambdaListHandler(LambdaListHandler_sp llh) { SUBIMP(); };
     void setf_column(int x) { this->fdesc()->column = x; };
     
     virtual void __write__(T_sp) const;
@@ -511,7 +512,7 @@ namespace core {
     : Function_O(ep), _lambdaListHandler(unbound<LambdaListHandler_O>())  {};
   BuiltinClosure_O(EntryPoint_sp ep, LambdaListHandler_sp llh)
     : Function_O(ep), _lambdaListHandler(llh)  {};
-    void finishSetup(LambdaListHandler_sp llh) {
+    virtual void setLambdaListHandler(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
     }
     T_sp closedEnvironment() const override { return nil<T_O>(); };
