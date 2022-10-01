@@ -127,6 +127,24 @@ class LispPrintVector (gdb.Command):
     maybeReloadModules()
     inspector_mod.do_lisp_print_vector(debugger_mod,arg)
 
+class LispVectorPrint (gdb.Command):
+  def __init__ (self):
+    super (LispPrintVector, self).__init__ ("lvecprint", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+    global inspector_mod, debugger_mod
+    maybeReloadModules()
+    inspector_mod.do_lisp_print_vector(debugger_mod,arg)
+
+class LispSignalSIGUSR1 (gdb.Command):
+  def __init__ (self):
+    super (LispSignalSIGUSR1, self).__init__ ("ss", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+    global inspector_mod, debugger_mod
+    maybeReloadModules()
+    debugger_mod.signalSIGUSR1()
+
 LispReload()
 LispInspect()
 LispPrint()
@@ -138,18 +156,20 @@ LispVm()
 LispBacktrace()
 LispDynEnvStack()
 LispPrintVector()
+LispSignalSIGUSR1()
 
-print("lreload            - reload debugger extension")
-print("lprint <address>   - print lisp object in compact form")
-print("linspect <address> - inspect lisp object - all fields")
-print("lhead <address>    - dump the clients header")
-print("lframe             - Dump the function name and args for a lisp frame trampoline")
+print("lreload                 - reload debugger extension")
+print("lprint <address>       - print lisp object in compact form")
+print("linspect <address>     - inspect lisp object - all fields")
+print("lhead <address>        - dump the clients header")
+print("lframe                 - Dump the function name and args for a lisp frame trampoline")
 print("ldis <bytecode-module-tptr>    - Disassemble a bytecode-module")
-print("ltest <address>    - test module reloading")
-print("lvm                - Dump current vm status")
-print("lbt [<num>]        - Dump backtrace with arguments")
-print("lde [<num>]        - Dump dynamic environment stack")
-print("lprve <addr> <num> - Print <num> values for a vector starting at <addr>")
+print("ltest <address>        - test module reloading")
+print("lvm                    - Dump current vm status")
+print("lbt [<num>]            - Dump backtrace with arguments")
+print("lde [<num>]            - Dump dynamic environment stack")
+print("lvecprint <addr> <num> - Print <num> values for a vector starting at <addr>")
+print("ss                     - Shorthand for signal SIGUSR1")
 
 debugger_mod = importlib.import_module("backends.udb")
 

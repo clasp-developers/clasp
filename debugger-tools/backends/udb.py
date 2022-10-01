@@ -53,6 +53,8 @@ def convenience_variable(name):
 def set_convenience_variable(name,val):
     gdb.set_convenience_variable(name,val)
 
+def signalSIGUSR1():
+    gdb.execute("signal SIGUSR1")
 
 # ---- new functionality
 
