@@ -462,9 +462,6 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
     return Values(nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
-  if (gc::IsA<BuiltinClosure_sp>(fsym)) {
-    return Values(_lisp->_true(), SimpleBaseString_O::make("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
-  }
   return Values(nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 

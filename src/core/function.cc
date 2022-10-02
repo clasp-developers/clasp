@@ -1160,37 +1160,5 @@ CL_DEFUN void core__closure_slots_dump(Function_sp closure) {
     }
   }
 }
-
-
-
-void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** funcPtr, size_t sizeofFuncPtr ) {
-#ifdef USE_PRECISE_GC
-    // Virtual method pointers look different from function pointers - they are small integers
-    //  here we assume a virtual method is always < 1024
-  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::InfoOp ) {
-    uintptr_t* ptrptr = (uintptr_t*)&funcPtr[0];
-    if (fixup->_trackAddressName) {
-      fixup->addAddressName( *funcPtr, _rep_(this->entryPoint()->_FunctionDescription->functionName()) );
-    }
-  } else if ( snapshotSaveLoad::operation(fixup)==snapshotSaveLoad::SaveOp) {
-    if ((uintptr_t)funcPtr[0] > 1024) {
-      uintptr_t* ptrptr = (uintptr_t*)&funcPtr[0];
-      snapshotSaveLoad::encodeEntryPointInLibrary(fixup,ptrptr);
-    }
-  } else if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
-    if ((uintptr_t)funcPtr[0] > 1024) {
-      snapshotSaveLoad::decodeEntryPointInLibrary(fixup,(uintptr_t*)&funcPtr[0]);
-    }
-  } else {
-    SIMPLE_ERROR(("Illegal image save/load operation"));
-  }
-#endif
-}
-
-
-//  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
-
-
-
 };
 

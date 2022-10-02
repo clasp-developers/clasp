@@ -244,55 +244,6 @@ public:
   }
 
 };
-
-template <typename Policies, typename Pointer, typename ConstructType, typename ...ARGS >
-class VariadicConstructorFunction_O < clbind::constructor<ARGS...>, Policies, Pointer, ConstructType, clbind::BytecodeWrapper > : public core::BuiltinClosure_O {
-public:
-  typedef VariadicConstructorFunction_O< constructor<ARGS...>,Policies, Pointer, ConstructType, BytecodeWrapper > MyType;
-  typedef core::BuiltinClosure_O TemplatedBase;
-public:
-  typedef Wrapper<ConstructType,Pointer>  WrapperType;
-public:
-  virtual const char* describe() const { return "VariadicConstructorFunctor"; };
-  enum { NumParams = sizeof...(ARGS) };
-  VariadicConstructorFunction_O(core::GlobalEntryPoint_sp ep) : core::BuiltinClosure_O(ep) {};
-  virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-    // nothing to do - no wrapped functions
-  }
-  static inline LCC_RETURN LISP_CALLING_CONVENTION()
-  {
-    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    DO_DRAG_CXX_CALLS();
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::goFrame(lcc_args);
-    return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(std::move(all_args));
-  }
-  static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
-  }
-
-};
 };
 
 template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentHandler>

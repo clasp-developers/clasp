@@ -42,12 +42,13 @@ struct BeginReturnType<T, RT (T::*)()> {
 };
 
 template <typename Pols, typename OT, typename Begin, typename End >
-class IteratorMethoid : public core::BuiltinClosure_O {
+class IteratorMethoid : public core::GlobalEntryPointBase_O {
 public:
-  typedef core::BuiltinClosure_O TemplatedBase;
+  typedef IteratorMethoid MyType;
+  typedef core::GlobalEntryPointBase_O TemplatedBase;
 
 public:
-  IteratorMethoid(core::GlobalEntryPoint_sp ep, Begin begin, End end) : core::BuiltinClosure_O(ep), _begin(begin), _end(end){};
+  IteratorMethoid(core::FunctionDescription_sp fdesc, core::T_sp code, Begin begin, End end) : core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), _begin(begin), _end(end){};
 
 private:
   typedef typename BeginReturnType<OT, Begin>::type IteratorType;
@@ -56,11 +57,18 @@ private:
   End _end;
 
 public:
+
   virtual size_t templatedSizeof() const { return sizeof(*this); };
+
+  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {};
+
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup ) {
+    printf("%s:%d:%s Shouldn't need to fixup internals\n", __FILE__, __LINE__, __FUNCTION__ );
   }
 
+  
 public:
+
   static LCC_RETURN LISP_CALLING_CONVENTION() {
     IteratorMethoid* closure = gctools::untag_general<IteratorMethoid*>((IteratorMethoid*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);

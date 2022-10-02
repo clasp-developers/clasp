@@ -36,12 +36,6 @@ struct gctools::GCInfo<core::Function_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-template <>
-struct gctools::GCInfo<core::BuiltinClosure_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
 #define INCREMENT_FUNCTION_CALL_COUNTER(x) ++x->_TimesCalled
@@ -495,36 +489,8 @@ namespace core {
   extern bool cl__stringp(T_sp obj);
   extern void lisp_error_sprintf(const char* file, int line, const char* fmt, ...);
   
-SMART(LambdaListHandler);
 };
 
-namespace core {
-//#define SOURCE_INFO_PASS sourceFileInfoHandle, filePos, lineno, column
-  
-  class BuiltinClosure_O : public Function_O {
-    LISP_CLASS(core,CorePkg,BuiltinClosure_O,"BuiltinClosure",Function_O);
-  public:
-    CLASP_DEFAULT_CTOR BuiltinClosure_O() {};
-  public:
-    LambdaListHandler_sp _lambdaListHandler;
-  public:
-  BuiltinClosure_O(EntryPoint_sp ep)
-    : Function_O(ep), _lambdaListHandler(unbound<LambdaListHandler_O>())  {};
-  BuiltinClosure_O(EntryPoint_sp ep, LambdaListHandler_sp llh)
-    : Function_O(ep), _lambdaListHandler(llh)  {};
-    virtual void setLambdaListHandler(LambdaListHandler_sp llh) {
-      this->_lambdaListHandler = llh;
-    }
-    T_sp closedEnvironment() const override { return nil<T_O>(); };
-    virtual size_t templatedSizeof() const override { return sizeof(*this); };
-    // Fixup the code pointers
-    void fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** address, size_t size );
-    virtual const char *describe() const override { return "BuiltinClosure"; };
-    bool builtinP() const override { return true; };
-    T_sp lambdaListHandler() const override { return this->_lambdaListHandler; };
-  };
-
-}
 
 namespace core {
 

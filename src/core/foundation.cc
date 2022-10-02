@@ -1085,7 +1085,6 @@ void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& spe
   //
   // The following is where we setup the method_body - a Function_O that implements the method is given its LambdaListHandler_O
   //
-  // We need to make method_body an EntryPoint_O, NOT a BuiltinClosure_O
   //
   //
   

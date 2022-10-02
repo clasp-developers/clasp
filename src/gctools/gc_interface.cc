@@ -840,10 +840,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::FuncallableInstance_O,2,SMART_PTR_OFFSET,_Class);
   Init__fixed_field(core::FuncallableInstance_O,3,SMART_PTR_OFFSET,_CompiledDispatchFunction);
 
-  Init_templated_kind(core::BuiltinClosure_O);
-  Init__fixed_field(core::BuiltinClosure_O,0,SMART_PTR_OFFSET,_TheEntryPoint );
-  Init__fixed_field(core::BuiltinClosure_O,1,SMART_PTR_OFFSET,_lambdaListHandler);
-  
   Init_class_kind(core::Closure_O);
   Init__fixed_field(core::Closure_O,0,SMART_PTR_OFFSET,_TheEntryPoint );
   Init__variable_array0(core::Closure_O,_Slots._Data);
