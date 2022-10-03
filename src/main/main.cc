@@ -335,7 +335,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   (core::global_options->_ProcessArguments)(core::global_options);
   ::globals_ = new core::globals_t();
   globals_->_DebugStream = new core::DebugStream(mpiRank);
-  globals_->_Stage = core::global_options->_StartupStage;
 
   const char* jls = getenv("CLASP_JIT_LOG_SYMBOLS");
   if (jls || core::global_options->_JITLogSymbols) {

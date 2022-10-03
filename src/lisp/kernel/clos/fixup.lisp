@@ -185,7 +185,7 @@
   (mlog "(not (fboundp name)) -> {}%N" (not (fboundp name)))
   (let ((gfun (si::traced-old-definition name)))
     (cond ((not (legal-generic-function-name-p name))
-	   (simple-program-error "~A is not a valid generic function name" name))
+	   (core:simple-program-error "~A is not a valid generic function name" name))
           ((not (fboundp name))
            (mlog "A gfun -> {} name -> {}  args -> {}%N" gfun name args)
            ;;           (break "About to setf (fdefinition name)")
@@ -198,10 +198,10 @@
 	     new-gf))
 	  ((special-operator-p name)
            (mlog "C%N")
-	   (simple-program-error "The special operator ~A is not a valid name for a generic function" name))
+	   (core:simple-program-error "The special operator ~A is not a valid name for a generic function" name))
 	  ((macro-function name)
            (mlog "D%N")
-	   (simple-program-error
+	   (core:simple-program-error
             "The symbol ~A is bound to a macro and is not a valid name for a generic function" name))
           ((not *clos-booted*)
            (mlog "E%N")
@@ -209,7 +209,7 @@
 		 (apply #'ensure-generic-function-using-class nil name args))
            (fdefinition name))
 	  (t
-	   (simple-program-error "The symbol ~A is bound to an ordinary function and is not a valid name for a generic function" name)))))
+	   (core:simple-program-error "The symbol ~A is bound to an ordinary function and is not a valid name for a generic function" name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

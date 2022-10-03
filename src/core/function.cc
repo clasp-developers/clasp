@@ -58,10 +58,6 @@ namespace core {
 trampoline_function interpreter_trampoline = NULL;
 bytecode_trampoline_function bytecode_trampoline = bytecode_call; // default
 
-
-// Keep track of how many interpreted closure calls there are
-std::atomic<uint64_t> global_interpreted_closure_calls;
-
 void CodeEntryPoint_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** ptr) {
 #ifdef USE_PRECISE_GC
   if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::InfoOp) {
@@ -817,95 +813,6 @@ CL_DEFUN void core__verify_global_entry_point(T_sp alist)
 }
 
 
-gctools::return_type interpreter_call(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
-{
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    //  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    ++global_interpreted_closure_calls;
-    ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(gc::As<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]), (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT]);
-    //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
-    //  newValueEnvironment->dump();
-    LambdaListHandler_sp llh = gc::As_unsafe<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]);
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,lisp_lambdaListHandlerNumberOfSpecialVariables(llh));
-    ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newValueEnvironment);
-    lambdaListHandler_createBindings(closure->asSmartPtr(), llh, &scope, lcc_nargs, lcc_args );
-    //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
-    //  newValueEnvironment->dump();
-    ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
-    return Values(nil<T_O>()); // KILL
-}
-
-
-struct InterpretedClosureEntryPoint {
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    if (interpreter_trampoline) return (interpreter_trampoline)((void*)&interpreter_call,lcc_closure,lcc_nargs,lcc_args);
-    return interpreter_call(lcc_closure,lcc_nargs,lcc_args);
-  }
-  static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
-  }
-
-};
-
-    
-Closure_sp Closure_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
-  FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<InterpretedClosureEntryPoint>(name,nil<T_O>(),lambda_list,docstring,declares,sfi,lineno,column,filePos );
-  Closure_sp closure =
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,
-                                                                                       INTERPRETED_CLOSURE_SLOTS,
-                                                                                       entryPoint,
-                                                                                       Closure_O::interpretedClosure);
-  (*closure)[INTERPRETED_CLOSURE_FORM_SLOT] = form;
-  (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT] = environment;
-  if (lambda_list_handler.nilp()) {
-    printf("%s:%d  A NIL lambda-list-handler was passed for %s lambdalist: %s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(lambda_list).c_str());
-    abort();
-  }
-  (*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT] = lambda_list_handler;
-  closure->setf_lambdaList(lambda_list_handler->lambdaList());
-  closure->setf_docstring(docstring);
-  validateFunctionDescription(__FILE__,__LINE__,closure);
-  return closure;
-}
-Closure_sp Closure_O::make_bclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint ) {
-  FunctionDescription_sp fdesc = makeFunctionDescription(name,lambda_list);
-  core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPoint(fdesc,fn,localEntryPoint);
-  Closure_sp closure = 
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,
-                                                                                       BCLASP_CLOSURE_SLOTS,
-                                                                                       entryPoint,
-                                                                                       Closure_O::bclaspClosure);
-  (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
-  closure->setf_sourcePathname(nil<T_O>());
-  closure->setf_lambdaList(lambda_list);
-  closure->setf_docstring(nil<T_O>());
-  validateFunctionDescription(__FILE__,__LINE__,closure);
-  return closure;
-}
-
-
 CL_LISPIFY_NAME(bytecode_closure/make);
 CL_DEF_CLASS_METHOD
 Closure_sp Closure_O::make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots ) {
@@ -933,32 +840,14 @@ Closure_sp Closure_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn,
   return closure;
 }
 
-T_sp Closure_O::interpretedSourceCode() {
-  if (this->closureType==interpretedClosure) {
-    return (*this)[INTERPRETED_CLOSURE_FORM_SLOT];
-  };
-  SIMPLE_ERROR(("Source code is only available for interpreted functions"));
-}
-
 /* This function is used (currently exclusively) in funcallableInstance.cc.
  * It returns true if the function doesn't refer to any closure slots,
  * i.e., if the entry point ignores its first argument. */
 bool Closure_O::openP() {
   switch (this->closureType) {
-  case bclaspClosure: return this->closedEnvironment().nilp();
   case cclaspClosure: return (this->_Slots.length() == 0);
   default: return false;
   }
-}
-
-DOCGROUP(clasp)
-CL_DEFUN T_mv core__interpreted_closure_form(Closure_sp func) {
-  return Values(func->interpretedSourceCode(),func->closedEnvironment());
-}
-
-DOCGROUP(clasp)
-CL_DEFUN Integer_sp core__interpreted_closure_calls() {
-  return Integer_O::create((Fixnum)global_interpreted_closure_calls);
 }
 
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
@@ -1057,24 +946,9 @@ CL_DEFUN size_t core__closure_size(size_t number_of_slots)
 DOCGROUP(clasp)
 CL_DEFUN size_t core__closure_length(Function_sp tclosure)
 {
-  ASSERT(gc::IsA<Closure_sp>(tclosure));
-  Closure_sp closure = gc::As_unsafe<Closure_sp>(tclosure);
-  if (closure->closureType == Closure_O::cclaspClosure) {
-    return closure->_Slots.length();
-  }
-  if (tclosure->closedEnvironment().notnilp()) {
-    return gc::As<ValueFrame_sp>(tclosure->closedEnvironment())->length();
-  }
-  return 0;
+  Closure_sp closure = gc::As_assert<Closure_sp>(tclosure);
+  return closure->_Slots.length();
 }
-
-T_sp Closure_O::code() const {
-  if (this->interpretedP()) {
-    return (*this)[INTERPRETED_CLOSURE_FORM_SLOT];
-  }
-  SIMPLE_ERROR(("Tried to get code for a non interpreted closure"));
-}
-
 
 string Closure_O::__repr__() const {
   T_sp name = this->functionName();
@@ -1086,14 +960,8 @@ string Closure_O::__repr__() const {
   ss << " " << _rep_(name);
   ss << " :type ";
   switch (this->closureType) {
-  case interpretedClosure:
-      ss << "interpreted ";
-      break;
   case bytecodeClosure:
       ss << "bytecode ";
-      break;
-  case bclaspClosure:
-      ss << "bclasp ";
       break;
   case cclaspClosure:
       ss << "cclasp ";
@@ -1115,22 +983,6 @@ CL_DEFUN T_sp core__closure_ref(Function_sp tclosure, size_t index)
 {
   if ( Closure_sp closure = tclosure.asOrNull<Closure_O>() ) {
     switch (closure->closureType) {
-    case Closure_O::interpretedClosure:
-    case Closure_O::bclaspClosure:
-      {
-        T_sp env = closure->closedEnvironment();
-        if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
-          env = ve->getActivationFrame();
-        }
-        if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
-          if ( index >= tvf->length() ) {
-            SIMPLE_ERROR(("Out of bounds closure reference - there are only %d slots") , tvf->length() );
-          }
-          return (*tvf)[index];
-        }
-        SIMPLE_ERROR(("Out of bounds closure reference - there are no slots"));
-      }
-      break;
     case Closure_O::bytecodeClosure:
         printf("%s:%d:%s Add support for looking up slot %lu in bytecodeClosure\n", __FILE__, __LINE__, __FUNCTION__, index );
         return nil<core::T_O>();
@@ -1151,13 +1003,6 @@ CL_DEFUN void core__closure_slots_dump(Function_sp closure) {
   printf("Closure has %zu slots\n", nslots);
   for ( int i=0; i<nslots; ++i ) {
     printf("    Slot[%d] --> %s\n", i, _rep_(core__closure_ref(closure,i)).c_str());
-  }
-  if (!closure->interpretedP()) {
-    SourcePosInfo_sp spi = gc::As<SourcePosInfo_sp>(closure->sourcePosInfo());
-    T_mv tsfi = core__file_scope(spi);
-    if ( FileScope_sp sfi = tsfi.asOrNull<FileScope_O>() ) {
-      printf("Closure source: %s:%d\n", sfi->namestring().c_str(), spi->lineno() );
-    }
   }
 }
 };

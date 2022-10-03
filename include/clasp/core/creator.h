@@ -42,7 +42,6 @@ namespace core {
     virtual bool allocates() const { return true; };
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
     T_sp functionName() const override { return nil<T_O>(); };
-    T_sp closedEnvironment() const override { return nil<T_O>(); };
     T_sp lambdaListHandler() const override { return nil<T_O>(); };
     T_sp lambda_list() const { return nil<T_O>(); };
     T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column ) {return nil<T_O>();};

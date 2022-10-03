@@ -305,11 +305,4 @@ ENTRY_POINT_MAX_ARGS_IN_REGISTER_SAVE_AREA includes the closure
 #define HAVE_MKSTEMP
 #define HAVE_MKDTEMP
 
-
-// Use the bytecode compiler right from startup
-// Turned off right now until we fix some bootstrapping code
-//
-#define USE_IMPLICIT_BYTECODE_COMPILE
-
-
 #endif // __CORE_CONFIG_H__

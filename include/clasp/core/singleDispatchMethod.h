@@ -52,7 +52,6 @@ public: // Simple default ctor/dtor
   /*! Store the receiver class for this method */
   Instance_sp _receiver_class;
   //	BuiltIn_sp	_method_builtin;
-  /*! This is the LambdaListHandler for the Builtin method */
   List_sp _declares;
   /*! Store the docstring */
   T_sp _docstring;
@@ -77,12 +76,6 @@ CL_DEFMETHOD   Instance_sp singleDispatchMethodReceiverClass() const { return th
  
 //CL_LISPIFY_NAME("singleDispatchMethodCode");
 //CL_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
-
-#if 0
-CL_LISPIFY_NAME("singleDispatchMethodLambdaListHandler");
-CL_DEFMETHOD   LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_MethodLambdaListHandler; };
-#endif
-  
 CL_LISPIFY_NAME("singleDispatchMethodDeclares");
 CL_DEFMETHOD   List_sp singleDispatchMethodDeclares() const { return this->_declares; };
 CL_LISPIFY_NAME("singleDispatchMethodDocstring");

@@ -44,6 +44,7 @@
                  "X86_64" t
                  "BUILD_EXTENSION" (and (extensions configuration) t)
                  "DEFAULT_STAGE" (if (extensions configuration) :|'e'| :|'c'|)
+                 "CLASP_EXTENSIONS" (and (extensions configuration) t)
                  "EXTENSION_SYSTEMS" (intern (create-keyword-list (extension-systems configuration)) "KEYWORD")
                  "_ADDRESS_MODEL_64" t
                  "__STDC_CONSTANT_MACROS" t

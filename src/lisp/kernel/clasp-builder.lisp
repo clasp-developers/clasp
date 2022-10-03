@@ -412,7 +412,6 @@ been initialized with install path versus the build path of the source code file
          (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
 (defun link-fasl (&key (output-file (build-common-lisp-bitcode-pathname))
-                       (target-backend (default-target-backend))
                        (system (command-line-paths)))
   (cond ((eq core:*clasp-build-mode* :bitcode)
          (cmp:link-bitcode-modules output-file system))
@@ -430,10 +429,8 @@ been initialized with install path versus the build path of the source code file
         (t
          (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
-(defun construct-system (files extension reproducible
-                         &aux source-path output-path system last item
-                         new-last (position 0)
-                         (*features* (list* (if extension :eclasp :cclasp) *features*)))
+(defun construct-system (files position reproducible
+                         &aux source-path output-path system last item new-last)
   (tagbody
    next
     (when files
@@ -466,17 +463,15 @@ been initialized with install path versus the build path of the source code file
 (defvar +stage-features+ '(:clasp-min :clos :aclasp :bclasp :cclasp :eclasp))
 (defvar +load-weight+ 0.5d0)
 
-(defun load-stage (system stage extension load-verbose)
+(defun load-stage (system stage name load-verbose)
   (let ((start (make-pathname :host "sys"
                               :directory (list :absolute "src" "lisp"
-                                               "kernel" "stage"                                                             
-                                               (if extension "extension" "base"))
+                                               "kernel" "stage" name)                                                          
                               :name (core:fmt nil "{:d}-begin" stage)
                               :type "lisp"))
         (end (make-pathname :host "sys"
                             :directory (list :absolute "src" "lisp"
-                                             "kernel" "stage"
-                                             (if extension "extension" "base"))
+                                             "kernel" "stage" name)
                             :name (core:fmt nil "{:d}-end" stage)
                             :type "lisp"))
         (stage-keyword (intern (core:fmt nil "STAGE{:d}" stage) :keyword))
@@ -531,24 +526,35 @@ been initialized with install path versus the build path of the source code file
             added-features (cons feature added-features))))
   (pprint-features added-features removed-features))
 
-(defun load-clasp (&key (bytecode t)
-                        (clean (ext:getenv "CLASP_CLEAN"))
-                        extension
+(defun stage-count (system name
+                    &aux (last-stage -1) source-path
+                         (stage-directory (list :absolute "SRC" "LISP" "KERNEL" "STAGE" name))) 
+  (dolist (entry system (1+ last-stage))
+    (setq source-path (getf entry :source-path))
+    (when (equalp (pathname-directory source-path) stage-directory)
+      (setq last-stage (max last-stage (parse-integer (pathname-name source-path) :junk-allowed t))))))
+
+(defun load-clasp (&key (clean (ext:getenv "CLASP_CLEAN"))
                         (load-verbose (ext:getenv "CLASP_LOAD_VERBOSE"))
-                        (output-file (build-common-lisp-bitcode-pathname))
+                        (name "base")
+                        (position 0)
                         reproducible
                         (system-sort (ext:getenv "CLASP_SYSTEM_SORT"))
-                        (stage-count (if (ext:getenv "CLASP_STAGE_COUNT")
-                                         (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))))
+                        (stage-count (when (ext:getenv "CLASP_STAGE_COUNT")
+                                       (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))))
                         (system (command-line-paths)))
-  (unless stage-count
-    (setq stage-count (if extension 1 3)))
-  (setq *features* (list* :bytecode :staging :bytecodelike *features*))
-  (let ((*target-backend* (default-target-backend))
-        (write-date 0))
-    (setq system (construct-system system extension reproducible))
+  (setq *features* (list* :bytecode :staging :bytecodelike *features*)
+        system (construct-system system position reproducible))
+  (let ((write-date 0)
+        (max-stage-count (stage-count system name)))
+    (cond ((null stage-count)
+           (setq stage-count max-stage-count))
+          ((or (< stage-count 0)
+               (> stage-count max-stage-count))
+           (message :err "Stage count of {} is out of bounds. Maximum stage count is {}."
+                    stage-count max-stage-count)))
     (dotimes (stage stage-count)
-      (load-stage system stage extension load-verbose))
+      (load-stage system stage name load-verbose))
     (setq *features* (core:remove-equal :staging *features*))
     (when reproducible
       (prepare-metadata system))

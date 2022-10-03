@@ -60,7 +60,7 @@ struct CommandLineOptions {
   ImageTypeEnum _DefaultStartupType;
   bool _HasDescribeFile;
   std::string _DescribeFile;
-  char _StartupStage;
+  char _Stage;
   long _RandomNumberSeed;
   bool _ExportedSymbolsAccumulate;
   std::string _ExportedSymbolsFilename;

@@ -88,9 +88,7 @@ module."
 (defun clasp-module-provider (module)
   (let* ((name (string module))
          (fasl-path (make-pathname :host "SYS"
-                                   :directory (list :absolute "LIB"
-                                                    (core:fmt nil "{}-bitcode"
-                                                              (default-target-backend)))
+                                   :directory '(:absolute "LIB" "MODULES")
                                    :name name))
          (lisp-path (make-pathname :host "SYS"
                                    :directory (list :absolute "SRC" "LISP" "MODULES" name)

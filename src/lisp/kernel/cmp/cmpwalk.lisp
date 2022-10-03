@@ -32,26 +32,10 @@
 ;; The macros that are invoked here must be the same macros that are used
 ;; in compile-file to set up the environment that the code needs to compile forms
 ;; as compile-file does.
-(defun code-walk-using-bclasp (code-walker-function form env)
-  "This is used in clos/method.lisp to code walk defmethod bodies"
-  (and core:*use-cleavir-compiler* (error "The core:*use-cleavir-compiler* is set to T"))
-  (let* ((module (llvm-create-module "code-walk-for-defmethod"))
-	 (*code-walker* code-walker-function))
-    (with-compilation-unit ()
-      (with-module (:module module
-                    :optimize nil)
-        (with-debug-info-generator (:module module
-                                    :pathname #P"/dev/null")
-          (with-make-new-run-all (run-all-function)
-            (with-literal-table (:id 0)
-              (literal:arrange-thunk-as-top-level
-               (compile-thunk 'walk-thunk form env nil)))))
-        (llvm-sys::module-delete module))))
-  t)
-
 
 (defun code-walk-using-bytecode (code-walker-function form env)
   (let* ((*code-walker* code-walker-function)
+         (env (or env (make-null-lexical-environment)))
          (module (cmp:module/make)))
     (compile-lambda nil `(progn ,form) env module)))
 
@@ -62,9 +46,7 @@ code-walker-function takes two arguments (form env).
 Returns T if walked, NIL if not (e.g. because the compiler signaled an error)."
   (let ((*code-walking* t))
     (if (not core:*use-cleavir-compiler*)
-        (if (eq cmp::*implicit-compile-hook* 'cmp::bytecode-implicit-compile-repl-form)
-            (code-walk-using-bytecode code-walker-function form (or env #+bytecode(make-null-lexical-environment)))
-            (code-walk-using-bclasp code-walker-function form env))
+        (code-walk-using-bytecode code-walker-function form env)
         (let* ((clasp-cleavir-pkg (find-package :clasp-cleavir))
                (code-walk-using-cleavir-symbol (find-symbol "CODE-WALK-USING-CLEAVIR" clasp-cleavir-pkg)))
           (if (fboundp code-walk-using-cleavir-symbol)

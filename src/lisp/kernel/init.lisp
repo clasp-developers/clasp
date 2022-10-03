@@ -592,123 +592,100 @@ a relative path from there."
                 ((eq filetype :intrinsics) "intrinsics")
                 ((eq filetype :builtins) "builtins-no-debug-info")
                 (t (error "illegal filetype - only :intrinsics or :builtins allowed")))))
-    (cond
-      ((eq link-type :fasl)
-       (translate-logical-pathname (core:fmt nil "lib:{}-{}-cxx.a" +bitcode-name+ name)))
-      ((eq link-type :compile)
-       (translate-logical-pathname (core:fmt nil "lib:{}-{}-cxx.bc" +bitcode-name+ name)))
-      ((eq link-type :executable)
-       (translate-logical-pathname (core:fmt nil "lib:{}-all-cxx.a" +bitcode-name+)))
-      (t (error "Provide a bitcode file for the link-type ~a" link-type)))))
+    (cond ((eq link-type :fasl)
+           (make-pathname :host "SYS"
+                          :directory '(:absolute "LIB")
+                          :name (core:fmt nil "{}-cxx.a" name)
+                          :type "a"))
+          ((eq link-type :compile)
+           (make-pathname :host "SYS"
+                          :directory '(:absolute "LIB")
+                          :name (core:fmt nil "{}-cxx.bc" name)
+                          :type "a"))
+          ((eq link-type :executable)
+           (make-pathname :host "SYS"
+                          :directory '(:absolute "LIB")
+                          :name (core:fmt nil "{}-all-cxx.a" name)
+                          :type "a"))
+          (t
+           (error "Provide a bitcode file for the link-type ~a" link-type)))))
 
 (defun build-common-lisp-bitcode-pathname ()
-  (translate-logical-pathname (pathname (core:fmt nil "lib:{}clasp-{}-common-lisp.bc" (default-target-stage) +variant-name+))))
+  (make-pathname :host "SYS"
+                 :directory '(:absolute "LIB")
+                 :name "common-lisp-cxx.a"
+                 :type "a"))
+
 (export '(build-inline-bitcode-pathname build-common-lisp-bitcode-pathname))
+
 #+(or)
 (progn
   (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
   (export '(+image-pathname+ )))
+
 (defun bitcode-extension ()
   (if cmp::*use-human-readable-bitcode*
       "ll"
       "bc"))
+
 (export 'bitcode-extension)
 
 (defun build-extension (type)
-  (if (eq type :fasl)
-      "fasl"
-      (if (eq type :bitcode)
-          (if cmp::*use-human-readable-bitcode*
-              "ll"
-              "bc")
-          (if (eq type :ll)
-              "ll"
-              (if (eq type :object)
-                  "o"
-                  (if (eq type :fasp)
-                      "fasp"
-                      (if (eq type :faso)
-                          "faso"
-                          (if (eq type :fasoll)
-                              "fasoll"
-                              (if (eq type :faspll)
-                                  "faspll"
-                                  (if (eq type :fasobc)
-                                      "fasobc"
-                                      (if (eq type :faspbc)
-                                          "faspbc"
-                                          (error "Unsupported build-extension type ~a" type))))))))))))
+  (cond ((eq type :fasl)
+         "fasl")
+        ((eq type :ll)
+         "ll")
+        ((eq type :object)
+         "o")
+        ((eq type :fasp)
+         "fasp")
+        ((eq type :faso)
+         "faso")
+        ((eq type :fasoll)
+         "fasoll")
+        ((eq type :faspll)
+         "faspll")
+        ((eq type :fasobc)
+         "fasobc")
+        ((eq type :faspbc)
+         "faspbc")
+        ((and (eq type :bitcode) cmp::*use-human-readable-bitcode*)
+         "ll")
+        ((eq type :bitcode)
+         "bc")
+        (t
+         (error "Unsupported build-extension type ~a" type))))
 
 (defun build-library-type (type)
   "Given the object-type TYPE return what type of library it generates"
-  (if (eq type :fasl)
-      :fasl
-      (if (eq type :object)
-          :fasl
-          (if (eq type :fasp)
-              :fasp
-              (if (eq type :faso)
-                  :fasp
-                  (if (eq type :fasoll)
-                      :faspll
-                      (if (eq type :faspll)
-                          :faspll
-                          (if (eq type :fasobc)
-                              :faspbc
-                              (if (eq type :faspbc)
-                                  :faspbc
-                                  (error "Unsupported build-extension type ~a" type))))))))))
+  (cond ((eq type :fasl)
+         :fasl)
+        ((eq type :object)
+         :fasl)
+        ((eq type :fasp)
+         :fasp)
+        ((eq type :faso)
+         :fasp)
+        ((eq type :fasoll)
+         :faspll)
+        ((eq type :faspll)
+         :faspll)
+        ((eq type :fasobc)
+         :faspbc)
+        ((eq type :faspbc)
+         :faspbc)
+        (t
+         (error "Unsupported build-extension type ~a" type))))
 
 (defun bitcode-pathname (pathname &optional (type cmp:*default-object-type*) stage)
   (make-pathname :host "sys"
                  :directory (list* :absolute
                                    "LIB"
-                                   (build-target-dir type stage)
                                    (cdr (pathname-directory pathname)))
                  :name (pathname-name pathname)
                  :type (build-extension type)))
 
-(defun build-pathname (partial-pathname &optional (type :lisp) stage)
-  "If partial-pathname is nil and type is :fasl or :executable then construct the name using
-the stage, the +application-name+ and the +bitcode-name+"
-  (flet ((find-lisp-source (module root)
-           (or
-            (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lsp")) root))
-            (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) root))
-            (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
-    (let ((target-dir (build-target-dir type stage)))
-      #+dbg-print(core:fmt t "DBG-PRINT build-pathname module: {}%N" module)
-      #+dbg-print(core:fmt t "DBG-PRINT build-pathname target-dir: {}%N" target-dir)
-      (let ((result
-              (cond
-                ((eq type :lisp)
-                 (let ((module (ensure-relative-pathname partial-pathname)))
-                   (cond
-                     ((string= "generated" (second (pathname-directory module)))
-                      ;; Strip the "generated" part of the directory
-                      (find-lisp-source (make-pathname
-                                         :directory (cons :relative (cddr (pathname-directory module)))
-                                         :name (pathname-name module))
-                                        (translate-logical-pathname "SYS:GENERATED;")))
-                     (t
-                      (find-lisp-source module (translate-logical-pathname "sys:"))))))
-                ((and (null partial-pathname) (eq type :executable))
-                 (translate-logical-pathname (core:fmt nil "sys:executable;{}{}-{}"
-                                                       (default-target-stage) +application-name+
-                                                       +bitcode-name+)))
-                ((and (null partial-pathname) (eq type :fasl))
-                 (translate-logical-pathname (core:fmt nil "sys:lib;{}{}-{}.fasl"
-                                                       (default-target-stage) +application-name+
-                                                       +bitcode-name+)))
-                (t
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative "LIB" target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host "SYS")))))))
-        result))))
-(export '(build-pathname build-extension))
-
-
-
+(export '(build-extension))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -935,55 +912,6 @@ the stage, the +application-name+ and the +bitcode-name+"
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun entry-filename (filename-or-cons)
-  "If filename-or-cons is a list then the first entry is a filename"
-  (if (consp filename-or-cons)
-      (car filename-or-cons)
-      filename-or-cons))
-
-(defun entry-compile-file-options (entry)
-  (if (consp entry)
-      (cadr entry)
-      nil))
-
-(defun delete-init-file (entry &key (really-delete t) stage)
-  (let* ((module (entry-filename entry))
-         (bitcode-path (bitcode-pathname module :bitcode stage)))
-    (if (probe-file bitcode-path)
-        (if really-delete
-            (progn
-              (core:fmt t "     Deleting bitcode: {}%N" bitcode-path)
-              (delete-file bitcode-path))))))
-
-
-;; I need to search the list rather than using features because *features* may change at runtime
-(defun default-target-backend (&optional given-stage)
-  (let* ((stage (if given-stage
-                    given-stage
-                    (default-target-stage)))
-         (garbage-collector (build-configuration))
-         (target-backend (core:fmt nil "{}{}" stage garbage-collector)))
-    target-backend))
-(export 'default-target-backend)
-
-(defvar *target-backend* (default-target-backend))
-(export '*target-backend*)
-
-(defun bitcode-exists-and-up-to-date (entry)
-  (let* ((filename (entry-filename entry))
-         (bitcode-path (bitcode-pathname filename))
-         (found-bitcode (probe-file bitcode-path)))
-    (if found-bitcode
-        (> (file-write-date bitcode-path)
-           (file-write-date filename))
-        nil)))
-
-(defun default-prologue-form (&optional features)
-  `(progn
-     ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
-     (if (not (core:noinform-p))
-         (core:fmt t "Starting {}%N" (lisp-implementation-version)))))
-
 (export 'process-command-line-load-eval-sequence)
 (defun process-command-line-load-eval-sequence ()
   (mapcar #'(lambda (entry)
@@ -1022,8 +950,8 @@ the stage, the +application-name+ and the +bitcode-name+"
 ;;; I moved the build system code out of init.lisp and
 ;;; put it in clasp-builder.lisp
 
-(if (member :clasp-builder *features*)
-    (load "sys:src;lisp;kernel;clasp-builder.lisp"))
+(when (member :clasp-builder *features*)
+  (load "sys:src;lisp;kernel;clasp-builder.lisp"))
 
 
 (defun tpl-hook (cmd)
