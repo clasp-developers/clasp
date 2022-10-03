@@ -1129,11 +1129,14 @@ global_names = {}
 
 ## opcodes are loaded by load_clasp_layout
 
-def load_clasp_layout(thedebugger):
+def load_clasp_layout(thedebugger,verbose=False):
     (vm_opcodes, class_layouts) = thedebugger.clasp_python_info()
     exec(vm_opcodes)
     exec(class_layouts)
-    if (verbose): print("class_layouts = %s" % class_layouts )
+    if (verbose==True):
+        print("verbose = %s" % verbose)
+        print("class_layouts = %s" % class_layouts )
+        print("vm_opcodes = %s" % vm_opcodes)
     SetupGlobals()
 
 

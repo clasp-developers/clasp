@@ -13,7 +13,15 @@ print( "\n\n\nLoading clasp udb python extension from directory = %s" % dir)
 
 sys.path.insert(0,dir)
 
-def maybeReloadModules():
+help_commands = []
+def register_help(cmd,info):
+    help_commands.append((cmd,info))
+
+def show_help():
+    for (cmd,info) in help_commands:
+        print("%-30s- %s" % (cmd, info ))
+
+def maybeReloadModules(verbose=False):
     global inspector_mod, debugger_mod
     if (inspector_mod == None):
       inspector_mod = importlib.import_module("clasp_inspect")
@@ -23,7 +31,8 @@ def maybeReloadModules():
       debugger_mod = importlib.import_module("backends.udb")
     else:
       importlib.reload(debugger_mod)
-    inspector_mod.load_clasp_layout(debugger_mod)
+    print( "maybeReloadModules verbose = %s" % verbose)
+    inspector_mod.load_clasp_layout(debugger_mod,verbose)
     # Tell the debugger_mod about the inspector_mod
     debugger_mod.install_debugger_inspector(debugger_mod,inspector_mod)
 
@@ -145,6 +154,24 @@ class LispSignalSIGUSR1 (gdb.Command):
     maybeReloadModules()
     debugger_mod.signalSIGUSR1()
 
+class LispDumpDebugInfo (gdb.Command):
+  def __init__ (self):
+    super (LispDumpDebugInfo, self).__init__("ldumpdebuginfo", gdb.COMMAND_USER)
+    register_help("ldumpdebuginfo","Dump the debug info")
+
+  def invoke (self, arg, from_tty):
+    global inspector_mod, debugger_mod
+    maybeReloadModules(True)
+
+class LispHelp (gdb.Command):
+  def __init__ (self):
+    super (LispHelp, self).__init__("lhelp", gdb.COMMAND_USER)
+    register_help("lhelp","This message")
+
+  def invoke (self, arg, from_tty):
+    global inspector_mod, debugger_mod
+    show_help()
+    
 LispReload()
 LispInspect()
 LispPrint()
@@ -158,18 +185,22 @@ LispDynEnvStack()
 LispPrintVector()
 LispSignalSIGUSR1()
 
-print("lreload                 - reload debugger extension")
-print("lprint <address>       - print lisp object in compact form")
-print("linspect <address>     - inspect lisp object - all fields")
-print("lhead <address>        - dump the clients header")
-print("lframe                 - Dump the function name and args for a lisp frame trampoline")
-print("ldis <bytecode-module-tptr>    - Disassemble a bytecode-module")
-print("ltest <address>        - test module reloading")
-print("lvm                    - Dump current vm status")
-print("lbt [<num>]            - Dump backtrace with arguments")
-print("lde [<num>]            - Dump dynamic environment stack")
-print("lvecprint <addr> <num> - Print <num> values for a vector starting at <addr>")
-print("ss                     - Shorthand for signal SIGUSR1")
+register_help("lreload", "reload debugger extension")
+register_help("lprint <address>","print lisp object in compact form")
+register_help("linspect <address>","inspect lisp object - all fields")
+register_help("lhead <address>","dump the clients header")
+register_help("lframe","Dump the function name and args for a lisp frame trampoline")
+register_help("ldis <bytecode-module-tptr>","Disassemble a bytecode-module")
+register_help("ltest <address>","test module reloading")
+register_help("lvm","Dump current vm status")
+register_help("lbt [<num>]","Dump backtrace with arguments")
+register_help("lde [<num>]","Dump dynamic environment stack")
+register_help("lvecprint <addr> <num>","Print <num> values for a vector starting at <addr>")
+register_help("ss","Shorthand for signal SIGUSR1")
+LispDumpDebugInfo()
+LispHelp()
+
+show_help()
 
 debugger_mod = importlib.import_module("backends.udb")
 
