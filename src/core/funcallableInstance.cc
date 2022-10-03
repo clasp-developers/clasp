@@ -465,9 +465,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   //  the GF is part of the compiler and it continues to be called while it is being
   //  compiled then you avoid a recursive cycle of compilations that will hang the system.
   //
-  // Disable this for now
-  // fixme2022
-#if 0
+#if 1
   if (calls == COMPILE_TRIGGER) {
     eval::funcall(clos::_sym_compile_discriminating_function, generic_function);
   }

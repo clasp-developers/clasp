@@ -358,7 +358,7 @@
                    `(car ,(class-cell-form slot-name class)))
                   (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
       `(let ((value ,valuef))
-         (if (cleavir-primop:eq value (core:unbound))
+         (if (eq value (core:unbound))
              (slot-unbound ,class ,(first arguments) ',slot-name)
              value)))))
 
@@ -472,7 +472,7 @@
              ,(when (and more-args max-nargs) ; Check argcount.
                 ;; FIXME: Should be possible to not check, on low safety.
                 `(let ((nmore (length ,more-args)))
-                   (if (cleavir-primop:fixnum-less ,(- max-nargs nreq) nmore)
+                   (if (< ,(- max-nargs nreq) nmore)
                        (error 'core:wrong-number-of-arguments
                               :called-function .generic-function.
                               :given-nargs (+ nmore ,nreq)

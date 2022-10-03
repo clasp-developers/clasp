@@ -687,12 +687,13 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (apply #'dispatch-miss generic-function vaslist-args))
 
 (defvar *fastgf-force-compiler* nil)
-(defun calculate-fastgf-dispatch-function (generic-function &key compile)
+(defun calculate-fastgf-dispatch-function
+    (generic-function &key (compile *fastgf-force-compiler*))
   (if (mp:atomic (safe-gf-call-history generic-function))
       (let ((timer-start (get-internal-real-time)))
         (unwind-protect
-             (if (or *fastgf-force-compiler* compile)
-                 (error "BUG: fastgf compilation disabled for now")
+             (if (and #-cclasp nil compile cmp:*cleavir-compile-hook*)
+                 (compile nil (generate-discriminator generic-function))
                  (interpreted-discriminator generic-function))
           (let ((delta-seconds (/ (float (- (get-internal-real-time) timer-start) 1d0)
                                   internal-time-units-per-second)))
@@ -716,6 +717,12 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 
 ;;; Used by interpret-dtree-program.
 (defun compile-discriminating-function (generic-function)
+  ;; Ensure an up to date (i.e. won't need to miss on these arguments)
+  ;; interpreted discriminator is installed, so that if Cleavir calls the
+  ;; generic function we're compiling it won't go recursive.
+  (set-funcallable-instance-function generic-function
+                                     (calculate-fastgf-dispatch-function
+                                      generic-function :compile nil))
   (set-funcallable-instance-function generic-function
                                      (calculate-fastgf-dispatch-function
                                       generic-function :compile t)))
