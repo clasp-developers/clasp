@@ -579,6 +579,10 @@ int main( int argc, char *argv[] )
 
   fflush( stderr );
 
+  //
+  // Setup debugging info all the time
+  //
+  core::dumpDebuggingLayouts();
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
     stringstream ss;
     char* username = getenv("USER");
@@ -595,7 +599,6 @@ int main( int argc, char *argv[] )
     }
     fprintf(fout,"%d",getpid());
     fclose(fout);
-    core::dumpDebuggingLayouts();
   }
   //
   // Pause before any allocations take place
