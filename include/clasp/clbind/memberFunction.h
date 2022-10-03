@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <clasp/clbind/policies.h>
 #include <clasp/clbind/details.h>
 namespace clbind {
-
 template <typename MethodPtrType, typename Policies, typename Wrapper>
 class TEMPLATED_FUNCTION_IndirectVariadicMethoid;
 };
@@ -46,7 +45,6 @@ public:
   typedef core::GlobalEntryPointBase_O TemplatedBase;
 public:
   MethodType           mptr;
-  core::LambdaListHandler_sp _lambdaListHandler;
 public:
 
   enum { NumParams = sizeof...(ARGS)+1 };
@@ -59,8 +57,6 @@ public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
 
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
 
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
@@ -116,7 +112,6 @@ public:
   typedef core::GlobalEntryPointBase_O TemplatedBase;
 public:
   MethodType           mptr;
-  core::LambdaListHandler_sp _lambdaListHandler;
 public:
 
   enum { NumParams = sizeof...(ARGS)+1 };
@@ -129,8 +124,6 @@ public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
 
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
 
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
@@ -177,11 +170,16 @@ public:
 };
 
 
-
 template < typename MethodPtrType, typename Pols, typename ArgumentHandler >
 class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid< MethodPtrType, Pols, ArgumentHandler >> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid< MethodPtrType, Pols, ArgumentHandler >::TemplatedBase>::StampWtag;
 };
+
+template < typename MethodPtrType, typename Pols, typename ArgumentHandler >
+class gctools::Inherits<typename clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid< MethodPtrType, Pols, ArgumentHandler >::TemplatedBase, clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid< MethodPtrType, Pols, ArgumentHandler >> : public std::true_type {};
+
+
+
 
 #endif

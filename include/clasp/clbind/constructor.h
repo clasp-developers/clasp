@@ -176,16 +176,13 @@ public:
 };
 };
 
-template <typename Policies, typename T>
-class gctools::GCStamp<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::StampWtag;
+namespace clbind {
+
+template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentHandler>
+class VariadicConstructorFunction_O;
 };
 
 namespace clbind {
-
-template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentHandler> class VariadicConstructorFunction_O;
-
 template <typename ConstructorPtrType, typename Policies, typename Pointer, typename ConstructType, typename ArgumentHandler>
 class VariadicConstructorFunction_O : public core::GlobalEntryPointBase_O {};
 
@@ -196,13 +193,11 @@ public:
   typedef core::GlobalEntryPointBase_O TemplatedBase;
   typedef Wrapper<ConstructType,Pointer>  WrapperType;
 public:
-  core::LambdaListHandler_sp _lambdaListHandler;
 public:
   virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
   VariadicConstructorFunction_O(core::FunctionDescription_sp fdesc) : core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),nil<core::T_O>()) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -251,6 +246,18 @@ class gctools::GCStamp<clbind::VariadicConstructorFunction_O<Sig, Pols, Pointer,
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::VariadicConstructorFunction_O<Sig,Pols, Pointer, T, ArgumentHandler>::TemplatedBase>::StampWtag;
 };
+
+template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentHandler>
+struct gctools::Inherits<typename clbind::VariadicConstructorFunction_O<Sig, Pols, Pointer, T, ArgumentHandler>::TemplatedBase, clbind::VariadicConstructorFunction_O<Sig, Pols, Pointer, T, ArgumentHandler>> : public std::true_type {};
+
+template <typename Policies, typename T>
+class gctools::GCStamp<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::StampWtag;
+};
+template <typename Policies, typename T>
+struct gctools::Inherits<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase,clbind::DerivableDefaultConstructorFunctor<Policies, T>> : public std::true_type {};
+
 
 
 namespace clbind {

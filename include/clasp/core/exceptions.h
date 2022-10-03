@@ -471,6 +471,7 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #ifdef DEBUG_ASSERT
 #define lisp_ASSERT(x) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,#x)
 #define ASSERT(x) lisp_ASSERT(x)
+#define ASSERT_DO(x) do { x; } while (0)
 #endif
 #ifdef DEBUG_BOUNDS_ASSERT
 #define lisp_BOUNDS_ASSERT(x) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,#x)
@@ -481,6 +482,7 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #define BOUNDS_ASSERT_LT(x,y)
 #endif
 #ifdef DEBUG_ASSERT
+#define ASSERT_DO(x) do {} while (0)
 #define lisp_ASSERTP( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e));
 #define ASSERTP(x, e) lisp_ASSERTP(x, e)
 #define lisp_ASSERTF( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e).c_str());

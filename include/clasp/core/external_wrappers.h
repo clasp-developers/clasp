@@ -47,7 +47,6 @@ public:
   typedef GlobalEntryPointBase_O TemplatedBase;
 public:
   MethodType           mptr;
-  LambdaListHandler_sp _lambdaListHandler;
 public:
 
   enum { NumParams = sizeof...(ARGS)+1 };
@@ -60,8 +59,6 @@ public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
 
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
 
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
@@ -111,7 +108,6 @@ public:
   typedef GlobalEntryPointBase_O TemplatedBase;
 public:
   MethodType           mptr;
-  LambdaListHandler_sp _lambdaListHandler;
 public:
 
   enum { NumParams = sizeof...(ARGS)+1 };
@@ -124,8 +120,6 @@ public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
 
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
 
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
@@ -191,7 +185,8 @@ public:
   
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
-    this->fixupOneCodePointer( fixup, (void**)&this->mptr );
+    printf("%s:%d:%s What do we do with mptr %p\n", __FILE__, __LINE__, __FUNCTION__, *(void**)&this->mptr );
+    // this->fixupOneCodePointer( fixup, (void**)&this->mptr );
   };
   
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
@@ -228,6 +223,10 @@ class gctools::GCStamp<core::TEMPLATED_FUNCTION_IndirectMethoid<MethodPtrType, P
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_IndirectMethoid< MethodPtrType, Policies, OT, ArgumentHandler >::TemplatedBase>::StampWtag;
 };
+
+template <typename Policies, typename OT, typename MethodPtrType, typename ArgumentHandler >
+struct gctools::Inherits<typename core::TEMPLATED_FUNCTION_IndirectMethoid<MethodPtrType, Policies, OT, ArgumentHandler >::TemplatedBase, core::TEMPLATED_FUNCTION_IndirectMethoid<MethodPtrType, Policies, OT, ArgumentHandler >> : public std::true_type {};
+
 
 namespace core {
 
@@ -293,7 +292,6 @@ public:
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>());
       lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }
@@ -308,7 +306,6 @@ public:
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>());
       lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }
@@ -323,7 +320,6 @@ public:
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>());
       lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }
@@ -338,7 +334,6 @@ public:
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>());
       lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }

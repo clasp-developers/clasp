@@ -86,6 +86,7 @@ GlobalEntryPointBase_O::GlobalEntryPointBase_O(FunctionDescription_sp fdesc, con
     , _EntryPoints(entry_point) {
   if (code.nilp()) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
+    this->_Code = code;
     if (gc::IsA<llvmo::Library_sp>(code)) {
       for ( size_t ii=0; ii<ClaspXepFunction::Entries; ii++ ) {
         maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii],sizeof(void*),"GlobalEntryPointBaseName",ii);
@@ -99,7 +100,6 @@ void GlobalEntryPointBase_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad
   for ( size_t ii=0; ii<ClaspXepFunction::Entries; ++ii ) {
     this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints._EntryPoints[ii]);
   }
-  this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
 }
 
 GlobalEntryPoint_O::GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp lep ) : GlobalEntryPointBase_O(fdesc, entry_point, code), _localEntryPoint(lep) {
@@ -701,25 +701,6 @@ void FunctionDescription_O::setf_docstring(T_sp x) {
   this->_docstring = x;
 }
 
-void validateFunctionDescription(const char* filename, size_t lineno, Function_sp func) {
-  T_sp functionName = func->functionName();
-  if (functionName.unboundp()) {
-    printf("FunctionDescription defined at %s:%zu  is missing functionName\n", filename, lineno);
-    abort();
-  }
-  T_sp sourcePathname = func->sourcePathname();
-  if (sourcePathname.unboundp()) {
-    printf("FunctionDescription for function %s defined at %s:%zu  is missing sourcePathname\n", _rep_(functionName).c_str(), filename, lineno);
-  }
-  T_sp lambdaList = func->lambdaList();
-  if (lambdaList.unboundp()) {
-    printf("FunctionDescription for function %s defined at %s:%zu  is missing lambdaList\n", _rep_(functionName).c_str(), filename, lineno);
-  }
-  T_sp docstring = func->docstring();
-  if (docstring.unboundp()) {
-    printf("FunctionDescription for function %s defined at %s:%zu  is missing docstring\n", _rep_(functionName).c_str(), filename, lineno);
-  }
-}
 };
 
 extern "C" void dumpFunctionDescription(core::FunctionDescription_sp fdesc)
@@ -821,7 +802,6 @@ Closure_sp Closure_O::make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoi
                                                                               closedOverSlots,
                                                                               entryPoint,
                                                                               Closure_O::bytecodeClosure);
-  validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
 
@@ -836,7 +816,6 @@ Closure_sp Closure_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn,
                                                                                        Closure_O::cclaspClosure);
   closure->setf_lambdaList(lambda_list);
   closure->setf_docstring(nil<T_O>());
-  validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
 

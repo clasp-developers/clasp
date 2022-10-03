@@ -869,8 +869,11 @@ typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
  class EntryPoint_O;
  typedef gctools::smart_ptr<EntryPoint_O> EntryPoint_sp;
  class CodeEntryPoint_O;
- typedef gctools::smart_ptr<CodeEntryPoint_O> CodeEntryPoint_sp;
- 
+ typedef gctools::smart_ptr<CodeEntryPoint_O> CodeEntryPoint_sp; 
+
+ class GlobalEntryPointBase_O;
+ typedef gctools::smart_ptr<GlobalEntryPointBase_O> GlobalEntryPointBase_sp;
+
 class SymbolToEnumConverter_O;
 typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 }
@@ -1002,7 +1005,7 @@ size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp llh);
 void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& dummy_specializer,
                                      T_sp name,
                                      Symbol_sp classSymbol,
-                                     Function_sp,
+                                     GlobalEntryPointBase_sp entry,
                                      size_t TemplateDispatchOn = 0,
                                      bool useTemplateDispatchOn = false,
                                      const string &lambda_list = "",
@@ -1015,7 +1018,7 @@ void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& dum
 void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specializer,
                                      T_sp name,
                                      Symbol_sp classSymbol,
-                                     Function_sp,
+                                     GlobalEntryPointBase_sp entry,
                                      size_t TemplateDispatchOn = 0,
                                      bool useTemplateDispatchOn = false,
                                      const string &lambda_list = "",
@@ -1036,7 +1039,7 @@ void lisp_defmacro(Symbol_sp name, const string &packageName,
                            int bytecodep,
                            Symbol_sp sym,
                            const string &packageName,
-                           CodeEntryPoint_sp fc,
+                           GlobalEntryPointBase_sp fc,
                            const string& arguments = "",
                            const string& declares = "",
                            const string &docstring = "",

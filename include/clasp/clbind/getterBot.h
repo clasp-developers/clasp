@@ -18,11 +18,9 @@ public:
 
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {};
-
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
-    printf("%s:%d:%s What do we do with mptr\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s What do we do with mptr %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this->mptr );
     //this->fixupOneCodePointer( fixup, (void**)&this->mptr );
   };
 

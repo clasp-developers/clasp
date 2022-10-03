@@ -188,8 +188,11 @@ CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
   // Global symbol macro?
   T_mv symmac = core__get_sysprop(sym, ext::_sym_symbolMacro);
   MultipleValues& mvn = core::lisp_multipleValues();
-  if (gc::As_unsafe<T_sp>(mvn.valueGet(1,symmac.number_of_values())).notnilp())
-    return SymbolMacroVarInfo_O::make(symmac);
+  if (gc::As_unsafe<T_sp>(mvn.valueGet(1,symmac.number_of_values())).notnilp()) {
+    T_sp symmac0 = symmac;
+    Function_sp fsymmac = gc::As_assert<Function_sp>(symmac0);
+    return SymbolMacroVarInfo_O::make(fsymmac);
+  }
   // Unknown.
   return nil<T_O>();
 }
@@ -606,7 +609,7 @@ void Module_O::initialize_cfunction_positions() {
 }
 
 void Fixup_O::update_positions(size_t increase) {
-  Cfunction_sp funct = this->cfunction();
+  Cfunction_sp funct = gc::As_assert<Cfunction_sp>(this->cfunction());
   ComplexVector_T_sp annotations = funct->annotations();
   size_t nannot = annotations->length();
   for (size_t idx = this->iindex() + 1; idx < nannot; ++idx) {
@@ -915,7 +918,7 @@ CL_DEFUN void compile_let(List_sp bindings, List_sp body,
       post_binding_env = post_binding_env->bind_vars(Cons_O::createList(var),
                                                      ctxt);
       ++lexical_binding_count;
-      ctxt->maybe_emit_make_cell(var_info(var, post_binding_env));
+      ctxt->maybe_emit_make_cell(gc::As_assert<comp::LexicalVarInfo_sp>(var_info(var, post_binding_env)));
     }
   }
   ctxt->emit_bind(lexical_binding_count, env->frameEnd());
@@ -955,7 +958,7 @@ CL_DEFUN void compile_letSTAR(List_sp bindings, List_sp body,
     } else {
       size_t frame_start = new_env->frameEnd();
       new_env = new_env->bind_vars(Cons_O::createList(var), ctxt);
-      ctxt->maybe_emit_make_cell(var_info(var, new_env));
+      ctxt->maybe_emit_make_cell(gc::As_assert<comp::LexicalVarInfo_sp>(var_info(var, new_env)));
       ctxt->assemble1(vm_set, frame_start);
     }
   }

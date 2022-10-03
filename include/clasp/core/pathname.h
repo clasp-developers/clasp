@@ -173,7 +173,7 @@ T_sp cl__directory_namestring(T_sp tpname);
 T_sp cl__host_namestring(T_sp tpname);
 T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults);
 
-T_sp cl__logical_pathname_translations(String_sp host);
+List_sp cl__logical_pathname_translations(String_sp host);
 T_sp cl__setf_logical_pathname_translations(List_sp translations, String_sp host);
 
 /* If you want to call makePathname use:

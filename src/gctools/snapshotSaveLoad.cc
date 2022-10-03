@@ -338,10 +338,10 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #define DBG_SL(...)
 #endif
 
-#if 0
-#define DBG_SLS(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str()); fflush(stdout); }
+#if 1
+#define DBG_SLS(...) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); fflush(stdout); }
 #else
-#define DBG_SLS(_fmt_)
+#define DBG_SLS(...)
 #endif
 #if 0
 #define DBG_SL1(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
@@ -457,13 +457,22 @@ uintptr_t encodeRelocation_( uint8_t firstByte, size_t libraryIndex, size_t relo
   return result;
 }
 
+bool virtualMethodP(uintptr_t* ptrptr) {
+  uintptr_t val = *ptrptr;
+  if (val < 65536) {
+//    printf("%s:%d:%s skipping function entry point at @%p is small %p\n", __FILE__, __LINE__, __FUNCTION__, ptrptr, (void*)val);
+    return true;
+  }
+  return false;
+}
 
 uintptr_t Fixup::fixedAddress(bool functionP, uintptr_t* ptrptr, const char* addressName ) {
   uint8_t firstByte;
   uintptr_t libidx;
   uintptr_t pointerIndex;
-  uintptr_t value = *ptrptr;
-  decodeRelocation_( value, firstByte, libidx, pointerIndex );
+  if (virtualMethodP(ptrptr)) return *ptrptr;
+  uintptr_t codedAddress = *ptrptr;
+  decodeRelocation_( codedAddress, firstByte, libidx, pointerIndex );
 //  printf("%s:%d:%s libidx = %lu pointerIndex = %lu\n", __FILE__, __LINE__, __FUNCTION__, libidx, pointerIndex );
   uintptr_t address = this->_libraries[libidx]._GroupedPointers[pointerIndex]._address;
 //  printf("%s:%d:%s address = %p @ %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, &this->_libraries[libidx]._GroupedPointers[pointerIndex]._address );
@@ -471,9 +480,10 @@ uintptr_t Fixup::fixedAddress(bool functionP, uintptr_t* ptrptr, const char* add
 //  printf("%s:%d:%s addressOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, addressOffset );
   uintptr_t ptr = address + addressOffset;
   if ( functionP && *(uint8_t*)ptr != firstByte) {
-    printf("%s:%d:%s during decode %s %p must be readable and point to first byte: 0x%x - but it points to 0x%x  libidx: %lu\n",
+    printf("%s:%d:%s during decode %s codedAddress: %p ptr-> %p must be readable and point to first byte: 0x%x - but it points to 0x%x  libidx: %lu\n",
            __FILE__, __LINE__, __FUNCTION__,
            addressName,
+           (void*)codedAddress,
            (void*)ptr,
            (uint32_t)firstByte,
            (uint32_t)*(uint8_t*)ptr,
@@ -577,6 +587,7 @@ uintptr_t encodeEntryPointOffset( uintptr_t address, uintptr_t codeStart, uintpt
 
 void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr) {
   size_t libraryIndex = fixup->ensureLibraryRegistered(*ptrptr);
+  uintptr_t val = *ptrptr;
   fixup->registerFunctionPointer(libraryIndex,ptrptr);
 }
 
@@ -595,6 +606,9 @@ void decodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr ) {
 */
 bool encodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::ObjectFile_sp code) {
   uintptr_t address = *ptrptr;
+  if (address<65536) {
+    printf("%s:%d:%s address @%p is %p and is small\n", __FILE__, __LINE__, __FUNCTION__, ptrptr, (void*)address);
+  }
   uint8_t firstByte = *(uint8_t*)address;
   uintptr_t codeStart = (uintptr_t)code->codeStart();
   uintptr_t codeEnd = (uintptr_t)code->codeEnd();
@@ -630,6 +644,7 @@ bool decodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Obj
 
 
 void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
+  if (virtualMethodP(ptrptr)) return;
   if (gc::IsA<llvmo::ObjectFile_sp>(codebase)) {
     llvmo::ObjectFile_sp code = gc::As_unsafe<llvmo::ObjectFile_sp>(codebase);
     if (!encodeEntryPointForCompiledCode(fixup,ptrptr,code)) {
@@ -643,7 +658,7 @@ void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
     encodeEntryPointInLibrary(fixup,ptrptr);
   } else {
     printf("%s:%d:%s The codebase must be a Code_sp or a Library_sp it is %s\n" , __FILE__, __LINE__, __FUNCTION__, _rep_(codebase).c_str());
-    SIMPLE_ERROR(("The codebase must be a Code_sp or a Library_sp it is %s") , _rep_(codebase) );
+    abort();
   }
 }
 
@@ -1964,6 +1979,7 @@ struct LoadSymbolCallback : public core::SymbolCallback {
   }
 };
 
+__attribute__((optnone))
 void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   class OrderByAddress {
   public:
@@ -1973,45 +1989,49 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
     }
   };
   OrderByAddress orderer;
-  DBG_SLS(BF("Step1\n" ));
+  DBG_SLS("Step1\n" );
   for ( size_t idx = 0; idx< fixup->_libraries.size(); idx++ ) {
-    DBG_SLS(BF("Adding library #%lu: %s\n") % idx % fixup->_libraries[idx]._Name);
+    DBG_SLS( "Adding library #%lu: %s\n" , idx , fixup->_libraries[idx]._Name.c_str() );
     symbolLookup.addLibrary(fixup->_libraries[idx]._Name);
     auto pointersBegin = fixup->_libraries[idx]._InternalPointers.begin();
     auto pointersEnd = fixup->_libraries[idx]._InternalPointers.end();
     if ( pointersBegin < pointersEnd ) {
-      DBG_SLS(BF("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n") % fixup->_libraries[idx]._InternalPointers.size());
+      DBG_SLS("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n" , fixup->_libraries[idx]._InternalPointers.size());
       sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer );
     }
   }
-  DBG_SLS(BF("Step2\n" ));
+  DBG_SLS("Step2 - there are %lu libraries with function pointers that need relocating\n", fixup->_libraries.size() );
   for ( size_t idx=0; idx<fixup->_libraries.size(); idx++ ) {
     int groupPointerIdx = -1;
     ISLLibrary& curLib = fixup->_libraries[idx];
-//    printf("%s:%d:%s  Dealing with library: %s\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str() );
-//    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers.size() );
+    printf("%s:%d:%s  Dealing with library#%lu:  %s @%p\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._Name.c_str(), &curLib );
+    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._InternalPointers.size() );
     for ( size_t ii=0; ii<curLib._InternalPointers.size(); ii++ ) {
       if (groupPointerIdx < 0 || curLib._InternalPointers[ii]._address != curLib._InternalPointers[ii-1]._address ) {
         curLib._GroupedPointers.emplace_back( curLib._InternalPointers[ii]._pointerType, curLib._InternalPointers[ii]._address );
         groupPointerIdx++;
       }
     // Now encode the relocation
-      uint8_t firstByte = *(uint8_t*)(*(void**)curLib._InternalPointers[ii]._ptrptr);
+      void** addr = (void**)curLib._InternalPointers[ii]._ptrptr;
+      uint8_t* uint8ptr = (uint8_t*)*addr;
+//      printf("%s:%d:%s Relocation @%p group: %d  from %p\n", __FILE__, __LINE__, __FUNCTION__, curLib._InternalPointers[ii]._ptrptr, groupPointerIdx, uint8ptr );
+      uint8_t firstByte = *uint8ptr;
       *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_( firstByte, idx, groupPointerIdx );
-//      printf("%s:%d:%s Wrote relocation @%p to %p\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers[ii]._ptrptr, *curLib._Pointers[ii]._ptrptr );
+//      printf("%s:%d:%s                             to %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)*curLib._InternalPointers[ii]._ptrptr );
     }
-//    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
+    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
     thing.generateSymbolTable(fixup,symbolLookup);
-//    printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
+    printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
     for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
       if (curLib._SymbolInfo[ii]._SymbolLength<0) {
         printf("%s:%d:%s The _SymbolInfo[%lu] does not have an length\n", __FILE__, __LINE__, __FUNCTION__, ii );
       }
     }
+    printf("%s:%d:%s  Done with library: %s @%p\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str(), &curLib );
   }
-  DBG_SLS(BF("Step done\n" ));
+  DBG_SLS("Step done\n" );
 }
 
 void updateRelocationTableAfterLoad(ISLLibrary& curLib,SymbolLookup& symbolLookup) {
@@ -2253,7 +2273,7 @@ void* snapshot_save_impl(void* data) {
   //
 #if 1  
   fixup._operation = InfoOp;
-  DBG_SLS(BF("0. Get info on objects for snapshot save\n"));
+  DBG_SLS("0. Get info on objects for snapshot save\n");
   gather_info_for_snapshot_save_t gather_info(&fixup,&islInfo);
   walk_gathered_objects( gather_info, allObjects );
 #endif
@@ -2272,7 +2292,7 @@ void* snapshot_save_impl(void* data) {
   prepare_for_snapshot_save_t prepare(&islInfo);
   walk_gathered_objects( prepare, allObjects );
 #endif
-  DBG_SLS(BF("4. Sum size of all objects\n"));
+  DBG_SLS("4. Sum size of all objects\n");
   calculate_size_t calc_size(&islInfo);
   walk_gathered_objects( calc_size, allObjects );
   fmt::printf("   size = %lu\n", calc_size._TotalSize);
@@ -2387,15 +2407,15 @@ void* snapshot_save_impl(void* data) {
   // Calculate the size of the libraries section
   //  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
   SymbolLookup lookup;
-  DBG_SLS(BF(" prepareRelocationTableForSave\n"));
+  DBG_SLS(" prepareRelocationTableForSave\n");
   prepareRelocationTableForSave( &fixup, lookup );
   
-  DBG_SLS(BF("done prepareRelocationTableForSave\n"));
+  DBG_SLS("done prepareRelocationTableForSave\n");
   size_t librarySize = 0;
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     librarySize += fixup._libraries[idx].writeSize();
   }
-  DBG_SLS(BF("copy_buffer_t\n"));
+  DBG_SLS("copy_buffer_t\n");
   snapshot._Libraries = new copy_buffer_t(librarySize);
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     size_t alignedLen = fixup._libraries[idx].nameSize();
@@ -2427,7 +2447,7 @@ void* snapshot_save_impl(void* data) {
     free(buffer);
   }
 
-  DBG_SLS(BF(" Generating fileHeader\n"));
+  DBG_SLS(" Generating fileHeader\n");
   
   ISLFileHeader* fileHeader = snapshot._FileHeader;
   uintptr_t offset = snapshot._HeaderBuffer->_Size;
@@ -2526,7 +2546,7 @@ void* snapshot_save_impl(void* data) {
     std::remove(filename.c_str());
  }
 
-  DBG_SLS(BF(" Done snapshot_save_impl\n"));
+  DBG_SLS(" Done snapshot_save_impl\n");
 #if 1
   if (getenv("CLASP_PAUSE_EXIT")) {
     printf("%s:%d PID = %d  Paused at exit - press enter to continue: \n", __FILE__, __LINE__, getpid() );
@@ -3120,7 +3140,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             // addGenerator was done in ClaspJIT_O
         } else {
           llvm_jitdylib = &*(obj_claspJIT->_LLJIT->createJITDylib(name)); // Every other one we need to create
-          printf("%s:%d:%s Setting JITDylib %p into JITDylib_sp_ %p = %s\n", __FILE__, __LINE__, __FUNCTION__, llvm_jitdylib, memory_JITDylib_sp_.raw_(), name.c_str() );
+//          printf("%s:%d:%s Setting JITDylib %p into JITDylib_sp_ %p = %s\n", __FILE__, __LINE__, __FUNCTION__, llvm_jitdylib, memory_JITDylib_sp_.raw_(), name.c_str() );
           memory_JITDylib_sp_->_ptr = llvm_jitdylib;
           llvm_jitdylib->addGenerator(llvm::cantFail(llvmo::DynamicLibrarySearchGenerator::GetForCurrentProcess(obj_claspJIT->_LLJIT->getDataLayout().getGlobalPrefix())));
         }
@@ -3372,8 +3392,10 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               // Skip the NIL object we handled above
               countNullObjects++; // It's a Null_O object but its header has been obliterated by a fwd
             } else if ( source_header->_badge_stamp_wtag_mtag.fwdP() ) {
+#if 0
               printf("%s:%d:%s About to skip allocation of the object in snapshot at snapshot_header %p - fwdPointer() = %p\n",
                      __FILE__, __LINE__, __FUNCTION__, source_header, source_header->_badge_stamp_wtag_mtag.fwdPointer() );
+#endif
             } else if ( generalHeader->_Header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
               // Set the forwarding pointer defined above.
               gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;

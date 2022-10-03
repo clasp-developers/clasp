@@ -66,8 +66,8 @@ NOINLINE void define_pathname_translation(const string &from, const string &to) 
       core::Cons_O::create(core::Cons_O::createList(
                                core::cl__pathname(core::SimpleBaseString_O::make(from)),
                                core::cl__pathname(core::SimpleBaseString_O::make(globals_->_Bundle->_Directories->_SysDir / to))),
-                           core::cl__logical_pathname_translations(host)),
-      host);
+                           core::cl__logical_pathname_translations(gc::As_assert<core::String_sp>(host))),
+      gc::As_assert<core::String_sp>(host));
 }
 
 #define SOURCE_INFO_HELPERS

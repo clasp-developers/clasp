@@ -420,12 +420,12 @@ public:
   uint8_t _opcode16;
   uint8_t _opcode24;
 public:
-  ControlLabelFixup_O(T_sp label, uint8_t opcode8, uint8_t opcode16, uint8_t opcode24)
+  ControlLabelFixup_O(Label_sp label, uint8_t opcode8, uint8_t opcode16, uint8_t opcode24)
     : LabelFixup_O(label, 2), _opcode8(opcode8), _opcode16(opcode16),
       _opcode24(opcode24) {}
   CL_LISPIFY_NAME(ControlLabelFixup/make)
   CL_DEF_CLASS_METHOD
-  static ControlLabelFixup_sp make(T_sp label, uint8_t opcode8,
+  static ControlLabelFixup_sp make(Label_sp label, uint8_t opcode8,
                                    uint8_t opcode16, uint8_t opcode24) {
     return gctools::GC<ControlLabelFixup_O>::allocate<gctools::RuntimeStage>(label, opcode8, opcode16, opcode24);
   }
@@ -440,11 +440,11 @@ class JumpIfSuppliedFixup_O : public LabelFixup_O {
 public:
   uint8_t _index;
 public:
-  JumpIfSuppliedFixup_O(T_sp label, uint8_t index)
+  JumpIfSuppliedFixup_O(Label_sp label, uint8_t index)
     : LabelFixup_O(label, 3), _index(index) {}
   CL_LISPIFY_NAME(JumpIfSuppliedFixup/make)
   CL_DEF_CLASS_METHOD
-  static JumpIfSuppliedFixup_sp make(T_sp label, uint8_t nindex) {
+  static JumpIfSuppliedFixup_sp make(Label_sp label, uint8_t nindex) {
     return gctools::GC<JumpIfSuppliedFixup_O>::allocate<gctools::RuntimeStage>(label, nindex);
   }
 public:

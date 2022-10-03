@@ -60,8 +60,6 @@ public:
 
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {};
-
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup ) {
     printf("%s:%d:%s Shouldn't need to fixup internals\n", __FILE__, __LINE__, __FUNCTION__ );
   }
@@ -109,10 +107,13 @@ public:
 };
 };
 
-template <typename Pols, typename OT, typename Begin, typename End >
-class gctools::GCStamp<clbind::IteratorMethoid<Pols, OT, Begin, End >> {
+template <typename Policies, typename OT, typename Begin, typename End >
+class gctools::GCStamp<clbind::IteratorMethoid<Policies, OT, Begin, End >> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::IteratorMethoid< Pols, OT, Begin, End >::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::IteratorMethoid< Policies, OT, Begin, End >::TemplatedBase>::StampWtag;
 };
+
+template <typename Policies, typename OT, typename Begin, typename End >
+struct gctools::Inherits<typename clbind::IteratorMethoid<Policies, OT, Begin, End >::TemplatedBase, clbind::IteratorMethoid<Policies, OT, Begin, End >> : public std::true_type {};
 
 #endif

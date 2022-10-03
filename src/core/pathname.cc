@@ -656,7 +656,7 @@ parse_directories(T_sp s, int flags, size_t start, size_t end,
 CL_DOCSTRING(R"dx(Returns the host's list of translations. Each translation is a list of at least
 two elements: from-wildcard and to-wildcard. From-wildcard is a logical
 pathname whose host is host. To-wildcard is a pathname.)dx")
-CL_DEFUN T_sp cl__logical_pathname_translations(String_sp host) {
+CL_DEFUN List_sp cl__logical_pathname_translations(String_sp host) {
   KeyValuePair *pair = _lisp->pathnameTranslations_()->find(host);
   if (!pair) // This type error should be (satisfies logical-host-p)
     TYPE_ERROR(host, cl::_sym_string);
@@ -2086,7 +2086,7 @@ begin:
     //	    printf("%s:%d Returning non-logical pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str() );
     return pathname;
   }
-  List_sp l = cl__logical_pathname_translations(pathname->_Host);
+  List_sp l = cl__logical_pathname_translations(gc::As_assert<String_sp>(pathname->_Host));
   //  TESTING();
   for (auto cur : l) {     // ; !cl__endp(l); l = CDR(l)) {
     T_sp pair = oCar(cur); // I just noticed that I had oCar(l) in here!!!!!

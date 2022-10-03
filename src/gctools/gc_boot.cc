@@ -78,6 +78,16 @@ void dump_data_types(std::ostream& fout, const std::string& indent)
   DTNAME(ctype_const_char_ptr,"const_char_ptr",sizeof(const char*));
   DTNAME(ctype_size_t,"size_t",sizeof(size_t));
   DTNAME(ctype_opaque_ptr,"opaque_ptr",sizeof(void*));
+
+  DTNAME(CXX_FIXUP_OFFSET,"CXX_FIXUP_OFFSET",sizeof(unsigned long));
+  DTNAME(ATOMIC_POD_OFFSET_unsigned_long,"ATOMIC_POD_OFFSET_unsigned_long",sizeof(unsigned long));
+  DTNAME(ATOMIC_POD_OFFSET_mp__ProcessPhase,"ATOMIC_POD_OFFSET_mp__ProcessPhase",sizeof(mp::ProcessPhase));
+  DTNAME(ATOMIC_POD_OFFSET_unsigned_int,"ATOMIC_POD_OFFSET_unsigned_int",sizeof(unsigned int));
+  DTNAME(ATOMIC_POD_OFFSET_long_long,"ATOMIC_POD_OFFSET_long_long",sizeof(long long));
+  DTNAME(ATOMIC_POD_OFFSET__Bool,"ATOMIC_POD_OFFSET__Bool",sizeof(bool));
+  DTNAME(ATOMIC_POD_OFFSET_long,"ATOMIC_POD_OFFSET_long",sizeof(long));
+  DTNAME(CXX_SHARED_MUTEX_OFFSET,"CXX_SHARED_MUTEX_OFFSET",sizeof(mp::Mutex));
+  
 #define Init_global_ints(_name_,_value_) fmt::print(fout,"{}Init_global_ints(name=\"{}\",value={})\n", indent.c_str(), _name_,_value_);
 #define Init_global_size_t(_name_,_value_) fmt::print(fout,"{}Init_global_ints(name=\"{}\",value={})\n", indent.c_str(), _name_,_value_);
   Init_global_ints("TAG_BITS",TAG_BITS);

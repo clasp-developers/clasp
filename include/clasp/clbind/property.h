@@ -61,22 +61,22 @@ class TEMPLATED_FUNCTION_SetterMethoid;
 #include <clasp/clbind/setterBot.h>
 };
 
-template <typename GetterPolicies, typename OT, typename VariablePtrType >
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType >> {
+template <typename Policies, typename OT, typename VariablePtrType >
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_GetterMethoid<Policies, OT, VariablePtrType >> {
 public:
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType >::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<Policies, OT, VariablePtrType >::TemplatedBase>::StampWtag;
 };
 
-template <typename SetterPolicies, typename OT, typename VariablePtrType>
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_SetterMethoid<SetterPolicies, OT, VariablePtrType>> {
-public:
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
+template <typename Policies, typename OT, typename VariablePtrType >
+struct gctools::Inherits<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<Policies, OT, VariablePtrType >::TemplatedBase, clbind::TEMPLATED_FUNCTION_GetterMethoid<Policies, OT, VariablePtrType >> : public std::true_type {};
 
+template <typename Policies, typename OT, typename VariablePtrType>
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_SetterMethoid<Policies, OT, VariablePtrType>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_SetterMethoid<SetterPolicies, OT, VariablePtrType>::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_SetterMethoid<Policies, OT, VariablePtrType>::TemplatedBase>::StampWtag;
 };
+
+template <typename Policies, typename OT, typename VariablePtrType >
+struct gctools::Inherits<typename clbind::TEMPLATED_FUNCTION_SetterMethoid<Policies, OT, VariablePtrType >::TemplatedBase, clbind::TEMPLATED_FUNCTION_SetterMethoid<Policies, OT, VariablePtrType >> : public std::true_type {};
 
 #endif

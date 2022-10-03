@@ -114,7 +114,6 @@ public:
   typedef GlobalEntryPointBase_O TemplatedBase;
 public:
   MethodType           mptr;
-  LambdaListHandler_sp _lambdaListHandler;
 public:
 
   enum { NumParams = sizeof...(ARGS)+1 };
@@ -127,8 +126,6 @@ public:
   virtual const char* describe() const {return "VariadicMethoid";};
 
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
 
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
@@ -187,7 +184,6 @@ public:
   typedef GlobalEntryPointBase_O TemplatedBase;
 public:
   MethodType           mptr;
-  LambdaListHandler_sp _lambdaListHandler;
 public:
 
   enum { NumParams = sizeof...(ARGS)+1 };
@@ -200,8 +196,6 @@ public:
   virtual const char* describe() const {return "VariadicMethoid";};
 
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
 
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
@@ -317,6 +311,8 @@ class gctools::GCStamp<core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, Func
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, FunctionPtrType, Policies, ArgumentHandler>::TemplatedBase>::StampWtag;
 };
+template <int DispatchOn, typename FunctionPtrType, typename Policies, typename ArgumentHandler>
+struct gctools::Inherits<typename core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, FunctionPtrType, Policies, ArgumentHandler>::TemplatedBase, core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, FunctionPtrType, Policies, ArgumentHandler>> : public std::true_type {};
 
 namespace core {
 
@@ -336,9 +332,8 @@ inline void defmacro(const string &packageName, const string &name, T_mv (*fp)(L
   using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack< 2, clbind::policies<>>::type;
   using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<T_mv(*)(List_sp,T_sp),core::policy::clasp_policy, PureOutValuePack, clbind::DefaultWrapper>;
   FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
-  auto entry = gctools::GC<VariadicType>::allocate(fp,fdesc,nil<T_O>());
+  GlobalEntryPointBase_sp entry = gctools::GC<VariadicType>::allocate(fp,fdesc,nil<T_O>());
   lisp_bytecode_defun( symbol_function_macro, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring);
-  validateFunctionDescription(__FILE__,__LINE__,entry);
 }
  
 template <int N>
@@ -430,7 +425,6 @@ public:
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>());
       lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }
@@ -453,7 +447,6 @@ public:
       FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
       auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>());
       lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,entry);
     }
     return *this;
   }

@@ -1019,7 +1019,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
 void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& specializer,
                                      T_sp name,
                                      Symbol_sp classSymbol,
-                                     Function_sp method_body,
+                                     GlobalEntryPointBase_sp method_body,
                                      size_t TemplateDispatchOn,
                                      bool useTemplateDispatchOn,
                                      const string &raw_arguments,
@@ -1102,7 +1102,7 @@ void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& spe
 void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer,
                                      T_sp name,
                                      Symbol_sp classSymbol,
-                                     Function_sp method_body,
+                                     GlobalEntryPointBase_sp method_body,
                                      size_t TemplateDispatchOn,
                                      bool useTemplateDispatchOn,
                                      const string &raw_arguments,
@@ -1142,7 +1142,7 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
                          int bytecodep,
                          Symbol_sp sym,
                          const string &packageName,
-                         CodeEntryPoint_sp entry,
+                         GlobalEntryPointBase_sp entry,
                          const string& arguments,
                          const string& declares,
                          const string &docstring,
@@ -1195,7 +1195,6 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   func->setf_lambdaList(lambda_list);
   func->setf_docstring(tdocstring);
-  validateFunctionDescription( __FILE__, __LINE__, func );
 }
 
 Symbol_sp lisp_internKeyword(const string &name) {

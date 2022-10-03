@@ -412,7 +412,6 @@ struct memfun_registration : registration {
                                     true,
                                     CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
                                     GatherPureOutValues<Policies, 0>::gather());
-    core::validateFunctionDescription(__FILE__, __LINE__, entry);
   }
   
   virtual std::string name() const { return this->m_name; };
@@ -441,7 +440,6 @@ struct iterator_registration : registration {
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
     lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), symbol, classSymbol, entry, 0, true, m_arguments, m_declares, m_doc_string, true, 1); // one argument required for iterator - the object that has the sequence
-    core::validateFunctionDescription(__FILE__, __LINE__, entry);
   }
   
   virtual std::string name() const { return this->m_name; };
@@ -593,7 +591,6 @@ struct property_registration : registration {
      auto raw_getter = gc::GC<VariadicGetterType>::allocate( entryPoint, get );
      core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>( raw_getter );
      lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1 );
-     core::validateFunctionDescription( __FILE__, __LINE__, getter );
      core::T_sp setf_name = core::Cons_O::createList( cl::_sym_setf, sym );
      using VariadicSetterType = TEMPLATED_FUNCTION_SetterMethoid<reg::null_type, Class, Set>;
      core::GlobalEntryPoint_sp setterEntryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicSetterType>( setf_name ,nil<core::T_O>());
@@ -601,7 +598,6 @@ struct property_registration : registration {
      auto raw_setter = gc::GC<VariadicSetterType>::allocate( setterEntryPoint, set );
      core::BuiltinClosure_sp setter = gc::As<core::BuiltinClosure_sp>( raw_setter );
      lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_doc_string, true, 2);
-     core::validateFunctionDescription(__FILE__,__LINE__,setter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
  }
@@ -643,7 +639,6 @@ struct property_registration : registration {
     core::FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<core::T_O>());
     auto entry = gc::GC<VariadicType>::allocate( get, fdesc, nil<core::T_O>());
     lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, classSymbol, entry, 0, true, m_arguments, m_declares, m_doc_string, true, 1);
-    core::validateFunctionDescription(__FILE__, __LINE__, entry);
   }
   virtual std::string name() const { return this->m_name;}
   virtual std::string kind() const { return "property_registration"; };

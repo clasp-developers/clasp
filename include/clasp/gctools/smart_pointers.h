@@ -223,7 +223,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   inline base_ptr(const base_ptr<Type> &obj) : theObject(obj.theObject){};
 #endif
 
-#ifndef DEBUG_ASSERT_TYPE_CAST
+#ifndef DO_ASSERT_TYPE_CAST
   template <class From>
     inline base_ptr(base_ptr<From> const &rhs) : theObject(reinterpret_cast<Type*>(rhs.theObject)) {};
 #else
@@ -420,7 +420,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
 namespace gctools {
 
-#if (defined(DEBUG_ASSERT_TYPE_CAST) && !defined(SCRAPING))
+#if (defined(DO_ASSERT_TYPE_CAST) && !defined(SCRAPING))
 template <typename T1, typename T2>
 struct Inherits : std::false_type {};
 // This is the only place that we include INIT_CLASSES_INC_H into a build
@@ -446,7 +446,7 @@ struct Inherits : std::true_type {};
 
 template <typename T1, typename T2>
 void TestInheritance() {
-  static_assert(Inherits<T1,T2>::value,"T1 does not inherit from T2");
+  static_assert(Inherits<T1,T2>::value,"Second class MUST inherit from first class - for the expression to compile");
 };
 };
 
@@ -468,7 +468,7 @@ public:
     abort();
   };
 
-#ifndef DEBUG_ASSERT_TYPE_CAST
+#ifndef DO_ASSERT_TYPE_CAST
   template <class From>
   inline smart_ptr(smart_ptr<From> const &rhs) : base_ptr<Type>((Tagged)rhs.raw_()) {};
 #else

@@ -102,7 +102,6 @@ public:
   typedef RT(*FuncType)(ARGS...);
 public:
   FuncType                   fptr;
-  core::LambdaListHandler_sp _lambdaListHandler;
 public:
   static constexpr auto inValueMask = clbind::inValueMaskMuple<sizeof...(ARGS), Policies>();
 
@@ -116,8 +115,6 @@ public:
   virtual const char* describe() const { return "VariadicFunctor"; };
 
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
 
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
@@ -193,11 +190,6 @@ public:
 
   virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-  virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {
-    printf("%s:%d:%s BZZZZZZT We don't use LambdaListHandler_O anymore - don't call this.\n", __FILE__, __LINE__, __FUNCTION__ );
-    abort();
-  }
-
 // Fixup the pointers through snapshot save-load
   void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
@@ -249,6 +241,9 @@ class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrTyp
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, ArgumentHandler >::TemplatedBase>::StampWtag;
 };
+
+template <typename FunctionPtrType, typename Policies, typename PureOutsPack, typename ArgumentHandler>
+struct gctools::Inherits<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, ArgumentHandler>::TemplatedBase, clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, ArgumentHandler> > : public std::true_type {};
 
 namespace clbind {
 

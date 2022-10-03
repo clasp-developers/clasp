@@ -254,7 +254,10 @@ namespace core {
   // Accessors
    CodeEntryPoint_O(FunctionDescription_sp fdesc, T_sp code) : EntryPoint_O(fdesc), _Code(code) {  };
  public:
-   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(("Subclass must implement")); };
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) {
+     printf("%s:%d:%s Subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ );
+     abort();
+   }
    virtual void setLambdaListHandler(LambdaListHandler_sp llh) {SUBIMP();};
    void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
    CL_DEFMETHOD T_sp EntryPoint_code() const { return this->_Code; };
@@ -295,10 +298,13 @@ FORWARD(GlobalEntryPointBase);
        The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
    */
    ClaspXepFunction _EntryPoints;
+   LambdaListHandler_sp _lambdaListHandler; // fixme2022 REMOVE THIS WHEN WE SWITCH TO BYTECODE WRAPPERS
  public:
   // Accessors
    GlobalEntryPointBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code );
    GlobalEntryPointBase_O() {};
+   virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
+
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
  };
@@ -474,8 +480,6 @@ GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescripti
 GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
 LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp ep, void** fptrs);
 
-
-void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
 };
 
