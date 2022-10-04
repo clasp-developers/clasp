@@ -286,31 +286,6 @@ namespace core {
 
 
 
-// this is used in gc_interface.cc expose_function
- template <typename RT, typename... ARGS>
-void wrap_function_LambdaListHandler(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-   maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
-   Symbol_sp symbol = _lisp->intern(name, packageName);
-   printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
-   using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack< sizeof...(ARGS), clbind::policies<>>::type;
-   using VariadicType = clbind::WRAPPER_VariadicFunction<RT(*)(ARGS...),core::policy::clasp_policy, PureOutValuePack, clbind::LambdaListHandlerWrapper >;
-   FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
-   auto entry = gctools::GC<VariadicType>::allocate(fp,fdesc,nil<T_O>());
-   lisp_bytecode_defun( core::symbol_function, clbind::LambdaListHandlerWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
- }
-
- template <typename RT, typename... ARGS>
-void wrap_function_BytecodeWrapper(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-   maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
-   Symbol_sp symbol = _lisp->intern(name, packageName);
-   printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
-   using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack< sizeof...(ARGS), clbind::policies<>>::type;
-   using VariadicType = clbind::WRAPPER_VariadicFunction<RT(*)(ARGS...),core::policy::clasp_policy, PureOutValuePack, clbind::BytecodeWrapper>;
-   FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
-   auto entry = gctools::GC<VariadicType>::allocate(fp,fdesc,nil<T_O>());
-   lisp_bytecode_defun( core::symbol_function, clbind::BytecodeWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
- }
-
  template <typename RT, typename... ARGS>
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
    maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);

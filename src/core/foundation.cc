@@ -1167,6 +1167,9 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer,
   func->setf_sourcePathname(nil<T_O>());
   func->setf_lambdaList(lambda_list); // use this for lambda wrapper
   func->setf_docstring(docStr);
+  List_sp names = core::_sym_STARbuiltin_single_dispatch_method_namesSTAR->symbolValue();
+  names = Cons_O::create(name,names);
+  core::_sym_STARbuiltin_function_namesSTAR->setf_symbolValue(names);
   core__ensure_single_dispatch_method(gfn, name, receiver_class, ldeclares, docStr, func );
 }
 

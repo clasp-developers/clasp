@@ -80,27 +80,6 @@ namespace std {
 class type_info;
 };
 
-namespace clbind {
-
-struct LambdaListHandlerWrapper {
-  enum { BytecodeP = 0 };
-};
-struct BytecodeWrapper {
-  enum { BytecodeP = 1 };
-};
-
-
-#if USE_BYTECODE_WRAPPERS
-// Use bytecode wrappers for all exposed functions
-using DefaultWrapper = BytecodeWrapper;
-using SpecialWrapper = LambdaListHandlerWrapper;
-#else
-// Use LambdaListHandler wrappers for all exposed functions
-using DefaultWrapper = LambdaListHandlerWrapper;
-using SpecialWrapper = BytecodeWrapper;
-#endif
-
-};
 
 //
 // USE_TAGGED_PTR_P0  determines whether a p0 pointer,  the most-derived-pointer is stored
@@ -153,6 +132,30 @@ typedef std::size_t class_id;
 
 /*! Configure architecture dependent types */
 #include <clasp/core/configure_clasp.h>
+
+namespace clbind {
+
+struct LambdaListHandlerWrapper {
+  enum { BytecodeP = 0 };
+};
+struct BytecodeWrapper {
+  enum { BytecodeP = 1 };
+};
+
+
+#if USE_BYTECODE_WRAPPERS==1
+// Use bytecode wrappers for all exposed functions
+using DefaultWrapper = BytecodeWrapper;
+using SpecialWrapper = LambdaListHandlerWrapper;
+#elif USE_BYTECODE_WRAPPERS==0
+// Use LambdaListHandler wrappers for all exposed functions
+using DefaultWrapper = LambdaListHandlerWrapper;
+using SpecialWrapper = BytecodeWrapper;
+#else
+#error "USE_BYTECODE_WRAPPERS must be 0 or 1"
+#endif
+
+};
 
 /*! Use old Conditions system baked into C++
   OLD_CONDITIONS = 1

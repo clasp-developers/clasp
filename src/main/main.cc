@@ -497,10 +497,12 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
-#ifdef USE_BYTECODE_WRAPPERS
+#if USE_BYTECODE_WRAPPERS==1
   printf("%s:%d:%s USE_BYTECODE_WRAPPERS is ON\n", __FILE__, __LINE__, __FUNCTION__);
-#else
+#elif USE_BYTECODE_WRAPPERS==0
   printf("%s:%d:%s USE_BYTECODE_WRAPPERS is UNDEFINED - using LambdaListHandlerWrappers\n", __FILE__, __LINE__, __FUNCTION__);
+#else
+# error "USE_BYTECODE_WRAPPERS must be 0 or 1"
 #endif
   
   if (getenv("CLASP_TIME_EXIT")) {

@@ -173,6 +173,7 @@ SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CorePkg, STARdrag_native_callsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_function_namesSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_single_dispatch_method_namesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_setf_function_namesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_macro_function_namesSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARcompile_file_parallelSTAR);

@@ -186,6 +186,10 @@ CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 
 
 void lambdaListHandler_createBindings(Function_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager *scope, size_t nargs, T_O** args ) {
+#if USE_BYTECODE_WRAPPERS==1
+  printf("%s:%d:%s USE_BYTECODE_WRAPPERS is defined - so we shouldn't be invoking lambdaListHandler_createBindings\n",
+         __FILE__, __LINE__, __FUNCTION__ );
+#endif
 #if 0
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
