@@ -1979,7 +1979,6 @@ struct LoadSymbolCallback : public core::SymbolCallback {
   }
 };
 
-__attribute__((optnone))
 void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   class OrderByAddress {
   public:
