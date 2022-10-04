@@ -1820,46 +1820,47 @@
 (defun layout-xep-function* (xep-group arity the-function ir calling-convention abi)
   (declare (ignore abi))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-      ;; Parse lambda list.
-    (let ((ret (cmp:compile-lambda-list-code (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
-                                             calling-convention
-                                             arity
-                                             :argument-out #'out)))
-      (unless ret
-        (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
-    ;; Import cells.
-    (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
-           (llvm-function-info (find-llvm-function-info ir))
-           (environment-values
-             (loop for import in (environment llvm-function-info)
-                   for i from 0
-                   for offset = (cmp:%closure%.offset-of[n]/t* i)
-                   collect (cmp:irc-t*-load-atomic
-                            (cmp::gen-memref-address closure-vec offset))))
-           (source-pos-info (function-source-pos-info ir)))
-      ;; Tail call the real function.
-      (cmp:with-debug-info-source-position (source-pos-info)
-        (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
-               (arguments
-                 (mapcar (lambda (arg)
-                           (translate-cast (in arg)
-                                           '(:object) (cc-bmir:rtype arg)))
-                         (arguments llvm-function-info)))
-               (c
-                 (cmp:irc-create-call-wft
-                  function-type
-                  (main-function llvm-function-info)
-                  ;; Augment the environment lexicals as a local call would.
-                  (nconc environment-values arguments)))
-               (returni (bir:returni ir))
-               (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
-          #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
-          ;; Box/etc. results of the local call.
-          (if returni
-              (cmp:irc-ret (translate-cast
-                            (local-call-rv->inputs c rrtype)
-                            rrtype :multiple-values))
-              (cmp:irc-unreachable))))))
+    ;; Parse lambda list.
+    (cmp:with-landing-pad nil
+      (let ((ret (cmp:compile-lambda-list-code (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
+                                               calling-convention
+                                               arity
+                                               :argument-out #'out)))
+        (unless ret
+          (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
+      ;; Import cells.
+      (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
+             (llvm-function-info (find-llvm-function-info ir))
+             (environment-values
+               (loop for import in (environment llvm-function-info)
+                     for i from 0
+                     for offset = (cmp:%closure%.offset-of[n]/t* i)
+                     collect (cmp:irc-t*-load-atomic
+                              (cmp::gen-memref-address closure-vec offset))))
+             (source-pos-info (function-source-pos-info ir)))
+        ;; Tail call the real function.
+        (cmp:with-debug-info-source-position (source-pos-info)
+          (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
+                 (arguments
+                   (mapcar (lambda (arg)
+                             (translate-cast (in arg)
+                                             '(:object) (cc-bmir:rtype arg)))
+                           (arguments llvm-function-info)))
+                 (c
+                   (cmp:irc-create-call-wft
+                    function-type
+                    (main-function llvm-function-info)
+                    ;; Augment the environment lexicals as a local call would.
+                    (nconc environment-values arguments)))
+                 (returni (bir:returni ir))
+                 (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
+            #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
+            ;; Box/etc. results of the local call.
+            (if returni
+                (cmp:irc-ret (translate-cast
+                              (local-call-rv->inputs c rrtype)
+                              rrtype :multiple-values))
+                (cmp:irc-unreachable)))))))
   the-function)
 
 (defun layout-main-function* (the-function ir

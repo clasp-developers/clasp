@@ -37,19 +37,14 @@
   #-(and staging bytecode) nil)
 |#
 
-(defvar *avoid-compiling* t)
+(defvar *avoid-compiling* nil)
 
 (defun emf-maybe-compile (form)
-  (if *avoid-compiling*
+  (if (or *avoid-compiling* (not cmp:*cleavir-compile-hook*))
       (let ((core:*use-interpreter-for-eval* t))
         (coerce form 'function))
-      (let ((*avoid-compiling* t)
-            ;; Cleavir itself uses generic functions, and we could therefore
-            ;; end up here recursively, which ends quite badly.
-            ;; So fall back to the bclasp compiler which does not use gfs.
-            (cmp:*cleavir-compile-hook* nil))
-        #+bytecompile(cmp::bytecompile form)
-        #-bytecompile(compile nil form))))
+      (let ((*avoid-compiling* t))
+        (compile nil form))))
 
 (defun emf-default (form &optional (arg-info '(t)))
   (let ((restp (car arg-info)) (vars (cdr arg-info)))
