@@ -497,6 +497,12 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
+#ifdef USE_BYTECODE_WRAPPERS
+  printf("%s:%d:%s USE_BYTECODE_WRAPPERS is ON\n", __FILE__, __LINE__, __FUNCTION__);
+#else
+  printf("%s:%d:%s USE_BYTECODE_WRAPPERS is UNDEFINED - using LambdaListHandlerWrappers\n", __FILE__, __LINE__, __FUNCTION__);
+#endif
+  
   if (getenv("CLASP_TIME_EXIT")) {
     atexit(core::last_exit);
   }
