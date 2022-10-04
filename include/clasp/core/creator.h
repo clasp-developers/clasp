@@ -91,17 +91,17 @@ namespace core {
 
 
   template <class _W_>
-    class TEMPLATED_FUNCTION_BuiltInObjectCreator : public core::Creator_O {
+    class WRAPPER_BuiltInObjectCreator : public core::Creator_O {
   public:
     typedef core::Creator_O TemplatedBase;
   public:
-    size_t templatedSizeof() const { return sizeof(TEMPLATED_FUNCTION_BuiltInObjectCreator<_W_>); };
+    size_t templatedSizeof() const { return sizeof(WRAPPER_BuiltInObjectCreator<_W_>); };
     virtual core::T_sp creator_allocate() {
       auto  obj = gctools::GC<_W_>::allocate_with_default_constructor();
       return obj;
     }
     virtual void searcher(){};
-    TEMPLATED_FUNCTION_BuiltInObjectCreator(core::GlobalEntryPoint_sp fdesc) : core::Creator_O(fdesc) {};
+    WRAPPER_BuiltInObjectCreator(core::GlobalEntryPoint_sp fdesc) : core::Creator_O(fdesc) {};
   };
 
 
@@ -109,12 +109,12 @@ namespace core {
 };
 
 template <typename T>
-class gctools::GCStamp<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<T>> {
+class gctools::GCStamp<core::WRAPPER_BuiltInObjectCreator<T>> {
  public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_BuiltInObjectCreator<T>::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::WRAPPER_BuiltInObjectCreator<T>::TemplatedBase>::StampWtag;
 };
 template <typename T>
-struct gctools::GCInfo<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<T>> {
+struct gctools::GCInfo<core::WRAPPER_BuiltInObjectCreator<T>> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

@@ -1111,8 +1111,63 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer,
                                      bool autoExport,
                                      int number_of_required_arguments,
                                      const std::set<int> pureOutIndices) {
-  printf("%s:%d:%s What do I do here\n", __FILE__, __LINE__, __FUNCTION__ );
-  abort();
+  string arguments = fix_method_lambda(classSymbol,raw_arguments);
+  Instance_sp receiver_class = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
+  Symbol_sp className = receiver_class->_className();
+  List_sp ldeclares = lisp_parse_declares(gc::As<Package_sp>(className->getPackage())->getName(), declares);
+  // NOTE: We are compiling the llhandler in the package of the class - not the package of the
+  // method name  -- sometimes the method name will belong to another class (ie: core:--init--)
+  List_sp lambda_list;
+  size_t single_dispatch_argument_index;
+  if (useTemplateDispatchOn) single_dispatch_argument_index = TemplateDispatchOn;
+  if (arguments == "" && number_of_required_arguments >= 0) {
+    lambda_list = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments, number_of_required_arguments, pureOutIndices );
+  } else if (arguments != "") {
+    List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments);
+    T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw, true);
+    T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
+    lambda_list = coerce_to_list(tllproc);
+    MultipleValues& mvn = core::lisp_multipleValues();
+    Symbol_sp sd_symbol = gc::As<Symbol_sp>(mvn.valueGet(1,mv_llprocessed.number_of_values()));
+    Symbol_sp specializer_symbol = gc::As<Symbol_sp>(mvn.valueGet(2,mv_llprocessed.number_of_values()));
+    T_sp dispatchOn = mvn.valueGet(3,mv_llprocessed.number_of_values());
+    if (dispatchOn.unsafe_fixnum() !=0) {
+      printf("%s:%d:%s bad dispatchOn lambda_list = %s sd_symbol = %s  specializer_symbol = %s dispatchOn = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lambda_list).c_str(), _rep_(sd_symbol).c_str(), _rep_(specializer_symbol).c_str(), _rep_(dispatchOn).c_str()  );
+      abort();
+    }
+    single_dispatch_argument_index = dispatchOn.unsafe_fixnum();
+  }
+  if (TemplateDispatchOn != single_dispatch_argument_index) {
+    SIMPLE_ERROR(("Mismatch between single_dispatch_argument_index[%d] from lambda_list and TemplateDispatchOn[%d] for class %s  method: %s  lambda_list: %s") , single_dispatch_argument_index , TemplateDispatchOn , _rep_(classSymbol) , _rep_(name) , arguments);
+  }
+  LOG("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]" , receiver_class->instanceClassName() , (receiver_class.get()) , sym->fullName() , arguments , autoExport);
+  
+  T_sp docStr = nil<T_O>();
+  if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
+  SingleDispatchGenericFunction_sp gfn = core__ensure_single_dispatch_generic_function(name, autoExport,single_dispatch_argument_index, lambda_list ); // Ensure the single dispatch generic function exists
+  //
+  // The following is where we setup the method_body - a Function_O that implements the method is given its LambdaListHandler_O
+  //
+  //
+  //
+  bool trivial_wrapper;
+  List_sp vars = lisp_lexical_variable_names( lambda_list, trivial_wrapper );
+  Function_sp func;
+  if (trivial_wrapper) {
+    func = method_body;
+  } else {
+    List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( method_body, vars ));
+    List_sp declare_form = Cons_O::createList( cl::_sym_declare, Cons_O::createList (core::_sym_lambdaName, name ));
+    //printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
+    List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,declare_form, funcall_form);
+    //printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
+    func = comp::bytecompile( form,comp::Lexenv_O::make_top_level());
+  }
+
+  func->setf_sourcePathname(nil<T_O>());
+  func->setf_lambdaList(lambda_list); // use this for lambda wrapper
+  func->setf_docstring(docStr);
+  core__ensure_single_dispatch_method(gfn, name, receiver_class, ldeclares, docStr, func );
 }
 
 void lisp_throwIfBuiltInClassesNotInitialized() {
@@ -1160,14 +1215,14 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
     func = entry;
     gc::As<CodeEntryPoint_sp>(entry)->setLambdaListHandler(llh);
   } else {
-    List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ));
-    List_sp declare_form = Cons_O::createList( cl::_sym_declare, Cons_O::createList (core::_sym_lambdaName, sym ));
-    //printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
-    List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,declare_form, funcall_form);
-    //printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
     if (trivial_wrapper) {
       func = entry;
     } else {
+      List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ));
+      List_sp declare_form = Cons_O::createList( cl::_sym_declare, Cons_O::createList (core::_sym_lambdaName, sym ));
+    //printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
+      List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,declare_form, funcall_form);
+    //printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
       func = comp::bytecompile( form,comp::Lexenv_O::make_top_level());
 //    printf("%s:%d:%s compiled a non-trivial wrapper for %s %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sym).c_str(), _rep_(lambda_list).c_str() );
     }

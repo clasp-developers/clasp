@@ -42,13 +42,13 @@ struct BeginReturnType<T, RT (T::*)()> {
 };
 
 template <typename Pols, typename OT, typename Begin, typename End >
-class IteratorMethoid : public core::GlobalEntryPointBase_O {
+class WRAPPER_Iterator : public core::GlobalEntryPointBase_O {
 public:
-  typedef IteratorMethoid MyType;
+  typedef WRAPPER_Iterator MyType;
   typedef core::GlobalEntryPointBase_O TemplatedBase;
 
 public:
-  IteratorMethoid(core::FunctionDescription_sp fdesc, core::T_sp code, Begin begin, End end) : core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), _begin(begin), _end(end){};
+  WRAPPER_Iterator(core::FunctionDescription_sp fdesc, core::T_sp code, Begin begin, End end) : core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), _begin(begin), _end(end){};
 
 private:
   typedef typename BeginReturnType<OT, Begin>::type IteratorType;
@@ -68,7 +68,7 @@ public:
 public:
 
   static LCC_RETURN LISP_CALLING_CONVENTION() {
-    IteratorMethoid* closure = gctools::untag_general<IteratorMethoid*>((IteratorMethoid*)lcc_closure);
+    WRAPPER_Iterator* closure = gctools::untag_general<WRAPPER_Iterator*>((WRAPPER_Iterator*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     if (lcc_nargs != 1)
       core::wrongNumberOfArguments(core::T_sp((gctools::Tagged)lcc_closure),lcc_nargs, 1);
@@ -108,12 +108,12 @@ public:
 };
 
 template <typename Policies, typename OT, typename Begin, typename End >
-class gctools::GCStamp<clbind::IteratorMethoid<Policies, OT, Begin, End >> {
+class gctools::GCStamp<clbind::WRAPPER_Iterator<Policies, OT, Begin, End >> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::IteratorMethoid< Policies, OT, Begin, End >::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::WRAPPER_Iterator< Policies, OT, Begin, End >::TemplatedBase>::StampWtag;
 };
 
 template <typename Policies, typename OT, typename Begin, typename End >
-struct gctools::Inherits<typename clbind::IteratorMethoid<Policies, OT, Begin, End >::TemplatedBase, clbind::IteratorMethoid<Policies, OT, Begin, End >> : public std::true_type {};
+struct gctools::Inherits<typename clbind::WRAPPER_Iterator<Policies, OT, Begin, End >::TemplatedBase, clbind::WRAPPER_Iterator<Policies, OT, Begin, End >> : public std::true_type {};
 
 #endif

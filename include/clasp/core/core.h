@@ -90,7 +90,7 @@ struct BytecodeWrapper {
 };
 
 
-#if 0
+#if USE_BYTECODE_WRAPPERS
 // Use bytecode wrappers for all exposed functions
 using DefaultWrapper = BytecodeWrapper;
 using SpecialWrapper = LambdaListHandlerWrapper;

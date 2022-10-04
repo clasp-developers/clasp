@@ -89,15 +89,15 @@ class my_tuple : public std::tuple<Types...> {
 };
 
 namespace clbind {
-template <typename FunctionPtrType, typename Policies, typename PureOuts, typename ArgumentHandling>
-class TEMPLATED_FUNCTION_VariadicFunctor;
+template <typename FunctionPtrType, typename Policies, typename PureOuts, typename ArgumentWrapper>
+class WRAPPER_VariadicFunction;
 };
 
 namespace clbind {
-template <typename RT, typename...ARGS, typename Policies, typename...PUREOUTS>
-class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, LambdaListHandlerWrapper > : public core::GlobalEntryPointBase_O {
+template <typename RT, typename...ARGS, typename Policies, typename...PUREOUTS, typename ArgumentWrapper>
+class WRAPPER_VariadicFunction< RT(*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, ArgumentWrapper > : public core::GlobalEntryPointBase_O {
 public:
-  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, LambdaListHandlerWrapper > MyType;
+  typedef WRAPPER_VariadicFunction < RT(*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, ArgumentWrapper > MyType;
   typedef core::GlobalEntryPointBase_O TemplatedBase;
   typedef RT(*FuncType)(ARGS...);
 public:
@@ -107,7 +107,7 @@ public:
 
   enum { NumParams = sizeof...(ARGS)};
 
-  TEMPLATED_FUNCTION_VariadicFunctor(FuncType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
+  WRAPPER_VariadicFunction(FuncType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
       : fptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
   };
@@ -121,7 +121,7 @@ public:
     this->fixupOneCodePointer( fixup, (void**)&this->fptr );
   };
 
-  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
+  static inline LCC_RETURN handler_entry_point_n(const LambdaListHandlerWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -134,69 +134,8 @@ public:
     std::tuple<translate::from_object<ARGS,PUREOUTS>...> all_args(arg_tuple<0,Policies,ARGS...>::goFrame(frame->arguments()));
     return apply_and_return<Policies,RT,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
   }
-  static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
-  }
 
-};
-}; // namespace clbind
-
-
-//
-//
-// External BytecodeWrapper wrapper, no LambdaListHandler
-//
-//
-namespace clbind {
-template <typename RT, typename...ARGS, typename Policies, typename...PUREOUTS>
-class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, BytecodeWrapper > : public core::GlobalEntryPointBase_O {
-public:
-  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, BytecodeWrapper > MyType;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
-  typedef RT(*FuncType)(ARGS...);
-public:
-  FuncType                   fptr;
-public:
-  static constexpr auto inValueMask = clbind::inValueMaskMuple<sizeof...(ARGS), Policies>();
-
-  enum { NumParams = sizeof...(ARGS)};
-
-  TEMPLATED_FUNCTION_VariadicFunctor(FuncType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : fptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
-    this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
-  };
-
-  virtual const char* describe() const { return "VariadicFunctor"; };
-
-  virtual size_t templatedSizeof() const { return sizeof(*this);};
-
-// Fixup the pointers through snapshot save-load
-  void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-    this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
-    this->fixupOneCodePointer( fixup, (void**)&this->fptr );
-  };
-
-  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
+  static inline LCC_RETURN handler_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -204,6 +143,11 @@ public:
     std::tuple<translate::from_object<ARGS,PUREOUTS>...> all_args(arg_tuple<0,Policies,ARGS...>::goFrame(lcc_args));
     return apply_and_return<Policies,RT,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
   }
+
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args ) {
+    return handler_entry_point_n(ArgumentWrapper(),lcc_closure,lcc_nargs,lcc_args);
+  }
+  
   static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
   }
@@ -232,18 +176,15 @@ public:
 }; // namespace clbind
 
 
-namespace clbind {
-//#include <clasp/clbind/clbind_functoids.h>
-};
 
-template <typename FunctionPtrType, typename Policies, typename PureOutsPack, typename ArgumentHandler>
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, ArgumentHandler> > {
+template <typename FunctionPtrType, typename Policies, typename PureOutsPack, typename ArgumentWrapper>
+class gctools::GCStamp<clbind::WRAPPER_VariadicFunction<FunctionPtrType, Policies, PureOutsPack, ArgumentWrapper> > {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, ArgumentHandler >::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::WRAPPER_VariadicFunction<FunctionPtrType, Policies, PureOutsPack, ArgumentWrapper >::TemplatedBase>::StampWtag;
 };
 
-template <typename FunctionPtrType, typename Policies, typename PureOutsPack, typename ArgumentHandler>
-struct gctools::Inherits<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, ArgumentHandler>::TemplatedBase, clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies, PureOutsPack, ArgumentHandler> > : public std::true_type {};
+template <typename FunctionPtrType, typename Policies, typename PureOutsPack, typename ArgumentWrapper>
+struct gctools::Inherits<typename clbind::WRAPPER_VariadicFunction<FunctionPtrType, Policies, PureOutsPack, ArgumentWrapper>::TemplatedBase, clbind::WRAPPER_VariadicFunction<FunctionPtrType, Policies, PureOutsPack, ArgumentWrapper> > : public std::true_type {};
 
 namespace clbind {
 
@@ -275,7 +216,7 @@ struct function_registration<FunctionPointerType,policies<Policies...>,PureOutsP
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp symbol = core::lisp_intern(m_name, core::lisp_currentPackageName());
     using inValuePack = clbind::inValueTrueFalseMaskPack<FunctionArgCount<FunctionPointerType>::value,policies<Policies...>>;
-    using VariadicType = TEMPLATED_FUNCTION_VariadicFunctor<FunctionPointerType, policies<Policies...>, typename inValuePack::type, clbind::DefaultWrapper >;
+    using VariadicType = WRAPPER_VariadicFunction<FunctionPointerType, policies<Policies...>, typename inValuePack::type, clbind::DefaultWrapper >;
     core::FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<core::T_O>());
     auto entry = gctools::GC<VariadicType>::allocate(this->functionPtr,fdesc,nil<core::T_O>());
     core::lisp_bytecode_defun( core::symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, core::lisp_currentPackageName(), entry, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<policies<Policies...>, -1>::gather());

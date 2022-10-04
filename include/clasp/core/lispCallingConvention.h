@@ -57,6 +57,16 @@ namespace gctools {
 #define LISP_ENTRY_4() LCC_RETURN entry_point_4(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3 )
 #define LISP_ENTRY_5() LCC_RETURN entry_point_5(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3, core::T_O* lcc_farg4 )
 
+template <typename WRAPPER, typename...ARGS>
+inline LCC_RETURN arity_entry_point(core::T_O* lcc_closure, ARGS... lcc_arg)
+{
+  if constexpr (WRAPPER::NumParams == sizeof...(ARGS)) {
+      core::T_O* args[sizeof...(ARGS)] = {lcc_arg...};
+      return WRAPPER::entry_point_n(lcc_closure, lcc_arg... );
+    }
+  cc_wrong_number_of_arguments( lcc_closure, sizeof...(ARGS), WRAPPER::NumParams, WRAPPER::NumParams );
+}
+
 
 extern "C" {
 

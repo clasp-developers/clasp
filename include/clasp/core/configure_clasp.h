@@ -28,9 +28,13 @@ THE SOFTWARE.
 #define __CORE_CONFIG_H__
 
 
+
 // ----------------------------------------------------------------------------
 // Set system wide debug flags here
 // ----------------------------------------------------------------------------
+
+#define USE_BYTECODE_WRAPPERS 1
+
 #if 0
 //// DEBUG_RUNTIME defined and type errors print more info
 //#define DEBUG_RUNTIME 1

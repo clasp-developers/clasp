@@ -1,8 +1,8 @@
 template <typename GetterPolicies, typename OT, typename MemberType>
-class TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*) >
+class WRAPPER_Getter<GetterPolicies, OT, MemberType *const(OT::*) >
   : public core::GlobalEntryPointBase_O {
 public:
-  typedef TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies,OT,MemberType *const(OT::*) > MyType;
+  typedef WRAPPER_Getter<GetterPolicies,OT,MemberType *const(OT::*) > MyType;
   typedef core::GlobalEntryPointBase_O TemplatedBase;
   typedef clbind::Wrapper<MemberType,MemberType*> WrapperType;
   typedef MemberType* const(OT::*VariablePtrType);
@@ -11,7 +11,7 @@ public:
   VariablePtrType mptr;
 
 public:
-  TEMPLATED_FUNCTION_GetterMethoid(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
+  WRAPPER_Getter(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
       : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code) {
     trapGetterMethoid();
   };

@@ -1,8 +1,8 @@
 template <typename SetterPolicies, typename OT, typename MemberType>
-class TEMPLATED_FUNCTION_SetterMethoid<SetterPolicies, OT, MemberType *const(OT::*)>
+class WRAPPER_Setter<SetterPolicies, OT, MemberType *const(OT::*)>
   : public core::GlobalEntryPointBase_O {
 public:
-  typedef TEMPLATED_FUNCTION_SetterMethoid<SetterPolicies,OT,MemberType *const(OT::*)> MyType;
+  typedef WRAPPER_Setter<SetterPolicies,OT,MemberType *const(OT::*)> MyType;
   typedef core::GlobalEntryPointBase_O TemplatedBase;
   typedef clbind::Wrapper<MemberType,MemberType*> WrapperType;
   typedef MemberType* const(OT::*VariablePtrType);
@@ -11,7 +11,7 @@ private:
   VariablePtrType mptr;
 
 public:
-  TEMPLATED_FUNCTION_SetterMethoid(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code )
+  WRAPPER_Setter(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code )
       : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code) {
   };
 

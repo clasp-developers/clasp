@@ -51,32 +51,32 @@ struct memberpointertraits<M C::*> {
 namespace clbind {
 
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
-class TEMPLATED_FUNCTION_GetterMethoid;
+class WRAPPER_Getter;
 #include <clasp/clbind/getterTop.h>
 #include <clasp/clbind/getterBot.h>
 
 template <typename SetterPolicies, typename OT, typename VariablePtrType>
-class TEMPLATED_FUNCTION_SetterMethoid;
+class WRAPPER_Setter;
 #include <clasp/clbind/setterTop.h>
 #include <clasp/clbind/setterBot.h>
 };
 
 template <typename Policies, typename OT, typename VariablePtrType >
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_GetterMethoid<Policies, OT, VariablePtrType >> {
+class gctools::GCStamp<clbind::WRAPPER_Getter<Policies, OT, VariablePtrType >> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<Policies, OT, VariablePtrType >::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::WRAPPER_Getter<Policies, OT, VariablePtrType >::TemplatedBase>::StampWtag;
 };
 
 template <typename Policies, typename OT, typename VariablePtrType >
-struct gctools::Inherits<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<Policies, OT, VariablePtrType >::TemplatedBase, clbind::TEMPLATED_FUNCTION_GetterMethoid<Policies, OT, VariablePtrType >> : public std::true_type {};
+struct gctools::Inherits<typename clbind::WRAPPER_Getter<Policies, OT, VariablePtrType >::TemplatedBase, clbind::WRAPPER_Getter<Policies, OT, VariablePtrType >> : public std::true_type {};
 
 template <typename Policies, typename OT, typename VariablePtrType>
-class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_SetterMethoid<Policies, OT, VariablePtrType>> {
+class gctools::GCStamp<clbind::WRAPPER_Setter<Policies, OT, VariablePtrType>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_SetterMethoid<Policies, OT, VariablePtrType>::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::WRAPPER_Setter<Policies, OT, VariablePtrType>::TemplatedBase>::StampWtag;
 };
 
 template <typename Policies, typename OT, typename VariablePtrType >
-struct gctools::Inherits<typename clbind::TEMPLATED_FUNCTION_SetterMethoid<Policies, OT, VariablePtrType >::TemplatedBase, clbind::TEMPLATED_FUNCTION_SetterMethoid<Policies, OT, VariablePtrType >> : public std::true_type {};
+struct gctools::Inherits<typename clbind::WRAPPER_Setter<Policies, OT, VariablePtrType >::TemplatedBase, clbind::WRAPPER_Setter<Policies, OT, VariablePtrType >> : public std::true_type {};
 
 #endif

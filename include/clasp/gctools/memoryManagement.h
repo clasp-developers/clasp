@@ -875,13 +875,6 @@ void FinishAssigningBuiltinStamps();
 
 };
 
-
-
-
-namespace core {
-  class BuiltinClosure_O;
-};
-
 namespace gctools {
 #ifdef DEBUG_GUARD_VALIDATE
 #define EXHAUSTIVE_VALIDATE(ptr) (ptr)->quick_validate();

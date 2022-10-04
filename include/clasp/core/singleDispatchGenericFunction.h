@@ -88,11 +88,13 @@ public:
     while (classPrecedenceList.consp()) {
       Instance_sp class_ = gc::As<Instance_sp>(CONS_CAR(classPrecedenceList));
       classPrecedenceList = CONS_CDR(classPrecedenceList);
+//      printf("%s:%d:%s class_ = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(class_).c_str());
       List_sp curMethod = methods;
       while (curMethod.consp()) {
         SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>(CONS_CAR(curMethod));
         curMethod = CONS_CDR(curMethod);
         Instance_sp methodClass = method->receiver_class();
+//        printf("%s:%d:%s methodClass = %s   class_ = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(methodClass).c_str(), _rep_(class_).c_str());
         if (methodClass == class_) {
           // Update the call-history using CAS
           T_sp expected;

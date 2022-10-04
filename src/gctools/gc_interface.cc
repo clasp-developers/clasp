@@ -918,7 +918,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_class_kind(core::InstanceCreator_O);
      Init_class_kind(core::StandardClassCreator_O);
      Init_class_kind(core::SpecialForm_O);
-     Init_class_kind(core::TranslationFunctor_O);
+     Init_class_kind(core::WRAPPER_Translator_O);
      Init_class_kind(core::SingleDispatchGenericFunction_O);
      Init_class_kind(core::ImmobileObject_O);
      Init_class_kind(core::WeakPointer_O);

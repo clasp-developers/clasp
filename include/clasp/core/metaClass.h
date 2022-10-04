@@ -57,24 +57,24 @@ namespace core {
 #define REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS 24
 #define REF_CLASS_NUMBER_OF_SLOTS_IN_DERIVABLE_CXX_CLASS REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS
   
-  // Specialize TEMPLATED_FUNCTION_BuiltInObjectCreator for DummyStandardInstance_O
+  // Specialize WRAPPER_BuiltInObjectCreator for DummyStandardInstance_O
   template <>
-    class TEMPLATED_FUNCTION_BuiltInObjectCreator<Instance_O> : public core::Creator_O {
+    class WRAPPER_BuiltInObjectCreator<Instance_O> : public core::Creator_O {
   public:
     typedef core::Creator_O TemplatedBase;
   public:
   public:
-    size_t templatedSizeof() const { return sizeof(TEMPLATED_FUNCTION_BuiltInObjectCreator<Instance_O>); };
+    size_t templatedSizeof() const { return sizeof(WRAPPER_BuiltInObjectCreator<Instance_O>); };
     bool creates_classes() const { return true; };
     virtual core::T_sp creator_allocate() {
-      // TEMPLATED_FUNCTION_BuiltInObjectCreator<Instance_O> uses a different allocation method
+      // WRAPPER_BuiltInObjectCreator<Instance_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new Class
       auto  obj = gctools::GC<Instance_O>::allocate( lisp_standard_class() /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS */);
 //      printf("%s:%d  creating class\n", __FILE__, __LINE__ );
       return obj;
     }
     virtual void searcher(){};
-    TEMPLATED_FUNCTION_BuiltInObjectCreator<Instance_O>(GlobalEntryPoint_sp fdesc) : Creator_O(fdesc) {};
+    WRAPPER_BuiltInObjectCreator<Instance_O>(GlobalEntryPoint_sp fdesc) : Creator_O(fdesc) {};
   };
 };
 
