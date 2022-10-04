@@ -1201,6 +1201,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdrag_native_callsSTAR->defparameter(nil<core::T_O>());
 #endif
   _sym_STARbuiltin_function_namesSTAR->defparameter(nil<core::T_O>());
+  _sym_STARbuiltin_single_dispatch_method_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_macro_function_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_setf_function_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(nil<core::T_O>());
