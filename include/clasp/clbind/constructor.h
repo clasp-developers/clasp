@@ -204,6 +204,7 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
     MAKE_STACK_FRAME(frame,2);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
@@ -221,6 +222,7 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
     std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::goFrame(lcc_args);
     return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(std::move(all_args));
   }

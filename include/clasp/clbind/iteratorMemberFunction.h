@@ -70,6 +70,7 @@ public:
   static LCC_RETURN LISP_CALLING_CONVENTION() {
     WRAPPER_Iterator* closure = gctools::untag_general<WRAPPER_Iterator*>((WRAPPER_Iterator*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
     if (lcc_nargs != 1)
       core::wrongNumberOfArguments(core::T_sp((gctools::Tagged)lcc_closure),lcc_nargs, 1);
     core::T_sp arg0((gctools::Tagged)lcc_args[0]);

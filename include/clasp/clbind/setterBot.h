@@ -26,6 +26,7 @@ public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
     core::T_sp arg0((gctools::Tagged)lcc_args[0]);
     core::T_sp arg1((gctools::Tagged)lcc_args[1]);
     OT *objPtr = gc::As<core::WrappedPointer_sp>(arg1)->cast<OT>();

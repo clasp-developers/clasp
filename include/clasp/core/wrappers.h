@@ -136,6 +136,7 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
     MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
@@ -150,6 +151,7 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
     OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::goFrame(lcc_args);
     return clbind::method_apply_and_return<RT,core::policy::clasp_policy,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),std::move(oto),std::move(all_args));
@@ -220,6 +222,7 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
     MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
@@ -234,6 +237,7 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
     OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::goFrame(lcc_args);
     return clbind::method_apply_and_return<RT,core::policy::clasp_policy,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),std::move(oto),std::move(all_args));

@@ -135,6 +135,7 @@ namespace core {
     static inline LCC_RETURN LISP_CALLING_CONVENTION() {
       SETUP_CLOSURE(FuncallableInstance_O,closure);
       INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      DO_DRAG_CXX_CALLS();
       // We need to be sure to load the GFUN_DISPATCHER only once.
       // We used to load it twice, which caused a race condition in that other threads
       // could call setFuncallableInstanceFunction between the loads, meaning we called
