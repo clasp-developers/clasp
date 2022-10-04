@@ -10,20 +10,12 @@
 (defun print-asdf-stub (output-stream host &rest systems)
   "Print the commands to initialize ASDF and load required systems."
   (format output-stream "#-asdf (require :asdf)~%")
-  (pprint `(asdf:initialize-source-registry
-             (list :source-registry
-                (list :tree (merge-pathnames ,(root :code) (uiop:getcwd)))
-                :inherit-configuration))
-           output-stream)
-  (pprint `(asdf:initialize-output-translations
-             (list :output-translations
-                (list t (list (merge-pathnames ,(if host
-                                                    (make-pathname :directory '(:relative "host-fasl"))
-                                                    (root :variant-lib))
-                                               (uiop:getcwd))
-                              :implementation))
-                :inherit-configuration))
-           output-stream)
+  (when host
+    (pprint `(asdf:initialize-source-registry
+               (list :source-registry
+                     (list :tree (merge-pathnames ,(root :code) (uiop:getcwd)))
+                     :inherit-configuration))
+            output-stream))
   (loop for system in systems
         do (pprint `(asdf:load-system ,system) output-stream)))
 
