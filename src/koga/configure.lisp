@@ -598,6 +598,8 @@ is not compatible with snapshots.")
                                                          :generate-headers
                                                          (list (make-source #P"generate-headers.lisp" :variant)
                                                                :scraper)
+                                                         :compile-systems
+                                                         (list (make-source #P"compile-systems.lisp" :build))
                                                          :update-unicode
                                                          (list (make-source #P"update-unicode.lisp" :build))
                                                          :load-clasp
@@ -610,8 +612,10 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"compile-module.lisp" :build))
                                                          :link-fasl
                                                          (list (make-source #P"link-fasl.lisp" :build))
-                                                         :static-analyzer
-                                                         (list (make-source #P"static-analyzer.lisp" :variant))
+                                                         :analyze-file
+                                                         (list (make-source #P"analyze-file.lisp" :build))
+                                                         :analyze-generate
+                                                         (list (make-source #P"analyze-generate.lisp" :build))
                                                          :snapshot
                                                          (list (make-source #P"snapshot.lisp" :variant))
                                                          :clasprc
@@ -624,7 +628,7 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"build.ninja" :build)
                                                                :bitcode :iclasp :cclasp :modules :eclasp
                                                                :eclasp-link :sclasp :install-bin :install-code
-                                                               :clasp :regression-tests :static-analyzer
+                                                               :clasp :regression-tests :analyzer :analyze
                                                                :tags :install-extension-code)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)

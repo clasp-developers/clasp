@@ -29,6 +29,17 @@
   (print-asdf-stub output-stream t :clasp-scraper)
   (pprint '(apply #'uiop:symbol-call "CSCRAPE" "GENERATE-SIF" (uiop:command-line-arguments)) output-stream))
 
+(defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)
+  (declare (ignore configuration))
+  (format output-stream "#-asdf (require :asdf)~%
+(loop for system across core:*command-line-arguments*
+      for index from 0
+      unless (zerop index)
+        do (asdf:compile-system system))
+(with-open-file (stream (elt core:*command-line-arguments* 0)
+                 :direction :output :if-exists :supersede :if-does-not-exist :create)
+  (pprint core:*command-line-arguments* stream))"))
+
 (defmethod print-variant-target-sources
     (configuration (name (eql :generate-headers)) output-stream
      (target (eql :scraper)) sources
@@ -100,18 +111,21 @@
                 :system (core:command-line-paths 1))
 (core:quit)" output-stream))
 
-;;; TODO The parallel analyzer is disabled below. Enable it once it works.
-(defmethod print-prologue (configuration (name (eql :static-analyzer)) output-stream)
+(defmethod print-prologue (configuration (name (eql :analyze-generate)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream nil :clasp-analyzer)
-  (let ((log-path (resolve-source (make-source "analyzer-logs/" :variant))))
-    (format output-stream "
-(setq core::*number-of-jobs* ~a)
-(uiop:delete-directory-tree ~s :validate t :if-does-not-exist :ignore)
-(clasp-analyzer:search-and-generate-code (pathname (elt core:*command-line-arguments* 0))
-                                         (pathname (elt core:*command-line-arguments* 1))
-                                         :log-path ~s :parallel ~s)"
-            (jobs configuration) log-path log-path nil #+(or)(parallel-build configuration))))
+  (format output-stream "
+(clasp-analyzer:merge-and-generate-code (pathname (elt core:*command-line-arguments* 0))
+                                        (core::command-line-paths 1))"))
+
+(defmethod print-prologue (configuration (name (eql :analyze-file)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream nil :clasp-analyzer)
+  (format output-stream "
+(clasp-analyzer:search-source-file (pathname (elt core:*command-line-arguments* 0))
+                                   (elt core:*command-line-arguments* 1)
+                                   (pathname (elt core:*command-line-arguments* 2))
+                                   (pathname (elt core:*command-line-arguments* 3)))"))
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
   (when (jupyter configuration)

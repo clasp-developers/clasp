@@ -56,11 +56,20 @@
                     :command "$lisp --script ${variant-path}generate-headers.lisp $precise $in"
                     :restat 1
                     :description "Creating headers from sif files")
-  (ninja:write-rule output-stream :static-analyzer
-                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load ${variant-path}static-analyzer.lisp -- $sif $in"
+  (ninja:write-rule output-stream :compile-systems
+                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load compile-systems.lisp -- $out $systems"
+                    :description "Compiling systems: $systems"
+                    :restat 1
+                    :pool "console")
+  (ninja:write-rule output-stream :analyze-generate
+                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load analyze-generate.lisp -- $out $in"
                     :description "Analyzing clasp"
                     :restat 1
                     :pool "console")
+  (ninja:write-rule output-stream :analyze-file
+                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load analyze-file.lisp -- $out $in $log $database"
+                    :depfile "$out.d"
+                    :description "Analyzing $in")
   (ninja:write-rule output-stream :ar
                     :command "$ar rcsu $out $in"
                     :description "Creating archive $out")
@@ -740,22 +749,54 @@
                          :outputs (list "cando-test")))))
 
 (defmethod print-variant-target-sources
-    (configuration (name (eql :ninja)) output-stream (target (eql :static-analyzer)) sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :analyzer)) sources
      &key &allow-other-keys)
+  (ninja:write-build output-stream :compile-systems
+                     :clasp (make-source "iclasp" :variant)
+                     :inputs sources
+                     :implicit-inputs (list (build-name "cclasp"))
+                     :systems "clasp-analyzer"
+                     :outputs (list (make-source "analyzer.stub" :variant-lib))))                                     
+
+(defmethod print-variant-target-source
+    (configuration (name (eql :ninja)) output-stream (target (eql :analyze))
+     (source c-source)
+     &aux (output (make-source-output source :type "sa"))
+          (database (make-source (format nil "preciseprep~:[~;-d~]/compile_commands.json"
+                                         *variant-debug*)
+                                 :build)))
+  (declare (ignore configuration name output-stream target))
   (unless (or *variant-prep* *variant-precise*)
-    (ninja:write-build output-stream :static-analyzer
+    (ninja:write-build output-stream :analyze-file
                        :clasp (make-source "iclasp" :variant)
-                       :variant-path *variant-path*
-                       :inputs (list (make-source (format nil "preciseprep~:[~;-d~]/compile_commands.json"
-                                                          *variant-debug*)
-                                                          :build))
+                       :inputs (list source)
                        :implicit-inputs (list (build-name "cclasp")
-                                              (build-name "generated" :prep t :gc :mps))
-                       :outputs (list (build-name "analyze"))
-                       :sif (make-source (if (member :cando (extensions configuration))
+                                              (build-name "generated" :prep t :gc :mps)
+                                              database
+                                              (make-source "analyzer.stub" :variant-lib))                                    
+                       :database database
+                       :log (make-source-output source :type "log")
+                       :outputs (list output))
+    (list :outputs output)))
+
+(defmethod print-variant-target-sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :analyze)) sources
+     &key outputs &allow-other-keys
+     &aux (sif (make-source (if (member :cando (extensions configuration))
                                              "src/analysis/clasp_gc_cando.sif"
                                              "src/analysis/clasp_gc.sif")
-                                         :code))
+                                         :code)))              
+  (unless (or *variant-prep* *variant-precise* *variant-debug*)
+    (ninja:write-build output-stream :analyze-generate
+                       :clasp (make-source "iclasp" :variant)
+                       :inputs outputs
+                       :implicit-inputs (list (build-name "cclasp")
+                                              (build-name "generated" :prep t :gc :mps)
+                                              (make-source "analyzer.stub" :variant-lib))                                    
+                       :outputs (list sif))
+    (ninja:write-build output-stream :phony
+                       :inputs (list sif)
+                       :outputs (list (build-name "analyze")))
     (unless *variant-debug*
       (ninja:write-build output-stream :phony
                          :inputs (list (build-name "analyze"))

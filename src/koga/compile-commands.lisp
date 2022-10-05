@@ -11,15 +11,21 @@
                                                               (uiop:getcwd))
                            for source in sources
                            for out = (resolve-source (make-source-output source :type "o"))
-                           when (typep source 'cc-source)
+                           for sa-out = (let ((*root-paths* (list* :variant (merge-pathnames (make-pathname :directory (list :relative "boehm"))
+                                                                                             (root :build))
+                                                                   *root-paths*)))
+                                          (resolve-source (make-source-output source :type "sa")))
+                           when (or (typep source 'cc-source)
+                                    (typep source 'c-source))
                              collect `(:object-plist "directory" ,build-path
                                                      "file" ,(resolve-source source)
                                                      "output" ,out
-                                                     "command" ,(format nil "~a ~a ~a -c -MD -MF ~a.d -o~a ~a"
+                                                     "command" ,(format nil "~a ~a ~a -c -MD -MF ~a.d -MT ~a -o~a ~a"
                                                                         (cxx configuration)
                                                                         *variant-cxxflags*
                                                                         (cxxflags configuration)
-                                                                        out
+                                                                        sa-out
+                                                                        sa-out
                                                                         out
                                                                         (resolve-source source))))
                      output-stream))

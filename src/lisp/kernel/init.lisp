@@ -907,6 +907,17 @@ a relative path from there."
   (load #P"sys:src;lisp;kernel;cmp;jit-setup.lisp")
   (load #P"sys:src;lisp;kernel;clsymbols.lisp"))
 
+(defun command-line-paths (&optional (start 0)
+                           &aux (index (length core:*command-line-arguments*))
+                                paths)
+  (tagbody
+   next
+    (if (> index start)
+        (progn
+          (setq index (- index 1)
+                paths (cons (pathname (elt core:*command-line-arguments* index)) paths))
+          (go next))))
+  paths)
 
 ;;;
 ;;;

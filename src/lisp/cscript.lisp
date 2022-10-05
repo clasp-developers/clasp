@@ -209,3 +209,6 @@
            #~"kernel/contrib/trivial-indent/"
            #~"kernel/contrib/trivial-with-current-source-form/"
            #~"kernel/contrib/usocket/")
+
+(k:sources :analyzer
+           :clasp-analyzer)

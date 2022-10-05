@@ -230,18 +230,6 @@
              'compile-system-serial)
          args))
 
-(defun command-line-paths (&optional (start 0)
-                           &aux (index (length core:*command-line-arguments*))
-                                paths)
-  (tagbody
-   next
-    (if (> index start)
-        (progn
-          (setq index (- index 1)
-                paths (cons (pathname (elt core:*command-line-arguments* index)) paths))
-          (go next))))
-  paths)
-
 (defun build-failure (condition)
   (message :warn "%nBuild aborted.%nReceived condition of type: {}%n{}"
            (type-of condition)
