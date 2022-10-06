@@ -84,7 +84,7 @@
          ,@(loop for arg in (butlast arguments)
                  collect `(values ,arg))
          (values-list ,(first (last arguments))))))
-
+#+(or)
 (define-cleavir-compiler-macro values (&whole form &rest values)
   `(cleavir-primop:values ,@values))
 

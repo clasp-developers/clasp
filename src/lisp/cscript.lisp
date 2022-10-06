@@ -141,7 +141,7 @@
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
              #~"kernel/cleavir/auto-compile.lisp"
              #~"kernel/cleavir/bytecode-adaptor.lisp"
-             ;; fixme2022 #~"kernel/cleavir/inline.lisp" ;; restore this
+             #~"kernel/cleavir/inline.lisp"
              #~"kernel/lsp/generated-encodings.lisp"
              #~"kernel/lsp/process.lisp"
              #~"kernel/lsp/encodings.lisp"

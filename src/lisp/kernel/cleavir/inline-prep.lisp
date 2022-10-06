@@ -122,6 +122,13 @@
          child-ast))))
   ast)
 
+;;; erase all source info.
+(defun unhome-inline-ast (ast)
+  (cleavir-ast:map-ast-depth-first-preorder
+   (lambda (ast) (setf (cleavir-ast:origin ast) nil))
+   ast)
+  ast)
+
 ;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lisp)
 (defun defun-inline-hook (name function-form env)
   (declare (ignore env))
@@ -129,7 +136,7 @@
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (when (core:declared-global-inline-p ',name)
          (setf (inline-ast ',name)
-               (fix-inline-ast
+               (unhome-inline-ast
                 ;; Must use file compilation semantics here to compile
                 ;; load-time-value correctly.
                 (cleavir-primop:cst-to-ast ,function-form t)))))))
@@ -236,6 +243,7 @@
       (when (core:global-inline-status inlinee-name)
         (setf (gethash :inline inlinee-ht) t)))))
 
+#+(or)
 (defmethod cleavir-cst-to-ast:convert-called-function-reference
     (cst info env (system clasp-64bit))
   (declare (ignore env))
