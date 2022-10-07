@@ -842,7 +842,19 @@ void jit_register_symbol( const std::string& name, size_t size, void* address ) 
     global_jit_log_stream = fopen(filename.str().c_str(),"w");
   }
   if (global_jit_log_stream) {
-    fprintf( global_jit_log_stream, "%0lx %lx %s\n", (uintptr_t)address, size, name.c_str() );
+    char nameBuffer[1024];
+    char* namecur = nameBuffer;
+    char prevchar = ' ';
+    for ( int i=0; i<name.size() && i<1023; i++ ) {
+      if (name[i] == '\r') continue;
+      if (name[i] == '\n') continue;
+      if (name[i] == prevchar) continue;
+      *namecur = name[i];
+      prevchar = name[i];
+      namecur++;
+    }
+    *namecur = '\0';
+    fprintf( global_jit_log_stream, "%0lx %lx %s\n", (uintptr_t)address, size, nameBuffer );
     fflush(global_jit_log_stream);
   }
 }

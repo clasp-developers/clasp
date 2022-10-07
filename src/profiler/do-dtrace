@@ -13,7 +13,7 @@ if [ -f /tmp/perf-$PID.map ]; then
 else
    cp /tmp/out-$PID.raw.stacks /tmp/out-$PID.sym.stacks
 fi
-./cleanup-stacks -i /tmp/out-$PID.sym.stacks -o /tmp/out-$PID.stacks
+./cleanup-stacks -i /tmp/out-$PID.sym.stacks -o /tmp/out-$PID.stacks -m ${FRAMES}
 # PRUNE_OUTFILE=${OUTFILE%.prune_stacks}
 # ./prune-trace.lisp $OUTFILE $PRUNE_OUTFILE
 echo /tmp/out-$PID.stacks
