@@ -312,6 +312,7 @@ namespace core {
 class Lisp {
   friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
+public:
   struct GCRoots //: public gctools::HeapRoot
   {
     T_sp                       _TrueObject; // The True object

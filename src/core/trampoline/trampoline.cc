@@ -26,21 +26,6 @@ meister@zeus:~/Development/test$ diff -u trampoline.ll trampoline-done.ll
 +
  @_ZL16global_save_args = internal unnamed_addr global i64* null, align 8, !dbg !0
  
- ; Function Attrs: mustprogress uwtable
- define dso_local { i8*, i64 } @interpreter_trampoline_with_stackmap({ i8*, i64 } (i8*, i64, i8**)* nocapture noundef readonly %0, i8* noundef %1, i64 noundef %2, i8** noundef %3) local_unnamed_addr #0 !dbg !104 {
-   %5 = alloca [3 x i64], align 16
-+  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %5)
-   call void @llvm.dbg.value(metadata { i8*, i64 } (i8*, i64, i8**)* %0, metadata !117, metadata !DIExpression()), !dbg !125
-   call void @llvm.dbg.value(metadata i8* %1, metadata !118, metadata !DIExpression()), !dbg !125
-   call void @llvm.dbg.value(metadata i64 %2, metadata !119, metadata !DIExpression()), !dbg !125
-@@ -16,7 +22,6 @@
-   call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %6) #4, !dbg !126
-   call void @llvm.dbg.declare(metadata [3 x i64]* %5, metadata !121, metadata !DIExpression()), !dbg !127
-   %7 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 0, !dbg !128
--  store i64* %7, i64** @_ZL16global_save_args, align 8, !dbg !129, !tbaa !130
-   %8 = ptrtoint i8* %1 to i64, !dbg !134
-   store i64 %8, i64* %7, align 16, !dbg !135, !tbaa !136
-   %9 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 1, !dbg !138
 @@ -41,6 +46,7 @@
  ; Function Attrs: mustprogress uwtable
  define dso_local { i8*, i64 } @bytecode_trampoline_with_stackmap({ i8*, i64 } (i64, i8*, i64, i8**)* nocapture noundef readonly %0, i64 noundef %1, i8* noundef %2, i64 noundef %3, i8** noundef %4) local_unnamed_addr #0 !dbg !145 {
@@ -89,6 +74,16 @@ meister@zeus:~/Development/test$ diff -u trampoline.ll trampoline-done.ll
 
 #include <cstdint>
 
+#define MAGIC 3735879680
+
+struct Gcroots {
+  uint64_t val1;
+  void*    val2;
+  uint64_t val3;
+  uint64_t val4;
+  void**   val5;
+  uint64_t val6;
+};
 
 struct return_type {
   void* _ptr;
@@ -98,36 +93,27 @@ return_type(void* ptr, uint64_t nvals) : _ptr(ptr), _nvals(nvals) {};
 
 typedef uint64_t* save_args;
 
-typedef return_type (interpreter_trampoline_type)(void* closure, std::size_t nargs, void** args);
-typedef return_type (bytecode_trampoline_type)(uint64_t pc, void* closure, std::size_t nargs, void** args);
-
-static uint64_t* global_save_args;
+typedef return_type (bytecode_trampoline_type)(uint64_t pc, void* closure, uint64_t nargs, void** args);
 
 extern "C" {
 
+  Gcroots CLASP_GCROOTS[0];
+  void*   CLASP_LITERALS[0];
+  
+  void LLVM_EXPERIMENTAL_STACKMAP( uint64_t type, uint32_t dummy, ... );
 
-  return_type interpreter_trampoline_with_stackmap(interpreter_trampoline_type fn, void* closure, std::size_t nargs, void** args) {
+  return_type bytecode_call( uint64_t pc, void* closure, uint64_t nargs, void** args);
+
+  return_type WRAPPER_NAME_trampoline( uint64_t pc, void* closure, uint64_t nargs, void** args) {
     uint64_t trampoline_save_args[3];
-    global_save_args = trampoline_save_args;
-    trampoline_save_args[0] = (uintptr_t)closure;
-    trampoline_save_args[1] = (uintptr_t)nargs;
-    trampoline_save_args[2] = (uintptr_t)args;
-    return (fn)(closure,nargs,args);
-  }
-
-  return_type bytecode_call( uint64_t pc, void* closure, std::size_t nargs, void** args);
-
-  return_type bytecode_trampoline_with_stackmap( uint64_t pc, void* closure, std::size_t nargs, void** args) {
-    uint64_t trampoline_save_args[3];
-    global_save_args = trampoline_save_args;
+    LLVM_EXPERIMENTAL_STACKMAP( (uint64_t)MAGIC, 0, &trampoline_save_args );
     trampoline_save_args[0] = (uintptr_t)closure;
     trampoline_save_args[1] = (uintptr_t)nargs;
     trampoline_save_args[2] = (uintptr_t)args;
     return bytecode_call(pc,closure,nargs,args);
   }
 
-
-  void CLASP_STARTUP_trampoline()
+  void CLASP_STARTUP()
   {
   };
 };

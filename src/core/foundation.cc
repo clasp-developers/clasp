@@ -1593,7 +1593,7 @@ void tokenize(const string &str,
   }
 }
 
-string searchAndReplaceString(const string &str, const string &search, const string &replace, LispPtr lisp) {
+string searchAndReplaceString(const string &str, const string &search, const string &replace) {
   string result;
   string::size_type pos = 0;
   result = str;

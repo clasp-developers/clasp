@@ -848,7 +848,7 @@ void jit_register_symbol( const std::string& name, size_t size, void* address ) 
     for ( int i=0; i<name.size() && i<1023; i++ ) {
       if (name[i] == '\r') continue;
       if (name[i] == '\n') continue;
-      if (name[i] == prevchar) continue;
+      if ( name[i]<32 && name[i] == prevchar) continue;
       *namecur = name[i];
       prevchar = name[i];
       namecur++;

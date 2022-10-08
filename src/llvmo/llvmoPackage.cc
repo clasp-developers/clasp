@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
+#include <clasp/core/bytecode.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/pathname.h>
@@ -130,8 +131,9 @@ JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::str
   std::vector<std::string> startup_functions;
   for (auto &F : *module->wrappedPtr()) {
     std::string function_name = F.getName().str();
-//    printf("%s:%d Function: %s\n", __FILE__, __LINE__, function_name.c_str());
+    // printf("%s:%d Function: %s looking for %s\n", __FILE__, __LINE__, function_name.c_str(), MODULE_STARTUP_FUNCTION_NAME);
     if (function_name.find(MODULE_STARTUP_FUNCTION_NAME) != std::string::npos) {
+      // printf("%s:%d !!!!!        Function: %s found %s\n", __FILE__, __LINE__, function_name.c_str(), MODULE_STARTUP_FUNCTION_NAME);
       startup_functions.push_back(function_name);
     }
   }
@@ -524,7 +526,9 @@ CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcs, core::T_sp only) {
 
 DOCGROUP(clasp)
 CL_DEFUN ClaspJIT_sp llvm_sys__clasp_jit() {
-  return gc::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
+  Lisp::GCRoots* roots = &_lisp->_Roots;
+  //  printf("%s:%d:%s Getting _ClaspJIT roots %p  roots->_ClaspJIT %p nilp %d\n", __FILE__, __LINE__, __FUNCTION__, roots, roots->_ClaspJIT.raw_(), roots->_ClaspJIT.nilp());
+  return gc::As_unsafe<ClaspJIT_sp>(roots->_ClaspJIT);
 }
 
 
@@ -537,6 +541,11 @@ void initialize_llvm() {
   llvm::InitializeAllTargetMCs();
   llvm::InitializeAllAsmParsers();
   llvm::InitializeAllDisassemblers();
+
+  printf("%s:%d:%s About to set _ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
+  auto jit_engine = gctools::GC<ClaspJIT_O>::allocate( false, (llvmo::JITDylib_O*)NULL );
+  //llvm_sys__create_lljit_thread_pool();
+    _lisp->_Roots._ClaspJIT = jit_engine;
 }
 
 void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose what) const {
@@ -579,9 +588,6 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
 #endif
 #endif
-    auto jit_engine = gctools::GC<ClaspJIT_O>::allocate( false, (llvmo::JITDylib_O*)NULL );
-    //llvm_sys__create_lljit_thread_pool();
-    _lisp->_Roots._ClaspJIT = jit_engine;
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_dumpObjectFiles));
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
@@ -613,283 +619,82 @@ void LlvmoExposer_O::shutdown() {
 /*!
    Install a trampoline that spills registers onto the stack
 
-   This does both an interpeter trampoline and a bytecode trampoline.
-   The bytecode trampoline also passes a PC.
-   We could recover the bytecode PC if we spill it into the stack here as well.
-   We could register another stackmap entry that stores the PC for backtraces and debugging.
-   Just add another slot to %Registers and register it with a new stackmap value.
-
+   The bytecode trampoline passes a PC.
 */
 
-CL_DEFUN core::T_mv llvm_sys__installBacktraceTrampoline() {
-  std::string trampoline = R"trampoline(
+};
 
-
-
-
-
-; ModuleID = 'trampoline.bc'
-source_filename = "trampoline.cc"
-target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
-target triple = "x86_64-pc-linux-gnu"
-
-@__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
-@__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
-@_ZL16global_save_args = internal unnamed_addr global i64* null, align 8, !dbg !0
-
-; Function Attrs: nofree nosync nounwind readnone speculatable willreturn
-declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
-
-; Function Attrs: argmemonly nofree nosync nounwind willreturn
-declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #2
-
-; Function Attrs: argmemonly nofree nosync nounwind willreturn
-declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #2
-
-; Function Attrs: mustprogress uwtable
-define dso_local { i8*, i64 } @bytecode_trampoline_with_stackmap(i64 noundef %0, i8* noundef %1, i64 noundef %2, i8** noundef %3) local_unnamed_addr #0 !dbg !145 {
-  %5 = alloca [3 x i64], align 16
-  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %5)
-  call void @llvm.dbg.value(metadata i64 %0, metadata !149, metadata !DIExpression()), !dbg !154
-  call void @llvm.dbg.value(metadata i8* %1, metadata !150, metadata !DIExpression()), !dbg !154
-  call void @llvm.dbg.value(metadata i64 %2, metadata !151, metadata !DIExpression()), !dbg !154
-  call void @llvm.dbg.value(metadata i8** %3, metadata !152, metadata !DIExpression()), !dbg !154
-  %6 = bitcast [3 x i64]* %5 to i8*, !dbg !155
-  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %6) #5, !dbg !155
-  call void @llvm.dbg.declare(metadata [3 x i64]* %5, metadata !153, metadata !DIExpression()), !dbg !156
-  %7 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 0, !dbg !157
-  %8 = ptrtoint i8* %1 to i64, !dbg !159
-  store i64 %8, i64* %7, align 16, !dbg !160, !tbaa !136
-  %9 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 1, !dbg !161
-  store i64 %2, i64* %9, align 8, !dbg !162, !tbaa !136
-  %10 = ptrtoint i8** %3 to i64, !dbg !163
-  %11 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 2, !dbg !164
-  store i64 %10, i64* %11, align 16, !dbg !165, !tbaa !136
-  %12 = call { i8*, i64 } @bytecode_call(i64 noundef %0, i8* noundef %1, i64 noundef %2, i8** noundef %3), !dbg !166
-  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %6) #5, !dbg !167
-  ret { i8*, i64 } %12, !dbg !167
+extern "C" {
+NEVER_OPTIMIZE
+gctools::return_type default_bytecode_trampoline(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
+  return bytecode_call(pc,closure,nargs,args);
 }
 
-declare !dbg !168 { i8*, i64 } @bytecode_call(i64 noundef, i8* noundef, i64 noundef, i8** noundef) local_unnamed_addr #3
-
-; Function Attrs: mustprogress nofree norecurse nosync nounwind readnone uwtable willreturn
-define dso_local void @"CLASP_STARTUP_trampoline"() local_unnamed_addr #4 !dbg !170 {
-  ret void, !dbg !173
+NEVER_OPTIMIZE
+gctools::return_type unknown_bytecode_trampoline(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
+  return bytecode_call(pc,closure,nargs,args);
 }
 
-declare void @llvm.experimental.stackmap(i64, i32, ...) #6
+NEVER_OPTIMIZE
+gctools::return_type lambda_nil(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
+  return bytecode_call(pc,closure,nargs,args);
+}
+};
 
-; Function Attrs: nofree nosync nounwind readnone speculatable willreturn
-declare void @llvm.dbg.value(metadata, metadata, metadata) #1
+namespace llvmo {
+#include "trampoline.h"
 
-attributes #0 = { mustprogress uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #1 = { nofree nosync nounwind readnone speculatable willreturn }
-attributes #2 = { argmemonly nofree nosync nounwind willreturn }
-attributes #3 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #4 = { mustprogress nofree norecurse nosync nounwind readnone uwtable willreturn "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #5 = { nounwind }
-attributes #6 = { nofree nosync willreturn }
-
-!llvm.dbg.cu = !{!2}
-!llvm.module.flags = !{!96, !97, !98, !99, !100, !101, !102}
-!llvm.ident = !{!103}
-
-!0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
-!1 = distinct !DIGlobalVariable(name: "global_save_args", linkageName: "_ZL16global_save_args", scope: !2, file: !3, line: 104, type: !95, isLocal: true, isDefinition: true)
-!2 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus_14, file: !3, producer: "Debian clang version 14.0.6-2", isOptimized: true, runtimeVersion: 0, emissionKind: FullDebug, retainedTypes: !4, globals: !8, imports: !9, splitDebugInlining: false, nameTableKind: None)
-!3 = !DIFile(filename: "trampoline.cc", directory: "/home/meister/Development/clasp-vm/src/core/trampoline", checksumkind: CSK_MD5, checksum: "f8b494ea176a734cff65e2a2727ff77f")
-!4 = !{!5}
-!5 = !DIDerivedType(tag: DW_TAG_typedef, name: "uintptr_t", file: !6, line: 90, baseType: !7)
-!6 = !DIFile(filename: "/usr/include/stdint.h", directory: "", checksumkind: CSK_MD5, checksum: "8e56ab3ccd56760d8ae9848ebf326071")
-!7 = !DIBasicType(name: "unsigned long", size: 64, encoding: DW_ATE_unsigned)
-!8 = !{!0}
-!9 = !{!10, !18, !22, !26, !30, !32, !34, !36, !38, !41, !44, !47, !50, !53, !55, !60, !64, !68, !71, !73, !75, !77, !79, !82, !85, !88, !91, !94}
-!10 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !12, file: !17, line: 47)
-!11 = !DINamespace(name: "std", scope: null)
-!12 = !DIDerivedType(tag: DW_TAG_typedef, name: "int8_t", file: !13, line: 24, baseType: !14)
-!13 = !DIFile(filename: "/usr/include/x86_64-linux-gnu/bits/stdint-intn.h", directory: "", checksumkind: CSK_MD5, checksum: "b26974ec56196748bbc399ee826d2a0e")
-!14 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int8_t", file: !15, line: 37, baseType: !16)
-!15 = !DIFile(filename: "/usr/include/x86_64-linux-gnu/bits/types.h", directory: "", checksumkind: CSK_MD5, checksum: "58b79843d97f4309eefa4aa722dac91e")
-!16 = !DIBasicType(name: "signed char", size: 8, encoding: DW_ATE_signed_char)
-!17 = !DIFile(filename: "/usr/bin/../lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/cstdint", directory: "")
-!18 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !19, file: !17, line: 48)
-!19 = !DIDerivedType(tag: DW_TAG_typedef, name: "int16_t", file: !13, line: 25, baseType: !20)
-!20 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int16_t", file: !15, line: 39, baseType: !21)
-!21 = !DIBasicType(name: "short", size: 16, encoding: DW_ATE_signed)
-!22 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !23, file: !17, line: 49)
-!23 = !DIDerivedType(tag: DW_TAG_typedef, name: "int32_t", file: !13, line: 26, baseType: !24)
-!24 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int32_t", file: !15, line: 41, baseType: !25)
-!25 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-!26 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !27, file: !17, line: 50)
-!27 = !DIDerivedType(tag: DW_TAG_typedef, name: "int64_t", file: !13, line: 27, baseType: !28)
-!28 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int64_t", file: !15, line: 44, baseType: !29)
-!29 = !DIBasicType(name: "long", size: 64, encoding: DW_ATE_signed)
-!30 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !31, file: !17, line: 52)
-!31 = !DIDerivedType(tag: DW_TAG_typedef, name: "int_fast8_t", file: !6, line: 58, baseType: !16)
-!32 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !33, file: !17, line: 53)
-!33 = !DIDerivedType(tag: DW_TAG_typedef, name: "int_fast16_t", file: !6, line: 60, baseType: !29)
-!34 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !35, file: !17, line: 54)
-!35 = !DIDerivedType(tag: DW_TAG_typedef, name: "int_fast32_t", file: !6, line: 61, baseType: !29)
-!36 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !37, file: !17, line: 55)
-!37 = !DIDerivedType(tag: DW_TAG_typedef, name: "int_fast64_t", file: !6, line: 62, baseType: !29)
-!38 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !39, file: !17, line: 57)
-!39 = !DIDerivedType(tag: DW_TAG_typedef, name: "int_least8_t", file: !6, line: 43, baseType: !40)
-!40 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int_least8_t", file: !15, line: 52, baseType: !14)
-!41 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !42, file: !17, line: 58)
-!42 = !DIDerivedType(tag: DW_TAG_typedef, name: "int_least16_t", file: !6, line: 44, baseType: !43)
-!43 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int_least16_t", file: !15, line: 54, baseType: !20)
-!44 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !45, file: !17, line: 59)
-!45 = !DIDerivedType(tag: DW_TAG_typedef, name: "int_least32_t", file: !6, line: 45, baseType: !46)
-!46 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int_least32_t", file: !15, line: 56, baseType: !24)
-!47 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !48, file: !17, line: 60)
-!48 = !DIDerivedType(tag: DW_TAG_typedef, name: "int_least64_t", file: !6, line: 46, baseType: !49)
-!49 = !DIDerivedType(tag: DW_TAG_typedef, name: "__int_least64_t", file: !15, line: 58, baseType: !28)
-!50 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !51, file: !17, line: 62)
-!51 = !DIDerivedType(tag: DW_TAG_typedef, name: "intmax_t", file: !6, line: 101, baseType: !52)
-!52 = !DIDerivedType(tag: DW_TAG_typedef, name: "__intmax_t", file: !15, line: 72, baseType: !29)
-!53 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !54, file: !17, line: 63)
-!54 = !DIDerivedType(tag: DW_TAG_typedef, name: "intptr_t", file: !6, line: 87, baseType: !29)
-!55 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !56, file: !17, line: 65)
-!56 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint8_t", file: !57, line: 24, baseType: !58)
-!57 = !DIFile(filename: "/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h", directory: "", checksumkind: CSK_MD5, checksum: "3d2fbc5d847dd222c2fbd70457568436")
-!58 = !DIDerivedType(tag: DW_TAG_typedef, name: "__uint8_t", file: !15, line: 38, baseType: !59)
-!59 = !DIBasicType(name: "unsigned char", size: 8, encoding: DW_ATE_unsigned_char)
-!60 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !61, file: !17, line: 66)
-!61 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint16_t", file: !57, line: 25, baseType: !62)
-!62 = !DIDerivedType(tag: DW_TAG_typedef, name: "__uint16_t", file: !15, line: 40, baseType: !63)
-!63 = !DIBasicType(name: "unsigned short", size: 16, encoding: DW_ATE_unsigned)
-!64 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !65, file: !17, line: 67)
-!65 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint32_t", file: !57, line: 26, baseType: !66)
-!66 = !DIDerivedType(tag: DW_TAG_typedef, name: "__uint32_t", file: !15, line: 42, baseType: !67)
-!67 = !DIBasicType(name: "unsigned int", size: 32, encoding: DW_ATE_unsigned)
-!68 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !69, file: !17, line: 68)
-!69 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint64_t", file: !57, line: 27, baseType: !70)
-!70 = !DIDerivedType(tag: DW_TAG_typedef, name: "__uint64_t", file: !15, line: 45, baseType: !7)
-!71 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !72, file: !17, line: 70)
-!72 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint_fast8_t", file: !6, line: 71, baseType: !59)
-!73 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !74, file: !17, line: 71)
-!74 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint_fast16_t", file: !6, line: 73, baseType: !7)
-!75 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !76, file: !17, line: 72)
-!76 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint_fast32_t", file: !6, line: 74, baseType: !7)
-!77 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !78, file: !17, line: 73)
-!78 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint_fast64_t", file: !6, line: 75, baseType: !7)
-!79 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !80, file: !17, line: 75)
-!80 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint_least8_t", file: !6, line: 49, baseType: !81)
-!81 = !DIDerivedType(tag: DW_TAG_typedef, name: "__uint_least8_t", file: !15, line: 53, baseType: !58)
-!82 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !83, file: !17, line: 76)
-!83 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint_least16_t", file: !6, line: 50, baseType: !84)
-!84 = !DIDerivedType(tag: DW_TAG_typedef, name: "__uint_least16_t", file: !15, line: 55, baseType: !62)
-!85 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !86, file: !17, line: 77)
-!86 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint_least32_t", file: !6, line: 51, baseType: !87)
-!87 = !DIDerivedType(tag: DW_TAG_typedef, name: "__uint_least32_t", file: !15, line: 57, baseType: !66)
-!88 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !89, file: !17, line: 78)
-!89 = !DIDerivedType(tag: DW_TAG_typedef, name: "uint_least64_t", file: !6, line: 52, baseType: !90)
-!90 = !DIDerivedType(tag: DW_TAG_typedef, name: "__uint_least64_t", file: !15, line: 59, baseType: !70)
-!91 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !92, file: !17, line: 80)
-!92 = !DIDerivedType(tag: DW_TAG_typedef, name: "uintmax_t", file: !6, line: 102, baseType: !93)
-!93 = !DIDerivedType(tag: DW_TAG_typedef, name: "__uintmax_t", file: !15, line: 73, baseType: !7)
-!94 = !DIImportedEntity(tag: DW_TAG_imported_declaration, scope: !11, entity: !5, file: !17, line: 81)
-!95 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !69, size: 64)
-!96 = !{i32 7, !"Dwarf Version", i32 5}
-!97 = !{i32 2, !"Debug Info Version", i32 3}
-!98 = !{i32 1, !"wchar_size", i32 4}
-!99 = !{i32 7, !"PIC Level", i32 2}
-!100 = !{i32 7, !"PIE Level", i32 2}
-!101 = !{i32 7, !"uwtable", i32 1}
-!102 = !{i32 7, !"frame-pointer", i32 2}
-!103 = !{!"Debian clang version 14.0.6-2"}
-!104 = distinct !DISubprogram(name: "interpreter_trampoline_with_stackmap", scope: !3, file: !3, line: 109, type: !105, scopeLine: 109, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !2, retainedNodes: !116)
-!105 = !DISubroutineType(types: !106)
-!106 = !{!107, !108, !112, !113, !115}
-!107 = !DICompositeType(tag: DW_TAG_structure_type, name: "return_type", file: !3, line: 93, size: 128, flags: DIFlagFwdDecl | DIFlagNonTrivial, identifier: "_ZTS11return_type")
-!108 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !109, size: 64)
-!109 = !DIDerivedType(tag: DW_TAG_typedef, name: "interpreter_trampoline_type", file: !3, line: 101, baseType: !110)
-!110 = !DISubroutineType(types: !111)
-!111 = !{!107, !112, !113, !115}
-!112 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
-!113 = !DIDerivedType(tag: DW_TAG_typedef, name: "size_t", scope: !11, file: !114, line: 298, baseType: !7)
-!114 = !DIFile(filename: "/usr/bin/../lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h", directory: "", checksumkind: CSK_MD5, checksum: "e442060cb5d8ef14615f2a1f144d5d0b")
-!115 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !112, size: 64)
-!116 = !{!117, !118, !119, !120, !121}
-!117 = !DILocalVariable(name: "fn", arg: 1, scope: !104, file: !3, line: 109, type: !108)
-!118 = !DILocalVariable(name: "closure", arg: 2, scope: !104, file: !3, line: 109, type: !112)
-!119 = !DILocalVariable(name: "nargs", arg: 3, scope: !104, file: !3, line: 109, type: !113)
-!120 = !DILocalVariable(name: "args", arg: 4, scope: !104, file: !3, line: 109, type: !115)
-!121 = !DILocalVariable(name: "trampoline_save_args", scope: !104, file: !3, line: 110, type: !122)
-!122 = !DICompositeType(tag: DW_TAG_array_type, baseType: !69, size: 192, elements: !123)
-!123 = !{!124}
-!124 = !DISubrange(count: 3)
-!125 = !DILocation(line: 0, scope: !104)
-!126 = !DILocation(line: 110, column: 5, scope: !104)
-!127 = !DILocation(line: 110, column: 14, scope: !104)
-!128 = !DILocation(line: 111, column: 24, scope: !104)
-!129 = !DILocation(line: 111, column: 22, scope: !104)
-!130 = !{!131, !131, i64 0}
-!131 = !{!"any pointer", !132, i64 0}
-!132 = !{!"omnipotent char", !133, i64 0}
-!133 = !{!"Simple C++ TBAA"}
-!134 = !DILocation(line: 112, column: 31, scope: !104)
-!135 = !DILocation(line: 112, column: 29, scope: !104)
-!136 = !{!137, !137, i64 0}
-!137 = !{!"long", !132, i64 0}
-!138 = !DILocation(line: 113, column: 5, scope: !104)
-!139 = !DILocation(line: 113, column: 29, scope: !104)
-!140 = !DILocation(line: 114, column: 31, scope: !104)
-!141 = !DILocation(line: 114, column: 5, scope: !104)
-!142 = !DILocation(line: 114, column: 29, scope: !104)
-!143 = !DILocation(line: 115, column: 12, scope: !104)
-!144 = !DILocation(line: 116, column: 3, scope: !104)
-!145 = distinct !DISubprogram(name: "bytecode_trampoline_with_stackmap", scope: !3, file: !3, line: 120, type: !146, scopeLine: 120, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !2, retainedNodes: !148)
-!146 = !DISubroutineType(types: !147)
-!147 = !{!107, !69, !112, !113, !115}
-!148 = !{!149, !150, !151, !152, !153}
-!149 = !DILocalVariable(name: "pc", arg: 1, scope: !145, file: !3, line: 120, type: !69)
-!150 = !DILocalVariable(name: "closure", arg: 2, scope: !145, file: !3, line: 120, type: !112)
-!151 = !DILocalVariable(name: "nargs", arg: 3, scope: !145, file: !3, line: 120, type: !113)
-!152 = !DILocalVariable(name: "args", arg: 4, scope: !145, file: !3, line: 120, type: !115)
-!153 = !DILocalVariable(name: "trampoline_save_args", scope: !145, file: !3, line: 121, type: !122)
-!154 = !DILocation(line: 0, scope: !145)
-!155 = !DILocation(line: 121, column: 5, scope: !145)
-!156 = !DILocation(line: 121, column: 14, scope: !145)
-!157 = !DILocation(line: 122, column: 24, scope: !145)
-!158 = !DILocation(line: 122, column: 22, scope: !145)
-!159 = !DILocation(line: 123, column: 31, scope: !145)
-!160 = !DILocation(line: 123, column: 29, scope: !145)
-!161 = !DILocation(line: 124, column: 5, scope: !145)
-!162 = !DILocation(line: 124, column: 29, scope: !145)
-!163 = !DILocation(line: 125, column: 31, scope: !145)
-!164 = !DILocation(line: 125, column: 5, scope: !145)
-!165 = !DILocation(line: 125, column: 29, scope: !145)
-!166 = !DILocation(line: 126, column: 12, scope: !145)
-!167 = !DILocation(line: 127, column: 3, scope: !145)
-!168 = !DISubprogram(name: "bytecode_call", scope: !3, file: !3, line: 118, type: !146, flags: DIFlagPrototyped, spFlags: DISPFlagOptimized, retainedNodes: !169)
-!169 = !{}
-!170 = distinct !DISubprogram(name: "CLASP_STARTUP_trampoline", scope: !3, file: !3, line: 130, type: !171, scopeLine: 131, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !2, retainedNodes: !169)
-!171 = !DISubroutineType(types: !172)
-!172 = !{null}
-!173 = !DILocation(line: 132, column: 3, scope: !170)
-
-
-
-
-
-)trampoline";
-
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  trampoline = std::regex_replace( trampoline, std::regex("CLASP_STARTUP"), std::string(MODULE_STARTUP_FUNCTION_NAME) );
-  Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline" );
-//  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
-  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
+CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib,"bytecode_trampoline_with_stackmap");
-//  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
-  if (getenv("CLASP_DISABLE_TRAMPOLINES")) {
-    printf("%s:%d:%s CLASP_DISABLE_TRAMPOLINES is set so disabling trampolines\n bytecode_trampoline at %p", __FILE__, __LINE__, __FUNCTION__, (void*)bytecode_ptr->ptr());
-    return Values0<core::T_O>();
+  if (!getenv("CLASP_ENABLE_TRAMPOLINES")) {
+    // If the JIT isn't ready then use the default trampoline
+    return Values(Pointer_O::create((void*)bytecode_call),
+                  SimpleBaseString_O::make("bytecode_call"));
   }
-  core::bytecode_trampoline = (bytecode_trampoline_function)bytecode_ptr->ptr();
-//  printf("%s:%d:%s after interpreter_t
-return Values(bytecode_ptr);
+  if (jit.nilp()) {
+    // If the JIT isn't ready then use the default trampoline
+    return Values(Pointer_O::create((void*)default_bytecode_trampoline),
+                  SimpleBaseString_O::make("default_bytecode_trampoline"));
+  }
+  if (tname.consp()
+      && CONS_CAR(tname)==::cl::_sym_lambda
+      && CONS_CDR(tname).consp()
+      && CONS_CAR(CONS_CDR(tname)).nilp()) {
+    return Values(Pointer_O::create((void*)lambda_nil),
+                  SimpleBaseString_O::make("lambda_nil"));
+  }
+  
+  std::string name;
+  if (gc::IsA<core::Symbol_sp>(tname)) {
+    name = gc::As_unsafe<core::Symbol_sp>(tname)->fullName();
+  } else {
+    name = _rep_(tname);
+    // printf("%s:%d:%s trampoline name = |%s|\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
+    // fflush();
+    if (name[0]=='"' && name[name.size()-1] == '"') {
+      if (name.size() < 3) { // matches ""
+        return Values(Pointer_O::create((void*)unknown_bytecode_trampoline),
+                      SimpleBaseString_O::make("unknown_bytecode_trampoline"));
+      }
+    }
+    name = name.substr(1,name.size()-2);   // Strip double quotes
+  }
+  name = name + "_bct";
+  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
+  std::string trampoline = global_trampoline;
+  trampoline = core::searchAndReplaceString( trampoline, "@WRAPPER_NAME", "@\""+name+"\"");
+  stringstream ss_trampoline;
+  ss_trampoline << global_trampoline_datalayout_triple;
+  ss_trampoline << trampoline;
+  trampoline = ss_trampoline.str();
+  //printf("%s:%d:%s About to parseIRString %s\n", __FILE__, __LINE__, __FUNCTION__, trampoline.c_str());
+  Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline" );
+  //printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
+  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
+  core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib,name);
+  //  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
+  //  printf("%s:%d:%s after interpreter_t
+  return Values(bytecode_ptr,SimpleBaseString_O::make(name));
 }
 
 

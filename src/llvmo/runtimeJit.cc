@@ -591,7 +591,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           }
           currentCode->_LiteralVectorSizeBytes = symbolSize;
         }
-      }        
+      }
     }
     if (!found_literals) {
       printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, literals_name.c_str() );
@@ -793,7 +793,7 @@ bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& 
      void* ptr;
      bool found = this->do_lookup(dylibsp,Name,ptr);
      if (!found) {
-       SIMPLE_ERROR("Could not find pointer for name %s" , Name );
+       SIMPLE_ERROR("Could not find pointer for name |%s|" , Name );
      }
      return core::Pointer_O::create(ptr);
  }

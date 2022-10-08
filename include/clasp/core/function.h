@@ -336,6 +336,7 @@ FORWARD(GlobalBytecodeEntryPoint);
    /*! A general entry point at 0 and fixed arity entry points from 1...(NUMBER_OF_ENTRY_POINTS-1)
        The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
    */
+   
    // The frame size this function needs for local variables.
    unsigned short   _LocalsFrameSize;
   // Number of required args.
@@ -358,6 +359,7 @@ FORWARD(GlobalBytecodeEntryPoint);
   // Entry points into the bytes vector in the containing module.
   // These are offsets instead of an interior pointers to make dumping/loading/GC considerations easier.
    unsigned int     _EntryPcN;
+   BytecodeTrampolineFunction _Trampoline;
  public:
   // Accessors
    GlobalBytecodeEntryPoint_O(FunctionDescription_sp fdesc,
@@ -371,12 +373,15 @@ FORWARD(GlobalBytecodeEntryPoint);
                               T_sp keyConsts,
                               unsigned char flags,
                               unsigned int environmentSize,
-                              unsigned int entryPcN );
+                              unsigned int entryPcN,
+                              BytecodeTrampolineFunction trampoline);
 
  public:
    virtual Pointer_sp defaultEntryAddress() const;
    BytecodeModule_sp code() const;
    string __repr__() const;
+
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup);
 
    CL_DEFMETHOD Fixnum localsFrameSize() const { return this->_LocalsFrameSize; };
    CL_DEFMETHOD Fixnum required() const { return this->_Required; };
@@ -474,7 +479,8 @@ GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescripti
                                                                T_sp keyConsts,
                                                                size_t flags,
                                                                size_t environmentSize,
-                                                               List_sp pcIndices );
+                                                               List_sp pcIndices,
+                                                               Pointer_sp trampoline);
 
 
 GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);

@@ -525,7 +525,7 @@ void Lisp::startupLispEnvironment() {
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
     Readtable_sp readtable = Readtable_O::create_standard_readtable();
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
-    initialize_functions();
+    initialize_functions(); 
     core::_sym_STAReval_with_env_hookSTAR->defparameter(comp::_sym_bytecode_toplevel_eval->symbolFunction());
     globals_->_Bundle->setup_pathname_translations();
     //    eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);

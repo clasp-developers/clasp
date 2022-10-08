@@ -810,7 +810,7 @@ extern Symbol_sp& _sym_simpleError;
  * \param search The string to search for
  * \param replace The string to replace with
  */
-string searchAndReplaceString(const string &str, const string &search, const string &replace, LispPtr lisp);
+string searchAndReplaceString(const string &str, const string &search, const string &replace );
 
 /* The CallingConvention for Common Lisp functions is a pointer to where the multiple value result
    should be written, the closed over environment for the function, the number of args, three explicit args that will pass in registers (or be NULL)

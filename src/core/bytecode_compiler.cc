@@ -4,6 +4,7 @@
 #include <clasp/core/lambdaListHandler.h> // lambda list parsing
 #include <clasp/core/designators.h> // functionDesignator
 #include <clasp/core/primitives.h> // gensym, function_block_name
+#include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/bytecode.h>
 #include <algorithm> // max
 
@@ -733,15 +734,18 @@ GlobalBytecodeEntryPoint_sp Cfunction_O::link_function(T_sp compile_info) {
                                 cfunction->lambda_list(),
                                 cfunction->doc());
     Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
+    Pointer_sp trampoline = llvmo::cmp__compile_trampoline(cfunction->nname());
     GlobalBytecodeEntryPoint_sp func
-      = core__makeGlobalBytecodeEntryPoint(fdesc, bytecode_module,
-                                           cfunction->nlocals(),
-                                          // FIXME: remove
-                                           0, 0, 0, 0, nil<T_O>(), 0,
-                                           cfunction->closed()->length(),
-                                          // FIXME: remove
-                                           cl__make_list(clasp_make_fixnum(7),
-                                                         ep));
+        = core__makeGlobalBytecodeEntryPoint(fdesc, bytecode_module,
+                                             cfunction->nlocals(),
+                                             // FIXME: remove
+                                             0, 0, 0, 0, nil<T_O>(), 0,
+                                             cfunction->closed()->length(),
+                                             // FIXME: remove
+                                             cl__make_list(clasp_make_fixnum(7),
+                                                           ep),
+                                             trampoline
+                                             );
     cfunction->setInfo(func);
   }
   // Now replace the cfunctions in the cmodule literal vector with

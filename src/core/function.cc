@@ -116,7 +116,8 @@ GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fd
                                                        T_sp keyConsts,
                                                        unsigned char flags,
                                                        unsigned int environmentSize,
-                                                       unsigned int entryPcN )
+                                                       unsigned int entryPcN,
+                                                       BytecodeTrampolineFunction trampoline )
 : GlobalEntryPointBase_O(fdesc, entry_point, module),
   _LocalsFrameSize(localsFrameSize),
   _Required(required),
@@ -126,11 +127,18 @@ GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fd
   _KeyConsts(keyConsts),
   _Flags(flags),
   _EnvironmentSize(environmentSize),
-  _EntryPcN(entryPcN)
+  _EntryPcN(entryPcN),
+  _Trampoline(trampoline)
 {
   llvmo::validateEntryPoint( module, entry_point );
 };
 
+
+void GlobalBytecodeEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup )
+{
+  this->fixupOneCodePointer( fixup,(void**)&this->_Trampoline );
+  this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
+}
 
 CL_DEFMETHOD size_t GlobalBytecodeEntryPoint_O::entryPcN() const {
   return this->_EntryPcN;
@@ -430,7 +438,7 @@ struct BytecodeClosureEntryPoint {
     int entryPcOffset = entryPoint->_EntryPcN;
     ASSERT(gc::IsA<Array_sp>(module->_Bytecode));
     unsigned char* pc =  (unsigned char*)&(gc::As_unsafe<SimpleVector_byte8_t_sp>(module->_Bytecode)->_Data[0]) + entryPcOffset;
-    return (bytecode_trampoline)( pc, lcc_closure, lcc_nargs, lcc_args );
+    return (entryPoint->_Trampoline)( pc, lcc_closure, lcc_nargs, lcc_args );
   }
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
@@ -475,7 +483,8 @@ GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescripti
                                                                T_sp keyConsts,
                                                                size_t flags,
                                                                size_t environmentSize,
-                                                               List_sp pcIndices )
+                                                               List_sp pcIndices,
+                                                               Pointer_sp trampoline )
 {
   if (cl__length(pcIndices)!=NUMBER_OF_ENTRY_POINTS) {
     SIMPLE_ERROR("You must provide %zu entry-points - you provided %s", NUMBER_OF_ENTRY_POINTS, _rep_(pcIndices).c_str() );
@@ -496,7 +505,8 @@ GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescripti
                                                                        keyConsts,
                                                                        flags,
                                                                        environmentSize,
-                                                                       entryPcN);
+                                                                       entryPcN,
+                                                                       (BytecodeTrampolineFunction)trampoline->ptr() );
   return entryPoint;
 }
 

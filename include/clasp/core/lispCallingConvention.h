@@ -138,6 +138,7 @@ LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* far
 typedef LCC_RETURN_RAW(*ClaspLocalFunction)();
 typedef LCC_RETURN_RAW(*ClaspXepAnonymousFunction)();
 #define LISP_CALLING_CONVENTION() entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
+typedef LCC_RETURN_RAW(*BytecodeTrampolineFunction)(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args );
 typedef LCC_RETURN_RAW(*ClaspXepGeneralFunction)(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args );
 typedef LCC_RETURN_RAW(*ClaspXep0Function)(core::T_O* lcc_closure);
 typedef LCC_RETURN_RAW(*ClaspXep1Function)(core::T_O* lcc_closure, core::T_O* farg0);

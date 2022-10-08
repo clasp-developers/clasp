@@ -674,7 +674,7 @@ core::Pointer_sp ClaspLinkerJIT_O::lookup(JITDylib& dylib, const std::string& Na
      void* ptr;
      bool found = this->do_lookup(dylib,Name,ptr);
      if (!found) {
-       SIMPLE_ERROR(BF("Could not find pointer for name %s") % Name );
+       SIMPLE_ERROR(BF("Could not find pointer for name |%s|") % Name );
      }
      return core::Pointer_O::create(ptr);
  }

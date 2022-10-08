@@ -3,8 +3,8 @@
 ;;
 
 
-#-darwin
-(llvm-sys:install-backtrace-trampoline)
+;;;#-darwin
+#+(or)(cmp:trampoline "bytecode")
 
 #+(or)
 (eval-when (:compile-toplevel :execute)
