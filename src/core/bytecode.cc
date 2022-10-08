@@ -205,7 +205,7 @@ static unsigned char *long_dispatch(VirtualMachine&,
                                     unsigned char*,
                                     MultipleValues& multipleValues,
                                     T_O**, T_O**, Closure_O*,
-                                    core::T_O**, core::T_O**&,
+                                    core::T_O**, core::T_O**,
                                     size_t, core::T_O**,
                                     uint8_t);
 
@@ -217,7 +217,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                         T_O** literals, T_O** closed,
                                         Closure_O* closure,
                                         core::T_O** fp, // frame pointer
-                                        core::T_O**& sp, // stack pointer
+                                        core::T_O** sp, // stack pointer
                                         size_t lcc_nargs,
                                         core::T_O** lcc_args) {
   ASSERT( literals==NULL || (uintptr_t)literals>65536);
@@ -726,10 +726,11 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       vm.setreg(fp, n, env.raw_());
       gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
-      if (setjmp(target)) sp = old_sp;
+      setjmp(target);
       again:
       try {
         bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
+        sp = vm._stackPointer;
         pc = vm._pc;
       }
       catch (Unwind &uw) {
@@ -770,6 +771,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       // This sham return value just gets us out of the bytecode_vm call in
       // vm_entry, above.
       vm._pc = pc + 1;
+      vm._stackPointer = sp;
       return gctools::return_type(nil<T_O>().raw_(), 0);
     }
     case vm_special_bind: {
@@ -785,6 +787,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
                                                           fp, sp,
                                                           lcc_nargs, lcc_args);
                                });
+      sp = vm._stackPointer;
       pc = vm._pc;
       break;
     }
@@ -811,6 +814,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_unbind: {
       DBG_VM("unbind\n");
       vm._pc = pc + 1;
+      vm._stackPointer = sp;
       // This return value is not actually used - we're just returning from
       // a bytecode_vm recursively invoked by vm_special_bind above.
       return gctools::return_type(nil<T_O>().raw_(), 0);
@@ -845,7 +849,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       // In a separate function to facilitate better icache utilization
       // by bytecode_vm (hopefully)
       pc++;
+     // FIXME: This is a stupid way of returning two values.
       pc = long_dispatch(vm, pc, multipleValues, literals, closed, closure, fp, sp, lcc_nargs, lcc_args, *pc);
+      sp = vm._stackPointer;
       break;
     }
     default:
@@ -865,7 +871,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
                                     T_O** closed,
                                     Closure_O* closure,
                                     core::T_O** fp,
-                                    core::T_O**& sp,
+                                    core::T_O** sp,
                                     size_t lcc_nargs,
                                     core::T_O** lcc_args,
                                     uint8_t sub_opcode) {
@@ -1184,11 +1190,14 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     T_sp value((gctools::Tagged)(vm.pop(sp)));
     pc += 3;
     T_sp symbol((gctools::Tagged)literals[c]);
+    vm._pc = pc;
     call_with_variable_bound(symbol, value,
                              [&]() { return bytecode_vm(vm, literals, closed,
                                                         closure,
                                                         fp, sp, lcc_nargs, lcc_args);
                              });
+    pc = vm._pc;
+    sp = vm._stackPointer;
     break;
   }
   case vm_symbol_value: {
@@ -1215,6 +1224,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
   default:
       SIMPLE_ERROR("Unknown LONG sub_opcode %hu", sub_opcode);
   }
+  vm._stackPointer = sp;
   return pc;
 }
 };
