@@ -736,16 +736,11 @@ GlobalBytecodeEntryPoint_sp Cfunction_O::link_function(T_sp compile_info) {
     Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
     Pointer_sp trampoline = llvmo::cmp__compile_trampoline(cfunction->nname());
     GlobalBytecodeEntryPoint_sp func
-        = core__makeGlobalBytecodeEntryPoint(fdesc, bytecode_module,
-                                             cfunction->nlocals(),
-                                             // FIXME: remove
-                                             0, 0, 0, 0, nil<T_O>(), 0,
-                                             cfunction->closed()->length(),
-                                             // FIXME: remove
-                                             cl__make_list(clasp_make_fixnum(7),
-                                                           ep),
-                                             trampoline
-                                             );
+      = core__makeGlobalBytecodeEntryPoint(fdesc, bytecode_module,
+                                           cfunction->nlocals(),
+                                           cfunction->closed()->length(),
+                                           ep.unsafe_fixnum(),
+                                           trampoline);
     cfunction->setInfo(func);
   }
   // Now replace the cfunctions in the cmodule literal vector with

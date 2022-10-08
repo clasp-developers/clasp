@@ -109,23 +109,11 @@ GlobalBytecodeEntryPoint_O::GlobalBytecodeEntryPoint_O(FunctionDescription_sp fd
                                                        const ClaspXepFunction& entry_point,
                                                        T_sp module,
                                                        uint16_t localsFrameSize,
-                                                       uint16_t required,
-                                                       uint16_t optional,
-                                                       uint16_t restSlot,
-                                                       uint16_t keyStart,
-                                                       T_sp keyConsts,
-                                                       unsigned char flags,
                                                        unsigned int environmentSize,
                                                        unsigned int entryPcN,
                                                        BytecodeTrampolineFunction trampoline )
 : GlobalEntryPointBase_O(fdesc, entry_point, module),
   _LocalsFrameSize(localsFrameSize),
-  _Required(required),
-  _Optional(optional),
-  _RestSlot(restSlot),
-  _KeyStart(keyStart),
-  _KeyConsts(keyConsts),
-  _Flags(flags),
   _EnvironmentSize(environmentSize),
   _EntryPcN(entryPcN),
   _Trampoline(trampoline)
@@ -476,38 +464,20 @@ CL_DEFUN
 GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescription_sp fdesc,
                                                                BytecodeModule_sp module,
                                                                size_t localsFrameSize,
-                                                               size_t required,
-                                                               size_t optional,
-                                                               size_t restSlot,
-                                                               size_t keyStart,
-                                                               T_sp keyConsts,
-                                                               size_t flags,
                                                                size_t environmentSize,
-                                                               List_sp pcIndices,
+                                                               size_t pcIndex,
                                                                Pointer_sp trampoline )
 {
-  if (cl__length(pcIndices)!=NUMBER_OF_ENTRY_POINTS) {
-    SIMPLE_ERROR("You must provide %zu entry-points - you provided %s", NUMBER_OF_ENTRY_POINTS, _rep_(pcIndices).c_str() );
-  }
-  unsigned int entryPcs[NUMBER_OF_ENTRY_POINTS];
   size_t idx = 0;
-  int entryPcN = oCar(pcIndices).unsafe_fixnum();
   ClaspXepFunction xep;
   xep.setup<BytecodeClosureEntryPoint>();
   auto entryPoint = gctools::GC<GlobalBytecodeEntryPoint_O>::allocate( fdesc,
                                                                        xep,
                                                                        module,
                                                                        localsFrameSize,
-                                                                       required,
-                                                                       optional,
-                                                                       restSlot,
-                                                                       keyStart,
-                                                                       keyConsts,
-                                                                       flags,
                                                                        environmentSize,
-                                                                       entryPcN,
-                                                                       (BytecodeTrampolineFunction)trampoline->ptr() );
-  return entryPoint;
+                                                                       pcIndex,
+                                                                       (BytecodeTrampolineFunction)tram  return entryPoint;
 }
 
 LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp original, void** entry_points) {

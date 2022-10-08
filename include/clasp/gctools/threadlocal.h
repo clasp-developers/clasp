@@ -58,7 +58,6 @@ typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 };
 namespace core {
 
-#define STACK_GROWS_UP 1
 #ifdef DEBUG_VIRTUAL_MACHINE
 #define DVM_TRACE_FRAME 0b0001
 extern int global_debug_virtual_machine;
@@ -110,11 +109,7 @@ struct VirtualMachine {
     this->_Running = false;
   }
   inline void push(core::T_O**& stackPointer, core::T_O* value) {
-#ifdef STACK_GROWS_UP
     stackPointer++;
-#else
-    stackPointer--;
-#endif
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,stackPointer);
     *stackPointer = value;
@@ -122,11 +117,7 @@ struct VirtualMachine {
 
   inline core::T_O* pop(core::T_O**& stackPointer) {
     core::T_O* value = *stackPointer;
-#ifdef STACK_GROWS_UP
     stackPointer--;
-#else
-    stackPointer++;
-#endif
     VM_CHECK(*this);
     return value;
   }
@@ -134,42 +125,23 @@ struct VirtualMachine {
   // Allocate a Vaslist object on the stack.
   inline core::T_O* alloca_vaslist1(core::T_O**& stackPointer,
                                     core::T_O** args, size_t nargs) {
-#ifdef STACK_GROWS_UP
     stackPointer += 2;
     *(stackPointer - 1) = (core::T_O*)args;
     *(stackPointer - 0) = Vaslist::make_shifted_nargs(nargs);
-#else
-    stackPointer -= 2;
-    *(stackPointer + 0) = (core::T_O*)args;
-    *(stackPointer + 1) = Vaslist::make_shifted_nargs(nargs);
-#endif
     VM_CHECK(*this);
-#ifdef STACK_GROWS_UP
     return gc::tag_vaslist<core::T_O*>((core::Vaslist*)(stackPointer - 1));
-#else
-    return gc::tag_vaslist<core::T_O*>((core::Vaslist*)(stackPointer));
-#endif
   }
 
   inline core::T_O* alloca_vaslist2(core::T_O**& stackPointer,
                                     core::T_O** args, size_t nargs) {
-#ifdef STACK_GROWS_UP
     core::T_O* vl = this->alloca_vaslist1(stackPointer,args,nargs);
     core::T_O* vl_backup = this->alloca_vaslist1(stackPointer,args,nargs);
-#else
-    core::T_O* vl_backup = this->alloca_vaslist1(stackPointer,args,nargs);
-    core::T_O* vl = this->alloca_vaslist1(stackPointer,args,nargs);
-#endif
     return vl;
   }
     
   // Drop NELEMS slots on the stack all in one go.
   inline void drop(core::T_O**& stackPointer, size_t nelems) {
-#ifdef STACK_GROWS_UP
     stackPointer -= nelems;
-#else
-    stackPointer += nelems;
-#endif
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,stackPointer);
   }
@@ -179,11 +151,7 @@ struct VirtualMachine {
   inline core::T_O** stackref(core::T_O**& stackPointer, ptrdiff_t n) {
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,stackPointer);
-#ifdef STACK_GROWS_UP
     return stackPointer - n;
-#else
-    return stackPointer + n;
-#endif
   }
 
   // Push a new frame with NLOCALS local variables.
@@ -194,91 +162,57 @@ struct VirtualMachine {
       printf("\nFRAME PUSH %p %p %lu unwind_counter %lu throw_counter %lu\n", this->_data, this->_data1, this->_counter0, this->_unwind_counter, this->_throw_counter);
     }
 #endif
-#ifdef STACK_GROWS_UP
     core::T_O** ret = framePointer + nlocals;
-#else
-    core::T_O** ret = framePointer - nlocals;
-#endif
     VM_STACK_POINTER_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,ret);
     return ret;
   }
 
   inline void setreg(T_O** framePointer, size_t base, core::T_O* value) {
-#ifdef STACK_GROWS_UP
     *(framePointer + base + 1) = value;
-#else
-    *(framePointer - base) = value;
-#endif
   }
 
   inline void savesp(T_O** framePointer, T_O**& stackPointer, size_t base) {
-#ifdef STACK_GROWS_UP
     *(framePointer + base + 1) = (core::T_O*)stackPointer;
-#else
-    *(framePointer - base) = (core::T_O*)stackPointer;
-#endif
   }
 
   inline void restoresp(T_O** framePointer, T_O**& stackPointer,
                         size_t base) {
-#ifdef STACK_GROWS_UP
     stackPointer = (core::T_O**)(*(framePointer + base + 1));
-#else
-    stackPointer = (core::T_O**)(*(framePointer - base));
-#endif
   }
 
   // Copy N elements from SOURCE into the current frame's register file
   // starting at BASE.
-  // If the stack grows up, SOURCE should be a pointer to the first element
-  // of the source data; otherwise the last.
   inline void copytoreg(core::T_O** framePointer, core::T_O** source,
                         size_t n, size_t base) {
-#ifdef STACK_GROWS_UP
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,source);
     std::copy(source, source + n, framePointer + base + 1);
-#else
-    std::copy_backward(source - n, source, framePointer - base);
-#endif
   }
 
   // Fill OBJECT into N registers starting at BASE.
   inline void fillreg(core::T_O** framePointer, core::T_O* object,
                       size_t n, size_t base) {
-#ifdef STACK_GROWS_UP
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,framePointer+base+1);
     std::fill(framePointer + base + 1, framePointer + base + n + 1, object);
-#else
-    std::fill(framePointer - base, framePointer - base + n, object);
-#endif
   }
 
   // Get a pointer to the nth register in the current frame.
   inline core::T_O** reg(core::T_O** framePointer, size_t n) {
-#ifdef STACK_GROWS_UP
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,framePointer+n+1);
     return framePointer + n + 1;
-#else
-    return framePointer - n;
-#endif
   }
 
   // Compute how many elements are on the stack in the current frame
   // but which are not part of the register file.
   inline ptrdiff_t npushed(T_O** framePointer, T_O**& stackPointer,
                            size_t nlocals) {
-#ifdef STACK_GROWS_UP
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,stackPointer);
     VM_ASSERT_ALIGNED(*this,framePointer);
     return stackPointer - nlocals - framePointer;
-#else
-    return framePointer - nlocals - stackPointer;
-#endif
   }
 
   // Copy the n most recent pushes to the given memory.
@@ -287,13 +221,9 @@ struct VirtualMachine {
   // of the range regardless of stack growth direction.
   template < class OutputIter >
   inline void copyto(core::T_O**& stackPointer, size_t n, OutputIter dest) {
-#ifdef STACK_GROWS_UP
     VM_CHECK(*this);
     VM_ASSERT_ALIGNED(*this,stackPointer+1-n);
     std::copy(stackPointer + 1 - n, stackPointer + 1, dest);
-#else
-    std::copy(stackPointer, stackPointer + n, dest);
-#endif
   }
 
   VirtualMachine();

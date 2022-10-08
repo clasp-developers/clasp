@@ -333,31 +333,12 @@ FORWARD(GlobalBytecodeEntryPoint);
  class GlobalBytecodeEntryPoint_O : public GlobalEntryPointBase_O {
    LISP_CLASS(core,CorePkg,GlobalBytecodeEntryPoint_O,"GlobalBytecodeEntryPoint",GlobalEntryPointBase_O);
  public:
-   /*! A general entry point at 0 and fixed arity entry points from 1...(NUMBER_OF_ENTRY_POINTS-1)
-       The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
-   */
-   
    // The frame size this function needs for local variables.
    unsigned short   _LocalsFrameSize;
-  // Number of required args.
-   unsigned short   _Required;
-  // Number of optional args.
-   unsigned short   _Optional;
-  // The frame slot for the &REST arg if there is one.
-   unsigned short   _RestSlot;
-  // A fixed offset (to be added to key-consts) for where the stack slots for the keyword arguments are.
-   unsigned short    _KeyStart;
-  // An array of named &KEY symbols.
-   T_sp             _KeyConsts;
-  // Packed flags for:
-  //  1. If lambda list has &REST
-  //  2. If lambda list has &KEY
-  //  3. If lambda list has &ALLOW-OTHER-KEYS
-   unsigned char    _Flags;
   // Number of closure values in the environment
    unsigned int     _EnvironmentSize;
-  // Entry points into the bytes vector in the containing module.
-  // These are offsets instead of an interior pointers to make dumping/loading/GC considerations easier.
+  // Entry point into the bytes vector in the containing module.
+  // This is an offset instead of an interior pointer to make dumping/loading/GC considerations easier.
    unsigned int     _EntryPcN;
    BytecodeTrampolineFunction _Trampoline;
  public:
@@ -366,12 +347,6 @@ FORWARD(GlobalBytecodeEntryPoint);
                               const ClaspXepFunction& entry_point,
                               T_sp code,
                               unsigned short localsFrameSize,
-                              unsigned short required,
-                              unsigned short optional,
-                              unsigned short restSlot,
-                              unsigned short keyStart,
-                              T_sp keyConsts,
-                              unsigned char flags,
                               unsigned int environmentSize,
                               unsigned int entryPcN,
                               BytecodeTrampolineFunction trampoline);
@@ -384,12 +359,6 @@ FORWARD(GlobalBytecodeEntryPoint);
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup);
 
    CL_DEFMETHOD Fixnum localsFrameSize() const { return this->_LocalsFrameSize; };
-   CL_DEFMETHOD Fixnum required() const { return this->_Required; };
-   CL_DEFMETHOD Fixnum optional() const { return this->_Optional; };
-   CL_DEFMETHOD Fixnum restSlot() const { return this->_RestSlot; };
-   CL_DEFMETHOD Fixnum keyStart() const { return this->_KeyStart; };
-   CL_DEFMETHOD T_sp keyConsts() const { return this->_KeyConsts; };
-   CL_DEFMETHOD Fixnum flags() const { return this->_Flags; };
    CL_DEFMETHOD Fixnum environmentSize() const { return this->_EnvironmentSize; };
    size_t entryPcN() const;
 
@@ -472,14 +441,8 @@ GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName
 GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescription_sp fdesc,
                                                                BytecodeModule_sp module,
                                                                size_t localsFrameSize,
-                                                               size_t required,
-                                                               size_t optional,
-                                                               size_t restSlot,
-                                                               size_t keyStart,
-                                                               T_sp keyConsts,
-                                                               size_t flags,
                                                                size_t environmentSize,
-                                                               List_sp pcIndices,
+                                                               size_t pcIndex,
                                                                Pointer_sp trampoline);
 
 
