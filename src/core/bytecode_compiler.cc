@@ -736,12 +736,8 @@ GlobalBytecodeEntryPoint_sp Cfunction_O::link_function(T_sp compile_info) {
     GlobalBytecodeEntryPoint_sp func
       = core__makeGlobalBytecodeEntryPoint(fdesc, bytecode_module,
                                            cfunction->nlocals(),
-                                          // FIXME: remove
-                                           0, 0, 0, 0, nil<T_O>(), 0,
                                            cfunction->closed()->length(),
-                                          // FIXME: remove
-                                           cl__make_list(clasp_make_fixnum(7),
-                                                         ep));
+                                           ep.unsafe_fixnum());
     cfunction->setInfo(func);
   }
   // Now replace the cfunctions in the cmodule literal vector with
