@@ -518,13 +518,17 @@
     (cmp:irc-begin-block cleanup)
     ;; Save values, call the cleanup, continue unwinding.
     ;; Note that we don't need to pop the dynenv, as the unwinder does so.
-    (let* ((nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
+    (let* ((dest (%intrinsic-call "cc_get_unwind_dest" nil "dest"))
+           (index (%intrinsic-call "cc_get_unwind_dest_index" nil "dest-index"))
+           (nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
            (mv-temp (cmp:alloca-temp-values nvals)))
       (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
       (cmp:with-landing-pad (maybe-entry-landing-pad (bir:parent instruction)
                                                      *tags*)
         (closure-call-or-invoke (in (first (bir:inputs instruction))) nil)
         (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))
+        (%intrinsic-call "cc_set_unwind_dest_index" (list index))
+        (%intrinsic-call "cc_set_unwind_dest" (list dest))
         (%intrinsic-invoke-if-landing-pad-or-call "cc_sjlj_continue_unwinding" nil))
       (cmp:irc-unreachable)))
   #+(or)
@@ -1703,9 +1707,12 @@
     ((inst bir:load-time-value-reference) abi)
   (declare (ignore abi))
   (out (let* ((ltv (first (bir:inputs inst)))
-              (index (gethash ltv *constant-values*))
+              (imm-or-index (gethash ltv *constant-values*))
               (label (datum-name-as-string (bir:output inst))))
-         (cmp:irc-t*-load (%indexed-literal-ref index label)))
+         (assert imm-or-index () "Load-time-value not found!")
+         (if (integerp imm-or-index)
+             (cmp:irc-t*-load (%indexed-literal-ref imm-or-index label))
+             imm-or-index))
        (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-reference)
@@ -1720,15 +1727,7 @@
               (immediate-or-index (gethash constant *constant-values*)))
          (assert immediate-or-index () "Constant not found!")
          (if (integerp immediate-or-index)
-             (multiple-value-bind (literals literals-type)
-                 (literal:ltv-global)
-               (cmp:irc-t*-load
-                (cmp:irc-typed-gep-variable literals-type
-                                      literals
-                                      (list (%size_t 0)
-                                            (%i64 immediate-or-index))
-                                      label)
-                label))
+             (cmp:irc-t*-load (%indexed-literal-ref immediate-or-index label))
              immediate-or-index))
        (bir:output inst)))
 
@@ -2041,29 +2040,30 @@
 (defun get-or-create-lambda-name (bir)
   (or (bir:name bir) 'top-level))
 
+(defun allocate-constant (ir value read-only-p)
+  (let ((immediate (core:create-tagged-immediate-value-or-nil value)))
+    (setf (gethash ir *constant-values*)
+          (if immediate
+              (cmp:irc-int-to-ptr (%i64 immediate) cmp:%t*%)
+              (literal:reference-literal value read-only-p)))))
+
 ;;; Given a BIR module, allocate its constants and load time
 ;;; values. We translate immediates directly, and use an index into
 ;;; the literal table for non-immediate constants.
 (defun allocate-module-constants (module)
   (cleavir-set:doset (constant (bir:constants module))
-    (let* ((value (bir:constant-value constant))
-           (immediate (core:create-tagged-immediate-value-or-nil value)))
-      (setf (gethash constant *constant-values*)
-            (if immediate
-                (cmp:irc-int-to-ptr
-                 (%i64 immediate)
-                 cmp:%t*%)
-                (literal:reference-literal value t)))))
-  (assert (or (cleavir-set:empty-set-p (bir:load-time-values module))
-              (eq cst-to-ast:*compiler* 'cl:compile-file))
-          ()
-          "Found load-time-values to dump but not file compiling!")
-  (cleavir-set:doset (load-time-value (bir:load-time-values module))
-    (let ((form (bir:form load-time-value)))
-      (setf (gethash load-time-value *constant-values*)
-            ;; Allocate an index in the literal table for this load-time-value.
-            (literal:load-time-value-from-thunk
-             (compile-form form *clasp-env*))))))
+    (allocate-constant constant (bir:constant-value constant) t))
+  (if (eq cst-to-ast:*compiler* 'cl:compile-file)
+      (cleavir-set:doset (load-time-value (bir:load-time-values module))
+        (let ((form (bir:form load-time-value)))
+          (setf (gethash load-time-value *constant-values*)
+                ;; Allocate an index in the literal table
+                ;; for this load-time-value.
+                (literal:load-time-value-from-thunk
+                 (compile-form form *clasp-env*)))))
+      (cleavir-set:doset (load-time-value (bir:load-time-values module))
+        (allocate-constant load-time-value (eval (bir:form load-time-value))
+                           (bir:read-only-p load-time-value)))))
 
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
   ;; Create llvm IR functions for each BIR function.
