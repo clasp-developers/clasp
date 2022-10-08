@@ -204,7 +204,7 @@ void vm_record_playback(void* value, const char* name) {
 static unsigned char *long_dispatch(VirtualMachine&,
                                     unsigned char*,
                                     MultipleValues& multipleValues,
-                                    T_O**, size_t, Closure_O*,
+                                    T_O**, T_O**, size_t, Closure_O*,
                                     core::T_O**, core::T_O**&,
                                     size_t, core::T_O**,
                                     uint8_t);
@@ -214,7 +214,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, name);
 __attribute__((optnone))
 #endif
 static gctools::return_type bytecode_vm(VirtualMachine& vm,
-                                        T_O** literals,
+                                        T_O** literals, T_O** closed,
                                         size_t nlocals, Closure_O* closure,
                                         core::T_O** fp, // frame pointer
                                         core::T_O**& sp, // stack pointer
@@ -273,7 +273,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_closure: {
       uint8_t n = *(++pc);
       DBG_VM("closure %" PRIu8 "\n", n);
-      vm.push(sp, (*closure)[n].raw_());
+      vm.push(sp, closed[n]);
       pc++;
       break;
     }
@@ -747,7 +747,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       if (setjmp(target)) sp = old_sp;
       again:
       try {
-        bytecode_vm(vm, literals, nlocals, closure, fp, sp, lcc_nargs, lcc_args);
+        bytecode_vm(vm, literals, closed, nlocals, closure, fp, sp, lcc_nargs, lcc_args);
         pc = vm._pc;
       }
       catch (Unwind &uw) {
@@ -798,7 +798,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       T_sp symbol((gctools::Tagged)literals[c]);
       vm._pc = pc;
       call_with_variable_bound(symbol, value,
-                               [&]() { return bytecode_vm(vm, literals,
+                               [&]() { return bytecode_vm(vm, literals, closed,
                                                           nlocals, closure,
                                                           fp, sp,
                                                           lcc_nargs, lcc_args);
@@ -863,7 +863,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       // In a separate function to facilitate better icache utilization
       // by bytecode_vm (hopefully)
       pc++;
-      pc = long_dispatch(vm, pc, multipleValues, literals, nlocals, closure, fp, sp, lcc_nargs, lcc_args, *pc);
+      pc = long_dispatch(vm, pc, multipleValues, literals, closed, nlocals, closure, fp, sp, lcc_nargs, lcc_args, *pc);
       break;
     }
     default:
@@ -880,6 +880,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
                                     unsigned char *pc,
                                     MultipleValues& multipleValues,
                                     T_O** literals,
+                                    T_O** closed,
                                     size_t nlocals,
                                     Closure_O* closure,
                                     core::T_O** fp,
@@ -910,7 +911,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(pc + 1);
     uint16_t n = low + (*(pc + 2) << 8);
     DBG_VM1("long closure %" PRIu16 "\n", n);
-    vm.push(sp, (*closure)[n].raw_());
+    vm.push(sp, closed[n]);
     pc += 3;
     break;
   }
@@ -1210,7 +1211,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     pc += 3;
     T_sp symbol((gctools::Tagged)literals[c]);
     call_with_variable_bound(symbol, value,
-                             [&]() { return bytecode_vm(vm, literals,
+                             [&]() { return bytecode_vm(vm, literals, closed,
                                                         nlocals, closure,
                                                         fp, sp, lcc_nargs, lcc_args);
                              });
@@ -1255,6 +1256,9 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   size_t nlocals = entryPoint->_LocalsFrameSize;
   core::BytecodeModule_sp module = gc::As_assert<core::BytecodeModule_sp>(entryPoint->_Code);
   core::T_O** literals = (core::T_O**)&gc::As_assert<core::SimpleVector_sp>(module->_Literals)->_Data[0];
+  core::T_O** closed = NULL;
+  if (entryPoint->environmentSize() != 0)
+    closed = (core::T_O**)(closure->_Slots.data());
   core::VirtualMachine& vm = my_thread->_VM;
   VM_CURRENT_DATA(vm, (lcc_nargs>=2) ? lcc_args[1] : NULL);
   VM_CURRENT_DATA1(vm, (lcc_nargs>=3) ? lcc_args[2] : NULL);
@@ -1272,7 +1276,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   try {
 #if 1
     core::T_mv res = core::funwind_protect([&] {
-      gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure, fp, sp, lcc_nargs, lcc_args);
+      gctools::return_type res = bytecode_vm(vm, literals, closed, nlocals, closure, fp, sp, lcc_nargs, lcc_args);
       vm._pc = old_pc;
       return core::T_mv(res);
     },
@@ -1282,7 +1286,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
 #ifdef DEBUG_VIRTUAL_MACHINE_STACK_POINTER
     core::T_O** save_stackPointer = vm._stackPointer;
 #endif
-    gctools::return_type res = bytecode_vm(vm, literals, nlocals, closure, fp, sp, lcc_nargs, lcc_args);
+    gctools::return_type res = bytecode_vm(vm, literals, closed, nlocals, closure, fp, sp, lcc_nargs, lcc_args);
     vm._pc = old_pc;
 #ifdef DEBUG_VIRTUAL_MACHINE_STACK_POINTER
     intptr_t delta_stackPointer = (intptr_t)save_stackPointer - (intptr_t)vm._stackPointer;
