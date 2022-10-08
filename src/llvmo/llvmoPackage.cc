@@ -637,30 +637,6 @@ target triple = "x86_64-pc-linux-gnu"
 @__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
 @_ZL16global_save_args = internal unnamed_addr global i64* null, align 8, !dbg !0
 
-; Function Attrs: mustprogress uwtable
-define dso_local { i8*, i64 } @interpreter_trampoline_with_stackmap({ i8*, i64 } (i8*, i64, i8**)* nocapture noundef readonly %0, i8* noundef %1, i64 noundef %2, i8** noundef %3) local_unnamed_addr #0 !dbg !104 {
-  %5 = alloca [3 x i64], align 16
-  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %5)
-  call void @llvm.dbg.value(metadata { i8*, i64 } (i8*, i64, i8**)* %0, metadata !117, metadata !DIExpression()), !dbg !125
-  call void @llvm.dbg.value(metadata i8* %1, metadata !118, metadata !DIExpression()), !dbg !125
-  call void @llvm.dbg.value(metadata i64 %2, metadata !119, metadata !DIExpression()), !dbg !125
-  call void @llvm.dbg.value(metadata i8** %3, metadata !120, metadata !DIExpression()), !dbg !125
-  %6 = bitcast [3 x i64]* %5 to i8*, !dbg !126
-  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %6) #5, !dbg !126
-  call void @llvm.dbg.declare(metadata [3 x i64]* %5, metadata !121, metadata !DIExpression()), !dbg !127
-  %7 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 0, !dbg !128
-  %8 = ptrtoint i8* %1 to i64, !dbg !134
-  store i64 %8, i64* %7, align 16, !dbg !135, !tbaa !136
-  %9 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 1, !dbg !138
-  store i64 %2, i64* %9, align 8, !dbg !139, !tbaa !136
-  %10 = ptrtoint i8** %3 to i64, !dbg !140
-  %11 = getelementptr inbounds [3 x i64], [3 x i64]* %5, i64 0, i64 2, !dbg !141
-  store i64 %10, i64* %11, align 16, !dbg !142, !tbaa !136
-  %12 = call { i8*, i64 } %0(i8* noundef %1, i64 noundef %2, i8** noundef %3), !dbg !143
-  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %6) #5, !dbg !144
-  ret { i8*, i64 } %12, !dbg !144
-}
-
 ; Function Attrs: nofree nosync nounwind readnone speculatable willreturn
 declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
 
@@ -905,153 +881,16 @@ attributes #6 = { nofree nosync willreturn }
 //  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
   JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  core::Pointer_sp interpreter_ptr = jit->lookup(jitDylib,"interpreter_trampoline_with_stackmap");
   core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib,"bytecode_trampoline_with_stackmap");
 //  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
   if (getenv("CLASP_DISABLE_TRAMPOLINES")) {
-    printf("%s:%d:%s CLASP_DISABLE_TRAMPOLINES is set so disabling trampolines\n interpeter_trampoline at %p\n bytecode_trampoline at %p", __FILE__, __LINE__, __FUNCTION__, (void*)interpreter_ptr->ptr(), (void*)bytecode_ptr->ptr());
+    printf("%s:%d:%s CLASP_DISABLE_TRAMPOLINES is set so disabling trampolines\n bytecode_trampoline at %p", __FILE__, __LINE__, __FUNCTION__, (void*)bytecode_ptr->ptr());
     return Values0<core::T_O>();
   }
-  core::interpreter_trampoline = (trampoline_function)interpreter_ptr->ptr();
   core::bytecode_trampoline = (bytecode_trampoline_function)bytecode_ptr->ptr();
 //  printf("%s:%d:%s after interpreter_t
-return Values(bytecode_ptr,interpreter_ptr);
+return Values(bytecode_ptr);
 }
-
-
-#if 0
-CL_DEFUN core::Pointer_sp llvm_sys__installInterpreterTrampoline() {
-  std::string trampoline = R"trampoline(
-
-@__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
-@__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
-
-define { i8*, i64 } @interpreter_tail_call_with_stackmap({ i8*, i64 } (i8*, i64, i8**)* nocapture %fn, i8* %closure, i64 %nargs, i8** %args) #0  {
-entry:
-  %Registers = alloca [3 x i64], align 16
-  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %Registers)
-  %0 = bitcast [3 x i64]* %Registers to i8*
-  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %0) #2
-  %1 = ptrtoint i8* %closure to i64
-  %arrayidx = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 0
-  store i64 %1, i64* %arrayidx, align 16
-  %arrayidx1 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 1
-  store i64 %nargs, i64* %arrayidx1, align 8
-  %2 = ptrtoint i8** %args to i64
-  %arrayidx2 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 2
-  store i64 %2, i64* %arrayidx2, align 16
-  %call = call { i8*, i64 } %fn( i8* %closure, i64 %nargs, i8** %args)
-  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %0) #2
-  ret { i8*, i64 } %call
-}
-
-declare i32 @__gxx_personality_v0(...) #4
-
-define void @"CLASP_STARTUP_trampoline"() #4 personality i32 (...)* @__gxx_personality_v0 {
-entry:
-  ret void
-}
-
-declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #1
-
-declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #1
-
-declare void @llvm.experimental.stackmap(i64, i32, ...) #3
-
-
-attributes #0 = { mustprogress uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #1 = { argmemonly mustprogress nofree nosync nounwind willreturn }
-attributes #2 = { nounwind }
-attributes #3 = { nofree nosync willreturn }
-attributes #4 = { nounwind "frame-pointer"="all" }
-
-)trampoline";
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  trampoline = std::regex_replace( trampoline, std::regex("CLASP_STARTUP"), std::string(MODULE_STARTUP_FUNCTION_NAME) );
-  Module_sp module = llvm_sys__parseIRString(trampoline, context, "interpreter_trampoline" );
-//  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
-  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
-  ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  core::Pointer_sp ptr = jit->lookup(jitDylib,"interpreter_tail_call_with_stackmap");
-//  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
-  if (getenv("CLASP_DISABLE_TRAMPOLINES")) {
-    printf("%s:%d:%s CLASP_DISABLE_TRAMPOLINES is set so disabling trampoline that is located at %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)ptr->ptr());
-    return Pointer_O::create(NULL);
-  }
-  core::interpreter_trampoline = (trampoline_function)ptr->ptr();
-//  printf("%s:%d:%s after interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
-  return ptr;
-}
-#endif
-
-#if 0
-
-CL_DEFUN core::Pointer_sp llvm_sys__installBytecodeTrampoline() {
-  std::string trampoline = R"trampoline(
-
-@__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
-@__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
-
-define { i8*, i64 } @bytecode_tail_call_with_stackmap({ i8*, i64 } (i8*, i8*, i64, i8**)* nocapture %fn, i8* %pc, i8* %closure, i64 %nargs, i8** %args) #0  {
-entry:
-  %Registers = alloca [3 x i64], align 16
-  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %Registers)
-  %0 = bitcast [3 x i64]* %Registers to i8*
-  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %0) #2
-  %1 = ptrtoint i8* %closure to i64
-  %arrayidx = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 0
-  store i64 %1, i64* %arrayidx, align 16
-  %arrayidx1 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 1
-  store i64 %nargs, i64* %arrayidx1, align 8
-  %2 = ptrtoint i8** %args to i64
-  %arrayidx2 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 2
-  store i64 %2, i64* %arrayidx2, align 16
-  %call = call { i8*, i64 } %fn( i8* %pc, i8* %closure, i64 %nargs, i8** %args)
-  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %0) #2
-  ret { i8*, i64 } %call
-}
-
-declare i32 @__gxx_personality_v0(...) #4
-
-define void @"CLASP_STARTUP_trampoline"() #4 personality i32 (...)* @__gxx_personality_v0 {
-entry:
-  ret void
-}
-
-declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #1
-
-declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #1
-
-declare void @llvm.experimental.stackmap(i64, i32, ...) #3
-
-
-attributes #0 = { mustprogress uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #1 = { argmemonly mustprogress nofree nosync nounwind willreturn }
-attributes #2 = { nounwind }
-attributes #3 = { nofree nosync willreturn }
-attributes #4 = { nounwind "frame-pointer"="all" }
-
-)trampoline";
-
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  trampoline = std::regex_replace( trampoline, std::regex("CLASP_STARTUP"), std::string(MODULE_STARTUP_FUNCTION_NAME) );
-  Module_sp module = llvm_sys__parseIRString(trampoline, context, "bytecode_trampoline" );
-//  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
-  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
-  ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  core::Pointer_sp ptr = jit->lookup(jitDylib,"bytecode_tail_call_with_stackmap");
-//  printf("%s:%d:%s before bytecode_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::bytecode_trampoline );
-  if (getenv("CLASP_DISABLE_TRAMPOLINES")) {
-    printf("%s:%d:%s CLASP_DISABLE_TRAMPOLINES is set so disabling trampoline that is located at %p in pid %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)ptr->ptr(), getpid());
-    return Pointer_O::create(NULL);
-  }
-  core::bytecode_trampoline = (bytecode_trampoline_function)ptr->ptr();
-//  printf("%s:%d:%s after bytecode_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::bytecode_trampoline );
-  return ptr;
-}
-
-#endif
-
 
 
 

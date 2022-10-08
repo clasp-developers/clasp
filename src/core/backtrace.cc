@@ -159,11 +159,7 @@ T_sp dwarf_ep(size_t frameIndex,
   //
   // If the object file contains the interpreter_trampoline - then we are in the interpreter
   //
-  if (ofi->codeStart()<=(uintptr_t)interpreter_trampoline && (uintptr_t)interpreter_trampoline<ofi->codeEnd()) {
-    functionStartAddress = (void*)interpreter_trampoline;
-    D(printf("%s:%d:%s interpreter trampoline functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress ););
-    return nil<T_O>();
-  } else if (ofi->codeStart()<=(uintptr_t)bytecode_trampoline && (uintptr_t)bytecode_trampoline<ofi->codeEnd()) {
+  if (ofi->codeStart()<=(uintptr_t)bytecode_trampoline && (uintptr_t)bytecode_trampoline<ofi->codeEnd()) {
     functionStartAddress = (void*)bytecode_trampoline;
     D(printf("%s:%d:%s bytecode trampoline functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress ););
     return nil<T_O>();
