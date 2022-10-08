@@ -55,7 +55,6 @@ THE SOFTWARE.
 
 namespace core {
 
-trampoline_function interpreter_trampoline = NULL;
 bytecode_trampoline_function bytecode_trampoline = bytecode_call; // default
 
 void CodeEntryPoint_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** ptr) {

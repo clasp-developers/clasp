@@ -560,9 +560,6 @@ namespace core {
 
 
 namespace core {
-typedef gctools::return_type (*trampoline_function)(void* fn, core::T_O* closure, size_t nargs, core::T_O** args );
-extern trampoline_function interpreter_trampoline;
-
 typedef gctools::return_type (*bytecode_trampoline_function)(unsigned char* pc, core::T_O* closure, size_t nargs, core::T_O** args );
 extern bytecode_trampoline_function bytecode_trampoline;
 
