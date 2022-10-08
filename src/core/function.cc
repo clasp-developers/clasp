@@ -477,7 +477,8 @@ GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescripti
                                                                        localsFrameSize,
                                                                        environmentSize,
                                                                        pcIndex,
-                                                                       (BytecodeTrampolineFunction)tram  return entryPoint;
+                                                                       (BytecodeTrampolineFunction)trampoline->ptr() );
+  return entryPoint;
 }
 
 LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp original, void** entry_points) {
