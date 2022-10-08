@@ -43,8 +43,8 @@ namespace core {
 
 
 void BytecodeModule_O::initialize() {
-  this->_Literals = ComplexVector_T_O::make(16);
-  this->_Bytecode = ComplexVector_byte8_t_O::make(1024,0,true,core::make_fixnum(0),nil<core::T_O>(),false, core::make_fixnum(0));
+  this->_Literals = nil<core::T_O>();
+  this->_Bytecode = nil<core::T_O>();
 }
 
 CL_DEFMETHOD
