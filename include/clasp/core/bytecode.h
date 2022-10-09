@@ -32,6 +32,7 @@ public:
   typedef T_O                        Bytecode_O_Type;
   typedef T_sp                       Literals_sp_Type;
   typedef T_sp                       Bytecode_sp_Type;
+public:
   Literals_sp_Type                   _Literals;
   Bytecode_sp_Type                   _Bytecode;
   T_sp                               _CompileInfo;
@@ -56,9 +57,48 @@ public:
 
 };
 
+namespace core {
+FORWARD(GFBytecodeModule);
+class GFBytecodeModule_O : public core::CxxObject_O {
+  LISP_CLASS(core, CorePkg, GFBytecodeModule_O, "GFBytecodeModule", core::CxxObject_O);
+ public:
+  void initialize();
+public:
+  typedef T_O                        Literals_O_Type;
+  typedef T_O                        GFBytecode_O_Type;
+  typedef T_sp                       Literals_sp_Type;
+  typedef T_sp                       GFBytecode_sp_Type;
+  Literals_sp_Type                   _Literals;
+  GFBytecode_sp_Type                 _GFBytecode;
+  T_sp                               _CompileInfo;
+
+public:
+  CL_LISPIFY_NAME(GFBytecodeModule/make)
+  CL_DEF_CLASS_METHOD
+  static GFBytecodeModule_sp make() {
+    // When we can gc code allocate entire block in GC memory
+    GFBytecodeModule_sp codeblock = gctools::GC<GFBytecodeModule_O>::allocate<gctools::RuntimeStage>();
+    return codeblock;
+  };
+
+  Literals_sp_Type literals() const;
+  void setf_literals(T_sp obj);
+  GFBytecode_sp_Type bytecode() const;
+  void setf_bytecode(T_sp obj);
+  GFBytecode_sp_Type compileInfo() const;
+  void setf_compileInfo(T_sp obj);
+  GFBytecodeModule_O() {};
+};
+
+};
+
+
 extern "C" {
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure,
                                    size_t lcc_nargs, core::T_O** lcc_args);
+
+gctools::return_type gfbytecode_call(unsigned char* pc, core::T_O* lcc_closure,
+                                     size_t lcc_nargs, core::T_O** lcc_args);
 
 }; // namespace core
 

@@ -992,14 +992,6 @@ bool ValueEnvironment_O::activationFrameElementBoundP(int idx) const {
   return vframe->boundp_entry(idx);
 }
 
-CL_LISPIFY_NAME(makeValueEnvironment);
-DOCGROUP(clasp)
-CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent) {
-  ValueEnvironment_sp env(ValueEnvironment_O::create());
-  env->setupForLambdaListHandler(llh, parent);
-  return env;
-}
-
 CL_LISPIFY_NAME(makeValueEnvironmentForNumberOfEntries);
 CL_LAMBDA(num-args parent &optional invisible)
 DOCGROUP(clasp)
@@ -1032,24 +1024,6 @@ CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(
     env->defineSpecialBinding(gc::As<Symbol_sp>(oCar(cur)));
   }
   return env;
-}
-
-void ValueEnvironment_O::setupForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent) {
-  List_sp classifiedSymbols = llh->classifiedSymbols();
-  this->setupParent(parent);
-  int numberOfLexicals = 0;
-  for (auto cur : classifiedSymbols) {
-    List_sp classifiedSymbol = coerce_to_list(oCar(cur));
-    Symbol_sp classification = gc::As<Symbol_sp>(oCar(classifiedSymbol));
-    if (classification == ext::_sym_lexicalVar) {
-      ++numberOfLexicals;
-    } else if (classification == ext::_sym_specialVar) {
-      // handle special declarations
-      Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classifiedSymbol));
-      this->defineSpecialBinding(sym);
-    }
-  }
-  this->_ActivationFrame = ValueFrame_O::create(numberOfLexicals, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
 }
 
 string ValueEnvironment_O::summaryOfContents() const {

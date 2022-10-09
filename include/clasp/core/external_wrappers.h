@@ -67,21 +67,6 @@ public:
     this->fixupOneCodePointer( fixup, (void**)&this->mptr );
   };
 
-  static inline LCC_RETURN wrapper_entry_point_n(const LambdaListHandlerWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
-  {
-    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler, numSpecialBindings, specialBindingsVLA, frame, sizeof...(ARGS)+1);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
-    OT* otep  = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::goFrame(frame->arguments(0));
-    return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),otep,std::move(all_args));
-  }
-
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -144,21 +129,6 @@ public:
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
     this->fixupOneCodePointer( fixup, (void**)&this->mptr );
   };
-
-  static inline LCC_RETURN wrapper_entry_point_n(const LambdaListHandlerWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
-  {
-    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler, numSpecialBindings, specialBindingsVLA, frame, sizeof...(ARGS)+1);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
-    OT* otep  = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::goFrame(frame->arguments(0));
-    return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),otep,std::move(all_args));
-  }
 
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
@@ -297,9 +267,12 @@ public:
     T_sp theClass = lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol());
     if (theClass.nilp()) {
       LOG(("Adding class(%s) to environment") , OT::static_className());
+      DEPRECATED();
+#if 0
       lisp_addClassSymbol(OT::static_classSymbol(),
                           OT::staticCreator(),
                           OT::Bases::baseClass1Id() );
+#endif
     }
   }
 

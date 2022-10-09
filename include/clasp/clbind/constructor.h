@@ -199,25 +199,6 @@ public:
   WRAPPER_Constructor_O(core::FunctionDescription_sp fdesc) : core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),nil<core::T_O>()) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
 
-
-  static inline LCC_RETURN wrapper_entry_point_n(const LambdaListHandlerWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
-  {
-    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    MAKE_STACK_FRAME(frame,2);
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler,
-                                              numSpecialBindings,
-                                              specialBindingsVLA,
-                                              frame,
-                                              2);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
-    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::goFrame(frame->arguments());
-    return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(std::move(all_args));
-  }
-
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);

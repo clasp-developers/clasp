@@ -145,14 +145,6 @@ CL_DEFUN bool core__instancep(T_sp obj) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(lambda_list_handler_p)dx")
-DOCGROUP(clasp)
-CL_DEFUN bool core__lambda_list_handler_p(T_sp obj) {
-  return gc::IsA<LambdaListHandler_sp>(obj);
-};
-
-CL_LAMBDA(arg)
-CL_DECLARE();
 CL_DOCSTRING(R"dx(numberP)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__numberp(T_sp obj) {

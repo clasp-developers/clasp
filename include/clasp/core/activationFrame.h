@@ -147,9 +147,6 @@ public:
 
   static ValueFrame_sp createFromReversedCons(List_sp values, T_sp parent);
 
-  static ValueFrame_sp createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent);
-
-
  private:
   ValueFrame_O() = delete;
  public:

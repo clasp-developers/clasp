@@ -498,14 +498,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
-#if USE_BYTECODE_WRAPPERS==1
-  printf("%s:%d:%s USE_BYTECODE_WRAPPERS is ON\n", __FILE__, __LINE__, __FUNCTION__);
-#elif USE_BYTECODE_WRAPPERS==0
-  printf("%s:%d:%s USE_BYTECODE_WRAPPERS is UNDEFINED - using LambdaListHandlerWrappers\n", __FILE__, __LINE__, __FUNCTION__);
-#else
-# error "USE_BYTECODE_WRAPPERS must be 0 or 1"
-#endif
-
   const char* trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
   if (trigger) {
     size_t strigger = atoi(trigger);

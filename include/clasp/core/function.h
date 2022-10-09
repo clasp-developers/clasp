@@ -205,7 +205,6 @@ namespace core {
     virtual int column() const {
       return this->fdesc()->column;
     }
-    virtual void setLambdaListHandler(LambdaListHandler_sp llh) { SUBIMP(); };
     void setf_column(int x) { this->fdesc()->column = x; };
     
     virtual void __write__(T_sp) const;
@@ -259,7 +258,6 @@ namespace core {
      printf("%s:%d:%s Subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ );
      abort();
    }
-   virtual void setLambdaListHandler(LambdaListHandler_sp llh) {SUBIMP();};
    void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
    CL_DEFMETHOD T_sp EntryPoint_code() const { return this->_Code; };
  };
@@ -299,13 +297,10 @@ FORWARD(GlobalEntryPointBase);
        The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
    */
    ClaspXepFunction _EntryPoints;
-   LambdaListHandler_sp _lambdaListHandler; // fixme2022 REMOVE THIS WHEN WE SWITCH TO BYTECODE WRAPPERS
  public:
   // Accessors
    GlobalEntryPointBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code );
    GlobalEntryPointBase_O() {};
-   virtual void setLambdaListHandler(core::LambdaListHandler_sp llh) {this->_lambdaListHandler = llh; };
-
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
  };

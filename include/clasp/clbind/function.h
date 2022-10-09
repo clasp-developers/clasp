@@ -121,20 +121,6 @@ public:
     this->fixupOneCodePointer( fixup, (void**)&this->fptr );
   };
 
-  static inline LCC_RETURN handler_entry_point_n(const LambdaListHandlerWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
-  {
-    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    DO_DRAG_CXX_CALLS();
-    MAKE_STACK_FRAME(frame,sizeof...(ARGS));
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler, numSpecialBindings,specialBindingsVLA,frame,sizeof...(ARGS));
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope, lcc_nargs, lcc_args  );
-    std::tuple<translate::from_object<ARGS,PUREOUTS>...> all_args(arg_tuple<0,Policies,ARGS...>::goFrame(frame->arguments()));
-    return apply_and_return<Policies,RT,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
-  }
-
   static inline LCC_RETURN handler_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);

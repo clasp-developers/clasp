@@ -33,10 +33,6 @@ THE SOFTWARE.
 // Set system wide debug flags here
 // ----------------------------------------------------------------------------
 
-// Use LambdaListHandlerWrapper if USE_BYTECODE_WRAPPERS is 0
-//#define USE_BYTECODE_WRAPPERS 0
-// Use BytecodeWrapper if USE_BYTECODE_WRAPPERS is 1
-#define USE_BYTECODE_WRAPPERS 1
 
 #if 0
 //// DEBUG_RUNTIME defined and type errors print more info

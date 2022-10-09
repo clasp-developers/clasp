@@ -52,10 +52,6 @@ List_sp Argument::classified() const {
   SIMPLE_ERROR(("Illegal target"));
 }
 
-LambdaListHandler_sp Argument::lambdaListHandler() const {
-  return ((gc::As<LambdaListHandler_sp>(this->_ArgTarget)));
-}
-
 string Argument::asString() const {
   stringstream ss;
   ss << "#<Argument ";
@@ -204,35 +200,5 @@ void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, 
   this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, val);
 }
 
-void StackFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp val) {
-  if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
-    Symbol_sp sym = gc::As_unsafe<Symbol_sp>(argument._ArgTarget);
-    this->new_special_binding(sym, val);
-    return;
-  }
-  ASSERTF(argument._ArgTargetFrameIndex >= 0, ("Illegal ArgTargetIndex[%d] for lexical variable[%s]") , argument._ArgTargetFrameIndex , _rep_(argument._ArgTarget));
-  gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, val.raw_() );
-  if (this->_Environment.notnilp()) this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val );
-}
-
-void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
-  if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
-    SIMPLE_ERROR(("You cannot bind &VA-REST argument to a special"));
-  }
-  ASSERTF(argument._ArgTargetFrameIndex >= 0, ("Illegal ArgTargetIndex[%d] for lexical variable[%s]") , argument._ArgTargetFrameIndex , _rep_(argument._ArgTarget));
-  Vaslist_sp valist(&this->valist());
-  gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, valist.raw_() );
-  T_sp val((gctools::Tagged)valist.raw_());
-  if (this->_Environment.notnilp()) this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val );
-}
-
-void StackFrameDynamicScopeManager::ensureLexicalElementUnbound( const Argument& argument) {
-  this->frame.mkunboundValue_(argument._ArgTargetFrameIndex);
-}
-
-bool StackFrameDynamicScopeManager::lexicalElementBoundP_(const Argument &argument) {
-  //  core::T_O **array(frame::ValuesArray(this->frame));
-  return !gctools::tagged_unboundp(this->frame.value_(argument._ArgTargetFrameIndex));
-}
 
 };

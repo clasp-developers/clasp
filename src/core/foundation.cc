@@ -159,10 +159,6 @@ union NW {
   char name[8];
 };
 
-bool lisp_lambdaListHandlerNeedsValueEnvironment(LambdaListHandler_sp llh) {
-  return llh->needsValueEnvironmentP();
-}
-
 uint64_t lisp_nameword(core::T_sp name)
 {
   NW nw;
@@ -890,25 +886,6 @@ T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
   return mc;
 }
 
-// void lisp_defineInitializationArgumentsForClassSymbol(LispPtr lisp, const string& argumentString, uint classSymbol)
-// {
-//     Instance_sp mc = lisp->classFromClassSymbol(classSymbol);
-//     mc->__setLambdaListHandlerString(argumentString);
-// }
-
-void lisp_addClassSymbol(Symbol_sp classSymbol,
-                   gctools::smart_ptr<Creator_O> cb,
-                   Symbol_sp base1ClassSymbol)
-{
-  DEPRECATED();
-  printf("%s:%d:%s    lisp_addClass   %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(classSymbol).c_str());
-  _lisp->addClassSymbol(classSymbol, cb, base1ClassSymbol); //, base2ClassSymbol);
-}
-void lisp_addClass(Symbol_sp classSymbol) {
-  DEPRECATED();
-  //	_lisp->addClass(classSymbol);
-}
-
 List_sp lisp_parse_arguments(const string &packageName, const string &args, int number_of_required_arguments, const std::set<int> skip_indices ) {
   if (args == "") {
     // If args is "" then cook up arguments using number_of_required_arguments and skip_indices
@@ -988,15 +965,6 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   return sscons;
 }
 
-size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp lambda_list_handler)
-{
-  return lambda_list_handler->numberOfSpecialVariables();
-}
-LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues) {
-  LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list, declares, cl::_sym_function, pureOutValues);
-  return llh;
-}
-
 
 /*! Insert the package qualified class_symbol into the lambda list wherever a ! is seen */
 string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda)
@@ -1014,90 +982,7 @@ string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda)
 
 
 SYMBOL_EXPORT_SC_(KeywordPkg, body);
-SYMBOL_EXPORT_SC_(KeywordPkg, lambda_list_handler);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
-void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& specializer,
-                                     T_sp name,
-                                     Symbol_sp classSymbol,
-                                     GlobalEntryPointBase_sp method_body,
-                                     size_t TemplateDispatchOn,
-                                     bool useTemplateDispatchOn,
-                                     const string &raw_arguments,
-                                     const string &declares,
-                                     const string &docstring,
-                                     bool autoExport,
-                                     int number_of_required_arguments,
-                                     const std::set<int> pureOutIndices) {
-  string arguments = fix_method_lambda(classSymbol,raw_arguments);
-  Instance_sp receiver_class = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
-  Symbol_sp className = receiver_class->_className();
-  List_sp ldeclares = lisp_parse_declares(gc::As<Package_sp>(className->getPackage())->getName(), declares);
-  // NOTE: We are compiling the llhandler in the package of the class - not the package of the
-  // method name  -- sometimes the method name will belong to another class (ie: core:--init--)
-  LambdaListHandler_sp llhandler;
-  List_sp llproc;
-  size_t single_dispatch_argument_index;
-  if (useTemplateDispatchOn) single_dispatch_argument_index = TemplateDispatchOn;
-  if (arguments == "" && number_of_required_arguments >= 0) {
-    // If the arguments string is empty and number_of_required_arguments is >= 0 then create
-    // a LambdaListHandler that supports that number of required arguments
-    llhandler = LambdaListHandler_O::create(number_of_required_arguments, pureOutIndices);
-    llproc = llhandler->lambdaList();
-  } else if (arguments != "") {
-    List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments);
-    T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw, true);
-    T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
-    MultipleValues& mvn = core::lisp_multipleValues();
-    Symbol_sp sd_symbol = gc::As<Symbol_sp>(mvn.valueGet(1,mv_llprocessed.number_of_values()));
-    Symbol_sp specializer_symbol = gc::As<Symbol_sp>(mvn.valueGet(2,mv_llprocessed.number_of_values()));
-    llproc = coerce_to_list(tllproc);
-    if (specializer_symbol.notnilp() && specializer_symbol != classSymbol) {
-      SIMPLE_ERROR(("Mismatch between hard coded class[%s] and"
-                    " specializer_symbol[%s] for function %s with argument list: %s") ,
-                   classSymbol->fullName() , specializer_symbol->fullName() , _rep_(name) , _rep_(llraw));
-    }
-    llhandler = lisp_function_lambda_list_handler(llproc, ldeclares, pureOutIndices);
-    if (sd_symbol.notnilp()) {
-      single_dispatch_argument_index = llhandler->single_dispatch_on_argument(sd_symbol);
-      if (useTemplateDispatchOn) {
-        if (single_dispatch_argument_index != TemplateDispatchOn) {
-          SIMPLE_ERROR(("There is a mismatch between the single_dispatch_argument_index %d and TemplateDispatchOn %d") , single_dispatch_argument_index , TemplateDispatchOn);
-        }
-      }
-      // if dispatching off of something other than the first argument and this isn't a (setf xxx) function - then error
-      if (single_dispatch_argument_index != 0 && !(name.consp() && CONS_CAR(name)==cl::_sym_setf)) {
-        SIMPLE_ERROR(("There is no support for dispatching on anything but the first argument -"
-                      " wrap this virtual function in a regular function and do the dispatch yourself  %s::%s") ,
-                     _rep_(className) , _rep_(name));
-      }
-    }
-  } else {
-    SIMPLE_ERROR(("No arguments were provided and number_of_required_arguments is %d") , number_of_required_arguments);
-  }
-  if (TemplateDispatchOn != single_dispatch_argument_index) {
-    SIMPLE_ERROR(("Mismatch between single_dispatch_argument_index[%d] from lambda_list and TemplateDispatchOn[%d] for class %s  method: %s  lambda_list: %s") , single_dispatch_argument_index , TemplateDispatchOn , _rep_(classSymbol) , _rep_(name) , arguments);
-  }
-  LOG("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]" , receiver_class->instanceClassName() , (receiver_class.get()) , sym->fullName() , arguments , autoExport);
-  
-  T_sp docStr = nil<T_O>();
-  if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
-  SingleDispatchGenericFunction_sp gfn = core__ensure_single_dispatch_generic_function(name, autoExport,single_dispatch_argument_index, llproc ); // Ensure the single dispatch generic function exists
-  //
-  // The following is where we setup the method_body - a Function_O that implements the method is given its LambdaListHandler_O
-  //
-  //
-  //
-  
-  method_body->setLambdaListHandler(llhandler); //<<<<< This passes the llhandler to the method function
-  method_body->setf_sourcePathname(nil<T_O>());
-  method_body->setf_lambdaList(llhandler->lambdaList());
-  method_body->setf_docstring(docStr);
-  ASSERT(llhandler || llhandler.notnilp());
-#ifdef DEBUG_PROGRESS
-  printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
-#endif
-  core__ensure_single_dispatch_method(gfn, name, receiver_class, ldeclares, docStr, method_body);
-}
 
 void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer,
                                      T_sp name,
@@ -1124,7 +1009,7 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer,
     lambda_list = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments, number_of_required_arguments, pureOutIndices );
   } else if (arguments != "") {
     List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments);
-    T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw, true);
+    T_mv mv_llprocessed = process_single_dispatch_lambda_list(llraw, true);
     T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
     lambda_list = coerce_to_list(tllproc);
     MultipleValues& mvn = core::lisp_multipleValues();
@@ -1145,9 +1030,6 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer,
   T_sp docStr = nil<T_O>();
   if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
   SingleDispatchGenericFunction_sp gfn = core__ensure_single_dispatch_generic_function(name, autoExport,single_dispatch_argument_index, lambda_list ); // Ensure the single dispatch generic function exists
-  //
-  // The following is where we setup the method_body - a Function_O that implements the method is given its LambdaListHandler_O
-  //
   //
   //
   bool trivial_wrapper;
@@ -1214,9 +1096,8 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind,
   List_sp vars = lisp_lexical_variable_names( lambda_list, trivial_wrapper );
   Function_sp func;
   if (!bytecodep) {
-    LambdaListHandler_sp llh = lisp_function_lambda_list_handler( lambda_list, nil<T_O>(), skipIndices );
-    func = entry;
-    gc::As<CodeEntryPoint_sp>(entry)->setLambdaListHandler(llh);
+    printf("%s:%d:%s We don't support LambdaListHandler anymore\n", __FILE__, __LINE__, __FUNCTION__ );
+    abort();
   } else {
     if (trivial_wrapper) {
       func = entry;

@@ -869,11 +869,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__variable_capacity(core::Rack_O,value_type,_Slots._Length,_Slots._Length);
   Init__variable_field(core::Rack_O,gctools::SMART_PTR_OFFSET, 0, "only", 0);
   
-  Init_class_kind(core::LambdaListHandler_O);
-  Init__fixed_field(core::LambdaListHandler_O,0,SMART_PTR_OFFSET,_ClassifiedSymbolList);
-  Init__fixed_field(core::LambdaListHandler_O,1,POINTER_OFFSET,_SpecialSymbolSet.theObject);
-
-
   Init_class_kind(core::Pathname_O);
   Init__fixed_field(core::Pathname_O,0,SMART_PTR_OFFSET,_Host);
   Init__fixed_field(core::Pathname_O,1,SMART_PTR_OFFSET,_Device);
@@ -890,21 +885,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::LogicalPathname_O,4,SMART_PTR_OFFSET,_Type);
   Init__fixed_field(core::LogicalPathname_O,5,SMART_PTR_OFFSET,_Version);
   
-#if 0
- {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_SpecialSymbolSet.theObject), "_SpecialSymbolSet.theObject" }, // atomic: NIL public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_DeclareSpecifierList), "_DeclareSpecifierList" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::RequiredArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RequiredArguments._Vector._Contents), "_RequiredArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::OptionalArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_OptionalArguments._Vector._Contents), "_OptionalArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RestArgument._ArgTarget), "_RestArgument._ArgTarget" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_KeyFlag), "_KeyFlag" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::KeywordArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_KeywordArguments._Vector._Contents), "_KeywordArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_AllowOtherKeys), "_AllowOtherKeys" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::AuxArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_AuxArguments._Vector._Contents), "_AuxArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_Comment), "_Comment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_LexicalVariableNamesForDebugging), "_LexicalVariableNamesForDebugging" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-#endif
-
-
      Init_class_kind(core::Vaslist_dummy_O);
      Init_class_kind(core::Unused_dummy_O);
      Init_class_kind(core::ClassHolder_O);

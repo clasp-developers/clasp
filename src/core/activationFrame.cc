@@ -139,11 +139,6 @@ void ValueFrame_O::fillRestOfEntries(int istart, List_sp values) {
   }
 }
 
-ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent) {
-  ValueFrame_sp vf(ValueFrame_O::create(llh->numberOfLexicalVariables(), parent));
-  return ((vf));
-}
-
 ValueFrame_sp ValueFrame_O::create(List_sp values, T_sp parent) {
   ValueFrame_sp vf = ValueFrame_O::create(cl__length(values), parent);
   //	vf->allocateStorage(cl__length(values));

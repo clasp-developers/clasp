@@ -135,25 +135,12 @@ typedef std::size_t class_id;
 
 namespace clbind {
 
-struct LambdaListHandlerWrapper {
-  enum { BytecodeP = 0 };
-};
 struct BytecodeWrapper {
   enum { BytecodeP = 1 };
 };
 
-
-#if USE_BYTECODE_WRAPPERS==1
 // Use bytecode wrappers for all exposed functions
 using DefaultWrapper = BytecodeWrapper;
-using SpecialWrapper = LambdaListHandlerWrapper;
-#elif USE_BYTECODE_WRAPPERS==0
-// Use LambdaListHandler wrappers for all exposed functions
-using DefaultWrapper = LambdaListHandlerWrapper;
-using SpecialWrapper = BytecodeWrapper;
-#else
-#error "USE_BYTECODE_WRAPPERS must be 0 or 1"
-#endif
 
 };
 
@@ -990,8 +977,6 @@ uint64_t lisp_nameword(T_sp name);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, T_sp a8);
-  bool lisp_lambdaListHandlerNeedsValueEnvironment(LambdaListHandler_sp llh);
-
 
 //    void lisp_setGlobalInt(const string& package, const string& n, uint val );
 //    Symbol_sp lisp_allocate_packageless_sid(string const& n);
@@ -1001,22 +986,6 @@ uint64_t lisp_nameword(T_sp name);
 List_sp lisp_parse_arguments(const string &packageName, const string &args, int numberOfRequiredArguments=0, const std::set<int> skip_indices = std::set<int>() );
 List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
   List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
-  LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
-size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp llh);
-
-
-void lisp_defineSingleDispatchMethod(const clbind::LambdaListHandlerWrapper& dummy_specializer,
-                                     T_sp name,
-                                     Symbol_sp classSymbol,
-                                     GlobalEntryPointBase_sp entry,
-                                     size_t TemplateDispatchOn = 0,
-                                     bool useTemplateDispatchOn = false,
-                                     const string &lambda_list = "",
-                                     const string &declares = "",
-                                     const string &docstring = "",
-                                     bool autoExport = true,
-                                     int number_of_required_arguments = -1,
-                                     std::set<int> pureOutIndices = std::set<int>());
 
 void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specializer,
                                      T_sp name,

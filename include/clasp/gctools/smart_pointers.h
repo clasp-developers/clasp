@@ -1691,8 +1691,6 @@ gctools::smart_ptr<T> deleted() {
 
 namespace gctools {
 
-// LambdaListHandler_sp llh(ptr)
-
 template <class TO, class FROM>
 smart_ptr<TO> dynamic_pointer_cast(const smart_ptr<FROM> &ptr) {
   return smart_ptr<TO>(dynamic_cast<TO *>(ptr.pxget()));

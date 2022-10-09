@@ -332,7 +332,6 @@ class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
   /*! Create an environment that extends a parent environment,
 	 Pass a Cons of 2-element conses that contain either `(lexical ,symbol-name) or `(special ,symbol-name) 
 	that distinguish if the symbol-name is a lexical one or a special one */
-  static ValueEnvironment_sp createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent);
   /*! Create a fixed size environment for passing values to a function.
 	 This is used to maintain runtime-environment information. */
   static ValueEnvironment_sp createForNumberOfEntries(int numberOfArguments, T_sp parent, bool invisible = false);
@@ -340,8 +339,6 @@ class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
   static ValueEnvironment_sp createForLocallySpecialEntries(List_sp specials, T_sp parent);
 
  private:
-  void setupForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent);
-
  public:
 //  virtual T_sp _lookupValue(int depth, int index);
   List_sp find(Symbol_sp sym) const;

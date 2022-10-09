@@ -41,8 +41,6 @@ extern T_mv core__separate_pair_list(List_sp listOfPairs);
 
 extern Symbol_sp core__function_block_name(T_sp functionName);
 
-//extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llh);
-
 extern List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
 
 T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p = nil<T_O>(), T_sp eof_value = nil<T_O>(), T_sp recursive_p = nil<T_O>());
