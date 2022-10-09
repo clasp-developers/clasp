@@ -23,6 +23,7 @@ namespace core {
   FORWARD(BuiltinClosure);
   FORWARD(Closure);
   FORWARD(BytecodeModule);
+  FORWARD(GFBytecodeModule);
   FORWARD(SimpleVector_byte32_t);
 };
 
@@ -363,6 +364,36 @@ FORWARD(GlobalBytecodeEntryPoint);
    size_t entryPcN() const;
 
  };
+
+
+// Fulfill the role of bytecode_function
+FORWARD(GFBytecodeEntryPoint);
+ class GFBytecodeEntryPoint_O : public GlobalEntryPointBase_O {
+   LISP_CLASS(core,CorePkg,GFBytecodeEntryPoint_O,"GFBytecodeEntryPoint",GlobalEntryPointBase_O);
+ public:
+  // Entry point into the bytes vector in the containing module.
+  // This is an offset instead of an interior pointer to make dumping/loading/GC considerations easier.
+   unsigned int     _EntryPcN;
+   BytecodeTrampolineFunction _Trampoline;
+ public:
+  // Accessors
+   GFBytecodeEntryPoint_O(FunctionDescription_sp fdesc,
+                          const ClaspXepFunction& entry_point,
+                          T_sp code,
+                          unsigned int entryPcN,
+                          BytecodeTrampolineFunction trampoline);
+   
+ public:
+   virtual Pointer_sp defaultEntryAddress() const;
+   BytecodeModule_sp code() const;
+   string __repr__() const;
+
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup);
+   size_t entryPcN() const;
+
+ };
+
+
 
 
 FORWARD(GlobalEntryPointGenerator);

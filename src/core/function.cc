@@ -133,6 +133,48 @@ CL_DEFMETHOD size_t GlobalBytecodeEntryPoint_O::entryPcN() const {
 }
 
 
+GFBytecodeEntryPoint_O::GFBytecodeEntryPoint_O(FunctionDescription_sp fdesc,
+                                                       const ClaspXepFunction& entry_point,
+                                                       T_sp module,
+                                                       unsigned int entryPcN,
+                                                       BytecodeTrampolineFunction trampoline )
+: GlobalEntryPointBase_O(fdesc, entry_point, module),
+  _EntryPcN(entryPcN),
+  _Trampoline(trampoline)
+{
+  llvmo::validateEntryPoint( module, entry_point );
+};
+
+Pointer_sp GFBytecodeEntryPoint_O::defaultEntryAddress() const {
+  return Pointer_O::create((void*)this->_EntryPoints[0]);
+};
+
+std::string GFBytecodeEntryPoint_O::__repr__() const {
+  stringstream ss;
+  ss << "#<GF-BYTECODE-ENTRY-POINT ";
+  for ( size_t ii = 0; ii<NUMBER_OF_ENTRY_POINTS; ii++ ) {
+    if (ii==0) {
+      ss << "xep@";
+    } else {
+      ss << "xep" << (ii-1) << "@";
+    }
+    ss << (void*)this->_EntryPoints._EntryPoints[ii] << " ";
+  }
+  ss << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+void GFBytecodeEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup )
+{
+  this->fixupOneCodePointer( fixup,(void**)&this->_Trampoline );
+  this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
+}
+
+CL_DEFMETHOD size_t GFBytecodeEntryPoint_O::entryPcN() const {
+  return this->_EntryPcN;
+}
+
+
 LocalEntryPoint_O::LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code ) : CodeEntryPoint_O(fdesc,code), _Entry(entry_point) {
   llvmo::validateEntryPoint( code, entry_point );
 };
