@@ -277,6 +277,7 @@ struct VirtualMachine {
     uint64_t   _BytesAllocated;
     uint64_t            _Tid;
     uintptr_t           _BacktraceBasePointer;
+    uint64_t            _DtreeInterpreterCallCount;
     VirtualMachine      _VM;
     
 #ifdef DEBUG_MONITOR_SUPPORT

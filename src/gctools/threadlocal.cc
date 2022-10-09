@@ -195,7 +195,7 @@ VirtualMachine::~VirtualMachine() {
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy) :
   _unwinds(0)
-  , _CleanupFunctions(NULL)
+  ,_CleanupFunctions(NULL)
   ,_PendingInterrupts()
   ,_ObjectFiles()
   ,_BufferStr8NsPool()
@@ -204,6 +204,7 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   ,_BreakstepFrame(NULL)
   ,_DynEnvStackBottom()
   ,_UnwindDest()
+  ,_DtreeInterpreterCallCount(0)
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN

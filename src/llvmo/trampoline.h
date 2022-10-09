@@ -3,13 +3,19 @@
 
 #if defined(_TARGET_OS_DARWIN)
 std::string global_trampoline_datalayout_triple = R"big(
+;ModuleID = 'trampoline.bc'
 target datalayout = "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx12.0.0"
 )big";
-#elif defined(_TARGET_OS3735879680_LINUX)
-# error "Add info for linux"
+#elif defined(_TARGET_OS_LINUX)
+std::string global_trampoline_datalayout_triple = R"big(
+;ModuleID = 'trampoline.bc'
+source_filename = "trampoline.cc"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+                                                        )big";
 #else
-# error "Add info for os"
+# error "Add info for unknown os"
 #endif
 
 std::string global_trampoline = R"trampoline(

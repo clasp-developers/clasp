@@ -132,7 +132,7 @@ namespace core {
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args ) {
       SETUP_CLOSURE(FuncallableInstance_O,closure);
       INCREMENT_FUNCTION_CALL_COUNTER(closure);
       DO_DRAG_CXX_CALLS();
@@ -145,30 +145,30 @@ namespace core {
       //  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
       return funcall_general<core::Function_O>( funcallable_closure.tagged_(), lcc_nargs, lcc_args );
     }
-      static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
-  }
-
+    static inline LISP_ENTRY_0() {
+      return entry_point_n(lcc_closure,0,NULL);
+    }
+    static inline LISP_ENTRY_1() {
+      core::T_O* args[1] = {lcc_farg0};
+      return entry_point_n(lcc_closure,1,args);
+    }
+    static inline LISP_ENTRY_2() {
+      core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+      return entry_point_n(lcc_closure,2,args);
+    }
+    static inline LISP_ENTRY_3() {
+      core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+      return entry_point_n(lcc_closure,3,args);
+    }
+    static inline LISP_ENTRY_4() {
+      core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+      return entry_point_n(lcc_closure,4,args);
+    }
+    static inline LISP_ENTRY_5() {
+      core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+      return entry_point_n(lcc_closure,5,args);
+    }
+    
   }; // FuncallableInstance class
 
 }; // core namespace
