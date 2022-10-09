@@ -437,7 +437,8 @@ std::string dtree_op_name(int dtree_op) {
 SYMBOL_EXPORT_SC_(ClosPkg,interp_wrong_nargs);
 SYMBOL_EXPORT_SC_(ClosPkg, compile_discriminating_function);
 
-#define COMPILE_TRIGGER 1024 // completely arbitrary
+#define COMPILE_TRIGGER ((size_t)1024)
+size_t global_compile_discriminating_function_trigger = COMPILE_TRIGGER;
 
 //
 CL_LAMBDA(program gf core:&va-rest args)
@@ -456,7 +457,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
           DTILOG("[%3d] : %5s ;; .tagged_() = %lu!!!!\n" , i , _safe_rep_((*program)[i]), (uintptr_t)((*program)[i].tagged_()));
       });
   size_t argi(0);
-  
+
   // Increment the call count, and if it's high enough, compile the thing
   size_t calls = gc::As_unsafe<FuncallableInstance_sp>(generic_function)->increment_calls();
   //
@@ -465,12 +466,12 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   //  the GF is part of the compiler and it continues to be called while it is being
   //  compiled then you avoid a recursive cycle of compilations that will hang the system.
   //
-#if 0 // disabled as it seems to be crashing the build.
-  if (calls == COMPILE_TRIGGER) {
+#if 0
+  if (calls == global_compile_discriminating_function_trigger) {
+    printf("%s:%d:%s Compiling discriminating function %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(generic_function).c_str());
     eval::funcall(clos::_sym_compile_discriminating_function, generic_function);
   }
 #endif
-  
   // Regardless of whether we triggered the compile, we next
   // Dispatch
   DTILOG("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n");

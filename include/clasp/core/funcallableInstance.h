@@ -204,6 +204,8 @@ namespace gctools {
 
 namespace core {
 void registerOrDumpDtreeInfo(std::ostream& fout);
+extern size_t global_compile_discriminating_function_trigger;
+
 };
 
 #endif /* _core_funcallable_instance_H_ */

@@ -67,6 +67,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/array.h>
 #include <clasp/core/function.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/cons.h>
@@ -504,7 +505,13 @@ int main( int argc, char *argv[] )
 #else
 # error "USE_BYTECODE_WRAPPERS must be 0 or 1"
 #endif
-  
+
+  const char* trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
+  if (trigger) {
+    size_t strigger = atoi(trigger);
+    core::global_compile_discriminating_function_trigger = strigger;
+    printf("%s:%d:%s Setting global_compile_discriminating_function_trigger = %lu\n", __FILE__, __LINE__, __FUNCTION__, strigger );
+  }
   if (getenv("CLASP_TIME_EXIT")) {
     atexit(core::last_exit);
   }
