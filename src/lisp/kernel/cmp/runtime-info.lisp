@@ -12,7 +12,6 @@
 (defvar +sizeof-size_t+ (get-cxx-data-structure-info 'core:size-t))
 (defvar +optimized-slot-index-index+ (get-cxx-data-structure-info :optimized-slot-index-index))
 (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
-(defvar +value-frame-parent-offset+ (get-cxx-data-structure-info :value-frame-parent-offset))
 (defvar +closure-entry-point-offset+ (get-cxx-data-structure-info :closure-entry-point-offset))
 (defvar +global-entry-point-entry-points-offset+ (get-cxx-data-structure-info :global-entry-point-entry-points-offset))
 (defvar +unused-stamp+ (get-cxx-data-structure-info :unused-stamp))

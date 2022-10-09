@@ -260,33 +260,11 @@
      nil)))
 
 ;;; The toplevel shell may have a bclasp environment - ignore it
-(defmethod env:symbol-macro-expansion (symbol (environment core:value-frame))
-  (cleavir-environment:symbol-macro-expansion symbol *clasp-env*))
-
 (defmethod env:function-info ((sys clasp) (environment null) symbol)
   (env:function-info sys *clasp-env* symbol))
 
-(defmethod env:function-info ((sys clasp)
-                              (environment core:value-environment) symbol)
-  (env:function-info sys (core:get-parent-environment environment) symbol))
-
-(defmethod env:function-info ((sys clasp)
-                              (environment core:value-frame) symbol)
-  (env:function-info sys (core:get-parent-environment environment) symbol))
-
-(defmethod env:variable-info ((sys clasp)
-                              (environment core:value-frame) symbol)
-  (env:variable-info sys (core:get-parent-environment environment) symbol))
-
-(defmethod env:variable-info ((sys clasp)
-                              (environment core:value-environment) symbol)
-  (env:variable-info sys (core:get-parent-environment environment) symbol))
-
 (defmethod env:declarations ((environment null))
   (env:declarations *clasp-env*))
-
-(defmethod env:declarations ((environment core:value-environment))
-  (env:declarations (core:get-parent-environment environment)))
 
 ;;; TODO: Handle (declaim (declaration ...))
 (defmethod env:declarations
@@ -317,9 +295,6 @@
 
 (defmethod env:optimize-info ((environment NULL))
   (env:optimize-info *clasp-env*))
-
-(defmethod env:optimize-info ((environment core:value-environment))
-  (env:optimize-info (core:get-parent-environment environment)))
 
 
 (defmethod cleavir-environment:macro-function (symbol (environment clasp-global-environment))
@@ -398,6 +373,9 @@
   ;; Convert a cleavir ENTRY (or null) into an environment clasp's interpreter can use.
   ;; Only for compile time environments, so it's symbol macros, macros, and declarations.
   ;; The interpreter doesn't use declarations besides SPECIAL.
+  (format t "In cleavir-env->interpreter - failing~%")
+  (break)
+  #+(or)
   (etypecase env
     (clasp-global-environment nil)
     (null env)
