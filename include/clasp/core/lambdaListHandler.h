@@ -64,35 +64,7 @@ typedef enum { required,
       See CLHS 3.4
     */
 
-template <class ArgumentType>
-string asString(gctools::Vec0<ArgumentType> const &vec) {
-  stringstream ss;
-  for (typename gctools::Vec0<ArgumentType>::const_iterator it = vec.begin(); it != vec.end(); it++) {
-    ss << " " << it->asString();
-  }
-  return ss.str();
-}
 }; // core
-
-namespace core {
-
-struct TargetClassifier {
-  T_sp _SpecialSymbols;
-  /*! symbols that are seen in the lambda-list and are special are accumulated here */
-  HashTableEq_sp _LambdaListSpecials;
-  int lexicalIndex;
-  ql::list _AccumulatedClassifiedSymbols;
-  std::set<int> skipLexicalIndices;
-  explicit TargetClassifier(const std::set<int> &skipLexicalIndices);
-  explicit TargetClassifier(HashTableEq_sp specialSymbols, const std::set<int> &skipLexicalIndices);
-  void classifyTarget(Argument &target);
-  List_sp finalClassifiedSymbols();
-  int totalLexicalVariables() const { return this->lexicalIndex; };
-  size_t numberOfSpecialVariables() const;
-  void advanceLexicalIndex();
-};
-
-};
 
 namespace core{
 

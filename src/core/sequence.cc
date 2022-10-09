@@ -53,10 +53,7 @@ CL_DEFUN size_t cl__length(T_sp arg) {
     return 0;
   } else if (Vector_sp vec = arg.asOrNull<Vector_O>()) {
     return vec->length();
-  } else if (ActivationFrame_sp af = arg.asOrNull<ActivationFrame_O>()) {
-    return af->length();
-  }
-  else {
+  } else {
     T_sp result = eval::funcall(seqext::_sym_length, arg);
     if (result.fixnump())
       return result.unsafe_fixnum();

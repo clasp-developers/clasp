@@ -48,8 +48,6 @@ typedef gctools::smart_ptr<Instance_O> Instance_sp;
  class Cache_O;
  typedef gctools::smart_ptr<Cache_O> Cache_sp;
 class Lisp;
-class Environment_O;
-typedef gctools::smart_ptr<Environment_O> Environment_sp;
 class Symbol_O;
 typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
 

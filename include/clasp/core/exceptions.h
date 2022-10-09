@@ -70,12 +70,6 @@ extern core::Symbol_sp& _sym_name;
 #define ERROR(_type_, _initializers_) lisp_error( _type_, _initializers_)
 #define SIMPLE_ERROR_SPRINTF(...) ::core::lisp_error_sprintf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 #define SIMPLE_ERROR(...) ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf(__VA_ARGS__))
-#define NOT_ENVIRONMENT_ERROR(_e_)                                                                  \
-  ERROR(cl::_sym_simpleTypeError,                                                                      \
-        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a bclasp environment"), \
-                              kw::_sym_format_arguments, core::lisp_createList(_e_),                  \
-                              kw::_sym_expected_type, core::_sym_Environment_O, \
-                              kw::_sym_datum, _e_));
 /*! Error for when an index is out of range - eg: beyond the end of a string */
 #define TYPE_ERROR_INDEX(_seq_, _idx_) \
   ERROR(cl::_sym_simpleTypeError, \

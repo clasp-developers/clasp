@@ -705,16 +705,6 @@ CL_DEFUN bool core__operator_shadowed_p(T_sp name, T_sp env) {
   if (env.nilp()) {
     // No lexical environment.
     return false;
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    // Native environment. Check for local functions.
-    int depth;
-    int index;
-    Function_sp value;
-    T_sp functionEnv = nil<T_O>();
-    if (eenv->findFunction(name, depth, index, value, functionEnv))
-      return true;
-    // No local function, check for local macro instead.
-    return Environment_O::clasp_findMacro(eenv, name, depth, index, value);
   } else if (comp::Lexenv_sp bce = env.asOrNull<comp::Lexenv_O>()) {
     return bce->functionInfo(name).notnilp();
   } else { // Cleavir, maybe

@@ -192,44 +192,6 @@ T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
   return eval::evaluate(form, env);
 }
 
-TargetClassifier::TargetClassifier(const std::set<int> &skip) : lexicalIndex(-1), skipLexicalIndices(skip) {
-  this->_SpecialSymbols = nil<T_O>();
-  this->_LambdaListSpecials = HashTableEq_O::create_default();
-  this->advanceLexicalIndex();
-};
-TargetClassifier::TargetClassifier(HashTableEq_sp specialSymbols, const std::set<int> &skip)
-    : _SpecialSymbols(specialSymbols), lexicalIndex(-1), skipLexicalIndices(skip) {
-  this->_LambdaListSpecials = HashTableEq_O::create_default();
-  this->advanceLexicalIndex();
-};
-
-size_t TargetClassifier::numberOfSpecialVariables() const
-{
-  return this->_LambdaListSpecials->hashTableCount();
-};
-
-
-void TargetClassifier::advanceLexicalIndex() {
-  while (true) {
-    ++this->lexicalIndex;
-    if (this->skipLexicalIndices.count(this->lexicalIndex) == 0)
-      return;
-  }
-}
-
-/*! Any Special symbols that haven't been seen in the lambda list need to be added to the
-      AccumulatedClassifiedSymbols */
-List_sp TargetClassifier::finalClassifiedSymbols() {
-  if (this->_SpecialSymbols.notnilp()) {
-    gc::As<HashTableEq_sp>(this->_SpecialSymbols)->maphash([this](T_sp s, T_sp val) {
-                    if ( !this->_LambdaListSpecials->contains(s) ) {
-                        this->_AccumulatedClassifiedSymbols
-                            << Cons_O::create(ext::_sym_specialVar,s);
-                    } });
-  }
-  return this->_AccumulatedClassifiedSymbols.cons();
-}
-
 void throw_if_not_destructuring_context(T_sp context) {
   if (context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
       || context == cl::_sym_destructuring_bind)
@@ -250,38 +212,6 @@ void throw_if_not_destructuring_context(T_sp context) {
        dispatching argument then the first argument is used and SINGLE-DISPATCH-CLASS returns as nil.
     DISPATCH-INDEX is the index of the argument that is being dispatched on - it should never be anything
     other than zero but I'll let the caller decide.*/
-
-void TargetClassifier::classifyTarget(Argument &target) {
-  //  printf("%s:%d  TargetClassifier::classifyTarget target._ArgTarget@%p --> %p\n", __FILE__, __LINE__, &target._ArgTarget.rawRef_(), target._ArgTarget.raw_());
-  Symbol_sp sym = gc::As<Symbol_sp>(target._ArgTarget);
-  if (sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<HashTable_sp>(this->_SpecialSymbols)->contains(sym))) {
-    target._ArgTargetFrameIndex = SPECIAL_TARGET;
-    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_specialVar, target._ArgTarget);
-    this->_LambdaListSpecials->insert(sym);
-  } else {
-    target._ArgTargetFrameIndex = this->lexicalIndex;
-    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_lexicalVar, Cons_O::create(target._ArgTarget, make_fixnum(target._ArgTargetFrameIndex)));
-    this->advanceLexicalIndex();
-  }
-}
-
-void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, ScopeManager &scope) {
-  LOG("There are %d aux variables" , auxs.size());
-  gctools::Vec0<AuxArgument>::const_iterator ci;
-  {
-    for (ci = auxs.begin(); ci != auxs.end(); ci++) {
-      T_sp expr = ci->_Expression;
-      if (expr.notnilp()) {
-        T_sp value = evaluate_lambda_list_form(expr, scope.lexenv());
-        scope.new_binding(*ci, value);
-      } else {
-        scope.new_binding(*ci, nil<T_O>());
-      }
-    }
-  }
-}
-
-
 
 string argument_mode_as_string(ArgumentMode mode) {
   switch (mode) {

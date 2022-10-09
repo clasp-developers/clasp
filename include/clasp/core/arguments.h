@@ -134,49 +134,6 @@ public:
   }
 };
 
-struct SpecialBinding {
-  T_sp _Var;
-  T_sp _Val;
-};
-
-#define MAKE_SPECIAL_BINDINGS_HOLDER(_newnum_,_vla_,_num_) \
-  size_t _newnum_ = _num_; \
-  core::SpecialBinding _vla_[_num_];
-
-struct ScopeManager {
-  size_t          _NumberOfBindings;
-  size_t          _NextBindingIndex;
-  SpecialBinding* _Bindings;
-  ScopeManager(size_t numberOfBindings, SpecialBinding* bindings) : _NumberOfBindings(numberOfBindings), _NextBindingIndex(0), _Bindings(bindings) {};
-  ~ScopeManager();
-  void new_special_binding(Symbol_sp var, T_sp val);
-  virtual void new_binding(const Argument &argument, T_sp val) = 0;
-  virtual T_sp lexenv() const = 0;
-  virtual Vaslist &valist() { N_A_(); };
-  virtual void va_rest_binding(const Argument &argument) { N_A_(); };
-  virtual bool lexicalElementBoundP_(const Argument &argument) { N_A_(); };
-  virtual void ensureLexicalElementUnbound(const Argument &argument) { N_A_(); };
-};
-
-class ValueEnvironmentDynamicScopeManager : public ScopeManager {
-public:
-  ValueEnvironment_sp _Environment;
-  Vaslist _VaRest;
-public:
-  ValueEnvironmentDynamicScopeManager(size_t numberOfBindings, SpecialBinding* bindings, ValueEnvironment_sp env) : ScopeManager(numberOfBindings,bindings), _Environment(env){};
-public:
-  /*! This is used for creating binds for lambda lists */
-  virtual Vaslist &valist() { return this->_VaRest; };
-  virtual void va_rest_binding(const Argument &argument);
-  virtual void new_binding(const Argument &argument, T_sp val);
-  void new_variable(List_sp classifiedVariable, T_sp val);
-  void new_special(List_sp classifiedVariable);
-  virtual void ensureLexicalElementUnbound(const Argument &argument);
-  virtual bool lexicalElementBoundP_(const Argument &argument);
-  virtual T_sp lexenv() const { return this->_Environment; };
-};
-
-
 };
 
 #endif

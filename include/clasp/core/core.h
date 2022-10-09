@@ -767,9 +767,6 @@ typedef vector<AtomHandle> VectorAtomHandle;
 // # p r a g m a warning( disable : 4290 )
 #endif
 
-class ActivationFrame_O;
-class Environment_O;
-typedef gctools::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
 };
 
 /*! A type for an array of arguments */
@@ -982,7 +979,6 @@ uint64_t lisp_nameword(T_sp name);
 //    Symbol_sp lisp_allocate_packageless_sid(string const& n);
   Symbol_sp lisp_getClassSymbolForClassName(const string &n);
   string lisp_convertCNameToLispName(string const &cname, bool convertUnderscoreToDash = true);
-  T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp args);
 List_sp lisp_parse_arguments(const string &packageName, const string &args, int numberOfRequiredArguments=0, const std::set<int> skip_indices = std::set<int>() );
 List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
   List_sp lisp_parse_declares(const string &packageName, const string &declarestring);

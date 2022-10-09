@@ -279,14 +279,6 @@ CL_DEFUN bool core__single_dispatch_generic_function_p(T_sp obj) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(activation_frame_p)dx")
-DOCGROUP(clasp)
-CL_DEFUN bool core__activation_frame_p(T_sp obj) {
-  return gc::IsA<ActivationFrame_sp>(obj);
-};
-
-CL_LAMBDA(arg)
-CL_DECLARE();
 CL_DOCSTRING(R"dx(externalObjectP)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool core__external_object_p(T_sp obj) {
