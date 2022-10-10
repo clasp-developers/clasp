@@ -63,9 +63,7 @@
 (defun compute-fsi (ast)
   (let ((orig (let ((orig (origin-source (cleavir-ast:origin ast))))
                 (cond ((consp orig) (car orig))
-                      ((null orig)
-                       ;; KLUDGE: If no source info, make one up
-                       (core:make-source-pos-info))
+                      ((null orig) core:*current-source-pos-info*)
                       (t orig)))))
     ;; See usage in cmp/debuginfo.lisp
     (list (cmp:jit-function-name (cleavir-ast:name ast))
@@ -75,13 +73,9 @@
 ;;; Stuff to put function scope infos into inline ast SPIs.
 (defun insert-function-scope-info-into-spi (spi fsi)
   ;; If something already has an FSI, we're in a nested inline AST
-  ;; and don't want to interfere with it, but need to hit the one that
-  ;; doesn't deeper in.
-  (if (core:source-pos-info-function-scope spi)
-      (let ((next (core:source-pos-info-inlined-at spi)))
-        (when next
-          (insert-function-scope-info-into-spi next fsi)))
-      (core:setf-source-pos-info-function-scope spi fsi)))
+  ;; and don't want to interfere with it.
+  (unless (core:source-pos-info-function-scope spi)
+    (core:setf-source-pos-info-function-scope spi fsi)))
 (defun insert-function-scope-info-into-ast (ast fsi)
   (let ((orig (origin-source (cleavir-ast:origin ast))))
     (cond ((consp orig)
@@ -102,24 +96,6 @@
                    (t (insert-function-scope-info-into-ast ast fsi)
                     (cleavir-ast:map-children #'aux ast)))))
         (cleavir-ast:map-children #'aux ast))))
-  #+(or)
-  (let ((fsi (compute-fsi ast)))
-    (unless (null fsi)
-      (cleavir-ast:map-ast-depth-first-preorder
-       (lambda (ast)
-         (insert-function-scope-info-into-ast ast fsi))
-       ast)))
-  #+(or)
-  (let ((fsi (compute-fsi ast)))
-    (unless (null fsi)
-      (insert-function-scope-info-into-ast ast fsi)
-      (dolist (child-ast (cleavir-ast:children ast))
-        (cleavir-ast:map-ast-depth-first-preorder
-         (lambda (ast)
-           (if (typep ast 'cleavir-ast:function-ast)
-               (fix-inline-ast ast)
-               (insert-function-scope-info-into-ast ast fsi)))
-         child-ast))))
   ast)
 
 ;;; erase all source info.
@@ -136,23 +112,10 @@
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (when (core:declared-global-inline-p ',name)
          (setf (inline-ast ',name)
-               (unhome-inline-ast
+               (fix-inline-ast
                 ;; Must use file compilation semantics here to compile
                 ;; load-time-value correctly.
                 (cleavir-primop:cst-to-ast ,function-form t)))))))
-
-;; When we inline expand, the saved ast will be as if we had a
-;; load-time-value ast. Fix those up if we are not file compiling.
-(defun eval-load-time-value-asts (ast)
-  (cleavir-ast:map-ast-depth-first-preorder
-   (lambda (ast)
-     (when (typep ast 'cleavir-ast:load-time-value-ast)
-       ;; Fixup saved load-time-value asts by evaling them if need be.
-       (unless (eq cleavir-cst-to-ast:*compiler* 'cl:compile-file)
-         (change-class ast 'cleavir-ast:constant-ast
-                       :value (eval (cleavir-ast:form ast))))))
-   ast)
-  ast)
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*proclaim-hook* 'proclaim-hook))
@@ -207,7 +170,9 @@
                                                inlined-at table)))
        (reinitialize-instance copy :source source)))))
 
-(defun copy-origin-fixing-sources (origin inlined-at table)
+(defun copy-origin-fixing-sources (origin inlined-at
+                                   &optional (table
+                                              (make-hash-table :test #'eq)))
   (multiple-value-bind (copy presentp)
       (gethash origin table)
     (if presentp
@@ -219,46 +184,10 @@
           (%initialize-copy origin copy inlined-at table)
           copy))))
 
-(defun fix-inline-source-positions (ast inlined-at)
-  (let ((new-origins (make-hash-table :test #'eq)))
-    ;; NEW-ORIGINS is a memoization table.
-    (cleavir-ast:map-ast-depth-first-preorder
-     (lambda (ast)
-       (let ((orig (cleavir-ast:origin ast)))
-         (setf (cleavir-ast:origin ast)
-               (copy-origin-fixing-sources orig inlined-at new-origins))))
-     ast))
-  ast)
-
-(defun track-inline-counts (inlinee-names inlined-name)
-  (let (inlinee-name)
-    (loop for iname in inlinee-names
-          when iname
-            do (setf inlinee-name iname))
-    (let ((inlinee-ht (gethash inlinee-name cmp:*track-inlined-functions*)))
-      (unless inlinee-ht
-        (setf inlinee-ht (make-hash-table :test #'equal))
-        (setf (gethash inlinee-name cmp:*track-inlined-functions*) inlinee-ht))
-      (incf (gethash inlined-name inlinee-ht 0))
-      (when (core:global-inline-status inlinee-name)
-        (setf (gethash :inline inlinee-ht) t)))))
-
-#+(or)
-(defmethod cleavir-cst-to-ast:convert-called-function-reference
-    (cst info env (system clasp-64bit))
-  (declare (ignore env))
-  ;; FIXME: Duplicates cleavir.
-  (when (not (eq (cleavir-env:inline info) 'cl:notinline))
-    (let ((ast (cleavir-env:ast info)))
-      (when ast
-        (when (hash-table-p cmp:*track-inlined-functions*)
-          (track-inline-counts cmp:*track-inlinee-name* (cleavir-environment:name info)))
-        (return-from cleavir-cst-to-ast:convert-called-function-reference
-          (eval-load-time-value-asts
-           (fix-inline-source-positions
-            (cleavir-ast-transformations:clone-ast ast)
-            (let ((source (origin-source cst)))
-              (cond ((consp source) (car source))
-                    ((null source) core:*current-source-pos-info*)
-                    (t source)))))))))
-  (call-next-method))
+(defmethod cleavir-ast-to-bir:inline-origin (origin inlined-at (system clasp))
+  (let ((inlined-at (origin-spi (origin-source inlined-at))))
+    (if inlined-at
+        (progn
+          (check-type inlined-at core:source-pos-info)
+          (copy-origin-fixing-sources origin inlined-at))
+        origin)))

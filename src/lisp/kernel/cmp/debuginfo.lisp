@@ -122,7 +122,9 @@
           (if logical-pathname
               ;; If we include the source we should put this at the end
               (core:fmt nil ";; LOGICAL-PATHNAME={}%n" logical-pathname)
-              nil))))
+              ;; KLUDGE: LLVM complains "inconsistent use of embedded source"
+              ;; if some DIFiles have a source field and some don't.
+              ";;"))))
 
 (defun make-create-file-args (pathname namestring &optional install-pathname)
   (let (args)
@@ -276,22 +278,22 @@
 (defparameter *trap-zero-lineno* nil)
 
 (defun get-dilocation (spi dbg-current-scope)
-  (let ((file-handle (core:source-pos-info-file-handle spi))
-        (lineno (core:source-pos-info-lineno spi))
-        (col (core:source-pos-info-column spi))
-        (inlined-at (core:source-pos-info-inlined-at spi)))
+  (let* ((file-handle (core:source-pos-info-file-handle spi))
+         (lineno (core:source-pos-info-lineno spi))
+         (col (core:source-pos-info-column spi))
+         (fsi (core:source-pos-info-function-scope spi))
+         (inlined-at (core:source-pos-info-inlined-at spi))
+         (scope (if inlined-at (cached-function-scope fsi) dbg-current-scope)))
     (declare (ignore file-handle))
     (when (and *trap-zero-lineno* (zerop lineno))
       (format *error-output* "In get-dilocation lineno was zero! Setting to ~d~%"
               (setf lineno 666666)))
     (if inlined-at
         (llvm-sys:get-dilocation (thread-local-llvm-context)
-                                 lineno col
-                                 dbg-current-scope
+                                 lineno col scope
                                  (get-dilocation inlined-at dbg-current-scope))
         (llvm-sys:get-dilocation (thread-local-llvm-context)
-                                 lineno col
-                                 dbg-current-scope))))
+                                 lineno col scope))))
 
 (defun dbg-set-irbuilder-source-location (irbuilder spi)
   (when *dbg-generate-dwarf*
