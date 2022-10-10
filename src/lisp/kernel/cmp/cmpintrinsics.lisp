@@ -687,16 +687,6 @@ Boehm and MPS use a single pointer"
      (error "Arity is too high -add support for this ~a" arity))
     (t (error "fn-prototype-names Illegal arity ~a" arity))))
 
-(defun dbg-parameter-var (name argno &optional (type-name "T_O*")
-                                       (type llvm-sys:+dw-ate-address+))
-  (dbg-create-parameter-variable :name name :argno argno
-                                 :lineno *dbg-current-function-lineno*
-                                 :type (llvm-sys:create-basic-type
-                                        *the-module-dibuilder*
-                                        type-name 64 type 0)
-                                 :always-preserve t))
-
-
 ;; (Maybe) generate code to store registers in memory. Return value unspecified.  
 (defun maybe-spill-to-register-save-area (arity register-save-area* registers)
   (cmp-log "maybe-spill-to-register-save-area register-save-area* -> {}%N" register-save-area*)
@@ -712,12 +702,6 @@ Boehm and MPS use a single pointer"
                                       (t
                                        (irc-bit-cast reg %i8*% "reg-i8*")))))
                  (irc-store reg-i8* addr t)
-                 (when (llvm-sys:current-debug-location *irbuilder*)
-                   (let ((var (dbg-parameter-var addr-name (1+ idx))))
-                     (unless var
-                       (error "maybe-spill-to-register-save-area var is NIL arity is ~a  idx is ~a" arity idx))
-                     (%dbg-variable-value reg-i8* var)
-                     (%dbg-variable-addr addr var)))
                  addr)))
         (let* ((names (if (eq arity :general-entry)
                           (list "rsa-closure" "rsa-nargs" "rsa-args")
@@ -727,71 +711,6 @@ Boehm and MPS use a single pointer"
                   (spill-reg idx reg name)
                   (incf idx))
                 registers names))))))
-
-
-(defun %dbg-variable-addr (addr var)
-  (let* ((addrmd (llvm-sys:metadata-as-value-get
-                  (thread-local-llvm-context)
-                  (llvm-sys:value-as-metadata-get addr)))
-         (varmd (llvm-sys:metadata-as-value-get
-                 (thread-local-llvm-context)
-                 var))
-         (diexpr (llvm-sys:metadata-as-value-get
-                  (thread-local-llvm-context)
-                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
-    (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr)))
-
-;;; Put in debug information for a variable corresponding to an alloca.
-(defun dbg-variable-alloca (alloca name spi
-                                   &optional (type-name "T_O*")
-                                     (type llvm-sys:+dw-ate-address+))
-  (when spi ; don't bother if there's no info.
-    (let* ((type (llvm-sys:create-basic-type
-                  *the-module-dibuilder* type-name 64 type 0))
-           (inlined-at (core:source-pos-info-inlined-at spi))
-           (scope (if inlined-at
-                      (cached-function-scope
-                       (core:source-pos-info-function-scope spi))
-                      *dbg-current-scope*))
-           (auto-variable (dbg-create-auto-variable
-                           :name name
-                           :lineno (core:source-pos-info-lineno spi)
-                           :scope scope
-                           :type type)))
-      (%dbg-variable-addr alloca auto-variable))))
-
-(defun %dbg-variable-value (value var)
-    (let* ((valuemd (llvm-sys:metadata-as-value-get
-                     (thread-local-llvm-context)
-                     (llvm-sys:value-as-metadata-get value)))
-           (varmd (llvm-sys:metadata-as-value-get
-                   (thread-local-llvm-context)
-                   var))
-           (diexpr (llvm-sys:metadata-as-value-get
-                    (thread-local-llvm-context)
-                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
-      (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr)))
-
-;;; Put in debug information for a variable corresponding to an llvm Value.
-(defun dbg-variable-value (value name spi
-                                 &optional (type-name "T_O*")
-                                   (type llvm-sys:+dw-ate-address+))
-  (when spi
-    (let* ((type (llvm-sys:create-basic-type
-                  *the-module-dibuilder* type-name 64 type 0))
-           (inlined-at (core:source-pos-info-inlined-at spi))
-           (scope (if inlined-at
-                      (cached-function-scope
-                       (core:source-pos-info-function-scope spi))
-                      *dbg-current-scope*))
-           (auto-variable (dbg-create-auto-variable
-                           :name name
-                           :lineno (core:source-pos-info-lineno spi)
-                           :scope scope
-                           :type type)))
-      (unless auto-variable
-        (error "maybe-spill-to-register-save-area auto-variable is NIL"))
-      (%dbg-variable-value value auto-variable))))
 
 ;;; This is the normal C-style prototype for a function
 (define-symbol-macro %opaque-fn-prototype*% %i8*%)

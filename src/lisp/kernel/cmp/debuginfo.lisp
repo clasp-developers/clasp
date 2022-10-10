@@ -326,6 +326,77 @@
                                                               '(llvm-sys:diflags-zero))
                                         annotations)))
 
+(defun dbg-parameter-var (name argno &optional (type-name "T_O*")
+                                       (type llvm-sys:+dw-ate-address+))
+  (dbg-create-parameter-variable :name name :argno argno
+                                 :lineno *dbg-current-function-lineno*
+                                 :type (llvm-sys:create-basic-type
+                                        *the-module-dibuilder*
+                                        type-name 64 type 0)
+                                 :always-preserve t))
+
+(defun %dbg-variable-addr (addr var)
+  (let* ((addrmd (llvm-sys:metadata-as-value-get
+                  (thread-local-llvm-context)
+                  (llvm-sys:value-as-metadata-get addr)))
+         (varmd (llvm-sys:metadata-as-value-get
+                 (thread-local-llvm-context)
+                 var))
+         (diexpr (llvm-sys:metadata-as-value-get
+                  (thread-local-llvm-context)
+                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
+    (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr)))
+
+;;; Put in debug information for a variable corresponding to an alloca.
+(defun dbg-variable-alloca (alloca name spi
+                                   &optional (type-name "T_O*")
+                                     (type llvm-sys:+dw-ate-address+))
+  (when spi ; don't bother if there's no info.
+    (let* ((type (llvm-sys:create-basic-type
+                  *the-module-dibuilder* type-name 64 type 0))
+           (fsi (core:source-pos-info-function-scope spi))
+           (scope (if fsi
+                      (cached-function-scope fsi)
+                      *dbg-current-scope*))
+           (auto-variable (dbg-create-auto-variable
+                           :name name
+                           :lineno (core:source-pos-info-lineno spi)
+                           :scope scope
+                           :type type)))
+      (%dbg-variable-addr alloca auto-variable))))
+
+(defun %dbg-variable-value (value var)
+    (let* ((valuemd (llvm-sys:metadata-as-value-get
+                     (thread-local-llvm-context)
+                     (llvm-sys:value-as-metadata-get value)))
+           (varmd (llvm-sys:metadata-as-value-get
+                   (thread-local-llvm-context)
+                   var))
+           (diexpr (llvm-sys:metadata-as-value-get
+                    (thread-local-llvm-context)
+                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
+      (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr)))
+
+;;; Put in debug information for a variable corresponding to an llvm Value.
+(defun dbg-variable-value (value name spi
+                                 &optional (type-name "T_O*")
+                                   (type llvm-sys:+dw-ate-address+))
+  (when spi
+    (let* ((type (llvm-sys:create-basic-type
+                  *the-module-dibuilder* type-name 64 type 0))
+           (fsi (core:source-pos-info-function-scope spi))
+           (scope (if fsi
+                      (cached-function-scope fsi)
+                      *dbg-current-scope*))
+           (auto-variable (dbg-create-auto-variable
+                           :name name
+                           :lineno (core:source-pos-info-lineno spi)
+                           :scope scope
+                           :type type)))
+      (unless auto-variable
+        (error "maybe-spill-to-register-save-area auto-variable is NIL"))
+      (%dbg-variable-value value auto-variable))))
+
 (defun set-instruction-source-position (origin function-metadata)
   (when *dbg-generate-dwarf*
     (if origin
