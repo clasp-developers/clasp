@@ -203,6 +203,28 @@ namespace core {
       this->setCdrNoValidate(o);
     }
 
+  public: // atomic access
+    inline T_sp carAtomic(std::memory_order order) const {
+      return _Car.load(order);
+    }
+    inline T_sp cdrAtomic(std::memory_order order) const {
+      return _Cdr.load(order);
+    }
+    inline void setCarAtomic(T_sp o, std::memory_order order) {
+      _Car.store(o, order);
+    }
+    inline void setCdrAtomic(T_sp o, std::memory_order order) {
+      _Cdr.store(o, order);
+    }
+    inline T_sp carCAS(T_sp expected, T_sp desired, std::memory_order order) {
+      _Car.compare_exchange_strong(expected, desired, order);
+      return expected;
+    }
+    inline T_sp cdrCAS(T_sp expected, T_sp desired, std::memory_order order) {
+      _Cdr.compare_exchange_strong(expected, desired, order);
+      return expected;
+    }
+
   public:
     inline Cons_sp rplaca(T_sp o) {
       setCar(o);

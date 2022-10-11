@@ -347,9 +347,9 @@ same order as they are for CL:PUSHNEW, specified in CLHS 5.1.1.1."
   (apply #'get-atomic-expansion `(cdr ,list) keys))
 
 (define-simple-atomic-expander car (list)
-  core::car-atomic core::rplaca-atomic core::cas-car)
+  core:car-atomic core:rplaca-atomic core:cas-car)
 (define-simple-atomic-expander cdr (list)
-  core::cdr-atomic core::rplacd-atomic core::cas-cdr)
+  core:cdr-atomic core:rplacd-atomic core:cas-cdr)
 
 (define-simple-atomic-expander core:rack-ref (rack index)
   core::atomic-rack-read core::atomic-rack-write core::cas-rack)
