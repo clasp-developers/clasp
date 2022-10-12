@@ -62,7 +62,7 @@
                     :restat 1
                     :pool "console")
   (ninja:write-rule output-stream :analyze-generate
-                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load analyze-generate.lisp -- $out $in"
+                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load analyze-generate.lisp -- $sif $in"
                     :description "Analyzing clasp"
                     :restat 1
                     :pool "console")
@@ -766,7 +766,7 @@
                                          *variant-debug*)
                                  :build)))
   (declare (ignore configuration name output-stream target))
-  (unless (or *variant-prep* *variant-precise*)
+  (unless (or *variant-prep* *variant-precise* *variant-debug*)
     (ninja:write-build output-stream :analyze-file
                        :clasp (make-source "iclasp" :variant)
                        :inputs (list source)
@@ -793,14 +793,11 @@
                        :implicit-inputs (list (build-name "cclasp")
                                               (build-name "generated" :prep t :gc :mps)
                                               (make-source "analyzer.stub" :variant-lib))                                    
-                       :outputs (list sif))
-    (ninja:write-build output-stream :phony
-                       :inputs (list sif)
+                       :sif (list sif)
                        :outputs (list (build-name "analyze")))
-    (unless *variant-debug*
-      (ninja:write-build output-stream :phony
-                         :inputs (list (build-name "analyze"))
-                         :outputs (list "analyze")))))
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "analyze"))
+                       :outputs (list "analyze"))))
 
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :sclasp))
