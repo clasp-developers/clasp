@@ -1227,7 +1227,12 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
   vm._stackPointer = sp;
   return pc;
 }
-};
+
+void VMFrameDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
+  my_thread->_VM._stackPointer = this->old_sp;
+}
+
+}; // namespace core
 
 extern "C" {
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args)
@@ -1256,35 +1261,21 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   core::T_O** fp = vm._stackPointer;
   core::T_O** sp = vm.push_frame(fp, nlocals);
   try {
-#if 1
-    core::T_mv res = core::funwind_protect([&] {
-      gctools::return_type res = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
-      vm._pc = old_pc;
-      return core::T_mv(res);
-    },
-      [&] { vm._stackPointer = fp; });
-    return res.as_return_type();
-#else
-#ifdef DEBUG_VIRTUAL_MACHINE_STACK_POINTER
-    core::T_O** save_stackPointer = vm._stackPointer;
-#endif
-    gctools::return_type res = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
+    gctools::StackAllocate<core::VMFrameDynEnv_O> frame(fp);
+    gctools::StackAllocate<core::Cons_O> sa_ec(frame.asSmartPtr(),
+                                               my_thread->dynEnvStackGet());
+    core::DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
+    gctools::return_type res = bytecode_vm(vm, literals, closed, closure,
+                                           fp, sp, lcc_nargs, lcc_args);
     vm._pc = old_pc;
-#ifdef DEBUG_VIRTUAL_MACHINE_STACK_POINTER
-    intptr_t delta_stackPointer = (intptr_t)save_stackPointer - (intptr_t)vm._stackPointer;
-    if (delta_stackPointer) {
-      printf("%s:%d:%s The stackpointer wasn't restored: nargs %lu retvals %lu  and %ld words left on stack\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs, res.nvals, delta_stackPointer/sizeof(core::T_O*));
-    }
-#endif
     return res;
-#endif
   } catch (core::VM_error& err) {
     printf("%s:%d:%s Recovering from VM_error\n", __FILE__, __LINE__, __FUNCTION__ );
     return gctools::return_type(nil<core::T_O>().raw_(), 0 );
   }
 }
 
-};
+}; // extern C
 
 
 

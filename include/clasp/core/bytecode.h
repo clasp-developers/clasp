@@ -7,6 +7,7 @@
 #define bytecode_H
 #include <unistd.h>
 #include <clasp/core/common.h>
+#include <clasp/core/unwind.h>
 
 namespace core {
   class Bytecode_O;
@@ -55,7 +56,23 @@ public:
   BytecodeModule_O() {};
 };
 
+// Dynenv used for VM call frames to ensure the unwinder properly
+// cleans up stack frames.
+class VMFrameDynEnv_O : public DynEnv_O {
+  LISP_CLASS(core, CorePkg, VMFrameDynEnv_O, "VMFrameDynEnv", DynEnv_O);
+public:
+  VMFrameDynEnv_O(T_O** a_old_sp) : old_sp(a_old_sp) {}
+  // Slightly sketchy: We use the destructor to reset the stack pointer,
+  // so that C++ unwinds are also affected by this dynenv.
+  // This means VMFrames must be stack allocated.
+  ~VMFrameDynEnv_O() { my_thread->_VM._stackPointer = this->old_sp; }
+public:
+  T_O** old_sp;
+public:
+  virtual SearchStatus search() const { return Continue; }
+  virtual void proceed(DestDynEnv_sp, size_t);
 };
+}; // namespace core
 
 namespace core {
 FORWARD(GFBytecodeModule);
@@ -100,6 +117,6 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure,
 gctools::return_type gfbytecode_call(unsigned char* pc, core::T_O* lcc_closure,
                                      size_t lcc_nargs, core::T_O** lcc_args);
 
-}; // namespace core
+};
 
 #endif
