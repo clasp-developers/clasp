@@ -60,7 +60,7 @@
 
 (defmethod add-target-source (configuration target (source (eql :extension-systems))
                               &aux (systems (extension-systems configuration)))
-  (when systems
+  (when (member :cando-user systems)
     (loop for system in (append '(:cffi-toolchain :cffi-grovel :cffi)
                                 systems)
           do (add-target-source configuration target system))))
