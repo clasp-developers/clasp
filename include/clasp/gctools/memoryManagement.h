@@ -808,6 +808,12 @@ struct StackAllocate {
   }
 };
 
+template <class LispClass, class...ARGS>
+LispClass* initialize_into(void* where, ARGS&&...args) {
+  LispClass* object = (LispClass*)((Header_s*)where + 1);
+  new(where) Header_s(Header_s::BadgeStampWtagMtag::make<LispClass>(lisp_stack_badge()));
+  return new(object) LispClass(std::forward<ARGS>(args)...);
+}
 
 
 };

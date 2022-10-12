@@ -141,6 +141,24 @@ struct VirtualMachine {
     core::T_O* vl_backup = this->alloca_vaslist1(stackPointer,args,nargs);
     return vl;
   }
+
+  // Allocate a general object on the stack.
+  template<class LispClass, class...ARGS>
+  inline gctools::smart_ptr<LispClass> alloc(core::T_O**& stackPointer,
+                                             ARGS&&...args) {
+    size_t size = gc::sizeof_with_header<LispClass>();
+    LispClass* obj = gc::initialize_into<LispClass>(stackPointer,
+                                                    std::forward<ARGS>(args)...);
+    stackPointer += size;
+    LispClass* tobj = gc::tag_general<LispClass*>(obj);
+    gctools::smart_ptr<LispClass> robj((gctools::Tagged)tobj);
+    return robj;
+  }
+
+  template<class LispClass>
+  inline void dealloc(core::T_O**& stackPointer) {
+    stackPointer -= gc::sizeof_with_header<LispClass>();
+  }
     
   // Drop NELEMS slots on the stack all in one go.
   inline void drop(core::T_O**& stackPointer, size_t nelems) {
