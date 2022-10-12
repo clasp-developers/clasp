@@ -225,7 +225,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
   ASSERT((((uintptr_t)closure)&0x7)==0); // must be aligned
   ASSERT((((uintptr_t)lcc_args)&0x7)==0); // must be aligned
   VM_WRITE("{}\n", (uintptr_t)vm._stackPointer-(uintptr_t)vm._stackBottom);
-  bool vaslistp = false; // true if we need to deallocate a vaslist at the end
 #ifdef DEBUG_VIRTUAL_MACHINE
   if (lcc_nargs> 65536) {
     printf("%s:%d:%s A very large number of arguments %lu are being passed - check if there is a problem\n", __FILE__, __LINE__, __FUNCTION__, lcc_nargs );
@@ -419,7 +418,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     }
     case vm_return: {
       DBG_VM1("return\n");
-      if (vaslistp) vm.drop(sp, 4); // deallocate
       // since the stack pointer is a local variable we don't need to
       // adjust it.
       size_t nvalues = multipleValues.getSize();
@@ -476,7 +474,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       }
 #endif
       vm.push(sp, theVaslist);
-      vaslistp = true;
       pc++;
       break;
     }
