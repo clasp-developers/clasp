@@ -27,7 +27,7 @@
   "The C macro names of the scraper headers used during a precise build.")
 
 (defparameter +scraper-lisp-sources+
-  '(:cl_wrappers_lisp)
+  '()
   "The C macro names of the scraper lisp sources.")
 
 (defmethod configure-unit (configuration (unit (eql :llvm)))

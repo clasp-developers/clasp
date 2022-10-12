@@ -793,7 +793,7 @@
                        :implicit-inputs (list (build-name "cclasp")
                                               (build-name "generated" :prep t :gc :mps)
                                               (make-source "analyzer.stub" :variant-lib))                                    
-                       :sif (list sif)
+                       :sif sif
                        :outputs (list (build-name "analyze")))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "analyze"))
