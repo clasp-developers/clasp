@@ -808,13 +808,38 @@ struct StackAllocate {
   }
 };
 
-template <class LispClass, class...ARGS>
-LispClass* initialize_into(void* where, ARGS&&...args) {
-  LispClass* object = (LispClass*)((Header_s*)where + 1);
-  new(where) Header_s(Header_s::BadgeStampWtagMtag::make<LispClass>(lisp_stack_badge()));
-  return new(object) LispClass(std::forward<ARGS>(args)...);
-}
+// We use a sham struct because C++ doesn't let us partially specify templates.
+template <class LispClass>
+struct InitializeObject {
 
+  static size_t size() { return sizeof_with_header<LispClass>(); }
+
+  template <typename...ARGS>
+  static LispClass* go(void* where, ARGS&&...args) {
+    LispClass* object = (LispClass*)((Header_s*)where + 1);
+    new(where) Header_s(Header_s::BadgeStampWtagMtag::make<LispClass>(lisp_stack_badge()));
+    return new(object) LispClass(std::forward<ARGS>(args)...);
+  }
+};
+
+template <>
+struct InitializeObject<core::Cons_O> {
+  
+  // KLUDGE: We can't specialize InitializeObject directly because Cons_O
+  // is not defined enough yet that we can write code to initialize one.
+  // But if we put in another layer of template, it's apparently okay.
+  template <class ConsType, typename...ARGS>
+  static ConsType* initialize_cons(void* where, ARGS&&...args) {
+    ConsType* object = (ConsType*)((ConsHeader_s*)where + 1);
+    new(where) ConsHeader_s(ConsHeader_s::BadgeStampWtagMtag::make<ConsType>(lisp_stack_badge()));
+    return new(object) ConsType(std::forward<ARGS>(args)...);
+  }
+
+  template <typename...ARGS>
+  static core::Cons_O* go(void* where, ARGS&&...args) {
+    return initialize_cons<core::Cons_O>(where, std::forward<ARGS>(args)...);
+  }
+};
 
 };
 

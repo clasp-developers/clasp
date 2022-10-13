@@ -143,22 +143,50 @@ struct VirtualMachine {
   }
 
   // Allocate a general object on the stack.
-  template<class LispClass, class...ARGS>
-  inline gctools::smart_ptr<LispClass> alloc(core::T_O**& stackPointer,
-                                             ARGS&&...args) {
-    size_t size = gc::sizeof_with_header<LispClass>();
-    LispClass* obj = gc::initialize_into<LispClass>(stackPointer,
-                                                    std::forward<ARGS>(args)...);
-    stackPointer += size;
-    LispClass* tobj = gc::tag_general<LispClass*>(obj);
-    gctools::smart_ptr<LispClass> robj((gctools::Tagged)tobj);
-    return robj;
-  }
+  template <class LispClass>
+  struct Alloc {
+    static inline size_t size() { return gc::sizeof_with_header<LispClass>(); }
+    
+    template <typename...ARGS>
+    static inline gctools::smart_ptr<LispClass> alloc(core::T_O**& stackPointer,
+                                                      ARGS&&...args) {
+      LispClass* obj
+        = gc::InitializeObject<LispClass>::go(stackPointer,
+                                              std::forward<ARGS>(args)...);
+      stackPointer += size();
+      LispClass* tobj = gc::tag_general<LispClass*>(obj);
+      gctools::smart_ptr<LispClass> robj((gctools::Tagged)tobj);
+      return robj;
+    }
 
-  template<class LispClass>
-  inline void dealloc(core::T_O**& stackPointer) {
-    stackPointer -= gc::sizeof_with_header<LispClass>();
-  }
+    static inline void dealloc(core::T_O**& stackPointer) {
+      stackPointer -= size();
+    }
+  };
+
+  // Allocate a cons.
+  // FIXME: It would be nice to roll the smart pointer stuff under the
+  // InitializeObject struct, but in gctools/memoryManagement.h we don't
+  // have a complete definition of Cons_O or even DoRegister, making things
+  // rather more difficult.o
+  template <>
+  struct Alloc<core::Cons_O> {
+    template <class ConsType>
+    static inline size_t size() {
+      return gc::ConsSizeCalculator<gc::RuntimeStage, ConsType, gc::DoRegister>::value();
+    }
+
+    template <typename...ARGS>
+    static inline core::Cons_sp alloc(core::T_O**& stackPointer, ARGS&&...args) {
+      core::Cons_O* obj
+        = gc::InitializeObject<core::Cons_O>::go(stackPointer,
+                                                 std::forward<ARGS>(args)...);
+      stackPointer += size<core::Cons_O>();
+      core::Cons_O* tobj = gc::tag_cons<core::Cons_O*>(obj);
+      core::Cons_sp robj((gctools::Tagged)tobj);
+      return robj;
+    }
+  };
     
   // Drop NELEMS slots on the stack all in one go.
   inline void drop(core::T_O**& stackPointer, size_t nelems) {
