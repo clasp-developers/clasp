@@ -116,7 +116,7 @@
                       :restat 1
                       :pool "console"))
   (ninja:write-rule output-stream :compile-module
-                    :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image -t c --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
+                    :command "$clasp --non-interactive --norc --disable-mpi -t c --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
                     :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
@@ -506,7 +506,6 @@
          (iclasp (make-source "iclasp" :variant)))
     (ninja:write-build output-stream :compile-module
                        :clasp iclasp
-                       :image image
                        :inputs (list source)
                        :implicit-inputs (list iclasp image)
                        :source (format nil "\"~/ninja:escape/\""

@@ -97,11 +97,13 @@
 (defmethod print-prologue (configuration (name (eql :compile-clasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:load-and-compile-clasp :reproducible ~s :system-sort t
+(core:load-and-compile-clasp :reproducible ~s :system-sort ~s
                              :name (elt core:*command-line-arguments* 0)
                              :position (parse-integer (elt core:*command-line-arguments* 1))
                              :system (core:command-line-paths 2))
-(core:quit)" (jobs configuration) (reproducible-build configuration)))
+(core:quit)"
+          (jobs configuration) (reproducible-build configuration)
+          (> (parse-integer (jobs configuration)) 1)))
 
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (write-string "(setq *features* (cons :aclasp *features*))
