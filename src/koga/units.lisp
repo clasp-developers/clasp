@@ -11,7 +11,8 @@
     "llvm-config~a-64"
     "llvm-config"
     "llvm-config-64"
-    #+darwin "/usr/local/opt/llvm/bin/llvm-config")
+    #+darwin "/usr/local/opt/llvm/bin/llvm-config"
+    #+darwin "/usr/local/opt/llvm@~a/bin/llvm-config")
   "Candidate names for the llvm-config binary.")
 
 (defparameter +scraper-headers+
