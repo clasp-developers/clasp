@@ -103,7 +103,7 @@
                              :system (core:command-line-paths 2))
 (core:quit)"
           (jobs configuration) (reproducible-build configuration)
-          (> (parse-integer (jobs configuration)) 1)))
+          (and (> (jobs configuration) 1) (parallel-build configuration))))
 
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (write-string "(setq *features* (cons :aclasp *features*))

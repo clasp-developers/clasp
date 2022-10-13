@@ -57,7 +57,8 @@
 
 (defparameter +option-parsers+
   (list :extensions #'split-keywords
-        :skip-sync #'split-keywords))
+        :skip-sync #'split-keywords
+        :jobs #'parse-integer))
 
 (defun parse-string-option (arg start eq-pos)
   (let ((name (intern (string-upcase (subseq arg start eq-pos))
