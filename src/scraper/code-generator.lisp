@@ -1486,13 +1486,14 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
                       (getf app-config :clasp_gc_cc)))
   (multiple-value-bind (direct-call-c-code direct-call-cl-code c-code-info cl-code-info)
       (generate-code-for-direct-call-functions all-functions)
+    (declare (ignorable direct-call-cl-code cl-code-info))                   
     (write-if-changed direct-call-c-code
                       (getf app-config :c_wrappers_h))
-    (write-if-changed direct-call-cl-code
+    #+(or)(write-if-changed direct-call-cl-code
                       (getf app-config :cl_wrappers_lisp))
     (write-if-changed c-code-info
                       (merge-pathnames (make-pathname :type "txt")
                                        (getf app-config :c_wrappers_h)))
-    (write-if-changed cl-code-info
+    #+(or)(write-if-changed cl-code-info
                       (merge-pathnames (make-pathname :type "txt")
                                        (getf app-config :cl_wrappers_lisp)))))

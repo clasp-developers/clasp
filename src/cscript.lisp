@@ -16,7 +16,7 @@
 
 (k:sources :scraper
            #@"clasp_gc.cc"
-           #@"cl-wrappers.lisp"
+           ;#@"cl-wrappers.lisp"
            #@"c-wrappers.h"
            #@"enum_inc.h"
            #@"expose_inc.h"
