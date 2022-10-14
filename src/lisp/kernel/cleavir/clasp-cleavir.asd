@@ -25,7 +25,6 @@
                (:file "ast")
                (:file "convert-form")
                (:file "convert-special")
-               (:file "ast-interpreter")
                (:file "toplevel")
                (:file "setup")
                (:file "fold")
