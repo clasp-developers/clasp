@@ -1871,7 +1871,12 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest,
       } else if (gc::IsA<GlobalFunInfo_sp>(info)) {
         GlobalFunInfo_sp gfinfo = gc::As_unsafe<GlobalFunInfo_sp>(info);
         T_sp cmexpander = gfinfo->cmexpander();
-        if (cmexpander.notnilp() && !env->notinlinep(head)) {
+        if (cmexpander.notnilp() && !env->notinlinep(head)
+            // KLUDGE: The TYPEP compiler macro expands into TYPEQ, which
+            // causes infinite recursion as we implement TYPEQ as TYPEP.
+            // Better solution would be to have TYPEP expand into
+            // simpler TYPEPs, I'm thinking.
+            && (head != cl::_sym_typep)) {
           // Compiler macroexpand
           T_sp form = Cons_O::create(head, rest);
           ASSERT(gc::IsA<Function_sp>(cmexpander));
