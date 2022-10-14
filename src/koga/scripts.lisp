@@ -124,10 +124,14 @@
   (declare (ignore configuration))
   (print-asdf-stub output-stream nil :clasp-analyzer)
   (format output-stream "
-(clasp-analyzer:search-source-file (pathname (elt core:*command-line-arguments* 0))
-                                   (elt core:*command-line-arguments* 1)
-                                   (pathname (elt core:*command-line-arguments* 2))
-                                   (pathname (elt core:*command-line-arguments* 3)))"))
+(handler-case
+    (clasp-analyzer:search-source-file (pathname (elt core:*command-line-arguments* 0))
+                                       (elt core:*command-line-arguments* 1)
+                                       (pathname (elt core:*command-line-arguments* 2))
+                                       (pathname (elt core:*command-line-arguments* 3)))
+  (error (condition)
+    (format *error-output* \"~~a~~%\" condition)
+    (sys:exit 1)))"))
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
   (when (jupyter configuration)
