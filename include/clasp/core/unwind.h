@@ -45,7 +45,7 @@ public:
   virtual void invalidate() {};
 #endif
   /* Undo this environment. */
-  virtual void proceed(DestDynEnv_sp dest, size_t index) {};
+  virtual void proceed() {};
 };
 
 /* A dynenv of this class is used to warn our unwinder that there is
@@ -73,7 +73,7 @@ public:
   DestDynEnv_O(jmp_buf* a_target) : DynEnv_O(), target(a_target) {};
   virtual ~DestDynEnv_O() {};
   virtual SearchStatus search() const { return Continue; };
-  virtual void proceed(DestDynEnv_sp dest, size_t index) {};
+  virtual void proceed() {};
 #ifdef UNWIND_INVALIDATE_STRICT
   virtual void invalidate() { valid = false; }
 #endif
@@ -140,10 +140,11 @@ public:
   jmp_buf* target;
 public:
   virtual SearchStatus search() const { return Continue; };
-  [[noreturn]] virtual void proceed(DestDynEnv_sp, size_t);
+  [[noreturn]] virtual void proceed();
 };
 
 // Dynenv for a special variable binding.
+FORWARD(BindingDynEnv);
 class BindingDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, BindingDynEnv_O, "BindingDynEnv", DynEnv_O);
 public:
@@ -152,7 +153,7 @@ public:
   Symbol_sp sym;
   T_sp old;
   virtual SearchStatus search() const { return Continue; };
-  virtual void proceed(DestDynEnv_sp, size_t);
+  virtual void proceed();
 };
 
 // RAII helper for augmenting the dynamic environment.

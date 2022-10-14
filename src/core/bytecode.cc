@@ -1225,7 +1225,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
   return pc;
 }
 
-void VMFrameDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
+void VMFrameDynEnv_O::proceed() {
   my_thread->_VM._stackPointer = this->old_sp;
 }
 

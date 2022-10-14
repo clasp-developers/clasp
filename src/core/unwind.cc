@@ -86,18 +86,17 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
       longjmp(*(dest->target), index);
     } else {
       thread->dynEnvStackSet(iter);
-      diter->proceed(dest, index);
+      diter->proceed();
     }
   }
 }
 
-[[noreturn]] void UnwindProtectDynEnv_O::proceed(DestDynEnv_sp dest,
-                                                 size_t index) {
+[[noreturn]] void UnwindProtectDynEnv_O::proceed() {
   my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
   longjmp(*(this->target) , 1); // 1 irrelevant
 }
 
-void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
+void BindingDynEnv_O::proceed() {
   this->sym->set_threadLocalSymbolValue(this->old);
 }
 

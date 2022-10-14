@@ -70,7 +70,7 @@ public:
   T_O** old_sp;
 public:
   virtual SearchStatus search() const { return Continue; }
-  virtual void proceed(DestDynEnv_sp, size_t);
+  virtual void proceed();
 };
 }; // namespace core
 
