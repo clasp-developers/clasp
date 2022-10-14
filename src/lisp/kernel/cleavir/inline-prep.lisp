@@ -98,12 +98,21 @@
         (cleavir-ast:map-children #'aux ast))))
   ast)
 
-;;; erase all source info.
-(defun unhome-inline-ast (ast)
-  (cleavir-ast:map-ast-depth-first-preorder
-   (lambda (ast) (setf (cleavir-ast:origin ast) nil))
-   ast)
-  ast)
+;;; Bound by cst->ast to preserve source info.
+(defvar *compiling-cst* nil)
+
+(defmacro compute-inline-ast (form compile-file-semantics-p)
+  (let ((cleavir-cst-to-ast:*compiler*
+          (if compile-file-semantics-p
+              'cl:compile-file
+              'cl:compile))
+        (cmp:*cleavir-compile-hook* 'bir-compile)
+        ;; FIXME: This will mess up inline definitions within macrolets etc.
+        (env nil)
+        (cst (if *compiling-cst*
+                 (cst:reconstruct form *compiling-cst* *clasp-system*)
+                 (cst:cst-from-expression form))))
+    (fix-inline-ast (cst->ast cst env))))
 
 ;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lisp)
 (defun defun-inline-hook (name function-form env)
@@ -112,10 +121,9 @@
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (when (core:declared-global-inline-p ',name)
          (setf (inline-ast ',name)
-               (fix-inline-ast
-                ;; Must use file compilation semantics here to compile
-                ;; load-time-value correctly.
-                (cleavir-primop:cst-to-ast ,function-form t)))))))
+               ;; Must use file compilation semantics here to compile
+               ;; load-time-value correctly.
+               (compute-inline-ast ,function-form t))))))
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*proclaim-hook* 'proclaim-hook))

@@ -2117,32 +2117,36 @@
 Does not hoist.
 COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
-  (handler-bind
-      ((cst-to-ast:no-variable-info
-         (lambda (condition)
-           (cmp:warn-undefined-global-variable
-            (origin-spi (cmp:compiler-condition-origin condition))
-            (cst-to-ast:name condition))
-           (invoke-restart 'cst-to-ast:consider-special)))
-       (cst-to-ast:no-function-info
-         (lambda (condition)
-           (cmp:register-global-function-ref
-            (cst-to-ast:name condition)
-            (origin-spi (cmp:compiler-condition-origin condition)))
-           (invoke-restart 'cst-to-ast:consider-global)))
-       (cst-to-ast:compiler-macro-expansion-error
-         (lambda (condition)
-           (warn 'cmp:compiler-macro-expansion-error-warning
-                 :origin (origin-spi (cmp:compiler-condition-origin condition))
-                 :condition condition)
-           (continue condition)))
-       ((and cst-to-ast:compilation-program-error
-             ;; If something goes wrong evaluating an eval-when,
-             ;; we just want a normal error signal-
-             ;; we can't recover and keep compiling.
-             (not cst-to-ast:eval-error))
-         #'conversion-error-handler))
-    (cst-to-ast:cst-to-ast cst env clasp-cleavir:*clasp-system*)))
+  (let (;; used by compute-inline-ast (inline-prep.lisp) to get detailed
+        ;; source info for inline function bodies.
+        (*compiling-cst* cst))
+    (handler-bind
+        ((cst-to-ast:no-variable-info
+           (lambda (condition)
+             (cmp:warn-undefined-global-variable
+              (origin-spi (cmp:compiler-condition-origin condition))
+              (cst-to-ast:name condition))
+             (invoke-restart 'cst-to-ast:consider-special)))
+         (cst-to-ast:no-function-info
+           (lambda (condition)
+             (cmp:register-global-function-ref
+              (cst-to-ast:name condition)
+              (origin-spi (cmp:compiler-condition-origin condition)))
+             (invoke-restart 'cst-to-ast:consider-global)))
+         (cst-to-ast:compiler-macro-expansion-error
+           (lambda (condition)
+             (warn 'cmp:compiler-macro-expansion-error-warning
+                   :origin (origin-spi
+                            (cmp:compiler-condition-origin condition))
+                   :condition condition)
+             (continue condition)))
+         ((and cst-to-ast:compilation-program-error
+               ;; If something goes wrong evaluating an eval-when,
+               ;; we just want a normal error signal-
+               ;; we can't recover and keep compiling.
+               (not cst-to-ast:eval-error))
+           #'conversion-error-handler))
+      (cst-to-ast:cst-to-ast cst env clasp-cleavir:*clasp-system*))))
 
 ;;; Given an AST that may not be a function-ast, wrap it
 ;;; in a function AST. Useful for the pattern of

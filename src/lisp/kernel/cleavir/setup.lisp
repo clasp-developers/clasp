@@ -171,9 +171,6 @@
     ((eq name 'core::vector-length) t)
     ((eq name 'core::%array-dimension) t)
     ((eq name 'core::fence) t)
-    ((eq name 'cleavir-primop:funcall) t)
-    ((eq name 'cleavir-primop:unreachable) t)
-    ((eq name 'cleavir-primop:case) t)
     ((eq name 'core:defcallback) t)
     ((eq name 'core::atomic-vref) t)
     ((eq name 'core::atomic-vset) t)
@@ -369,35 +366,6 @@
   (declare (ignore environment errorp))
   name)
 
-(defun cleavir-env->interpreter (env)
-  ;; Convert a cleavir ENTRY (or null) into an environment clasp's interpreter can use.
-  ;; Only for compile time environments, so it's symbol macros, macros, and declarations.
-  ;; The interpreter doesn't use declarations besides SPECIAL.
-  (format t "In cleavir-env->interpreter - failing~%")
-  (break)
-  #+(or)
-  (etypecase env
-    (clasp-global-environment nil)
-    (null env)
-    (env:special-variable
-     (core:make-value-environment-for-locally-special-entries
-      (list (env:name env))
-      (cleavir-env->interpreter (env::next env))))
-    (env:symbol-macro
-     (let ((result (core:make-symbol-macrolet-environment
-                    (cleavir-env->interpreter (env::next env)))))
-       (core:add-symbol-macro
-        result (env:name env)
-        (constantly (env:expansion env)))
-       result))
-    (env:macro
-     (let ((result (core:make-macrolet-environment
-                    (cleavir-env->interpreter (env::next env)))))
-       (core:add-macro result (env:name env)
-                       (env:expander env))
-       result))
-    (env::entry (cleavir-env->interpreter (env::next env)))))
-
 (defun cleavir-env->bytecode (env)
   ;; Convert a cleavir ENTRY (or null) into an environment clasp's bytecode compiler
   ;; can use. Only for compile time environments, so it's symbol macros, macros, and
@@ -433,22 +401,17 @@
            next)))
     (env::entry (cleavir-env->bytecode (env::next env)))))
 
-(defvar *use-ast-interpreter* t)
-
-(defvar *use-bytecompiler* nil)
-
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
   (cleavir-environment:eval form env *clasp-env*))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (if *use-bytecompiler*
-      (let ((cmp:*cleavir-compile-hook* nil)) ; disable compiler macros
-           (funcall (cmp:bytecompile `(lambda () (progn ,form))
-                                     (cleavir-env->bytecode env))))
-      (cleavir-environment:cst-eval (cst:cst-from-expression form) env dispatch-env nil)))
-
-(defvar *use-cst-eval* t)
+  (simple-eval form env
+               (lambda (form env)
+                 (let (;; disable cleavir compiler macros
+                       (cmp:*cleavir-compile-hook* nil))
+                   (funcall (cmp:bytecompile `(lambda () (progn ,form))
+                                             (cleavir-env->bytecode env)))))))
 
 (defun wrap-cst (cst)
   (cst:quasiquote (cst:source cst)
@@ -457,27 +420,13 @@
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
                                          system)
   (declare (ignore system))
-  ;; NOTE: We want the interpreter to deal with CSTs when we care about source info.
-  ;; That is mainly when saving inline definitions.
-  ;; At the moment, only simple-eval-cst and ast-interpret-cst actually deal with the CST,
-  ;; so we want to be using one of those cases when saving definitions.
-  (cond #+(or)
-        (*use-bytecompiler*
-         (let ((cmp:*cleavir-compile-hook* nil)) ; disable compiler macros
-           (funcall (cmp:bytecompile `(lambda () (progn ,(cst:raw cst)))
-                                     (cleavir-env->bytecode env)))))
-        (*use-cst-eval*
-         (simple-eval-cst cst env
-                       (cond (core:*use-interpreter-for-eval*
-                              (lambda (cst env)
-                                (core:interpret (cst:raw cst) (cleavir-env->interpreter env))))
-                             (*use-ast-interpreter* #'ast-interpret-cst)
-                             (t (lambda (cst env)
-                                  (funcall (bir-compile-cst-in-env (wrap-cst cst) env)))))))
-        (core:*use-interpreter-for-eval*
-         (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
-        (*use-ast-interpreter* (ast-interpret-cst cst env))
-        (t (funcall (bir-compile-cst-in-env (wrap-cst cst) env)))))
+  (simple-eval-cst cst env
+                   (lambda (cst env)
+                     (let ((cmp:*cleavir-compile-hook* nil))
+                       (funcall
+                        (cmp:bytecompile
+                         `(lambda () (progn ,(cst:raw cst)))
+                         (cleavir-env->bytecode env)))))))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
   (cleavir-environment:cst-eval cst env *clasp-env* system))
