@@ -150,10 +150,11 @@ struct VirtualMachine {
     template <typename...ARGS>
     static inline gctools::smart_ptr<LispClass> alloc(core::T_O**& stackPointer,
                                                       ARGS&&...args) {
-      LispClass* obj
-        = gc::InitializeObject<LispClass>::go(stackPointer,
-                                              std::forward<ARGS>(args)...);
+      core::T_O** start = stackPointer + 1;
       stackPointer += size();
+      LispClass* obj
+        = gc::InitializeObject<LispClass>::go(start,
+                                              std::forward<ARGS>(args)...);
       LispClass* tobj = gc::tag_general<LispClass*>(obj);
       gctools::smart_ptr<LispClass> robj((gctools::Tagged)tobj);
       return robj;
@@ -178,10 +179,11 @@ struct VirtualMachine {
 
     template <typename...ARGS>
     static inline core::Cons_sp alloc(core::T_O**& stackPointer, ARGS&&...args) {
-      core::Cons_O* obj
-        = gc::InitializeObject<core::Cons_O>::go(stackPointer,
-                                                 std::forward<ARGS>(args)...);
+      core::T_O** start = stackPointer + 1;
       stackPointer += size<core::Cons_O>();
+      core::Cons_O* obj
+        = gc::InitializeObject<core::Cons_O>::go(start,
+                                                 std::forward<ARGS>(args)...);
       core::Cons_O* tobj = gc::tag_cons<core::Cons_O*>(obj);
       core::Cons_sp robj((gctools::Tagged)tobj);
       return robj;
