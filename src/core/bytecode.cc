@@ -359,7 +359,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_cell_ref: {
       DBG_VM1("cell-ref\n");
       T_sp cons((gctools::Tagged)vm.pop(sp));
-      vm.push(sp, oCar(cons).raw_());
+      vm.push(sp, cons.unsafe_cons()->ocar().raw_());
       pc++;
       break;
     }
