@@ -210,8 +210,8 @@ Lisp::GCRoots::GCRoots() :
   _AllCodeBlocks(nil<T_O>()),
   _AllLibraries(nil<T_O>()),
 #ifdef CLASP_THREADS
-    _UnboundSymbolFunctionEntryPoint(unbound<GlobalEntryPoint_O>()),
-    _UnboundSetfSymbolFunctionEntryPoint(unbound<GlobalEntryPoint_O>()),
+    _UnboundSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
+    _UnboundSetfSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
   _ActiveThreads(nil<T_O>()),
   _DefaultSpecialBindings(nil<T_O>()),
 #endif
@@ -453,8 +453,8 @@ void Lisp::startupLispEnvironment() {
   symbol_nil->fmakunbound();
   symbol_nil->fmakunbound_setf();
   { // Trap symbols as they are interned
-    if (offsetof(Function_O,_TheEntryPoint)!=offsetof(FuncallableInstance_O,_TheEntryPoint)) {
-      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,_TheEntryPoint),offsetof(FuncallableInstance_O,_TheEntryPoint) );
+    if (offsetof(Function_O,_TheSimpleFun)!=offsetof(FuncallableInstance_O,_TheSimpleFun)) {
+      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,_TheSimpleFun),offsetof(FuncallableInstance_O,_TheSimpleFun) );
       printf("        These must match for Clasp to be able to function\n");
       abort();
     }

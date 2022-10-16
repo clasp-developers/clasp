@@ -193,25 +193,25 @@ T_sp dwarf_ep(size_t frameIndex,
           );
         for (size_t i = 0; i < nliterals; ++i) {
           T_sp literal((gc::Tagged)(rliterals[i]));
-          if (gc::IsA<LocalEntryPoint_sp>(literal)) {
-            LocalEntryPoint_sp ep = gc::As_unsafe<LocalEntryPoint_sp>(literal);
+          if (gc::IsA<LocalSimpleFun_sp>(literal)) {
+            LocalSimpleFun_sp ep = gc::As_unsafe<LocalSimpleFun_sp>(literal);
             uintptr_t absolute_entry = (uintptr_t)(ep->_Entry);
-            D(printf("%s%s:%d:%s LocalEntryPoint_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), (void*)absolute_entry, _rep_(ep->functionDescription()).c_str()););
+            D(printf("%s%s:%d:%s LocalSimpleFun_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), (void*)absolute_entry, _rep_(ep->functionDescription()).c_str()););
             for (auto range : ranges) {
               uintptr_t absolute_LowPC = range.LowPC+(uintptr_t)codeStart;
               uintptr_t absolute_HighPC = range.HighPC+(uintptr_t)codeStart;
               if ((absolute_LowPC<=absolute_entry) && (absolute_entry<absolute_HighPC)) {
                 D(printf("%s%s:%d:%s Matched absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC ););
                 XEPp = false;
-            // This will be identical to the entry point address in LocalEntryPoint_sp ep
+            // This will be identical to the entry point address in LocalSimpleFun_sp ep
                 return ep;
               } else {
                 D(printf("%s%s:%d:%s DID NOT match absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC ););
               }
             }
-          } else if (gc::IsA<GlobalEntryPoint_sp>(literal)) {
-            GlobalEntryPoint_sp ep = gc::As_unsafe<GlobalEntryPoint_sp>(literal);
-            D(printf("%s%s:%d:%s GlobalEntryPoint_sp %s  FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), _rep_(ep->functionDescription()).c_str() ););
+          } else if (gc::IsA<GlobalSimpleFun_sp>(literal)) {
+            GlobalSimpleFun_sp ep = gc::As_unsafe<GlobalSimpleFun_sp>(literal);
+            D(printf("%s%s:%d:%s GlobalSimpleFun_sp %s  FunctionDescription name %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), _rep_(ep->functionDescription()).c_str() ););
             for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
               uintptr_t absolute_entry = (uintptr_t)(ep->_EntryPoints[j]);
               for (auto range : ranges) {
@@ -220,8 +220,8 @@ T_sp dwarf_ep(size_t frameIndex,
                 if ((absolute_LowPC<=absolute_entry) && (absolute_entry<absolute_HighPC)) {
                   D(printf("%s%s:%d:%s Matched arityCode: %lu absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, j, (void*)absolute_LowPC, (void*)absolute_HighPC ););
                   XEPp = true;
-              // This will be identical to ONE of the the entry point address in GlobalEntryPoint_sp ep
-              // arityCode is the index into the GlobalEntryPoint_sp vector corresponding to functionStartAddress
+              // This will be identical to ONE of the the entry point address in GlobalSimpleFun_sp ep
+              // arityCode is the index into the GlobalSimpleFun_sp vector corresponding to functionStartAddress
                   arityCode = j;
                   return ep;
                 } else {
@@ -412,7 +412,7 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex,
   T_sp ep = dwarf_ep( frameIndex, ofi, dcontext, sa, codeStart, functionStartAddress, XEPp, arityCode );
   D(printf("%s:%d:%s dwarf_ep returned ep = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str() ););
   D(printf("%s:%d:%s dwarf_ep returned functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)functionStartAddress ););
-  T_sp functionDescriptionOrNil = ep.notnilp() ? gc::As_unsafe<EntryPoint_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
+  T_sp functionDescriptionOrNil = ep.notnilp() ? gc::As_unsafe<SimpleFun_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
   D(printf("%s:%d:%s functionDescriptionOrNil = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(functionDescriptionOrNil).c_str() ););
   T_sp closure = nil<T_O>(), args = nil<T_O>();
   bool args_available = args_for_function( frameIndex, absolute_ip, string,
@@ -543,8 +543,8 @@ static bool sanity_check_frame( size_t frameIndex, void* ip, void* fbp) {
     T_sp ep = dwarf_ep( frameIndex, ofi, dcontext, sa, codeStart, functionStartAddress, XEPp, arityCode );
     uintptr_t stackmap_start = (uintptr_t)(ofi->_StackmapStart);
     uintptr_t stackmap_end = stackmap_start + ofi->_StackmapSize;
-    if (gc::IsA<LocalEntryPoint_sp>(ep)) {
-      LocalEntryPoint_sp localEntryPoint = gc::As_unsafe<LocalEntryPoint_sp>(ep);
+    if (gc::IsA<LocalSimpleFun_sp>(ep)) {
+      LocalSimpleFun_sp localEntryPoint = gc::As_unsafe<LocalSimpleFun_sp>(ep);
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function,
                        int32_t offsetOrSmallConstant, int64_t patchPointId) {
@@ -558,8 +558,8 @@ static bool sanity_check_frame( size_t frameIndex, void* ip, void* fbp) {
         walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
       }
       return result;
-    } else if (gc::IsA<GlobalEntryPoint_sp>(ep)) {
-      GlobalEntryPoint_sp globalEntryPoint = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
+    } else if (gc::IsA<GlobalSimpleFun_sp>(ep)) {
+      GlobalSimpleFun_sp globalEntryPoint = gc::As_unsafe<GlobalSimpleFun_sp>(ep);
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function,
                        int32_t offsetOrSmallConstant, int64_t patchPointId ) {

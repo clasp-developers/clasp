@@ -299,8 +299,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UNWIND-PROTECT-DYNENV-SIZE"),make_fixnum(gctools::sizeof_with_header<UnwindProtectDynEnv_O>())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("BINDING-DYNENV-SIZE"),make_fixnum(gctools::sizeof_with_header<BindingDynEnv_O>())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-SIZE"),make_fixnum(gctools::sizeof_with_header<Cons_O>())),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,_TheEntryPoint))),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GLOBAL-ENTRY-POINT-ENTRY-POINTS-OFFSET"),make_fixnum(offsetof(core::GlobalEntryPoint_O, _EntryPoints))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,_TheSimpleFun))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GLOBAL-ENTRY-POINT-ENTRY-POINTS-OFFSET"),make_fixnum(offsetof(core::GlobalSimpleFun_O, _EntryPoints))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   LoadTimeValues_O tempLtv;
@@ -381,8 +381,8 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   if (unbox_fixnum(functionSize) != Function_O_size) {
     SIMPLE_ERROR(("Mismatch between function size[%d] and core::Function_O size[%d]") , unbox_fixnum(functionSize) , Function_O_size);
   }
-  if (function_description_offset.unsafe_fixnum()!=offsetof(core::GlobalEntryPoint_O,_FunctionDescription)) {
-    SIMPLE_ERROR(("Mismatch between function description offset[%d] and core::GlobalEntryPoint_O._FunctionDescription offset[%d]") , function_description_offset.unsafe_fixnum() , offsetof(core::GlobalEntryPoint_O,_FunctionDescription));
+  if (function_description_offset.unsafe_fixnum()!=offsetof(core::GlobalSimpleFun_O,_FunctionDescription)) {
+    SIMPLE_ERROR(("Mismatch between function description offset[%d] and core::GlobalSimpleFun_O._FunctionDescription offset[%d]") , function_description_offset.unsafe_fixnum() , offsetof(core::GlobalSimpleFun_O,_FunctionDescription));
   }
   if ( gcRootsInModuleSize.notnilp() ) {
     int gcRootsInModule_size = sizeof(gctools::GCRootsInModule);
@@ -683,6 +683,7 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
   LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
   std::string trampoline = global_trampoline;
   trampoline = core::searchAndReplaceString( trampoline, "@WRAPPER_NAME", "@\""+name+"\"");
+  trampoline = core::searchAndReplaceString( trampoline, "WRAPPER_NAME", name);
   stringstream ss_trampoline;
   ss_trampoline << global_trampoline_datalayout_triple;
   ss_trampoline << trampoline;

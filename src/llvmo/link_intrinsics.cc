@@ -165,12 +165,12 @@ typedef void LtvcReturnVoid;
 
 LtvcReturnVoid ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, /*size_t functionIndex,*/ size_t entry_point_index)
 {NO_UNWIND_BEGIN();
-//  printf("%s:%d:%s got functionIndex %lu change to entryPointIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
+//  printf("%s:%d:%s got functionIndex %lu change to simpleFunIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
-  core::GlobalEntryPoint_sp entryPoint(tentrypoint);
+  core::GlobalSimpleFun_sp simpleFun(tentrypoint);
   gctools::smart_ptr<core::Closure_O> functoid =
       gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,0,
-                                                                                       entryPoint,
+                                                                                       simpleFun,
                                                                                        core::Closure_O::cclaspClosure);
   LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
   NO_UNWIND_END();
@@ -403,17 +403,17 @@ LtvcReturnVoid ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, cha
 //  printf("%s:%d:%s got functionIndex %lu to index: %lu\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, index );
   ClaspLocalFunction llvm_func = (ClaspLocalFunction)holder->lookup_function(functionIndex);
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
-  core::LocalEntryPoint_sp entryPoint = core::makeLocalEntryPoint(fdesc,llvm_func);
+  core::LocalSimpleFun_sp simpleFun = core::makeLocalSimpleFun(fdesc,llvm_func);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
-  if (!gc::IsA<core::LocalEntryPoint_sp>(entryPoint)) {
-    SIMPLE_ERROR(("The object is not a LocalEntryPoint %s") , core::_rep_(entryPoint));
+  if (!gc::IsA<core::LocalSimpleFun_sp>(simpleFun)) {
+    SIMPLE_ERROR(("The object is not a LocalEntryPoint %s") , core::_rep_(simpleFun));
   }
 #if 0
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalSimpleFun_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, simpleFun.raw_()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
 #endif
-  LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
+  LTVCRETURN holder->setTaggedIndex(tag,index,simpleFun.tagged_());
   NO_UNWIND_END();
 }
 
@@ -425,17 +425,17 @@ LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, ch
   for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
     xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex0+ii);
   }
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,xep,localEntryPoint);
+  core::GlobalSimpleFun_sp simpleFun = core::makeGlobalSimpleFun(fdesc,xep,localEntryPoint);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
-  if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
-    SIMPLE_ERROR(("The object is not a GlobalEntryPoint %s") , core::_rep_(entryPoint));
+  if (!gc::IsA<core::GlobalSimpleFun_sp>(simpleFun)) {
+    SIMPLE_ERROR(("The object is not a GlobalSimpleFun %s") , core::_rep_(simpleFun));
   }
 #if 0
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalSimpleFun_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, simpleFun.raw_()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
 #endif
-  LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
+  LTVCRETURN holder->setTaggedIndex(tag,index,simpleFun.tagged_());
   NO_UNWIND_END();
 }
 
@@ -484,19 +484,19 @@ gctools::Tagged ltvc_lookup_literal( gctools::GCRootsInModule* holder, size_t in
   return holder->getTaggedIndex(LITERAL_TAG_CHAR,index);
 }
 
-LtvcReturnVoid ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t entryPointIndex, const char* name) {
-  return ltvc_set_ltv_funcall(holder, tag, index, entryPointIndex, name );
+LtvcReturnVoid ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t simpleFunIndex, const char* name) {
+  return ltvc_set_ltv_funcall(holder, tag, index, simpleFunIndex, name );
 }
 
-LtvcReturnVoid ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t entryPointIndex, const char* name) {
-//  printf("%s:%d:%s make entry-point-index got entryPointIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, entryPointIndex, name );
-  core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
+LtvcReturnVoid ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t simpleFunIndex, const char* name) {
+//  printf("%s:%d:%s make entry-point-index got simpleFunIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, simpleFunIndex, name );
+  core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
   LCC_RETURN ret = ep->entry()(ep.raw_(),0,NULL);
 }
 
 // Similar to the above, but puts value in the table.
-LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t entryPointIndex, const char* name) {\
-  core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
+LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t simpleFunIndex, const char* name) {\
+  core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
 #endif
@@ -506,8 +506,8 @@ LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, 
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
 }
 
-LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t entryPointIndex, const char* name) {
-  core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
+LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t simpleFunIndex, const char* name) {
+  core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
 #endif
@@ -1142,14 +1142,14 @@ NEVER_OPTIMIZE void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* n
                       kw::_sym_possibilities, tpossibilities);
 }
 
-core::T_O *cc_enclose(core::T_O* entryPointInfo,
+core::T_O *cc_enclose(core::T_O* simpleFunInfo,
                       std::size_t numCells)
 {
-  core::T_sp tentryPoint((gctools::Tagged)entryPointInfo);
-  core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tentryPoint);
+  core::T_sp tsimpleFun((gctools::Tagged)simpleFunInfo);
+  core::GlobalSimpleFun_sp simpleFun = gc::As<GlobalSimpleFun_sp>(tsimpleFun);
   gctools::smart_ptr<core::Closure_O> functoid =
       gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>( false, numCells
-                                                                                        , entryPoint
+                                                                                        , simpleFun
                                                                                         , core::Closure_O::cclaspClosure);
   return functoid.raw_();
 }

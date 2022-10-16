@@ -49,7 +49,18 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 namespace core {
+#ifdef DEBUG_DTREE_INTERPRETER // for debugging
+#define DTILOG(...) { fprintf( DTILOG_fout, "%5lu: %s", my_thread->_DtreeInterpreterCallCount, (fmt::sprintf(__VA_ARGS__).c_str())); fflush(DTILOG_fout); }
+#define DTIDO(x) do { x; } while(0)
+#define DTIDO_ALWAYS(x) x
+#else
+#define DTILOG(...)
+#define DTIDO(x) do {} while(0)
+#define DTIDO_ALWAYS(x) 
+#endif
+};
 
+namespace core {
 
 void FuncallableInstance_O::initializeSlots(gctools::BaseHeader_s::StampWtagMtag stamp,
                                             T_sp sig, size_t numberOfSlots) {
@@ -71,7 +82,7 @@ CL_LAMBDA(class slot-count)
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
                                                            size_t slot_count) {
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda,nil<core::T_sp>());
+  GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda,nil<core::T_sp>());
   auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint);
   obj->_Class = cl;
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
@@ -81,7 +92,7 @@ CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
 DOCGROUP(clasp)
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl,
                                                                         Rack_sp rack) {
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda,nil<core::T_sp>());
+  GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda,nil<core::T_sp>());
   auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint, cl, rack);
   return obj;
 }
@@ -181,17 +192,17 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
    * thread is calling.
    * As an optimization, if a function isn't a closure, we just use its entry
    * point directly, to avoid the overhead from funcallable_entry_point.
-   * But in general we have funcallable_entry_point just call the GFUN_DISPATCHER.
-   * Accessing both the entry point and the GFUN_DISPATCHER is atomic.
-   * So here's what we do: first, change the GFUN_DISPATCHER. Then, change the
+   * But in general we have funcallable_entry_point just call the REAL_FUNCTION.
+   * Accessing both the entry point and the REAL_FUNCTION is atomic.
+   * So here's what we do: first, change the REAL_FUNCTION. Then, change the
    * entry point.
    * If we had funcallable_entry_point before the set-funcallable-instance,
    * a call between the two sets will just use the new function.
    * If we had some other entry point, a call will use that, and it must be
-   * insensitive to the GFUN_DISPATCHER.
+   * insensitive to the REAL_FUNCTION.
    * So in either case something coherent is called. */
   /* TODO: We could make this work with any closure, without using locks:
-   * 1) GFUN_DISPATCHER_set. If the entry_point is funcallable_entry_point,
+   * 1) REAL_FUNCTION_set. If the entry_point is funcallable_entry_point,
    *    now we are using the new function. Otherwise this is meaningless.
    * 2) Set the entry to funcallable_entry_point. Now the instance's closure
    *    vector is irrelevant and we are using the new function.
@@ -200,20 +211,24 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
    * The only reason I'm not doing this now is that funcallable instances
    * aren't actually closures at the moment. */
   if (gc::IsA<Function_sp>(function)) {
-    this->GFUN_DISPATCHER_set(function);
+    this->REAL_FUNCTION_set(gc::As_unsafe<Function_sp>(function));
+    // This operation isn't thread safe - always go through the REAL_FUNCTION
     // If the function has no closure slots, we can use its entry point.
+//    printf("%s:%d:%s I am about to NOT use setEntryPoint and that should be immutable\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0 
     if (gc::IsA<Closure_sp>(function)) {
       Closure_sp closure = gc::As_unsafe<Closure_sp>(function);
       if (closure->openP())
-        this->setEntryPoint(closure->entryPoint());
+        this->setSimpleFun(closure->entryPoint());
       else {
-        GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(gctools::As<GlobalEntryPoint_sp>(this->entryPoint()));
-        this->setEntryPoint(entryPoint);
+        GlobalSimpleFun_sp entryPoint = templated_makeGlobalSimpleFunCopy<FuncallableInstance_O>(gctools::As<GlobalSimpleFun_sp>(this->entryPoint()));
+        this->setSimpleFun(entryPoint);
       }
     } else {
-      GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(gc::As<GlobalEntryPoint_sp>(this->entryPoint()));
-      this->setEntryPoint(entryPoint);
+      GlobalSimpleFun_sp entryPoint = templated_makeGlobalSimpleFunCopy<FuncallableInstance_O>(gc::As<GlobalSimpleFun_sp>(this->entryPoint()));
+      this->setSimpleFun(entryPoint);
     }
+#endif
   } else {
     TYPE_ERROR(function, cl::_sym_function);
   }
@@ -248,6 +263,8 @@ CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
 };
 
 
+
+
 namespace core {
 
 DOCGROUP(clasp)
@@ -257,11 +274,11 @@ CL_DEFUN size_t clos__generic_function_interpreted_calls(FuncallableInstance_sp 
 
 DOCGROUP(clasp)
 CL_DEFUN T_sp clos__generic_function_compiled_dispatch_function(T_sp obj) {
-  return gc::As<FuncallableInstance_sp>(obj)->GFUN_DISPATCHER();
+  return gc::As<FuncallableInstance_sp>(obj)->REAL_FUNCTION();
 }
 DOCGROUP(clasp)
 CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_sp val) {
-  gc::As<FuncallableInstance_sp>(obj)->GFUN_DISPATCHER_set(val);
+  gc::As<FuncallableInstance_sp>(obj)->REAL_FUNCTION_set(gc::As<Function_sp>(val));
 }
 }
 
@@ -279,15 +296,6 @@ CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_
 
 namespace core {
 
-#ifdef DEBUG_DTREE_INTERPRETER // for debugging
-#define DTILOG(...) { fprintf( DTILOG_fout, "%5lu: %s", my_thread->_DtreeInterpreterCallCount, (fmt::sprintf(__VA_ARGS__).c_str())); fflush(DTILOG_fout); }
-#define DTIDO(x) do { x; } while(0)
-#define DTIDO_ALWAYS(x) x
-#else
-#define DTILOG(...)
-#define DTIDO(x) do {} while(0)
-#define DTIDO_ALWAYS(x) 
-#endif
 
 #define DTREE_OP_MISS 0
 #define DTREE_OP_ADVANCE 1
@@ -302,6 +310,15 @@ namespace core {
 #define DTREE_OP_CAR 10
 #define DTREE_OP_RPLACA 11
 #define DTREE_OP_EFFECTIVE_METHOD 12
+#define DTREE_OP_REGISTER0 13
+#define DTREE_OP_REGISTER1 14
+#define DTREE_OP_REGISTER2 15
+#define DTREE_OP_REGISTER3 16
+#define DTREE_OP_REGISTER4 17
+#define DTREE_OP_REGISTER5 18
+#define DTREE_OP_REGISTER6 19
+#define DTREE_OP_REGISTER7 20
+#define DTREE_OP_COUNT     21
 
 #define DTREE_OP_MISS_LENGTH 1
 
@@ -442,6 +459,231 @@ size_t global_compile_discriminating_function_trigger = COMPILE_TRIGGER;
 
 //
 
+template <int Size>
+struct ReadArg;
+
+template <>
+struct ReadArg<1> {
+  inline static size_t read(unsigned char* addr, uintptr_t offset) {
+    unsigned char val = *(addr+offset);
+    return val;
+  }
+  inline static T_sp read_literal(unsigned char* addr, uintptr_t offset, T_sp* literals) {
+    size_t index = read(addr,offset);
+    return literals[index];
+  }
+  inline static uintptr_t read_literal_tagged(unsigned char* addr, uintptr_t offset, T_sp* literals) {
+    size_t index = read(addr,offset);
+    return literals[index].tagged_();
+  }
+  inline static uintptr_t offset(uintptr_t offset) {
+    return 1+(offset-1);
+  }
+};
+
+template <>
+struct ReadArg<2> {
+  inline static size_t read(unsigned char* addr, uintptr_t offset) {
+    unsigned char low = *(addr+1+2*(offset-1));
+    unsigned char high = *(addr+1+2*(offset-1)+1);
+    size_t val = (high<<8)+low;
+//    printf("%s:%d:%s read low %u  high %u  val = %lu\n", __FILE__, __LINE__, __FUNCTION__, low, high, val );
+    return (high<<8)+low;
+  }
+  inline static T_sp read_literal(unsigned char* addr, uintptr_t offset, T_sp* literals) {
+    size_t index = read(addr,offset);
+    return literals[index];
+  }
+  inline static uintptr_t read_literal_tagged(unsigned char* addr, uintptr_t offset, T_sp* literals) {
+    size_t index = read(addr,offset);
+    return literals[index].tagged_();
+  }
+  inline static uintptr_t offset(uintptr_t offset) {
+    return 1+(offset-1)*2;
+  }
+};
+
+CL_DEFUN void clos__validate_dtree_bytecode_vm(size_t opcount) {
+  if (opcount != DTREE_OP_COUNT) {
+    SIMPLE_ERROR("opcount %zu does not match DTREE_OP_COUNT %zu", opcount, DTREE_OP_COUNT );
+  }
+}
+
+
+
+};
+
+
+
+
+
+
+namespace core {
+
+
+
+struct GFBytecodeEntryPoint {
+  static inline LCC_RETURN bytecode_enter(T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
+    GFBytecodeSimpleFun_O* gfep = gctools::untag_general<GFBytecodeSimpleFun_O*>((GFBytecodeSimpleFun_O*)lcc_closure);
+    Function_sp generic_function = gfep->_GenericFunction;
+    SimpleVector_byte8_t_sp program = gc::As_assert<SimpleVector_byte8_t_sp>(gfep->_Code);
+    Vaslist vpass_args(lcc_nargs,lcc_args);
+    Vaslist_sp pass_args((gctools::Tagged)gctools::tag_vaslist<Vaslist*>(&vpass_args));
+    SimpleVector_sp literal_vec = gfep->_Literals;
+    T_sp* literals = &(*literal_vec)[0];
+    size_t nargs = pass_args->nargs(); // used in error signalling
+    unsigned char* ip0 = (unsigned char*)&(*program)[0]; // instruction pointer
+    unsigned char* ip = ip0;
+    DO_DRAG_INTERPRET_DTREE();
+    DTIDO_ALWAYS(
+        FILE* DTILOG_fout = monitor_file("dtree-interp");
+        my_thread->_DtreeInterpreterCallCount++;
+                 );
+    DTILOG("=============================== Entered clos__interpret_dtree_program\n");
+    DTILOG("---- generic function: %s\n" , _safe_rep_(generic_function));
+    DTILOG("---- program length: %d\n" , program->length());
+    DTIDO(
+        for ( size_t i=0; i<program->length(); ++i ) {
+            DTILOG("[%lu @%p] : %5u \n" , i, (void*)(i+ip) , (*program)[i] );
+        }
+        for ( size_t i=0; i<literal_vec->length(); ++i ) {
+          DTILOG("literal[%lu] : %s \n" , i , _safe_rep_((*literal_vec)[i]) );
+        });
+    size_t argi(0);
+  //
+  // if calls == COMPILE_TRIGGER then compile the discriminating function.
+  //  ONLY use == here - so that compilation is only triggered once and if
+  //  the GF is part of the compiler and it continues to be called while it is being
+  //  compiled then you avoid a recursive cycle of compilations that will hang the system.
+  //
+  // Regardless of whether we triggered the compile, we next
+  // Dispatch
+    DTILOG("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n");
+    DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
+    Vaslist valist_copy(*pass_args);
+    Vaslist_sp dispatch_args(&valist_copy);
+    DTILOG("valist_copy.nargs() = %lu\n", valist_copy.nargs() );
+    DTILOG("valist_copy.args() = %p\n", (void*)valist_copy.args() );
+    DTILOG("About to dump copied dispatch_args Vaslist @%p\n", (void*)dispatch_args.raw_());
+    DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
+    T_sp arg;
+    uintptr_t stamp;
+    while (1) {
+      unsigned char op = *ip;
+//      printf("%s:%d:%s ip = %p  op = %d\n", __FILE__, __LINE__, __FUNCTION__, ip, op );
+      DTILOG("ip[%lu @%p]: %u/%s\n" , (uintptr_t)(ip-ip0), (void*)ip , op , dtree_op_name(op));
+      switch (op) {
+#define ENABLE_REGISTER -1
+#define MAYBE_LONG_MUL 1
+#define MAYBE_LONG_ADD 0
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#define MAYBE_LONG_MUL 2
+#define MAYBE_LONG_ADD DTREE_OP_COUNT
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+      default:
+          printf("%s:%d:%s Invalid dtree ip0: %p  ip: %p  opcode %u\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op );
+          SIMPLE_ERROR("%zu is not a valid dtree opcode" , op );
+      }
+    }
+  DISPATCH_MISS:
+    DTILOG("dispatch miss. arg %lu stamp %lu\n" , arg , stamp);
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,pass_args);
+  }
+
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args ) {
+    return bytecode_enter( lcc_closure, lcc_nargs, lcc_args );
+  }
+
+  static inline LISP_ENTRY_0() {
+    return bytecode_enter( lcc_closure, 0, NULL );
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return bytecode_enter( lcc_closure, 1, args );
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return bytecode_enter( lcc_closure, 2, args );
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return bytecode_enter( lcc_closure, 3, args );
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return bytecode_enter( lcc_closure, 4, args );
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return bytecode_enter( lcc_closure, 5, args );
+  }
+};
+
+
+GFBytecodeSimpleFun_O::GFBytecodeSimpleFun_O(FunctionDescription_sp fdesc,
+                                             unsigned int entryPcN,
+                                             SimpleVector_byte8_t_sp bytecode,
+                                             SimpleVector_sp literals,
+                                             Function_sp generic_function)
+: GlobalSimpleFunBase_O(fdesc, ClaspXepFunction::make<GFBytecodeEntryPoint>(), bytecode),
+  _EntryPcN(entryPcN),
+  _Literals(literals),
+  _GenericFunction(generic_function)
+{};
+
+SYMBOL_EXPORT_SC_(ClosPkg,bytecode_dtree_compile);
+CL_LISPIFY_NAME(GFBytecodeSimpleFun/make);
+CL_DEF_CLASS_METHOD
+GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make( Function_sp generic_function ) {
+  T_sp name = generic_function->functionName();
+  FunctionDescription_sp fdesc = makeFunctionDescription(name);
+  T_mv compiled = eval::funcall(clos::_sym_bytecode_dtree_compile,generic_function);
+  SimpleVector_byte8_t_sp bytecode = gc::As<SimpleVector_byte8_t_sp>(compiled);
+  MultipleValues& mv = my_thread->_MultipleValues;
+  SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
+  SimpleVector_sp literals = mv.third(compiled.number_of_values());
+  auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate( fdesc, 0, bytecode, literals, generic_function );
+  return obj;
+}
+
+
+Pointer_sp GFBytecodeSimpleFun_O::defaultEntryAddress() const {
+  return Pointer_O::create((void*)this->_EntryPoints[0]);
+};
+
+std::string GFBytecodeSimpleFun_O::__repr__() const {
+  stringstream ss;
+  ss << "#<GF-BYTECODE-ENTRY-POINT ";
+  for ( size_t ii = 0; ii<NUMBER_OF_ENTRY_POINTS; ii++ ) {
+    if (ii==0) {
+      ss << "xep@";
+    } else {
+      ss << "xep" << (ii-1) << "@";
+    }
+    ss << (void*)this->_EntryPoints._EntryPoints[ii] << " ";
+  }
+  ss << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+void GFBytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup )
+{
+  this->fixupOneCodePointer( fixup,(void**)&this->_Trampoline );
+  this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
+}
+
+CL_DEFMETHOD size_t GFBytecodeSimpleFun_O::entryPcN() const {
+  return this->_EntryPcN;
+}
+
+};
+
+
+namespace core {
+
+
 CL_LAMBDA(program gf core:&va-rest args)
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
@@ -559,9 +801,13 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         // The stamps are from Common Lisp, so they're tagged fixnums. Don't untag.
         uintptr_t pivot = (*program)[ip+DTREE_LT_PIVOT_OFFSET].tagged_();
         DTILOG("testing < pivot %lu\n" , pivot);
-        if (stamp < pivot)
+        if (stamp < pivot) {
           ip = (*program)[ip+DTREE_LT_LEFT_OFFSET].unsafe_fixnum();
-        else ip += DTREE_LT_RIGHT_OFFSET;
+          DTILOG("  TRUE - ip <- %lu\n" , ip );
+        } else {
+          ip += DTREE_LT_RIGHT_OFFSET;
+          DTILOG("  FALSE - ip <- %lu\n" , ip );
+        }
         break;
       }
     case DTREE_OP_EQ_CHECK:

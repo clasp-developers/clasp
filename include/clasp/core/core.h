@@ -507,6 +507,7 @@ class Cons_O;
 class General_O;
 class HashTableEqual_O;
 class SimpleVector_O;
+class SimpleVector_byte8_t_O;
 
 
   [[noreturn]]void lisp_error_sprintf(const char* file, int lineno, const char* function, const char* fmt, ... );
@@ -851,15 +852,21 @@ typedef gctools::smart_ptr<General_O> General_sp;
 class Symbol_O;
 typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
 
- class Function_O;
- typedef gctools::smart_ptr<Function_O> Function_sp;
- class EntryPoint_O;
- typedef gctools::smart_ptr<EntryPoint_O> EntryPoint_sp;
- class CodeEntryPoint_O;
- typedef gctools::smart_ptr<CodeEntryPoint_O> CodeEntryPoint_sp; 
+class SimpleVector_byte8_t_O;
+typedef gctools::smart_ptr<SimpleVector_byte8_t_O> SimpleVector_byte8_t_sp;
 
- class GlobalEntryPointBase_O;
- typedef gctools::smart_ptr<GlobalEntryPointBase_O> GlobalEntryPointBase_sp;
+class SimpleVector_O;
+typedef gctools::smart_ptr<SimpleVector_O> SimpleVector_sp;
+
+class Function_O;
+ typedef gctools::smart_ptr<Function_O> Function_sp;
+ class SimpleFun_O;
+ typedef gctools::smart_ptr<SimpleFun_O> SimpleFun_sp;
+ class CodeSimpleFun_O;
+ typedef gctools::smart_ptr<CodeSimpleFun_O> CodeSimpleFun_sp; 
+
+ class GlobalSimpleFunBase_O;
+ typedef gctools::smart_ptr<GlobalSimpleFunBase_O> GlobalSimpleFunBase_sp;
 
 class SymbolToEnumConverter_O;
 typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
@@ -986,7 +993,7 @@ List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
 void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specializer,
                                      T_sp name,
                                      Symbol_sp classSymbol,
-                                     GlobalEntryPointBase_sp entry,
+                                     GlobalSimpleFunBase_sp entry,
                                      size_t TemplateDispatchOn = 0,
                                      bool useTemplateDispatchOn = false,
                                      const string &lambda_list = "",
@@ -1007,7 +1014,7 @@ void lisp_defmacro(Symbol_sp name, const string &packageName,
                            int bytecodep,
                            Symbol_sp sym,
                            const string &packageName,
-                           GlobalEntryPointBase_sp fc,
+                           GlobalSimpleFunBase_sp fc,
                            const string& arguments = "",
                            const string& declares = "",
                            const string &docstring = "",

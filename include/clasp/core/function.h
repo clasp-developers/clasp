@@ -15,9 +15,9 @@ namespace cl {
 };
 
 namespace core {
-  FORWARD(EntryPoint);
-  FORWARD(GlobalEntryPoint);
-  FORWARD(LocalEntryPoint);
+  FORWARD(SimpleFun);
+  FORWARD(GlobalSimpleFun);
+  FORWARD(LocalSimpleFun);
   FORWARD(Function);
   FORWARD(ClosureBase);
   FORWARD(BuiltinClosure);
@@ -45,14 +45,14 @@ struct gctools::GCInfo<core::Function_O> {
 #endif
 
 template <>
-struct gctools::GCInfo<core::GlobalEntryPoint_O> {
+struct gctools::GCInfo<core::GlobalSimpleFun_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = collectable_immobile;
 };
 
 template <>
-struct gctools::GCInfo<core::LocalEntryPoint_O> {
+struct gctools::GCInfo<core::LocalSimpleFun_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = collectable_immobile;
@@ -123,17 +123,17 @@ namespace core {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
     CLASP_DEFAULT_CTOR Function_O() {};
-    Function_O(EntryPoint_O* ep) : _TheEntryPoint(EntryPoint_sp((gctools::Tagged)(gctools::tag_general<EntryPoint_O*>(ep)))) {
-      ASSERT(!gctools::tagged_generalp<EntryPoint_O*>(ep)); // on entry should not be tagged
+    Function_O(SimpleFun_O* ep) : _TheSimpleFun(SimpleFun_sp((gctools::Tagged)(gctools::tag_general<SimpleFun_O*>(ep)))) {
+      ASSERT(!gctools::tagged_generalp<SimpleFun_O*>(ep)); // on entry should not be tagged
     };
   public:
-    std::atomic<EntryPoint_sp>    _TheEntryPoint;
+    std::atomic<SimpleFun_sp>    _TheSimpleFun;
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
-  Function_O(EntryPoint_sp ptr)
-      : _TheEntryPoint(ptr)
+  Function_O(SimpleFun_sp ptr)
+      : _TheSimpleFun(ptr)
     {
 #ifdef _DEBUG_BUILD
       if (!ptr.generalp()) {
@@ -155,15 +155,15 @@ namespace core {
     //  virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
 
 
-    CL_DEFMETHOD EntryPoint_sp entryPoint() const {
-      EntryPoint_sp ep = this->_TheEntryPoint.load();
+    CL_DEFMETHOD SimpleFun_sp entryPoint() const {
+      SimpleFun_sp ep = this->_TheSimpleFun.load();
       ASSERT(ep.generalp());
       return ep;
     }
 
-    CL_DEFMETHOD void setEntryPoint(EntryPoint_sp ep) {
+    CL_DEFMETHOD void setSimpleFun(SimpleFun_sp ep) {
       ASSERT(ep.generalp());
-      return this->_TheEntryPoint.store(ep);
+      return this->_TheSimpleFun.store(ep);
     }
 
     CL_LISPIFY_NAME("core:functionName");
@@ -229,69 +229,69 @@ namespace core {
 
 namespace core {
 
- FORWARD(EntryPoint);
- class EntryPoint_O : public Function_O {
-   LISP_CLASS(core,CorePkg,EntryPoint_O,"EntryPoint",Function_O);
+ FORWARD(SimpleFun);
+ class SimpleFun_O : public Function_O {
+   LISP_CLASS(core,CorePkg,SimpleFun_O,"SimpleFun",Function_O);
  public:
-   CLASP_DEFAULT_CTOR EntryPoint_O() {};
+   CLASP_DEFAULT_CTOR SimpleFun_O() {};
  public:
    FunctionDescription_sp _FunctionDescription;
  public:
   // Accessors
-   EntryPoint_O(FunctionDescription_sp fdesc) : Function_O(this), _FunctionDescription(fdesc) {  };
+   SimpleFun_O(FunctionDescription_sp fdesc) : Function_O(this), _FunctionDescription(fdesc) {  };
    CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
    virtual Pointer_sp defaultEntryAddress() const;
  };
 
- FORWARD(CodeEntryPoint);
- class CodeEntryPoint_O : public EntryPoint_O {
-   LISP_CLASS(core,CorePkg,CodeEntryPoint_O,"CodeEntryPoint",EntryPoint_O);
+ FORWARD(CodeSimpleFun);
+ class CodeSimpleFun_O : public SimpleFun_O {
+   LISP_CLASS(core,CorePkg,CodeSimpleFun_O,"CodeSimpleFun",SimpleFun_O);
  public:
-   CLASP_DEFAULT_CTOR CodeEntryPoint_O() {};
+   CLASP_DEFAULT_CTOR CodeSimpleFun_O() {};
  public:
    T_sp _Code;                       //  10 code
  public:
   // Accessors
-   CodeEntryPoint_O(FunctionDescription_sp fdesc, T_sp code) : EntryPoint_O(fdesc), _Code(code) {  };
+   CodeSimpleFun_O(FunctionDescription_sp fdesc, T_sp code) : SimpleFun_O(fdesc), _Code(code) {  };
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) {
      printf("%s:%d:%s Subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ );
      abort();
    }
    void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
-   CL_DEFMETHOD T_sp EntryPoint_code() const { return this->_Code; };
+   CL_DEFMETHOD T_sp SimpleFun_code() const { return this->_Code; };
  };
 
- FORWARD(LocalEntryPoint);
- class LocalEntryPoint_O : public CodeEntryPoint_O {
-   LISP_CLASS(core,CorePkg,LocalEntryPoint_O,"LocalEntryPoint",CodeEntryPoint_O);
+ FORWARD(LocalSimpleFun);
+ class LocalSimpleFun_O : public CodeSimpleFun_O {
+   LISP_CLASS(core,CorePkg,LocalSimpleFun_O,"LocalSimpleFun",CodeSimpleFun_O);
  public:
    ClaspLocalFunction _Entry;
  public:
   // Accessors
-   LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code );
+   LocalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code );
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
    string __repr__() const;
 };
 
-FORWARD(LocalEntryPointGenerator);
-class LocalEntryPointGenerator_O : public EntryPoint_O {
-   LISP_CLASS(core,CorePkg,LocalEntryPointGenerator_O,"LocalEntryPointGenerator",EntryPoint_O);
+FORWARD(LocalSimpleFunGenerator);
+class LocalSimpleFunGenerator_O : public SimpleFun_O {
+   LISP_CLASS(core,CorePkg,LocalSimpleFunGenerator_O,"LocalSimpleFunGenerator",SimpleFun_O);
  public:
   T_sp _entry_point_indices;
  public:
   // Accessors
-   LocalEntryPointGenerator_O( FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPoint_O(fdesc), _entry_point_indices(entry_point_indices) {
+   LocalSimpleFunGenerator_O( FunctionDescription_sp fdesc, T_sp entry_point_indices ) : SimpleFun_O(fdesc), _entry_point_indices(entry_point_indices) {
      //ASSERT(cl__length(entry_point_indices)==1);
    };
   std::string __repr__() const;
  };
 
-FORWARD(GlobalEntryPointBase);
- class GlobalEntryPointBase_O : public CodeEntryPoint_O {
-   LISP_CLASS(core,CorePkg,GlobalEntryPointBase_O,"GlobalEntryPointBase",CodeEntryPoint_O);
+FORWARD(GlobalSimpleFunBase);
+ class GlobalSimpleFunBase_O : public CodeSimpleFun_O {
+   LISP_CLASS(core,CorePkg,GlobalSimpleFunBase_O,"GlobalSimpleFunBase",CodeSimpleFun_O);
  public:
    /*! A general entry point at 0 and fixed arity entry points from 1...(NUMBER_OF_ENTRY_POINTS-1)
        The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
@@ -299,35 +299,35 @@ FORWARD(GlobalEntryPointBase);
    ClaspXepFunction _EntryPoints;
  public:
   // Accessors
-   GlobalEntryPointBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code );
-   GlobalEntryPointBase_O() {};
+   GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code );
+   GlobalSimpleFunBase_O() {};
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
  };
 
 
-FORWARD(GlobalEntryPoint);
- class GlobalEntryPoint_O : public GlobalEntryPointBase_O {
-   LISP_CLASS(core,CorePkg,GlobalEntryPoint_O,"GlobalEntryPoint",GlobalEntryPointBase_O);
+FORWARD(GlobalSimpleFun);
+ class GlobalSimpleFun_O : public GlobalSimpleFunBase_O {
+   LISP_CLASS(core,CorePkg,GlobalSimpleFun_O,"GlobalSimpleFun",GlobalSimpleFunBase_O);
  public:
-   T_sp _localEntryPoint;
+   T_sp _localSimpleFun;
  public:
   // Accessors
-   GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp localEntryPoint );
+   GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp localSimpleFun );
  public:
    virtual Pointer_sp defaultEntryAddress() const;
    T_mv sectionedEntryInfo() const;
    T_sp lineTable() const;
    llvmo::ObjectFile_sp code() const;
-   T_sp localEntryPoint() const;
+   T_sp localSimpleFun() const;
    string __repr__() const;
  };
 
 
 // Fulfill the role of bytecode_function
-FORWARD(GlobalBytecodeEntryPoint);
- class GlobalBytecodeEntryPoint_O : public GlobalEntryPointBase_O {
-   LISP_CLASS(core,CorePkg,GlobalBytecodeEntryPoint_O,"GlobalBytecodeEntryPoint",GlobalEntryPointBase_O);
+FORWARD(GlobalBytecodeSimpleFun);
+ class GlobalBytecodeSimpleFun_O : public GlobalSimpleFunBase_O {
+   LISP_CLASS(core,CorePkg,GlobalBytecodeSimpleFun_O,"GlobalBytecodeSimpleFun",GlobalSimpleFunBase_O);
  public:
    // The frame size this function needs for local variables.
    unsigned short   _LocalsFrameSize;
@@ -339,7 +339,7 @@ FORWARD(GlobalBytecodeEntryPoint);
    BytecodeTrampolineFunction _Trampoline;
  public:
   // Accessors
-   GlobalBytecodeEntryPoint_O(FunctionDescription_sp fdesc,
+   GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc,
                               const ClaspXepFunction& entry_point,
                               T_sp code,
                               unsigned short localsFrameSize,
@@ -361,47 +361,18 @@ FORWARD(GlobalBytecodeEntryPoint);
  };
 
 
-// Fulfill the role of bytecode_function
-FORWARD(GFBytecodeEntryPoint);
- class GFBytecodeEntryPoint_O : public GlobalEntryPointBase_O {
-   LISP_CLASS(core,CorePkg,GFBytecodeEntryPoint_O,"GFBytecodeEntryPoint",GlobalEntryPointBase_O);
- public:
-  // Entry point into the bytes vector in the containing module.
-  // This is an offset instead of an interior pointer to make dumping/loading/GC considerations easier.
-   unsigned int     _EntryPcN;
-   BytecodeTrampolineFunction _Trampoline;
- public:
-  // Accessors
-   GFBytecodeEntryPoint_O(FunctionDescription_sp fdesc,
-                          const ClaspXepFunction& entry_point,
-                          T_sp code,
-                          unsigned int entryPcN,
-                          BytecodeTrampolineFunction trampoline);
-   
- public:
-   virtual Pointer_sp defaultEntryAddress() const;
-   BytecodeModule_sp code() const;
-   string __repr__() const;
 
-   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup);
-   size_t entryPcN() const;
-
- };
-
-
-
-
-FORWARD(GlobalEntryPointGenerator);
-class GlobalEntryPointGenerator_O : public EntryPoint_O {
-   LISP_CLASS(core,CorePkg,GlobalEntryPointGenerator_O,"GlobalEntryPointGenerator",EntryPoint_O);
+FORWARD(GlobalSimpleFunGenerator);
+class GlobalSimpleFunGenerator_O : public SimpleFun_O {
+   LISP_CLASS(core,CorePkg,GlobalSimpleFunGenerator_O,"GlobalSimpleFunGenerator",SimpleFun_O);
  public:
   T_sp _entry_point_indices;
-  size_t _localEntryPointIndex;
+  size_t _localSimpleFunIndex;
  public:
   // Accessors
-  GlobalEntryPointGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex) : EntryPoint_O(fdesc), _entry_point_indices(entry_point_indices), _localEntryPointIndex(lepIndex) {};
+  GlobalSimpleFunGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex) : SimpleFun_O(fdesc), _entry_point_indices(entry_point_indices), _localSimpleFunIndex(lepIndex) {};
   std::string __repr__() const;
-  size_t localEntryPointIndex() const;
+  size_t localSimpleFunIndex() const;
  };
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
@@ -414,36 +385,36 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                      int filePos=-1);
 
 
-LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
+LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc,
                                        const ClaspLocalFunction& entry_point
                                        );
 
-GlobalEntryPoint_sp makeGlobalEntryPoint( FunctionDescription_sp fdesc,
+GlobalSimpleFun_sp makeGlobalSimpleFun( FunctionDescription_sp fdesc,
                                           const ClaspXepFunction& entry_point,
                                           T_sp lep=nil<core::T_O>()
                                           );
 
 template <typename Wrapper>
-GlobalEntryPoint_sp templated_makeGlobalEntryPoint(FunctionDescription_sp fdesc, T_sp lep) {
+GlobalSimpleFun_sp templated_makeGlobalSimpleFun(FunctionDescription_sp fdesc, T_sp lep) {
   ClaspXepFunction xep;
   xep.setup<Wrapper>();
-  return makeGlobalEntryPoint( fdesc, xep, lep );
+  return makeGlobalSimpleFun( fdesc, xep, lep );
 }
 
 
-GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp original, const ClaspXepFunction& = ClaspXepFunction() );
+GlobalSimpleFun_sp makeGlobalSimpleFunCopy(GlobalSimpleFun_sp original, const ClaspXepFunction& = ClaspXepFunction() );
 
 template <typename Wrapper>
-GlobalEntryPoint_sp templated_makeGlobalEntryPointCopy(GlobalEntryPoint_sp original) {
+GlobalSimpleFun_sp templated_makeGlobalSimpleFunCopy(GlobalSimpleFun_sp original) {
   ClaspXepFunction xep;
   xep.setup<Wrapper>();
-  return makeGlobalEntryPointCopy(original,xep);
+  return makeGlobalSimpleFunCopy(original,xep);
 }
 
 
 template <typename Wrapper>
-GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName,
-                                                               T_sp localEntryPoint,
+GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName,
+                                                               T_sp localSimpleFun,
                                                                T_sp lambda_list=unbound<T_O>(),
                                                                T_sp docstring=nil<T_O>(),
                                                                T_sp declares=nil<T_O>(),
@@ -459,12 +430,12 @@ GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName
                                                          lineno,
                                                          column,
                                                          filePos );
-  return templated_makeGlobalEntryPoint<Wrapper>(fdesc,localEntryPoint);
+  return templated_makeGlobalSimpleFun<Wrapper>(fdesc,localSimpleFun);
 };
 
 
 
-GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescription_sp fdesc,
+GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc,
                                                                BytecodeModule_sp module,
                                                                size_t localsFrameSize,
                                                                size_t environmentSize,
@@ -472,8 +443,8 @@ GlobalBytecodeEntryPoint_sp core__makeGlobalBytecodeEntryPoint(FunctionDescripti
                                                                Pointer_sp trampoline);
 
 
-GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
-LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp ep, void** fptrs);
+GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
+LocalSimpleFun_sp makeLocalSimpleFunFromGenerator(LocalSimpleFunGenerator_sp ep, void** fptrs);
 
 
 };
@@ -504,12 +475,12 @@ namespace core {
       return gctools::sizeof_container<Closure_O>(this->_Slots.size());
     };
   public:
-    static Closure_sp make_bytecode_closure(GlobalBytecodeEntryPoint_sp entryPoint, size_t closedOverSlots);
+    static Closure_sp make_bytecode_closure(GlobalBytecodeSimpleFun_sp entryPoint, size_t closedOverSlots);
 
-    static Closure_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column );
+    static Closure_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localSimpleFun, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column );
   public:
     Closure_O(size_t capacity,
-                       EntryPoint_sp ep,
+                       SimpleFun_sp ep,
                        ClosureType nclosureType)
         : Base(ep),
           closureType(nclosureType),

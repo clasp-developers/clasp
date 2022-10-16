@@ -38,7 +38,7 @@ FORWARD(SingleDispatchMethod);
 class SingleDispatchGenericFunction_O : public Function_O {
   LISP_CLASS(core,CorePkg,SingleDispatchGenericFunction_O,"SingleDispatchGenericFunction",Function_O);
 public:
-  SingleDispatchGenericFunction_O(GlobalEntryPoint_sp ep) : Base(ep) {};
+  SingleDispatchGenericFunction_O(GlobalSimpleFun_sp ep) : Base(ep) {};
 public:
   typedef enum {
       REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY = 0,

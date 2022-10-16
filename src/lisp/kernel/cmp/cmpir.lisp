@@ -148,7 +148,7 @@ If nil then insert a general_entry_point_redirect_x function"
 name - the common, unadorned name of the xep function
 cleavir-lambda-list-analysis - the cleavir-lambda-list-analysis that applies to the entire xep-group
 arities - a list of xep-arity
-entry-point-reference - an index into the literal vector that stores the GeneralEntryPoint_O for this xep-group.
+entry-point-reference - an index into the literal vector that stores the GeneralSimpleFun_O for this xep-group.
 local-function - the lcl function that all of the xep functions call."
   name
   cleavir-lambda-list-analysis
@@ -1056,21 +1056,21 @@ function-description - for debugging."
 
 (defun irc-create-global-entry-point-reference (xep-arity-list module function-description local-entry-point-reference)
   (declare (ignore module))
-  (let* ((entry-point-generator (let ((entry-point-indices (literal:register-xep-function-indices xep-arity-list)))
-                                  (sys:make-global-entry-point-generator
+  (let* ((simple-fun-generator (let ((entry-point-indices (literal:register-xep-function-indices xep-arity-list)))
+                                  (sys:make-global-simple-fun-generator
                                    :entry-point-functions entry-point-indices
                                    :function-description function-description
                                    :local-entry-point-index (entry-point-reference-index local-entry-point-reference))))
-         (index (literal:reference-literal entry-point-generator)))
+         (index (literal:reference-literal simple-fun-generator)))
     (make-entry-point-reference :index index :kind :global :function-description function-description)))
 
 (defun irc-create-local-entry-point-reference (local-fn module function-description)
   (declare (ignore module))
-  (let* ((entry-point-generator (let ((entry-point-index (literal:register-local-function-index local-fn)))
-                                 (sys:make-local-entry-point-generator
+  (let* ((simple-fun-generator (let ((entry-point-index (literal:register-local-function-index local-fn)))
+                                 (sys:make-local-simple-fun-generator
                                   :entry-point-functions (list entry-point-index)
                                   :function-description function-description)))
-         (index (literal:reference-literal entry-point-generator)))
+         (index (literal:reference-literal simple-fun-generator)))
     (make-entry-point-reference :index index :kind :local :function-description function-description)))
 
 

@@ -725,14 +725,14 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
       // This is where we translate some literals
       // This is like load-time
       //
-      if (gc::IsA<core::GlobalEntryPointGenerator_sp>(arg)) {
-        core::GlobalEntryPointGenerator_sp fdgen = gc::As_unsafe<core::GlobalEntryPointGenerator_sp>(arg);
-//        printf("%s:%d:%s Hit a GlobalEntryPointGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_EntryPointFunctions).c_str());
-        arg = core::makeGlobalEntryPointFromGenerator(fdgen,roots,fptrs);
-      } else if (gc::IsA<core::LocalEntryPointGenerator_sp>(arg)) {
-        core::LocalEntryPointGenerator_sp fdgen = gc::As_unsafe<core::LocalEntryPointGenerator_sp>(arg);
-//        printf("%s:%d:%s Hit a LocalEntryPointGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_EntryPointFunctions).c_str());
-        arg = core::makeLocalEntryPointFromGenerator(fdgen,fptrs);
+      if (gc::IsA<core::GlobalSimpleFunGenerator_sp>(arg)) {
+        core::GlobalSimpleFunGenerator_sp fdgen = gc::As_unsafe<core::GlobalSimpleFunGenerator_sp>(arg);
+//        printf("%s:%d:%s Hit a GlobalSimpleFunGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_SimpleFunFunctions).c_str());
+        arg = core::makeGlobalSimpleFunFromGenerator(fdgen,roots,fptrs);
+      } else if (gc::IsA<core::LocalSimpleFunGenerator_sp>(arg)) {
+        core::LocalSimpleFunGenerator_sp fdgen = gc::As_unsafe<core::LocalSimpleFunGenerator_sp>(arg);
+//        printf("%s:%d:%s Hit a LocalSimpleFunGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_SimpleFunFunctions).c_str());
+        arg = core::makeLocalSimpleFunFromGenerator(fdgen,fptrs);
       }
       
       roots->setLiteral(idx,arg.tagged_());

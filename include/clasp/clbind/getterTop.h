@@ -1,9 +1,9 @@
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
 class WRAPPER_Getter
-  : public core::GlobalEntryPointBase_O {
+  : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_Getter< GetterPolicies, OT, VariablePtrType > MyType;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
   typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
   typedef clbind::Wrapper<MemberType,MemberType*> WrapperType;
 
@@ -12,7 +12,7 @@ public:
 
 public:
   WRAPPER_Getter(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code) {
+      : mptr(ptr), GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code) {
     trapGetterMethoid();
   };
 

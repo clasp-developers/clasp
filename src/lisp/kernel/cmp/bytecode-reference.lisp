@@ -23,6 +23,53 @@
 
 ;;; FIXME: New package
 
+
+
+(defconstant +mask-arg+     #b011000)
+(defconstant +constant-arg+ #b001000)
+(defconstant +keys-arg+     #b011000)
+(defconstant +label-arg+    #b010000)
+
+(defun constant-arg (val)
+  (logior +constant-arg+ val))
+
+(defun constant-arg-p (val)
+  (= (logand +mask-arg+ val) +constant-arg+))
+
+(defun label-arg (val)
+  (logior +label-arg+ val))
+
+(defun label-arg-p (val)
+  (= (logand +mask-arg+ val) +label-arg+))
+
+(export '(constant-arg-p label-arg-p) :cmpref)
+
+#||
+
+const_arglength_mask   = 0b000111
+const_argtype_mask     = 0b111000
+const_constant_arg     = 0b001000
+const_keys_arg         = 0b011000
+const_label_arg        = 0b010000
+
+global_vm_long = 0
+def new_instr(name, code, args=[], long_args=[]):
+    instr = instruction_description(name,code,args,long_args)
+    global_codes[instr._value] = instr
+    global_names[instr._name] = instr
+    if (instr._name == "long"):
+        global_vm_long = instr._value
+
+def constant_arg(index):
+    return const_constant_arg|index
+
+def keys_arg(index):
+    return const_keys_arg|index
+
+def label_arg(index):
+    return const_label_arg|index
+
+||#
 (let ((rev-codes nil)
       (forms nil))
   (macrolet ((new-instr (name code &optional arguments long-arguments)
@@ -1591,7 +1638,7 @@
                  (length (cfunction-closed cfunction))
                  (annotation-module-position (cfunction-entry-point cfunction)))
                 #+clasp
-                (core:global-bytecode-entry-point/make
+                (core:global-bytecode-simple-fun/make
                  (core:function-description/make
                   :function-name (cfunction-name cfunction)
                   :docstring (cfunction-doc cfunction))
@@ -1932,3 +1979,6 @@
 
 
 (export 'generate-header :cmpref)
+
+
+

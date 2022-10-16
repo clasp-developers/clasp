@@ -42,13 +42,13 @@ struct BeginReturnType<T, RT (T::*)()> {
 };
 
 template <typename Pols, typename OT, typename Begin, typename End >
-class WRAPPER_Iterator : public core::GlobalEntryPointBase_O {
+class WRAPPER_Iterator : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_Iterator MyType;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
 
 public:
-  WRAPPER_Iterator(core::FunctionDescription_sp fdesc, core::T_sp code, Begin begin, End end) : core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), _begin(begin), _end(end){};
+  WRAPPER_Iterator(core::FunctionDescription_sp fdesc, core::T_sp code, Begin begin, End end) : core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), _begin(begin), _end(end){};
 
 private:
   typedef typename BeginReturnType<OT, Begin>::type IteratorType;

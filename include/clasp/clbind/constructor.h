@@ -45,7 +45,7 @@ typedef constructor<> default_constructor;
 class ConstructorCreator_O : public core::Creator_O {
   LISP_ABSTRACT_CLASS(clbind,ClbindPkg,ConstructorCreator_O,"ConstructorCreator",core::Creator_O);
 public:
-  ConstructorCreator_O(core::GlobalEntryPoint_sp ep, core::Symbol_sp c) : Creator_O(ep), _mostDerivedClassSymbol(c){};
+  ConstructorCreator_O(core::GlobalSimpleFun_sp ep, core::Symbol_sp c) : Creator_O(ep), _mostDerivedClassSymbol(c){};
   core::Symbol_sp _mostDerivedClassSymbol;
   virtual ~ConstructorCreator_O() {};
 };
@@ -64,11 +64,11 @@ public:
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
-  DefaultConstructorCreator_O(core::GlobalEntryPoint_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>()) 
+  DefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>()) 
     , _duplicationLevel(0){
 //    printf("%s:%d  Constructing DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
-  DefaultConstructorCreator_O(core::GlobalEntryPoint_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag headerValue, int dupnum)
+  DefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag headerValue, int dupnum)
       : ConstructorCreator_O(fdesc, cn), _HeaderValue(headerValue), _duplicationLevel(dupnum){
 //    printf("%s:%d  Constructing non trivial DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
@@ -84,7 +84,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %lu\n", __FILE__, __LINE__, _rep_(className).c_str(), (uintptr_t)this->_HeaderValue._value);
-    core::GlobalEntryPoint_sp fdesc = core::makeGlobalEntryPointAndFunctionDescription<DefaultConstructorCreator_O<T,Pointer>>(nil<core::T_O>(),nil<core::T_O>());
+    core::GlobalSimpleFun_sp fdesc = core::makeGlobalSimpleFunAndFunctionDescription<DefaultConstructorCreator_O<T,Pointer>>(nil<core::T_O>(),nil<core::T_O>());
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(fdesc,className, this->_HeaderValue, this->_duplicationLevel + 1));
     return allocator;
   }
@@ -110,9 +110,9 @@ public:
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
-  DerivableDefaultConstructorCreator_O(core::GlobalEntryPoint_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>())
+  DerivableDefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>())
     , _duplicationLevel(0){};
-  DerivableDefaultConstructorCreator_O(core::GlobalEntryPoint_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag& header, int dupnum)
+  DerivableDefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag& header, int dupnum)
       : ConstructorCreator_O(fdesc,cn), _Header(header), _duplicationLevel(dupnum){};
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
@@ -123,7 +123,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
 //    printf("%s:%d DerivableDefaultConstructorCreator_O  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_Kind);
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<DerivableDefaultConstructorCreator_O<T>>(nil<core::T_O>(),nil<core::T_O>());
+    core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<DerivableDefaultConstructorCreator_O<T>>(nil<core::T_O>(),nil<core::T_O>());
     return gc::As_unsafe<core::Creator_sp>(gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(entryPoint,className, this->_Header, this->_duplicationLevel + 1));
   }
 };
@@ -142,7 +142,7 @@ public:
   typedef core::Function_O TemplatedBase;
 public:
   enum { NumParams = 0 };
-  DerivableDefaultConstructorFunctor(core::GlobalEntryPoint_sp fdesc) : core::Function_O(fdesc){};
+  DerivableDefaultConstructorFunctor(core::GlobalSimpleFun_sp fdesc) : core::Function_O(fdesc){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
@@ -184,19 +184,19 @@ class WRAPPER_Constructor_O;
 
 namespace clbind {
 template <typename ConstructorPtrType, typename Policies, typename Pointer, typename ConstructType, typename ArgumentWrapper>
-class WRAPPER_Constructor_O : public core::GlobalEntryPointBase_O {};
+class WRAPPER_Constructor_O : public core::GlobalSimpleFunBase_O {};
 
 template <typename ...ARGS, typename Policies, typename Pointer, typename ConstructType, typename ArgumentWrapper >
-class WRAPPER_Constructor_O < constructor<ARGS...>, Policies, Pointer, ConstructType, ArgumentWrapper > : public core::GlobalEntryPointBase_O {
+class WRAPPER_Constructor_O < constructor<ARGS...>, Policies, Pointer, ConstructType, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_Constructor_O< constructor<ARGS...>,Policies, Pointer, ConstructType, ArgumentWrapper > MyType;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
   typedef Wrapper<ConstructType,Pointer>  WrapperType;
 public:
 public:
   virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
-  WRAPPER_Constructor_O(core::FunctionDescription_sp fdesc) : core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),nil<core::T_O>()) {};
+  WRAPPER_Constructor_O(core::FunctionDescription_sp fdesc) : core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),nil<core::T_O>()) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
 
   static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )

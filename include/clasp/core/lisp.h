@@ -322,8 +322,8 @@ public:
     std::atomic<T_sp>          _AllLibraries;
     std::atomic<T_sp>          _AllObjectFiles;
     std::atomic<T_sp>          _AllCodeBlocks;
-    GlobalEntryPoint_sp        _UnboundSymbolFunctionEntryPoint;
-    GlobalEntryPoint_sp        _UnboundSetfSymbolFunctionEntryPoint;
+    GlobalSimpleFun_sp        _UnboundSymbolFunctionEntryPoint;
+    GlobalSimpleFun_sp        _UnboundSetfSymbolFunctionEntryPoint;
     T_sp                       _TerminalIO;
     List_sp                    _ActiveThreads;
     List_sp                    _DefaultSpecialBindings;

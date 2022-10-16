@@ -84,7 +84,7 @@ namespace core {
       return entry_point_n(lcc_closure,5,args);
     }
 
-    Creator_O(GlobalEntryPoint_sp fdesc) : Base(fdesc) {};
+    Creator_O(GlobalSimpleFun_sp fdesc) : Base(fdesc) {};
 //    Creator_O() : Function_O(makeFunctionDescription(_Nil<T_O>(),entry_point)) {};
     virtual ~Creator_O() {};
   };
@@ -101,7 +101,7 @@ namespace core {
       return obj;
     }
     virtual void searcher(){};
-    WRAPPER_BuiltInObjectCreator(core::GlobalEntryPoint_sp fdesc) : core::Creator_O(fdesc) {};
+    WRAPPER_BuiltInObjectCreator(core::GlobalSimpleFun_sp fdesc) : core::Creator_O(fdesc) {};
   };
 
 
@@ -126,7 +126,7 @@ namespace core {
   public:
     Instance_sp _class;
   public:
-    InstanceCreator_O(GlobalEntryPoint_sp fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
+    InstanceCreator_O(GlobalSimpleFun_sp fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(InstanceCreator_O); };
   };
@@ -138,7 +138,7 @@ namespace core {
   public:
     Instance_sp _class;
   public:
-  FuncallableInstanceCreator_O(GlobalEntryPoint_sp fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
+  FuncallableInstanceCreator_O(GlobalSimpleFun_sp fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(FuncallableInstanceCreator_O); };
   };
@@ -148,7 +148,7 @@ namespace core {
   class StandardClassCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,StandardClassCreator_O,"StandardClassCreator",Creator_O);
   public:
-  StandardClassCreator_O(GlobalEntryPoint_sp fdesc) : Base(fdesc) {};
+  StandardClassCreator_O(GlobalSimpleFun_sp fdesc) : Base(fdesc) {};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(StandardClassCreator_O); };
   };
@@ -158,7 +158,7 @@ namespace core {
   class DerivableCxxClassCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,DerivableCxxClassCreator_O,"DerivableCxxClassCreator",Creator_O);
   public:
-  DerivableCxxClassCreator_O(GlobalEntryPoint_sp fdesc) : Base(fdesc) {};
+  DerivableCxxClassCreator_O(GlobalSimpleFun_sp fdesc) : Base(fdesc) {};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(DerivableCxxClassCreator_O); };
   };
@@ -168,7 +168,7 @@ namespace core {
   class ClassRepCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,ClassRepCreator_O,"ClassRepCreator",Creator_O);
   public:
-  ClassRepCreator_O(GlobalEntryPoint_sp fdesc) : Base(fdesc) {};
+  ClassRepCreator_O(GlobalSimpleFun_sp fdesc) : Base(fdesc) {};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(ClassRepCreator_O); };
   };

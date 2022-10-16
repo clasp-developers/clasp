@@ -572,7 +572,7 @@ public:
    // The index of this cfunction in the containing module's cfunction vector.
   size_t _index;
    // The runtime function, used during link.
-  GlobalBytecodeEntryPoint_sp _info;
+  GlobalBytecodeSimpleFun_sp _info;
    // Stuff for the function description.
   T_sp _name;
   T_sp _doc;
@@ -589,7 +589,7 @@ public:
       _closed(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
       _entry_point(Label_O::make()),
      // not sure this has to be initialized, but just in case
-      _info(unbound<GlobalBytecodeEntryPoint_O>()),
+      _info(unbound<GlobalBytecodeSimpleFun_O>()),
       _name(name), _doc(doc), _lambda_list(lambda_list)
   {}
   CL_LISPIFY_NAME(Cfunction/make)
@@ -632,9 +632,9 @@ public:
     this->_index = nindex;
     return nindex;
   }
-  CL_DEFMETHOD GlobalBytecodeEntryPoint_sp info() { return _info; }
+  CL_DEFMETHOD GlobalBytecodeSimpleFun_sp info() { return _info; }
   CL_LISPIFY_NAME(Cfunction/setf-info)
-  CL_DEFMETHOD GlobalBytecodeEntryPoint_sp setInfo(GlobalBytecodeEntryPoint_sp gbep) {
+  CL_DEFMETHOD GlobalBytecodeSimpleFun_sp setInfo(GlobalBytecodeSimpleFun_sp gbep) {
     this->_info = gbep;
     return gbep;
   }
@@ -646,11 +646,11 @@ public:
 // Run down the hierarchy and link the compile time representations
 // of modules and functions together into runtime objects. Return the
 // bytecode function corresponding to this cfunction.
-  CL_DEFMETHOD GlobalBytecodeEntryPoint_sp link_function(T_sp compile_info);
+  CL_DEFMETHOD GlobalBytecodeSimpleFun_sp link_function(T_sp compile_info);
 };
 
 // Main entry point
-GlobalBytecodeEntryPoint_sp bytecompile(T_sp, Lexenv_sp);
+GlobalBytecodeSimpleFun_sp bytecompile(T_sp, Lexenv_sp);
 // main entry point for using the evaluator
 T_mv cmp__bytecode_implicit_compile_form(T_sp, T_sp);
 T_mv bytecode_toplevel_eval(T_sp, T_sp);

@@ -51,7 +51,7 @@ namespace core {
 
 SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex, List_sp lambdaList)
 {
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<SingleDispatchGenericFunction_O>(gfname,nil<T_O>(),lambdaList);
+  GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<SingleDispatchGenericFunction_O>(gfname,nil<T_O>(),lambdaList);
   auto gfun = gctools::GC<SingleDispatchGenericFunction_O>::allocate(entryPoint);
   gfun->callHistory = nil<T_O>();
   gfun->argumentIndex = make_fixnum(singleDispatchArgumentIndex);

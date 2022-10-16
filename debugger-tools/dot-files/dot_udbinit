@@ -1,5 +1,6 @@
-
 source -s -v debugger-tools/udb-loader.py
+
+set pagination off
 
 #b core__gdb
 #b cl__error
@@ -9,3 +10,9 @@ handle SIGXFSZ nostop noprint
 handle SIGSEGV nostop noprint
 
 set python print-stack full
+
+
+#set complaints 100
+
+#set confirm off
+

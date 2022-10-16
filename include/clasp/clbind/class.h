@@ -167,7 +167,7 @@ class DummyCreator_O : public core::Creator_O {
   LISP_CLASS(clbind,ClbindPkg,DummyCreator_O,"DummyCreator",core::Creator_O);
   core::T_sp _name;
 public:
-  DummyCreator_O(core::GlobalEntryPoint_sp ep, core::T_sp name) : core::Creator_O(ep), _name(name){};
+  DummyCreator_O(core::GlobalSimpleFun_sp ep, core::T_sp name) : core::Creator_O(ep), _name(name){};
 public:
   virtual size_t templatedSizeof() const  override{ return sizeof(*this); };
   virtual bool allocates() const  override{ return false; };
@@ -175,7 +175,7 @@ public:
     SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", core::_rep_(this->_name).c_str());
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className)  override{
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<DummyCreator_O>(nil<T_O>(),nil<core::T_O>());
+    core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<DummyCreator_O>(nil<T_O>(),nil<core::T_O>());
     return gc::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
 };
@@ -524,7 +524,7 @@ template <class Class, class HoldType, class Policies>
   struct constructor_registration<Class, HoldType, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, HoldType, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, HoldType, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription<DefaultConstructorCreator_O<Class,HoldType>>(nil<core::T_O>(),nil<core::T_O>());
+    core::GlobalSimpleFun_sp ep = core::makeGlobalSimpleFunAndFunctionDescription<DefaultConstructorCreator_O<Class,HoldType>>(nil<core::T_O>(),nil<core::T_O>());
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate(ep));
     return allocator;
   }
@@ -586,14 +586,14 @@ struct property_registration : registration {
      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
      core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
      using VariadicGetterType = WRAPPER_Getter< reg::null_type, Class, Get >;
-     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicGetterType>( sym ,nil<core::T_O>());
+     core::GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<VariadicGetterType>( sym ,nil<core::T_O>());
      maybe_register_symbol_using_dladdr( (void*)VariadicGetterType::entry_point );
      auto raw_getter = gc::GC<VariadicGetterType>::allocate( entryPoint, get );
      core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>( raw_getter );
      lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1 );
      core::T_sp setf_name = core::Cons_O::createList( cl::_sym_setf, sym );
      using VariadicSetterType = WRAPPER_Setter<reg::null_type, Class, Set>;
-     core::GlobalEntryPoint_sp setterEntryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicSetterType>( setf_name ,nil<core::T_O>());
+     core::GlobalSimpleFun_sp setterEntryPoint = makeGlobalSimpleFunAndFunctionDescription<VariadicSetterType>( setf_name ,nil<core::T_O>());
      maybe_register_symbol_using_dladdr( (void*)VariadicSetterType::entry_point );
      auto raw_setter = gc::GC<VariadicSetterType>::allocate( setterEntryPoint, set );
      core::BuiltinClosure_sp setter = gc::As<core::BuiltinClosure_sp>( raw_setter );

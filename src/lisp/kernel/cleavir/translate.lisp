@@ -98,7 +98,7 @@
                      (push item arglist))))
              (nreverse arglist))))
     (let ((function-description (cmp:irc-make-function-description function-info jit-function-name)))
-      (multiple-value-bind (the-function local-entry-point)
+      (multiple-value-bind (the-function local-simple-fun)
           (cmp:irc-local-function-create
            (llvm-sys:function-type-get
             (main-function-return-type function)
@@ -117,7 +117,7 @@
                                                            cmp:*the-module*
                                                            function-description
                                                            the-function
-                                                           local-entry-point)
+                                                           local-simple-fun)
                              :xep-unallocated)))
           (if (eq xep-group :xep-unallocated)
               (make-instance 'llvm-function-info

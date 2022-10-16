@@ -341,18 +341,18 @@ CL_DEFUN bool core__proper_list_p(T_sp arg) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(global-entry-point-generator-p)dx")
+CL_DOCSTRING(R"dx(global-simple-fun-generator-p)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool core__global_entry_point_generator_p(T_sp obj) {
-  return gc::IsA<GlobalEntryPointGenerator_sp>(obj);
+CL_DEFUN bool core__global_simple_fun_generator_p(T_sp obj) {
+  return gc::IsA<GlobalSimpleFunGenerator_sp>(obj);
 };
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(local-entry-point-generator-p)dx")
+CL_DOCSTRING(R"dx(local-simple-fun-generator-p)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool core__local_entry_point_generator_p(T_sp obj) {
-  return gc::IsA<LocalEntryPointGenerator_sp>(obj);
+CL_DEFUN bool core__local_simple_fun_generator_p(T_sp obj) {
+  return gc::IsA<LocalSimpleFunGenerator_sp>(obj);
 };
 
 CL_LAMBDA(arg)

@@ -715,7 +715,7 @@ CL_DEFUN T_sp lambda_list_for_name(T_sp raw_lambda_list) {
   return core::lambda_list_for_name(raw_lambda_list);
 }
 
-GlobalBytecodeEntryPoint_sp Cfunction_O::link_function(T_sp compile_info) {
+GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
   Module_sp cmodule = this->module();
   cmodule->initialize_cfunction_positions();
   cmodule->resolve_fixup_sizes();
@@ -735,8 +735,8 @@ GlobalBytecodeEntryPoint_sp Cfunction_O::link_function(T_sp compile_info) {
                                 cfunction->doc());
     Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
     Pointer_sp trampoline = llvmo::cmp__compile_trampoline(cfunction->nname());
-    GlobalBytecodeEntryPoint_sp func
-      = core__makeGlobalBytecodeEntryPoint(fdesc, bytecode_module,
+    GlobalBytecodeSimpleFun_sp func
+      = core__makeGlobalBytecodeSimpleFun(fdesc, bytecode_module,
                                            cfunction->nlocals(),
                                            cfunction->closed()->length(),
                                            ep.unsafe_fixnum(),
@@ -1744,7 +1744,7 @@ CL_DEFUN void compile_load_time_value(T_sp form, Lexenv_sp env, Context_sp ctxt)
   // want to just call eval, which may or may not go through bytecompilation.
   Lexenv_sp nenv = make_null_lexical_environment();
   T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(), form);
-  GlobalBytecodeEntryPoint_sp thunk = bytecompile(lexpr, nenv);
+  GlobalBytecodeSimpleFun_sp thunk = bytecompile(lexpr, nenv);
   T_sp value = eval::funcall(thunk);
   compile_literal(value, env, ctxt);
 }
@@ -1764,7 +1764,7 @@ static T_sp symbol_macrolet_bindings(Lexenv_sp menv, List_sp bindings,
                                     Cons_O::createList(cl::_sym_declare,
                                                        Cons_O::createList(cl::_sym_ignore, formv, envv)),
                                     Cons_O::createList(cl::_sym_quote, expansion));
-    GlobalBytecodeEntryPoint_sp expander = bytecompile(lexpr, menv);
+    GlobalBytecodeSimpleFun_sp expander = bytecompile(lexpr, menv);
     SymbolMacroVarInfo_sp info = SymbolMacroVarInfo_O::make(expander);
     vars = Cons_O::create(Cons_O::create(name, info), vars);
   }
@@ -1790,7 +1790,7 @@ static T_sp macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp funs) {
     T_sp body = oCddr(binding);
     T_sp eform = eval::funcall(ext::_sym_parse_macro,
                                name, lambda_list, body, menv);
-    GlobalBytecodeEntryPoint_sp expander = bytecompile(eform, menv);
+    GlobalBytecodeSimpleFun_sp expander = bytecompile(eform, menv);
     LocalMacroInfo_sp info = LocalMacroInfo_O::make(expander);
     funs = Cons_O::create(Cons_O::create(name, info), funs);
   }
@@ -1918,7 +1918,7 @@ CL_DEFUN void compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
 }
 
 CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment)))
-CL_DEFUN GlobalBytecodeEntryPoint_sp bytecompile(T_sp lambda_expression,
+CL_DEFUN GlobalBytecodeSimpleFun_sp bytecompile(T_sp lambda_expression,
                                                  Lexenv_sp env) {
   if (!gc::IsA<Cons_sp>(lambda_expression)
       || (oCar(lambda_expression) != cl::_sym_lambda))

@@ -74,7 +74,7 @@ namespace core {
       return obj;
     }
     virtual void searcher(){};
-    WRAPPER_BuiltInObjectCreator<Instance_O>(GlobalEntryPoint_sp fdesc) : Creator_O(fdesc) {};
+    WRAPPER_BuiltInObjectCreator<Instance_O>(GlobalSimpleFun_sp fdesc) : Creator_O(fdesc) {};
   };
 };
 

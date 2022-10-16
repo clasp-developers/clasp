@@ -183,16 +183,35 @@ struct ClaspXepFunction {
     this->_EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
     this->_EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
   }
-  void fixupInternalsForSnapshotSaveLoad(CodeEntryPoint_O* cep, snapshotSaveLoad::Fixup* fixup) {
+  void fixupInternalsForSnapshotSaveLoad(CodeSimpleFun_O* cep, snapshotSaveLoad::Fixup* fixup) {
     printf("%s:%d:%s See function.h/clbind/line136\n", __FILE__, __LINE__, __FUNCTION__ );
   }
   ClaspXepAnonymousFunction operator[](int index) const { return this->_EntryPoints[index]; };
-  inline LCC_RETURN invoke_0(T_O* closure) {
+
+  inline LCC_RETURN invoke_0(T_O* closure) const {
     return ((ClaspXep0Function)(this->_EntryPoints[1]))( closure );
   }
-  inline LCC_RETURN invoke_1(T_O* closure, T_O* farg0) {
+
+  inline LCC_RETURN invoke_1(T_O* closure, T_O* farg0) const {
     return ((ClaspXep1Function)(this->_EntryPoints[2]))( closure, farg0 );
   }
+
+  inline LCC_RETURN invoke_2(T_O* closure, T_O* farg0, T_O* farg1 ) const {
+    return ((ClaspXep2Function)(this->_EntryPoints[3]))( closure, farg0, farg1 );
+  }
+
+  inline LCC_RETURN invoke_3(T_O* closure, T_O* farg0, T_O* farg1, T_O* farg2 ) const {
+    return ((ClaspXep3Function)(this->_EntryPoints[4]))( closure, farg0, farg1, farg2 );
+  }
+
+  inline LCC_RETURN invoke_4(T_O* closure, T_O* farg0, T_O* farg1, T_O* farg2, T_O* farg3 ) const {
+    return ((ClaspXep4Function)(this->_EntryPoints[5]))( closure, farg0, farg1, farg2, farg3 );
+  }
+
+  inline LCC_RETURN invoke_5(T_O* closure, T_O* farg0, T_O* farg1, T_O* farg2, T_O* farg3, T_O* farg4 ) const {
+    return ((ClaspXep5Function)(this->_EntryPoints[6]))( closure, farg0, farg1, farg2, farg3, farg4 );
+  }
+
 };
 
 #endif

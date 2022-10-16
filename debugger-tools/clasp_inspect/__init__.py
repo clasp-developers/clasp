@@ -590,15 +590,15 @@ class Package_O(General_O):
 class Function_O(General_O):
     def __init__(self,debugger,tptr):
         General_O.__init__(self,debugger,tptr)
-        self._TheEntryPoint = self.field("_TheEntryPoint")
-        self._FunctionDescription = self._TheEntryPoint.field("_FunctionDescription")
+        self._TheSimpleFun = self.field("_TheSimpleFun")
+        self._FunctionDescription = self._TheSimpleFun.field("_FunctionDescription")
         self._Name = self._FunctionDescription.field("_functionName")
     def name(self):
         return self._Name
     def __repr__(self):
         return "Function[:name %s]" % self.name()
 
-class EntryPoint_O(General_O):
+class SimpleFun_O(General_O):
     def __init__(self,debugger,tptr):
         General_O.__init__(self,debugger,tptr)
         self._FunctionDescription = self.field("_FunctionDescription")
@@ -791,8 +791,8 @@ def translate_tagged_ptr(debugger,tptr):
                     return Rack_O(debugger,tptr)
                 if (name in ["core::Function_O", "core::FuncallableInstance_O", "core::Closure_O", "core::BuiltinClosure_O"]):
                     return Function_O(debugger,tptr)
-                if (name in ["core::GlobalBytecodeEntryPoint_O", "core::GlobalEntryPoint_O"]):
-                    return EntryPoint_O(debugger,tptr)
+                if (name in ["core::GlobalBytecodeSimpleFun_O", "core::GlobalSimpleFun_O"]):
+                    return SimpleFun_O(debugger,tptr)
                 if (name=="llvmo::JITDylib_O"):
                     return JITDylib_O(debugger,tptr)
                 return General_O(debugger,tptr)

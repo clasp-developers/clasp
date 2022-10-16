@@ -43,6 +43,7 @@ THE SOFTWARE.
 //#include "clbind/prefix.h"
 #include <clasp/clbind/config.h>
 #include <clasp/clbind/cl_include.h>
+#include <clasp/llvmo/intrinsics.h>
 #include <memory>
 
 namespace clbind {
@@ -95,10 +96,10 @@ class WRAPPER_VariadicFunction;
 
 namespace clbind {
 template <typename RT, typename...ARGS, typename Policies, typename...PUREOUTS, typename ArgumentWrapper>
-class WRAPPER_VariadicFunction< RT(*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, ArgumentWrapper > : public core::GlobalEntryPointBase_O {
+class WRAPPER_VariadicFunction< RT(*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_VariadicFunction < RT(*)(ARGS...), Policies, clbind::pureOutsPack<PUREOUTS...>, ArgumentWrapper > MyType;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
   typedef RT(*FuncType)(ARGS...);
 public:
   FuncType                   fptr;
@@ -108,7 +109,7 @@ public:
   enum { NumParams = sizeof...(ARGS)};
 
   WRAPPER_VariadicFunction(FuncType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : fptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
+      : fptr(ptr), GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
   };
 
@@ -131,6 +132,7 @@ public:
   }
 
   static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args ) {
+//    if (lcc_nargs != NumParams) cc_wrong_number_of_arguments(lcc_closure,lcc_nargs,NumParams,NumParams);
     return handler_entry_point_n(ArgumentWrapper(),lcc_closure,lcc_nargs,lcc_args);
   }
   

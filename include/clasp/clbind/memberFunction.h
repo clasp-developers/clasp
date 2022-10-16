@@ -38,11 +38,11 @@ class WRAPPER_AlienVariadicMethod;
 namespace clbind {
 
 template <typename Policies, typename RT, typename OT, typename... ARGS, typename ArgumentWrapper >
-class WRAPPER_AlienVariadicMethod < RT(OT::*)(ARGS...), Policies, ArgumentWrapper > : public core::GlobalEntryPointBase_O {
+class WRAPPER_AlienVariadicMethod < RT(OT::*)(ARGS...), Policies, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_AlienVariadicMethod< RT(OT::*)(ARGS...), Policies, ArgumentWrapper > MyType;
   typedef RT(OT::*MethodType)(ARGS...) ;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
 public:
   MethodType           mptr;
 public:
@@ -50,7 +50,7 @@ public:
   enum { NumParams = sizeof...(ARGS)+1 };
 
   WRAPPER_AlienVariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
+      : mptr(ptr), GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
 
@@ -107,11 +107,11 @@ public:
 namespace clbind {
 
 template <typename Policies, typename RT, typename OT, typename... ARGS, typename ArgumentWrapper >
-class WRAPPER_AlienVariadicMethod < RT(OT::*)(ARGS...) const, Policies, ArgumentWrapper > : public core::GlobalEntryPointBase_O {
+class WRAPPER_AlienVariadicMethod < RT(OT::*)(ARGS...) const, Policies, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_AlienVariadicMethod< RT(OT::*)(ARGS...) const, Policies, ArgumentWrapper > MyType;
   typedef RT(OT::*MethodType)(ARGS...) const;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
 public:
   MethodType           mptr;
 public:
@@ -119,7 +119,7 @@ public:
   enum { NumParams = sizeof...(ARGS)+1 };
 
   WRAPPER_AlienVariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
+      : mptr(ptr), GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
 

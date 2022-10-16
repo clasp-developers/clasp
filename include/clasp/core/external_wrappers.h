@@ -42,11 +42,11 @@ namespace clbind {
 
 
 template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper >
-class WRAPPER_IndirectMethod < RT(OT::ExternalType::*)(ARGS...), Policies, OT, ArgumentWrapper > : public core::GlobalEntryPointBase_O {
+class WRAPPER_IndirectMethod < RT(OT::ExternalType::*)(ARGS...), Policies, OT, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_IndirectMethod< RT(OT::ExternalType::*)(ARGS...), Policies, OT, ArgumentWrapper > MyType;
   typedef RT(OT::ExternalType::*MethodType)(ARGS...) ;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
 public:
   MethodType           mptr;
 public:
@@ -54,7 +54,7 @@ public:
   enum { NumParams = sizeof...(ARGS)+1 };
 
   WRAPPER_IndirectMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
+      : mptr(ptr), GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
 
@@ -105,11 +105,11 @@ public:
 
 namespace clbind {
 template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper >
-class WRAPPER_IndirectMethod < RT(OT::ExternalType::*)(ARGS...) const, Policies, OT, ArgumentWrapper > : public core::GlobalEntryPointBase_O {
+class WRAPPER_IndirectMethod < RT(OT::ExternalType::*)(ARGS...) const, Policies, OT, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_IndirectMethod< RT(OT::ExternalType::*)(ARGS...) const, Policies, OT, ArgumentWrapper > MyType;
   typedef RT(OT::ExternalType::*MethodType)(ARGS...) const;
-  typedef GlobalEntryPointBase_O TemplatedBase;
+  typedef GlobalSimpleFunBase_O TemplatedBase;
 public:
   MethodType           mptr;
 public:
@@ -117,7 +117,7 @@ public:
   enum { NumParams = sizeof...(ARGS)+1 };
 
   WRAPPER_IndirectMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
+      : mptr(ptr), GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
 
@@ -170,9 +170,9 @@ public:
 
 namespace core {
 template <class D, class C>
-class WRAPPER_Getter : public GlobalEntryPointBase_O {
+class WRAPPER_Getter : public GlobalSimpleFunBase_O {
 public:
-  typedef GlobalEntryPointBase_O TemplatedBase;
+  typedef GlobalSimpleFunBase_O TemplatedBase;
   typedef WRAPPER_Getter< D, C > MyType;
 
 public:
@@ -183,7 +183,7 @@ public:
 public:
   
   WRAPPER_Getter(MemPtr ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code) {
+      : mptr(ptr), GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code) {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   }
   

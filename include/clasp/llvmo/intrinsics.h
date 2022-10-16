@@ -258,4 +258,9 @@ namespace llvmo {
   void initialize_raw_translators( void );
 }
 
+extern "C" {
+NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,
+                                           std::size_t min, std::size_t max);
+};
+
 #endif

@@ -43,8 +43,8 @@ THE SOFTWARE.
 
 namespace core {
 
-class WRAPPER_Translator_O : public core::GlobalEntryPointBase_O {
-  LISP_CLASS(core,CorePkg,WRAPPER_Translator_O,"WRAPPER_Translator",GlobalEntryPointBase_O);
+class WRAPPER_Translator_O : public core::GlobalSimpleFunBase_O {
+  LISP_CLASS(core,CorePkg,WRAPPER_Translator_O,"WRAPPER_Translator",GlobalSimpleFunBase_O);
 public:
   typedef WRAPPER_Translator_O MyType;
   typedef core::T_O* (*Type)(core::T_O* arg);
@@ -60,7 +60,7 @@ public:
     this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
     };
   public:
-    typedef GlobalEntryPoint_O TemplatedBase;
+    typedef GlobalSimpleFun_O TemplatedBase;
     virtual size_t templatedSizeof() const override { return sizeof(WRAPPER_Translator_O); };
 
     virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
@@ -107,11 +107,11 @@ class WRAPPER_VariadicMethod;
 
 namespace clbind {
 template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper >
-class WRAPPER_VariadicMethod <RT(OT::*)(ARGS...), Policies, ArgumentWrapper > : public core::GlobalEntryPointBase_O {
+class WRAPPER_VariadicMethod <RT(OT::*)(ARGS...), Policies, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_VariadicMethod < RT(OT::*)(ARGS...), Policies, ArgumentWrapper > MyType;
   typedef RT(OT::*MethodType)(ARGS...) ;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
 public:
   MethodType           mptr;
 public:
@@ -119,7 +119,7 @@ public:
   enum { NumParams = sizeof...(ARGS)+1 };
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
+      : mptr(ptr), core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
 
@@ -178,11 +178,11 @@ public:
 //
 namespace clbind {
 template < typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper >
-class WRAPPER_VariadicMethod < RT(OT::*)(ARGS...) const, Policies, ArgumentWrapper > : public core::GlobalEntryPointBase_O {
+class WRAPPER_VariadicMethod < RT(OT::*)(ARGS...) const, Policies, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
   typedef WRAPPER_VariadicMethod< RT(OT::*)(ARGS...) const, Policies, ArgumentWrapper > MyType;
   typedef RT(OT::*MethodType)(ARGS...) const ;
-  typedef core::GlobalEntryPointBase_O TemplatedBase;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
 public:
   MethodType           mptr;
 public:
@@ -190,7 +190,7 @@ public:
   enum { NumParams = sizeof...(ARGS)+1 };
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), core::GlobalEntryPointBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
+      : mptr(ptr), core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
 
@@ -309,7 +309,7 @@ inline void defmacro(const string &packageName, const string &name, T_mv (*fp)(L
   using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack< 2, clbind::policies<>>::type;
   using VariadicType = clbind::WRAPPER_VariadicFunction<T_mv(*)(List_sp,T_sp),core::policy::clasp_policy, PureOutValuePack, clbind::DefaultWrapper>;
   FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
-  GlobalEntryPointBase_sp entry = gctools::GC<VariadicType>::allocate(fp,fdesc,nil<T_O>());
+  GlobalSimpleFunBase_sp entry = gctools::GC<VariadicType>::allocate(fp,fdesc,nil<T_O>());
   lisp_bytecode_defun( symbol_function_macro, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring);
 }
  
