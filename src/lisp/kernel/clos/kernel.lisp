@@ -12,12 +12,6 @@
 
 (in-package "CLOS")
 
-;;; Turned this off when I was first starting with bloader/loader.lisp
-;;; because it broke the build.   Disable on Sep 7, 2022
-#+bytecode (setq *features* (core:remove-equal :static-gfs *features*))
-
-
-
 #+(or)(eval-when (:execute)
         (setq core:*echo-repl-read* t))
 
@@ -68,7 +62,7 @@
        (core:setf-find-class new-value name)
        #+static-gfs
        (static-gfs:invalidate-designated-constructors name)
-       #+static-gfs
+       #+(or) ;static-gfs
        (static-gfs:invalidate-designated-changers name))
       (t (error 'simple-type-error :datum new-value :expected-type '(or class null)
                                    :format-control "~A is not a valid class for (setf find-class)"
