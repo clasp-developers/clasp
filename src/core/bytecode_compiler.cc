@@ -4,6 +4,7 @@
 #include <clasp/core/lambdaListHandler.h> // lambda list parsing
 #include <clasp/core/designators.h> // functionDesignator
 #include <clasp/core/primitives.h> // gensym, function_block_name
+#include <clasp/core/sourceFileInfo.h> // source info stuff
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/bytecode.h>
 #include <algorithm> // max
@@ -729,10 +730,24 @@ GlobalBytecodeEntryPoint_sp Cfunction_O::link_function(T_sp compile_info) {
   for (T_sp tfun : *cfunctions) {
     ASSERT(gc::IsA<Cfunction_sp>(tfun));
     Cfunction_sp cfunction = gc::As_unsafe<Cfunction_sp>(tfun);
+    T_sp sourcePathname = nil<T_O>();
+    int lineno = -1;
+    int column = -1;
+    int filepos = -1;
+    if (cfunction->sourcePosInfo().notnilp()) {
+      SourcePosInfo_sp spi = gc::As_assert<SourcePosInfo_sp>(cfunction->sourcePosInfo());
+      // FIXME: This is ridiculous.
+      sourcePathname = gc::As_assert<FileScope_sp>(core__file_scope(clasp_make_fixnum(spi->fileHandle())))->pathname();
+      lineno = spi->lineno();
+      column = spi->column();
+      filepos = spi->filepos();
+    }
     FunctionDescription_sp fdesc
       = makeFunctionDescription(cfunction->nname(),
                                 cfunction->lambda_list(),
-                                cfunction->doc());
+                                cfunction->doc(),
+                                nil<T_O>(), // declares
+                                sourcePathname, lineno, column, filepos);
     Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
     Pointer_sp trampoline = llvmo::cmp__compile_trampoline(cfunction->nname());
     GlobalBytecodeEntryPoint_sp func
@@ -1282,7 +1297,9 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body,
   if (name.nilp())
     name = Cons_O::createList(cl::_sym_lambda,
                               comp::lambda_list_for_name(lambda_list));
-  Cfunction_sp function = Cfunction_O::make(module, name, docstring, lambda_list);
+  Cfunction_sp function = Cfunction_O::make(module, name,
+                                            docstring, lambda_list,
+                                            core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
   Context_sp context = Context_O::make(cl::_sym_T_O, function);
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(),
                                   env->blocks(), env->funs(),

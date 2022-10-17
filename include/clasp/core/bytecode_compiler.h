@@ -577,8 +577,10 @@ public:
   T_sp _name;
   T_sp _doc;
   T_sp _lambda_list;
+  T_sp _source_pos_info;
 public:
-  Cfunction_O(Module_sp module, T_sp name, T_sp doc, T_sp lambda_list)
+  Cfunction_O(Module_sp module, T_sp name,
+              T_sp doc, T_sp lambda_list, T_sp source_pos_info)
     : _module(module),
      // A zero-length adjustable vector with fill pointer.
       _bytecode(ComplexVector_byte8_t_O::make_vector(0, 0,
@@ -590,13 +592,15 @@ public:
       _entry_point(Label_O::make()),
      // not sure this has to be initialized, but just in case
       _info(unbound<GlobalBytecodeEntryPoint_O>()),
-      _name(name), _doc(doc), _lambda_list(lambda_list)
+      _name(name), _doc(doc), _lambda_list(lambda_list),
+      _source_pos_info(source_pos_info)
   {}
   CL_LISPIFY_NAME(Cfunction/make)
   CL_DEF_CLASS_METHOD
   static Cfunction_sp make(Module_sp module,
-                           T_sp name, T_sp doc, T_sp lambda_list) {
-    return gctools::GC<Cfunction_O>::allocate<gctools::RuntimeStage>(module, name, doc, lambda_list);
+                           T_sp name, T_sp doc, T_sp lambda_list,
+                           T_sp source_pos_info) {
+    return gctools::GC<Cfunction_O>::allocate<gctools::RuntimeStage>(module, name, doc, lambda_list, source_pos_info);
   }
   CL_DEFMETHOD Module_sp module() { return _module; }
   CL_LISPIFY_NAME(cfunction/bytecode)
@@ -642,6 +646,7 @@ public:
   CL_DEFMETHOD T_sp nname() { return _name; }
   CL_DEFMETHOD T_sp doc() { return _doc; }
   CL_DEFMETHOD T_sp lambda_list() { return _lambda_list; }
+  T_sp sourcePosInfo() { return _source_pos_info; }
 public:
 // Run down the hierarchy and link the compile time representations
 // of modules and functions together into runtime objects. Return the
