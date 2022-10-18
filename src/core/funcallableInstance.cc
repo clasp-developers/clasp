@@ -185,53 +185,9 @@ string FuncallableInstance_O::__repr__() const {
   return ss.str();
 }
 
+SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
 T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
-  SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
-  /* We have to be cautious about thread safety here. We don't want to crash
-   * if one thread set-funcallable-instance-function's an instance that another
-   * thread is calling.
-   * As an optimization, if a function isn't a closure, we just use its entry
-   * point directly, to avoid the overhead from funcallable_entry_point.
-   * But in general we have funcallable_entry_point just call the REAL_FUNCTION.
-   * Accessing both the entry point and the REAL_FUNCTION is atomic.
-   * So here's what we do: first, change the REAL_FUNCTION. Then, change the
-   * entry point.
-   * If we had funcallable_entry_point before the set-funcallable-instance,
-   * a call between the two sets will just use the new function.
-   * If we had some other entry point, a call will use that, and it must be
-   * insensitive to the REAL_FUNCTION.
-   * So in either case something coherent is called. */
-  /* TODO: We could make this work with any closure, without using locks:
-   * 1) REAL_FUNCTION_set. If the entry_point is funcallable_entry_point,
-   *    now we are using the new function. Otherwise this is meaningless.
-   * 2) Set the entry to funcallable_entry_point. Now the instance's closure
-   *    vector is irrelevant and we are using the new function.
-   * 3) Copy the closure vector into the instance. Doesn't need to be atomic.
-   * 4) Set the entry to the closure's entry.
-   * The only reason I'm not doing this now is that funcallable instances
-   * aren't actually closures at the moment. */
-  if (gc::IsA<Function_sp>(function)) {
-    this->REAL_FUNCTION_set(gc::As_unsafe<Function_sp>(function));
-    // This operation isn't thread safe - always go through the REAL_FUNCTION
-    // If the function has no closure slots, we can use its entry point.
-//    printf("%s:%d:%s I am about to NOT use setEntryPoint and that should be immutable\n", __FILE__, __LINE__, __FUNCTION__ );
-#if 0 
-    if (gc::IsA<Closure_sp>(function)) {
-      Closure_sp closure = gc::As_unsafe<Closure_sp>(function);
-      if (closure->openP())
-        this->setSimpleFun(closure->entryPoint());
-      else {
-        GlobalSimpleFun_sp entryPoint = templated_makeGlobalSimpleFunCopy<FuncallableInstance_O>(gctools::As<GlobalSimpleFun_sp>(this->entryPoint()));
-        this->setSimpleFun(entryPoint);
-      }
-    } else {
-      GlobalSimpleFun_sp entryPoint = templated_makeGlobalSimpleFunCopy<FuncallableInstance_O>(gc::As<GlobalSimpleFun_sp>(this->entryPoint()));
-      this->setSimpleFun(entryPoint);
-    }
-#endif
-  } else {
-    TYPE_ERROR(function, cl::_sym_function);
-  }
+  this->REAL_FUNCTION_set(gc::As<Function_sp>(function));
   return ((this->sharedThis<FuncallableInstance_O>()));
 }
 
@@ -296,7 +252,11 @@ CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_
 
 namespace core {
 
-
+#if 1
+#define GF_BYTECODE_VM
+#include "clasp/core/virtualMachine.h"
+#undef GF_BYTECODE_VM
+#else
 #define DTREE_OP_MISS 0
 #define DTREE_OP_ADVANCE 1
 #define DTREE_OP_TAG_TEST 2
@@ -320,49 +280,41 @@ namespace core {
 #define DTREE_OP_REGISTER7 20
 #define DTREE_OP_COUNT     21
 
-#define DTREE_OP_MISS_LENGTH 1
-
 #define DTREE_FIXNUM_TAG_OFFSET 1
 #define DTREE_SINGLE_FLOAT_TAG_OFFSET 2
 #define DTREE_CHARACTER_TAG_OFFSET 3
 #define DTREE_CONS_TAG_OFFSET 4
 #define DTREE_GENERAL_TAG_OFFSET 5
-#define DTREE_OP_TAG_TEST_LENGTH 6
 
 #define DTREE_READ_HEADER_OFFSET 1
 #define DTREE_READ_OTHER_OFFSET 2
-#define DTREE_OP_STAMP_READ_LENGTH 3
 
 #define DTREE_LT_PIVOT_OFFSET 1
 #define DTREE_LT_LEFT_OFFSET 2
 #define DTREE_LT_RIGHT_OFFSET 3
-#define DTREE_OP_LT_BRANCH_LENGTH 4
 
 #define DTREE_EQ_PIVOT_OFFSET 1
 #define DTREE_EQ_NEXT_OFFSET 2
-#define DTREE_OP_EQ_CHECK_LENGTH 3
 
 #define DTREE_RANGE_MIN_OFFSET 1
 #define DTREE_RANGE_MAX_OFFSET 2
 #define DTREE_RANGE_NEXT_OFFSET 3
-#define DTREE_OP_RANGE_CHECK_LENGTH 4
 
 #define DTREE_EQL_OBJECT_OFFSET 1
 #define DTREE_EQL_BRANCH_OFFSET 2
 #define DTREE_EQL_NEXT_OFFSET 3
-#define DTREE_OP_EQL_LENGTH 4
 
 #define DTREE_SLOT_READER_INDEX_OFFSET 1
 #define DTREE_SLOT_READER_SLOT_NAME_OFFSET 2
-#define DTREE_OP_SLOT_READ_LENGTH 3
-#define DTREE_OP_CAR_LENGTH 3
+#define DTREE_CAR_READER_INDEX_OFFSET 1
+#define DTREE_CAR_READER_CAR_NAME_OFFSET 2
 
 #define DTREE_SLOT_WRITER_INDEX_OFFSET 1
-#define DTREE_OP_SLOT_WRITE_LENGTH 2
-#define DTREE_OP_RPLACA_LENGTH 2
+#define DTREE_RPLACA_WRITER_INDEX_OFFSET 1
 
 #define DTREE_EFFECTIVE_METHOD_OFFSET 1
-#define DTREE_OP_EFFECTIVE_METHOD_LENGTH 2
+#endif
+
 
 SYMBOL_EXPORT_SC_(CorePkg,STARdtreeSymbolsSTAR);
 
@@ -377,6 +329,7 @@ void registerOneDtreeInfo(const std::string& name, int val ) {
   ht->setf_gethash(key,make_fixnum(val));
 }
 
+#if 0
 void registerOrDumpDtreeInfo(std::ostream& fout) {
 #define DTREE_EXPOSE(_name_) if (fout) fmt::print(fout,"Init_global_ints(name=\"{}\",value={});\n", #_name_, _name_); else registerOneDtreeInfo(#_name_,_name_);
    DTREE_EXPOSE(DTREE_OP_MISS);
@@ -392,61 +345,42 @@ void registerOrDumpDtreeInfo(std::ostream& fout) {
    DTREE_EXPOSE(DTREE_OP_CAR);
    DTREE_EXPOSE(DTREE_OP_RPLACA);
    DTREE_EXPOSE(DTREE_OP_EFFECTIVE_METHOD);
-   DTREE_EXPOSE(DTREE_OP_MISS_LENGTH);
    DTREE_EXPOSE(DTREE_FIXNUM_TAG_OFFSET);
    DTREE_EXPOSE(DTREE_SINGLE_FLOAT_TAG_OFFSET);
    DTREE_EXPOSE(DTREE_CHARACTER_TAG_OFFSET);
    DTREE_EXPOSE(DTREE_CONS_TAG_OFFSET);
    DTREE_EXPOSE(DTREE_GENERAL_TAG_OFFSET);
-   DTREE_EXPOSE(DTREE_OP_TAG_TEST_LENGTH);
    DTREE_EXPOSE(DTREE_READ_HEADER_OFFSET);
    DTREE_EXPOSE(DTREE_READ_OTHER_OFFSET);
-   DTREE_EXPOSE(DTREE_OP_STAMP_READ_LENGTH);
    DTREE_EXPOSE(DTREE_LT_PIVOT_OFFSET);
    DTREE_EXPOSE(DTREE_LT_LEFT_OFFSET);
    DTREE_EXPOSE(DTREE_LT_RIGHT_OFFSET);
-   DTREE_EXPOSE(DTREE_OP_LT_BRANCH_LENGTH);
    DTREE_EXPOSE(DTREE_EQ_PIVOT_OFFSET);
    DTREE_EXPOSE(DTREE_EQ_NEXT_OFFSET);
-   DTREE_EXPOSE(DTREE_OP_EQ_CHECK_LENGTH);
    DTREE_EXPOSE(DTREE_RANGE_MIN_OFFSET);
    DTREE_EXPOSE(DTREE_RANGE_MAX_OFFSET);
    DTREE_EXPOSE(DTREE_RANGE_NEXT_OFFSET);
-   DTREE_EXPOSE(DTREE_OP_RANGE_CHECK_LENGTH);
    DTREE_EXPOSE(DTREE_EQL_OBJECT_OFFSET);
    DTREE_EXPOSE(DTREE_EQL_BRANCH_OFFSET);
    DTREE_EXPOSE(DTREE_EQL_NEXT_OFFSET);
-   DTREE_EXPOSE(DTREE_OP_EQL_LENGTH);
    DTREE_EXPOSE(DTREE_SLOT_READER_INDEX_OFFSET);
    DTREE_EXPOSE(DTREE_SLOT_READER_SLOT_NAME_OFFSET);
-   DTREE_EXPOSE(DTREE_OP_SLOT_READ_LENGTH);
-   DTREE_EXPOSE(DTREE_OP_CAR_LENGTH);
+   DTREE_EXPOSE(DTREE_CAR_READER_INDEX_OFFSET);
+   DTREE_EXPOSE(DTREE_CAR_READER_CAR_NAME_OFFSET);
    DTREE_EXPOSE(DTREE_SLOT_WRITER_INDEX_OFFSET);
-   DTREE_EXPOSE(DTREE_OP_SLOT_WRITE_LENGTH);
-   DTREE_EXPOSE(DTREE_OP_RPLACA_LENGTH);
+   DTREE_EXPOSE(DTREE_RPLACA_WRITER_INDEX_OFFSET);
    DTREE_EXPOSE(DTREE_EFFECTIVE_METHOD_OFFSET);
-   DTREE_EXPOSE(DTREE_OP_EFFECTIVE_METHOD_LENGTH);
  }
+#endif
 
 
 
   
-#define CASE_OP_NAME(op) case op: return #op;
 std::string dtree_op_name(int dtree_op) {
   switch (dtree_op) {
-    CASE_OP_NAME(DTREE_OP_MISS);
-    CASE_OP_NAME(DTREE_OP_ADVANCE);
-    CASE_OP_NAME(DTREE_OP_TAG_TEST);
-    CASE_OP_NAME(DTREE_OP_STAMP_READ);
-    CASE_OP_NAME(DTREE_OP_LT_BRANCH);
-    CASE_OP_NAME(DTREE_OP_EQ_CHECK);
-    CASE_OP_NAME(DTREE_OP_RANGE_CHECK);
-    CASE_OP_NAME(DTREE_OP_EQL);
-    CASE_OP_NAME(DTREE_OP_SLOT_READ);
-    CASE_OP_NAME(DTREE_OP_SLOT_WRITE);
-    CASE_OP_NAME(DTREE_OP_CAR);
-    CASE_OP_NAME(DTREE_OP_RPLACA);
-    CASE_OP_NAME(DTREE_OP_EFFECTIVE_METHOD);
+#define GF_BYTECODE_VM_NAMES
+    #include "clasp/core/virtualMachine.h"
+#undef GF_BYTECODE_VM_NAMES
   default: return "UNKNOWN_OP";
   };
 };
@@ -520,59 +454,53 @@ CL_DEFUN void clos__validate_dtree_bytecode_vm(size_t opcount) {
 
 namespace core {
 
+#define TOP_VM() \
+    GFBytecodeSimpleFun_O* gfep = gctools::untag_general<GFBytecodeSimpleFun_O*>((GFBytecodeSimpleFun_O*)lcc_closure); \
+    Function_sp generic_function = gfep->_GenericFunction; \
+    SimpleVector_byte8_t_sp program = gc::As_assert<SimpleVector_byte8_t_sp>(gfep->_Code); \
+    SimpleVector_sp literal_vec = gfep->_Literals; \
+    T_sp* literals = &(*literal_vec)[0]; \
+    unsigned char* ip0 = (unsigned char*)&(*program)[0]; \
+    unsigned char* ip = ip0;  \
+    DO_DRAG_INTERPRET_DTREE(); \
+    DTIDO_ALWAYS( \
+        FILE* DTILOG_fout = monitor_file("dtree-interp"); \
+        my "DTREE_OP_DTREE-INTERP"_thread->_DtreeInterpreterCallCount++; \
+                 ); \
+    DTILOG("=============================== Entered clos__interpret_dtree_program\n"); \
+    DTILOG("---- generic function: %s\n" , _safe_rep_(generic_function)); \
+    DTILOG("---- program length: %d\n" , program->length()); \
+    DTIDO( \
+        for ( size_t i=0; i<program->length(); ++i ) { \
+            DTILOG("[%lu @%p] : %5u \n" , i, (void*)(i+ip) , (*program)[i] ); \
+        } \
+        for ( size_t i=0; i<literal_vec->length(); ++i ) { \
+          DTILOG("literal[%lu] : %s \n" , i , _safe_rep_((*literal_vec)[i]) ); \
+        }); \
+    T_sp arg; \
+    uintptr_t stamp;  \
+    while (1) { \
+      unsigned char op = *ip; \
+      DTILOG("ip[%lu @%p]: %u/%s\n" , (uintptr_t)(ip-ip0), (void*)ip , op , dtree_op_name(op)); \
+      switch (op) { 
+
+
+#define BOTTOM_VM() \
+        default: \
+          printf("%s:%d:%s Invalid dtree ip0: %p  ip: %p  opcode %u\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op ); \
+          SIMPLE_ERROR("%zu is not a valid dtree opcode" , op ); \
+          break; \
+       } /*switch*/ \
+    } /* while(1) */ 
 
 
 struct GFBytecodeEntryPoint {
   static inline LCC_RETURN bytecode_enter(T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
-    GFBytecodeSimpleFun_O* gfep = gctools::untag_general<GFBytecodeSimpleFun_O*>((GFBytecodeSimpleFun_O*)lcc_closure);
-    Function_sp generic_function = gfep->_GenericFunction;
-    SimpleVector_byte8_t_sp program = gc::As_assert<SimpleVector_byte8_t_sp>(gfep->_Code);
-    Vaslist vpass_args(lcc_nargs,lcc_args);
-    Vaslist_sp pass_args((gctools::Tagged)gctools::tag_vaslist<Vaslist*>(&vpass_args));
-    SimpleVector_sp literal_vec = gfep->_Literals;
-    T_sp* literals = &(*literal_vec)[0];
-    size_t nargs = pass_args->nargs(); // used in error signalling
-    unsigned char* ip0 = (unsigned char*)&(*program)[0]; // instruction pointer
-    unsigned char* ip = ip0;
-    DO_DRAG_INTERPRET_DTREE();
-    DTIDO_ALWAYS(
-        FILE* DTILOG_fout = monitor_file("dtree-interp");
-        my_thread->_DtreeInterpreterCallCount++;
-                 );
-    DTILOG("=============================== Entered clos__interpret_dtree_program\n");
-    DTILOG("---- generic function: %s\n" , _safe_rep_(generic_function));
-    DTILOG("---- program length: %d\n" , program->length());
-    DTIDO(
-        for ( size_t i=0; i<program->length(); ++i ) {
-            DTILOG("[%lu @%p] : %5u \n" , i, (void*)(i+ip) , (*program)[i] );
-        }
-        for ( size_t i=0; i<literal_vec->length(); ++i ) {
-          DTILOG("literal[%lu] : %s \n" , i , _safe_rep_((*literal_vec)[i]) );
-        });
-    size_t argi(0);
-  //
-  // if calls == COMPILE_TRIGGER then compile the discriminating function.
-  //  ONLY use == here - so that compilation is only triggered once and if
-  //  the GF is part of the compiler and it continues to be called while it is being
-  //  compiled then you avoid a recursive cycle of compilations that will hang the system.
-  //
-  // Regardless of whether we triggered the compile, we next
-  // Dispatch
-    DTILOG("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n");
-    DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-    Vaslist valist_copy(*pass_args);
-    Vaslist_sp dispatch_args(&valist_copy);
-    DTILOG("valist_copy.nargs() = %lu\n", valist_copy.nargs() );
-    DTILOG("valist_copy.args() = %p\n", (void*)valist_copy.args() );
-    DTILOG("About to dump copied dispatch_args Vaslist @%p\n", (void*)dispatch_args.raw_());
-    DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
-    T_sp arg;
-    uintptr_t stamp;
-    while (1) {
-      unsigned char op = *ip;
-//      printf("%s:%d:%s ip = %p  op = %d\n", __FILE__, __LINE__, __FUNCTION__, ip, op );
-      DTILOG("ip[%lu @%p]: %u/%s\n" , (uintptr_t)(ip-ip0), (void*)ip , op , dtree_op_name(op));
-      switch (op) {
+    Vaslist pass_args(lcc_nargs,lcc_args);
+    DTILOG("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n"); 
+    DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args)); 
+    TOP_VM();
+#define GENERAL_ARITY_CALL 1
 #define ENABLE_REGISTER -1
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
@@ -582,15 +510,14 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
 #undef MAYBE_LONG_MUL
-      default:
-          printf("%s:%d:%s Invalid dtree ip0: %p  ip: %p  opcode %u\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op );
-          SIMPLE_ERROR("%zu is not a valid dtree opcode" , op );
-      }
-    }
+    BOTTOM_VM();
   DISPATCH_MISS:
-    DTILOG("dispatch miss. arg %lu stamp %lu\n" , arg , stamp);
-    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,pass_args);
+    DTILOG("dispatch miss. arg %lu stamp %lu\n" , arg , stamp); 
+    Vaslist vaslist(lcc_nargs,lcc_args);
+    Vaslist_sp error_args(&vaslist);
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
   }
+#undef GENERAL_ARITY_CALL
 
   static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args ) {
     return bytecode_enter( lcc_closure, lcc_nargs, lcc_args );
@@ -600,24 +527,105 @@ struct GFBytecodeEntryPoint {
     return bytecode_enter( lcc_closure, 0, NULL );
   }
   static inline LISP_ENTRY_1() {
+    TOP_VM();
+#define ENABLE_REGISTER 0
+#define MAYBE_LONG_MUL 1
+#define MAYBE_LONG_ADD 0
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#define MAYBE_LONG_MUL 2
+#define MAYBE_LONG_ADD DTREE_OP_COUNT
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#undef GENERAL_ARITY_CALL
+#undef ENABLE_REGISTER    
+    BOTTOM_VM();
+  DISPATCH_MISS:
     core::T_O* args[1] = {lcc_farg0};
-    return bytecode_enter( lcc_closure, 1, args );
+    Vaslist vaslist( 1, args );
+    Vaslist_sp error_args(&vaslist);
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
   }
   static inline LISP_ENTRY_2() {
+    TOP_VM();
+#define ENABLE_REGISTER 1
+#define MAYBE_LONG_MUL 1
+#define MAYBE_LONG_ADD 0
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#define MAYBE_LONG_MUL 2
+#define MAYBE_LONG_ADD DTREE_OP_COUNT
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#undef GENERAL_ARITY_CALL
+#undef ENABLE_REGISTER    
+    BOTTOM_VM();
+  DISPATCH_MISS:
     core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return bytecode_enter( lcc_closure, 2, args );
+    Vaslist vaslist( 2, args );
+    Vaslist_sp error_args(&vaslist);
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
   }
   static inline LISP_ENTRY_3() {
+    TOP_VM();
+#define ENABLE_REGISTER 2
+#define MAYBE_LONG_MUL 1
+#define MAYBE_LONG_ADD 0
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#define MAYBE_LONG_MUL 2
+#define MAYBE_LONG_ADD DTREE_OP_COUNT
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#undef GENERAL_ARITY_CALL
+#undef ENABLE_REGISTER    
+    BOTTOM_VM();
+  DISPATCH_MISS:
     core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return bytecode_enter( lcc_closure, 3, args );
+    Vaslist vaslist( 3, args );
+    Vaslist_sp error_args(&vaslist);
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
   }
   static inline LISP_ENTRY_4() {
+    TOP_VM();
+#define ENABLE_REGISTER 3
+#define MAYBE_LONG_MUL 1
+#define MAYBE_LONG_ADD 0
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#define MAYBE_LONG_MUL 2
+#define MAYBE_LONG_ADD DTREE_OP_COUNT
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#undef GENERAL_ARITY_CALL
+#undef ENABLE_REGISTER    
+    BOTTOM_VM();
+  DISPATCH_MISS:
     core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return bytecode_enter( lcc_closure, 4, args );
+    Vaslist vaslist( 4, args );
+    Vaslist_sp error_args(&vaslist);
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
   }
+
   static inline LISP_ENTRY_5() {
+    TOP_VM();
+#define ENABLE_REGISTER 4
+#define MAYBE_LONG_MUL 1
+#define MAYBE_LONG_ADD 0
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#define MAYBE_LONG_MUL 2
+#define MAYBE_LONG_ADD DTREE_OP_COUNT
+#include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_MUL
+#undef GENERAL_ARITY_CALL
+#undef ENABLE_REGISTER    
+    BOTTOM_VM();
+  DISPATCH_MISS:
     core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return bytecode_enter( lcc_closure, 5, args );
+    Vaslist vaslist( 5, args );
+    Vaslist_sp error_args(&vaslist);
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
   }
 };
 

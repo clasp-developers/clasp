@@ -1,18 +1,21 @@
     case MAYBE_LONG_ADD+DTREE_OP_MISS:
         goto DISPATCH_MISS;
-    case MAYBE_LONG_ADD+DTREE_OP_ADVANCE: {
+#if defined(GENERAL_ARITY_CALL)
+    case MAYBE_LONG_ADD+DTREE_OP_ARGN: {
       DTILOG("About to read arg dispatch_args-> %p\n" , (void*)dispatch_args.raw_());
       DTILOG("About to dump dispatch_args Vaslist\n");
       DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
-      if (dispatch_args->nargs_zero())
+      size_t idx = ReadArg<MAYBE_LONG_MUL>::read(ip,(DTREE_ARGN_OFFSET));
+      if (pass_args.nargs()<= idx)
           // we use an intermediate function, in lisp, to get a nice error message.
         return core::eval::funcall(clos::_sym_interp_wrong_nargs,
-                                   generic_function, make_fixnum(nargs));
-      arg = dispatch_args->next_arg();
-      ++ip;
+                                   generic_function, make_fixnum(pass_args.nargs()));
+      arg = pass_args.iarg(idx);
+      ip += ReadArg<MAYBE_LONG_MUL>::offset(DTREE_ARGN_NEXT_OFFSET);
       DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
     }
         break;
+#endif
     case MAYBE_LONG_ADD+DTREE_OP_TAG_TEST:
         if (arg.fixnump()) {
           ip += ReadArg<MAYBE_LONG_MUL>::read(ip,(DTREE_FIXNUM_TAG_OFFSET));
@@ -101,6 +104,7 @@
         else ip += ReadArg<MAYBE_LONG_MUL>::offset(DTREE_EQL_NEXT_OFFSET);
         break;
       }
+#if defined(GENERAL_ARITY_CALL)
     case MAYBE_LONG_ADD+DTREE_OP_SLOT_READ:
       {
         DTILOG("reading slot: ");
@@ -110,7 +114,7 @@
         size_t index = location.unsafe_fixnum();
         DTILOG("DTREE_OP_SLOT_READ: About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        T_sp tinstance = pass_args->next_arg();
+        T_sp tinstance = pass_args.next_arg();
         DTILOG("Got tinstance@%p %s\n" , (void*)tinstance.raw_() , _safe_rep_(tinstance));
         DTILOG("DTREE_OP_SLOT_READ: About to dump pass_args Vaslist AFTER next_arg\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
@@ -133,7 +137,7 @@
         T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_READER_SLOT_NAME_OFFSET),literals);
         DTILOG("DTREE_OP_CAR: About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        Instance_sp instance = gc::As_unsafe<Instance_sp>(pass_args->next_arg());
+        Instance_sp instance = gc::As_unsafe<Instance_sp>(pass_args.next_arg());
         DTILOG("Got instance@%p %s\n" , (void*)instance.raw_() , _safe_rep_(instance));
         Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
         T_sp value = CONS_CAR(cell);
@@ -151,10 +155,10 @@
         DTILOG("index %lu\n" , index);
         DTILOG("DTREE_OP_SLOT_WRITE: About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        T_sp value((gc::Tagged)pass_args->next_arg_raw());
+        T_sp value((gc::Tagged)pass_args.next_arg_raw());
         DTILOG("DTREE_OP_SLOT_WRITE: About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        T_sp tinstance = pass_args->next_arg();
+        T_sp tinstance = pass_args.next_arg();
         DTILOG("Got tinstance@%p %s\n" , (void*)tinstance.raw_() , _safe_rep_(tinstance));
         Instance_sp instance((gc::Tagged)tinstance.raw_());
         instance->instanceSet(index,value);
@@ -168,11 +172,12 @@
         Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
         DTILOG("DTREE_OP_RPLACA: About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        T_sp value((gc::Tagged)pass_args->next_arg());
+        T_sp value((gc::Tagged)pass_args.next_arg());
         DTILOG("Got value@%p %s\n" , (void*)value.raw_() , _safe_rep_(value));
         cell->rplaca(value);
         return gctools::return_type(value.raw_(),1);
       }
+#endif
     case MAYBE_LONG_ADD+DTREE_OP_EFFECTIVE_METHOD:
       {
         DTILOG("effective method call\n");
@@ -182,69 +187,97 @@
         DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         DTILOG(">>>>>>> DTREE_OP_EFFECTIVE_METHOD: Invoking effective method\n");
-        return func->entry()(func.raw_(), pass_args->nargs(), pass_args->args());
+        ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(func->_TheSimpleFun.load())->_EntryPoints;
+#if defined(GENERAL_ARITY_CALL)
+        return xep.invoke_n(func.raw_(), pass_args.nargs(), pass_args.args());
+#elif (ENABLE_REGISTER==-1)
+        return xep.invoke_0(func.raw_());
+#elif (ENABLE_REGISTER==0)
+        return xep.invoke_1(func.raw_(),lcc_farg0);
+#elif (ENABLE_REGISTER==1)
+        return xep.invoke_2(func.raw_(),lcc_farg0,lcc_farg1);
+#elif (ENABLE_REGISTER==2)
+        return xep.invoke_3(func.raw_(),lcc_farg0,lcc_farg1,lcc_farg2);
+#elif (ENABLE_REGISTER==3)
+        return xep.invoke_4(func.raw_(),lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3);
+#elif (ENABLE_REGISTER==4)
+        return xep.invoke_5(func.raw_(),lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4);
+#endif
       }
+#if !defined(GENERAL_ARITY_CALL)
 #if (ENABLE_REGISTER>=0)
-    case MAYBE_LONG_ADD+DTREE_OP_REGISTER0: {
-      arg = lcc_reg0;
+    case MAYBE_LONG_ADD+DTREE_OP_FARG0: {
+      arg = T_sp((gctools::Tagged)lcc_farg0);
       ++ip;
       DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
     }
         break;
 #if (ENABLE_REGISTER>=1)
-    case MAYBE_LONG_ADD+DTREE_OP_REGISTER1: {
-      arg = lcc_reg1;
+    case MAYBE_LONG_ADD+DTREE_OP_FARG1: {
+      arg = T_sp((gctools::Tagged)lcc_farg1);
       ++ip;
       DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
     }
         break;
 #if (ENABLE_REGISTER>=2)
-    case MAYBE_LONG_ADD+DTREE_OP_REGISTER2: {
-      arg = lcc_reg2;
+    case MAYBE_LONG_ADD+DTREE_OP_FARG2: {
+      arg = T_sp((gctools::Tagged)lcc_farg2);
       ++ip;
       DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
     }
         break;
 #if (ENABLE_REGISTER>=3)
-    case MAYBE_LONG_ADD+DTREE_OP_REGISTER3: {
-      arg = lcc_reg3;
+    case MAYBE_LONG_ADD+DTREE_OP_FARG3: {
+      arg = T_sp((gctools::Tagged)lcc_farg3);
       ++ip;
       DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
     }
         break;
 #if (ENABLE_REGISTER>=4)
-    case MAYBE_LONG_ADD+DTREE_OP_REGISTER4: {
-      arg = lcc_reg4;
+    case MAYBE_LONG_ADD+DTREE_OP_FARG4: {
+      arg = T_sp((gctools::Tagged)lcc_farg4);
       ++ip;
       DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
     }
         break;
-#if (ENABLE_REGISTER>=5)
-    case MAYBE_LONG_ADD+DTREE_OP_REGISTER5: {
-      arg = lcc_reg5;
-      ++ip;
-      DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
-    }
-        break;
-#if (ENABLE_REGISTER>=6)
-    case MAYBE_LONG_ADD+DTREE_OP_REGISTER6: {
-      arg = lcc_reg6;
-      ++ip;
-      DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
-    }
-        break;
-#if (ENABLE_REGISTER>=7)
-    case MAYBE_LONG_ADD+DTREE_OP_REGISTER7: {
-      arg = lcc_reg7;
-      ++ip;
-      DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
-    }
-        break;
-#endif // ENABLE_REGISTER >= 7
-#endif // ENABLE_REGISTER >= 6
-#endif // ENABLE_REGISTER >= 5
 #endif // ENABLE_REGISTER >= 4
 #endif // ENABLE_REGISTER >= 3
 #endif // ENABLE_REGISTER >= 2
 #endif // ENABLE_REGISTER >= 1
 #endif // ENABLE_REGISTER >= 0
+#else // GENERAL_ARITY_CALL
+
+
+    case MAYBE_LONG_ADD+DTREE_OP_FARG0: {
+      arg = pass_args.iarg(0);
+      ++ip;
+      DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
+    }
+        break;
+    case MAYBE_LONG_ADD+DTREE_OP_FARG1: {
+      arg = pass_args.iarg(1);
+      ++ip;
+      DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
+    }
+        break;
+    case MAYBE_LONG_ADD+DTREE_OP_FARG2: {
+      arg = pass_args.iarg(2);
+      ++ip;
+      DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
+    }
+        break;
+    case MAYBE_LONG_ADD+DTREE_OP_FARG3: {
+      arg = pass_args.iarg(3);
+      ++ip;
+      DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
+    }
+        break;
+    case MAYBE_LONG_ADD+DTREE_OP_FARG4: {
+      arg = pass_args.iarg(4);
+      ++ip;
+      DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
+    }
+        break;
+
+#endif
+

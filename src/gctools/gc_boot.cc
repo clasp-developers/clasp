@@ -134,7 +134,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
     //    fprintf(fout,"import clasp\n");
     //    fprintf(fout,"from clasp import inspect\n");
     dump_data_types(fout,indent);
-    core::registerOrDumpDtreeInfo(fout);
+//    core::registerOrDumpDtreeInfo(fout);
   }
   // First pass through the global_stamp_layout_codes_table
   // to count the number of stamps and the number of fields

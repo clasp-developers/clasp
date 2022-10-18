@@ -534,7 +534,7 @@ For example, for a function-name that is a symbol, returns that symbol's package
   (fresh-line stream)
   (values))
 
-(defun primitive-print-backtrace (&key (stream *standard-output*)
+(defun primitive-print-backtrace (&key (stream ext:+process-standard-output+)
                                     count source-positions (delimited t))
   (with-stack (stack :delimited delimited)
     (primitive-print-stack stack :stream stream :count count

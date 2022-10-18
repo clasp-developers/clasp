@@ -188,6 +188,10 @@ struct ClaspXepFunction {
   }
   ClaspXepAnonymousFunction operator[](int index) const { return this->_EntryPoints[index]; };
 
+  inline LCC_RETURN invoke_n(T_O* closure,size_t lcc_nargs, T_O** lcc_args) const {
+    return ((ClaspXepGeneralFunction)(this->_EntryPoints[0]))( closure, lcc_nargs, lcc_args );
+  }
+
   inline LCC_RETURN invoke_0(T_O* closure) const {
     return ((ClaspXep0Function)(this->_EntryPoints[1]))( closure );
   }

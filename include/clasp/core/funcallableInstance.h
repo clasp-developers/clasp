@@ -278,7 +278,6 @@ FORWARD(GFBytecodeSimpleFun);
 
 
 namespace core {
-void registerOrDumpDtreeInfo(std::ostream& fout);
 extern size_t global_compile_discriminating_function_trigger;
 
 };

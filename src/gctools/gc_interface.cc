@@ -750,7 +750,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
 #define Init_global_ints(_name_,_value_) fmt::print(fout,"Init_global_ints(name=\"{}\",value={});\n", _name_,_value_);
   printf("Dumping interface\n");
   gctools::dump_data_types(fout,"");
-  core::registerOrDumpDtreeInfo(fout);
+//  core::registerOrDumpDtreeInfo(fout);
   Init_class_kind(core::T_O);
   Init_class_kind(core::General_O);
 

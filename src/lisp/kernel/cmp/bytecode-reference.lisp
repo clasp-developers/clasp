@@ -1,5 +1,11 @@
 
+#-sbcl
 (in-package :cmpref)
+
+#+sbcl
+(defpackage :cmpref
+  (:use #:common-lisp))
+      
 
 
 (defmacro logf (message &rest args)
@@ -23,129 +29,15 @@
 
 ;;; FIXME: New package
 
-
-
-(defconstant +mask-arg+     #b011000)
-(defconstant +constant-arg+ #b001000)
-(defconstant +keys-arg+     #b011000)
-(defconstant +label-arg+    #b010000)
-
-(defun constant-arg (val)
-  (logior +constant-arg+ val))
-
 (defun constant-arg-p (val)
   (= (logand +mask-arg+ val) +constant-arg+))
-
-(defun label-arg (val)
-  (logior +label-arg+ val))
 
 (defun label-arg-p (val)
   (= (logand +mask-arg+ val) +label-arg+))
 
 (export '(constant-arg-p label-arg-p) :cmpref)
 
-#||
-
-const_arglength_mask   = 0b000111
-const_argtype_mask     = 0b111000
-const_constant_arg     = 0b001000
-const_keys_arg         = 0b011000
-const_label_arg        = 0b010000
-
-global_vm_long = 0
-def new_instr(name, code, args=[], long_args=[]):
-    instr = instruction_description(name,code,args,long_args)
-    global_codes[instr._value] = instr
-    global_names[instr._name] = instr
-    if (instr._name == "long"):
-        global_vm_long = instr._value
-
-def constant_arg(index):
-    return const_constant_arg|index
-
-def keys_arg(index):
-    return const_keys_arg|index
-
-def label_arg(index):
-    return const_label_arg|index
-
-||#
-(let ((rev-codes nil)
-      (forms nil))
-  (macrolet ((new-instr (name code &optional arguments long-arguments)
-               `(progn
-                  (push (list ,name ,code ,arguments ,long-arguments) rev-codes)
-                  (let ((sym (intern (format nil "+~a+" ,(string-upcase name))))
-                        (cd ,code))
-                    (eval `(defconstant ,sym ,cd))
-                    ))))
-    (new-instr "ref" 0 '(1) '(2))
-    (new-instr "const" 1 '((constant-arg 1)) '((constant-arg 2)))
-    (new-instr "closure" 2 '(1) '(2))
-    (new-instr "call" 3 '(1) '(2))
-    (new-instr "call-receive-one" 4 '(1) '(2))
-    (new-instr "call-receive-fixed" 5 '(1 1) '(2 2))
-    (new-instr "bind" 6 '(1 1) '(2 2))
-    (new-instr "set" 7 '(1) '(2))
-    (new-instr "make-cell" 8)
-    (new-instr "cell-ref" 9)
-    (new-instr "cell-set" 10)
-    (new-instr "make-closure" 11 '((constant-arg 1)) '((constant-arg 2)))
-    (new-instr "make-uninitialized-closure" 12 '((constant-arg 1)) '((constant-arg 2)))
-    (new-instr "initialize-closure" 13 '(1) '(2))
-    (new-instr "return" 14)
-    (new-instr "bind-required-args" 15 '(1) '(2))
-    (new-instr "bind-optional-args" 16 '(1 1) '(2 2))
-    (new-instr "listify-rest-args" 17 '(1) '(2))
-    (new-instr "vaslistify-rest-args" 18 '(1))
-    (new-instr "parse-key-args" 19 '(1 1 (keys-arg 1) 1) '(2 2 (keys-arg 2) 2))
-    (new-instr "jump-8" 20 '((label-arg 1)))
-    (new-instr "jump-16" 21 '((label-arg 2)))
-    (new-instr "jump-24" 22 '((label-arg 3)))
-    (new-instr "jump-if-8" 23 '((label-arg 1)))
-    (new-instr "jump-if-16" 24 '((label-arg 2)))
-    (new-instr "jump-if-24" 25 '((label-arg 3)))
-    (new-instr "jump-if-supplied-8" 26 '(1 (label-arg 1)))
-    (new-instr "jump-if-supplied-16" 27 '(1 (label-arg 2)))
-    (new-instr "check-arg-count-LE" 28 '(1) '(2))
-    (new-instr "check-arg-count-GE" 29 '(1) '(2))
-    (new-instr "check-arg-count-EQ" 30 '(1) '(2))
-    (new-instr "push-values" 31)
-    (new-instr "append-values" 32)
-    (new-instr "pop-values" 33)
-    (new-instr "mv-call" 34)
-    (new-instr "mv-call-receive-one" 35)
-    (new-instr "mv-call-receive-fixed" 36 '(1) '(2))
-    (new-instr "save-sp" 37 '(1))
-    (new-instr "restore-sp" 38 '(1))
-    (new-instr "entry" 39 '(1))
-    (new-instr "exit-8" 40 '((label-arg 1)))
-    (new-instr "exit-16" 41 '((label-arg 2)))
-    (new-instr "exit-24" 42 '((label-arg 3)))
-    (new-instr "entry-close" 43)
-    (new-instr "catch-8" 44)
-    (new-instr "catch-16" 45)
-    (new-instr "throw" 46)
-    (new-instr "catch-close" 47)
-    (new-instr "special-bind" 48 '((constant-arg 1)) '((constant-arg 2)))
-    (new-instr "symbol-value" 49 '((constant-arg 1)) '((constant-arg 2)))
-    (new-instr "symbol-value-set" 50 '((constant-arg 1)) '((constant-arg 2)))
-    (new-instr "unbind" 51)
-    (new-instr "progv" 52)
-    (new-instr "fdefinition" 53 '((constant-arg 1)) '((constant-arg 2)))
-    (new-instr "nil" 54)
-    (new-instr "eq" 55)
-    (new-instr "push" 56)
-    (new-instr "pop" 57)
-    (new-instr "long" 58)
-    (let ((codes (nreverse rev-codes)))
-      (defparameter *full-codes* codes)
-      (defparameter *codes* (mapcar #'first codes)))
-    (eval `(progn ,@forms))
-    (defun decode-instr (code)
-      code)
-    ))
-
+(defun decode-instr (code) code)
 
 #+(or)
 (macrolet ((defcodes (&rest names)
@@ -1876,7 +1768,7 @@ def label_arg(index):
     (flet ((textify-operand-or-label (thing)
              (if (integerp thing)
                  (write-to-string thing)
-                 (concatenate 'string "L" (string thing)))))
+                 (concatenate 'string "L" (format nil "~a" thing)))))
       (format t "~&---module---~%")
       (dolist (item dis)
         (if (consp item)
@@ -1896,37 +1788,6 @@ def label_arg(index):
 ;;;
 ;;;
 
-
-(defun pythonify-arguments (args)
-  (declare (optimize (debug 3)))
-  (loop for arg in args
-        when (integerp arg)
-          collect (format nil "~d" arg)
-        when (consp arg)
-          collect (let* ((fn-name (string-downcase (car arg)))
-                         (fn-underscore-name (substitute #\_ #\- fn-name))
-                         (num-arg (second arg)))
-                    (format nil "~a(~d)" fn-underscore-name num-arg))))
-
-(defun generate-python-bytecode-table (fout)
-  (format fout "#ifdef PYTHON_OPCODES~%")
-  (format fout "R\"opcodes(~%")
-  (loop for full-code in *full-codes*
-        do (destructuring-bind (name code arguments long-arguments)
-               full-code
-             (let ((python-arguments (pythonify-arguments arguments))
-                   (python-long-arguments (pythonify-arguments long-arguments)))
-               (format fout "new_instr( ~s, ~d, [~{ ~a~^, ~}], [~{ ~a~^, ~}] )~%"
-                       name
-                       code
-                       python-arguments
-                       python-long-arguments))))
-  (format fout ")opcodes\"~%")
-  (format fout "#endif~%")
-  (format t "Generated python table~%")
-  )
-
-
 ;;; --------------------------------------------------
 ;;;
 ;;; Generate C++ code for the VM bytecodes
@@ -1941,44 +1802,54 @@ def label_arg(index):
            (let ((sublen (length substr)))
              (and (>= (length remain) sublen) (string= substr remain :start2 0 :end2 sublen)))))
     (with-output-to-string (sout)
-      (loop for index below (length name)
-            for remain = (subseq name index)
-            for chr = (elt remain 0)
-            do (cond
-                 ((submatch "/=" remain)
-                  (format sout "_NE_")
-                  (incf index))
-                 ((submatch ">=" remain)
-                  (format sout "_GE_")
-                  (incf index))
-                 ((submatch "<=" remain)
-                  (format sout "_LE_")
-                  (incf index))
-                 ((char= chr #\=) (format sout "_EQ_"))
-                 ((char= chr #\<) (format sout "_LT_"))
-                 ((char= chr #\>) (format sout "_GT_"))
-                 ((char= chr #\-) (format sout "_"))
-                 (t (format sout "~a" chr)))))))
+      (dotimes (index (length name))
+        (let* ((remain (subseq name index))
+               (chr (elt remain 0)))
+          (cond
+            ((submatch "/=" remain)
+             (format sout "_NE_")
+             (incf index))
+            ((submatch ">=" remain)
+             (format sout "_GE_")
+             (incf index))
+            ((submatch "<=" remain)
+             (format sout "_LE_")
+             (incf index))
+            ((char= chr #\=) (format sout "_EQ_"))
+            ((char= chr #\<) (format sout "_LT_"))
+            ((char= chr #\>) (format sout "_GT_"))
+            ((char= chr #\-) (format sout "_"))
+            (t (format sout "~a" chr))))))))
 
-(defun generate-header (&optional (file-name "virtualMachine.h"))
-  (with-open-file (fout file-name :direction :output :if-exists :supersede)
-    (write-string "#ifdef VM_CODES" fout) (terpri fout) (terpri fout)
-    (let ((enums (loop for name in *codes*
-                       for index from 0
-                       for sym-name = (format nil "vm_~a" (c++ify name))
-                       collect (format nil "~a=~a" sym-name index))))
-      (format fout "enum vm_codes {~%~{   ~a~^,~^~%~} };~%" enums))
-    (terpri fout)
-    (write-string "#endif" fout)
-    (terpri fout)
-    (terpri fout)
-    (terpri fout)
-    (generate-python-bytecode-table fout)
-    (format t "Generated header in file: ~s~%" file-name)
-    ))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;  Now the Generic-function dtree interpreter virtual machine instructions
+;;;
+
+#-sbcl(in-package :clos)
+#+sbcl
+(defpackage :clos
+  (:use #:common-lisp ))
+
+(defun dtree-op-byte-length (dtree-op long)
+  (1+ (if long
+          (let ((sum-bytes 0))
+            (dolist (arg (dtree-op-long-arguments dtree-op))
+              (let ((bytes (second arg)))
+                (incf sum-bytes bytes)))
+            sum-bytes)
+          (let ((sum-bytes 0))
+            (dolist (arg (dtree-op-arguments dtree-op))
+              (incf sum-bytes (second arg)))
+            sum-bytes))))
+
+(eval-when (:execute :load-toplevel)
+  ;; Ensure the dtree VM defined here is consistent with the one in C++
+  (clos:validate-dtree-bytecode-vm (length *dtree-ops*)))
 
 
-(export 'generate-header :cmpref)
+(export '(dump-gf-bytecode-virtual-machine
+          dump-python-gf-bytecode-virtual-machine) :clos)
 
 
 
