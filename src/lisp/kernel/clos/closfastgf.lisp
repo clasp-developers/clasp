@@ -694,12 +694,10 @@ FIXME!!!! This code will have problems with multithreading if a generic function
         (unwind-protect
              (if (and #-cclasp nil compile cmp:*cleavir-compile-hook*)
                  (compile nil (generate-discriminator generic-function))
-                 (if (member :new-discriminator *features*)
+                 (if (member :old-discriminator *features*)
+                     (interpreted-discriminator generic-function)
                      (bytecode-interpreted-discriminator generic-function)
-                     (progn
-                       (when (member :compile-new-discriminator *features*)
-                         (bytecode-interpreted-discriminator generic-function))
-                       (interpreted-discriminator generic-function))))
+                     ))
           (let ((delta-seconds (/ (float (- (get-internal-real-time) timer-start) 1d0)
                                   internal-time-units-per-second)))
             (gctools:accumulate-discriminating-function-compilation-seconds delta-seconds))))
