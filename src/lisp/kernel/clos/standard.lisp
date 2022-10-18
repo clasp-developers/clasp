@@ -232,9 +232,9 @@
   ;; if a generic function is specialized where an obsolete instance is, it will go to
   ;; the slow path, which will call MAYBE-UPDATE-INSTANCES.
   (invalidate-generic-functions-with-class-selector class)
-  #+static-gfs
+  #+(or); static-gfs
   (static-gfs:invalidate-class-reinitializers* class)
-  #+static-gfs
+  #+(or) ;static-gfs
   (static-gfs:invalidate-changers* class)
   class)
 
@@ -426,9 +426,9 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod finalize-inheritance :after ((class std-class))
   #+static-gfs
   (static-gfs:invalidate-class-constructors class)
-  #+static-gfs
+  #+(or) ;static-gfs
   (static-gfs:invalidate-changers* class)
-  #+static-gfs
+  #+(or) ;static-gfs
   (static-gfs:invalidate-class-reinitializers* class)
   (std-class-generate-accessors class))
 
