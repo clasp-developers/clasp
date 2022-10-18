@@ -64,7 +64,12 @@ public: // Functions here
   {
     return this->valueGet(2,number_of_values);
   }
- 
+
+  inline T_sp fourth(int number_of_values) const
+  {
+    return this->valueGet(3,number_of_values);
+  }
+
   void set1(T_sp val) {
     this->_Values[0] = val.raw_();
     this->_Size = 1;

@@ -2,10 +2,8 @@
         goto DISPATCH_MISS;
 #if defined(GENERAL_ARITY_CALL)
     case MAYBE_LONG_ADD+DTREE_OP_ARGN: {
-      DTILOG("About to read arg dispatch_args-> %p\n" , (void*)dispatch_args.raw_());
-      DTILOG("About to dump dispatch_args Vaslist\n");
-      DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
       size_t idx = ReadArg<MAYBE_LONG_MUL>::read(ip,(DTREE_ARGN_OFFSET));
+      DTILOG("About to read arg %lu\n" , idx );
       if (pass_args.nargs()<= idx)
           // we use an intermediate function, in lisp, to get a nice error message.
         return core::eval::funcall(clos::_sym_interp_wrong_nargs,
@@ -112,12 +110,8 @@
         T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_READER_SLOT_NAME_OFFSET),literals);
         DTILOG(" location: %s  name: %s\n", _safe_rep_(location), _safe_rep_(slot_name));
         size_t index = location.unsafe_fixnum();
-        DTILOG("DTREE_OP_SLOT_READ: About to dump pass_args Vaslist\n");
-        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        T_sp tinstance = pass_args.next_arg();
+        T_sp tinstance = pass_args.iarg(0);
         DTILOG("Got tinstance@%p %s\n" , (void*)tinstance.raw_() , _safe_rep_(tinstance));
-        DTILOG("DTREE_OP_SLOT_READ: About to dump pass_args Vaslist AFTER next_arg\n");
-        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         Instance_sp instance((gc::Tagged)tinstance.raw_());
         DTILOG("instance %p index %lu\n" , (void*)instance.raw_() , index);
         T_sp value = instance->instanceRef(index);
@@ -135,9 +129,7 @@
         DTILOG("class cell\n");
         T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_READER_INDEX_OFFSET),literals);
         T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_READER_SLOT_NAME_OFFSET),literals);
-        DTILOG("DTREE_OP_CAR: About to dump pass_args Vaslist\n");
-        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        Instance_sp instance = gc::As_unsafe<Instance_sp>(pass_args.next_arg());
+        Instance_sp instance = gc::As_unsafe<Instance_sp>(pass_args.iarg(0));
         DTILOG("Got instance@%p %s\n" , (void*)instance.raw_() , _safe_rep_(instance));
         Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
         T_sp value = CONS_CAR(cell);
@@ -145,6 +137,7 @@
           return core::eval::funcall(cl::_sym_slot_unbound,
                                      lisp_instance_class(instance),
                                      instance,slot_name);
+        DTILOG("read value: %s\n", _safe_rep_(value));
         return gctools::return_type(value.raw_(),1);
       }
     case MAYBE_LONG_ADD+DTREE_OP_SLOT_WRITE:
@@ -153,15 +146,12 @@
         T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_WRITER_INDEX_OFFSET),literals);
         size_t index = location.unsafe_fixnum();
         DTILOG("index %lu\n" , index);
-        DTILOG("DTREE_OP_SLOT_WRITE: About to dump pass_args Vaslist\n");
-        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        T_sp value((gc::Tagged)pass_args.next_arg_raw());
-        DTILOG("DTREE_OP_SLOT_WRITE: About to dump pass_args Vaslist\n");
-        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        T_sp tinstance = pass_args.next_arg();
+        T_sp value = pass_args.iarg(0);
+        T_sp tinstance = pass_args.iarg(1);
         DTILOG("Got tinstance@%p %s\n" , (void*)tinstance.raw_() , _safe_rep_(tinstance));
         Instance_sp instance((gc::Tagged)tinstance.raw_());
         instance->instanceSet(index,value);
+        DTILOG("Set to value: %s\n", _safe_rep_(value));
         return gctools::return_type(value.raw_(),1);
       }
     case MAYBE_LONG_ADD+DTREE_OP_RPLACA:
@@ -170,13 +160,84 @@
         T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_WRITER_INDEX_OFFSET),literals);
         size_t index = location.unsafe_fixnum();
         Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-        DTILOG("DTREE_OP_RPLACA: About to dump pass_args Vaslist\n");
-        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
-        T_sp value((gc::Tagged)pass_args.next_arg());
+        T_sp value = pass_args.iarg(0);
         DTILOG("Got value@%p %s\n" , (void*)value.raw_() , _safe_rep_(value));
         cell->rplaca(value);
+        DTILOG("Set to value: %s\n", _safe_rep_(value));
         return gctools::return_type(value.raw_(),1);
       }
+#else
+#if ENABLE_REGISTER >= 0
+    case MAYBE_LONG_ADD+DTREE_OP_SLOT_READ:
+      {
+         DTILOG("reading slot: ");
+        T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_READER_INDEX_OFFSET),literals);
+        T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_READER_SLOT_NAME_OFFSET),literals);
+        DTILOG(" location: %s  name: %s\n", _safe_rep_(location), _safe_rep_(slot_name));
+        size_t index = location.unsafe_fixnum();
+        T_sp tinstance((gctools::Tagged)lcc_farg0);
+        // Do I need to check if it's an Instance_sp here????
+        Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
+        DTILOG("instance %p index %lu\n" , (void*)instance.raw_() , index);
+        T_sp value = instance->instanceRef(index);
+        if (value.unboundp()) {
+          DTILOG("Slot was unbound\n");
+          return core::eval::funcall(cl::_sym_slot_unbound,
+                                     lisp_instance_class(tinstance),
+                                     instance,slot_name);
+        }
+        DTILOG("Slot was read with value: %s\n", _safe_rep_(value));
+        return gctools::return_type(value.raw_(),1);
+      }
+    case MAYBE_LONG_ADD+DTREE_OP_CAR:
+      {
+        DTILOG("class cell\n");
+        T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_READER_INDEX_OFFSET),literals);
+        T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_READER_SLOT_NAME_OFFSET),literals);
+        T_sp tinstance((gctools::Tagged)lcc_farg0);
+        // Do I need to check if it's an Instance_sp here????
+        Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
+        DTILOG("Got instance@%p %s\n" , (void*)instance.raw_() , _safe_rep_(instance));
+        Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+        T_sp value = CONS_CAR(cell);
+        if (value.unboundp())
+          return core::eval::funcall(cl::_sym_slot_unbound,
+                                     lisp_instance_class(instance),
+                                     instance,slot_name);
+        DTILOG("read value: %s\n", _safe_rep_(value));
+        return gctools::return_type(value.raw_(),1);
+      }
+#endif
+#if ENABLE_REGISTER >= 1
+    case MAYBE_LONG_ADD+DTREE_OP_SLOT_WRITE:
+      {
+        DTILOG("writing slot: ");
+        T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_WRITER_INDEX_OFFSET),literals);
+        size_t index = location.unsafe_fixnum();
+        DTILOG("index %lu\n" , index);
+        T_sp value((gc::Tagged)lcc_farg0);
+        T_sp tinstance((gctools::Tagged)lcc_farg1);
+        // Do I need to check if it's an Instance_sp here????
+        Instance_sp instance = gc::As_unsafe<Instance_sp>(tinstance);
+        instance->instanceSet(index,value);
+        DTILOG("Set to value: %s\n", _safe_rep_(value));
+        return gctools::return_type(value.raw_(),1);
+      }
+#endif
+#if ENABLE_REGISTER >= 0
+    case MAYBE_LONG_ADD+DTREE_OP_RPLACA:
+      {
+        DTILOG("class cell\n");
+        T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_SLOT_WRITER_INDEX_OFFSET),literals);
+        size_t index = location.unsafe_fixnum();
+        Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+        T_sp value((gc::Tagged)lcc_farg0);
+        DTILOG("Got value@%p %s\n" , (void*)value.raw_() , _safe_rep_(value));
+        cell->rplaca(value);
+        DTILOG("Set to value: %s\n", _safe_rep_(value));
+        return gctools::return_type(value.raw_(),1);
+      }
+#endif
 #endif
     case MAYBE_LONG_ADD+DTREE_OP_EFFECTIVE_METHOD:
       {
@@ -184,23 +245,45 @@
         T_sp tfunc = ReadArg<MAYBE_LONG_MUL>::read_literal(ip,(DTREE_EFFECTIVE_METHOD_OFFSET),literals);
         Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
         // Use the pass_args here because it points to the original arguments
-        DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to dump pass_args Vaslist\n");
-        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         DTILOG(">>>>>>> DTREE_OP_EFFECTIVE_METHOD: Invoking effective method\n");
         ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(func->_TheSimpleFun.load())->_EntryPoints;
+        DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to dump args\n");
 #if defined(GENERAL_ARITY_CALL)
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&pass_args));
         return xep.invoke_n(func.raw_(), pass_args.nargs(), pass_args.args());
 #elif (ENABLE_REGISTER==-1)
+        DTILOG(" ---- done\n");
         return xep.invoke_0(func.raw_());
 #elif (ENABLE_REGISTER==0)
+        DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
+        DTILOG(" ---- done\n");
         return xep.invoke_1(func.raw_(),lcc_farg0);
-#elif (ENABLE_REGISTER==1)
+#elif (ENABLE_REGISTER==1) 
+        DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
+        DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
+        DTILOG(" ---- done\n");
         return xep.invoke_2(func.raw_(),lcc_farg0,lcc_farg1);
 #elif (ENABLE_REGISTER==2)
+        DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
+        DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
+        DTILOG(" arg2 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg2)));
+        DTILOG(" ---- done\n");
         return xep.invoke_3(func.raw_(),lcc_farg0,lcc_farg1,lcc_farg2);
 #elif (ENABLE_REGISTER==3)
+        DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
+        DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
+        DTILOG(" arg2 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg2)));
+        DTILOG(" arg3 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg3)));
+        DTILOG(" ---- done\n");
         return xep.invoke_4(func.raw_(),lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3);
 #elif (ENABLE_REGISTER==4)
+        DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to args\n");
+        DTILOG(" arg0 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg0)));
+        DTILOG(" arg1 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg1)));
+        DTILOG(" arg2 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg2)));
+        DTILOG(" arg3 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg3)));
+        DTILOG(" arg4 = %s\n", _safe_rep_(T_sp((gctools::Tagged)lcc_farg4)));
+        DTILOG(" ---- done\n");
         return xep.invoke_5(func.raw_(),lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4);
 #endif
       }

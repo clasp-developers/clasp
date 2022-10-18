@@ -2,6 +2,14 @@
 
 ;;; Misc
 
+(defparameter *debug-dtree* nil)
+#+(or)(defmacro dtree-log (fmt &rest args)
+  `(when *debug-dtree*
+     (format t ,fmt ,@args)))
+
+(defmacro dtree-log (fmt &rest args)
+  nil)
+
 (defun insert-sorted (item lst &optional (test #'<) (key #'identity))
   (if (null lst)
       (list item)
@@ -115,21 +123,26 @@
 
 (defun bc-basic-tree (call-history specializer-profile)
   (assert (not (null call-history)))
+  (dtree-log "Entered bc-basic-tree call-history: ~a specializer-profile: ~a~%" (core:safe-repr call-history) (core::safe-repr specializer-profile))
   (let ((last-specialized (position nil specializer-profile :from-end t :test-not #'eq))
         (first-specialized (position-if #'identity specializer-profile)))
-    (let ((specializer-indices (loop for index from first-specialized to last-specialized
+    (dtree-log "A first-specialized ~a last-specialized ~a~%" first-specialized last-specialized)
+    (let ((specializer-indices (when (and (integerp first-specialized) (integerp last-specialized))
+                                 (loop for index from first-specialized to last-specialized
                                      when (elt specializer-profile index)
-                                       collect index)))
+                                       collect index))))
+      (dtree-log "B specializer-indices ~s~%" specializer-indices)
       (when (null last-specialized)
         ;; no specialization - we go immediately to the outcome
         ;; (we could assert all outcomes are identical)
-        (return-from bc-basic-tree (cdr (first call-history))))
+        (return-from bc-basic-tree (values (cdr (first call-history)) 0)))
       ;; usual case
+      (dtree-log "C~%")
       (loop with result = (make-test :index (car specializer-indices))
             with specialized-length = (1+ last-specialized)
             for (specializers . outcome) in call-history
             do (bc-add-entry result specializers outcome specializer-indices)
-            finally (return result)))))
+            finally (return (values result specialized-length))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -776,67 +789,44 @@
 ;;; Bytecode approach
 
 (defun bytecode-dtree-compile (generic-function)
-  (let* ((basic (bc-basic-tree
-                 (safe-gf-call-history generic-function)
-                 (safe-gf-specializer-profile generic-function)))
-         (compiled (compile-tree-top basic))
-         (linear (linearize compiled))
-         (grouped (group-instructions linear)))
-    (index-instructions grouped)
-    (multiple-value-bind (instructions literals longs)
-        (reference-literals grouped)
-      (loop named longify
-            with new-long
-            with long-changes
-            do (let ((labels (generate-label-map instructions longs)))
-                 (multiple-value-setq (longs long-changes)
-                   (maybe-longify-instructions instructions labels longs))
-                 (when (null long-changes) (return-from longify labels))))
-      (let ((labels (generate-label-map instructions longs))
-            (bytecode (make-array 16 :element-type 'ext:byte8
-                                     :adjustable t
-                                     :fill-pointer 0))
-            (entry-points (make-array 16 :adjustable t :fill-pointer 0)))
-        (update-label-deltas instructions labels longs)
-        (multiple-value-bind (entry-ip new-instructions saw-long)
-            (bytecodeify instructions longs labels bytecode)
-          (declare (ignorable saw-long))
-          #+(or)
-          (when saw-long
-            (loop for instr in new-instructions
-                  do (format t "~s~%" instr))
-            (format t "Done instructions~%")
-            (loop for byte across bytecode
-                  for index from 0
-                  do (format t "~4a: ~s~%" index byte))
-            )
-          (vector-push-extend entry-ip entry-points)
-          (values (copy-seq bytecode) (copy-seq entry-points) (copy-seq literals) instructions new-instructions labels grouped compiled basic))))))
-
-(defun bytecode-dtree-compile-test (generic-function)
-  (let* ((basic (bc-basic-tree
-                 (safe-gf-call-history generic-function)
-                 (safe-gf-specializer-profile generic-function)))
-         (compiled (compile-tree-top basic))
-         (linear (linearize compiled))
-         (grouped (group-instructions linear)))
-    (index-instructions grouped)
-    (multiple-value-bind (instructions literals longs)
-        (reference-literals grouped)
-      (loop named longify
-            with new-long
-            with long-changes
-            do (let ((labels (generate-label-map instructions longs)))
-                 (multiple-value-setq (longs long-changes)
-                   (maybe-longify-instructions instructions labels longs))
-                 (when (null long-changes) (return-from longify labels))))
-      (let ((labels (generate-label-map instructions longs))
-            (bytecode (make-array 16 :element-type 'ext:byte8
-                                     :adjustable t
-                                     :fill-pointer 0))
-            (entry-points (make-array 16 :adjustable t :fill-pointer 0)))
-        (update-label-deltas instructions labels longs)
-        (values instructions labels grouped compiled basic)))))
+  (multiple-value-bind (basic specialized-length)
+      (bc-basic-tree
+       (safe-gf-call-history generic-function)
+       (safe-gf-specializer-profile generic-function))
+    (let* ((compiled (compile-tree-top basic))
+           (linear (linearize compiled))
+           (grouped (group-instructions linear)))
+      (index-instructions grouped)
+      (multiple-value-bind (instructions literals longs)
+          (reference-literals grouped)
+        (loop named longify
+              with new-long
+              with long-changes
+              do (let ((labels (generate-label-map instructions longs)))
+                   (multiple-value-setq (longs long-changes)
+                     (maybe-longify-instructions instructions labels longs))
+                   (when (null long-changes) (return-from longify labels))))
+        (let ((labels (generate-label-map instructions longs))
+              (bytecode (make-array 16 :element-type 'ext:byte8
+                                       :adjustable t
+                                       :fill-pointer 0))
+              (entry-points (make-array 16 :adjustable t :fill-pointer 0)))
+          (update-label-deltas instructions labels longs)
+          (multiple-value-bind (entry-ip new-instructions saw-long)
+              (bytecodeify instructions longs labels bytecode)
+            (declare (ignorable saw-long))
+            #+(or)
+            (when saw-long
+              (loop for instr in new-instructions
+                    do (format t "~s~%" instr))
+              (format t "Done instructions~%")
+              (loop for byte across bytecode
+                    for index from 0
+                    do (format t "~4a: ~s~%" index byte))
+              )
+            (vector-push-extend entry-ip entry-points)
+            (values (copy-seq bytecode) (copy-seq entry-points) (copy-seq literals) specialized-length
+                    #| Remaining return values are for debugging |# instructions new-instructions labels grouped compiled basic)))))))
 
 (defun bytecode-interpreted-discriminator (generic-function)
   (let ((program (sys:gfbytecode-simple-fun/make

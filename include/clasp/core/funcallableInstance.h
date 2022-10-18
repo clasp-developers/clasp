@@ -261,7 +261,8 @@ FORWARD(GFBytecodeSimpleFun);
                          unsigned int entryPcN,
                          SimpleVector_byte8_t_sp bytecode,
                          SimpleVector_sp literals,
-                         Function_sp generic_function);
+                         Function_sp generic_function,
+                         size_t specialized_length);
  public:
    static GFBytecodeSimpleFun_sp make( Function_sp generic_function );
  public:

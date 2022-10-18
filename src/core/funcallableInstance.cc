@@ -463,12 +463,6 @@ namespace core {
     unsigned char* ip0 = (unsigned char*)&(*program)[0]; \
     unsigned char* ip = ip0;  \
     DO_DRAG_INTERPRET_DTREE(); \
-    DTIDO_ALWAYS( \
-        FILE* DTILOG_fout = monitor_file("dtree-interp"); \
-        my "DTREE_OP_DTREE-INTERP"_thread->_DtreeInterpreterCallCount++; \
-                 ); \
-    DTILOG("=============================== Entered clos__interpret_dtree_program\n"); \
-    DTILOG("---- generic function: %s\n" , _safe_rep_(generic_function)); \
     DTILOG("---- program length: %d\n" , program->length()); \
     DTIDO( \
         for ( size_t i=0; i<program->length(); ++i ) { \
@@ -487,18 +481,34 @@ namespace core {
 
 #define BOTTOM_VM() \
         default: \
-          printf("%s:%d:%s Invalid dtree ip0: %p  ip: %p  opcode %u\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op ); \
-          SIMPLE_ERROR("%zu is not a valid dtree opcode" , op ); \
+        printf("%s:%d:%s Invalid dtree opcode ip0: %p  ip: %p  opcode %u %s\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op, dtree_op_name(op).c_str() ); \
+        SIMPLE_ERROR("%zu/%s is not a valid dtree opcode" , op, dtree_op_name(op).c_str() ); \
           break; \
        } /*switch*/ \
     } /* while(1) */ 
 
 
+[[noreturn]] void wrongNumberOfArgumentsForGenericFunction(T_O* lcc_closure, size_t nargs ) {
+  Function_sp closure((gctools::Tagged)lcc_closure);
+  const ClaspXepFunction& xep = gc::As<GlobalSimpleFunBase_sp>(closure->_TheSimpleFun.load())->_EntryPoints;
+  int required_args = xep._RequiredArgs;
+  wrongNumberOfArguments(closure,nargs,required_args);
+  UNREACHABLE();
+}
+
+
 struct GFBytecodeEntryPoint {
   static inline LCC_RETURN bytecode_enter(T_O* lcc_closure, size_t lcc_nargs, T_O** lcc_args ) {
     Vaslist pass_args(lcc_nargs,lcc_args);
+    T_sp gfunction((gctools::Tagged)lcc_closure);
+    DTIDO_ALWAYS( 
+        FILE* DTILOG_fout = monitor_file("dtree-interp"); 
+        my_thread->_DtreeInterpreterCallCount++; 
+                  ); 
+    DTILOG("=============================== Entered clos__interpret_dtree_program\n"); 
+    DTILOG("---- generic function: %s\n" , _safe_rep_(gfunction)); 
     DTILOG("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n"); 
-    DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args)); 
+    DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&pass_args)); 
     TOP_VM();
 #define GENERAL_ARITY_CALL 1
 #define ENABLE_REGISTER -1
@@ -523,10 +533,46 @@ struct GFBytecodeEntryPoint {
     return bytecode_enter( lcc_closure, lcc_nargs, lcc_args );
   }
 
-  static inline LISP_ENTRY_0() {
+  [[noreturn]] static inline LCC_RETURN error_entry_point_0(core::T_O* lcc_closure) {
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 0 );
+  }
+  static inline LCC_RETURN entry_point_0(core::T_O* lcc_closure) {
     return bytecode_enter( lcc_closure, 0, NULL );
   }
+#if 0
+  // Get rid of this once we ensure that bytecode gf discriminators work
   static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return bytecode_enter( lcc_closure, 1, args );
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return bytecode_enter( lcc_closure, 2, args );
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return bytecode_enter( lcc_closure, 3, args );
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return bytecode_enter( lcc_closure, 4, args );
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return bytecode_enter( lcc_closure, 5, args );
+  }
+#else
+  static inline LCC_RETURN error_entry_point_1(core::T_O *lcc_closure, core::T_O* lcc_farg0) {
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 1 );
+  }
+  static inline LCC_RETURN entry_point_1(core::T_O *lcc_closure, core::T_O* lcc_farg0) {
+    T_sp gfunction((gctools::Tagged)lcc_closure);
+    DTIDO_ALWAYS( 
+        FILE* DTILOG_fout = monitor_file("dtree-interp"); 
+        my_thread->_DtreeInterpreterCallCount++; 
+                  ); 
+    DTILOG("===== %s ========================== Entered clos__interpret_dtree_program\n", __FUNCTION__); 
+    DTILOG("---- generic function: %s\n" , _safe_rep_(gfunction)); 
     TOP_VM();
 #define ENABLE_REGISTER 0
 #define MAYBE_LONG_MUL 1
@@ -544,9 +590,21 @@ struct GFBytecodeEntryPoint {
     core::T_O* args[1] = {lcc_farg0};
     Vaslist vaslist( 1, args );
     Vaslist_sp error_args(&vaslist);
-    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
+   return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); 
   }
-  static inline LISP_ENTRY_2() {
+
+  static inline LCC_RETURN error_entry_point_2(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1 ) {
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 2 );
+  }
+
+  static inline LCC_RETURN entry_point_2(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1 ) {
+    T_sp gfunction((gctools::Tagged)lcc_closure);
+    DTIDO_ALWAYS( 
+        FILE* DTILOG_fout = monitor_file("dtree-interp"); 
+        my_thread->_DtreeInterpreterCallCount++; 
+                  ); 
+    DTILOG("===== %s ========================== Entered clos__interpret_dtree_program\n", __FUNCTION__); 
+    DTILOG("---- generic function: %s\n" , _safe_rep_(gfunction)); 
     TOP_VM();
 #define ENABLE_REGISTER 1
 #define MAYBE_LONG_MUL 1
@@ -564,9 +622,21 @@ struct GFBytecodeEntryPoint {
     core::T_O* args[2] = {lcc_farg0,lcc_farg1};
     Vaslist vaslist( 2, args );
     Vaslist_sp error_args(&vaslist);
-    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); 
   }
-  static inline LISP_ENTRY_3() {
+
+  static inline LCC_RETURN error_entry_point_3(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2 ) {
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 3 );
+  }
+  
+  static inline LCC_RETURN entry_point_3(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2 ) {
+    T_sp gfunction((gctools::Tagged)lcc_closure);
+    DTIDO_ALWAYS( 
+        FILE* DTILOG_fout = monitor_file("dtree-interp"); 
+        my_thread->_DtreeInterpreterCallCount++; 
+                  ); 
+    DTILOG("===== %s ========================== Entered clos__interpret_dtree_program\n", __FUNCTION__); 
+    DTILOG("---- generic function: %s\n" , _safe_rep_(gfunction)); 
     TOP_VM();
 #define ENABLE_REGISTER 2
 #define MAYBE_LONG_MUL 1
@@ -584,9 +654,20 @@ struct GFBytecodeEntryPoint {
     core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
     Vaslist vaslist( 3, args );
     Vaslist_sp error_args(&vaslist);
-    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args);
   }
-  static inline LISP_ENTRY_4() {
+
+  static inline LCC_RETURN error_entry_point_4(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3 ) {
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 4 );
+  }
+  static inline LCC_RETURN entry_point_4(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3 ) {
+    T_sp gfunction((gctools::Tagged)lcc_closure);
+    DTIDO_ALWAYS( 
+        FILE* DTILOG_fout = monitor_file("dtree-interp"); 
+        my_thread->_DtreeInterpreterCallCount++; 
+                  ); 
+    DTILOG("===== %s ========================== Entered clos__interpret_dtree_program\n", __FUNCTION__); 
+    DTILOG("---- generic function: %s\n" , _safe_rep_(gfunction)); 
     TOP_VM();
 #define ENABLE_REGISTER 3
 #define MAYBE_LONG_MUL 1
@@ -604,10 +685,20 @@ struct GFBytecodeEntryPoint {
     core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
     Vaslist vaslist( 4, args );
     Vaslist_sp error_args(&vaslist);
-    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args);
   }
 
-  static inline LISP_ENTRY_5() {
+  static inline LCC_RETURN error_entry_point_5(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3, core::T_O* lcc_farg4 ) {
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, 5 );
+  }
+  static inline LCC_RETURN entry_point_5(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3, core::T_O* lcc_farg4 ) {
+    T_sp gfunction((gctools::Tagged)lcc_closure);
+    DTIDO_ALWAYS( 
+        FILE* DTILOG_fout = monitor_file("dtree-interp"); 
+        my_thread->_DtreeInterpreterCallCount++; 
+                  ); 
+    DTILOG("===== %s ========================== Entered clos__interpret_dtree_program\n", __FUNCTION__); 
+    DTILOG("---- generic function: %s\n" , _safe_rep_(gfunction)); 
     TOP_VM();
 #define ENABLE_REGISTER 4
 #define MAYBE_LONG_MUL 1
@@ -625,8 +716,9 @@ struct GFBytecodeEntryPoint {
     core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
     Vaslist vaslist( 5, args );
     Vaslist_sp error_args(&vaslist);
-    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); \
+    return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,error_args); 
   }
+#endif
 };
 
 
@@ -634,8 +726,9 @@ GFBytecodeSimpleFun_O::GFBytecodeSimpleFun_O(FunctionDescription_sp fdesc,
                                              unsigned int entryPcN,
                                              SimpleVector_byte8_t_sp bytecode,
                                              SimpleVector_sp literals,
-                                             Function_sp generic_function)
-: GlobalSimpleFunBase_O(fdesc, ClaspXepFunction::make<GFBytecodeEntryPoint>(), bytecode),
+                                             Function_sp generic_function,
+                                             size_t specialized_length)
+: GlobalSimpleFunBase_O(fdesc, ClaspXepFunction::make<GFBytecodeEntryPoint>(specialized_length), bytecode),
   _EntryPcN(entryPcN),
   _Literals(literals),
   _GenericFunction(generic_function)
@@ -652,7 +745,8 @@ GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make( Function_sp generic_function
   MultipleValues& mv = my_thread->_MultipleValues;
   SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
   SimpleVector_sp literals = mv.third(compiled.number_of_values());
-  auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate( fdesc, 0, bytecode, literals, generic_function );
+  size_t specialized_length = mv.fourth(compiled.number_of_values()).unsafe_fixnum();
+  auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate( fdesc, 0, bytecode, literals, generic_function, specialized_length );
   return obj;
 }
 
@@ -849,12 +943,8 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
         T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
         size_t index = location.unsafe_fixnum();
-        DTILOG("DTREE_OP_SLOT_READ: About to dump pass_args Vaslist\n");
-        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         T_sp tinstance = pass_args->next_arg();
         DTILOG("Got tinstance@%p %s\n" , (void*)tinstance.raw_() , _safe_rep_(tinstance));
-        DTILOG("DTREE_OP_SLOT_READ: About to dump pass_args Vaslist AFTER next_arg\n");
-        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         Instance_sp instance((gc::Tagged)tinstance.raw_());
         DTILOG("instance %p index %lu\n" , (void*)instance.raw_() , index);
         T_sp value = instance->instanceRef(index);
@@ -862,6 +952,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
           return core::eval::funcall(cl::_sym_slot_unbound,
                                      lisp_instance_class(tinstance),
                                      instance,slot_name);
+        DTILOG("read value: %s\n", _safe_rep_(value));
         return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_CAR:
@@ -879,6 +970,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
           return core::eval::funcall(cl::_sym_slot_unbound,
                                      lisp_instance_class(instance),
                                      instance,slot_name);
+        DTILOG("read value: %s\n", _safe_rep_(value));
         return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_SLOT_WRITE:
@@ -896,6 +988,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         DTILOG("Got tinstance@%p %s\n" , (void*)tinstance.raw_() , _safe_rep_(tinstance));
         Instance_sp instance((gc::Tagged)tinstance.raw_());
         instance->instanceSet(index,value);
+        DTILOG("Set to value: %s\n", _safe_rep_(value));
         return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_RPLACA:
@@ -909,6 +1002,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         T_sp value((gc::Tagged)pass_args->next_arg());
         DTILOG("Got value@%p %s\n" , (void*)value.raw_() , _safe_rep_(value));
         cell->rplaca(value);
+        DTILOG("Set to value: %s\n", _safe_rep_(value));
         return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_EFFECTIVE_METHOD:

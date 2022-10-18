@@ -408,7 +408,7 @@ GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp tfdesc,
 GlobalSimpleFun_sp makeGlobalSimpleFunCopy(GlobalSimpleFun_sp entryPoint,
                                              const ClaspXepFunction& entry_point) {
   T_sp code = unbound<T_O>();
-  if (entry_point._Defined) {
+  if (entry_point._Defined ) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
   }
   auto ep = gctools::GC<GlobalSimpleFun_O>::allocate( entryPoint->_FunctionDescription, entry_point, code, entryPoint->_localSimpleFun );
@@ -765,7 +765,7 @@ CL_DEFUN void core__verify_closure(T_sp alist)
 SYMBOL_EXPORT_SC_(KeywordPkg,function_description);
 SYMBOL_EXPORT_SC_(KeywordPkg,code);
 SYMBOL_EXPORT_SC_(KeywordPkg,entry_points);
-SYMBOL_EXPORT_SC_(KeywordPkg,defined);
+SYMBOL_EXPORT_SC_(KeywordPkg,required_args);
 
 DOCGROUP(clasp)
 CL_DEFUN void core__verify_global_entry_point(T_sp alist)
@@ -773,7 +773,6 @@ CL_DEFUN void core__verify_global_entry_point(T_sp alist)
   expect_offset(kw::_sym_function_description,alist,offsetof(GlobalSimpleFun_O,_FunctionDescription)-gctools::general_tag);
   expect_offset(kw::_sym_code,alist,offsetof(GlobalSimpleFun_O,_Code)-gctools::general_tag);
   expect_offset(kw::_sym_entry_points,alist,offsetof(GlobalSimpleFun_O,_EntryPoints._EntryPoints)-gctools::general_tag);
-  expect_offset(kw::_sym_defined,alist,offsetof(GlobalSimpleFun_O,_EntryPoints._Defined)-gctools::general_tag);
 }
 
 

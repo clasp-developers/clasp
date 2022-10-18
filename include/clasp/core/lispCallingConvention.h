@@ -153,10 +153,11 @@ struct XepFillUsingLambda {};
 struct ClaspXepFunction {
   static const int Entries = NUMBER_OF_ENTRY_POINTS;
   ClaspXepAnonymousFunction _EntryPoints[NUMBER_OF_ENTRY_POINTS];
+  int _RequiredArgs;
   bool _Defined;
-  ClaspXepFunction() : _Defined(false) {};
+  ClaspXepFunction() : _RequiredArgs(-1), _Defined(false) {};
   //! Use this ctor when filling ClaspXepFunction with entry points
-  ClaspXepFunction(XepFilling f) : _Defined(true) {};
+  ClaspXepFunction(XepFilling f) : _RequiredArgs(-1), _Defined(true) {};
   template <typename Wrapper>
   static ClaspXepFunction make() {
     assert(NUMBER_OF_ENTRY_POINTS==7);
@@ -169,6 +170,40 @@ struct ClaspXepFunction {
     me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
     me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
     me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+    return me;
+  }
+  template <typename Wrapper>
+  static ClaspXepFunction make(size_t specializer_length) {
+    assert(NUMBER_OF_ENTRY_POINTS==7);
+    ClaspXepFunction me;
+    me._RequiredArgs = specializer_length;
+    me._Defined = true;
+    me._EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
+
+    if (0<specializer_length)
+      me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_0;
+    else me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
+
+    if (1<specializer_length)
+      me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_1;
+    else       me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
+
+    if (2<specializer_length)
+      me._EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_2;
+    else me._EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
+
+    if (3<specializer_length)
+      me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_3;
+    else me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
+
+    if (4<specializer_length)
+      me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_4;
+    else me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
+
+    if (5<specializer_length)
+      me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_5;
+    else me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+
     return me;
   }
   template <typename Wrapper>
