@@ -212,30 +212,6 @@ CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test()
   return Values(core::make_fixnum(POINTER_TAG_MASK),core::make_fixnum(POINTER_TAG_EQ));
 }
 
-
-CL_DOCSTRING(R"dx(Return the header kind for the object)dx")
-DOCGROUP(clasp)
-CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
-  if (obj.consp()) {
-    return gctools::STAMPWTAG_CONS;
-  } else if (obj.fixnump()) {
-    return gctools::STAMPWTAG_FIXNUM;
-  } else if (obj.generalp()) {
-    void *mostDerived = gctools::untag_general<void *>(obj.raw_());
-    const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
-    gctools::GCStampEnum stamp = header->_badge_stamp_wtag_mtag.stamp_();
-    return (Fixnum)stamp;
-  } else if (obj.single_floatp()) {
-    return gctools::STAMPWTAG_SINGLE_FLOAT;
-  } else if (obj.characterp()) {
-    return gctools::STAMPWTAG_CHARACTER;
-  } else if (obj.valistp()) {
-    return gctools::STAMPWTAG_VASLIST_S;
-  }
-  printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
-  SIMPLE_ERROR(("The object %s doesn't have a stamp") , _rep_(obj));
-}
-
 CL_DOCSTRING(R"dx(Return the index part of the stamp.  Stamp indices are adjacent to each other.)dx")
 DOCGROUP(clasp)
 CL_DEFUN size_t core__stamp_index(size_t stamp)
