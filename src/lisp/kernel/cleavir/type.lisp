@@ -562,13 +562,13 @@
   ;; Note that we don't check for division by zero here. That's mostly out of
   ;; laziness, but it should be okay since the quotient type does more checking.
   (declare (ignore dividend))
-  (make-interval (let ((low (interval-low divisor)))
+  (make-interval (let ((low (bound-parts (interval-low divisor))))
                    (cond ((not low) low)
                          ((>= low 0) 0)
                          ;; these are always exclusive.
                          ;; e.g (floor x -2) never has a remainder of -2.
                          (t (list low))))
-                 (let ((high (interval-high divisor)))
+                 (let ((high (bound-parts (interval-high divisor))))
                    (cond ((not high) high)
                          ((<= high 0) 0)
                          (t (list high))))))
@@ -576,11 +576,11 @@
 (defun ceiling-remainder (dividend divisor)
   (declare (ignore dividend))
   ;; The remainder has the opposite sign of the divisor.
-  (make-interval (let ((high (interval-high divisor)))
+  (make-interval (let ((high (bound-parts (interval-high divisor))))
                    (cond ((not high) high)
                          ((<= high 0) 0)
                          (t (list (- high)))))
-                 (let ((low (interval-low divisor)))
+                 (let ((low (bound-parts (interval-low divisor))))
                    (cond ((not low) low)
                          ((>= low 0) 0)
                          (t (list (- low)))))))
@@ -588,8 +588,8 @@
 (defun truncate-remainder (dividend divisor)
   ;; The remainder has the same sign as the dividend. A bit trickier.
   ;; First, get the divisor bound with the largest magnitude.
-  (let* ((low (interval-low divisor))
-         (high (interval-high divisor))
+  (let* ((low (bound-parts (interval-low divisor)))
+         (high (bound-parts (interval-high divisor)))
          (max (if (or (not low) (not high))
                   nil
                   (max (abs low) (abs high)))))
@@ -622,7 +622,8 @@
                          (range->interval divisor sys))
                 rkind sys))
          nil (ctype:bottom sys) sys))
-      (ctype:values (list (ctype:range 'integer '* '* sys)
+      (ctype:values (list (ctype:range (funcall quokindfun 'real 'real)
+                                       '* '* sys)
                           (env:parse-type-specifier 'real nil sys))
                     nil (ctype:bottom sys) sys)))
 
