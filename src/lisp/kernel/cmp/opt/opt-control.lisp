@@ -92,6 +92,10 @@
          (declare (ignore args))
          ,s))))
 
+;;; Dummy macro for use by the bytecode compiler. Ignored by cclasp.
+(defmacro cleavir-primop:case (keyform &rest clauses)
+  `(case ,keyform ,@clauses))
+
 (define-compiler-macro case (&whole form keyform &rest clauses)
   ;;; Check degenerate case
   (when (null clauses)

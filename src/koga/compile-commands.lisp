@@ -15,15 +15,21 @@
                                                                                              (root :build))
                                                                    *root-paths*)))
                                           (resolve-source (make-source-output source :type "sa")))
-                           when (or (typep source 'cc-source)
-                                    (typep source 'c-source))
+                           for cc-source = (typep source 'cc-source)
+                           when (typep source 'c-source)
                              collect `(:object-plist "directory" ,build-path
                                                      "file" ,(resolve-source source)
                                                      "output" ,out
                                                      "command" ,(format nil "~a ~a ~a -c -MD -MF ~a.d -MT ~a -o~a ~a"
-                                                                        (cxx configuration)
-                                                                        *variant-cxxflags*
-                                                                        (cxxflags configuration)
+                                                                        (if cc-source
+                                                                            (cxx configuration)
+                                                                            (cc configuration))
+                                                                        (if cc-source
+                                                                            *variant-cxxflags*
+                                                                            *variant-cflags*)
+                                                                        (if cc-source
+                                                                            (cxxflags configuration)
+                                                                            (cflags configuration))
                                                                         sa-out
                                                                         sa-out
                                                                         out

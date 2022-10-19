@@ -858,9 +858,12 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
         (let ((initializer (single-tool-initializer tool)))
           (when initializer (funcall (single-tool-initializer tool)))))
       (format t "About to run!  run-and-save -> ~a~%" run-and-save)
-      (if run-and-save
-                (ast-tooling:run-and-save *match-refactoring-tool* factory)
-                (ast-tooling:clang-tool-run *match-refactoring-tool* factory))
+      (ecase (if run-and-save
+                 (ast-tooling:run-and-save *match-refactoring-tool* factory)
+                 (ast-tooling:clang-tool-run *match-refactoring-tool* factory))
+        (0)
+        (1 (error "Error while running clang tool."))
+        (2 (error "Some files skipped due to incomplete database.")))
       (format t "Ran tools: ~a~%" (multitool-active-tool-names mtool))
       (format t "Total number of matches ~a~%" *match-counter*)
       (print-report))))
