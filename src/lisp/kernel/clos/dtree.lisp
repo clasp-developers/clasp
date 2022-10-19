@@ -307,7 +307,8 @@
 ;;;
 
 (defstruct (walk (:type vector) :named)
-  callback
+  (collect 'identity)
+  (next 'identity)
   (wrap (lambda (tree fn) (declare (ignore tree)) (funcall fn)))
   results)
 
@@ -318,13 +319,13 @@
            (wait (tree &optional name)
              (declare (ignore name))
              (next tree)
-             #+(or)(let ((new-tail (list nil)))
+             (let ((new-tail (list nil)))
                (push (cons new-tail tree) (car links))))
            (next (tree &optional name)
              (declare (ignore name))
              (funcall (walk-wrap walk) tree (lambda () (do-walk-subtree tree links walk))))
            (cont ()
-             #+(or)(if (null (car links))
+             (if (null (car links))
                  ;; nothing more to do
                  (return-from do-walk-subtree)
                  ;; go to the next tree
@@ -380,25 +381,6 @@
   (let ((links (list nil)))
     (do-walk-subtree tree links walk))
   walk)
-
-#+(or)
-(defun rewrite-arguments (tree)
-  (loop (let ((did-rewrite nil)
-              (walk (clos::make-walk
-                       :callback (lambda (tree walk)
-                                   (when (and (clos::argument-p tree)
-                                              (clos::argument-p (clos::argument-next tree))
-                                              (not (clos::argument-p (clos::argument-next (clos::argument-next tree)))))
-                                     (push tree (clos::walk-results walk)))))))
-          (walk-tree tree walk)
-          (dolist (argument0 (walk-results walk))
-            (let ((argument1 (argument-next argument0)))
-              (when (< (argument-count argument1) cmp:+entry-point-arity-end+)
-                (setf (argument-count argument0) (argument-count argument1)
-                      (argument-next argument0) (argument-next argument1))
-                (setf did-rewrite t))))
-          (unless did-rewrite (return-from rewrite-arguments tree))))
-  tree)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -788,13 +770,17 @@
 
 ;;; Bytecode approach
 
-(defun bytecode-dtree-compile (generic-function)
+(defun dtree-compile (generic-function)
   (multiple-value-bind (basic specialized-length)
       (bc-basic-tree
        (safe-gf-call-history generic-function)
        (safe-gf-specializer-profile generic-function))
-    (let* ((compiled (compile-tree-top basic))
-           (linear (linearize compiled))
+    (values (compile-tree-top basic) specialized-length)))
+
+(defun bytecode-dtree-compile (generic-function)
+  (multiple-value-bind (compiled specialized-length)
+      (dtree-compile generic-function)
+    (let* ((linear (linearize compiled))
            (grouped (group-instructions linear)))
       (index-instructions grouped)
       (multiple-value-bind (instructions literals longs)
@@ -826,13 +812,11 @@
               )
             (vector-push-extend entry-ip entry-points)
             (values (copy-seq bytecode) (copy-seq entry-points) (copy-seq literals) specialized-length
-                    #| Remaining return values are for debugging |# instructions new-instructions labels grouped compiled basic)))))))
+                    #| Remaining return values are for debugging |#
+                    instructions new-instructions labels grouped compiled)))))))
 
 (defun bytecode-interpreted-discriminator (generic-function)
-  (let ((program (sys:gfbytecode-simple-fun/make
-                  generic-function
-                  (safe-gf-call-history generic-function)
-                  (safe-gf-specializer-profile generic-function))))
+  (let ((program (sys:gfbytecode-simple-fun/make generic-function)))
     program))
 
 (export 'bytecode-dtree-compile :clos)

@@ -16,17 +16,18 @@
   (let ((node nil))
     (labels ((collect (tree &rest xs)
                (let ((seen (gethash tree (bc-graph-nodes graph))))
-                 (unless seen
-                   (let ((name (gensym)))
-                     (setf node (make-bc-node :name name
-                                              :text (format nil "~a-~a ~{ ~a~}"
-                                                            (cond
-                                                              ((symbolp tree)
-                                                               tree)
-                                                              (t (elt tree 0)))
-                                                            (string name)
-                                                            xs))
-                           (gethash tree (bc-graph-nodes graph)) node)))))
+                 (if seen
+                     (setq node seen)
+                     (let ((name (gensym)))
+                       (setf node (make-bc-node :name name
+                                                :text (format nil "~a-~a ~{ ~a~}"
+                                                              (cond
+                                                                ((symbolp tree)
+                                                                 tree)
+                                                                (t (elt tree 0)))
+                                                              (string name)
+                                                              xs))
+                             (gethash tree (bc-graph-nodes graph)) node)))))
              (wait (tree &optional (name (elt tree 0)))
                (let ((new-tail (list nil)))
                  (push (cons new-tail tree) (bc-graph-links graph))
@@ -43,10 +44,14 @@
                        (pop (bc-graph-links graph))
                      (push (cons patchpoint subtree) (bc-graph-patches graph))
                      (next subtree "cont")))))
-      (cond ((advance-p tree)
+      (cond ((argument-p tree)
              (collect tree
-               :count (advance-count tree))
-             (next (advance-next tree) "next"))
+               :count (argument-count tree))
+             (next (argument-next tree) "next"))
+            ((register-p tree)
+             (collect tree
+               :count (register-index tree))
+             (next (register-next tree) "next"))
             ((tag-test-p tree)
              (collect tree)
              (wait (elt (tag-test-tags tree) 0) "fixnum-tag")
@@ -114,7 +119,7 @@
                  (setf (car place) node))))
     graph))
 
-(defun render-tree-graph (filename graph)
+(defun render-dtree-graph (filename graph)
   (with-open-file (fout filename :direction :output :if-exists :supersede)
     (format fout "digraph {~%")
     (maphash (lambda (key node)
@@ -135,4 +140,10 @@
              (bc-graph-nodes graph))
     (format fout "}~%")))
 
+(defun render-dtree (filename generic-function)
+  (let* ((compiled (dtree-compile generic-function))
+         (graph (graphviz-linearize compiled)))
+    (render-dtree-graph filename graph)))
+
+(export 'render-generic-function-dtree)
 
