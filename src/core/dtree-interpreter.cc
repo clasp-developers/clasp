@@ -4,10 +4,12 @@
     case MAYBE_LONG_ADD+DTREE_OP_ARGN: {
       size_t idx = ReadArg<MAYBE_LONG_MUL>::read(ip,(DTREE_ARGN_OFFSET));
       DTILOG("About to read arg %lu\n" , idx );
-      if (pass_args.nargs()<= idx)
-          // we use an intermediate function, in lisp, to get a nice error message.
+      if (pass_args.nargs()<= idx) {
+          // we use an intermediate function, in lisp, to get a nice error message. 
+        Function_sp generic_function = gfep->_GenericFunction;
         return core::eval::funcall(clos::_sym_interp_wrong_nargs,
                                    generic_function, make_fixnum(pass_args.nargs()));
+      }
       arg = pass_args.iarg(idx);
       ip += ReadArg<MAYBE_LONG_MUL>::offset(DTREE_ARGN_NEXT_OFFSET);
       DTILOG("Got arg@%p %s new ip %p\n" , (void*)arg.raw_() , _safe_rep_(arg), (void*)ip);
