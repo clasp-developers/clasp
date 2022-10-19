@@ -127,6 +127,7 @@ public:
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
+    if (lcc_nargs!=NumParams) cc_wrong_number_of_arguments(lcc_closure,lcc_nargs,NumParams,NumParams);
     std::tuple<translate::from_object<ARGS,PUREOUTS>...> all_args(arg_tuple<0,Policies,ARGS...>::goFrame(lcc_args));
     return apply_and_return<Policies,RT,decltype(closure->fptr),decltype(all_args)>::go(std::move(closure->fptr),std::move(all_args));
   }
