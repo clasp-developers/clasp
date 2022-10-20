@@ -1820,6 +1820,14 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest,
   // extension
   else if (head == cleavirPrimop::_sym_funcall)
     compile_funcall(oCar(rest), oCdr(rest), env, context);
+  else if (head == cleavirPrimop::_sym_eq) {
+    // KLUDGE: Compile a call to EQ.
+    // Better would be to use the EQ opcode. Better than that would be
+    // eliminating the special operator entirely and working with the
+    // function instead.
+    compile_function(cl::_sym_eq, env, context->sub(clasp_make_fixnum(1)));
+    compile_call(rest, env, context);
+  }
   // not a special form
   else {
     if (gc::IsA<Symbol_sp>(head)) {
