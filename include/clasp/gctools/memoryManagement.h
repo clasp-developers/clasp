@@ -1044,7 +1044,23 @@ inline size_t sizeof_container_with_header(size_t num) {
   inline size_t Align(size_t size) {
     return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
   };
+
+
+// Manually define these for the sake of As<Fixnum_sp> etc.
+template <> class gctools::GCStamp<core::Fixnum_I> {
+public:
+  static GCStampEnum const StampWtag = STAMPWTAG_core__Fixnum_dummy_O;
 };
+template <> class gctools::GCStamp<core::SingleFloat_I> {
+public:
+  static GCStampEnum const StampWtag = STAMPWTAG_core__SingleFloat_dummy_O;
+};
+template <> class gctools::GCStamp<core::Character_I> {
+public:
+  static GCStampEnum const StampWtag = STAMPWTAG_core__Character_dummy_O;
+};
+
+}; // namespace gctools
 
 
 
