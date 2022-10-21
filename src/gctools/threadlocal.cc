@@ -186,7 +186,7 @@ VirtualMachine::VirtualMachine() :
 
 void VirtualMachine::enable_guards() {
 //  printf("%s:%d:%s pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid()  );
-#if 1
+#if 0
   size_t pageSize = getpagesize();
   int mprotectResult = mprotect((void*)this->_stackGuard,pageSize,PROT_READ);
   if (mprotectResult!=0) {
@@ -196,7 +196,7 @@ void VirtualMachine::enable_guards() {
 }
 void VirtualMachine::disable_guards() {
 //  printf("%s:%d:%s pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid()  );
-#if 1
+#if 0
   size_t pageSize = getpagesize();
   int mprotectResult = mprotect((void*)this->_stackGuard,pageSize,PROT_READ|PROT_WRITE);
   if (mprotectResult!=0) {
