@@ -167,6 +167,11 @@
    (flags% :initform nil :accessor flags%)
    (direct-subclasses% :initform nil :accessor direct-subclasses%)))
 
+(defmethod tag% (instance)
+  (error "Unable to find TAG% method for ~A.
+This probably means you need to run the static analyzer
+via `ninja -C build analyze` or `./analyze`." instance))
+
 (defclass exposed-internal-class-kind (kind exposed-internal-class) ())
 (defclass exposed-external-class-kind (kind exposed-external-class) ())
 
