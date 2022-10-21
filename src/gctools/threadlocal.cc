@@ -265,28 +265,6 @@ pid_t ThreadLocalState::safe_fork()
   return result;
 }
 
-pid_t ThreadLocalState::safe_vfork()
-{
-  // Wrap vfork in code that turns guards off and on
-  this->_VM.disable_guards();
-  // shut down llvm thread pool
-  gctools::global_thread_pool->~thread_pool();
-  pid_t result = vfork();
-  // start up llvm thread pool
-  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
-  if (result==-1) {
-    // error
-    printf("%s:%d:%s vfork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno );
-  } else if (result == 0) {
-    // child
-    this->_VM.enable_guards();
-  } else {
-    // parent
-    this->_VM.enable_guards();
-  }
-  return result;
-}
-
 // This needs to be called at initialization immediately after Nil is allocated
 // AND during image load once Nil is found in the image and relocated to its
 // new position in the GC managed memory.

@@ -1958,7 +1958,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
     }
   }
 
-  pid_t child_PID = my_thread->safe_vfork();
+  pid_t child_PID = vfork();
 
   if (child_PID >= 0) {
     if (child_PID == 0) {
@@ -2067,7 +2067,8 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
       // error
       DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % errno % strerror( errno ) % 0 );
 
-      return Values( clasp_make_fixnum( errno ), SimpleBaseString_O::make( std::strerror( errno )), nil<T_O>() );
+      char* serr = std::strerror(errno);
+      return Values( clasp_make_fixnum( errno ), SimpleBaseString_O::make(serr), nil<T_O>() );
     }
   }
   else

@@ -299,7 +299,6 @@ struct VirtualMachine {
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
 
     pid_t safe_fork();
-    pid_t safe_vfork();
     
     void dynEnvStackTest(core::T_sp val) const;
     void dynEnvStackSet(core::T_sp val) {
