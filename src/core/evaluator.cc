@@ -642,8 +642,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(eval)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__eval(T_sp form) {
-  if (core::_sym_STAReval_with_env_hookSTAR.unboundp() ||
-      !core::_sym_STAReval_with_env_hookSTAR->boundP() ||
+  if (!core::_sym_STAReval_with_env_hookSTAR->boundP() ||
       core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
       ) {
     return eval::evaluate(form, nil<T_O>());
