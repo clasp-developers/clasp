@@ -64,7 +64,7 @@ namespace core {
 
 void FuncallableInstance_O::initializeSlots(gctools::BaseHeader_s::StampWtagMtag stamp,
                                             T_sp sig, size_t numberOfSlots) {
-  ASSERT(gctools::BaseHeader_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
+//  ASSERT(gctools::BaseHeader_s::StampWtagMtag::is_rack_shifted_stamp((uint64_t)stamp));
   this->_Rack = Rack_O::make(numberOfSlots,sig,unbound<T_O>());
   this->stamp_set(stamp.as_fixnum());
 #ifdef DEBUG_GUARD_VALIDATE
@@ -72,10 +72,12 @@ void FuncallableInstance_O::initializeSlots(gctools::BaseHeader_s::StampWtagMtag
 #endif
 }
 
+#if 0
 void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::BaseHeader_s::StampWtagMtag stamp) {
-  ASSERT(gctools::Header_s::BaseHeader_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
+  ASSERT(gctools::Header_s::BaseHeader_s::StampWtagMtag::is_rack_shifted_stamp((uint64_t)stamp));
   DEPRECATED();
 }
+#endif
 
 // FIXME: Exists solely for cases where the list of slotds is hard to get.
 CL_LAMBDA(class slot-count)
@@ -456,7 +458,7 @@ namespace core {
 
 void prepare_vm(core::T_O* lcc_closure, GFBytecodeSimpleFun_sp& gfep, SimpleVector_byte8_t_sp& program, SimpleVector_sp& literal_vec, T_sp*& literals, unsigned char*& ip0 ) {
   gfep = GFBytecodeSimpleFun_sp((gctools::Tagged)lcc_closure);
-  program = gc::As_assert<SimpleVector_byte8_t_sp>(gfep->_Code);
+  program = gc::As_assert<SimpleVector_byte8_t_sp>(gfep->_Bytecode);
   literal_vec = gfep->_Literals;
   literals = (T_sp*)&literal_vec->_Data[0];
   ip0 = (unsigned char*)&program->_Data[0];
@@ -829,8 +831,9 @@ GFBytecodeSimpleFun_O::GFBytecodeSimpleFun_O(FunctionDescription_sp fdesc,
                                              SimpleVector_sp literals,
                                              Function_sp generic_function,
                                              size_t specialized_length)
-    : GlobalSimpleFunBase_O(fdesc, ClaspXepFunction::make<GFBytecodeEntryPoint>(specialized_length), bytecode),
+    : GlobalSimpleFunBase_O(fdesc, ClaspXepFunction::make<GFBytecodeEntryPoint>(specialized_length), nil<T_O>()),
       _EntryPcN(entryPcN),
+      _Bytecode(bytecode),
       _Literals(literals),
       _GenericFunction(generic_function)
 {};

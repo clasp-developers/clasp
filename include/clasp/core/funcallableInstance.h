@@ -253,6 +253,7 @@ FORWARD(GFBytecodeSimpleFun);
    // This is an offset instead of an interior pointer to make dumping/loading/GC considerations easier.
    unsigned int               _EntryPcN;
    BytecodeTrampolineFunction _Trampoline;
+   SimpleVector_byte8_t_sp    _Bytecode;
    SimpleVector_sp            _Literals;
    Function_sp                _GenericFunction;
  public:

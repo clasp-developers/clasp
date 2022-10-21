@@ -84,6 +84,16 @@ struct MaybeTimeStartup {
 };
 
 
+/* Return "GC" if the pointer is in GC memory or "SL" if it's in the safe/load buffer */
+bool pointer_in_gc_memory(void* pointer) {
+  if (GC_base(pointer)) return true;
+  return false;
+}
+const char* pointer_pool(void* pointer) {
+  if (pointer_in_gc_memory(pointer)) return "GC";
+  return "SL";
+}
+
 
 /*! Build a LibraryLookup by running 'nm' on one of our loaded libraries or executable.
  *  For dynamic libraries on linux (contain .so in filename) use --dynamic because regular symbols are often stripped
@@ -333,13 +343,18 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 
 // #define DEBUG_SL 1
 #if 1
-#define DBG_SL(...) { printf("%s:%d:%s DBG_SL: ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__ ); }
+#define DBG_SL_STEP(step,...)  { printf("%s:%d:%s DBG_SL_STEP: %d ", __FILE__, __LINE__, __FUNCTION__, step ); printf(__VA_ARGS__ ); }
+#else
+#define DBG_SL_STEP(...)
+#endif
+#if 1
+#define DBG_SL(...)  { printf("%s:%d:%s DBG_SL:  ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__ ); }
 #else
 #define DBG_SL(...)
 #endif
 
 #if 1
-#define DBG_SLS(...) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); fflush(stdout); }
+#define DBG_SLS(...) { printf("%s:%d:%s DBG_SLS: ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); fflush(stdout); }
 #else
 #define DBG_SLS(...)
 #endif
@@ -367,15 +382,15 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #endif
 
 #if 0
-#define DBG_SL_FWD(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#define DBG_SL_FWD(...) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__);}
 #else
-#define DBG_SL_FWD(_fmt_)
+#define DBG_SL_FWD(...)
 #endif
 
 #if 0
-#define DBG_SL_FFWD(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#define DBG_SL_FFWD(...) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); }
 #else
-#define DBG_SL_FFWD(_fmt_)
+#define DBG_SL_FFWD(...)
 #endif
 
 #if 0
@@ -820,7 +835,7 @@ bool is_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
   }
 }
 
-uintptr_t forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
+uintptr_t get_forwarding_pointer(gctools::BaseHeader_s* header, ISLInfo* info) {
   if (global_forwardingKind == testStomp) {
     uintptr_t noStompResult =  (uintptr_t)info->_forwarding[header];
     uintptr_t stompResult = (uintptr_t)header->_badge_stamp_wtag_mtag.fwdPointer();
@@ -856,7 +871,7 @@ public:
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 gctools::clasp_ptr_t test_pointer(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag, void* user_data) {
-  DBG_SL_FFWD(BF("test_pointer clientAddress: %p client: %p\n") % (void*)clientAddress % (void*)client );
+  DBG_SL_FFWD(("test_pointer clientAddress: %p client: %p\n"), (void*)clientAddress, (void*)client );
   test_objects_t* test_objects = (test_objects_t*)user_data;
   ISLInfo* islInfo = test_objects->_info;
   gctools::Header_s* header;
@@ -886,7 +901,7 @@ gctools::clasp_ptr_t test_pointer(gctools::clasp_ptr_t* clientAddress, gctools::
 }
 
 gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag, void* user_data) {
-  DBG_SL_FFWD(BF("maybe_follow_forwarding_pointer clientAddress: %p client: %p\n") % (void*)clientAddress % (void*)client );
+  DBG_SL_FFWD(("maybe_follow_forwarding_pointer clientAddress: %p/%s client: %p/%s\n"), (void*)clientAddress, pointer_pool(clientAddress), (void*)client, pointer_pool(client) );
   ISLInfo* islInfo = (ISLInfo*)user_data;
   uintptr_t fwd_client;
   gctools::Header_s* header;
@@ -897,22 +912,34 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
   } else {
     header = WEAK_PTR_TO_HEADER_PTR(client);
   }
-  DBG_SL_FFWD(BF("    maybe_follow_forwarding_pointer client %p header: %p\n") % (void*)client % (void*)header );
-  if (islInfo->_operation== SaveOp && ! is_forwarding_pointer(header,islInfo)) {
-    printf("%s:%d:%s general header %p MUST BE A FORWARDING POINTER - got %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, *(void**)header);
-    printf("%s:%d:%s stage: %s connect a debugger to pid: %d\n", __FILE__, __LINE__, __FUNCTION__, globalPointerFixStage, getpid() );
-    printf("%s:%d:%s Running memory test\n", __FILE__, __LINE__, __FUNCTION__ );
+  DBG_SL_FFWD(("    maybe_follow_forwarding_pointer client %p header: %p\n"), (void*)client, (void*)header );
+  if (islInfo->_operation== SaveOp && !is_forwarding_pointer(header,islInfo)) {
+    printf("%s:%d:%s       clientAddress: %p/%s client: %p/%s\n", __FILE__, __LINE__, __FUNCTION__, (void*)clientAddress, pointer_pool(clientAddress), (void*)client, pointer_pool(client) );
+    printf("%s:%d:%s       general header %p IS NOT A FORWARDING POINTER - but it must be\n", __FILE__, __LINE__, __FUNCTION__, (void*)header);
+    if (global_forwardingKind == noStomp) {
+      printf(" - for noStomp is not key in info->_forwarding[header]\n");
+    } else {
+      printf(" - *header should be fwd ptr but got %p\n", *(void**)header);
+    }
+    bool clientAddressPool = pointer_in_gc_memory(clientAddress);
+    printf("%s:%d:%s       The clientAddress %p is in %s memory\n", __FILE__, __LINE__, __FUNCTION__, clientAddress, pointer_pool(clientAddress) );
+    bool clientPool = pointer_in_gc_memory(client);
+    printf("%s:%d:%s       The client        %p is in %s memory\n", __FILE__, __LINE__, __FUNCTION__, client, pointer_pool(client) );
+    printf("%s:%d:%s       ---- They should be in different pools and that is %s\n", __FILE__, __LINE__, __FUNCTION__, (clientAddressPool != clientPool) ? "TRUE" : "FALSE");
+    printf("%s:%d:%s       stage: %s connect a debugger to pid: %d\n", __FILE__, __LINE__, __FUNCTION__, globalPointerFixStage, getpid() );
+    printf("%s:%d:%s       Running memory test\n", __FILE__, __LINE__, __FUNCTION__ );
+    fflush(stdout);
     memory_test( true, NULL, "Memory test after bad forwarding pointer was discovered" );
     printf("%s:%d:%s stage: %s Sleeping to connect a debugger to pid: %d\n", __FILE__, __LINE__, __FUNCTION__, globalPointerFixStage, getpid() );
     sleep(1000000);
   }
   if (is_forwarding_pointer(header,islInfo)) {
-    fwd_client = (uintptr_t)forwarding_pointer(header,islInfo);
-    DBG_SL_FFWD(BF("fwdPointer from %p  to header@%p  %p  GC_base %p\n")
-                % (void*)((uintptr_t)client | tag)
-                % (void*)header
-                % ((void*)((uintptr_t)fwd_client | tag))
-                % GC_base((void*)fwd_client) );
+    fwd_client = (uintptr_t)get_forwarding_pointer(header,islInfo);
+    DBG_SL_FFWD(("fwdPointer from %p  to header@%p  %p  GC_base %p\n")
+                , (void*)((uintptr_t)client | tag)
+                , (void*)header
+                , ((void*)((uintptr_t)fwd_client | tag))
+                , GC_base((void*)fwd_client) );
     if (islInfo->_operation == SaveOp) {
       if (!(islInfo->_islStart<=fwd_client)&&(fwd_client<islInfo->_islEnd)) {
         printf("%s:%d:%s Forwarded pointer does NOT point into the islbuffer\n", __FILE__, __LINE__, __FUNCTION__);
@@ -928,7 +955,7 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
       }
     }
     return (gctools::clasp_ptr_t)(fwd_client | tag);
-  }
+ }
   // When loading we have a few objects that are NOT forwarded - so we return them here
   return (gctools::clasp_ptr_t)((uintptr_t)client | tag);
 }
@@ -1561,8 +1588,8 @@ struct copy_objects_t : public walker_callback_t {
         new(&newObjectFile->_MemoryBuffer) std::unique_ptr<llvm::MemoryBuffer>();
         DBG_SAVECOPY(BF("   copied general header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
         set_forwarding_pointer(header, new_client, this->_info ); // This is a client pointer
-        DBG_SL_FWD(BF("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n")
-                   % (void*)header % (void*)new_client % (void*)forwarding_pointer(header,this->_info));
+        DBG_SL_FWD("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n",
+                   (void*)header, (void*)new_client , (void*)get_forwarding_pointer(header,this->_info));
         DBG_OF(
             printf("%s:%d:%s Wrote %lu bytes to _ObjectFileOffset %p\n", __FILE__, __LINE__, __FUNCTION__,
                    newObjectFile->_ObjectFileSize,
@@ -1578,8 +1605,8 @@ struct copy_objects_t : public walker_callback_t {
         newObjectFile->_LiteralVectorSizeBytes = code->literalsSize();
         DBG_SAVECOPY(BF("   copied general header ObjectFile_O object %p to %p - %p\n")
                      % header % (void*)islh % (void*)this->_buffer );
-        DBG_SL_FWD(BF("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n")
-                   % (void*)header % (void*)new_client % (void*)forwarding_pointer(header,this->_info));
+        DBG_SL_FWD(("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n"),
+                   (void*)header, (void*)new_client, (void*)get_forwarding_pointer(header,this->_info));
         DBG_OF(
             printf("%s:%d:%s Wrote literals %lu bytes to _LiteralVectorStart %p\n", __FILE__, __LINE__, __FUNCTION__,
                    newObjectFile->_LiteralVectorSizeBytes,
@@ -1598,8 +1625,8 @@ struct copy_objects_t : public walker_callback_t {
         char* new_client = this->_objects->write_buffer((char*)clientStart, clientEnd-clientStart);
         DBG_SAVECOPY(BF("   copied general header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
         set_forwarding_pointer(header, new_client, this->_info ); // This is a client pointer
-        DBG_SL_FWD(BF("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n")
-                   % (void*)header % (void*)new_client % (void*)forwarding_pointer(header,this->_info));
+        DBG_SL_FWD(("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n"),
+                   (void*)header, (void*)new_client, (void*)get_forwarding_pointer(header,this->_info));
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
@@ -1614,7 +1641,7 @@ struct copy_objects_t : public walker_callback_t {
       DBG_SAVECOPY(BF("   copied cons header %p to %p - %p | CAR: %p CDR: %p\n") %
                    header % (void*)islh % (void*)this->_buffer
                    % (void*)cons->_Car.load().raw_() % (void*)cons->_Cdr.load().raw_() );
-      DBG_SL_FWD(BF("setFwdPointer cons header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
+      DBG_SL_FWD("setFwdPointer cons header %p new_addr -> %p\n", (void*)header, (void*)new_addr);
     } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
 //      printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
@@ -1627,7 +1654,7 @@ struct copy_objects_t : public walker_callback_t {
       char* new_addr = this->_objects->write_buffer((char*)clientStart, clientEnd-clientStart);
       set_forwarding_pointer(header, new_addr, this->_info );
       DBG_SAVECOPY(BF("   copied weak header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
-      DBG_SL_FWD(BF("setFwdPointer weak header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
+      DBG_SL_FWD("setFwdPointer weak header %p new_addr -> %p\n", (void*)header, (void*)new_addr);
     }
     this->_NumberOfObjects++;
   }
@@ -2217,7 +2244,7 @@ void* snapshot_save_impl(void* data) {
            __FILE__, __LINE__, __FUNCTION__ );
     abort();
   }
-  DBG_SL("1 Entered\n" );
+  DBG_SL_STEP(1,"Entered snapshot_save_impl\n" );
   //
   // For real save-lisp-and-die do the following (a simple 19 step plan)
   //
@@ -2272,7 +2299,7 @@ void* snapshot_save_impl(void* data) {
   //
 #if 1  
   fixup._operation = InfoOp;
-  DBG_SLS("0. Get info on objects for snapshot save\n");
+  DBG_SL_STEP(2,"Get info on objects for snapshot save\n");
   gather_info_for_snapshot_save_t gather_info(&fixup,&islInfo);
   walk_gathered_objects( gather_info, allObjects );
 #endif
@@ -2287,11 +2314,11 @@ void* snapshot_save_impl(void* data) {
 
 #if 0
   // I'm going to try this right before I fixup the vtables
-  DBG_SL("3 Prepare objects for snapshot save\n");
+  DBG_SL_STEP(2,"Prepare objects for snapshot save\n" );
   prepare_for_snapshot_save_t prepare(&islInfo);
   walk_gathered_objects( prepare, allObjects );
 #endif
-  DBG_SLS("4. Sum size of all objects\n");
+  DBG_SL_STEP(3,"Sum size of all objects\n" );
   calculate_size_t calc_size(&islInfo);
   walk_gathered_objects( calc_size, allObjects );
   fmt::printf("   size = %lu\n", calc_size._TotalSize);
@@ -2312,6 +2339,7 @@ void* snapshot_save_impl(void* data) {
   // Align up memory_size to pagesize
 
   
+  DBG_SL_STEP(4,"Calculate buffer ranges\n");
   // Add the snapshot save load buffer limits to islInfo
   snapshot._Memory = new copy_buffer_t( gctools::AlignUp(buffer_size) );
   snapshot._ObjectFiles = new copy_buffer_t( calc_size._ObjectFileTotalSize );
@@ -2326,7 +2354,7 @@ void* snapshot_save_impl(void* data) {
   //     (a) copy them to next position in intermediate-buffer
   //     (b) Set a forwarding pointer in the original object
   //
-  DBG_SL("5  snapshot._Memory->_BufferStart = %p\n", (void*)snapshot._Memory->_BufferStart );
+  DBG_SL_STEP(5,"Copy objects to snapshot._Memory   snapshot._Memory->_BufferStart = %p\n", (void*)snapshot._Memory->_BufferStart );
   copy_objects_t copy_objects( snapshot._Memory, snapshot._ObjectFiles, &islInfo );
   walk_gathered_objects( copy_objects, allObjects );
 
@@ -2341,6 +2369,7 @@ void* snapshot_save_impl(void* data) {
   //
   // 4. Copy roots into intermediate-buffer
   //
+  DBG_SL_STEP(6,"Copy roots into intermediate buffer\n");
   ISLRootHeader_s roots1( Roots,  sizeof(core::T_O*) );
   snapshot._FileHeader->_LispRootOffset = snapshot._Memory->write_buffer( (char*)&roots1 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
   snapshot._FileHeader->_LispRootCount = 1;
@@ -2354,12 +2383,13 @@ void* snapshot_save_impl(void* data) {
   // Save the NextUnshiftedStamp so when we load we will pick up where we left off
   // in terms of assigning stamps.
   //
+  DBG_SL_STEP(7,"Saving _NextUnshiftedCLBindStamp and NextUnshiftedStamp\n");
   snapshot._FileHeader->_NextUnshiftedClbindStamp = gctools::global_NextUnshiftedClbindStamp;
   snapshot._FileHeader->_NextUnshiftedStamp = gctools::global_NextUnshiftedStamp;
   //
   // 5. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
   //
-  DBG_SL("6  Fixing objects starting at %p\n", (void*)snapshot._Memory->_BufferStart);
+  DBG_SL_STEP(8,"Fixing objects starting at %p\n", (void*)snapshot._Memory->_BufferStart);
   {
     fixup_objects_t fixup_objects(SaveOp, (gctools::clasp_ptr_t)snapshot._Memory->_BufferStart, &islInfo );
     globalPointerFix = maybe_follow_forwarding_pointer;
@@ -2373,6 +2403,7 @@ void* snapshot_save_impl(void* data) {
   //
 
   {
+    DBG_SL_STEP(9,"Fixup root pointers\n");
     globalPointerFix = maybe_follow_forwarding_pointer;
     globalPointerFixStage = "fixupRoots";
 //    printf("%s:%d:%s  Fixing roots snapshot._Memory->_BufferStart = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)snapshot._Memory->_BufferStart, (void*)((char*)snapshot._Memory->_BufferStart+snapshot._Memory->_Size ));
@@ -2386,12 +2417,12 @@ void* snapshot_save_impl(void* data) {
   // Last thing - fixup vtables
   //
   // I'm going to try this right before I fixup the vtables
-  DBG_SL("7 Prepare objects for snapshot save\n");
+  DBG_SL_STEP(10,"Prepare objects for snapshot save\n");
   prepare_for_snapshot_save_t prepare(&fixup,&islInfo);
   walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart,prepare);
 
   {
-    DBG_SL("8 snapshot_save fixing up vtable pointers\n");
+    DBG_SL_STEP(11,"snapshot_save fixing up vtable pointers\n");
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
     core::executableVtableSectionRange(start,end);
@@ -2406,15 +2437,15 @@ void* snapshot_save_impl(void* data) {
   // Calculate the size of the libraries section
   //  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
   SymbolLookup lookup;
-  DBG_SLS(" prepareRelocationTableForSave\n");
+  DBG_SL_STEP(12," prepareRelocationTableForSave\n");
   prepareRelocationTableForSave( &fixup, lookup );
   
-  DBG_SLS("done prepareRelocationTableForSave\n");
+  DBG_SL_STEP(13,"Calculating library sizes\n");
   size_t librarySize = 0;
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     librarySize += fixup._libraries[idx].writeSize();
   }
-  DBG_SLS("copy_buffer_t\n");
+  DBG_SL_STEP(14,"copy_buffer_t\n");
   snapshot._Libraries = new copy_buffer_t(librarySize);
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     size_t alignedLen = fixup._libraries[idx].nameSize();
@@ -2446,7 +2477,7 @@ void* snapshot_save_impl(void* data) {
     free(buffer);
   }
 
-  DBG_SLS(" Generating fileHeader\n");
+  DBG_SL_STEP(15,"Generating fileHeader\n");
   
   ISLFileHeader* fileHeader = snapshot._FileHeader;
   uintptr_t offset = snapshot._HeaderBuffer->_Size;
@@ -3622,8 +3653,10 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       //
         gctools::Header_s* oldCode_source_header = GENERAL_PTR_TO_HEADER_PTR(oldCodeClient);
         set_forwarding_pointer(oldCode_source_header,((char*)newCodeClient), &islInfo );
-        DBG_SL_FWD(BF("setFwdPointer code header %p new_addr -> %p  reread fwdPointer -> %p\n")
-                   % (void*)oldCode_source_header % (void*)newCodeClient % (void*)forwarding_pointer(oldCode_source_header,&islInfo));
+        DBG_SL_FWD(("setFwdPointer code header %p new_addr -> %p  reread fwdPointer -> %p\n"),
+                   (void*)oldCode_source_header,
+                   (void*)newCodeClient,
+                   (void*)get_forwarding_pointer(oldCode_source_header,&islInfo));
       }
     
       if (countNullObjects!=1) {

@@ -155,7 +155,7 @@ void Instance_O::CLASS_set_stamp_for_instances(gctools::BaseHeader_s::StampWtagM
 // NOT called by regular CL allocate instance. FIXME, find a way to remove this if possible.
 void Instance_O::initializeClassSlots(Creator_sp creator, gctools::BaseHeader_s::StampWtagMtag stamp) {
   // Should match clos/hierarchy.lisp
-  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
+//  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
   SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
   SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
   this->instanceSet(REF_SPECIALIZER_MUTEX, mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw));

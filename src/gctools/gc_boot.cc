@@ -207,14 +207,16 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
   idx = 0;
   size_t fixed_index = 0;
   size_t container_variable_index = 0;
+  size_t prev_field_offset = ~0;
   for ( idx=0; idx<num_codes; ++idx ) {
     DGC_PRINT("%s:%d Loading scan   idx = %d\n", __FILE__, __LINE__, idx);
     switch (codes[idx].cmd) {
     case class_kind:
-      cur_stamp = STAMP(codes[idx].data0);
-      if (cur_stamp>local_stamp_max) {
-        printf("%s:%d  class_kind  cur_stamp = %d local_stamp_max = %lu\n", __FILE__, __LINE__, cur_stamp, local_stamp_max );
-      }
+        prev_field_offset = ~0;
+        cur_stamp = STAMP(codes[idx].data0);
+        if (cur_stamp>local_stamp_max) {
+          printf("%s:%d  class_kind  cur_stamp = %d local_stamp_max = %lu\n", __FILE__, __LINE__, cur_stamp, local_stamp_max );
+        }
       DGC_PRINT("%s:%d  idx: %d class_kind  cur_stamp = %d name = %s\n", __FILE__, __LINE__, idx, cur_stamp, codes[idx].description);
       local_stamp_layout[cur_stamp].layout_op = class_container_op;
       local_stamp_layout[cur_stamp].field_layout_start = NULL;
@@ -282,7 +284,18 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
           DGC_PRINT("%s:%d   fixed_field %s : cur_stamp = %d  field_offset = %lu bit_index =%d bitmap = 0x%lX\n", __FILE__, __LINE__, field_name, cur_stamp, field_offset, bit_index, field_bitmap);
           DGC_PRINT("       class_field_pointer_bitmap = 0x%lX\n", local_stamp_layout[cur_stamp].class_field_pointer_bitmap);
 #endif
+#ifdef DEBUG_ASSERT
+          if (field_offset == prev_field_offset) {
+            printf("%s:%d:%s The same field_offset %lu has been declared twice while parsing the static analyzer generated tables.\n", __FILE__, __LINE__, __FUNCTION__, field_offset );
+            printf("cur_stamp  = %d\n", cur_stamp );
+            printf("Class name = \"%s\"\n", local_stamp_info[cur_stamp].name );
+            printf("field_name = \"%s\"\n", field_name );
+            printf("     This indicates a problem with those generated tables - check the static analyzer output.  ABORTING...\n" );
+            abort();
+          }
+#endif
           cur_field_layout->field_offset = field_offset;
+          prev_field_offset = field_offset;
           GCTOOLS_ASSERT(cur_field_info<max_field_info);
           if ( local_stamp_info[cur_stamp].field_info_ptr == NULL )
             local_stamp_info[cur_stamp].field_info_ptr = cur_field_info;
@@ -295,6 +308,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
       }
       break;
     case container_kind:
+      prev_field_offset = ~0;
       cur_stamp = STAMP(codes[idx].data0);
       DGC_PRINT("%s:%d   container_kind  cur_stamp = %d name = %s\n", __FILE__, __LINE__, cur_stamp, codes[idx].description);
       local_stamp_layout[cur_stamp].layout_op = class_container_op;
@@ -315,6 +329,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
                                      local_stamp_layout[cur_stamp].size);
       break;
     case bitunit_container_kind:
+      prev_field_offset = ~0;
       cur_stamp = STAMP(codes[idx].data0);
       DGC_PRINT("%s:%d   bitunit_container_kind  cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].layout_op = bitunit_container_op;
@@ -415,6 +430,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
       break;
     case templated_kind:
       {
+        prev_field_offset = ~0;
         cur_stamp = STAMP(codes[idx].data0);
         size_t size = codes[idx].data1;
         const char* name = codes[idx].description;

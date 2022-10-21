@@ -73,9 +73,17 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           if ( stamp_index == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Lisp) ) { // wasMTAG
             int num_fields = stamp_layout.number_of_fields;
             const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
+            core::T_O** prevField = NULL;
             for ( int i=0; i<num_fields; ++i ) {
               core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
+              if (field==prevField) {
+                printf("%s:%d:%s ---- scanning object %p stamp %lu field %p is about to be POINTER_FIXed for a second time\n", __FILE__, __LINE__, __FUNCTION__, (void*)client, stamp_index, field );
+                printf("%s:%d:%s field_layout_cur = %p  field_layout_cur->field_offset = %p field_layout_cur->field_offset = %lu\n", __FILE__, __LINE__, __FUNCTION__, field_layout_cur, &field_layout_cur->field_offset, field_layout_cur->field_offset);
+                printf("%s:%d:%s prev field_layout_cur = %p  prev &field_layout_cur->field_offset = %p prev field_layout_cur->field_offset = %lu\n", __FILE__, __LINE__, __FUNCTION__, (field_layout_cur-1), &(field_layout_cur-1)->field_offset, (field_layout_cur-1)->field_offset);
+                abort();
+              }
               POINTER_FIX(field);
+              prevField = field;
               ++field_layout_cur;
             }
           } else {

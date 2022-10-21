@@ -575,7 +575,9 @@ inline To_SP As(const return_type &rhs) {
  template <typename To_SP, typename From_SP>
  inline To_SP As_assert(From_SP const &rhs) {
 #ifdef DEBUG_ASSERT
-   GCTOOLS_ASSERT(TaggedCast<typename To_SP::Type*, typename From_SP::Type*>::isA(rhs));
+   if (!gctools::IsA<To_SP>(rhs)) {
+     throw_hard_error_failed_assertion("!gctools::IsA<To_SP>(rhs)");
+   }
 #endif
    To_SP ret((Tagged)rhs.raw_());
    return ret;
