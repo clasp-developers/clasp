@@ -104,6 +104,9 @@ struct VirtualMachine {
   unsigned char* _pc;
 
   void error();
+
+  void enable_guards();
+  void disable_guards();
   
   inline void shutdown() {
     this->_Running = false;
@@ -295,6 +298,9 @@ struct VirtualMachine {
     ThreadLocalState();
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
 
+    pid_t safe_fork();
+    pid_t safe_vfork();
+    
     void dynEnvStackTest(core::T_sp val) const;
     void dynEnvStackSet(core::T_sp val) {
 #ifdef DEBUG_DYN_ENV_STACK
@@ -343,7 +349,7 @@ struct ThreadManager {
     // Worker must be allocated at the top of the worker thread function
     // It uses RAII to register/deregister our thread
     Worker() : _StateLowLevel((void*)this), _State(false) {
-//      printf("%s:%d:%s Starting\n", __FILE__, __LINE__, __FUNCTION__ );
+//      printf("%s:%d:%s Starting pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid() );
 #ifdef USE_BOEHM
       GC_get_stack_base(&this->_StackBase);
       GC_register_my_thread(&this->_StackBase);
@@ -351,7 +357,7 @@ struct ThreadManager {
 #endif
     };
     ~Worker() {
-//      printf("%s:%d:%s Stopping\n", __FILE__, __LINE__, __FUNCTION__ );
+ //      printf("%s:%d:%s Stopping pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid() );
 #ifdef USE_BOEHM
       GC_unregister_my_thread();
 #endif
@@ -361,12 +367,18 @@ struct ThreadManager {
     // Do nothing for now
   };
   void unregister_thread(std::thread& th) {
-    // Do nothing for now
+//    printf("%s:%d:%s What do I do here pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid(); );
   };
 };
 
 
+template <typename T>
+class thread_pool;
 
+namespace gctools {
 
+extern thread_pool<ThreadManager>* global_thread_pool;
+
+};
 
 #endif

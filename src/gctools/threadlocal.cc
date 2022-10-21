@@ -18,13 +18,16 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/core/unwind.h> // DynEnv stuff
 #include <clasp/gctools/boehmGarbageCollection.h> // DynEnv stuff
-
+#include <clasp/external/thread-pool/thread_pool.h>
 
 
 
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
+namespace gctools {
+thread_pool<ThreadManager>* global_thread_pool;
+};
 namespace core {
 
 #ifdef DEBUG_VIRTUAL_MACHINE
@@ -173,16 +176,39 @@ VirtualMachine::VirtualMachine() :
   this->_stackGuard = (core::T_O**)stackGuard;
 //  printf("%s:%d:%s stackGuard = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackGuard );
   this->_stackBytes = stackSpace;
+  // Clear the stack memory
   memset(this->_stackBottom,0,stackSpace);
-//  int mprotectResult = mprotect((void*)this->_stackGuard,pageSize,PROT_READ);
+  this->enable_guards();
   this->_stackPointer = this->_stackBottom;
   (*this->_stackPointer) = NULL;
 }
 
-VirtualMachine::~VirtualMachine() {
-#if 0
+
+void VirtualMachine::enable_guards() {
+//  printf("%s:%d:%s pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid()  );
+#if 1
+  size_t pageSize = getpagesize();
+  int mprotectResult = mprotect((void*)this->_stackGuard,pageSize,PROT_READ);
+  if (mprotectResult!=0) {
+    printf("%s:%d:%s mprotect failed with %d\n", __FILE__, __LINE__, __FUNCTION__, mprotectResult );
+  }
+#endif
+}
+void VirtualMachine::disable_guards() {
+//  printf("%s:%d:%s pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid()  );
+#if 1
   size_t pageSize = getpagesize();
   int mprotectResult = mprotect((void*)this->_stackGuard,pageSize,PROT_READ|PROT_WRITE);
+  if (mprotectResult!=0) {
+    printf("%s:%d:%s mprotect failed with %d\n", __FILE__, __LINE__, __FUNCTION__, mprotectResult );
+  }
+#endif
+}
+
+
+VirtualMachine::~VirtualMachine() {
+#if 1
+  this->disable_guards();
 #endif
 }
 
@@ -215,6 +241,50 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   this->_xorshf_x = rand();
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
+}
+
+pid_t ThreadLocalState::safe_fork()
+{
+  // Wrap fork in code that turns guards off and on
+  this->_VM.disable_guards();
+  // shut down llvm thread pool
+  gctools::global_thread_pool->~thread_pool();
+  pid_t result = fork();
+  // start up llvm thread pool
+  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
+  if (result==-1) {
+    // error
+    printf("%s:%d:%s fork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno );
+  } else if (result == 0) {
+    // child
+    this->_VM.enable_guards();
+  } else {
+    // parent
+    this->_VM.enable_guards();
+  }
+  return result;
+}
+
+pid_t ThreadLocalState::safe_vfork()
+{
+  // Wrap vfork in code that turns guards off and on
+  this->_VM.disable_guards();
+  // shut down llvm thread pool
+  gctools::global_thread_pool->~thread_pool();
+  pid_t result = vfork();
+  // start up llvm thread pool
+  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
+  if (result==-1) {
+    // error
+    printf("%s:%d:%s vfork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno );
+  } else if (result == 0) {
+    // child
+    this->_VM.enable_guards();
+  } else {
+    // parent
+    this->_VM.enable_guards();
+  }
+  return result;
 }
 
 // This needs to be called at initialization immediately after Nil is allocated

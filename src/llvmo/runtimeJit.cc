@@ -664,13 +664,10 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 
 namespace llvmo {
 
-thread_pool<ThreadManager>* global_thread_pool;
-
-
 /*! Call this after fork() to create a thread-pool for lljit
  */
 CL_DEFUN void llvm_sys__create_lljit_thread_pool() {
-  global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
+  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
 #if 0
   ClaspJIT_O* jit = &*gctools::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
   jit->_LLJIT->getExecutionSession().setDispatchTask([jit](std::unique_ptr<Task> T) {

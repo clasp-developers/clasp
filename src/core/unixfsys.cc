@@ -244,7 +244,7 @@ CL_DEFUN T_mv core__fork(bool bReturnStream) {
       abort();
     }
   }
-  pid_t child_PID = fork();
+  pid_t child_PID = my_thread->safe_fork();
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child
@@ -277,7 +277,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(fork-redirect)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__fork_redirect(int stdout_fd, int stderr_fd) {
-  pid_t child_PID = fork();
+  pid_t child_PID = my_thread->safe_fork();
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child
@@ -1958,7 +1958,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
     }
   }
 
-  pid_t child_PID = vfork();
+  pid_t child_PID = my_thread->safe_vfork();
 
   if (child_PID >= 0) {
     if (child_PID == 0) {
@@ -2115,7 +2115,7 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
       abort();
     }
   }
-  pid_t child_PID = fork();
+  pid_t child_PID = my_thread->safe_fork();
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child
