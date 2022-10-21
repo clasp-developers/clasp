@@ -1176,12 +1176,12 @@ void ~a::expose_to_clasp() {
 
 (defun generate-layout-code (kind stream)
   (dolist (field (fixed-fields% kind))
-    (format stream " {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~a), 0, \"~a\" },~%"
+    (format stream " {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
             (tags:offset-type-cxx-identifier field)
             (tags:offset-ctype field)
             (tags:offset-base-ctype field)
-            (first (tags:layout-offset-field-names field))
-            (first (tags:layout-offset-field-names field))))
+            (tags:layout-offset-field-names field)
+            (tags:layout-offset-field-names field)))
   (let ((vinfo (variable-info% kind))
         (vcapacity (variable-capacity% kind))
         (vfields (variable-fields% kind)))
