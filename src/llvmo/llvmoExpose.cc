@@ -3380,10 +3380,6 @@ CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::DISubprogram*))&
 
 CL_LISPIFY_NAME("addReturnAttr");
 CL_DEFMETHOD void Function_O::addReturnAttr(typename llvm::Attribute::AttrKind Attr) {
-  printf("%s:%d:%s Entered but this function has been retired in llvm or it's name changed to addRetAttr\n",
-         __FILE__, __LINE__, __FUNCTION__ );
-  
-  // this->wrappedPtr()->addAttribute(llvm::AttributeList::ReturnIndex, Attr);
 }
 
 CL_DEFMETHOD LLVMContext_sp Function_O::getContext() const {

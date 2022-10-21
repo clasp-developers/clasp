@@ -105,10 +105,6 @@
 ;;;;;;;;
 ;;;;;;;;
 
-
-#+bytecodelike
-(defmacro cleavir-primop:eq (xx yy)  `(eq ,xx ,yy))
-
 #+bytecodelike
 (defmacro cleavir-primop:typeq (object type) `(typep ,object ',type))
 

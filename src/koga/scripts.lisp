@@ -147,8 +147,7 @@
 (defmethod print-prologue (configuration (name (eql :clasp-sh)) output-stream)
   (declare (ignore configuration))
   (format output-stream "#!/usr/bin/env bash
-exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
-          (build-name :iclasp)))
+exec $(dirname \"$0\")/iclasp -f ignore-extensions -t c \"$@\""))
 
 (defmethod print-prologue (configuration (name (eql :jupyter-kernel)) output-stream)
   (let ((candop (member :cando (extensions configuration))))

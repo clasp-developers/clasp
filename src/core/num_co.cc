@@ -848,22 +848,15 @@ int clasp_signbit(Number_sp x) {
   SIMPLE_ERROR(("Illegal argument for clasp_signbit: %s") , _rep_(x));
 }
 
-/*
-  The CL_LAMBDA used to be: (x &optional (y x yp))
-  but that requires a ValueEnvironment_O in lambda-list handling and that adds GC pressure.
-  So handle it at runtime by checking yp
-*/
 CL_LAMBDA(x &optional (y nil yp))
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(floatSign)dx")
 DOCGROUP(clasp)
-CL_DEFUN Float_sp cl__float_sign(Float_sp x, Float_sp y, T_sp yp) {
-  int negativep;
-  if (yp.nilp()) {
-    y = cl__float(clasp_make_fixnum(1), x);
-  }
-  negativep = clasp_signbit(x);
+CL_DEFUN Float_sp cl__float_sign(Float_sp x, T_sp oy, T_sp yp) {
+  Float_sp y
+    = yp.nilp() ? cl__float(clasp_make_fixnum(1), x) : gc::As<Float_sp>(oy);
+  int negativep = clasp_signbit(x);
   switch (clasp_t_of(y)) {
   case number_SingleFloat: {
     float f = y.unsafe_single_float();

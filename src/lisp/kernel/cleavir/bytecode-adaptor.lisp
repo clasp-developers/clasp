@@ -11,7 +11,6 @@
 
 ;;; Wipe out macros we can't have for cleavir
 
-  (fmakunbound 'cleavir-primop:eq)
   (fmakunbound 'cleavir-primop:typeq)
   (fmakunbound 'cleavir-primop:car)
   (fmakunbound 'cleavir-primop:cdr)

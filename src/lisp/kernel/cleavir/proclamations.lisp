@@ -809,7 +809,13 @@
                 pprint-dispatch)
          (ftype (sfunction (stream-designator t &optional t t) null)
                 pprint-fill pprint-linear)
-         (ftype (sfunction (stream-designator t &optional t t (integer 0)) null)
+         ;; Although PPRINT-TABULAR strictly only accepts a NIL tabsize,
+         ;; in format (e.g. (format ~<~v:/pprint-tabular/~:> '(nil ...)))
+         ;; we end up passing NIL sometimes. FIXME: We could probably
+         ;; put this type declaration back to standard strictness if we
+         ;; fix FORMAT ~v ~/ behavior.
+         (ftype (sfunction (stream-designator t &optional t t (maybe (integer 0)))
+                           null)
                 pprint-tabular)
          ;; First argument would be (member :block :current), except see
          ;; SET-PPRINT-DISPATCH below.

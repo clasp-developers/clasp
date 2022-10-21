@@ -79,14 +79,14 @@
               (progn nil))
            (setf initarg (core:vaslist-pop (core:validate-vaslist largs)))
            (core:validate-vaslist largs)
-           #+(or)(when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
+           #+(or)(when (endp largs) (core:simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
            (when (= (core:vaslist-length (core:validate-vaslist largs)) 0)
-             (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
-                                   (progn
-                                     (core:vaslist-rewind initargs)
-                                     (core:list-from-vaslist initargs))))
+             (core:simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
+                                        (progn
+                                          (core:vaslist-rewind initargs)
+                                          (core:list-from-vaslist initargs))))
            (unless (symbolp initarg)
-             (simple-program-error "Not a valid initarg: ~A" initarg))
+             (core:simple-program-error "Not a valid initarg: ~A" initarg))
            (setf val #+(or)(pop l) (core:vaslist-pop (core:validate-vaslist largs)))
            (when (member initarg slot-initargs :test #'eq)
              (setf (slot-value instance slot-name) val)
@@ -751,11 +751,13 @@ because it contains a reference to the undefined class~%  ~A"
         (methods-initialized-p nil))
        ((null name-loc)
         (when (and (not allow-other-keys) unknown-key-names)
-          (simple-program-error "Unknown initialization options ~S for class ~A."
-                                (nreverse unknown-key-names) class)))
+          (core:simple-program-error
+           "Unknown initialization options ~S for class ~A."
+           (nreverse unknown-key-names) class)))
     (let ((name (first name-loc)))
       (cond ((null (cdr name-loc))
-             (simple-program-error "No value supplied for the init-name ~S." name))
+             (core:simple-program-error "No value supplied for the init-name ~S."
+                                        name))
             ;; This check must be here, because :ALLOW-OTHER-KEYS is a valid
             ;; slot-initarg.
             ((and (eql name :ALLOW-OTHER-KEYS)
