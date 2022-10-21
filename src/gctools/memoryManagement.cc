@@ -1096,7 +1096,7 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
 
 
 void gatherAllObjects(GatherObjects& gather) {
-  printf("%s:%d:%s entered \n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s entered \n", __FILE__, __LINE__, __FUNCTION__ );
 
   globalMemoryWalkPointerFix = gatherObjects;
   

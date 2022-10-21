@@ -61,7 +61,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup ) {
-    printf("%s:%d:%s Shouldn't need to fixup internals\n", __FILE__, __LINE__, __FUNCTION__ );
+    //printf("%s:%d:%s Shouldn't need to fixup internals\n", __FILE__, __LINE__, __FUNCTION__ );
   }
 
   

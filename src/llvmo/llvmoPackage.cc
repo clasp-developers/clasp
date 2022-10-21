@@ -541,7 +541,10 @@ void initialize_llvm() {
   llvm::InitializeAllTargetMCs();
   llvm::InitializeAllAsmParsers();
   llvm::InitializeAllDisassemblers();
+};
 
+
+void initialize_ClaspJIT() {
   printf("%s:%d:%s About to set _ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
   auto jit_engine = gctools::GC<ClaspJIT_O>::allocate( false, (llvmo::JITDylib_O*)NULL );
   //llvm_sys__create_lljit_thread_pool();
@@ -571,6 +574,7 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
       break;
   case candoGlobals: {
     initialize_llvm();
+    initialize_ClaspJIT();
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
@@ -700,11 +704,6 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
 
 
 
-
-void initialize_llvm(int argc, char **argv) {
-//  InitLLVM X(argc,argv);
-  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
-}
 
 };
 

@@ -342,18 +342,18 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #ifdef USE_PRECISE_GC
 
 // #define DEBUG_SL 1
-#if 1
+#if 0
 #define DBG_SL_STEP(step,...)  { printf("%s:%d:%s DBG_SL_STEP: %d ", __FILE__, __LINE__, __FUNCTION__, step ); printf(__VA_ARGS__ ); }
 #else
 #define DBG_SL_STEP(...)
 #endif
-#if 1
+#if 0
 #define DBG_SL(...)  { printf("%s:%d:%s DBG_SL:  ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__ ); }
 #else
 #define DBG_SL(...)
 #endif
 
-#if 1
+#if 0
 #define DBG_SLS(...) { printf("%s:%d:%s DBG_SLS: ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); fflush(stdout); }
 #else
 #define DBG_SLS(...)
@@ -3063,7 +3063,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           core::SimpleBaseString_sp name = snapshot_JITDylib_O_->_name;
           std::string sname = name->get_std_string();
           if (sname == "main") {
-            printf("%s:%d:%s !!!!!!!!!!!!!! main - save it\n", __FILE__, __LINE__, __FUNCTION__ );
+//            printf("%s:%d:%s !!!!!!!!!!!!!! main - save it\n", __FILE__, __LINE__, __FUNCTION__ );
             obj_mainJITDylib = obj_jd;
           }
 #if 0
@@ -3105,7 +3105,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                         % (void*) obj_claspJIT.raw_()
                         % (void*)fwd);
         root_holder.add((void*)obj_claspJIT.raw_());
-        printf("%s:%d:%s snapshot_claspJIT = %p   obj_claspJIT.raw_() = %p\n", __FILE__, __LINE__, __FUNCTION__, snapshot_claspJIT, obj_claspJIT.raw_());
+//        printf("%s:%d:%s snapshot_claspJIT = %p   obj_claspJIT.raw_() = %p\n", __FILE__, __LINE__, __FUNCTION__, snapshot_claspJIT, obj_claspJIT.raw_());
       }
       llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(obj_claspJIT.raw_());
       new (claspJIT) llvmo::ClaspJIT_O( true, mainJITDylib );
@@ -3146,7 +3146,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       // We can't use gc::As<xxx>(...) at this point because we are working in the snapshot save/load buffer
       //  and the headers aren't the same as in main memory
       //
-      printf("%s:%d:%s Use the ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
       DBG_SL("7.4 Handle JITDylibs\n");
       if (obj_claspJIT.nilp()) {
         printf("%s:%d:%s Could not find the LLJIT!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -3164,7 +3163,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         llvmo::JITDylib* llvm_jitdylib;
         if (name=="main") {
           llvm_jitdylib = &obj_claspJIT->_LLJIT->getMainJITDylib(); // Main JITDylib we get from the LLJIT
-          printf("%s:%d:%s Setting JITDylib %p into %s JITDylib_sp_ %p\n", __FILE__, __LINE__, __FUNCTION__, llvm_jitdylib, name.c_str(), memory_JITDylib_sp_.raw_() );
+//          printf("%s:%d:%s Setting JITDylib %p into %s JITDylib_sp_ %p\n", __FILE__, __LINE__, __FUNCTION__, llvm_jitdylib, name.c_str(), memory_JITDylib_sp_.raw_() );
           memory_JITDylib_sp_->_ptr = llvm_jitdylib;
           auto rt = llvm_jitdylib->getDefaultResourceTracker();
             // addGenerator was done in ClaspJIT_O
@@ -3690,10 +3689,10 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
 
 #ifdef DEBUG_GUARD
     // only works when DEBUG_GUARD is on
-    printf("%s:%d:%s Testing snapshot load memory\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s DEBUG_GUARD ON Testing snapshot load memory\n", __FILE__, __LINE__, __FUNCTION__ );
     gctools::GatherObjects gather;
     gctools::gatherAllObjects(gather);
-    printf("%s:%d:%s snapshot load memory test report\n", __FILE__, __LINE__, __FUNCTION__  );
+    printf("%s:%d:%s DEBUG_GUARD ON snapshot load memory test report\n", __FILE__, __LINE__, __FUNCTION__  );
     dump_test_results(stdout,gather);
 #endif
 
