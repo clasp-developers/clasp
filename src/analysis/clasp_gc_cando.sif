@@ -6719,6 +6719,10 @@
              :offset-base-ctype "core::GFBytecodeSimpleFun_O"
              :layout-offset-field-names ("_Trampoline")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_byte8_t_O>"
+             :offset-base-ctype "core::GFBytecodeSimpleFun_O"
+             :layout-offset-field-names ("_Bytecode")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_O>"
              :offset-base-ctype "core::GFBytecodeSimpleFun_O"
              :layout-offset-field-names ("_Literals")}
