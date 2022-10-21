@@ -1209,12 +1209,12 @@ void ~a::expose_to_clasp() {
                  (tags:fixup-type vfields)))
         (list
          (dolist (vfield vfields)
-           (format stream "    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~a), 0, \"~a\" },~%"
+           (format stream "    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
                    (tags:offset-type-cxx-identifier vfield)
                    (tags:fixup-ctype-offset-type-key vfield)
                    (tags:fixup-ctype-key vfield)
-                   (first (tags:layout-offset-field-names vfield))
-                   (first (tags:layout-offset-field-names vfield)))))))))
+                   (tags:layout-offset-field-names vfield)
+                   (tags:layout-offset-field-names vfield))))))))
 
 (defgeneric generate-kind-tag-code (kind stream))
 (defmethod generate-kind-tag-code ((kind tags:class-kind) stream)
