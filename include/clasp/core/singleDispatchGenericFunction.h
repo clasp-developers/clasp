@@ -51,9 +51,10 @@ public:
   static SingleDispatchGenericFunction_sp create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex, List_sp lambdaList);
 public:
   std::atomic<T_sp> callHistory;
-  Fixnum_sp argumentIndex;
+  Fixnum_sp         argumentIndex;
   std::atomic<T_sp> methods;
 
+ 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     SETUP_CLOSURE(SingleDispatchGenericFunction_O,closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);

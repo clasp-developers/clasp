@@ -59,6 +59,16 @@ SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create_single_
   return gfun;
 }
 
+CL_LISPIFY_NAME(SingleDispatchGenericFunction/callHistory);
+CL_DEFUN List_sp core__callHistory(SingleDispatchGenericFunction_sp func) {
+  return func->callHistory.load();
+}
+
+CL_LISPIFY_NAME(SingleDispatchGenericFunction/specializerIndices);
+CL_DEFUN List_sp core__specializerIndices(SingleDispatchGenericFunction_sp func) {
+  return Cons_O::createList(func->argumentIndex);
+}
+
 
 
 CL_DECLARE();
