@@ -270,7 +270,6 @@ jobs:
         run: |
           sudo chown -R build: .
           sudo chown -R build: /github/home
-          sudo chown -R build: /__w
           sudo pacman -Syu --noconfirm
       - name: Import GPG key
         id: import_gpg
@@ -278,6 +277,9 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.PKG_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PKG_GPG_PASSPHRASE }}
+      - name: Set permissions and update packages
+        run: |
+          sudo chown -R build: /__w
       - uses: actions/download-artifact@v3
         with:
           name: arch_clasp
