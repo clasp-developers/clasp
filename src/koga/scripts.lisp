@@ -19,6 +19,11 @@
   (loop for system in systems
         do (pprint `(asdf:load-system ,system) output-stream)))
 
+(defmethod print-prologue (configuration (name (eql :generate-vm-header)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t)
+  (format output-stream "(cmpref:generate-virtual-machine-header (first (uiop:command-line-arguments)))"))
+
 (defmethod print-prologue (configuration (name (eql :update-unicode)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :unicode-data)

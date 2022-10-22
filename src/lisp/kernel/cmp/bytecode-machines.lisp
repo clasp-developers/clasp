@@ -37,8 +37,8 @@
                   (defvar *codes* ',(reverse rev-codes))
                   ,@rev-defconstants))))
   (defops
-      ("ref" 0 (1) (2))
-      ("const" 1 ((constant-arg 1)) ((constant-arg 2)))
+    ("ref" 0 (1) (2))
+    ("const" 1 ((constant-arg 1)) ((constant-arg 2)))
     ("closure" 2 (1) (2))
     ("call" 3 (1) (2))
     ("call-receive-one" 4 (1) (2))
@@ -95,10 +95,7 @@
     ("eq" 55)
     ("push" 56)
     ("pop" 57)
-    ("long" 58)
-    ))
-
-
+    ("long" 58)))
 
 (defun pythonify-arguments (args)
   (declare (optimize (debug 3)))
@@ -128,12 +125,11 @@
                 python-arguments
                 python-long-arguments))))
   (format fout ")opcodes\"~%")
-  (format fout "#endif~%")
-  )
+  (format fout "#endif~%"))
 
 #+sbcl
 (defpackage :clos
-  (:use #:common-lisp ))
+  (:use #:common-lisp))
 
 (in-package :clos)
 
@@ -143,8 +139,7 @@
     constant-argument-indices
     label-argument-indices)
 
-  (defstruct (dtree-macro (:type vector) :named) name value)
-  )
+  (defstruct (dtree-macro (:type vector) :named) name value))
 
 (macrolet ((defops (&rest ops)
              (let ((new-dtree-ops (make-array (length ops)))
@@ -196,8 +191,8 @@
                   (defparameter *dtree-ops* ',new-dtree-ops)
                   (defparameter *isa* ',new-isa)))))
   (defops
-      ("miss" 0 "DTREE_OP_MISS")
-      ("advance" 1 "DTREE_OP_ADVANCE")
+    ("miss" 0 "DTREE_OP_MISS")
+    ("advance" 1 "DTREE_OP_ADVANCE")
     ("tag-test" 2 "DTREE_OP_TAG_TEST" ((label-arg "DTREE_FIXNUM_TAG_OFFSET")
                                        (label-arg "DTREE_SINGLE_FLOAT_TAG_OFFSET")
                                        (label-arg "DTREE_CHARACTER_TAG_OFFSET")
@@ -229,8 +224,7 @@
     ("farg3" 16 "DTREE_OP_FARG3")
     ("farg4" 17 "DTREE_OP_FARG4")
     ("argn" 18 "DTREE_OP_ARGN" ((register-arg "DTREE_ARGN_OFFSET")
-                                (offset "DTREE_ARGN_NEXT_OFFSET")))
-    ))
+                                (offset "DTREE_ARGN_NEXT_OFFSET")))))
 
 (defun dump-gf-bytecode-virtual-machine (stream)
   (format stream "#ifdef GF_BYTECODE_VM~%")
@@ -257,7 +251,6 @@
 (export '(dump-gf-bytecode-virtual-machine
           dump-gf-bytecode-virtual-machine-macro-names
           dump-python-gf-bytecode-virtual-machine) :clos)
-
 
 (in-package :cmpref)
 
@@ -297,20 +290,16 @@
     (format fout "enum vm_codes {~%~{   ~a~^,~^~%~} };~%" enums))
   (terpri fout)
   (write-string "#endif // VM_CODES" fout)
-  (terpri fout)
-  )
+  (terpri fout))
+
 (defun generate-virtual-machine-header (&optional (file-name "virtualMachine.h"))
+  (print file-name)
   (with-open-file (fout (pathname file-name) :direction :output :if-exists :supersede)
     (generate-vm-codes fout)
     (generate-python-bytecode-table fout)
     (clos:dump-gf-bytecode-virtual-machine fout)
     (clos:dump-gf-bytecode-virtual-machine-macro-names fout)
     (clos:dump-python-gf-bytecode-virtual-machine fout)
-    (format t "Generated header in file: ~s~%" file-name)
-    ))
+    (format t "Generated header in file: ~s~%" file-name)))
 
-
-#+sbcl
-(let ((output-file (car (last sb-ext:*posix-argv*))))
-  (generate-virtual-machine-header (pathname output-file))
-  (sb-ext:exit))
+(export 'generate-virtual-machine-header)

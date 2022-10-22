@@ -11,7 +11,7 @@
 
 
 #define VM_CODES
-#include <clasp/core/virtualMachine.h>
+#include <virtualMachine.h>
 #undef VM_CODES
 
 namespace comp {

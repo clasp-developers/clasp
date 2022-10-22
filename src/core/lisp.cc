@@ -1213,7 +1213,7 @@ uint Lisp::nextEnvironmentId() {
 
 unsigned char global_python_vm_codes_literal[] =
 #define PYTHON_OPCODES
-# include "clasp/core/virtualMachine.h"
+# include <virtualMachine.h>
     ;
 #undef PYTHON_OPCODES
 

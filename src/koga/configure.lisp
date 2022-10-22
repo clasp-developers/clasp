@@ -598,6 +598,8 @@ is not compatible with snapshots.")
                                                          :generate-headers
                                                          (list (make-source #P"generate-headers.lisp" :variant)
                                                                :scraper)
+                                                         :generate-vm-header
+                                                         (list (make-source #P"generate-vm-header.lisp" :build))
                                                          :compile-systems
                                                          (list (make-source #P"compile-systems.lisp" :build))
                                                          :update-unicode
@@ -629,7 +631,7 @@ is not compatible with snapshots.")
                                                                :bitcode :iclasp :cclasp :modules :eclasp
                                                                :eclasp-link :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
-                                                               :tags :install-extension-code)
+                                                               :tags :install-extension-code :vm-header)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
                                                                :scraper)

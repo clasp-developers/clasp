@@ -56,6 +56,10 @@
                     :command "$lisp --script ${variant-path}generate-headers.lisp $precise $in"
                     :restat 1
                     :description "Creating headers from sif files")
+  (ninja:write-rule output-stream :generate-vm-header
+                    :command "$lisp --load $in --script generate-vm-header.lisp $out"
+                    :restat 1
+                    :description "Generating VM header from $in")
   (ninja:write-rule output-stream :compile-systems
                     :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load compile-systems.lisp -- $out $systems"
                     :description "Compiling systems: $systems"
@@ -242,6 +246,19 @@
                      :inputs outputs
                      :outputs (list "install_bin")))
 
+(defmethod print-variant-target-sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :vm-header)) sources
+     &key &allow-other-keys
+     &aux (header (make-source "virtualMachine.h" :variant-generated))
+          (installed-header (make-source "virtualMachine.h" :installed-generated)))
+  (ninja:write-build output-stream :generate-vm-header
+                     :inputs sources
+                     :outputs (list header))
+  (when *variant-default*
+    (ninja:write-build output-stream :install-file
+                                :inputs (list header)
+                                :outputs (list installed-header))))  
+
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :iclasp))
      (source c-source))
@@ -264,6 +281,7 @@
     (ninja:write-build output-stream :scrape-pp
                        :variant-cppflags *variant-cppflags*
                        :inputs (list source)
+                       :order-only-inputs (list (make-source "virtualMachine.h" :variant-generated))
                        :outputs (list pp))
     (ninja:write-build output-stream :generate-sif
                        :inputs (list pp)
@@ -271,9 +289,10 @@
     (ninja:write-build output-stream :cxx
                        :variant-cxxflags *variant-cxxflags*
                        :inputs (list source)
-                       :order-only-inputs (if *variant-precise*
-                                              (scraper-precise-headers configuration)
-                                              (scraper-headers configuration))
+                       :order-only-inputs (list* (make-source "virtualMachine.h" :variant-generated)
+                                                 (if *variant-precise*
+                                                     (scraper-precise-headers configuration)
+                                                     (scraper-headers configuration)))
                        :outputs (list o))
     (list :objects o
           :sifs sif)))
@@ -382,6 +401,7 @@
                                                            "install_code"
                                                            "install_extension_code"
                                                            "install_bin"
+                                                           (make-source "virtualMachine.h" :installed-generated)
                                                            exe-installed
                                                            lib-installed
                                                            symlink-installed)

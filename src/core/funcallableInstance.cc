@@ -256,7 +256,7 @@ namespace core {
 
 #if 1
 #define GF_BYTECODE_VM
-#include "clasp/core/virtualMachine.h"
+#include <virtualMachine.h>
 #undef GF_BYTECODE_VM
 #else
 #define DTREE_OP_MISS 0
@@ -381,7 +381,7 @@ void registerOrDumpDtreeInfo(std::ostream& fout) {
 std::string dtree_op_name(int dtree_op) {
   switch (dtree_op) {
 #define GF_BYTECODE_VM_NAMES
-#include "clasp/core/virtualMachine.h"
+#include <virtualMachine.h>
 #undef GF_BYTECODE_VM_NAMES
   default: return "UNKNOWN_OP";
   };

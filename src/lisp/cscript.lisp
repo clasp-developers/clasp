@@ -214,3 +214,6 @@
 
 (k:sources :analyzer
            :clasp-analyzer)
+
+(k:sources :vm-header
+           #~"kernel/cmp/bytecode-machines.lisp")
