@@ -230,6 +230,10 @@
     ("farg4" 17 "DTREE_OP_FARG4")
     ("argn" 18 "DTREE_OP_ARGN" ((register-arg "DTREE_ARGN_OFFSET")
                                 (offset "DTREE_ARGN_NEXT_OFFSET")))
+    ("sd-eq-branch" 19 "DTREE_OP_SD_EQ_BRANCH" ((constant-arg "DTREE_SD_STAMP_OFFSET")
+                                                (label-arg "DTREE_SD_FAIL_OFFSET")
+                                                (offset "DTREE_SD_NEXT_OFFSET")))
+    ("single-dispatch-miss" 20 "DTREE_OP_SINGLE_DISPATCH_MISS")
     ))
 
 (defun dump-gf-bytecode-virtual-machine (stream)

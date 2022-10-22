@@ -191,7 +191,14 @@ new_instr( "long", 58, [], [] )
 #define DTREE_ARGN_OFFSET 1
 #define DTREE_ARGN_NEXT_OFFSET 2
 
-#define DTREE_OP_COUNT 19
+#define DTREE_OP_SD_EQ_BRANCH 19
+#define DTREE_SD_STAMP_OFFSET 1
+#define DTREE_SD_FAIL_OFFSET 2
+#define DTREE_SD_NEXT_OFFSET 3
+
+#define DTREE_OP_SINGLE_DISPATCH_MISS 20
+
+#define DTREE_OP_COUNT 21
 #endif // GF_BYTECODE_VM
 #ifdef GF_BYTECODE_VM_NAMES
   case DTREE_OP_MISS: return "DTREE_OP_MISS";
@@ -213,5 +220,7 @@ new_instr( "long", 58, [], [] )
   case DTREE_OP_FARG3: return "DTREE_OP_FARG3";
   case DTREE_OP_FARG4: return "DTREE_OP_FARG4";
   case DTREE_OP_ARGN: return "DTREE_OP_ARGN";
+  case DTREE_OP_SD_EQ_BRANCH: return "DTREE_OP_SD_EQ_BRANCH";
+  case DTREE_OP_SINGLE_DISPATCH_MISS: return "DTREE_OP_SINGLE_DISPATCH_MISS";
 #endif // GF_BYTECODE_VM_NAMES
 // This is where I dump the python GF bytecode VM
