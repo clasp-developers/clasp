@@ -98,7 +98,7 @@
                      (push item arglist))))
              (nreverse arglist))))
     (let ((function-description (cmp:irc-make-function-description function-info jit-function-name)))
-      (multiple-value-bind (the-function local-entry-point)
+      (multiple-value-bind (the-function local-simple-fun)
           (cmp:irc-local-function-create
            (llvm-sys:function-type-get
             (main-function-return-type function)
@@ -117,7 +117,7 @@
                                                            cmp:*the-module*
                                                            function-description
                                                            the-function
-                                                           local-entry-point)
+                                                           local-simple-fun)
                              :xep-unallocated)))
           (if (eq xep-group :xep-unallocated)
               (make-instance 'llvm-function-info
@@ -381,6 +381,11 @@
             phi block))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
+
+;; fixme2022 simple-unwinding screws up the VM so we disable it everywhere
+(defmethod bir-transformations:simple-unwinding-p :around (instruction system)
+  nil)
+
 (defun translate-come-from (come-from successors)
   (let* ((simplep (bir-transformations:simple-unwinding-p
                    come-from *clasp-system*))
@@ -513,13 +518,17 @@
     (cmp:irc-begin-block cleanup)
     ;; Save values, call the cleanup, continue unwinding.
     ;; Note that we don't need to pop the dynenv, as the unwinder does so.
-    (let* ((nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
+    (let* ((dest (%intrinsic-call "cc_get_unwind_dest" nil "dest"))
+           (index (%intrinsic-call "cc_get_unwind_dest_index" nil "dest-index"))
+           (nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
            (mv-temp (cmp:alloca-temp-values nvals)))
       (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
       (cmp:with-landing-pad (maybe-entry-landing-pad (bir:parent instruction)
                                                      *tags*)
         (closure-call-or-invoke (in (first (bir:inputs instruction))) nil)
         (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))
+        (%intrinsic-call "cc_set_unwind_dest_index" (list index))
+        (%intrinsic-call "cc_set_unwind_dest" (list dest))
         (%intrinsic-invoke-if-landing-pad-or-call "cc_sjlj_continue_unwinding" nil))
       (cmp:irc-unreachable)))
   #+(or)
@@ -739,7 +748,7 @@
                    (:dynamic
                     (%intrinsic-call
                      "cc_stack_enclose"
-                     (list (cmp:alloca-i8 (core:closure-with-slots-size ninputs)
+                     (list (cmp:alloca-i8 (core:closure-size ninputs)
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
                            (literal:constants-table-value (cmp:entry-point-reference-index entry-point-reference))
@@ -1698,9 +1707,12 @@
     ((inst bir:load-time-value-reference) abi)
   (declare (ignore abi))
   (out (let* ((ltv (first (bir:inputs inst)))
-              (index (gethash ltv *constant-values*))
+              (imm-or-index (gethash ltv *constant-values*))
               (label (datum-name-as-string (bir:output inst))))
-         (cmp:irc-t*-load (%indexed-literal-ref index label)))
+         (assert imm-or-index () "Load-time-value not found!")
+         (if (integerp imm-or-index)
+             (cmp:irc-t*-load (%indexed-literal-ref imm-or-index label))
+             imm-or-index))
        (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-reference)
@@ -1715,15 +1727,7 @@
               (immediate-or-index (gethash constant *constant-values*)))
          (assert immediate-or-index () "Constant not found!")
          (if (integerp immediate-or-index)
-             (multiple-value-bind (literals literals-type)
-                 (literal:ltv-global)
-               (cmp:irc-t*-load
-                (cmp:irc-typed-gep-variable literals-type
-                                      literals
-                                      (list (%size_t 0)
-                                            (%i64 immediate-or-index))
-                                      label)
-                label))
+             (cmp:irc-t*-load (%indexed-literal-ref immediate-or-index label))
              immediate-or-index))
        (bir:output inst)))
 
@@ -1815,46 +1819,47 @@
 (defun layout-xep-function* (xep-group arity the-function ir calling-convention abi)
   (declare (ignore abi))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-      ;; Parse lambda list.
-    (let ((ret (cmp:compile-lambda-list-code (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
-                                             calling-convention
-                                             arity
-                                             :argument-out #'out)))
-      (unless ret
-        (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
-    ;; Import cells.
-    (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
-           (llvm-function-info (find-llvm-function-info ir))
-           (environment-values
-             (loop for import in (environment llvm-function-info)
-                   for i from 0
-                   for offset = (cmp:%closure-with-slots%.offset-of[n]/t* i)
-                   collect (cmp:irc-t*-load-atomic
-                            (cmp::gen-memref-address closure-vec offset))))
-           (source-pos-info (function-source-pos-info ir)))
-      ;; Tail call the real function.
-      (cmp:with-debug-info-source-position (source-pos-info)
-        (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
-               (arguments
-                 (mapcar (lambda (arg)
-                           (translate-cast (in arg)
-                                           '(:object) (cc-bmir:rtype arg)))
-                         (arguments llvm-function-info)))
-               (c
-                 (cmp:irc-create-call-wft
-                  function-type
-                  (main-function llvm-function-info)
-                  ;; Augment the environment lexicals as a local call would.
-                  (nconc environment-values arguments)))
-               (returni (bir:returni ir))
-               (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
-          #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
-          ;; Box/etc. results of the local call.
-          (if returni
-              (cmp:irc-ret (translate-cast
-                            (local-call-rv->inputs c rrtype)
-                            rrtype :multiple-values))
-              (cmp:irc-unreachable))))))
+    ;; Parse lambda list.
+    (cmp:with-landing-pad nil
+      (let ((ret (cmp:compile-lambda-list-code (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
+                                               calling-convention
+                                               arity
+                                               :argument-out #'out)))
+        (unless ret
+          (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
+      ;; Import cells.
+      (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
+             (llvm-function-info (find-llvm-function-info ir))
+             (environment-values
+               (loop for import in (environment llvm-function-info)
+                     for i from 0
+                     for offset = (cmp:%closure%.offset-of[n]/t* i)
+                     collect (cmp:irc-t*-load-atomic
+                              (cmp::gen-memref-address closure-vec offset))))
+             (source-pos-info (function-source-pos-info ir)))
+        ;; Tail call the real function.
+        (cmp:with-debug-info-source-position (source-pos-info)
+          (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
+                 (arguments
+                   (mapcar (lambda (arg)
+                             (translate-cast (in arg)
+                                             '(:object) (cc-bmir:rtype arg)))
+                           (arguments llvm-function-info)))
+                 (c
+                   (cmp:irc-create-call-wft
+                    function-type
+                    (main-function llvm-function-info)
+                    ;; Augment the environment lexicals as a local call would.
+                    (nconc environment-values arguments)))
+                 (returni (bir:returni ir))
+                 (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
+            #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
+            ;; Box/etc. results of the local call.
+            (if returni
+                (cmp:irc-ret (translate-cast
+                              (local-call-rv->inputs c rrtype)
+                              rrtype :multiple-values))
+                (cmp:irc-unreachable)))))))
   the-function)
 
 (defun layout-main-function* (the-function ir
@@ -1987,6 +1992,8 @@
                                                         cmp:*irbuilder-function-alloca*)
                   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
                     (cmp:with-debug-info-source-position (source-pos-info)
+                      (if sys:*drag-native-calls*
+                          (cmp::irc-intrinsic "drag_native_calls"))
                       (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
                              (calling-convention
                                (cmp:setup-calling-convention xep-arity-function
@@ -2033,29 +2040,30 @@
 (defun get-or-create-lambda-name (bir)
   (or (bir:name bir) 'top-level))
 
+(defun allocate-constant (ir value read-only-p)
+  (let ((immediate (core:create-tagged-immediate-value-or-nil value)))
+    (setf (gethash ir *constant-values*)
+          (if immediate
+              (cmp:irc-int-to-ptr (%i64 immediate) cmp:%t*%)
+              (literal:reference-literal value read-only-p)))))
+
 ;;; Given a BIR module, allocate its constants and load time
 ;;; values. We translate immediates directly, and use an index into
 ;;; the literal table for non-immediate constants.
 (defun allocate-module-constants (module)
   (cleavir-set:doset (constant (bir:constants module))
-    (let* ((value (bir:constant-value constant))
-           (immediate (core:create-tagged-immediate-value-or-nil value)))
-      (setf (gethash constant *constant-values*)
-            (if immediate
-                (cmp:irc-int-to-ptr
-                 (%i64 immediate)
-                 cmp:%t*%)
-                (literal:reference-literal value t)))))
-  (assert (or (cleavir-set:empty-set-p (bir:load-time-values module))
-              (eq cst-to-ast:*compiler* 'cl:compile-file))
-          ()
-          "Found load-time-values to dump but not file compiling!")
-  (cleavir-set:doset (load-time-value (bir:load-time-values module))
-    (let ((form (bir:form load-time-value)))
-      (setf (gethash load-time-value *constant-values*)
-            ;; Allocate an index in the literal table for this load-time-value.
-            (literal:load-time-value-from-thunk
-             (compile-form form *clasp-env*))))))
+    (allocate-constant constant (bir:constant-value constant) t))
+  (if (eq cst-to-ast:*compiler* 'cl:compile-file)
+      (cleavir-set:doset (load-time-value (bir:load-time-values module))
+        (let ((form (bir:form load-time-value)))
+          (setf (gethash load-time-value *constant-values*)
+                ;; Allocate an index in the literal table
+                ;; for this load-time-value.
+                (literal:load-time-value-from-thunk
+                 (compile-form form *clasp-env*)))))
+      (cleavir-set:doset (load-time-value (bir:load-time-values module))
+        (allocate-constant load-time-value (eval (bir:form load-time-value))
+                           (bir:read-only-p load-time-value)))))
 
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
   ;; Create llvm IR functions for each BIR function.
@@ -2109,32 +2117,36 @@
 Does not hoist.
 COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
-  (handler-bind
-      ((cst-to-ast:no-variable-info
-         (lambda (condition)
-           (cmp:warn-undefined-global-variable
-            (origin-spi (cmp:compiler-condition-origin condition))
-            (cst-to-ast:name condition))
-           (invoke-restart 'cst-to-ast:consider-special)))
-       (cst-to-ast:no-function-info
-         (lambda (condition)
-           (cmp:register-global-function-ref
-            (cst-to-ast:name condition)
-            (origin-spi (cmp:compiler-condition-origin condition)))
-           (invoke-restart 'cst-to-ast:consider-global)))
-       (cst-to-ast:compiler-macro-expansion-error
-         (lambda (condition)
-           (warn 'cmp:compiler-macro-expansion-error-warning
-                 :origin (origin-spi (cmp:compiler-condition-origin condition))
-                 :condition condition)
-           (continue condition)))
-       ((and cst-to-ast:compilation-program-error
-             ;; If something goes wrong evaluating an eval-when,
-             ;; we just want a normal error signal-
-             ;; we can't recover and keep compiling.
-             (not cst-to-ast:eval-error))
-         #'conversion-error-handler))
-    (cst-to-ast:cst-to-ast cst env clasp-cleavir:*clasp-system*)))
+  (let (;; used by compute-inline-ast (inline-prep.lisp) to get detailed
+        ;; source info for inline function bodies.
+        (*compiling-cst* cst))
+    (handler-bind
+        ((cst-to-ast:no-variable-info
+           (lambda (condition)
+             (cmp:warn-undefined-global-variable
+              (origin-spi (cmp:compiler-condition-origin condition))
+              (cst-to-ast:name condition))
+             (invoke-restart 'cst-to-ast:consider-special)))
+         (cst-to-ast:no-function-info
+           (lambda (condition)
+             (cmp:register-global-function-ref
+              (cst-to-ast:name condition)
+              (origin-spi (cmp:compiler-condition-origin condition)))
+             (invoke-restart 'cst-to-ast:consider-global)))
+         (cst-to-ast:compiler-macro-expansion-error
+           (lambda (condition)
+             (warn 'cmp:compiler-macro-expansion-error-warning
+                   :origin (origin-spi
+                            (cmp:compiler-condition-origin condition))
+                   :condition condition)
+             (continue condition)))
+         ((and cst-to-ast:compilation-program-error
+               ;; If something goes wrong evaluating an eval-when,
+               ;; we just want a normal error signal-
+               ;; we can't recover and keep compiling.
+               (not cst-to-ast:eval-error))
+           #'conversion-error-handler))
+      (cst-to-ast:cst-to-ast cst env clasp-cleavir:*clasp-system*))))
 
 ;;; Given an AST that may not be a function-ast, wrap it
 ;;; in a function AST. Useful for the pattern of

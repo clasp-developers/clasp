@@ -48,10 +48,6 @@ typedef gctools::smart_ptr<Instance_O> Instance_sp;
  class Cache_O;
  typedef gctools::smart_ptr<Cache_O> Cache_sp;
 class Lisp;
-class LambdaListHandler_O;
-typedef gctools::smart_ptr<LambdaListHandler_O> LambdaListHandler_sp;
-class Environment_O;
-typedef gctools::smart_ptr<Environment_O> Environment_sp;
 class Symbol_O;
 typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
 
@@ -78,7 +74,6 @@ class StrongKeyHashTable_O;
 class DynamicScopeManager;
 
 class Function_O;
-class BuiltinClosure_O;
 };
 
 namespace core {
@@ -92,7 +87,6 @@ typedef gctools::smart_ptr<Package_O> Package_sp;
 typedef gctools::smart_ptr<Stream_O> Stream_sp;
 typedef gctools::smart_ptr<SourcePosInfo_O> SourcePosInfo_sp;
 typedef gctools::smart_ptr<FileScope_O> FileScope_sp;
-typedef gctools::smart_ptr<BuiltinClosure_O> BuiltinClosure_sp;
 };
 
 namespace core {

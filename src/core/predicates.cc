@@ -114,18 +114,6 @@ CL_DEFUN bool cl__functionp(T_sp obj) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(interpretedFunctionP)dx")
-DOCGROUP(clasp)
-CL_DEFUN bool core__interpreted_function_p(T_sp arg) {
-  if ( gc::IsA<ClosureWithSlots_sp>(arg)){
-    ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(arg);
-    return closure->closureType == ClosureWithSlots_O::interpretedClosure;
-  }
-  return false;
-};
-
-CL_LAMBDA(arg)
-CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS packagep)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__packagep(T_sp obj) {
@@ -153,14 +141,6 @@ CL_DOCSTRING(R"dx(Predicate for the object being an Instance (C++ class used for
 DOCGROUP(clasp)
 CL_DEFUN bool core__instancep(T_sp obj) {
   return gc::IsA<Instance_sp>(obj) || gc::IsA<FuncallableInstance_sp>(obj);
-};
-
-CL_LAMBDA(arg)
-CL_DECLARE();
-CL_DOCSTRING(R"dx(lambda_list_handler_p)dx")
-DOCGROUP(clasp)
-CL_DEFUN bool core__lambda_list_handler_p(T_sp obj) {
-  return gc::IsA<LambdaListHandler_sp>(obj);
 };
 
 CL_LAMBDA(arg)
@@ -299,14 +279,6 @@ CL_DEFUN bool core__single_dispatch_generic_function_p(T_sp obj) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(activation_frame_p)dx")
-DOCGROUP(clasp)
-CL_DEFUN bool core__activation_frame_p(T_sp obj) {
-  return gc::IsA<ActivationFrame_sp>(obj);
-};
-
-CL_LAMBDA(arg)
-CL_DECLARE();
 CL_DOCSTRING(R"dx(externalObjectP)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool core__external_object_p(T_sp obj) {
@@ -369,18 +341,18 @@ CL_DEFUN bool core__proper_list_p(T_sp arg) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(global-entry-point-generator-p)dx")
+CL_DOCSTRING(R"dx(global-simple-fun-generator-p)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool core__global_entry_point_generator_p(T_sp obj) {
-  return gc::IsA<GlobalEntryPointGenerator_sp>(obj);
+CL_DEFUN bool core__global_simple_fun_generator_p(T_sp obj) {
+  return gc::IsA<GlobalSimpleFunGenerator_sp>(obj);
 };
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(local-entry-point-generator-p)dx")
+CL_DOCSTRING(R"dx(local-simple-fun-generator-p)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool core__local_entry_point_generator_p(T_sp obj) {
-  return gc::IsA<LocalEntryPointGenerator_sp>(obj);
+CL_DEFUN bool core__local_simple_fun_generator_p(T_sp obj) {
+  return gc::IsA<LocalSimpleFunGenerator_sp>(obj);
 };
 
 CL_LAMBDA(arg)

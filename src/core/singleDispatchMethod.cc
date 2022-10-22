@@ -43,18 +43,10 @@ namespace core {
 
 SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        Instance_sp receiverClass,
-                                                       LambdaListHandler_sp llh,
                                                        List_sp declares,
                                                        gc::Nilable<String_sp> docstr,
                                                        Function_sp body) {
-  auto  method = gctools::GC<SingleDispatchMethod_O>::allocate( name,receiverClass,llh,declares,docstr,body);
-  //validateFunctionDescription(__FILE__,__LINE__, body);
-  // method->_name = name;
-  // method->_receiver_class = receiverClass;
-  // ASSERTF(body.notnilp(), BF("The body of a method should never be nil"));
-  // method->_argument_handler = llh;
-  // method->_declares = declares;
-  // method->_docstring = docstr;
+  auto  method = gctools::GC<SingleDispatchMethod_O>::allocate( name,receiverClass,declares,docstr,body);
   return method;
 }
 

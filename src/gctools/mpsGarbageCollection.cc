@@ -128,9 +128,9 @@ void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   }
   vector<gctools::ReachableMPSObject> *reachablesP = reinterpret_cast<vector<gctools::ReachableMPSObject> *>(p);
   // Very expensive to validate every object on the heap
-  if (header->_stamp_wtag_mtag.stampP()) {
+  if (header->_badge_stamp_wtag_mtag.stampP()) {
     header->validate();
-    gctools::ReachableMPSObject &obj = (*reachablesP)[header->_stamp_wtag_mtag.stamp_()];
+    gctools::ReachableMPSObject &obj = (*reachablesP)[header->_badge_stamp_wtag_mtag.stamp_()];
     ++obj.instances;
     size_t sz = (char *)(obj_skip(client)) - (char *)client;
     obj.totalMemory += sz;
@@ -409,7 +409,7 @@ void searchMemoryForAddress(mps_addr_t addr) {
 static mps_addr_t obj_isfwd(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   const Header_s *header = reinterpret_cast<const Header_s *>(GeneralPtrToHeaderPtr(client));
-  if (header->_stamp_wtag_mtag.fwdP()) return header->_stamp_wtag_mtag.fwdPointer();
+  if (header->_badge_stamp_wtag_mtag.fwdP()) return header->_badge_stamp_wtag_mtag.fwdPointer();
   return NULL;
 }
 
@@ -418,10 +418,10 @@ static void obj_pad(mps_addr_t base, size_t size) {
   assert(size >= alignment);
   Header_s *header = reinterpret_cast<Header_s *>(base);
   if (size == alignment) {
-    header->_stamp_wtag_mtag.setPad(Header_s::pad1_mtag);
+    header->_badge_stamp_wtag_mtag.setPad(Header_s::pad1_mtag);
   } else {
-    header->_stamp_wtag_mtag.setPad(Header_s::pad_mtag);
-    header->_stamp_wtag_mtag.setPadSize(size);
+    header->_badge_stamp_wtag_mtag.setPad(Header_s::pad_mtag);
+    header->_badge_stamp_wtag_mtag.setPadSize(size);
   }
 }
 
@@ -617,9 +617,9 @@ extern "C" {
 std::atomic<size_t> global_finalization_requests;
   void my_mps_finalize(core::T_O* tclient) {
     core::T_sp tsp((gctools::Tagged)tclient);
-    size_t badge = core::lisp_badge(tsp);
     void* client = reinterpret_cast<void*>(gctools::untag_object(tclient));
 #ifdef DEBUG_FINALIZERS
+    size_t badge = core::lisp_badge(tsp);
     printf("%s:%d register mps_finalize of tagged: %p client: %p badge: 0x%zx\n", __FILE__, __LINE__, tclient, client, badge);
 #endif
     mps_finalize(global_arena,&client);
@@ -709,9 +709,9 @@ size_t processMpsMessages(size_t& finalizations) {
           printf("%s:%d    in General pool %p\n", __FILE__, __LINE__, ref_o);
 #endif
           gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
-          live_object = (header->_stamp_wtag_mtag.stampP());
+          live_object = (header->_badge_stamp_wtag_mtag.stampP());
 #ifdef DEBUG_FINALIZERS
-          printf("%s:%d    in General pool %p  stamp_wtag_mtag %lu  live_object -> %d\n", __FILE__, __LINE__, ref_o, (size_t)header->_stamp_wtag_mtag._value, live_object);
+          printf("%s:%d    in General pool %p  stamp_wtag_mtag %lu  live_object -> %d\n", __FILE__, __LINE__, ref_o, (size_t)header->_badge_stamp_wtag_mtag._value, live_object);
 #endif
           obj = gctools::smart_ptr<core::T_O>((gctools::Tagged)gctools::tag_general<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         }
@@ -735,7 +735,8 @@ size_t processMpsMessages(size_t& finalizations) {
         WITH_READ_LOCK(globals_->_FinalizersMutex);
         auto ht = _lisp->_Roots._Finalizers;
         core::T_mv res = ht->gethash(obj);
-        if (res.second().notnilp()) {
+        core::MultipleValues& mvn = core::lisp_multipleValues();
+        if (mvn.second(res.number_of_values()).notnilp()) {
           printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());
           core::List_sp finalizers = res;
           for ( auto cur : finalizers ) {
@@ -1348,7 +1349,7 @@ size_t ReachableMPSObject::print(const std::string &shortName,const vector<std::
 }
 
 
-void clasp_gc_room(std::ostringstream& OutputStream) {
+void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verb) {
   mps_arena_park(global_arena);
   mps_word_t numCollections = mps_collections(global_arena);
   size_t arena_committed = mps_arena_committed(global_arena);

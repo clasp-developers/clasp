@@ -69,8 +69,8 @@
                                        :buffer input
                                        :buffer-pathname out
                                        :buffer-stream (make-string-input-stream input))))
-    (ninja:with-timestamp-preserving-stream (stream out :external-format :utf-8)
-      (write (process-all-recognition-elements buffer-stream) :escape t :stream stream))))
+    (write-sif-file (process-all-recognition-elements buffer-stream)
+                    out)))
 
 (defun generate-headers (use-precise config clasp-code-path clasp-sys-path &rest sif-files)
   (format t "clasp-code-path             -> ~a~%" clasp-code-path)

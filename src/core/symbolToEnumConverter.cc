@@ -86,14 +86,15 @@ Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp c
 CL_LISPIFY_NAME("enumIndexForSymbol");
 CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(T_sp obj) {
   T_mv match_mv = this->_SymbolToEnum->gethash(obj);
-  if (match_mv.second().nilp()) TYPE_ERROR(obj,Cons_O::create(cl::_sym_member,this->enumSymbolsAsList()));
+  MultipleValues& mv = core::lisp_multipleValues();
+  if (mv.second(match_mv.number_of_values()).nilp()) TYPE_ERROR(obj,Cons_O::create(cl::_sym_member,this->enumSymbolsAsList()));
   return unbox_fixnum(match_mv);
 }
 
 Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index) {
   _OF();
   Fixnum_sp indexKey = make_fixnum(index);
-  ASSERTF(this->_EnumToSymbol->contains(indexKey), BF("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") % index % this->_WhatTheEnumsRepresent->get_std_string().c_str());
+  ASSERTF(this->_EnumToSymbol->contains(indexKey), ("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") , index , this->_WhatTheEnumsRepresent->get_std_string().c_str());
   return gc::As<Symbol_sp>(this->_EnumToSymbol->gethash(indexKey));
 }
 

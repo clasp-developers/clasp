@@ -27,7 +27,7 @@ inline Cons* do_boehm_cons_allocation(size_t size,ARGS&&... args)
 {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
 #ifdef USE_PRECISE_GC
-  ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),size,global_cons_kind,&global_cons_kind));
+  ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS),size,global_cons_kind,&global_cons_kind)); // wasMTAG
 # ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons );
 # endif
@@ -44,7 +44,7 @@ inline Cons* do_boehm_cons_allocation(size_t size,ARGS&&... args)
 
 #ifdef USE_BOEHM
 template <typename Stage = RuntimeStage>
-inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
+inline Header_s* do_boehm_atomic_allocation(const Header_s::BadgeStampWtagMtag& the_header, size_t size) 
 {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
@@ -70,7 +70,7 @@ inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_h
 #endif
 
 #ifdef USE_BOEHM
-inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
+inline Header_s* do_boehm_weak_allocation(const Header_s::BadgeStampWtagMtag& the_header, size_t size) 
 {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
@@ -93,7 +93,7 @@ inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_hea
 
 #ifdef USE_BOEHM
 template <typename Stage = RuntimeStage>
-inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_header,  size_t size) 
+inline Header_s* do_boehm_general_allocation(const Header_s::BadgeStampWtagMtag& the_header,  size_t size) 
 {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
@@ -125,7 +125,7 @@ inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_
 #endif
 
 #ifdef USE_BOEHM
-inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
+inline Header_s* do_boehm_uncollectable_allocation(const Header_s::BadgeStampWtagMtag& the_header, size_t size) 
 {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;

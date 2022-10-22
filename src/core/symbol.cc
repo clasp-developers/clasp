@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/hashTable.h>
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/lispList.h>
@@ -213,7 +213,7 @@ namespace core {
 
 struct UnboundFunctionEntryPoint {
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
     Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
     ERROR_UNDEFINED_FUNCTION(symbol);
   }
@@ -245,7 +245,7 @@ struct UnboundFunctionEntryPoint {
 
 struct UnboundSetfFunctionEntryPoint {
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
     Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
     List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
     ERROR_UNDEFINED_FUNCTION(name);
@@ -277,31 +277,31 @@ struct UnboundSetfFunctionEntryPoint {
 };
 
 
-ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
+Closure_sp make_unbound_symbol_function(Symbol_sp name)
 {
   if (_lisp->_Roots._UnboundSymbolFunctionEntryPoint.unboundp()) {
-    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundFunctionEntryPoint>(name,nil<T_O>());
+    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalSimpleFunAndFunctionDescription<UnboundFunctionEntryPoint>(name,nil<T_O>());
   }
-  ClosureWithSlots_sp closure = 
-      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,1,
+  Closure_sp closure = 
+      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,1,
                                                                                        _lisp->_Roots._UnboundSymbolFunctionEntryPoint,
-                                                                                       ClosureWithSlots_O::cclaspClosure);
+                                                                                       Closure_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
 }
 
 
 
-ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
+Closure_sp make_unbound_setf_symbol_function(Symbol_sp name)
 {
   if (_lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint.unboundp()) {
     List_sp sname = Cons_O::createList(cl::_sym_setf,name);
-    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundSetfFunctionEntryPoint>(sname,nil<T_O>());
+    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalSimpleFunAndFunctionDescription<UnboundSetfFunctionEntryPoint>(sname,nil<T_O>());
   }
-  ClosureWithSlots_sp closure = 
-      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false, 1,
+  Closure_sp closure = 
+      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1,
                                                                                        _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint,
-                                                                                       ClosureWithSlots_O::cclaspClosure);
+                                                                                       Closure_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
 }
@@ -326,7 +326,7 @@ Symbol_O::Symbol_O() : Base(),
 
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
-  ASSERTF(pkg, BF("The package is UNDEFINED"));
+  ASSERTF(pkg, ("The package is UNDEFINED"));
   this->_HomePackage = pkg;
   if (pkg->actsLikeKeywordPackage())
     this->set_globalValue(this->asSmartPtr());
@@ -349,7 +349,7 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // The following are done in finish_setup
   //  n->fmakunbound();
   //  n->fmakunbound_setf();
-  ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
+  ASSERTF(nm != "", ("You cannot create a symbol without a name"));
   return n;
 };
    
@@ -658,7 +658,7 @@ T_sp Symbol_O::getPackage() const {
 }
 
 void Symbol_O::setPackage(T_sp p) {
-  ASSERTF(p, BF("The package is UNDEFINED"));
+  ASSERTF(p, ("The package is UNDEFINED"));
   ASSERT(p.nilp() || gc::IsA<Package_sp>(p));
   this->_HomePackage.store(p, std::memory_order_relaxed);
 }

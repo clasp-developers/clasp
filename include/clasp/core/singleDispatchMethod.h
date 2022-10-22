@@ -45,15 +45,13 @@ class SingleDispatchMethod_O : public General_O {
 public:
   friend class SingleDispatchGeneralFunction_O;
 public: // Simple default ctor/dtor
- SingleDispatchMethod_O(T_sp name, Instance_sp receiverClass, LambdaListHandler_sp llh, List_sp declares, T_sp docstring, Function_sp body) : _name(name), _receiver_class(receiverClass), _argument_handler(llh), _declares(declares), _docstring(docstring), _function(body) {};
+ SingleDispatchMethod_O(T_sp name, Instance_sp receiverClass, List_sp declares, T_sp docstring, Function_sp body) : _name(name), _receiver_class(receiverClass), _declares(declares), _docstring(docstring), _function(body) {};
  public:
            /*! Store the generic function name */
   T_sp _name;
   /*! Store the receiver class for this method */
   Instance_sp _receiver_class;
   //	BuiltIn_sp	_method_builtin;
-  /*! This is the LambdaListHandler for the Builtin method */
-  LambdaListHandler_sp _argument_handler;
   List_sp _declares;
   /*! Store the docstring */
   T_sp _docstring;
@@ -63,14 +61,12 @@ public: // creation function
   // The creates above are depreciated
   static SingleDispatchMethod_sp create(T_sp name,
                                         Instance_sp receiver,
-                                        LambdaListHandler_sp lambda_list_handler,
                                         List_sp declares,
                                         gc::Nilable<String_sp> docstr,
                                         Function_sp body);
 
 public: // Functions here
   Instance_sp receiver_class() const { return this->_receiver_class; };
-  LambdaListHandler_sp method_lambda_list_handler() const { return this->_argument_handler; };
   string __repr__() const;
 
 CL_LISPIFY_NAME("singleDispatchMethodName");
@@ -80,9 +76,6 @@ CL_DEFMETHOD   Instance_sp singleDispatchMethodReceiverClass() const { return th
  
 //CL_LISPIFY_NAME("singleDispatchMethodCode");
 //CL_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
- 
-CL_LISPIFY_NAME("singleDispatchMethodLambdaListHandler");
-CL_DEFMETHOD   LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler; };
 CL_LISPIFY_NAME("singleDispatchMethodDeclares");
 CL_DEFMETHOD   List_sp singleDispatchMethodDeclares() const { return this->_declares; };
 CL_LISPIFY_NAME("singleDispatchMethodDocstring");
@@ -97,7 +90,7 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp gfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, core::T_sp docstring, Function_sp body);
+void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp gfname, Instance_sp receiver_class, List_sp declares, core::T_sp docstring, Function_sp body);
 
 
 };

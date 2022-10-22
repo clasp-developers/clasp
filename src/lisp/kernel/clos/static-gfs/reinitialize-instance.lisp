@@ -96,7 +96,12 @@
 (defun update-reinitializer-function (reinitializer)
   (clos:set-funcallable-instance-function
    reinitializer
-   (cmp:bclasp-compile nil (generate-reinitializer-function reinitializer))))
+   #+(or)
+   (let ((core:*use-interpreter-for-eval* t)
+         (cmp:*cleavir-compile-hook* nil))
+     (coerce (generate-reinitializer-function reinitializer) 'function))
+   ;;#+(or)
+   (error "BUG: No suitable compiler yet")))
 
 (defun reinitializer-miss (reinitializer instance &rest args)
   (when (clos::maybe-update-instance instance)
@@ -167,7 +172,7 @@
                (maybe-invalidate-reinitializer-wrt-classes
                 reinitializer classes))
              *reinitializers*)))
-
+#+(or)
 (define-compiler-macro reinitialize-instance
     (&whole form instance &rest initargs &environment env)
   (multiple-value-bind (keys syms bindings validp)

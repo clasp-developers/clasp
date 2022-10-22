@@ -33,24 +33,24 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/package.h>
 
-namespace cleavirPrimops {
+namespace cleavirPrimop {
 
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, typeq);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, callWithVariableBound);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, eq);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumLess);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumNotGreater);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumEqual);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, car);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, cdr);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, funcall);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, unreachable);
-SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, case);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, typeq);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, callWithVariableBound);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, eq);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, fixnumLess);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, fixnumNotGreater);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, fixnumEqual);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, car);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, cdr);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, funcall);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, unreachable);
+SYMBOL_EXPORT_SC_(CleavirPrimopPkg, case);
 
-void initialize_cleavirPrimopsPackage() {
+void initialize_cleavirPrimopPackage() {
   list<string> lnicknames;
   list<string> luse = {};
-  _lisp->makePackage(CleavirPrimopsPkg, lnicknames, luse);
+  _lisp->makePackage(CleavirPrimopPkg, lnicknames, luse);
   // We don't have to create the CLEAVIR-PRIMOPS symbols here - it's done in bootStrapCoreSymbolMap
 }
 };

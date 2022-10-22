@@ -33,7 +33,7 @@ RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit  EXTRA_ARGUM
     while (client < limit) {
       const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(WEAK_PTR_TO_HEADER_PTR(client));
       gctools::WeakObject *weakObj = reinterpret_cast<gctools::WeakObject *>(client);
-      switch (header._stamp_wtag_mtag._value) {
+      switch (header._badge_stamp_wtag_mtag._value) {
       case gctools::Header_s::WeakBucketKind: {
         gctools::WeakBucketsObjectType *obj = reinterpret_cast<gctools::WeakBucketsObjectType *>(weakObj);
         // Fix the obj->dependent pointer
@@ -74,7 +74,7 @@ RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit  EXTRA_ARGUM
         client = (ADDR_T)((char *)client + sizeof(gctools::WeakPointer) + sizeof(gctools::Header_s));
       } break;
       default:
-          THROW_HARD_ERROR("handle other weak kind %d", header._stamp_wtag_mtag._value);
+          THROW_HARD_ERROR("handle other weak kind %d", header._badge_stamp_wtag_mtag._value);
       }
     };
   }
@@ -87,8 +87,8 @@ RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit  EXTRA_ARGUM
 ADDR_T WEAK_SKIP(ADDR_T client, bool dbg, size_t& objectSize) {
   GCWEAK_LOG(fmt::sprintf("weak_obj_skip client=%p" , ((void *)client)));
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(WEAK_PTR_TO_HEADER_PTR(client));
-  if (header._stamp_wtag_mtag.weakObjectP()) {
-    switch (header._stamp_wtag_mtag._value) {
+  if (header._badge_stamp_wtag_mtag.weakObjectP()) {
+    switch (header._badge_stamp_wtag_mtag._value) {
     case gctools::Header_s::WeakBucketKind: {
       gctools::WeakBucketsObjectType *obj = reinterpret_cast<gctools::WeakBucketsObjectType *>(client);
       GCWEAK_LOG(fmt::sprintf("WeakBucketKind sizeof(WeakBucketsObjectType)=%d + sizeof(typename WeakBucketsObjectType::value_type)=%d * obj->length()=%d" , sizeof(WeakBucketsObjectType) , sizeof(typename WeakBucketsObjectType::value_type) , obj->length()));
@@ -113,7 +113,7 @@ ADDR_T WEAK_SKIP(ADDR_T client, bool dbg, size_t& objectSize) {
     } break;
     }
   } else {
-    THROW_HARD_ERROR("Handle weak_obj_skip other weak kind %d", header._stamp_wtag_mtag._value);
+    THROW_HARD_ERROR("Handle weak_obj_skip other weak kind %d", header._badge_stamp_wtag_mtag._value);
   }
   client = (ADDR_T)((char *)client + objectSize + sizeof(gctools::Header_s));
   GCWEAK_LOG(fmt::sprintf("weak_obj_skip returning client=%p" , ((void *)client)));
@@ -129,10 +129,10 @@ void WEAK_FWD(ADDR_T old_client, ADDR_T new_client) {
   size_t size = (char *)limit - (char *)old_client;
   assert(size >= Align(sizeof(weak_fwd2_s)));
   if (size == gctools::Align(sizeof(gctools::weak_fwd2_s))) {
-    header._stamp_wtag_mtag.setFwdPointer((void*)new_client);
+    header._badge_stamp_wtag_mtag.setFwdPointer((void*)new_client);
   } else {
-    header._stamp_wtag_mtag.setFwdPointer((void*)new_client);
-    header._stamp_wtag_mtag.setFwdSize(size);
+    header._badge_stamp_wtag_mtag.setFwdPointer((void*)new_client);
+    header._badge_stamp_wtag_mtag.setFwdSize(size);
   }
 }
 #endif

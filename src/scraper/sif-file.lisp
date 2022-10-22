@@ -1,18 +1,49 @@
 (in-package :cscrape)
 
+(defun pprint-tag (stream object)
+  (pprint-logical-block (stream nil :prefix "{" :suffix "}")
+    (write (type-of object) :stream stream)
+    (loop with first-slot = t
+          for slot in (closer-mop:class-slots (find-class (type-of object)))
+          for initargs = (closer-mop:slot-definition-initargs slot)
+          for initfunction = (closer-mop:slot-definition-initfunction slot)
+          for name = (closer-mop:slot-definition-name slot)
+          when (and initargs
+                    (slot-boundp object name)
+                    #+(or)(or (not initfunction)
+                        (eql (slot-value object name)
+                             (funcall initfunction))))
+            do (write-char #\Space stream)
+               (cond (first-slot
+                      (setf first-slot nil)
+                      (pprint-indent :current 0 stream))
+                     (t
+                      (pprint-newline :fill stream)))
+               (write (first initargs) :stream stream)
+               (write-char #\Space stream)
+               (write (slot-value object name) :stream stream))))
+
+(defun write-sif-file (tags output)
+  (let ((*package* (find-package :tags))
+        (*print-readably* t)
+        (*print-pretty* t)
+        (*print-case* :downcase)
+        (*print-right-margin* 100)
+        (*print-pprint-dispatch* (copy-pprint-dispatch)))
+    (set-pprint-dispatch 'tags:tag #'pprint-tag)
+    (ninja:with-timestamp-preserving-stream (stream output :external-format :utf-8)
+      (loop for tag in tags
+            do (write tag :stream stream)
+               (fresh-line stream)))))
+
 (defun generate-sif-file (input output)
   "* Arguments
 - input :: A pathname.
 - output :: A pathname.
 * Description
 Read the input .i file and extract the tags from it and write out a .sif file"
-  (let* ((bufs (read-entire-file input))
-         (tags (process-all-recognition-elements bufs))
-         (sif-pathname output))
-    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede :external-format :utf-8)
-      (let ((*print-readably* t)
-            (*print-pretty* nil))
-        (prin1 tags fout)))))
+  (write-sif-file (process-all-recognition-elements (read-entire-file input))
+                  output))
 
 (defun read-sif-file (sif-file)
   "* Arguments
@@ -20,17 +51,14 @@ Read the input .i file and extract the tags from it and write out a .sif file"
 * Description
 Read a list of tags from the sif file."
   (let* ((sif-pathname (pathname sif-file))
-         (*readtable* (copy-readtable)))
-    (set-macro-character
-     #\{
-     (lambda (str char)
-       (declare (ignore char))
-       (let ((list (read-delimited-list #\} str t)))
-         (let ((type (first list))
-               (list (second list)))
-           (let ((class (allocate-instance (find-class type))))
-             (loop for i in list do
-                   (setf (slot-value class (car i)) (cdr i)))
-             class)))))
-    (with-open-file (fin sif-pathname :direction :input :external-format :utf-8)
-      (read fin))))
+         (*readtable* (copy-readtable))
+         (*package* (find-package :tags)))
+    (set-macro-character #\{
+                         (lambda (stream char)
+                           (declare (ignore char))
+                           (apply #'make-instance (read-delimited-list #\} stream t))))
+    (set-macro-character #\} (get-macro-character #\) nil))
+    (with-open-file (stream sif-pathname :direction :input :external-format :utf-8)
+      (loop for tag = (read stream nil stream)
+            until (eq tag stream)
+            collect tag))))

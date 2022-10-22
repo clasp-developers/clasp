@@ -211,9 +211,9 @@
                      ((eql-specializer-p argspec)
                       ;; This is (typep (e-s-o ...) spec) but we know spec is
                       ;; a class so we skip to this.
-                      (subclassp (class-of (eql-specializer-object argspec))
+                      (si:subclassp (class-of (eql-specializer-object argspec))
                                  spec))
-                     (t (subclassp argspec spec)))))
+                     (t (si:subclassp argspec spec)))))
 
 ;;; This "fuzzed" applicable-method-p is used in
 ;;; update-call-history-for-add-method, below, to handle added EQL-specialized
@@ -225,12 +225,12 @@
                       (if (eql-specializer-p argspec)
                           (eql (eql-specializer-object argspec)
                                (eql-specializer-object spec))
-                          (subclassp argspec
+                          (si:subclassp argspec
                                      (class-of (eql-specializer-object spec)))))
                      ((eql-specializer-p argspec)
-                      (subclassp (class-of (eql-specializer-object argspec))
+                      (si:subclassp (class-of (eql-specializer-object argspec))
                                  spec))
-                     (t (subclassp argspec spec)))))
+                     (t (si:subclassp argspec spec)))))
 
 (defun applicable-method-list-using-specializers (gf specializers)
   (declare (optimize (speed 3)))
@@ -687,14 +687,17 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (apply #'dispatch-miss generic-function vaslist-args))
 
 (defvar *fastgf-force-compiler* nil)
-(defun calculate-fastgf-dispatch-function (generic-function &key compile)
+(defun calculate-fastgf-dispatch-function
+    (generic-function &key (compile *fastgf-force-compiler*))
   (if (mp:atomic (safe-gf-call-history generic-function))
       (let ((timer-start (get-internal-real-time)))
         (unwind-protect
-             (if (or *fastgf-force-compiler* compile)
-                 (cmp:bclasp-compile
-                  nil (generate-discriminator generic-function))
-                 (interpreted-discriminator generic-function))
+             (if (and #-cclasp nil compile cmp:*cleavir-compile-hook*)
+                 (compile nil (generate-discriminator generic-function))
+                 (if (member :old-discriminator *features*)
+                     (interpreted-discriminator generic-function)
+                     (bytecode-interpreted-discriminator generic-function)
+                     ))
           (let ((delta-seconds (/ (float (- (get-internal-real-time) timer-start) 1d0)
                                   internal-time-units-per-second)))
             (gctools:accumulate-discriminating-function-compilation-seconds delta-seconds))))
@@ -717,6 +720,12 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 
 ;;; Used by interpret-dtree-program.
 (defun compile-discriminating-function (generic-function)
+  ;; Ensure an up to date (i.e. won't need to miss on these arguments)
+  ;; interpreted discriminator is installed, so that if Cleavir calls the
+  ;; generic function we're compiling it won't go recursive.
+  (set-funcallable-instance-function generic-function
+                                     (calculate-fastgf-dispatch-function
+                                      generic-function :compile nil))
   (set-funcallable-instance-function generic-function
                                      (calculate-fastgf-dispatch-function
                                       generic-function :compile t)))

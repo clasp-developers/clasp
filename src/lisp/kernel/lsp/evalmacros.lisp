@@ -26,7 +26,7 @@ last FORM.  If not, simply returns NIL."
      ;; (as the eval-when :compile-toplevel is executed)
      ;; Need a more comprehensive solution though, since the actual macro
      ;; lambda will be compiled twice anyway.
-     (setf-lambda-list
+     (core:setf-lambda-list
       (funcall #'(setf macro-function)
                #',(ext:parse-macro name lambda-list body env)
                ',name)
@@ -119,7 +119,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 (defmacro defun (name lambda-list &body body &environment env)
    ;; Documentation in help.lisp
    (multiple-value-bind (decls body doc-string) 
-       (process-declarations body t)
+       (si:process-declarations body t)
      (let* ((doclist (when doc-string (list doc-string)))
             (global-function
               `#'(lambda ,lambda-list
@@ -265,21 +265,19 @@ TESTs evaluates to non-NIL."
 
 ; program feature
 
-(defmacro prog (vl &rest body &aux (decl nil))
+(defmacro prog (vl &rest body)
   "Syntax: (prog ({var | (var [init])}*) {decl}* {tag | statement}*)
 Establishes a NIL block, binds each VAR to the value of INIT (which defaults
 to NIL) in parallel, and executes STATEMENTs.  Returns NIL."
-  (multiple-value-setq (decl body)
-    (find-declarations body))
-  `(BLOCK NIL (LET ,vl ,@decl (TAGBODY ,@body))))
+  (multiple-value-bind (decl body) (find-declarations body)
+    `(BLOCK NIL (LET ,vl ,@decl (TAGBODY ,@body)))))
 
-(defmacro prog* (vl &rest body &aux (decl nil))
+(defmacro prog* (vl &rest body)
   "Syntax: (prog* ({var | (var [init])}*) {decl}* {tag | statement}*)
 Establishes a NIL block, binds each VAR to the value of INIT (which defaults
 to NIL) sequentially, and executes STATEMENTs.  Returns NIL."
-  (multiple-value-setq (decl body)
-    (find-declarations body))
-  `(BLOCK NIL (LET* ,vl ,@decl (TAGBODY ,@body))))
+  (multiple-value-bind (decl body) (find-declarations body)
+    `(BLOCK NIL (LET* ,vl ,@decl (TAGBODY ,@body)))))
 
 ; sequencing
 
@@ -290,7 +288,6 @@ Evaluates FIRST-FORM and FORMs in order.  Returns the primary value of FIRST-FOR
       `(values ,first)
       `(LET ((,sym ,first))
          ,@body ,sym)))
-
 
 
 (defmacro prog2 (first second &rest body &aux (sym (gensym)))

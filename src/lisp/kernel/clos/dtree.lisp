@@ -2,6 +2,14 @@
 
 ;;; Misc
 
+(defparameter *debug-dtree* nil)
+#+(or)(defmacro dtree-log (fmt &rest args)
+  `(when *debug-dtree*
+     (format t ,fmt ,@args)))
+
+(defmacro dtree-log (fmt &rest args)
+  nil)
+
 (defun insert-sorted (item lst &optional (test #'<) (key #'identity))
   (if (null lst)
       (list item)
@@ -14,7 +22,7 @@
 ;;; Building an abstract "basic" tree - no tag tests or anything
 ;;; NOTE: We could probably store this instead of the call history
 
-(defstruct (test (:type vector) :named) (paths nil))
+(defstruct (test (:type vector) :named) index (paths nil))
 (defstruct (skip (:type vector) :named) next)
 
 ;;; Make a new subtree with only one path, starting with the ith specializer.
@@ -74,11 +82,77 @@
                                 do (setf result (make-skip :next result))
                                 finally (return result))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;
+
+;;; Make a new subtree with only one path, starting with the ith specializer.
+(defun bc-remaining-subtree (specializers outcome specializer-indices)
+  (if (null specializer-indices)
+      outcome
+      (make-test :index (car specializer-indices)
+                 :paths
+                 (acons (svref specializers (car specializer-indices))
+                        (bc-remaining-subtree specializers outcome (cdr specializer-indices))
+                        nil))))
+
+;;; Adds a call history entry to a tree, avoiding new nodes as much as possible.
+(defun bc-add-entry (node specializers outcome specializer-indices)
+  (when specializer-indices
+    (let ((specializer-index (car specializer-indices)))
+      (cond
+        ((outcome-p node)
+         ;; If we're here, we don't have anything to add.
+         (error "BUG in BC-ADD-ENTRY: Redundant call history entry: ~a"
+                (cons specializers outcome)))
+        ((test-p node)
+         (let* ((spec (svref specializers specializer-index))
+                (pair (assoc spec (test-paths node))))
+           (if pair
+               ;; our entry is so far identical to an existing one;
+               ;; continue the search.
+               (bc-add-entry (cdr pair) specializers outcome (cdr specializer-indices))
+               ;; We have something new. Add it and we're done.
+               (setf (test-paths node)
+                     (acons spec
+                            (bc-remaining-subtree 
+                             specializers outcome (cdr specializer-indices))
+                            (test-paths node))))))
+        (t
+         (error "BUG in BC-ADD-ENTRY: Not a node: ~a" node))))))
+
+(defun bc-basic-tree (call-history specializer-profile)
+  (assert (not (null call-history)))
+  (dtree-log "Entered bc-basic-tree call-history: ~a specializer-profile: ~a~%" (core:safe-repr call-history) (core::safe-repr specializer-profile))
+  (let ((last-specialized (position nil specializer-profile :from-end t :test-not #'eq))
+        (first-specialized (position-if #'identity specializer-profile)))
+    (dtree-log "A first-specialized ~a last-specialized ~a~%" first-specialized last-specialized)
+    (let ((specializer-indices (when (and (integerp first-specialized) (integerp last-specialized))
+                                 (loop for index from first-specialized to last-specialized
+                                     when (elt specializer-profile index)
+                                       collect index))))
+      (dtree-log "B specializer-indices ~s~%" specializer-indices)
+      (when (null last-specialized)
+        ;; no specialization - we go immediately to the outcome
+        ;; (we could assert all outcomes are identical)
+        (return-from bc-basic-tree (values (cdr (first call-history)) 0)))
+      ;; usual case
+      (dtree-log "C~%")
+      (loop with result = (make-test :index (car specializer-indices))
+            with specialized-length = (1+ last-specialized)
+            for (specializers . outcome) in call-history
+            do (bc-add-entry result specializers outcome specializer-indices)
+            finally (return (values result specialized-length))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; 
 ;;; Compiling a basic tree into concrete tests and sundry.
 ;;; The node/possibly DAG here basically forms a slightly weird VM defined as follows.
 ;;; There are two registers, ARG and STAMP. Each node performs an action and then branches.
 ;;;
-;;; ADVANCE: assign ARG = get next arg. unconditional jump to NEXT.
+;;; ARGUMENT: assign ARG = get next arg if COUNT==NIL then unconditional jump to NEXT.
+;;;                        = COUNT (if COUNT is fixnum) then unconditional jump to NEXT
 ;;; TAG-TEST: check the tag of ARG. If it's one of the discriminatable tags, jump to the
 ;;;           tag-th entry of the tag-test's vector. Otherwise, jump to the default.
 ;;; STAMP-READ: assign STAMP = header stamp of ARG. If STAMP indicates a C++
@@ -93,7 +167,8 @@
 ;;;             If it eqls none of the OBJECTS, jump to DEFAULT.
 ;;; MISS: unconditional jump to dispatch-miss routine.
 
-(defstruct (advance (:type vector) :named) next)
+(defstruct (argument (:type vector) :named) count next)
+(defstruct (register (:type vector) :named) index next)
 (defstruct (tag-test (:type vector) :named) tags default)
 (defstruct (stamp-read (:type vector) :named) c++ other)
 (defstruct (<-branch (:type vector) :named) pivot left right)
@@ -102,9 +177,12 @@
 (defstruct (eql-search (:type vector) :named) objects nexts default)
 (defstruct (miss (:type vector) :named))
 
+(defun compile-tree-top (tree)
+    (compile-tree tree))
+
 (defun compile-tree (tree)
   (cond ((outcome-p tree) tree)
-        ((skip-p tree) (make-advance :next (compile-tree (skip-next tree))))
+        ((skip-p tree) (make-argument :next (compile-tree (skip-next tree))))
         ((test-p tree) (compile-test tree))))
 
 (defun compile-test (test)
@@ -115,14 +193,15 @@
            (other-search (compile-ranges (classes-to-ranges other-classes)))
            (stamp
              (if (and (miss-p c++-search) (miss-p other-search))
-                 c++-search ; no need to branch - miss immediately.
+                 c++-search    ; no need to branch - miss immediately.
                  (make-stamp-read :c++ c++-search :other other-search)))
            (tag-test
              (if (and (miss-p stamp)
                       (every #'null tags))
-                 stamp ; miss immediately
+                 stamp                  ; miss immediately
                  (compile-tag-test tags stamp))))
-      (make-advance
+      (make-argument
+       :count (test-index test)
        ;; we do EQL tests before anything else. they could be moved later if we altered
        ;; when eql tests are stored in the call history, i think.
        :next (cond ((null eqls)
@@ -222,22 +301,301 @@
                                                 (compile-tree (cdr pair)))
                                eqls)
                    :default next))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Search the subtree for patters
+;;;
+
+(defstruct (walk (:type vector) :named)
+  (collect 'identity)
+  (next 'identity)
+  (wrap (lambda (tree fn) (declare (ignore tree)) (funcall fn)))
+  results)
+
+(defun do-walk-subtree (tree links walk)
+  (labels ((collect (tree)
+             (funcall (walk-callback walk) tree walk)
+             )
+           (wait (tree &optional name)
+             (declare (ignore name))
+             (next tree)
+             (let ((new-tail (list nil)))
+               (push (cons new-tail tree) (car links))))
+           (next (tree &optional name)
+             (declare (ignore name))
+             (funcall (walk-wrap walk) tree (lambda () (do-walk-subtree tree links walk))))
+           (cont ()
+             (if (null (car links))
+                 ;; nothing more to do
+                 (return-from do-walk-subtree)
+                 ;; go to the next tree
+                 (destructuring-bind (patchpoint . subtree)
+                     (pop (car links))
+                   (declare (ignore patchpoint))
+                   (next subtree "cont")))))
+    (cond ((argument-p tree)
+           (collect tree)
+           (next (argument-next tree) "next"))
+          ((tag-test-p tree)
+           (collect tree)
+           (wait (elt (tag-test-tags tree) 0) "fixnum-tag")
+           (wait (elt (tag-test-tags tree) 1) "cons-tag")
+           (wait (elt (tag-test-tags tree) 2) "single-float-tag")
+           (wait (elt (tag-test-tags tree) 3) "character-tag")
+           (next (tag-test-default tree) "default"))
+          ((stamp-read-p tree)
+           (collect tree)
+           (wait (stamp-read-c++ tree) "c++")
+           (next (stamp-read-other tree) "other"))
+          ((<-branch-p tree)
+           (collect tree)
+           (wait (<-branch-left tree) "left")
+           (next (<-branch-right tree) "right"))
+          ((=-check-p tree)
+           (collect tree)
+           (next (=-check-next tree) "next"))
+          ((range-check-p tree)
+           (collect tree)
+           (next (range-check-next tree) "next"))
+          ((eql-search-p tree)
+           (loop for object across (eql-search-objects tree)
+                 for next across (eql-search-nexts tree)
+                 do (collect tree)
+                    (wait next "next"))
+           (next (eql-search-default tree) "default"))
+          ((miss-p tree)
+           (collect tree)
+           (cont))
+          ((optimized-slot-reader-p tree)
+           (collect tree)
+           (cont))
+          ((optimized-slot-writer-p tree)
+           (collect tree)
+           (cont))
+          ((effective-method-outcome-p tree)
+           (collect tree)
+           (cont))
+          (t (error "BUG: Unknown dtree: ~a" tree)))))
+
+(defun walk-tree (tree walk)
+  (let ((links (list nil)))
+    (do-walk-subtree tree links walk))
+  walk)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Linearization
 ;;;
 
-(defparameter *isa*
-  '((miss 0) (advance 1) (tag-test 2) (stamp-read 3)
-    (<-branch 4) (=-check 5) (range-check 6) (eql 7)
-    (optimized-slot-reader 8) (optimized-slot-writer 9)
-    (car 10) (rplaca 11)
-    (effective-method-outcome 12)))
-
 (defun opcode (inst)
   (or (second (assoc inst *isa*))
       (error "BUG: In fastgf linker, symbol is not an op: ~a" inst)))
+
+(defstruct (bc-constant-arg (:type vector) :named)
+  value)
+
+(defstruct (bc-constant-ref (:type vector) :named)
+  ref)
+
+(defstruct (bc-label-arg (:type vector) :named)
+  lip index delta)
+
+(defstruct (bc-register-arg (:type vector) :named)
+  index)
+
+(defstruct (bc-instruction (:type vector) :named)
+  name lip index byte-index code final-op)
+
+(defstruct (bc-long-instruction (:type vector) (:include bc-instruction) :named)
+  code-add)
+
+(defun longify-instruction (short-instruction num-ops instr)
+  (declare (ignorable instr))
+  (let ((longer (make-bc-long-instruction :name (bc-instruction-name short-instruction)
+                                          :code (bc-instruction-code short-instruction)
+                                          :code-add num-ops
+                                          :lip (bc-instruction-lip short-instruction)
+                                          :index (bc-instruction-index short-instruction)
+                                          :byte-index (bc-instruction-byte-index short-instruction))))
+;;;    (format t "longify-instruction ~s~%  from ~s~%" longer instr)
+    longer))
+
+
+(defun annotated-opcode (inst)
+  (let* ((code-cell (assoc inst *isa*))
+         (code (second code-cell)))
+    (make-bc-instruction :name inst :code code)))
+
+(defconstant +longify-trigger+ 255)
+
+;; Move constants into the literals vector and replace them with
+;; indices in the program.  Also accumulate patchpoints for labels
+(defun literalify-arguments (instr dtree-op literals coallesce-indexes)
+  (loop named literalify
+        with long-arg = nil
+        for cur = (cdr instr) then (cdr cur)
+        for annotated-arg = (car cur)
+        for arg-type in (dtree-op-arguments dtree-op)
+        collect (cond
+                  ((bc-constant-arg-p annotated-arg)
+                   (let* ((arg (bc-constant-arg-value annotated-arg))
+                          (seen-index-value (gethash arg coallesce-indexes)))
+                     (if (null seen-index-value)
+                         (let* ((index (vector-push-extend arg literals))
+                               (index-value (make-bc-constant-ref :ref index)))
+                           (setf (gethash arg coallesce-indexes) index-value)
+                           (when (> index +longify-trigger+)
+                             (setf long-arg t))
+                           index-value)
+                         seen-index-value)))
+                  ((bc-label-arg-p annotated-arg) annotated-arg)
+                  ((bc-register-arg-p annotated-arg) annotated-arg)
+                  (t (error "Illegal arg ~a" annotated-arg)))
+          into new-args
+        when (null (cdr cur))
+          do (return-from literalify (values new-args long-arg))))
+
+;;; Move constants into a literal vector and replace them with references
+;;; Return a vector of nil/T, one for each instruction if the instruction is long
+(defun reference-literals (compiled)
+  (let* ((coallesce-indexes (make-hash-table :test 'eql))
+         (literals (make-array (length compiled) :fill-pointer 0
+                                                 :adjustable t
+                                                 :initial-element nil))
+         (longs (make-array (length compiled) :initial-element nil))
+         (new-program (loop for instr in compiled
+                            for index from 0
+                            for annotated-op = (first instr)
+                            for op = (bc-instruction-code annotated-op)
+                            for dop = (elt *dtree-ops* op)
+                            collect (multiple-value-bind (new-args long-arg)
+                                        (literalify-arguments instr dop literals coallesce-indexes)
+                                      (if long-arg
+                                          (progn
+                                            (format t "Dealing with long instruction ~s~%" instr)
+                                            (setf (elt longs index) long-arg)
+                                            (longify-instruction annotated-op (length *dtree-ops*) instr))
+                                          (list* annotated-op new-args))))))
+    (values new-program literals longs)))
+
+;;; Calculate a map of labels to byte-positions taking
+;;; into account the longs
+(defun generate-label-map (instructions longs)
+  (let ((map (make-array (length instructions))))
+    (loop for instr in instructions
+          for index from 0
+          with ip = 0
+          for annotated-op = (first instr)
+          for op = (bc-instruction-code annotated-op)
+          for dop = (elt *dtree-ops* op)
+          for long = (elt longs index)
+          for byte-length = (dtree-op-byte-length dop long)
+          do (setf (elt map index) ip)
+          do (incf ip byte-length))
+    map))
+
+(defun longify-instruction-p (ip instruction dtree-op labels)
+  (let ((need-longify nil))
+    (loop named longify
+          for idx below (length (dtree-op-label-argument-indices dtree-op))
+          for label-index = (elt (dtree-op-label-argument-indices dtree-op) idx)
+          for annotated-jump-label = (elt (cdr instruction) label-index)
+          for jump-label = (bc-label-arg-index annotated-jump-label)
+          for start-ip = ip
+          for end-ip = (elt labels jump-label)
+          for delta = (- end-ip start-ip)
+          do (setf (bc-label-arg-delta annotated-jump-label) delta) ; save the delta in the arg
+          when (> delta +longify-trigger+)
+            do (setf need-longify t))
+    need-longify))
+
+;;; Iterate through the instructions and determine if any of them
+;;; need to be made long - if they do then update the longs vector
+;;; and return new-longify=t
+(defun maybe-longify-instructions (instructions labels longs)
+  (let ((new-long nil))
+    (loop for instr in instructions
+          for index from 0
+          for ip = (elt labels index)
+          for annotated-op = (first instr)
+          for op = (bc-instruction-code annotated-op)
+          for dop = (elt *dtree-ops* op)
+          for long = (elt longs index)
+          do (when (not long)
+               (when (longify-instruction-p ip instr dop labels)
+                 (setf (first instr) (longify-instruction annotated-op (length *dtree-ops*) instr)
+                       new-long t
+                       (elt longs index) t))))
+    (values longs new-long)))
+
+(defun update-label-deltas (instructions labels longs)
+  (loop for instr in instructions
+        for index from 0
+        for ip = (elt labels index)
+        for annotated-op = (first instr)
+        for op = (bc-instruction-code annotated-op)
+        for dop = (elt *dtree-ops* op)
+        for long = (elt longs index)
+        for longify = (longify-instruction-p ip instr dop labels)
+        when (and longify (not long))
+          do (error "A new longify was calculated ~a" instr)))
+
+(defun byteify-args (args long bytecode)
+  (labels ((two-byte (val bytecode)
+             (let ((low (logand val #xff))
+                   (high (logand (ash val -8) #xff))
+                   (higher (ash val -16)))
+               (when (> higher 0) (error "A value ~a larger than 65535 cannot be coded in two bytes - you need a bigger vm" val))
+               (vector-push-extend low bytecode)
+               (vector-push-extend high bytecode))))
+    (loop for arg in args
+          do (cond
+               ((bc-constant-ref-p arg)
+                (let ((arg-val (bc-constant-ref-ref arg)))
+                  (if long
+                      (two-byte arg-val bytecode)
+                      (if (> arg-val +longify-trigger+)
+                          (error "This value should be long ~a" arg-val)
+                          (vector-push-extend arg-val bytecode)))))
+               ((bc-label-arg-p arg)
+                (let ((arg-val (bc-label-arg-delta arg)))
+                  (if long
+                      (two-byte arg-val bytecode)
+                      (if (> arg-val +longify-trigger+)
+                          (warn "This value should be long ~a" arg)
+                          (vector-push-extend arg-val bytecode)))))
+               ((bc-register-arg-p arg)
+                (let ((arg-val (bc-register-arg-index arg)))
+                  (if long
+                      (two-byte arg-val bytecode)
+                      (if (> arg-val +longify-trigger+)
+                          (warn "This value should be long ~a" arg)
+                          (vector-push-extend arg-val bytecode)))))
+               (t (error "Illegal arg type ~a" arg))))))
+
+(defun bytecodeify (instructions longs labels bytecode)
+  (let* ((ip (length bytecode))
+         (saw-long nil)
+         (new-instructions (loop for instr in instructions
+                                 for index from 0
+                                 for long across longs
+                                 for annotated-op = (car instr)
+                                 for op = (bc-instruction-code annotated-op)
+                                 for final-op = (if long
+                                                    (if (bc-long-instruction-p annotated-op)
+                                                        (progn
+                                                          (setf saw-long t)
+                                                          (+ op (bc-long-instruction-code-add annotated-op)))
+                                                        (error "instruction is not long ~a" annotated-op))
+                                                    op)
+                                 for args = (cdr instr)
+                                 for byte-ip = (elt labels index)
+                                 do (vector-push-extend final-op bytecode)
+                                 do (byteify-args args long bytecode)
+                                 do (setf (bc-instruction-byte-index annotated-op) byte-ip
+                                          (bc-instruction-final-op annotated-op) final-op)
+                                 collect (list* annotated-op (cdr instr)))))
+    (values ip new-instructions saw-long)))
 
 ;;; Build a linear program (list of opcodes and objects) from a compiled tree.
 ;;; We do this in one pass to save memory (an actual problem, if this is done
@@ -274,9 +632,24 @@
                           (pop links)
                         (setf (car patchpoint) ip)
                         (next subtree)))))
-      (loop (cond ((advance-p tree)
-                   (collect (opcode 'advance))
-                   (next (advance-next tree)))
+      (loop (cond ((argument-p tree)
+                   (cond
+                     ((null (argument-count tree))
+                      (collect (opcode 'advance)))
+                     ((= (argument-count tree) 0)
+                      (collect (opcode 'farg0)))
+                     ((= (argument-count tree) 1)
+                      (collect (opcode 'farg1)))
+                     ((= (argument-count tree) 2)
+                      (collect (opcode 'farg2)))
+                     ((= (argument-count tree) 3)
+                      (collect (opcode 'farg3)))
+                     ((= (argument-count tree) 4)
+                      (collect (opcode 'farg4)))
+                     (t (when (< (argument-count tree) (1- cmp:+entry-point-arity-end+))
+                          (warn "Add arity option with fixed argument for ~a < ~a" (argument-count tree) cmp:+entry-point-arity-end+))
+                        (collect(opcode 'argn) (argument-count tree))))
+                   (next (argument-next tree)))
                   ((tag-test-p tree)
                    (collect (opcode 'tag-test))
                    (loop for tag across (tag-test-tags tree)
@@ -287,12 +660,12 @@
                    (wait (stamp-read-c++ tree))
                    (next (stamp-read-other tree)))
                   ((<-branch-p tree)
-                   (collect (opcode '<-branch)
+                   (collect (opcode 'lt-branch)
                             (<-branch-pivot tree))
                    (wait (<-branch-left tree))
                    (next (<-branch-right tree)))
                   ((=-check-p tree)
-                   (collect (opcode '=-check)
+                   (collect (opcode 'eq-check)
                             (=-check-pivot tree))
                    (next (=-check-next tree)))
                   ((range-check-p tree)
@@ -314,7 +687,7 @@
                    (collect
                     (if (core:fixnump (optimized-slot-reader-index tree))
                         (opcode 'optimized-slot-reader) ; instance
-                        (opcode 'car)) ; class
+                        (opcode 'car))                  ; class
                     (optimized-slot-reader-index tree)
                     (optimized-slot-reader-slot-name tree))
                    (cont))
@@ -322,7 +695,7 @@
                    (collect
                     (if (core:fixnump (optimized-slot-writer-index tree))
                         (opcode 'optimized-slot-writer) ; instance
-                        (opcode 'rplaca)) ; class
+                        (opcode 'rplaca))               ; class
                     (optimized-slot-writer-index tree))
                    (cont))
                   ((effective-method-outcome-p tree)
@@ -331,22 +704,121 @@
                    (cont))
                   (t (error "BUG: Unknown dtree: ~a" tree)))))))
 
+(defun group-instruction (linear ip-place index)
+  (symbol-macrolet ((ip (car ip-place))
+                    (ip++ (prog1 (car ip-place) (incf (car ip-place)))))
+    (let* ((start-ip ip)
+           (op (elt linear ip++))
+           (dtree-op (elt *dtree-ops* op))
+           (arguments (loop for arg in (dtree-op-arguments dtree-op)
+                            collect (cond
+                                      ((eq (car arg) 'constant-arg)
+                                       (make-bc-constant-arg :value (elt linear ip++)))
+                                      ((eq (car arg) 'label-arg)
+                                       (make-bc-label-arg :lip (elt linear ip++)))
+                                      ((eq (car arg) 'register-arg)
+                                       (make-bc-register-arg :index (elt linear ip++)))
+                                      (t (error "Illegal arg type ~a" arg))))))
+      (list* (make-bc-instruction :name (dtree-op-name dtree-op) :lip start-ip :code op :index index) arguments))))
+
+(defun group-instructions (linear)
+  (let ((ip-place (list 0)))
+    (loop for index from 0
+          collect (group-instruction linear ip-place index) into instructions
+          do (when (>= (car ip-place) (length linear))
+               (return-from group-instructions instructions)))))
+
+(defun index-instructions (instructions)
+  (let ((lip-to-index (make-hash-table :test 'eql)))
+    (loop for instr in instructions
+          for op = (first instr)
+          do (setf (gethash (bc-instruction-lip op) lip-to-index) (bc-instruction-index op)))
+    (loop for instr in instructions
+          for op = (first instr)
+          for args = (rest instr)
+          do (loop for arg in args
+                   when (bc-label-arg-p arg)
+                     do (setf (bc-label-arg-index arg) (gethash (bc-label-arg-lip arg) lip-to-index))))))
+
 ;;; SIMPLE ENTRY POINTS
 
 (defun calculate-dtree (call-history specializer-profile)
-  (compile-tree (basic-tree call-history specializer-profile)))
+  (compile-tree-top (basic-tree call-history specializer-profile)))
 
 (defun compute-dispatch-program (call-history specializer-profile)
   (let* ((basic (basic-tree call-history specializer-profile))
-         (compiled (compile-tree basic))
+         (compiled (compile-tree-top basic))
          (linear (linearize compiled))
          (final (coerce linear 'vector)))
     final))
 
+(defun dtree-compile (generic-function)
+  (let* ((basic (basic-tree (safe-gf-call-history generic-function)
+                            (safe-gf-specializer-profile generic-function)))
+         (compiled (compile-tree-top basic))
+         (linear (linearize compiled))
+         (final (coerce linear 'vector)))
+    (values final linear compiled basic)))
+
 (defun interpreted-discriminator (generic-function)
-  (let ((program (compute-dispatch-program
+  (let ((program ( compute-dispatch-program
                   (safe-gf-call-history generic-function)
                   (safe-gf-specializer-profile generic-function))))
     (lambda (core:&va-rest args)
       (declare (core:lambda-name interpreted-discriminating-function))
-      (clos:interpret-dtree-program program generic-function args))))
+      (apply #'clos:interpret-dtree-program program generic-function args))))
+
+;;; Bytecode approach
+
+(defun dtree-compile (generic-function)
+  (multiple-value-bind (basic specialized-length)
+      (bc-basic-tree
+       (safe-gf-call-history generic-function)
+       (safe-gf-specializer-profile generic-function))
+    (values (compile-tree-top basic) specialized-length)))
+
+(defun bytecode-dtree-compile (generic-function)
+  (multiple-value-bind (compiled specialized-length)
+      (dtree-compile generic-function)
+    (let* ((linear (linearize compiled))
+           (grouped (group-instructions linear)))
+      (index-instructions grouped)
+      (multiple-value-bind (instructions literals longs)
+          (reference-literals grouped)
+        (loop named longify
+              with new-long
+              with long-changes
+              do (let ((labels (generate-label-map instructions longs)))
+                   (multiple-value-setq (longs long-changes)
+                     (maybe-longify-instructions instructions labels longs))
+                   (when (null long-changes) (return-from longify labels))))
+        (let ((labels (generate-label-map instructions longs))
+              (bytecode (make-array 16 :element-type 'ext:byte8
+                                       :adjustable t
+                                       :fill-pointer 0))
+              (entry-points (make-array 16 :adjustable t :fill-pointer 0)))
+          (update-label-deltas instructions labels longs)
+          (multiple-value-bind (entry-ip new-instructions saw-long)
+              (bytecodeify instructions longs labels bytecode)
+            (declare (ignorable saw-long))
+            #+(or)
+            (when saw-long
+              (loop for instr in new-instructions
+                    do (format t "~s~%" instr))
+              (format t "Done instructions~%")
+              (loop for byte across bytecode
+                    for index from 0
+                    do (format t "~4a: ~s~%" index byte))
+              )
+            (vector-push-extend entry-ip entry-points)
+            (values (copy-seq bytecode) (copy-seq entry-points) (copy-seq literals) specialized-length
+                    #| Remaining return values are for debugging |#
+                    instructions new-instructions labels grouped compiled)))))))
+
+(defun bytecode-interpreted-discriminator (generic-function)
+  (let ((program (sys:gfbytecode-simple-fun/make generic-function)))
+    program))
+
+(export 'bytecode-dtree-compile :clos)
+
+

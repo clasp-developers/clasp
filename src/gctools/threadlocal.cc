@@ -18,12 +18,36 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/core/unwind.h> // DynEnv stuff
 #include <clasp/gctools/boehmGarbageCollection.h> // DynEnv stuff
+#include <clasp/external/thread-pool/thread_pool.h>
+
 
 
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
+namespace gctools {
+thread_pool<ThreadManager>* global_thread_pool;
+};
 namespace core {
+
+#ifdef DEBUG_VIRTUAL_MACHINE
+int global_debug_virtual_machine = 0;
+
+CL_LAMBDA(val reset-counters);
+CL_DEFUN void core__debug_virtual_machine(int val, bool reset_counters) {
+  global_debug_virtual_machine = val;
+  if (reset_counters) {
+    VM_RESET_COUNTERS(my_thread->_VM);
+  }
+}
+
+#endif
+
+
+void VirtualMachine::error() {
+  printf("%s:%d:%s There was an error encountered in the vm - put a breakpoint here to trap it\n", __FILE__, __LINE__, __FUNCTION__ );
+};
+
 unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nail) {
   size_t size = _lisp->integer_ordering()._mpz_import_size;
   size_t numb = (size << 3) - nail; // *8
@@ -135,32 +159,57 @@ ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
 namespace core {
 
 
-VirtualMachine::VirtualMachine() {
+VirtualMachine::VirtualMachine() :
+    _Running(true)
+#ifdef DEBUG_VIRTUAL_MACHINE
+    ,_counter0(0)
+    ,_unwind_counter(0)
+    ,_throw_counter(0)
+#endif
+{
+  size_t stackSpace = VirtualMachine::MaxStackWords*sizeof(T_O*);
+  this->_stackTop = this->_stackBottom+VirtualMachine::MaxStackWords-1;
+//  printf("%s:%d:%s vm._stackTop = %p\n", __FILE__, __LINE__, __FUNCTION__, this->_stackTop );
   size_t pageSize = getpagesize();
-  void* mem;
-  int result = posix_memalign( &mem, pageSize, VirtualMachine::MaxStackWords*sizeof(T_O**) );
-  if (result !=0) {
-    printf("%s:%d:%s posix_memalign failed with error %d\n", __FILE__, __LINE__, __FUNCTION__, result );
-    abort();
-  }
-  this->_StackBottom = (T_O**)mem;
-  this->_StackTop = this->_StackBottom+VirtualMachine::MaxStackWords-1;
-  this->_StackBytes = VirtualMachine::MaxStackWords*sizeof(T_O*);
-  memset(this->_StackBottom,0,VirtualMachine::MaxStackWords*sizeof(T_O*));
-  int mprotectResult = mprotect(this->_StackBottom,pageSize,PROT_READ);
-  gctools::clasp_gc_registerRoots((this->_StackBottom+pageSize),(this->_StackBytes-pageSize)/sizeof(T_O*));
-  this->_FramePointer = NULL;
-  this->_StackPointer = this->_StackTop;
-  (*this->_StackPointer) = NULL;
-  this->push((core::T_O*)this->_FramePointer);
-  this->_FramePointer = this->_StackPointer;
+  uintptr_t stackGuardPage = ((uintptr_t)this->_stackTop - pageSize)/pageSize;
+  uintptr_t stackGuard = stackGuardPage*pageSize;
+  this->_stackGuard = (core::T_O**)stackGuard;
+//  printf("%s:%d:%s stackGuard = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackGuard );
+  this->_stackBytes = stackSpace;
+  // Clear the stack memory
+  memset(this->_stackBottom,0,stackSpace);
+  this->enable_guards();
+  this->_stackPointer = this->_stackBottom;
+  (*this->_stackPointer) = NULL;
 }
 
-VirtualMachine::~VirtualMachine() {
+
+void VirtualMachine::enable_guards() {
+//  printf("%s:%d:%s pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid()  );
+#if 0
   size_t pageSize = getpagesize();
-  gctools::clasp_gc_deregisterRoots((this->_StackBottom+pageSize),(this->_StackBytes-pageSize)/sizeof(T_O*));
-  int mprotectResult = mprotect(this->_StackBottom,pageSize,PROT_READ|PROT_WRITE);
-  free(this->_StackBottom);
+  int mprotectResult = mprotect((void*)this->_stackGuard,pageSize,PROT_READ);
+  if (mprotectResult!=0) {
+    printf("%s:%d:%s mprotect failed with %d\n", __FILE__, __LINE__, __FUNCTION__, mprotectResult );
+  }
+#endif
+}
+void VirtualMachine::disable_guards() {
+//  printf("%s:%d:%s pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid()  );
+#if 0
+  size_t pageSize = getpagesize();
+  int mprotectResult = mprotect((void*)this->_stackGuard,pageSize,PROT_READ|PROT_WRITE);
+  if (mprotectResult!=0) {
+    printf("%s:%d:%s mprotect failed with %d\n", __FILE__, __LINE__, __FUNCTION__, mprotectResult );
+  }
+#endif
+}
+
+
+VirtualMachine::~VirtualMachine() {
+#if 1
+  this->disable_guards();
+#endif
 }
 
 
@@ -172,7 +221,7 @@ VirtualMachine::~VirtualMachine() {
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy) :
   _unwinds(0)
-  , _CleanupFunctions(NULL)
+  ,_CleanupFunctions(NULL)
   ,_PendingInterrupts()
   ,_ObjectFiles()
   ,_BufferStr8NsPool()
@@ -181,6 +230,7 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   ,_BreakstepFrame(NULL)
   ,_DynEnvStackBottom()
   ,_UnwindDest()
+  ,_DtreeInterpreterCallCount(0)
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
@@ -191,6 +241,28 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   this->_xorshf_x = rand();
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
+}
+
+pid_t ThreadLocalState::safe_fork()
+{
+  // Wrap fork in code that turns guards off and on
+  this->_VM.disable_guards();
+  // shut down llvm thread pool
+  gctools::global_thread_pool->~thread_pool();
+  pid_t result = fork();
+  // start up llvm thread pool
+  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
+  if (result==-1) {
+    // error
+    printf("%s:%d:%s fork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno );
+  } else if (result == 0) {
+    // child
+    this->_VM.enable_guards();
+  } else {
+    // parent
+    this->_VM.enable_guards();
+  }
+  return result;
 }
 
 // This needs to be called at initialization immediately after Nil is allocated
@@ -334,7 +406,7 @@ uint32_t ThreadLocalState::random() {
     this->_xorshf_x = this->_xorshf_y;
     this->_xorshf_y = this->_xorshf_z;
     this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
-  } while (this->_xorshf_z==0);
+  } while (this->_xorshf_z==gctools::BaseHeader_s::BadgeStampWtagMtag::IllegalBadge || this->_xorshf_z==gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge);
   uint32_t rnd = this->_xorshf_z&0xFFFFFFFF;
   // printf("%s:%d:%s rnd = %u\n", __FILE__, __LINE__, __FUNCTION__, rnd );
   return rnd;

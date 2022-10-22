@@ -12,4 +12,4 @@
         frame-function
         ;; char-upcase.2a
         ;; char-downcase.2a
-        ))
+        FINALIZERS-GENERAL PRINT-6))

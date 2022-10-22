@@ -106,7 +106,7 @@ void derivable_class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<DummyCreator_O>(::nil<core::T_O>(),::nil<core::T_O>());
+    core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<DummyCreator_O>(::nil<core::T_O>(),::nil<core::T_O>());
     creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
   crep->initializeClassSlots(creator,gctools::NextClbindStampWtag(gctools::Header_s::derivable_wtag));
@@ -157,7 +157,7 @@ void derivable_class_registration::register_() const {
       // the baseclass' class_rep structure
       ClassRep_sp bcrep = registry->find_class(i->first);
 //      printf("%s:%d         %s inherits from %s\n", __FILE__, __LINE__, _rep_(className).c_str(), _rep_(bcrep).c_str());
-      ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
+      ASSERTF(bcrep.notnilp(), ("Could not find base class %s") , i->first.name());
       // Add it to the DirectSuperClass list
       crep->addInstanceBaseClass(bcrep->_className());
       crep->addInstanceAsSubClass(bcrep->_className());

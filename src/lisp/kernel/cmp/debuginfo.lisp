@@ -122,7 +122,9 @@
           (if logical-pathname
               ;; If we include the source we should put this at the end
               (core:fmt nil ";; LOGICAL-PATHNAME={}%n" logical-pathname)
-              nil))))
+              ;; KLUDGE: LLVM complains "inconsistent use of embedded source"
+              ;; if some DIFiles have a source field and some don't.
+              ";;"))))
 
 (defun make-create-file-args (pathname namestring &optional install-pathname)
   (let (args)
@@ -276,22 +278,22 @@
 (defparameter *trap-zero-lineno* nil)
 
 (defun get-dilocation (spi dbg-current-scope)
-  (let ((file-handle (core:source-pos-info-file-handle spi))
-        (lineno (core:source-pos-info-lineno spi))
-        (col (core:source-pos-info-column spi))
-        (inlined-at (core:source-pos-info-inlined-at spi)))
+  (let* ((file-handle (core:source-pos-info-file-handle spi))
+         (lineno (core:source-pos-info-lineno spi))
+         (col (core:source-pos-info-column spi))
+         (fsi (core:source-pos-info-function-scope spi))
+         (inlined-at (core:source-pos-info-inlined-at spi))
+         (scope (if inlined-at (cached-function-scope fsi) dbg-current-scope)))
     (declare (ignore file-handle))
     (when (and *trap-zero-lineno* (zerop lineno))
       (format *error-output* "In get-dilocation lineno was zero! Setting to ~d~%"
               (setf lineno 666666)))
     (if inlined-at
         (llvm-sys:get-dilocation (thread-local-llvm-context)
-                                 lineno col
-                                 dbg-current-scope
+                                 lineno col scope
                                  (get-dilocation inlined-at dbg-current-scope))
         (llvm-sys:get-dilocation (thread-local-llvm-context)
-                                 lineno col
-                                 dbg-current-scope))))
+                                 lineno col scope))))
 
 (defun dbg-set-irbuilder-source-location (irbuilder spi)
   (when *dbg-generate-dwarf*
@@ -325,6 +327,77 @@
                                         (core:enum-logical-or llvm-sys:diflags-enum
                                                               '(llvm-sys:diflags-zero))
                                         annotations)))
+
+(defun dbg-parameter-var (name argno &optional (type-name "T_O*")
+                                       (type llvm-sys:+dw-ate-address+))
+  (dbg-create-parameter-variable :name name :argno argno
+                                 :lineno *dbg-current-function-lineno*
+                                 :type (llvm-sys:create-basic-type
+                                        *the-module-dibuilder*
+                                        type-name 64 type 0)
+                                 :always-preserve t))
+
+(defun %dbg-variable-addr (addr var)
+  (let* ((addrmd (llvm-sys:metadata-as-value-get
+                  (thread-local-llvm-context)
+                  (llvm-sys:value-as-metadata-get addr)))
+         (varmd (llvm-sys:metadata-as-value-get
+                 (thread-local-llvm-context)
+                 var))
+         (diexpr (llvm-sys:metadata-as-value-get
+                  (thread-local-llvm-context)
+                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
+    (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr)))
+
+;;; Put in debug information for a variable corresponding to an alloca.
+(defun dbg-variable-alloca (alloca name spi
+                                   &optional (type-name "T_O*")
+                                     (type llvm-sys:+dw-ate-address+))
+  (when spi ; don't bother if there's no info.
+    (let* ((type (llvm-sys:create-basic-type
+                  *the-module-dibuilder* type-name 64 type 0))
+           (fsi (core:source-pos-info-function-scope spi))
+           (scope (if fsi
+                      (cached-function-scope fsi)
+                      *dbg-current-scope*))
+           (auto-variable (dbg-create-auto-variable
+                           :name name
+                           :lineno (core:source-pos-info-lineno spi)
+                           :scope scope
+                           :type type)))
+      (%dbg-variable-addr alloca auto-variable))))
+
+(defun %dbg-variable-value (value var)
+    (let* ((valuemd (llvm-sys:metadata-as-value-get
+                     (thread-local-llvm-context)
+                     (llvm-sys:value-as-metadata-get value)))
+           (varmd (llvm-sys:metadata-as-value-get
+                   (thread-local-llvm-context)
+                   var))
+           (diexpr (llvm-sys:metadata-as-value-get
+                    (thread-local-llvm-context)
+                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
+      (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr)))
+
+;;; Put in debug information for a variable corresponding to an llvm Value.
+(defun dbg-variable-value (value name spi
+                                 &optional (type-name "T_O*")
+                                   (type llvm-sys:+dw-ate-address+))
+  (when spi
+    (let* ((type (llvm-sys:create-basic-type
+                  *the-module-dibuilder* type-name 64 type 0))
+           (fsi (core:source-pos-info-function-scope spi))
+           (scope (if fsi
+                      (cached-function-scope fsi)
+                      *dbg-current-scope*))
+           (auto-variable (dbg-create-auto-variable
+                           :name name
+                           :lineno (core:source-pos-info-lineno spi)
+                           :scope scope
+                           :type type)))
+      (unless auto-variable
+        (error "maybe-spill-to-register-save-area auto-variable is NIL"))
+      (%dbg-variable-value value auto-variable))))
 
 (defun set-instruction-source-position (origin function-metadata)
   (when *dbg-generate-dwarf*

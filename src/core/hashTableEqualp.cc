@@ -47,6 +47,12 @@ HashTableEqualp_sp HashTableEqualp_O::create(uint sz, Number_sp rehashSize, doub
   return hashTable;
 }
 
+HashTableEqualp_sp HashTableEqualp_O::create_default() {
+  DoubleFloat_sp rhs = DoubleFloat_O::create(2.0);
+  HashTableEqualp_sp ht = HashTableEqualp_O::create(16, rhs, DEFAULT_REHASH_THRESHOLD);
+  return ht;
+}
+
 #if 0
     void HashTableEqualp_O::serialize(::serialize::SNodeP node)
     {

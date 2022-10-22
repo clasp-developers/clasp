@@ -3,6 +3,7 @@
 
 #include <signal.h>
 #include <functional>
+#include <algorithm> // copy
 #include <clasp/gctools/threadlocal.fwd.h>
 
 typedef core::T_O*(*T_OStartUp)(core::T_O*);
@@ -57,26 +58,175 @@ typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 };
 namespace core {
 
-struct VirtualMachine {
-  static constexpr size_t MaxStackWords = 16384; // 16K words for now.
-  core::T_O**    _StackBottom;
-  size_t         _StackBytes;
-  core::T_O**    _StackTop;
-  core::T_O**    _FramePointer;
-  core::T_O**    _StackPointer;
-  core::T_sp     _CurrentFunction;
-  core::T_O**    _Literals;
-  unsigned char* _PC;
+#ifdef DEBUG_VIRTUAL_MACHINE
+#define DVM_TRACE_FRAME 0b0001
+extern int global_debug_virtual_machine;
 
-  inline void push(core::T_O* value) {
-    this->_StackPointer--;
-    *this->_StackPointer = value;
+#define VM_ASSERT_ALIGNED(vm,ptr) if (((uintptr_t)(ptr))&0x7) { printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr)); (vm).error(); }
+#define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&stackPointer&&!((vm)._stackBottom<=stackPointer && stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
+#define VM_PC_CHECK(vm,pc,bytecode_start,bytecode_end) if ((uintptr_t)pc<(uintptr_t)bytecode_start || (uintptr_t)pc>=(uintptr_t)bytecode_end) {printf("%s:%d:%s vm._pc %p is outside of the bytecode vector range [ %p - %p ]\n", __FILE__, __LINE__, __FUNCTION__, (void*)pc, (void*)bytecode_start,(void*)bytecode_end);(vm).error();}
+#define VM_CHECK(vm) VM_STACK_POINTER_CHECK(vm);
+#define VM_CURRENT_DATA(vm,data) { (vm)._data = data; }
+#define VM_CURRENT_DATA1(vm,data) { (vm)._data1 = data; }
+#define VM_INC_COUNTER0(vm) { (vm)._counter0++; }
+#define VM_INC_UNWIND_COUNTER(vm) { (vm)._unwind_counter++; }
+#define VM_INC_THROW_COUNTER(vm) { (vm)._throw_counter++; }
+#define VM_RESET_COUNTERS(vm) { (vm)._unwind_counter=0; (vm)._throw_counter=0; (vm)._counter0=0; }
+#else
+#define VM_ASSERT_ALIGNED(vm,ptr)
+#define VM_STACK_POINTER_CHECK(vm)
+#define VM_CHECK(vm)
+#define VM_PC_CHECK(vm,pc,start,end)
+#define VM_CURRENT_DATA(vm,data)
+#define VM_CURRENT_DATA1(vm,data)
+#define VM_INC_COUNTER0(vm)
+#define VM_INC_UNWIND_COUNTER(vm)
+#define VM_INC_THROW_COUNTER(vm)
+#define VM_RESET_COUNTERS(vm)
+#endif
+
+struct VirtualMachine {
+  static constexpr size_t MaxStackWords = 32768; // 32K words for now.
+  bool           _Running;
+  core::T_O*     _stackBottom[MaxStackWords];
+  size_t         _stackBytes;
+  core::T_O**    _stackTop;
+  core::T_O**    _stackGuard;
+  core::T_O**    _stackPointer;
+#ifdef DEBUG_VIRTUAL_MACHINE
+  core::T_O*     _data;
+  core::T_O*     _data1;
+  size_t         _counter0;
+  size_t         _unwind_counter;
+  size_t         _throw_counter;
+#endif
+  core::T_O**    _literals;
+  unsigned char* _pc;
+
+  void error();
+
+  void enable_guards();
+  void disable_guards();
+  
+  inline void shutdown() {
+    this->_Running = false;
+  }
+  inline void push(core::T_O**& stackPointer, core::T_O* value) {
+    stackPointer++;
+    VM_CHECK(*this);
+    VM_ASSERT_ALIGNED(*this,stackPointer);
+    *stackPointer = value;
   }
 
-  inline core::T_O* pop() {
-    core::T_O* value = *this->_StackPointer;
-    this->_StackPointer++;
+  inline core::T_O* pop(core::T_O**& stackPointer) {
+    core::T_O* value = *stackPointer;
+    stackPointer--;
+    VM_CHECK(*this);
     return value;
+  }
+
+  // Allocate a Vaslist object on the stack.
+  inline core::T_O* alloca_vaslist1(core::T_O**& stackPointer,
+                                    core::T_O** args, size_t nargs) {
+    stackPointer += 2;
+    *(stackPointer - 1) = (core::T_O*)args;
+    *(stackPointer - 0) = Vaslist::make_shifted_nargs(nargs);
+    VM_CHECK(*this);
+    return gc::tag_vaslist<core::T_O*>((core::Vaslist*)(stackPointer - 1));
+  }
+
+  inline core::T_O* alloca_vaslist2(core::T_O**& stackPointer,
+                                    core::T_O** args, size_t nargs) {
+    core::T_O* vl = this->alloca_vaslist1(stackPointer,args,nargs);
+    core::T_O* vl_backup = this->alloca_vaslist1(stackPointer,args,nargs);
+    return vl;
+  }
+    
+  // Drop NELEMS slots on the stack all in one go.
+  inline void drop(core::T_O**& stackPointer, size_t nelems) {
+    stackPointer -= nelems;
+    VM_CHECK(*this);
+    VM_ASSERT_ALIGNED(*this,stackPointer);
+  }
+
+  // Get a pointer to the nth element from the stack
+  // i.e. 0 is most recently pushed, 1 the next most recent, etc.
+  inline core::T_O** stackref(core::T_O**& stackPointer, ptrdiff_t n) {
+    VM_CHECK(*this);
+    VM_ASSERT_ALIGNED(*this,stackPointer);
+    return stackPointer - n;
+  }
+
+  // Push a new frame with NLOCALS local variables.
+  // Return the new stack pointer.
+  inline T_O** push_frame(core::T_O** framePointer, size_t nlocals) {
+#ifdef DEBUG_VIRTUAL_MACHINE
+    if (global_debug_virtual_machine&DVM_TRACE_FRAME) {
+      printf("\nFRAME PUSH %p %p %lu unwind_counter %lu throw_counter %lu\n", this->_data, this->_data1, this->_counter0, this->_unwind_counter, this->_throw_counter);
+    }
+#endif
+    core::T_O** ret = framePointer + nlocals;
+    VM_STACK_POINTER_CHECK(*this);
+    VM_ASSERT_ALIGNED(*this,ret);
+    return ret;
+  }
+
+  inline void setreg(T_O** framePointer, size_t base, core::T_O* value) {
+    *(framePointer + base + 1) = value;
+  }
+
+  inline void savesp(T_O** framePointer, T_O**& stackPointer, size_t base) {
+    *(framePointer + base + 1) = (core::T_O*)stackPointer;
+  }
+
+  inline void restoresp(T_O** framePointer, T_O**& stackPointer,
+                        size_t base) {
+    stackPointer = (core::T_O**)(*(framePointer + base + 1));
+  }
+
+  // Copy N elements from SOURCE into the current frame's register file
+  // starting at BASE.
+  inline void copytoreg(core::T_O** framePointer, core::T_O** source,
+                        size_t n, size_t base) {
+    VM_CHECK(*this);
+    VM_ASSERT_ALIGNED(*this,source);
+    std::copy(source, source + n, framePointer + base + 1);
+  }
+
+  // Fill OBJECT into N registers starting at BASE.
+  inline void fillreg(core::T_O** framePointer, core::T_O* object,
+                      size_t n, size_t base) {
+    VM_CHECK(*this);
+    VM_ASSERT_ALIGNED(*this,framePointer+base+1);
+    std::fill(framePointer + base + 1, framePointer + base + n + 1, object);
+  }
+
+  // Get a pointer to the nth register in the current frame.
+  inline core::T_O** reg(core::T_O** framePointer, size_t n) {
+    VM_CHECK(*this);
+    VM_ASSERT_ALIGNED(*this,framePointer+n+1);
+    return framePointer + n + 1;
+  }
+
+  // Compute how many elements are on the stack in the current frame
+  // but which are not part of the register file.
+  inline ptrdiff_t npushed(T_O** framePointer, T_O**& stackPointer,
+                           size_t nlocals) {
+    VM_CHECK(*this);
+    VM_ASSERT_ALIGNED(*this,stackPointer);
+    VM_ASSERT_ALIGNED(*this,framePointer);
+    return stackPointer - nlocals - framePointer;
+  }
+
+  // Copy the n most recent pushes to the given memory.
+  // The most recent push goes to the end of the range.
+  // Unlike copytoreg, here the destination is the pointer to the start
+  // of the range regardless of stack growth direction.
+  template < class OutputIter >
+  inline void copyto(core::T_O**& stackPointer, size_t n, OutputIter dest) {
+    VM_CHECK(*this);
+    VM_ASSERT_ALIGNED(*this,stackPointer+1-n);
+    std::copy(stackPointer + 1 - n, stackPointer + 1, dest);
   }
 
   VirtualMachine();
@@ -130,6 +280,7 @@ struct VirtualMachine {
     uint64_t   _BytesAllocated;
     uint64_t            _Tid;
     uintptr_t           _BacktraceBasePointer;
+    uint64_t            _DtreeInterpreterCallCount;
     VirtualMachine      _VM;
     
 #ifdef DEBUG_MONITOR_SUPPORT
@@ -147,6 +298,8 @@ struct VirtualMachine {
     ThreadLocalState();
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
 
+    pid_t safe_fork();
+    
     void dynEnvStackTest(core::T_sp val) const;
     void dynEnvStackSet(core::T_sp val) {
 #ifdef DEBUG_DYN_ENV_STACK
@@ -195,7 +348,7 @@ struct ThreadManager {
     // Worker must be allocated at the top of the worker thread function
     // It uses RAII to register/deregister our thread
     Worker() : _StateLowLevel((void*)this), _State(false) {
-//      printf("%s:%d:%s Starting\n", __FILE__, __LINE__, __FUNCTION__ );
+//      printf("%s:%d:%s Starting pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid() );
 #ifdef USE_BOEHM
       GC_get_stack_base(&this->_StackBase);
       GC_register_my_thread(&this->_StackBase);
@@ -203,7 +356,7 @@ struct ThreadManager {
 #endif
     };
     ~Worker() {
-//      printf("%s:%d:%s Stopping\n", __FILE__, __LINE__, __FUNCTION__ );
+ //      printf("%s:%d:%s Stopping pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid() );
 #ifdef USE_BOEHM
       GC_unregister_my_thread();
 #endif
@@ -213,12 +366,18 @@ struct ThreadManager {
     // Do nothing for now
   };
   void unregister_thread(std::thread& th) {
-    // Do nothing for now
+//    printf("%s:%d:%s What do I do here pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid(); );
   };
 };
 
 
+template <typename T>
+class thread_pool;
 
+namespace gctools {
 
+extern thread_pool<ThreadManager>* global_thread_pool;
+
+};
 
 #endif

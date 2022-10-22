@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
+#include <clasp/core/bytecode.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/pathname.h>
@@ -130,8 +131,9 @@ JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::str
   std::vector<std::string> startup_functions;
   for (auto &F : *module->wrappedPtr()) {
     std::string function_name = F.getName().str();
-//    printf("%s:%d Function: %s\n", __FILE__, __LINE__, function_name.c_str());
+    // printf("%s:%d Function: %s looking for %s\n", __FILE__, __LINE__, function_name.c_str(), MODULE_STARTUP_FUNCTION_NAME);
     if (function_name.find(MODULE_STARTUP_FUNCTION_NAME) != std::string::npos) {
+      // printf("%s:%d !!!!!        Function: %s found %s\n", __FILE__, __LINE__, function_name.c_str(), MODULE_STARTUP_FUNCTION_NAME);
       startup_functions.push_back(function_name);
     }
   }
@@ -224,10 +226,10 @@ SYMBOL_EXPORT_SC_(KeywordPkg, cons_tag);
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp llvm_sys__tag_tests() {
   ql::list l;
-  l << core::Cons_O::createList(kw::_sym_fixnum_tag,core::make_fixnum(gctools::STAMPWTAG_FIXNUM),core::make_fixnum(FIXNUM_TEST),core::_sym_fixnump);
-  l << core::Cons_O::createList(kw::_sym_single_float_tag,core::make_fixnum(gctools::STAMPWTAG_SINGLE_FLOAT),core::make_fixnum(SINGLE_FLOAT_TEST), core::_sym_single_float_p);
-  l << core::Cons_O::createList(kw::_sym_character_tag,core::make_fixnum(gctools::STAMPWTAG_CHARACTER),core::make_fixnum(CHARACTER_TEST), ::cl::_sym_characterp);
-  l << core::Cons_O::createList(kw::_sym_cons_tag,core::make_fixnum(gctools::STAMPWTAG_CONS),core::make_fixnum(CONS_TEST), ::cl::_sym_consp);
+  l << core::Cons_O::createList(kw::_sym_fixnum_tag,core::make_fixnum(gctools::STAMPWTAG_FIXNUM<<(gctools::BaseHeader_s::general_mtag_shift-gctools::fixnum_shift)),core::make_fixnum(FIXNUM_TEST),core::_sym_fixnump);
+  l << core::Cons_O::createList(kw::_sym_single_float_tag,core::make_fixnum(gctools::STAMPWTAG_SINGLE_FLOAT<<(gctools::BaseHeader_s::general_mtag_shift-gctools::fixnum_shift)),core::make_fixnum(SINGLE_FLOAT_TEST), core::_sym_single_float_p);
+  l << core::Cons_O::createList(kw::_sym_character_tag,core::make_fixnum(gctools::STAMPWTAG_CHARACTER<<(gctools::BaseHeader_s::general_mtag_shift-gctools::fixnum_shift)),core::make_fixnum(CHARACTER_TEST), ::cl::_sym_characterp);
+  l << core::Cons_O::createList(kw::_sym_cons_tag,core::make_fixnum(gctools::STAMPWTAG_CONS<<(gctools::BaseHeader_s::general_mtag_shift-gctools::fixnum_shift)),core::make_fixnum(CONS_TEST), ::cl::_sym_consp);
   return l.cons();
 }
 
@@ -240,9 +242,9 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadLocalState))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"), make_fixnum((int)gctools::Alignment())),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-PARENT-OFFSET"), make_fixnum((int)offsetof(core::ValueFrame_O,_Parent))),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT0-OFFSET"), make_fixnum((int)offsetof(core::ValueFrame_O,_Objects._Data[0]))),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT-SIZE"), make_fixnum((int)sizeof(core::ValueFrame_O::value_type))),list);
+//  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-PARENT-OFFSET"), make_fixnum((int)offsetof(core::ValueFrame_O,_Parent))),list);
+//  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT0-OFFSET"), make_fixnum((int)offsetof(core::ValueFrame_O,_Objects._Data[0]))),list);
+//  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT-SIZE"), make_fixnum((int)sizeof(core::ValueFrame_O::value_type))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("LCC-ARGS-IN-REGISTERS"), make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("PTAG-MASK"), make_fixnum((int)gctools::ptag_mask)), list);
 
@@ -252,9 +254,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("WRAPPED-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::wrapped_wtag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::header_wtag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MAX-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::max_wtag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("MTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::mtag_width)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("WTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::wtag_width)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-MTAG-SHIFT"), make_fixnum((int)gctools::Header_s::Header_s::general_mtag_shift)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-MTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::general_mtag_width)), list);
   
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
@@ -282,11 +283,14 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"), make_fixnum(sizeof(uintptr_t))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-SIZE"), make_fixnum(sizeof(Vaslist))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-ALIGNMENT"), make_fixnum(VASLIST_ALIGNMENT)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-ARGS-OFFSET"), make_fixnum((int)offsetof(Vaslist,_args))),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-OFFSET"), make_fixnum((int)offsetof(Vaslist,_nargs))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-ARGS-OFFSET"), make_fixnum((int)Vaslist::args_offset())),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-OFFSET"), make_fixnum((int)Vaslist::nargs_offset())),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-DECREMENT"), make_fixnum((int)Vaslist::NargsDecrement)),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-MASK"), make_fixnum((int)Vaslist::NargsMask)),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-SHIFT"), make_fixnum((int)Vaslist::NargsShift)),list);
   
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-SIZE"), make_fixnum(sizeof(gctools::Header_s))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-STAMP-OFFSET"), make_fixnum(offsetof(gctools::Header_s,_stamp_wtag_mtag._value))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-STAMP-OFFSET"), make_fixnum(offsetof(gctools::Header_s,_badge_stamp_wtag_mtag._value))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-STAMP-SIZE"), make_fixnum(sizeof(gctools::tagged_stamp_t))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
@@ -295,8 +299,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UNWIND-PROTECT-DYNENV-SIZE"),make_fixnum(gctools::sizeof_with_header<UnwindProtectDynEnv_O>())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("BINDING-DYNENV-SIZE"),make_fixnum(gctools::sizeof_with_header<BindingDynEnv_O>())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-SIZE"),make_fixnum(gctools::sizeof_with_header<Cons_O>())),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,_EntryPoint))),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GLOBAL-ENTRY-POINT-ENTRY-POINTS-OFFSET"),make_fixnum(offsetof(core::GlobalEntryPoint_O, _EntryPoints))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,_TheSimpleFun))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GLOBAL-ENTRY-POINT-ENTRY-POINTS-OFFSET"),make_fixnum(offsetof(core::GlobalSimpleFun_O, _EntryPoints))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   LoadTimeValues_O tempLtv;
@@ -321,7 +325,6 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "WRAPPED-WHERE-TAG", make_fixnum(gctools::Header_s::wrapped_wtag));
   ENTRY(list, "HEADER-WHERE-TAG", make_fixnum(gctools::Header_s::header_wtag));
   ENTRY(list, "WHERE-TAG-WIDTH", make_fixnum(gctools::Header_s::where_tag_width));
-  ENTRY(list, "STAMP-MASK", make_fixnum(gctools::Header_s::stamp_mask));
   ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMPWTAG_max));
   ENTRY(list, "CONS-STAMP", make_fixnum(gctools::STAMPWTAG_CONS));
   ENTRY(list, "VASLIST_S-STAMP", make_fixnum(gctools::STAMPWTAG_VASLIST_S));
@@ -378,8 +381,8 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   if (unbox_fixnum(functionSize) != Function_O_size) {
     SIMPLE_ERROR(("Mismatch between function size[%d] and core::Function_O size[%d]") , unbox_fixnum(functionSize) , Function_O_size);
   }
-  if (function_description_offset.unsafe_fixnum()!=offsetof(core::GlobalEntryPoint_O,_FunctionDescription)) {
-    SIMPLE_ERROR(("Mismatch between function description offset[%d] and core::GlobalEntryPoint_O._FunctionDescription offset[%d]") , function_description_offset.unsafe_fixnum() , offsetof(core::GlobalEntryPoint_O,_FunctionDescription));
+  if (function_description_offset.unsafe_fixnum()!=offsetof(core::GlobalSimpleFun_O,_FunctionDescription)) {
+    SIMPLE_ERROR(("Mismatch between function description offset[%d] and core::GlobalSimpleFun_O._FunctionDescription offset[%d]") , function_description_offset.unsafe_fixnum() , offsetof(core::GlobalSimpleFun_O,_FunctionDescription));
   }
   if ( gcRootsInModuleSize.notnilp() ) {
     int gcRootsInModule_size = sizeof(gctools::GCRootsInModule);
@@ -523,7 +526,9 @@ CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcs, core::T_sp only) {
 
 DOCGROUP(clasp)
 CL_DEFUN ClaspJIT_sp llvm_sys__clasp_jit() {
-  return gc::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
+  Lisp::GCRoots* roots = &_lisp->_Roots;
+  //  printf("%s:%d:%s Getting _ClaspJIT roots %p  roots->_ClaspJIT %p nilp %d\n", __FILE__, __LINE__, __FUNCTION__, roots, roots->_ClaspJIT.raw_(), roots->_ClaspJIT.nilp());
+  return gc::As_unsafe<ClaspJIT_sp>(roots->_ClaspJIT);
 }
 
 
@@ -536,6 +541,14 @@ void initialize_llvm() {
   llvm::InitializeAllTargetMCs();
   llvm::InitializeAllAsmParsers();
   llvm::InitializeAllDisassemblers();
+};
+
+
+void initialize_ClaspJIT() {
+  printf("%s:%d:%s About to set _ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
+  auto jit_engine = gctools::GC<ClaspJIT_O>::allocate( false, (llvmo::JITDylib_O*)NULL );
+  //llvm_sys__create_lljit_thread_pool();
+    _lisp->_Roots._ClaspJIT = jit_engine;
 }
 
 void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose what) const {
@@ -561,27 +574,24 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
       break;
   case candoGlobals: {
     initialize_llvm();
-    
+    initialize_ClaspJIT();
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
 #ifdef USE_JITLINKER
-    #error "Define a different code-model"
+#error "Define a different code-model"
 #else
-    #ifdef _TARGET_OS_DARWIN
+#ifdef _TARGET_OS_DARWIN
   // This is from Lang Hames who said on Discord #llvm channel:
   // @drmeister Regarding code models: I would switch your code model and custom linking layer together:
   // If Darwin then use ObjectLinkingLayer and Small, otherwise RTDyldObjectLinkingLayer and Large.
   // Also see llvmoExpose.cc
   //     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Small);
-    #else
+#else
     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
-    #endif
 #endif
-    auto jit_engine = gctools::GC<ClaspJIT_O>::allocate(false);
-    //llvm_sys__create_lljit_thread_pool();
-    _lisp->_Roots._ClaspJIT = jit_engine;
+#endif
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_dumpObjectFiles));
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
@@ -608,139 +618,92 @@ void LlvmoExposer_O::shutdown() {
   gctools::gctools__garbage_collect();
 };
 
-CL_DEFUN core::Pointer_sp llvm_sys__installInterpreterTrampoline() {
-  std::string trampoline = R"trampoline(
-
-@__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
-@__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
-
-define { i8*, i64 } @tail_call_with_stackmap({ i8*, i64 } (i8*, i64, i8**)* nocapture %fn, i8* %closure, i64 %nargs, i8** %args) #0  {
-entry:
-  %Registers = alloca [3 x i64], align 16
-  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %Registers)
-  %0 = bitcast [3 x i64]* %Registers to i8*
-  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %0) #2
-  %1 = ptrtoint i8* %closure to i64
-  %arrayidx = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 0
-  store i64 %1, i64* %arrayidx, align 16
-  %arrayidx1 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 1
-  store i64 %nargs, i64* %arrayidx1, align 8
-  %2 = ptrtoint i8** %args to i64
-  %arrayidx2 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 2
-  store i64 %2, i64* %arrayidx2, align 16
-  %call = call { i8*, i64 } %fn( i8* %closure, i64 %nargs, i8** %args)
-  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %0) #2
-  ret { i8*, i64 } %call
-}
-
-declare i32 @__gxx_personality_v0(...) #4
-
-define void @"CLASP_STARTUP_trampoline"() #4 personality i32 (...)* @__gxx_personality_v0 {
-entry:
-  ret void
-}
-
-declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #1
-
-declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #1
-
-declare void @llvm.experimental.stackmap(i64, i32, ...) #3
-
-
-attributes #0 = { mustprogress uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #1 = { argmemonly mustprogress nofree nosync nounwind willreturn }
-attributes #2 = { nounwind }
-attributes #3 = { nofree nosync willreturn }
-attributes #4 = { nounwind "frame-pointer"="all" }
-
-)trampoline";
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  trampoline = std::regex_replace( trampoline, std::regex("CLASP_STARTUP"), std::string(MODULE_STARTUP_FUNCTION_NAME) );
-  Module_sp module = llvm_sys__parseIRString(trampoline, context, "interpreter_trampoline" );
-//  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
-  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
-  ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  core::Pointer_sp ptr = jit->lookup(jitDylib,"tail_call_with_stackmap");
-//  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
-  core::interpreter_trampoline = (trampoline_function)ptr->ptr();
-//  printf("%s:%d:%s after interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
-  return ptr;
-}
 
 
 /*!
    Install a trampoline that spills registers onto the stack
 
-   We could recover the bytecode PC if we spill it into the stack here as well.
-   We could register another stackmap entry that stores the PC for backtraces and debugging.
-   Just add another slot to %Registers and register it with a new stackmap value.
-
+   The bytecode trampoline passes a PC.
 */
 
-CL_DEFUN core::Pointer_sp llvm_sys__installBytecodeTrampoline() {
-  std::string trampoline = R"trampoline(
+};
 
-@__clasp_gcroots_in_module_trampoline = internal global { i64, i8*, i64, i64, i8**, i64 } zeroinitializer
-@__clasp_literals_trampoline = internal global [0 x i8*] zeroinitializer
-
-define { i8*, i64 } @tail_call_with_stackmap({ i8*, i64 } (i8*, i8*, i64, i8**)* nocapture %fn, i8* %pc, i8* %closure, i64 %nargs, i8** %args) #0  {
-entry:
-  %Registers = alloca [3 x i64], align 16
-  call void (i64, i32, ...) @llvm.experimental.stackmap(i64 3735879680, i32 0, [3 x i64]* nonnull %Registers)
-  %0 = bitcast [3 x i64]* %Registers to i8*
-  call void @llvm.lifetime.start.p0i8(i64 24, i8* nonnull %0) #2
-  %1 = ptrtoint i8* %closure to i64
-  %arrayidx = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 0
-  store i64 %1, i64* %arrayidx, align 16
-  %arrayidx1 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 1
-  store i64 %nargs, i64* %arrayidx1, align 8
-  %2 = ptrtoint i8** %args to i64
-  %arrayidx2 = getelementptr inbounds [3 x i64], [3 x i64]* %Registers, i64 0, i64 2
-  store i64 %2, i64* %arrayidx2, align 16
-  %call = call { i8*, i64 } %fn( i8* %pc, i8* %closure, i64 %nargs, i8** %args)
-  call void @llvm.lifetime.end.p0i8(i64 24, i8* nonnull %0) #2
-  ret { i8*, i64 } %call
+extern "C" {
+NEVER_OPTIMIZE
+gctools::return_type default_bytecode_trampoline(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
+  return bytecode_call(pc,closure,nargs,args);
 }
 
-declare i32 @__gxx_personality_v0(...) #4
-
-define void @"CLASP_STARTUP_trampoline"() #4 personality i32 (...)* @__gxx_personality_v0 {
-entry:
-  ret void
+NEVER_OPTIMIZE
+gctools::return_type unknown_bytecode_trampoline(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
+  return bytecode_call(pc,closure,nargs,args);
 }
 
-declare void @llvm.lifetime.start.p0i8(i64 immarg, i8* nocapture) #1
+NEVER_OPTIMIZE
+gctools::return_type lambda_nil(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
+  return bytecode_call(pc,closure,nargs,args);
+}
+};
 
-declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #1
+namespace llvmo {
+#include "trampoline.h"
 
-declare void @llvm.experimental.stackmap(i64, i32, ...) #3
-
-
-attributes #0 = { mustprogress uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #1 = { argmemonly mustprogress nofree nosync nounwind willreturn }
-attributes #2 = { nounwind }
-attributes #3 = { nofree nosync willreturn }
-attributes #4 = { nounwind "frame-pointer"="all" }
-
-)trampoline";
-
-  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  trampoline = std::regex_replace( trampoline, std::regex("CLASP_STARTUP"), std::string(MODULE_STARTUP_FUNCTION_NAME) );
-  Module_sp module = llvm_sys__parseIRString(trampoline, context, "interpreter_trampoline" );
-//  printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
-  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
+CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  core::Pointer_sp ptr = jit->lookup(jitDylib,"tail_call_with_stackmap");
-//  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
-  core::bytecode_trampoline = (bytecode_trampoline_function)ptr->ptr();
-//  printf("%s:%d:%s after interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
-  return ptr;
+  if (!getenv("CLASP_ENABLE_TRAMPOLINES")) {
+    // If the JIT isn't ready then use the default trampoline
+    return Values(Pointer_O::create((void*)bytecode_call),
+                  SimpleBaseString_O::make("bytecode_call"));
+  }
+  if (jit.nilp()) {
+    // If the JIT isn't ready then use the default trampoline
+    return Values(Pointer_O::create((void*)default_bytecode_trampoline),
+                  SimpleBaseString_O::make("default_bytecode_trampoline"));
+  }
+  if (tname.consp()
+      && CONS_CAR(tname)==::cl::_sym_lambda
+      && CONS_CDR(tname).consp()
+      && CONS_CAR(CONS_CDR(tname)).nilp()) {
+    return Values(Pointer_O::create((void*)lambda_nil),
+                  SimpleBaseString_O::make("lambda_nil"));
+  }
+  
+  std::string name;
+  if (gc::IsA<core::Symbol_sp>(tname)) {
+    name = gc::As_unsafe<core::Symbol_sp>(tname)->fullName();
+  } else {
+    name = _rep_(tname);
+    // printf("%s:%d:%s trampoline name = |%s|\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
+    // fflush();
+    if (name[0]=='"' && name[name.size()-1] == '"') {
+      if (name.size() < 3) { // matches ""
+        return Values(Pointer_O::create((void*)unknown_bytecode_trampoline),
+                      SimpleBaseString_O::make("unknown_bytecode_trampoline"));
+      }
+    }
+    name = name.substr(1,name.size()-2);   // Strip double quotes
+  }
+  name = name + "_bct";
+  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
+  std::string trampoline = global_trampoline;
+  trampoline = core::searchAndReplaceString( trampoline, "@WRAPPER_NAME", "@\""+name+"\"");
+  trampoline = core::searchAndReplaceString( trampoline, "WRAPPER_NAME", name);
+  stringstream ss_trampoline;
+  ss_trampoline << global_trampoline_datalayout_triple;
+  ss_trampoline << trampoline;
+  trampoline = ss_trampoline.str();
+  //printf("%s:%d:%s About to parseIRString %s\n", __FILE__, __LINE__, __FUNCTION__, trampoline.c_str());
+  Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline" );
+  //printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
+  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
+  core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib,name);
+  //  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
+  //  printf("%s:%d:%s after interpreter_t
+  return Values(bytecode_ptr,SimpleBaseString_O::make(name));
 }
 
-void initialize_llvm(int argc, char **argv) {
-//  InitLLVM X(argc,argv);
-  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
-}
+
+
 
 };
 

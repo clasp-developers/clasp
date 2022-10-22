@@ -15,22 +15,6 @@
     #+darwin "/usr/local/opt/llvm@~a/bin/llvm-config")
   "Candidate names for the llvm-config binary.")
 
-(defparameter +scraper-headers+
-  '(:init_functions_inc_h :init_classes_inc_h :source_info_inc_h
-    :symbols_scraped_inc_h :enum_inc_h :initializers_inc_h :expose_inc_h
-    :terminators_inc_h :pre_gc_startup_inc_h :c_wrappers_h)
-  "The C macro names of the scraper headers used during a non-precise build.")
-
-(defparameter +scraper-precise-headers+
-  '(:init_functions_inc_h :init_classes_inc_h :source_info_inc_h
-    :symbols_scraped_inc_h :enum_inc_h :initializers_inc_h :expose_inc_h
-    :terminators_inc_h :pre_gc_startup_inc_h :c_wrappers_h :clasp_gc_cc)
-  "The C macro names of the scraper headers used during a precise build.")
-
-(defparameter +scraper-lisp-sources+
-  '(:cl_wrappers_lisp)
-  "The C macro names of the scraper lisp sources.")
-
 (defmethod configure-unit (configuration (unit (eql :llvm)))
   "Find the llvm-config binary and use it to configure LLVM."
   (with-accessors ((llvm-config llvm-config)

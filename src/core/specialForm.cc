@@ -40,7 +40,7 @@ namespace core {
 
 
 SpecialForm_sp SpecialForm_O::create(Symbol_sp symbol, SpecialFormCallback fptr) {
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<SpecialForm_O>(symbol,nil<core::T_O>());
+  GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<SpecialForm_O>(symbol,nil<core::T_O>());
   SpecialForm_sp sf = gctools::GC<SpecialForm_O>::allocate(entryPoint);
   sf->_fptr = fptr;
   return sf;

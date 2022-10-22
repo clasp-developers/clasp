@@ -114,13 +114,13 @@ using namespace gctools;
 size_t obj_kind( core::T_O *tagged_ptr) {
   const core::T_O *client = untag_object<const core::T_O *>(tagged_ptr);
   const Header_s *header = reinterpret_cast<const Header_s *>(GeneralPtrToHeaderPtr(client));
-  return (size_t)(header->_stamp_wtag_mtag.stamp_());
+  return (size_t)(header->_badge_stamp_wtag_mtag.stamp_());
 }
 
 const char *obj_kind_name(core::T_O *tagged_ptr) {
   core::T_O *client = untag_object<core::T_O *>(tagged_ptr);
   const Header_s *header = reinterpret_cast<const Header_s *>(GeneralPtrToHeaderPtr(client));
-  return obj_name(header->_stamp_wtag_mtag.stamp_());
+  return obj_name(header->_badge_stamp_wtag_mtag.stamp_());
 }
 
 bool valid_stamp(gctools::stamp_t stamp) {
@@ -129,7 +129,7 @@ bool valid_stamp(gctools::stamp_t stamp) {
   if (stamp_index<global_stamp_max) return true;
   return false;
 #elif defined(USE_BOEHM)
-  if (stamp<=global_unshifted_nowhere_stamp_names.size()) {
+  if (stamp<=STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) {
     return true;
   }
   return false;
@@ -142,7 +142,7 @@ const char *obj_name(gctools::stamp_t stamp) {
   if (stamp == (gctools::stamp_t)STAMPWTAG_null) {
     return "UNDEFINED";
   }
-  if ( stamp > STAMPWTAG_max ) stamp = gctools::GCStamp<core::Instance_O>::StampWtag;
+  if ( stamp > (STAMPWTAG_max ))stamp = gctools::GCStamp<core::Instance_O>::StampWtag;
   size_t stamp_index = (size_t)stamp;
   ASSERT(stamp_index<=global_stamp_max);
 //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
@@ -174,8 +174,8 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 #endif
 
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(GeneralPtrToHeaderPtr(client));
-  ASSERTF(header->_stamp_wtag_mtag.stampP(), ("obj_deallocate_unmanaged_instance called without a valid object"));
-  gctools::GCStampEnum stamp = (GCStampEnum)(header->_stamp_wtag_mtag.stamp_());
+  ASSERTF(header->_badge_stamp_wtag_mtag.stampP(), ("obj_deallocate_unmanaged_instance called without a valid object"));
+  gctools::GCStampEnum stamp = (GCStampEnum)(header->_badge_stamp_wtag_mtag.stamp_());
 #ifndef RUNNING_PRECISEPREP
 #if defined(USE_MPS) || defined(USE_PRECISE_GC)
   size_t jump_table_index = (size_t)stamp; // - stamp_first_general;
@@ -227,13 +227,13 @@ mps_addr_t obj_skip(mps_addr_t client) {
   return obj_skip_debug(client,false,objectSize);
 }
 
-__attribute__((noinline))  mps_addr_t obj_skip_debug_wrong_size(mps_addr_t client,
-                                                            void* header,
-                                                            size_t stamp_wtag_mtag,
-                                                            size_t stamp,
-                                                            size_t allocate_size,
-                                                            size_t skip_size,
-                                                            int delta) {
+mps_addr_t obj_skip_debug_wrong_size(mps_addr_t client,
+                                     void* header,
+                                     size_t stamp_wtag_mtag,
+                                     size_t stamp,
+                                     size_t allocate_size,
+                                     size_t skip_size,
+                                     int delta) {
   printf("%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %lu) allocate_size -> %lu  obj_skip -> %lu delta -> %d\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
          __FILE__, __LINE__, (void*)header, stamp_wtag_mtag, stamp, allocate_size, skip_size, delta );
   size_t objectSize;
@@ -378,7 +378,7 @@ void obj_finalize(mps_addr_t client) {
     #undef GC_OBJ_FINALIZE_TABLE
   #endif // ifndef RUNNING_PRECISEPREP
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(GeneralPtrToHeaderPtr(client)));
-  ASSERTF(header->_stamp_wtag_mtag.stampP(), BF("obj_finalized called without a valid object"));
+  ASSERTF(header->_stamp_wtag_mtag.stampP(), "obj_finalized called without a valid object");
   gctools::GCStampEnum stamp = (GCStampEnum)(header->_stamp_wtag_mtag.stamp_());
   #ifndef RUNNING_PRECISEPREP
   size_t table_index = (size_t)stamp;
@@ -521,7 +521,7 @@ NOINLINE void set_one_static_class_Header() {
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(UnshiftedStamp theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<TheClass>(kw::_sym_create,nil<core::T_O>());
+  core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<TheClass>(kw::_sym_create,nil<core::T_O>());
   auto cb = gctools::GC<TheClass>::allocate(entryPoint);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
@@ -536,7 +536,7 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(UnshiftedStamp 
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<core::BuiltInObjectCreator<TheClass>>(nil<core::T_O>(),nil<core::T_O>());
+  core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<core::BuiltInObjectCreator<TheClass>>(nil<core::T_O>(),nil<core::T_O>());
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_StampWtagMtag.shifted_stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
@@ -732,36 +732,44 @@ void initialize_classes_and_methods()
 #endif
 
 
-void dumpBoehmLayoutTables(FILE* fout) {
-  fprintf(fout, "# dumpBoehmLayoutTables when static analyzer output is not available\n" );
+void dumpBoehmLayoutTables(std::ostream& fout) {
+#define LAYOUT_STAMP(_class_) (gctools::GCStamp<_class_>::StampWtag >> gctools::BaseHeader_s::wtag_width)
+  fmt::print(fout, "# dumpBoehmLayoutTables when static analyzer output is not available\n" );
 #define Init_class_kind(_class_) \
-  fprintf(fout, "Init_class_kind( stamp=%d, name=\"%s\", size=%lu)\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
+  fmt::print(fout, "Init_class_kind( stamp={}, name=\"{}\", size={});\n", LAYOUT_STAMP(_class_),#_class_,sizeof(*(_class_*)0x0));
 #define Init_templated_kind(_class_) \
-  fprintf(fout, "Init_templated_kind( stamp=%d, name=\"%s\", size=%lu)\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
+  fmt::print(fout, "Init_templated_kind( stamp={}, name=\"{}\", size={});\n", LAYOUT_STAMP(_class_),#_class_,sizeof(*(_class_*)0x0));
 #define Init__fixed_field(_class_,_index_,_type_,_field_name_) \
-  fprintf(fout, "Init__fixed_field( stamp=%d, index=%d, data_type=%d,field_name=\"%s\",field_offset=%lu);\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
+  fmt::print(fout, "Init__fixed_field( stamp={}, index={}, data_type={},field_name=\"{}\",field_offset={});\n", LAYOUT_STAMP(_class_),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
 #define Init__variable_array0(_class_,_data_field_) \
-  fprintf(fout,"Init__variable_array0( stamp=%d, name=\"%s\", offset=%lu );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_data_field_,offsetof(_class_,_data_field_));
+  fmt::print(fout,"Init__variable_array0( stamp={}, name=\"{}\", offset={} );\n", LAYOUT_STAMP(_class_),#_data_field_,offsetof(_class_,_data_field_));
 #define Init__variable_capacity(_class_,_value_type_,_end_,_capacity_) \
-  fprintf(fout,"Init__variable_capacity( stamp=%d, element_size=%lu, end_offset=%lu, capacity_offset=%lu );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
+  fmt::print(fout,"Init__variable_capacity( stamp={}, element_size={}, end_offset={}, capacity_offset={} );\n", LAYOUT_STAMP(_class_),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
 #define Init__variable_field(_class_,_data_type_,_index_,_field_name_,_field_offset_) \
-  fprintf(fout,"Init__variable_field( stamp=%d, index=%d, data_type=%d, field_name=\"%s\", field_offset=%d );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_data_type_,_field_name_,_field_offset_);
-#define Init_global_ints(_name_,_value_) fprintf(fout,"Init_global_ints(name=\"%s\",value=%d)\n", _name_,_value_);
+  fmt::print(fout,"Init__variable_field( stamp={}, index={}, data_type={}, field_name=\"{}\", field_offset={} );\n", LAYOUT_STAMP(_class_),_index_,_data_type_,_field_name_,_field_offset_);
+#define Init_global_ints(_name_,_value_) fmt::print(fout,"Init_global_ints(name=\"{}\",value={});\n", _name_,_value_);
   printf("Dumping interface\n");
   gctools::dump_data_types(fout,"");
-  core::registerOrDumpDtreeInfo(fout);
+//  core::registerOrDumpDtreeInfo(fout);
   Init_class_kind(core::T_O);
   Init_class_kind(core::General_O);
+
   Init_class_kind(core::Cons_O);
   Init__fixed_field(core::Cons_O,0,SMART_PTR_OFFSET,_Car);
   Init__fixed_field(core::Cons_O,1,SMART_PTR_OFFSET,_Cdr);
+
   Init_class_kind(core::SimpleBaseString_O);
   Init__variable_array0(core::SimpleBaseString_O,_Data._Data);
   Init__variable_capacity(core::SimpleBaseString_O,value_type,_Data._MaybeSignedLength,_Data._MaybeSignedLength);
   Init__variable_field(core::SimpleBaseString_O,gctools::ctype_unsigned_char, 0, "only", 0);
 
-  Init_class_kind(core::Function_O);
+  Init_class_kind(core::SimpleCharacterString_O);
+  Init__variable_array0(core::SimpleCharacterString_O,_Data._Data);
+  Init__variable_capacity(core::SimpleCharacterString_O,value_type,_Data._MaybeSignedLength,_Data._MaybeSignedLength);
+  Init__variable_field(core::SimpleCharacterString_O,gctools::ctype_unsigned_int, 0, "only", 0);
   
+  Init_class_kind(core::Function_O);
+
   Init_class_kind(core::Symbol_O);
   Init__fixed_field(core::Symbol_O,0,SMART_PTR_OFFSET,_Name);
   Init__fixed_field(core::Symbol_O,1,SMART_PTR_OFFSET,_HomePackage);
@@ -770,26 +778,73 @@ void dumpBoehmLayoutTables(FILE* fout) {
   Init__fixed_field(core::Symbol_O,4,SMART_PTR_OFFSET,_SetfFunction);
   Init__fixed_field(core::Symbol_O,5,SMART_PTR_OFFSET,_PropertyList);
 
-  Init_class_kind(core::GlobalEntryPoint_O);
-  Init__fixed_field(core::GlobalEntryPoint_O,0,SMART_PTR_OFFSET,_FunctionDescription );
-  Init__fixed_field(core::GlobalEntryPoint_O,1,RAW_POINTER_OFFSET,_EntryPoints._EntryPoints[0]);
-  Init__fixed_field(core::GlobalEntryPoint_O,1+NUMBER_OF_ENTRY_POINTS,ctype__Bool,_EntryPoints._Defined);
+  Init_class_kind(core::DestDynEnv_O);
+  Init__fixed_field(core::DestDynEnv_O,0,RAW_POINTER_OFFSET,target);
+
+  Init_class_kind(core::LexDynEnv_O);
+  Init__fixed_field(core::LexDynEnv_O,0,RAW_POINTER_OFFSET,target);
+  Init__fixed_field(core::LexDynEnv_O,1,RAW_POINTER_OFFSET,frame);
+
+  Init_class_kind(core::BlockDynEnv_O);
+  Init__fixed_field(core::BlockDynEnv_O,0,RAW_POINTER_OFFSET,target);
+  Init__fixed_field(core::BlockDynEnv_O,1,RAW_POINTER_OFFSET,frame);
+
+  Init_class_kind(core::TagbodyDynEnv_O);
+  Init__fixed_field(core::TagbodyDynEnv_O,0,RAW_POINTER_OFFSET,target);
+  Init__fixed_field(core::TagbodyDynEnv_O,1,RAW_POINTER_OFFSET,frame);
+
+  Init_class_kind(core::CatchDynEnv_O);
+  Init__fixed_field(core::CatchDynEnv_O,0,RAW_POINTER_OFFSET,target);
+  Init__fixed_field(core::CatchDynEnv_O,0,SMART_PTR_OFFSET,tag);
+
+  Init_class_kind(core::UnwindProtectDynEnv_O);
+  Init__fixed_field(core::UnwindProtectDynEnv_O,0,RAW_POINTER_OFFSET,target);
+
+  Init_class_kind(core::BindingDynEnv_O);
+  Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,sym);
+  Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,old);
+
+  Init_class_kind(core::BytecodeModule_O);
+  Init__fixed_field(core::BytecodeModule_O,0,SMART_PTR_OFFSET,_Literals);
+  Init__fixed_field(core::BytecodeModule_O,1,SMART_PTR_OFFSET,_Bytecode);
+  Init__fixed_field(core::BytecodeModule_O,2,SMART_PTR_OFFSET,_CompileInfo);
+
+  Init_class_kind(core::GlobalSimpleFun_O);
+  Init__fixed_field(core::GlobalSimpleFun_O,0,SMART_PTR_OFFSET,_TheSimpleFun );
+  Init__fixed_field(core::GlobalSimpleFun_O,1,SMART_PTR_OFFSET,_FunctionDescription );
+  Init__fixed_field(core::GlobalSimpleFun_O,2,SMART_PTR_OFFSET,_Code );
+  for (int iii=0; iii<NUMBER_OF_ENTRY_POINTS; iii++ ) {
+    Init__fixed_field(core::GlobalSimpleFun_O,3+iii,RAW_POINTER_OFFSET,_EntryPoints._EntryPoints[iii]);
+  }
+  Init__fixed_field(core::GlobalSimpleFun_O,3+NUMBER_OF_ENTRY_POINTS,SMART_PTR_OFFSET,_localSimpleFun);
+
+  Init_class_kind(core::GlobalBytecodeSimpleFun_O);
+  Init__fixed_field(core::GlobalBytecodeSimpleFun_O,0,SMART_PTR_OFFSET,_TheSimpleFun );
+  Init__fixed_field(core::GlobalBytecodeSimpleFun_O,1,SMART_PTR_OFFSET,_FunctionDescription );
+  Init__fixed_field(core::GlobalBytecodeSimpleFun_O,2,SMART_PTR_OFFSET,_Code );
+  Init__fixed_field(core::GlobalBytecodeSimpleFun_O,3,RAW_POINTER_OFFSET,_EntryPoints._EntryPoints[0]);
 
   Init_class_kind(core::FunctionDescription_O);
   Init__fixed_field(core::FunctionDescription_O,0,SMART_PTR_OFFSET,_functionName);
+  Init__fixed_field(core::FunctionDescription_O,1,SMART_PTR_OFFSET,_sourcePathname);
+  Init__fixed_field(core::FunctionDescription_O,2,SMART_PTR_OFFSET,_lambdaList);
+  Init__fixed_field(core::FunctionDescription_O,3,SMART_PTR_OFFSET,_docstring);
+  Init__fixed_field(core::FunctionDescription_O,4,SMART_PTR_OFFSET,_declares);
+  Init__fixed_field(core::FunctionDescription_O,5,ctype_int,lineno);
+  Init__fixed_field(core::FunctionDescription_O,6,ctype_int,column);
+  Init__fixed_field(core::FunctionDescription_O,7,ctype_int,filepos);
   
   Init_class_kind(core::FuncallableInstance_O);
-  Init__fixed_field(core::FuncallableInstance_O,0,SMART_PTR_OFFSET,_Rack);
-  Init__fixed_field(core::FuncallableInstance_O,1,SMART_PTR_OFFSET,_Class);
-  Init__fixed_field(core::FuncallableInstance_O,2,SMART_PTR_OFFSET,_CompiledDispatchFunction);
+  Init__fixed_field(core::FuncallableInstance_O,0,SMART_PTR_OFFSET,_TheSimpleFun );
+  Init__fixed_field(core::FuncallableInstance_O,1,SMART_PTR_OFFSET,_Rack);
+  Init__fixed_field(core::FuncallableInstance_O,2,SMART_PTR_OFFSET,_Class);
+  Init__fixed_field(core::FuncallableInstance_O,3,SMART_PTR_OFFSET,_RealFunction);
 
-  Init_templated_kind(core::BuiltinClosure_O);
-  Init__fixed_field( core::BuiltinClosure_O, 0,SMART_PTR_OFFSET,_lambdaListHandler);
-  
-  Init_class_kind(core::ClosureWithSlots_O);
-  Init__variable_array0(core::ClosureWithSlots_O,_Slots._Data);
-  Init__variable_capacity(core::ClosureWithSlots_O,value_type,_Slots._MaybeSignedLength,_Slots._MaybeSignedLength);
-  Init__variable_field(core::ClosureWithSlots_O,SMART_PTR_OFFSET,0,"only",0);
+  Init_class_kind(core::Closure_O);
+  Init__fixed_field(core::Closure_O,0,SMART_PTR_OFFSET,_TheSimpleFun );
+  Init__variable_array0(core::Closure_O,_Slots._Data);
+  Init__variable_capacity(core::Closure_O,value_type,_Slots._MaybeSignedLength,_Slots._MaybeSignedLength);
+  Init__variable_field(core::Closure_O,SMART_PTR_OFFSET,0,"only",0);
 
   Init_templated_kind( core::WrappedPointer_O );
   Init__fixed_field( core::WrappedPointer_O, 0, SMART_PTR_OFFSET, Class_ );
@@ -802,26 +857,34 @@ void dumpBoehmLayoutTables(FILE* fout) {
   Init__fixed_field(core::Package_O, 4, SMART_PTR_OFFSET, _Nicknames);
   Init__fixed_field(core::Package_O, 5, SMART_PTR_OFFSET, _LocalNicknames);
   Init__fixed_field(core::Package_O, 6, SMART_PTR_OFFSET, _Documentation);
+
+  Init_class_kind(core::Instance_O);
+  Init__fixed_field(core::Instance_O, 0, SMART_PTR_OFFSET, _Class );
+  Init__fixed_field(core::Instance_O, 1, SMART_PTR_OFFSET, _Rack );
+
+  Init_class_kind(core::Rack_O);
+  Init__fixed_field(core::Rack_O, 0, ctype_size_t, _ShiftedStamp );
+  Init__fixed_field(core::Rack_O, 1, SMART_PTR_OFFSET, _Sig );
+  Init__variable_array0(core::Rack_O,_Slots);
+  Init__variable_capacity(core::Rack_O,value_type,_Slots._Length,_Slots._Length);
+  Init__variable_field(core::Rack_O,gctools::SMART_PTR_OFFSET, 0, "only", 0);
   
+  Init_class_kind(core::Pathname_O);
+  Init__fixed_field(core::Pathname_O,0,SMART_PTR_OFFSET,_Host);
+  Init__fixed_field(core::Pathname_O,1,SMART_PTR_OFFSET,_Device);
+  Init__fixed_field(core::Pathname_O,2,SMART_PTR_OFFSET,_Directory);
+  Init__fixed_field(core::Pathname_O,3,SMART_PTR_OFFSET,_Name);
+  Init__fixed_field(core::Pathname_O,4,SMART_PTR_OFFSET,_Type);
+  Init__fixed_field(core::Pathname_O,5,SMART_PTR_OFFSET,_Version);
 
-  Init_class_kind(core::LambdaListHandler_O);
-  Init__fixed_field(core::LambdaListHandler_O,0,SMART_PTR_OFFSET,_ClassifiedSymbolList);
-  Init__fixed_field(core::LambdaListHandler_O,1,POINTER_OFFSET,_SpecialSymbolSet.theObject);
-#if 0
- {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_SpecialSymbolSet.theObject), "_SpecialSymbolSet.theObject" }, // atomic: NIL public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_DeclareSpecifierList), "_DeclareSpecifierList" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::RequiredArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RequiredArguments._Vector._Contents), "_RequiredArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::OptionalArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_OptionalArguments._Vector._Contents), "_OptionalArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RestArgument._ArgTarget), "_RestArgument._ArgTarget" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_KeyFlag), "_KeyFlag" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::KeywordArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_KeywordArguments._Vector._Contents), "_KeywordArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_AllowOtherKeys), "_AllowOtherKeys" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::AuxArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_AuxArguments._Vector._Contents), "_AuxArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_Comment), "_Comment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_LexicalVariableNamesForDebugging), "_LexicalVariableNamesForDebugging" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-#endif
-
-
+  Init_class_kind(core::LogicalPathname_O);
+  Init__fixed_field(core::LogicalPathname_O,0,SMART_PTR_OFFSET,_Host);
+  Init__fixed_field(core::LogicalPathname_O,1,SMART_PTR_OFFSET,_Device);
+  Init__fixed_field(core::LogicalPathname_O,2,SMART_PTR_OFFSET,_Directory);
+  Init__fixed_field(core::LogicalPathname_O,3,SMART_PTR_OFFSET,_Name);
+  Init__fixed_field(core::LogicalPathname_O,4,SMART_PTR_OFFSET,_Type);
+  Init__fixed_field(core::LogicalPathname_O,5,SMART_PTR_OFFSET,_Version);
+  
      Init_class_kind(core::Vaslist_dummy_O);
      Init_class_kind(core::Unused_dummy_O);
      Init_class_kind(core::ClassHolder_O);
@@ -835,7 +898,7 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::InstanceCreator_O);
      Init_class_kind(core::StandardClassCreator_O);
      Init_class_kind(core::SpecialForm_O);
-     Init_class_kind(core::TranslationFunctor_O);
+     Init_class_kind(core::WRAPPER_Translator_O);
      Init_class_kind(core::SingleDispatchGenericFunction_O);
      Init_class_kind(core::ImmobileObject_O);
      Init_class_kind(core::WeakPointer_O);
@@ -924,7 +987,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::ComplexVector_int64_t_O);
      Init_class_kind(core::AbstractSimpleVector_O);
      Init_class_kind(core::SimpleString_O);
-     Init_class_kind(core::SimpleCharacterString_O);
      Init_class_kind(core::SimpleVector_int16_t_O);
      Init_class_kind(core::SimpleVector_byte16_t_O);
      Init_class_kind(core::SimpleBitVector_O);
@@ -955,7 +1017,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(asttooling::AsttoolingExposer_O);
      Init_class_kind(llvmo::StructLayout_O);
      Init_class_kind(clasp_ffi::ForeignTypeSpec_O);
-     Init_class_kind(core::Instance_O);
      Init_class_kind(core::DerivableCxxObject_O);
      Init_class_kind(clbind::ClassRep_O);
      Init_class_kind(core::SmallMap_O);
@@ -1062,26 +1123,8 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(llvmo::Module_O);
      Init_class_kind(llvmo::Target_O);
      Init_class_kind(llvmo::Linker_O);
-     Init_class_kind(core::Rack_O);
      Init_class_kind(core::SmallMultimap_O);
      Init_class_kind(core::Sigset_O);
-     Init_class_kind(core::Environment_O);
-     Init_class_kind(core::GlueEnvironment_O);
-     Init_class_kind(core::LexicalEnvironment_O);
-     Init_class_kind(core::RuntimeVisibleEnvironment_O);
-     Init_class_kind(core::FunctionValueEnvironment_O);
-     Init_class_kind(core::TagbodyEnvironment_O);
-     Init_class_kind(core::BlockEnvironment_O);
-     Init_class_kind(core::ValueEnvironment_O);
-     Init_class_kind(core::CompileTimeEnvironment_O);
-     Init_class_kind(core::CatchEnvironment_O);
-     Init_class_kind(core::MacroletEnvironment_O);
-     Init_class_kind(core::SymbolMacroletEnvironment_O);
-     Init_class_kind(core::FunctionContainerEnvironment_O);
-     Init_class_kind(core::UnwindProtectEnvironment_O);
-     Init_class_kind(core::ActivationFrame_O);
-     Init_class_kind(core::ValueFrame_O);
-     Init_class_kind(core::FunctionFrame_O);
      Init_class_kind(core::RandomState_O);
      Init_class_kind(core::HashTableBase_O);
      Init_class_kind(core::WeakKeyHashTable_O);
@@ -1094,8 +1137,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::Scope_O);
      Init_class_kind(core::FileScope_O);
      Init_class_kind(core::Path_O);
-     Init_class_kind(core::Pathname_O);
-     Init_class_kind(core::LogicalPathname_O);
      Init_class_kind(core::Number_O);
      Init_class_kind(core::Real_O);
      Init_class_kind(core::Rational_O);
@@ -1134,7 +1175,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_templated_kind(core::WrappedPointer_O);
      Init_templated_kind(core::Creator_O);
      Init_templated_kind(clbind::ConstructorCreator_O);
-     Init_templated_kind(core::BuiltinClosure_O);
 
 };
 

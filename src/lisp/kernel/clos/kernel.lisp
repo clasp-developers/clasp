@@ -62,7 +62,7 @@
        (core:setf-find-class new-value name)
        #+static-gfs
        (static-gfs:invalidate-designated-constructors name)
-       #+static-gfs
+       #+(or) ;static-gfs
        (static-gfs:invalidate-designated-changers name))
       (t (error 'simple-type-error :datum new-value :expected-type '(or class null)
                                    :format-control "~A is not a valid class for (setf find-class)"
@@ -75,6 +75,7 @@
 
 (defun install-method (name qualifiers specializers lambda-list fun &rest options)
   (declare (notinline ensure-generic-function))
+  (mlog "kernel.lisp::install-method  name -> {}  lambda-list -> {} %N" (core:safe-repr name) (core:safe-repr lambda-list))
 ;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
   (let* ((gf (ensure-generic-function name))
 	 (method (make-method (generic-function-method-class gf)
@@ -103,7 +104,7 @@
 	      :a-p-o-function nil
 	      :declarations nil
 	      :dependents nil)
-        (setf-function-name gfun name)
+        (core:setf-function-name gfun name)
         (setf (generic-function-method-combination gfun)
               (find-method-combination gfun 'standard nil))
         (invalidate-discriminating-function gfun)
@@ -118,7 +119,7 @@
   (declare (notinline reinitialize-instance)) ; bootstrapping
   (if *clos-booted*
       (reinitialize-instance gf :name new-name)
-      (setf-function-name gf new-name))
+      (core:setf-function-name gf new-name))
   new-name)
 
 ;;; Will be the standard method after fixup.
@@ -197,7 +198,7 @@
                                      (values nil nil)))
                                  nil)
                                 ((si::subclassp class spec))))))
-      (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf classes)
+      (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf (length classes))
       (let ((result (sort-applicable-methods
                      gf
                      (loop for method in (generic-function-methods gf)
@@ -211,7 +212,7 @@
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors (+eql-specializer-slots+ +standard-generic-function-slots+)
-    (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf classes)
+    (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" (core:safe-repr gf) (length classes))
     (flet ((applicable-method-p (method classes)
 	     (loop for spec in (safe-method-specializers method)
 		for class in classes

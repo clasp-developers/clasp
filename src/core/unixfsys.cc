@@ -244,7 +244,7 @@ CL_DEFUN T_mv core__fork(bool bReturnStream) {
       abort();
     }
   }
-  pid_t child_PID = fork();
+  pid_t child_PID = my_thread->safe_fork();
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child
@@ -277,7 +277,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(fork-redirect)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__fork_redirect(int stdout_fd, int stderr_fd) {
-  pid_t child_PID = fork();
+  pid_t child_PID = my_thread->safe_fork();
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child
@@ -1250,6 +1250,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
   char *text;
   DIR *dir;
   struct dirent *entry;
+  MultipleValues& mvn = core::lisp_multipleValues();
 
   clasp_disable_interrupts();
   dir = opendir((char *)gc::As<String_sp>(prefix)->get_std_string().c_str());
@@ -1282,7 +1283,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     }
     T_mv component_path_mv = file_truename(component_path, component, flags);
     component_path = component_path_mv;
-    kind = component_path_mv.valueGet_(1);
+    kind = mvn.valueGet(1,component_path_mv.number_of_values());
     out = Cons_O::create(Cons_O::create(component_path, kind), out);
   }
   closedir(dir);
@@ -2066,7 +2067,8 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
       // error
       DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % errno % strerror( errno ) % 0 );
 
-      return Values( clasp_make_fixnum( errno ), SimpleBaseString_O::make( std::strerror( errno )), nil<T_O>() );
+      char* serr = std::strerror(errno);
+      return Values( clasp_make_fixnum( errno ), SimpleBaseString_O::make(serr), nil<T_O>() );
     }
   }
   else
@@ -2114,7 +2116,7 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
       abort();
     }
   }
-  pid_t child_PID = fork();
+  pid_t child_PID = my_thread->safe_fork();
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child

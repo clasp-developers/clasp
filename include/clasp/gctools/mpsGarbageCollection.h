@@ -306,7 +306,7 @@ struct ReachableMPSObject {
 };
 
 
-void clasp_gc_room(std::ostringstream& OutputStream);
+void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity);
 void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots );
 
 };

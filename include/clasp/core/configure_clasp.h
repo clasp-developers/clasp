@@ -28,16 +28,28 @@ THE SOFTWARE.
 #define __CORE_CONFIG_H__
 
 
+
 // ----------------------------------------------------------------------------
 // Set system wide debug flags here
 // ----------------------------------------------------------------------------
+
+
 #if 0
+//// DEBUG_RUNTIME defined and type errors print more info
+//#define DEBUG_RUNTIME 1
 //#define DEBUG_OBJECT_FILES 1
 //#define DEBUG_VALUES 1
 //#define DEBUG_VASLIST 1
 //#define DEBUG_EVALUATE 1
 //#define DEBUG_DTORS 1
 //#define DEBUG_DYN_ENV_STACK 1
+#define DEBUG_DTREE_INTERPRETER
+//#define DEBUG_VIRTUAL_MACHINE 1
+//#define DEBUG_DRAG_CXX_CALLS 1 // Slows down all calls in CXX wrappers - study impact
+//#define DEBUG_DRAG_NATIVE_CALLS 1
+//#define DEBUG_DRAG_INTERPRET_DTREE 1
+//#define DEBUG_DRAG_CONS_ALLOCATION 1
+//#define DEBUG_DRAG_GENERAL_ALLOCATION 1
 /* 0 == no CHECK_FRAME, 1 == fast CHECK_FRAME, 2 == slow CHECK_FRAME */
 #define DEBUG_FRAME() 0
 // If ANY flags above are set - then set this one to print a message at startup
@@ -289,13 +301,17 @@ ENTRY_POINT_MAX_ARGS_IN_REGISTER_SAVE_AREA includes the closure
 
 #endif
 
-#define MODULE_STARTUP_FUNCTION_NAME "<<clasp_startup>>"
-#define MODULE_SHUTDOWN_FUNCTION_NAME "<<clasp_shutdown>>"
+#define MODULE_STARTUP_FUNCTION_NAME "clasp_startup"
+#define MODULE_SHUTDOWN_FUNCTION_NAME "clasp_shutdown"
 
 // On linux and OS X we have mkstemp so use it
 #define HAVE_MKSTEMP
 #define HAVE_MKDTEMP
 
-
-
+#if defined(DEBUG_ASSERT_TYPE_CAST) && defined(USE_PRECISE_GC)
+// DO_ASSERT_TYPE_CAST only works with USE_PRECISE_GC
+# define DO_ASSERT_TYPE_CAST 1
+#else
+// Do nothing - we can't DO_ASSERT_TYPE_CAST if
+#endif
 #endif // __CORE_CONFIG_H__

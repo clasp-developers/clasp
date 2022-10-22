@@ -203,6 +203,28 @@ namespace core {
       this->setCdrNoValidate(o);
     }
 
+  public: // atomic access
+    inline T_sp carAtomic(std::memory_order order) const {
+      return _Car.load(order);
+    }
+    inline T_sp cdrAtomic(std::memory_order order) const {
+      return _Cdr.load(order);
+    }
+    inline void setCarAtomic(T_sp o, std::memory_order order) {
+      _Car.store(o, order);
+    }
+    inline void setCdrAtomic(T_sp o, std::memory_order order) {
+      _Cdr.store(o, order);
+    }
+    inline T_sp carCAS(T_sp expected, T_sp desired, std::memory_order order) {
+      _Car.compare_exchange_strong(expected, desired, order);
+      return expected;
+    }
+    inline T_sp cdrCAS(T_sp expected, T_sp desired, std::memory_order order) {
+      _Cdr.compare_exchange_strong(expected, desired, order);
+      return expected;
+    }
+
   public:
     inline Cons_sp rplaca(T_sp o) {
       setCar(o);
@@ -346,7 +368,7 @@ struct StackAllocate<core::Cons_O> {
   core::Cons_O  _Object;
 
   template <class...ARGS>
-  StackAllocate(ARGS&&...args) : _Header(ConsHeader_s::StampWtagMtag::make_Value<core::Cons_O>()),
+  StackAllocate(ARGS&&...args) : _Header(ConsHeader_s::BadgeStampWtagMtag::make<core::Cons_O>(lisp_stack_badge())),
                                  _Object(std::forward<ARGS>(args)...) {};
 
   smart_ptr<core::Cons_O> asSmartPtr() {
@@ -667,6 +689,7 @@ namespace core {
 /*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
 List_sp core__alist_assoc_eq(List_sp alist, T_sp key);
 List_sp core__alist_assoc_eql(List_sp alist, T_sp key);
+List_sp core__alist_assoc_equal(List_sp alist, T_sp key);
  
 };
 

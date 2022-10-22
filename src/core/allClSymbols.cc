@@ -53,9 +53,10 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
   Package_sp commonLispPackage = _lisp->commonLispPackage();
   List_sp missing = nil<T_O>();
+  MultipleValues& mvn = core::lisp_multipleValues();
   for (auto it : globalAllClSymbols) {
     T_mv sym = commonLispPackage->findSymbol(it.first);
-    T_sp found = sym.valueGet_(1);
+    T_sp found = mvn.valueGet(1,sym.number_of_values());
     if (found.nilp()) {
       missing = Cons_O::create(SimpleBaseString_O::make(it.first), missing);
     }

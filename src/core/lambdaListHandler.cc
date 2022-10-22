@@ -185,65 +185,6 @@ CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 }
 
 
-void lambdaListHandler_createBindings(Function_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager *scope, size_t nargs, T_O** args ) {
-#if 0
-  if (llh->requiredLexicalArgumentsOnlyP()) {
-    size_t numReq = llh->numberOfRequiredArguments();
-    if (numReq <= LCC_ARGS_IN_REGISTERS && numReq == lcc_nargs) {
-      switch (numReq) {
-      case 4:
-        scope.new_binding(llh->_RequiredArguments[3], T_sp((gc::Tagged)lcc_fixed_arg3));
-        scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
-        scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
-        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
-#ifdef DEBUG_EVALUATE
-        if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-          printf("%s:%d:%s 4arg optimization arg0 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg0)).c_str());
-          printf("%s:%d:%s 4arg optimization arg1 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg1)).c_str());
-          printf("%s:%d:%s 4arg optimization arg2 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg2)).c_str());
-          printf("%s:%d:%s 4arg optimization arg3 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg3)).c_str());
-        }
-#endif
-        return;
-      case 3:
-        scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
-        scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
-        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
-#ifdef DEBUG_EVALUATE
-        if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-          printf("%s:%d:%s 3arg optimization arg0 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg0)).c_str());
-          printf("%s:%d:%s 3arg optimization arg1 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg1)).c_str());
-          printf("%s:%d:%s 3arg optimization arg2 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg2)).c_str());
-        }
-#endif
-        return;
-      case 2:
-        scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
-        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
-#ifdef DEBUG_EVALUATE
-        if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-          printf("%s:%d:%s 2arg optimization arg0 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg0)).c_str());
-          printf("%s:%d:%s 2arg optimization arg1 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg1)).c_str());
-        }
-#endif
-        return;
-      case 1:
-        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
-#ifdef DEBUG_EVALUATE
-        if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-          printf("%s:%d:%s 1arg optimization arg0 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg0)).c_str());
-        }
-#endif
-        return;
-      }
-      return;
-    }
-  }
-#endif
-  LOG("About to createBindingsInScopeVaslist with\n llh->%s\n    Vaslist->%s" , _rep_(llh) , _rep_(lcc_vargs));
-  llh->createBindingsInScope(closure, nargs, args, *scope);
-  return;
-}
 
 T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
   // TODO:: The code should be compiled and not interpreted
@@ -251,155 +192,11 @@ T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
   return eval::evaluate(form, env);
 }
 
-TargetClassifier::TargetClassifier(const std::set<int> &skip) : lexicalIndex(-1), skipLexicalIndices(skip) {
-  this->_SpecialSymbols = nil<T_O>();
-  this->_LambdaListSpecials = HashTableEq_O::create_default();
-  this->advanceLexicalIndex();
-};
-TargetClassifier::TargetClassifier(HashTableEq_sp specialSymbols, const std::set<int> &skip)
-    : _SpecialSymbols(specialSymbols), lexicalIndex(-1), skipLexicalIndices(skip) {
-  this->_LambdaListSpecials = HashTableEq_O::create_default();
-  this->advanceLexicalIndex();
-};
-
-size_t TargetClassifier::numberOfSpecialVariables() const
-{
-  return this->_LambdaListSpecials->hashTableCount();
-};
-
-
-void TargetClassifier::advanceLexicalIndex() {
-  while (true) {
-    ++this->lexicalIndex;
-    if (this->skipLexicalIndices.count(this->lexicalIndex) == 0)
-      return;
-  }
-}
-
-/*! Any Special symbols that haven't been seen in the lambda list need to be added to the
-      AccumulatedClassifiedSymbols */
-List_sp TargetClassifier::finalClassifiedSymbols() {
-  if (this->_SpecialSymbols.notnilp()) {
-    gc::As<HashTableEq_sp>(this->_SpecialSymbols)->maphash([this](T_sp s, T_sp val) {
-                    if ( !this->_LambdaListSpecials->contains(s) ) {
-                        this->_AccumulatedClassifiedSymbols
-                            << Cons_O::create(ext::_sym_specialVar,s);
-                    } });
-  }
-  return this->_AccumulatedClassifiedSymbols.cons();
-}
-
 void throw_if_not_destructuring_context(T_sp context) {
   if (context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
       || context == cl::_sym_destructuring_bind)
     return;
   SIMPLE_ERROR(("Lambda list is destructuring_bind but context does not support it context[%s]") , _rep_(context));
-}
-
-CL_LISPIFY_NAME("LambdaListHandler-lambdaList");
-CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
-  ql::list ll;
-  { // required arguments  req = ( num req1 req2 ...)
-    for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
-         it != this->_RequiredArguments.end(); ++it) {
-      ll << it->_ArgTarget;
-    }
-  }
-  if (this->_OptionalArguments.size() > 0) {
-    ll << cl::_sym_AMPoptional;
-    for (gctools::Vec0<OptionalArgument>::const_iterator it = this->_OptionalArguments.begin();
-         it != this->_OptionalArguments.end(); it++) {
-      if (it->_Sensor._ArgTarget.notnilp()) {
-        Cons_sp one = Cons_O::createList(it->_ArgTarget, it->_Default, it->_Sensor._ArgTarget);
-        ll << one;
-      } else if (it->_Default.notnilp()) {
-        Cons_sp one = Cons_O::createList(it->_ArgTarget, it->_Default);
-        ll << one;
-      } else {
-        ll << it->_ArgTarget;
-      }
-    }
-  }
-  if (this->_RestArgument._ArgTarget.notnilp()) {
-    if (this->_RestArgument.VaRest) {
-      ll << core::_sym_AMPva_rest;
-    } else {
-      ll << cl::_sym_AMPrest;
-    }
-    ll << this->_RestArgument._ArgTarget;
-  }
-  if (this->_KeyFlag.notnilp() || this->_KeywordArguments.size() > 0) {
-    ll << cl::_sym_AMPkey;
-    for (gctools::Vec0<KeywordArgument>::const_iterator it = this->_KeywordArguments.begin();
-         it != this->_KeywordArguments.end(); it++) {
-      T_sp keywordTarget = it->_ArgTarget;
-      if (gc::As<Symbol_sp>(it->_Keyword)->symbolName()->get_std_string()
-          != gc::As<Symbol_sp>(keywordTarget)->symbolName()->get_std_string()) {
-        keywordTarget = Cons_O::createList(it->_Keyword, keywordTarget);
-      }
-      if (it->_Sensor._ArgTarget.notnilp()) {
-        Cons_sp one = Cons_O::createList(keywordTarget, it->_Default, it->_Sensor._ArgTarget);
-        ll << one;
-      } else if (it->_Default.notnilp()) {
-        Cons_sp one = Cons_O::createList(keywordTarget, it->_Default);
-        ll << one;
-      } else {
-        ll << keywordTarget;
-      }
-    }
-  }
-  if (this->_AllowOtherKeys.notnilp()) {
-    ll << cl::_sym_AMPallow_other_keys;
-  }
-  if (this->_AuxArguments.size() > 0) {
-    ll << cl::_sym_AMPaux;
-    for (gctools::Vec0<AuxArgument>::const_iterator it = this->_AuxArguments.begin();
-         it != this->_AuxArguments.end(); it++) {
-      Cons_sp one = Cons_O::createList(it->_ArgTarget, it->_Expression);
-      ll << one;
-    }
-  }
-  return ll.cons();
-}
-
-
-CL_LISPIFY_NAME("add-missing-sensors");
-CL_DOCSTRING(R"dx(Any optional or keyword parameters that are missing their sensors have them set to gensyms)dx")
-CL_DEFMETHOD void LambdaListHandler_O::add_missing_sensors() {
-  if (this->_OptionalArguments.size() > 0) {
-    for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
-         it != this->_OptionalArguments.end(); it++) {
-      if (it->_Sensor._ArgTarget.nilp()) {
-        it->_Sensor._ArgTarget = cl__gensym();
-      }
-    }
-  }
-  if (this->_KeyFlag.notnilp() || this->_KeywordArguments.size() > 0) {
-    for (gctools::Vec0<KeywordArgument>::iterator it = this->_KeywordArguments.begin();
-         it != this->_KeywordArguments.end(); it++) {
-      if (it->_Sensor._ArgTarget.nilp()) {
-        it->_Sensor._ArgTarget = cl__gensym();
-      }
-    }
-  }
-}
-
-HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecifierList) {
-  HashTableEq_sp specials(HashTableEq_O::create_default());
-  LOG("Processing declareSpecifierList: %s" , _rep_(declareSpecifierList));
-  if (declareSpecifierList.notnilp()) {
-    ASSERTF(oCar(declareSpecifierList) != cl::_sym_declare, BF("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") % _rep_(declareSpecifierList));
-    for (auto cur : declareSpecifierList) {
-      T_sp entry = oCar(cur);
-      if ((entry).consp() && oCar(entry) == cl::_sym_special) {
-        for (auto spcur : coerce_to_list(oCdr(entry))) {
-          specials->insert(gc::As<Symbol_sp>(oCar(spcur)));
-        }
-      }
-    }
-  }
-  LOG("Returning symbolSet: %s" , specials->__repr__());
-  return specials;
 }
 
 /* Process llraw as a single-dispatch lambda-list.
@@ -415,249 +212,6 @@ HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecif
        dispatching argument then the first argument is used and SINGLE-DISPATCH-CLASS returns as nil.
     DISPATCH-INDEX is the index of the argument that is being dispatched on - it should never be anything
     other than zero but I'll let the caller decide.*/
-
-T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, bool allow_first_argument_default_dispatcher) {
-  List_sp llprocessed = cl__copy_list(llraw);
-  Symbol_sp sd_symbol = nil<Symbol_O>();
-  Symbol_sp sd_class = nil<Symbol_O>();
-  int dispatchIndex = 0;
-  int idx = 0;
-  for (auto cur : llprocessed) {
-    T_sp arg = oCar(cur);
-    if (cl__symbolp(arg)) {
-      // Originally checked if the symbol started with an ampersand.
-      // Unfortunately, I don't fully understand the logic here.
-      if (arg == cl::_sym_AMPoptional ||
-          arg == cl::_sym_AMPrest || arg == cl::_sym_AMPbody ||
-          arg == core::_sym_AMPva_rest ||
-          arg == cl::_sym_AMPkey || arg == cl::_sym_AMPallow_other_keys ||
-          arg == cl::_sym_AMPaux)
-        break;
-    } else if ((arg).consp()) {
-      List_sp carg = arg;
-      if (cl__length(carg) != 2) {
-        SYMBOL_SC_(CorePkg, singleDispatchWrongNumberArgumentsError);
-        SYMBOL_EXPORT_SC_(KeywordPkg, arguments);
-        ERROR(_sym_singleDispatchWrongNumberArgumentsError,
-              Cons_O::createList(kw::_sym_arguments, carg));
-      }
-      if (sd_symbol.notnilp()) {
-        // There is already a sd_symbol defined -
-        // This means there are too many specialized arguments
-        SYMBOL_SC_(CorePkg, singleDispatchTooManyArgumentsError);
-        ERROR(_sym_singleDispatchTooManyArgumentsError,
-              Cons_O::createList(kw::_sym_arguments, llraw));
-      }
-      sd_symbol = gc::As<Symbol_sp>(oCar(carg));
-      sd_class = gc::As<Symbol_sp>(oCadr(carg));
-      cur->setCar(sd_symbol);
-      dispatchIndex = idx;
-    } else {
-      SYMBOL_SC_(CorePkg, singleDispatchBadLambdaListError);
-      ERROR(_sym_singleDispatchBadLambdaListError,
-            Cons_O::createList(kw::_sym_arguments, llraw));
-    }
-    idx++;
-  }
-  if (sd_symbol.nilp()) {
-    if (allow_first_argument_default_dispatcher) {
-      T_sp car = oCar(llprocessed);
-      sd_symbol = gc::As<Symbol_sp>(car);
-    } else {
-      SYMBOL_SC_(CorePkg, singleDispatchMissingDispatchArgumentError);
-      ERROR(_sym_singleDispatchMissingDispatchArgumentError,
-            Cons_O::createList(kw::_sym_arguments, llraw));
-    }
-  }
-  T_sp tllprocessed = llprocessed;
-  return (Values(tllprocessed, sd_symbol, sd_class, make_fixnum(dispatchIndex)));
-}
-
-/*! Pull the &whole and &environment variables out of the lambda_list and
-      prefix them as required arguments.  If they weren't present then use gensym to
-      generate temporary symbols */
-List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
-  List_sp new_lambda_list = cl__copy_list(lambda_list);
-  Symbol_sp whole_symbol = nil<Symbol_O>();
-  Symbol_sp environment_symbol = nil<Symbol_O>();
-  if (oCar(new_lambda_list) == cl::_sym_AMPwhole) {
-    whole_symbol = gc::As<Symbol_sp>(oCadr(new_lambda_list));
-    new_lambda_list = oCddr(new_lambda_list);
-  }
-  if (oCar(new_lambda_list) == cl::_sym_AMPenvironment) {
-    environment_symbol = gc::As<Symbol_sp>(oCadr(new_lambda_list));
-    new_lambda_list = oCddr(new_lambda_list);
-  } else {
-    List_sp cur = oCdr(new_lambda_list);
-    Cons_sp prev = new_lambda_list.asCons();
-    for (; cur.notnilp(); prev = cur.asCons(), cur = oCdr(cur)) {
-      if (oCar(cur) == cl::_sym_AMPenvironment) {
-        environment_symbol = gc::As<Symbol_sp>(oCadr(cur));
-        // remove the &environment from the lambda-list
-        prev->setCdr(oCddr(cur));
-        break;
-      }
-    }
-  }
-  if (whole_symbol.nilp())
-    whole_symbol = cl__gensym(SimpleBaseString_O::make("whole"));
-  if (environment_symbol.nilp())
-    environment_symbol = cl__gensym(SimpleBaseString_O::make("environment"));
-
-  Symbol_sp name_symbol = cl__gensym(SimpleBaseString_O::make("macro-name"));
-  //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
-  ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__file_scope(lambda_list));
-  sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
-  List_sp macro_ll = sclist.cons();
-  return macro_ll;
-}
-
-CL_LAMBDA(lambda-list)
-CL_DECLARE();
-CL_DOCSTRING(R"dx(process_macro_lambda_list)dx")
-DOCGROUP(clasp)
-CL_DEFUN T_sp core__process_macro_lambda_list(List_sp lambda_list) {
-  List_sp new_ll = LambdaListHandler_O::process_macro_lambda_list(lambda_list);
-  return new_ll;
-}
-
-CL_LAMBDA(lambda-list)
-CL_DECLARE();
-CL_DOCSTRING(R"dx(process_single_dispatch_lambda_list)dx")
-DOCGROUP(clasp)
-CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
-  return LambdaListHandler_O::process_single_dispatch_lambda_list(lambda_list);
-}
-
-void LambdaListHandler_O::initialize() {
-  this->_CreatesBindings = true;
-  this->_DeclareSpecifierList = nil<T_O>();
-  this->_RequiredArguments.clear();
-  this->_OptionalArguments.clear();
-  this->_RestArgument.clear();
-  this->_KeyFlag = nil<T_O>();
-  this->_KeywordArguments.clear();
-  this->_AllowOtherKeys = nil<T_O>();
-  this->_AuxArguments.clear();
-}
-
-void TargetClassifier::targetIsSubLambdaList(Argument &target, LambdaListHandler_sp subHandler) {
-  target._ArgTarget = subHandler;
-  target._ArgTargetFrameIndex = SUB_LAMBDA_LIST;
-}
-
-void TargetClassifier::classifyTarget(Argument &target) {
-  //  printf("%s:%d  TargetClassifier::classifyTarget target._ArgTarget@%p --> %p\n", __FILE__, __LINE__, &target._ArgTarget.rawRef_(), target._ArgTarget.raw_());
-  Symbol_sp sym = gc::As<Symbol_sp>(target._ArgTarget);
-  if (sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<HashTable_sp>(this->_SpecialSymbols)->contains(sym))) {
-    target._ArgTargetFrameIndex = SPECIAL_TARGET;
-    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_specialVar, target._ArgTarget);
-    this->_LambdaListSpecials->insert(sym);
-  } else {
-    target._ArgTargetFrameIndex = this->lexicalIndex;
-    this->_AccumulatedClassifiedSymbols << Cons_O::create(ext::_sym_lexicalVar, Cons_O::create(target._ArgTarget, make_fixnum(target._ArgTargetFrameIndex)));
-    this->advanceLexicalIndex();
-  }
-}
-
-void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp declares, T_sp context, TargetClassifier &classifier) {
-  { // required arguments
-    for (gctools::Vec0<RequiredArgument>::iterator it = this->_RequiredArguments.begin();
-         it != this->_RequiredArguments.end(); it++) {
-      //      printf("%s:%d  (*it)._ArgTarget.raw_() -> %p\n", __FILE__, __LINE__, (*it)._ArgTarget.raw_());
-      classifier.classifyTarget(*it);
-    }
-  }
-  { // optional arguments
-    for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
-         it != this->_OptionalArguments.end(); it++) {
-      (void)ENSURE_VALID_OBJECT((T_O*)it._Vec.raw_());
-      classifier.classifyTarget(*it);
-      if (it->_Sensor.isDefined()) classifier.classifyTarget(it->_Sensor);
-    }
-  }
-  if (this->_RestArgument.isDefined()) classifier.classifyTarget(this->_RestArgument);
-  { // keyed arguments
-    for (gctools::Vec0<KeywordArgument>::iterator it = this->_KeywordArguments.begin();
-         it != this->_KeywordArguments.end(); it++) {
-      classifier.classifyTarget(*it);
-      if (it->_Sensor.isDefined()) classifier.classifyTarget(it->_Sensor);
-    }
-  }
-
-  { // aux arguments
-    for (gctools::Vec0<AuxArgument>::iterator it = this->_AuxArguments.begin();
-         it != this->_AuxArguments.end(); it++) {
-      classifier.classifyTarget(*it);
-    }
-  }
-}
-
-#define PASS_FUNCTION_REQUIRED bind_required_vaslist
-#define PASS_FUNCTION_OPTIONAL bind_optional_vaslist
-#define PASS_FUNCTION_REST bind_rest_vaslist
-#define PASS_FUNCTION_KEYWORD bind_keyword_vaslist
-#define PASS_ARGS size_t n_args, T_O** arglist
-#define PASS_ARGS_NUM n_args
-#define PASS_NEXT_ARG(_ai) core::T_sp((gctools::Tagged)arglist[_ai])
-#include "argumentBinding.cc"
-#undef PASS_FUNCTION_REQUIRED
-#undef PASS_FUNCTION_OPTIONAL
-#undef PASS_FUNCTION_REST
-#undef PASS_FUNCTION_KEYWORD
-#undef PASS_ARGS
-#undef PASS_ARGS_NUM
-#undef PASS_NEXT_ARG
-
-void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, ScopeManager &scope) {
-  LOG("There are %d aux variables" , auxs.size());
-  gctools::Vec0<AuxArgument>::iterator ci;
-  {
-    for (ci = auxs.begin(); ci != auxs.end(); ci++) {
-      T_sp expr = ci->_Expression;
-      if (expr.notnilp()) {
-        T_sp value = evaluate_lambda_list_form(expr, scope.lexenv());
-        scope.new_binding(*ci, value);
-      } else {
-        scope.new_binding(*ci, nil<T_O>());
-      }
-    }
-  }
-}
-
-void LambdaListHandler_O::createBindingsInScope(core::T_sp closure,
-                                                      size_t nargs, core::T_O** arglist,
-                                                      ScopeManager &scope) {
-  if (UNLIKELY(!this->_CreatesBindings)) return;
-  int arg_idx = 0;
-  arg_idx = bind_required_vaslist(closure,this->_RequiredArguments, nargs, arglist, arg_idx, scope);
-  if (UNLIKELY(this->_OptionalArguments.size() != 0)) {
-    arg_idx = bind_optional_vaslist(closure,this->_OptionalArguments, nargs, arglist, arg_idx, scope);
-  }
-  if (UNLIKELY(arg_idx < nargs && !(this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
-    throwTooManyArgumentsError(closure,nargs, this->numberOfLexicalVariables());
-  }
-  if (UNLIKELY(this->_RestArgument.isDefined())) {
-    // Make and use a copy of the arglist so that keyword processing can parse the args as well
-    bind_rest_vaslist(closure,this->_RestArgument, nargs, arglist, arg_idx, scope);
-  }
-  if (UNLIKELY(this->_KeywordArguments.size() != 0)) {
-    for (auto fi = this->_KeywordArguments.begin(); fi != this->_KeywordArguments.end(); fi++)
-      scope.ensureLexicalElementUnbound(*fi);
-    bind_keyword_vaslist(closure,this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
-  }
-  if (UNLIKELY(this->_AuxArguments.size() != 0))
-    bind_aux(closure,this->_AuxArguments, scope);
-}
-
-#if 0
-void LambdaListHandler_O::dump_keywords()
-{
-  for ( int i = 0; i< this->_KeywordArguments.size(); ++i ) {
-    printf("%s:%d Keyword: %s@%p\n", __FILE__, __LINE__, _rep_(this->_KeywordArguments[i]._Keyword).c_str(), this->_KeywordArguments[i]._Keyword.raw_());
-  }
-}
-#endif
 
 string argument_mode_as_string(ArgumentMode mode) {
   switch (mode) {
@@ -1119,7 +673,38 @@ DONE:
   return true;
 }
 
-  
+List_sp lexical_variable_names(gctools::Vec0<RequiredArgument> &reqs,
+                               gctools::Vec0<OptionalArgument> &optionals,
+                               RestArgument &restarg,
+                               gctools::Vec0<KeywordArgument> &keys,
+                               gctools::Vec0<AuxArgument> &auxs) {
+  ql::list result;
+  // required arguments  req = ( num req1 req2 ...)
+  for (auto &it : reqs) result << it._ArgTarget;
+  // optional arguments   opts = (num opt1 init1 flag1 ...)
+  for (auto &it : optionals) {
+    result << it._ArgTarget;
+    if (it._Sensor._ArgTarget.notnilp()) {
+      result << it._Sensor._ArgTarget;
+    }
+  }
+  if (restarg._ArgTarget.notnilp()) {
+    result << restarg._ArgTarget;
+  }
+  // optional arguments   keys = (num key1 var1 init1 flag1 ...)
+  for (auto &it : keys) {
+    result << it._ArgTarget;
+    if (it._Sensor._ArgTarget.notnilp()) {
+      result << it._Sensor._ArgTarget;
+    }
+  }
+  //	    lauxs << make_fixnum((int)auxs.size());
+  for (auto &it : auxs) {
+    result << it._ArgTarget;
+  }
+  return result.cons();
+}
+
 CL_LAMBDA(vl context)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(This is like ECL::process-lambda-list)dx")
@@ -1184,6 +769,37 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
                 _lisp->_boolean(restarg.VaRest));
 };
 
+// Given a lambda list, return a lambda list suitable for display purposes.
+// This means only the external interface is required.
+// No default values, no -p variables, no &aux.
+T_sp lambda_list_for_name(T_sp raw_lambda_list) {
+  gctools::Vec0<RequiredArgument> reqs;
+  gctools::Vec0<OptionalArgument> optionals;
+  gctools::Vec0<KeywordArgument> keys;
+  gctools::Vec0<AuxArgument> auxs;
+  RestArgument restarg;
+  T_sp key_flag;
+  T_sp allow_other_keys;
+  parse_lambda_list(raw_lambda_list, cl::_sym_Function_O,
+                    reqs, optionals, restarg,
+                    key_flag, keys, allow_other_keys, auxs);
+  ql::list result;
+  for (auto &it : reqs) result << it._ArgTarget;
+  if (optionals.size() > 0) {
+    result << cl::_sym_AMPoptional;
+    for (auto &it : optionals) result << it._ArgTarget;
+  }
+  if (restarg._ArgTarget.notnilp())
+    result << cl::_sym_AMPrest << restarg._ArgTarget;
+  if (key_flag.notnilp()) {
+    result << cl::_sym_AMPkey;
+    for (auto &it : keys) result << it._Keyword;
+  }
+  if (allow_other_keys.notnilp())
+    result << cl::_sym_AMPallow_other_keys;
+  return result.cons();
+}
+
 /*
  * ------------------------------------------------------------
  * ------------------------------------------------------------
@@ -1195,309 +811,155 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
  * ------------------------------------------------------------
  */
 
-LambdaListHandler_sp LambdaListHandler_O::createRecursive_(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier) {
-  auto  llh = gctools::GC<LambdaListHandler_O>::allocate_with_default_constructor();
-  llh->parse_lambda_list_declares(lambda_list, declares, context, classifier);
-  return llh;
-}
-
-LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp declares, T_sp context, const std::set<int> &skipFrameIndices) {
-  HashTableEq_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
-  TargetClassifier classifier(specialSymbols, skipFrameIndices);
-  LambdaListHandler_sp ollh = LambdaListHandler_O::createRecursive_(lambda_list, declares, context, classifier);
-  ollh->_NumberOfSpecialVariables = classifier.numberOfSpecialVariables();
-  ollh->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
-  ollh->_RequiredLexicalArgumentsOnly = ollh->requiredLexicalArgumentsOnlyP_();
-  return ollh;
-}
-
-void LambdaListHandler_O::setComment(const string &s) { this->_Comment = SimpleBaseString_O::make(s); };
-string LambdaListHandler_O::getComment() const { if (this->_Comment) return this->_Comment->get_std_string(); else return ""; };
-
-
-LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int> &skipIndices) {
-  auto  ollh = gctools::GC<LambdaListHandler_O>::allocate_with_default_constructor();
-  ollh->create_required_arguments(numArgs, skipIndices);
-  return ollh;
-}
-
-CL_LAMBDA("lambda-list &optional declares (context 'core::function)")
-CL_LISPIFY_NAME(makeLambdaListHandler);
-DOCGROUP(clasp)
-CL_DEFUN LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context) {
-  LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list, declares, context);
-  return llh;
-}
-
-void LambdaListHandler_O::create_required_arguments(int num, const std::set<int> &skipIndices) {
-  _OF();
-  TargetClassifier classifier(skipIndices);
-  for (int i = 0, iEnd(num - skipIndices.size()); i < iEnd; ++i) {
-    Symbol_sp name = cl__gensym(SimpleBaseString_O::make("arg"));
-    RequiredArgument req(name, i);
-    this->_RequiredArguments.push_back(req);
-    classifier.classifyTarget(req);
-  }
-  this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-  ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
-  this->_NumberOfSpecialVariables = classifier.numberOfSpecialVariables();
-  this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
-  this->_RequiredLexicalArgumentsOnly = this->requiredLexicalArgumentsOnlyP_();
-}
 
 /*! Trivial initializers are atomic values that aren't non-keyword symbols
 */
-bool initializerIsTrivial(T_sp initializer) {
+bool initializerIsTrivial(T_sp lambda_list, List_sp seen, T_sp initializer) {
   if (initializer.consp()) {
-    return false;
+    Cons_sp cinit = gc::As_unsafe<Cons_sp>(initializer);
+    for ( auto cur : (List_sp)seen ) {
+      T_sp oseen = CONS_CAR(cur);
+      if (cinit->memberEq(oseen).notnilp()) {
+        if (!_lisp->_Roots._TheSystemIsUp) {
+          printf("%s:%d:%s\n  In lambda-list %s\n    the initializer %s is a list\n    and references the seen symbol %s \n    - so it is not trivial and needs a ValueEnvironment_O\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lambda_list).c_str(), _rep_(initializer).c_str(), _rep_(oseen).c_str() );
+        }
+        return false;
+      }
+    }
+    return true;
   } else if (gc::IsA<Symbol_sp>(initializer)) {
-    Symbol_sp sdefault = gc::As_unsafe<Symbol_sp>(initializer);
-    if (!sdefault->isKeywordSymbol()) {
-      return false;
+    if (seen.consp()) {
+      Cons_sp cseen = gc::As_unsafe<Cons_sp>(seen);
+      Symbol_sp sdefault = gc::As_unsafe<Symbol_sp>(initializer);
+      T_sp result = cseen->memberEq(sdefault);
+      if (result.notnilp()) {
+        if (!_lisp->_Roots._TheSystemIsUp) {
+          printf("%s:%d:%s default initializer: %s\n   lambda-list: %s\n   references a seen symbol: %s\n    - needs a ValueEnvironment_O\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sdefault).c_str(), _rep_(lambda_list).c_str(), _rep_(seen).c_str() );
+        }
+        return false;
+      }
     }
   }
   return true;
 }
 
-void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_sp declareSpecifierList, T_sp context, TargetClassifier &classifier) {
-  _OF();
-  T_sp whole;
-  Symbol_sp environment;
-  this->_DeclareSpecifierList = declareSpecifierList;
-  this->_CreatesBindings = parse_lambda_list(lambda_list,
-                                             context,
-                                             this->_RequiredArguments,
-                                             this->_OptionalArguments,
-                                             this->_RestArgument,
-                                             this->_KeyFlag,
-                                             this->_KeywordArguments,
-                                             this->_AllowOtherKeys,
-                                             this->_AuxArguments);
-//  printf("%s:%d parse_lambda_list_declares lambda_list -> %s  handler -> %s\n", __FILE__, __LINE__, _rep_(lambda_list).c_str(), _rep_(this->asSmartPtr()).c_str());
-  if (this->_CreatesBindings) {
-    this->recursively_build_handlers_count_arguments(declareSpecifierList, context, classifier);
-    this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-    ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
-  } else {
-    this->_ClassifiedSymbolList = nil<T_O>();
-  }
-  //
-  // Calculate if the LambdaListHandler will need a ValueEnvironment_O for evaluation or not.
-  //
-  { // optional arguments   opts = (num opt1 init1 flag1 ...)
-    for (auto it = this->_OptionalArguments.begin();
-         it != this->_OptionalArguments.end(); it++) {
-      if (!initializerIsTrivial(it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
-    }
-  }
-  { // optional arguments   keys = (num key1 var1 init1 flag1 ...)
-    for ( auto it = this->_KeywordArguments.begin();
-          it != this->_KeywordArguments.end(); it++) {
-      if (!initializerIsTrivial(it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
-    }
-  }
-  { // auxes arguments   auxs = (num aux1 init1 ...)
-    for ( auto it = this->_AuxArguments.begin();
-          it != this->_AuxArguments.end(); it++) {
-      if (!initializerIsTrivial(it->_Expression)) goto NEEDS_VALUE_ENVIRONMENT;
-    }
-  }
-  return;
- NEEDS_VALUE_ENVIRONMENT:
-  this->_NeedsValueEnvironment = true;
-  return;
-}
-
-CL_LISPIFY_NAME("single-dispatch-on-argument");
-CL_DEFMETHOD int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp target) {
-  for (auto &ri : this->_RequiredArguments) {
-    if (ri._symbolP()) {
-      if (ri.symbol() == target)
-        return ri.targetFrameIndex();
+T_mv process_single_dispatch_lambda_list(List_sp llraw, bool allow_first_argument_default_dispatcher) {
+  List_sp llprocessed = cl__copy_list(llraw);
+  Symbol_sp sd_symbol = nil<Symbol_O>();
+  Symbol_sp sd_class = nil<Symbol_O>();
+  int dispatchIndex = 0;
+  int idx = 0;
+  for (auto cur : llprocessed) {
+    T_sp arg = oCar(cur);
+    if (cl__symbolp(arg)) {
+      // Originally checked if the symbol started with an ampersand.
+      // Unfortunately, I don't fully understand the logic here.
+      if (arg == cl::_sym_AMPoptional ||
+          arg == cl::_sym_AMPrest || arg == cl::_sym_AMPbody ||
+          arg == core::_sym_AMPva_rest ||
+          arg == cl::_sym_AMPkey || arg == cl::_sym_AMPallow_other_keys ||
+          arg == cl::_sym_AMPaux)
+        break;
+    } else if ((arg).consp()) {
+      List_sp carg = arg;
+      if (cl__length(carg) != 2) {
+        SYMBOL_SC_(CorePkg, singleDispatchWrongNumberArgumentsError);
+        SYMBOL_EXPORT_SC_(KeywordPkg, arguments);
+        ERROR(_sym_singleDispatchWrongNumberArgumentsError,
+              Cons_O::createList(kw::_sym_arguments, carg));
+      }
+      if (sd_symbol.notnilp()) {
+        // There is already a sd_symbol defined -
+        // This means there are too many specialized arguments
+        SYMBOL_SC_(CorePkg, singleDispatchTooManyArgumentsError);
+        ERROR(_sym_singleDispatchTooManyArgumentsError,
+              Cons_O::createList(kw::_sym_arguments, llraw));
+      }
+      sd_symbol = gc::As<Symbol_sp>(oCar(carg));
+      sd_class = gc::As<Symbol_sp>(oCadr(carg));
+      cur->setCar(sd_symbol);
+      dispatchIndex = idx;
     } else {
-      SIMPLE_ERROR(("Required arguments of single dispatch generic functions must be symbols - I got: %s") , ri.asString());
+      SYMBOL_SC_(CorePkg, singleDispatchBadLambdaListError);
+      ERROR(_sym_singleDispatchBadLambdaListError,
+            Cons_O::createList(kw::_sym_arguments, llraw));
     }
+    idx++;
   }
-  SIMPLE_ERROR(("Could not find single dispatch target symbol[%s]") , _rep_(target));
-#if 0
-	// Slide all the frameIndexPointers up one
-	for ( int i=0; i<arguments.size()-1; i++ )
-	{
-	    ASSERTF((*arguments[i])==i,BF("FrameIndex %d is out of sequence") % i);
-	    (*arguments[i]) = (*arguments[i])+1;
-	}
-	// Now move the FrameIndex associated with target (the last one) to zero
-	int single_dispatch_argument_index = *(arguments.back());
-	*(arguments.back()) = 0;
-	return single_dispatch_argument_index;
-#endif
-}
-
-string LambdaListHandler_O::partsAsString() const {
-  _OF();
-  stringstream ss;
-  if (!this->_ClassifiedSymbolList.objectp()) {
-    ss << " :ClassifiedSymbols UNDEFINED ";
-  } else {
-    ss << " :ClassifiedSymbols " << _rep_(this->_ClassifiedSymbolList)
-       << " ";
-  }
-  if (this->_RequiredArguments.size() > 0) {
-    ss << " &required ";
-    ss << asString(this->_RequiredArguments);
-  }
-  if (this->_OptionalArguments.size() > 0) {
-    ss << " &optional ";
-    ss << asString(this->_OptionalArguments);
-  }
-  if (this->_RestArgument.isDefined()) {
-    if (this->_RestArgument.VaRest) {
-      ss << " &va-rest ";
+  if (sd_symbol.nilp()) {
+    if (allow_first_argument_default_dispatcher) {
+      T_sp car = oCar(llprocessed);
+      sd_symbol = gc::As<Symbol_sp>(car);
     } else {
-      ss << " &rest ";
-    }
-    ss << this->_RestArgument.asString();
-  }
-  if (this->_KeyFlag.notnilp()) {
-    ss << " &key ";
-  }
-  if (this->_KeywordArguments.size() > 0) {
-    ss << asString(this->_KeywordArguments);
-  }
-  if (this->_AllowOtherKeys.isTrue()) {
-    ss << " &allowOtherKeys ";
-    ss << _rep_(this->_AllowOtherKeys);
-  }
-  if (this->_AuxArguments.size() > 0) {
-    ss << " &aux ";
-    ss << asString(this->_AuxArguments);
-  }
-  return ss.str();
-}
-
-string LambdaListHandler_O::__repr__() const {
-  _OF();
-  stringstream ss;
-  ss << "#<" << cl__class_of(this->asSmartPtr())->_classNameAsString();
-  {
-    ss << this->partsAsString();
-  }
-  if (this->_Comment) { ss << " :comment \"" << this->_Comment->get_std_string() << "\"";}
-  ss << "> ";
-  return ss.str();
-}
-
-CL_LISPIFY_NAME("processLambdaListHandler");
-CL_DEFMETHOD T_mv LambdaListHandler_O::processLambdaListHandler() const {
-
-  ql::list reqs;
-  { // required arguments  req = ( num req1 req2 ...)
-    reqs << make_fixnum((int)this->_RequiredArguments.size());
-    for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
-         it != this->_RequiredArguments.end(); it++) {
-      reqs << it->classified();
+      SYMBOL_SC_(CorePkg, singleDispatchMissingDispatchArgumentError);
+      ERROR(_sym_singleDispatchMissingDispatchArgumentError,
+            Cons_O::createList(kw::_sym_arguments, llraw));
     }
   }
-  ql::list opts;
-  { // optional arguments   opts = (num opt1 init1 flag1 ...)
-    opts << make_fixnum((int)this->_OptionalArguments.size());
-    for (gctools::Vec0<OptionalArgument>::const_iterator it = this->_OptionalArguments.begin();
-         it != this->_OptionalArguments.end(); it++) {
-      opts << it->classified() << it->_Default << it->_Sensor.classified();
-    }
-  }
-  ql::list keys;
-  bool keyFlag = this->_KeyFlag.notnilp();
-  { // optional arguments   keys = (num key1 var1 init1 flag1 ...)
-    keys << make_fixnum((int)this->_KeywordArguments.size());
-    for (gctools::Vec0<KeywordArgument>::const_iterator it = this->_KeywordArguments.begin();
-         it != this->_KeywordArguments.end(); it++) {
-      keys << it->_Keyword << it->classified() << it->_Default << it->_Sensor.classified();
-      keyFlag = true;
-    }
-  }
-  ql::list auxs;
-  { // auxes arguments   auxs = (num aux1 init1 ...)
-    auxs << make_fixnum((int)this->_AuxArguments.size());
-    for (gctools::Vec0<AuxArgument>::const_iterator it = this->_AuxArguments.begin();
-         it != this->_AuxArguments.end(); it++) {
-      auxs << it->classified() << it->_Expression;
-    }
-  }
-  T_sp treqs = reqs.cons();
-  return (Values(treqs,
-                 opts.cons(),
-                 this->_RestArgument.classified(),
-                 _lisp->_boolean(keyFlag),
-                 keys.cons(),
-                 this->_AllowOtherKeys,
-                 auxs.cons(),
-                 _lisp->_boolean(this->_RestArgument.VaRest)
-                 ));
+  T_sp tllprocessed = llprocessed;
+  return (Values(tllprocessed, sd_symbol, sd_class, make_fixnum(dispatchIndex)));
 }
 
-bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP_() const {
-  bool requiredArgumentsOnlyP = (this->_OptionalArguments.size() == 0) && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0) && (!this->_AllowOtherKeys.isTrue()) && (this->_AuxArguments.size() == 0);
-  if (requiredArgumentsOnlyP) {
-    for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
-         it != this->_RequiredArguments.end(); it++) {
-      if (!it->targetIsLexical())
-        return false;
-    }
-    return true;
+/*! Pull the &whole and &environment variables out of the lambda_list and
+      prefix them as required arguments.  If they weren't present then use gensym to
+      generate temporary symbols */
+List_sp process_macro_lambda_list(List_sp lambda_list) {
+  List_sp new_lambda_list = cl__copy_list(lambda_list);
+  Symbol_sp whole_symbol = nil<Symbol_O>();
+  Symbol_sp environment_symbol = nil<Symbol_O>();
+  if (oCar(new_lambda_list) == cl::_sym_AMPwhole) {
+    whole_symbol = gc::As<Symbol_sp>(oCadr(new_lambda_list));
+    new_lambda_list = oCddr(new_lambda_list);
   }
-  return false;
-}
-
-CL_LISPIFY_NAME("namesOfLexicalVariables");
-CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
-  List_sp namesRev = nil<T_O>();
-  for (auto cur : this->_ClassifiedSymbolList) {
-    if (oCar(oCar(cur)) == ext::_sym_lexicalVar) {
-      namesRev = Cons_O::create(oCadr(oCar(cur)), namesRev);
-    }
-  }
-  return cl__nreverse(namesRev);
-}
-
-
-CL_LISPIFY_NAME("special-variables");
-CL_DEFMETHOD List_sp LambdaListHandler_O::specialVariables() const {
-  List_sp namesRev = nil<T_O>();
-  for (auto cur : this->_ClassifiedSymbolList) {
-    T_sp entry = CONS_CAR(cur);
-    if (oCar(entry) == ext::_sym_specialVar) {
-      namesRev = Cons_O::create(oCdr(entry), namesRev);
+  if (oCar(new_lambda_list) == cl::_sym_AMPenvironment) {
+    environment_symbol = gc::As<Symbol_sp>(oCadr(new_lambda_list));
+    new_lambda_list = oCddr(new_lambda_list);
+  } else {
+    List_sp cur = oCdr(new_lambda_list);
+    Cons_sp prev = new_lambda_list.asCons();
+    for (; cur.notnilp(); prev = cur.asCons(), cur = oCdr(cur)) {
+      if (oCar(cur) == cl::_sym_AMPenvironment) {
+        environment_symbol = gc::As<Symbol_sp>(oCadr(cur));
+        // remove the &environment from the lambda-list
+        prev->setCdr(oCddr(cur));
+        break;
+      }
     }
   }
-  return cl__nreverse(namesRev);
+  if (whole_symbol.nilp())
+    whole_symbol = cl__gensym(SimpleBaseString_O::make("whole"));
+  if (environment_symbol.nilp())
+    environment_symbol = cl__gensym(SimpleBaseString_O::make("environment"));
+
+  Symbol_sp name_symbol = cl__gensym(SimpleBaseString_O::make("macro-name"));
+  //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
+  ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__file_scope(lambda_list));
+  sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
+  List_sp macro_ll = sclist.cons();
+  return macro_ll;
 }
 
-void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
-  List_sp names = this->namesOfLexicalVariables();
-  this->_LexicalVariableNamesForDebugging = ComplexVector_T_O::make(cl__length(names),nil<T_O>());
-  gc::As<ComplexVector_T_sp>(this->_LexicalVariableNamesForDebugging)->fillInitialContents(names);
+CL_LAMBDA(lambda-list)
+CL_DECLARE();
+CL_DOCSTRING(R"dx(process_macro_lambda_list)dx")
+DOCGROUP(clasp)
+CL_DEFUN T_sp core__process_macro_lambda_list(List_sp lambda_list) {
+  List_sp new_ll = process_macro_lambda_list(lambda_list);
+  return new_ll;
 }
 
-CL_LISPIFY_NAME("namesOfLexicalVariablesForDebugging");
-CL_DEFMETHOD ComplexVector_T_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
-  if (this->_LexicalVariableNamesForDebugging.nilp()) {
-    this->calculateNamesOfLexicalVariablesForDebugging();
-  }
-  return gc::As<ComplexVector_T_sp>(this->_LexicalVariableNamesForDebugging);
+CL_LAMBDA(lambda-list)
+CL_DECLARE();
+CL_DOCSTRING(R"dx(process_single_dispatch_lambda_list)dx")
+DOCGROUP(clasp)
+CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
+  return process_single_dispatch_lambda_list(lambda_list);
 }
-
-// ----------------------------------------------------------------------
-//
-
-
-LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(nil<T_O>()), _LexicalVariableNamesForDebugging(nil<ComplexVector_T_O>()), _RequiredLexicalArgumentsOnly(false){};
 
 
 
   SYMBOL_SC_(CorePkg, process_macro_lambda_list);
   SYMBOL_SC_(CorePkg, process_single_dispatch_lambda_list);
-  SYMBOL_SC_(CorePkg, makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, processLambdaList);
 
 

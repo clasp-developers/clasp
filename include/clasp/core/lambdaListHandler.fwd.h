@@ -29,10 +29,5 @@ THE SOFTWARE.
 
 namespace core {
 
-FORWARD(LambdaListHandler);
-
-struct ScopeManager;
-
-extern void lambdaListHandler_createBindings(Function_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager* scope, std::size_t lcc_nargs, core::T_O** lcc_args );
 };
 #endif

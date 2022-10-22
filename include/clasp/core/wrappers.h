@@ -43,23 +43,32 @@ THE SOFTWARE.
 
 namespace core {
 
-  class TranslationFunctor_O : public BuiltinClosure_O {
-    LISP_CLASS(core,CorePkg,TranslationFunctor_O,"TranslationFunctor",BuiltinClosure_O);
-  public:
-    typedef core::T_O* (*Type)(core::T_O* arg);
-    Type fptr;
-  public:
-    TranslationFunctor_O(GlobalEntryPoint_sp ep, Type ptr) : BuiltinClosure_O(ep), fptr(ptr) {
-      this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
+class WRAPPER_Translator_O : public core::GlobalSimpleFunBase_O {
+  LISP_CLASS(core,CorePkg,WRAPPER_Translator_O,"WRAPPER_Translator",GlobalSimpleFunBase_O);
+public:
+  typedef WRAPPER_Translator_O MyType;
+  typedef core::T_O* (*Type)(core::T_O* arg);
+public:
+  Type fptr;
+public:
+  WRAPPER_Translator_O(Type ptr) : fptr(ptr) {
+    printf("%s:%d:%s What do I do with CodePtr\n", __FILE__, __LINE__, __FUNCTION__ );
+    //
+    // Initialize the _EntryPoints with the addresses of this classes entrypoints
+    //
+    this->_EntryPoints.template setup<MyType>();
+    this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
     };
   public:
-    typedef BuiltinClosure_O TemplatedBase;
-    virtual size_t templatedSizeof() const override { return sizeof(TranslationFunctor_O); };
+    typedef GlobalSimpleFun_O TemplatedBase;
+    virtual size_t templatedSizeof() const override { return sizeof(WRAPPER_Translator_O); };
+
     virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-      this->fixupOneCodePointer( fixup, (void**)&this->fptr, sizeof(this->fptr) );
+      this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
+      this->fixupOneCodePointer( fixup, (void**)&this->fptr );
     }
     static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      TranslationFunctor_O* closure = gctools::untag_general<TranslationFunctor_O*>((TranslationFunctor_O*)lcc_closure);
+      WRAPPER_Translator_O* closure = gctools::untag_general<WRAPPER_Translator_O*>((WRAPPER_Translator_O*)lcc_closure);
       core::T_O* arg0 = lcc_args[0];
       return gctools::return_type((closure->fptr)(arg0),1);
     }
@@ -67,7 +76,7 @@ namespace core {
       wrong_number_of_arguments(lcc_closure,0,1);
     };
     static inline LISP_ENTRY_1() {
-      TranslationFunctor_O* closure = gctools::untag_general<TranslationFunctor_O*>((TranslationFunctor_O*)lcc_closure);
+      WRAPPER_Translator_O* closure = gctools::untag_general<WRAPPER_Translator_O*>((WRAPPER_Translator_O*)lcc_closure);
       return gctools::return_type((closure->fptr)(lcc_farg0),1);
     }
     static inline LISP_ENTRY_2() {
@@ -89,55 +98,55 @@ namespace core {
 
 #include <clasp/core/arguments.h>
 #include <clasp/core/lambdaListHandler.fwd.h>
+#include <type_traits>
 
-
-#if 1
-namespace core {
-//#include <clasp/core/wrappers_functoids.h>
-
-template <int DispatchOn, typename Policies, typename FunctionPtrType>
-class TEMPLATED_FUNCTION_VariadicMethoid : public BuiltinClosure_O {
-public:
-  typedef BuiltinClosure_O TemplatedBase;
-  size_t templatedSizeof() const { return sizeof(*this); };
+namespace clbind {
+template <typename FunctionPtrType, typename Policies, typename ArgumentWrapper>
+class WRAPPER_VariadicMethod;
 };
 
-template <int DispatchOn, typename RT, typename OT, typename... ARGS>
-class TEMPLATED_FUNCTION_VariadicMethoid <DispatchOn, core::policy::clasp, RT(OT::*)(ARGS...)> : public BuiltinClosure_O {
+namespace clbind {
+template <typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper >
+class WRAPPER_VariadicMethod <RT(OT::*)(ARGS...), Policies, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
-  typedef TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, core::policy::clasp,RT(OT::*)(ARGS...) > MyType;
-  typedef BuiltinClosure_O TemplatedBase;
-public:
-  virtual const char* describe() const {return "VariadicMethoid";};
+  typedef WRAPPER_VariadicMethod < RT(OT::*)(ARGS...), Policies, ArgumentWrapper > MyType;
   typedef RT(OT::*MethodType)(ARGS...) ;
-  MethodType mptr;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
 public:
+  MethodType           mptr;
+public:
+
   enum { NumParams = sizeof...(ARGS)+1 };
-  TEMPLATED_FUNCTION_VariadicMethoid(GlobalEntryPoint_sp ep, MethodType ptr) : BuiltinClosure_O(ep), mptr(ptr) {
+
+  WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
+      : mptr(ptr), core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
+
+  virtual const char* describe() const {return "VariadicMethoid";};
+
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-    this->fixupOneCodePointer( fixup, (void**)&this->mptr, sizeof(this->mptr) );
-  }
-  static inline gctools::return_type LISP_CALLING_CONVENTION()
+
+  void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+    this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
+    this->fixupOneCodePointer( fixup, (void**)&this->mptr );
+  };
+
+  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler,
-                                              numSpecialBindings,
-                                              specialBindingsVLA,
-                                              frame,
-                                              sizeof...(ARGS)+1);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope, lcc_nargs, lcc_args );
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
-    OT& oto = *gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::goFrame(frame->arguments(0));
-    return clbind::method_apply_and_return<RT,core::policy::clasp,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),std::move(oto),std::move(all_args));
+    DO_DRAG_CXX_CALLS();
+    if (lcc_nargs!=NumParams) cc_wrong_number_of_arguments(lcc_closure,lcc_nargs,NumParams,NumParams);
+    OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::goFrame(lcc_args);
+    return clbind::method_apply_and_return<RT,core::policy::clasp_policy,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),std::move(oto),std::move(all_args));
   }
+  
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args ) {
+    return wrapper_entry_point_n(ArgumentWrapper(),lcc_closure,lcc_nargs,lcc_args);
+  }
+
   static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
   }
@@ -162,46 +171,55 @@ public:
     return entry_point_n(lcc_closure,5,args);
   }
 };
+};
 
 
-template <int DispatchOn, typename RT, typename OT, typename... ARGS>
-class TEMPLATED_FUNCTION_VariadicMethoid <DispatchOn, core::policy::clasp, RT(OT::*)(ARGS...) const>
-: public BuiltinClosure_O {
+//
+// A copy of the specializer above but now with "cost" WHY, WHY, WHY!
+//
+namespace clbind {
+template < typename RT, typename OT, typename... ARGS, typename Policies, typename ArgumentWrapper >
+class WRAPPER_VariadicMethod < RT(OT::*)(ARGS...) const, Policies, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
-  typedef TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, core::policy::clasp,RT(OT::*)(ARGS...) const > MyType;
-  typedef BuiltinClosure_O TemplatedBase;
-public:
-  virtual const char* describe() const {return "VariadicMethoid";};
+  typedef WRAPPER_VariadicMethod< RT(OT::*)(ARGS...) const, Policies, ArgumentWrapper > MyType;
   typedef RT(OT::*MethodType)(ARGS...) const ;
-  MethodType mptr;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
 public:
+  MethodType           mptr;
+public:
+
   enum { NumParams = sizeof...(ARGS)+1 };
-  TEMPLATED_FUNCTION_VariadicMethoid(GlobalEntryPoint_sp ep, MethodType ptr) : BuiltinClosure_O(ep), mptr(ptr) {
+
+  WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
+      : mptr(ptr), core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
+
+  virtual const char* describe() const {return "VariadicMethoid";};
+
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-    this->fixupOneCodePointer(fixup,(void**)&this->mptr,sizeof(this->mptr));
-  }
-  static inline gctools::return_type LISP_CALLING_CONVENTION()
+
+  void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+    this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
+    this->fixupOneCodePointer( fixup, (void**)&this->mptr );
+  };
+
+  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    MAKE_STACK_FRAME(frame,sizeof...(ARGS)+1);
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler,
-                                              numSpecialBindings,
-                                              specialBindingsVLA,
-                                              frame,
-                                              sizeof...(ARGS)+1);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope, lcc_nargs, lcc_args );
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
-    OT& oto = *gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::goFrame(frame->arguments(0));
-    return clbind::method_apply_and_return<RT,core::policy::clasp,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),std::move(oto),std::move(all_args));
+    DO_DRAG_CXX_CALLS();
+    if (lcc_nargs!=NumParams) cc_wrong_number_of_arguments(lcc_closure,lcc_nargs,NumParams,NumParams);
+    OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::goFrame(lcc_args);
+    return clbind::method_apply_and_return<RT,core::policy::clasp_policy,decltype(closure->mptr),OT,decltype(all_args)>::go(std::move(closure->mptr),std::move(oto),std::move(all_args));
   }
-    static inline LISP_ENTRY_0() {
+
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args ) {
+    return wrapper_entry_point_n(ArgumentWrapper(),lcc_closure,lcc_nargs,lcc_args);
+  }
+
+  static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
   }
   static inline LISP_ENTRY_1() {
@@ -224,64 +242,56 @@ public:
     core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
     return entry_point_n(lcc_closure,5,args);
   }
-
+};
 };
 
-
-
-
-#else
-
-#include <clasp/core/wrappers_methoids.h>
-#endif
-};
 
 namespace core {
 
   inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string& filename,  const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
     Symbol_sp symbol = lispify_intern(name, packageName);
-    using VariadicType = TranslationFunctor_O;
-    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
-    BuiltinClosure_sp f = gctools::GC<VariadicType>::allocate(entryPoint,fp);
-    lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, 1 );
-    validateFunctionDescription(__FILE__,__LINE__,f);
+    using VariadicType = WRAPPER_Translator_O;
+    FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+    auto entry = gctools::GC<VariadicType>::allocate(fp);
+    lisp_bytecode_defun( symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring, sourceFile, sourceLine, 1 );
   }
 
 
 
-// this is used in gc_interface.cc expose_function
  template <typename RT, typename... ARGS>
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
    maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
    Symbol_sp symbol = _lisp->intern(name, packageName);
-   using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp,clbind::pureOutsPack<>>;
-   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>( symbol ,nil<core::T_O>());
-   BuiltinClosure_sp f = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
-   lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
-   validateFunctionDescription(__FILE__,__LINE__,f);
+   using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack< sizeof...(ARGS), clbind::policies<>>::type;
+   using VariadicType = clbind::WRAPPER_VariadicFunction<RT(*)(ARGS...),core::policy::clasp_policy, PureOutValuePack, clbind::DefaultWrapper>;
+   FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+   auto entry = gctools::GC<VariadicType>::allocate(fp,fdesc,nil<T_O>());
+   lisp_bytecode_defun( core::symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
  }
 
 // this is used in gc_interface.cc expose_function_setf
   template <typename RT, typename... ARGS>
 void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
     maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
-  Symbol_sp symbol = _lisp->intern(name, packageName);
-  using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp,clbind::pureOutsPack<>>;
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>( symbol ,nil<core::T_O>());
-  BuiltinClosure_sp f = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
-  lisp_defun_setf(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
-  validateFunctionDescription(__FILE__,__LINE__,f);
+    Symbol_sp symbol = _lisp->intern(name, packageName);
+    using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack< sizeof...(ARGS), clbind::policies<>>::type;
+    using VariadicType = clbind::WRAPPER_VariadicFunction<RT(*)(ARGS...),core::policy::clasp_policy,PureOutValuePack,clbind::DefaultWrapper>;
+    FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+    auto entry = gctools::GC<VariadicType>::allocate(fp,fdesc,nil<T_O>());
+    lisp_bytecode_defun( core::symbol_function_setf, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
   }
 
 
 
 };
 
-template <int DispatchOn, typename Policies, typename FunctionPtrType>
-class gctools::GCStamp<core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, Policies, FunctionPtrType>> {
+template < typename FunctionPtrType, typename Policies, typename ArgumentHandler >
+class gctools::GCStamp<clbind::WRAPPER_VariadicMethod< FunctionPtrType, Policies, ArgumentHandler>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, Policies, FunctionPtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::WRAPPER_VariadicMethod< FunctionPtrType, Policies, ArgumentHandler>::TemplatedBase>::StampWtag;
 };
+template < typename FunctionPtrType, typename Policies, typename ArgumentHandler>
+struct gctools::Inherits<typename clbind::WRAPPER_VariadicMethod< FunctionPtrType, Policies, ArgumentHandler>::TemplatedBase, clbind::WRAPPER_VariadicMethod< FunctionPtrType, Policies, ArgumentHandler>> : public std::true_type {};
 
 namespace core {
 
@@ -295,14 +305,14 @@ class Function_O;
 // Wrapper for ActivationFrameMacroPtr
 
 // basically like wrap_function.
-inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourcePathname, int lineno) {
-  maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
+inline void defmacro(const string &packageName, const string &name, T_mv (*fp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourcePathname, int lineno) {
+  maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
   Symbol_sp symbol = lispify_intern(name, packageName);
-  using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<T_mv(*)(List_sp,T_sp),core::policy::clasp,clbind::pureOutsPack<>>;
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>( symbol ,nil<core::T_O>());
-  BuiltinClosure_sp f = gc::As<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,mp));
-  lisp_defmacro(symbol, packageName, f, arguments, declares, docstring);
-  validateFunctionDescription(__FILE__,__LINE__,f);
+  using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack< 2, clbind::policies<>>::type;
+  using VariadicType = clbind::WRAPPER_VariadicFunction<T_mv(*)(List_sp,T_sp),core::policy::clasp_policy, PureOutValuePack, clbind::DefaultWrapper>;
+  FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+  GlobalSimpleFunBase_sp entry = gctools::GC<VariadicType>::allocate(fp,fdesc,nil<T_O>());
+  lisp_bytecode_defun( symbol_function_macro, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring);
 }
  
 template <int N>
@@ -390,11 +400,10 @@ public:
         pkgName = symbol_packageName(this->_ClassSymbol);
       }
       Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
-      using VariadicType = TEMPLATED_FUNCTION_VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...)>;
-      GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
-      BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,mp));
-      lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,m);
+      using VariadicType = clbind::WRAPPER_VariadicMethod< RT (OT::*)(ARGS...), core::policy::clasp_policy, clbind::DefaultWrapper >;
+      FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+      auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>());
+      lisp_defineSingleDispatchMethod( clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     }
     return *this;
   }
@@ -413,11 +422,10 @@ public:
         pkgName = symbol_packageName(this->_ClassSymbol);
       }
       Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
-      using VariadicType = TEMPLATED_FUNCTION_VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...) const>;
-      GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
-      BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,mp));
-      lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
-      validateFunctionDescription(__FILE__,__LINE__,m);
+      using VariadicType = clbind::WRAPPER_VariadicMethod< RT (OT::*)(ARGS...) const, core::policy::clasp_policy, clbind::DefaultWrapper >;
+      FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
+      auto entry = gctools::GC<VariadicType>::allocate(mp,fdesc,nil<T_O>());
+      lisp_defineSingleDispatchMethod(clbind::DefaultWrapper(), symbol, this->_ClassSymbol, entry, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     }
     return *this;
   }

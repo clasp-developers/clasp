@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/environment.h>
+#include <clasp/core/bytecode_compiler.h> // Lexenv
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/bignum.h>
@@ -153,7 +154,7 @@ CL_DEFUN T_sp core__interpreter_symbols() {
 #define ServeEventPkg_SYMBOLS
 #define CompPkg_SYMBOLS
 #define CleavirEnvPkg_SYMBOLS
-#define CleavirPrimopsPkg_SYMBOLS
+#define CleavirPrimopPkg_SYMBOLS
 #define ClosPkg_SYMBOLS
 #define GrayPkg_SYMBOLS
 #define ClcenvPkg_SYMBOLS
@@ -174,7 +175,7 @@ CL_DEFUN T_sp core__interpreter_symbols() {
 #undef ServeEventPkg_SYMBOLS
 #undef CompPkg_SYMBOLS
 #undef CleavirEnvPkg_SYMBOLS
-#undef CleavirPrimopsPkg_SYMBOLS
+#undef CleavirPrimopPkg_SYMBOLS
 #undef ClosPkg_SYMBOLS
 #undef GrayPkg_SYMBOLS
 #undef ClcenvPkg_SYMBOLS
@@ -540,7 +541,7 @@ CL_DOCSTRING(R"dx(values)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
   // returns multiple values
-  size_t nargs = vargs->remaining_nargs();
+  size_t nargs = vargs->nargs();
   SUPPRESS_GC();
 #ifdef DEBUG_VALUES
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
@@ -704,16 +705,8 @@ CL_DEFUN bool core__operator_shadowed_p(T_sp name, T_sp env) {
   if (env.nilp()) {
     // No lexical environment.
     return false;
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    // Native environment. Check for local functions.
-    int depth;
-    int index;
-    Function_sp value;
-    T_sp functionEnv = nil<T_O>();
-    if (eenv->findFunction(name, depth, index, value, functionEnv))
-      return true;
-    // No local function, check for local macro instead.
-    return Environment_O::clasp_findMacro(eenv, name, depth, index, value);
+  } else if (comp::Lexenv_sp bce = env.asOrNull<comp::Lexenv_O>()) {
+    return bce->functionInfo(name).notnilp();
   } else { // Cleavir, maybe
     SYMBOL_EXPORT_SC_(CorePkg, cleavir_operator_shadowed_p);
     T_sp lbool = eval::funcall(core::_sym_cleavir_operator_shadowed_p,
@@ -729,9 +722,10 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
   T_sp func = nil<T_O>();
   if (env.nilp()) {
-    func = af_interpreter_lookup_macro(symbol, env);
-  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    func = af_interpreter_lookup_macro(symbol, eenv);
+    if (symbol->fboundp() && symbol->macroP()) return symbol->symbolFunction();
+    else return nil<T_O>();
+  } else if (comp::Lexenv_sp bce = env.asOrNull<comp::Lexenv_O>()) {
+    func = bce->lookupMacro(symbol);
 #if 0    
   } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>()) {
     clcenv::Info_sp info = clcenv::function_info(cenv,symbol);
@@ -746,7 +740,8 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
       func = eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
     } else {
       printf("%s:%d Unexpected environment for MACRO-FUNCTION before Cleavir is available - using toplevel environment\n", __FILE__, __LINE__);
-      func = af_interpreter_lookup_macro(symbol, nil<T_O>());
+      if (symbol->fboundp() && symbol->macroP()) return symbol->symbolFunction();
+      else return nil<T_O>();
     }
   }
   return func;
@@ -1050,15 +1045,17 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
       if (dname.consp()) {
         Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
         if (name.notnilp() && oCdr(dname).nilp()) {
-          if (!name->fboundp_setf())
+          if (!name->fboundp_setf()) {
             ERROR_UNDEFINED_FUNCTION(functionName);
+          }
           return name->getSetfFdefinition();
         }
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
-    if (!sym->fboundp())
+    if (!sym->fboundp()) {
       ERROR_UNDEFINED_FUNCTION(functionName);
+    }
     return sym->symbolFunction();
   }
   TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
@@ -1478,7 +1475,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp cl__append(Vaslist_sp args) {
   ql::list list;
   LOG("Carrying out append with arguments: %s" , _rep_(lists));
-  size_t lenArgs = args->total_nargs();
+  size_t lenArgs = args->nargs();
   unlikely_if (lenArgs==0) return nil<T_O>();
   T_O* lastArg = (*args)[lenArgs-1];
   for ( int i(0),iEnd(lenArgs-1);i<iEnd; ++i ) {
@@ -2153,7 +2150,7 @@ CL_DEFUN void core__withStackCons(T_sp car, T_sp cdr, T_sp fn) {
   printf("%s:%d:%s The ConsSizeCalculator<Cons_O> size is %lu\n", __FILE__, __LINE__, __FUNCTION__, gctools::ConsSizeCalculator<gctools::RuntimeStage,Cons_O>::value());
   eval::funcall(fn,cons.asSmartPtr());
 }
-
+#if 0
 DOCGROUP(clasp)
 CL_DEFUN core::Test_sp core__makeTest() {
   auto tt = new Test();
@@ -2161,6 +2158,7 @@ CL_DEFUN core::Test_sp core__makeTest() {
   t->set_wrapped(tt);
   return t;
 }
+#endif
 
 void Test::setMultiplier(int m) {
   this->multiplier = m;

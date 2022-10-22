@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#include <atomic> // memory_order_etc
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -126,6 +127,26 @@ CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
   return Cons_O::create(obj1, obj2);
 };
 
+CL_LAMBDA(order cons)
+CL_DECLARE();
+CL_DOCSTRING(R"dx(car-atomic)dx")
+CL_UNWIND_COOP(true);
+DOCGROUP(clasp)
+CL_DEFUN T_sp core__car_atomic(T_sp order, Cons_sp c) {
+  // FIXME: We laze out here and ignore the order.
+  // This is valid but could make clever concurrent code less efficient.
+  return c->carAtomic(std::memory_order_seq_cst);
+}
+
+CL_LAMBDA(order cons)
+CL_DECLARE();
+CL_DOCSTRING(R"dx(cdr-atomic)dx")
+CL_UNWIND_COOP(true);
+DOCGROUP(clasp)
+CL_DEFUN T_sp core__cdr_atomic(T_sp order, Cons_sp c) {
+  return c->cdrAtomic(std::memory_order_seq_cst);
+}
+
 CL_LAMBDA(c o)
 CL_DECLARE();
 CL_UNWIND_COOP(true);
@@ -143,6 +164,44 @@ DOCGROUP(clasp)
 CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
+
+CL_LAMBDA(order value cons)
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx()dx")
+DOCGROUP(clasp)
+CL_DEFUN Cons_sp core__rplaca_atomic(T_sp order, T_sp value, Cons_sp c) {
+  c->setCarAtomic(value, std::memory_order_seq_cst);
+  return c;
+}
+
+CL_LAMBDA(order value cons)
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx()dx")
+DOCGROUP(clasp)
+CL_DEFUN Cons_sp core__rplacd_atomic(T_sp order, T_sp value, Cons_sp c) {
+  c->setCdrAtomic(value, std::memory_order_seq_cst);
+  return c;
+}
+
+CL_LAMBDA(order old new cons)
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx()dx")
+DOCGROUP(clasp)
+CL_DEFUN T_sp core__cas_car(T_sp order, T_sp old, T_sp newv, Cons_sp c) {
+  return c->carCAS(old, newv, std::memory_order_seq_cst);
+}
+
+CL_LAMBDA(order old new cons)
+CL_DECLARE();
+CL_UNWIND_COOP(true);
+CL_DOCSTRING(R"dx()dx")
+DOCGROUP(clasp)
+CL_DEFUN T_sp core__cas_cdr(T_sp order, T_sp old, T_sp newv, Cons_sp c) {
+  return c->cdrCAS(old, newv, std::memory_order_seq_cst);
+}
 
 CL_LAMBDA(osize &key initial-element)
 CL_DECLARE();
@@ -690,6 +749,22 @@ CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
       T_sp pair = CONS_CAR(cur);
       if (pair.consp()) {
         if (cl__eql(CONS_CAR(pair),key)) return pair;
+      } else {
+        not_alist_error(alist);
+      }
+    }
+  }
+  return nil<T_O>();
+}
+
+CL_UNWIND_COOP(true);
+DOCGROUP(clasp)
+CL_DEFUN List_sp core__alist_assoc_equal(List_sp alist, T_sp key) {
+  if (alist.consp()) {
+    for ( auto cur : alist ) {
+      T_sp pair = CONS_CAR(cur);
+      if (pair.consp()) {
+        if (cl__equal(CONS_CAR(pair),key)) return pair;
       } else {
         not_alist_error(alist);
       }

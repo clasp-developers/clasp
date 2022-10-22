@@ -83,18 +83,21 @@ and not a simple-function so return (values name class::name nil)"
 (defun extract-method-name-from-signature (sig)
   (declare (optimize (debug 3)))
   (let* ((tsig (maybe-remove-one-prefix-from-start sig '("virtual" "inline")))
-         (first-sep (position-if
-                     (lambda (c) (or (char= c #\newline)
-                                     (char= c #\space)
-                                     (char= c #\tab)))
-                     tsig))
-         (first-name-char (position-if
-                           (lambda (c) (not (or (char= c #\newline)
-                                                (char= c #\space)
-                                                (char= c #\tab)
-                                                (char= c #\*)))) ;; skip *
-                           tsig
-                           :start first-sep))
+         (first-sep (or (position-if
+                         (lambda (c) (or (char= c #\newline)
+                                         (char= c #\space)
+                                         (char= c #\tab)))
+                         tsig)
+                        (error "Bad signature: ~a" sig)))
+         (first-name-char (or
+                           (position-if
+                            (lambda (c) (not (or (char= c #\newline)
+                                                 (char= c #\space)
+                                                 (char= c #\tab)
+                                                 (char= c #\*)))) ;; skip *
+                            tsig
+                            :start first-sep)
+                           (error "Bad signature: ~a" sig)))
          (open-paren (position #\( tsig :test #'char= :start first-name-char))
          (class-method (string-left-trim '(#\newline #\space #\tab #\*) (string-right-trim '(#\newline #\space #\tab) (subseq tsig first-name-char open-paren))))
          (colon-colon-pos (search "::" class-method)))
@@ -142,11 +145,15 @@ Trim whitespace from each member of the pair.
 Rudimentarily detects and skips initializers."
   (declare (optimize (speed 3)))
   (let* ((initializer-start (position #\= type-name :from-end t))
-         (name-start (position-if #'(lambda (c)
-                                      (not (or (alphanumericp c) (char= c #\_))))
-                                  type-name
-                                  :end initializer-start
-                                  :from-end t))
+         (name-start
+           (or (position-if #'(lambda (c)
+                                (not (or (alphanumericp c) (char= c #\_))))
+                            type-name
+                            :end initializer-start
+                            :from-end t)
+               (error "Bad type-name ~s for ~a. Should be a C++ type followed by a space followed by a parameter name.
+This may indicate a C++ arglist with type names but without the parameter names the scraper requires."
+                      type-name 'split-type-name)))
          (first (subseq type-name 0 (1+ name-start)))
          (second (subseq type-name (1+ name-start) initializer-start)))
     (values (string-trim +white-space+ first) (string-trim +white-space+ second))))

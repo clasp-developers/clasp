@@ -30,10 +30,6 @@
 (test-true disassemble-4 (test-disassemble '(lambda (a) a)))
 (test-true disassemble-5 (test-disassemble '(lambda ()) :type :ir))
 
-(test-true disassemble-5-bclasp
-           (let ((cmp:*CLEAVIR-COMPILE-HOOK* nil))
-             (test-disassemble '(lambda ()) :type :ir)))
-
 (defun %foo% (n) (* n n))
 
 (test-true disassemble-6 (test-disassemble '%foo%))

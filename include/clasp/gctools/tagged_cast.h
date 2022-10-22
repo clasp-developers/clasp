@@ -36,7 +36,6 @@ namespace core {
   class SingleFloat_I {};
   class Character_I {};
   class Integer_O;
-  class Environment_O;
   class Rational_O;
   class Real_O;
   class Number_O;

@@ -88,15 +88,7 @@ inline gctools::multiple_values<core::Symbol_O> safe_downcast(const gctools::mul
 namespace translate {
 /*! The second template argument can be std::true_type if the value passed to the from_object ctor should be used
       to construct the value or std::false_type if a default initialization value should be used */
-template <class oClass, typename Doit = std::true_type>
-struct from_object {
-#if 0
-	    typedef	gctools::smart_ptr<oClass>	DeclareType;	
-	    DeclareType _v;
-	    from_object(T_P o) : _v(o.as<oClass>()) {};
-#endif
-};
-
+template <class oClass, typename Doit = std::true_type> struct from_object;
 
 struct dont_adopt_pointer {};
 struct adopt_pointer {};

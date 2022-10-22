@@ -49,7 +49,7 @@ THE SOFTWARE.
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
@@ -61,6 +61,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/array.h>
+#include <clasp/core/bytecode_compiler.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/wrappedPointer.h>
@@ -84,6 +85,8 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/null.h>
 #include <clasp/core/wrappers.h>
+
+
 
 namespace reg {
 
@@ -155,10 +158,6 @@ union NW {
   uint64_t  word;
   char name[8];
 };
-
-bool lisp_lambdaListHandlerNeedsValueEnvironment(LambdaListHandler_sp llh) {
-  return llh->needsValueEnvironmentP();
-}
 
 uint64_t lisp_nameword(core::T_sp name)
 {
@@ -254,21 +253,43 @@ void lisp_errorDereferencedUnbound() {
   SIMPLE_ERROR(("Tried to dereference unbound"));
 }
 
-DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP) {
-  if (expectedTyp >= _lisp->classSymbolsHolder().size()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("expected class_id %d out of range max[%d]" , expectedTyp , _lisp->classSymbolsHolder().size()));
+
+DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedTypeStampWtag(size_t to, core::T_O *objP) {
+  size_t expectedStamp = STAMP_UNSHIFT_WTAG(to);
+#ifdef DEBUG_RUNTIME
+  // This is a really low level debug code appropriate when debugging the runtime
+  const char* expectedName = obj_name(expectedStamp);
+  printf("%s:%d:%s ----- Unexpected type error! ------\n", __FILE__, __LINE__, __FUNCTION__ );
+  printf(" EXPECTED stamp_wtag = %4lu name: %s\n", (size_t)to, expectedName );
+  printf(" the actual object with tagged pointer %p has the header:\n", objP );
+  client_describe(objP);
+# if 0
+  for ( size_t ii=0; ii<_lisp->_Roots.staticClassSymbolsUnshiftedNowhere.size(); ii++ ) {
+    Symbol_sp ssym = _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[ii];
+    printf("%s:%d:%s _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[%lu] -> %s\n", __FILE__, __LINE__, __FUNCTION__, ii, _rep_(ssym).c_str() );
   }
-  core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expectedTyp];
+# endif
+#endif
+  Symbol_sp expectedClassSymbol = _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[expectedStamp];
+  T_sp obj((gctools::Tagged)objP);
+  TYPE_ERROR(obj,expectedClassSymbol);
+}
+
+DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, class_id given_class_id, core::T_O *objP) {
+  if (expected_class_id >= _lisp->classSymbolsHolder().size()) {
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("expected class_id %d out of range max[%d]" , expected_class_id , _lisp->classSymbolsHolder().size()));
+  }
+  core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expected_class_id];
   if (expectedSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("unexpected type for object %p givenTyp %d could not find expectedTyp %d because symbol was not defined" , (void*)objP , givenTyp , expectedTyp));
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("unexpected class_id for object %p (given_class_id %d / expected_class_id %d) could not lookup expected_class_id symbol" , (void*)objP , given_class_id , expected_class_id));
   }
 
-  if (givenTyp >= _lisp->classSymbolsHolder().size()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("given class_id %d out of range max[%d]" , givenTyp , _lisp->classSymbolsHolder().size()));
+  if (given_class_id >= _lisp->classSymbolsHolder().size()) {
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("given class_id %d out of range max[%d]" , given_class_id , _lisp->classSymbolsHolder().size()));
   }
-  core::Symbol_sp givenSym = _lisp->classSymbolsHolder()[givenTyp];
+  core::Symbol_sp givenSym = _lisp->classSymbolsHolder()[given_class_id];
   if (givenSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("given class_id %d symbol was not defined" , givenTyp));
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf("given class_id %d symbol was not defined" , given_class_id));
   }
 
   gctools::smart_ptr<core::T_O> obj((gc::Tagged)objP);
@@ -282,6 +303,12 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O
 
 DONT_OPTIMIZE_ALWAYS void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP) {
   lisp_errorUnexpectedType(toType, fromType, objP);
+}
+
+
+DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastStampWtag(size_t to, core::T_O *objP) {
+  lisp_errorUnexpectedTypeStampWtag((size_t)to, objP);
+  abort();
 }
 
 DONT_OPTIMIZE_ALWAYS void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP) {
@@ -859,28 +886,22 @@ T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
   return mc;
 }
 
-// void lisp_defineInitializationArgumentsForClassSymbol(LispPtr lisp, const string& argumentString, uint classSymbol)
-// {
-//     Instance_sp mc = lisp->classFromClassSymbol(classSymbol);
-//     mc->__setLambdaListHandlerString(argumentString);
-// }
-
-void lisp_addClassSymbol(Symbol_sp classSymbol,
-                   gctools::smart_ptr<Creator_O> cb,
-                   Symbol_sp base1ClassSymbol)
-{
-  DEPRECATED();
-  printf("%s:%d:%s    lisp_addClass   %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(classSymbol).c_str());
-  _lisp->addClassSymbol(classSymbol, cb, base1ClassSymbol); //, base2ClassSymbol);
-}
-void lisp_addClass(Symbol_sp classSymbol) {
-  DEPRECATED();
-  //	_lisp->addClass(classSymbol);
-}
-
-List_sp lisp_parse_arguments(const string &packageName, const string &args) {
-  if (args == "")
-    return nil<T_O>();
+List_sp lisp_parse_arguments(const string &packageName, const string &args, int number_of_required_arguments, const std::set<int> skip_indices ) {
+  if (args == "") {
+    // If args is "" then cook up arguments using number_of_required_arguments and skip_indices
+    ql::list args;
+    int num = 0;
+    for ( int idx=0; idx< number_of_required_arguments; idx++) {
+      if (skip_indices.count(idx)==0) {
+        stringstream ss;
+        ss << "ARG" << num;
+        num++;
+        Symbol_sp arg_sym = _lisp->intern(ss.str(),packageName);
+        args << arg_sym;
+      }
+    }
+    return args.cons();
+  }
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(args);
@@ -894,6 +915,39 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   List_sp sscons = osscons;
   return sscons;
 }
+
+List_sp lisp_lexical_variable_names( List_sp lambda_list, bool& trivial_wrapper ) {
+  gctools::Vec0<RequiredArgument> reqs;
+  gctools::Vec0<OptionalArgument> optionals;
+  gctools::Vec0<KeywordArgument> keys;
+  gctools::Vec0<AuxArgument> auxs;
+  RestArgument restarg;
+  T_sp key_flag;
+  T_sp allow_other_keys;
+  T_sp decl_dict = nil<T_O>();
+  parse_lambda_list(lambda_list,
+                    cl::_sym_function,
+                    reqs,
+                    optionals,
+                    restarg,
+                    key_flag,
+                    keys,
+                    allow_other_keys,
+                    auxs);
+  //
+  // trivial_wrapper is true if only required arguments are in lambda_list
+  //
+  trivial_wrapper = true;
+  if (optionals.size()>0) trivial_wrapper = false;
+  if (keys.size()>0) trivial_wrapper = false;
+  if (auxs.size()>0) trivial_wrapper = false;
+  if (restarg.isDefined()) trivial_wrapper = false;
+  if (allow_other_keys.notnilp()) trivial_wrapper = false;
+  if (key_flag.notnilp()) trivial_wrapper = false;
+  T_sp vars = lexical_variable_names(reqs,optionals,restarg,keys,auxs);
+  return vars;
+}
+
 
 List_sp lisp_parse_declares(const string &packageName, const string &declarestring) {
   if (declarestring == "")
@@ -909,15 +963,6 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   List_sp sscons = read_lisp_object(str,true,nil<T_O>(), false);
 #endif
   return sscons;
-}
-
-size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp lambda_list_handler)
-{
-  return lambda_list_handler->numberOfSpecialVariables();
-}
-LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues) {
-  LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list, declares, cl::_sym_function, pureOutValues);
-  return llh;
 }
 
 
@@ -937,11 +982,12 @@ string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda)
 
 
 SYMBOL_EXPORT_SC_(KeywordPkg, body);
-SYMBOL_EXPORT_SC_(KeywordPkg, lambda_list_handler);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
-void lisp_defineSingleDispatchMethod(T_sp name,
+
+void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& specializer,
+                                     T_sp name,
                                      Symbol_sp classSymbol,
-                                     BuiltinClosure_sp method_body,
+                                     GlobalSimpleFunBase_sp method_body,
                                      size_t TemplateDispatchOn,
                                      bool useTemplateDispatchOn,
                                      const string &raw_arguments,
@@ -956,42 +1002,25 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   List_sp ldeclares = lisp_parse_declares(gc::As<Package_sp>(className->getPackage())->getName(), declares);
   // NOTE: We are compiling the llhandler in the package of the class - not the package of the
   // method name  -- sometimes the method name will belong to another class (ie: core:--init--)
-  LambdaListHandler_sp llhandler;
+  List_sp lambda_list;
   size_t single_dispatch_argument_index;
   if (useTemplateDispatchOn) single_dispatch_argument_index = TemplateDispatchOn;
   if (arguments == "" && number_of_required_arguments >= 0) {
-    // If the arguments string is empty and number_of_required_arguments is >= 0 then create
-    // a LambdaListHandler that supports that number of required arguments
-    llhandler = LambdaListHandler_O::create(number_of_required_arguments, pureOutIndices);
+    lambda_list = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments, number_of_required_arguments, pureOutIndices );
   } else if (arguments != "") {
     List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments);
-    T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw, true);
+    T_mv mv_llprocessed = process_single_dispatch_lambda_list(llraw, true);
     T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
-    Symbol_sp sd_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet_(1));
-    Symbol_sp specializer_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet_(2));
-    List_sp llproc = coerce_to_list(tllproc);
-    if (specializer_symbol.notnilp() && specializer_symbol != classSymbol) {
-      SIMPLE_ERROR(("Mismatch between hard coded class[%s] and"
-                    " specializer_symbol[%s] for function %s with argument list: %s") ,
-                   classSymbol->fullName() , specializer_symbol->fullName() , _rep_(name) , _rep_(llraw));
+    lambda_list = coerce_to_list(tllproc);
+    MultipleValues& mvn = core::lisp_multipleValues();
+    Symbol_sp sd_symbol = gc::As<Symbol_sp>(mvn.valueGet(1,mv_llprocessed.number_of_values()));
+    Symbol_sp specializer_symbol = gc::As<Symbol_sp>(mvn.valueGet(2,mv_llprocessed.number_of_values()));
+    T_sp dispatchOn = mvn.valueGet(3,mv_llprocessed.number_of_values());
+    if (dispatchOn.unsafe_fixnum() !=0) {
+      printf("%s:%d:%s bad dispatchOn lambda_list = %s sd_symbol = %s  specializer_symbol = %s dispatchOn = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lambda_list).c_str(), _rep_(sd_symbol).c_str(), _rep_(specializer_symbol).c_str(), _rep_(dispatchOn).c_str()  );
+      abort();
     }
-    llhandler = lisp_function_lambda_list_handler(llproc, ldeclares, pureOutIndices);
-    if (sd_symbol.notnilp()) {
-      single_dispatch_argument_index = llhandler->single_dispatch_on_argument(sd_symbol);
-      if (useTemplateDispatchOn) {
-        if (single_dispatch_argument_index != TemplateDispatchOn) {
-          SIMPLE_ERROR(("There is a mismatch between the single_dispatch_argument_index %d and TemplateDispatchOn %d") , single_dispatch_argument_index , TemplateDispatchOn);
-        }
-      }
-      // if dispatching off of something other than the first argument and this isn't a (setf xxx) function - then error
-      if (single_dispatch_argument_index != 0 && !(name.consp() && CONS_CAR(name)==cl::_sym_setf)) {
-        SIMPLE_ERROR(("There is no support for dispatching on anything but the first argument -"
-                      " wrap this virtual function in a regular function and do the dispatch yourself  %s::%s") ,
-                     _rep_(className) , _rep_(name));
-      }
-    }
-  } else {
-    SIMPLE_ERROR(("No arguments were provided and number_of_required_arguments is %d") , number_of_required_arguments);
+    single_dispatch_argument_index = dispatchOn.unsafe_fixnum();
   }
   if (TemplateDispatchOn != single_dispatch_argument_index) {
     SIMPLE_ERROR(("Mismatch between single_dispatch_argument_index[%d] from lambda_list and TemplateDispatchOn[%d] for class %s  method: %s  lambda_list: %s") , single_dispatch_argument_index , TemplateDispatchOn , _rep_(classSymbol) , _rep_(name) , arguments);
@@ -1000,16 +1029,30 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   
   T_sp docStr = nil<T_O>();
   if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
-  SingleDispatchGenericFunction_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
-  method_body->finishSetup(llhandler);
-  method_body->setf_sourcePathname(nil<T_O>());
-  method_body->setf_lambdaList(llhandler->lambdaList());
-  method_body->setf_docstring(docStr);
-  ASSERT(llhandler || llhandler.notnilp());
-#ifdef DEBUG_PROGRESS
-  printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
-#endif
-  core__ensure_single_dispatch_method(gfn, name, receiver_class, llhandler, ldeclares, docStr, method_body);
+  SingleDispatchGenericFunction_sp gfn = core__ensure_single_dispatch_generic_function(name, autoExport,single_dispatch_argument_index, lambda_list ); // Ensure the single dispatch generic function exists
+  //
+  //
+  bool trivial_wrapper;
+  List_sp vars = lisp_lexical_variable_names( lambda_list, trivial_wrapper );
+  Function_sp func;
+  if (trivial_wrapper) {
+    func = method_body;
+  } else {
+    List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( method_body, vars ));
+    List_sp declare_form = Cons_O::createList( cl::_sym_declare, Cons_O::createList (core::_sym_lambdaName, name ));
+    //printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
+    List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,declare_form, funcall_form);
+    //printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
+    func = comp::bytecompile( form,comp::Lexenv_O::make_top_level());
+  }
+
+  func->setf_sourcePathname(nil<T_O>());
+  func->setf_lambdaList(lambda_list); // use this for lambda wrapper
+  func->setf_docstring(docStr);
+  List_sp names = core::_sym_STARbuiltin_single_dispatch_method_namesSTAR->symbolValue();
+  names = Cons_O::create(name,names);
+  core::_sym_STARbuiltin_function_namesSTAR->setf_symbolValue(names);
+  core__ensure_single_dispatch_method(gfn, name, receiver_class, ldeclares, docStr, func );
 }
 
 void lisp_throwIfBuiltInClassesNotInitialized() {
@@ -1019,10 +1062,6 @@ void lisp_throwIfBuiltInClassesNotInitialized() {
 Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
   return gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
 }
-
-
-  
-
 
 /*! If the name has the structure XXX:YYY or XXX::YYY then intern YYY in package XXX either
       exported or not respectively.   If there is no package prefix then use the defaultPackageName */
@@ -1036,93 +1075,66 @@ Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, b
   return sym;
 }
 
-void lisp_defun(Symbol_sp sym,
-                const string &packageName,
-                BuiltinClosure_sp fc,
-                const string &arguments,
-                const string &declarestring,
-                const string &docstring,
-                const string &sourceFile,
-                int lineNumber,
-                int number_of_required_arguments,
-                const std::set<int> &skipIndices) {
-  List_sp ldeclares = lisp_parse_declares(packageName, declarestring); // get the declares but ignore them for now
-  (void)ldeclares;                                                     // suppress warning
-  LambdaListHandler_sp llh;
-  if ((arguments == "" || arguments == "()") && number_of_required_arguments >= 0) {
-    llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
+
+SYMBOL_EXPORT_SC_(CorePkg,bytecode_wrapper);
+
+void lisp_bytecode_defun(SymbolFunctionEnum kind,
+                         int bytecodep,
+                         Symbol_sp sym,
+                         const string &packageName,
+                         GlobalSimpleFunBase_sp entry,
+                         const string& arguments,
+                         const string& declares,
+                         const string &docstring,
+                         const string &sourceFile,
+                         int lineNumber,
+                         int numberOfRequiredArguments,
+                         const std::set<int> &skipIndices)
+{
+  List_sp lambda_list = lisp_parse_arguments(packageName, arguments,numberOfRequiredArguments,skipIndices);
+  bool trivial_wrapper;
+  List_sp vars = lisp_lexical_variable_names( lambda_list, trivial_wrapper );
+  Function_sp func;
+  if (!bytecodep) {
+    printf("%s:%d:%s We don't support LambdaListHandler anymore\n", __FILE__, __LINE__, __FUNCTION__ );
+    abort();
   } else {
-    List_sp ll = lisp_parse_arguments(packageName, arguments);
-    llh = lisp_function_lambda_list_handler(ll, nil<T_O>(), skipIndices);
+    if (trivial_wrapper) {
+      func = entry;
+    } else {
+      List_sp funcall_form = Cons_O::create( cleavirPrimop::_sym_funcall, Cons_O::create( entry, vars ));
+      List_sp declare_form = Cons_O::createList( cl::_sym_declare, Cons_O::createList (core::_sym_lambdaName, sym ));
+    //printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
+      List_sp form = Cons_O::createList(cl::_sym_lambda,lambda_list,declare_form, funcall_form);
+    //printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
+      func = comp::bytecompile( form,comp::Lexenv_O::make_top_level());
+//    printf("%s:%d:%s compiled a non-trivial wrapper for %s %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sym).c_str(), _rep_(lambda_list).c_str() );
+    }
   }
-  fc->finishSetup(llh);
-  fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
-  Function_sp func = fc;
-  sym->setf_symbolFunction(func);
-  sym->exportYourself();
-  T_sp tdocstring = nil<T_O>();
-  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
-  fc->setf_lambdaList(llh->lambdaList());
-  fc->setf_docstring(tdocstring);
-}
-
-// identical to above except for using setSetfFdefinition.
-void lisp_defun_setf(Symbol_sp sym,
-                     const string &packageName,
-                     BuiltinClosure_sp fc,
-                     const string &arguments,
-                     const string &declarestring,
-                     const string &docstring,
-                     const string &sourceFile,
-                     int lineNumber,
-                     int number_of_required_arguments,
-                     const std::set<int> &skipIndices) {
-  List_sp ldeclares = lisp_parse_declares(packageName, declarestring); // get the declares but ignore them for now
-  (void)ldeclares;                                                     // suppress warning
-  LambdaListHandler_sp llh;
-  if ((arguments == "" || arguments == "()") && number_of_required_arguments >= 0) {
-    llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
-  } else {
-    List_sp ll = lisp_parse_arguments(packageName, arguments);
-    llh = lisp_function_lambda_list_handler(ll, nil<T_O>(), skipIndices);
+  func->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
+  if (kind==symbol_function) {
+    sym->setf_symbolFunction(func);
+    List_sp names = core::_sym_STARbuiltin_function_namesSTAR->symbolValue();
+    names = Cons_O::create(sym,names);
+    core::_sym_STARbuiltin_function_namesSTAR->setf_symbolValue(names);
+  } else if (kind==symbol_function_macro) {
+    sym->setf_symbolFunction(func);
+    sym->setf_macroP(true);
+    List_sp names = core::_sym_STARbuiltin_macro_function_namesSTAR->symbolValue();
+    names = Cons_O::create(sym,names);
+    core::_sym_STARbuiltin_macro_function_namesSTAR->setf_symbolValue(names);
+  } else if (kind==symbol_function_setf) {
+    sym->setSetfFdefinition(func);
+    List_sp names = core::_sym_STARbuiltin_setf_function_namesSTAR->symbolValue();
+    names = Cons_O::create(sym,names);
+    core::_sym_STARbuiltin_setf_function_namesSTAR->setf_symbolValue(names);
   }
-  fc->finishSetup(llh);
-  fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
+  sym->exportYourself();
   T_sp tdocstring = nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
-  fc->setf_sourcePathname(nil<T_O>());
-  fc->setf_lambdaList(llh->lambdaList());
-  fc->setf_docstring(tdocstring);
-  Function_sp func = fc;
-  sym->setSetfFdefinition(func);
-  sym->exportYourself();
+  func->setf_lambdaList(lambda_list);
+  func->setf_docstring(tdocstring);
 }
-
-void lisp_defmacro(Symbol_sp sym,
-                   const string &packageName,
-                   BuiltinClosure_sp f,
-                   const string &arguments,
-                   const string &declarestring,
-                   const string &docstring) {
-  LOG("Adding form[%s] with arguments[%s]" , name , arguments);
-  List_sp ll = lisp_parse_arguments(packageName, arguments);
-  List_sp ldeclares = lisp_parse_declares(packageName, declarestring);
-  (void)ldeclares;
-  LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, nil<T_O>());
-  f->finishSetup(llh);
-  sym->setf_macroP(true);
-  f->setf_sourcePathname(nil<T_O>());
-  f->setf_lambdaList(llh->lambdaList());
-  T_sp tdocstring = nil<T_O>();
-  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
-  f->setf_docstring(tdocstring);
-  Function_sp func = f;
-  //    Package_sp package = lisp->getPackage(packageName);
-  //    package->addFunctionForLambdaListHandlerCreation(func);
-  sym->setf_symbolFunction(func);
-  sym->exportYourself();
-}
-
 
 Symbol_sp lisp_internKeyword(const string &name) {
   if (name == "")
@@ -1314,7 +1326,8 @@ SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos
   SimpleBaseString_sp fn = SimpleBaseString_O::make(fileName);
   T_mv sfi_mv = core__file_scope(fn);
   FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
-  Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet_(1));
+  MultipleValues& mvn = core::lisp_multipleValues();
+  Fixnum_sp handle = gc::As<Fixnum_sp>(mvn.valueGet(1,sfi_mv.number_of_values()));
   int sfindex = unbox_fixnum(handle);
   return SourcePosInfo_O::create(sfindex, filePos, lineno, 0);
 }
@@ -1337,7 +1350,7 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp 
 [[noreturn]] void lisp_error_no_stamp(void* ptr)
 {
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::GeneralPtrToHeaderPtr(ptr));
-  SIMPLE_ERROR(("This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one  - the subclass header stamp value is %lu") , ((void*)ptr) , header->_stamp_wtag_mtag.stamp_());
+  SIMPLE_ERROR(("This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one  - the subclass header stamp value is %lu") , ((void*)ptr) , header->_badge_stamp_wtag_mtag.stamp_());
 }
 
 void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass_symbol)
@@ -1461,7 +1474,7 @@ void tokenize(const string &str,
   }
 }
 
-string searchAndReplaceString(const string &str, const string &search, const string &replace, LispPtr lisp) {
+string searchAndReplaceString(const string &str, const string &search, const string &replace) {
   string result;
   string::size_type pos = 0;
   result = str;
@@ -1580,16 +1593,105 @@ void throwIfClassesNotInitialized(const LispPtr &lisp) {
 
 };
 
+
+extern "C" {
+size_t global_drag_native_calls_delay = 0;
+size_t global_drag_cxx_calls_delay = 0;
+size_t global_drag_interpret_dtree_delay = 0;
+size_t global_drag_cons_allocation_delay = 0;
+size_t global_drag_general_allocation_delay = 0;
+
+void drag_native_calls() {
+  for (size_t ii=0; ii<global_drag_native_calls_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+void drag_cxx_calls() {
+  for (size_t ii=0; ii<global_drag_cxx_calls_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+void drag_interpret_dtree() {
+  for (size_t ii=0; ii<global_drag_interpret_dtree_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+void drag_cons_allocation() {
+  for (size_t ii=0; ii<global_drag_cons_allocation_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+
+void drag_general_allocation() {
+  for (size_t ii=0; ii<global_drag_general_allocation_delay; ii++ ) {
+    drag_delay();
+  }
+};
+
+};
+
+namespace core {
+
+CL_DEFUN void core__set_drag_cxx_calls_delay(size_t num) {
+  global_drag_cxx_calls_delay = num;
+#ifndef DEBUG_DRAG_CXX_CALLS
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_CXX_CALLS is off");
+#endif
+};
+
+CL_DEFUN void core__set_drag_native_calls_delay(size_t num) {
+  global_drag_native_calls_delay = num;
+#ifndef DEBUG_DRAG_NATIVE_CALLS
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_NATIVE_CALLS is off");
+#endif
+};
+
+CL_DEFUN void core__set_drag_interpret_dtree_delay(size_t num) {
+  global_drag_interpret_dtree_delay = num;
+#ifndef DEBUG_DRAG_INTERPRET_DTREE
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_INTERPRET_DTREE is off");
+#endif
+};
+
+CL_DEFUN void core__set_drag_cons_allocation_delay(size_t num) {
+  global_drag_cons_allocation_delay = num;
+#ifndef DEBUG_DRAG_CONS_ALLOCATION
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_CONS_ALLOCATION is off");
+#endif
+};
+
+CL_DEFUN void core__set_drag_general_allocation_delay(size_t num) {
+  global_drag_general_allocation_delay = num;
+#ifndef DEBUG_DRAG_GENERAL_ALLOCATION
+  SIMPLE_ERROR("Does nothing - DEBUG_DRAG_GENERAL_ALLOCATION is off");
+#endif
+};
+
+};
+
+
+
+
 namespace core {
 
 uint32_t lisp_general_badge(General_sp object) {
   const gctools::Header_s* header = gctools::header_pointer(object.unsafe_general());
-  return header->_stamp_wtag_mtag._header_badge;
+  if (header->_badge_stamp_wtag_mtag._header_badge == gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge) {
+    header->_badge_stamp_wtag_mtag._header_badge = lisp_calculate_heap_badge();
+  }
+  return header->_badge_stamp_wtag_mtag._header_badge;
 }
 
 uint32_t lisp_cons_badge(Cons_sp object) {
   const gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(object.unsafe_cons());
-  return header->_stamp_wtag_mtag._header_badge;
+  if (header->_badge_stamp_wtag_mtag._header_badge == gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge) {
+    header->_badge_stamp_wtag_mtag._header_badge = lisp_calculate_heap_badge();
+  }
+  return header->_badge_stamp_wtag_mtag._header_badge;
 }
 
 uint32_t lisp_badge(T_sp object) {
@@ -1613,17 +1715,17 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 {
   if (object.consp()) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::ConsPtrToHeaderPtr(object.unsafe_cons()));
-    header->_stamp_wtag_mtag._header_badge = badge;
+    header->_badge_stamp_wtag_mtag._header_badge = badge;
     return;
   } else if (object.generalp()) {
     gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
-    header->_stamp_wtag_mtag._header_badge = badge;
+    header->_badge_stamp_wtag_mtag._header_badge = badge;
   }
 }
 
 
 
-uint32_t lisp_random()
+uint32_t lisp_calculate_heap_badge()
 {
   if (!my_thread) return 123456;
   return my_thread->random();

@@ -45,7 +45,7 @@ typedef constructor<> default_constructor;
 class ConstructorCreator_O : public core::Creator_O {
   LISP_ABSTRACT_CLASS(clbind,ClbindPkg,ConstructorCreator_O,"ConstructorCreator",core::Creator_O);
 public:
-  ConstructorCreator_O(core::GlobalEntryPoint_sp ep, core::Symbol_sp c) : Creator_O(ep), _mostDerivedClassSymbol(c){};
+  ConstructorCreator_O(core::GlobalSimpleFun_sp ep, core::Symbol_sp c) : Creator_O(ep), _mostDerivedClassSymbol(c){};
   core::Symbol_sp _mostDerivedClassSymbol;
   virtual ~ConstructorCreator_O() {};
 };
@@ -64,11 +64,11 @@ public:
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
-  DefaultConstructorCreator_O(core::GlobalEntryPoint_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>()) 
+  DefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>()) 
     , _duplicationLevel(0){
 //    printf("%s:%d  Constructing DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
-  DefaultConstructorCreator_O(core::GlobalEntryPoint_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag headerValue, int dupnum)
+  DefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag headerValue, int dupnum)
       : ConstructorCreator_O(fdesc, cn), _HeaderValue(headerValue), _duplicationLevel(dupnum){
 //    printf("%s:%d  Constructing non trivial DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
@@ -84,7 +84,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %lu\n", __FILE__, __LINE__, _rep_(className).c_str(), (uintptr_t)this->_HeaderValue._value);
-    core::GlobalEntryPoint_sp fdesc = core::makeGlobalEntryPointAndFunctionDescription<DefaultConstructorCreator_O<T,Pointer>>(nil<core::T_O>(),nil<core::T_O>());
+    core::GlobalSimpleFun_sp fdesc = core::makeGlobalSimpleFunAndFunctionDescription<DefaultConstructorCreator_O<T,Pointer>>(nil<core::T_O>(),nil<core::T_O>());
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(fdesc,className, this->_HeaderValue, this->_duplicationLevel + 1));
     return allocator;
   }
@@ -94,7 +94,7 @@ public:
 template <typename T, typename Pointer>
 class gctools::GCStamp<clbind::DefaultConstructorCreator_O<T, Pointer>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DefaultConstructorCreator_O<T, Pointer>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DefaultConstructorCreator_O<T, Pointer>::TemplatedBase>::StampWtag;
 };
 
 namespace clbind {
@@ -110,9 +110,9 @@ public:
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
-  DerivableDefaultConstructorCreator_O(core::GlobalEntryPoint_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>())
+  DerivableDefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>())
     , _duplicationLevel(0){};
-  DerivableDefaultConstructorCreator_O(core::GlobalEntryPoint_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag& header, int dupnum)
+  DerivableDefaultConstructorCreator_O(core::GlobalSimpleFun_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag& header, int dupnum)
       : ConstructorCreator_O(fdesc,cn), _Header(header), _duplicationLevel(dupnum){};
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
@@ -123,7 +123,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
 //    printf("%s:%d DerivableDefaultConstructorCreator_O  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_Kind);
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<DerivableDefaultConstructorCreator_O<T>>(nil<core::T_O>(),nil<core::T_O>());
+    core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<DerivableDefaultConstructorCreator_O<T>>(nil<core::T_O>(),nil<core::T_O>());
     return gc::As_unsafe<core::Creator_sp>(gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(entryPoint,className, this->_Header, this->_duplicationLevel + 1));
   }
 };
@@ -132,7 +132,7 @@ public:
 template <typename T>
 class gctools::GCStamp<clbind::DerivableDefaultConstructorCreator_O<T>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorCreator_O<T>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorCreator_O<T>::TemplatedBase>::StampWtag;
 };
 
 namespace clbind {
@@ -142,7 +142,7 @@ public:
   typedef core::Function_O TemplatedBase;
 public:
   enum { NumParams = 0 };
-  DerivableDefaultConstructorFunctor(core::GlobalEntryPoint_sp fdesc) : core::Function_O(fdesc){};
+  DerivableDefaultConstructorFunctor(core::GlobalSimpleFun_sp fdesc) : core::Function_O(fdesc){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
@@ -176,48 +176,44 @@ public:
 };
 };
 
-template <typename Policies, typename T>
-class gctools::GCStamp<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::Stamp;
+namespace clbind {
+
+template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentWrapper>
+class WRAPPER_Constructor_O;
 };
 
 namespace clbind {
+template <typename ConstructorPtrType, typename Policies, typename Pointer, typename ConstructType, typename ArgumentWrapper>
+class WRAPPER_Constructor_O : public core::GlobalSimpleFunBase_O {};
 
-template <typename Pols, typename Pointer, typename T, typename Sig> class VariadicConstructorFunction_O;
-
-template <typename Policies, typename Pointer, typename ConstructType ,typename... ARGS >
-class VariadicConstructorFunction_O < Policies, Pointer, ConstructType, constructor<ARGS...> > : public core::BuiltinClosure_O {
+template <typename ...ARGS, typename Policies, typename Pointer, typename ConstructType, typename ArgumentWrapper >
+class WRAPPER_Constructor_O < constructor<ARGS...>, Policies, Pointer, ConstructType, ArgumentWrapper > : public core::GlobalSimpleFunBase_O {
 public:
-  typedef VariadicConstructorFunction_O< Policies, Pointer, ConstructType, constructor<ARGS...> > MyType;
-  typedef core::BuiltinClosure_O TemplatedBase;
-public:
+  typedef WRAPPER_Constructor_O< constructor<ARGS...>,Policies, Pointer, ConstructType, ArgumentWrapper > MyType;
+  typedef core::GlobalSimpleFunBase_O TemplatedBase;
   typedef Wrapper<ConstructType,Pointer>  WrapperType;
+public:
 public:
   virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
-  VariadicConstructorFunction_O(core::GlobalEntryPoint_sp ep) : core::BuiltinClosure_O(ep) {};
+  WRAPPER_Constructor_O(core::FunctionDescription_sp fdesc) : core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),nil<core::T_O>()) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
-    // nothing to do - no wrapped functions
-  }
-  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+
+  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    MAKE_STACK_FRAME(frame,2);
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler,
-                                              numSpecialBindings,
-                                              specialBindingsVLA,
-                                              frame,
-                                              2);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
-    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::goFrame(frame->arguments());
-    return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(returnValues,std::move(all_args));
+    DO_DRAG_CXX_CALLS();
+    if (lcc_nargs!=NumParams) cc_wrong_number_of_arguments(lcc_closure,lcc_nargs,NumParams,NumParams);
+    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::goFrame(lcc_args);
+    return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(std::move(all_args));
   }
+
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
+  {
+    return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args );
+  }
+
   static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
   }
@@ -245,11 +241,23 @@ public:
 };
 };
 
-template <typename Pols, typename Pointer, typename T, typename Sig>
-class gctools::GCStamp<clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>> {
+template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentWrapper>
+class gctools::GCStamp<clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T, ArgumentWrapper>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::WRAPPER_Constructor_O<Sig,Pols, Pointer, T, ArgumentWrapper>::TemplatedBase>::StampWtag;
 };
+
+template <typename Sig, typename Pols, typename Pointer, typename T, typename ArgumentWrapper>
+struct gctools::Inherits<typename clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T, ArgumentWrapper>::TemplatedBase, clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T, ArgumentWrapper>> : public std::true_type {};
+
+template <typename Policies, typename T>
+class gctools::GCStamp<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::StampWtag;
+};
+template <typename Policies, typename T>
+struct gctools::Inherits<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase,clbind::DerivableDefaultConstructorFunctor<Policies, T>> : public std::true_type {};
+
 
 
 namespace clbind {

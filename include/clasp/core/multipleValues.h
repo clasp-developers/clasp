@@ -55,7 +55,31 @@ public: // Functions here
     return nil<T_O>();
   }
 
+  inline T_sp second(int number_of_values) const
+  {
+    return this->valueGet(1,number_of_values);
+  }
 
+  inline T_sp third(int number_of_values) const
+  {
+    return this->valueGet(2,number_of_values);
+  }
+
+  inline T_sp fourth(int number_of_values) const
+  {
+    return this->valueGet(3,number_of_values);
+  }
+
+  void set1(T_sp val) {
+    this->_Values[0] = val.raw_();
+    this->_Size = 1;
+  }
+
+  void setN(T_O* val, size_t vals) {
+    this->_Values[0] = val;
+    this->_Size = vals;
+  }
+  
   //        GC_RESULT scanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
 
   T_O **returnValues(size_t start=0) { return &this->_Values[start]; }
@@ -70,6 +94,17 @@ public: // Functions here
   /*! Set the value */
 
   T_O *&operator[](size_t i) { return this->_Values[i]; };
+
+  T_mv readFromMultipleValue0(size_t num) {
+    T_O* val0 = this->valueGet(0,num).raw_();
+    T_mv res((void*)val0,num);
+    return res;
+  }
+
+  void saveToMultipleValue0(T_mv val) {
+    this->_Values[0] = val.raw_();
+    this->setSize(val.number_of_values());
+  }
 
   void valueSet(int i, T_sp val) {
     this->_Values[i] = val.raw_();
@@ -336,5 +371,58 @@ inline void fill_frame_multiple_value_return( Frame* frame, size_t& idx, gctools
 }
 
 };
+
+
+
+namespace core {
+
+ /* Save a return_type (in the form of a primary value and number of values)
+  * into an array of T_O*. Values past the first are taken from lisp_multipleValues.
+  * This is intended to be used in a pattern like the following:
+  * { T_mv result = whatever;
+  *   size_t nvals = whatever.number_of_values();
+  *   T_O* mv_temp[nvals];
+  *   returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
+  *   ... stuff that messes with values ...
+  *   return returnTypeLoadFromTemp(nvals, mv_temp);
+  * }
+  * FIXME: Formalize with a macro or templates or something? */
+ inline void returnTypeSaveToTemp(size_t nvals, T_O* primary, T_O** temp) {
+   if (nvals > 0) { // don't store even the primary unless the space actually exists
+     core::MultipleValues& mv = core::lisp_multipleValues();
+     temp[0] = primary;
+     for (size_t i = 1; i < nvals; ++i) {
+       temp[i] = mv._Values[i];
+     }
+   }
+ }
+ // Build and return a return_type from a temporary vector. See above.
+ inline gctools::return_type returnTypeLoadFromTemp(size_t nvals, T_O** temp) {
+   core::MultipleValues& mv = core::lisp_multipleValues();
+   for (size_t i = 1; i < nvals; ++i) {
+     mv._Values[i] = temp[i];
+   }
+   return gctools::return_type(nvals == 0 ? nil<core::T_O>().raw_() : temp[0], nvals);
+ }
+
+ // Similar to returnTypeSaveToTemp, but saves only from lisp_multipleValues.
+ inline void multipleValuesSaveToTemp(size_t nvals, T_O** temp) {
+   core::MultipleValues& mv = core::lisp_multipleValues();
+   for (size_t i = 0; i < nvals; ++i) {
+     temp[i] = mv._Values[i];
+   }
+ }
+ // Similar to returnTypeLoadFromTemp, but just writes into lisp_multipleValues.
+ inline void multipleValuesLoadFromTemp(size_t nvals, T_O** temp) {
+   core::MultipleValues& mv = core::lisp_multipleValues();
+   mv.setSize(nvals);
+   for (size_t i = 0; i < nvals; ++i) {
+     mv._Values[i] = temp[i];
+   }
+ }
+};
+
+
+
 
 #endif

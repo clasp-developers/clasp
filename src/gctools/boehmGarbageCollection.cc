@@ -61,18 +61,17 @@ static gctools::ReachableClassMap *static_ReachableClassKinds;
 static size_t invalidHeaderTotalSize = 0;
 
 extern "C" {
-void callback_reachable_object( gctools::Header_s* ptr, void *client_data) {
-  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
+void callback_reachable_object( gctools::BaseHeader_s* ptr, void *client_data) {
   gctools::GCStampEnum stamp;
-  if (h->_stamp_wtag_mtag.consObjectP()) {
+  if (ptr->_badge_stamp_wtag_mtag.consObjectP()) {
     stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
   } else {
-    stamp = h->_stamp_wtag_mtag.stamp_();
+    stamp = ptr->_badge_stamp_wtag_mtag.stamp_();
     if (!valid_stamp(stamp)) {
-      printf("%s:%d:%s Invalid stamp\n", __FILE__, __LINE__, __FUNCTION__ );
+      printf("%s:%d:%s Invalid stamp %u\n", __FILE__, __LINE__, __FUNCTION__, stamp );
     }
   }
-  size_t sz = objectSize(h);
+  size_t sz = objectSize(ptr);
   gctools::ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
   if (it == static_ReachableClassKinds->end()) {
     gctools::ReachableClass reachableClass(stamp);
@@ -92,7 +91,7 @@ void callback_reachable_object( gctools::Header_s* ptr, void *client_data) {
 void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *client_data) {
   gctools::FindStamp* findStamp = (gctools::FindStamp*)client_data;
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
+  gctools::GCStampEnum stamp = h->_badge_stamp_wtag_mtag.stamp_();
   if (!valid_stamp(stamp)) {
     if (sz==32) {
       stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
@@ -271,7 +270,8 @@ void run_finalizers(core::T_sp obj, void* data)
 void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* data)
 {
   gctools::Header_s* header = (gctools::Header_s*)((char*)client - sizeof(gctools::Header_s));
-//  printf("%s:%d:%s for client: %p stamp: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)client, header->_stamp_wtag_mtag.stamp());
+//  printf("%s:%d:%s for client: %p stamp: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)client, header->_badge_stamp_wtag_mtag.stamp());
+//  printf("         obj class from stamp -> %s\n", obj_name(header->_badge_stamp_wtag_mtag.stamp()) );
   if ((uintptr_t)client&gctools::ptag_mask) {
     printf("%s:%d The client pointer %p must NOT BE TAGGED at this point\n", __FILE__, __LINE__, client);
     abort();

@@ -28,6 +28,8 @@ THE SOFTWARE.
 
 #define DEBUG_LEVEL_NONE
 
+#include <unistd.h>
+#include <fcntl.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcalloc.h>
 #include <clasp/core/object.h>
@@ -239,33 +241,56 @@ void clasp_dealloc(char* buffer) {
 
 
 namespace gctools {
+
+bool is_memory_readable(const void* address,size_t bytes) {
+  int filedes = open("/dev/null", O_WRONLY);
+  if (filedes<0) {
+    printf("%s:%d:%s Could not open /dev/null\n", __FILE__, __LINE__, __FUNCTION__);
+    abort();
+  }
+  ssize_t wrote = write( filedes, address, bytes );
+  close(filedes);
+  return (wrote!=-1);
+}
+
+
 void rawHeaderDescribe(const uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
   switch (headerTag) {
-  case Header_s::invalid_mtag: {
+  case Header_s::invalid0_mtag:
+  case Header_s::invalid1_mtag:{
       printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
       printf(" Not an object header!\n");
       break;
   }
   case Header_s::stamp_mtag: {
-    printf("  %p : %" PRIuPTR " (%p)\n", headerP, *headerP, (void*)*headerP);
-    printf("  %p : %" PRIuPTR " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
-#ifdef DEBUG_GUARD
-    printf("  %p : %p\n", (headerP+2), (void*)*(headerP+2));
-    printf("  %p : %p\n", (headerP+3), (void*)*(headerP+3));
-    printf("  %p : %p\n", (headerP+4), (void*)*(headerP+4));
-    printf("  %p : %p\n", (headerP+5), (void*)*(headerP+5));
-#endif    
-    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP))._stamp_wtag_mtag.stamp_());
-    printf(" stamp tag - stamp: %d", kind);
+    if (is_memory_readable(headerP)) {
+      printf("   %p : %18p <- header\n", headerP, (void*)*headerP);
+    } else {
+      printf("   %p : <<<<< The address is NOT readable\n", headerP );
+      return;
+    }
+#ifndef DEBUG_GUARD
+    printf("   %p : %18p <- vtable\n", (headerP+1), (void*)*(headerP+1));
     fflush(stdout);
-    printf("     %s\n", obj_name(kind));
+#else
+    printf("   %p : %18p\n", (headerP+1), (void*)*(headerP+1));
+    printf("   %p : %18p\n", (headerP+2), (void*)*(headerP+2));
+    printf("   %p : %18p\n", (headerP+3), (void*)*(headerP+3));
+    printf("   %p : %18p\n", (headerP+4), (void*)*(headerP+4));
+    printf("   %p : %18p\n", (headerP+5), (void*)*(headerP+5));
+#endif    
+    size_t stamp_wtag = (GCStampEnum)((*((Header_s*)headerP))._badge_stamp_wtag_mtag.stamp_wtag());
+    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP))._badge_stamp_wtag_mtag.stamp());
+    printf(" ACTUAL stamp_wtag   = %4zu", stamp_wtag);
+    fflush(stdout);
+    printf(" name: %s\n", obj_name(kind));
   } break;
   case Header_s::fwd_mtag: {
     Header_s *hdr = (Header_s *)headerP;
     printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
     printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::mtag_mask);
-    printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->_stamp_wtag_mtag.fwdSize(), hdr->_stamp_wtag_mtag.fwdSize());
+    printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->_badge_stamp_wtag_mtag.fwdSize(), hdr->_badge_stamp_wtag_mtag.fwdSize());
   } break;
   case Header_s::pad1_mtag:
       printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
@@ -290,7 +315,6 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
 extern "C" {
 void client_describe(void *taggedClient) {
   if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
-    printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
     // conses may be moved into a separate pool and dealt with in a different way
@@ -326,7 +350,7 @@ void client_validate_General_O_ptr(const core::General_O* client_ptr) {
 
 void client_validate_Cons_O_ptr(const core::Cons_O* client_ptr) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ConsPtrToHeaderPtr(reinterpret_cast<const void*>(client_ptr)));
-  if (!header->_stamp_wtag_mtag.consObjectP()) {
+  if (!header->_badge_stamp_wtag_mtag.consObjectP()) {
     printf("%s:%d The header %p is not a cons header and it must be\n", __FILE__, __LINE__, (void*)client_ptr);
     abort();
   }
@@ -369,20 +393,73 @@ void BaseHeader_s::validate() const {
     printf("%s:%d The header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
-  if ( this->_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
-  if ( this->_stamp_wtag_mtag.stampP() ) {
+  if ( this->_badge_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
+  if ( this->_badge_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
+  if ( this->_badge_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
-    uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
+    uintptr_t stamp_index = (uintptr_t)this->_badge_stamp_wtag_mtag.stamp_();
+    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) { // wasMTAG
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }
 #endif // USE_PRECISE_GC
-    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
+    if ( !(gctools::BaseHeader_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
   } else {
     signal_invalid_object(this,"Not a normal object");
   }
+}
+
+bool ConsHeader_s::isValidConsObject() const {
+  if (((uintptr_t)this&ptag_mask)!=0) {
+    printf("%s:%d The cons header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
+  void* gcBase = GC_base((void*)this);
+  if (gcBase!=(void*)this) goto bad;
+  if ( this->_badge_stamp_wtag_mtag._value == 0 ) goto bad;
+  if ( this->_badge_stamp_wtag_mtag.invalidP() ) goto bad;
+  if ( !this->_badge_stamp_wtag_mtag.consObjectP() ) goto bad;
+  return true;
+ bad:
+  return false;
+}
+
+
+bool Header_s::isValidGeneralObject() const {
+  if (((uintptr_t)this&ptag_mask)!=0) {
+    printf("%s:%d The general header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
+  void* gcBase = GC_base((void*)this);
+  if (gcBase!=(void*)this) goto bad;
+  if ( this->_badge_stamp_wtag_mtag._value == 0 ) goto bad;
+  #ifdef DEBUG_GUARD  
+  if ( this->_badge_stamp_wtag_mtag._value != this->_dup_badge_stamp_wtag_mtag._value ) goto bad;
+#endif
+  if ( this->_badge_stamp_wtag_mtag.invalidP() ) goto bad;
+  if ( this->_badge_stamp_wtag_mtag.stampP() ) {
+#if defined(USE_PRECISE_GC)
+    uintptr_t stamp_index = (uintptr_t)this->_badge_stamp_wtag_mtag.stamp_();
+    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) goto bad; // wasMTAG
+#endif // USE_PRECISE_GC
+#ifdef DEBUG_GUARD    
+    if ( this->_guard != GUARD1) goto bad;
+    if ( this->_guard2!= GUARD2) goto bad;
+#endif
+    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value))) goto bad;
+#ifdef DEBUG_GUARD
+    for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
+            *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
+      if (*cp!=0xcc) goto bad;
+    }
+#endif
+  } else if (!this->_badge_stamp_wtag_mtag.weakObjectP()) {
+    goto bad;
+  }
+  return true;
+ bad:
+  printf("%s:%d:%s Encountered a bad general object at %p value: 0x%x\n", __FILE__, __LINE__, __FUNCTION__, this, this->_badge_stamp_wtag_mtag._value );
+  return false;
 }
 
 void Header_s::validate() const {
@@ -390,15 +467,15 @@ void Header_s::validate() const {
     printf("%s:%d The header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
+  if ( this->_badge_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
 #ifdef DEBUG_GUARD  
-  if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");
+  if ( this->_badge_stamp_wtag_mtag._value != this->_dup_badge_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");
 #endif
-  if ( this->_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
-  if ( this->_stamp_wtag_mtag.stampP() ) {
+  if ( this->_badge_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
+  if ( this->_badge_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_PRECISE_GC)
-    uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
+    uintptr_t stamp_index = (uintptr_t)this->_badge_stamp_wtag_mtag.stamp_();
+    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) { // wasMTAG
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }
@@ -407,7 +484,7 @@ void Header_s::validate() const {
     if ( this->_guard != GUARD1) signal_invalid_object(this,"normal object bad header guard");
     if ( this->_guard2!= GUARD2) signal_invalid_object(this,"normal object bad header guard2");
 #endif
-    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
+    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD
     for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
             *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
@@ -429,17 +506,17 @@ void Header_s::validate() const {
 //
 // Return true if the object represented by this header is polymorphic
 bool BaseHeader_s::preciseIsPolymorphic() const {
-  if (this->_stamp_wtag_mtag.stampP()) {
-    uintptr_t stamp = this->_stamp_wtag_mtag.stamp();
+  if (this->_badge_stamp_wtag_mtag.stampP()) {
+    uintptr_t stamp = this->_badge_stamp_wtag_mtag.stamp();
     return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;
-  } else if (this->_stamp_wtag_mtag.consObjectP()) {
+  } else if (this->_badge_stamp_wtag_mtag.consObjectP()) {
     return false;
-  } else if (this->_stamp_wtag_mtag.weakObjectP()) {
-    if (this->_stamp_wtag_mtag._value == WeakBucketKind) {
+  } else if (this->_badge_stamp_wtag_mtag.weakObjectP()) {
+    if (this->_badge_stamp_wtag_mtag._value == WeakBucketKind) {
       return std::is_polymorphic<WeakBucketsObjectType>();
-    } else if (this->_stamp_wtag_mtag._value == StrongBucketKind ) {
+    } else if (this->_badge_stamp_wtag_mtag._value == StrongBucketKind ) {
       return std::is_polymorphic<StrongBucketsObjectType>();
-    } else if (this->_stamp_wtag_mtag._value == WeakPointerKind  ) {
+    } else if (this->_badge_stamp_wtag_mtag._value == WeakPointerKind  ) {
       return std::is_polymorphic<WeakPointer>();
     }
   }
@@ -460,9 +537,10 @@ CL_DEFUN core::T_mv gctools__multiple_values_ensure_valid(core::T_mv obj) {
   } else if (obj.consp()) {
     client_validate_Cons_O_ptr(obj.unsafe_cons());
   }
+  core::MultipleValues& mvn = core::lisp_multipleValues();
   for ( size_t ii = 1; ii<obj.number_of_values(); ++ii ) {
-    if (obj.valueGet_(ii).generalp()) {
-      client_validate_General_O_ptr(obj.valueGet_(ii).unsafe_general());
+    if (mvn.valueGet(ii,obj.number_of_values()).generalp()) {
+      client_validate_General_O_ptr(mvn.valueGet(ii,obj.number_of_values()).unsafe_general());
     }
   }
   return obj;
@@ -647,14 +725,14 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
       // This is where we translate some literals
       // This is like load-time
       //
-      if (gc::IsA<core::GlobalEntryPointGenerator_sp>(arg)) {
-        core::GlobalEntryPointGenerator_sp fdgen = gc::As_unsafe<core::GlobalEntryPointGenerator_sp>(arg);
-//        printf("%s:%d:%s Hit a GlobalEntryPointGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_EntryPointFunctions).c_str());
-        arg = core::makeGlobalEntryPointFromGenerator(fdgen,roots,fptrs);
-      } else if (gc::IsA<core::LocalEntryPointGenerator_sp>(arg)) {
-        core::LocalEntryPointGenerator_sp fdgen = gc::As_unsafe<core::LocalEntryPointGenerator_sp>(arg);
-//        printf("%s:%d:%s Hit a LocalEntryPointGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_EntryPointFunctions).c_str());
-        arg = core::makeLocalEntryPointFromGenerator(fdgen,fptrs);
+      if (gc::IsA<core::GlobalSimpleFunGenerator_sp>(arg)) {
+        core::GlobalSimpleFunGenerator_sp fdgen = gc::As_unsafe<core::GlobalSimpleFunGenerator_sp>(arg);
+//        printf("%s:%d:%s Hit a GlobalSimpleFunGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_SimpleFunFunctions).c_str());
+        arg = core::makeGlobalSimpleFunFromGenerator(fdgen,roots,fptrs);
+      } else if (gc::IsA<core::LocalSimpleFunGenerator_sp>(arg)) {
+        core::LocalSimpleFunGenerator_sp fdgen = gc::As_unsafe<core::LocalSimpleFunGenerator_sp>(arg);
+//        printf("%s:%d:%s Hit a LocalSimpleFunGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_SimpleFunFunctions).c_str());
+        arg = core::makeLocalSimpleFunFromGenerator(fdgen,fptrs);
       }
       
       roots->setLiteral(idx,arg.tagged_());
@@ -725,9 +803,8 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   //
   // Walk the stamp field layout tables.
   //
-  
-  walk_stamp_field_layout_tables(precise_info);
-  
+  stringstream ssdummy;
+  walk_stamp_field_layout_tables(precise_info,ssdummy);
 #ifdef SIGRTMIN
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
 #else
@@ -876,17 +953,50 @@ PointerFix globalMemoryWalkPointerFix;
 
 void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* userData ) {
   GatherObjects* gather = (GatherObjects*)userData;
-  Header_s* header;
+  BaseHeader_s* base;
   if (tag == gctools::general_tag) {
-    header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
+    Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
+    base = header;
+    if (!header->isValidGeneralObject()) {
+      auto ii = gather->_corruptObjects.find(header);
+      if ( ii == gather->_corruptObjects.end() ) {
+        std::vector<uintptr_t> badPointers;
+        badPointers.push_back((uintptr_t)clientAddress);
+        gather->_corruptObjects[header] = badPointers;
+      } else {
+        std::vector<uintptr_t>& badPointers = ii->second;
+        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)clientAddress) != badPointers.end() ) {
+          badPointers.push_back((uintptr_t)clientAddress);
+        }
+      }
+      return;
+    }
   } else if (tag==gctools::cons_tag) {
-    header = (Header_s*)ConsPtrToHeaderPtr((void*)client);
+    ConsHeader_s* consHeader = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
+    base = consHeader;
+    if (!consHeader->isValidConsObject()) {
+      auto ii = gather->_corruptObjects.find(consHeader);
+      if ( ii == gather->_corruptObjects.end() ) {
+        std::vector<uintptr_t> badPointers;
+        badPointers.push_back((uintptr_t)clientAddress);
+        gather->_corruptObjects[consHeader] = badPointers;
+      } else {
+        std::vector<uintptr_t>& badPointers = ii->second;
+        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)clientAddress) != badPointers.end() ) {
+          badPointers.push_back((uintptr_t)clientAddress);
+        }
+      }
+      return;
+    }
   } else {
 #ifdef RUNNING_PRECISEPREP
     Header_s* base = NULL;
 #else
     Header_s* base = (Header_s*)GC_base(clientAddress);
 #endif
+    if (base==NULL) {
+      printf("%s:%d:%s Hit NULL base pointer for %p\n", __FILE__, __LINE__, __FUNCTION__, clientAddress );
+    }
     auto ii = gather->_corruptObjects.find(base);
     if ( ii == gather->_corruptObjects.end() ) {
       std::vector<uintptr_t> badPointers;
@@ -900,8 +1010,12 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
            __FILE__, __LINE__, __FUNCTION__, (void*)clientAddress, (void*)(client|tag));
     return; // It's an immediate - it shouldn't have gotten here
   }
+  //
+  // It's a good object maybe mark it
+  //
+  //
   // If it's marked already then return
-  if (gather->markedP(header)) return;
+  if (gather->markedP(base)) return;
   //
   // It hasn't been seen - mark it for scanning
   //
@@ -982,6 +1096,7 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
 
 
 void gatherAllObjects(GatherObjects& gather) {
+//  printf("%s:%d:%s entered \n", __FILE__, __LINE__, __FUNCTION__ );
 
   globalMemoryWalkPointerFix = gatherObjects;
   
@@ -1017,7 +1132,7 @@ void gatherAllObjects(GatherObjects& gather) {
       // headers are guaranteed to be the same size
       Header_s* generalOrWeakHeader = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
       gather.mark(generalOrWeakHeader);
-      if (!generalOrWeakHeader->_stamp_wtag_mtag.weakObjectP()) {
+      if (!generalOrWeakHeader->_badge_stamp_wtag_mtag.weakObjectP()) {
         // It's a general object - walk it
         size_t objectSize;
         LOG("Mark/scan client: %p\n", *(void**)client );
@@ -1045,14 +1160,14 @@ void gatherAllObjects(GatherObjects& gather) {
 
 
 /* Return the size of the object */
-size_t objectSize( Header_s* header ) {
-  if (header->_stamp_wtag_mtag.consObjectP() ) {
+size_t objectSize( BaseHeader_s* header ) {
+  if (header->_badge_stamp_wtag_mtag.consObjectP() ) {
       // It's a cons object
     size_t consSize;
     uintptr_t client = (uintptr_t)HeaderPtrToConsPtr(header);
     uintptr_t clientLimit = mw_cons_skip(client,consSize);
     return consSize;
-  } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+  } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
          // It's a weak object
     size_t objectSize;
     uintptr_t client = (uintptr_t)HeaderPtrToWeakPtr(header);

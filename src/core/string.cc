@@ -1461,7 +1461,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_LISPIFY_NAME(base_string_concatenate);
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__base_string_concatenate(Vaslist_sp vargs) {
-  size_t nargs = vargs->remaining_nargs();
+  size_t nargs = vargs->nargs();
   stringstream ss;
   for (size_t i(0); i < nargs; ++i) {
     T_sp csp = vargs->next_arg();

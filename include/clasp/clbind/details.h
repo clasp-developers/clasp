@@ -48,7 +48,7 @@ struct IndexOf<policies<>, T> {
 };
 
  template <typename T>
-   struct IndexOf<core::policy::clasp, T> {
+   struct IndexOf<core::policy::clasp_policy, T> {
    enum { value = -1 };
  };
 

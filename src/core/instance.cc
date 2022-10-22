@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>
 
@@ -92,6 +93,38 @@ CL_DEFUN void core__rack_set(Rack_sp rack, size_t i, T_sp val) {
   rack->low_level_rackSet(i, val);
 }
 
+DOCGROUP(clasp)
+CL_LAMBDA(order rack index)
+CL_DEFUN T_sp core__atomic_rack_read(T_sp order, Rack_sp rack, size_t i) {
+  T_sp val = rack->low_level_rackRef(i);
+  return val;
+}
+
+DOCGROUP(clasp)
+CL_LAMBDA(order value rack index)
+CL_DEFUN void core__atomic_rack_write(T_sp order, T_sp val, Rack_sp rack, size_t i) {
+  rack->low_level_rackSet(i, val);
+}
+
+
+SYMBOL_EXPORT_SC_(KeywordPkg,SequentiallyConsistent);
+
+DOCGROUP(clasp)
+CL_LAMBDA(order old nv rack index)
+CL_DEFUN T_sp core__cas_rack(T_sp order, T_sp old, T_sp newval, Rack_sp rack, size_t index) {
+  if (order != kw::_sym_SequentiallyConsistent) {
+    SIMPLE_ERROR("Add support for order %s", _rep_(order).c_str());
+  }
+  bool result = rack->low_level_rack_compare_exchange_strong(index, old, newval);
+#if 0
+  printf("%s:%d:%s order = %s old = %p newval = %p rack = %p index = %zu result = %d\n",
+         __FILE__, __LINE__, __FUNCTION__, _rep_(order).c_str(), old.raw_(), newval.raw_(), rack.raw_(), index, result );
+#endif
+  return old;
+}
+
+
+
 CL_LAMBDA(instance class)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(instanceClassSet)dx")
@@ -114,16 +147,15 @@ void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, T_sp sig,
 //  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
 }
 
-void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
-  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(s));
-  T_sp stamp((gctools::Tagged)s);
+void Instance_O::CLASS_set_stamp_for_instances(gctools::BaseHeader_s::StampWtagMtag s) {
+  T_sp stamp((gctools::Tagged)s.as_fixnum());
   this->instanceSet(REF_CLASS_STAMP_FOR_INSTANCES_,stamp); // write shifted stamp - it's automatically a fixnum
 };
 
 // NOT called by regular CL allocate instance. FIXME, find a way to remove this if possible.
-void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
+void Instance_O::initializeClassSlots(Creator_sp creator, gctools::BaseHeader_s::StampWtagMtag stamp) {
   // Should match clos/hierarchy.lisp
-  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
+//  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
   SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
   SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
   this->instanceSet(REF_SPECIALIZER_MUTEX, mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw));
@@ -212,13 +244,32 @@ void Instance_O::fields(Record_sp node) {
 
 
 DOCGROUP(clasp)
-CL_DEFUN Rack_sp core__instance_rack(Instance_sp instance) {
-  return instance->rack();
+CL_DEFUN Rack_sp core__instance_rack(T_sp instance) {
+  if (gc::IsA<Instance_sp>(instance)) {
+    return gc::As_unsafe<Instance_sp>(instance)->rack();
+  } else if (gc::IsA<FuncallableInstance_sp>(instance)) {
+    return gc::As_unsafe<FuncallableInstance_sp>(instance)->rack();
+  }
+  TYPE_ERROR(instance,Cons_O::createList(core::_sym_Instance_O,core::_sym_FuncallableInstance_O));
 }
 
 DOCGROUP(clasp)
-CL_DEFUN void core__instance_rack_set(Instance_sp instance, Rack_sp rack) {
-  instance->_Rack = rack;
+CL_DEFUN void core__instance_rack_set(T_sp instance, Rack_sp rack) {
+  if (gc::IsA<Instance_sp>(instance)) {
+    gc::As_unsafe<Instance_sp>(instance)->_Rack = rack;
+    return;
+  } else if (gc::IsA<FuncallableInstance_sp>(instance)) {
+    gc::As_unsafe<FuncallableInstance_sp>(instance)->_Rack = rack;
+    return;
+  }
+  TYPE_ERROR(instance,Cons_O::createList(core::_sym_Instance_O,core::_sym_FuncallableInstance_O));
+}
+
+DOCGROUP(clasp)
+CL_LAMBDA(old nv instance index)
+CL_DEFUN T_sp core__instance_cas(T_sp old, T_sp newval, T_sp instance, size_t index) {
+  Rack_sp rack = core__instance_rack(instance);
+  return core__cas_rack(kw::_sym_SequentiallyConsistent,old,newval,rack,index);
 }
 
 size_t Instance_O::rack_stamp_offset() {
@@ -392,8 +443,7 @@ Instance_sp Instance_O::create(Symbol_sp symbol, Instance_sp metaClass, Creator_
   DEPRECATED();
 };
 
-Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, Instance_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
-  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
+Instance_sp Instance_O::createClassUncollectable(gctools::BaseHeader_s::StampWtagMtag stamp, Instance_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
 #if 0  
   printf("%s:%d:%s stamp -> %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   if (!metaClass.unboundp()) {
@@ -550,7 +600,7 @@ bool Instance_O::isSubClassOf(Instance_sp ancestor) const {
   // TODO: I need to memoize this somehow so that I'm not constantly searching a list in
   // linear time
     List_sp cpl = this->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
-    ASSERTF(!cpl.unboundp(), BF("You tried to use isSubClassOf when the ClassPrecedenceList had not been initialized"));
+    ASSERTF(!cpl.unboundp(), "You tried to use isSubClassOf when the ClassPrecedenceList had not been initialized");
     for (auto cur : cpl) {
       if (CONS_CAR(cur) == ancestor) return true;
     }
@@ -713,6 +763,22 @@ CL_DEFUN T_sp core__class_stamp_for_instances(Instance_sp c) {
   }
   TYPE_ERROR(c,cl::_sym_class);
 };
+};
+
+
+#define READ_RACK_STAMP
+#include <clasp/llvmo/read-stamp.cc>
+#undef READ_RACK_STAMP
+
+namespace core {
+CL_DEFUN T_sp core__rack_stamp(core::T_sp obj) {
+  General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)obj.raw_());
+  uintptr_t stamp = (uintptr_t)(llvmo::template_read_rack_stamp(client_ptr));
+  //core::write_bf_stream(fmt::sprintf("%s:%d:%s stamp = %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
+  T_sp result((gctools::Tagged)stamp);
+  return result;
+}
+
 
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__name_of_class(Instance_sp c) {

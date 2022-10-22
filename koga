@@ -57,7 +57,8 @@
 
 (defparameter +option-parsers+
   (list :extensions #'split-keywords
-        :skip-sync #'split-keywords))
+        :skip-sync #'split-keywords
+        :jobs #'parse-integer))
 
 (defun parse-string-option (arg start eq-pos)
   (let ((name (intern (string-upcase (subseq arg start eq-pos))
@@ -123,10 +124,5 @@
   (asdf:initialize-source-registry
     `(:source-registry (:tree ,(uiop:getcwd))
                        :inherit-configuration))
-  (asdf:initialize-output-translations
-    `(:output-translations (t (,(merge-pathnames (merge-pathnames #P"host-fasl/" build)
-                                                 (uiop:getcwd))
-                               :implementation))
-                           :inherit-configuration))
   (asdf:load-system :koga)
   (apply #'uiop:symbol-call "KOGA" (if help "HELP" "SETUP") initargs))

@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #include <clasp/core/foundation.h>
 #include <clasp/core/wrappedPointer.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
@@ -76,6 +77,16 @@ void WrappedPointer_O::_setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
   this->_instanceClassSet(cl);
 }
 
+std::string WrappedPointer_O::__repr__() const {
+  stringstream ss;
+  ss << "#<wrapped-pointer :ptr ";
+  ss << (void*)this->mostDerivedPointer();
+  ss << " @";
+  ss << (void*)this;
+  ss << ">";
+  return ss.str();
+}
+
 bool WrappedPointer_O::eql_(T_sp obj) const {
   if (WrappedPointer_sp wo = obj.asOrNull<WrappedPointer_O>()) {
     return (wo->mostDerivedPointer() == this->mostDerivedPointer());
@@ -108,6 +119,25 @@ CL_DEFUN void core__verify_wrapped_pointer_layout(size_t stamp_offset)
   size_t cxx_stamp_offset = offsetof(WrappedPointer_O,ShiftedStamp_);
   if (stamp_offset!=cxx_stamp_offset)
     SIMPLE_ERROR(("stamp_offset %lu does not match cxx_stamp_offset %lu") , stamp_offset , cxx_stamp_offset );
+}
+
+};
+
+
+
+#define READ_WRAPPED_STAMP
+#include <clasp/llvmo/read-stamp.cc>
+#undef READ_WRAPPED_STAMP
+
+namespace core {
+
+CL_DEFUN T_sp core__wrapped_stamp(T_sp obj)
+{
+  General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)obj.raw_());
+  uintptr_t stamp = (uintptr_t)(llvmo::template_read_wrapped_stamp(client_ptr));
+//  core::write_bf_stream(fmt::sprintf("%s:%d:%s stamp = %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
+  T_sp result((gctools::Tagged)stamp);
+  return result;
 }
 
 

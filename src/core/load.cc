@@ -96,9 +96,9 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   
   if (source.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
   Pathname_sp pathname = cl__pathname(source);
-  ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
+  ASSERTF(pathname.objectp(), ("Problem getting pathname of [%s] in loadSource") , _rep_(source));
   Pathname_sp truename = cl__truename(source);
-  ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
+  ASSERTF(truename.objectp(), ("Problem getting truename of [%s] in loadSource") , _rep_(source));
   DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, pathname);
   DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
 

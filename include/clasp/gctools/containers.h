@@ -57,9 +57,10 @@ public:
   typedef const value_type &const_reference;
   typedef typename vector_type::iterator iterator;
   typedef typename vector_type::const_iterator const_iterator;
-  typedef typename vector_type::iterator::difference_type difference_type;
-  typedef typename vector_type::iterator::size_type size_type;
-  typedef typename vector_type::iterator::const_pointer const_pointer;
+  typedef typename vector_type::difference_type difference_type;
+  typedef typename vector_type::size_type size_type;
+  typedef typename vector_type::pointer pointer;
+  typedef typename vector_type::const_pointer const_pointer;
 public:
   vector_type _Vector;
   Vec0_impl(bool dummy) :_Vector(dummy) {}; // don't allocate GC memory ctor
@@ -99,12 +100,12 @@ public:
   const_reference front() const { return this->_Vector[0]; }
   reference back() { return this->_Vector[this->_Vector.size() - 1]; }
   const_reference back() const { return this->_Vector[this->_Vector.size() - 1]; }
-  iterator insert(const_iterator position, const value_type &val) { return this->_Vector.emplace(position, val); };
+  iterator insert(const_iterator position, const value_type &val) { return const_cast<iterator>(this->_Vector.emplace(position, val)); };
   template <typename... ARGS>
   iterator emplace(const_iterator position, ARGS &&... args) { return this->_Vector.emplace(position, std::forward<ARGS>(args)...); };
   template <typename... ARGS>
   void emplace_back(ARGS &&... args) { this->_Vector.emplace_back(std::forward<ARGS>(args)...); };
-  iterator erase(const_iterator position) { return this->_Vector.erase(position); };
+  iterator erase(iterator position) { return this->_Vector.erase(position); };
 };
 
 template <class Arr>

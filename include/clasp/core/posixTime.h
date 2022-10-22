@@ -46,5 +46,8 @@ void last_exit();
 
 T_sp cl__get_internal_real_time();
 T_sp cl__get_internal_run_time();
+
+void systemReadClock(struct timespec &ts);
+
 };
 #endif //]

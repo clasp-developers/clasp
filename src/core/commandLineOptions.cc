@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 namespace core {
 
-bool global_debug_byte_code = false;
+bool global_debug_start_code = false;
 
 const char *help = R"dx(Usage: clasp <options>
 Options:
@@ -66,6 +66,8 @@ Options:
       Don't prompt or print in read-eval loop
   -D, --disable-debugger
       If the default debugger would be entered, Clasp instead quits
+  -G, --dump-debugger-info
+      Dump the info for the gdb/udb/lldb debugger extension.
   --quit
       Don't start a REPL
   -a, --addresses <file>
@@ -148,6 +150,8 @@ Environment variables:
       of file. <filenames> is separated with spaces or commas.
   CLASP_DEBUGGER_SUPPORT=1
       Generate files that lldb/gdb/udb can use to debug clasp.
+  CLASP_ENABLE_TRAMPOLINES=1
+      Set this environment variable if you want good profiling.
   CLASP_NO_JIT_GDB=1
       Don't register object files with gdb/lldb for source level debugging.
   CLASP_SNAPSHOT=1
@@ -168,8 +172,8 @@ Environment variables:
       Trap the intern of the symbol
   CLASP_VERBOSE_BUNDLE_SETUP
       Dump info during bundle setup
-  CLASP_DEBUG_BYTE_CODE
-      Dump info during startup for every byte-code
+  CLASP_DEBUG_START_CODE
+      Dump info during startup for every start-code
   CLASP_DEBUG_SNAPSHOT
       Dump info during snapshot loading
   CLASP_DEBUG_OBJECT_FILES=save
@@ -229,7 +233,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
                                               "-S",
                                               "--seed",
                                               "-f",
-                                              "--feature"};
+                                                "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
     if (parameter_required.find(*arg) != parameter_required.end() && (arg + 1) == end) {
       std::cerr << "Missing parameter for " << *arg << " option." << std::endl;
@@ -272,6 +276,11 @@ void process_clasp_arguments(CommandLineOptions *options) {
       options->_NoPrint = true;
     } else if (*arg == "-D" || *arg == "--disable-debugger") {
       options->_DebuggerDisabled = true;
+    } else if (*arg == "-G" || *arg == "--dump-debugger-info") {
+      core::dumpDebuggingLayouts();
+      std::cout << global_python_virtual_machine_codes;
+      std::cout << global_python_class_layouts;
+      std::exit(0);
     } else if (*arg == "--quit") {
       options->_Interactive = false;
     } else if (*arg == "-N" || *arg == "--non-interactive") {
@@ -331,7 +340,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
       options->_HasDescribeFile = true;
       options->_DescribeFile = *++arg;
     } else if (*arg == "-t" || *arg == "--stage") {
-      options->_StartupStage = (*++arg)[0];
+      options->_Stage = (*++arg)[0];
     } else if (*arg == "-e" || *arg == "--eval") {
       options->_LoadEvalList.push_back(pair<LoadEvalEnum, std::string>(std::make_pair(cloEval, *++arg)));
     } else if (*arg == "-l" || *arg == "--load") {
@@ -352,7 +361,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
 
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     : _ProcessArguments(process_clasp_arguments), _IgnoreInitImage(false), _IgnoreInitLsp(false), _DisableMpi(false),
-      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _StartupStage(DEFAULT_STAGE),
+      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _Stage(DEFAULT_STAGE),
       _StartupFile(""), _DefaultStartupType(cloDefault), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0), _NoInform(false),
       _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
       _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), // FIXME should be initialized later with user-homedir-pathname?

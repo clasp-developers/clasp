@@ -44,6 +44,7 @@
                  "X86_64" t
                  "BUILD_EXTENSION" (and (extensions configuration) t)
                  "DEFAULT_STAGE" (if (extensions configuration) :|'e'| :|'c'|)
+                 "CLASP_EXTENSIONS" (and (extensions configuration) t)
                  "EXTENSION_SYSTEMS" (intern (create-keyword-list (extension-systems configuration)) "KEYWORD")
                  "_ADDRESS_MODEL_64" t
                  "__STDC_CONSTANT_MACROS" t
@@ -55,6 +56,7 @@
                  "DEBUG_DTRACE_LOCK_PROBE" (debug-dtrace-lock-probe configuration)
                  "DEBUG_STACKMAPS" (debug-stackmaps configuration)
                  "DEBUG_ASSERT_TYPE_CAST" (debug-assert-type-cast configuration)
+                 "DEBUG_ASSERT" (debug-assert configuration)
                  "SOURCE_DEBUG" (source-debug configuration)
                  "DEBUG_JIT_LOG_SYMBOLS" (debug-jit-log-symbols configuration)
                  "DEBUG_GUARD" (debug-guard configuration)

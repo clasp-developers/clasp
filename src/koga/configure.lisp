@@ -235,7 +235,7 @@
                     :documentation "print messages about stackmap registration")
    (debug-assert :accessor debug-assert
                  :initarg :debug-assert
-                 :initform t
+                 :initform nil
                  :type boolean
                  :documentation "Turn on DEBUG_ASSERT")
    (debug-assert-type-cast :accessor debug-assert-type-cast
@@ -598,24 +598,24 @@ is not compatible with snapshots.")
                                                          :generate-headers
                                                          (list (make-source #P"generate-headers.lisp" :variant)
                                                                :scraper)
+                                                         :compile-systems
+                                                         (list (make-source #P"compile-systems.lisp" :build))
                                                          :update-unicode
                                                          (list (make-source #P"update-unicode.lisp" :build))
-                                                         :run-aclasp
-                                                         (list (make-source #P"run-aclasp.lisp" :build))
-                                                         :compile-aclasp
-                                                         (list (make-source #P"compile-aclasp.lisp" :build))
-                                                         :compile-bclasp
-                                                         (list (make-source #P"compile-bclasp.lisp" :build))
-                                                         :compile-cclasp
-                                                         (list (make-source #P"compile-cclasp.lisp" :build))
-                                                         :compile-eclasp
-                                                         (list (make-source #P"compile-eclasp.lisp" :build))
+                                                         :load-clasp
+                                                         (list (make-source #P"load-clasp.lisp" :build))
+                                                         :snapshot-clasp
+                                                         (list (make-source #P"snapshot-clasp.lisp" :build))
+                                                         :compile-clasp
+                                                         (list (make-source #P"compile-clasp.lisp" :build))
                                                          :compile-module
                                                          (list (make-source #P"compile-module.lisp" :build))
                                                          :link-fasl
                                                          (list (make-source #P"link-fasl.lisp" :build))
-                                                         :static-analyzer
-                                                         (list (make-source #P"static-analyzer.lisp" :variant))
+                                                         :analyze-file
+                                                         (list (make-source #P"analyze-file.lisp" :build))
+                                                         :analyze-generate
+                                                         (list (make-source #P"analyze-generate.lisp" :build))
                                                          :snapshot
                                                          (list (make-source #P"snapshot.lisp" :variant))
                                                          :clasprc
@@ -626,9 +626,9 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"bench.lisp" :build))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
-                                                               :bitcode :iclasp :aclasp :bclasp :cclasp
-                                                               :modules :eclasp :sclasp :install-bin :install-code
-                                                               :clasp :regression-tests :static-analyzer
+                                                               :bitcode :iclasp :cclasp :modules :eclasp
+                                                               :eclasp-link :sclasp :install-bin :install-code
+                                                               :clasp :regression-tests :analyzer :analyze
                                                                :tags :install-extension-code)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
@@ -778,9 +778,8 @@ then they will overide the current variant's corresponding property."
 (defun image-source (configuration target &optional (root :variant-lib))
   "Return the name of an image based on a target name, the bitcode name
 and the build mode."
-  (make-source (format nil "~(~a~)-~a-image.~a"
-                       target *variant-bitcode-name*
-                       (image-fasl-extension configuration))
+  (make-source (format nil "images/~(~a~).~a"
+                       target (image-fasl-extension configuration))
                root))
 
 (defun funcall-variant (configuration func

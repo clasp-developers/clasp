@@ -43,6 +43,13 @@
 (defmethod trivial-gray-streams:stream-finish-output ((stream timestamp-preserving-stream))
   (finish-output (timestamp-preserving-stream-old-stream stream)))
 
+(defmethod trivial-gray-streams:stream-line-column ((stream timestamp-preserving-stream))
+  #+abcl (ext:charpos (timestamp-preserving-stream-new-stream stream))
+  #+allegro (excl:charpos (timestamp-preserving-stream-new-stream stream))
+  #+(or clasp ecl) (sys:file-column (timestamp-preserving-stream-new-stream stream))
+  #+cmucl (lisp::charpos (timestamp-preserving-stream-new-stream stream))
+  #+sbcl (sb-kernel:charpos (timestamp-preserving-stream-new-stream stream)))
+
 (defmethod cl:close ((stream timestamp-preserving-stream) &key abort)
   (with-accessors ((old-stream timestamp-preserving-stream-old-stream)
                    (new-stream timestamp-preserving-stream-new-stream)

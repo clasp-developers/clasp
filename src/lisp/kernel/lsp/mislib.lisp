@@ -26,15 +26,6 @@
 (defun function-lambda-expression (function)
   (values nil t (core:function-name function)))
 
-(defun   logical-pathname-translations (p)
-  (or (si:pathname-translations p)
-      (error 'simple-type-error
-             :datum p
-             :expected-type 'logical-pathname
-             :format-control "logical host not yet defined: ~S"
-             :format-arguments (list p))))
-(defsetf logical-pathname-translations si:pathname-translations)
-
 (defun load-logical-pathname-translations (host)
   "Search for a logical pathname named host, if not already defined. If already
 defined no attempt to find or load a definition is attempted and NIL is
@@ -43,7 +34,7 @@ successfully, T is returned, else error."
   (declare (type string host)
            (ext:check-arguments-type))
   (unless (or (string-equal host "sys")
-              (si::pathname-translations host))
+              (logical-pathname-translations host))
     (with-open-file (in-str (make-pathname :defaults "sys:src;lisp;translations;"
                                            :name (string-downcase host)
                                            :type "translations"))
@@ -63,33 +54,23 @@ successfully, T is returned, else error."
          end-unwinds
          clasp-bytes-start clasp-bytes-end
 	 real-end
-	 run-end
-         interpreted-calls-start interpreted-calls-end)
+	 run-end)
     ;; Garbage collection forces counters to be updated
     (multiple-value-setq (clasp-bytes-start)
       (gctools:bytes-allocated))
-    (setq interpreted-calls-start (core:interpreted-closure-calls))
     (multiple-value-prog1
 	(funcall closure)
       (multiple-value-setq (clasp-bytes-end)
         (gctools:bytes-allocated))
       (setq run-end (get-internal-run-time)
 	    real-end (get-internal-real-time)
-            interpreted-calls-end (core:interpreted-closure-calls)
             )
       (setf end-unwinds (gctools:thread-local-unwind-counter))
-      (if (= interpreted-calls-end interpreted-calls-start)
-          (core:fmt *trace-output* "Time real({:.3f} secs) run({:.3f} secs) consed({} bytes) unwinds({})%N"
-                        (float (/ (- real-end real-start) internal-time-units-per-second))
-                        (float (/ (- run-end run-start) internal-time-units-per-second))
-                        (- clasp-bytes-end clasp-bytes-start)
-                        (- end-unwinds start-unwinds))
-          (core:fmt *trace-output* "Time real({:.3f} secs) run({:.3f} secs) consed({} bytes) interps({}) unwinds({})%N"
-                        (float (/ (- real-end real-start) internal-time-units-per-second))
-                        (float (/ (- run-end run-start) internal-time-units-per-second))
-                        (- clasp-bytes-end clasp-bytes-start)
-                        (- interpreted-calls-end interpreted-calls-start)
-                        (- end-unwinds start-unwinds))))))
+      (core:fmt *trace-output* "Time real({:.3f} secs) run({:.3f} secs) consed({} bytes) unwinds({})%N"
+                (float (/ (- real-end real-start) internal-time-units-per-second))
+                (float (/ (- run-end run-start) internal-time-units-per-second))
+                (- clasp-bytes-end clasp-bytes-start)
+                (- end-unwinds start-unwinds)))))
 
 (defmacro time (form)
   "Syntax: (time form)

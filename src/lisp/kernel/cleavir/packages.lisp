@@ -36,7 +36,6 @@
    #:*function-inline-asts*
    #:*clasp-env*
    #:*clasp-system*
-   #:*code-walker*
    #:alloca-i8
    #:inline-ast
    )

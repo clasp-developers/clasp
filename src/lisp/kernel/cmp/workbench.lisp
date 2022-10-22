@@ -106,8 +106,8 @@
          literal::register-xep-function-indices
          literal::register-local-function->function-datum
          literal::register-xep-function->function-datums
-         sys:make-global-entry-point-generator
-         sys:make-local-entry-point-generator
+         sys:make-global-simple-fun-generator
+         sys:make-local-simple-fun-generator
          )
   (compile 'foo '(lambda (x) x))
   #+(or)(compile-file "/tmp/xxx.lisp")

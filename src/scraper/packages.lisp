@@ -10,6 +10,7 @@
    #:buffer
    #:search-for-element
    #:skip-char
+   #:write-sif-file
    #:search-for-character
    #:search-for-whitespace
    #:read-string-to-character

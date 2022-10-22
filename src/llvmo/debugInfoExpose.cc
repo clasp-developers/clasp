@@ -561,10 +561,11 @@ CL_LAMBDA(address &key verbose)
 DOCGROUP(clasp)
 CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
 {
-  core::T_mv object_info = object_file_for_instruction_pointer(address,verbose);
-  if (object_info.notnilp()) {
-    SectionedAddress_sp sectioned_address = gc::As<SectionedAddress_sp>(object_info);
-    ObjectFile_sp object_file = gc::As<ObjectFile_sp>(object_info.second());
+  core::T_mv objectinfo = object_file_for_instruction_pointer(address,verbose);
+  if (objectinfo.notnilp()) {
+    SectionedAddress_sp sectioned_address = gc::As<SectionedAddress_sp>(objectinfo);
+    core::MultipleValues& mvn = core::lisp_multipleValues();
+    ObjectFile_sp object_file = gc::As<ObjectFile_sp>(mvn.second(objectinfo.number_of_values()));
     DWARFContext_sp context = DWARFContext_O::createDWARFContext(object_file);
     if (verbose){
       core::write_bf_stream(fmt::sprintf("Address: %p\n" , address ));

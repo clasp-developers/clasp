@@ -59,7 +59,7 @@ template <class TheClass>
 NOINLINE void set_one_static_class_Header() {
   gctools::ShiftedStamp the_stamp = gctools::NextStampWtag(0 /* Get from the Stamp */,gctools::GCStamp<TheClass>::StampWtag);
   if (gctools::GCStamp<TheClass>::StampWtag!=0) {
-    TheClass::static_ValueStampWtagMtag = gctools::Header_s::StampWtagMtag::make_Value<TheClass>();
+    TheClass::static_ValueStampWtagMtag = gctools::Header_s::StampWtagMtag::make<TheClass>();
   } else {
 #ifdef USE_MPS
     if (core::global_initialize_builtin_classes) {
@@ -75,7 +75,7 @@ NOINLINE void set_one_static_class_Header() {
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(gctools::UnshiftedStamp theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<TheClass>(kw::_sym_create,nil<core::T_O>());
+  core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<TheClass>(kw::_sym_create,nil<core::T_O>());
   auto cb = gctools::GC<TheClass>::allocate(entryPoint);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
@@ -90,8 +90,8 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(gctools::Unshif
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>>(nil<core::T_O>(),nil<core::T_O>());
-  core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
+  core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<core::WRAPPER_BuiltInObjectCreator<TheClass>>(nil<core::T_O>(),nil<core::T_O>());
+  core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::WRAPPER_BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_ValueStampWtagMtag,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
@@ -204,13 +204,13 @@ void initialize_typeq_map() {
   core::HashTableEq_sp theTypeqMap = core::HashTableEq_O::create_default();
 #define ADD_SINGLE_TYPEQ_TEST(type,stamp) { \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_classSymbol()); \
-    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type>())); \
+    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateTypeqHeaderValue<type>())); \
   }
 #define ADD_RANGE_TYPEQ_TEST(type_low,type_high,stamp_low,stamp_high) { \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_classSymbol()); \
     theTypeqMap->setf_gethash(type_low::static_classSymbol(), \
-                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_low>()), \
-                                                   core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_high>()))); \
+                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateTypeqHeaderValue<type_low>()), \
+                                                   core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateTypeqHeaderValue<type_high>()))); \
   }
 #ifndef SCRAPING
  #if !defined(USE_PRECISE_GC)
@@ -271,7 +271,7 @@ void initialize_allocate_metaclasses(  core::BootStrapCoreSymbolMap& bootStrapCo
   ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(TheDerivableCxxClass_stamp));
   gctools::ShiftedStamp TheClbindCxxClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
   ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(TheClbindCxxClass_stamp));
-//  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::Stamp;
+//  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::StampWtag;
 
 
   _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,unbound<core::Instance_O>());

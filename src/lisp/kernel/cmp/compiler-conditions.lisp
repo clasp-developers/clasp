@@ -258,10 +258,10 @@ Operation was (~s~{ ~s~})."
 ;;;
 ;;; Noting conditions in the compiler
 
-(defvar *compiler-error-count*)
-(defvar *compiler-warning-count*)
-(defvar *compiler-style-warning-count*)
-(defvar *compiler-note-count*)
+(defvar *compiler-error-count* 0)
+(defvar *compiler-warning-count* 0)
+(defvar *compiler-style-warning-count* 0)
+(defvar *compiler-note-count* 0)
 
 ;;; Let errors through - lower level code should handle them if able, and otherwise
 ;;; it's a compiler bug and we ought to enter the debugger.

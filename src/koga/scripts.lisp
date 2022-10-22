@@ -10,20 +10,12 @@
 (defun print-asdf-stub (output-stream host &rest systems)
   "Print the commands to initialize ASDF and load required systems."
   (format output-stream "#-asdf (require :asdf)~%")
-  (pprint `(asdf:initialize-source-registry
-             (list :source-registry
-                (list :tree (merge-pathnames ,(root :code) (uiop:getcwd)))
-                :inherit-configuration))
-           output-stream)
-  (pprint `(asdf:initialize-output-translations
-             (list :output-translations
-                (list t (list (merge-pathnames ,(if host
-                                                    (make-pathname :directory '(:relative "host-fasl"))
-                                                    (root :variant-lib))
-                                               (uiop:getcwd))
-                              :implementation))
-                :inherit-configuration))
-           output-stream)
+  (when host
+    (pprint `(asdf:initialize-source-registry
+               (list :source-registry
+                     (list :tree (merge-pathnames ,(root :code) (uiop:getcwd)))
+                     :inherit-configuration))
+            output-stream))
   (loop for system in systems
         do (pprint `(asdf:load-system ,system) output-stream)))
 
@@ -36,6 +28,17 @@
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :clasp-scraper)
   (pprint '(apply #'uiop:symbol-call "CSCRAPE" "GENERATE-SIF" (uiop:command-line-arguments)) output-stream))
+
+(defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)
+  (declare (ignore configuration))
+  (format output-stream "#-asdf (require :asdf)~%
+(loop for system across core:*command-line-arguments*
+      for index from 0
+      unless (zerop index)
+        do (asdf:compile-system system))
+(with-open-file (stream (elt core:*command-line-arguments* 0)
+                 :direction :output :if-exists :supersede :if-does-not-exist :create)
+  (pprint core:*command-line-arguments* stream))"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :generate-headers)) output-stream
@@ -70,60 +73,65 @@
             (:fasobc :faspbc)
             (otherwise :fasl))))
 
-(defmethod print-prologue (configuration (name (eql :compile-aclasp)) output-stream)
-  (format output-stream "(setq *features* (cons :aclasp *features*))
-(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs* ~a)
-(core:compile-aclasp :reproducible ~s)
-(core:quit)" (jobs configuration) (reproducible-build configuration)))
-
-(defmethod print-prologue (configuration (name (eql :run-aclasp)) output-stream)
+(defmethod print-prologue (configuration (name (eql :load-clasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:load-aclasp :reproducible ~s)" (jobs configuration) (reproducible-build configuration)))
+(defvar *system* (core:load-clasp :reproducible ~s
+                                  :name (elt core:*command-line-arguments* 0)
+                                  :position (parse-integer (elt core:*command-line-arguments* 1))
+                                  :system (core:command-line-paths 2)))
+(if (fboundp 'core:top-level)
+    (core:top-level)
+    (core:low-level-repl))" (jobs configuration) (reproducible-build configuration)))
 
-(defmethod print-prologue (configuration (name (eql :compile-bclasp)) output-stream)
-  (format output-stream "(setq *features* (cons :bclasp *features*))
-(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(defmethod print-prologue (configuration (name (eql :snapshot-clasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:compile-bclasp :reproducible ~s)
+(defvar *system* (core:load-clasp :reproducible ~s
+                                  :name (elt core:*command-line-arguments* 1)
+                                  :position (parse-integer (elt core:*command-line-arguments* 2))
+                                  :system (core:command-line-paths 3)))
+(gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)
 (core:quit)" (jobs configuration) (reproducible-build configuration)))
 
-(defmethod print-prologue (configuration (name (eql :compile-cclasp)) output-stream)
-  (format output-stream "(setq *features* (cons :cclasp *features*))
-(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(defmethod print-prologue (configuration (name (eql :compile-clasp)) output-stream)
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
-(core:compile-cclasp :reproducible ~s)
-(core:quit)" (jobs configuration) (reproducible-build configuration)))
-
-(defmethod print-prologue (configuration (name (eql :compile-eclasp)) output-stream)
-  (format output-stream "(setq *features* (cons :eclasp *features*))
-(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
-(setq core::*number-of-jobs* ~a)
-(core:compile-eclasp :reproducible ~s)
-(core:quit)" (jobs configuration) (reproducible-build configuration)))
+(core:load-and-compile-clasp :reproducible ~s :system-sort ~s
+                             :name (elt core:*command-line-arguments* 0)
+                             :position (parse-integer (elt core:*command-line-arguments* 1))
+                             :system (core:command-line-paths 2))
+(core:quit)"
+          (jobs configuration) (reproducible-build configuration)
+          (and (> (jobs configuration) 1) (parallel-build configuration))))
 
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (write-string "(setq *features* (cons :aclasp *features*))
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (load #P\"sys:src;lisp;kernel;cmp;jit-setup.lisp\")
-(let ((args (core:command-line-arguments-as-list)))
-  (core:link-fasl :output-file (car args)
-                  :system (cdr args)))
+(core:link-fasl :output-file (pathname (elt core:*command-line-arguments* 0))
+                :system (core:command-line-paths 1))
 (core:quit)" output-stream))
 
-;;; TODO The parallel analyzer is disabled below. Enable it once it works.
-(defmethod print-prologue (configuration (name (eql :static-analyzer)) output-stream)
+(defmethod print-prologue (configuration (name (eql :analyze-generate)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream nil :clasp-analyzer)
-  (let ((log-path (resolve-source (make-source "analyzer-logs/" :variant))))
-    (format output-stream "
-(setq core::*number-of-jobs* ~a)
-(uiop:delete-directory-tree ~s :validate t :if-does-not-exist :ignore)
-(clasp-analyzer:search-and-generate-code (pathname (elt core:*command-line-arguments* 0))
-                                         (pathname (elt core:*command-line-arguments* 1))
-                                         :log-path ~s :parallel ~s)"
-            (jobs configuration) log-path log-path nil #+(or)(parallel-build configuration))))
+  (format output-stream "
+(clasp-analyzer:merge-and-generate-code (pathname (elt core:*command-line-arguments* 0))
+                                        (core::command-line-paths 1))"))
+
+(defmethod print-prologue (configuration (name (eql :analyze-file)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream nil :clasp-analyzer)
+  (format output-stream "
+(handler-case
+    (clasp-analyzer:search-source-file (pathname (elt core:*command-line-arguments* 0))
+                                       (elt core:*command-line-arguments* 1)
+                                       (pathname (elt core:*command-line-arguments* 2))
+                                       (pathname (elt core:*command-line-arguments* 3)))
+  (error (condition)
+    (format *error-output* \"~~a~~%\" condition)
+    (sys:exit 1)))"))
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
   (when (jupyter configuration)
@@ -139,8 +147,7 @@
 (defmethod print-prologue (configuration (name (eql :clasp-sh)) output-stream)
   (declare (ignore configuration))
   (format output-stream "#!/usr/bin/env bash
-exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
-          (build-name :iclasp)))
+exec $(dirname \"$0\")/iclasp -f ignore-extensions -t c \"$@\""))
 
 (defmethod print-prologue (configuration (name (eql :jupyter-kernel)) output-stream)
   (let ((candop (member :cando (extensions configuration))))
@@ -191,21 +198,25 @@ exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
               (pprint-newline :mandatory stream)))
   (write-line ")" stream))
 
-(defun print-translations (output-stream targets sources)
+(defun print-translations (output-stream sources)
   (format output-stream "(in-package \"SYSTEM\")~%
 (let ((sys (translate-logical-pathname \"SYS:\"))
       (lib (translate-logical-pathname \"SYS:LIB;\"))
       (generated (translate-logical-pathname \"SYS:GENERATED;\")))
-  (declare (ignorable sys lib generated))")
+  (declare (ignorable sys lib generated))
+  (setf (logical-pathname-translations \"SYS\")
+        (list* ")
   (flet ((print-translation (translation root
                              &aux (prefix (root-to-prefix root)))
-           (format output-stream "~%  (push (list ~s~%              (merge-pathnames ~s ~a))~%        (logical-pathname-translations \"SYS\"))"
+           (format output-stream "(list ~s
+                      (merge-pathnames ~s ~a))
+               "
                    (ninja:make-logical-pathname-representation "SYS" translation
                                                                :prefix prefix
                                                                :version :wild)
                    translation (or prefix "sys"))))
     (loop with translations = (make-hash-table :test #'equal)
-          for source in sources
+          for source in (reverse sources)
           for translation = (ninja:find-minimal-pathname-translation (source-path source))
           when (and translation
                     (not (member (source-root source) '(:code :variant-generated))))
@@ -216,29 +227,25 @@ exec $(dirname \"$0\")/~a -f ignore-extensions -t c \"$@\""
                      (gethash translation translations))
             do (setf (gethash translation translations) t)
                (print-translation translation :code)
-               (loop for target in targets
-                     do (print-translation (make-pathname :directory (list* :relative
-                                                                            (format nil "~(~a~)-~a-bitcode" target *variant-name*)
+               (print-translation (make-pathname :directory (list* :relative
+                                                                            ;(format nil "~(~a~)-~a-bitcode" target *variant-name*)
                                                                             (cdr (pathname-directory translation)))
                                                           :name (pathname-name translation)
                                                           :type (pathname-type translation))
-                                           :variant-lib))))
-  (format output-stream ")~%"))
+                                           :variant-lib)))
+  (format output-stream "(logical-pathname-translations \"SYS\"))))~%"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :cclasp-translations)) output-stream
      (target (eql :cclasp)) sources
      &key &allow-other-keys)
-  (print-translations output-stream (if (extensions configuration)
-                                      '(:cclasp :eclasp)
-                                      '(:cclasp))
-                                    sources))
+  (print-translations output-stream sources))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :eclasp-translations)) output-stream
      (target (eql :eclasp-translations)) sources
      &key &allow-other-keys)
-  (print-translations output-stream '(:eclasp) sources))
+  (print-translations output-stream sources))
 
 (defmethod print-prologue (configuration (name (eql :cclasp-immutable)) output-stream)
   (pprint-immutable-systems output-stream (gethash :cclasp (target-systems configuration))))

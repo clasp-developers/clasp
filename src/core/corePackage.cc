@@ -171,6 +171,11 @@ SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_hash_tableSTAR)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
+SYMBOL_EXPORT_SC_(CorePkg, STARdrag_native_callsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_function_namesSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_single_dispatch_method_namesSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_setf_function_namesSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_macro_function_namesSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARcompile_file_parallelSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdefault_object_typeSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARforce_startup_external_linkageSTAR);
@@ -293,6 +298,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebugStartupSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugByteCodeSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugSourcePosInfoSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugVaslistSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARdebugConditionSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
 SYMBOL_EXPORT_SC_(CorePkg, dump_module);
@@ -305,7 +311,6 @@ SYMBOL_SC_(CorePkg, printf);
 //SYMBOL_EXPORT_SC_(CorePkg, acos);
 //SYMBOL_EXPORT_SC_(CorePkg, acosh);
 //SYMBOL_EXPORT_SC_(CorePkg, atanh);
-SYMBOL_EXPORT_SC_(CompPkg, bclasp_compile);
 
 SYMBOL_EXPORT_SC_(ClPkg, nil);
 SYMBOL_EXPORT_SC_(CorePkg, STARpollTicksPerGcSTAR);
@@ -409,6 +414,7 @@ SYMBOL_EXPORT_SC_(ClPkg, restartName);
 SYMBOL_EXPORT_SC_(ClPkg, position);
 SYMBOL_EXPORT_SC_(ClPkg, compileFile);
 SYMBOL_EXPORT_SC_(ClPkg, compiler_macro);
+SYMBOL_EXPORT_SC_(ClPkg, compiler_macro_function);
 SYMBOL_EXPORT_SC_(ClPkg, inline);
 SYMBOL_EXPORT_SC_(ClPkg, compilation_speed);
 SYMBOL_EXPORT_SC_(ClPkg, first);
@@ -621,7 +627,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARbuild_linkflagsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuild_cppflagsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
 SYMBOL_SC_(CorePkg, STARdebugMacroexpandSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, T);
 SYMBOL_EXPORT_SC_(ClPkg, method);
@@ -1054,7 +1059,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(nil<T_O>());
   _lisp->_Roots._ClassTable = HashTable_O::create_thread_safe(cl::_sym_eq,SimpleBaseString_O::make("CLTBLRD"),SimpleBaseString_O::make("CLTBLWR"));
-  _sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
   _sym_STARsharpEqContextSTAR->defparameter(nil<T_O>());
   cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_single_float);
   _sym_STARnestedErrorDepthSTAR->defparameter(make_fixnum(0));
@@ -1191,6 +1195,15 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   core::_sym__PLUS_literals_name_PLUS_->defparameter(SimpleBaseString_O::make(LITERALS_NAME));
   _sym_STARdebug_threadsSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_fastgfSTAR->defparameter(nil<core::T_O>());
+#ifdef DEBUG_DRAG_NATIVE_CALLS
+  _sym_STARdrag_native_callsSTAR->defparameter(_lisp->_true());
+#else
+  _sym_STARdrag_native_callsSTAR->defparameter(nil<core::T_O>());
+#endif
+  _sym_STARbuiltin_function_namesSTAR->defparameter(nil<core::T_O>());
+  _sym_STARbuiltin_single_dispatch_method_namesSTAR->defparameter(nil<core::T_O>());
+  _sym_STARbuiltin_macro_function_namesSTAR->defparameter(nil<core::T_O>());
+  _sym_STARbuiltin_setf_function_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_hash_tableSTAR->defparameter(nil<core::T_O>());

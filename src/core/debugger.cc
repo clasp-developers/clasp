@@ -98,10 +98,28 @@ CL_DEFUN Vaslist_sp core__vaslist_rewind(Vaslist_sp v)
 }
 
 DOCGROUP(clasp)
+CL_DEFUN Vaslist_sp core__do_validate_vaslist(Vaslist_sp v)
+{
+  if (!gctools::tagged_vaslistp<T_O*>(v.raw_())) {
+    printf("%s:%d:%s vaslist is not tagged properly %p\n", __FILE__, __LINE__, __FUNCTION__, v.raw_());
+    abort();
+  }
+  if (v->nargs()>2048) {
+    printf("%s:%d:%s vaslist nargs = %lu\n", __FILE__, __LINE__, __FUNCTION__, v->nargs() );
+    abort();
+  }
+  if (((uintptr_t)v->args()) & 0x7) {
+    printf("%s:%d:%s vaslist args is not aligned %p\n", __FILE__, __LINE__, __FUNCTION__, v->args() );
+    abort();
+  }
+  return v;
+}
+
+DOCGROUP(clasp)
 CL_DEFUN size_t core__vaslist_length(Vaslist_sp v)
 {
-//  printf("%s:%d vaslist length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
-  return v->remaining_nargs();
+//  printf("%s:%d vaslist length %" PRu "\n", __FILE__, __LINE__, v->nargs());
+  return v->nargs();
 }
 
 DOCGROUP(clasp)
@@ -134,7 +152,7 @@ CL_DEFUN List_sp core__list_from_vaslist(Vaslist_sp vorig)
   Vaslist valist_copy(*vorig);
   Vaslist_sp valist(&valist_copy);
   ql::list l;
-  size_t nargs = valist->remaining_nargs();
+  size_t nargs = valist->nargs();
 //  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
   for ( size_t i=0; i<nargs; ++i ) {
     T_sp one = valist->next_arg_indexed(i);
@@ -318,14 +336,14 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
 void dbg_Vaslist_sp_describe(T_sp obj) {
     // Convert the T_sp object into a Vaslist_sp object
   Vaslist_sp vl = Vaslist_sp((gc::Tagged)obj.raw_());
-  printf("Original vaslist at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_args);
+  printf("Original vaslist at: %p\n", &*((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_()))));
     // Create a copy of the Vaslist with a va_copy of the vaslist
   Vaslist vlcopy_s(*vl);
   Vaslist_sp vlcopy(&vlcopy_s);
   printf("Calling dump_Vaslist_ptr\n");
   bool atHead = dump_Vaslist_ptr(stdout,&vlcopy_s);
   if (atHead) {
-    for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
+    for (size_t i(0), iEnd(vlcopy->nargs()); i < iEnd; ++i) {
       T_sp v = vlcopy->next_arg_indexed(i);
       printf("entry@%p %3zu --> %s\n", v.raw_(), i, _rep_(v).c_str());
     }
@@ -342,7 +360,7 @@ void dbg_lowLevelDescribe(T_sp obj) {
   } else if (obj.characterp()) {
     printf("character: %d #\\%c\n", obj.unsafe_character(), obj.unsafe_character());
   } else if (obj.generalp()) {
-    printf("vtable-ptr: %p  typeid: %s\n", &*obj, typeid(obj.unsafe_general()).name());
+    printf("    vtable-ptr: %p  typeid: %s\n", &*obj, typeid(obj.unsafe_general()).name());
     printf("className-> %s\n", obj.unsafe_general()->className().c_str());
     printf("contents-> [%s]\n", _rep_(obj).c_str());
     if ( Function_sp closure = obj.asOrNull<Function_O>() ) {
@@ -363,8 +381,6 @@ void dbg_lowLevelDescribe(T_sp obj) {
 
 void dbg_describe_tagged_T_Optr(T_O *p) {
   client_describe(p);
-  T_sp obj((gctools::Tagged) reinterpret_cast<T_O *>(p));
-  dbg_lowLevelDescribe(obj);
 }
 
 void dbg_describe_tagged_T_Optr_header(T_O *p) {
@@ -393,14 +409,6 @@ void dbg_describe_symbol(Symbol_sp obj) {
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->_className()).c_str());
-  ss << _rep_(obj);
-  printf("dbg_describe: %s\n", ss.str().c_str());
-}
-
-void dbg_describeActivationFrame(ActivationFrame_sp obj) {
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
-  stringstream ss;
-  printf("dbg_describe ActivationFrame class--> %s\n", _rep_(obj->__class()->_className()).c_str());
   ss << _rep_(obj);
   printf("dbg_describe: %s\n", ss.str().c_str());
 }
@@ -436,8 +444,8 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 }
 
 extern "C" {
-#define REPR_ADDR(addr) << "@" << (void*)addr
-//#define REPR_ADDR(addr)
+//#define REPR_ADDR(addr) << "@" << (void*)addr
+#define REPR_ADDR(addr)
 
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
@@ -456,9 +464,12 @@ std::string dbg_safe_repr(uintptr_t raw) {
       core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);
       core::Package_sp pkg = gc::As_unsafe<core::Package_sp>(sym->_HomePackage.load());
       if (pkg.generalp() && gc::IsA<core::Package_sp>(pkg)) {
-        ss << pkg->_Name->get_std_string();
+        if (pkg->isKeywordPackage()) {
+          ss << ":";
+        } else {
+          ss << pkg->_Name->get_std_string() << "::";
+        }
       }
-      ss << "::";
       if (sym->_Name.generalp() && gc::IsA<core::String_sp>(sym->_Name)) {
         ss << sym->_Name->get_std_string();
       }
@@ -529,9 +540,9 @@ std::string dbg_safe_repr(uintptr_t raw) {
     ss  << " :args @" << (void*)vaslist->_args;
     ;
 #endif
-    ss << ":nargs " << vaslist->remaining_nargs();
+    ss << ":nargs " << vaslist->nargs();
     ss << " :contents (";
-    for ( size_t ii=0; ii<vaslist->remaining_nargs(); ii++ ) {
+    for ( size_t ii=0; ii<vaslist->nargs(); ii++ ) {
       ss << dbg_safe_repr((uintptr_t)vaslist->relative_indexed_arg(ii)) << " ";
     }
     ss << ")$>";
@@ -581,6 +592,11 @@ void tsymbol(void* ptr)
   printf("%s:%d Looking up symbol at ptr->%p\n", __FILE__, __LINE__, ptr);
   core::T_sp result = llvmo::llvm_sys__lookup_jit_symbol_info(ptr);
   printf("      Result -> %s\n", _rep_(result).c_str());
+}
+
+SYMBOL_EXPORT_SC_(CorePkg,primitive_print_backtrace);
+void dbg_primitive_print_backtrace() {
+  core::eval::funcall(core::_sym_primitive_print_backtrace);
 }
 
 void dbg_safe_backtrace() {

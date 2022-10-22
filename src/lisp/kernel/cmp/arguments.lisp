@@ -542,6 +542,37 @@ a_p = a_p_temp; a = a_temp;
                    (incf nreq)))))
     (values req-opt-only nreq nopt)))
 
+(defun lambda-list-arguments (lambda-list)
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
+      (core:process-lambda-list lambda-list 'function)
+    (declare (ignore auxargs allow-other-keys varest-p key-flag))
+    (cmp-log "reqargs = {}%N" reqargs)
+    (cmp-log "optargs = {}%N" optargs)
+    (cmp-log "rest-var = {}%N" rest-var)
+    (cmp-log "keyargs = {}%N" keyargs)
+    (let ((args '()))
+      (dolist (req (rest reqargs))
+        (cmp-log "req-name = {}%N" req)
+        (push req args))
+      (do ((cur (rest optargs) (cdddr cur)))
+          ((null cur) nil)
+        (let ((opt-name (car cur))
+              (opt-flag (cadr cur)))
+          (cmp-log "opt cur = {}%N" cur)
+          (cmp-log "opt-name = {}%N" opt-name)
+          (cmp-log "opt-flag = {}%N" opt-flag)
+          (push opt-name args)
+          (when opt-flag (push opt-flag args))))
+      (when rest-var (push rest-var args))
+      (do ((cur (rest keyargs) (cddddr cur)))
+          ((null cur) nil)
+        (let ((key-name (caddr cur))
+              (key-flag (cadddr cur)))
+          (cmp-log "key-name = {}%N" key-name)
+          (cmp-log "key-flag = {}%N" key-flag)
+          (push key-name args)
+          (when key-flag (push key-flag args))))
+      (nreverse args))))
 
 (defun calculate-cleavir-lambda-list-analysis (lambda-list)
   ;; we assume that the lambda list is in its correct format:
@@ -689,68 +720,3 @@ a_p = a_p_temp; a = a_temp;
                                    :debug-on debug-on
                                    :rest-alloc rest-alloc
                                    :cleavir-lambda-list-analysis cleavir-lambda-list-analysis))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; bclasp 
-;;;
-
-
-(defun bclasp-map-lambda-list-symbols-to-indices (cleavir-lambda-list-analysis)
-  (multiple-value-bind (reqs opts rest key-flag keys)
-      (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
-    (declare (ignore key-flag))
-    ;; Create the register lexicals using allocas
-    (let (bindings
-          (index -1))
-      (cmp-log "Processing reqs -> {}%N" reqs)
-      (dolist (req (cdr reqs))
-        (cmp-log "Add req {}%N" req)
-        (push (cons req (incf index)) bindings))
-      (cmp-log "Processing opts -> {}%N" opts)
-      (do* ((cur (cdr opts) (cdddr cur))
-            (opt (car cur) (car cur))
-            (optp (cadr cur) (cadr cur)))
-           ((null cur))
-        (cmp-log "Add opt {} {}%N" opt optp)
-        (push (cons opt (incf index)) bindings)
-        (push (cons optp (incf index)) bindings))
-      (cmp-log "Processing rest -> {}%N" rest)
-      (when rest
-        (push (cons rest (incf index)) bindings))
-      (cmp-log "Processing keys -> {}%N" keys)
-      (do* ((cur (cdr keys) (cddddr cur))
-            (key (third cur) (third cur))
-            (keyp (fourth cur) (fourth cur)))
-           ((null cur))
-        (push (cons key (incf index)) bindings)
-        (push (cons keyp (incf index)) bindings))
-      (nreverse bindings))))
-
-(defun bclasp-compile-lambda-list-code (fn-env callconv arity &key (safep t))
-  (let ((cleavir-lambda-list-analysis (calling-convention-cleavir-lambda-list-analysis callconv)))
-    (cmp-log "Entered bclasp-compile-lambda-list-code%N")
-    (let* ((output-bindings (bclasp-map-lambda-list-symbols-to-indices cleavir-lambda-list-analysis))
-           (new-env (irc-new-unbound-value-environment-of-size
-                     fn-env
-                     :number-of-arguments (length output-bindings)
-                     :label "arguments-env")))
-      (irc-make-value-frame-set-parent new-env (length output-bindings) fn-env)
-      (cmp-log "output-bindings: {}%N" output-bindings)
-      (mapc (lambda (ob)
-              (cmp-log "Adding to environment: {}%N" ob)
-              (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
-            output-bindings)
-      (cmp-log "register-environment contents -> {}%N" new-env)
-      (compile-lambda-list-code
-       cleavir-lambda-list-analysis
-       callconv
-       arity
-       :safep safep
-       :argument-out (lambda (value datum)
-                       (let* ((info (assoc datum output-bindings))
-                              (symbol (car info))
-                              (index (cdr info))
-                              (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
-                         (irc-t*-result value ref))))
-      new-env)))

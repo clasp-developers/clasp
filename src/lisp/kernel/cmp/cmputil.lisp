@@ -159,6 +159,8 @@
 (defun make-global-function-refs-table ()
   (make-hash-table :test #'equal :thread-safe t))
 
+(defvar *active-protection* nil)
+
 ;;; Will be redefined in compiler-conditions.lisp
 (defun do-compilation-unit (closure &key override)
   (if (or (not *active-protection*) ; we're not in a do-compilation-unit

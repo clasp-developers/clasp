@@ -223,7 +223,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   inline base_ptr(const base_ptr<Type> &obj) : theObject(obj.theObject){};
 #endif
 
-#ifndef DEBUG_ASSERT_TYPE_CAST
+#ifndef DO_ASSERT_TYPE_CAST
   template <class From>
     inline base_ptr(base_ptr<From> const &rhs) : theObject(reinterpret_cast<Type*>(rhs.theObject)) {};
 #else
@@ -420,7 +420,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
 namespace gctools {
 
-#if (defined(DEBUG_ASSERT_TYPE_CAST) && !defined(SCRAPING))
+#if (defined(DO_ASSERT_TYPE_CAST) && !defined(SCRAPING))
 template <typename T1, typename T2>
 struct Inherits : std::false_type {};
 // This is the only place that we include INIT_CLASSES_INC_H into a build
@@ -446,7 +446,7 @@ struct Inherits : std::true_type {};
 
 template <typename T1, typename T2>
 void TestInheritance() {
-  static_assert(Inherits<T1,T2>::value,"T1 does not inherit from T2");
+  static_assert(Inherits<T1,T2>::value,"Second class MUST inherit from first class - for the expression to compile");
 };
 };
 
@@ -468,7 +468,7 @@ public:
     abort();
   };
 
-#ifndef DEBUG_ASSERT_TYPE_CAST
+#ifndef DO_ASSERT_TYPE_CAST
   template <class From>
   inline smart_ptr(smart_ptr<From> const &rhs) : base_ptr<Type>((Tagged)rhs.raw_()) {};
 #else
@@ -544,9 +544,8 @@ inline To_SP As(From_SP const &rhs) {
     return ret;
   }
   // If the cast didn't work then signal a type error
-  class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
-  class_id this_typ = reg::registered_class<typename From_SP::Type>::id;
-  lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.raw_()));
+  gctools::GCStampEnum expectedStampWtag = gctools::GCStamp<typename To_SP::Type>::StampWtag;
+  lisp_errorBadCastStampWtag((size_t)expectedStampWtag, reinterpret_cast<core::T_O *>(rhs.raw_()));
   HARD_UNREACHABLE();
 }
 template <typename To_SP>
@@ -562,12 +561,23 @@ inline To_SP As(const return_type &rhs) {
 }
 
  // Cast the type without any concern if it is appropriate
- // This is only used for loading objects and patching
- // See src/core/record.h
  template <typename To_SP, typename From_SP>
-   inline To_SP As_unsafe(From_SP const &rhs) {
+ inline To_SP As_unsafe(From_SP const &rhs) {
 #ifdef DEBUG_ASSERT
 //   GCTOOLS_ASSERT(TaggedCast<typename To_SP::Type*, typename From_SP::Type*>::isA(rhs));
+#endif
+   To_SP ret((Tagged)rhs.raw_());
+   return ret;
+ }
+
+ // Cast the type without any concern if it is appropriate
+ // If DEBUG_ASSERT then check if the type is appropriate.
+ template <typename To_SP, typename From_SP>
+ inline To_SP As_assert(From_SP const &rhs) {
+#ifdef DEBUG_ASSERT
+   if (!gctools::IsA<To_SP>(rhs)) {
+     throw_hard_error_failed_assertion("!gctools::IsA<To_SP>(rhs)");
+   }
 #endif
    To_SP ret((Tagged)rhs.raw_());
    return ret;
@@ -1627,23 +1637,14 @@ public:
   fast_iterator_proxy full() { return fast_iterator_proxy(*this); }
 
   smart_ptr<core::List_V> &operator=(const smart_ptr<core::List_V> &other) {
-    if (this == &other)
-      return *this;
     this->theObject = other.theObject;
     return *this;
   };
 
   template <typename From>
   smart_ptr<core::List_V> &operator=(const smart_ptr<From> &other) {
-    if (this == reinterpret_cast<smart_ptr<core::List_V> *>(const_cast<smart_ptr<From> *>(&other)))
-      return *this;
-    if (tagged_consp<From *>(other.theObject)) {
-      this->theObject = other.theObject;
-    } else if (tagged_nilp<From *>(other.theObject)) {
-      this->theObject = other.theObject;
-    } else {
-      lisp_error(cl::_sym_type_error, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expected_type, cl::_sym_list));
-    }
+    GCTOOLS_ASSERT(tagged_consp<From *>(other.theObject) || tagged_nilp<From *>(other.theObject));
+    this->theObject = other.theObject;
     return *this;
   };
 };
@@ -1691,8 +1692,6 @@ gctools::smart_ptr<T> deleted() {
 }
 
 namespace gctools {
-
-// LambdaListHandler_sp llh(ptr)
 
 template <class TO, class FROM>
 smart_ptr<TO> dynamic_pointer_cast(const smart_ptr<FROM> &ptr) {
@@ -1937,18 +1936,10 @@ public:
   }
 
   MyType &operator=(smart_ptr<core::T_O> const &orig) {
-    if (tagged_nilp(orig.theObject)) {
-      this->theObject = reinterpret_cast<Type *>(global_tagged_Symbol_OP_nil);
-      return *this;
-    } else if (Base foo = orig.asOrNull<Type>()) {
-      this->theObject = foo.theObject;
-      return *this;
-    }
-    class_id expected_typ = reg::registered_class<Type>::id;
-    lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(this->theObject));
-    throw_hard_error("Unreachable");
+    GCTOOLS_ASSERT(tagged_nilp(orig.theObject)|| orig.asOrNull<Type>());
+    this->theObject = reinterpret_cast<Type*>(orig.theObject);
+    return *this;
   }
-
   inline return_type as_return_type() { return return_type(this->theObject,1);};
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return !tagged_nilp(this->theObject); }

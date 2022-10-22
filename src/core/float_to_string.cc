@@ -101,7 +101,8 @@ T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max
   }
   T_mv mv_exp = core__float_to_digits(nil<T_O>(), number, nil<T_O>(), nil<T_O>());
   Fixnum_sp exp = gc::As_unsafe<Fixnum_sp>(mv_exp);
-  StrNs_sp buffer = gc::As<StrNs_sp>(mv_exp.second());
+  MultipleValues& mv = core::lisp_multipleValues();
+  StrNs_sp buffer = gc::As<StrNs_sp>(mv.second(mv_exp.number_of_values()));
   e = exp.unsafe_fixnum();
   if (clasp_signbit(number)) {
     insert_char(buffer, base++, '-');

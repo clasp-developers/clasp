@@ -86,6 +86,41 @@
 (defmacro cl:progv (symbols values &rest forms)
   `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
 
+
+;;;;;;;;
+;;;  Validate vaslists
+;;;;;;;;
+
+#+validate-vaslists
+(defmacro validate-vaslist (vaslist)
+  `(core:do-validate-vaslist ,vaslist))
+
+#-validate-vaslists
+(defmacro validate-vaslist (vaslist)
+  `(progn
+     ,vaslist))
+
+(export 'validate-vaslist :core)
+
+;;;;;;;;
+;;;;;;;;
+
+#+bytecodelike
+(defmacro cleavir-primop:typeq (object type) `(typep ,object ',type))
+
+#+bytecodelike
+(defmacro cleavir-primop:car (obj) `(car ,obj))
+#+bytecodelike
+(defmacro cleavir-primop:cdr (obj) `(cdr ,obj))
+
+#+(and bytecodelike (not clasp-min))
+(defmacro core::header-stamp-case (stamp derivable rack wrapped header)
+  `(case (logand (ash ,stamp 2) ,cmp:+where-tag-mask+)
+     (,cmp:+derivable-where-tag+ ,derivable)
+     (,cmp:+rack-where-tag+ ,rack)
+     (,cmp:+wrapped-where-tag+ ,wrapped)
+     (,cmp:+header-where-tag+ ,header)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; core:debug-message is a macro to mimic the core:debug-message special operator

@@ -43,10 +43,10 @@
   ;; (values function-specifier lambda-list options)
   (let (function-specifier)
     (unless args
-      (simple-program-error "Illegal defgeneric form: missing generic function name"))
+      (core:simple-program-error "Illegal defgeneric form: missing generic function name"))
     (setq function-specifier (pop args))
     (unless args
-      (simple-program-error "Illegal defgeneric form: missing lambda-list"))
+      (core:simple-program-error "Illegal defgeneric form: missing lambda-list"))
     (values function-specifier (first args) (rest args))))
 
 (defun parse-generic-options (options lambda-list)
@@ -65,8 +65,8 @@
                 ((eq option-name 'declare)
                  (setf declarations (append (rest option) declarations)))
                 ((member option-name processed-options)
-                 (simple-program-error "Option ~s specified more than once"
-                                       option-name))
+                 (core:simple-program-error "Option ~s specified more than once"
+                                            option-name))
                 (t
                  (push option-name processed-options)
                  ;; We leave much of the type checking for SHARED-INITIALIZE
@@ -78,12 +78,12 @@
                           (rest option))
                          ((:documentation :generic-function-class :method-class)
                           (unless (endp (cddr option))
-                            (simple-program-error "Too many arguments for option ~A"
-                                                  option-name))
+                            (core:simple-program-error "Too many arguments for option ~A"
+                                                       option-name))
                           (second option))
                          (otherwise
-                          (simple-program-error "~S is not a legal defgeneric option"
-                                                option-name))))
+                          (core:simple-program-error "~S is not a legal defgeneric option"
+                                                     option-name))))
                  (setf arg-list `(',option-name ',option-value ,@arg-list)))))))
     (values `(:lambda-list ',lambda-list ,@arg-list
               ,@(when core:*current-source-pos-info*
@@ -97,7 +97,7 @@
     (let ((arg (car lambda-list)))
       (cond ((null lambda-list))
             ((eq arg '&AUX)
-             (simple-program-error "&aux is not allowed in a generic function lambda-list"))
+             (core:simple-program-error "&aux is not allowed in a generic function lambda-list"))
             ((member arg lambda-list-keywords)
              (parse-lambda-list (cdr lambda-list) t))
             (post-keyword
@@ -105,7 +105,7 @@
              (parse-lambda-list (cdr lambda-list) t))
             (t
              (if (listp arg)
-                 (simple-program-error "the parameters cannot be specialized in generic function lambda-list")
+                 (core:simple-program-error "the parameters cannot be specialized in generic function lambda-list")
                  (parse-lambda-list (cdr lambda-list))))))))
 
 (defun valid-declaration-p (decl)
@@ -132,20 +132,21 @@
      &aux (gfun-name (or (core:function-name gfun) name :anonymous)))
   (declare (ignore slot-names))
   ;; Check the validity of several fields.
+  (mlog "standard.lisp::shared-initialize:before instance -> {} l-l-p -> {}  lambda-list -> {}%N" (core:safe-repr gfun) l-l-p (core:safe-repr lambda-list))
   (when a-o-p
     (unless l-l-p
-      (simple-program-error "When defining generic function ~A
+      (core:simple-program-error "When defining generic function ~A
 Supplied :argument-precedence-order, but :lambda-list is missing"
-			    gfun-name))
+			         gfun-name))
     (dolist (l (lambda-list-required-arguments lambda-list))
       (unless (= (count l argument-precedence-order) 1)
-	(simple-program-error "When defining generic function ~A
+	(core:simple-program-error "When defining generic function ~A
 The required argument ~A does not appear exactly once in the ARGUMENT-PRECEDENCE-ORDER list ~A"
-			      gfun-name l argument-precedence-order))))
+			           gfun-name l argument-precedence-order))))
   (unless (every #'valid-declaration-p declarations)
-    (simple-program-error "When defining generic function ~A
+    (core:simple-program-error "When defining generic function ~A
 Not a valid declaration list: ~A"
-                          gfun-name declarations))
+                               gfun-name declarations))
   (unless (typep documentation '(or null string))
     (error 'simple-type-error
 	   :format-control "When defining generic function~A
@@ -154,8 +155,8 @@ Not a valid documentation object ~A"
 	   :datum documentation
 	   :expected-type '(or null string)))
   (unless (or (not m-c-p) (si::subclassp method-class (find-class 'method)))
-    (simple-program-error "When defining generic function~A~%Not a valid method class, ~A"
-                          gfun-name method-class))
+    (core:simple-program-error "When defining generic function~A~%Not a valid method class, ~A"
+                               gfun-name method-class))
   ;; When supplying a new lambda-list, ensure that it is compatible with
   ;; the old list of methods.
   (when (and l-l-p (slot-boundp gfun 'methods))
@@ -163,8 +164,8 @@ Not a valid documentation object ~A"
                        (declare (core:lambda-name shared-initialize.lambda))
 		       (congruent-lambda-p lambda-list x))
 		 (mapcar #'method-lambda-list (generic-function-methods gfun)))
-      (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
-			    gfun lambda-list))))
+      (core:simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
+			         gfun lambda-list))))
 
 (defun initialize-gf-specializer-profile (gfun)
   (when (slot-boundp gfun 'lambda-list)
@@ -183,25 +184,28 @@ Not a valid documentation object ~A"
        &allow-other-keys)
   (declare (ignore slot-names argument-precedence-order)
            (core:lambda-name shared-initialize.generic-function))
+  (mlog "generic.lisp::shared-initialize :after entered gfun -> {} lambda-list -> {}%N" (core:safe-repr gfun) (core:safe-repr lambda-list))
   ;; Coerce a method combination if required.
   (let ((combination (generic-function-method-combination gfun)))
     (unless (typep combination 'method-combination)
       (setf (%generic-function-method-combination gfun)
 	    (find-method-combination gfun (first combination) (rest combination)))))
   ;; If we have a new lambda list but no argument precedence, default the latter.
+  (mlog "generic.lisp::shared-initialize :after l-l-p -> {}  (not a-o-p) -> {}%N" (core:safe-repr l-l-p) (core:safe-repr (not a-o-p)))
   (when (and l-l-p (not a-o-p))
+    (mlog "generic.lisp::shared-initialize :after (lambda-list-required-arguments lambda-list)->{}%N" (core:safe-repr (lambda-list-required-arguments lambda-list)))
     (setf (%generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
   ;; If we have a new name, set the internal name.
   ;; If there's no new name, but the old name isn't set, set it to the default LAMBDA.
   ;; NOTE: MOP says it should be NIL, but we use LAMBDA elsewhere. Could fix that.
   (if name-p
-      (setf-function-name gfun name)
+      (core:setf-function-name gfun name)
       (when (eq (core:function-name gfun) (core:unbound))
-        (setf-function-name gfun 'cl:lambda)))
+        (core:setf-function-name gfun 'cl:lambda)))
   ;; If we have a new lambda list, set the display lambda list.
   (when l-l-p
-    (setf-lambda-list gfun lambda-list))
+    (core:setf-lambda-list gfun lambda-list))
   ;; Ditto docstring.
   (when documentation-p
     (setf (core:function-docstring gfun) documentation))
@@ -227,6 +231,7 @@ Not a valid documentation object ~A"
   (invalidate-discriminating-function gfun))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
+  (mlog "generic.lisp::reinitialize-instance :after initargs -> {}%N" (core:safe-repr initargs))
   (update-dependents gfun initargs)
   ;; Check if the redefinition is trivial.
   ;; I am not sure of the fine details here. What happens if you reinitialize-instance
@@ -264,8 +269,11 @@ Not a valid documentation object ~A"
   (remf args :declare)
   (remf args :environment)
   (remf args :delete-methods)
+  (mlog "In ensure-generic-function-using-class B%N")
+
   (when (symbolp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
+  (mlog "In ensure-generic-function-using-class C%N")
   (when gfcp
     ;; ANSI DEFGENERIC talks about the possibility of change-class-ing a
     ;; generic function, but AMOP specifically rules this possibility out.
@@ -273,14 +281,18 @@ Not a valid documentation object ~A"
     (unless (eq generic-function-class (class-of gfun))
       (error "Cannot change the class of generic function ~a from ~a to ~a. See AMOP, ENSURE-GENERIC-FUNCTION-USING-CLASS."
              name (class-name (class-of gfun)) (class-name generic-function-class))))
+  (mlog "In ensure-generic-function-using-class D%N")
   (when (and method-class-p (symbolp method-class))
     (setf args (list* :method-class (find-class method-class) args)))
+  (mlog "In ensure-generic-function-using-class E%N")
   (when delete-methods
     (dolist (m (copy-list (generic-function-methods gfun)))
       (when (getf (method-plist m) :method-from-defgeneric-p)
 	(remove-method gfun m))))
+  (mlog "In ensure-generic-function-using-class F%N")
   (if (eq (class-of gfun) generic-function-class)
       (progn
+        (mlog "In ensure-generic-function-using-class F: About to reinitialize-instance args->{}%N" (core:safe-repr args))
 	(apply #'reinitialize-instance gfun :name name args))
       (progn
 	(apply #'change-class gfun generic-function-class :name name args))))
@@ -292,7 +304,7 @@ Not a valid documentation object ~A"
                                    (delete-methods nil)
                                    &allow-other-keys)
   (declare (ignore delete-methods gfun))
-  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> {}  name -> {} args -> {}%N" gfun name args)
+  (mlog "In ensure-generic-function-using-class (gfun null) gfun -> {}  name -> {} args -> {}%N" gfun name args)
   ;; else create a new generic function object
   (setf args (copy-list args))
   (remf args :generic-function-class)

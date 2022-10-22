@@ -791,7 +791,7 @@ public:
     (when (is-exposed-class exposed-class)
       (let ((class-tag (class-tag% exposed-class)))
         (format stream "namespace ~a {
-  gctools::Header_s::StampWtagMtag::Value ~a::static_ValueStampWtagMtag;
+  gctools::Header_s::StampWtagMtag ~a::static_ValueStampWtagMtag;
 };~%"
                 (tags:namespace% class-tag) (tags:name% class-tag)))))
   (format stream "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
@@ -1176,7 +1176,7 @@ void ~a::expose_to_clasp() {
 
 (defun generate-layout-code (kind stream)
   (dolist (field (fixed-fields% kind))
-    (format stream " {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~a), 0, \"~a\" },~%"
+    (format stream " {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
             (tags:offset-type-cxx-identifier field)
             (tags:offset-ctype field)
             (tags:offset-base-ctype field)
@@ -1209,7 +1209,7 @@ void ~a::expose_to_clasp() {
                  (tags:fixup-type vfields)))
         (list
          (dolist (vfield vfields)
-           (format stream "    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~a), 0, \"~a\" },~%"
+           (format stream "    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
                    (tags:offset-type-cxx-identifier vfield)
                    (tags:fixup-ctype-offset-type-key vfield)
                    (tags:fixup-ctype-key vfield)
@@ -1486,13 +1486,14 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
                       (getf app-config :clasp_gc_cc)))
   (multiple-value-bind (direct-call-c-code direct-call-cl-code c-code-info cl-code-info)
       (generate-code-for-direct-call-functions all-functions)
+    (declare (ignorable direct-call-cl-code cl-code-info))                   
     (write-if-changed direct-call-c-code
                       (getf app-config :c_wrappers_h))
-    (write-if-changed direct-call-cl-code
+    #+(or)(write-if-changed direct-call-cl-code
                       (getf app-config :cl_wrappers_lisp))
     (write-if-changed c-code-info
                       (merge-pathnames (make-pathname :type "txt")
                                        (getf app-config :c_wrappers_h)))
-    (write-if-changed cl-code-info
+    #+(or)(write-if-changed cl-code-info
                       (merge-pathnames (make-pathname :type "txt")
                                        (getf app-config :cl_wrappers_lisp)))))

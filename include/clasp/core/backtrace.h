@@ -17,7 +17,12 @@ namespace core {
 
 // TODO: Delete Frame_O, make this Frame_O
 FORWARD(DebuggerFrame);
-class DebuggerFrame_O : public General_O {
+class
+
+
+
+
+DebuggerFrame_O : public General_O {
   LISP_CLASS(core, CorePkg, DebuggerFrame_O, "DebuggerFrame", General_O);
   virtual ~DebuggerFrame_O() {};
 public:
@@ -75,6 +80,24 @@ public:
   T_sp declfile;
   T_sp declline;
 };
+
+};
+namespace llvmo {
+FORWARD(DWARFContext);
+FORWARD(SectionedAddress);
+};
+
+namespace core {
+
+T_sp dwarf_ep(size_t frameIndex,
+              llvmo::ObjectFile_sp ofi,
+              llvmo::DWARFContext_sp dcontext,
+              llvmo::SectionedAddress_sp sa,
+              void*& codeStart,
+              void*& functionStartAddress,
+              bool& XEPp,
+              int& arityCode);
+
 } // namespace core
 
 #endif // guard

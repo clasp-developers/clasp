@@ -232,13 +232,21 @@
                               :reader layout-offset-field-names)))
 
 (defclass kind-tag (tag)
-  ((stamp-name :initarg :stamp-name :reader stamp-name)
-   (stamp-key :initarg :stamp-key :reader stamp-key)
-   (parent-class :initarg :parent-class :reader parent-class)
-   (lisp-class-base :initarg :lisp-class-base :reader lisp-class-base)
-   (root-class :initarg :root-class :reader root-class)
-   (stamp-wtag :initarg :stamp-wtag :reader stamp-wtag)
-   (definition-data :initarg :definition-data :reader definition-data)))
+  ((stamp-name :initarg :stamp-name
+               :reader stamp-name)
+   (stamp-key :initarg :stamp-key
+              :reader stamp-key)
+   (parent-class :initarg :parent-class
+                 :reader parent-class)
+   (lisp-class-base :initarg :lisp-class-base
+                    :initform nil
+                    :reader lisp-class-base)
+   (root-class :initarg :root-class
+               :reader root-class)
+   (stamp-wtag :initarg :stamp-wtag
+               :reader stamp-wtag)
+   (definition-data :initarg :definition-data
+                    :reader definition-data)))
 
 (defclass tags:class-kind (kind-tag) ())
 

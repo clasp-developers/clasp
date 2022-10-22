@@ -56,7 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
 #include <clasp/core/character.h>
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/debugger.h>
@@ -69,6 +69,7 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/activationFrame.h>
+#include <clasp/core/bytecode_compiler.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
@@ -461,9 +462,6 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
     return Values(nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
-  if (gc::IsA<BuiltinClosure_sp>(fsym)) {
-    return Values(_lisp->_true(), SimpleBaseString_O::make("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
-  }
   return Values(nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
@@ -472,7 +470,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
 std::string startup_snapshot_name(Bundle& bundle) {
 
   stringstream sn;
-  sn << globals_->_Stage << "clasp-" << VARIANT_NAME;
+  sn << global_options->_Stage << "clasp-" << VARIANT_NAME;
   stringstream ss;
   std::string executablePath;
   core::executablePath(executablePath);
@@ -506,7 +504,7 @@ CL_DOCSTRING(R"dx(startupImagePathname - returns a pathname based on *features* 
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   stringstream ss;
-  ss << "sys:lib;" << stage << "clasp-" << VARIANT_NAME << "-image";
+  ss << "sys:lib;images;" << stage << "clasp";
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
   if (mode == kw::_sym_faso) {
     ss << ".fasp";
@@ -844,7 +842,19 @@ void jit_register_symbol( const std::string& name, size_t size, void* address ) 
     global_jit_log_stream = fopen(filename.str().c_str(),"w");
   }
   if (global_jit_log_stream) {
-    fprintf( global_jit_log_stream, "%0lx %lx %s\n", (uintptr_t)address, size, name.c_str() );
+    char nameBuffer[1024];
+    char* namecur = nameBuffer;
+    char prevchar = ' ';
+    for ( int i=0; i<name.size() && i<1023; i++ ) {
+      if (name[i] == '\r') continue;
+      if (name[i] == '\n') continue;
+      if ( name[i]<32 && name[i] == prevchar) continue;
+      *namecur = name[i];
+      prevchar = name[i];
+      namecur++;
+    }
+    *namecur = '\0';
+    fprintf( global_jit_log_stream, "%0lx %lx %s\n", (uintptr_t)address, size, nameBuffer );
     fflush(global_jit_log_stream);
   }
 }
@@ -997,7 +1007,8 @@ CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage(size_t id,
 {
   T_mv result = core__startup_linkage_shutdown_names(id,prefix);
   T_sp result1 = result;
-  T_sp result2 = result.second();
+  MultipleValues& mvn = core::lisp_multipleValues();
+  T_sp result2 = mvn.second(result.number_of_values());
   return Values(result1,result2);
 }
 
@@ -1224,103 +1235,9 @@ CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
   }
 }
 
-CL_LAMBDA(form &optional env)
-DOCGROUP(clasp)
-CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
-  // Convert the form into a thunk and return like COMPILE does
-  LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
-  Cons_sp code = Cons_O::create(form, nil<T_O>());
-  T_sp sourcePosInfo = nil<T_O>();
-  stringstream ss;
-  ss << "THE-IMPLICIT-COMPILE-REPL"; // << _lisp->nextReplCounter();
-  Symbol_sp name = _lisp->intern(ss.str());
-  ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name,
-                                                                        kw::_sym_function,
-                                                                        nil<T_O>(),
-                                                                        llh,
-                                                                        nil<T_O>(),
-                                                                        nil<T_O>(),
-                                                                        code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
-  Function_sp thunk = ic;
-  return (thunk->entry())(thunk.raw_(),0,NULL);
-  //  return eval::funcall(thunk);
-};
-
-};
-
-extern "C" {
-  __attribute__((noinline)) int callByValue(core::T_sp v1, core::T_sp v2, core::T_sp v3, core::T_sp v4) {
-    ASSERT(v1.fixnump());
-    ASSERT(v2.fixnump());
-    ASSERT(v3.fixnump());
-    ASSERT(v4.fixnump());
-    int f1 = v1.unsafe_fixnum();
-    int f2 = v2.unsafe_fixnum();
-    int f3 = v3.unsafe_fixnum();
-    int f4 = v4.unsafe_fixnum();
-    int res = f1 + f2 + f3 + f4;
-    return res;
-  }
-
-  __attribute__((noinline)) int callByPointer(core::T_O *v1, core::T_O *v2, core::T_O *v3, core::T_O *v4) {
-    ASSERT(gctools::tagged_fixnump(v1));
-    ASSERT(gctools::tagged_fixnump(v2));
-    ASSERT(gctools::tagged_fixnump(v3));
-    ASSERT(gctools::tagged_fixnump(v4));
-    int f1 = gctools::untag_fixnum(v1);
-    int f2 = gctools::untag_fixnum(v2);
-    int f3 = gctools::untag_fixnum(v3);
-    int f4 = gctools::untag_fixnum(v4);
-    int res = f1 + f2 + f3 + f4;
-    return res;
-  }
-
-  __attribute__((noinline)) int callByConstRef(const core::T_sp &v1, const core::T_sp &v2, const core::T_sp &v3, const core::T_sp &v4) {
-    ASSERT(v1.fixnump());
-    ASSERT(v2.fixnump());
-    ASSERT(v3.fixnump());
-    ASSERT(v4.fixnump());
-    int f1 = v1.unsafe_fixnum();
-    int f2 = v2.unsafe_fixnum();
-    int f3 = v3.unsafe_fixnum();
-    int f4 = v4.unsafe_fixnum();
-    int res = f1 + f2 + f3 + f4;
-    return res;
-  }
 };
 
 namespace core {
-
-T_sp allocFixnum() {
-  Fixnum_sp fn = make_fixnum(3);
-  return fn;
-}
-
-void dynamicCastArg(T_sp a) {
-  Cons_sp c = gc::As<Cons_sp>(a);
-  (void)c; // suppress warning
-}
-
-T_sp bitOLogicWithObjects() {
-  T_sp val = _lisp->_true();
-  T_sp val2 = nil<T_O>();
-  if (val2.nilp()) {
-    return val;
-  }
-  return val2;
-};
-
-T_sp allocCons() {
-  Cons_sp fn = Cons_O::create(nil<T_O>(),nil<T_O>());
-  return fn;
-}
-
-T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
-  ASSERT(fr.isA<ActivationFrame_O>());
-  ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<ActivationFrame_O>(fr);
-  T_sp val = core::value_frame_lookup_reference(af, depth, index);
-  return val;
-}
 
 CL_LAMBDA(symbol value thunk)
 CL_DECLARE();
@@ -1376,7 +1293,8 @@ CL_DOCSTRING(R"dx(Like CL:THROW, but takes a thunk)dx")
 DOCGROUP(clasp)
 CL_DEFUN void core__throw_function(T_sp tag, Function_sp result_form) {
   T_mv result = eval::funcall(result_form);
-  result.saveToMultipleValue0();
+  MultipleValues& mv = lisp_multipleValues();
+  mv.saveToMultipleValue0(result);
   sjlj_throw(tag);
 }
 
@@ -1458,7 +1376,6 @@ CL_DEFUN T_sp core__handle_creator( T_sp object ) {
 }
 
  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
- SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
  SYMBOL_SC_(CorePkg, dlopen);
  SYMBOL_SC_(CorePkg, dlsym);
  SYMBOL_SC_(CorePkg, dladdr);
@@ -1790,7 +1707,7 @@ void ltvc_mlf_init_basic_call_varargs(gctools::GCRootsInModule* holder,
 }
 
 
-void dump_byte_code(T_sp fin, size_t length, bool useFrom=false, size_t from=0) {
+void dump_start_code(T_sp fin, size_t length, bool useFrom=false, size_t from=0) {
   StringInputStream_sp sis = gc::As<StringInputStream_sp>(fin);
   string peer;
   if (useFrom) {
@@ -1818,7 +1735,7 @@ void dump_byte_code(T_sp fin, size_t length, bool useFrom=false, size_t from=0) 
 #include "byte-code-interpreter.cc"
 #undef DEFINE_PARSERS
 
-void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
+void start_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
 {
   volatile uint32_t i=0x01234567;
     // return 0 for big endian, 1 for little endian.
@@ -1834,7 +1751,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
       printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__ );
       printf("%s:%d byte_index = %zu\n",__FILE__, __LINE__,  byte_index);
     }
-    // dump_byte_code(fin,32);
+    // dump_start_code(fin,32);
     char c = ltvc_read_char(fin,log,byte_index);
     switch (c) {
     case 0: goto DONE;
@@ -1863,8 +1780,9 @@ void initialize_compiler_primitives(LispPtr lisp) {
   // Initialize raw object translators needed for Foreign Language Interface support 
   llvmo::initialize_raw_translators(); // See file intrinsics.cc!
 
-  comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default);
-  cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
+  comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_bytecode_implicit_compile_form);
+  cleavirPrimop::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
+  comp::_sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
 
   return;
 }
@@ -1926,6 +1844,7 @@ void expect_offset(T_sp key, T_sp alist, size_t expected) {
 
 };
 
+SYMBOL_EXPORT_SC_(CorePkg,two_arg_STAR);
 
 extern "C" {
 

@@ -224,8 +224,8 @@
                                      collect `((,@keys) (go ,tag)))
                              (otherwise (go ,default-tag)))))))
              (return
-               `(core::local-block ,bname
-                  (core::local-tagbody
+               `(block ,bname
+                  (tagbody
                    (case ,form
                      ,@(loop for (tag . objects)
                                in (partition eql-specs :key #'cdr :getter #'car)
@@ -290,8 +290,8 @@
   (let ((*codegen-map* (make-hash-table))
         (*block-name* (gensym "DISCRIMINATION"))
         (*default-tag* (gensym "DEFAULT")))
-    `(core::local-block ,*block-name*
-       (core::local-tagbody
+    `(block ,*block-name*
+       (tagbody
           (go ,(node-tag acycle syms))
           ,@(loop for (tag . code)
                     being each hash-value of *codegen-map*
@@ -350,7 +350,7 @@
     (unless (>= (length arguments) 1)
       (error "BUG: SLOT-READ effective method has insufficient required parameters"))
     (let ((valuef
-            (cond ((fixnump location)
+            (cond ((si:fixnump location)
                    ;; instance location- easy
                    `(core:instance-ref ,(first arguments) ',location))
                   ((consp location)
@@ -358,7 +358,7 @@
                    `(car ,(class-cell-form slot-name class)))
                   (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
       `(let ((value ,valuef))
-         (if (cleavir-primop:eq value (core:unbound))
+         (if (eq value (core:unbound))
              (slot-unbound ,class ,(first arguments) ',slot-name)
              value)))))
 
@@ -372,7 +372,7 @@
     (declare (ignore rest))
     (unless (>= (length arguments) 2)
       (error "BUG: SLOT-WRITE effective method has insufficient required parameters"))
-    (cond ((fixnump location)
+    (cond ((si:fixnump location)         ;
            `(si:instance-set ,(second arguments) ,location ,(first arguments)))
           ((consp location)
            ;; class location
@@ -463,7 +463,7 @@
          (required-args (loop repeat nreq
                               collect (gensym "DISCRIMINATION-ARG"))))
     `(lambda (,@required-args
-              ,@(when more-args `(core:&va-rest ,more-args)))
+              ,@(when more-args `(&rest ,more-args)))
        ,@(when generic-function-name
            `((declare (core:lambda-name ,generic-function-name))))
        (with-effective-method-parameters ((,@required-args) ,more-args)
@@ -471,8 +471,8 @@
            (let ((.generic-function. ,generic-function-form))
              ,(when (and more-args max-nargs) ; Check argcount.
                 ;; FIXME: Should be possible to not check, on low safety.
-                `(let ((nmore (core:vaslist-length ,more-args)))
-                   (if (cleavir-primop:fixnum-less ,(- max-nargs nreq) nmore)
+                `(let ((nmore (length ,more-args)))
+                   (if (< ,(- max-nargs nreq) nmore)
                        (error 'core:wrong-number-of-arguments
                               :called-function .generic-function.
                               :given-nargs (+ nmore ,nreq)
@@ -484,7 +484,7 @@
                    (.method-args.
                      (list* ,@required-args
                             ,(if more-args
-                                 `(core:list-from-vaslist ,more-args)
+                                 more-args
                                  nil))))
                ,(generate-discrimination
                  call-history specializer-profile

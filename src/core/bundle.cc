@@ -277,22 +277,19 @@ string Bundle::describe() {
   return ss.str();
 }
 
-void create_translation(const std::filesystem::path &path, const std::string &translation) {
-  if (!path.empty()) {
-    T_sp name = SimpleBaseString_O::make("SYS");
-    core__pathname_translations(name, _lisp->_true(),
-        Cons_O::create(Cons_O::createList(SimpleBaseString_O::make("SYS:" + translation),
-                                              cl__pathname(SimpleBaseString_O::make(path / "**" / "*.*"))),
-                        core__pathname_translations(name, _lisp->_true(), _lisp->_false())));
-  }
-}
-
 void Bundle::setup_pathname_translations() {
-  create_translation(this->_Directories->_SysDir, "**;*.*.*");
-  create_translation(this->_Directories->_GeneratedDir, "GENERATED;**;*.*.*");
-  create_translation(this->_Directories->_LibDir, "LIB;**;*.*.*");
-  create_translation(this->_Directories->_ExecutableDir, "EXECUTABLE;**;*.*.*");
-  create_translation(this->_Directories->_QuicklispDir, "QUICKLISP;**;*.*.*");
+  cl__setf_logical_pathname_translations(
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("SYS:GENERATED;**;*.*.*"),
+                                            SimpleBaseString_O::make(this->_Directories->_GeneratedDir / "**" / "*.*")),
+                         Cons_O::createList(SimpleBaseString_O::make("SYS:LIB;**;*.*.*"),
+                                            SimpleBaseString_O::make(this->_Directories->_LibDir / "**" / "*.*")),
+                         Cons_O::createList(SimpleBaseString_O::make("SYS:EXECUTABLE;**;*.*.*"),
+                                            SimpleBaseString_O::make(this->_Directories->_ExecutableDir / "**" / "*.*")),
+                         Cons_O::createList(SimpleBaseString_O::make("SYS:QUICKLISP;**;*.*.*"),
+                                            SimpleBaseString_O::make(this->_Directories->_QuicklispDir / "**" / "*.*")),
+                         Cons_O::createList(SimpleBaseString_O::make("SYS:**;*.*.*"),
+                                            SimpleBaseString_O::make(this->_Directories->_SysDir / "**" / "*.*"))),
+      SimpleBaseString_O::make("SYS"));
 }
 
 }; // namespace core

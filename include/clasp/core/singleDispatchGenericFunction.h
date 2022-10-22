@@ -38,7 +38,7 @@ FORWARD(SingleDispatchMethod);
 class SingleDispatchGenericFunction_O : public Function_O {
   LISP_CLASS(core,CorePkg,SingleDispatchGenericFunction_O,"SingleDispatchGenericFunction",Function_O);
 public:
-  SingleDispatchGenericFunction_O(GlobalEntryPoint_sp ep) : Base(ep) {};
+  SingleDispatchGenericFunction_O(GlobalSimpleFun_sp ep) : Base(ep) {};
 public:
   typedef enum {
       REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY = 0,
@@ -48,16 +48,16 @@ public:
       REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS = 4
   } SingleDispatchSlots;
 public:
-  static SingleDispatchGenericFunction_sp create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex);
+  static SingleDispatchGenericFunction_sp create_single_dispatch_generic_function(T_sp gfname, size_t singleDispatchArgumentIndex, List_sp lambdaList);
 public:
   std::atomic<T_sp> callHistory;
-  LambdaListHandler_sp lambdaListHandler;
   Fixnum_sp argumentIndex;
   std::atomic<T_sp> methods;
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     SETUP_CLOSURE(SingleDispatchGenericFunction_O,closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
     size_t singleDispatchArgumentIndex = closure->argumentIndex.unsafe_fixnum();
     Instance_sp dispatchArgClass;
     // SingleDispatchGenericFunctions can dispatch on the first or second argument
@@ -89,11 +89,13 @@ public:
     while (classPrecedenceList.consp()) {
       Instance_sp class_ = gc::As<Instance_sp>(CONS_CAR(classPrecedenceList));
       classPrecedenceList = CONS_CDR(classPrecedenceList);
+//      printf("%s:%d:%s class_ = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(class_).c_str());
       List_sp curMethod = methods;
       while (curMethod.consp()) {
         SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>(CONS_CAR(curMethod));
         curMethod = CONS_CDR(curMethod);
         Instance_sp methodClass = method->receiver_class();
+//        printf("%s:%d:%s methodClass = %s   class_ = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(methodClass).c_str(), _rep_(class_).c_str());
         if (methodClass == class_) {
           // Update the call-history using CAS
           T_sp expected;
@@ -113,7 +115,7 @@ public:
                  , _rep_(dispatchArgClass)
                  , _rep_(dispatchArg).c_str());
   }
-    static inline LISP_ENTRY_0() {
+  static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
   }
   static inline LISP_ENTRY_1() {
@@ -144,7 +146,7 @@ public:
 
 
 namespace core {
-SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex);
+SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_function(T_sp gfname, bool autoExport, size_t singleDispatchArgumentIndex, List_sp lambdaList );
 // void core__satiateSingleDispatchGenericFunctions();
 
 };

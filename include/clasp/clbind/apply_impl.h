@@ -248,6 +248,12 @@ template <int N, typename ...Types>
 struct MapNotPureOutValues<N,policies<Types...>>{
   using type = typename detail::MapNotPureOutValuesImpl<N,Types...>::type;
 };
+
+template <int N>
+struct MapNotPureOutValues<N,core::policy::clasp_policy>{
+  using type = typename detail::MapNotPureOutValuesImpl<N>::type;
+};
+
 };
 
 

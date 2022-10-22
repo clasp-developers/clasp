@@ -95,41 +95,6 @@ the corresponding VAR.  Returns NIL."
 
 
 
-(fset 'when #'(lambda (def env)
-                (declare (ignore env))
-                `(if ,(cadr def) (progn ,@(cddr def))))
-      t)
-
-
-(fset 'unless #'(lambda (def env)
-                  (declare (ignore env))
-                  `(if ,(cadr def) nil (progn ,@(cddr def))))
-      t)
-
-
-
-(defun si::while-until (test body jmp-op)
-  (let ((label (gensym))
-        (exit (gensym)))
-    `(TAGBODY
-        (GO ,exit)
-      ,label
-        ,@body
-      ,exit
-        (,jmp-op ,test (GO ,label)))))
-
-(fset 'si::while #'(lambda (def env)
-                     (declare (ignore env))
-                     (si::while-until (cadr def) (cddr def) 'when))
-      t)
-
-
-(fset 'si::until #'(lambda (def env)
-                     (declare (ignore env))
-                     (si::while-until (cadr def) (cddr def) 'unless))
-      t)
-
-
 (fset 'cons-car #'(lambda (def env)
                     (declare (ignore env))
                     `(car (the cons ,(cadr def))))
@@ -150,19 +115,6 @@ the corresponding VAR.  Returns NIL."
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :core))
-
-
-(si::fset 'prog1 #'(lambda (whole env)
-                     (declare (ignore env))
-                     (let ((sym (gensym))
-                           (first (cadr whole))
-                           (body (cddr whole)))
-                       (if body
-                           `(let ((,sym ,first))
-                              ,@body
-                              ,sym)
-                           first)))
-          t)
 
 
 (defvar *bytecodes-compiler* nil)
@@ -349,23 +301,6 @@ the corresponding VAR.  Returns NIL."
   (apply #'fmt t fmt args))
 
 (in-package :cl)
-
-;; We do not use this macroexpansion, and thus we do not care whether
-;; it is efficiently compiled by ECL or not.
-(core:fset 'multiple-value-bind
-           #'(lambda (whole env)
-               (declare (core:lambda-name multiple-value-bind-macro))
-               (declare (ignore env))
-               (let ((vars (cadr whole))
-                     (form (caddr whole))
-                     (body (cdddr whole))
-                     (restvar (gensym)))
-                 `(multiple-value-call
-                      #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
-                          (declare (ignore ,restvar))
-                          ,@body)
-                    ,form)))
-           t)
 
 (defun warn (x &rest args)
   (core:fmt t "WARN: {} {}%N" x args))

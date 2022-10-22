@@ -42,9 +42,10 @@
   (let ((designator (macroexpand designator env)))
     (cond ((function-form-p designator) designator)
           ((constantp designator env)
-           (if (symbolp (ext:constant-form-value designator env))
-               `(fdefinition ,designator)
-               form))
+           (let ((value (ext:constant-form-value designator env)))
+             (cond ((symbolp value) `(fdefinition ,designator))
+                   ((functionp value) value)
+                   (t form))))
           (t form))))
 
 (define-compiler-macro not (objectf)
@@ -90,6 +91,10 @@
        (lambda (&rest args)
          (declare (ignore args))
          ,s))))
+
+;;; Dummy macro for use by the bytecode compiler. Ignored by cclasp.
+(defmacro cleavir-primop:case (keyform &rest clauses)
+  `(case ,keyform ,@clauses))
 
 (define-compiler-macro case (&whole form keyform &rest clauses)
   ;;; Check degenerate case

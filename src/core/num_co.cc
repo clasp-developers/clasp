@@ -127,14 +127,14 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN SingleFloat_sp core__to_single_float(Real_sp x) {
-  if (x.single_floatp()) return x;
+  if (x.single_floatp()) return gc::As_unsafe<SingleFloat_sp>(x);
   else return clasp_make_single_float(clasp_to_double(x));
 }
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN DoubleFloat_sp core__to_double_float(Real_sp x) {
-  if (gc::IsA<DoubleFloat_sp>(x)) return x;
+  if (gc::IsA<DoubleFloat_sp>(x)) return gc::As_unsafe<DoubleFloat_sp>(x);
   else return clasp_make_double_float(clasp_to_double(x));
 }
 
@@ -244,17 +244,19 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor,
   case_Bignum_v_Fixnum: {
       Bignum_sp bdividend = gc::As_unsafe<Bignum_sp>(dividend);
       Fixnum fdivisor = divisor.unsafe_fixnum();
-      T_mv mv = core__next_ftruncate(bdividend, fdivisor);
-      quotient = gc::As_unsafe<Integer_sp>(mv);
-      remainder = gc::As_unsafe<Integer_sp>(mv.valueGet_(1));
+      T_mv rmv = core__next_ftruncate(bdividend, fdivisor);
+      quotient = gc::As_unsafe<Integer_sp>(rmv);
+      MultipleValues& mvn = core::lisp_multipleValues();
+      remainder = gc::As_unsafe<Integer_sp>(mvn.valueGet(1,rmv.number_of_values()));
       return;
     }
   case_Bignum_v_Bignum: {
       Bignum_sp bdividend = gc::As_unsafe<Bignum_sp>(dividend);
       Bignum_sp bdivisor = gc::As_unsafe<Bignum_sp>(divisor);
-      T_mv mv = core__next_truncate(bdividend, bdivisor);
-      quotient = gc::As_unsafe<Integer_sp>(mv);
-      remainder = gc::As_unsafe<Integer_sp>(mv.valueGet_(1));
+      T_mv mvr = core__next_truncate(bdividend, bdivisor);
+      quotient = gc::As_unsafe<Integer_sp>(mvr);
+      MultipleValues& mvn = core::lisp_multipleValues();
+      remainder = gc::As_unsafe<Integer_sp>(mvn.valueGet(1,mvr.number_of_values()));
       return;
     }
   // case_Bignum_v_Ratio: above
@@ -846,17 +848,15 @@ int clasp_signbit(Number_sp x) {
   SIMPLE_ERROR(("Illegal argument for clasp_signbit: %s") , _rep_(x));
 }
 
-CL_LAMBDA(x &optional (y x yp))
+CL_LAMBDA(x &optional (y nil yp))
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(floatSign)dx")
 DOCGROUP(clasp)
-CL_DEFUN Float_sp cl__float_sign(Float_sp x, Float_sp y, T_sp yp) {
-  int negativep;
-  if (yp.nilp()) {
-    y = cl__float(clasp_make_fixnum(1), x);
-  }
-  negativep = clasp_signbit(x);
+CL_DEFUN Float_sp cl__float_sign(Float_sp x, T_sp oy, T_sp yp) {
+  Float_sp y
+    = yp.nilp() ? cl__float(clasp_make_fixnum(1), x) : gc::As<Float_sp>(oy);
+  int negativep = clasp_signbit(x);
   switch (clasp_t_of(y)) {
   case number_SingleFloat: {
     float f = y.unsafe_single_float();

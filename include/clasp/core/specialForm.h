@@ -56,7 +56,7 @@ public: // initialize
   T_mv evaluate(List_sp args, T_sp environment);
   SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor
 
-  SpecialForm_O(GlobalEntryPoint_sp ep) : Base(ep) {};
+  SpecialForm_O(GlobalSimpleFun_sp ep) : Base(ep) {};
   virtual ~SpecialForm_O() {};
 
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {

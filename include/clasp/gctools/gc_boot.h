@@ -31,42 +31,42 @@ namespace gctools {
 
 enum Data_types {
     DONT_EXPOSE_OFFSET,
-  SMART_PTR_OFFSET,
-  ATOMIC_SMART_PTR_OFFSET,
-  TAGGED_POINTER_OFFSET,
-  RAW_POINTER_OFFSET,
-  ARRAY_OFFSET,
-  POINTER_OFFSET,
-  CONSTANT_ARRAY_OFFSET,
-  ctype_double,
-  ctype_float,
-  ctype_int,
-  ctype_short,
-  ctype_unsigned_char,
-  ctype_signed_char,
-  ctype_unsigned_short,
-  ctype_signed_short,
-  ctype_unsigned_long,
-  ctype_unsigned_long_long,
-  ctype_unsigned_int,
-  ctype_long,
-  ctype_long_long,
-  ctype_char,
-  ctype__Bool,
-  ctype_enum_core__StreamMode,
-  ctype_core__FrameStamp,
-  ctype_const_char_ptr,
-  ctype_size_t,
-  ctype_opaque_ptr,
-  CXX_FIXUP_OFFSET,
-  ATOMIC_POD_OFFSET_unsigned_long,
-  ATOMIC_POD_OFFSET_mp__ProcessPhase,
-  ATOMIC_POD_OFFSET_unsigned_int,
-  ATOMIC_POD_OFFSET_long_long,
-  ATOMIC_POD_OFFSET__Bool,
-  ATOMIC_POD_OFFSET_long,
-  CXX_SHARED_MUTEX_OFFSET,
-  last_data_type };
+    SMART_PTR_OFFSET,
+    ATOMIC_SMART_PTR_OFFSET,
+    TAGGED_POINTER_OFFSET,
+    RAW_POINTER_OFFSET,
+    ARRAY_OFFSET,
+    POINTER_OFFSET,
+    CONSTANT_ARRAY_OFFSET,
+    ctype_double,
+    ctype_float,
+    ctype_int,
+    ctype_short,
+    ctype_unsigned_char,
+    ctype_signed_char,
+    ctype_unsigned_short,
+    ctype_signed_short,
+    ctype_unsigned_long,
+    ctype_unsigned_long_long,
+    ctype_unsigned_int,
+    ctype_long,
+    ctype_long_long,
+    ctype_char,
+    ctype__Bool,
+    ctype_enum_core__StreamMode,
+    ctype_core__FrameStamp,
+    ctype_const_char_ptr,
+    ctype_size_t,
+    ctype_opaque_ptr,
+    CXX_FIXUP_OFFSET,
+    ATOMIC_POD_OFFSET_unsigned_long,
+    ATOMIC_POD_OFFSET_mp__ProcessPhase,
+    ATOMIC_POD_OFFSET_unsigned_int,
+    ATOMIC_POD_OFFSET_long_long,
+    ATOMIC_POD_OFFSET__Bool,
+    ATOMIC_POD_OFFSET_long,
+    CXX_SHARED_MUTEX_OFFSET,
+    last_data_type };
 
  //
  // Use powers of two for the flags
@@ -85,7 +85,7 @@ extern uintptr_t global_strong_weak_kind;
 
 extern int              global_container_proc_index;
 
-extern void dump_data_types(FILE* fout, const std::string& indent);
+extern void dump_data_types(std::ostream& fout, const std::string& indent);
 
 
 enum Layout_cmd {
@@ -222,7 +222,7 @@ extern Field_layout*    global_field_layout;
 
 
 typedef enum { precise_info, lldb_info } WalkKind;
-void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout=NULL);
+void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& stream);
 
 
 #define FRIEND_GC_INTERFACE() friend gctools::Layout_code* gctools::get_stamp_layout_codes()

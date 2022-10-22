@@ -167,6 +167,11 @@
    (flags% :initform nil :accessor flags%)
    (direct-subclasses% :initform nil :accessor direct-subclasses%)))
 
+(defmethod tag% (instance)
+  (error "Unable to find TAG% method for ~A.
+This probably means you need to run the static analyzer
+via `ninja -C build analyze` or `./analyze`." instance))
+
 (defclass exposed-internal-class-kind (kind exposed-internal-class) ())
 (defclass exposed-external-class-kind (kind exposed-external-class) ())
 
@@ -178,11 +183,9 @@
 (defmethod class-key% ((object kind))
   (tags:stamp-key (tag% object)))
 (defmethod base% ((object kind))
-  (let* ((tag (tag% object))
-         (lisp-class-base (when tag (tags:lisp-class-base tag))))
-    (if (string= lisp-class-base "NoLispBase") ; magic string gen. by analyzer
-        (tags:parent-class (tag% object))
-        lisp-class-base)))
+  (let ((tag (tag% object)))
+    (or (when tag (tags:lisp-class-base tag))
+        (tags:parent-class tag))))
 (defmethod c++type% ((object kind))
   (class-key% object))
 (defmethod tags:stamp-wtag ((object kind))

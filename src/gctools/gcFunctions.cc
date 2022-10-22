@@ -167,18 +167,32 @@ CL_DEFUN size_t core__next_unused_kind() {
 
 namespace gctools {
 
+CL_DOCSTRING(R"dx(Return the header stamp for the object)dx")
+DOCGROUP(clasp)
+CL_DEFUN core::T_sp core__header_stamp(core::T_sp obj) {
+  if (obj.generalp()) {
+    void *mostDerived = gctools::untag_general<void *>(obj.raw_());
+    const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
+    uintptr_t stamp = 0xFFFFFFFF&(header->_badge_stamp_wtag_mtag._value);
+//    core::write_bf_stream(fmt::sprintf("%s:%d:%s stamp = %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
+    core::T_sp result((gctools::Tagged)stamp);
+    return result;;
+  }
+  SIMPLE_ERROR(("The object %s is not a general object and doesn't have a header-value") , _rep_(obj));
+}
+
 CL_DOCSTRING(R"dx(Return the header value for the object)dx")
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
-    return core::clasp_make_integer(header->_stamp_wtag_mtag._value);
+    return core::clasp_make_integer(header->_badge_stamp_wtag_mtag._value);
   }
   SIMPLE_ERROR(("The object %s is not a general object and doesn't have a header-value") , _rep_(obj));
 }
 
-
+#if 0
 CL_DOCSTRING(R"dx(Return the header value for the object)dx")
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
@@ -188,6 +202,8 @@ CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
   }
   TYPE_ERROR(value,cl::_sym_fixnum);
 }
+#endif
+
 
 DOCGROUP(clasp)
 CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test()
@@ -196,43 +212,26 @@ CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test()
   return Values(core::make_fixnum(POINTER_TAG_MASK),core::make_fixnum(POINTER_TAG_EQ));
 }
 
-
-CL_DOCSTRING(R"dx(Return the header kind for the object)dx")
-DOCGROUP(clasp)
-CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
-  if (obj.consp()) {
-    return gctools::STAMPWTAG_CONS;
-  } else if (obj.fixnump()) {
-    return gctools::STAMPWTAG_FIXNUM;
-  } else if (obj.generalp()) {
-    void *mostDerived = gctools::untag_general<void *>(obj.raw_());
-    const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
-    gctools::GCStampEnum stamp = header->_stamp_wtag_mtag.stamp_();
-    return (Fixnum)stamp;
-  } else if (obj.single_floatp()) {
-    return gctools::STAMPWTAG_SINGLE_FLOAT;
-  } else if (obj.characterp()) {
-    return gctools::STAMPWTAG_CHARACTER;
-  } else if (obj.valistp()) {
-    return gctools::STAMPWTAG_VASLIST_S;
-  }
-  printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
-  SIMPLE_ERROR(("The object %s doesn't have a stamp") , _rep_(obj));
-}
-
 CL_DOCSTRING(R"dx(Return the index part of the stamp.  Stamp indices are adjacent to each other.)dx")
 DOCGROUP(clasp)
 CL_DEFUN size_t core__stamp_index(size_t stamp)
 {
-  return stamp>>(gctools::Header_s::wtag_width+gctools::Header_s::mtag_width);
+  return stamp>>(gctools::Header_s::wtag_width+gctools::Header_s::general_mtag_width);
 }
 
 CL_DOCSTRING(R"dx(Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting)dx")
 DOCGROUP(clasp)
-CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t unshifted_stamp)
+CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t stamp_wtagx2)
 {
-  return core::make_fixnum((unshifted_stamp << gctools::Header_s::general_mtag_shift)
-                           | gctools::Header_s::general_mtag);
+  // This assumes the stamp_wtagx2 is a stamp_wtag shifted * 2
+  // This shift must coordinate with the shift in GenerateTypeqHeaderValue
+  // so that the returned result, when written into llvm-IR matches exactly the bit patterns
+  // in the header._value
+  //  If a stamp_wtag is 4
+  //     then stamp_wtagx2 is 8
+  //     This returns 32
+  //     The bit pattern in a header._value will be 32
+  return core::make_fixnum(stamp_wtagx2<<fixnum_shift);
 }
 
 CL_DOCSTRING(R"dx(Return the stamp for the object, the flags and the header stamp)dx")
@@ -1152,12 +1151,12 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport) ss << (fmt::sprintf("DEBUG_VERIFY_TRANSFORMATIONS = %s\n" , (debug_verify_transformations ? "**DEFINED**" : "undefined")));
 
   bool debug_assert_type_cast = false;
-#ifdef DEBUG_ASSERT_TYPE_CAST
+#ifdef DO_ASSERT_TYPE_CAST
   debug_assert_type_cast = true;
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-ASSERT-TYPE-CAST"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_ASSERT_TYPE_CAST = %s\n" , (debug_assert_type_cast ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::sprintf("DO_ASSERT_TYPE_CAST = %s\n" , (debug_assert_type_cast ? "**DEFINED**" : "undefined") ));
   
   bool debug_llvm_optimization_level_0 = false;
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0

@@ -48,16 +48,16 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
       oldClient = (ADDR_T)client;
       // The client must have a valid header
       const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(GENERAL_PTR_TO_HEADER_PTR(client));
-      const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-      stamp_index = header._stamp_wtag_mtag.stamp_();
+      const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
+      stamp_index = header._badge_stamp_wtag_mtag.stamp_();
       LOG("obj_scan client=%p stamp=%lu\n" , (void*)client , stamp_index );
-      if (header._stamp_wtag_mtag.stampP()) {
+      if (header._badge_stamp_wtag_mtag.stampP()) {
 #ifdef DEBUG_VALIDATE_GUARD
         header->validate();
 #endif
-        gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
+        gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
         const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
-        if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__DerivableCxxObject_O ) ) {
+        if ( stamp_index == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__DerivableCxxObject_O ) ) { // wasMTAG
           // If this is true then I think we need to call virtual functions on the client
           // to determine the Instance_O offset and the total size of the object.
           printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
@@ -70,12 +70,20 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         if ( stamp_layout.field_layout_start ) {
           // Handle Lisp object specially because it's bitmask will be too large
 #ifdef USE_PRECISE_GC
-          if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__Lisp) ) {
+          if ( stamp_index == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Lisp) ) { // wasMTAG
             int num_fields = stamp_layout.number_of_fields;
             const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
+            core::T_O** prevField = NULL;
             for ( int i=0; i<num_fields; ++i ) {
               core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
+              if (field==prevField) {
+                printf("%s:%d:%s ---- scanning object %p stamp %lu field %p is about to be POINTER_FIXed for a second time\n", __FILE__, __LINE__, __FUNCTION__, (void*)client, stamp_index, field );
+                printf("%s:%d:%s field_layout_cur = %p  field_layout_cur->field_offset = %p field_layout_cur->field_offset = %lu\n", __FILE__, __LINE__, __FUNCTION__, field_layout_cur, &field_layout_cur->field_offset, field_layout_cur->field_offset);
+                printf("%s:%d:%s prev field_layout_cur = %p  prev &field_layout_cur->field_offset = %p prev field_layout_cur->field_offset = %lu\n", __FILE__, __LINE__, __FUNCTION__, (field_layout_cur-1), &(field_layout_cur-1)->field_offset, (field_layout_cur-1)->field_offset);
+                abort();
+              }
               POINTER_FIX(field);
+              prevField = field;
               ++field_layout_cur;
             }
           } else {
@@ -119,7 +127,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
           // Use new way with pointer bitmaps
           uintptr_t start_pointer_bitmap = stamp_layout.container_layout->container_field_pointer_bitmap;
-          if (header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
+          if (header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
 //            printf("%s:%d:%s obj_scan for Code_o object with header %p\n", __FILE__, __LINE__, __FUNCTION__, &header );
             llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
             core::T_O** addr = (core::T_O**)code->literalsStart();
@@ -179,7 +187,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false,objectSize)-(char*)oldClient);
           if (scan_size != skip_size) {
             printf("%s:%d The size of the object at client %p with stamp %u will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
-                   __FILE__, __LINE__, (void*)oldClient, header._stamp_wtag_mtag.stamp_(), scan_size, skip_size);
+                   __FILE__, __LINE__, (void*)oldClient, header._badge_stamp_wtag_mtag.stamp_(), scan_size, skip_size);
             size_t objectSize;
             OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false,objectSize);
           }
@@ -190,7 +198,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         switch (mtag) {
 #ifdef USE_MPS
         case gctools::Header_s::fwd_mtag: {
-          client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.fwdSize());
+          client = (ADDR_T)((char *)(client) + header._badge_stamp_wtag_mtag.fwdSize());
 #ifdef DEBUG_MPS_SIZE
           {
             size_t scan_size = ((char*)client-(char*)oldClient);
@@ -206,9 +214,9 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         }
         case gctools::Header_s::pad_mtag: {
           if (header_value.pad1P()) {
-            client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.pad1Size());
-          } else if (header._stamp_wtag_mtag.padP()) {
-            client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.padSize());
+            client = (ADDR_T)((char *)(client) + header._badge_stamp_wtag_mtag.pad1Size());
+          } else if (header._badge_stamp_wtag_mtag.padP()) {
+            client = (ADDR_T)((char *)(client) + header._badge_stamp_wtag_mtag.padSize());
           }
 #ifdef DEBUG_MPS_SIZE
           {
@@ -224,9 +232,11 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           break;
         }
 #endif // USE_MPS
-        case gctools::Header_s::invalid_mtag: {
-          throw_hard_error_bad_client((void*)client);
-        }
+        case gctools::Header_s::invalid0_mtag:
+        case gctools::Header_s::invalid1_mtag:
+          {
+            throw_hard_error_bad_client((void*)client);
+          }
         }
       }
     }
@@ -238,18 +248,17 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 
 
 #ifdef OBJECT_SKIP
-__attribute__((optnone))
 ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
   ADDR_T oldClient = client;
   const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(GENERAL_PTR_TO_HEADER_PTR(client));
   const gctools::Header_s& header = *header_ptr;
-  const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-  if (header._stamp_wtag_mtag.stampP()) {
+  const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
+  if (header._badge_stamp_wtag_mtag.stampP()) {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
-    gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
-    size_t stamp_index = header._stamp_wtag_mtag.stamp_();
+    gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
+    size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
 #ifdef DEBUG_ON
     if (dbg) {
       LOG("stamp_wtag = %lu stamp_index=%lu\n" , (size_t)stamp_wtag , stamp_index);
@@ -357,18 +366,19 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
     gctools::tagged_stamp_t mtag = header_value.mtag();
     switch (mtag) {
     case gctools::Header_s::fwd_mtag: {
-      client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.fwdSize());
+      client = (ADDR_T)((char *)(client) + header._badge_stamp_wtag_mtag.fwdSize());
       break;
     }
     case gctools::Header_s::pad1_mtag: {
-      client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.pad1Size());
+      client = (ADDR_T)((char *)(client) + header._badge_stamp_wtag_mtag.pad1Size());
       break;
     }
     case gctools::Header_s::pad_mtag: {
-      client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.padSize());
+      client = (ADDR_T)((char *)(client) + header._badge_stamp_wtag_mtag.padSize());
       break;
     }
-    case gctools::Header_s::invalid_mtag: {
+    case gctools::Header_s::invalid0_mtag: 
+    case gctools::Header_s::invalid1_mtag: {
       throw_hard_error_bad_client((void*)client);
       break;
     }
@@ -391,8 +401,8 @@ static void OBJECT_FWD(ADDR_T old_client, ADDR_T new_client) {
     THROW_HARD_ERROR("obj_fwd needs size >= %u", gctools::global_sizeof_fwd);
   }
   gctools::Header_s *header = (gctools::Header_s*)(GENERAL_PTR_TO_HEADER_PTR(old_client));
-  header->_stamp_wtag_mtag.setFwdSize(size);
-  header->_stamp_wtag_mtag.setFwdPointer((void*)new_client);
+  header->_badge_stamp_wtag_mtag.setFwdSize(size);
+  header->_badge_stamp_wtag_mtag.setFwdPointer((void*)new_client);
 }
 
 #endif // OBJECT_FWD
@@ -430,17 +440,17 @@ extern "C" {
 int global_scan_stamp = -1;
 NEVER_OPTIMIZE
 struct GC_ms_entry* Lisp_object_mark(GC_word addr,
-                                       struct GC_ms_entry* msp,
-                                       struct GC_ms_entry* msl,
-                                       GC_word env)
+                                     struct GC_ms_entry* msp,
+                                     struct GC_ms_entry* msl,
+                                     GC_word env)
 {
     // The client must have a valid header
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(addr);
-  if (header._stamp_wtag_mtag._header_badge == 0 ) return msp; // If addr points to unused object residing on a free list then second word is zero
+  if (header._badge_stamp_wtag_mtag._header_badge == 0 ) return msp; // If addr points to unused object residing on a free list then second word is zero
   (void)ENSURE_VALID_HEADER((void*)addr);
   void* client = (char*)addr + sizeof(gctools::Header_s);
-  const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-  size_t stamp_index = header._stamp_wtag_mtag.stamp_();
+  const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
+  size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
 #ifdef DEBUG_GUARD_VALIDATE
   const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
 #endif
@@ -453,7 +463,7 @@ struct GC_ms_entry* Lisp_object_mark(GC_word addr,
   const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
 #endif
   gctools::tagged_stamp_t mtag = header_value.mtag();
-  gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
+  gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
   const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
   int num_fields = stamp_layout.number_of_fields;
   const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
@@ -490,11 +500,11 @@ struct GC_ms_entry* class_mark(GC_word addr,
 #endif
     // The client must have a valid header
     const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>((void*)addr);
-    if (header._stamp_wtag_mtag._value == 0 ) return msp;
+    if (header._badge_stamp_wtag_mtag._value == 0 ) return msp;
     (void)ENSURE_VALID_HEADER((void*)addr);
     void* client = (char*)addr + sizeof(gctools::Header_s);
-    const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-    size_t stamp_index = header._stamp_wtag_mtag.stamp_();
+    const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
+    size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
 #ifdef DEBUG_OBJECT_SCAN
     const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
     if (global_scan_stamp==-1 || global_scan_stamp == stamp_index) {
@@ -503,7 +513,7 @@ struct GC_ms_entry* class_mark(GC_word addr,
     const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
 #endif
     gctools::tagged_stamp_t mtag = header_value.mtag();
-    gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
+    gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
     const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
     int idx = 0;
     uintptr_t pointer_bitmap = stamp_layout.boehm._class_bitmap;
@@ -540,7 +550,7 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
     // The client must have a valid header
   gctools::Header_s& header = *reinterpret_cast<gctools::Header_s *>((void*)addr);
   env = header._boehm_mark_work;
-  if (header._stamp_wtag_mtag._value == 0 ) return msp;
+  if (header._badge_stamp_wtag_mtag._value == 0 ) return msp;
   (void)ENSURE_VALID_HEADER((void*)addr);
   void* client = (char*)addr + sizeof(gctools::Header_s);
   void* next_client = obj_skip(client);
@@ -583,10 +593,10 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
   {
     // The client must have a valid header
     gctools::Header_s& header = *reinterpret_cast<gctools::Header_s *>((void*)addr);
-    if (header._stamp_wtag_mtag._value == 0 ) return msp;
+    if (header._badge_stamp_wtag_mtag._value == 0 ) return msp;
     (void)ENSURE_VALID_HEADER((void*)addr);
     void* client = (char*)addr + sizeof(gctools::Header_s);
-    const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
+    const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
     size_t stamp_index = header.stamp_();
     env = header._boehm_mark_work;
 #ifdef DEBUG_CONTAINER_SCAN

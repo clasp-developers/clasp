@@ -55,34 +55,34 @@ namespace core {
     // in src/lisp/kernel/cmp/cmpintrinsics.lisp.
     // Changes to the structure here must be reflected there.
   public: // ctor/dtor for classes with shared virtual base
-  FuncallableInstance_O(GlobalEntryPoint_sp ep) :
+  FuncallableInstance_O(GlobalSimpleFun_sp ep) :
       Base(ep)
       , _Class(nil<Instance_O>())
-    , _CompiledDispatchFunction(nil<T_O>()) {}
-    explicit FuncallableInstance_O(GlobalEntryPoint_sp fdesc,Instance_sp metaClass, size_t slots) :
+    , _RealFunction(nil<Function_O>()) {}
+    explicit FuncallableInstance_O(GlobalSimpleFun_sp fdesc,Instance_sp metaClass, size_t slots) :
         Base(fdesc)
         , _Class(metaClass)
-        , _CompiledDispatchFunction(nil<T_O>())
+        , _RealFunction(nil<Function_O>())
     {};
-    FuncallableInstance_O(GlobalEntryPoint_sp fdesc, Instance_sp cl, Rack_sp rack)
+    FuncallableInstance_O(GlobalSimpleFun_sp fdesc, Instance_sp cl, Rack_sp rack)
         : Base(fdesc),
           _Class(cl),
           _Rack(rack),
-          _CompiledDispatchFunction(nil<T_O>())
+          _RealFunction(nil<Function_O>())
     {};
     virtual ~FuncallableInstance_O(){};
   public:
     // The order MUST be
-    // entry (inherited from Function_O, matches offset)
+    // _TheSimpleFun (inherited from Function_O, matches offset)
     // _Rack (matches offset in Instance_O)
-    Rack_sp _Rack;
-    Instance_sp _Class;
-    std::atomic<size_t> _InterpretedCalls;
-    std::atomic<T_sp>   _CompiledDispatchFunction;
+    // <other stuff>
+    Rack_sp                  _Rack;
+    Instance_sp              _Class;
+    std::atomic<size_t>      _InterpretedCalls;
+    std::atomic<Function_sp> _RealFunction;
   public:
-
-    T_sp GFUN_DISPATCHER() const { return this->_CompiledDispatchFunction.load(); };
-    void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction.store(val); };
+    Function_sp REAL_FUNCTION() const { return this->_RealFunction.load(); };
+    void REAL_FUNCTION_set(Function_sp val) { this->_RealFunction.store(val); };
   public:
 
     virtual bool compiledP() const { return true; };
@@ -93,15 +93,14 @@ namespace core {
     T_sp make_instance();
   public:
   // Add support for Function_O methods
-    virtual T_sp closedEnvironment() const { HARD_IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
     virtual List_sp declares() const { HARD_IMPLEMENT_ME(); };
     virtual size_t filePos() const { return 0; }
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::ShiftedStamp is, T_sp sig, size_t numberOfSlots);
-    void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
+    void initializeSlots(gctools::BaseHeader_s::StampWtagMtag is, T_sp sig, size_t numberOfSlots);
+    void initializeClassSlots(Creator_sp creator, gctools::BaseHeader_s::StampWtagMtag class_stamp);
   public:
     static size_t rack_stamp_offset();
 
@@ -133,41 +132,78 @@ namespace core {
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args ) {
       SETUP_CLOSURE(FuncallableInstance_O,closure);
       INCREMENT_FUNCTION_CALL_COUNTER(closure);
-      // We need to be sure to load the GFUN_DISPATCHER only once.
-      // We used to load it twice, which caused a race condition in that other threads
-      // could call setFuncallableInstanceFunction between the loads, meaning we called
-      // the code for one function but pass it the closure object for another.
-      T_sp funcallable_closure = closure->GFUN_DISPATCHER();
-      // This is where we could decide to compile the dtree and switch the GFUN_DISPATCHER() or not
+      DO_DRAG_CXX_CALLS();
+      // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
+      Function_sp funcallable_closure = closure->REAL_FUNCTION();
+      // This is where we could decide to compile the dtree and switch the REAL_FUNCTION() or not
       //  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
-      return funcall_general<core::Function_O>( funcallable_closure.tagged_(), lcc_nargs, lcc_args );
+      GlobalSimpleFunBase_sp simpleFun = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load());
+      ClaspXepGeneralFunction entry_point = (ClaspXepGeneralFunction)simpleFun->_EntryPoints[0];
+      return (entry_point)(funcallable_closure.raw_(), lcc_nargs, lcc_args );
     }
-      static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
-  }
+
+    static inline LCC_RETURN entry_point_0(core::T_O *lcc_closure ) {
+      SETUP_CLOSURE(FuncallableInstance_O,closure);
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      DO_DRAG_CXX_CALLS();
+      // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
+      Function_sp funcallable_closure = closure->REAL_FUNCTION();
+      const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+      return xep.invoke_0(funcallable_closure.raw_());
+    }
+
+    static inline LCC_RETURN entry_point_1(core::T_O *lcc_closure, core::T_O* lcc_farg0 ) {
+      SETUP_CLOSURE(FuncallableInstance_O,closure);
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      DO_DRAG_CXX_CALLS();
+      // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
+      Function_sp funcallable_closure = closure->REAL_FUNCTION();
+      const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+      return xep.invoke_1(funcallable_closure.raw_(), lcc_farg0 );
+    }
+
+    static inline LCC_RETURN entry_point_2(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1 ) {
+      SETUP_CLOSURE(FuncallableInstance_O,closure);
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      DO_DRAG_CXX_CALLS();
+      // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
+      Function_sp funcallable_closure = closure->REAL_FUNCTION();
+      const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+      return xep.invoke_2(funcallable_closure.raw_(), lcc_farg0, lcc_farg1 );
+    }
+
+    static inline LCC_RETURN entry_point_3(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2 ) {
+      SETUP_CLOSURE(FuncallableInstance_O,closure);
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      DO_DRAG_CXX_CALLS();
+      // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
+      Function_sp funcallable_closure = closure->REAL_FUNCTION();
+      const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+      return xep.invoke_3(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2 );
+    }
+
+    static inline LCC_RETURN entry_point_4(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3 ) {
+      SETUP_CLOSURE(FuncallableInstance_O,closure);
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      DO_DRAG_CXX_CALLS();
+      // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
+      Function_sp funcallable_closure = closure->REAL_FUNCTION();
+      const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+      return xep.invoke_4(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3 );
+    }
+
+    static inline LCC_RETURN entry_point_5(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3, core::T_O* lcc_farg4 ) {
+      SETUP_CLOSURE(FuncallableInstance_O,closure);
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      DO_DRAG_CXX_CALLS();
+      // We need to be sure to load the REAL_FUNCTION only once to avoid race conditions.
+      Function_sp funcallable_closure = closure->REAL_FUNCTION();
+      const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+      return xep.invoke_5(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4 );
+    }
 
   }; // FuncallableInstance class
 
@@ -202,8 +238,57 @@ namespace gctools {
   };
 };
 
+
+
+
 namespace core {
-void registerOrDumpDtreeInfo(FILE* fout);
+
+// Fulfill the role of bytecode_function
+FORWARD(GFBytecodeSimpleFun);
+ class GFBytecodeSimpleFun_O : public GlobalSimpleFunBase_O {
+   LISP_CLASS(core,CorePkg,GFBytecodeSimpleFun_O,"GFBytecodeSimpleFun",GlobalSimpleFunBase_O);
+ public:
+   // Store the bytecode in the _Code slot
+   // Entry point into the bytes vector in the containing module.
+   // This is an offset instead of an interior pointer to make dumping/loading/GC considerations easier.
+   unsigned int               _EntryPcN;
+   BytecodeTrampolineFunction _Trampoline;
+   SimpleVector_byte8_t_sp    _Bytecode;
+   SimpleVector_sp            _Literals;
+   Function_sp                _GenericFunction;
+ public:
+  // Accessors
+   GFBytecodeSimpleFun_O(FunctionDescription_sp fdesc,
+                         unsigned int entryPcN,
+                         SimpleVector_byte8_t_sp bytecode,
+                         SimpleVector_sp literals,
+                         Function_sp generic_function,
+                         size_t specialized_length);
+ public:
+   static GFBytecodeSimpleFun_sp make( Function_sp generic_function );
+ public:
+   virtual Pointer_sp defaultEntryAddress() const;
+   BytecodeModule_sp code() const;
+   string __repr__() const;
+
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup);
+   size_t entryPcN() const;
+
+ };
+
 };
+
+
+namespace core {
+extern size_t global_compile_discriminating_function_trigger;
+
+};
+
+
+
+
+
+
+
 
 #endif /* _core_funcallable_instance_H_ */

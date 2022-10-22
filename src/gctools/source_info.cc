@@ -62,12 +62,12 @@ NOINLINE void define_source_info(source_info_kind kind, const string &lisp_name,
 
 NOINLINE void define_pathname_translation(const string &from, const string &to) {
   core::T_sp host = core::SimpleBaseString_O::make("SYS");
-  core::core__pathname_translations(
-      host, _lisp->_true(),
+  core::cl__setf_logical_pathname_translations(
       core::Cons_O::create(core::Cons_O::createList(
                                core::cl__pathname(core::SimpleBaseString_O::make(from)),
                                core::cl__pathname(core::SimpleBaseString_O::make(globals_->_Bundle->_Directories->_SysDir / to))),
-                           core::core__pathname_translations(host, _lisp->_true(), _lisp->_false())));
+                           core::cl__logical_pathname_translations(gc::As_assert<core::String_sp>(host))),
+      gc::As_assert<core::String_sp>(host));
 }
 
 #define SOURCE_INFO_HELPERS

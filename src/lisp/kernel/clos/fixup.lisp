@@ -23,7 +23,7 @@
 ;;; (Which happens a fair amount, because it's where CLOS begins use.)
 
 ;;; This will print every form as its compiled
-#+(or)
+#+mlog
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (format t "Starting fixup.lisp")
   (setq *echo-repl-tpl-read* t)
@@ -71,10 +71,10 @@
           finally (append-generic-function-call-history f new-call-history))
     ;; Finish setup
     (mlog "function-to-method: installed method%N")
-    (setf-lambda-list f lambda-list) ; hook up the introspection
+    (core:setf-lambda-list f lambda-list) ; hook up the introspection
     ;; (setf generic-function-name) itself goes through here, so to minimize
     ;; bootstrap headaches we use the underlying writer directly.
-    (setf-function-name f name)
+    (core:setf-function-name f name)
     (setf (fdefinition name) f)
     (when (boundp '*early-methods*)
       (push (cons name (list method)) *early-methods*)))
@@ -185,7 +185,7 @@
   (mlog "(not (fboundp name)) -> {}%N" (not (fboundp name)))
   (let ((gfun (si::traced-old-definition name)))
     (cond ((not (legal-generic-function-name-p name))
-	   (simple-program-error "~A is not a valid generic function name" name))
+	   (core:simple-program-error "~A is not a valid generic function name" name))
           ((not (fboundp name))
            (mlog "A gfun -> {} name -> {}  args -> {}%N" gfun name args)
            ;;           (break "About to setf (fdefinition name)")
@@ -198,10 +198,10 @@
 	     new-gf))
 	  ((special-operator-p name)
            (mlog "C%N")
-	   (simple-program-error "The special operator ~A is not a valid name for a generic function" name))
+	   (core:simple-program-error "The special operator ~A is not a valid name for a generic function" name))
 	  ((macro-function name)
            (mlog "D%N")
-	   (simple-program-error
+	   (core:simple-program-error
             "The symbol ~A is bound to a macro and is not a valid name for a generic function" name))
           ((not *clos-booted*)
            (mlog "E%N")
@@ -209,7 +209,7 @@
 		 (apply #'ensure-generic-function-using-class nil name args))
            (fdefinition name))
 	  (t
-	   (simple-program-error "The symbol ~A is bound to an ordinary function and is not a valid name for a generic function" name)))))
+	   (core:simple-program-error "The symbol ~A is bound to an ordinary function and is not a valid name for a generic function" name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -286,6 +286,8 @@
   ;; during boot it's a structure accessor
   (declare (notinline method-qualifiers remove-method))
   (declare (notinline reinitialize-instance)) ; bootstrap stuff
+
+  (mlog "fixup.lisp::add-method entered for gf {}%N" (core:safe-repr gf))
   ;;
   ;; 1) The method must not be already installed in another generic function.
   ;;
@@ -300,15 +302,19 @@ and cannot be added to ~A." method other-gf gf)))
   ;;    function does.
   ;;
   (let ((new-lambda-list (method-lambda-list method)))
+    (mlog "fixup.lisp::add-method (slot-boundp gf 'lambda-list) -> {}%N" (slot-boundp gf 'lambda-list))
     (if (slot-boundp gf 'lambda-list)
 	(let ((old-lambda-list (generic-function-lambda-list gf)))
 	  (unless (congruent-lambda-p old-lambda-list new-lambda-list)
 	    (error "Cannot add the method ~A to the generic function ~A because their lambda lists ~A and ~A are not congruent."
 		   method gf new-lambda-list old-lambda-list))
           ;; Add any keywords from the method to the gf display lambda list.
+          (mlog "fixup.lisp::add-method About to call maybe-augment-generic-function-lambda-list new-lambda-list->{}%N" (core:safe-repr new-lambda-list))
           (maybe-augment-generic-function-lambda-list gf new-lambda-list))
-	(reinitialize-instance
-         gf :lambda-list (method-lambda-list-for-gf new-lambda-list))))
+	(progn
+          (mlog "fixup.lisp::add-method About to call reinitialize-instance lambda-list ->{}%N" (core:safe-repr (method-lambda-list-for-gf new-lambda-list)))
+          (reinitialize-instance
+           gf :lambda-list (method-lambda-list-for-gf new-lambda-list)))))
   ;;
   ;; 3) Finally, it is inserted in the list of methods, and the method is
   ;;    marked as belonging to a generic function.
@@ -348,53 +354,6 @@ and cannot be added to ~A." method other-gf gf)))
   (set-funcallable-instance-function gf (compute-discriminating-function gf))
   (update-dependents gf (list 'remove-method method))
   gf)
-
-#+(or)
-(progn
-  (sys:safe-trace instancep maybe-update-instance maybe-update-instances dispatch-miss)
-  (sys:safe-trace perform-outcome)
-  (sys:safe-trace check-gf-argcount dispatch-miss-info memoize-calls memoize-call force-dispatcher)
-  (sys:safe-trace function-to-method safe-gf-specializer-profile safe-gf-call-history
-                  specializer-call-history-generic-functions-push-new
-                  generic-function-call-history)
-  (sys:safe-trace std-compute-applicable-methods)
-  (sys:safe-trace applicable-method-list sort-applicable-methods class-of)
-  (sys:safe-trace generic-function-min-max-args)
-  (sys:safe-trace ensure-generic-function)
-  (sys:safe-trace make-%method-function-fast make-method add-method
-                  make-effective-method-outcome append-generic-function-call-history)
-  (sys:safe-trace setf-lambda-list setf-function-name)
-  (sys:safe-trace (setf fdefinition))
-  (sys:safe-trace invalidated-dispatch-function)
-  (sys:safe-trace initialize-instance)
-  (sys:safe-trace core:list-from-vaslist)
-  (sys:safe-trace apply))
-
-#+(or)
-(progn
-  (sys:safe-trace function-to-method)
-  (sys:safe-trace instancep)
-  (sys:safe-trace maybe-update-instance
-                  maybe-update-instances
-                  dispatch-miss
-                  invalidated-dispatch-function
-                  generate-discriminator-from-data
-                  clos:interpret-dtree-program
-                  interpreted-discriminator
-                  dispatch-miss-va
-                  core:apply0
-                  core:apply1
-                  core:apply2
-                  core:apply3
-                  core:apply4
-                  perform-outcome
-                  )
-  )
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format t "Done remove-method ~a~%" (core:getpid))
-  (y-or-n-p "About to function-to-method")
-  )
 
 ;;(setq cmp:*debug-compiler* t)
 (function-to-method 'add-method '(gf method) '(standard-generic-function standard-method)
@@ -543,18 +502,21 @@ and cannot be added to ~A." method other-gf gf)))
   (dolist (d (generic-function-dependents c))
     (funcall function d)))
 
-;; FIXME: dependence on core:closure-with-slots is not super
-(%satiate map-dependents (standard-generic-function core:closure-with-slots)
-          (standard-class core:closure-with-slots))
+;; FIXME: dependence on core:closure is not super
+(%satiate map-dependents (standard-generic-function core:closure)
+          (standard-class core:closure))
 
+(mlog "TOP: defgeneric update-dependent%N")
 (defgeneric update-dependent (object dependent &rest initargs))
 
 ;; After this, update-dependents will work
 (setf *clos-booted* 'map-dependents)
 
+(mlog "TOP: (defclass initargs-updater ()%N")
 (defclass initargs-updater ()
   ())
 
+(mlog "TOP: (defun recursively-update-class-initargs-cache (a-class)%N")
 (defun recursively-update-class-initargs-cache (a-class)
   ;; Bug #588: If a class is forward referenced and you define an initialize-instance
   ;; (or whatever) method on it, it got here and tried to compute valid initargs, which
@@ -564,6 +526,7 @@ and cannot be added to ~A." method other-gf gf)))
     (precompute-valid-initarg-keywords a-class)
     (mapc #'recursively-update-class-initargs-cache (class-direct-subclasses a-class))))
 
+(mlog "TOP: (defmethod update-dependent ((object generic-function) (dep initargs-updater)%N")
 (defmethod update-dependent ((object generic-function) (dep initargs-updater)
 			     &rest initargs
                              &key ((add-method added-method) nil am-p)
@@ -583,27 +546,33 @@ and cannot be added to ~A." method other-gf gf)))
 ;; that the loader can't handle yet.
 ;; We could use NOTINLINE now that bclasp handles it,
 ;; but we don't need to go through make-instance's song and dance anyway.
+(mlog "TOP: (let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))%N")
 (let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
 
 ;; can't satiate this one, because the environment class will vary.
+(mlog "TOP: (function-to-method 'make-method-lambda%N")
 (function-to-method 'make-method-lambda
                     '(gf method lambda-form environment)
                     '(standard-generic-function standard-method t t))
 
 ;; ditto
+(mlog "TOP: (function-to-method 'expand-apply-method%N")
 (function-to-method 'expand-apply-method
                     '(method method-arguments arguments env)
                     '(standard-method t t t)
                     nil
                     #'std-expand-apply-method)
 
+(mlog "TOP: (function-to-method 'compute-discriminating-function '(gf)%N")
 (function-to-method 'compute-discriminating-function '(gf)
                     '(standard-generic-function)
                     '((standard-generic-function)))
 
+(mlog "TOP: (function-to-method 'print-object%N")
 (function-to-method 'print-object
                     '(object stream)
                     '(t t))
+

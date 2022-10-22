@@ -167,7 +167,9 @@ void Complex_O::__write__(T_sp stream) const {
 // Function_O also has a __repr__ method, but it displays too much low level info.
 // generic functions go through the instance printer, not this.
 void Function_O::__write__(T_sp stream) const {
-  clasp_write_string("#<FUNCTION ", stream);
+  clasp_write_string("#<", stream);
+  clasp_write_string(this->className(),stream);
+  clasp_write_char(' ', stream);
   write_ugly_object(this->functionName(), stream);
   clasp_write_char('>', stream);
 }
@@ -251,7 +253,7 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     Vaslist valist_scopy(*vl);
     Vaslist_sp xa(&valist_scopy); // = gc::smart_ptr<Vaslist>((gc::Tagged)last.raw_());
     ql::list l;
-    int nargs = xa->remaining_nargs();
+    int nargs = xa->nargs();
     for (int i(0); i < nargs; ++i) l << xa->next_arg_indexed(i);
     core::write_object(l.cons(),stream);
     clasp_write_string(">",stream);

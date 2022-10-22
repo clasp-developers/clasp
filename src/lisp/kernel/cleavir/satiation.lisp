@@ -113,7 +113,7 @@
     ;;add-inline, add-inline-expansion
     (for-entries cleavir-env:add-lexical-variable (symbol))
     (for-entries cleavir-env:add-local-function (symbol))
-    (for-entries cleavir-env:add-local-macro (symbol core:closure-with-slots))
+    (for-entries cleavir-env:add-local-macro (symbol core:closure))
     (for-entries cleavir-env:add-local-symbol-macro (symbol symbol cons)) ; not sure history is correct
     ;;add-optimize
     (for-entries cleavir-env:add-special-variable (symbol))

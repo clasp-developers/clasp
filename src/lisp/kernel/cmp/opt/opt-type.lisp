@@ -155,7 +155,11 @@
                (generate-test simple-vector-type complex-vector-type
                               ;; This LENGTH can be inlined; see cleavir/bir-to-bmir
                               `(eq (length (the ,simple-vector-type object)) ',length)
-                              `(eq (length object) ',length)
+                              ;; The ARRAY types are defined in terms of
+                              ;; dimensions, rather than length (which is
+                              ;; influenced by fill pointers etc.)
+                              ;; See ANSI test MISC.578.
+                              `(eq (array-dimension object 0) ',length)
                               'nil))))
         ((*) ; anything, and dimensions are unspecified
          ;; for general arrays we have superclasses to use
@@ -404,7 +408,6 @@
               ;; NOTE: In cclasp cleavir will wrap this with better source info.
               (cmp:warn-undefined-type nil type)
               (default)))))))))
-
 
 (define-compiler-macro typep (&whole whole object type &optional environment
                                      &environment macro-env)

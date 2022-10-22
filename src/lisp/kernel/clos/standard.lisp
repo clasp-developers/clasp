@@ -23,6 +23,7 @@
 
 (defmethod initialize-instance ((instance T) core:&va-rest initargs)
   (dbg-standard "standard.lisp:29  initialize-instance unbound instance ->~a~%" (eq (core:unbound) instance))
+  (mlog "standard.lisp:26 about to apply shared-initialize%N")
   (apply #'shared-initialize instance 'T initargs))
 
 (defmethod reinitialize-instance ((instance T ) &rest initargs)
@@ -30,14 +31,16 @@
   ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY
   ;; does not reuse rest lists. If it did, a method on #'shared-initialize,
   ;; or whatever, could potentially let the rest list escape.
+  (mlog "standard.lisp::reinitialize-instance instance initargs -> {}%N" (core:safe-repr initargs))
   (when initargs
     (check-initargs-uncached
      (class-of instance) initargs
      (list (list #'reinitialize-instance (list instance))
            (list #'shared-initialize (list instance t)))))
+  (mlog "standard.lisp:40 about to apply shared-initialize initargs -> {}%N" (core:safe-repr initargs))
   (apply #'shared-initialize instance '() initargs))
 
-(defmethod shared-initialize ((instance T) slot-names #+(or)&rest core:&va-rest initargs)
+(defmethod shared-initialize ((instance T) slot-names core:&va-rest initargs)
   ;;
   ;; initialize the instance's slots is a two step process
   ;;   1 A slot for which one of the initargs in initargs can set
@@ -58,29 +61,33 @@
   ;;       ()
   ;;            no slots are set from initforms
   ;;
+  (mlog "standard.lisp::shared-initialize instance -> {} initargs -> {}%N" (core:safe-repr instance) (core:list-from-vaslist initargs))
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
     (dolist (slotd (class-slots class))
-      (core:vaslist-rewind initargs)
+      (core:vaslist-rewind (core:validate-vaslist initargs))
+      (core:validate-vaslist initargs)
       (let* ((slot-initargs (slot-definition-initargs slotd))
              (slot-name (slot-definition-name slotd)))
         (or
          ;; Try to initialize the slot from one of the initargs.
-         (do ((largs initargs)
+         (do ((largs (core:validate-vaslist initargs))
               initarg
               val)
-           (#+(or)(null largs) (= (core:vaslist-length largs) 0)
+             ((progn
+                (= (core:vaslist-length (core:validate-vaslist largs)) 0))
               (progn nil))
-           (setf initarg #+(or)(pop largs) (core:vaslist-pop largs))
-           #+(or)(when (endp largs) (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
-           (when (= (core:vaslist-length largs) 0)
-             (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
-                                   (progn
-                                     (core:vaslist-rewind initargs)
-                                     (core:list-from-vaslist initargs))))
+           (setf initarg (core:vaslist-pop (core:validate-vaslist largs)))
+           (core:validate-vaslist largs)
+           #+(or)(when (endp largs) (core:simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A" initargs))
+           (when (= (core:vaslist-length (core:validate-vaslist largs)) 0)
+             (core:simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
+                                        (progn
+                                          (core:vaslist-rewind initargs)
+                                          (core:list-from-vaslist initargs))))
            (unless (symbolp initarg)
-             (simple-program-error "Not a valid initarg: ~A" initarg))
-           (setf val #+(or)(pop l) (core:vaslist-pop largs))
+             (core:simple-program-error "Not a valid initarg: ~A" initarg))
+           (setf val #+(or)(pop l) (core:vaslist-pop (core:validate-vaslist largs)))
            (when (member initarg slot-initargs :test #'eq)
              (setf (slot-value instance slot-name) val)
              (return t)))
@@ -119,7 +126,7 @@
   ;; So we don't finalize here.
   (core:allocate-raw-instance class (make-rack-for-class class)))
 
-(defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
+(defmethod allocate-instance ((class core:derivable-cxx-class) &rest initargs)
   (declare (ignore initargs))
   (core:allocate-raw-general-instance class (make-rack-for-class class)))
 
@@ -225,9 +232,9 @@
   ;; if a generic function is specialized where an obsolete instance is, it will go to
   ;; the slow path, which will call MAYBE-UPDATE-INSTANCES.
   (invalidate-generic-functions-with-class-selector class)
-  #+static-gfs
+  #+(or); static-gfs
   (static-gfs:invalidate-class-reinitializers* class)
-  #+static-gfs
+  #+(or) ;static-gfs
   (static-gfs:invalidate-changers* class)
   class)
 
@@ -419,9 +426,9 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod finalize-inheritance :after ((class std-class))
   #+static-gfs
   (static-gfs:invalidate-class-constructors class)
-  #+static-gfs
+  #+(or) ;static-gfs
   (static-gfs:invalidate-changers* class)
-  #+static-gfs
+  #+(or) ;static-gfs
   (static-gfs:invalidate-class-reinitializers* class)
   (std-class-generate-accessors class))
 
@@ -622,7 +629,7 @@ because it contains a reference to the undefined class~%  ~A"
 	(cond ((not (eq (slot-definition-allocation slotd) :class)))
 	      ((find name direct-slots :key #'slot-definition-name) ; new shared slot
 	       (let* ((initfunc (slot-definition-initfunction slotd))
-	              (value (if initfunc (funcall initfunc) (unbound))))
+	              (value (if initfunc (funcall initfunc) (si:unbound))))
 	         (setf (%slot-definition-location slotd) (list value))))
 	      (t			; inherited shared slot
 	       (dolist (c (class-precedence-list class))
@@ -707,11 +714,12 @@ because it contains a reference to the undefined class~%  ~A"
 	  (unknown-key-names nil))
 	 ((null name-loc)
 	  (when (and (not allow-other-keys) unknown-key-names)
-            (simple-program-error "Unknown initialization options ~S for class ~A."
-                                  (nreverse unknown-key-names) class)))
+            (core:simple-program-error "Unknown initialization options ~S for class ~A."
+                                       (nreverse unknown-key-names) class)))
       (let ((name (first name-loc)))
 	(cond ((null (cdr name-loc))
-	       (simple-program-error "No value supplied for the init-name ~S." name))
+	       (core:simple-program-error
+                "No value supplied for the init-name ~S." name))
 	      ;; This check must be here, because :ALLOW-OTHER-KEYS is a valid
 	      ;; slot-initarg.
 	      ((and (eql name :ALLOW-OTHER-KEYS)
@@ -743,11 +751,13 @@ because it contains a reference to the undefined class~%  ~A"
         (methods-initialized-p nil))
        ((null name-loc)
         (when (and (not allow-other-keys) unknown-key-names)
-          (simple-program-error "Unknown initialization options ~S for class ~A."
-                                (nreverse unknown-key-names) class)))
+          (core:simple-program-error
+           "Unknown initialization options ~S for class ~A."
+           (nreverse unknown-key-names) class)))
     (let ((name (first name-loc)))
       (cond ((null (cdr name-loc))
-             (simple-program-error "No value supplied for the init-name ~S." name))
+             (core:simple-program-error "No value supplied for the init-name ~S."
+                                        name))
             ;; This check must be here, because :ALLOW-OTHER-KEYS is a valid
             ;; slot-initarg.
             ((and (eql name :ALLOW-OTHER-KEYS)

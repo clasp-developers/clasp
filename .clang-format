@@ -3,5 +3,5 @@ Language: Cpp
 BasedOnStyle: LLVM
 ColumnLimit: 132
 SortIncludes: false
-WhitespaceSensitiveMacros: ['CL_LAMBDA', 'CL_DECLARE']
+WhitespaceSensitiveMacros: ['CL_LAMBDA', 'CL_DECLARE', 'CL_NAME', 'CL_LISPIFY_NAME']
 ...

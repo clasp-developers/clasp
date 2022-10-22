@@ -59,7 +59,7 @@ class KeywordArgument;
 class RequiredArgument;
 class SymbolClassHolderPair;
 class SymbolStorage;
-class TranslationFunctor_O;
+class WRAPPER_Translator_O ;
 class DynamicBinding;
 class AuxArgument;
 class OptionalArgument;

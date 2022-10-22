@@ -745,6 +745,19 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
   (or (ast-tooling:add-dynamic-matcher match-finder compiled-matcher callback)
       (error "Could not add dynamic-matcher ~s" matcher-sexp)))
 
+(defvar *save-match-finders* nil)
+(defun make-permanent-match-finder (&optional save)
+  (let ((mf (ast-tooling:new-match-finder)))
+    (format t "In make-permanent-match-finder made new match-finder: ~s~%" mf)
+    (push mf *save-match-finders*)
+    (when (and (> (length *save-match-finders*) 10000) (= (mod (length *save-match-finders*) 100) 0))
+      (warn "Exceeded 1000 match finders at ~a" (length *save-match-finders*)))
+    mf))
+
+(defun make-temporary-match-finder (&optional save)
+  (let ((mf (ast-tooling:new-match-finder)))
+    mf))
+
 (defun batch-run-matcher (match-sexp &key compilation-tool-database callback run-and-save)
   (declare (type list match-sexp)
            (type ast-tooling:match-callback callback))
@@ -756,9 +769,9 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
       (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
       (let* ((*run-and-save* run-and-save)
              (matcher (compile-matcher match-sexp))
-             (match-finder (let ((mf (ast-tooling:new-match-finder)))
-                             (safe-add-dynamic-matcher mf matcher callback :matcher-sexp match-sexp)
-                             mf))
+             (match-finder (let ((temp-match-finder (make-permanent-match-finder)))
+                             (safe-add-dynamic-matcher temp-match-finder matcher callback :matcher-sexp match-sexp)
+                             temp-match-finder))
              (factory (ast-tooling:new-frontend-action-factory match-finder)))
         (if (not run-and-save)
             (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
@@ -836,7 +849,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
       (ast-tooling:append-arguments-adjuster *match-refactoring-tool* (multitool-arguments-adjuster mtool)))
     (let* ((*run-and-save* run-and-save)
            (tools (multitool-active-tools mtool))
-           (match-finder (let ((mf (ast-tooling:new-match-finder)))
+           (match-finder (let ((mf (make-permanent-match-finder)))
                            (dolist (tool tools)
                              (safe-add-dynamic-matcher mf (single-tool-matcher tool) (single-tool-callback tool) :matcher-sexp (single-tool-matcher-sexp tool)))
                            mf))
@@ -845,9 +858,12 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
         (let ((initializer (single-tool-initializer tool)))
           (when initializer (funcall (single-tool-initializer tool)))))
       (format t "About to run!  run-and-save -> ~a~%" run-and-save)
-      (if run-and-save
-                (ast-tooling:run-and-save *match-refactoring-tool* factory)
-                (ast-tooling:clang-tool-run *match-refactoring-tool* factory))
+      (ecase (if run-and-save
+                 (ast-tooling:run-and-save *match-refactoring-tool* factory)
+                 (ast-tooling:clang-tool-run *match-refactoring-tool* factory))
+        (0)
+        (1 (error "Error while running clang tool."))
+        (2 (error "Some files skipped due to incomplete database.")))
       (format t "Ran tools: ~a~%" (multitool-active-tool-names mtool))
       (format t "Total number of matches ~a~%" *match-counter*)
       (print-report))))
@@ -855,13 +871,16 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
 (defun sub-match-run (compiled-matcher matcher-sexp node ast-context code)
   "* Arguments
 - compiled-matcher :: The matcher that you want to run on the node and everything under it.
+- matcher-sexp :: The origin sexp of the compiled matcher.
 - node :: The node that you want to run the matcher on.
 - ast-context :: The AST context of the node.
 - code :: The code that should be run on the matches.
 * Description
-Run a matcher on a node and everything underneath it."
+Run a matcher on a node and everything underneath it.
+The callback is a closure that closes over objects that are updated depending
+on what the sub-matcher matches."
   (with-unmanaged-object (callback (make-instance 'code-match-callback :match-code code))
-    (let ((sub-match-finder (ast-tooling:new-match-finder)))
+    (let ((sub-match-finder (make-temporary-match-finder)))
       (safe-add-dynamic-matcher sub-match-finder compiled-matcher callback :matcher-sexp matcher-sexp)
       (match sub-match-finder node ast-context))))
 
@@ -878,7 +897,7 @@ Limit the number of times you call the callback with counter-limit."
            (*match-counter-limit* counter-limit)
            (whole-matcher-sexp `(:bind :whole ,match-sexp)) ;(:bind :whole ,match-sexp))
            (matcher (compile-matcher whole-matcher-sexp))
-           (match-finder (ast-tooling:new-match-finder)))
+           (match-finder (make-permanent-match-finder)))
       (safe-add-dynamic-matcher match-finder matcher callback :matcher-sexp match-sexp)
       (format t "About to start matching asts -> ~a~%" asts)
       (catch 'match-counter-reached-limit
@@ -968,14 +987,14 @@ Code for representing ASTMatchers as s-expressions
 
 |#
 
-
+(defvar *node-matcher-rules* nil)
+(defparameter +narrowing-matcher-hints+ (make-hash-table :test #'eq))
+(defparameter +node-matcher-hints+ (make-hash-table :test #'eq))
 (defparameter +all-matchers+ (append *node-matcher-rules* *narrowing-matcher-rules* *traversal-matcher-rules*))
 
-(defparameter +node-matcher-hints+ (make-hash-table :test #'eq))
 (dolist (i *node-matcher-rules*)
   (setf (gethash (car i) +node-matcher-hints+) (cdr i)))
 
-(defparameter +narrowing-matcher-hints+ (make-hash-table :test #'eq))
 (dolist (i *narrowing-matcher-rules*)
   (setf (gethash (car i) +narrowing-matcher-hints+) (cdr i)))
 

@@ -1,15 +1,9 @@
-(defun add-aclasp-sources (&optional (target :aclasp) wrappers)
+(defun add-cclasp-sources (target)
   (k:sources target
-             #~"kernel/tag/start.lisp"
-             #~"kernel/lsp/prologue.lisp")
-  (when wrappers
-    (k:sources target
-               #~"kernel/lsp/direct-calls.lisp"
-               #@"cl-wrappers.lisp"))
-  (k:sources target
-             #~"kernel/tag/min-start.lisp"
+             #~"kernel/stage/base/0-begin.lisp"
+             #~"kernel/stage/base/1-begin.lisp"
+             #~"kernel/lsp/prologue.lisp"
              #~"kernel/init.lisp"
-             #~"kernel/tag/after-init.lisp"
              #~"kernel/cmp/runtime-info.lisp"
              #~"kernel/lsp/sharpmacros.lisp"
              #~"kernel/cmp/jit-setup.lisp"
@@ -38,38 +32,30 @@
              #~"kernel/lsp/debug.lisp"
              #~"kernel/cmp/cmpexports.lisp"
              #~"kernel/cmp/cmpsetup.lisp"
-             #~"kernel/cmp/cmpglobals.lisp"
              #~"kernel/cmp/cmputil.lisp"
              #~"kernel/cmp/cmpintrinsics.lisp"
              #~"kernel/cmp/primitives.lisp"
              #~"kernel/cmp/cmpir.lisp"
-             #~"kernel/cmp/cmpeh.lisp"
              #~"kernel/cmp/debuginfo.lisp"
-             #~"kernel/cmp/codegen-vars.lisp"
              #~"kernel/cmp/arguments.lisp"
-             #~"kernel/cmp/cmplambda.lisp"
              #~"kernel/cmp/cmprunall.lisp"
              #~"kernel/cmp/cmpliteral.lisp"
              #~"kernel/cmp/typeq.lisp"
              #~"kernel/cmp/codegen-special-form.lisp"
-             #~"kernel/cmp/codegen.lisp"
              #~"kernel/cmp/compile.lisp"
-             #~"kernel/cmp/codegen-toplevel.lisp"
              #~"kernel/cmp/compile-file.lisp"
              #~"kernel/cmp/external-clang.lisp"
              #~"kernel/cmp/cmpname.lisp"
              #~"kernel/cmp/cmpbundle.lisp"
-             #~"kernel/cmp/cmprepl.lisp"
-             #~"kernel/tag/min-pre-epilogue.lisp"
-             #~"kernel/lsp/epilogue-aclasp.lisp"
-             #~"kernel/tag/min-end.lisp"))
-    
-(defun add-bclasp-sources (&optional (target :bclasp))
-  (add-aclasp-sources target t)
-  (k:sources target
-             #~"kernel/tag/bclasp-start.lisp"
+             #~"kernel/cmp/bytecode-compile.lisp"
+             #~"kernel/cmp/bytecode-machines.lisp"
+             #~"kernel/cmp/bytecode-reference.lisp"
+             #~"kernel/cmp/cmprepl-bytecode.lisp"
+             #@"cclasp-translations.lisp"
+             #~"kernel/stage/base/0-end.lisp"
              #~"kernel/cmp/cmpwalk.lisp"
              #~"kernel/lsp/assert.lisp"
+             #~"kernel/lsp/iolib.lisp"
              #~"kernel/lsp/numlib.lisp"
              #~"kernel/lsp/describe.lisp"
              #~"kernel/lsp/module.lisp"
@@ -108,6 +94,7 @@
              #~"kernel/clos/outcome.lisp"
              #~"kernel/clos/discriminate.lisp"
              #~"kernel/clos/dtree.lisp"
+             #~"kernel/clos/dtree-graphviz.lisp"
              #~"kernel/clos/effective-accessor.lisp"
              #~"kernel/clos/closfastgf.lisp"
              #~"kernel/clos/satiation.lisp"
@@ -137,11 +124,12 @@
              #~"kernel/clos/static-gfs/change-class.lisp"
              #~"kernel/lsp/source-location.lisp"
              #~"kernel/lsp/defvirtual.lisp"
+             #~"kernel/clos/streams.lisp"
+             #~"kernel/lsp/pprint.lisp"
+             #~"kernel/lsp/format-pprint.lisp"
              #~"kernel/clos/conditions.lisp"
              #~"kernel/clos/print.lisp"
-             #~"kernel/clos/streams.lisp"
              #~"kernel/clos/sequences.lisp"
-             #~"kernel/lsp/pprint.lisp"
              #~"kernel/cmp/compiler-conditions.lisp"
              #~"kernel/lsp/packlib2.lisp"
              #~"kernel/clos/inspect.lisp"
@@ -149,52 +137,38 @@
              #~"kernel/lsp/posix.lisp"
              #~"modules/sockets/sockets.lisp"
              #~"kernel/lsp/top.lisp"
-             #~"kernel/tag/pre-epilogue-bclasp.lisp"
-             #~"kernel/lsp/epilogue-bclasp.lisp"
-             #~"kernel/tag/bclasp.lisp"))
-
-(defun add-cclasp-sources (&optional (target :cclasp))
-  (add-bclasp-sources target)
-  (k:sources target
-             (k:make-source "cclasp-translations.lisp" :variant-generated)
+             #~"kernel/stage/base/1-end.lisp"
+             #~"kernel/stage/base/2-begin.lisp"  
              :clasp-cleavir
-             #~"kernel/cleavir/auto-compile.lisp"
-             #~"kernel/cleavir/inline.lisp"
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
-             #~"kernel/cmp/compile-file-parallel.lisp"
+             #~"kernel/cleavir/auto-compile.lisp"
+             #~"kernel/cleavir/bytecode-adaptor.lisp"
+             #~"kernel/cleavir/inline.lisp"
              #~"kernel/lsp/generated-encodings.lisp"
              #~"kernel/lsp/process.lisp"
              #~"kernel/lsp/encodings.lisp"
-             #~"kernel/lsp/cltl2.lisp")
-  (when (eq target :cclasp)
-    (k:sources target
-               (k:make-source "cclasp-immutable.lisp" :variant-generated)))
-  (k:sources target
-             #~"kernel/tag/pre-epilogue-cclasp.lisp"
-             #~"kernel/lsp/epilogue-cclasp.lisp"
-             #~"kernel/tag/cclasp.lisp"))
+             #~"kernel/lsp/cltl2.lisp"
+             #@"cclasp-immutable.lisp"
+             #~"kernel/stage/base/2-end.lisp"
+             #~"kernel/cmp/compile-file-parallel.lisp"
+             #~"kernel/lsp/epilogue-cclasp.lisp"))
 
-(defun add-eclasp-sources (&optional (target :eclasp))
+(defun add-eclasp-sources (target)
   (add-cclasp-sources target)
-  (when (eq target :eclasp)
-    (k:sources target
-               (k:make-source "eclasp-immutable.lisp" :variant-generated)))
   (k:sources target
-             (k:make-source "eclasp-translations.lisp" :variant-generated)
+             #~"kernel/stage/extension/0-begin.lisp"
+             #@"eclasp-immutable.lisp"
+             #@"eclasp-translations.lisp"
              #~"modules/asdf/build/asdf.lisp"
-             :extension-systems)
-  (k:sources target
+             :extension-systems
+             #~"kernel/stage/extension/0-end.lisp"
              #~"kernel/tag/pre-epilogue-eclasp.lisp"
              #~"kernel/lsp/epilogue-eclasp.lisp"
              #~"kernel/tag/eclasp.lisp"))
 
-(add-aclasp-sources)
+(add-cclasp-sources :cclasp)
 
-(add-bclasp-sources)
-
-(add-cclasp-sources)
-
-(add-eclasp-sources)
+(add-eclasp-sources :eclasp)
 
 (k:sources :eclasp-translations :extension-systems)
 
@@ -237,3 +211,6 @@
            #~"kernel/contrib/trivial-indent/"
            #~"kernel/contrib/trivial-with-current-source-form/"
            #~"kernel/contrib/usocket/")
+
+(k:sources :analyzer
+           :clasp-analyzer)

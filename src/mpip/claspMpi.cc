@@ -187,7 +187,7 @@ void Mpi_O::Init(int &argc, char **&argv, bool &mpiEnabled, int &rank, int &msiz
 // Do not touch the debug log in this function
 #ifdef USE_MPI
   _MpiEnvironment = new boost::mpi::environment(argc, argv);
-  HARD_ASSERTF(_MpiEnvironment, BF("Could not create MPI environment although mpi should be enabled"));
+  HARD_ASSERTF(_MpiEnvironment, ("Could not create MPI environment although mpi should be enabled"));
   _MpiInitialized = _MpiEnvironment->initialized();
   if (_MpiInitialized) {
     boost::mpi::communicator world;

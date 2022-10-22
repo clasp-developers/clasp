@@ -14,6 +14,11 @@
        ;; it SHOULD signal an error.
        (clos:finalize-inheritance class))
      ;; bclasp-compile because cclasp is full of make-instance
+     ;;#+(or)
+     (let ((core:*use-interpreter-for-eval* t)
+           (cmp:*cleavir-compile-hook* nil))
+       (coerce (constructor-form class class-form keys) 'function))
+     #+(or)
      (cmp:bclasp-compile nil (constructor-form class class-form keys)))))
 
 ;;; This function is called when an actual make-instance call is happening.

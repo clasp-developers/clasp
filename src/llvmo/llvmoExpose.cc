@@ -1626,7 +1626,8 @@ void ExecutionEngine_O::removeNamedModule(const string &name) {
   core::SimpleBaseString_sp key = core::SimpleBaseString_O::make(name);
   core::T_mv mi = this->_DependentModules->gethash(key);
   //	core::StringMap<Module_O>::iterator mi = this->_DependentModules.find(name);
-  if (mi.valueGet_(1).nilp()) // == this->_DependentModules.end() )
+  core::MultipleValues& mvn = core::lisp_multipleValues();
+  if (mvn.valueGet(1,mi.number_of_values()).nilp()) // == this->_DependentModules.end() )
   {
     SIMPLE_ERROR(("Could not find named module %s") , name);
   }
@@ -2205,18 +2206,6 @@ CL_EXTERN_DEFMETHOD(LandingPadInst_O, &llvm::LandingPadInst::addClause);;
 ;
 
 }; // llvmo
-
-#if 0
-namespace translate {
-template <>
-struct from_object< llvm::MaybeAlign, std::true_type> {
-  typedef llvm::MaybeAlign DeclareType;
-  DeclareType _v;
-  from_object(core::T_sp object) : _v((size_t)core::clasp_to_fixnum(object)) {};
-};
-};
-#endif
-
 
 
 namespace llvmo {
@@ -3391,10 +3380,6 @@ CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::DISubprogram*))&
 
 CL_LISPIFY_NAME("addReturnAttr");
 CL_DEFMETHOD void Function_O::addReturnAttr(typename llvm::Attribute::AttrKind Attr) {
-  printf("%s:%d:%s Entered but this function has been retired in llvm or it's name changed to addRetAttr\n",
-         __FILE__, __LINE__, __FUNCTION__ );
-  
-  // this->wrappedPtr()->addAttribute(llvm::AttributeList::ReturnIndex, Attr);
 }
 
 CL_DEFMETHOD LLVMContext_sp Function_O::getContext() const {
@@ -4560,8 +4545,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   ObjectFile_sp codeObject;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str(), jit->getMainJITDylib().raw_(), jit->getMainJITDylib()->wrappedPtr(), llvm::cast<JITLinkDylib>(jit->getMainJITDylib()->wrappedPtr())));
   replPtrRaw = jit->runStartupCode(jit->getMainJITDylib(), startupName, initialData );
-  core::T_O* closure = makeCompiledFunction((core::T_O*)replPtrRaw,nil<core::T_O>().raw_());
-  core::Function_sp functoid((gctools::Tagged)closure);
+  core::GlobalSimpleFun_sp functoid((gctools::Tagged)replPtrRaw);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
   return functoid;
 }
@@ -4578,11 +4562,11 @@ CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp d
   //    So use the code below
   llvm::ExitOnError ExitOnErr;
   ExitOnErr(jit->_Jit->runConstructors());
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid;
+  gctools::smart_ptr<core::Closure_O> functoid;
   if (core::startup_functions_are_waiting()) {
     core::T_O* replPtrRaw = core::startup_functions_invoke(initialData.raw_());
     core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
-    functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
+    functoid = core::Closure_O::make_bclasp_closure( core::_sym_repl,
                                                               lisp_funcPtr,
                                                               kw::_sym_function,
                                                               nil<core::T_O>(),
@@ -4664,30 +4648,30 @@ std::string SectionedAddress_O::__repr__() const {
   return ss.str();
 }
 
-void python_dump_field(FILE* fout, const char* name, bool comma, gctools::Data_types dt, size_t offset, size_t sz=0)
+void python_dump_field(std::ostream& fout, const char* name, bool comma, gctools::Data_types dt, size_t offset, size_t sz=0)
 {
-  if (comma) fprintf(fout, ",");
-  fprintf(fout, "[ \"%s\", %d, %lu, %lu ]\n", name, dt, offset, sz );
+  if (comma) fmt::print(fout, ",");
+  fmt::print(fout, "[ \"{}\", {}, {}, {} ]\n", name, dt, offset, sz );
 }
 
-void dump_objects_for_lldb(FILE* fout,std::string indent)
+void dump_objects_for_debugger(std::ostream& fout,std::string indent)
 {
-  fprintf(fout,"%sInit_struct(\"gctools::Header_s::StampWtagMtag\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s::StampWtagMtag));
+  fmt::print(fout, "{}Init_struct(\"gctools::Header_s::StampWtagMtag\",sizeof={},fields=[ \n", indent.c_str(), sizeof(gctools::Header_s::StampWtagMtag));
   python_dump_field(fout,"_value",false,gctools::ctype_int,offsetof(gctools::Header_s::StampWtagMtag,_value),sizeof(gctools::Header_s::StampWtagMtag::_value));
-  python_dump_field(fout,"_header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s::StampWtagMtag,_header_badge),sizeof(gctools::Header_s::StampWtagMtag::_header_badge));
-  fprintf(fout,"] )\n");
-  fprintf(fout,"%sInit_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
-  python_dump_field(fout,"_stamp_wtag_mtag._value",false,gctools::ctype_int,offsetof(gctools::Header_s,_stamp_wtag_mtag._value),sizeof(gctools::Header_s::_stamp_wtag_mtag._value));
-  python_dump_field(fout,"_stamp_wtag_mtag._header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s,_stamp_wtag_mtag._header_badge),sizeof(gctools::Header_s::_stamp_wtag_mtag._header_badge));
+  python_dump_field(fout,"_header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s::BadgeStampWtagMtag,_header_badge),sizeof(gctools::Header_s::BadgeStampWtagMtag::_header_badge));
+  fmt::print(fout,"] )\n");
+  fmt::print(fout,"{}Init_struct(\"gctools::Header_s\",sizeof={},fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
+  python_dump_field(fout,"_badge_stamp_wtag_mtag._value",false,gctools::ctype_int,offsetof(gctools::Header_s,_badge_stamp_wtag_mtag._value),sizeof(gctools::Header_s::_badge_stamp_wtag_mtag._value));
+  python_dump_field(fout,"_stamp_wtag_mtag._header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s,_badge_stamp_wtag_mtag._header_badge),sizeof(gctools::Header_s::_badge_stamp_wtag_mtag._header_badge));
 #ifdef DEBUG_GUARD
   python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start),sizeof(gctools::Header_s::_tail_start));
   python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size),sizeof(gctools::Header_s::_tail_size));
   python_dump_field(fout,"_guard",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard),sizeof(gctools::Header_s::_guard));
   python_dump_field(fout,"_source",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_source),sizeof(gctools::Header_s::_source));
   python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2),sizeof(gctools::Header_s::_guard2));
-  python_dump_field(fout,"_dup_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_stamp_wtag_mtag),sizeof(gctools::Header_s::_dup_stamp_wtag_mtag));
+  python_dump_field(fout,"_dup_badge_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_badge_stamp_wtag_mtag),sizeof(gctools::Header_s::_dup_badge_stamp_wtag_mtag));
 #endif
-  fprintf(fout,"] )\n");
+  fmt::print(fout,"] )\n");
 #if 0
   fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
   python_dump_field(fout,"_faso_filename",false,gctools::ctype_const_char_ptr,offsetof(ObjectFileInfo,_faso_filename));
@@ -4698,7 +4682,7 @@ void dump_objects_for_lldb(FILE* fout,std::string indent)
   python_dump_field(fout,"_stackmap_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_stackmap_start));
   python_dump_field(fout,"_stackmap_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_stackmap_size));
   python_dump_field(fout,"_next",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_next));
-  fprintf(fout,"] )\n");
+  fmt::print(fout,"] )\n");
 #endif
 };
   

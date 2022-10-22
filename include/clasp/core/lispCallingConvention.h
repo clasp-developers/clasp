@@ -35,8 +35,9 @@ namespace gctools {
 #endif
     void* ret0[LCC_RETURN_VALUES_IN_REGISTERS()];  // One for every LCC_RETURN_VALUES_IN_REGISTERS
     size_t nvals;
-  return_type() : ret0{NULL}, nvals(0){};
-  return_type(core::T_O *r0, size_t nv) : ret0{r0}, nvals(nv) {};
+    
+    return_type() : ret0{NULL}, nvals(0){};
+    return_type(core::T_O *r0, size_t nv) : ret0{r0}, nvals(nv) {};
     template <typename T>
     return_type(T* r0, size_t nv) : ret0{reinterpret_cast<void*>(r0)}, nvals(nv) {};
   };
@@ -55,6 +56,16 @@ namespace gctools {
 #define LISP_ENTRY_3() LCC_RETURN entry_point_3(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2 )
 #define LISP_ENTRY_4() LCC_RETURN entry_point_4(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3 )
 #define LISP_ENTRY_5() LCC_RETURN entry_point_5(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3, core::T_O* lcc_farg4 )
+
+template <typename WRAPPER, typename...ARGS>
+inline LCC_RETURN arity_entry_point(core::T_O* lcc_closure, ARGS... lcc_arg)
+{
+  if constexpr (WRAPPER::NumParams == sizeof...(ARGS)) {
+      core::T_O* args[sizeof...(ARGS)] = {lcc_arg...};
+      return WRAPPER::entry_point_n(lcc_closure, lcc_arg... );
+    }
+  cc_wrong_number_of_arguments( lcc_closure, sizeof...(ARGS), WRAPPER::NumParams, WRAPPER::NumParams );
+}
 
 
 extern "C" {
@@ -127,6 +138,7 @@ LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* far
 typedef LCC_RETURN_RAW(*ClaspLocalFunction)();
 typedef LCC_RETURN_RAW(*ClaspXepAnonymousFunction)();
 #define LISP_CALLING_CONVENTION() entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
+typedef LCC_RETURN_RAW(*BytecodeTrampolineFunction)(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args );
 typedef LCC_RETURN_RAW(*ClaspXepGeneralFunction)(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args );
 typedef LCC_RETURN_RAW(*ClaspXep0Function)(core::T_O* lcc_closure);
 typedef LCC_RETURN_RAW(*ClaspXep1Function)(core::T_O* lcc_closure, core::T_O* farg0);
@@ -141,10 +153,59 @@ struct XepFillUsingLambda {};
 struct ClaspXepFunction {
   static const int Entries = NUMBER_OF_ENTRY_POINTS;
   ClaspXepAnonymousFunction _EntryPoints[NUMBER_OF_ENTRY_POINTS];
+  int _RequiredArgs;
   bool _Defined;
-  ClaspXepFunction() : _Defined(false) {};
+  ClaspXepFunction() : _RequiredArgs(-1), _Defined(false) {};
   //! Use this ctor when filling ClaspXepFunction with entry points
-  ClaspXepFunction(XepFilling f) : _Defined(true) {};
+  ClaspXepFunction(XepFilling f) : _RequiredArgs(-1), _Defined(true) {};
+  template <typename Wrapper>
+  static ClaspXepFunction make() {
+    assert(NUMBER_OF_ENTRY_POINTS==7);
+    ClaspXepFunction me;
+    me._Defined = true;
+    me._EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
+    me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
+    me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
+    me._EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
+    me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
+    me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
+    me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+    return me;
+  }
+  template <typename Wrapper>
+  static ClaspXepFunction make(size_t specializer_length) {
+    assert(NUMBER_OF_ENTRY_POINTS==7);
+    ClaspXepFunction me;
+    me._RequiredArgs = specializer_length;
+    me._Defined = true;
+    me._EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
+
+    if (0<specializer_length)
+      me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_0;
+    else me._EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
+
+    if (1<specializer_length)
+      me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_1;
+    else       me._EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
+
+    if (2<specializer_length)
+      me._EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_2;
+    else me._EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
+
+    if (3<specializer_length)
+      me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_3;
+    else me._EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
+
+    if (4<specializer_length)
+      me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_4;
+    else me._EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
+
+    if (5<specializer_length)
+      me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::error_entry_point_5;
+    else me._EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
+
+    return me;
+  }
   template <typename Wrapper>
   void setup() {
     assert(NUMBER_OF_ENTRY_POINTS==7);
@@ -157,13 +218,39 @@ struct ClaspXepFunction {
     this->_EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
     this->_EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
   }
+  void fixupInternalsForSnapshotSaveLoad(CodeSimpleFun_O* cep, snapshotSaveLoad::Fixup* fixup) {
+    printf("%s:%d:%s See function.h/clbind/line136\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
   ClaspXepAnonymousFunction operator[](int index) const { return this->_EntryPoints[index]; };
-  inline LCC_RETURN invoke_0(T_O* closure) {
+
+  inline LCC_RETURN invoke_n(T_O* closure,size_t lcc_nargs, T_O** lcc_args) const {
+    return ((ClaspXepGeneralFunction)(this->_EntryPoints[0]))( closure, lcc_nargs, lcc_args );
+  }
+
+  inline LCC_RETURN invoke_0(T_O* closure) const {
     return ((ClaspXep0Function)(this->_EntryPoints[1]))( closure );
   }
-  inline LCC_RETURN invoke_1(T_O* closure, T_O* farg0) {
+
+  inline LCC_RETURN invoke_1(T_O* closure, T_O* farg0) const {
     return ((ClaspXep1Function)(this->_EntryPoints[2]))( closure, farg0 );
   }
+
+  inline LCC_RETURN invoke_2(T_O* closure, T_O* farg0, T_O* farg1 ) const {
+    return ((ClaspXep2Function)(this->_EntryPoints[3]))( closure, farg0, farg1 );
+  }
+
+  inline LCC_RETURN invoke_3(T_O* closure, T_O* farg0, T_O* farg1, T_O* farg2 ) const {
+    return ((ClaspXep3Function)(this->_EntryPoints[4]))( closure, farg0, farg1, farg2 );
+  }
+
+  inline LCC_RETURN invoke_4(T_O* closure, T_O* farg0, T_O* farg1, T_O* farg2, T_O* farg3 ) const {
+    return ((ClaspXep4Function)(this->_EntryPoints[5]))( closure, farg0, farg1, farg2, farg3 );
+  }
+
+  inline LCC_RETURN invoke_5(T_O* closure, T_O* farg0, T_O* farg1, T_O* farg2, T_O* farg3, T_O* farg4 ) const {
+    return ((ClaspXep5Function)(this->_EntryPoints[6]))( closure, farg0, farg1, farg2, farg3, farg4 );
+  }
+
 };
 
 #endif
@@ -178,11 +265,11 @@ std::string dbg_safe_repr(uintptr_t raw);
 // Return true if the Vaslist is at the head of the list and false if it is used up
 inline bool dump_Vaslist_ptr(FILE* fout, Vaslist* args) {
   fprintf(fout,"Vaslist dump @%p\n", (void*)args);
-  fprintf(fout,"Vaslist nargs = %lu\n", args->_nargs);
-  int iEnd = args->_nargs;
+  fprintf(fout,"Vaslist nargs = %lu\n", args->nargs());
+  int iEnd = args->nargs();
   if (iEnd>CALL_ARGUMENTS_LIMIT) {
     iEnd = 0;
-    fprintf(fout,"%s:%d      args->_nargs -> %lu !!!!  A BAD VALUE\n", __FILE__, __LINE__, args->_nargs);
+    fprintf(fout,"%s:%d      args->_nargs -> %lu !!!!  A BAD VALUE\n", __FILE__, __LINE__, args->nargs());
   }
   for ( int i=0; i<iEnd; ++i ) {
     T_O* arg = (*args)[i];

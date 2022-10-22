@@ -314,12 +314,13 @@ Boehm and MPS use a single pointer"
 
 
 (define-c++-struct %global-entry-point% +general-tag+
-                 ((%i8*% :vtable)
-                  (%t*%  :function-description)
-                  (%t*%  :code)
-                  (%entry-point-vector% :entry-points)
-                  (%i8%  :defined)
-                  ))
+  ((%i8*% :vtable)
+   (%t*%  :entry-point)
+   (%t*%  :function-description)
+   (%t*%  :code)
+   (%entry-point-vector% :entry-points)
+   (%i8%  :defined)
+   ))
 (define-symbol-macro %global-entry-point*% (llvm-sys:type-get-pointer-to %global-entry-point%))
 (define-symbol-macro %entry-point-vector*% (llvm-sys:type-get-pointer-to %entry-point-vector%))
 
@@ -400,7 +401,7 @@ Boehm and MPS use a single pointer"
 ;;; MUST match FuncallableInstance_O layout
 (define-c++-struct %funcallable-instance% +general-tag+
   ((%i8*% :vtable)
-   (%i8*% :function-description)
+   (%t*% :entry-point)
    (%t*% :rack)
    (%t*% :class)
    (%atomic<size_t>% :interpreted-calls)
@@ -566,7 +567,7 @@ Boehm and MPS use a single pointer"
 
   (define-c++-struct %vaslist% +vaslist0-tag+  ;; TODO - there is going to be a problem here becaues of +vaslist1-tag+
     ((%t**% :args)     ; This is a pointer to T*
-     (%size_t% :nargs)))
+     (%uintptr_t% :nargs)))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
 ;;;    "Function prototype for generic functions")
@@ -578,9 +579,37 @@ Boehm and MPS use a single pointer"
   (ensure-opaque-or-pointee-type-matches vaslist* %vaslist%)
   (irc-struct-gep %vaslist% vaslist* 0 label))
 
-(defun vaslist*-nargs* (vaslist* &optional (label "nargs*"))
+(defun vaslist*-shifted-nargs* (vaslist* &optional (label "nargs*"))
   (ensure-opaque-or-pointee-type-matches vaslist* %vaslist%)
   (irc-struct-gep %vaslist% vaslist* 1 label))
+
+(defun vaslist*-set-nargs (vaslist* nargs)
+  (let* ((pos* (vaslist*-shifted-nargs* vaslist*))
+         (shifted-nargs (irc-shl nargs +vaslist-nargs-shift+)))
+    (irc-store shifted-nargs pos*)))
+
+(defun vaslist-start (vaslist* nargs &optional args)
+  (when args
+    (irc-maybe-check-word-aligned-load %t*% args)
+    (irc-store args (vaslist*-args* vaslist*)))
+  (vaslist*-set-nargs vaslist* nargs))
+
+;;; Generate code to read the next argument from the vaslist*
+;;; The vaslist* argument MUST be an untagged pointer to a %vaslist%
+(defun gen-vaslist-pop (vaslist*)
+  (irc-maybe-check-word-aligned-load %vaslist% vaslist*)
+  (let* ((args* (vaslist*-args* vaslist* "gvp-args*"))
+         (args (irc-typed-load %t**% args* "gvp-args"))
+         (val (irc-t*-load args "gvp-val"))
+         (args-next (irc-typed-gep %t*% args (list 1)))
+         (shifted-nargs* (vaslist*-shifted-nargs* vaslist* "gvp-nargs*"))
+         (shifted-nargs (irc-typed-load %i64% shifted-nargs*))
+         (shifted-nargs-next (irc-sub shifted-nargs (jit-constant-i64 +vaslist-nargs-decrement+))))
+    (irc-maybe-check-word-aligned-load %t*% args-next)
+    (irc-store args-next args*)
+    (irc-store shifted-nargs-next shifted-nargs*)
+    val))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -633,28 +662,6 @@ Boehm and MPS use a single pointer"
                                     :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
                                     :rest-alloc rest-alloc)))))))
 
-(defun vaslist-start (vaslist* nargs &optional args)
-  (when args
-    (irc-maybe-check-word-aligned-load %t*% args)
-    (irc-store args (vaslist*-args* vaslist*)))
-  (irc-store nargs (vaslist*-nargs* vaslist*)))
-
-;;; Generate code to read the next argument from the vaslist*
-;;; The vaslist* argument MUST be an untagged pointer to a %vaslist%
-(defun gen-vaslist-pop (vaslist*)
-  (irc-maybe-check-word-aligned-load %vaslist% vaslist*)
-  (let* ((args* (vaslist*-args* vaslist* "gvp-args*"))
-         (args (irc-typed-load %t**% args* "gvp-args"))
-         (val (irc-t*-load args "gvp-val"))
-         (args-next (irc-typed-gep %t*% args (list 1)))
-         (nargs* (vaslist*-nargs* vaslist* "gvp-nargs*"))
-         (nargs (irc-typed-load %i64% nargs*))
-         (nargs-next (irc-sub nargs (jit-constant-i64 1))))
-    (irc-maybe-check-word-aligned-load %t*% args-next)
-    (irc-store args-next args*)
-    (irc-store nargs-next nargs*)
-    val))
-
 ;;;
 ;;; Read the next argument from the vaslist
 (defun calling-convention-vaslist.va-arg (cc)
@@ -680,16 +687,6 @@ Boehm and MPS use a single pointer"
      (error "Arity is too high -add support for this ~a" arity))
     (t (error "fn-prototype-names Illegal arity ~a" arity))))
 
-(defun dbg-parameter-var (name argno &optional (type-name "T_O*")
-                                       (type llvm-sys:+dw-ate-address+))
-  (dbg-create-parameter-variable :name name :argno argno
-                                 :lineno *dbg-current-function-lineno*
-                                 :type (llvm-sys:create-basic-type
-                                        *the-module-dibuilder*
-                                        type-name 64 type 0)
-                                 :always-preserve t))
-
-
 ;; (Maybe) generate code to store registers in memory. Return value unspecified.  
 (defun maybe-spill-to-register-save-area (arity register-save-area* registers)
   (cmp-log "maybe-spill-to-register-save-area register-save-area* -> {}%N" register-save-area*)
@@ -705,12 +702,6 @@ Boehm and MPS use a single pointer"
                                       (t
                                        (irc-bit-cast reg %i8*% "reg-i8*")))))
                  (irc-store reg-i8* addr t)
-                 (when (llvm-sys:current-debug-location *irbuilder*)
-                   (let ((var (dbg-parameter-var addr-name (1+ idx))))
-                     (unless var
-                       (error "maybe-spill-to-register-save-area var is NIL arity is ~a  idx is ~a" arity idx))
-                     (%dbg-variable-value reg-i8* var)
-                     (%dbg-variable-addr addr var)))
                  addr)))
         (let* ((names (if (eq arity :general-entry)
                           (list "rsa-closure" "rsa-nargs" "rsa-args")
@@ -720,71 +711,6 @@ Boehm and MPS use a single pointer"
                   (spill-reg idx reg name)
                   (incf idx))
                 registers names))))))
-
-
-(defun %dbg-variable-addr (addr var)
-  (let* ((addrmd (llvm-sys:metadata-as-value-get
-                  (thread-local-llvm-context)
-                  (llvm-sys:value-as-metadata-get addr)))
-         (varmd (llvm-sys:metadata-as-value-get
-                 (thread-local-llvm-context)
-                 var))
-         (diexpr (llvm-sys:metadata-as-value-get
-                  (thread-local-llvm-context)
-                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
-    (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr)))
-
-;;; Put in debug information for a variable corresponding to an alloca.
-(defun dbg-variable-alloca (alloca name spi
-                                   &optional (type-name "T_O*")
-                                     (type llvm-sys:+dw-ate-address+))
-  (when spi ; don't bother if there's no info.
-    (let* ((type (llvm-sys:create-basic-type
-                  *the-module-dibuilder* type-name 64 type 0))
-           (inlined-at (core:source-pos-info-inlined-at spi))
-           (scope (if inlined-at
-                      (cached-function-scope
-                       (core:source-pos-info-function-scope spi))
-                      *dbg-current-scope*))
-           (auto-variable (dbg-create-auto-variable
-                           :name name
-                           :lineno (core:source-pos-info-lineno spi)
-                           :scope scope
-                           :type type)))
-      (%dbg-variable-addr alloca auto-variable))))
-
-(defun %dbg-variable-value (value var)
-    (let* ((valuemd (llvm-sys:metadata-as-value-get
-                     (thread-local-llvm-context)
-                     (llvm-sys:value-as-metadata-get value)))
-           (varmd (llvm-sys:metadata-as-value-get
-                   (thread-local-llvm-context)
-                   var))
-           (diexpr (llvm-sys:metadata-as-value-get
-                    (thread-local-llvm-context)
-                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
-      (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr)))
-
-;;; Put in debug information for a variable corresponding to an llvm Value.
-(defun dbg-variable-value (value name spi
-                                 &optional (type-name "T_O*")
-                                   (type llvm-sys:+dw-ate-address+))
-  (when spi
-    (let* ((type (llvm-sys:create-basic-type
-                  *the-module-dibuilder* type-name 64 type 0))
-           (inlined-at (core:source-pos-info-inlined-at spi))
-           (scope (if inlined-at
-                      (cached-function-scope
-                       (core:source-pos-info-function-scope spi))
-                      *dbg-current-scope*))
-           (auto-variable (dbg-create-auto-variable
-                           :name name
-                           :lineno (core:source-pos-info-lineno spi)
-                           :scope scope
-                           :type type)))
-      (unless auto-variable
-        (error "maybe-spill-to-register-save-area auto-variable is NIL"))
-      (%dbg-variable-value value auto-variable))))
 
 ;;; This is the normal C-style prototype for a function
 (define-symbol-macro %opaque-fn-prototype*% %i8*%)
@@ -804,7 +730,7 @@ Boehm and MPS use a single pointer"
   )
 
 ;;
-;; The %function% type MUST match the layout and size of Function_O in functor.h
+;; The %function% type MUST match the layout and size of Function_O in function.h
 ;;
 (define-c++-struct %Function% +general-tag+
   ((%i8*%      :vtable)
@@ -816,7 +742,7 @@ Boehm and MPS use a single pointer"
 
 ;;; ------------------------------------------------------------
 ;;;
-;;; This must match FunctionDescription in functor.h
+;;; This must match FunctionDescription in function.h
 ;;;
 ;;; source-info/function-name are stored in a CONS cell CAR/CDR
 ;;; lambda-list/docstring are stored in a CONS cell CAR/CDR
@@ -835,7 +761,7 @@ Boehm and MPS use a single pointer"
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
-(define-c++-struct %closure-with-slots% +general-tag+
+(define-c++-struct %closure% +general-tag+
   ((%i8*% vtable)
    (%t*% entry-point)
    (%i32% closure-type)
@@ -843,11 +769,11 @@ Boehm and MPS use a single pointer"
    (%tsp[0]% data0))
   )
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (verify-closure-with-slots (c++-struct-field-offsets info.%closure-with-slots%)))
+  (verify-closure (c++-struct-field-offsets info.%closure%)))
 
-(defun %closure-with-slots%.offset-of[n]/t* (index)
+(defun %closure%.offset-of[n]/t* (index)
   "This assumes that the t* offset coincides with the tsp start"
-  (let* ((offset-of-data (cdr (assoc 'data0 (c++-struct-field-offsets info.%closure-with-slots%))))
+  (let* ((offset-of-data (cdr (assoc 'data0 (c++-struct-field-offsets info.%closure%))))
          (sizeof-element (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) %tsp%)))
     (+ (* sizeof-element index) offset-of-data)))
 
@@ -1069,11 +995,6 @@ and initialize it with an array consisting of one function pointer."
            (rack-data-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.data-index+)))
       (core:verify-rack-layout rack-stamp-offset rack-data-offset))
     (core:verify-mdarray-layout (c++-struct-field-offsets info.%mdarray%))
-    (let* ((value-frame-layout (llvm-sys:data-layout-get-struct-layout data-layout %value-frame%))
-           (value-frame-parent-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.parent-index+))
-           (value-frame-length-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.length-index+))
-           (value-frame-data-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.data-index+)))
-      (core:verify-value-frame-layout value-frame-parent-offset value-frame-length-offset value-frame-data-offset))
     (let* ((wrapped-pointer-layout (llvm-sys:data-layout-get-struct-layout data-layout %wrapped-pointer%))
            (wrapped-pointer-stamp-offset (llvm-sys:struct-layout-get-element-offset wrapped-pointer-layout +wrapped-pointer.stamp-index+)))
       (core:verify-wrapped-pointer-layout wrapped-pointer-stamp-offset))

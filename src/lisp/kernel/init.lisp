@@ -3,9 +3,8 @@
 ;;
 
 
-;;#+(or)
-(llvm-sys:install-interpreter-trampoline)
-(llvm-sys:install-bytecode-trampoline)
+;;;#-darwin
+#+(or)(cmp:trampoline "bytecode")
 
 #+(or)
 (eval-when (:compile-toplevel :execute)
@@ -39,7 +38,7 @@
         (llvm-sys:debug-object-files 'llvm-sys:debug-object-files-print-save)))
 
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
-(setq *load-print* nil)
+;;;(setq *load-print* nil)
 
 (setq cl:*print-circle* nil)
 
@@ -54,6 +53,51 @@
 ;;;
 (if (member :force-compile-file-serial *features*)
     (setq cmp:*use-compile-file-parallel* nil))
+
+#+clasp-min
+(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
+  (CORE:SETF-LAMBDA-LIST
+   (FUNCALL #'(SETF MACRO-FUNCTION)
+            #'(LAMBDA
+                  (whole env
+                   &AUX (CLAUSES (CDR (THE CONS whole))))
+                (DECLARE (IGNORABLE rest whole)
+                         (CORE:LAMBDA-NAME (MACRO-FUNCTION COND)))
+                (DECLARE (IGNORE env))
+                (BLOCK COND
+                  (IF (CONSP CLAUSES)
+                      (LET* ((clauses1 CLAUSES)
+                             (clauses2 clauses1)
+                             (XXX
+                               (PROGN
+                                 (IF (NULL clauses2)
+                                     (error "too few arguments ~a ~a" clauses1
+                                            '((PRED . FORMS) . REST-CLAUSES)))
+                                 (let ((prog1-val (CAR (THE CONS clauses2))))
+                                   (SETQ clauses2 (CDR (THE CONS clauses2)))
+                                   prog1-val)))
+                             (YYY XXX)
+                             (PRED
+                               (PROGN
+                                 (IF (NULL YYY)
+                                     (error "too few arguments ~a ~a" clauses1 '(PRED . FORMS)))
+                                 (let ((PROG1-val (CAR (THE CONS YYY))))
+                                   (SETQ YYY (CDR (THE CONS YYY)))
+                                   prog1-val)))
+                             (FORMS YYY)
+                             (REST-CLAUSES clauses2))
+                        (DECLARE (IGNORABLE YYY XXX clauses2 clauses1))
+                        (IF (EQ PRED T)
+                            (core:quasiquote
+                             (PROGN (core::UNQUOTE-SPLICE FORMS)))
+                            (core:QUASIQUOTE
+                             (IF (core::UNQUOTE PRED)
+                                 (PROGN (core::UNQUOTE-SPLICE FORMS))
+                                 (COND (core::UNQUOTE-SPLICE REST-CLAUSES))))))
+                      NIL)))
+            'COND)
+   '(&REST CLAUSES))
+  'COND)
 
 (cond
   ((member :generate-faso *features*)
@@ -75,10 +119,12 @@
 ;;;
 
 (eval-when (:compile-toplevel :execute)
-  (let* ((obj "asdf")
+  (let* ((obj "dummy-object-string")
+         (obj-class (core:instance-class obj))
+         (obj-class-name (core:name-of-class obj-class))
          (stamp (core:instance-stamp obj))
-         (class-stamp (core:class-stamp-for-instances (core:instance-class obj)))
-         (map-stamp (gethash (core:name-of-class (core:instance-class obj)) core:+type-header-value-map+)))
+         (class-stamp (core:class-stamp-for-instances obj-class))
+         (map-stamp (gethash obj-class-name core:+type-header-value-map+)))
     (if (not (numberp stamp))
         (progn
           (core:fmt t "Sanity check failure stamp {} must be a number%N" stamp)
@@ -94,14 +140,14 @@
                   (core:cabort)))))
     (if (not (= stamp class-stamp))
         (progn
-          (core:fmt t "For object {} there is a mismatch between the stamp {} and the class-stamp {}%N"
-                        obj stamp class-stamp)
+          (core:fmt t "For object {} class {} class-name {} there is a mismatch between the stamp {} and the class-stamp {}%N"
+                    obj obj-class obj-class-name stamp class-stamp)
           (finish-output)
           (core:cabort))
         (if (not (= stamp map-stamp))
             (progn
-              (core:fmt t "For object {} there is a mismatch between the stamp {} and the class-stamp {}%N"
-                            obj stamp class-stamp)
+              (core:fmt t "For object {} class {} class-name {} there is a mismatch between the stamp {} and the map-stamp {}%N"
+                        obj obj-class obj-class-name stamp map-stamp)
               (finish-output)
               (core:cabort))))))
 
@@ -111,6 +157,9 @@
 ;; Turn this off and recompile everything once the system has
 ;; been bootstrapped
 (setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
+
+;;; fixme2022 - We shouldn't need the varest feature
+(setq *features* (cons :varest *features*))
 
 ;; Set up a few things for the CLOS package
 (export '(clos::standard-class) "CLOS")
@@ -459,6 +508,32 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            t )
 (export '(and or))
 
+(defun 1- (num) (- num 1))
+(defun 1+ (num) (+ num 1))
+
+;;; These definitions do not use setf, and are replaced in setf.lisp.
+#+clasp-min
+(si::fset 'incf
+	   #'(lambda (args env)
+               (declare (core:lambda-name incf))
+               (let* ((where (second args))
+                      (what (caddr args)))
+                 (if what
+                     `(setq ,where (+ ,where ,what))
+                     `(setq ,where (1+ ,where)))))
+	  t)
+
+#+clasp-min
+(si::fset 'decf
+	   #'(lambda (args env)
+               (declare (core:lambda-name decf))
+               (let* ((where (second args))
+                      (what (caddr args)))
+                 (if what
+                     `(setq ,where (- ,where ,what))
+                     `(setq ,where (1- ,where)))))
+	  t)
+
 (defun build-target-dir (type &optional stage)
   (declare (ignore type))
   (let* ((stage (if stage
@@ -469,17 +544,19 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-host))
 
 (defun default-target-stage ()
-  (let ((stage (if (member :eclasp *features*)
-                   "e"
-                   (if (member :cclasp *features*)
-                       "c"
-                       (if (member :bclasp *features*)
-                           (if (member :compiling-cleavir *features*)
-                               "pre"
-                               "b")
-                           "a")))))
-    stage))
-
+  (if (member :eclasp *features*)
+      "e"
+      (if (member :mclasp *features*)
+          "m"
+          (if (member :vclasp *features*)
+              "v"
+              (if (member :cclasp *features*)
+                  "c"
+                  (if (member :bclasp *features*)
+                      (if (member :compiling-cleavir *features*)
+                          "pre"
+                          "b")
+                      "a"))))))
 
 (defun build-configuration ()
   (let ((gc (cond
@@ -515,173 +592,336 @@ a relative path from there."
                 ((eq filetype :intrinsics) "intrinsics")
                 ((eq filetype :builtins) "builtins-no-debug-info")
                 (t (error "illegal filetype - only :intrinsics or :builtins allowed")))))
-    (cond
-      ((eq link-type :fasl)
-       (translate-logical-pathname (core:fmt nil "lib:{}-{}-cxx.a" +bitcode-name+ name)))
-      ((eq link-type :compile)
-       (translate-logical-pathname (core:fmt nil "lib:{}-{}-cxx.bc" +bitcode-name+ name)))
-      ((eq link-type :executable)
-       (translate-logical-pathname (core:fmt nil "lib:{}-all-cxx.a" +bitcode-name+)))
-      (t (error "Provide a bitcode file for the link-type ~a" link-type)))))
+    (cond ((eq link-type :fasl)
+           (make-pathname :host "SYS"
+                          :directory '(:absolute "LIB")
+                          :name (core:fmt nil "{}-cxx.a" name)
+                          :type "a"))
+          ((eq link-type :compile)
+           (make-pathname :host "SYS"
+                          :directory '(:absolute "LIB")
+                          :name (core:fmt nil "{}-cxx.bc" name)
+                          :type "a"))
+          ((eq link-type :executable)
+           (make-pathname :host "SYS"
+                          :directory '(:absolute "LIB")
+                          :name (core:fmt nil "{}-all-cxx.a" name)
+                          :type "a"))
+          (t
+           (error "Provide a bitcode file for the link-type ~a" link-type)))))
 
 (defun build-common-lisp-bitcode-pathname ()
-  (translate-logical-pathname (pathname (core:fmt nil "lib:{}clasp-{}-common-lisp.bc" (default-target-stage) +variant-name+))))
+  (make-pathname :host "SYS"
+                 :directory '(:absolute "LIB")
+                 :name "common-lisp-cxx.a"
+                 :type "a"))
+
 (export '(build-inline-bitcode-pathname build-common-lisp-bitcode-pathname))
+
 #+(or)
 (progn
   (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
   (export '(+image-pathname+ )))
+
 (defun bitcode-extension ()
   (if cmp::*use-human-readable-bitcode*
       "ll"
       "bc"))
+
 (export 'bitcode-extension)
 
 (defun build-extension (type)
-  (if (eq type :fasl)
-      "fasl"
-      (if (eq type :bitcode)
-          (if cmp::*use-human-readable-bitcode*
-              "ll"
-              "bc")
-          (if (eq type :ll)
-              "ll"
-              (if (eq type :object)
-                  "o"
-                  (if (eq type :fasp)
-                      "fasp"
-                      (if (eq type :faso)
-                          "faso"
-                          (if (eq type :fasoll)
-                              "fasoll"
-                              (if (eq type :faspll)
-                                  "faspll"
-                                  (if (eq type :fasobc)
-                                      "fasobc"
-                                      (if (eq type :faspbc)
-                                          "faspbc"
-                                          (error "Unsupported build-extension type ~a" type))))))))))))
+  (cond ((eq type :fasl)
+         "fasl")
+        ((eq type :ll)
+         "ll")
+        ((eq type :object)
+         "o")
+        ((eq type :fasp)
+         "fasp")
+        ((eq type :faso)
+         "faso")
+        ((eq type :fasoll)
+         "fasoll")
+        ((eq type :faspll)
+         "faspll")
+        ((eq type :fasobc)
+         "fasobc")
+        ((eq type :faspbc)
+         "faspbc")
+        ((and (eq type :bitcode) cmp::*use-human-readable-bitcode*)
+         "ll")
+        ((eq type :bitcode)
+         "bc")
+        (t
+         (error "Unsupported build-extension type ~a" type))))
 
 (defun build-library-type (type)
   "Given the object-type TYPE return what type of library it generates"
-  (if (eq type :fasl)
-      :fasl
-      (if (eq type :object)
-          :fasl
-          (if (eq type :fasp)
-              :fasp
-              (if (eq type :faso)
-                  :fasp
-                  (if (eq type :fasoll)
-                      :faspll
-                      (if (eq type :faspll)
-                          :faspll
-                          (if (eq type :fasobc)
-                              :faspbc
-                              (if (eq type :faspbc)
-                                  :faspbc
-                                  (error "Unsupported build-extension type ~a" type))))))))))
+  (cond ((eq type :fasl)
+         :fasl)
+        ((eq type :object)
+         :fasl)
+        ((eq type :fasp)
+         :fasp)
+        ((eq type :faso)
+         :fasp)
+        ((eq type :fasoll)
+         :faspll)
+        ((eq type :faspll)
+         :faspll)
+        ((eq type :fasobc)
+         :faspbc)
+        ((eq type :faspbc)
+         :faspbc)
+        (t
+         (error "Unsupported build-extension type ~a" type))))
 
 (defun bitcode-pathname (pathname &optional (type cmp:*default-object-type*) stage)
   (make-pathname :host "sys"
                  :directory (list* :absolute
                                    "LIB"
-                                   (build-target-dir type stage)
                                    (cdr (pathname-directory pathname)))
                  :name (pathname-name pathname)
                  :type (build-extension type)))
 
-(defun build-pathname (partial-pathname &optional (type :lisp) stage)
-  "If partial-pathname is nil and type is :fasl or :executable then construct the name using
-the stage, the +application-name+ and the +bitcode-name+"
-  (flet ((find-lisp-source (module root)
-           (or
-            (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lsp")) root))
-            (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) root))
-            (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
-    (let ((target-dir (build-target-dir type stage)))
-      #+dbg-print(core:fmt t "DBG-PRINT build-pathname module: {}%N" module)
-      #+dbg-print(core:fmt t "DBG-PRINT build-pathname target-dir: {}%N" target-dir)
-      (let ((result
-              (cond
-                ((eq type :lisp)
-                 (let ((module (ensure-relative-pathname partial-pathname)))
-                   (cond
-                     ((string= "generated" (second (pathname-directory module)))
-                      ;; Strip the "generated" part of the directory
-                      (find-lisp-source (make-pathname
-                                         :directory (cons :relative (cddr (pathname-directory module)))
-                                         :name (pathname-name module))
-                                        (translate-logical-pathname "SYS:GENERATED;")))
-                     (t
-                      (find-lisp-source module (translate-logical-pathname "sys:"))))))
-                ((and (null partial-pathname) (eq type :executable))
-                 (translate-logical-pathname (core:fmt nil "sys:executable;{}{}-{}"
-                                                       (default-target-stage) +application-name+
-                                                       +bitcode-name+)))
-                ((and (null partial-pathname) (eq type :fasl))
-                 (translate-logical-pathname (core:fmt nil "sys:lib;{}{}-{}.fasl"
-                                                       (default-target-stage) +application-name+
-                                                       +bitcode-name+)))
-                (t
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative "LIB" target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host "SYS")))))))
-        result))))
-(export '(build-pathname build-extension))
+(export '(build-extension))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;
+;;;  Early macros ....
+;;;
+;;;
+
+
+#-staging
+(eval-when (:execute)
+  (eval-when (eval compile load)
+    (si::select-package "SI"))
+
+  ;; This is needed only when bootstrapping CLASP using CLASP-MIN
+  (eval-when (eval)
+    (si::fset 'in-package
+              #'(lambda (def env)
+                  (declare (core:lambda-name in-package))
+		  `(eval-when (eval compile load)
+		     (si::select-package ,(string (second def)))))
+	      t)
+    )
+
+  ;;
+  ;; This is also needed for booting Clasp. In particular it is required in
+  ;; defmacro.lisp.
+  ;;
+
+  ;; Required by REGISTER-GLOBAL in cmp/cmpvar.lisp
+  (si::fset 'pushnew #'(lambda (w e)
+                         (declare (ignore e))
+                         (let ((item (cadr w))
+                               (place (caddr w)))
+                           `(setq ,place (adjoin ,item ,place))))
+            t)
+
+  (si::fset 'push #'(lambda (w e)
+                      (declare (ignore e))
+                      (let ((item (cadr w))
+                            (place (caddr w)))
+                        `(setq ,place (cons ,item ,place))))
+            t)
+
+
+
+  (fset 'when #'(lambda (def env)
+                  (declare (ignore env))
+                  `(if ,(cadr def) (progn ,@(cddr def))))
+        t)
+
+
+  (fset 'unless #'(lambda (def env)
+                    (declare (ignore env))
+                    `(if ,(cadr def) nil (progn ,@(cddr def))))
+        t)
+
+
+  (defun si::while-until (test body jmp-op)
+    (let ((label (gensym))
+          (exit (gensym)))
+      `(TAGBODY
+          (GO ,exit)
+          ,label
+          ,@body
+          ,exit
+          (,jmp-op ,test (GO ,label)))))
+
+  (fset 'si::while #'(lambda (def env)
+                       (declare (ignore env))
+                       (si::while-until (cadr def) (cddr def) 'when))
+        t)
+
+
+  (fset 'si::until #'(lambda (def env)
+                       (declare (ignore env))
+                       (si::while-until (cadr def) (cddr def) 'unless))
+        t)
+
+  (core:fset 'multiple-value-bind
+             #'(lambda (whole env)
+                 (declare (core:lambda-name multiple-value-bind-macro))
+                 (declare (ignore env))
+                 (let ((vars (cadr whole))
+                       (form (caddr whole))
+                       (body (cdddr whole))
+                       (restvar (gensym)))
+                   `(multiple-value-call
+                        #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
+                            (declare (ignore ,restvar))
+                            ,@body)
+                      ,form)))
+             t)
+
+
+  (defun filter-dolist-declarations (declarations)
+    (let ((a nil))
+      (mapc #'(lambda (clause)
+                (when (not (and (consp clause)
+                                (or (eq (car clause) 'type)
+                                    (eq (car clause) 'ignore))))
+                  (setq a (cons clause a))))
+            declarations)
+      (nreverse a)))
+
+  (let ((f #'(lambda (whole env)
+               (declare (ignore env) (core:lambda-name dolist))
+               (let (body control var expr exit)
+                 (setq body (rest whole))
+                 (when (endp body)
+                   (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+                 (setq control (first body) body (rest body))
+                 (when (endp control)
+                   (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+                 (setq var (first control) control (rest control))
+                 (if (<= 1 (length control) 2)
+                     (setq expr (first control) exit (rest control))
+                     (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
+                 (multiple-value-bind (declarations body)
+                     (process-declarations body nil)
+                   `(block nil
+                      (let* ((%dolist-var ,expr))
+                        (si::while %dolist-var
+                                   (let ((,var (first %dolist-var)))
+                                     (declare ,@declarations)
+                                     (tagbody
+                                        ,@body
+                                        (setq %dolist-var (cdr %dolist-var))))))
+                      ,(when exit
+                         `(let ((,var nil))
+                            (declare (ignorable ,var)
+                                     ,@(filter-dolist-declarations declarations))
+                            ,@exit))))))))
+    (si::fset 'dolist f t '((var list-form &optional result-form) &body body)))
+
+  (let ((f #'(lambda (whole env)
+               (declare (ignore env) (core:lambda-name dotimes))
+               (let (body control var expr exit)
+                 (setq body (rest whole))
+                 (when (endp body)
+                   (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
+                 (setq control (first body) body (rest body))
+                 (when (endp control)
+                   (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
+                 (setq var (first control) control (rest control))
+                 (if (<= 1 (length control) 2)
+                     (setq expr (first control) exit (rest control))
+                     (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))
+                 (multiple-value-bind (declarations body)
+                     (process-declarations body nil)
+                   (when (and (integerp expr) (>= expr 0))
+                     (setq declarations
+                           (cons `(type (integer 0 ,expr) ,var) declarations)))
+                   `(block nil
+                      (let* ((%dotimes-var ,expr)
+                             (,var 0))
+                        (declare ,@declarations)
+                        (si::while (< ,var %dotimes-var)
+                                   ,@body
+                                   (setq ,var (1+ ,var)))
+                        ,@exit)))))))
+    (si::fset 'dotimes f t '((var count-form &optional result-form) &body body)))
+
+  (let ((f #'(lambda (whole env)
+               (declare (ignore env) (core:lambda-name do/do*-expand))
+               (let (do/do* control test result vlexport step let psetq body)
+                 (setq do/do* (first whole) body (rest whole))
+                 (if (eq do/do* 'do)
+                     (setq let 'LET psetq 'PSETQ)
+                     (setq let 'LET* psetq 'SETQ))
+                 (when (endp body)
+                   (simple-program-error "Syntax error first (endp body) in ~A:~%~A" do/do* whole))
+                 (setq control (first body) body (rest body))
+                 (when (endp body)
+                   (simple-program-error "Syntax error second (endp body) in ~A:~%~A" do/do* whole))
+                 (setq test (first body) body (rest body))
+                 (when (endp test)
+                   (simple-program-error "Syntax error (endp test) in ~A:~%~A" do/do* whole))
+                 (setq result (rest test) test (first test))
+                 (dolist (c control)
+                   (when (symbolp c) (setq c (list c)))
+                   (let ((lenc (length c)))
+                     (cond
+                       ((or (eql lenc 1) (eql lenc 2))
+                        (setq vlexport (cons c vlexport)))
+                       ((eql lenc 3)
+                        (setq vlexport (cons (butlast c) vlexport)
+                              step (list* (third c) (first c) step)))
+                       (t
+                        (simple-program-error "Syntax error (length not 1,2,3 - its ~a and c is ~s) in ~A:~%~A" (length c) c do/do* whole)))))
+                 (multiple-value-bind (declarations real-body)
+                     (process-declarations body nil)
+                   `(BLOCK NIL
+                      (,let ,(nreverse vlexport)
+                        (declare ,@declarations)
+                        (sys::until ,test
+                                    ,@real-body
+                                    ,@(when step (list (cons psetq (nreverse step)))))
+                        ,@(or result '(nil)))))))))
+    (si::fset 'do f t '(vars test &body body))
+    (si::fset 'do* f t '(vars test &body body)))
+
+  (si::fset 'prog1 #'(lambda (whole env)
+                       (declare (ignore env))
+                       (let ((sym (gensym))
+                             (first (cadr whole))
+                             (body (cddr whole)))
+                         (if body
+                             `(let ((,sym ,first))
+                                ,@body
+                                ,sym)
+                             first)))
+            t)
+  )
+
+
+#-staging
 (eval-when (:execute)
   (load #P"sys:src;lisp;kernel;cmp;jit-setup.lisp")
   (load #P"sys:src;lisp;kernel;clsymbols.lisp"))
 
-(defun entry-filename (filename-or-cons)
-  "If filename-or-cons is a list then the first entry is a filename"
-  (if (consp filename-or-cons)
-      (car filename-or-cons)
-      filename-or-cons))
+(defun command-line-paths (&optional (start 0)
+                           &aux (index (length core:*command-line-arguments*))
+                                paths)
+  (tagbody
+   next
+    (if (> index start)
+        (progn
+          (setq index (- index 1)
+                paths (cons (pathname (elt core:*command-line-arguments* index)) paths))
+          (go next))))
+  paths)
 
-(defun entry-compile-file-options (entry)
-  (if (consp entry)
-      (cadr entry)
-      nil))
-
-(defun delete-init-file (entry &key (really-delete t) stage)
-  (let* ((module (entry-filename entry))
-         (bitcode-path (bitcode-pathname module :bitcode stage)))
-    (if (probe-file bitcode-path)
-        (if really-delete
-            (progn
-              (core:fmt t "     Deleting bitcode: {}%N" bitcode-path)
-              (delete-file bitcode-path))))))
-
-
-;; I need to search the list rather than using features because *features* may change at runtime
-(defun default-target-backend (&optional given-stage)
-  (let* ((stage (if given-stage
-                    given-stage
-                    (default-target-stage)))
-         (garbage-collector (build-configuration))
-         (target-backend (core:fmt nil "{}{}" stage garbage-collector)))
-    target-backend))
-(export 'default-target-backend)
-
-(defvar *target-backend* (default-target-backend))
-(export '*target-backend*)
-
-(defun bitcode-exists-and-up-to-date (entry)
-  (let* ((filename (entry-filename entry))
-         (bitcode-path (bitcode-pathname filename))
-         (found-bitcode (probe-file bitcode-path)))
-    (if found-bitcode
-        (> (file-write-date bitcode-path)
-           (file-write-date filename))
-        nil)))
-
-(defun default-prologue-form (&optional features)
-  `(progn
-     ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
-     (if (not (core:noinform-p))
-         (core:fmt t "Starting {}%N" (lisp-implementation-version)))))
+;;;
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (export 'process-command-line-load-eval-sequence)
 (defun process-command-line-load-eval-sequence ()
@@ -721,8 +961,8 @@ the stage, the +application-name+ and the +bitcode-name+"
 ;;; I moved the build system code out of init.lisp and
 ;;; put it in clasp-builder.lisp
 
-(if (member :clasp-builder *features*)
-    (load "sys:src;lisp;kernel;clasp-builder.lisp"))
+(when (member :clasp-builder *features*)
+  (load "sys:src;lisp;kernel;clasp-builder.lisp"))
 
 
 (defun tpl-hook (cmd)
@@ -751,3 +991,5 @@ the stage, the +application-name+ and the +bitcode-name+"
 #-(or aclasp bclasp cclasp eclasp)
 (eval-when (:execute :load-toplevel)
   (core:fmt t "init.lisp  %N!\n!\n! Hello from the bottom of init.lisp - for some reason execution is passing through here\n!\n!\n"))
+
+

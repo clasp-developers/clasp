@@ -73,12 +73,20 @@ namespace llvmo {
 };
 
 
+extern "C" {
+extern unsigned char* global_python_virtual_machine_codes;
+extern uintptr_t      global_python_virtual_machine_codes_size;
+extern unsigned char* global_python_class_layouts;
+extern uintptr_t      global_python_class_layouts_size;
+};
+
+
 namespace core {
 
 
   extern CommandLineOptions *global_options;
   extern bool global_initialize_builtin_classes;
-  
+
 class Bundle;
 class CallStack;
 SMART(Intrinsic);
@@ -232,7 +240,6 @@ struct globals_t {
   DebugStream *_DebugStream;
   uint _SingleStepLevel;
   int _TraceLevel;
-  char _Stage;
   std::atomic<int> _DebuggerLevel;
   /*! Global environment initialization hooks can be added until
 	  the environment is started up.
@@ -305,6 +312,7 @@ namespace core {
 class Lisp {
   friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
+public:
   struct GCRoots //: public gctools::HeapRoot
   {
     T_sp                       _TrueObject; // The True object
@@ -314,8 +322,8 @@ class Lisp {
     std::atomic<T_sp>          _AllLibraries;
     std::atomic<T_sp>          _AllObjectFiles;
     std::atomic<T_sp>          _AllCodeBlocks;
-    GlobalEntryPoint_sp        _UnboundSymbolFunctionEntryPoint;
-    GlobalEntryPoint_sp        _UnboundSetfSymbolFunctionEntryPoint;
+    GlobalSimpleFun_sp        _UnboundSymbolFunctionEntryPoint;
+    GlobalSimpleFun_sp        _UnboundSetfSymbolFunctionEntryPoint;
     T_sp                       _TerminalIO;
     List_sp                    _ActiveThreads;
     List_sp                    _DefaultSpecialBindings;
@@ -355,7 +363,7 @@ class Lisp {
     DoubleFloat_sp _RehashSize;
     DoubleFloat_sp _RehashThreshold;
     T_sp _NullStream;
-    List_sp _ThePathnameTranslations; /* alist */
+    HashTableEqualp_sp _ThePathnameTranslations;
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
@@ -460,8 +468,8 @@ public:
   //	void catchUnwindTag(List_sp catchStore);
   //	List_sp catchFindTag(T_sp tag);
 public:
-  List_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
-  void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
+  HashTableEqualp_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
+  //void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
   /*! Return the maximum path length for the system */
 public:
   bool bootClassTableIsValid() const { return this->_BootClassTableIsValid; };
@@ -943,7 +951,7 @@ FILE* monitor_file(const std::string& filename_prefix);
 #endif
 extern bool global_Started;
 
-void dumpDebuggingLayouts(const std::string& filename);
+void dumpDebuggingLayouts();
 T_mv cl__intern(String_sp symbol_name, T_sp package_desig);
 };
 

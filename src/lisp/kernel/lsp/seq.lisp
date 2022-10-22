@@ -363,25 +363,27 @@ default value of INITIAL-ELEMENT depends on TYPE."
 
 ;;; separate because it's easier to not make the whole list at once.
 ;;; Only used in a compiler macroexpansion, for now
-(defun concatenate-to-list (core:&va-rest sequences)
+(defun concatenate-to-list (&rest sequences)
   (let* ((head (list nil)) (tail head))
     (declare (type cons head tail)
              (optimize (safety 0) (speed 3)))
-    (dovaslist (sequence sequences (cdr head))
+    (dolist (sequence sequences)
       (sequence:dosequence (elt sequence)
         (let ((new-tail (list elt)))
           (rplacd tail new-tail)
-          (setq tail new-tail))))))
+          (setq tail new-tail))))
+    (cdr head)))
 
-(defun concatenate-into-sequence (seq core:&va-rest sequences)
+(defun concatenate-into-sequence (seq &rest sequences)
   ;; seq is assumed to be non complex and have the correct length.
   (reckless
    (sequence:with-sequence-iterator (it nil from-end step nil nil setelt)
-       (seq)
-     (dovaslist (sequence sequences seq)
+     (seq)
+     (dolist (sequence sequences)
        (sequence:dosequence (elt sequence)
-         (funcall setelt elt seq it)
-         (setq it (funcall step seq it from-end)))))))
+                            (funcall setelt elt seq it)
+                            (setq it (funcall step seq it from-end))))
+     seq)))
 
 (defun concatenate (result-type &rest sequences)
   (declare (dynamic-extent sequences))

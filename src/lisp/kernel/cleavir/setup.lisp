@@ -158,8 +158,20 @@
 
 (defun treat-as-special-operator-p (name)
   (cond
-    ((cmp:treat-as-special-operator-p name) t)
-    ((eq name 'unwind-protect) t)
+    ;; These are CL special operators (special-operator-p) but handled
+    ;; with macros.
+    ((member name '(catch throw progv)) nil)
+    ((special-operator-p name) t)
+    ((eq name 'core:debug-message) t)      ;; special operator
+    ((eq name 'core:debug-break) t)      ;; special operator
+    ((eq name 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
+    ((eq name 'core:foreign-call-pointer) t) ;; Call function pointers
+    ((eq name 'core:foreign-call) t)         ;; Call foreign function
+    ((eq name 'core:bind-vaslist) t)         ;; bind-vaslist
+    ((eq name 'core::vector-length) t)
+    ((eq name 'core::%array-dimension) t)
+    ((eq name 'core::fence) t)
+    ((eq name 'core:defcallback) t)
     ((eq name 'core::atomic-vref) t)
     ((eq name 'core::atomic-vset) t)
     ((eq name 'core::vcas) t)
@@ -245,33 +257,11 @@
      nil)))
 
 ;;; The toplevel shell may have a bclasp environment - ignore it
-(defmethod env:symbol-macro-expansion (symbol (environment core:value-frame))
-  (cleavir-environment:symbol-macro-expansion symbol *clasp-env*))
-
 (defmethod env:function-info ((sys clasp) (environment null) symbol)
   (env:function-info sys *clasp-env* symbol))
 
-(defmethod env:function-info ((sys clasp)
-                              (environment core:value-environment) symbol)
-  (env:function-info sys (core:get-parent-environment environment) symbol))
-
-(defmethod env:function-info ((sys clasp)
-                              (environment core:value-frame) symbol)
-  (env:function-info sys (core:get-parent-environment environment) symbol))
-
-(defmethod env:variable-info ((sys clasp)
-                              (environment core:value-frame) symbol)
-  (env:variable-info sys (core:get-parent-environment environment) symbol))
-
-(defmethod env:variable-info ((sys clasp)
-                              (environment core:value-environment) symbol)
-  (env:variable-info sys (core:get-parent-environment environment) symbol))
-
 (defmethod env:declarations ((environment null))
   (env:declarations *clasp-env*))
-
-(defmethod env:declarations ((environment core:value-environment))
-  (env:declarations (core:get-parent-environment environment)))
 
 ;;; TODO: Handle (declaim (declaration ...))
 (defmethod env:declarations
@@ -302,9 +292,6 @@
 
 (defmethod env:optimize-info ((environment NULL))
   (env:optimize-info *clasp-env*))
-
-(defmethod env:optimize-info ((environment core:value-environment))
-  (env:optimize-info (core:get-parent-environment environment)))
 
 
 (defmethod cleavir-environment:macro-function (symbol (environment clasp-global-environment))
@@ -379,42 +366,52 @@
   (declare (ignore environment errorp))
   name)
 
-(defun cleavir-env->interpreter (env)
-  ;; Convert a cleavir ENTRY (or null) into an environment clasp's interpreter can use.
-  ;; Only for compile time environments, so it's symbol macros, macros, and declarations.
-  ;; The interpreter doesn't use declarations besides SPECIAL.
+(defun cleavir-env->bytecode (env)
+  ;; Convert a cleavir ENTRY (or null) into an environment clasp's bytecode compiler
+  ;; can use. Only for compile time environments, so it's symbol macros, macros, and
+  ;; declarations. The bytecode compiler doesn't use any declarations besides
+  ;; SPECIAL and NOTINLINE.
   (etypecase env
-    (clasp-global-environment nil)
-    (null env)
+    ((or clasp-global-environment null) (cmp:make-null-lexical-environment))
     (env:special-variable
-     (core:make-value-environment-for-locally-special-entries
-      (list (env:name env))
-      (cleavir-env->interpreter (env::next env))))
+     (cmp:add-specials (cleavir-env->bytecode (env::next env))
+                       (list (env:name env))))
     (env:symbol-macro
-     (let ((result (core:make-symbol-macrolet-environment
-                    (cleavir-env->interpreter (env::next env)))))
-       (core:add-symbol-macro
-        result (env:name env)
-        (constantly (env:expansion env)))
-       result))
+     (let ((next (cleavir-env->bytecode (env::next env))))
+       (cmp:lexenv/make
+        (acons (env:name env)
+               (cmp:symbol-macro-var-info/make (constantly (env:expansion env)))
+               (cmp:lexenv/vars next))
+        (cmp:lexenv/tags next) (cmp:lexenv/blocks next) (cmp:lexenv/funs next)
+        (cmp:lexenv/notinlines next) (cmp:lexenv/frame-end next))))
     (env:macro
-     (let ((result (core:make-macrolet-environment
-                    (cleavir-env->interpreter (env::next env)))))
-       (core:add-macro result (env:name env)
-                       (env:expander env))
-       result))
-    (env::entry (cleavir-env->interpreter (env::next env)))))
-
-(defvar *use-ast-interpreter* t)
+     (let ((next (cleavir-env->bytecode (env::next env))))
+       (cmp:lexenv/make
+        (cmp:lexenv/vars next) (cmp:lexenv/tags next) (cmp:lexenv/blocks next)
+        (acons (env:name env) (cmp:local-macro-info/make (env:expander env))
+               (cmp:lexenv/funs next))
+        (cmp:lexenv/notinlines next) (cmp:lexenv/frame-end next))))
+    (env:inline
+     (let ((next (cleavir-env->bytecode (env::next env))))
+       (if (eq (env:inline env) 'cl:notinline)
+           (cmp:lexenv/make
+            (cmp:lexenv/vars next) (cmp:lexenv/tags next) (cmp:lexenv/blocks next)
+            (cmp:lexenv/funs next) (cons (env:name env) (cmp:lexenv/notinlines next))
+            (cmp:lexenv/frame-end next))
+           next)))
+    (env::entry (cleavir-env->bytecode (env::next env)))))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
   (cleavir-environment:eval form env *clasp-env*))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (cleavir-environment:cst-eval (cst:cst-from-expression form) env dispatch-env nil))
-
-(defvar *use-cst-eval* t)
+  (simple-eval form env
+               (lambda (form env)
+                 (let (;; disable cleavir compiler macros
+                       (cmp:*cleavir-compile-hook* nil))
+                   (funcall (cmp:bytecompile `(lambda () (progn ,form))
+                                             (cleavir-env->bytecode env)))))))
 
 (defun wrap-cst (cst)
   (cst:quasiquote (cst:source cst)
@@ -423,22 +420,13 @@
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
                                          system)
   (declare (ignore system))
-  ;; NOTE: We want the interpreter to deal with CSTs when we care about source info.
-  ;; That is mainly when saving inline definitions.
-  ;; At the moment, only simple-eval-cst and ast-interpret-cst actually deal with the CST,
-  ;; so we want to be using one of those cases when saving definitions.
-  (if *use-cst-eval*
-      (simple-eval-cst cst env
-                       (cond (core:*use-interpreter-for-eval*
-                              (lambda (cst env)
-                                (core:interpret (cst:raw cst) (cleavir-env->interpreter env))))
-                             (*use-ast-interpreter* #'ast-interpret-cst)
-                             (t (lambda (cst env)
-                                  (funcall (bir-compile-cst-in-env (wrap-cst cst) env))))))
-      (cond (core:*use-interpreter-for-eval*
-             (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
-            (*use-ast-interpreter* (ast-interpret-cst cst env))
-            (t (funcall (bir-compile-cst-in-env (wrap-cst cst) env))))))
+  (simple-eval-cst cst env
+                   (lambda (cst env)
+                     (let ((cmp:*cleavir-compile-hook* nil))
+                       (funcall
+                        (cmp:bytecompile
+                         `(lambda () (progn ,(cst:raw cst)))
+                         (cleavir-env->bytecode env)))))))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
   (cleavir-environment:cst-eval cst env *clasp-env* system))

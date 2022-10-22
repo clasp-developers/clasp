@@ -80,6 +80,7 @@ namespace std {
 class type_info;
 };
 
+
 //
 // USE_TAGGED_PTR_P0  determines whether a p0 pointer,  the most-derived-pointer is stored
 //         in the tagged_ptr.   If you turn it on then tagged_ptr uses twice as much
@@ -131,6 +132,17 @@ typedef std::size_t class_id;
 
 /*! Configure architecture dependent types */
 #include <clasp/core/configure_clasp.h>
+
+namespace clbind {
+
+struct BytecodeWrapper {
+  enum { BytecodeP = 1 };
+};
+
+// Use bytecode wrappers for all exposed functions
+using DefaultWrapper = BytecodeWrapper;
+
+};
 
 /*! Use old Conditions system baked into C++
   OLD_CONDITIONS = 1
@@ -495,11 +507,13 @@ class Cons_O;
 class General_O;
 class HashTableEqual_O;
 class SimpleVector_O;
+class SimpleVector_byte8_t_O;
 
 
   [[noreturn]]void lisp_error_sprintf(const char* file, int lineno, const char* function, const char* fmt, ... );
   [[noreturn]]void lisp_errorDereferencedNonPointer(core::T_O *objP);
   [[noreturn]]void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP);
+  [[noreturn]]void lisp_errorBadCastStampWtag(size_t toStampWtag, core::T_O *objP);
   [[noreturn]]void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP);
   [[noreturn]]void lisp_errorBadCastToFixnum(class_id fromType, core::T_O *objP);
   [[noreturn]]void lisp_errorBadCastFromT_OToCons_O(core::T_O *objP);
@@ -527,6 +541,47 @@ namespace core {
 //  MultipleValues &lisp_callArgs();
 };
 
+extern "C" {
+
+void drag_delay();
+void drag_native_calls();
+void drag_cxx_calls();
+void drag_interpret_dtree();
+void drag_cons_allocation();
+void drag_general_allocation();
+
+};
+
+#ifdef DEBUG_DRAG_NATIVE_CALLS
+# define DO_DRAG_NATIVE_CALLS() drag_native_calls()
+#else
+# define DO_DRAG_NATIVE_CALLS()
+#endif
+
+#ifdef DEBUG_DRAG_CXX_CALLS
+# define DO_DRAG_CXX_CALLS() drag_cxx_calls()
+#else
+# define DO_DRAG_CXX_CALLS()
+#endif
+
+#ifdef DEBUG_DRAG_INTERPRET_DTREE
+# define DO_DRAG_INTERPRET_DTREE() drag_interpret_dtree()
+#else
+# define DO_DRAG_INTERPRET_DTREE()
+#endif
+
+#ifdef DEBUG_DRAG_CONS_ALLOCATION
+# define DO_DRAG_CONS_ALLOCATION() drag_cons_allocation()
+#else
+# define DO_DRAG_CONS_ALLOCATION()
+#endif
+
+#ifdef DEBUG_DRAG_GENERAL_ALLOCATION
+# define DO_DRAG_GENERAL_ALLOCATION() drag_general_allocation()
+#else
+# define DO_DRAG_GENERAL_ALLOCATION()
+#endif
+
 extern void clasp_mps_debug_allocation(const char *poolName, void *base, void *objAddr, int size, int kind);
 extern void clasp_mps_debug_fix1_before(void *base, void *smartAddr);
 extern void clasp_mps_debug_fix_before(void *pbase, void *px, int offset);
@@ -548,6 +603,7 @@ extern void clasp_mps_debug_container(const char *ctype, const char *name, int s
 #include <clasp/gctools/containers.h>
 #include <clasp/gctools/threadLocalStacks.h>
 #include <clasp/gctools/gcStack.h>
+#include <clasp/gctools/multiple_value_pointers.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/gctools/threadlocal.h>
@@ -712,9 +768,6 @@ typedef vector<AtomHandle> VectorAtomHandle;
 // # p r a g m a warning( disable : 4290 )
 #endif
 
-class ActivationFrame_O;
-class Environment_O;
-typedef gctools::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
 };
 
 /*! A type for an array of arguments */
@@ -742,7 +795,7 @@ extern Symbol_sp& _sym_simpleError;
  * \param search The string to search for
  * \param replace The string to replace with
  */
-string searchAndReplaceString(const string &str, const string &search, const string &replace, LispPtr lisp);
+string searchAndReplaceString(const string &str, const string &search, const string &replace );
 
 /* The CallingConvention for Common Lisp functions is a pointer to where the multiple value result
    should be written, the closed over environment for the function, the number of args, three explicit args that will pass in registers (or be NULL)
@@ -799,9 +852,22 @@ typedef gctools::smart_ptr<General_O> General_sp;
 class Symbol_O;
 typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
 
- class Function_O;
+class SimpleVector_byte8_t_O;
+typedef gctools::smart_ptr<SimpleVector_byte8_t_O> SimpleVector_byte8_t_sp;
+
+class SimpleVector_O;
+typedef gctools::smart_ptr<SimpleVector_O> SimpleVector_sp;
+
+class Function_O;
  typedef gctools::smart_ptr<Function_O> Function_sp;
- 
+ class SimpleFun_O;
+ typedef gctools::smart_ptr<SimpleFun_O> SimpleFun_sp;
+ class CodeSimpleFun_O;
+ typedef gctools::smart_ptr<CodeSimpleFun_O> CodeSimpleFun_sp; 
+
+ class GlobalSimpleFunBase_O;
+ typedef gctools::smart_ptr<GlobalSimpleFunBase_O> GlobalSimpleFunBase_sp;
+
 class SymbolToEnumConverter_O;
 typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 }
@@ -915,46 +981,48 @@ uint64_t lisp_nameword(T_sp name);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, T_sp a8);
-  bool lisp_lambdaListHandlerNeedsValueEnvironment(LambdaListHandler_sp llh);
-
 
 //    void lisp_setGlobalInt(const string& package, const string& n, uint val );
 //    Symbol_sp lisp_allocate_packageless_sid(string const& n);
   Symbol_sp lisp_getClassSymbolForClassName(const string &n);
   string lisp_convertCNameToLispName(string const &cname, bool convertUnderscoreToDash = true);
-  T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp args);
-  List_sp lisp_parse_arguments(const string &packageName, const string &args);
+List_sp lisp_parse_arguments(const string &packageName, const string &args, int numberOfRequiredArguments=0, const std::set<int> skip_indices = std::set<int>() );
+List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
   List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
-  LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
-size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp llh);
+
+void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specializer,
+                                     T_sp name,
+                                     Symbol_sp classSymbol,
+                                     GlobalSimpleFunBase_sp entry,
+                                     size_t TemplateDispatchOn = 0,
+                                     bool useTemplateDispatchOn = false,
+                                     const string &lambda_list = "",
+                                     const string &declares = "",
+                                     const string &docstring = "",
+                                     bool autoExport = true,
+                                     int number_of_required_arguments = -1,
+                                     std::set<int> pureOutIndices = std::set<int>());
 
 
-  void lisp_defineSingleDispatchMethod(T_sp name,
-                                       Symbol_sp classSymbol,
-                                       BuiltinClosure_sp,
-                                       size_t TemplateDispatchOn = 0,
-                                       bool useTemplateDispatchOn = false,
-                                       const string &lambda_list = "",
-                                       const string &declares = "",
-                                       const string &docstring = "",
-                                       bool autoExport = true,
-                                       int number_of_required_arguments = -1,
-                                       std::set<int> pureOutIndices = std::set<int>());
-
-
-  void lisp_defmacro(Symbol_sp name, const string &packageName,
+#if 0
+void lisp_defmacro(Symbol_sp name, const string &packageName,
                      BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
                      const string &docstring = "");
-  void lisp_defun(Symbol_sp name, const string &packageName,
-                  BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
-                  const string &docstring = "", const string &sourceFile = "",
-                  int sourceLine = 0, int number_of_required_arguments = 0,
-                  const std::set<int> &skipIndices = std::set<int>());
-  void lisp_defun_setf(Symbol_sp name, const string &packageName,
-                       BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
-                       const string &docstring = "", const string &sourceFile = "",
-                       int sourceLine = 0, int number_of_required_arguments = 0,
-                       const std::set<int> &skipIndices = std::set<int>());
+#endif
+  typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
+  void lisp_bytecode_defun(SymbolFunctionEnum kind,
+                           int bytecodep,
+                           Symbol_sp sym,
+                           const string &packageName,
+                           GlobalSimpleFunBase_sp fc,
+                           const string& arguments = "",
+                           const string& declares = "",
+                           const string &docstring = "",
+                           const string &sourceFile = "",
+                           int lineNumber = 0,
+                           int numberOfRequiredArguments = 0,
+                           const std::set<int> &skipIndices = std::set<int>() );
+
   void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);
 
   void lisp_defsetfSingleDispatchMethod(LispPtr lisp, const string &name, Symbol_sp classSymbol,

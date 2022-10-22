@@ -45,7 +45,7 @@ __attribute__((always_inline))
 #else
 inline
 #endif
-PTR_TYPE general_mps_allocation(const Header_s::StampWtagMtag& the_header,
+PTR_TYPE general_mps_allocation(const Header_s::BadgeStampWtagMtag& the_header,
                                 size_t size,
                                 mps_ap_t& allocation_point,
                                 ARGS &&... args) {

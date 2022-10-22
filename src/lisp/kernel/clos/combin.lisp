@@ -31,15 +31,19 @@
 ;; The ARG-INFO threaded throughout here is used to skip some APPLYing.
 ;; See closfastgf.lisp, gf-arg-info function.
 
+#|
+(defvar *avoid-compiling*
+  #+(and staging bytecode) t
+  #-(and staging bytecode) nil)
+|#
+
 (defvar *avoid-compiling* nil)
+
 (defun emf-maybe-compile (form)
-  (if *avoid-compiling*
-      (coerce form 'function)
-      (let ((*avoid-compiling* t)
-            ;; Cleavir itself uses generic functions, and we could therefore
-            ;; end up here recursively, which ends quite badly.
-            ;; So fall back to the bclasp compiler which does not use gfs.
-            (cmp:*cleavir-compile-hook* nil))
+  (if (or *avoid-compiling* (not cmp:*cleavir-compile-hook*))
+      (let ((core:*use-interpreter-for-eval* t))
+        (coerce form 'function))
+      (let ((*avoid-compiling* t))
         (compile nil form))))
 
 (defun emf-default (form &optional (arg-info '(t)))
@@ -176,6 +180,11 @@
         collect (call-method-aux gf nmethod)))
 
 (defun std-expand-apply-method (method method-arguments arguments env)
+  (mlog "combin.lisp:std-expand-apply-method method -> {} method-arguments -> {} arguments -> {} env -> {}%N"
+        (core:safe-repr method)
+        (core:safe-repr method-arguments)
+        (core:safe-repr arguments)
+        (core:safe-repr env))
   (destructuring-bind (&optional ((&rest next-methods))) method-arguments
     (let ((arg-info (argforms-to-arg-info arguments env)))
       (cond
@@ -188,7 +197,7 @@
                 (sname (slot-definition-name
                         (accessor-method-slot-definition method)))
                 (valuef
-                  (cond ((fixnump location)
+                  (cond ((si:fixnump location)
                          ;; instance location- easy
                          `(core:instance-ref ,(first arguments) ',location))
                         ((consp location)
@@ -210,7 +219,7 @@
                (sname (slot-definition-name
                        (accessor-method-slot-definition method)))
                (class (second (method-specializers method))))
-           (cond ((fixnump location)
+           (cond ((si:fixnump location)
                   `(si:instance-set ,(second arguments) ,location ,(first arguments)))
                  ((consp location)
                   ;; class location

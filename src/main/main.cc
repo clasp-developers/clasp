@@ -66,7 +66,8 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/array.h>
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/cons.h>
@@ -331,23 +332,10 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     core::global_initialize_builtin_classes = false;
   }
   
-  if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-    printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
-    stringstream ss;
-    char* username = getenv("USER");
-    if (!username) {
-      printf("Could not get USER environment variable\n");
-      exit(1);
-    }
-    ss << "/tmp/clasp_layout_" << getenv("USER") << ".py";
-    core::dumpDebuggingLayouts(ss.str());
-  }
-  
   // Do some minimal argument processing
   (core::global_options->_ProcessArguments)(core::global_options);
   ::globals_ = new core::globals_t();
   globals_->_DebugStream = new core::DebugStream(mpiRank);
-  globals_->_Stage = core::global_options->_StartupStage;
 
   const char* jls = getenv("CLASP_JIT_LOG_SYMBOLS");
   if (jls || core::global_options->_JITLogSymbols) {
@@ -510,6 +498,12 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 int main( int argc, char *argv[] )
 {
+  const char* trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
+  if (trigger) {
+    size_t strigger = atoi(trigger);
+    core::global_compile_discriminating_function_trigger = strigger;
+    printf("%s:%d:%s Setting global_compile_discriminating_function_trigger = %lu\n", __FILE__, __LINE__, __FUNCTION__, strigger );
+  }
   if (getenv("CLASP_TIME_EXIT")) {
     atexit(core::last_exit);
   }
@@ -592,8 +586,11 @@ int main( int argc, char *argv[] )
 
   fflush( stderr );
 
+  //
+  // Setup debugging info all the time
+  //
+  core::dumpDebuggingLayouts();
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-    printf("%s:%d:%s  Setting up clasp for debugging - writing PID to /tmp/clasp_pid\n", __FILE__, __LINE__, __FUNCTION__);
     stringstream ss;
     char* username = getenv("USER");
     if (!username) {
@@ -601,6 +598,7 @@ int main( int argc, char *argv[] )
       exit(1);
     }
     ss << "/tmp/clasp_pid_" << getenv("USER");
+    printf("%s:%d:%s  Setting up clasp for debugging - writing PID to %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str());
     FILE* fout = fopen(ss.str().c_str(),"w");
     if (!fout) {
       printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
@@ -608,13 +606,7 @@ int main( int argc, char *argv[] )
     }
     fprintf(fout,"%d",getpid());
     fclose(fout);
-    
-    printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
-    stringstream su;
-    su << "/tmp/clasp_layout_" << getenv("USER") << ".py";
-    core::dumpDebuggingLayouts(su.str());
   }
-  
   //
   // Pause before any allocations take place
   //

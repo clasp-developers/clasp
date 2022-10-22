@@ -461,18 +461,18 @@ rewrite the slot in the literal table to store a closure."
 
 (defun ltv/local-entry-point (entry-point index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  (let ((function-index (first (sys:local-entry-point-generator-entry-point-indices entry-point))))
+  (let ((function-index (first (sys:local-simple-fun-generator-entry-point-indices entry-point))))
     (add-creator "ltvc_make_local_entry_point" index entry-point
                  function-index
-                 (load-time-reference-literal (sys:entry-point-base-function-description entry-point) read-only-p :toplevelp nil))))
+                 (load-time-reference-literal (sys:simple-fun-function-description entry-point) read-only-p :toplevelp nil))))
 
 (defun ltv/global-entry-point (entry-point index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  (let ((function-index (first (sys:global-entry-point-generator-entry-point-indices entry-point)))
-        (local-entry-point-index (sys:global-entry-point-generator-local-entry-point-index entry-point)))
+  (let ((function-index (first (sys:global-simple-fun-generator-entry-point-indices entry-point)))
+        (local-entry-point-index (sys:global-simple-fun-generator-local-simple-fun-index entry-point)))
     (add-creator "ltvc_make_global_entry_point" index entry-point
                  function-index
-                 (load-time-reference-literal (sys:entry-point-base-function-description entry-point) read-only-p :toplevelp nil)
+                 (load-time-reference-literal (sys:simple-fun-function-description entry-point) read-only-p :toplevelp nil)
                  local-entry-point-index #+(or)(load-time-reference-literal (sys:global-entry-point-local-entry-point entry-point) read-only-p :toplevelp nil))))
 
 (defun ltv/package (package index read-only-p &key (toplevelp t))
@@ -551,8 +551,8 @@ rewrite the slot in the literal table to store a closure."
     ((double-float-p object) (values (literal-machine-double-float-coalesce literal-machine) #'ltv/double-float))
     ((core:ratiop object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
     ((sys:function-description-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
-    ((sys:local-entry-point-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/local-entry-point))
-    ((sys:global-entry-point-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/global-entry-point))
+    ((sys:local-simple-fun-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/local-entry-point))
+    ((sys:global-simple-fun-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/global-entry-point))
     ((bit-vector-p object) (values nil #'ltv/bitvector))
     ((core:base-string-p object)
      (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-base-string-coalesce literal-machine)) #'ltv/base-string))
@@ -780,12 +780,13 @@ Return the index of the load-time-value"
                    (byte-code-length (length byte-code-string))
                    (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string
                                                                   (core:fmt nil "startup-byte-code-{}" id))))
-              (cmp:irc-intrinsic-call "cc_invoke_byte_code_interpreter"
+              (cmp:irc-intrinsic-call "cc_invoke_start_code_interpreter"
                                       (list *gcroots-in-module*
                                             (cmp:irc-bit-cast (cmp:irc-typed-gep (llvm-sys:array-type-get cmp:%i8% (1+ byte-code-length))
                                                                            byte-code-global (list 0 0))
                                                               cmp:%i8*%)
-                                            (cmp:jit-constant-size_t byte-code-length)))
+                                            (cmp:jit-constant-size_t byte-code-length)
+                                            (cmp:irc-bit-cast cmp::*current-function* cmp:%i8*%)))
               (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*)))))
       (let ((literal-entries (literal-machine-table-index *literal-machine*)))
         (when t ;; (> literal-entries 0)
@@ -959,29 +960,12 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; returns a result.
 ;;;
 
-(defun bclasp-compile-form (form)
-  (let ((fn (cmp:with-new-function (local-fn fn-env fn-result
-                                             :function-name 'bclasp-top-level-form
-                                             :parent-env nil
-                                             :function-info (cmp:make-function-info
-                                                             :function-name 'bclasp-top-level-form
-                                                             :lambda-list nil
-                                                             :docstring nil
-                                                             :declares nil
-                                                             :spi core:*current-source-pos-info*))
-              ;; Map the function argument names
-              (cmp:cmp-log "Creating ltv thunk with name: {}%N" (llvm-sys:get-name local-fn))
-              (cmp:codegen fn-result form fn-env)
-              (cmp:cmp-log-dump-function local-fn)
-              (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function local-fn t)))))
-    fn))
-
 (defun compile-form (form)
   (if core:*use-cleavir-compiler*
       (progn
         (funcall (find-symbol "COMPILE-FORM" "CLASP-CLEAVIR")
                  form))
-      (bclasp-compile-form form)))
+      (error "BUG: no compiler for cmpliteral")))
 
 ;;; ------------------------------------------------------------
 ;;; ------------------------------------------------------------
@@ -1093,21 +1077,6 @@ and  return the sorted values and the constant-table or (values nil nil)."
         (values (constants-table-reference data-or-index) literal-name)
         data-or-index)))
 
-(defun codegen-rtv-bclasp (result obj)
-  "bclasp calls this to get copy the run-time-value for obj into result.
-Returns (value index t) if the value was put in the literal vector or it
-returns (value immediate nil) if the value is an immediate value."
-  (multiple-value-bind (immediate-datum?literal-node-runtime in-array)
-      (run-time-reference-literal obj t)
-    (if in-array
-        (let* ((literal-node-runtime immediate-datum?literal-node-runtime)
-               (index (literal-node-index literal-node-runtime)))
-          (cmp:irc-t*-result (constants-table-value index) result)
-          index)
-        (let ((immediate-datum immediate-datum?literal-node-runtime))
-          (cmp:irc-t*-result (cmp:jit-constant-i64 (immediate-datum-value immediate-datum)) result)
-          :poison-value-from-codegen-rtv-bclasp))))
-
 (defun codegen-rtv-cclasp (obj)
   "bclasp calls this to get copy the run-time-value for obj into result.
 Returns (value index t) if the value was put in the literal vector or it
@@ -1136,23 +1105,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
           (when result
             (cmp:irc-t*-result data-or-index result))
           :poison-value-from-codegen-literal))))
-
-;; Should be bclasp-compile-load-time-value-thunk
-(defun compile-load-time-value-thunk (form)
-  "bclasp compile the form into an llvm function and return that function"
-  (let ((fn (cmp:with-new-function (local-fn fn-env fn-result
-                                             :function-name 'bclasp-top-level-form
-                                             :parent-env nil
-                                             :function-info (cmp:make-function-info
-                                                             :function-name 'bclasp-top-level-form
-                                                             :lambda-list nil
-                                                             :docstring nil
-                                                             :declares nil
-                                                             :spi core:*current-source-pos-info*))
-              (cmp:codegen fn-result form fn-env)
-              (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function local-fn t))
-              )))
-    fn))
 
 ;;; ------------------------------------------------------------
 ;;;

@@ -2,6 +2,8 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/function.h>
+#include <clasp/core/bytecode.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/myReadLine.h>
 #include <clasp/core/primitives.h>
@@ -23,12 +25,13 @@ static void debugger_helpmsg() {
   // write_bf_stream(fmt::sprintf(":v      - list local environment\n")); // TODO
   write_bf_stream(fmt::sprintf(":x      - print current expression\n"));
   write_bf_stream(fmt::sprintf(":b      - print backtrace\n"));
+  write_bf_stream(fmt::sprintf(":B      - print primitive backtrace\n"));
   write_bf_stream(fmt::sprintf(":u      - goto caller frame\n"));
   write_bf_stream(fmt::sprintf(":d      - goto callee frame\n"));
   // write_bf_stream(fmt::sprintf(":D      - dissasemble current function\n")); // TODO?
   write_bf_stream(fmt::sprintf(":a      - abort\n"));
   write_bf_stream(fmt::sprintf(":g ##   - jump to frame ##\n"));
-
+  write_bf_stream(fmt::sprintf(":q ##   - quit with exit code ##. Default is zero.\n"));
 }
 
 // Return the frame shift frames away from cur. Shift may be positive or
@@ -82,10 +85,36 @@ static void debugger_display_frame(DebuggerFrame_sp cur, int index) {
   clasp_write_string("\n", stream);
 }
 
+static void debugger_dump_current_module(DebuggerFrame_sp cur, int index) {
+  // TODO: arguments, source location?
+  T_sp stream = cl::_sym_STARstandard_outputSTAR->symbolValue();
+  stringstream num;
+  num << std::setw(4);
+  num << index;
+  if (!gc::IsA<Function_sp>(cur->closure)) {
+    clasp_write_string(fmt::sprintf("  cur->closure is not a Function_sp: %p\n", (void*)cur->closure.raw_()),stream);
+    return;
+  }
+  Function_sp func = gc::As_unsafe<Function_sp>(cur->closure);
+  SimpleFun_sp ep = func->entryPoint();
+  if (gc::IsA<GlobalBytecodeSimpleFun_sp>(ep)) {
+    Array_sp bytecode = gc::As<Array_sp>(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(ep)->code());
+    clasp_write_string(fmt::sprintf("Start address: %p\n",(void*)bytecode->rowMajorAddressOfElement_(0)),stream);
+    for ( size_t ii=0; ii<cl__length(bytecode); ii++ ) {
+      clasp_write_string(fmt::sprintf("%d ", _rep_(bytecode->rowMajorAref(ii)) ),stream);
+    }
+    clasp_write_string("\n", stream);
+  } else {
+    SIMPLE_ERROR("Add support to dump module");
+  }
+}
+
 SYMBOL_EXPORT_SC_(CorePkg,primitive_print_backtrace);
 
-static void debugger_backtrace(DebuggerFrame_sp cur, int index) {
-  if (_sym_primitive_print_backtrace.boundp() && _sym_primitive_print_backtrace->fboundp()) {
+static void debugger_backtrace(DebuggerFrame_sp cur, int index, bool showArgs=true) {
+  // Bind *print-circle* to T for backtrace so things don't blow up
+  DynamicScopeManager tempBind(cl::_sym_STARprint_circleSTAR, _lisp->_true() );
+  if (showArgs && _sym_primitive_print_backtrace.boundp() && _sym_primitive_print_backtrace->fboundp()) {
     printf("%s:%d:%s Calling sys:primitive-print-backtrace\n", __FILE__, __LINE__, __FUNCTION__ );
     eval::funcall(_sym_primitive_print_backtrace);
   } else {
@@ -109,6 +138,9 @@ static bool debugger_parse_integer(string s, int& new_frame_index) {
 }
 
 T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
+  DynamicScopeManager tempBind(core::_sym_STAReval_with_env_hookSTAR, core::_sym_interpret_eval_with_env);
+  DynamicScopeManager tempBind2(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_bytecode_implicit_compile_form);
+
   int frame_index = 0;
   DebuggerFrame_sp cur = bot;
   debugger_display_frame(cur, frame_index);
@@ -137,6 +169,11 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
     case 'h': // help
         debugger_helpmsg();
         break;
+    case 'q': { // quit
+        int code;
+        exit(debugger_parse_integer(eline, code) ? code : 0);
+      }
+      break;
     case 'g': { // go to frame
       int new_frame_index;
       if (debugger_parse_integer(eline, new_frame_index)) {
@@ -150,6 +187,12 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
         break;
     case 'd': // down
         cur = debugger_frame_rel(cur, -1, frame_index);
+        break;
+    case 'D': // Dump code
+        debugger_dump_current_module(cur,frame_index);
+        break;
+    case 'B': // backtrace no args
+        debugger_backtrace(cur, frame_index, false);
         break;
     case 'b': // backtrace
         debugger_backtrace(cur, frame_index);
@@ -196,6 +239,7 @@ T_mv early_debug(T_sp condition, bool can_continue) {
   if (condition.notnilp()) {
     write_bf_stream(fmt::sprintf("Debugger entered with condition: %s\n", _rep_(condition)));
   }
+  DynamicScopeManager scope(core::_sym_STARdebugConditionSTAR, condition);
   return call_with_frame([=](auto frame){return early_debug_inner(frame, can_continue);});
 }
 

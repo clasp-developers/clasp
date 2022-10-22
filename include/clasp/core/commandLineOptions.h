@@ -33,7 +33,7 @@ class CommandLineOptions;
 
 typedef void (*process_arguments_callback)(CommandLineOptions *);
 
-extern bool global_debug_byte_code;
+extern bool global_debug_start_code;
 
 typedef enum { cloLoad, cloEval, cloScript } LoadEvalEnum;
 
@@ -60,7 +60,7 @@ struct CommandLineOptions {
   ImageTypeEnum _DefaultStartupType;
   bool _HasDescribeFile;
   std::string _DescribeFile;
-  char _StartupStage;
+  char _Stage;
   long _RandomNumberSeed;
   bool _ExportedSymbolsAccumulate;
   std::string _ExportedSymbolsFilename;

@@ -37,7 +37,7 @@ extern "C" {
 #include <clasp/core/common.h>
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/bignum.h>
-#include <clasp/core/functor.h>
+#include <clasp/core/function.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
@@ -57,6 +57,8 @@ extern "C" {
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/backtrace.h>
+#include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/core/random.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/numbers.h>
@@ -163,13 +165,13 @@ typedef void LtvcReturnVoid;
 
 LtvcReturnVoid ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, /*size_t functionIndex,*/ size_t entry_point_index)
 {NO_UNWIND_BEGIN();
-//  printf("%s:%d:%s got functionIndex %lu change to entryPointIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
+//  printf("%s:%d:%s got functionIndex %lu change to simpleFunIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
-  core::GlobalEntryPoint_sp entryPoint(tentrypoint);
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,0,
-                                                                                       entryPoint,
-                                                                                       core::ClosureWithSlots_O::cclaspClosure);
+  core::GlobalSimpleFun_sp simpleFun(tentrypoint);
+  gctools::smart_ptr<core::Closure_O> functoid =
+      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,0,
+                                                                                       simpleFun,
+                                                                                       core::Closure_O::cclaspClosure);
   LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
   NO_UNWIND_END();
 }
@@ -401,17 +403,17 @@ LtvcReturnVoid ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, cha
 //  printf("%s:%d:%s got functionIndex %lu to index: %lu\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, index );
   ClaspLocalFunction llvm_func = (ClaspLocalFunction)holder->lookup_function(functionIndex);
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
-  core::LocalEntryPoint_sp entryPoint = core::makeLocalEntryPoint(fdesc,llvm_func);
+  core::LocalSimpleFun_sp simpleFun = core::makeLocalSimpleFun(fdesc,llvm_func);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
-  if (!gc::IsA<core::LocalEntryPoint_sp>(entryPoint)) {
-    SIMPLE_ERROR(("The object is not a LocalEntryPoint %s") , core::_rep_(entryPoint));
+  if (!gc::IsA<core::LocalSimpleFun_sp>(simpleFun)) {
+    SIMPLE_ERROR(("The object is not a LocalEntryPoint %s") , core::_rep_(simpleFun));
   }
 #if 0
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalSimpleFun_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, simpleFun.raw_()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
 #endif
-  LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
+  LTVCRETURN holder->setTaggedIndex(tag,index,simpleFun.tagged_());
   NO_UNWIND_END();
 }
 
@@ -423,17 +425,17 @@ LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, ch
   for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
     xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex0+ii);
   }
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,xep,localEntryPoint);
+  core::GlobalSimpleFun_sp simpleFun = core::makeGlobalSimpleFun(fdesc,xep,localEntryPoint);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
-  if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
-    SIMPLE_ERROR(("The object is not a GlobalEntryPoint %s") , core::_rep_(entryPoint));
+  if (!gc::IsA<core::GlobalSimpleFun_sp>(simpleFun)) {
+    SIMPLE_ERROR(("The object is not a GlobalSimpleFun %s") , core::_rep_(simpleFun));
   }
 #if 0
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalSimpleFun_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, simpleFun.raw_()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
 #endif
-  LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
+  LTVCRETURN holder->setTaggedIndex(tag,index,simpleFun.tagged_());
   NO_UNWIND_END();
 }
 
@@ -482,47 +484,36 @@ gctools::Tagged ltvc_lookup_literal( gctools::GCRootsInModule* holder, size_t in
   return holder->getTaggedIndex(LITERAL_TAG_CHAR,index);
 }
 
-LtvcReturnVoid ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t entryPointIndex, const char* name) {
-  return ltvc_set_ltv_funcall(holder, tag, index, entryPointIndex, name );
+LtvcReturnVoid ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t simpleFunIndex, const char* name) {
+  return ltvc_set_ltv_funcall(holder, tag, index, simpleFunIndex, name );
 }
 
-LtvcReturnVoid ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t entryPointIndex, const char* name) {
-//  printf("%s:%d:%s make entry-point-index got entryPointIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, entryPointIndex, name );
-  core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
-  LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
+LtvcReturnVoid ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t simpleFunIndex, const char* name) {
+//  printf("%s:%d:%s make entry-point-index got simpleFunIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, simpleFunIndex, name );
+  core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
+  LCC_RETURN ret = ep->entry()(ep.raw_(),0,NULL);
 }
 
 // Similar to the above, but puts value in the table.
-LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t entryPointIndex, const char* name) {\
-  core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
+LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t simpleFunIndex, const char* name) {\
+  core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
 #endif
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
-  LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
+  LCC_RETURN ret = ep->entry()(ep.raw_(),0,NULL);
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
 }
 
-LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t entryPointIndex, const char* name) {
-  core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
+LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t simpleFunIndex, const char* name) {
+  core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
 #endif
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
-  LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
+  LCC_RETURN ret = ep->entry()(ep.raw_(),0,NULL);
 }
 
-};
-
-extern "C" {
-
-LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
-  printf("%s:%d lccSymbolFunction for %s returning NULL for now\n", __FILE__, __LINE__, _rep_(sym).c_str());
-  return NULL;
-}
 };
 
 extern "C" {
@@ -669,14 +660,6 @@ NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nar
                         kw::_sym_maxNargs, core::make_fixnum(max));
 }
 
-ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* evaluateFrameP)
-{NO_UNWIND_BEGIN();
-  core::ActivationFrame_sp af((gctools::Tagged)evaluateFrameP);
-  core::Function_sp func = gc::As_unsafe<core::Function_sp>(core::function_frame_lookup(af, depth, index));
-  return func.raw_();
-  NO_UNWIND_END();
-}
-
 /* Used in cclasp local calls. */
 T_O* cc_list(size_t nargs, ...) {
   va_list args;
@@ -746,31 +729,6 @@ void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
 
 extern "C" {
 
-
-core::T_O* makeCompiledFunction(core::T_O* tentrypoint,
-                                core::T_O* frameP
-                                )
-{NO_UNWIND_BEGIN();
-  // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
-  core::T_sp frame((gctools::Tagged)frameP);
-  core::T_sp tep((gctools::Tagged)tentrypoint);
-  core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tep);
-  if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
-    printf("%s:%d:%s You must pass a global-entry-point - you passed a %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(entryPoint).c_str());
-  };
-//  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
-  core::ClosureWithSlots_sp toplevel_closure =
-      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false, BCLASP_CLOSURE_SLOTS,
-                                                                                       entryPoint,
-                                                                                       core::ClosureWithSlots_O::bclaspClosure);
-  (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
-  return toplevel_closure.raw_();
-  NO_UNWIND_END();
-};
-};
-
-extern "C" {
-
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
 Otherwise there is just one. */
@@ -785,15 +743,25 @@ __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
   (void)ptr;
 }
 
-void cc_invoke_byte_code_interpreter(gctools::GCRootsInModule* roots, char* byte_code, size_t bytes) {
-//  printf("%s:%d byte_code: %p\n", __FILE__, __LINE__, byte_code);
-  core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(bytes,'\0',false,bytes,(const unsigned char*)byte_code);
+void cc_invoke_start_code_interpreter(gctools::GCRootsInModule* roots, char* start_code, size_t bytes, void* caller) {
+  //printf("%s:%d start_code interpreter: %p caller: %p\n", __FILE__, __LINE__, start_code, caller);
+  core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(bytes,'\0',false,bytes,(const unsigned char*)start_code);
   core::T_sp fin = core::cl__make_string_input_stream(str,0,nil<core::T_O>());
   bool log = false;
-  if (core::global_debug_byte_code) {
+  if (core::global_debug_start_code) {
     log = true;
+    llvmo::ObjectFile_sp objectFile;
+    bool found = lookupObjectFileFromEntryPoint( (uintptr_t)caller, objectFile);
+    if (found) {
+      llvmo::SectionedAddress_sp sa = object_file_sectioned_address( caller, objectFile, false);
+      llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(objectFile);
+      const char* functionName = getFunctionNameForAddress(dcontext,sa);
+      printf("%s:%d:%s start-code interpreter from caller %p -------------------------\n -------- Running start-code for %s\n", __FILE__, __LINE__, __FUNCTION__, caller, functionName );
+    } else {
+      printf("%s:%d:%s for caller %p - could not match to ObjectFile_O object\n", __FILE__, __LINE__, __FUNCTION__, caller );
+    }
   }
-  byte_code_interpreter(roots,fin,log);
+  start_code_interpreter(roots,fin,log);
 }
 
 
@@ -886,8 +854,8 @@ void debugPointer(const unsigned char *ptr)
 void debug_vaslistPtr(Vaslist *vargs)
 {NO_UNWIND_BEGIN();
   Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)vargs));
-  printf("++++++ debug_vaslist: _args @%p \n", args->_args );
-  printf("++++++ debug_vaslist: _nargs %lu\n", args->_nargs );
+  printf("++++++ debug_vaslist: _args @%p \n", args->args() );
+  printf("++++++ debug_vaslist: _nargs %lu\n", args->nargs() );
   NO_UNWIND_END();
 }
 
@@ -949,59 +917,13 @@ void debug_memory(size_t num, core::T_O** vector)
   NO_UNWIND_END();
 }
 
-void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
-  my_thread->_unwinds++;
-  core::ActivationFrame_sp af((gctools::Tagged)(frameP));
-  core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
-  core::BlockDynEnv_sp bde = gc::As<BlockDynEnv_sp>(handle);
-  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  sjlj_unwind(bde, 1); // index is unused here
-}
-};
-
-extern "C" {
-
-gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, void* handle) {
-  core::Unwind &returnFrom = *reinterpret_cast<core::Unwind *>(exceptionP);
-  if (returnFrom.getFrame() == handle) {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    gctools::return_type result(mv.operator[](0),mv.getSize());
-    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
-    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
-    return result;
-  }
-  throw; // throw returnFrom;
-}
-
-};
-
-extern "C" {
-
-core::T_O* initializeBlockClosure(core::T_O** afP, core::T_O* handle)
-{NO_UNWIND_BEGIN();
-  ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-  T_sp unique((gc::Tagged)handle);
-  vf->operator[](0) = unique;
-  return unique.raw_();
-  NO_UNWIND_END();
-}
-
-core::T_O* initializeTagbodyClosure(core::T_O *afP, core::T_O* handle)
-{NO_UNWIND_BEGIN();
-  core::T_sp tagbodyId((gctools::Tagged)afP);
-  core::T_sp thandle((gctools::Tagged)handle);
-  ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-  vf->operator[](0) = thandle;
-  return handle;
-  NO_UNWIND_END();
-}
 };
 
 template<typename Ty_O, class...ARGS>
 gctools::smart_ptr<Ty_O> InitObject(void* space, ARGS&&...args) {
   ASSERT(((uintptr_t)(space)&0x7)==0); // copied from cc_stack_enclose
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(space);
-  const gctools::Header_s::StampWtagMtag c_header = gctools::Header_s::StampWtagMtag::make_Value<Ty_O>();
+  const gctools::Header_s::BadgeStampWtagMtag c_header = gctools::Header_s::BadgeStampWtagMtag::make<Ty_O>(gctools::lisp_stack_badge());
 #ifdef DEBUG_GUARD
   size_t size = gctools::sizeof_with_header<Ty_O>();
   new (header) (typename gctools::GCHeader<Ty_O>::HeaderType)(c_header, size, 0, size);
@@ -1077,40 +999,38 @@ void* cc_dynenv_frame(T_O* dynenv)
   sjlj_unwind(gc::As<LexDynEnv_sp>(tde), index);
 }
 
-[[noreturn]] void cc_sjlj_continue_unwinding () {
-  sjlj_continue_unwinding();
+T_O* cc_get_unwind_dest()
+{NO_UNWIND_BEGIN();
+  return my_thread->_UnwindDest.raw_();
+  NO_UNWIND_END();
 }
 
-void throwIllegalSwitchValue(size_t val, size_t max) {
-  SIMPLE_ERROR(("Illegal switch value %d - max value is %d") , val , max);
+void cc_set_unwind_dest(T_O* dest)
+{NO_UNWIND_BEGIN();
+  T_sp tdest((gctools::Tagged)dest);
+  my_thread->_UnwindDest = tdest;
+  NO_UNWIND_END();
+}
+
+size_t cc_get_unwind_dest_index()
+{NO_UNWIND_BEGIN();
+  return my_thread->_UnwindDestIndex;
+  NO_UNWIND_END();
+}
+
+void cc_set_unwind_dest_index(size_t ind)
+{NO_UNWIND_BEGIN();
+  my_thread->_UnwindDestIndex = ind;
+  NO_UNWIND_END();
+}
+
+[[noreturn]] void cc_sjlj_continue_unwinding () {
+  sjlj_continue_unwinding();
 }
 
 void cc_error_bugged_come_from(size_t id) {
   SIMPLE_ERROR(("BUG: Nonlocal entry frame could not match go-index %d") , id);
 }
-
-void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
-  my_thread->_unwinds++;
-  T_sp af((gctools::Tagged)afP);
-  ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
-  T_sp handle = tagbody->operator[](0);
-  TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(handle);
-  /* This index was passed to us zero-based, as it's stored in the
-   * lexical environment, but for setjmp compatibility it must be
-   * at least 1. */
-  sjlj_unwind(tde, index + 1);
-}
-
-int tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, void* handle) {
-  core::Unwind& goException = *reinterpret_cast<core::Unwind *>(exceptionP);
-  if (goException.getFrame() == handle) {
-    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
-    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
-    return goException.index();
-  }
-  throw;
-}
-
 
 void debugFileScopeHandle(int *sourceFileInfoHandleP)
 {NO_UNWIND_BEGIN();
@@ -1126,7 +1046,8 @@ void debugFileScopeHandle(int *sourceFileInfoHandleP)
 extern "C" {
 void saveToMultipleValue0(core::T_mv *mvP)
 {NO_UNWIND_BEGIN();
-  mvP->saveToMultipleValue0();
+  MultipleValues& mv = lisp_multipleValues();
+  mv.saveToMultipleValue0(*mvP);
   NO_UNWIND_END();
 }
 
@@ -1221,15 +1142,15 @@ NEVER_OPTIMIZE void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* n
                       kw::_sym_possibilities, tpossibilities);
 }
 
-core::T_O *cc_enclose(core::T_O* entryPointInfo,
+core::T_O *cc_enclose(core::T_O* simpleFunInfo,
                       std::size_t numCells)
 {
-  core::T_sp tentryPoint((gctools::Tagged)entryPointInfo);
-  core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tentryPoint);
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>( false, numCells
-                                                                                        , entryPoint
-                                                                                        , core::ClosureWithSlots_O::cclaspClosure);
+  core::T_sp tsimpleFun((gctools::Tagged)simpleFunInfo);
+  core::GlobalSimpleFun_sp simpleFun = gc::As<GlobalSimpleFun_sp>(tsimpleFun);
+  gctools::smart_ptr<core::Closure_O> functoid =
+      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>( false, numCells
+                                                                                        , simpleFun
+                                                                                        , core::Closure_O::cclaspClosure);
   return functoid.raw_();
 }
 
@@ -1240,7 +1161,7 @@ void cc_initialize_closure(core::T_O* functoid,
   va_list argp;
   va_start(argp, numCells);
   int idx = 0;
-  ClosureWithSlots_sp closure((gctools::Tagged)functoid);
+  Closure_sp closure((gctools::Tagged)functoid);
   for (; numCells; --numCells) {
     p = ENSURE_VALID_OBJECT(va_arg(argp, core::T_O *));
     (*closure)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
@@ -1250,7 +1171,7 @@ void cc_initialize_closure(core::T_O* functoid,
 }
 
 LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gctools::return_type ret0 ) {
-  ASSERTF(gctools::tagged_generalp(tfunc), BF("The argument %p does not have a general tag!") % (void*)tfunc);
+  ASSERTF(gctools::tagged_generalp(tfunc), ("The argument %p does not have a general tag!") , (void*)tfunc);
   MAKE_STACK_FRAME( callargs, ret0.nvals);
   size_t idx(0);
   gctools::fill_frame_multiple_value_return( callargs, idx, ret0 );
@@ -1316,7 +1237,8 @@ T_O **cc_multipleValuesArrayAddress()
 
 void cc_saveMultipleValue0(core::T_mv result)
 {NO_UNWIND_BEGIN();
-  result.saveToMultipleValue0();
+  MultipleValues& mv = lisp_multipleValues();
+  mv.saveToMultipleValue0(result);
   NO_UNWIND_END();
 }
 

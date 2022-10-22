@@ -424,11 +424,12 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   size_t fillPointer = ss->fillPointer();
 #define GENTEMP_TRIES 1000000
   size_t tries = GENTEMP_TRIES;
+  MultipleValues& mvn = core::lisp_multipleValues();
   while (1) {
     ++static_gentemp_counter;
     core__integer_to_string(ss,Integer_O::create(static_gentemp_counter),clasp_make_fixnum(10),false,false);
-    T_mv mv = pkg->findSymbol(ss);
-    if (mv.valueGet_(1).nilp()) {
+    T_mv rmv = pkg->findSymbol(ss);
+    if (mvn.valueGet(1,rmv.number_of_values()).nilp()) {
       retval = pkg->intern(ss->asMinimalSimpleString());
       return retval;
     }
@@ -579,7 +580,8 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
   T_mv ei = this->_ExternalSymbols->gethash(nameKey, nil<T_O>());
 //  client_validate(nameKey);
   Symbol_sp val = gc::As<Symbol_sp>(ei);
-  bool foundp = ei.second().isTrue();
+  MultipleValues& mvn = core::lisp_multipleValues();
+  bool foundp = mvn.second(ei.number_of_values()).isTrue();
   if (foundp) {
 //    client_validate(val->_Name);
     LOG("Found it in the _ExternalsSymbols list - returning[%s]" , (_rep_(val)));
@@ -590,7 +592,7 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
     return Values(nil<T_O>(), nil<T_O>());
   T_mv ej = this->_InternalSymbols->gethash(nameKey, nil<T_O>());
   val = gc::As<Symbol_sp>(ej);
-  foundp = ej.second().isTrue();
+  foundp = mvn.second(ej.number_of_values()).isTrue();
   if (foundp) {
     LOG("Found it in the _InternalSymbols list - returning[%s]" , (_rep_(first)));
     return Values(val, kw::_sym_internal);
@@ -602,7 +604,7 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
       LOG("Looking in package[%s]" , _rep_(upkg));
       T_mv eu = upkg->_ExternalSymbols->gethash(nameKey, nil<T_O>());
       val = gc::As<Symbol_sp>(eu);
-      foundp = ei.second().isTrue();
+      foundp = mvn.second(eu.number_of_values()).isTrue();
       if (foundp) {
         LOG("Found it in the _ExternalsSymbols list - returning[%s]" , (_rep_(val)));
         return Values(val, kw::_sym_inherited);
@@ -705,7 +707,8 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
   Symbol_sp svalue = gc::As<Symbol_sp>(value);
   Symbol_mv values = this->_me->findSymbol_SimpleString_no_lock(nameKey);
   Symbol_sp mine = values;
-  T_sp foundp = values.second();
+  MultipleValues& mvn = core::lisp_multipleValues();
+  T_sp foundp = mvn.second(values.number_of_values());
   if (foundp.notnilp() && mine != svalue) {
     // If mine is in my shadowing list then it's not a conflict
     if ( this->_me->_Shadowing->contains(mine) ) return true;
@@ -733,9 +736,12 @@ bool Package_O::usePackage(Package_sp usePackage) {
     } // release package lock
     return true;
   name_conflict:
-    eval::funcall(core::_sym_use_package_name_conflict,
-                  this->asSmartPtr(), usePackage,
-                  findConflicts._conflicts);
+    if (core::_sym_use_package_name_conflict->fboundp())
+      eval::funcall(core::_sym_use_package_name_conflict,
+                    this->asSmartPtr(), usePackage,
+                    findConflicts._conflicts);
+    else
+      SIMPLE_ERROR(("Conflicts from USE-PACKAGE and name conflict function not yet installed: symbols %s using package %s used package %s"), _rep_(findConflicts._conflicts), _rep_(this->asSmartPtr()), _rep_(usePackage));
     // That function only returns once conflicts are resolved, so go around
     // again (rechecking for conflicts because multithreading makes this hard)
     // FIXME: This doesn't actually perfectly solve multithreading issues.
@@ -791,12 +797,13 @@ bool Package_O::unusePackage(Package_sp usePackage) {
 // Return a list of packages that will have a conflict if this package
 // starts exporting this new symbol. Lock needs to be held around this.
 List_sp Package_O::export_conflicts(SimpleString_sp nameKey, Symbol_sp sym) {
+  MultipleValues& mvn = core::lisp_multipleValues();
   List_sp conflicts = nil<List_V>();
   for (auto use_pkg : this->_PackagesUsedBy) {
     ASSERT(use_pkg.generalp());
     Symbol_mv x = use_pkg->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp xsym = x;
-    Symbol_sp status = gc::As<Symbol_sp>(x.second());
+    Symbol_sp status = gc::As<Symbol_sp>(mvn.second(x.number_of_values()));
     if (status.notnilp() && sym != xsym &&
         !use_pkg->_Shadowing->contains(xsym)) {
       conflicts = Cons_O::create(use_pkg, conflicts);
@@ -807,13 +814,14 @@ List_sp Package_O::export_conflicts(SimpleString_sp nameKey, Symbol_sp sym) {
 
 void Package_O::_export2(Symbol_sp sym) {
   SimpleString_sp nameKey = sym->_Name;
+  MultipleValues& mvn = core::lisp_multipleValues();
   List_sp conflicts;
  start:
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
-    Symbol_sp status = gc::As<Symbol_sp>(values.second());
+    Symbol_sp status = gc::As<Symbol_sp>(mvn.second(values.number_of_values()));
     if (status.nilp()) goto not_accessible;
     else if (foundSym != sym) goto already_symbol_same_name;
     else if (status == kw::_sym_external) {
@@ -862,7 +870,8 @@ bool Package_O::shadow(String_sp ssymbolName) {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   Symbol_mv values = this->findSymbol_SimpleString_no_lock(symbolName);
   shadowSym = values;
-  status = gc::As<Symbol_sp>(values.valueGet_(1));
+  MultipleValues& mvn = core::lisp_multipleValues();
+  status = gc::As<Symbol_sp>(mvn.valueGet(1,values.number_of_values()));
   if (status.nilp() || (status != kw::_sym_internal && status != kw::_sym_external)) {
     shadowSym = Symbol_O::create(symbolName);
     shadowSym->makunbound();
@@ -885,6 +894,7 @@ bool Package_O::shadow(List_sp symbolNames) {
 void Package_O::unexport(Symbol_sp sym) {
   // Make sure we don't signal an error without releasing the lock first.
   // (The printer will try to access the package name or something, and hang.)
+  MultipleValues& mvn = core::lisp_multipleValues();
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     // Don't allow unexporting from locked packages
@@ -893,7 +903,7 @@ void Package_O::unexport(Symbol_sp sym) {
     SimpleString_sp nameKey = sym->_Name;
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
-    Symbol_sp status = gc::As<Symbol_sp>(values.second());
+    Symbol_sp status = gc::As<Symbol_sp>(mvn.second(values.number_of_values()));
     if (status.nilp()) {
       goto not_accessible;
     } else if (status == kw::_sym_external) {
@@ -946,7 +956,8 @@ T_mv Package_O::intern(SimpleString_sp name) {
   Symbol_mv values = this->findSymbol_SimpleString_no_lock(name);
 //  client_validate(values->_Name);
   Symbol_sp sym = values;
-  Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
+  MultipleValues& mvn = core::lisp_multipleValues();
+  Symbol_sp status = gc::As<Symbol_sp>(mvn.valueGet(1,values.number_of_values()));
   if (status.nilp()) {
     sym = Symbol_O::create(name);
     client_validate(name);
@@ -977,7 +988,8 @@ bool Package_O::unintern_unsafe(Symbol_sp sym) {
     Symbol_sp foundSym;
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     foundSym = values;
-    status = gc::As<Symbol_sp>(values.valueGet_(1));
+    MultipleValues& mvn = core::lisp_multipleValues();
+    status = gc::As<Symbol_sp>(mvn.valueGet(1,values.number_of_values()));
     // If the symbol is not in the package there is nothing to unintern.
     if ((foundSym != sym) || (status.nilp())) return false;
   }
@@ -1012,6 +1024,7 @@ bool Package_O::unintern(Symbol_sp sym) {
       // all or nothing.
       // This is a list of symbols with the same name as the symbol
       // being uninterned that are exported by packages this package uses.
+      MultipleValues& mvn = core::lisp_multipleValues();
       for (auto it = this->_UsingPackages.begin();
            it != this->_UsingPackages.end(); it++) {
         Symbol_sp uf, status;
@@ -1019,7 +1032,7 @@ bool Package_O::unintern(Symbol_sp sym) {
           // FIXME: We don't have a lock on the other package!
           Symbol_mv values = (*it)->findSymbol_SimpleString_no_lock(nameKey);
           uf = values;
-          status = gc::As<Symbol_sp>(values.valueGet_(1));
+          status = gc::As<Symbol_sp>(mvn.valueGet(1,values.number_of_values()));
         }
         // not sure if separate nilp is actually necessary
         if (status.nilp() || (status != kw::_sym_external)
@@ -1053,7 +1066,8 @@ bool Package_O::isExported(Symbol_sp sym) {
   WITH_PACKAGE_READ_LOCK(this);
   SimpleString_sp nameKey = sym->_Name;
   T_mv values = this->_ExternalSymbols->gethash(nameKey, nil<T_O>());
-  T_sp presentp = values.valueGet_(1);
+  MultipleValues& mvn = core::lisp_multipleValues();
+  T_sp presentp = mvn.valueGet(1,values.number_of_values());
   LOG("isExported test of symbol[%s] isExported[%d]" , sym->symbolNameAsString() , presentp.isTrue());
   return (presentp.isTrue());
 }
@@ -1065,7 +1079,8 @@ void Package_O::import1(Symbol_sp symbolToImport) {
     SimpleString_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     foundSymbol = values;
-    Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
+    MultipleValues& mvn = core::lisp_multipleValues();
+    Symbol_sp status = gc::As<Symbol_sp>(mvn.valueGet(1,values.number_of_values()));
     if (status.nilp()) {
       // No conflict: add the symbol.
       this->add_symbol_to_package_no_lock(nameKey, symbolToImport, false);
@@ -1088,13 +1103,14 @@ void Package_O::import(List_sp symbols) {
 }
 
 void Package_O::shadowingImport(List_sp symbols) {
+  MultipleValues& mvn = core::lisp_multipleValues();
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   for (auto cur : symbols) {
     Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
     SimpleString_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSymbol = values;
-    Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
+    Symbol_sp status = gc::As<Symbol_sp>(mvn.valueGet(1,values.number_of_values()));
     if (status == kw::_sym_internal || status == kw::_sym_external) {
       this->unintern_unsafe(foundSymbol);
     }

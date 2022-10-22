@@ -55,7 +55,6 @@ public:
   inline bool _symbolP() const { return cl__symbolp(this->_ArgTarget); };
   Symbol_sp symbol() const;
   inline bool _lambdaListHandlerP() const { return core__lambda_list_handler_p(this->_ArgTarget); };
-  LambdaListHandler_sp lambdaListHandler() const;
   inline bool _lambdaListP() const { return this->_ArgTarget.consp(); };
   List_sp lambda_list() const;
   inline bool targetIsLexical() const { return this->_ArgTargetFrameIndex != SPECIAL_TARGET; }
@@ -135,62 +134,6 @@ public:
   }
 };
 
-struct SpecialBinding {
-  T_sp _Var;
-  T_sp _Val;
-};
-
-#define MAKE_SPECIAL_BINDINGS_HOLDER(_newnum_,_vla_,_num_) \
-  size_t _newnum_ = _num_; \
-  core::SpecialBinding _vla_[_num_];
-
-struct ScopeManager {
-  size_t          _NumberOfBindings;
-  size_t          _NextBindingIndex;
-  SpecialBinding* _Bindings;
-  ScopeManager(size_t numberOfBindings, SpecialBinding* bindings) : _NumberOfBindings(numberOfBindings), _NextBindingIndex(0), _Bindings(bindings) {};
-  ~ScopeManager();
-  void new_special_binding(Symbol_sp var, T_sp val);
-  virtual void new_binding(const Argument &argument, T_sp val) = 0;
-  virtual T_sp lexenv() const = 0;
-  virtual Vaslist &valist() { N_A_(); };
-  virtual void va_rest_binding(const Argument &argument) { N_A_(); };
-  virtual bool lexicalElementBoundP_(const Argument &argument) { N_A_(); };
-  virtual void ensureLexicalElementUnbound(const Argument &argument) { N_A_(); };
-};
-
-class ValueEnvironmentDynamicScopeManager : public ScopeManager {
-public:
-  ValueEnvironment_sp _Environment;
-  Vaslist _VaRest;
-public:
-  ValueEnvironmentDynamicScopeManager(size_t numberOfBindings, SpecialBinding* bindings, ValueEnvironment_sp env) : ScopeManager(numberOfBindings,bindings), _Environment(env){};
-public:
-  /*! This is used for creating binds for lambda lists */
-  virtual Vaslist &valist() { return this->_VaRest; };
-  virtual void va_rest_binding(const Argument &argument);
-  virtual void new_binding(const Argument &argument, T_sp val);
-  void new_variable(List_sp classifiedVariable, T_sp val);
-  void new_special(List_sp classifiedVariable);
-  virtual void ensureLexicalElementUnbound(const Argument &argument);
-  virtual bool lexicalElementBoundP_(const Argument &argument);
-  virtual T_sp lexenv() const { return this->_Environment; };
-};
-
-class StackFrameDynamicScopeManager : public ValueEnvironmentDynamicScopeManager {
-private:
-  gc::Frame &frame;
-public:
-  Vaslist VaRest;
-
-public:
-  StackFrameDynamicScopeManager(LambdaListHandler_sp llh, size_t numberOfSpecialBindings, SpecialBinding* bindings, gc::Frame* fP, size_t totalBindings) : ValueEnvironmentDynamicScopeManager(numberOfSpecialBindings,bindings,( lisp_lambdaListHandlerNeedsValueEnvironment(llh) ? ValueEnvironment_O::createSingleTopLevelEnvironment(totalBindings) : nil<ValueEnvironment_O>() )), frame(*fP) {};
-public:
-  virtual void va_rest_binding(const Argument &argument);
-  virtual void new_binding(const Argument &argument, T_sp val);
-  virtual void ensureLexicalElementUnbound(const Argument &argument);
-  virtual bool lexicalElementBoundP_(const Argument &argument);
-};
 };
 
 #endif
