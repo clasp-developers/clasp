@@ -270,6 +270,7 @@ jobs:
         run: |
           sudo chown -R build: .
           sudo chown -R build: /github/home
+          sudo chown -R build: /__w
           sudo pacman -Syu --noconfirm
       - name: Import GPG key
         id: import_gpg
