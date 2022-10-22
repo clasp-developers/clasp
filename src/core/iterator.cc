@@ -34,18 +34,18 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(it)
+CL_LAMBDA(it);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(iteratorUnsafeElement)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(iteratorUnsafeElement)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__iterator_unsafe_element(Iterator_sp it) {
   return it->unsafeElement();
 };
 
-CL_LAMBDA(it)
+CL_LAMBDA(it);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(iteratorStep)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(iteratorStep)dx");
+DOCGROUP(clasp);
 CL_DEFUN Iterator_sp core__iterator_step(Iterator_sp it) {
   it->step();
   return it;

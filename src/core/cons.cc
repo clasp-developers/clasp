@@ -56,11 +56,11 @@ List_sp coerce_to_list(T_sp o) {
   TYPE_ERROR(o, cl::_sym_list);
 }
 
-CL_LAMBDA(plist value indicator)
+CL_LAMBDA(plist value indicator);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(putF)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(putF)dx");
+DOCGROUP(clasp);
 CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
   auto it = place.begin();
   auto end = place.end();
@@ -83,22 +83,22 @@ CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
   return place;
 };
 
-CL_LAMBDA(plist indicator &optional default-value)
+CL_LAMBDA(plist indicator &optional default-value);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(getf)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(getf)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
   if (plist.nilp())
     return (default_value);
   return plist.asCons()->getf(indicator, default_value);
 };
 
-CL_LAMBDA(plist indicator)
+CL_LAMBDA(plist indicator);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
   if (oCar(plist) == indicator) {
     plist = oCddr(plist);
@@ -118,96 +118,96 @@ CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
   return (Values(tplist, _lisp->_false()));
 };
 
-CL_LAMBDA(object1 object2)
+CL_LAMBDA(object1 object2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(cons)dx")
+CL_DOCSTRING(R"dx(cons)dx");
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
   return Cons_O::create(obj1, obj2);
 };
 
-CL_LAMBDA(order cons)
+CL_LAMBDA(order cons);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(car-atomic)dx")
+CL_DOCSTRING(R"dx(car-atomic)dx");
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__car_atomic(T_sp order, Cons_sp c) {
   // FIXME: We laze out here and ignore the order.
   // This is valid but could make clever concurrent code less efficient.
   return c->carAtomic(std::memory_order_seq_cst);
 }
 
-CL_LAMBDA(order cons)
+CL_LAMBDA(order cons);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(cdr-atomic)dx")
+CL_DOCSTRING(R"dx(cdr-atomic)dx");
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__cdr_atomic(T_sp order, Cons_sp c) {
   return c->cdrAtomic(std::memory_order_seq_cst);
 }
 
-CL_LAMBDA(c o)
+CL_LAMBDA(c o);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
   return c->rplaca(o);
 };
 
-CL_LAMBDA(c o)
+CL_LAMBDA(c o);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
 
-CL_LAMBDA(order value cons)
+CL_LAMBDA(order value cons);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN Cons_sp core__rplaca_atomic(T_sp order, T_sp value, Cons_sp c) {
   c->setCarAtomic(value, std::memory_order_seq_cst);
   return c;
 }
 
-CL_LAMBDA(order value cons)
+CL_LAMBDA(order value cons);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN Cons_sp core__rplacd_atomic(T_sp order, T_sp value, Cons_sp c) {
   c->setCdrAtomic(value, std::memory_order_seq_cst);
   return c;
 }
 
-CL_LAMBDA(order old new cons)
+CL_LAMBDA(order old new cons);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__cas_car(T_sp order, T_sp old, T_sp newv, Cons_sp c) {
   return c->carCAS(old, newv, std::memory_order_seq_cst);
 }
 
-CL_LAMBDA(order old new cons)
+CL_LAMBDA(order old new cons);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__cas_cdr(T_sp order, T_sp old, T_sp newv, Cons_sp c) {
   return c->cdrCAS(old, newv, std::memory_order_seq_cst);
 }
 
-CL_LAMBDA(osize &key initial-element)
+CL_LAMBDA(osize &key initial-element);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(make_list)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(make_list)dx");
+DOCGROUP(clasp);
 CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   // Might be a negative Fixnum, take the right type, size_t is unsigned
   gc::Fixnum size = osize.unsafe_fixnum();
@@ -226,7 +226,7 @@ CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
 };
 
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__cons_size() {
   return gctools::ConsSizeCalculator<gctools::RuntimeStage,Cons_O,gctools::DontRegister>::value();
 }
@@ -268,11 +268,11 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
   return Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7, o8, o9, o10));
 }
 
-CL_LAMBDA(l1 l2)
+CL_LAMBDA(l1 l2);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(append2 - append l2 to l1 by copying l1 and pointing the end of it to l2)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(append2 - append l2 to l1 by copying l1 and pointing the end of it to l2)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
   return Cons_O::append(x, y);
 };
@@ -359,7 +359,7 @@ List_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
 /*! Just like member except if there is a key function then apply it to the item
   before you start the test (see ecl:list.d:member1 function) */
 List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
-  _OF();
+  
   Tester t(item, key, test, testNot, true);
   for (auto cur : (List_sp) this->asSmartPtr()) {
     LOG("Testing for member with item=%s entry = %s" , item , oCar(cur));
@@ -370,7 +370,7 @@ List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
 }
 
 List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
-  _OF();
+  
   Tester t(item, key, test, testNot, false);
   for (auto cur : (List_sp) this->asSmartPtr()) {
     LOG("Testing for assoc with item=%s entry = %s" , item , oCar(cur));
@@ -406,7 +406,7 @@ List_sp Cons_O::subseq(cl_index start, T_sp end) const {
 //
 SYMBOL_EXPORT_SC_(ClPkg, getf);
 T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
-  _OF();
+  
   for (List_sp cur = this->asSmartPtr(); cur.notnilp(); cur = oCddr(cur)) {
     if (key == oCar(cur)) {
       return ((oCadr(cur)));
@@ -417,7 +417,7 @@ T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
 
 #if defined(OLD_SERIALIZE)
 void Cons_O::serialize(serialize::SNode node) {
-  _OF();
+  
   node->attribute("cdrl", this->_CdrLength);
   node->attributeIfNotNil("car", this->ocar());
   node->attributeIfNotNil("cdr", this->cdr());
@@ -456,14 +456,14 @@ List_sp Cons_O::reverse() {
 }
 
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN List_sp core__list_reverse(List_sp list) {
   if (list.nilp()) return list;
   else return list.unsafe_cons()->reverse();
 }
 
 List_sp Cons_O::nreverse() {
-  _OF();
+  
   List_sp reversed = nil<T_O>();
   List_sp cur = this->asSmartPtr();
   List_sp hold = nil<T_O>();
@@ -477,7 +477,7 @@ List_sp Cons_O::nreverse() {
 }
 
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN List_sp core__list_nreverse(List_sp list) {
   if (list.nilp()) return list;
   else return list.unsafe_cons()->nreverse();
@@ -500,7 +500,7 @@ List_sp Cons_O::revappend(T_sp tail) {
 
 
 List_sp Cons_O::nreconc(T_sp tail) {
-  _OF();
+  
   List_sp reversed = nil<T_O>();
   Cons_sp original_first = this->asSmartPtr();
   List_sp cur = original_first;
@@ -516,7 +516,7 @@ List_sp Cons_O::nreconc(T_sp tail) {
 }
 
 T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
-  _OF();
+  
   if (index >= (int)this->length()) {
     SIMPLE_ERROR(("Index[%d] is beyond the length[%d] of the cons") , index , this->length());
   }
@@ -528,7 +528,7 @@ T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
 }
 
 T_sp Cons_O::elt(cl_index index) const {
-  _OF();
+  
   size_t max = this->length();
   unlikely_if (index < 0 || index >= max) {
     ERROR(core::_sym_sequence_out_of_bounds,
@@ -543,7 +543,7 @@ T_sp Cons_O::elt(cl_index index) const {
 }
 
 T_sp Cons_O::setf_elt(cl_index index, T_sp value) {
-  _OF();
+  
   size_t max = this->length();
   unlikely_if (index < 0 || index >= this->length()) {
     ERROR(core::_sym_sequence_out_of_bounds,
@@ -636,7 +636,7 @@ List_sp Cons_O::copyList() const {
 };
 
 List_sp Cons_O::copyTree() const {
-  _OF();
+  
   List_sp first, cur;
   first = Cons_O::create(nil<T_O>(), nil<T_O>());
   cur = first;
@@ -658,7 +658,7 @@ List_sp Cons_O::copyTree() const {
 }
 
 List_sp Cons_O::copyTreeCar() const {
-  _OF();
+  
   T_sp obj = this->ocar();
   ASSERTNOTNULL(obj);
   Cons_sp rootCopy = Cons_O::create(nil<T_O>(), nil<T_O>());
@@ -674,7 +674,7 @@ List_sp Cons_O::copyTreeCar() const {
 }
 
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__cons_length(Cons_sp cons) {
   size_t sz = 1;
   T_sp cur;
@@ -726,7 +726,7 @@ string Cons_O::__repr__() const {
  }
 
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
   if (alist.consp()) {
     for ( auto cur : alist ) {
@@ -742,7 +742,7 @@ CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
 }
 
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
   if (alist.consp()) {
     for ( auto cur : alist ) {
@@ -758,7 +758,7 @@ CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
 }
 
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN List_sp core__alist_assoc_equal(List_sp alist, T_sp key) {
   if (alist.consp()) {
     for ( auto cur : alist ) {
@@ -782,7 +782,7 @@ SYMBOL_EXPORT_SC_(ClPkg, make_list);
   SYMBOL_SC_(CorePkg, put_f);
 
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__verify_cons_layout(size_t cons_size, size_t cons_car_offset, size_t cons_cdr_offset)
 {
   if (cons_size!=sizeof(Cons_O)) SIMPLE_ERROR(("The cmpintrinsics.lisp cons_size %lu does not match sizeof(Cons_O) %lu") , cons_size , sizeof(Cons_O));

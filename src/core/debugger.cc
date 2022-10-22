@@ -88,7 +88,7 @@ core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start,
 
 namespace core {
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Vaslist_sp core__vaslist_rewind(Vaslist_sp v)
 {
   Vaslist* vaslist0 = &*v;
@@ -97,7 +97,7 @@ CL_DEFUN Vaslist_sp core__vaslist_rewind(Vaslist_sp v)
   return v;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Vaslist_sp core__do_validate_vaslist(Vaslist_sp v)
 {
   if (!gctools::tagged_vaslistp<T_O*>(v.raw_())) {
@@ -115,14 +115,14 @@ CL_DEFUN Vaslist_sp core__do_validate_vaslist(Vaslist_sp v)
   return v;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__vaslist_length(Vaslist_sp v)
 {
 //  printf("%s:%d vaslist length %" PRu "\n", __FILE__, __LINE__, v->nargs());
   return v->nargs();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__vaslist_pop(Vaslist_sp v)
 {
 #ifdef DEBUG_VASLIST
@@ -140,13 +140,13 @@ CL_DEFUN T_sp core__vaslist_pop(Vaslist_sp v)
   return val;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool core__vaslistp(T_sp o)
 {
   return o.valistp();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN List_sp core__list_from_vaslist(Vaslist_sp vorig)
 {
   Vaslist valist_copy(*vorig);
@@ -315,12 +315,12 @@ SYMBOL_EXPORT_SC_(KeywordPkg,closure);
 
 namespace core {
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
   dbg_lowLevelDescribe(obj);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
   const char* symbol; uintptr_t start; uintptr_t end;
   if (lookup_address((uintptr_t)(address->ptr()), symbol, start, end))
@@ -617,13 +617,13 @@ void dbg_safe_backtrace() {
 };
 namespace core {
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN std::string core__safe_repr(core::T_sp obj) {
   std::string result = dbg_safe_repr((uintptr_t)obj.raw_());
   return result;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Pointer_sp core__objectAddress(core::T_sp obj) {
   Pointer_sp result = Pointer_O::create(&*obj);
   return result;

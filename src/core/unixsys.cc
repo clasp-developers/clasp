@@ -242,10 +242,10 @@ clasp_waitpid(T_sp pid, T_sp wait)
   return Values(status,code,pid);
 }
 
-CL_LAMBDA(pid wait)
+CL_LAMBDA(pid wait);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(waitpid - see unix waitpid - returns status)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(waitpid - see unix waitpid - returns status)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__waitpid(T_sp pid, T_sp wait) {
   return clasp_waitpid( pid, wait );
 };

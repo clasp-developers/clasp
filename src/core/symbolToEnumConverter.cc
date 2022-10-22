@@ -70,7 +70,6 @@ void SymbolToEnumConverter_O::setWhatTheEnumsRepresent(const string &what) {
 }
 
 Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp const &archiveSym, int enumIndex) {
-  _OF();
   Symbol_sp sym = asym;
   if (sym.nilp()) {
     sym = archiveSym;
@@ -92,7 +91,6 @@ CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(T_sp obj) {
 }
 
 Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index) {
-  _OF();
   Fixnum_sp indexKey = make_fixnum(index);
   ASSERTF(this->_EnumToSymbol->contains(indexKey), ("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") , index , this->_WhatTheEnumsRepresent->get_std_string().c_str());
   return gc::As<Symbol_sp>(this->_EnumToSymbol->gethash(indexKey));
@@ -100,14 +98,14 @@ Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index) {
 
 #if 0
 string SymbolToEnumConverter_O::symbolStringForEnumIndex(int index)
-{_OF();
+{
     ASSERT(this->_EnumToArchiveString.count(index)>0);
     return this->_EnumToArchiveString[index];
 }
 #endif
 
 void SymbolToEnumConverter_O::throwIfUnrecognizedEnumIndex(int ei) {
-  _OF();
+  
   if (!this->recognizesEnumIndex(ei)) {
     stringstream ss;
     ss << fmt::sprintf("I do not recognize the enum value(%d)\n", ei);
@@ -118,7 +116,7 @@ void SymbolToEnumConverter_O::throwIfUnrecognizedEnumIndex(int ei) {
 }
 
 string SymbolToEnumConverter_O::legalEnumValuesAndSymbols() {
-  _OF();
+  
   stringstream ss;
   this->_EnumToArchiveSymbol->mapHash([&ss](T_sp key, T_sp val) {
             ss << "(" << _rep_(key) << "/" << _rep_(val) << ") ";
@@ -127,13 +125,13 @@ string SymbolToEnumConverter_O::legalEnumValuesAndSymbols() {
 }
 
 bool SymbolToEnumConverter_O::recognizesEnumIndex(int ei) {
-  _OF();
+  
   Fixnum_sp eif = make_fixnum(ei);
   return this->_EnumToSymbol->contains(eif);
 }
 
 bool SymbolToEnumConverter_O::recognizesSymbol(Symbol_sp sym) {
-  _OF();
+  
   return this->_SymbolToEnum->contains(sym);
 }
 
@@ -148,8 +146,8 @@ string SymbolToEnumConverter_O::__repr__() const {
   return ss.str();
 }
 
-CL_LAMBDA("converter symbols")
-DOCGROUP(clasp)
+CL_LAMBDA("converter symbols");
+DOCGROUP(clasp);
 CL_DEFUN Fixnum core__enum_logical_or(SymbolToEnumConverter_sp converter, List_sp symbols) {
   Fixnum flags = 0;
   for ( auto cur : symbols ) {

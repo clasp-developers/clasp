@@ -97,7 +97,7 @@ T_sp ClassRepCreator_O::creator_allocate() {
 namespace core {
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__run_creator(Creator_sp c)
 {
   return c->creator_allocate();

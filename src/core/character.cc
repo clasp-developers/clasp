@@ -53,67 +53,67 @@ void handleWideCharactersError(claspCharacter cc)
   SIMPLE_ERROR(("A wide character with the value %d was encountered in a function that needed a base-char") , cc);
 }
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Returns true if character is a graphic character other than space-like characters;
 otherwise, returns false.)dx")
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool core__printing_char_p(Character_sp c) {
   return printing_char_p(clasp_as_claspCharacter(c));
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(CLHS: graphic-char-p)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(CLHS: graphic-char-p)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__graphic_char_p(Character_sp c) {
   return graphic_char_p(clasp_as_claspCharacter(c));
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(lower_case_p)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(lower_case_p)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__lower_case_p(Character_sp c) {
   return lower_case_p(clasp_as_claspCharacter(c));
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(upper_case_p)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(upper_case_p)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__upper_case_p(Character_sp c) {
   return upper_case_p(clasp_as_claspCharacter(c));
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(both_case_p)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(both_case_p)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__both_case_p(Character_sp c) {
   return both_case_p(clasp_as_claspCharacter(c));
 };
 
-CL_LAMBDA(char)
+CL_LAMBDA(char);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(alphanumericp)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(alphanumericp)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__alphanumericp(Character_sp ch) {
   return alphanumericp(clasp_as_claspCharacter(ch));
 };
 
-CL_LAMBDA(char)
+CL_LAMBDA(char);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(charUpcase)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(charUpcase)dx");
+DOCGROUP(clasp);
 CL_DEFUN Character_sp cl__char_upcase(Character_sp ch) {
   return clasp_make_character(char_upcase(clasp_as_claspCharacter(ch)));
 };
 
-CL_LAMBDA(char)
+CL_LAMBDA(char);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(charDowncase)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(charDowncase)dx");
+DOCGROUP(clasp);
 CL_DEFUN Character_sp cl__char_downcase(Character_sp ch) {
   return clasp_make_character(char_downcase(clasp_as_claspCharacter(ch)));
 };
@@ -156,146 +156,146 @@ bool monotonic(int s, int t, Vaslist_sp args, bool preserve_case = true) {
   return true;
 };
 
-CL_LAMBDA(char1 char2)
+CL_LAMBDA(char1 char2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(two-arg char<)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(two-arg char<)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__two_arg_char_LT_(Character_sp char1, Character_sp char2) {
   return character_comparison(-1, 1, char1, char2);
 }
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__char_LT_(Vaslist_sp args) {
   if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(-1, 1, args);
 };
 
-CL_LAMBDA(char1 char2)
+CL_LAMBDA(char1 char2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(two-arg char>)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(two-arg char>)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__two_arg_char_GT_(Character_sp char1, Character_sp char2) {
   return character_comparison(1, 1, char1, char2);
 }
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__char_GT_(Vaslist_sp args) {
   if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(1, 1, args);
 };
 
-CL_LAMBDA(char1 char2)
+CL_LAMBDA(char1 char2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(two-arg char<=)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(two-arg char<=)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__two_arg_char_LE_(Character_sp char1, Character_sp char2) {
   return character_comparison(-1, 0, char1, char2);
 }
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__char_LE_(Vaslist_sp args) {
   if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(-1, 0, args);
 };
 
-CL_LAMBDA(char1 char2)
+CL_LAMBDA(char1 char2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(two-arg char>=)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(two-arg char>=)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__two_arg_char_GE_(Character_sp char1, Character_sp char2) {
   return character_comparison(1, 0, char1, char2);
 }
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__char_GE_(Vaslist_sp args) {
   if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(1, 0, args);
 };
 
-CL_LAMBDA(char1 char2)
+CL_LAMBDA(char1 char2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(two-arg char-lessp)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(two-arg char-lessp)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__two_arg_char_lessp(Character_sp char1, Character_sp char2) {
   return character_comparison(-1, 1, char1, char2, false);
 }
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing, ignore case)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing, ignore case)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__char_lessp(Vaslist_sp args) {
   if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(-1, 1, args, false);
 };
 
-CL_LAMBDA(char1 char2)
+CL_LAMBDA(char1 char2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(two-arg char-greaterp)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(two-arg char-greaterp)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__two_arg_char_greaterp(Character_sp char1, Character_sp char2) {
   return character_comparison(1, 1, char1, char2, false);
 }
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing, ignore case)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing, ignore case)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__char_greaterp(Vaslist_sp args) {
   if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(1, 1, args, false);
 };
 
-CL_LAMBDA(char1 char2)
+CL_LAMBDA(char1 char2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(two-arg char-not-greaterp)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(two-arg char-not-greaterp)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__two_arg_char_not_greaterp(Character_sp char1, Character_sp char2) {
   return character_comparison(-1, 0, char1, char2, false);
 }
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing, ignore case)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing, ignore case)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__char_not_greaterp(Vaslist_sp args) {
   if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(-1, 0, args, false);
 };
 
-CL_LAMBDA(char1 char2)
+CL_LAMBDA(char1 char2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(two-arg char-not-lessp)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(two-arg char-not-lessp)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__two_arg_char_not_lessp(Character_sp char1, Character_sp char2) {
   return character_comparison(1, 0, char1, char2, false);
 }
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing, ignore case)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing, ignore case)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__char_not_lessp(Vaslist_sp args) {
   if (args->nargs_zero()) PROGRAM_ERROR();
   else return monotonic(1, 0, args, false);
 };
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(NE_)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(NE_)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__char_NE_(Vaslist_sp args) {
   // Just like cl___NE_
   switch (args->nargs()) {
@@ -340,10 +340,10 @@ CL_DEFUN T_sp cl__char_NE_(Vaslist_sp args) {
   }
 }
 
-CL_LAMBDA(core:&va-rest args)
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(EQ_)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(EQ_)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__char_EQ_(Vaslist_sp args) {
   switch (args->nargs()) {
   case 0:
@@ -371,10 +371,10 @@ CL_DEFUN T_sp cl__char_EQ_(Vaslist_sp args) {
   };
 };
 
-CL_LAMBDA(&rest args)
+CL_LAMBDA(&rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Like char_NE_ but ignore case)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Like char_NE_ but ignore case)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__char_not_equal(List_sp args) {
   if (args.nilp())
       PROGRAM_ERROR();
@@ -401,20 +401,20 @@ bool clasp_charEqual2(T_sp x, T_sp y) {
 }
 
 // FIXME: redundant with the above
-CL_LAMBDA(char1 char2)
+CL_LAMBDA(char1 char2);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Two-arg char-equal)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Two-arg char-equal)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__two_arg_char_equal(Character_sp x, Character_sp y) {
   claspCharacter cx = char_upcase(x.unsafe_character());
   claspCharacter cy = char_upcase(y.unsafe_character());
   return cx == cy;
 }
 
-CL_LAMBDA(core:&va-rest chars)
+CL_LAMBDA(core:&va-rest chars);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(EQ_)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(EQ_)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__char_equal(Vaslist_sp chars) {
   switch (chars->nargs()) {
   case 0:
@@ -646,10 +646,10 @@ void CharacterInfo::initialize() {
   this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("DEL"),make_fixnum(RUBOUT_CHAR));
 }
 
-CL_LAMBDA(ch)
+CL_LAMBDA(ch);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(See CLHS: standard_char_p)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(See CLHS: standard_char_p)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__standard_char_p(Character_sp ch) {
   // Complete list is laid out in CLHS 2.1.3: Standard Characters.
   claspCharacter c = clasp_as_claspCharacter(ch);
@@ -701,10 +701,10 @@ CL_DEFUN bool cl__standard_char_p(Character_sp ch) {
   return false;
 };
 
-CL_LAMBDA(ch)
+CL_LAMBDA(ch);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(alpha_char_p)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(alpha_char_p)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__alpha_char_p(Character_sp ch) {
   return alpha_char_p(clasp_as_claspCharacter(ch));
 };
@@ -719,10 +719,10 @@ Fixnum clasp_digitp(claspCharacter ch, int basis) {
   return -1;
 }
 
-CL_LAMBDA(c &optional (radix 10))
+CL_LAMBDA(c &optional (radix 10));
 CL_DECLARE();
-CL_DOCSTRING(R"dx(digitCharP)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(digitCharP)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__digit_char_p(Character_sp c, Fixnum_sp radix) {
   Fixnum basis = unbox_fixnum(radix);
   if (basis < 2 || basis > 36) {
@@ -752,10 +752,10 @@ int unicodeHex2int (std::string aString){
     else return -1;
 }
 
-CL_LAMBDA(sname)
+CL_LAMBDA(sname);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(name_char)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(name_char)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__name_char(T_sp sname) {
   String_sp name = coerce::stringDesignator(sname);
   String_sp upname = cl__string_upcase(name);
@@ -771,10 +771,10 @@ CL_DEFUN T_sp cl__name_char(T_sp sname) {
     else return nil<T_O>();
 };
 
-CL_LAMBDA(och)
+CL_LAMBDA(och);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(char_name)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(char_name)dx");
+DOCGROUP(clasp);
 CL_DEFUN SimpleBaseString_sp cl__char_name(Character_sp och) {
   claspCharacter ch = clasp_as_claspCharacter(och);
   if (ch<_lisp->characterInfo().gCharacterNames.size()) {
@@ -788,32 +788,32 @@ CL_DEFUN SimpleBaseString_sp cl__char_name(Character_sp och) {
   return ret;
 };
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__all_characters() {
   return _lisp->characterInfo()._NamesToCharacterIndex->keysAsCons();
 }
-CL_LAMBDA(och)
+CL_LAMBDA(och);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(char_code)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(char_code)dx");
+DOCGROUP(clasp);
 CL_DEFUN Fixnum_sp cl__char_code(Character_sp och) {
   claspCharacter ch = clasp_as_claspCharacter(och);
   return make_fixnum((Fixnum)ch);
 };
 
-CL_LAMBDA(och)
+CL_LAMBDA(och);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(char_int)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(char_int)dx");
+DOCGROUP(clasp);
 CL_DEFUN Fixnum_sp cl__char_int(Character_sp och) {
   claspCharacter ch = clasp_as_claspCharacter(och);
   return make_fixnum((Fixnum)ch);
 };
 
-CL_LAMBDA(och)
+CL_LAMBDA(och);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(code_char)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(code_char)dx");
+DOCGROUP(clasp);
 CL_DEFUN Character_sp cl__code_char(Integer_sp ich) {
   int ii = clasp_to_int(ich);
   if (ii >= 0 && ii < CHAR_CODE_LIMIT) {

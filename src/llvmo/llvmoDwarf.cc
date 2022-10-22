@@ -39,10 +39,10 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace llvmo {
 
-CL_LAMBDA(tagsym &optional (debug-version (quote llvm-sys:llvmdebug-version8)))
-CL_DOCSTRING(R"dx(Convert a DW_TAG and version to an integer)dx")
+CL_LAMBDA(tagsym &optional (debug-version (quote llvm-sys:llvmdebug-version8)));
+CL_DOCSTRING(R"dx(Convert a DW_TAG and version to an integer)dx");
 CL_NAME(dw-tag);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN uint llvm_sys__dwTag(core::Symbol_sp tagsym, uint debugVersion) {
   core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(_sym_STARdwarfConstantsSTAR->symbolValue());
   uint itag = converter->enumIndexForSymbol(tagsym);

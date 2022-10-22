@@ -52,16 +52,16 @@ THE SOFTWARE.
 
 namespace core {
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__package_lock(T_sp x, T_sp y) {
 //  printf("%s:%d  package-lock doesn't do anything currently\n", __FILE__, __LINE__);
   return nil<T_O>();
 }
 
-CL_LAMBDA(package new-name &optional nick-names)
+CL_LAMBDA(package new-name &optional nick-names);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(renamePackage)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(renamePackage)dx");
+DOCGROUP(clasp);
 CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNameDesigs) {
   Package_sp package = coerce::packageDesignator(pkg);
   string newName = coerce::packageNameDesignator(newNameDesig);
@@ -81,21 +81,21 @@ CL_DEFUN Package_sp cl__rename_package(T_sp pkg, T_sp newNameDesig, T_sp nickNam
   return package;
 };
 
-CL_LAMBDA(pkg)
+CL_LAMBDA(pkg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(packageNicknames)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(packageNicknames)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__package_nicknames(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
   return package->getNicknames();
 };
 
-CL_LAMBDA(pkg nickname)
+CL_LAMBDA(pkg nickname);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Adds the nickname <nickname> to package)dx")
+CL_DOCSTRING(R"dx(Adds the nickname <nickname> to package)dx");
 CL_DOCSTRING_LONG(R"dx(Returns new nicknames. A package error is signalled,
 if package does not exist, or nickname is already in use)dx")
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp ext__package_add_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
   String_sp nickname  = coerce::stringDesignator(nick);
@@ -115,12 +115,12 @@ CL_DEFUN T_sp ext__package_add_nickname(T_sp pkg, T_sp nick) {
   }
 };
 
-CL_LAMBDA(pkg nickname)
+CL_LAMBDA(pkg nickname);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Removes the nickname <nickname> from package)dx")
+CL_DOCSTRING(R"dx(Removes the nickname <nickname> from package)dx");
 CL_DOCSTRING_LONG(R"dx(Returns nil, if nickname does not belong to package.
 A package error is signalled, if package does not exist)dx")
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
   unlikely_if (package->getNicknames().nilp())
@@ -135,65 +135,65 @@ CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
   else return nil<T_O>();
 };
 
-CL_LAMBDA(pkg)
+CL_LAMBDA(pkg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Grab the (local-nickname . package) alist without locking. No coercion.)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Grab the (local-nickname . package) alist without locking. No coercion.)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__package_local_nicknames_internal(Package_sp package) {
   return package->getLocalNicknames();
 }
 
 CL_LISPIFY_NAME("core:package-local-nicknames-internal");
-CL_LAMBDA(nicks pkg)
+CL_LAMBDA(nicks pkg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Set the local nicknames of PKG to be NICKS. Internal, unlocked, no coercion. Be careful.)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Set the local nicknames of PKG to be NICKS. Internal, unlocked, no coercion. Be careful.)dx");
+DOCGROUP(clasp);
 CL_DEFUN_SETF void set_package_local_nicknames_internal(T_sp nicks, Package_sp package) {
   package->setLocalNicknames(nicks);
 }
 
 // FIXME: Maybe we can just grab the lock in CL?
-CL_LAMBDA(pkg thunk)
+CL_LAMBDA(pkg thunk);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Call THUNK while holding the read lock for PKG, and return the result.)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Call THUNK while holding the read lock for PKG, and return the result.)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__call_with_package_read_lock(Package_sp pkg, Function_sp thunk) {
   WITH_PACKAGE_READ_LOCK(pkg);
   return eval::funcall(thunk);
 }
 
-CL_LAMBDA(pkg thunk)
+CL_LAMBDA(pkg thunk);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Call THUNK while holding the read-write lock for PKG, and return the result.)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Call THUNK while holding the read-write lock for PKG, and return the result.)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__call_with_package_read_write_lock(Package_sp pkg, Function_sp thunk) {
   WITH_PACKAGE_READ_WRITE_LOCK(pkg);
   return eval::funcall(thunk);
 }
 
-CL_LAMBDA(symbol &optional (package *package*))
+CL_LAMBDA(symbol &optional (package *package*));
 CL_DECLARE();
-CL_DOCSTRING(R"dx(unintern)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(unintern)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__unintern(Symbol_sp sym, T_sp packageDesig) {
   Package_sp pkg = coerce::packageDesignator(packageDesig);
   return pkg->unintern(sym);
 };
 
-CL_LAMBDA(symbol-name &optional (package *package*))
+CL_LAMBDA(symbol-name &optional (package *package*));
 CL_DECLARE();
-CL_DOCSTRING(R"dx(findSymbol)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(findSymbol)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__find_symbol(String_sp symbolName, T_sp packageDesig) {
   Package_sp package = coerce::packageDesignator(packageDesig);
   SimpleString_sp simple_symbol_name = coerce::simple_string(symbolName);
   return package->findSymbol_SimpleString(simple_symbol_name);
 };
 
-CL_LAMBDA("package-name &key nicknames (use (list \"CL\"))")
+CL_LAMBDA("package-name &key nicknames (use (list \"CL\"))");
 CL_DECLARE();
-CL_DOCSTRING(R"dx(make_package)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(make_package)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__make_package(T_sp package_name_desig, List_sp nick_names, List_sp use_packages) {
   String_sp package_name = coerce::stringDesignator(package_name_desig);
   list<string> lnn;
@@ -218,10 +218,10 @@ CL_DEFUN T_mv cl__make_package(T_sp package_name_desig, List_sp nick_names, List
   __END_DOC
 */
 
-CL_LAMBDA()
+CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING(R"dx(listAllPackages)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(listAllPackages)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__list_all_packages() {
   return _lisp->allPackagesAsCons();
 }
@@ -234,10 +234,10 @@ CL_DEFUN T_sp cl__list_all_packages() {
   __END_DOC
 */
 
-CL_LAMBDA(packages-to-use-desig &optional (package-desig *package*))
+CL_LAMBDA(packages-to-use-desig &optional (package-desig *package*));
 CL_DECLARE();
-CL_DOCSTRING(R"dx(See CLHS use-package)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(See CLHS use-package)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__use_package(T_sp packages_to_use_desig, T_sp package_desig) {
   List_sp packages_to_use = coerce::listOfPackageDesignators(packages_to_use_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -248,10 +248,10 @@ CL_DEFUN T_sp cl__use_package(T_sp packages_to_use_desig, T_sp package_desig) {
   return _lisp->_true();
 }
 
-CL_LAMBDA(packages-to-unuse-desig &optional (package-desig *package*))
+CL_LAMBDA(packages-to-unuse-desig &optional (package-desig *package*));
 CL_DECLARE();
-CL_DOCSTRING(R"dx(SeeCLHS unuse-package)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(SeeCLHS unuse-package)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig) {
   List_sp packages_to_unuse = coerce::listOfPackageDesignators(packages_to_unuse_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -263,9 +263,9 @@ CL_DEFUN T_sp cl__unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig
 }
 
 
-CL_LAMBDA(pkg)
-CL_DOCSTRING(R"dx(SeeCLHS delete-package)dx")
-DOCGROUP(clasp)
+CL_LAMBDA(pkg);
+CL_DOCSTRING(R"dx(SeeCLHS delete-package)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__delete_package(T_sp pobj)
 {
   // clhs http://www.lispworks.com/documentation/HyperSpec/Body/f_del_pk.htm
@@ -338,10 +338,10 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
   return _lisp->_true();
 }
 
-CL_LAMBDA(package-desig)
+CL_LAMBDA(package-desig);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(See CLHS package_shadowing_symbols)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(See CLHS package_shadowing_symbols)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__package_shadowing_symbols(T_sp package_desig) {
   Package_sp package = coerce::packageDesignator(package_desig);
   return package->shadowingSymbols();
@@ -354,10 +354,10 @@ CL_DEFUN T_sp cl__package_shadowing_symbols(T_sp package_desig) {
   Import the symbols into the (package) or the current package.
   __END_DOC
 */
-CL_LAMBDA(symbols-desig &optional (package-desig *package*))
+CL_LAMBDA(symbols-desig &optional (package-desig *package*));
 CL_DECLARE();
-CL_DOCSTRING(R"dx(See CLHS: import)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(See CLHS: import)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__import(T_sp symbols_desig, T_sp package_desig) {
   List_sp symbols = coerce::listOfSymbols(symbols_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -365,9 +365,9 @@ CL_DEFUN T_mv cl__import(T_sp symbols_desig, T_sp package_desig) {
   return Values(_lisp->_true());
 }
 
-CL_LAMBDA(symbol-names-desig &optional (package-desig *package*))
-CL_DOCSTRING(R"dx(See CLHS: shadow)dx")
-DOCGROUP(clasp)
+CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
+CL_DOCSTRING(R"dx(See CLHS: shadow)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__shadow(T_sp symbol_names_desig, T_sp package_desig) {
   List_sp symbolNames = coerce::listOfStringDesignators(symbol_names_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -375,26 +375,26 @@ CL_DEFUN T_mv cl__shadow(T_sp symbol_names_desig, T_sp package_desig) {
   return Values(_lisp->_true());
 }
 
-CL_LAMBDA(package)
-CL_DOCSTRING(R"dx(Retrieve the documentation of a package.)dx")
-DOCGROUP(clasp)
+CL_LAMBDA(package);
+CL_DOCSTRING(R"dx(Retrieve the documentation of a package.)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__package_documentation(Package_sp package) {
   return package->documentation();
 }
 
 CL_LISPIFY_NAME("core:package-documentation");
-CL_LAMBDA(documentation package)
-CL_DOCSTRING(R"dx(Set the documentation of a package.)dx")
-DOCGROUP(clasp)
+CL_LAMBDA(documentation package);
+CL_DOCSTRING(R"dx(Set the documentation of a package.)dx");
+DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp set_package_documentation(T_sp documentation, Package_sp package) {
   package->setDocumentation(documentation);
   return documentation;
 }
 
-CL_LAMBDA(symbol-names-desig &optional (package-desig *package*))
+CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
 CL_DECLARE();
-CL_DOCSTRING(R"dx(See CLHS: shadowing-import)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(See CLHS: shadowing-import)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__shadowing_import(T_sp symbol_names_desig, T_sp package_desig) {
   List_sp symbolNames = coerce::listOfSymbols(symbol_names_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -403,10 +403,10 @@ CL_DEFUN T_mv cl__shadowing_import(T_sp symbol_names_desig, T_sp package_desig) 
 }
 
 std::atomic<uint64_t> static_gentemp_counter;
-CL_LAMBDA(&optional (prefix "T") (package *package*))
+CL_LAMBDA(&optional (prefix "T") (package *package*));
 CL_DECLARE();
-CL_DOCSTRING(R"dx(See CLHS gentemp)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(See CLHS gentemp)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   Package_sp pkg = coerce::packageDesignator(package_designator);
   StrNs_sp ss;
@@ -441,28 +441,28 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   }
 };
 
-CL_LAMBDA(package-designator)
+CL_LAMBDA(package-designator);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(package_use_list)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(package_use_list)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__package_use_list(T_sp package_designator) {
   Package_sp pkg = coerce::packageDesignator(package_designator);
   return pkg->packageUseList();
 };
 
-CL_LAMBDA(package-designator)
+CL_LAMBDA(package-designator);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(packageUsedByList)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(packageUsedByList)dx");
+DOCGROUP(clasp);
 CL_DEFUN List_sp cl__package_used_by_list(T_sp pkgDesig) {
   Package_sp pkg = coerce::packageDesignator(pkgDesig);
   return pkg->packageUsedByList();
 };
 
-CL_LAMBDA(package-designator)
+CL_LAMBDA(package-designator);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(packageName)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(packageName)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__package_name(T_sp pkgDesig) {
   Package_sp pkg = coerce::packageDesignator(pkgDesig);
   string name = pkg->packageName();

@@ -962,7 +962,7 @@ void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
 
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 {
   printf("%s:%d:%s Creating JIT - we did this already at startup!!!!\n", __FILE__, __LINE__, __FUNCTION__ );

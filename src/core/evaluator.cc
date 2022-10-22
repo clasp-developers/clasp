@@ -83,11 +83,11 @@ void errorApplyLastArgumentNotList(T_sp lastArg ) {
 };
 
 namespace core {
-CL_LAMBDA(form &optional env stepping compiler-env-p (execute t))
+CL_LAMBDA(form &optional env stepping compiler-env-p (execute t));
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(compileFormAndEvalWithEnv)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(compileFormAndEvalWithEnv)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp stepping, T_sp compiler_env_p, T_sp execute) {
   T_mv result = eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), form, env);
   return result;
@@ -517,11 +517,11 @@ T_mv apply_inner_list(Function_sp func, size_t lenFixed, Vaslist_sp fixed, List_
   return (*func).entry()(func.raw_(),total_args,frame->arguments());
 }
 
-CL_LAMBDA(head core:&va-rest args)
+CL_LAMBDA(head core:&va-rest args);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(apply)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(apply)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
   Function_sp func = coerce::functionDesignator( head );
   if (args->nargs_zero()) eval::errorApplyZeroArguments();
@@ -542,11 +542,11 @@ CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
 
 // Calls to these APPLYN functions are compiler-macroexpanded from regular APPLY calls.
 
-CL_LAMBDA(func args)
+CL_LAMBDA(func args);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
   if (lastArg.valistp()) {
     return apply0_inner_valist(func, gc::As_unsafe<Vaslist_sp>(lastArg));
@@ -557,10 +557,10 @@ CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
   UNREACHABLE();
 }
 
-CL_LAMBDA(func args)
+CL_LAMBDA(func args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__trace_apply0(Function_sp func, T_sp lastArg) {
   if (lastArg.valistp()) {
     return apply0_inner_valist(func, gc::As_unsafe<Vaslist_sp>(lastArg));
@@ -571,11 +571,11 @@ CL_DEFUN T_mv core__trace_apply0(Function_sp func, T_sp lastArg) {
   UNREACHABLE();
 }
 
-CL_LAMBDA(func args arg0)
+CL_LAMBDA(func args arg0);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx((apply f a m) = (apply1 (coerce-fdesignator f) m a))dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx((apply f a m) = (apply1 (coerce-fdesignator f) m a))dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
   if (lastArg.valistp())
     return apply1_inner_valist(func, arg0.raw_(), gc::As_unsafe<Vaslist_sp>(lastArg));
@@ -585,11 +585,11 @@ CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
   UNREACHABLE();
 }
 
-CL_LAMBDA(func args arg0 arg1)
+CL_LAMBDA(func args arg0 arg1);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx((apply f a b m) = (apply2 (coerce-fdesignator f) m a b))dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx((apply f a b m) = (apply2 (coerce-fdesignator f) m a b))dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1) {
   if (lastArg.valistp())
@@ -601,11 +601,11 @@ CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
 }
 
 
-CL_LAMBDA(func args arg0 arg1 arg2)
+CL_LAMBDA(func args arg0 arg1 arg2);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx((apply f a b c m) = (apply3 (coerce-fdesignator f) m a b c))dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx((apply f a b c m) = (apply3 (coerce-fdesignator f) m a b c))dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1, T_sp arg2) {
   if (lastArg.valistp())
@@ -616,11 +616,11 @@ CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
   UNREACHABLE();
 }
 
-CL_LAMBDA(func args arg0 arg1 arg2 arg3 core:&va-rest more)
+CL_LAMBDA(func args arg0 arg1 arg2 arg3 core:&va-rest more);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...))dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...))dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3,
                            Vaslist_sp more) {
@@ -636,11 +636,11 @@ CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
   UNREACHABLE();
 }
 
-CL_LAMBDA(form)
+CL_LAMBDA(form);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(eval)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(eval)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__eval(T_sp form) {
   if (!core::_sym_STAReval_with_env_hookSTAR->boundP() ||
       core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
@@ -652,20 +652,20 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
 };
 
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Interpret FORM in the interpreter environment ENV.)dx")
+CL_DOCSTRING(R"dx(Interpret FORM in the interpreter environment ENV.)dx");
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
   return eval::evaluate(form, env);
 }
 
 
 // fast funcall
-CL_LAMBDA(function-desig &rest args)
+CL_LAMBDA(function-desig &rest args);
 CL_DECLARE((declare (dynamic-extent args)));
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(See CLHS: funcall)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(See CLHS: funcall)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
   //    printf("%s:%d cl__funcall should be inlined after the compiler starts up\n", __FILE__, __LINE__ );
   Function_sp func = coerce::functionDesignator(function_desig);
@@ -685,11 +685,11 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
   return res;
 }
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(coerce_to_function)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(coerce_to_function)dx");
+DOCGROUP(clasp);
 CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
   if (Function_sp fnobj = arg.asOrNull<Function_O>()) {
     return fnobj;
@@ -716,10 +716,10 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
   SIMPLE_ERROR(("Illegal function designator %s") , _rep_(arg));
 };
 
-CL_LAMBDA(body &optional expectDocString)
+CL_LAMBDA(body &optional expectDocString);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString) {
   bool b_expect_doc = expectDocString.isTrue();
   List_sp declares = nil<T_O>();
@@ -732,10 +732,10 @@ CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString
   return Values(tdeclares, code, (T_sp)docstring, specials);
 };
 
-CL_LAMBDA(declare-list &optional default)
+CL_LAMBDA(declare-list &optional default);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__extract_lambda_name_from_declares(List_sp declares, T_sp defaultValue) {
   // First check for a (declare (core:function-name XXX))
   for (; declares.consp(); declares = oCdr(declares)) {
@@ -748,10 +748,10 @@ CL_DEFUN T_sp core__extract_lambda_name_from_declares(List_sp declares, T_sp def
 }
 
 
-CL_LAMBDA(declare-list)
+CL_LAMBDA(declare-list);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
   // First check for a (declare (core:function-name XXX))
   for ( auto cur : declares ) {
@@ -767,10 +767,10 @@ CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
   return nil<T_O>();
 }
 
-CL_LAMBDA(form &optional default)
+CL_LAMBDA(form &optional default);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultValue) {
   List_sp body = oCddr(lambdaExpression);
   List_sp declares;
@@ -800,10 +800,10 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
 }
 
 CL_LISPIFY_NAME("ext:symbol-macro");
-CL_LAMBDA(symbol &optional env)
+CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Returns the macro expansion function for a symbol if it exists, or else NIL.)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Returns the macro expansion function for a symbol if it exists, or else NIL.)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   if (env.nilp()) { // nothing
   } else if (gc::IsA<comp::Lexenv_sp>(env)) {
@@ -823,19 +823,19 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   return fn;
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(evaluateVerbosity)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(evaluateVerbosity)dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) {
   eval::_evaluateVerbosity = unbox_fixnum(level);
 };
 
-CL_LAMBDA(form &optional env)
+CL_LAMBDA(form &optional env);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(Evaluate the form in the environment using the interpreter)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Evaluate the form in the environment using the interpreter)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) {
   return comp::bytecode_toplevel_eval(form, environment);
 }
@@ -988,8 +988,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg, load_toplevel);
 namespace core {
 
 
-CL_DOCSTRING(R"dx(Return a list of all special operators as defined in aclasp)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return a list of all special operators as defined in aclasp)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::List_sp core__aclasp_list_of_all_special_operators() {
   ql::list l;
   l << cl::_sym_progn;

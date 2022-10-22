@@ -134,10 +134,10 @@ struct SignalSimpleErrorTrap {
 };
     
 
-CL_LAMBDA(base-condition continue-message format-control format-args &rest args)
+CL_LAMBDA(base-condition continue-message format-control format-args &rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(signalSimpleError)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(signalSimpleError)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args) {
   SignalSimpleErrorTrap depth;
   printf("%s:%d core__signal_simple_error  caught because signal-simple-error is not installed yet\n", __FILE__, __LINE__);
@@ -220,8 +220,8 @@ void debugBreakPoint() {
   // Do nothing
 }
 
-CL_DOCSTRING(R"dx(Add a debug filename.)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Add a debug filename.)dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__add_debug_filename(const string& name) {
   lisp_debugLog()->addDebugFileName(name);
 }
@@ -586,8 +586,8 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
   UNREACHABLE();
 };
 
-CL_DOCSTRING(R"dx(functionWrongTypeArgument)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(functionWrongTypeArgument)dx");
+DOCGROUP(clasp);
 [[noreturn]] CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
@@ -616,10 +616,10 @@ DOCGROUP(clasp)
   UNREACHABLE();
 };
 
-CL_LAMBDA(source-file lineno function narg value type)
+CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(wrongTypeArgument)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(wrongTypeArgument)dx");
+DOCGROUP(clasp);
 [[noreturn]] CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
@@ -648,10 +648,10 @@ DOCGROUP(clasp)
   UNREACHABLE();
 };
 
-CL_LAMBDA(source-file lineno function narg value type)
+CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(wrongTypeNthArg)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(wrongTypeNthArg)dx");
+DOCGROUP(clasp);
 [[noreturn]] CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
   if (function.nilp()) {
     stringstream message;
@@ -681,10 +681,10 @@ DOCGROUP(clasp)
   UNREACHABLE();
 };
 
-CL_LAMBDA(source-file lineno function narg value type)
+CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(wrongIndex)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(wrongIndex)dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int nonincl_limit) {
   if (function.nilp()) {
     const char *message1 =

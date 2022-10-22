@@ -72,8 +72,8 @@ CL_DEFUN List_sp core__specializerIndices(SingleDispatchGenericFunction_sp func)
 
 
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ensureSingleDispatchGenericFunction)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ensureSingleDispatchGenericFunction)dx");
+DOCGROUP(clasp);
 CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_function(T_sp gfname, bool autoExport, size_t singleDispatchArgumentIndex, List_sp lambdaList) {
   T_sp tgfn;
   if (!cl__fboundp(gfname)) {
@@ -116,10 +116,10 @@ CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_f
 };
 
 
-CL_LAMBDA("gf gfname receiver-class &key declares (docstring \"\") body ")
+CL_LAMBDA("gf gfname receiver-class &key declares (docstring \"\") body ");
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function)dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp tgfname, Instance_sp receiver_class, List_sp declares, T_sp docstring, Function_sp body) {
   SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(tgfname,
                                                                   receiver_class,

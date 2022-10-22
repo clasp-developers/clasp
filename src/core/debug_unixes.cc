@@ -323,7 +323,7 @@ void walk_loaded_objects_symbol_table(SymbolCallback* callback)
 }
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__walk_loaded_objects()
 {
   SymbolCallback symbol_callback;

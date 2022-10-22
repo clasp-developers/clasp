@@ -11,10 +11,10 @@ void throw_if_invalid_global_telemetry_search() {
   }
 }
 
-CL_LAMBDA(pathname)
+CL_LAMBDA(pathname);
 CL_DECLARE();
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__telemetry_open(core::T_sp tpathname) {
   if (tpathname.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
   core::Pathname_sp pathname = core::cl__pathname(tpathname);
@@ -29,10 +29,10 @@ CL_DEFUN void core__telemetry_open(core::T_sp tpathname) {
 
 #define CANONICAL_POINTER(p) (p & (~0x7))
 
-CL_LAMBDA(addresses)
+CL_LAMBDA(addresses);
 CL_DECLARE();
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__telemetry_search(core::List_sp addresses) {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
@@ -70,10 +70,10 @@ CL_DEFUN void core__telemetry_search(core::List_sp addresses) {
   }
 }
 
-CL_LAMBDA(label &optional (begin 0) end)
+CL_LAMBDA(label &optional (begin 0) end);
 CL_DECLARE();
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__telemetry_search_labels(core::List_sp labels) {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
@@ -112,10 +112,10 @@ CL_DEFUN void core__telemetry_search_labels(core::List_sp labels) {
   }
 }
 
-CL_LAMBDA(address)
+CL_LAMBDA(address);
 CL_DECLARE();
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__telemetry_follow(core::T_sp address) {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
@@ -159,10 +159,10 @@ CL_DEFUN void core__telemetry_follow(core::T_sp address) {
   }
 }
 
-CL_LAMBDA()
+CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__telemetry_labels() {
   throw_if_invalid_global_telemetry_search();
   for (int i(0); i < global_telemetry_search->_Labels.size(); ++i) {
@@ -170,10 +170,10 @@ CL_DEFUN void core__telemetry_labels() {
   }
 }
 
-CL_LAMBDA(&optional (begin 0) end)
+CL_LAMBDA(&optional (begin 0) end);
 CL_DECLARE();
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
   throw_if_invalid_global_telemetry_search();
   if (!begin.fixnump()) {
@@ -213,10 +213,10 @@ CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
   }
 }
 
-CL_LAMBDA()
+CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING(R"dx()dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx()dx");
+DOCGROUP(clasp);
 CL_DEFUN size_t core__telemetry_count() {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();

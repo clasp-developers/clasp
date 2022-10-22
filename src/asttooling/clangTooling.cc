@@ -148,7 +148,7 @@ messes with Clasp's name lispification.  lispify(cxxRecordDecl) --> CXX-RECORD-D
 But the class that cxxRecordDecl() is supposed to match is CXXRECORD-DECL (lispify(CXXRecordDecl))
 So I'll fix it here by converting names that start with "cxx" to start with "CXX"
 Also fix up CUDA and RV.*/
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN std::string ast_tooling__fix_matcher_name(const string& orig_name)
 {
   if ( orig_name.substr(0,3) == "cxx") {
@@ -170,7 +170,7 @@ CL_DEFUN std::string ast_tooling__fix_matcher_name(const string& orig_name)
 }
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN core::Symbol_sp ast_tooling__intern_matcher_keyword(const string& orig_name)
 {
   core::Symbol_sp name = core::lispify_intern_keyword(ast_tooling__fix_matcher_name(orig_name));
@@ -518,7 +518,7 @@ SYMBOL_EXPORT_SC_(AstToolingPkg, onEndOfTranslationUnit);
 
 namespace asttooling {
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN core::T_sp ast_tooling__clangVersionString() {
   core::T_sp version = core::SimpleBaseString_O::make(CLANG_VERSION_STRING);
   return version;
@@ -642,7 +642,7 @@ void ast_tooling__RefactoringToolReplacementsAdd(clang::tooling::RefactoringTool
 #define ARGS_ast_tooling__deduplicate "(replacements)"
 #define DECL_ast_tooling__deduplicate ""
 #define DOCS_ast_tooling__deduplicate "deduplicate wraps and lispifys clang::tooling::deduplicate - it takes a Cons of replacements and returns (values replacements overlapping-ranges)"
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
   core::List_sp creps = replacements;
   vector<clang::tooling::Replacement> vreps;
@@ -680,7 +680,7 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
 
 
 #if 1
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void ast_tooling__testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
   printf("%s:%d - got DerivableMatchCallback object --> %p\n", __FILE__, __LINE__, ptr);
   ptr->onEndOfTranslationUnit();
@@ -764,42 +764,42 @@ namespace asttooling {
         .def("getIncludeLoc", &clang::PresumedLoc::getIncludeLoc);
 #endif
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool ast_tooling__isFileID(const clang::SourceLocation& ploc) {
   return ploc.isValid();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN std::string ast_tooling__printToString(const clang::SourceLocation& ploc,const clang::SourceManager &SM) {
   return ploc.printToString(SM);
 }
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool ast_tooling__isValid(const clang::PresumedLoc& ploc) {
   return ploc.isValid();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool ast_tooling__isInvalid(const clang::PresumedLoc& ploc) {
   return ploc.isInvalid();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN std::string ast_tooling__PresumedLoc_getFilename(const clang::PresumedLoc& ploc) {
   return ploc.getFilename();
 }
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN unsigned  ast_tooling__getLine(const clang::PresumedLoc& ploc) {
   return ploc.getLine();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN unsigned ast_tooling__getColumn(const clang::PresumedLoc& ploc) {
   return ploc.getColumn();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN clang::SourceLocation ast_tooling__getIncludeLoc(const clang::PresumedLoc& ploc) {
   return ploc.getIncludeLoc();
 }
@@ -808,7 +808,7 @@ CL_DEFUN clang::SourceLocation ast_tooling__getIncludeLoc(const clang::PresumedL
 
 };
 namespace asttooling {
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(core::T_sp FilePath, core::Symbol_sp ssyntax ) {
   clang::tooling::JSONCommandLineSyntax syntax = translate::from_object<clang::tooling::JSONCommandLineSyntax>(ssyntax)._v;
   std::string ErrorMessage;
@@ -992,7 +992,7 @@ void initialize_clangTooling() {
 }
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN core::T_sp ast_tooling__parse_dynamic_matcher(const string& matcher)
 {
 //  printf("%s:%d:%s got matcher %s\n", __FILE__, __LINE__, __FUNCTION__, matcher.c_str());

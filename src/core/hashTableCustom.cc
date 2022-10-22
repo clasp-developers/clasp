@@ -61,7 +61,7 @@ void HashTableCustom_O::archiveBase(::core::ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 bool HashTableCustom_O::keyTest(T_sp entryKey, T_sp searchKey) const {
-  _OF();
+  
   T_sp c = eval::funcall(comparator, entryKey, searchKey);
   return c.notnilp();
 }

@@ -530,7 +530,7 @@ bool BaseHeader_s::preciseIsPolymorphic() const {
 
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN core::T_mv gctools__multiple_values_ensure_valid(core::T_mv obj) {
   if (obj.generalp()) {
     client_validate_General_O_ptr(obj.unsafe_general());
@@ -546,7 +546,7 @@ CL_DEFUN core::T_mv gctools__multiple_values_ensure_valid(core::T_mv obj) {
   return obj;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__ensure_valid(core::T_sp obj) {
   if (obj.generalp()) {
     client_validate_General_O_ptr(obj.unsafe_general());
@@ -652,9 +652,9 @@ core::Fixnum ensure_fixnum(stamp_t val)
   return (core::Fixnum)val;
 }
 
-CL_LAMBDA()
-CL_DOCSTRING(R"dx(Return the next available header KIND value and increment the global variable global_next_header_stamp)dx")
-DOCGROUP(clasp)
+CL_LAMBDA();
+CL_DOCSTRING(R"dx(Return the next available header KIND value and increment the global variable global_next_header_stamp)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::Fixnum gctools__next_header_kind()
 {
   stamp_t next = global_next_header_stamp;
@@ -753,17 +753,17 @@ void shutdown_gcroots_in_module(GCRootsInModule* roots) {
   roots->_TransientAlloca = NULL;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Fixnum gctools__nextStampValue() {
   return Header_s::StampWtagMtag::shift_unshifted_stamp(global_NextUnshiftedStamp);
 }
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Fixnum gctools__NextUnshiftedStampValue() {
   return global_NextUnshiftedStamp;
 }
 
-CL_LAMBDA(address args)
-DOCGROUP(clasp)
+CL_LAMBDA(address args);
+DOCGROUP(clasp);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
   size_t nargs = core::cl__length(args);
   // Get the address of the memory space in the llvm::Module

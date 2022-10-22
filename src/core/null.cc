@@ -48,7 +48,7 @@ Null_sp Null_O::create_at_boot(const string &nm) {
 };
 
 string Null_O::__repr__() const {
-  _OF();
+  
   return "NIL";
 }
 

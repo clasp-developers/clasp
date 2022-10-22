@@ -37,7 +37,7 @@ namespace core {
 //
 
 CL_LISPIFY_NAME(make-weak-pointer);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN WeakPointer_sp WeakPointer_O::make(T_sp obj) {
   if (obj.objectp()) {
     auto  me = gctools::GC<WeakPointer_O>::allocate( obj);

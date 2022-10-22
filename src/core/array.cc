@@ -262,7 +262,7 @@ size_t Array_O::arrayRowMajorIndex(Vaslist_sp indices) const {
 }
 
 CL_LISPIFY_NAME("cl:array-dimensions");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN List_sp cl__arrayDimensions(Array_sp array)
 {
   List_sp indices = nil<T_O>();
@@ -273,7 +273,7 @@ CL_DEFUN List_sp cl__arrayDimensions(Array_sp array)
 }
 
 CL_LISPIFY_NAME("cl:adjustable-array-p");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool cl__adjustable_array_p(Array_sp array)
 {
   return array->adjustableArrayP();
@@ -281,21 +281,21 @@ CL_DEFUN bool cl__adjustable_array_p(Array_sp array)
 
 
 CL_LISPIFY_NAME("cl:array-dimension");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
 {
   return array->arrayDimension(idx);
 }
 
 CL_LISPIFY_NAME("core:data-vector-p");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool core__data_vector_p(T_sp obj)
 {
   return gc::IsA<AbstractSimpleVector_sp>(obj);
 }
 
 CL_LISPIFY_NAME("core:check-rank");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__check_rank(Array_sp array, size_t vs_rank) {
   size_t rank = array->rank();
   if (rank != vs_rank)
@@ -305,7 +305,7 @@ CL_DEFUN T_mv core__check_rank(Array_sp array, size_t vs_rank) {
 }
 
 CL_LISPIFY_NAME("core:check-index");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__check_index (size_t index, size_t max, size_t axis) {
   if (!((index >= 0) && (index < max)))
     SIMPLE_ERROR(("Invalid index %d for axis %d of array: expected 0-%d")
@@ -459,22 +459,22 @@ Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
 //
 
 CL_LISPIFY_NAME("cl:array-element-type");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN  T_sp cl__arrayElementType(Array_sp array)
 {
   return array->element_type();
 }
 
-CL_LAMBDA(array core:&va-rest core::indices)
+CL_LAMBDA(array core:&va-rest core::indices);
 CL_LISPIFY_NAME("cl:arrayRowMajorIndex");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, Vaslist_sp indices) {
   return array->arrayRowMajorIndex(indices);
 }
 
 
 CL_LISPIFY_NAME("cl:RowMajorAref");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__rowMajorAset(T_sp value, Array_sp array, gc::Fixnum idx)
 {
   // bounds check
@@ -487,7 +487,7 @@ CL_DEFUN_SETF T_sp core__rowMajorAset(T_sp value, Array_sp array, gc::Fixnum idx
 }
 
 CL_LISPIFY_NAME("cl:rowMajorAref");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN  T_sp cl__rowMajorAref(Array_sp array, gc::Fixnum idx)
 {
   // bounds check
@@ -503,7 +503,7 @@ CL_DEFUN  T_sp cl__rowMajorAref(Array_sp array, gc::Fixnum idx)
 // to the caller, but in that case it should always be transformed into a
 // call to cc_checkBound. See cleavir/bir-to-bmir.lisp for that.
 CL_LISPIFY_NAME("core:checkBound");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Fixnum core__check_bound(AbstractSimpleVector_sp vec, size_t len,
                                   gc::Fixnum idx) {
   unlikely_if ((idx < 0) || (idx >= len))
@@ -512,21 +512,21 @@ CL_DEFUN Fixnum core__check_bound(AbstractSimpleVector_sp vec, size_t len,
 }
 
 CL_LISPIFY_NAME("core:vref");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__vref(AbstractSimpleVector_sp vec, size_t idx)
 {
   return vec->vref(idx);
 }
 
 CL_LISPIFY_NAME("CORE:vref");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__vset(T_sp value, AbstractSimpleVector_sp vec, size_t idx)
 {
   vec->vset(idx, value);
   return value;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__arrayFlags(Array_sp a)
 {
   if (gc::IsA<AbstractSimpleVector_sp>(a)) {
@@ -538,7 +538,7 @@ CL_DEFUN size_t core__arrayFlags(Array_sp a)
   SIMPLE_ERROR(("Cannot get array-flags of %s") , _rep_(a));
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__mdarray_dump(Array_sp a)
 {
   MDArray_sp mda = gc::As<MDArray_sp>(a);
@@ -554,7 +554,7 @@ CL_DEFUN void core__mdarray_dump(Array_sp a)
 }
 
 CL_NAME("FILL-POINTER-SET");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__fillPointerSet(Array_sp vector, size_t idx)
 {
   unlikely_if (!vector->arrayHasFillPointerP()) noFillPointerError(core::_sym_fillPointerSet,vector);
@@ -563,7 +563,7 @@ CL_DEFUN size_t core__fillPointerSet(Array_sp vector, size_t idx)
   return idx;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t cl__fillPointer(Array_sp vector)
 {
   unlikely_if (!vector->arrayHasFillPointerP()) noFillPointerError(cl::_sym_fillPointer,vector);
@@ -571,28 +571,28 @@ CL_DEFUN size_t cl__fillPointer(Array_sp vector)
 }
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool cl__arrayHasFillPointerP(Array_sp array) {
   return array->arrayHasFillPointerP();
 }
 
 CL_LISPIFY_NAME("cl:array-total-size");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t cl__arrayTotalSize(Array_sp array) {
   return array->arrayTotalSize();
 }
 
 CL_LISPIFY_NAME("cl:array-rank");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN  size_t cl__array_rank(Array_sp array)
 {
   return array->rank();
 }
 
-CL_LAMBDA(core::array)
+CL_LAMBDA(core::array);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(arrayDisplacement)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(arrayDisplacement)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
   unlikely_if (!gc::IsA<MDArray_sp>(array)) {
     return Values(nil<T_O>(),clasp_make_fixnum(0));
@@ -603,12 +603,12 @@ CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
 
 // Next two used internally. In the compiler they'll be inlined.
 CL_LISPIFY_NAME("core:%displacement");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__PERCENTdisplacement(MDArray_sp array) {
   return array->realDisplacedTo();
 }
 CL_LISPIFY_NAME("core:%displaced-index-offset");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__PERCENTdisplaced_index_offset(MDArray_sp array) {
   return clasp_make_fixnum(array->displacedIndexOffset());
 }
@@ -643,10 +643,10 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
 }
 
 CL_LISPIFY_NAME("cl:aref"); // SETF symbol
-CL_LAMBDA(value array core:&va-rest indices)
+CL_LAMBDA(value array core:&va-rest indices);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(aset)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(aset)dx");
+DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, Vaslist_sp indices) {
   cl_index rowMajorIndex = array->arrayRowMajorIndex(indices);
   array->rowMajorAset(rowMajorIndex,value);
@@ -654,31 +654,31 @@ CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, Vaslist_sp indices) {
 };
 
 CL_LISPIFY_NAME("cl:aref");
-CL_LAMBDA(array core:&va-rest core::indices)
-DOCGROUP(clasp)
+CL_LAMBDA(array core:&va-rest core::indices);
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__aref(Array_sp array, Vaslist_sp vargs)
 {
   cl_index rowMajorIndex = array->arrayRowMajorIndex(vargs);
   return array->rowMajorAref(rowMajorIndex);
 }
 
-CL_LAMBDA(array core:&va-rest indices)
+CL_LAMBDA(array core:&va-rest indices);
 CL_LISPIFY_NAME("core:index");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN gc::Fixnum core__index(Array_sp array, Vaslist_sp indices) {
   return array->arrayRowMajorIndex(indices);
 }
 
 
 CL_LISPIFY_NAME("cl:svref");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__svref(SimpleVector_sp simple_vector, size_t idx)
 {
   return simple_vector->rowMajorAref(idx);
 }
 
 CL_LISPIFY_NAME("cl:svref");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__setf_svref(T_sp val, SimpleVector_sp simple_vector, cl_index idx)
 {
   simple_vector->rowMajorAset(idx,val);
@@ -688,7 +688,7 @@ CL_DEFUN_SETF T_sp core__setf_svref(T_sp val, SimpleVector_sp simple_vector, cl_
 /*! Fill the range of elements of the array,
    if end is nil then fill to the end of the array*/
 CL_LISPIFY_NAME("core:fill-array-with-elt");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__fillArrayWithElt(Array_sp array, T_sp element, cl_index start, T_sp end) {
     // dimensions probably already checked with core__sequence_start_end
     // this is probably a redundant check
@@ -698,7 +698,7 @@ CL_DEFUN void core__fillArrayWithElt(Array_sp array, T_sp element, cl_index star
 }
 
 CL_LISPIFY_NAME("core:replace-array");
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN  T_sp core__replace_array(Array_sp array, Array_sp other)
 {
   return array->replaceArray(other);
@@ -819,20 +819,20 @@ size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& r
 ////////////////////////////////////////////////////////////
 
 namespace core {
-CL_LAMBDA(&rest args)
+CL_LAMBDA(&rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(vector)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(vector)dx");
+DOCGROUP(clasp);
 CL_DEFUN Vector_sp cl__vector(List_sp args) {
   SimpleVector_sp vec = SimpleVector_O::make(cl__length(args));
   vec->fillInitialContents(args);
   return vec;
 };
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
-CL_LAMBDA(dimension initial_element initial_element_supplied_p)
+CL_LAMBDA(dimension initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Make a (simple-vector t))dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Make a (simple-vector t))dx");
+DOCGROUP(clasp);
 CL_DEFUN SimpleVector_sp core__make_simple_vector_t(size_t dimension,
                                                     T_sp initialElement, bool initialElementSuppliedP) {
   (void)initialElementSuppliedP; // ignore
@@ -842,7 +842,7 @@ CL_DEFUN SimpleVector_sp core__make_simple_vector_t(size_t dimension,
 #define DEFMAKESIMPLEVECTOR(TYPE, OBJECT, SMART)\
   CL_DOCSTRING(R"dx(Make a (simple-vector " #TYPE "))dx")\
   DOCGROUP(clasp) \
-  CL_LAMBDA(dimension initial_element initial_element_supplied_p)\
+  CL_LAMBDA(dimension initial_element initial_element_supplied_p);\
   CL_DEFUN SMART core__make_simple_vector_##TYPE(size_t dimension, T_sp initialElement, bool initialElementSuppliedP) {\
     OBJECT::value_type init = initialElementSuppliedP ? OBJECT::from_object(initialElement) : OBJECT::default_initial_element();\
     return OBJECT::make(dimension, init, initialElementSuppliedP);\
@@ -867,10 +867,10 @@ DEFMAKESIMPLEVECTOR(byte64, SimpleVector_byte64_t_O, SimpleVector_byte64_t_sp);
 DEFMAKESIMPLEVECTOR(fixnum, SimpleVector_fixnum_O, SimpleVector_fixnum_sp);
 DEFMAKESIMPLEVECTOR(size_t, SimpleVector_size_t_O, SimpleVector_size_t_sp);
 
-CL_LAMBDA(dimensions initial_element initial_element_supplied_p)
+CL_LAMBDA(dimensions initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Make a (simple-array t) that is not a vector)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Make a (simple-array t) that is not a vector)dx");
+DOCGROUP(clasp);
 CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
                                                        T_sp initialElement, bool initialElementSuppliedP) {
   (void)initialElementSuppliedP;
@@ -880,7 +880,7 @@ CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
 #define DEFMAKESIMPLEMDARRAY(TYPE, OBJECT, SMART, SIMPLE)\
   CL_DOCSTRING(R"dx(Make a (simple-array " #TYPE ") that is not a vector)dx")\
   DOCGROUP(clasp) \
-  CL_LAMBDA(dimension initial_element initial_element_supplied_p)\
+  CL_LAMBDA(dimension initial_element initial_element_supplied_p);\
   CL_DEFUN SMART core__make_simple_mdarray_##TYPE(List_sp dimensions, T_sp initialElement, bool initialElementSuppliedP) {\
     SIMPLE::value_type init = initialElementSuppliedP ? SIMPLE::from_object(initialElement) : SIMPLE::default_initial_element();\
     return OBJECT::make_multi_dimensional(dimensions, init, nil<T_O>());\
@@ -906,10 +906,10 @@ DEFMAKESIMPLEMDARRAY(byte64, SimpleMDArray_byte64_t_O, SimpleMDArray_byte64_t_sp
 DEFMAKESIMPLEMDARRAY(fixnum, SimpleMDArray_fixnum_O, SimpleMDArray_fixnum_sp, SimpleVector_fixnum_O);
 DEFMAKESIMPLEMDARRAY(size_t, SimpleMDArray_size_t_O, SimpleMDArray_size_t_sp, SimpleVector_size_t_O);
 
-CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to (displaced_index_offset 0) initial_element initial_element_supplied_p)
+CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to (displaced_index_offset 0) initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Makes a vector based on the arguments. See si_make_vector in ecl>>array.d)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Makes a vector based on the arguments. See si_make_vector in ecl>>array.d)dx");
+DOCGROUP(clasp);
 CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                                      size_t dimension,
                                      bool adjustable,
@@ -950,10 +950,10 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
 };
 
 
-CL_LAMBDA(element_type dimension &optional initial_element initial_element_supplied_p)
+CL_LAMBDA(element_type dimension &optional initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Makes a static vector based on the arguments. See si_make_vector in ecl>>array.d)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Makes a static vector based on the arguments. See si_make_vector in ecl>>array.d)dx");
+DOCGROUP(clasp);
 CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type,
                                             size_t dimension,
                                             T_sp initialElement,
@@ -985,10 +985,10 @@ CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type,
   else SIMPLE_ERROR(("Handle make-static-vector :element-type %s") , _rep_(element_type));
 };
 
-CL_LAMBDA(dimensions element_type adjustable displaced_to displaced_index_offset initial_element initial_element_supplied_p)
+CL_LAMBDA(dimensions element_type adjustable displaced_to displaced_index_offset initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Makes a multidimensional array based on the arguments.)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Makes a multidimensional array based on the arguments.)dx");
+DOCGROUP(clasp);
 CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
                                        T_sp element_type,
                                        bool adjustable,
@@ -1029,23 +1029,23 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
 // ------------------------------------------------------------
 // ------------------------------------------------------------
 
-CL_LAMBDA(newElement vector)
+CL_LAMBDA(newElement vector);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(vectorPush)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(vectorPush)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__vector_push(T_sp newElement, Vector_sp vec) {
   return vec->vectorPush(newElement);
 };
 
-CL_LAMBDA(newElement vector &optional (exension 0))
+CL_LAMBDA(newElement vector &optional (extension 0));
 CL_DECLARE();
-CL_DOCSTRING(R"dx(vectorPushExtend)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(vectorPushExtend)dx");
+DOCGROUP(clasp);
 CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, size_t extension) {
   return vec->vectorPushExtend(newElement, extension);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__verify_simple_vector_layout(size_t length_offset, size_t data_offset)
 {
   size_t cxx_length_offset = offsetof(SimpleVector_O,_Data._MaybeSignedLength);
@@ -1065,7 +1065,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,Flags);
 SYMBOL_EXPORT_SC_(KeywordPkg,Rank);
 SYMBOL_EXPORT_SC_(KeywordPkg,Dimensions);
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__verify_mdarray_layout(T_sp alist)
 {
   expect_offset(kw::_sym_FillPointerOrLengthOrDummy,alist,offsetof(MDArray_O,_FillPointerOrLengthOrDummy)-gctools::general_tag);
@@ -1082,7 +1082,7 @@ SYMBOL_EXPORT_SC_(ClPkg, vectorPush);
 SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
 
 // Create a byte8 simple vector from any array
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object)
 {
   if (gc::IsA<Array_sp>(object)) {
@@ -1115,7 +1115,7 @@ CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object)
 }
 
 // Create a base-char simple vector from any array
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp source)
 {
   T_sp element_type = source->element_type();
@@ -1133,20 +1133,20 @@ CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp 
   SIMPLE_ERROR(("Add support for coercing %s to a simple-base-string") , _rep_(source));
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN clasp_ffi::ForeignData_sp core__static_vector_address(Array_sp source)
 {
   return clasp_ffi::ForeignData_O::create(source->rowMajorAddressOfElement_(0));
 };
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN clasp_ffi::ForeignData_sp core__static_vector_pointer(Array_sp source, size_t offset )
 {
   return clasp_ffi::ForeignData_O::create((char*)source->rowMajorAddressOfElement_(0)+offset);
 }
 
-CL_DOCSTRING(R"dx(Return the simple-vector that stores the data for this array - this is like sbcl sb-ext:array-storage-vector)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return the simple-vector that stores the data for this array - this is like sbcl sb-ext:array-storage-vector)dx");
+DOCGROUP(clasp);
 CL_DEFUN Array_sp ext__array_storage_vector(Array_sp source )
 {
   if (source->displacedToP()) {
@@ -1159,15 +1159,15 @@ CL_DEFUN Array_sp ext__array_storage_vector(Array_sp source )
   return bsv;
 }
 
-CL_DOCSTRING(R"dx(Return a pointer to the data in the array source)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return a pointer to the data in the array source)dx");
+DOCGROUP(clasp);
 CL_DEFUN clasp_ffi::ForeignData_sp ext__array_pointer(Array_sp source )
 {
   return clasp_ffi::ForeignData_O::create(source->rowMajorAddressOfElement_(0));
 }
 
-CL_DOCSTRING(R"dx(Pin the objects in the list in memory and then call the thunk)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Pin the objects in the list in memory and then call the thunk)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv ext__pinned_objects_funcall(List_sp objects, T_sp thunk)
 {
   size_t num = cl__length(objects);

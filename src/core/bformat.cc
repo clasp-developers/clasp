@@ -176,10 +176,10 @@ CL_DEFUN std::string core__tostring(T_sp fobj)
 
 /*! Boost-format interface - works like CL:format but uses boost format strings
  */
-CL_LAMBDA(destination control &rest args)
+CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Like CL format but uses C/boost format strings)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Like CL format but uses C/boost format strings)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, List_sp args) {
   T_sp output;
   if (destination.nilp()) {
@@ -245,10 +245,10 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, Li
 
 /*! Boost-format interface - works like CL:format but uses boost format strings
  */
-CL_LAMBDA(destination control &rest args)
+CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Like CL format but uses fmt::format)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Like CL format but uses fmt::format)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__fmt(T_sp destination, const string &original_control, List_sp args) {
   T_sp output;
   if (destination.nilp()) {
@@ -351,10 +351,10 @@ CL_DEFUN T_sp core__fmt(T_sp destination, const string &original_control, List_s
 
 /*! Boost-format interface - works like CL:format but uses boost format strings
  */
-CL_LAMBDA(destination control arg)
+CL_LAMBDA(destination control arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Like CL format but uses C/boost format strings and takes one argument)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Like CL format but uses C/boost format strings and takes one argument)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__bformat1(T_sp destination, const string &original_control, T_sp arg) {
   T_sp output;
   if (destination.nilp()) {
@@ -434,15 +434,15 @@ CL_DEFUN T_sp core__bformat1(T_sp destination, const string &original_control, T
   return nil<T_O>();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__fflush() {
   fflush(stdout);
 }
 
-CL_LAMBDA(destination control &rest args)
+CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Subset of CL format - this does the job until the real format is installed)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Subset of CL format - this does the job until the real format is installed)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
   stringstream tf;
   if (cl__functionp(control)) {

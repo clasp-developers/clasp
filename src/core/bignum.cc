@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 namespace core {
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Bignum_sp core__next_from_fixnum(Fixnum fix) {
   return Bignum_O::create(fix);
 }
@@ -132,7 +132,7 @@ Bignum_sp Bignum_O::make(const string& str) {
                                             nlimbs, limbs);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Bignum_sp core__next_from_string(const string& str) {
   return Bignum_O::make(str);
 }
@@ -217,7 +217,7 @@ gc::Fixnum Bignum_O::bit_length_() const {
   }
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN string core__next_primitive_string(Bignum_sp num) {
   stringstream ss;
   mp_size_t len = num->length();
@@ -228,7 +228,7 @@ CL_DEFUN string core__next_primitive_string(Bignum_sp num) {
   return ss.str();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Integer_sp core__next_fmul(Bignum_sp left, Fixnum right) {
   if (right == 0) return clasp_make_fixnum(0);
   mp_size_t llen = left->length();
@@ -255,7 +255,7 @@ CL_DEFUN Integer_sp core__next_fmul(Bignum_sp left, Fixnum right) {
   return bignum_result(result_len, result_limbs);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Bignum_sp core__next_lshift(Bignum_sp num, Fixnum shift) {
   ASSERT(shift >= 0);
   mp_size_t len = num->length();
@@ -283,7 +283,7 @@ CL_DEFUN Bignum_sp core__next_lshift(Bignum_sp num, Fixnum shift) {
                                             result_size, result_limbs);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Integer_sp core__next_rshift(Bignum_sp num, Fixnum shift) {
   ASSERT(shift >= 0);
   mp_size_t len = num->length();
@@ -335,7 +335,7 @@ Integer_sp Bignum_O::shift_right(Fixnum shift) const {
   else return this->asSmartPtr();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Bignum_sp core__next_mul(Bignum_sp left, Bignum_sp right) {
   // NOTE: The mpz_ functions detect when left = right (analogously) and use
   // mpn_sqr instead. I don't _think_ this is required, given they're untouched anyway.
@@ -357,7 +357,7 @@ CL_DEFUN Bignum_sp core__next_mul(Bignum_sp left, Bignum_sp right) {
                                             result_size, result_limbs);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Bignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
   mp_size_t result_size = 2;
   mp_limb_t limbs[2];
@@ -381,7 +381,7 @@ CL_DEFUN Bignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
                                             0, false, result_size, limbs);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__next_truncate(Bignum_sp dividend,
                                   Bignum_sp divisor) {
   ASSERT(dividend != divisor); // "No overlap is permitted between arguments"
@@ -417,7 +417,7 @@ CL_DEFUN T_mv core__next_truncate(Bignum_sp dividend,
 
 // Truncating a fixnum by a bignum will always get you zero
 // so there's no function for that.
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__next_ftruncate(Bignum_sp dividend,
                                    Fixnum divisor) {
   if (divisor == 0)
@@ -550,13 +550,13 @@ Integer_sp next_gcd(const mp_limb_t* llimbs, mp_size_t lsize,
   return bignum_result(result_size, result_limbs);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Integer_sp core__next_gcd(Bignum_sp left, Bignum_sp right) {
   return next_gcd(left->limbs(), std::abs(left->length()),
                   right->limbs(), std::abs(right->length()));
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Integer_sp core__next_fgcd(Bignum_sp big, Fixnum small) {
   if (small == 0) return big;
   // Don't think mpn_gcd_1 understands negatives.
@@ -728,14 +728,14 @@ Integer_sp next_add(const mp_limb_t *llimbs, mp_size_t llen,
   return bignum_result(result_len, result_limbs);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Integer_sp core__next_add(Bignum_sp left,
                                    Bignum_sp right) {
   return next_add(left->limbs(), left->length(),
                   right->limbs(), right->length());
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Integer_sp core__next_sub(Bignum_sp left,
                                    Bignum_sp right) {
   return next_add(left->limbs(), left->length(),
@@ -769,14 +769,14 @@ Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len,
   return bignum_result(result_len, result_limbs);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Integer_sp core__next_fadd(Bignum_sp left, Fixnum right) {
   return next_fadd(left->limbs(), left->length(), right);
 }
 
 // bignum - fixnum is trivially bignum +-fixnum, but fixnum - bignum
 // is very slightly trickier
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Integer_sp core__next_fsub(Fixnum left, Bignum_sp right) {
   return next_fadd(right->limbs(), -(right->length()), left);
 }
@@ -825,7 +825,7 @@ LongFloat Bignum_O::as_long_float_() const {
   return static_cast<LongFloat>(next_to_double(this->length(), this->limbs()));
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN int core__next_compare(Bignum_sp left,
                                 Bignum_sp right) {
   mp_size_t llen = left->length(), rlen = right->length();

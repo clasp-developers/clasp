@@ -58,33 +58,25 @@ This chapter describes the classes and methods available within Cando-Script.
 __END_DOC
 */
 
-
 extern "C" {
-bool low_level_equal(core::T_O* a, core::T_O* b) {
-  core::T_sp ta((gctools::Tagged) a);
-  core::T_sp tb((gctools::Tagged) b);
-  return cl__equal(ta,tb);
-};  
-  
+bool low_level_equal(core::T_O *a, core::T_O *b) {
+  core::T_sp ta((gctools::Tagged)a);
+  core::T_sp tb((gctools::Tagged)b);
+  return cl__equal(ta, tb);
+};
 };
 
-
 extern "C" {
-__attribute__((noinline)) void drag_delay() {};
-
+__attribute__((noinline)) void drag_delay(){};
 };
 
 namespace core {
 
 uint __nextGlobalClassSymbol = 1;
 
-void set_nextGlobalClassSymbol(uint z) {
-  __nextGlobalClassSymbol = z;
-}
+void set_nextGlobalClassSymbol(uint z) { __nextGlobalClassSymbol = z; }
 
-uint get_nextGlobalClassSymbol() {
-  return __nextGlobalClassSymbol;
-}
+uint get_nextGlobalClassSymbol() { return __nextGlobalClassSymbol; }
 
 uint get_nextGlobalClassSymbolAndAdvance() {
   uint n = __nextGlobalClassSymbol;
@@ -111,10 +103,10 @@ T_sp alist_from_plist(List_sp plist) {
   return alist; // should I reverse this?
 }
 
-CL_LAMBDA(class-name &rest args)
+CL_LAMBDA(class-name &rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(make-cxx-object makes a C++ object using the encode/decode/fields functions)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(make-cxx-object makes a C++ object using the encode/decode/fields functions)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
   Instance_sp theClass;
   if (Instance_sp argClass = class_or_name.asOrNull<Instance_O>()) {
@@ -135,7 +127,7 @@ CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
         General_sp ginstance(instance.unsafe_general());
         ginstance->initialize(args);
       } else {
-        SIMPLE_ERROR(("Add support to decode object of class: %s") , _rep_(cl__class_of(instance)));
+        SIMPLE_ERROR(("Add support to decode object of class: %s"), _rep_(cl__class_of(instance)));
       }
     }
     return instance;
@@ -145,11 +137,11 @@ BAD_ARG0:
   UNREACHABLE();
 }
 
-
-CL_LAMBDA(class-name &rest args)
+CL_LAMBDA(class-name &rest args);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(load-cxx-object makes a C++ object using the encode/decode/fields functions using decoder/loader(s) - they support patching of objects)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(
+    R"dx(load-cxx-object makes a C++ object using the encode/decode/fields functions using decoder/loader(s) - they support patching of objects)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   Instance_sp theClass;
   if (Instance_sp argClass = class_or_name.asOrNull<Instance_O>()) {
@@ -164,13 +156,13 @@ CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   {
     T_sp instance = theClass->make_instance();
     if (args.notnilp()) {
-//      args = alist_from_plist(args);
+      //      args = alist_from_plist(args);
       //      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
-      if ( instance.generalp() ) {
+      if (instance.generalp()) {
         General_sp ginstance(instance.unsafe_general());
         ginstance->decode(args);
       } else {
-        SIMPLE_ERROR(("Add support to decode object of class: %s") , _rep_(cl__class_of(instance)));
+        SIMPLE_ERROR(("Add support to decode object of class: %s"), _rep_(cl__class_of(instance)));
       }
     }
     return instance;
@@ -180,39 +172,41 @@ BAD_ARG0:
   UNREACHABLE();
 }
 
-CL_LAMBDA(obj)
+CL_LAMBDA(obj);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(fieldsp returns true if obj has a fields function)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(fieldsp returns true if obj has a fields function)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__fieldsp(T_sp obj) {
-  if ( obj.generalp() ) {
+  if (obj.generalp()) {
     return obj.unsafe_general()->fieldsp();
   }
-  SIMPLE_ERROR(("Add support for fieldsp for %s") , _rep_(cl__class_of(obj)));
+  SIMPLE_ERROR(("Add support for fieldsp for %s"), _rep_(cl__class_of(obj)));
 }
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(encode object as an a-list)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(encode object as an a-list)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::List_sp core__encode(T_sp arg) {
-  if (arg.generalp()) return arg.unsafe_general()->encode();
+  if (arg.generalp())
+    return arg.unsafe_general()->encode();
   IMPLEMENT_MEF("Implement for non-general objects");
 };
 
-CL_LAMBDA(obj arg)
+CL_LAMBDA(obj arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(decode object from a-list)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(decode object from a-list)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__decode(T_sp obj, core::List_sp arg) {
-  if (obj.generalp()) obj.unsafe_general()->decode(arg);
+  if (obj.generalp())
+    obj.unsafe_general()->decode(arg);
   return obj;
   IMPLEMENT_MEF("Implement for non-general objects");
 };
 
-CL_LAMBDA(obj stream)
+CL_LAMBDA(obj stream);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(printCxxObject)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(printCxxObject)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
   if (core__fieldsp(obj)) {
     clasp_write_char('#', stream);
@@ -242,12 +236,12 @@ CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
   return obj;
 }
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(lowLevelDescribe)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(lowLevelDescribe)dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__low_level_describe(T_sp obj) {
-  if ( obj.generalp() ) {
+  if (obj.generalp()) {
     General_sp gobj(obj.unsafe_general());
     if (gobj.nilp()) {
       printf("NIL\n");
@@ -261,10 +255,10 @@ CL_DEFUN void core__low_level_describe(T_sp obj) {
   }
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(copyTree)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(copyTree)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp cl__copy_tree(T_sp arg) {
   if (arg.nilp())
     return nil<T_O>();
@@ -274,70 +268,67 @@ CL_DEFUN T_sp cl__copy_tree(T_sp arg) {
   return arg;
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(implementationClass)dx")
-DOCGROUP(clasp)
-CL_DEFUN T_sp core__implementation_class(T_sp arg) {
-  return lisp_static_class(arg);
-};
+CL_DOCSTRING(R"dx(implementationClass)dx");
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__implementation_class(T_sp arg) { return lisp_static_class(arg); };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(instanceClass)dx")
-DOCGROUP(clasp)
-CL_DEFUN Instance_sp core__instance_class(T_sp arg) {
-  return lisp_instance_class(arg);
-};
+CL_DOCSTRING(R"dx(instanceClass)dx");
+DOCGROUP(clasp);
+CL_DEFUN Instance_sp core__instance_class(T_sp arg) { return lisp_instance_class(arg); };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(classNameAsString)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(classNameAsString)dx");
+DOCGROUP(clasp);
 CL_DEFUN string core__class_name_as_string(T_sp arg) {
   Instance_sp c = core__instance_class(arg);
   return c->_className()->fullName();
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(instanceSig)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(instanceSig)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__instance_sig(T_sp obj) {
-  if ( obj.generalp() ) {
+  if (obj.generalp()) {
     return obj.unsafe_general()->instanceSig();
   }
   IMPLEMENT_MEF("Implement for non-general objects");
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(instanceSigSet)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(instanceSigSet)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__instance_sig_set(T_sp arg) {
-  if ( arg.generalp() ) {
+  if (arg.generalp()) {
     return arg.unsafe_general()->instanceSigSet();
   }
   IMPLEMENT_MEF("Implement for non-general objects");
 };
 
-CL_LAMBDA(obj idx val)
+CL_LAMBDA(obj idx val);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(instanceSet - set the (idx) slot of (obj) to (val))dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(instanceSet - set the (idx) slot of (obj) to (val))dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__instance_set(T_sp obj, int idx, T_sp val) {
-  if ( obj.generalp() ) {
+  if (obj.generalp()) {
     return obj.unsafe_general()->instanceSet(idx, val);
   }
   IMPLEMENT_MEF("Implement for non-general objects");
 };
 
-CL_LAMBDA(obj idx)
+CL_LAMBDA(obj idx);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(instanceRef - return the (idx) slot value of (obj))dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(instanceRef - return the (idx) slot value of (obj))dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__instance_ref(T_sp obj, int idx) {
-  if (obj.generalp())return obj.unsafe_general()->instanceRef(idx);
+  if (obj.generalp())
+    return obj.unsafe_general()->instanceRef(idx);
   IMPLEMENT_MEF("Implement for non-general objects");
 };
 
@@ -347,7 +338,8 @@ void General_O::initialize() {
 
 void General_O::initialize(core::List_sp alist) {
   Record_sp record = Record_O::create_initializer(alist);
-  if (this->fieldsp()) this->fields(record);
+  if (this->fieldsp())
+    this->fields(record);
   record->errorIfInvalidArguments();
 }
 
@@ -394,27 +386,22 @@ void General_O::sxhash_(HashGenerator &hg) const {
 }
 
 void General_O::sxhash_equal(HashGenerator &hg) const {
-  if (!hg.isFilling()) return;
+  if (!hg.isFilling())
+    return;
   hg.addGeneralAddress(this->asSmartPtr());
   return;
 }
 
-bool General_O::eql_(T_sp obj) const {
-  return this->eq(obj);
-}
+bool General_O::eql_(T_sp obj) const { return this->eq(obj); }
 
-bool General_O::equal(T_sp obj) const {
-  return this->eq(obj);
-}
+bool General_O::equal(T_sp obj) const { return this->eq(obj); }
 
-bool General_O::equalp(T_sp obj) const {
-  return this->equal(obj);
-}
-
+bool General_O::equalp(T_sp obj) const { return this->equal(obj); }
 
 bool HashGenerator::addGeneralAddress(General_sp part) {
   ASSERT(part.generalp());
-  if (this->isFull()) return false;
+  if (this->isFull())
+    return false;
   this->_Parts[this->_NextAddressIndex] = lisp_general_badge(part);
   this->_NextAddressIndex--;
   return true;
@@ -430,11 +417,9 @@ bool HashGenerator::addConsAddress(Cons_sp part) {
   return true;
 }
 
-void Hash1Generator::hashObject(T_sp obj) {
-  clasp_sxhash(obj, *this);
-}
+void Hash1Generator::hashObject(T_sp obj) { clasp_sxhash(obj, *this); }
 
-  // Add an address - this may need to work with location dependency
+// Add an address - this may need to work with location dependency
 bool Hash1Generator::addGeneralAddress(General_sp part) {
   ASSERT(part.generalp());
   this->_Part = lisp_general_badge(part);
@@ -459,7 +444,7 @@ bool Hash1Generator::addConsAddress(Cons_sp part) {
   return true;
 }
 
-/*! Recursive hashing of objects need to be prevented from 
+/*! Recursive hashing of objects need to be prevented from
     infinite recursion.   So we keep track of the depth of
     recursion.  clasp_sxhash will modify this->_Depth and
     when we return we have to restore _Depth to its
@@ -467,14 +452,15 @@ bool Hash1Generator::addConsAddress(Cons_sp part) {
 void HashGenerator::hashObject(T_sp obj) {
   int depth = this->_Depth;
   ++this->_Depth;
-  LIKELY_if (this->_Depth<MaxDepth) clasp_sxhash(obj, *this);
+  LIKELY_if(this->_Depth < MaxDepth) clasp_sxhash(obj, *this);
   this->_Depth = depth;
 }
 
 Fixnum bignum_hash(const mpz_class &bignum) {
   auto bn = bignum.get_mpz_t();
   unsigned int size = bn->_mp_size;
-  if (size<0) size = -size;
+  if (size < 0)
+    size = -size;
 #ifdef DEBUG_HASH_GENERATOR
   if (this->_debug) {
     printf("%s:%d Adding hash bignum\n", __FILE__, __LINE__);
@@ -482,7 +468,7 @@ Fixnum bignum_hash(const mpz_class &bignum) {
 #endif
   gc::Fixnum hash(5381);
   for (int i = 0; i < (int)size; i++) {
-    hash = (gc::Fixnum)hash_word(hash,(uintptr_t)bn->_mp_d[i]);
+    hash = (gc::Fixnum)hash_word(hash, (uintptr_t)bn->_mp_d[i]);
   }
   return hash;
 }
@@ -497,10 +483,10 @@ bool HashGenerator::addValue(const mpz_class &bignum) {
   return this->addValue(hash);
 }
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return t if obj is equal to T_O::_class->unboundValue())dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Return t if obj is equal to T_O::_class->unboundValue())dx");
+DOCGROUP(clasp);
 CL_DEFUN bool core__sl_boundp(T_sp obj) {
   //    bool boundp = (obj.get() != T_O::___staticClass->unboundValue().get());
   bool boundp = !obj.unboundp();
@@ -510,9 +496,7 @@ CL_DEFUN bool core__sl_boundp(T_sp obj) {
   return boundp;
 };
 
-void General_O::describe(T_sp stream) {
-  clasp_write_string(this->__repr__(), stream);
-}
+void General_O::describe(T_sp stream) { clasp_write_string(this->__repr__(), stream); }
 
 void General_O::__write__(T_sp strm) const {
   if (_sym_STARliteral_print_objectSTAR->symbolValue().notnilp()) {
@@ -526,11 +510,7 @@ void General_O::__write__(T_sp strm) const {
   }
 }
 
-
-
-string General_O::descriptionOfContents() const {
-  return "";
-};
+string General_O::descriptionOfContents() const { return ""; };
 
 string General_O::description() const {
   stringstream ss;
@@ -545,29 +525,31 @@ string General_O::description() const {
 };
 
 T_sp General_O::instanceRef(size_t idx) const {
-  SIMPLE_ERROR(("T_O::instanceRef(%d) invoked on object class[%s] val-->%s") , idx , this->_instanceClass()->_classNameAsString() , this->__repr__());
+  SIMPLE_ERROR(("T_O::instanceRef(%d) invoked on object class[%s] val-->%s"), idx, this->_instanceClass()->_classNameAsString(),
+               this->__repr__());
 }
 
 T_sp General_O::instanceClassSet(Instance_sp val) {
-  SIMPLE_ERROR(("T_O::instanceClassSet to class %s invoked on object class[%s] val-->%s - subclass must implement") , _rep_(val) , this->_instanceClass()->_classNameAsString() , _rep_(this->asSmartPtr()));
+  SIMPLE_ERROR(("T_O::instanceClassSet to class %s invoked on object class[%s] val-->%s - subclass must implement"), _rep_(val),
+               this->_instanceClass()->_classNameAsString(), _rep_(this->asSmartPtr()));
 }
 
 T_sp General_O::instanceSet(size_t idx, T_sp val) {
-  SIMPLE_ERROR(("T_O::instanceSet(%d,%s) invoked on object class[%s] val-->%s") , idx , _rep_(val) , this->_instanceClass()->_classNameAsString() , _rep_(this->asSmartPtr()));
+  SIMPLE_ERROR(("T_O::instanceSet(%d,%s) invoked on object class[%s] val-->%s"), idx, _rep_(val),
+               this->_instanceClass()->_classNameAsString(), _rep_(this->asSmartPtr()));
 }
 
 T_sp General_O::instanceSig() const {
-  SIMPLE_ERROR(("T_O::instanceSig() invoked on object class[%s] val-->%s") , this->_instanceClass()->_classNameAsString() , this->__repr__());
+  SIMPLE_ERROR(("T_O::instanceSig() invoked on object class[%s] val-->%s"), this->_instanceClass()->_classNameAsString(),
+               this->__repr__());
 }
 
 T_sp General_O::instanceSigSet() {
-  SIMPLE_ERROR(("T_O::instanceSigSet() invoked on object class[%s] val-->%s") , this->_instanceClass()->_classNameAsString() , _rep_(this->asSmartPtr()));
+  SIMPLE_ERROR(("T_O::instanceSigSet() invoked on object class[%s] val-->%s"), this->_instanceClass()->_classNameAsString(),
+               _rep_(this->asSmartPtr()));
 }
 
-Instance_sp instance_class(T_sp obj)
-{
-  return cl__class_of(obj);
-}
+Instance_sp instance_class(T_sp obj) { return cl__class_of(obj); }
 
 SYMBOL_SC_(CorePkg, slBoundp);
 SYMBOL_SC_(CorePkg, instanceRef);
@@ -582,117 +564,108 @@ SYMBOL_EXPORT_SC_(ClPkg, copyTree);
 
 ;
 
-
-
-
-
 #include <clasp/core/multipleValues.h>
 
 SYMBOL_EXPORT_SC_(ClPkg, eq);
 SYMBOL_EXPORT_SC_(ClPkg, eql);
 SYMBOL_EXPORT_SC_(ClPkg, equal);
 SYMBOL_EXPORT_SC_(ClPkg, equalp);
-};
-
+}; // namespace core
 
 namespace core {
 
-void lisp_setStaticClass(gctools::Header_s::StampWtagMtag header, Instance_sp value)
-{
+void lisp_setStaticClass(gctools::Header_s::StampWtagMtag header, Instance_sp value) {
   if (_lisp->_Roots.staticClassesUnshiftedNowhere.size() == 0) {
     ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_max));
     size_t stamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMPWTAG_max);
-//    printf("%s:%d:%s allocating %lu entries for stamp classes STAMWTAG_max %lu\n", __FILE__, __LINE__, __FUNCTION__, stamp, (size_t)gctools::STAMPWTAG_max );
-    _lisp->_Roots.staticClassesUnshiftedNowhere.resize(stamp+1);
+    //    printf("%s:%d:%s allocating %lu entries for stamp classes STAMWTAG_max %lu\n", __FILE__, __LINE__, __FUNCTION__, stamp,
+    //    (size_t)gctools::STAMPWTAG_max );
+    _lisp->_Roots.staticClassesUnshiftedNowhere.resize(stamp + 1);
   }
   size_t stamp = gctools::Header_s::Stamp(header);
-//  printf("%s:%d:%s header: %u  stamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header, stamp, _rep_(value).c_str());
+  //  printf("%s:%d:%s header: %u  stamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header, stamp, _rep_(value).c_str());
   _lisp->_Roots.staticClassesUnshiftedNowhere[stamp] = value;
 }
 
-void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag header, Symbol_sp value)
-{
-//  printf("%s:%d:%s  gctools::STAMP_max -> %u\n", __FILE__, __LINE__, __FUNCTION__, gctools::STAMP_max);
+void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag header, Symbol_sp value) {
+  //  printf("%s:%d:%s  gctools::STAMP_max -> %u\n", __FILE__, __LINE__, __FUNCTION__, gctools::STAMP_max);
   if (_lisp->_Roots.staticClassSymbolsUnshiftedNowhere.size() == 0) {
     ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_max));
     size_t stamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMPWTAG_max);
-//    printf("%s:%d:%s allocating %lu entries for stamp classes STAMWTAG_max %lu\n", __FILE__, __LINE__, __FUNCTION__, stamp, (size_t)gctools::STAMPWTAG_max );
-    _lisp->_Roots.staticClassSymbolsUnshiftedNowhere.resize(stamp+1);
+    //    printf("%s:%d:%s allocating %lu entries for stamp classes STAMWTAG_max %lu\n", __FILE__, __LINE__, __FUNCTION__, stamp,
+    //    (size_t)gctools::STAMPWTAG_max );
+    _lisp->_Roots.staticClassSymbolsUnshiftedNowhere.resize(stamp + 1);
   }
   size_t stamp = gctools::Header_s::Stamp(header);
   _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[stamp] = value;
-  //  printf("%s:%d:%s stamp: %lu  value: %s@%p\n", __FILE__, __LINE__, __FUNCTION__, stamp, _rep_(value).c_str(), &_lisp->_Roots.staticClassSymbolsUnshiftedNowhere[stamp]);
+  //  printf("%s:%d:%s stamp: %lu  value: %s@%p\n", __FILE__, __LINE__, __FUNCTION__, stamp, _rep_(value).c_str(),
+  //  &_lisp->_Roots.staticClassSymbolsUnshiftedNowhere[stamp]);
 }
-Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag header)
-{
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag header) {
   size_t stamp = gctools::Header_s::Stamp(header);
   T_sp value = _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[stamp];
-  //  printf("%s:%d:%s stamp: %lu  value: %s@%p\n", __FILE__, __LINE__, __FUNCTION__, stamp, _rep_(value).c_str(), &_lisp->_Roots.staticClassSymbolsUnshiftedNowhere[stamp]);
+  //  printf("%s:%d:%s stamp: %lu  value: %s@%p\n", __FILE__, __LINE__, __FUNCTION__, stamp, _rep_(value).c_str(),
+  //  &_lisp->_Roots.staticClassSymbolsUnshiftedNowhere[stamp]);
   Symbol_sp svalue = gc::As<Symbol_sp>(value);
   return svalue;
 }
 
-
-void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag header, Creator_sp value)
-{ 
+void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag header, Creator_sp value) {
   if (_lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere.size() == 0) {
     size_t stamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMPWTAG_max);
-    _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere.resize(stamp+1);
+    _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere.resize(stamp + 1);
   }
   size_t stamp = gctools::Header_s::Stamp(header);
   _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere[stamp] = value;
 }
 
-Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag header)
-{
+Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag header) {
   size_t stamp = gctools::Header_s::Stamp(header);
   Instance_sp class_ = _lisp->_Roots.staticClassesUnshiftedNowhere[stamp];
-  //printf("%s:%d:%s stamp = %lu   class_ = %s\n", __FILE__, __LINE__, __FUNCTION__, stamp, _rep_(class_).c_str());
+  // printf("%s:%d:%s stamp = %lu   class_ = %s\n", __FILE__, __LINE__, __FUNCTION__, stamp, _rep_(class_).c_str());
   return class_;
 }
-Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag header)
-{
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag header) {
   size_t stamp = gctools::Header_s::Stamp(header);
   return _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere[stamp];
 }
 
-};
-
+}; // namespace core
 
 namespace core {
 
-CL_LAMBDA(x y)
+CL_LAMBDA(x y);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(equalp)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(equalp)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
-    if (x.fixnump()) {
-      if (y.fixnump()) {
-        return x.raw_() == y.raw_();
-      } else if (y.single_floatp()) {
-        return (x.unsafe_fixnum() == y.unsafe_single_float());
-      } else if (gc::IsA<Number_sp>(y)) {
-        return basic_equalp(gc::As_unsafe<Fixnum_sp>(x),
-                            gc::As_unsafe<Number_sp>(y));
-      } else return false;
-    } else if (x.single_floatp()) {
-      if (y.single_floatp()) {
-        return x.unsafe_single_float() == y.unsafe_single_float();
-      } else if (y.fixnump()) {
-        return x.unsafe_single_float() == y.unsafe_fixnum();
-      } else if (gc::IsA<Number_sp>(y)) {
-        return basic_equalp(gc::As_unsafe<SingleFloat_sp>(x),
-                            gc::As_unsafe<Number_sp>(y));
-      } else return false;
-    } else if (x.characterp()) {
-      return clasp_charEqual2(x, y);
-    } else if (x.consp() ) {
-      Cons_O* cons = x.unsafe_cons();
-      return cons->equalp(y);
-    } else if ( x.generalp() ) {
-      General_O* genx = x.unsafe_general();
-      return genx->equalp(y);
-    }
-    SIMPLE_ERROR(("Bad equalp comparison"));
-  };
+  if (x.fixnump()) {
+    if (y.fixnump()) {
+      return x.raw_() == y.raw_();
+    } else if (y.single_floatp()) {
+      return (x.unsafe_fixnum() == y.unsafe_single_float());
+    } else if (gc::IsA<Number_sp>(y)) {
+      return basic_equalp(gc::As_unsafe<Fixnum_sp>(x), gc::As_unsafe<Number_sp>(y));
+    } else
+      return false;
+  } else if (x.single_floatp()) {
+    if (y.single_floatp()) {
+      return x.unsafe_single_float() == y.unsafe_single_float();
+    } else if (y.fixnump()) {
+      return x.unsafe_single_float() == y.unsafe_fixnum();
+    } else if (gc::IsA<Number_sp>(y)) {
+      return basic_equalp(gc::As_unsafe<SingleFloat_sp>(x), gc::As_unsafe<Number_sp>(y));
+    } else
+      return false;
+  } else if (x.characterp()) {
+    return clasp_charEqual2(x, y);
+  } else if (x.consp()) {
+    Cons_O *cons = x.unsafe_cons();
+    return cons->equalp(y);
+  } else if (x.generalp()) {
+    General_O *genx = x.unsafe_general();
+    return genx->equalp(y);
+  }
+  SIMPLE_ERROR(("Bad equalp comparison"));
 };
+}; // namespace core

@@ -50,7 +50,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
 SYMBOL_EXPORT_SC_(CorePkg, AMPva_rest );
 /*! Return true if the form represents a type
 */
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool core__is_a_type(T_sp form)
 {
   if ( form == _lisp->_true() ) return true;
@@ -121,7 +121,7 @@ ftype           inline     special
 ignorable       notinline  type
 And my own special one:    core:_sym_lambda_name
 */
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 {
   List_sp canon = nil<T_O>();
@@ -705,13 +705,13 @@ List_sp lexical_variable_names(gctools::Vec0<RequiredArgument> &reqs,
   return result.cons();
 }
 
-CL_LAMBDA(vl context)
+CL_LAMBDA(vl context);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(This is like ECL::process-lambda-list)dx")
-CL_DOCSTRING_LONG(R"dx(Differences are auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(This is like ECL::process-lambda-list)dx");
+CL_DOCSTRING_LONG(R"dx(Differences are auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
-  _OF();
+  
   gctools::Vec0<RequiredArgument> reqs;
   gctools::Vec0<OptionalArgument> optionals;
   gctools::Vec0<KeywordArgument> keys;
@@ -939,19 +939,19 @@ List_sp process_macro_lambda_list(List_sp lambda_list) {
   return macro_ll;
 }
 
-CL_LAMBDA(lambda-list)
+CL_LAMBDA(lambda-list);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(process_macro_lambda_list)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(process_macro_lambda_list)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__process_macro_lambda_list(List_sp lambda_list) {
   List_sp new_ll = process_macro_lambda_list(lambda_list);
   return new_ll;
 }
 
-CL_LAMBDA(lambda-list)
+CL_LAMBDA(lambda-list);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(process_single_dispatch_lambda_list)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(process_single_dispatch_lambda_list)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
   return process_single_dispatch_lambda_list(lambda_list);
 }

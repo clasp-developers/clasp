@@ -46,7 +46,7 @@ string Serializer_O::__repr__() const {
   return ss.str();
 };
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN Serializer_sp make_serializer(const std::string& s) {
   auto ser = gctools::GC<Serializer_O>::allocate(s);
   return ser;

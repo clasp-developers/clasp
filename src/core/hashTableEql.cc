@@ -73,7 +73,7 @@ void HashTableEql_O::archiveBase(::core::ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const {
-  _OF();
+  
   return cl__eql(entryKey, searchKey);
 }
 

@@ -98,68 +98,68 @@ static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
   sockaddr->sin_addr.s_addr = htonl((uint32_t)a1 << 24 | (uint32_t)a2 << 16 | (uint32_t)a3 << 8 | (uint32_t)a4);
 }
 
-CL_LAMBDA(domain type protocol)
+CL_LAMBDA(domain type protocol);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ff_socket)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ff_socket)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ff_socket(int domain, int type, int protocol) {
   return ::socket(domain, type, protocol);
 };
 
-CL_LAMBDA(sockfd backlog)
+CL_LAMBDA(sockfd backlog);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ff_listen)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ff_listen)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ff_listen(int sockfd, int backlog) {
   return ::listen(sockfd, backlog);
 };
 
-CL_LAMBDA(filedes)
+CL_LAMBDA(filedes);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ff_close)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ff_close)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ff_close(int filedes) {
   return ::close(filedes);
 };
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(funcName)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(funcName)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::T_mv sockets_internal__funcName() {
   IMPLEMENT_MEF("Implement funcName");
 };
 
-CL_LAMBDA()
+CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socket_errno)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socket_errno)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_socket_errno() {
   /* Return the value of global variable errno */
   return errno;
 };
 
-CL_LAMBDA()
+CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_get_name_service_h_errno)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_get_name_service_h_errno)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_get_name_service_h_errno() {
   /* Return the value of global variable h_errno */
   return h_errno;
 };
 
-CL_LAMBDA(num)
+CL_LAMBDA(num);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_getNameServiceErrorMessage)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_getNameServiceErrorMessage)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::String_sp sockets_internal__ll_getNameServiceErrorMessage(int num) {
   return core::SimpleBaseString_O::make(strerror(num));
 };
 
-CL_LAMBDA(host-name host-ent setf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses)
+CL_LAMBDA(host-name host-ent setf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_getHostByName)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_getHostByName)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,                 // #0
                                              core::T_sp tHostEnt,                          // #1
                                              core::Function_sp setf_host_ent_name,         // #2
@@ -200,10 +200,10 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
   }
 }
 
-CL_LAMBDA(address host-ent stf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses)
+CL_LAMBDA(address host-ent stf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_getHostByAddress)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_getHostByAddress)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp address,               //#0
                             core::T_sp tHostEnt,                   //#1
                             core::T_sp setf_host_ent_name,         //#2
@@ -251,10 +251,10 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
   }
 }
 
-CL_LAMBDA(fd buffer length oob peek waitall)
+CL_LAMBDA(fd buffer length oob peek waitall);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketReceive)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketReceive)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
                          core::T_sp buffer,                          // #1
                          int length,                                 // #2
@@ -285,10 +285,10 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
   }
 }
 
-CL_LAMBDA(name)
+CL_LAMBDA(name);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_getProtocolByName)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_getProtocolByName)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_getProtocolByName(const string &name) {
   struct protoent * proto = getprotobyname(name.c_str());
 
@@ -299,10 +299,10 @@ CL_DEFUN int sockets_internal__ll_getProtocolByName(const string &name) {
   return proto->p_proto;
 }
 
-CL_LAMBDA(port ip0 ip1 ip2 ip3 socketFileDescriptor)
+CL_LAMBDA(port ip0 ip1 ip2 ip3 socketFileDescriptor);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketBind - returns output)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketBind - returns output)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_socketBind_inetSocket(int port, int ip0, int ip1, int ip2, int ip3, int socketFileDescriptor) {
   struct sockaddr_in sockaddr;
   int output;
@@ -313,10 +313,10 @@ CL_DEFUN int sockets_internal__ll_socketBind_inetSocket(int port, int ip0, int i
   return output;
 }
 
-CL_LAMBDA(sfd)
+CL_LAMBDA(sfd);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketAccept_inetSocket)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketAccept_inetSocket)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_inetSocket(int sfd) {
   struct sockaddr_in sockaddr;
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_in);
@@ -343,10 +343,10 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_inetSocket(int sfd) {
   return Values(core::Integer_O::create((gc::Fixnum)return0), return1, core::Integer_O::create((gc::Fixnum)return2));
 }
 
-CL_LAMBDA(port ip0 ip1 ip2 ip3 socket-file-descriptor)
+CL_LAMBDA(port ip0 ip1 ip2 ip3 socket-file-descriptor);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketConnect_inetSocket)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketConnect_inetSocket)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_socketConnect_inetSocket(int port, int ip0, int ip1, int ip2, int ip3, int socket_file_descriptor) {
   struct sockaddr_in sockaddr;
   int output;
@@ -357,10 +357,10 @@ CL_DEFUN int sockets_internal__ll_socketConnect_inetSocket(int port, int ip0, in
   return output;
 }
 
-CL_LAMBDA(fd vector)
+CL_LAMBDA(fd vector);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketPeername_inetSocket)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketPeername_inetSocket)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_socketPeername_inetSocket(int fd, core::Vector_sp vector) {
   /* @01; */
   struct sockaddr_in name;
@@ -384,10 +384,10 @@ CL_DEFUN int sockets_internal__ll_socketPeername_inetSocket(int fd, core::Vector
   }
 }
 
-CL_LAMBDA(fd vector)
+CL_LAMBDA(fd vector);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketName)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketName)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_socketName(int fd, core::Vector_sp vector) {
   /* @01 */
   struct sockaddr_in name;
@@ -413,10 +413,10 @@ CL_DEFUN int sockets_internal__ll_socketName(int fd, core::Vector_sp vector) {
   }
 }
 
-CL_LAMBDA(fd vbuffer length secondAddress ip0 ip1 ip2 ip3 oob eor dontroute dontwait nosignal confirm)
+CL_LAMBDA(fd vbuffer length secondAddress ip0 ip1 ip2 ip3 oob eor dontroute dontwait nosignal confirm);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketSendAddress)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketSendAddress)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,            //#0
                                    core::Vector_sp vbuffer, //#1
                                    int length,        //#2
@@ -473,10 +473,10 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,        
   return core::Integer_O::create((gc::Fixnum)(len));
 }
 
-CL_LAMBDA(fb buffer length oob eor dontroute dontwait nosignal confirm)
+CL_LAMBDA(fb buffer length oob eor dontroute dontwait nosignal confirm);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketSendNoAddress)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketSendNoAddress)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendNoAddress(int fb,            //#0
                                   core::Vector_sp vbuffer, //#1
                                   int length,        //#2
@@ -510,10 +510,10 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendNoAddress(int fb,      
   return core::Integer_O::create((gc::Fixnum)(len));
 }
 
-CL_LAMBDA(fd name family)
+CL_LAMBDA(fd name family);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketBind_localSocket)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketBind_localSocket)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_socketBind_localSocket(int fd, const string &name, int family) {
   struct sockaddr_un sockaddr;
   //	size_t size;
@@ -531,10 +531,10 @@ CL_DEFUN int sockets_internal__ll_socketBind_localSocket(int fd, const string &n
   return output;
 }
 
-CL_LAMBDA(socket-file-descriptor)
+CL_LAMBDA(socket-file-descriptor);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketAccept_localSocket)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketAccept_localSocket)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_localSocket(int socketFileDescriptor) {
   struct sockaddr_un sockaddr;
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_un);
@@ -549,10 +549,10 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_localSocket(int socketFile
   return Values(core::Integer_O::create((gc::Fixnum)new_fd), second_ret);
 }
 
-CL_LAMBDA(fd family path)
+CL_LAMBDA(fd family path);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketConnect_localSocket)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketConnect_localSocket)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_socketConnect_localSocket(int fd, int family, const string &path) {
   struct sockaddr_un sockaddr;
   int output;
@@ -570,10 +570,10 @@ CL_DEFUN int sockets_internal__ll_socketConnect_localSocket(int fd, int family, 
   return output;
 }
 
-CL_LAMBDA(fd)
+CL_LAMBDA(fd);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_socketPeername_localSocket)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_socketPeername_localSocket)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::T_sp sockets_internal__ll_socketPeername_localSocket(int fd) {
   struct sockaddr_un name;
   socklen_t len = sizeof(struct sockaddr_un);
@@ -590,18 +590,18 @@ CL_DEFUN core::T_sp sockets_internal__ll_socketPeername_localSocket(int fd) {
   }
 }
 
-CL_LAMBDA(fd)
+CL_LAMBDA(fd);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_nonBlockingMode)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_nonBlockingMode)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_nonBlockingMode(int fd) {
   return fcntl(fd, F_GETFL, NULL) & O_NONBLOCK;
 }
 
-CL_LAMBDA(fd nblock)
+CL_LAMBDA(fd nblock);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_setfNonBlockingMode)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_setfNonBlockingMode)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_setfNonBlockingMode(int fd, int nblock) {
   int oldflags = fcntl(fd, F_GETFL, NULL);
   int newflags = (oldflags & ~O_NONBLOCK) |
@@ -612,18 +612,18 @@ CL_DEFUN int sockets_internal__ll_setfNonBlockingMode(int fd, int nblock) {
   return ret;
 }
 
-CL_LAMBDA(fd)
+CL_LAMBDA(fd);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_dup)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_dup)dx");
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__ll_dup(int fd) {
   return dup(fd);
 }
 
-CL_LAMBDA(name fd stream-mode element-type external-format)
+CL_LAMBDA(name fd stream-mode element-type external-format);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_makeStreamFromFd)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_makeStreamFromFd)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string &name,  //#0
                             int fd,              //#1
                             int streamMode,      //#2
@@ -649,10 +649,10 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string &name,  /
   return stream;
 }
 
-CL_LAMBDA(stream)
+CL_LAMBDA(stream);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_autoCloseTwoWayStream)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_autoCloseTwoWayStream)dx");
+DOCGROUP(clasp);
 CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::Stream_sp stream) {
 #if 0
 	IMPLEMENT_MEF("Handle ECL_STREAM_CLOSE_COMPONENTS");
@@ -660,26 +660,26 @@ CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::Stream_sp stream)
 #endif
 };
 
-CL_LAMBDA(num)
+CL_LAMBDA(num);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_strerror)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_strerror)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::String_sp sockets_internal__ll_strerror(int num) {
   return core::SimpleBaseString_O::make(strerror(num));
 }
 
-CL_LAMBDA()
+CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_strerror_errno)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_strerror_errno)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::String_sp sockets_internal__ll_strerror_errno() {
   return core::SimpleBaseString_O::make(strerror(errno));
 }
 
-CL_LAMBDA(fd level constant)
+CL_LAMBDA(fd level constant);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_getSockoptInt)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_getSockoptInt)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptInt(int fd, int level, int constant) {
   /* (c-inline (fd level const) (:int :int :int) t   ) */
   int sockopt, ret;
@@ -692,10 +692,10 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptInt(int fd, int level, 
   return (ret == 0) ? core::Integer_O::create((gc::Fixnum)sockopt) : nil<core::Integer_O>();
 }
 
-CL_LAMBDA(fd level constant)
+CL_LAMBDA(fd level constant);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_getSockoptBool)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_getSockoptBool)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::T_sp sockets_internal__ll_getSockoptBool(int fd, int level, int constant) {
   int sockopt, ret;
   socklen_t socklen = sizeof(int);
@@ -706,10 +706,10 @@ CL_DEFUN core::T_sp sockets_internal__ll_getSockoptBool(int fd, int level, int c
   return (ret == 0) ? _lisp->_boolean(sockopt) : nil<core::T_O>();
 }
 
-CL_LAMBDA(fd level constant)
+CL_LAMBDA(fd level constant);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_getSockoptTimeval)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_getSockoptTimeval)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::DoubleFloat_sp sockets_internal__ll_getSockoptTimeval(int fd, int level, int constant) {
   struct timeval tv;
   socklen_t socklen = sizeof(struct timeval);
@@ -720,10 +720,10 @@ CL_DEFUN core::DoubleFloat_sp sockets_internal__ll_getSockoptTimeval(int fd, int
   return (ret == 0) ? core::DoubleFloat_O::create((double)tv.tv_sec + ((double)tv.tv_usec) / 1000000.0) : nil<core::DoubleFloat_O>();
 }
 
-CL_LAMBDA(fd level constant)
+CL_LAMBDA(fd level constant);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_getSockoptLinger)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_getSockoptLinger)dx");
+DOCGROUP(clasp);
 CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptLinger(int fd, int level, int constant) {
   struct linger sockopt;
   socklen_t socklen = sizeof(struct linger);
@@ -736,10 +736,10 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptLinger(int fd, int leve
   return (ret == 0) ? core::Integer_O::create((gc::Fixnum)((sockopt.l_onoff != 0) ? sockopt.l_linger : 0)) : nil<core::Integer_O>();
 }
 
-CL_LAMBDA(fd level constant value)
+CL_LAMBDA(fd level constant value);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_setSockoptInt)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_setSockoptInt)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool sockets_internal__ll_setSockoptInt(int fd, int level, int constant, int value) {
   int sockopt = value;
   int ret;
@@ -751,10 +751,10 @@ CL_DEFUN bool sockets_internal__ll_setSockoptInt(int fd, int level, int constant
   return (ret == 0) ? true : false;
 }
 
-CL_LAMBDA(fd level constant value)
+CL_LAMBDA(fd level constant value);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_setSockoptBool)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_setSockoptBool)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool sockets_internal__ll_setSockoptBool(int fd, int level, int constant, bool value) {
   int sockopt = value ? 1 : 0;
   int ret;
@@ -766,10 +766,10 @@ CL_DEFUN bool sockets_internal__ll_setSockoptBool(int fd, int level, int constan
   return (ret == 0) ? true : false;
 }
 
-CL_LAMBDA(fd level constant value)
+CL_LAMBDA(fd level constant value);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_setSockoptTimeval)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_setSockoptTimeval)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool sockets_internal__ll_setSockoptTimeval(int fd, int level, int constant, double value) {
   struct timeval tv;
   double tmp = value;
@@ -784,10 +784,10 @@ CL_DEFUN bool sockets_internal__ll_setSockoptTimeval(int fd, int level, int cons
   return (ret == 0) ? true : false;
 }
 
-CL_LAMBDA(fd level constant value)
+CL_LAMBDA(fd level constant value);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ll_setSockoptLinger)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(ll_setSockoptLinger)dx");
+DOCGROUP(clasp);
 CL_DEFUN bool sockets_internal__ll_setSockoptLinger(int fd, int level, int constant, int value) {
   struct linger sockopt = {0, 0};
   int ret;
@@ -806,49 +806,49 @@ CL_DEFUN bool sockets_internal__ll_setSockoptLinger(int fd, int level, int const
 }
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__shutdown(int sock_fd, int direction_flag) {
   return shutdown(sock_fd,direction_flag);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__errno()
 {
   return errno;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN gc::Fixnum sockets_internal__fd_setsize() {
   return FD_SETSIZE;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void* sockets_internal__alloc_atomic_sizeof_fd_set() {
   return (void*)malloc(sizeof(fd_set));
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void sockets_internal__fdset_zero(core::Pointer_sp p)
 {
   FD_ZERO((fd_set*)p->ptr());
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void sockets_internal__fdset_set(gc::Fixnum fd, core::Pointer_sp fdset) {
   FD_SET(fd,(fd_set*)fdset->ptr());
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void sockets_internal__fdset_clr(gc::Fixnum fd, core::Pointer_sp fdset) {
   FD_CLR(fd,(fd_set*)fdset->ptr());
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN bool sockets_internal__fdset_isset(gc::Fixnum fd, core::Pointer_sp fdset) {
   return FD_ISSET(fd,(fd_set*)fdset->ptr());
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN core::T_sp sockets_internal__get_host_name() {
   char* buf = (char*)malloc(257);
   if (gethostname(buf,256) == 0 ) {
@@ -860,7 +860,7 @@ CL_DEFUN core::T_sp sockets_internal__get_host_name() {
   return nil<core::T_O>();
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN int sockets_internal__do_select(core::T_sp to_secs,
                                          unsigned int to_musecs,
                                          core::Pointer_sp rfds,

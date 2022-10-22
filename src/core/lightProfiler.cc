@@ -298,13 +298,13 @@ void LightProfiler::popTimerStates() {
 }
 
 LightEventCounter &LightProfiler::eventCounter(uint c) {
-  _OF();
+  
   ASSERT_lessThan(c, this->_EventCounters.size());
   return this->_EventCounters[c];
 }
 
 LightTimer &LightProfiler::timer(uint c) {
-  _OF();
+  
   ASSERT_lessThan(c, this->_Timers.size());
   return this->_Timers[c];
 }

@@ -89,7 +89,7 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::Ba
 
 // FIXME: Exists solely for cases where the list of slotds is hard to get.
 CL_LAMBDA(class slot-count);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl, size_t slot_count) {
   GlobalSimpleFun_sp entryPoint =
       makeGlobalSimpleFunAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda, nil<core::T_sp>());
@@ -99,7 +99,7 @@ CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl, size_
   return obj;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl, Rack_sp rack) {
   GlobalSimpleFun_sp entryPoint =
       makeGlobalSimpleFunAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda, nil<core::T_sp>());
@@ -165,7 +165,7 @@ T_sp FuncallableInstance_O::instanceSet(size_t idx, T_sp val) {
 
 // Get the name of a generic function without calling any generic functions
 // (e.g., generic-function-name). Nice for debugging CLOS.
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__low_level_standard_generic_function_name(FuncallableInstance_sp gfun) { return gfun->functionName(); }
 
 string FuncallableInstance_O::__repr__() const {
@@ -202,7 +202,7 @@ void FuncallableInstance_O::describe(T_sp stream) {
   clasp_write_string(ss.str(), stream);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     return Values(_lisp->_true(), Pointer_O::create((void *)iobj->entry()));
@@ -210,7 +210,7 @@ CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
     return Values(nil<T_O>(), nil<T_O>());
 };
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     return iobj->setFuncallableInstanceFunction(func);
@@ -222,14 +222,14 @@ CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
 
 namespace core {
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t clos__generic_function_interpreted_calls(FuncallableInstance_sp gf) { return gf->interpreted_calls(); }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp clos__generic_function_compiled_dispatch_function(T_sp obj) {
   return gc::As<FuncallableInstance_sp>(obj)->REAL_FUNCTION();
 }
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_sp val) {
   gc::As<FuncallableInstance_sp>(obj)->REAL_FUNCTION_set(gc::As<Function_sp>(val));
 }
@@ -783,7 +783,7 @@ namespace core {
 
 CL_LAMBDA(program gf core:&va-rest args);
 CL_UNWIND_COOP(true);
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 __attribute__((optnone)) CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
                                                                      Vaslist_sp pass_args) {
   DO_DRAG_INTERPRET_DTREE();
@@ -1010,7 +1010,7 @@ DISPATCH_MISS:
 SYMBOL_EXPORT_SC_(KeywordPkg, force_compile);
 SYMBOL_EXPORT_SC_(KeywordPkg, generic_function_name);
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset) {
   if (funcallableInstance_size != sizeof(FuncallableInstance_O))
     SIMPLE_ERROR(("The cmpintrinsics.lisp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O) %lu"),

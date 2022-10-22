@@ -234,8 +234,8 @@ void LocalSimpleFun_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixu
 
 
 
-CL_LAMBDA(&key function-description entry-point-functions local-entry-point-index)
-DOCGROUP(clasp)
+CL_LAMBDA(&key function-description entry-point-functions local-entry-point-index);
+DOCGROUP(clasp);
 CL_DEFUN GlobalSimpleFunGenerator_sp core__makeGlobalSimpleFunGenerator(FunctionDescription_sp fdesc,
                                                                           T_sp entryPointIndices,
                                                                           size_t localEntryPointIndex ) {
@@ -244,8 +244,8 @@ CL_DEFUN GlobalSimpleFunGenerator_sp core__makeGlobalSimpleFunGenerator(Function
   return entryPoint;
 }
 
-CL_LAMBDA(&key function-description entry-point-functions)
-DOCGROUP(clasp)
+CL_LAMBDA(&key function-description entry-point-functions);
+DOCGROUP(clasp);
 CL_DEFUN LocalSimpleFunGenerator_sp core__makeLocalSimpleFunGenerator(FunctionDescription_sp fdesc,
                                                                         T_sp entryPointIndices) {
   auto entryPoint = gctools::GC<LocalSimpleFunGenerator_O>::allocate(fdesc,entryPointIndices);
@@ -299,8 +299,8 @@ std::string GlobalSimpleFunGenerator_O::__repr__() const {
 }
 
 CL_LISPIFY_NAME(FunctionDescription/make);
-CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname (lineno 0) (column 0) (filepos 0))
-DOCGROUP(clasp)
+CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname (lineno 0) (column 0) (filepos 0));
+DOCGROUP(clasp);
 CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
                               T_sp lambdaList,
                               T_sp docstring,
@@ -535,76 +535,76 @@ GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp 
 
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__FunctionDescription_sourcePathname(FunctionDescription_sp fdesc) {
   return fdesc->_sourcePathname;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__FunctionDescription_functionName(FunctionDescription_sp fdesc) {
   return fdesc->_functionName;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__FunctionDescription_lambdaList(FunctionDescription_sp fdesc) {
   return fdesc->_lambdaList;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__FunctionDescription_docstring(FunctionDescription_sp fdesc) {
   return fdesc->_docstring;
 }
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__FunctionDescription_declares(FunctionDescription_sp fdesc) {
   return fdesc->_declares;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__FunctionDescription_lineno(FunctionDescription_sp fdesc) {
   return fdesc->lineno;
 }
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__FunctionDescription_column(FunctionDescription_sp fdesc) {
   return fdesc->column;
 }
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__FunctionDescription_filepos(FunctionDescription_sp fdesc) {
   return fdesc->filepos;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__SimpleFun_function_description(SimpleFun_sp entryPoint) {
   return entryPoint->_FunctionDescription;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__GlobalSimpleFunGenerator_entry_point_indices(GlobalSimpleFunGenerator_sp fdesc) {
   return fdesc->_entry_point_indices;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__LocalSimpleFunGenerator_entry_point_indices(LocalSimpleFunGenerator_sp fdesc) {
   return fdesc->_entry_point_indices;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__set_GlobalSimpleFun_entry_point_indices(GlobalSimpleFunGenerator_sp fdesc, T_sp entry_point_indices) {
   return fdesc->_entry_point_indices = entry_point_indices;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__set_LocalSimpleFun_entry_point_indices(LocalSimpleFunGenerator_sp fdesc, T_sp entry_point_indices) {
   return fdesc->_entry_point_indices = entry_point_indices;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__LocalSimpleFun_relptr(LocalSimpleFun_sp lep) {
   uintptr_t start = llvmo::codeStart(lep);
   uintptr_t abs = (uintptr_t)(lep->_Entry);
   return Integer_O::create(abs - start);
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__GlobalSimpleFun_relptr(GlobalSimpleFun_sp gep) {
   uintptr_t start = llvmo::codeStart(gep);
   uintptr_t abs = (uintptr_t)(gep->_EntryPoints[0]);
@@ -701,7 +701,7 @@ extern "C" void dumpFunctionDescription(core::FunctionDescription_sp fdesc)
 
 namespace core {
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__dumpFunctionDescription(T_sp func)
 {
   if (gc::IsA<Function_sp>(func)) {
@@ -731,15 +731,15 @@ CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
                 make_fixnum(this->lineno()), make_fixnum(this->column()));
 }
 
-DOCGROUP(clasp)
-CL_DOCSTRING("Return the documentation string associated with the function.")
+DOCGROUP(clasp);
+CL_DOCSTRING("Return the documentation string associated with the function.");
 CL_DEFUN T_sp core__function_docstring(Function_sp func) {
   return func->docstring();
 }
 
 CL_LISPIFY_NAME("core:function-docstring");
-CL_DOCSTRING("Set the documentation string associated with the function.")
-DOCGROUP(clasp)
+CL_DOCSTRING("Set the documentation string associated with the function.");
+DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp setf_function_docstring(T_sp doc, Function_sp func) {
   func->setf_docstring(doc);
   return doc;
@@ -753,7 +753,7 @@ SYMBOL_SC_(CompPkg,data_length);
 SYMBOL_SC_(CompPkg,data0);
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__verify_closure(T_sp alist)
 {
   expect_offset(core::_sym_entry_point,alist,offsetof(Closure_O,_TheSimpleFun)-gctools::general_tag);
@@ -767,7 +767,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,code);
 SYMBOL_EXPORT_SC_(KeywordPkg,entry_points);
 SYMBOL_EXPORT_SC_(KeywordPkg,required_args);
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__verify_global_entry_point(T_sp alist)
 {
   expect_offset(kw::_sym_function_description,alist,offsetof(GlobalSimpleFun_O,_FunctionDescription)-gctools::general_tag);
@@ -813,7 +813,7 @@ bool Closure_O::openP() {
 
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__function_call_counter(Function_sp f)
 {
   return f->_TimesCalled;
@@ -897,14 +897,14 @@ void Closure_O::describeFunction() const {
 }
 #endif
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__closure_size(size_t number_of_slots)
 {
   size_t result = gctools::sizeof_container_with_header<Closure_O>(number_of_slots);
   return result;
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t core__closure_length(Function_sp tclosure)
 {
   Closure_sp closure = gc::As_assert<Closure_sp>(tclosure);
@@ -939,7 +939,7 @@ string Closure_O::__repr__() const {
 
 
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__closure_ref(Function_sp tclosure, size_t index)
 {
   if ( Closure_sp closure = tclosure.asOrNull<Closure_O>() ) {
@@ -958,7 +958,7 @@ CL_DEFUN T_sp core__closure_ref(Function_sp tclosure, size_t index)
   SIMPLE_ERROR(("Out of bounds closure reference - there are no slots"));
 }
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__closure_slots_dump(Function_sp closure) {
   size_t nslots = core__closure_length(closure);
   printf("Closure has %zu slots\n", nslots);

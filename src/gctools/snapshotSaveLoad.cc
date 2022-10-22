@@ -2181,7 +2181,7 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message ) {
 }
 
 
-CL_LAMBDA(&key filename)
+CL_LAMBDA(&key filename);
 CL_DOCSTRING("Walk all objects in memory and determine how many contain pointers that are not to valid objects. Return the number of corrupt objects that were found.  If filename is provided then dump a report to that file.");
 CL_DEFUN size_t gctools__memory_test(core::T_sp filename)
 {

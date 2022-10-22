@@ -31,10 +31,10 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(pointerRelease)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(pointerRelease)dx");
+DOCGROUP(clasp);
 CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   if (ptr.nilp()) {
     return nil<Pointer_O>();
@@ -45,10 +45,10 @@ CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   SIMPLE_ERROR(("Could not release pointer for %s") , _rep_(ptr));
 }
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(pointerDelete)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(pointerDelete)dx");
+DOCGROUP(clasp);
 CL_DEFUN void core__pointer_delete(T_sp ptr) {
   if (ptr.nilp()) {
     return;
@@ -99,10 +99,10 @@ Pointer_sp WrappedPointer_O::address() const {
   return Pointer_O::create(addr);
 }
 
-CL_LAMBDA(arg)
+CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(pointerAddress)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(pointerAddress)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   if (ptr.nilp()) {
     return nil<Pointer_O>();
@@ -113,7 +113,7 @@ CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   SIMPLE_ERROR(("Could not get address of pointer for %s") , _rep_(ptr));
 };
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN void core__verify_wrapped_pointer_layout(size_t stamp_offset)
 {
   size_t cxx_stamp_offset = offsetof(WrappedPointer_O,ShiftedStamp_);

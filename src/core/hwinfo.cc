@@ -44,8 +44,8 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_DOCSTRING(R"dx(Returns the number of logical processors in the system.)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Returns the number of logical processors in the system.)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_sp core__num_logical_processors() {
 
 #if defined( _WIN32 ) || defined( _TARGET_OS_WIN )

@@ -62,14 +62,7 @@ unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nai
   return this->buffer;
 };
 
-
-
-
-
 };
-
-
-
 
 namespace core {
 
@@ -486,7 +479,7 @@ uint32_t my_thread_random() {
 
 namespace gctools {
 
-DOCGROUP(clasp)
+DOCGROUP(clasp);
 CL_DEFUN size_t gctools__thread_local_unwinds()
 {
   return

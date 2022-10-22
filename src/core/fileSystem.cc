@@ -90,10 +90,10 @@ void safeRename(Path_sp src, Path_sp dest) {
   rename_file(src, dest);
 }
 
-CL_LAMBDA(pathspec)
+CL_LAMBDA(pathspec);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Look for <path> and return it. If it doesn't exist create every missing directory along the path.)dx")
-DOCGROUP(clasp)
+CL_DOCSTRING(R"dx(Look for <path> and return it. If it doesn't exist create every missing directory along the path.)dx");
+DOCGROUP(clasp);
 CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   Path_sp path_to_create;
   if (cl__stringp(pathspec)) {
@@ -154,7 +154,7 @@ Path_mv af_makePath(List_sp args) {
 }
 
 void Path_O::sxhash_(HashGenerator &hg) const {
-  _OF();
+  
   string ts = this->_Path._value.string();
   for (char const &c: ts)
     if (!(hg.addValue(c))) return;
@@ -174,7 +174,7 @@ CL_DEFMETHOD Integer_sp Path_O::last_write_time() const {
 
 CL_LISPIFY_NAME("path-append");
 CL_DEFMETHOD Path_sp Path_O::path_append(string const &pp) {
-  _OF();
+  
   LOG("Appending string[%s] to the path" , pp);
   this->_Path._value /= pp;
   return this->sharedThis<Path_O>();
@@ -201,7 +201,7 @@ void Path_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 void Path_O::setPath(const std::filesystem::path &path) {
-  _OF();
+  
   this->_Path = path;
 }
 
@@ -216,7 +216,7 @@ CL_DEFMETHOD Path_sp Path_O::absolute() const {
 
 CL_LISPIFY_NAME("copyPath");
 CL_DEFMETHOD Path_sp Path_O::copyPath() const {
-  _OF();
+  
   auto  copy = gctools::GC<Path_O>::copy( *this);
   return copy;
 }
@@ -227,8 +227,8 @@ CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
   this->_Path._value = p;
 }
 
-CL_LAMBDA(self)
-CL_DOCSTRING(R"dx(Returns a list of path parts as strings)dx")
+CL_LAMBDA(self);
+CL_DOCSTRING(R"dx(Returns a list of path parts as strings)dx");
 CL_LISPIFY_NAME("path-parts");
 CL_DEFMETHOD List_sp Path_O::parts() const {
   std::filesystem::path::iterator it;
@@ -241,12 +241,12 @@ CL_DEFMETHOD List_sp Path_O::parts() const {
 
 CL_LISPIFY_NAME("path-asString");
 CL_DEFMETHOD string Path_O::asString() const {
-  _OF();
+  
   return this->_Path._value.string();
 }
 
 string Path_O::__repr__() const {
-  _OF();
+  
   stringstream ss;
   ss << "#<" << _rep_(this->_instanceClass()->_className()) << " :string ";
   ss << this->_Path._value.string() << ">";
@@ -264,7 +264,7 @@ CL_DEFMETHOD string Path_O::extension() {
 }
 
 void Path_O::appendToExtension(string const &str) {
-  _OF();
+  
   stringstream newExtension;
   newExtension << this->extension() << str;
   this->replaceExtension(newExtension.str());
@@ -272,7 +272,7 @@ void Path_O::appendToExtension(string const &str) {
 
 CL_LISPIFY_NAME("replaceExtension");
 CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const &str) {
-  _OF();
+  
   //	std::filesystem::path newExt(str);
   this->_Path._value.replace_extension(str);
   return this->sharedThis<Path_O>();
@@ -280,7 +280,7 @@ CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const &str) {
 
 CL_LISPIFY_NAME("parent_path");
 CL_DEFMETHOD Path_sp Path_O::parent_path() {
-  _OF();
+  
   return Path_O::create(this->_Path._value.parent_path());
 }
 
@@ -326,12 +326,12 @@ void DirectoryIterator_O::initialize() {
 }
 
 void DirectoryIterator_O::setPath(Path_sp p) {
-  _OF();
+  
   this->_Path = p;
 }
 
 void DirectoryIterator_O::setupCurrentIterator() {
-  _OF();
+  
   ASSERTNOTNULL(this->_Path);
   ASSERT(this->_Path.notnilp());
   delete (this->_CurrentIterator._value);
@@ -344,24 +344,24 @@ void DirectoryIterator_O::setupCurrentIterator() {
 }
 
 void DirectoryIterator_O::first() {
-  _OF();
+  
   this->setupCurrentIterator();
 }
 
 void DirectoryIterator_O::next() {
-  _OF();
+  
   ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator is NULL - it shouldn't be"));
   (*(this->_CurrentIterator._value))++;
 }
 
 bool DirectoryIterator_O::isDone() {
-  _OF();
+  
   ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   return (*(this->_CurrentIterator._value) == this->_EndIterator._value);
 }
 
 T_sp DirectoryIterator_O::currentObject() {
-  _OF();
+  
   ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG("The directory iteratory is done - returning nil");
@@ -395,12 +395,12 @@ void RecursiveDirectoryIterator_O::initialize() {
 }
 
 void RecursiveDirectoryIterator_O::setPath(Path_sp p) {
-  _OF();
+  
   this->_Path = p;
 }
 
 void RecursiveDirectoryIterator_O::setupCurrentIterator() {
-  _OF();
+  
   ASSERTNOTNULL(this->_Path);
   ASSERT(this->_Path.notnilp());
   delete (this->_CurrentIterator._value);
@@ -413,24 +413,24 @@ void RecursiveDirectoryIterator_O::setupCurrentIterator() {
 }
 
 void RecursiveDirectoryIterator_O::first() {
-  _OF();
+  
   this->setupCurrentIterator();
 }
 
 void RecursiveDirectoryIterator_O::next() {
-  _OF();
+  
   ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   (*(this->_CurrentIterator._value))++;
 }
 
 bool RecursiveDirectoryIterator_O::isDone() {
-  _OF();
+  
   ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   return (*(this->_CurrentIterator._value) == this->_EndIterator._value);
 }
 
 T_sp RecursiveDirectoryIterator_O::currentObject() {
-  _OF();
+  
   ASSERTF(this->_CurrentIterator._value != NULL, ("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG("The directory iteratory is done - returning nil");
@@ -468,7 +468,7 @@ CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::fileStatus() {
 
 CL_LISPIFY_NAME("symlinkStatus");
 CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::symlinkStatus() {
-  _OF();
+  
   FileStatus_sp fs = _lisp->create<FileStatus_O>();
   fs->setFileStatus(this->_Entry->symlink_status());
   return fs;
@@ -476,7 +476,7 @@ CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::symlinkStatus() {
 
 CL_LISPIFY_NAME("path");
 CL_DEFMETHOD Path_sp DirectoryEntry_O::path() {
-  _OF();
+  
   Path_sp path = _lisp->create<Path_O>();
   path->setPath(this->_Entry->path());
   return path;
@@ -495,18 +495,18 @@ void FileStatus_O::initialize() {
 }
 
 void FileStatus_O::setFileStatus(const std::filesystem::file_status &fs) {
-  _OF();
+  
   this->_FileStatus = fs;
 }
 
 CL_LISPIFY_NAME("exists");
 CL_DEFMETHOD bool FileStatus_O::exists() {
-  _OF();
+  
   return std::filesystem::exists(this->_FileStatus);
 }
 CL_LISPIFY_NAME("isRegularFile");
 CL_DEFMETHOD bool FileStatus_O::isRegularFile() {
-  _OF();
+  
   try {
     return std::filesystem::is_regular_file(this->_FileStatus);
   } catch (...) {
@@ -516,7 +516,7 @@ CL_DEFMETHOD bool FileStatus_O::isRegularFile() {
 
 CL_LISPIFY_NAME("isDirectory");
 CL_DEFMETHOD bool FileStatus_O::isDirectory() {
-  _OF();
+  
   try {
     return std::filesystem::is_directory(this->_FileStatus);
   } catch (...) {
@@ -525,7 +525,7 @@ CL_DEFMETHOD bool FileStatus_O::isDirectory() {
 }
 CL_LISPIFY_NAME("isSymlink");
 CL_DEFMETHOD bool FileStatus_O::isSymlink() {
-  _OF();
+  
   try {
     return std::filesystem::is_symlink(this->_FileStatus);
   } catch (...) {
@@ -534,7 +534,7 @@ CL_DEFMETHOD bool FileStatus_O::isSymlink() {
 }
 CL_LISPIFY_NAME("isOther");
 CL_DEFMETHOD bool FileStatus_O::isOther() {
-  _OF();
+  
   try {
   return std::filesystem::is_other(this->_FileStatus);
   } catch (...) {
