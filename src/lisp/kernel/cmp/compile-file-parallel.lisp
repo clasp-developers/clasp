@@ -37,8 +37,8 @@
     (cond
       ((member intermediate-output-type '(:object :in-memory-object))
        (let ((reloc-model (cond
-                            ((or (member :target-os-linux *features*)
-                                 (member :target-os-freebsd *features*))
+                            ((or (member :linux *features*)
+                                 (member :freebsd *features*))
                              'llvm-sys:reloc-model-pic-)
                             (t 'llvm-sys:reloc-model-undefined))))
          (when write-bitcode
@@ -64,7 +64,7 @@
              (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default object-file-path :bitcode))))
                (write-bitcode module bitcode-file)))
          (let ((reloc-model (cond
-                              ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                              ((or (member :linux *features*) (member :freebsd *features*))
                                'llvm-sys:reloc-model-pic-)
                               (t 'llvm-sys:reloc-model-undefined))))
            (generate-obj-asm module object-file-path :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))

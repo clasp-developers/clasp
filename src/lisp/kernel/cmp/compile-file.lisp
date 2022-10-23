@@ -378,7 +378,7 @@ Compile a lisp source file into an LLVM module."
 
 (defun reloc-model ()
   (cond
-    ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+    ((or (member :linux *features*) (member :freebsd *features*))
      'llvm-sys:reloc-model-pic-)
     (t 'llvm-sys:reloc-model-undefined)))
 

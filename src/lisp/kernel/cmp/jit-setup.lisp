@@ -623,8 +623,8 @@ No DIBuilder is defined for the default module")
 (defun code-model (&key jit (target-faso-file *default-object-type*))
   (declare (ignore jit target-faso-file))
   "Return the code-model for the compilation mode"
-  #+target-os-darwin 'llvm-sys:code-model-small
-  #+(or target-os-freebsd target-os-linux) 'llvm-sys:code-model-small)
+  #+darwin 'llvm-sys:code-model-small
+  #+(or freebsd linux) 'llvm-sys:code-model-small)
 
 (export 'code-model)
 

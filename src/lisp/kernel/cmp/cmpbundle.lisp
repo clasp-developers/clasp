@@ -80,7 +80,7 @@
 (defun generate-object-file (part-bitcode-pathname &key test)
   (let ((output-pathname (compile-file-pathname part-bitcode-pathname :output-type :object))
         (reloc-model (cond
-                       ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                       ((or (member :linux *features*) (member :freebsd *features*))
                         'llvm-sys:reloc-model-pic-)
                        (t 'llvm-sys:reloc-model-undefined))))
     (bitcode-to-obj-file part-bitcode-pathname output-pathname :reloc-model reloc-model)
@@ -134,13 +134,13 @@
   (declare (ignore input-type))
   ;; options are a list of strings like (list "-v")
   (let ((output-flag (cond
-                       ((member :target-os-darwin *features*)
+                       ((member :darwin *features*)
                         (case output-type
                           (:dynamic "-bundle")
                           (:static "-static")
                           (otherwise (error "Unknown output-type ~a for darwin" output-type))))
-                       ((or (member :target-os-linux *features*)
-                            (member :target-os-freebsd *features*))
+                       ((or (member :linux *features*)
+                            (member :freebsd *features*))
                         (case output-type
                           (:dynamic "-shared")
                           (:static "-static")
@@ -156,7 +156,7 @@
       (with-atomic-file-rename (temp-bundle-pathname bundle-file)
         (let* ((temp-bundle-file (namestring temp-bundle-pathname))
                (clang-args (cond
-                             ((member :target-os-darwin *features*)
+                             ((member :darwin *features*)
                               (let* ((object-lto-pathname (make-pathname :type "o"
                                                                          :name (sys:fmt nil "{}-lto" (pathname-name bundle-file))
                                                                          :defaults bundle-file))
@@ -181,8 +181,8 @@
                                                     "-o"
                                                     ,temp-bundle-file)))
                                 clang-args))
-                             ((or (member :target-os-linux *features*)
-                                  (member :target-os-freebsd *features*))
+                             ((or (member :linux *features*)
+                                  (member :freebsd *features*))
                               ;; Linux needs to use clang to link
                               ;; FreeBSD might
                               (let ((clang-args `(#+(or)"-v"
@@ -202,7 +202,7 @@
           (unless (probe-file temp-bundle-file)
             ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
             ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
-            (when (member :target-os-darwin *features*)
+            (when (member :darwin *features*)
               (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" temp-bundle-file clang-args)
               (ext:run-clang (cdr clang-args) :output-file-name temp-bundle-file)
               (when (probe-file temp-bundle-file)
@@ -211,7 +211,7 @@
               (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args temp-bundle-file)))))
       ;; Now rename the library to make compilation atomic
       ;; Run dsymutil on darwin
-      #+target-os-darwin
+      #+darwin
       (ext:run-dsymutil (list "-f" (namestring bundle-file)))
       (truename bundle-file))))
 
@@ -238,7 +238,7 @@
         (exec-file (ensure-string output-file-name))
         (link-flags (core:link-flags)))
     (cond
-      ((member :target-os-darwin *features*)
+      ((member :darwin *features*)
        (ext:run-clang `(,@options
                         ,(core:fmt nil "-O{}" *optimization-level*)
                         ,@all-names
@@ -248,8 +248,8 @@
                         "-o"
                         ,exec-file)
                       :output-file-name exec-file))
-      ((or (member :target-os-linux *features*)
-           (member :target-os-freebsd *features*))
+      ((or (member :linux *features*)
+           (member :freebsd *features*))
        ;; Linux needs to use clang to link
        ;; FreeBSD might
        (ext:run-clang `(,@options

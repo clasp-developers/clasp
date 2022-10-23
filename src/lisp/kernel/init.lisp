@@ -470,7 +470,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
       (close stream)
       (if (member :use-boehm *features*)
           (setq link-flags (cons "-lgc" link-flags)))
-      (let ((library-extension (if (member :target-os-darwin *features*)
+      (let ((library-extension (if (member :darwin *features*)
                                    "dylib"
                                    "so")))
         (values link-flags libdir library-extension)))))
