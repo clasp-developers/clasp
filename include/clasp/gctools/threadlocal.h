@@ -87,7 +87,7 @@ extern int global_debug_virtual_machine;
 
 struct VirtualMachine {
   static constexpr size_t MaxStackWords = 32768; // 32K words for now.
-  static constexpr size_t DynenvStackWords = 32768; // 32K words for now
+  static constexpr size_t DynenvStackWords = 262144; // 256K words for now
   bool           _Running;
   core::T_O*     _stackBottom[MaxStackWords];
   size_t         _stackBytes;
