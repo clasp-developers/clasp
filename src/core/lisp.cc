@@ -2101,9 +2101,9 @@ CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
 CL_LAMBDA(datum &rest arguments);
 CL_DECLARE((optimize (debug 3)));
 CL_UNWIND_COOP(true);
-NEVER_OPTIMIZE
 DOCGROUP(clasp);
-  CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
+NEVER_OPTIMIZE
+CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
   // These are volatile in an effort to make them available to debuggers.
   volatile T_sp saved_datum = datum;
   volatile List_sp saved_initializers = initializers;
