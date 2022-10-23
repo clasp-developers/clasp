@@ -1,4 +1,4 @@
-#+sbcl
+#-clasp
 (defpackage :cmpref
   (:use #:common-lisp))
 
@@ -127,7 +127,7 @@
   (format fout ")opcodes\"~%")
   (format fout "#endif~%"))
 
-#+sbcl
+#-clasp
 (defpackage :clos
   (:use #:common-lisp))
 
@@ -284,7 +284,8 @@
             (t (format sout "~a" chr))))))))
 
 (defun generate-vm-codes (fout)
-  (write-string "#ifdef VM_CODES" fout) (terpri fout) (terpri fout)
+  (write-line "#ifdef VM_CODES" fout)
+  (terpri fout)
   (let ((enums (let ((index 0)
                      rev-codes)
                  (dolist (name *codes*)
@@ -294,17 +295,13 @@
                  (nreverse rev-codes))))
     (format fout "enum vm_codes {~%~{   ~a~^,~^~%~} };~%" enums))
   (terpri fout)
-  (write-string "#endif // VM_CODES" fout)
-  (terpri fout))
+  (write-line "#endif // VM_CODES" fout))
 
-(defun generate-virtual-machine-header (&optional (file-name "virtualMachine.h"))
-  (print file-name)
-  (with-open-file (fout (pathname file-name) :direction :output :if-exists :supersede)
-    (generate-vm-codes fout)
-    (generate-python-bytecode-table fout)
-    (clos:dump-gf-bytecode-virtual-machine fout)
-    (clos:dump-gf-bytecode-virtual-machine-macro-names fout)
-    (clos:dump-python-gf-bytecode-virtual-machine fout)
-    (format t "Generated header in file: ~s~%" file-name)))
+(defun generate-virtual-machine-header (fout)
+  (generate-vm-codes fout)
+  (generate-python-bytecode-table fout)
+  (clos:dump-gf-bytecode-virtual-machine fout)
+  (clos:dump-gf-bytecode-virtual-machine-macro-names fout)
+  (clos:dump-python-gf-bytecode-virtual-machine fout))
 
 (export 'generate-virtual-machine-header)

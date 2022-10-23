@@ -21,8 +21,10 @@
 
 (defmethod print-prologue (configuration (name (eql :generate-vm-header)) output-stream)
   (declare (ignore configuration))
-  (print-asdf-stub output-stream t)
-  (format output-stream "(cmpref:generate-virtual-machine-header (first (uiop:command-line-arguments)))"))
+  (print-asdf-stub output-stream t :ninja)
+  (format output-stream "(map nil #'load (cdr (uiop:command-line-arguments)))
+(ninja:with-timestamp-preserving-stream (stream (first (uiop:command-line-arguments)))
+  (cmpref:generate-virtual-machine-header stream))"))
 
 (defmethod print-prologue (configuration (name (eql :update-unicode)) output-stream)
   (declare (ignore configuration))

@@ -57,7 +57,7 @@
                     :restat 1
                     :description "Creating headers from sif files")
   (ninja:write-rule output-stream :generate-vm-header
-                    :command "$lisp --load $in --script generate-vm-header.lisp $out"
+                    :command "$lisp --script generate-vm-header.lisp $out $in"
                     :restat 1
                     :description "Generating VM header from $in")
   (ninja:write-rule output-stream :compile-systems
