@@ -261,25 +261,17 @@ jobs:
     name: Update Arch Repository
     runs-on: ubuntu-latest
     container:
-      image: yitzchak/archlinux-makepkg:latest
+      image: archlinux:latest
     needs:
       - arch_clasp
       - arch_cando
     steps:
-      - name: Set permissions and update packages
-        run: |
-          sudo chown -R build: .
-          sudo chown -R build: /github/home
-          sudo pacman -Syu --noconfirm
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg_private_key: ${{ secrets.PKG_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PKG_GPG_PASSPHRASE }}
-      - name: Set permissions and update packages
-        run: |
-          sudo chown -R build: /__w
       - uses: actions/download-artifact@v3
         with:
           name: arch_clasp
