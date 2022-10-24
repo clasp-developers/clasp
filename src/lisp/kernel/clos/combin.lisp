@@ -31,12 +31,6 @@
 ;; The ARG-INFO threaded throughout here is used to skip some APPLYing.
 ;; See closfastgf.lisp, gf-arg-info function.
 
-#|
-(defvar *avoid-compiling*
-  #+(and staging bytecode) t
-  #-(and staging bytecode) nil)
-|#
-
 (defvar *avoid-compiling* nil)
 
 (defun emf-maybe-compile (form)

@@ -435,7 +435,7 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod compute-class-precedence-list ((class class))
   (compute-clos-class-precedence-list class (class-direct-superclasses class)))
 
-(eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
+(eval-when (:compile-toplevel :execute :load-toplevel)
   (defmacro mapappend (fun &rest args)
     `(reduce #'append (mapcar ,fun ,@args))))
 

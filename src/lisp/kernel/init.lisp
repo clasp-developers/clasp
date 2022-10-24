@@ -151,13 +151,6 @@
               (finish-output)
               (core:cabort))))))
 
-;; When boostrapping in stages, set this feature,
-;; it guarantees that everything that is declared at compile/eval time
-;; gets declared at load-time
-;; Turn this off and recompile everything once the system has
-;; been bootstrapped
-(setq *features* (cons :clasp-boot *features*)) ;; When bootstrapping in stages
-
 ;;; fixme2022 - We shouldn't need the varest feature
 (setq *features* (cons :varest *features*))
 
@@ -185,7 +178,6 @@
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)
 (setq *activation-frame-optimize* t)
-#-debug-dont-optimize-bclasp (setq *features* (cons :optimize-bclasp *features*))
 (sys:*make-special '*use-human-readable-bitcode*)
 (setq *use-human-readable-bitcode* (member :use-human-readable-bitcode *features*))
 (sys:*make-special '*compile-file-debug-dump-module*)

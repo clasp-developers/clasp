@@ -2301,7 +2301,7 @@
               package))))
 
 ;;; Originally contributed by stassats May 24, 2016
-#-bclasp
+#+(or cclasp eclasp)
 (define-compiler-macro format (&whole whole destination control-string &rest args
                                       &environment env)
   ;; Be especially nice about the common programmer error of

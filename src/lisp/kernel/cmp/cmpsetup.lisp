@@ -112,11 +112,6 @@ Options are :tagbody :go :all :eh-landing-pads
 
 (defvar *suppress-llvm-output* nil)
 
-#+optimize-bclasp
-(progn
-  (defvar *tagbody-frame-info*)
-  (defvar *block-frame-info*))
-
 ;; List of function names which have been declared NOTINLINE.
 (defvar *notinlines* nil)
 

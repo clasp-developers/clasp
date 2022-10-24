@@ -28,7 +28,7 @@
       (otherwise default))))
 
 ;; Ditto for ETYPECASE
-#-(and bclasp bytecode)
+#+(or cclasp eclasp)
 (define-compiler-macro core::etypecase-error (&whole whole value types &environment env)
   (if (constantp types env)
       (let ((types (ext:constant-form-value types env)))

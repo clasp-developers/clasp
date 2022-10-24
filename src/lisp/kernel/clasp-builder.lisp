@@ -52,14 +52,14 @@
            t))
 
 ;;;#+(or)
-(si:fset 'core::mmsg #'(lambda (whole env)
+(Si:fset 'core::mmsg #'(lambda (whole env)
                          nil)
          t)
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (mmsg "Starting up%N"))
 
-#-(or bclasp cclasp eclasp)
+#+clasp-min
 (core:fset 'cmp::with-compiler-timer
            (let ((body (gensym)))
              #+(or)(core:fmt t "body = {}%N" body)
@@ -405,7 +405,7 @@ been initialized with install path versus the build path of the source code file
                         (stage-count (when (ext:getenv "CLASP_STAGE_COUNT")
                                        (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))))
                         (system (command-line-paths)))
-  (setq *features* (list* :bytecode :staging :bytecodelike *features*)
+  (setq *features* (list* :staging *features*)
         system (construct-system system position reproducible))
   (let ((write-date 0)
         (max-stage-count (stage-count system name)))
@@ -430,7 +430,8 @@ been initialized with install path versus the build path of the source code file
                                     entry))
                          system))
     (if system-sort
-        (sort system #'> :key #'(lambda (entry) (getf entry :load-time 0)))
+        (sort system #'> :key #'(lambda (entry)
+                                  (getf entry :load-time most-positive-fixnum)))
         system)))
 
 (defun compile-clasp (system &aux (index 0))

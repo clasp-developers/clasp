@@ -5,7 +5,6 @@
   (format t "Setting core:*echo-repl-read* to T~%")
   (setq core:*echo-repl-read* t))
 
-#+bytecode
 (eval-when (:execute :load-toplevel)
 
 
@@ -19,7 +18,6 @@
 
 ;;; From opt-type.lisp
 
-#+bytecode
 (eval-when (:execute :load-toplevel)
   (define-compiler-macro typep (&whole whole object type &optional environment
                                        &environment macro-env)
@@ -37,7 +35,6 @@
 ;;; From opt-condition.lisp
 
 #|
-#+bytecode
 (eval-when (:execute :load-toplevel)
 
   (define-compiler-macro error (&whole whole datum &rest arguments &environment env)
@@ -76,7 +73,6 @@
 ;;; From opt-condition.lisp
 
 #|
-#+bytecode
 (eval-when (:execute :load-toplevel)
   (define-compiler-macro core::etypecase-error (&whole whole value types &environment env)
     (if (constantp types env)

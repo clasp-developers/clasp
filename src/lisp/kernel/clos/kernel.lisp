@@ -31,23 +31,6 @@
   (set-funcallable-instance-function
    gf (invalidated-discriminating-function-closure gf)))
 
-;;; ----------------------------------------------------------------------
-;;;
-;;; FIND-CLASS  naming classes.
-;;;
-;;;
-;;; (FIND-CLASS <name>) returns the class named <name>.  setf can be used
-;;; with find-class to set the class named <name>.  These are "extrinsic"
-;;; names.  Neither find-class nor setf of find-class do anything with the
-;;; name slot of the class, they only lookup and change the association from
-;;; name to class.
-;;; 
-;;; This is only used during boot.
-#+(or)
-(eval-when (:compile-toplevel #+clasp-boot :load-toplevel)
-  (defun (setf find-class) (new-value class &optional errorp env)
-    (warn "Ignoring class definition for ~S" class)))
-
 (defun (setf find-class) (new-value name &optional errorp env)
   (declare (ignore errorp env))
   (let ((old-class (find-class name nil)))

@@ -105,15 +105,13 @@
 ;;;;;;;;
 ;;;;;;;;
 
-#+bytecodelike
 (defmacro cleavir-primop:typeq (object type) `(typep ,object ',type))
 
-#+bytecodelike
 (defmacro cleavir-primop:car (obj) `(car ,obj))
-#+bytecodelike
+
 (defmacro cleavir-primop:cdr (obj) `(cdr ,obj))
 
-#+(and bytecodelike (not clasp-min))
+#-clasp-min
 (defmacro core::header-stamp-case (stamp derivable rack wrapped header)
   `(case (logand (ash ,stamp 2) ,cmp:+where-tag-mask+)
      (,cmp:+derivable-where-tag+ ,derivable)
