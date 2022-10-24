@@ -779,9 +779,9 @@ CL_DEFUN bool core__sanity_check_backtrace() {
 #endif
 }
 
-__attribute__((optnone))
 DOCGROUP(clasp);
-  CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
+__attribute__((optnone))
+CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
   MaybeTrace trace(__FUNCTION__);
   auto th = [&](DebuggerFrame_sp bot){ return eval::funcall(function, bot); };
   return call_with_frame(th);

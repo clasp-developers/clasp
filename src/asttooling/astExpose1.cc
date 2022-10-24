@@ -250,8 +250,8 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
 };
 
 CL_LAMBDA(astnode &optional (stream *standard-output*));
-__attribute__((optnone))
 DOCGROUP(clasp);
+__attribute__((optnone))
 CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp stream) {
 //    .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
 //    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
