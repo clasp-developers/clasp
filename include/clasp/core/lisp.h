@@ -43,7 +43,6 @@ THE SOFTWARE.
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/evaluator.fwd.h>
-#include <clasp/core/cache.h>
 #include <clasp/core/translators.h>
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/loadTimeValues.fwd.h>

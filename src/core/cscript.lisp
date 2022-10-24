@@ -11,7 +11,6 @@
            #~"compiler.cc"
            #~"instance.cc"
            #~"funcallableInstance.cc"
-           #~"cache.cc"
            #~"float_to_string.cc"
            #~"primitives.cc"
            #~"random.cc"
