@@ -182,7 +182,7 @@
                   (push (list value key) result)
                   (return)))))
         (sort result #'< :key #'first))
-      ((23 (1 . 2)) (24 (3 . 4)) (25 (4 . 5))))
+      (((23 (1 . 2)) (24 (3 . 4)) (25 (4 . 5)))))
 
 (test-true test-issue-1042
            (let ()
