@@ -6,6 +6,7 @@
 #include <clasp/core/array.h>
 #include <clasp/core/character.h>
 #include <clasp/core/ql.h>
+#include <clasp/core/sequence.h> // cl__length
 
 // ----------------------------------------------------------------------
 //

@@ -62,7 +62,6 @@ extern "C" {
 #include <clasp/core/array.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/debugger.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>

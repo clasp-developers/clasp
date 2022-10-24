@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/corePackage.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/bytecode_compiler.h> // Lexenv
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/bformat.h>

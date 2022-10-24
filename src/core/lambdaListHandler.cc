@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <string.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispList.h>

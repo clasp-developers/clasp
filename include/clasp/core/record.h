@@ -3,6 +3,7 @@
 
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
+#include <clasp/core/sequence.h> // cl__length
 
 namespace core {
 

@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/smallMap.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/wrappers.h>

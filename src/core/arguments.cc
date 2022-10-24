@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lambdaListHandler.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/core/arguments.h>
 
 namespace core {

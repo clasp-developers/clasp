@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <set>
 #include <clasp/core/object.h>
 //#include "model.h"
-#include <clasp/core/environment.h>
 
 namespace core {
 // Set up this class differently

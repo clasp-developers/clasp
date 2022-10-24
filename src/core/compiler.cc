@@ -48,7 +48,6 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/sort.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lightProfiler.h>
 #include <clasp/core/designators.h>
@@ -64,14 +63,11 @@ THE SOFTWARE.
 #include <clasp/core/pointer.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/hashTableEqual.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/core/bytecode_compiler.h>
 #include <clasp/core/pointer.h>
-#include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/jit.h>

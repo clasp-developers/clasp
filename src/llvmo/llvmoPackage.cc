@@ -65,7 +65,6 @@ THE SOFTWARE.
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/unixfsys.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>

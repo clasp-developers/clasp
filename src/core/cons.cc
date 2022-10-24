@@ -39,7 +39,6 @@ THE SOFTWARE.
 #include <clasp/core/serialize.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/array.h>

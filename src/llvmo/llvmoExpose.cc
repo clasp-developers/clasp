@@ -117,12 +117,10 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <clasp/core/lispCallingConvention.h>
 #include <clasp/core/package.h>
 #include <clasp/core/debugger.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/lispStream.h>

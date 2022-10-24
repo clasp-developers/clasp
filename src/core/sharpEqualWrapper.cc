@@ -34,7 +34,6 @@ THE SOFTWARE.
 #include <clasp/core/serialize.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/core/evaluator.h>
 //#i n c l u d e "render.h"
 #include <clasp/core/hashTableEq.h>

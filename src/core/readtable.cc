@@ -28,7 +28,6 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/evaluator.h>

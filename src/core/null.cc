@@ -28,7 +28,6 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/null.h>
 #include <clasp/core/wrappers.h>
 namespace core {

@@ -65,7 +65,6 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/cxxObject.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/externalObject.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/primitives.h>
@@ -95,7 +94,6 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/insertPoint.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
@@ -633,7 +631,6 @@ SYMBOL_EXPORT_SC_(ClPkg, generic_function);
 SYMBOL_SC_(CorePkg, STARenvironmentPrintingTabSTAR);
 SYMBOL_SC_(CorePkg, STARenvironmentPrintingTabIncrementSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARenvironment_debugSTAR);
-SYMBOL_SC_(CorePkg, _PLUS_activationFrameNil_PLUS_);
 SYMBOL_EXPORT_SC_(ClPkg, cond);
 SYMBOL_SC_(CorePkg, globalFunction);
 SYMBOL_SC_(CorePkg, globalSetfFunction);
@@ -1043,7 +1040,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(nil<T_O>());
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(cl::_sym_funcall);
   _sym_STARsharp_equal_final_tableSTAR->defparameter(nil<T_O>());
-  _sym__PLUS_activationFrameNil_PLUS_->defconstant(nil<T_O>());
   _sym__PLUS_variant_name_PLUS_->defconstant(SimpleBaseString_O::make(VARIANT_NAME));
   _sym__PLUS_bitcode_name_PLUS_->defconstant(SimpleBaseString_O::make(BITCODE_NAME));
   _sym__PLUS_executable_name_PLUS_->defconstant(SimpleBaseString_O::make(EXECUTABLE_NAME));

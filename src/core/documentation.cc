@@ -34,7 +34,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/wrappers.h>

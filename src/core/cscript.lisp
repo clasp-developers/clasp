@@ -2,8 +2,6 @@
            #~"dummy.cc"
            #~"mpPackage.cc"
            #~"nativeVector.cc"
-           #~"environment.cc"
-           #~"activationFrame.cc"
            #~"evaluator.cc"
            #~"function.cc"
            #~"creator.cc"

@@ -42,7 +42,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/mpPackage.h>

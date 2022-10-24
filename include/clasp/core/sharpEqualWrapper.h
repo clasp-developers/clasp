@@ -36,7 +36,6 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 //#include "stringSet.fwd.h"
 #include <clasp/core/environment.fwd.h>
-#include <clasp/core/activationFrame.fwd.h>
 #include <clasp/core/cons.h>
 
 namespace core {

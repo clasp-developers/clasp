@@ -41,7 +41,6 @@ THE SOFTWARE.
 
 #include <clasp/core/externalObject.h>
 #include <clasp/core/null.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispDefinitions.h>
 #include <clasp/core/symbol.h>

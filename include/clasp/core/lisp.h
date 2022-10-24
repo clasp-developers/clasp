@@ -591,7 +591,6 @@ private:
   void parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName, bool &exported) const;
 
 public:
-  //        ActivationFrame_sp& activationFrameNil() { return this->_Roots._ActivationFrameNil; };
   T_sp _true() const { return this->_Roots._TrueObject; };
   T_sp _not(T_sp x) const { return this->_boolean(!x.isTrue()); };
   T_sp _false() const { return nil<T_O>(); };

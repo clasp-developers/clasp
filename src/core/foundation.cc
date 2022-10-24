@@ -68,7 +68,6 @@ THE SOFTWARE.
 #include <clasp/core/debugger.h>
 #include <clasp/core/debugger2.h>
 //#i n c l u d e "setfExpander.h"
-#include <clasp/core/environment.h>
 #include <clasp/core/primitives.h>
 
 #ifdef _TARGET_OS_LINUX

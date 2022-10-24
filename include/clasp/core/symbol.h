@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/array.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/core/environment.fwd.h>
 //#include <clasp/core/lisp.h>
 

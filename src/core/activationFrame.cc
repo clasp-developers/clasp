@@ -1,5 +1,4 @@
 /*
-    File: activationFrame.cc
 */
 
 /*
@@ -27,7 +26,6 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/core/array.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/wrappers.h>

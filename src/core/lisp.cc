@@ -75,7 +75,6 @@ THE SOFTWARE.
 #include <clasp/core/backquote.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/cache.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/extensionPackage.h>
 #include <clasp/core/myReadLine.h>
 #include <clasp/core/numbers.h>

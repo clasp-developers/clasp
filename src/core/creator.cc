@@ -37,11 +37,9 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/lambdaListHandler.h>
 //#i n c l u d e "environmentDependent.h"
-#include <clasp/core/environment.h>
 #include <clasp/core/evaluator.h>
 // to avoid Generic to_object include headers here
 #include <clasp/core/wrappers.h>

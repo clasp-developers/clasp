@@ -28,7 +28,6 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/hashTableEqualp.h>
 #include <clasp/core/wrappers.h>
 namespace core {

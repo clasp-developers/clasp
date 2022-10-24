@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/array.h>

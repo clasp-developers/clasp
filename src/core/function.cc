@@ -41,10 +41,8 @@ THE SOFTWARE.
 #include <clasp/core/debugger.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/bytecode.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/core/lambdaListHandler.h>
 //#i n c l u d e "environmentDependent.h"
-#include <clasp/core/environment.h>
 #include <clasp/core/evaluator.h>
 // to avoid Generic to_object include headers here
 #include <clasp/core/wrappers.h>

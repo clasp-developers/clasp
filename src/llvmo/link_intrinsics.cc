@@ -62,7 +62,6 @@ extern "C" {
 #include <clasp/core/random.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/numbers.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>

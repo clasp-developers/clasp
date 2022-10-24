@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/character.h>
 #include <clasp/core/numberToString.h>

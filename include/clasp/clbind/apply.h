@@ -7,7 +7,6 @@
 
 #include <clasp/core/lispDefinitions.h>
 #include <clasp/core/symbolToEnumConverter.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/clbind/details.h>
 #include <clasp/clbind/external_policies.h>
 #include <clasp/core/translators.h>

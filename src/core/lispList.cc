@@ -30,7 +30,6 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
-#include <clasp/core/environment.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/symbolTable.h>

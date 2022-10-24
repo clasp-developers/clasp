@@ -37,7 +37,6 @@ _makeFunctionFrame
 _functionFrameReference
 _invokeTopLevelFunction
 _cc_register_startup_function
-_activationFrameSize
 _copyArgs
 _throwTooManyArgumentsException
 _throwNotEnoughArgumentsException

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #ifndef _clasp_mpPackage_H
 #define _clasp_mpPackage_H
 #include <clasp/core/mpPackage.fwd.h>
+#include <clasp/core/sequence.h> // cl__reverse
 
 namespace mp {
 FORWARD(Process);

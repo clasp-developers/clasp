@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/lispDefinitions.h>
 #include <clasp/core/exceptions.h>
 #include <clasp/core/symbolToEnumConverter.h>
-#include <clasp/core/activationFrame.h>
 #include <clasp/clbind/apply.h>
 #include <clasp/clbind/function.h>
 #include <clasp/clbind/policies.h>
