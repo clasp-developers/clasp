@@ -104,7 +104,6 @@ THE SOFTWARE.
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/null.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
-#include <clasp/core/specialForm.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/bignum.h>
 #include <clasp/clbind/class_rep.h>

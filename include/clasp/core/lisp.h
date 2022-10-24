@@ -96,7 +96,6 @@ SMART(FunctionValueEnvironment);
 SMART(Package);
 SMART(Path);
 SMART(Binder);
-SMART(SpecialForm);
 SMART(Hierarchy);
 SMART(Environment);
 
@@ -351,7 +350,6 @@ public:
     Package_sp                  _CorePackage;
     Package_sp                  _KeywordPackage;
     Package_sp                  _CommonLispPackage;
-    HashTableEq_sp              _SpecialForms;
     /*! Store a list of all of the _SingleDispatchGenericFunction names
      *  We will use this once the compiler is up and running to compile their discriminating functions.
      */
@@ -701,10 +699,6 @@ public:
   // Initialize the packages for this environment
   //
   void initializePackages();
-
-public: // Functions for manipulating special forms
-  Symbol_sp defineSpecialOperator(const string &package, const string &formName, SpecialFormCallback cb, const string &args = "", const string &docstring = "");
-  T_sp specialFormOrNil(Symbol_sp sym);
 
 public:
   bool recognizesModule(const string &fileName);

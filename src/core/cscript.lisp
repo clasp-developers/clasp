@@ -50,7 +50,6 @@
            #~"core_globals.cc"
            #~"externalObject.cc"
            #~"myReadLine.cc"
-           #~"specialForm.cc"
            #~"unixfsys.cc"
            #~"unixsys.cc"
            #~"lispList.cc"

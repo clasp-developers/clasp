@@ -71,7 +71,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqualp.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/cons.h>
-#include <clasp/core/specialForm.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/backquote.h>
 #include <clasp/core/bformat.h>
@@ -215,7 +214,6 @@ Lisp::GCRoots::GCRoots() :
   _ActiveThreads(nil<T_O>()),
   _DefaultSpecialBindings(nil<T_O>()),
 #endif
-  _SpecialForms(unbound<HashTableEq_O>()),
   _NullStream(nil<T_O>()),
   _UnixSignalHandlers(nil<T_O>()),
   _PrintSymbolsProperly(false),
@@ -528,7 +526,6 @@ void Lisp::startupLispEnvironment() {
     initialize_functions(); 
     core::_sym_STAReval_with_env_hookSTAR->defparameter(comp::_sym_bytecode_toplevel_eval->symbolFunction());
     globals_->_Bundle->setup_pathname_translations();
-    //    eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_classes_and_methods\n", __FILE__, __LINE__ );
 #endif
@@ -825,32 +822,6 @@ Symbol_sp Lisp::errorUndefinedSymbol(const char *sym) {
   stringstream ss;
   ss << "Unknown symbol(" << sym << ")";
   SIMPLE_ERROR(("%s") , ss.str());
-}
-
-Symbol_sp Lisp::defineSpecialOperator(const string &packageName, const string &rawFormName, SpecialFormCallback cb, const string &argstring, const string &docstring) {
-  
-  SIMPLE_ERROR(("Don't use this - hardcode special operators"));
-#if 0  
-  string formName = lispify_symbol_name(rawFormName);
-  Symbol_sp sym = _lisp->internWithPackageName(packageName, formName);
-  sym->exportYourself();
-//  sym->setf_symbolFunction(_lisp->_true());
-  SpecialForm_sp special = SpecialForm_O::create(sym, cb);
-  if (this->_Roots._SpecialForms.unboundp()) {
-    this->_Roots._SpecialForms = HashTableEq_O::create_default();
-  }
-  this->_Roots._SpecialForms->setf_gethash(sym, special);
-  return sym;
-#endif
-}
-
-T_sp Lisp::specialFormOrNil(Symbol_sp sym) {
-  if (sym.nilp())
-    return nil<T_O>();
-  if (eval::aclasp_special_operator_p(sym)) {
-    return _lisp->_true();
-  }
-  return nil<T_O>();
 }
 
 void Lisp::installPackage(const Exposer_O *pkg) {

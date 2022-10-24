@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/hashTable.h>
-#include <clasp/core/specialForm.h>
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
 #include <clasp/core/bytecode_compiler.h> // Lexenv
@@ -941,44 +940,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, load_toplevel);
         SYMBOL_EXPORT_SC_(ClPkg, quote);
         SYMBOL_EXPORT_SC_(ClPkg, progn);
         SYMBOL_EXPORT_SC_(ClPkg, throw);
-
-        bool aclasp_special_operator_p(Symbol_sp headSym) {
-            //
-            // IMPORTANT!!!! These all need to be tested in evaluator.cc::evaluate(...)
-            //
-            if (headSym == cl::_sym_progn) return true;
-            else if (headSym == cl::_sym_block) return true;
-            else if (headSym == cl::_sym_catch) return true;
-            else if (headSym == cl::_sym_eval_when) return true;
-            else if (headSym == cl::_sym_flet) return true;
-            else if (headSym == cl::_sym_function) return true;
-            else if (headSym == cl::_sym_the) return true;
-            else if (headSym == cl::_sym_go) return true;
-            else if (headSym == cl::_sym_if) return true;
-            else if (headSym == cl::_sym_labels) return true;
-            else if (headSym == cl::_sym_let) return true;
-            else if (headSym == cl::_sym_letSTAR) return true;
-            else if (headSym == cl::_sym_locally) return true;
-            else if (headSym == cl::_sym_macrolet) return true;
-            else if (headSym == cl::_sym_multiple_value_prog1) return true;
-            else if (headSym == cl::_sym_multiple_value_call) return true;
-            else if (headSym == core::_sym_debug_message) return true;
-            else if (headSym == core::_sym_multiple_value_foreign_call) return true;
-            else if (headSym == core::_sym_foreign_call) return true;
-            else if (headSym == core::_sym_foreign_call_pointer) return true;
-            else if (headSym == cl::_sym_progv) return true;
-            else if (headSym == cl::_sym_quote) return true;
-            else if (headSym == cl::_sym_return_from) return true;
-            else if (headSym == cl::_sym_setq) return true;
-            else if (headSym == cl::_sym_tagbody) return true;
-            else if (headSym == cl::_sym_throw) return true;
-            else if (headSym == cl::_sym_unwind_protect) return true;
-            else if (headSym == cl::_sym_symbol_macrolet) return true;
-            else if (headSym == cl::_sym_load_time_value) return true;
-            else if (headSym == ext::_sym_specialVar) return true;
-            else if (headSym == ext::_sym_lexicalVar) return true;
-            return false;
-        };
     };
 
 

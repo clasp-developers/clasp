@@ -41,7 +41,6 @@ mps_res_t mps_scan_LispRoots(mps_ss_t ss, mps_thr_t thr, void *p, size_t s, Lisp
   SMART_PTR_FIX(this->_CorePackage);
   SMART_PTR_FIX(this->_KeywordPackage);
   SMART_PTR_FIX(this->_HiddenBinder);
-  GCHOLDER_SYMBOLMAP_FIX(this->_SpecialForms);
   GCHOLDER_SYMBOLMAP_FIX(this->_SingleDispatchGenericFunctionTable);
   SMART_PTR_FIX(this->_TrueObject);
   SMART_PTR_FIX(this->_RehashSize);

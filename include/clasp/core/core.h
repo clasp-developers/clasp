@@ -778,7 +778,6 @@ namespace core {
 class Lisp;
 typedef gctools::tagged_pointer<Lisp> LispPtr;
 
-typedef T_mv (*SpecialFormCallback)(List_sp, T_sp);
 typedef void (*MakePackageCallback)(string const &packageName, LispPtr);
 typedef void (*ExportSymbolCallback)(Symbol_sp symbol, LispPtr);
 

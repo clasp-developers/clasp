@@ -86,7 +86,6 @@ typedef bool _Bool;
 
 #include <clasp/core/userData.h>
 #include <clasp/core/loadTimeValues.h>
-#include <clasp/core/specialForm.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/singleDispatchGenericFunction.h>

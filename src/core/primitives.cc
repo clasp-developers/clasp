@@ -812,13 +812,7 @@ CL_DEFUN T_sp cl__special_operator_p(Symbol_sp sym) {
       (sym == cl::_sym_progv) ||
       (sym == cl::_sym_quote)) {
     return _lisp->_true();
-  }
-  // Now check the special operators hash table because
-  // there may be a few more there.
-  // special-operator-p returns a generalized boolean
-  // so it's ok to return a special form symbol if
-  // sym is a special form
-  return _lisp->specialFormOrNil(sym);
+  } else return nil<T_O>();
 };
 
 CL_DEFUN Integer_sp core__ash_left(Integer_sp integer, Integer_sp count) {

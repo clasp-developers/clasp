@@ -177,14 +177,14 @@
                           "kinematics::Joint_O" "chem::AntechamberBondToAtomTest_O"
                           "core::MDArray_byte32_t_O" "llvmo::SectionedAddress_O"
                           "core::Character_dummy_O" "comp::LexRefFixup_O" "llvmo::Constant_O"
-                          "core::SpecialForm_O" "chem::EnergyStretch_O" "llvmo::FunctionCallee_O"
-                          "chem::ResidueOut" "core::NativeVector_int_O" "llvmo::DIBasicType_O"
-                          "llvmo::DIBuilder_O" "llvmo::APInt_O" "llvmo::APFloat_O"
-                          "core::SimpleMDArrayCharacter_O" "core::SimpleCharacterString_O"
-                          "core::Symbol_O" "chem::AtomOrBondMatchNode_O" "core::Array_O"
-                          "core::MDArray_byte4_t_O" "llvmo::Argument_O" "chem::FFItorDb_O"
-                          "llvmo::IRBuilderBase_O" "units::Unit_O" "core::Null_O"
-                          "chem::RingFinder_O" "llvmo::TargetPassConfig_O" "chem::IterateBonds_O"
+                          "chem::EnergyStretch_O" "llvmo::FunctionCallee_O" "chem::ResidueOut"
+                          "core::NativeVector_int_O" "llvmo::DIBasicType_O" "llvmo::DIBuilder_O"
+                          "llvmo::APInt_O" "llvmo::APFloat_O" "core::SimpleMDArrayCharacter_O"
+                          "core::SimpleCharacterString_O" "core::Symbol_O"
+                          "chem::AtomOrBondMatchNode_O" "core::Array_O" "core::MDArray_byte4_t_O"
+                          "llvmo::Argument_O" "chem::FFItorDb_O" "llvmo::IRBuilderBase_O"
+                          "units::Unit_O" "core::Null_O" "chem::RingFinder_O"
+                          "llvmo::TargetPassConfig_O" "chem::IterateBonds_O"
                           "core::RequiredArgument" "core::SingleDispatchMethod_O"
                           "chem::CDFragment_O" "comp::VarInfo_O" "core::CxxObject_O"
                           "llvmo::ReturnInst_O" "chem::MonomerContext_O" "llvmo::FunctionType_O"
@@ -6582,14 +6582,6 @@
              :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
              :offset-base-ctype "core::StandardClassCreator_O"
              :layout-offset-field-names ("_TheSimpleFun")}
-{class-kind :stamp-name "STAMPWTAG_core__SpecialForm_O" :stamp-key "core::SpecialForm_O"
-            :parent-class "core::Function_O" :lisp-class-base "core::Function_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
-             :offset-base-ctype "core::SpecialForm_O" :layout-offset-field-names ("_TheSimpleFun")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::SpecialForm_O" :layout-offset-field-names ("_fptr")}
 {class-kind :stamp-name "STAMPWTAG_core__Closure_O" :stamp-key "core::Closure_O"
             :parent-class "core::Function_O" :lisp-class-base "core::Function_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -13978,9 +13970,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Package_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._CommonLispPackage")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
-             :offset-base-ctype "core::Lisp" :layout-offset-field-names ("_Roots" "._SpecialForms")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._SingleDispatchGenericFunctions")}
