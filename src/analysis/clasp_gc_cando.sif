@@ -6722,6 +6722,9 @@
              :offset-ctype "gctools::smart_ptr<core::Function_O>"
              :offset-base-ctype "core::GFBytecodeSimpleFun_O"
              :layout-offset-field-names ("_GenericFunction")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::GFBytecodeSimpleFun_O"
+             :layout-offset-field-names ("_SpecializedLength")}
 {class-kind :stamp-name "STAMPWTAG_core__GlobalBytecodeSimpleFun_O"
             :stamp-key "core::GlobalBytecodeSimpleFun_O"
             :parent-class "core::GlobalSimpleFunBase_O"

@@ -370,6 +370,13 @@ struct GFBytecodeEntryPoint {
     T_sp *literals;
     unsigned char *ip0;
     prepare_vm(lcc_closure, gfep, program, literal_vec, literals, ip0);
+    // Check argcount, so that we don't try to read invalid arguments.
+    // Note that bytecode_enter is only called from entry_point_n and _0,
+    // so in the first case we need to do this, and in the second case
+    // it's rare enough to not matter. The other entry points do not go
+    // through here and thus don't perform a redundant test.
+    if (lcc_nargs < gfep->specializedLength())
+      wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
     unsigned char *ip = ip0;
     DTI_DUMP_PROGRAM();
     T_sp arg;
@@ -735,7 +742,7 @@ struct GFBytecodeEntryPoint {
 GFBytecodeSimpleFun_O::GFBytecodeSimpleFun_O(FunctionDescription_sp fdesc, unsigned int entryPcN, SimpleVector_byte8_t_sp bytecode,
                                              SimpleVector_sp literals, Function_sp generic_function, size_t specialized_length)
     : GlobalSimpleFunBase_O(fdesc, ClaspXepFunction::make<GFBytecodeEntryPoint>(specialized_length), nil<T_O>()),
-      _EntryPcN(entryPcN), _Bytecode(bytecode), _Literals(literals), _GenericFunction(generic_function){};
+      _EntryPcN(entryPcN), _Bytecode(bytecode), _Literals(literals), _GenericFunction(generic_function), _SpecializedLength(specialized_length){};
 
 SYMBOL_EXPORT_SC_(ClosPkg, bytecode_dtree_compile);
 CL_LISPIFY_NAME(GFBytecodeSimpleFun/make);
