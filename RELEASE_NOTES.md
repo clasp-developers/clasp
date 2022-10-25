@@ -1,4 +1,4 @@
-# Version 1.1.0 Pending
+# Version 2.0.0 Pending (LLVM14)
 
 ## Added
 * Lisp based koga metabuilder that outputs Ninja build files.

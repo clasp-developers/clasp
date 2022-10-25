@@ -32,11 +32,7 @@ and it will be 1-2 hours build time. If you have 8 GB of RAM you can turn off
 the parallel build which will then run for a day or so.  Make sure to have some 
 paging space ("swapfile") configured.
 
-There is a docker image for a superset of Clasp called Cando at 
-[Cando Docker][].
-
-Currently there are no binary releases available, however you can extract a 
-working /opt/clasp tree for Debian 10 out of the docker image.
+There is also docker image [here](https://github.com/clasp-developers/clasp/pkgs/container/clasp).
 
 ### Common Lisp Ecosystem Support
 
