@@ -63,7 +63,7 @@
                           "core::Fixnum_dummy_O" "core::AuxArgument" "core::MDArray_int8_t_O"
                           "llvmo::ConstantFP_O" "core::BlockDynEnv_O" "core::Cons_O"
                           "core::WRAPPER_Translator_O" "clbind::detail::vertex"
-                          "core::EntryDynEnv_O" "llvmo::LLVMContext_O" "core::MDArray_int4_t_O"
+                          "llvmo::LLVMContext_O" "core::MDArray_int4_t_O"
                           "core::WeakKeyHashTable_O" "core::Rack_O" "core::MDArrayBaseChar_O"
                           "core::UserData_O" "core::ExternalObject_O" "llvmo::DINode_O"
                           "llvmo::GlobalVariable_O" "core::BroadcastStream_O" "core::General_O"
@@ -593,17 +593,6 @@
              :offset-base-ctype "core::LexDynEnv_O" :layout-offset-field-names ("target")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::LexDynEnv_O" :layout-offset-field-names ("frame")}
-{class-kind :stamp-name "STAMPWTAG_core__EntryDynEnv_O" :stamp-key "core::EntryDynEnv_O"
-            :parent-class "core::LexDynEnv_O" :lisp-class-base "core::LexDynEnv_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EntryDynEnv_O" :layout-offset-field-names ("target")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EntryDynEnv_O" :layout-offset-field-names ("frame")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EntryDynEnv_O" :layout-offset-field-names ("sp")}
-{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
-             :offset-base-ctype "core::EntryDynEnv_O" :layout-offset-field-names ("desp")}
 {class-kind :stamp-name "STAMPWTAG_core__BlockDynEnv_O" :stamp-key "core::BlockDynEnv_O"
             :parent-class "core::LexDynEnv_O" :lisp-class-base "core::LexDynEnv_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

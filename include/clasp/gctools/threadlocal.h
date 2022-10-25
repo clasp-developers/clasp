@@ -87,15 +87,12 @@ extern int global_debug_virtual_machine;
 
 struct VirtualMachine {
   static constexpr size_t MaxStackWords = 32768; // 32K words for now.
-  static constexpr size_t DynenvStackWords = 262144; // 256K words for now
   bool           _Running;
   core::T_O*     _stackBottom[MaxStackWords];
   size_t         _stackBytes;
   core::T_O**    _stackTop;
   core::T_O**    _stackGuard;
   core::T_O**    _stackPointer;
-  core::T_O*     _destackBottom[DynenvStackWords];
-  core::T_O**    _destackPointer;
 #ifdef DEBUG_VIRTUAL_MACHINE
   core::T_O*     _data;
   core::T_O*     _data1;
@@ -103,6 +100,7 @@ struct VirtualMachine {
   size_t         _unwind_counter;
   size_t         _throw_counter;
 #endif
+  core::T_O**    _literals;
   unsigned char* _pc;
 
   void error();
@@ -189,11 +187,6 @@ struct VirtualMachine {
       core::Cons_O* tobj = gc::tag_cons<core::Cons_O*>(obj);
       core::Cons_sp robj((gctools::Tagged)tobj);
       return robj;
-    }
-
-    template<class ConsType> // workaround Cons_O thing explained above
-    static inline void dealloc(core::T_O**& stackPointer) {
-      stackPointer -= size<ConsType>();
     }
   };
     
