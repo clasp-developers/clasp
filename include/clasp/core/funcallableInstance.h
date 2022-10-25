@@ -254,6 +254,9 @@ public:
   SimpleVector_byte8_t_sp _Bytecode;
   SimpleVector_sp _Literals;
   Function_sp _GenericFunction;
+  // Number of specialized parameters. entry_point_n has to do an argcount
+  // check with this at runtime.
+  size_t _SpecializedLength;
 
 public:
   // Accessors
@@ -270,6 +273,7 @@ public:
 
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
   size_t entryPcN() const;
+  inline size_t specializedLength() const { return this->_SpecializedLength; }
 };
 
 }; // namespace core
