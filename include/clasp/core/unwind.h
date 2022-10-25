@@ -119,22 +119,6 @@ public:
   virtual bool unwound_dynenv_p() { return false; }
 };
 
-// Dynenv for either a CL:BLOCK or CL:TAGBODY. Currently only used by
-// VM.
-FORWARD(EntryDynEnv);
-class EntryDynEnv_O : public LexDynEnv_O {
-  LISP_CLASS(core, CorePkg, EntryDynEnv_O, "EntryDynEnv", LexDynEnv_O);
-public:
-  core::T_O** sp;
-  core::T_O** desp;
-  EntryDynEnv_O(void* frame, jmp_buf* target, core::T_O** a_sp, core::T_O** a_desp) : LexDynEnv_O(frame, target), sp(a_sp), desp(a_desp) {};
-  static EntryDynEnv_sp create(void* frame, jmp_buf* target, core::T_O** sp, core::T_O** desp) {
-    return gctools::GC<EntryDynEnv_O>::allocate(frame, target, sp, desp);
-  }
-  virtual ~EntryDynEnv_O() {};
-  virtual bool unwound_dynenv_p() { return false; }
-};
-
 FORWARD(CatchDynEnv);
 class CatchDynEnv_O : public DestDynEnv_O {
   LISP_CLASS(core, CorePkg, CatchDynEnv_O, "CatchDynEnv", DestDynEnv_O);
@@ -205,9 +189,6 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest);
  * Takes care of the search aspect and signaling errors, so this is
  * the main entry point. */
 [[noreturn]] void sjlj_unwind(LexDynEnv_sp dest, size_t index);
-// Currently only used by the bytecode VM, which assumes some
-// invariants about how unwinding in the VM works.
-void local_unwind(LexDynEnv_sp dest);
 /* Carry out an unwinding to the given tag. */
 [[noreturn]] void sjlj_throw(T_sp tag);
 /* Convenience function for use in unwind-protect cleanups. */

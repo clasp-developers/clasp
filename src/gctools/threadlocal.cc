@@ -173,10 +173,7 @@ VirtualMachine::VirtualMachine() :
   memset(this->_stackBottom,0,stackSpace);
   this->enable_guards();
   this->_stackPointer = this->_stackBottom;
-  memset(this->_destackBottom,0,VirtualMachine::DynenvStackWords*sizeof(T_O*));
-  this->_destackPointer = this->_destackBottom;
   (*this->_stackPointer) = NULL;
-  (*this->_destackPointer) = NULL;
 }
 
 

@@ -125,57 +125,6 @@ void BindingDynEnv_O::proceed() {
   }
 }
 
-void local_unwind_proceed(LexDynEnv_sp dest) {
-  ThreadLocalState* thread = my_thread;
-  T_sp here = thread->dynEnvStackGet();
-  thread->_UnwindDest = dest;
-  // Doesn't matter what this is I don't think.
-  thread->_UnwindDestIndex = 0;
-  // We must have already searched, so we know this is a dynenv
-  // and not the NIL sentinel.
-  for (T_sp iter = here; ; iter = CONS_CDR(iter)) {
-    ASSERT(iter.consp());
-    ASSERT(gc::IsA<DynEnv_sp>(CONS_CAR(iter)));
-    DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(CONS_CAR(iter));
-    if (diter == dest) {
-      thread->dynEnvStackSet(iter);
-      // No SJLJ needed, becuase the invariant we maintain for this
-      // function is that the (sitll valid) target is in the same C++
-      // frame as the frame we started unwinding from.
-      return;
-    } else {
-      thread->dynEnvStackSet(iter);
-      diter->proceed();
-    }
-  }
-}
-
-void local_unwind(LexDynEnv_sp dest) {
-  VM_INC_UNWIND_COUNTER(my_thread->_VM);
-  // We need to be careful here. The invariant we assume in the VM is
-  // that this is only called when the frame pointers at the point of
-  // unwinidng and the destination are the same.But that could still
-  // happen coincidentally, so we need to really check to see if the
-  // DynEnv has been invalidated already, which could legitimately
-  // happen.
-  switch (sjlj_unwind_search(dest)) {
-  case DynEnv_O::OutOfExtent:
-      NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
-#ifdef UNWIND_INVALIDATE_STRICT
-  case DynEnv_O::Abandoned:
-      NO_INITIALIZERS_ERROR(core::_sym_abandonedUnwind);
-#endif
-  case DynEnv_O::Proceed:
-#ifdef UNWIND_INVALIDATE_STRICT
-      sjlj_unwind_invalidate(dest);
-#endif
-      local_unwind_proceed(dest);
-      break;
-  default:
-      UNREACHABLE();
-  }
-}
-
 [[noreturn]] void sjlj_throw(T_sp tag) {
   VM_INC_THROW_COUNTER(my_thread->_VM);
   CatchDynEnv_sp dest;

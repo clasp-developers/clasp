@@ -714,106 +714,78 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_entry: {
       uint8_t n = *(++pc);
       DBG_VM("entry %" PRIu8 "\n", n);
+      T_O** old_sp = sp;
       pc++;
       jmp_buf target;
       void* frame = __builtin_frame_address(0);
-      // Save the current stack pointer(s). we will restore it upon
-      // reentry (i.e. when exiting). We don't need to save the frmae
-      // pointer as long as there is a 1-1 correspondence between
-      // bytecode Lisp and the C++ bytecode_call frame.
-      EntryDynEnv_sp env = VirtualMachine::Alloc<EntryDynEnv_O>::alloc(vm._destackPointer, frame, &target, sp, nullptr);
+      vm._pc = pc;
+      TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
       vm.setreg(fp, n, env.raw_());
-      Cons_sp sa_ec = VirtualMachine::Alloc<Cons_O>::alloc(vm._destackPointer, env, my_thread->dynEnvStackGet());
-      // This statement must come after the modification to the cons
-      // statement above to not partially nuke the cons object
-      // allocated on the destack after exiting to this point.
-      env->desp = vm._destackPointer;
-      my_thread->dynEnvStackSet(sa_ec);
-      if (setjmp(target)) {
-      // Receive the passing PC and SP from the nonlocal unwind.
-        pc = vm._pc;
+      gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
+      DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
+      setjmp(target);
+      again:
+      try {
+        bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
         sp = vm._stackPointer;
+        pc = vm._pc;
+      }
+      catch (Unwind &uw) {
+        if (uw.getFrame() == frame) {
+          my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
+          goto again;
+        }
+        else throw;
       }
       break;
     }
     case vm_exit_8: {
       int8_t rel = *(pc + 1);
       DBG_VM("exit %" PRId8 "\n", rel);
+      vm._pc = pc + rel;
       T_sp ttde((gctools::Tagged)(vm.pop(sp)));
-      EntryDynEnv_sp tde = gc::As_assert<EntryDynEnv_sp>(ttde);
-      vm._destackPointer = tde->desp;
-      if (__builtin_frame_address(0) == tde->frame) {
-        sp = tde->sp;
-        pc += rel;
-        local_unwind(tde);
-      } else {
-        vm._pc = pc + rel;
-        vm._stackPointer = tde->sp;
-        sjlj_unwind(tde, 1);
-      }
-      break;
+      TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
+      sjlj_unwind(tde, 1);
     }
     case vm_exit_16: {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("exit %" PRId16 "\n", rel);
       vm._pc = pc + rel;
       T_sp ttde((gctools::Tagged)(vm.pop(sp)));
-      EntryDynEnv_sp tde = gc::As_assert<EntryDynEnv_sp>(ttde);
-      vm._destackPointer = tde->desp;
-      if (__builtin_frame_address(0) == tde->frame) {
-        sp = tde->sp;
-        pc += rel;
-        local_unwind(tde);
-      } else {
-        vm._pc = pc + rel;
-        vm._stackPointer = tde->sp;
-        sjlj_unwind(tde, 1);
-      }
-      break;
+      TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
+      sjlj_unwind(tde, 1);
     }
     case vm_exit_24: {
       int32_t rel = read_label(pc, 3);
       DBG_VM("exit %" PRId32 "\n", rel);
       vm._pc = pc + rel;
       T_sp ttde((gctools::Tagged)(vm.pop(sp)));
-      EntryDynEnv_sp tde = gc::As_assert<EntryDynEnv_sp>(ttde);
-      vm._destackPointer = tde->desp;
-      if (__builtin_frame_address(0) == tde->frame) {
-        sp = tde->sp;
-        pc += rel;
-        local_unwind(tde);
-      } else {
-        vm._pc = pc + rel;
-        vm._stackPointer = tde->sp;
-        sjlj_unwind(tde, 1);
-      }
-      break;
+      TagbodyDynEnv_sp tde = gc::As_assert<TagbodyDynEnv_sp>(ttde);
+      sjlj_unwind(tde, 1);
     }
     case vm_entry_close: {
       DBG_VM("entry-close\n");
-      // Deallocate/invalidate the dynenv created by entry. The
-      // invariant here is that both the head of the thread local
-      // dynenv stack list and the top of the vm deStack are the
-      // tagbody dynenv we are trying to deallocate.
-      Cons_sp c = gc::As_assert<Cons_sp>(my_thread->dynEnvStackGet());
-      my_thread->dynEnvStackSet(CONS_CDR(c));
-      VirtualMachine::Alloc<Cons_O>::dealloc<Cons_O>(vm._destackPointer);
-      VirtualMachine::Alloc<EntryDynEnv_O>::dealloc(vm._destackPointer);
-      pc++;
-      break;
+      // This sham return value just gets us out of the bytecode_vm call in
+      // vm_entry, above.
+      vm._pc = pc + 1;
+      vm._stackPointer = sp;
+      return gctools::return_type(nil<T_O>().raw_(), 0);
     }
     case vm_special_bind: {
       uint8_t c = *(++pc);
       DBG_VM("special-bind %" PRIu8 "\n", c);
       T_sp value((gctools::Tagged)(vm.pop(sp)));
-      T_sp tsymbol((gctools::Tagged)literals[c]);
-      Symbol_sp sym = gc::As_assert<Symbol_sp>(tsymbol);
-      T_sp old = sym->threadLocalSymbolValue();
-      sym->set_threadLocalSymbolValue(value);
-      BindingDynEnv_sp bde = VirtualMachine::Alloc<BindingDynEnv_O>::alloc(vm._destackPointer, sym, old);
-      Cons_sp sa_ec = VirtualMachine::Alloc<Cons_O>::alloc(vm._destackPointer, bde, my_thread->dynEnvStackGet());
-      my_thread->dynEnvStackSet(sa_ec);
       pc++;
+      T_sp symbol((gctools::Tagged)literals[c]);
+      vm._pc = pc;
+      call_with_variable_bound(symbol, value,
+                               [&]() { return bytecode_vm(vm, literals, closed,
+                                                          closure,
+                                                          fp, sp,
+                                                          lcc_nargs, lcc_args);
+                               });
+      sp = vm._stackPointer;
+      pc = vm._pc;
       break;
     }
     case vm_symbol_value: {
@@ -838,16 +810,11 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     }
     case vm_unbind: {
       DBG_VM("unbind\n");
-      Cons_sp c = gc::As_assert<Cons_sp>(my_thread->dynEnvStackGet());
-      BindingDynEnv_sp bde = gc::As_assert<BindingDynEnv_sp>(CONS_CAR(c));
-      bde->proceed(); // restore old symbol value
-      my_thread->dynEnvStackSet(CONS_CDR(c));
-      // Deallocate the dynenv structures
-      // (previously allocated by vm_special_bind)
-      VirtualMachine::Alloc<Cons_O>::dealloc<Cons_O>(vm._destackPointer);
-      VirtualMachine::Alloc<BindingDynEnv_O>::dealloc(vm._destackPointer);
-      pc++;
-      break;
+      vm._pc = pc + 1;
+      vm._stackPointer = sp;
+      // This return value is not actually used - we're just returning from
+      // a bytecode_vm recursively invoked by vm_special_bind above.
+      return gctools::return_type(nil<T_O>().raw_(), 0);
     }
     case vm_fdefinition: {
       uint8_t c = *(++pc);
@@ -1218,14 +1185,16 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint16_t c = low + (*(pc + 2) << 8);
     DBG_VM("long special-bind %" PRIu16 "\n", c);
     T_sp value((gctools::Tagged)(vm.pop(sp)));
-    T_sp tsymbol((gctools::Tagged)literals[c]);
-    Symbol_sp sym = gc::As_assert<Symbol_sp>(tsymbol);
-    T_sp old = sym->threadLocalSymbolValue();
-    sym->set_threadLocalSymbolValue(value);
-    BindingDynEnv_sp bde = VirtualMachine::Alloc<BindingDynEnv_O>::alloc(vm._destackPointer, sym, old);
-    Cons_sp sa_ec = VirtualMachine::Alloc<Cons_O>::alloc(vm._destackPointer, bde, my_thread->dynEnvStackGet());
-    my_thread->dynEnvStackSet(sa_ec);
     pc += 3;
+    T_sp symbol((gctools::Tagged)literals[c]);
+    vm._pc = pc;
+    call_with_variable_bound(symbol, value,
+                             [&]() { return bytecode_vm(vm, literals, closed,
+                                                        closure,
+                                                        fp, sp, lcc_nargs, lcc_args);
+                             });
+    pc = vm._pc;
+    sp = vm._stackPointer;
     break;
   }
   case vm_symbol_value: {
@@ -1288,19 +1257,15 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // being unwound to.
   core::T_O** fp = vm._stackPointer;
   core::T_O** sp = vm.push_frame(fp, nlocals);
-  core::T_O** old_desp = vm._destackPointer;
-  gctools::StackAllocate<core::VMFrameDynEnv_O> frame(fp);
-  gctools::StackAllocate<core::Cons_O> sa_ec(frame.asSmartPtr(),
-                                             my_thread->dynEnvStackGet());
-  core::DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
   try {
+    gctools::StackAllocate<core::VMFrameDynEnv_O> frame(fp);
+    gctools::StackAllocate<core::Cons_O> sa_ec(frame.asSmartPtr(),
+                                               my_thread->dynEnvStackGet());
+    core::DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
     gctools::return_type res = bytecode_vm(vm, literals, closed, closure,
                                            fp, sp, lcc_nargs, lcc_args);
     vm._pc = old_pc;
     return res;
-  } catch (core::Unwind &uw) {
-    vm._destackPointer = old_desp;
-    throw;
   } catch (core::VM_error& err) {
     printf("%s:%d:%s Recovering from VM_error\n", __FILE__, __LINE__, __FUNCTION__ );
     return gctools::return_type(nil<core::T_O>().raw_(), 0 );
