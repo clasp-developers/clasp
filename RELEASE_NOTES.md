@@ -83,6 +83,13 @@
 * Some MAKE-ARRAY calls are compiled more efficiently.
 * Unused calls to many more (side-effect-free) standard functions are deleted.
 * Accesses to 1D simple arrays of known element type are a bit faster.
+* A virtual machine has been defined and implemented, greatly increasing the
+  speed of evaluation of code that doesn't usually need to be optimized
+  (for example, compile-time evaluations).
+* The building process has been streamlined by replacing several of the
+  bootstrapping components with the virtual machine.
+* Discriminating functions now execute faster.
+* The compiler now performs inlining much faster.
 
 ## Fixes
 * Replace hard coded paths to `nm` in snapshot code with NM_BINARY macro value
