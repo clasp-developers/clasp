@@ -4,12 +4,12 @@ goto DISPATCH_MISS;
 case MAYBE_LONG_ADD + DTREE_OP_ARGN: {
   size_t idx = ReadArg<MAYBE_LONG_MUL>::read(ip, (DTREE_ARGN_OFFSET));
   DTILOG("About to read arg %lu\n", idx);
-  if (pass_args.nargs() <= idx) {
+  if (lcc_nargs <= idx) {
     // we use an intermediate function, in lisp, to get a nice error message.
     Function_sp generic_function = gfep->_GenericFunction;
-    return core::eval::funcall(clos::_sym_interp_wrong_nargs, generic_function, make_fixnum(pass_args.nargs()));
+    return core::eval::funcall(clos::_sym_interp_wrong_nargs, generic_function, make_fixnum(lcc_nargs));
   }
-  arg = pass_args.iarg(idx);
+  arg = T_sp((gctools::Tagged)(lcc_args[idx]));
   ip += ReadArg<MAYBE_LONG_MUL>::offset(DTREE_ARGN_NEXT_OFFSET);
   DTILOG("Got arg@%p %s new ip %p\n", (void *)arg.raw_(), _safe_rep_(arg), (void *)ip);
 } break;
@@ -110,7 +110,7 @@ case MAYBE_LONG_ADD + DTREE_OP_SLOT_READ: {
   T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_SLOT_NAME_OFFSET), literals);
   DTILOG(" location: %s  name: %s\n", _safe_rep_(location), _safe_rep_(slot_name));
   size_t index = location.unsafe_fixnum();
-  T_sp tinstance = pass_args.iarg(0);
+  T_sp tinstance((gctools::Tagged)(lcc_args[0]));
   DTILOG("Got tinstance@%p %s\n", (void *)tinstance.raw_(), _safe_rep_(tinstance));
   Instance_sp instance((gc::Tagged)tinstance.raw_());
   DTILOG("instance %p index %lu\n", (void *)instance.raw_(), index);
@@ -126,7 +126,8 @@ case MAYBE_LONG_ADD + DTREE_OP_CAR: {
   DTILOG("class cell\n");
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_INDEX_OFFSET), literals);
   T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_SLOT_NAME_OFFSET), literals);
-  Instance_sp instance = gc::As_unsafe<Instance_sp>(pass_args.iarg(0));
+  // As_unsafe is ok since we couldn't be here unless we've already tested it.
+  Instance_sp instance = gc::As_unsafe<Instance_sp>(T_sp((gctools::Tagged)(lcc_args[0])));
   DTILOG("Got instance@%p %s\n", (void *)instance.raw_(), _safe_rep_(instance));
   Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
   T_sp value = CONS_CAR(cell);
@@ -140,8 +141,8 @@ case MAYBE_LONG_ADD + DTREE_OP_SLOT_WRITE: {
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
   size_t index = location.unsafe_fixnum();
   DTILOG("index %lu\n", index);
-  T_sp value = pass_args.iarg(0);
-  T_sp tinstance = pass_args.iarg(1);
+  T_sp value = T_sp((gctools::Tagged)(lcc_args[0]));
+  T_sp tinstance = T_sp((gctools::Tagged)(lcc_args[1]));
   DTILOG("Got tinstance@%p %s\n", (void *)tinstance.raw_(), _safe_rep_(tinstance));
   Instance_sp instance((gc::Tagged)tinstance.raw_());
   instance->instanceSet(index, value);
@@ -153,7 +154,7 @@ case MAYBE_LONG_ADD + DTREE_OP_RPLACA: {
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
   size_t index = location.unsafe_fixnum();
   Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-  T_sp value = pass_args.iarg(0);
+  T_sp value = T_sp((gctools::Tagged)(lcc_args[0]));
   DTILOG("Got value@%p %s\n", (void *)value.raw_(), _safe_rep_(value));
   cell->rplaca(value);
   DTILOG("Set to value: %s\n", _safe_rep_(value));
@@ -228,13 +229,12 @@ case MAYBE_LONG_ADD + DTREE_OP_EFFECTIVE_METHOD: {
   DTILOG("effective method call\n");
   T_sp tfunc = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_EFFECTIVE_METHOD_OFFSET), literals);
   Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
-  // Use the pass_args here because it points to the original arguments
   DTILOG(">>>>>>> DTREE_OP_EFFECTIVE_METHOD: Invoking effective method\n");
   ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(func->_TheSimpleFun.load())->_EntryPoints;
   DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to dump args\n");
 #if defined(GENERAL_ARITY_CALL)
-  DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &pass_args));
-  return xep.invoke_n(func.raw_(), pass_args.nargs(), pass_args.args());
+  DTIDO(dump_lcc_args(monitor_file("dtree-interp"), lcc_nargs, lcc_args));
+  return xep.invoke_n(func.raw_(), lcc_nargs, lcc_args);
 #elif (ENABLE_REGISTER == -1)
   DTILOG(" ---- done\n");
   return xep.invoke_0(func.raw_());
@@ -310,27 +310,27 @@ case MAYBE_LONG_ADD + DTREE_OP_FARG4: {
 #else  // GENERAL_ARITY_CALL
 
 case MAYBE_LONG_ADD + DTREE_OP_FARG0: {
-  arg = pass_args.iarg(0);
+  arg = T_sp((gctools::Tagged)(lcc_args[0]));
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void *)arg.raw_(), _safe_rep_(arg), (void *)ip);
 } break;
 case MAYBE_LONG_ADD + DTREE_OP_FARG1: {
-  arg = pass_args.iarg(1);
+  arg = T_sp((gctools::Tagged)(lcc_args[1]));
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void *)arg.raw_(), _safe_rep_(arg), (void *)ip);
 } break;
 case MAYBE_LONG_ADD + DTREE_OP_FARG2: {
-  arg = pass_args.iarg(2);
+  arg = T_sp((gctools::Tagged)(lcc_args[2]));
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void *)arg.raw_(), _safe_rep_(arg), (void *)ip);
 } break;
 case MAYBE_LONG_ADD + DTREE_OP_FARG3: {
-  arg = pass_args.iarg(3);
+  arg = T_sp((gctools::Tagged)(lcc_args[3]));
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void *)arg.raw_(), _safe_rep_(arg), (void *)ip);
 } break;
 case MAYBE_LONG_ADD + DTREE_OP_FARG4: {
-  arg = pass_args.iarg(4);
+  arg = T_sp((gctools::Tagged)(lcc_args[4]));
   ++ip;
   DTILOG("Got arg@%p %s new ip %p\n", (void *)arg.raw_(), _safe_rep_(arg), (void *)ip);
 } break;
