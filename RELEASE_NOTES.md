@@ -1,4 +1,4 @@
-# Version 2.0.0 Pending (LLVM14)
+# Version 2.0.0 (LLVM14) 2022-10-26
 
 ## Added
 * Lisp based koga metabuilder that outputs Ninja build files.
@@ -53,6 +53,7 @@
   eclector, and eclector-concrete-syntax-tree.
 * Source code file references for Lisp and C/C++ files compiled as part of the
   Clasp binary or images are now stored using logical pathnames.
+* Unicode character database updated to 2022-08-03.
 
 ## Removed
 * `core:*extensions-startup-loads*` and `core:*extensions-startup-evals*`
