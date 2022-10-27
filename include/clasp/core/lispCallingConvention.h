@@ -286,7 +286,7 @@ inline void dump_lcc_args(FILE* fout, size_t lcc_nargs, T_O** lcc_args) {
   } else {
     for (size_t i = 0; i < lcc_nargs; ++i) {
       T_O* arg = lcc_args[i];
-      fprintf(fout,"     [%d] --> %p %s\n", i, arg, dbg_safe_repr((uintptr_t)arg).c_str() );
+      fprintf(fout,"     [%zu] --> %p %s\n", i, arg, dbg_safe_repr((uintptr_t)arg).c_str() );
     }
   }
 }
