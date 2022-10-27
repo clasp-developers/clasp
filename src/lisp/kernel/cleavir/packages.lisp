@@ -72,7 +72,6 @@
    #:vaslist-length-ast
    #:header-stamp-ast #:rack-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
-   #:bind-vaslist-ast #:rest-alloc #:make-bind-vaslist-ast #:vaslist-ast
    #:atomic-car-ast #:atomic-cdr-ast #:atomic-rplaca-ast #:atomic-rplacd-ast
    #:fence-ast #:cmp-ast #:order
    #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast

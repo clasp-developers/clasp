@@ -382,9 +382,6 @@ a_p = a_p_temp; a = a_temp;
                    nil
                    (irc-size_t nfixed)))
          (wrong-nargs-block
-           ;; KLUDGE: BIND-VASLIST gets here with a calling-convention-closure of NIL,
-           ;; which ends badly. But bind-vaslist also specifies safep nil.
-           ;; Of course, without safep we won't use the block anyway, but still.
            (when safep
              (compile-wrong-number-arguments-block
               (calling-convention-closure calling-conv)

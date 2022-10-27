@@ -514,67 +514,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE::BIND-VASLIST
-;;;
-
-(defmethod cst-to-ast:convert-special ((symbol (eql 'core::bind-vaslist)) cst
-                                       environment (system clasp-cleavir:clasp))
-  ;; (bind-vaslist lambda-list va . body)
-  ;; => `(apply (lambda ,lambda-list . ,body) ,va)
-  (cst:db origin (op lambda-list-cst vaslist-cst . body-cst) cst
-    (declare (ignore op))
-    (cst-to-ast:convert
-     (cst:quasiquote origin
-                     (apply (lambda (cst:unquote lambda-list-cst)
-                              (cst:unquote-splicing body-cst))
-                            (cst:unquote vaslist-cst)))
-     environment system)))
-
-#+(or) ;;#+cst
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core::bind-vaslist)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (op lambda-list-cst vaslist-cst . body-cst) cst
-          (declare (ignore op))
-          (let ((parsed-lambda-list
-                  (cst:parse-ordinary-lambda-list system lambda-list-cst :error-p nil)))
-            (when (null parsed-lambda-list)
-              (error 'cst-to-ast::malformed-lambda-list
-                     :expr (cst:raw lambda-list-cst)
-                     :origin (cst:source lambda-list-cst)))
-            (multiple-value-bind (declaration-csts documentation forms-cst)
-                (cst:separate-function-body body-cst)
-              (declare (ignore documentation))
-              (let* ((declaration-specifiers
-                       (loop for declaration-cst in declaration-csts
-                             append (cdr (cst:listify declaration-cst))))
-                     (canonicalized-dspecs
-                       (cst:canonicalize-declaration-specifiers
-                        system
-                        (cleavir-env:declarations environment)
-                        declaration-specifiers)))
-                (multiple-value-bind (idspecs rdspecs)
-                    (cst-to-ast::itemize-declaration-specifiers-by-parameter-group
-                     (cst-to-ast::itemize-lambda-list parsed-lambda-list)
-                     canonicalized-dspecs)
-                  (multiple-value-bind (lexical-lambda-list entries)
-                      (cst-to-ast::lambda-list-from-parameter-groups
-                       (cst:children parsed-lambda-list))
-                    (let ((ast (cst-to-ast::process-parameter-groups
-                                (cst:children parsed-lambda-list)
-                                idspecs entries
-                                (cst-to-ast::make-body
-                                 rdspecs
-                                 (cst-to-ast::cst-for-body forms-cst nil origin))
-                                environment system)))
-                      (cc-ast:make-bind-vaslist-ast
-                       lexical-lambda-list
-                       (cst-to-ast::convert vaslist-cst environment system)
-                       ast
-                       nil ; FIXME: handle rest-alloc (parse &rest from lambda list)
-                       :origin origin)))))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Converting CORE:INSTANCE-REF/SET
 ;;;
 ;;; FIXME: Maybe just use the primops instead.
