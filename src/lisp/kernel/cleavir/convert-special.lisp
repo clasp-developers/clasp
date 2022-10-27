@@ -231,35 +231,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE:DEBUG-MESSAGE
-;;;
-;;; This is converted into a call to print a message
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core:debug-message)) cst environment
-     (system clasp-cleavir:clasp))
-  (declare (ignore environment))
-  (assert (typep (cst:raw (cst:second cst)) 'string))
-  (make-instance 'clasp-cleavir-ast:debug-message-ast
-    :debug-message (cst:raw (cst:second cst))
-    :origin cst))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE:DEBUG-BREAK
-;;;
-;;; This is converted into a call to invoke the debugger
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core:debug-break)) cst environment
-     (system clasp-cleavir:clasp))
-  (declare (ignore environment))
-  (make-instance 'clasp-cleavir-ast:debug-break-ast :origin cst))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Converting CORE:multiple-value-foreign-CALL
 ;;;
 ;;; This is converted into an intrinsic call

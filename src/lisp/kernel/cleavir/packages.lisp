@@ -46,8 +46,6 @@
   (:local-nicknames (#:ast #:cleavir-ast))
   (:use #:common-lisp)
   (:export
-   #:debug-message-ast
-   #:debug-break-ast
    #:multiple-value-foreign-call-ast
    #:foreign-call-ast
    #:foreign-call-pointer-ast
@@ -57,8 +55,6 @@
    #:defcallback-ast #:defcallback-args
    #:make-throw-ast
    #:make-setf-fdefinition-ast
-   #:debug-message
-   #:debug-break
    #:setf-fdefinition-ast
    #:throw-ast
    #:result-ast

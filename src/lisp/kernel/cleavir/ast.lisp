@@ -24,43 +24,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class DEBUG-MESSAGE-AST
-;;;
-;;; This AST is used to represent a debugging message inserted into the generated code.
-
-(defclass debug-message-ast (ast:one-value-ast-mixin ast:ast)
-  ((%debug-message :initarg :debug-message  :accessor debug-message)))
-
-(cleavir-io:define-save-info debug-message-ast
-    (:debug-message debug-message))
-
-(defmethod cleavir-ast-graphviz::label ((ast debug-message-ast))
-  (with-output-to-string (s)
-    (format s "debug-message (~a)" (debug-message ast))))
-
-(ast:define-children debug-message-ast ())
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class DEBUG-BREAK-AST
-;;;
-;;; This AST is used to represent a debugging break inserted into the generated code.
-
-(defclass debug-break-ast (ast:no-value-ast-mixin ast:ast)
-  ())
-
-(cleavir-io:define-save-info debug-break-ast
-    ())
-
-(defmethod cleavir-ast-graphviz::label ((ast debug-break-ast))
-  (with-output-to-string (s)
-    (format s "debug-break")))
-
-(ast:define-children debug-break-ast ())
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Class BASE-FOREIGN-CALL-AST
 ;;;
 ;;; This AST is used to represent a call to an intrinsic function inserted into the generated code.
