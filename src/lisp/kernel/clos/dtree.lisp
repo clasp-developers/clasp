@@ -749,6 +749,7 @@
        (safe-gf-specializer-profile generic-function))
     (values (compile-tree-top basic) specialized-length)))
 
+;;; Called by GFBytecodeSimpleFun/make
 (defun bytecode-dtree-compile (generic-function)
   (multiple-value-bind (compiled specialized-length)
       (dtree-compile generic-function)
