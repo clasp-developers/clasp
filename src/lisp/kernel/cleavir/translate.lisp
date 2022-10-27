@@ -1302,10 +1302,6 @@
    (in (second (bir:inputs inst)))
    :order (cmp::order-spec->order (cc-bir:order inst))))
 
-(defmethod translate-simple-instruction ((inst cc-bir:fence) abi)
-  (declare (ignore abi))
-  (cmp::gen-fence (cc-bir:order inst)))
-
 (defmethod translate-simple-instruction ((inst cc-blir:cas) abi)
   (declare (ignore abi))
   (out (cmp:irc-cmpxchg (in (first (bir:inputs inst)))

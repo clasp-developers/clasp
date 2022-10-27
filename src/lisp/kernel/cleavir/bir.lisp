@@ -51,17 +51,7 @@
            :type (member :relaxed :acquire :release :acquire-release
                          :sequentially-consistent))))
 
-(defclass fence (atomic bir:no-input bir:no-output bir:instruction) ())
-
 ;;; we just make the bmir directly for atomic car and cdr
-
-(defmethod ast-to-bir:compile-ast ((ast cc-ast:fence-ast) inserter system)
-  (declare (ignore system))
-  (ast-to-bir:insert
-   inserter
-   (make-instance 'cc-bir:fence :order (cc-ast:order ast)))
-  ())
-
 ;;; FIXME: This should be a primop or something, not direct LIR.
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:atomic-car-ast) inserter system)
   (ast-to-bir:with-compiled-asts (args ((cleavir-ast:cons-ast ast))

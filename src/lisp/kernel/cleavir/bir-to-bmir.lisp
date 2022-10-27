@@ -282,6 +282,11 @@
 (deftransform rplaca cleavir-primop:rplaca cons t)
 (deftransform rplacd cleavir-primop:rplacd cons t)
 
+(deftransform mp:fence core::fence-seq-cst (eql :sequentially-consistent))
+(deftransform mp:fence core::fence-acq-rel (eql :acquire-release))
+(deftransform mp:fence core::fence-acquire (eql :acquire))
+(deftransform mp:fence core::fence-release (eql :release))
+
 (defmethod reduce-instruction ((inst bir:call))
   (let ((ids (cleavir-attributes:identities (bir:attributes inst))))
     (when ids

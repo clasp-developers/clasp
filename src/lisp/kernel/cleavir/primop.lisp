@@ -100,7 +100,8 @@
            :effect ,@flags)
          (setf (gethash ',name *primop-rtypes*) '(,@param-info))
          (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
-           ,@body)
+           ,@body
+           (out nil (first (bir:outputs ,instparam))))
          ',name))))
 
 ;;; Define a primop used as a conditional test.
@@ -463,9 +464,18 @@
 ;;; Primops for debugging
 
 (defeprimop core:set-breakstep () (inst)
-  (declare (ignore inst))
   (%intrinsic-call "cc_set_breakstep" ()))
 
 (defeprimop core:unset-breakstep () (inst)
-  (declare (ignore inst))
   (%intrinsic-call "cc_unset_breakstep" ()))
+
+;;; Atomics
+
+(defeprimop core::fence-seq-cst (:object) (inst)
+  (cmp::gen-fence :sequentially-consistent))
+(defeprimop core::fence-acq-rel (:object) (inst)
+  (cmp::gen-fence :acquire-release))
+(defeprimop core::fence-acquire (:object) (inst)
+  (cmp::gen-fence :acquire))
+(defeprimop core::fence-release (:object) (inst)
+  (cmp::gen-fence :release))

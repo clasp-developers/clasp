@@ -165,7 +165,6 @@
     ((eq name 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
     ((eq name 'core:foreign-call-pointer) t) ;; Call function pointers
     ((eq name 'core:foreign-call) t)         ;; Call foreign function
-    ((eq name 'core::fence) t)
     ((eq name 'core:defcallback) t)
     ((eq name 'core::atomic-vref) t)
     ((eq name 'core::atomic-vset) t)
