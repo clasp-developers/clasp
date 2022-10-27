@@ -740,34 +740,6 @@
                    when (bc-label-arg-p arg)
                      do (setf (bc-label-arg-index arg) (gethash (bc-label-arg-lip arg) lip-to-index))))))
 
-;;; SIMPLE ENTRY POINTS
-
-(defun calculate-dtree (call-history specializer-profile)
-  (compile-tree-top (basic-tree call-history specializer-profile)))
-
-(defun compute-dispatch-program (call-history specializer-profile)
-  (let* ((basic (basic-tree call-history specializer-profile))
-         (compiled (compile-tree-top basic))
-         (linear (linearize compiled))
-         (final (coerce linear 'vector)))
-    final))
-
-(defun dtree-compile (generic-function)
-  (let* ((basic (basic-tree (safe-gf-call-history generic-function)
-                            (safe-gf-specializer-profile generic-function)))
-         (compiled (compile-tree-top basic))
-         (linear (linearize compiled))
-         (final (coerce linear 'vector)))
-    (values final linear compiled basic)))
-
-(defun interpreted-discriminator (generic-function)
-  (let ((program ( compute-dispatch-program
-                  (safe-gf-call-history generic-function)
-                  (safe-gf-specializer-profile generic-function))))
-    (lambda (core:&va-rest args)
-      (declare (core:lambda-name interpreted-discriminating-function))
-      (apply #'clos:interpret-dtree-program program generic-function args))))
-
 ;;; Bytecode approach
 
 (defun dtree-compile (generic-function)
@@ -777,6 +749,7 @@
        (safe-gf-specializer-profile generic-function))
     (values (compile-tree-top basic) specialized-length)))
 
+;;; Called by GFBytecodeSimpleFun/make
 (defun bytecode-dtree-compile (generic-function)
   (multiple-value-bind (compiled specialized-length)
       (dtree-compile generic-function)
@@ -801,15 +774,6 @@
           (multiple-value-bind (entry-ip new-instructions saw-long)
               (bytecodeify instructions longs labels bytecode)
             (declare (ignorable saw-long))
-            #+(or)
-            (when saw-long
-              (loop for instr in new-instructions
-                    do (format t "~s~%" instr))
-              (format t "Done instructions~%")
-              (loop for byte across bytecode
-                    for index from 0
-                    do (format t "~4a: ~s~%" index byte))
-              )
             (vector-push-extend entry-ip entry-points)
             (values (copy-seq bytecode) (copy-seq entry-points) (copy-seq literals) specialized-length
                     #| Remaining return values are for debugging |#

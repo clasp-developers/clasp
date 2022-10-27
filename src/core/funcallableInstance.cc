@@ -357,13 +357,12 @@ void prepare_vm(core::T_O *lcc_closure, GFBytecodeSimpleFun_sp &gfep, SimpleVect
 
 struct GFBytecodeEntryPoint {
   static inline LCC_RETURN bytecode_enter(T_O *lcc_closure, size_t lcc_nargs, T_O **lcc_args) {
-    Vaslist pass_args(lcc_nargs, lcc_args);
     T_sp gfunction((gctools::Tagged)lcc_closure);
     DTIDO_ALWAYS(FILE *DTILOG_fout = monitor_file("dtree-interp"); my_thread->_DtreeInterpreterCallCount++;);
     DTILOG("=============================== Entered clos__interpret_dtree_program\n");
     DTILOG("---- generic function: %s\n", _safe_rep_(gfunction));
-    DTILOG("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n");
-    DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &pass_args));
+    DTILOG("About to dump incoming arguments\n");
+    DTIDO(dump_lcc_args(monitor_file("dtree-interp"), lcc_nargs, lcc_args));
     GFBytecodeSimpleFun_sp gfep;
     SimpleVector_byte8_t_sp program;
     SimpleVector_sp literal_vec;
@@ -427,29 +426,6 @@ struct GFBytecodeEntryPoint {
     wrongNumberOfArgumentsForGenericFunction(lcc_closure, 0);
   }
   static inline LCC_RETURN entry_point_0(core::T_O *lcc_closure) { return bytecode_enter(lcc_closure, 0, NULL); }
-#if 0
-  // Get rid of this once we ensure that bytecode gf discriminators work
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return bytecode_enter( lcc_closure, 1, args );
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return bytecode_enter( lcc_closure, 2, args );
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return bytecode_enter( lcc_closure, 3, args );
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return bytecode_enter( lcc_closure, 4, args );
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return bytecode_enter( lcc_closure, 5, args );
-  }
-#else
   static inline LCC_RETURN error_entry_point_1(core::T_O *lcc_closure, core::T_O *lcc_farg0) {
     wrongNumberOfArgumentsForGenericFunction(lcc_closure, 1);
   }
@@ -736,7 +712,6 @@ struct GFBytecodeEntryPoint {
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
   }
-#endif
 };
 
 GFBytecodeSimpleFun_O::GFBytecodeSimpleFun_O(FunctionDescription_sp fdesc, unsigned int entryPcN, SimpleVector_byte8_t_sp bytecode,
@@ -787,232 +762,6 @@ CL_DEFMETHOD size_t GFBytecodeSimpleFun_O::entryPcN() const { return this->_Entr
 }; // namespace core
 
 namespace core {
-
-CL_LAMBDA(program gf core:&va-rest args);
-CL_UNWIND_COOP(true);
-DOCGROUP(clasp);
-__attribute__((optnone)) CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
-                                                                     Vaslist_sp pass_args) {
-  DO_DRAG_INTERPRET_DTREE();
-  DTIDO_ALWAYS(FILE *DTILOG_fout = monitor_file("dtree-interp"); my_thread->_DtreeInterpreterCallCount++;);
-  DTILOG("=============================== Entered clos__interpret_dtree_program\n");
-  DTILOG("---- generic function: %s\n", _safe_rep_(generic_function));
-  DTILOG("---- program length: %d\n", program->length());
-  DTIDO(for (size_t i = 0; i < program->length(); ++i) {
-    DTILOG("[%3d] : %5s ;; .tagged_() = %lu!!!!\n", i, _safe_rep_((*program)[i]), (uintptr_t)((*program)[i].tagged_()));
-  });
-  size_t argi(0);
-
-  // Increment the call count, and if it's high enough, compile the thing
-  size_t calls = gc::As_unsafe<FuncallableInstance_sp>(generic_function)->increment_calls();
-  //
-  // if calls == COMPILE_TRIGGER then compile the discriminating function.
-  //  ONLY use == here - so that compilation is only triggered once and if
-  //  the GF is part of the compiler and it continues to be called while it is being
-  //  compiled then you avoid a recursive cycle of compilations that will hang the system.
-  //
-#if 0
-  if (calls == global_compile_discriminating_function_trigger) {
-    printf("%s:%d:%s Compiling discriminating function %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(generic_function).c_str());
-    eval::funcall(clos::_sym_compile_discriminating_function, generic_function);
-  }
-#endif
-  // Regardless of whether we triggered the compile, we next
-  // Dispatch
-  DTILOG("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n");
-  DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &*pass_args));
-  Vaslist valist_copy(*pass_args);
-  Vaslist_sp dispatch_args(&valist_copy);
-  DTILOG("About to dump copied dispatch_args Vaslist\n");
-  DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &*dispatch_args));
-  T_sp arg;
-  uintptr_t stamp;
-  size_t ip = 0;                         // instruction pointer
-  size_t nargs = dispatch_args->nargs(); // used in error signalling
-  while (1) {
-    size_t op = (*program)[ip].unsafe_fixnum();
-    DTILOG("ip[%lu]: %lu/%s\n", ip, op, dtree_op_name(op));
-    switch (op) {
-    case DTREE_OP_MISS:
-      goto DISPATCH_MISS;
-    case DTREE_OP_ADVANCE: {
-      DTILOG("About to read arg dispatch_args-> %p\n", (void *)dispatch_args.raw_());
-      DTILOG("About to dump dispatch_args Vaslist\n");
-      DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &*dispatch_args));
-      if (dispatch_args->nargs_zero())
-        // we use an intermediate function, in lisp, to get a nice error message.
-        return core::eval::funcall(clos::_sym_interp_wrong_nargs, generic_function, make_fixnum(nargs));
-      arg = dispatch_args->next_arg();
-      ++ip;
-      DTILOG("Got arg@%p %s new ip %lu\n", (void *)arg.raw_(), _safe_rep_(arg), ip);
-    } break;
-    case DTREE_OP_TAG_TEST:
-      if (arg.fixnump()) {
-        ip = (*program)[ip + DTREE_FIXNUM_TAG_OFFSET].unsafe_fixnum();
-        DTILOG("DTREE_OP_TAG_TEST: fixnum new ip: %lu\n", ip);
-        break;
-      } else if (arg.consp()) {
-        ip = (*program)[ip + DTREE_CONS_TAG_OFFSET].unsafe_fixnum();
-        DTILOG("DTREE_OP_TAG_TEST: cons new ip: %lu\n", ip);
-        break;
-      } else if (arg.single_floatp()) {
-        ip = (*program)[ip + DTREE_SINGLE_FLOAT_TAG_OFFSET].unsafe_fixnum();
-        DTILOG("DTREE_OP_TAG_TEST: single-float new ip: %lu\n", ip);
-        break;
-      } else if (arg.characterp()) {
-        DTILOG("character\n");
-        ip = (*program)[ip + DTREE_CHARACTER_TAG_OFFSET].unsafe_fixnum();
-        DTILOG("DTREE_OP_TAG_TEST: character new ip: %lu\n", ip);
-        break;
-      } else if (arg.generalp()) {
-        ip += DTREE_GENERAL_TAG_OFFSET;
-        DTILOG("DTREE_OP_TAG_TEST: general new ip: %lu\n", ip);
-        break;
-      }
-      DTILOG("DTREE_OP_TAG_TEST: unknown\n");
-      // FIXME: We should be able to specialize on class valist and stuff.
-      SIMPLE_ERROR(("unknown tag for arg %s"), arg);
-      goto DISPATCH_MISS;
-    case DTREE_OP_STAMP_READ: {
-      General_O *client_ptr = gctools::untag_general<General_O *>((General_O *)arg.raw_());
-      stamp = (uintptr_t)(llvmo::template_read_general_stamp(client_ptr));
-      uintptr_t where = stamp & gctools::Header_s::where_mask;
-      switch (where) {
-      case gctools::Header_s::header_wtag:
-        ip = (*program)[ip + DTREE_READ_HEADER_OFFSET].unsafe_fixnum();
-        break;
-      case gctools::Header_s::rack_wtag:
-        stamp = (uintptr_t)(llvmo::template_read_rack_stamp(client_ptr));
-        ip += DTREE_READ_OTHER_OFFSET;
-        break;
-      case gctools::Header_s::wrapped_wtag:
-        stamp = (uintptr_t)(llvmo::template_read_wrapped_stamp(client_ptr));
-        ip += DTREE_READ_OTHER_OFFSET;
-        break;
-      case gctools::Header_s::derivable_wtag:
-        stamp = (uintptr_t)(llvmo::template_read_derived_stamp(client_ptr));
-        ip += DTREE_READ_OTHER_OFFSET;
-        break;
-      }
-      DTILOG(" stamp read: %lu\n", stamp);
-      break;
-    }
-    case DTREE_OP_LT_BRANCH: {
-      // The stamps are from Common Lisp, so they're tagged fixnums. Don't untag.
-      uintptr_t pivot = (*program)[ip + DTREE_LT_PIVOT_OFFSET].tagged_();
-      DTILOG("testing < pivot %lu\n", pivot);
-      if (stamp < pivot) {
-        ip = (*program)[ip + DTREE_LT_LEFT_OFFSET].unsafe_fixnum();
-        DTILOG("  TRUE - ip <- %lu\n", ip);
-      } else {
-        ip += DTREE_LT_RIGHT_OFFSET;
-        DTILOG("  FALSE - ip <- %lu\n", ip);
-      }
-      break;
-    }
-    case DTREE_OP_EQ_CHECK: {
-      uintptr_t pivot = (*program)[ip + DTREE_EQ_PIVOT_OFFSET].tagged_();
-      DTILOG("testing - pivot %lu  stamp: %lu  EQ -> %d\n", pivot, stamp, (stamp == pivot));
-      if (stamp != pivot)
-        goto DISPATCH_MISS;
-      ip += DTREE_EQ_NEXT_OFFSET;
-      break;
-    }
-    case DTREE_OP_RANGE_CHECK: {
-      uintptr_t min = (*program)[ip + DTREE_RANGE_MIN_OFFSET].tagged_();
-      uintptr_t max = (*program)[ip + DTREE_RANGE_MAX_OFFSET].tagged_();
-      DTILOG("testing > %lu and < %lu\n", min, max);
-      if (stamp < min || stamp > max)
-        goto DISPATCH_MISS;
-      ip += DTREE_RANGE_NEXT_OFFSET;
-      break;
-    }
-    case DTREE_OP_EQL: {
-      T_sp object = (*program)[ip + DTREE_EQL_OBJECT_OFFSET];
-      if (cl__eql(arg, object))
-        ip = (*program)[ip + DTREE_EQL_BRANCH_OFFSET].unsafe_fixnum();
-      else
-        ip += DTREE_EQL_NEXT_OFFSET;
-      break;
-    }
-    case DTREE_OP_SLOT_READ: {
-      DTILOG("reading slot: ");
-      T_sp location = (*program)[ip + DTREE_SLOT_READER_INDEX_OFFSET];
-      T_sp slot_name = (*program)[ip + DTREE_SLOT_READER_SLOT_NAME_OFFSET];
-      size_t index = location.unsafe_fixnum();
-      T_sp tinstance = pass_args->next_arg();
-      DTILOG("Got tinstance@%p %s\n", (void *)tinstance.raw_(), _safe_rep_(tinstance));
-      Instance_sp instance((gc::Tagged)tinstance.raw_());
-      DTILOG("instance %p index %lu\n", (void *)instance.raw_(), index);
-      T_sp value = instance->instanceRef(index);
-      if (value.unboundp())
-        return core::eval::funcall(cl::_sym_slot_unbound, lisp_instance_class(tinstance), instance, slot_name);
-      DTILOG("read value: %s\n", _safe_rep_(value));
-      return gctools::return_type(value.raw_(), 1);
-    }
-    case DTREE_OP_CAR: {
-      DTILOG("class cell\n");
-      T_sp location = (*program)[ip + DTREE_SLOT_READER_INDEX_OFFSET];
-      T_sp slot_name = (*program)[ip + DTREE_SLOT_READER_SLOT_NAME_OFFSET];
-      DTILOG("DTREE_OP_CAR: About to dump pass_args Vaslist\n");
-      DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &*pass_args));
-      Instance_sp instance = gc::As_unsafe<Instance_sp>(pass_args->next_arg());
-      DTILOG("Got instance@%p %s\n", (void *)instance.raw_(), _safe_rep_(instance));
-      Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-      T_sp value = CONS_CAR(cell);
-      if (value.unboundp())
-        return core::eval::funcall(cl::_sym_slot_unbound, lisp_instance_class(instance), instance, slot_name);
-      DTILOG("read value: %s\n", _safe_rep_(value));
-      return gctools::return_type(value.raw_(), 1);
-    }
-    case DTREE_OP_SLOT_WRITE: {
-      DTILOG("writing slot: ");
-      T_sp location = (*program)[ip + DTREE_SLOT_WRITER_INDEX_OFFSET];
-      size_t index = location.unsafe_fixnum();
-      DTILOG("index %lu\n", index);
-      DTILOG("DTREE_OP_SLOT_WRITE: About to dump pass_args Vaslist\n");
-      DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &*pass_args));
-      T_sp value((gc::Tagged)pass_args->next_arg_raw());
-      DTILOG("DTREE_OP_SLOT_WRITE: About to dump pass_args Vaslist\n");
-      DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &*pass_args));
-      T_sp tinstance = pass_args->next_arg();
-      DTILOG("Got tinstance@%p %s\n", (void *)tinstance.raw_(), _safe_rep_(tinstance));
-      Instance_sp instance((gc::Tagged)tinstance.raw_());
-      instance->instanceSet(index, value);
-      DTILOG("Set to value: %s\n", _safe_rep_(value));
-      return gctools::return_type(value.raw_(), 1);
-    }
-    case DTREE_OP_RPLACA: {
-      DTILOG("class cell\n");
-      T_sp location = (*program)[ip + DTREE_SLOT_WRITER_INDEX_OFFSET];
-      size_t index = location.unsafe_fixnum();
-      Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-      DTILOG("DTREE_OP_RPLACA: About to dump pass_args Vaslist\n");
-      DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &*pass_args));
-      T_sp value((gc::Tagged)pass_args->next_arg());
-      DTILOG("Got value@%p %s\n", (void *)value.raw_(), _safe_rep_(value));
-      cell->rplaca(value);
-      DTILOG("Set to value: %s\n", _safe_rep_(value));
-      return gctools::return_type(value.raw_(), 1);
-    }
-    case DTREE_OP_EFFECTIVE_METHOD: {
-      DTILOG("effective method call\n");
-      T_sp tfunc = (*program)[ip + DTREE_EFFECTIVE_METHOD_OFFSET];
-      Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
-      // Use the pass_args here because it points to the original arguments
-      DTILOG("DTREE_OP_EFFECTIVE_METHOD: About to dump pass_args Vaslist\n");
-      DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"), &*pass_args));
-      DTILOG(">>>>>>> DTREE_OP_EFFECTIVE_METHOD: Invoking effective method\n");
-      return func->entry()(func.raw_(), pass_args->nargs(), pass_args->args());
-    }
-    default:
-      SIMPLE_ERROR("%zu is not a valid dtree opcode", op);
-    }
-  }
-DISPATCH_MISS:
-  DTILOG("dispatch miss. arg %lu stamp %lu\n", arg, stamp);
-  return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, pass_args);
-}
 
 SYMBOL_EXPORT_SC_(KeywordPkg, force_compile);
 SYMBOL_EXPORT_SC_(KeywordPkg, generic_function_name);

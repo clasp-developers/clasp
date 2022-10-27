@@ -277,7 +277,21 @@ inline bool dump_Vaslist_ptr(FILE* fout, Vaslist* args) {
   }
   return true;
 };
-};
+
+inline void dump_lcc_args(FILE* fout, size_t lcc_nargs, T_O** lcc_args) {
+  fprintf(fout,"lcc_args dump @%p\n", (void*)lcc_args);
+  fprintf(fout,"lcc_nargs = %zu", lcc_nargs);
+  if (lcc_nargs > CALL_ARGUMENTS_LIMIT) {
+    fprintf(fout,"%s:%d      args->_nargs -> %zu !!!!  A BAD VALUE\n", __FILE__, __LINE__, lcc_nargs);
+  } else {
+    for (size_t i = 0; i < lcc_nargs; ++i) {
+      T_O* arg = lcc_args[i];
+      fprintf(fout,"     [%d] --> %p %s\n", i, arg, dbg_safe_repr((uintptr_t)arg).c_str() );
+    }
+  }
+}
+
+}; // extern "C"
 
 
 /*! Call a function object with args in a Vaslist_sp and consume the valist.
