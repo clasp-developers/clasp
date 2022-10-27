@@ -597,21 +597,6 @@
                      (list (first store) (second store)))
     (%intrinsic-call "cc_set_dynenv_stack" (list (third store)))))
 
-(defmethod translate-terminator
-    ((instruction cc-bir:header-stamp-case) abi next)
-  (declare (ignore abi))
-  (let* ((stamp (in (first (bir:inputs instruction))))
-         (stamp-i64 (cmp:irc-ptr-to-int stamp cmp:%i64%))
-         (where (cmp:irc-and stamp-i64 (%i64 cmp:+where-tag-mask+)))
-         (defaultb (cmp:irc-basic-block-create "impossible-default"))
-         (sw (cmp:irc-switch where defaultb 4)))
-    (cmp:irc-add-case sw (%i64 cmp:+derivable-where-tag+) (first next))
-    (cmp:irc-add-case sw (%i64 cmp:+rack-where-tag+) (second next))
-    (cmp:irc-add-case sw (%i64 cmp:+wrapped-where-tag+) (third next))
-    (cmp:irc-add-case sw (%i64 cmp:+header-where-tag+) (fourth next))
-    (cmp:irc-begin-block defaultb)
-    (cmp:irc-unreachable)))
-
 (defmethod translate-simple-instruction ((instruction bir:thei) abi)
   (declare (ignore abi))
   (out (in (bir:input instruction)) (bir:output instruction)))

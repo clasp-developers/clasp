@@ -146,60 +146,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class HEADER-STAMP-CASE-AST
-;;;
-
-(defclass header-stamp-case-ast (ast:ast)
-  ((%stamp-ast :initarg :stamp-ast :reader stamp-ast)))
-
-(ast:define-children header-stamp-case-ast (stamp-ast))
-
-(defun make-header-stamp-case-ast (stamp &optional origin)
-  (make-instance 'header-stamp-case-ast
-    :stamp-ast stamp :origin origin))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class HEADER-STAMP-AST
-
-(defclass header-stamp-ast (ast:one-value-ast-mixin ast:ast)
-  ((%arg :initarg :arg :accessor ast:arg-ast)))
-(cleavir-io:define-save-info header-stamp-ast (:arg ast:arg-ast))
-(defmethod cleavir-ast-graphviz::label ((ast header-stamp-ast)) "header-stamp")
-(ast:define-children header-stamp-ast (ast:arg-ast))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class RACK-STAMP-AST
-
-(defclass rack-stamp-ast (ast:one-value-ast-mixin ast:ast)
-  ((%arg :initarg :arg :accessor ast:arg-ast)))
-(cleavir-io:define-save-info rack-stamp-ast (:arg ast:arg-ast))
-(defmethod cleavir-ast-graphviz::label ((ast rack-stamp-ast)) "rack-stamp")
-(ast:define-children rack-stamp-ast (ast:arg-ast))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class WRAPPED-STAMP-AST
-
-(defclass wrapped-stamp-ast (ast:one-value-ast-mixin ast:ast)
-  ((%arg :initarg :arg :accessor ast:arg-ast)))
-(cleavir-io:define-save-info wrapped-stamp-ast (:arg ast:arg-ast))
-(defmethod cleavir-ast-graphviz::label ((ast wrapped-stamp-ast)) "wrapped-stamp")
-(ast:define-children wrapped-stamp-ast (ast:arg-ast))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class DERIVABLE-STAMP-AST
-
-(defclass derivable-stamp-ast (ast:one-value-ast-mixin ast:ast)
-  ((%arg :initarg :arg :accessor ast:arg-ast)))
-(cleavir-io:define-save-info derivable-stamp-ast (:arg ast:arg-ast))
-(defmethod cleavir-ast-graphviz::label ((ast derivable-stamp-ast)) "derivable-stamp")
-(ast:define-children derivable-stamp-ast (ast:arg-ast))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Class ATOMIC-AST
 ;;;
 ;;; Abstract. Superclass for atomic operations.

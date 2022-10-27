@@ -44,19 +44,6 @@
        :inputs rv :outputs ())))
   ())
 
-(defclass header-stamp-case (bir:one-input bir:no-output bir:terminator) ())
-
-(defmethod ast-to-bir:compile-test-ast
-    ((ast cc-ast:header-stamp-case-ast) inserter system)
-  (ast-to-bir:with-compiled-ast (rv (cc-ast:stamp-ast ast)
-                                    inserter system)
-    (let* ((ibs
-             (loop repeat 4 collect (ast-to-bir:make-iblock inserter)))
-           (hsc (make-instance 'header-stamp-case
-                  :next ibs :inputs rv)))
-      (ast-to-bir:terminate inserter hsc)
-      (copy-list ibs))))
-
 ;;; atomics
 
 (defclass atomic (bir:instruction)
@@ -298,16 +285,7 @@
                 (ast-to-bir:defprimop ,name ,ast ,@readers))))
   (defprimop core::instance-cas 4 :value cc-ast:slot-cas-ast
     cc-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:object-ast
-    cleavir-ast:slot-number-ast)
-
-  (defprimop core::header-stamp 1 :value
-    cc-ast:header-stamp-ast cleavir-ast:arg-ast)
-  (defprimop core::derivable-stamp 1 :value
-    cc-ast:derivable-stamp-ast cleavir-ast:arg-ast)
-  (defprimop core::wrapped-stamp 1 :value
-    cc-ast:wrapped-stamp-ast cleavir-ast:arg-ast)
-  (defprimop core::rack-stamp 1 :value
-    cc-ast:rack-stamp-ast cleavir-ast:arg-ast))
+    cleavir-ast:slot-number-ast))
 
 ;;; misc
 

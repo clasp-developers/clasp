@@ -331,11 +331,6 @@
 ;;; See their AST classes for more info probably
 ;;;
 
-(define-functionlike-special-form core::header-stamp cc-ast:header-stamp-ast (:arg))
-(define-functionlike-special-form core::rack-stamp cc-ast:rack-stamp-ast (:arg))
-(define-functionlike-special-form core::wrapped-stamp cc-ast:wrapped-stamp-ast (:arg))
-(define-functionlike-special-form core::derivable-stamp cc-ast:derivable-stamp-ast (:arg))
-
 (define-functionlike-special-form core::instance-cas cc-ast:slot-cas-ast
   (:cmp-ast :value-ast :object-ast :slot-number-ast))
 
@@ -457,25 +452,6 @@
       :value-ast (cst-to-ast:convert nv env system)
       :array-ast (cst-to-ast:convert vector env system)
       :index-ast (cst-to-ast:convert index env system))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE::HEADER-STAMP-CASE
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core::header-stamp-case)) cst env
-     (system clasp-cleavir:clasp))
-  (cst:db origin (stamp derivable rack wrapped header) (cst:rest cst)
-    (cleavir-ast:make-branch-ast
-     (clasp-cleavir-ast:make-header-stamp-case-ast
-      (cst-to-ast:convert stamp env system)
-      cst)
-     (list (cst-to-ast:convert derivable env system)
-           (cst-to-ast:convert rack env system)
-           (cst-to-ast:convert wrapped env system))
-     (cst-to-ast:convert header env system)
-     :origin cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
