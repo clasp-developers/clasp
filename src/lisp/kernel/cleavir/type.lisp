@@ -1450,3 +1450,15 @@
 (define-deriver mp:fence (order)
   (declare (ignore order))
   (ctype:values-bottom *clasp-system*))
+
+(define-deriver core:atomic-aref (order array &rest indices)
+  (declare (ignore order))
+  (derive-aref array indices))
+
+(define-deriver (setf core:atomic-aref) (new order array &rest indices)
+  (declare (ignore order array indices))
+  (sv new))
+
+(define-deriver core:acas (order cmp new array &rest indices)
+  (declare (ignore order cmp new))
+  (derive-aref array indices))

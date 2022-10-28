@@ -1406,46 +1406,6 @@
                     (in (second (bir:inputs inst)))
                     (in (third (bir:inputs inst)))))
 
-(defun gen-vector-effective-address (array index element-type fixnum-type)
-  (let* ((vtype (cmp::simple-vector-llvm-type element-type))
-         (type (llvm-sys:type-get-pointer-to vtype))
-         (cast (cmp:irc-bit-cast array type))
-         (untagged (cmp:irc-untag-fixnum index fixnum-type "vector-index")))
-    ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
-    ;; For layout of the vector, check simple-vector-llvm-type's definition.
-    ;; untagged is the actual offset.
-    (cmp:irc-typed-gep-variable vtype
-                          cast
-                          (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged)
-                          "aref")))
-
-(defmethod translate-simple-instruction ((inst cc-bir:vref) abi)
-  (let ((inputs (bir:inputs inst)))
-    (out (cmp:irc-t*-load-atomic
-          (gen-vector-effective-address
-           (in (first inputs)) (in (second inputs)) (cc-bir:element-type inst)
-           (%default-int-type abi))
-          :order (cmp::order-spec->order (cc-bir:order inst)))
-         (bir:output inst))))
-(defmethod translate-simple-instruction ((inst cc-bir:vset) abi)
-  (let ((inputs (bir:inputs inst)))
-    (cmp:irc-store-atomic
-     (in (first inputs))
-     (gen-vector-effective-address
-      (in (second inputs)) (in (third inputs)) (cc-bir:element-type inst)
-      (%default-int-type abi))
-     :order (cmp::order-spec->order (cc-bir:order inst)))))
-(defmethod translate-simple-instruction ((inst cc-bir:vcas) abi)
-  (let ((et (cc-bir:element-type inst))
-        (inputs (bir:inputs inst)))
-    (out (cmp:irc-cmpxchg
-          ;; This will err if et = bit or the like.
-          (gen-vector-effective-address
-           (in (third inputs)) (in (fourth inputs)) et
-           (%default-int-type abi))
-          (in (first inputs)) (in (second inputs)))
-         (bir:output inst))))
-
 (defmethod translate-simple-instruction ((inst cc-bmir:mtf) abi)
   (declare (ignore abi))
   (let* ((input (bir:input inst)) (output (bir:output inst))

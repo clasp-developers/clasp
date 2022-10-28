@@ -166,9 +166,6 @@
     ((eq name 'core:foreign-call-pointer) t) ;; Call function pointers
     ((eq name 'core:foreign-call) t)         ;; Call foreign function
     ((eq name 'core:defcallback) t)
-    ((eq name 'core::atomic-vref) t)
-    ((eq name 'core::atomic-vset) t)
-    ((eq name 'core::vcas) t)
     ((eq name 'core::primop) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))

@@ -60,10 +60,6 @@
    #:result-ast
    #:tag-ast
    #:datum-id
-   #:cmp-ast #:order
-   #:slot-cas-ast
-   #:atomic-vref-ast #:atomic-vset-ast #:vcas-ast
-   #:atomic-rack-read-ast #:atomic-rack-write-ast #:cas-rack-ast #:rack-ast
    ))
 
 (defpackage #:clasp-cleavir-bir
@@ -75,9 +71,7 @@
            #:foreign-call-pointer #:foreign-types
            #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name
-           #:atomic #:order #:fence
-           #:atomic-rack-read #:atomic-rack-write #:cas-rack
-           #:vref #:vset #:vcas #:element-type #:simple-p #:boxed-p))
+           #:atomic #:order))
 
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)

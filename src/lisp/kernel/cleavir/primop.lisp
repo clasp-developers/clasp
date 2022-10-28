@@ -470,8 +470,44 @@
   (%intrinsic-call "cc_unset_breakstep" ()))
 
 ;;; Atomics
+;;; These have a sham first input for the order.
+;;; FIXME: Make that actually unused so it can be deleted properly.
 
 (defeprimop mp:fence (:object) (inst)
   (destructuring-bind (order)
       (cleavir-primop-info:arguments (bir:info inst))
     (cmp::gen-fence order)))
+
+(defvprimop (core:atomic-aref :flags (:flushable))
+    ((:object) :object :object :utfixnum) (inst)
+  ;; only simple vectors are allowed right now.
+  ;; to extend, parametrization will have to be able to affect the rtypes.
+  (destructuring-bind (order etype rank)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (assert (and (eql etype 't) (eql rank 1)))
+    (let* ((vec (in (second (bir:inputs inst))))
+           (index (in (third (bir:inputs inst))))
+           (addr (%vector-element-address vec etype index)))
+      (cmp:irc-typed-load-atomic (vrtype->llvm :object) addr
+                                 :order (cmp::order-spec->order order)))))
+(defvprimop core::atomic-aset ((:object) :object :object :object :utfixnum) (inst)
+  (destructuring-bind (order etype rank)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (assert (and (eql etype 't) (eql rank 1)))
+    (let* ((val (in (first (bir:inputs inst))))
+           (vec (in (third (bir:inputs inst))))
+           (index (in (fourth (bir:inputs inst))))
+           (addr (%vector-element-address vec etype index)))
+      (cmp:irc-store-atomic val addr :order (cmp::order-spec->order order))
+      val)))
+(defvprimop core:acas ((:object) :object :object :object :object :utfixnum)
+  (inst)
+  (destructuring-bind (order etype rank)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (assert (and (eql etype 't) (eql rank 1)))
+    (let* ((old (in (second (bir:inputs inst))))
+           (new (in (third (bir:inputs inst))))
+           (vec (in (fourth (bir:inputs inst))))
+           (index (in (fifth (bir:inputs inst))))
+           (addr (%vector-element-address vec etype index)))
+      (cmp:irc-cmpxchg addr old new :order (cmp::order-spec->order order)))))

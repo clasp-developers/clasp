@@ -51,48 +51,6 @@
            :type (member :relaxed :acquire :release :acquire-release
                          :sequentially-consistent))))
 
-(defclass abstract-vref (bir:instruction)
-  ((%element-type :initarg :element-type :reader element-type)))
-(defclass vref (atomic bir:one-output abstract-vref) ())
-(defclass vset (atomic bir:no-output abstract-vref) ())
-(defclass vcas (atomic bir:one-output abstract-vref) ())
-
-(defmethod ast-to-bir:compile-ast ((ast cc-ast:atomic-vref-ast) inserter system)
-  (ast-to-bir:with-compiled-asts (args ((cleavir-ast:array-ast ast)
-                                        (cleavir-ast:index-ast ast))
-                                       inserter system)
-    (let ((out (make-instance 'bir:output)))
-      (ast-to-bir:insert
-       inserter
-       (make-instance 'vref
-         :order (cc-ast:order ast) :inputs args :outputs (list out)
-         :element-type (cleavir-ast:element-type ast)))
-      (list out))))
-(defmethod ast-to-bir:compile-ast ((ast cc-ast:atomic-vset-ast) inserter system)
-  (ast-to-bir:with-compiled-asts (args ((cleavir-ast:value-ast ast)
-                                        (cleavir-ast:array-ast ast)
-                                        (cleavir-ast:index-ast ast))
-                                       inserter system)
-    (ast-to-bir:insert
-     inserter
-     (make-instance 'vset
-       :order (cc-ast:order ast)
-       :element-type (cleavir-ast:element-type ast) :inputs args)))
-  :no-value)
-(defmethod ast-to-bir:compile-ast ((ast cc-ast:vcas-ast) inserter system)
-  (ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)
-                                        (cleavir-ast:value-ast ast)
-                                        (cleavir-ast:array-ast ast)
-                                        (cleavir-ast:index-ast ast))
-                                       inserter system)
-    (let ((out (make-instance 'bir:output)))
-      (ast-to-bir:insert
-       inserter
-       (make-instance 'vcas
-         :order (cc-ast:order ast) :inputs args :outputs (list out)
-         :element-type (cleavir-ast:element-type ast)))
-      (list out))))
-
 ;;;
 ;;; vaslist stuff
 

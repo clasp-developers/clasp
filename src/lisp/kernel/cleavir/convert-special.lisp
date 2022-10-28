@@ -298,38 +298,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; CASs and other atomic ops are mostly functionlike, except for the order.
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core::atomic-vref)) cst env (system clasp-cleavir:clasp))
-  (cst:db origin (vr order uaet vector index) cst
-    (declare (ignore vr))
-    (make-instance 'cc-ast:atomic-vref-ast
-      :order (cst:raw order) :element-type (cst:raw uaet) :origin cst
-      :array-ast (cst-to-ast:convert vector env system)
-      :index-ast (cst-to-ast:convert index env system))))
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core::atomic-vset)) cst env (system clasp-cleavir:clasp))
-  (cst:db origin (vr order uaet nv vector index) cst
-    (declare (ignore vr))
-    (make-instance 'cc-ast:atomic-vset-ast
-      :order (cst:raw order) :element-type (cst:raw uaet) :origin cst
-      :value-ast (cst-to-ast:convert nv env system)
-      :array-ast (cst-to-ast:convert vector env system)
-      :index-ast (cst-to-ast:convert index env system))))
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core::vcas)) cst env (system clasp-cleavir:clasp))
-  (cst:db origin (vr order uaet cmp nv vector index) cst
-    (declare (ignore vr))
-    (make-instance 'cc-ast:vcas-ast
-      :order (cst:raw order) :element-type (cst:raw uaet) :origin cst
-      :cmp-ast (cst-to-ast:convert cmp env system)
-      :value-ast (cst-to-ast:convert nv env system)
-      :array-ast (cst-to-ast:convert vector env system)
-      :index-ast (cst-to-ast:convert index env system))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Converting core::local-tagbody to tagbody
 ;;;        and core::local-block to block
 ;;;

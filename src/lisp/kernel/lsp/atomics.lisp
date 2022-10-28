@@ -365,12 +365,8 @@ are no bindings (in which case the global, thread-shared value is used."
         (read-order (reduce-read-order order))
         (write-order (reduce-write-order order)))
     (values (list gv gi)
-            (list `(let ((,gv ,simple-vector))
-                     (unless (typep ,gv 'simple-vector)
-                       (error 'type-error
-                              :datum ,gv :expected-type 'simple-vector))
-                     ,gv)
-                  `(let ((,gi ,index))
+            (list `(the simple-vector ,simple-vector)
+                  `(let ((,gi (the fixnum ,index)))
                      (unless (array-in-bounds-p ,gv ,gi)
                        (error 'core:sequence-out-of-bounds
                               :datum ,gi
@@ -378,9 +374,9 @@ are no bindings (in which case the global, thread-shared value is used."
                               :object ,gv))
                      ,gi))
             cmp new
-            `(core::atomic-vref ,read-order T ,gv ,gi)
-            `(progn (core::atomic-vset ,write-order T ,new ,gv ,gi) ,new)
-            `(core::vcas ,order T ,cmp ,new ,gv ,gi))))
+            `(core::atomic-aref ,read-order ,gv ,gi)
+            `(setf (core::atomic-aref ,write-order ,gv ,gi) ,new)
+            `(core::acas ,order ,cmp ,new ,gv ,gi))))
 
 #+(or)
 (define-simple-atomic-expander svref (vector index)
