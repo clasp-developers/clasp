@@ -471,11 +471,7 @@
 
 ;;; Atomics
 
-(defeprimop core::fence-seq-cst (:object) (inst)
-  (cmp::gen-fence :sequentially-consistent))
-(defeprimop core::fence-acq-rel (:object) (inst)
-  (cmp::gen-fence :acquire-release))
-(defeprimop core::fence-acquire (:object) (inst)
-  (cmp::gen-fence :acquire))
-(defeprimop core::fence-release (:object) (inst)
-  (cmp::gen-fence :release))
+(defeprimop mp:fence (:object) (inst)
+  (destructuring-bind (order)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (cmp::gen-fence order)))
