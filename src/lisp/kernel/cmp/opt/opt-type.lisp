@@ -192,13 +192,13 @@
        (and ,@(if (eq cart '*)
                   nil
                   (list
-                   `(let ((object (cleavir-primop:car object)))
+                   `(let ((object (car (the cons object))))
                       (declare (ignorable object))
                       ,(typep-expansion cart env))))
             ,@(if (eq cdrt '*)
                   nil
                   (list
-                   `(let ((object (cleavir-primop:cdr object)))
+                   `(let ((object (cdr (the cons object))))
                       (declare (ignorable object))
                       ,(typep-expansion cdrt env)))))
        nil))

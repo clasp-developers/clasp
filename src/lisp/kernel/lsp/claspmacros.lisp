@@ -107,10 +107,6 @@
 
 (defmacro cleavir-primop:typeq (object type) `(typep ,object ',type))
 
-(defmacro cleavir-primop:car (obj) `(car ,obj))
-
-(defmacro cleavir-primop:cdr (obj) `(cdr ,obj))
-
 #-clasp-min
 (defmacro core::header-stamp-case (stamp derivable rack wrapped header)
   `(case (logand (ash ,stamp 2) ,cmp:+where-tag-mask+)
