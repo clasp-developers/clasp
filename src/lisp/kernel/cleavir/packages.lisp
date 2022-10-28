@@ -60,12 +60,10 @@
    #:result-ast
    #:tag-ast
    #:datum-id
-   #:atomic-car-ast #:atomic-cdr-ast #:atomic-rplaca-ast #:atomic-rplacd-ast
-   #:fence-ast #:cmp-ast #:order
-   #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast
+   #:cmp-ast #:order
+   #:slot-cas-ast
    #:atomic-vref-ast #:atomic-vset-ast #:vcas-ast
    #:atomic-rack-read-ast #:atomic-rack-write-ast #:cas-rack-ast #:rack-ast
-   #:invoke-ast #:multiple-value-invoke-ast #:destinations
    ))
 
 (defpackage #:clasp-cleavir-bir
