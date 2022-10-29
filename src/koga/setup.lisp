@@ -192,12 +192,21 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
         do (configure-unit *configuration* unit))
   (message :emph "~%Evaluating cscript files")
   (recurse #P"")
-  (loop for source in (uiop:read-file-form #P"repos.sexp")
-        for name = (getf source :name)
-        for directory = (getf source :directory)
-        for extension = (getf source :extension)
-        when (and extension (member name (extensions *configuration*)))
-          do (recurse directory))
+  (loop with sources = (uiop:read-file-form #P"repos.sexp")
+        for name in (extensions *configuration*)
+        for directory = (make-pathname :directory (list :relative
+                                                        "extensions"
+                                                        (string-downcase (symbol-name name))))
+        for source = (find-if (lambda (source)
+                                (and (getf source :extension)
+                                     (eql name (getf source :name))))
+                              sources)
+        if source
+          do (message :info "Found repo definition for extension ~a. Using that to location extension directory." name)
+             (recurse (getf source :directory))
+        else
+          do (message :info "Did not find repo definition for extension ~a. Assuming extension is in ~a" name directory)
+             (recurse directory))
   (loop for script = (pop (scripts *configuration*))
         for *script-path* = (when script (uiop:pathname-directory-pathname script))
         while script

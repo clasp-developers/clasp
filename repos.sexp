@@ -203,6 +203,6 @@
   :extension :seqan-clasp)
  (:name :seqan
   :repository "https://github.com/seqan/seqan.git"
-  :directory "extensions/seqan-clasp/seqan"
+  :directory "extensions/seqan-clasp/seqan/"
   :branch "master"
   :extension :seqan-clasp))
