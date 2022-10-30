@@ -36,15 +36,6 @@
 
 ;;; Called by translate-simple-instruction. Return value irrelevant.
 (defgeneric translate-primop (opname instruction))
-;;; Called by translate-conditional-test
-(defgeneric translate-conditional-primop (opname instruction next)
-  (:method (opname (instruction bir:primop) next)
-    (declare (ignore opname))
-    ;; Like the default method on translate-conditional-test, compare the output
-    ;; against NIL.
-    (cmp:irc-cond-br
-     (cmp:irc-icmp-eq (in (first (bir:outputs instruction))) (%nil))
-     (second next) (first next))))
 
 ;;; Hash table from primop infos to rtype info.
 ;;; An rtype info is just a list (return-rtype argument-rtypes...)
@@ -109,33 +100,18 @@
            :effect ,@flags)
          (setf (gethash ',name *primop-rtypes*) '(,@param-info))
          (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
-           ,@body)
+           ,@body
+           (out nil (first (bir:outputs ,instparam))))
          ',name))))
 
 ;;; Define a primop used as a conditional test.
 ;;; Here param-info is parameters only.
-;;; The body is used for translate-conditional-primop, which is expected to
-;;; return an LLVM i1 Value.
-(defmacro deftprimop (name param-info (instparam nextparam) &body body)
-  (let ((name (if (consp name) (first name) name))
-        (options (if (consp name) (rest name) nil))
-        (param-info
-          (list* '(:object)
-                 (if (integerp param-info)
-                     (make-list param-info :initial-element :object)
-                     param-info)))
-        (nsym (gensym "NAME")))
-    (destructuring-bind (&key flags) options
-      `(progn
-         (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) 2
-           ,@flags)
-         (setf (gethash ',name *primop-rtypes*) '(,@param-info))
-         (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
-           (declare (ignore ,instparam)))
-         (defmethod translate-conditional-primop ((,nsym (eql ',name))
-                                                  ,instparam ,nextparam)
-           ,@body)
-         ',name))))
+(defmacro deftprimop (name param-info (instparam) &body body)
+  `(defvprimop ,name ((:boolean) ,@(if (integerp param-info)
+                                       (make-list param-info :initial-element :object)
+                                       param-info))
+     (,instparam)
+     ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -145,7 +121,7 @@
 (macrolet ((def-float-compare (sfname dfname op reversep)
              `(progn
                 (deftprimop ,sfname (:single-float :single-float)
-                  (inst next)
+                  (inst)
                   (assert (= (length (bir:inputs inst)) 2))
                   (let ((,(if reversep 'i2 'i1)
                           (in (first (bir:inputs inst))))
@@ -155,9 +131,9 @@
                                                  cmp:%float%))
                     (assert (llvm-sys:type-equal (llvm-sys:get-type i2)
                                                  cmp:%float%))
-                    (cmp:irc-cond-br (,op i1 i2) (first next) (second next))))
+                    (,op i1 i2)))
                 (deftprimop ,dfname (:double-float :double-float)
-                  (inst next)
+                  (inst)
                   (assert (= (length (bir:inputs inst)) 2))
                   (let ((,(if reversep 'i2 'i1)
                           (in (first (bir:inputs inst))))
@@ -167,7 +143,7 @@
                                                  cmp:%double%))
                     (assert (llvm-sys:type-equal (llvm-sys:get-type i2)
                                                  cmp:%double%))
-                    (cmp:irc-cond-br (,op i1 i2) (first next) (second next)))))))
+                    (,op i1 i2))))))
   (def-float-compare core::two-arg-sf-=  core::two-arg-df-=  %fcmp-oeq nil)
   (def-float-compare core::two-arg-sf-<  core::two-arg-df-<  %fcmp-olt nil)
   (def-float-compare core::two-arg-sf-<= core::two-arg-df-<= %fcmp-ole nil)
@@ -430,7 +406,7 @@
 (macrolet ((def-fixnum-compare (name op)
              `(progn
                 (deftprimop ,name (:fixnum :fixnum)
-                  (inst next)
+                  (inst)
                   (assert (= (length (bir:inputs inst)) 2))
                   ;; NOTE: We do not HAVE to cast to an integer type,
                   ;; as icmp works fine on pointers directly.
@@ -440,8 +416,7 @@
                   ;; constants. So we use the fixnum rtype.
                   (let ((i1 (in (first (bir:inputs inst))))
                         (i2 (in (second (bir:inputs inst)))))
-                    (cmp:irc-cond-br (,op i1 i2)
-                                     (first next) (second next)))))))
+                    (,op i1 i2))))))
   (def-fixnum-compare core::two-arg-fixnum-=  cmp:irc-icmp-eq)
   (def-fixnum-compare core::two-arg-fixnum-<  cmp:irc-icmp-slt)
   (def-fixnum-compare core::two-arg-fixnum-<= cmp:irc-icmp-sle)
@@ -474,13 +449,65 @@
                             (datum-name-as-string
                              (first (bir:outputs inst))))))
     fixn))
+;;; ditto the above, but makes sure the shift is valid by taking the min.
+(defvprimop (core::fixnum-ashr-min :flags (:flushable))
+    ((:fixnum) :fixnum :utfixnum) (inst)
+  (let* ((int (in (first (bir:inputs inst))))
+         ;; NOTE: treated as unsigned, so it'd better be positive
+         (pshift (in (second (bir:inputs inst))))
+         (shift (%intrinsic-call "llvm.umin.i64" (list pshift (%i64 63))))
+         (shifted (cmp:irc-ashr int shift))
+         (demask (%i64 (ldb (byte 64 0) (lognot cmp:+fixnum-mask+))))
+         (fixn (cmp:irc-and shifted demask)))
+    fixn))
 
 ;;; Primops for debugging
 
 (defeprimop core:set-breakstep () (inst)
-  (declare (ignore inst))
   (%intrinsic-call "cc_set_breakstep" ()))
 
 (defeprimop core:unset-breakstep () (inst)
-  (declare (ignore inst))
   (%intrinsic-call "cc_unset_breakstep" ()))
+
+;;; Atomics
+;;; These have a sham first input for the order.
+;;; FIXME: Make that actually unused so it can be deleted properly.
+
+(defeprimop mp:fence (:object) (inst)
+  (destructuring-bind (order)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (cmp::gen-fence order)))
+
+(defvprimop (core:atomic-aref :flags (:flushable))
+    ((:object) :object :object :utfixnum) (inst)
+  ;; only simple vectors are allowed right now.
+  ;; to extend, parametrization will have to be able to affect the rtypes.
+  (destructuring-bind (order etype rank)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (assert (and (eql etype 't) (eql rank 1)))
+    (let* ((vec (in (second (bir:inputs inst))))
+           (index (in (third (bir:inputs inst))))
+           (addr (%vector-element-address vec etype index)))
+      (cmp:irc-typed-load-atomic (vrtype->llvm :object) addr
+                                 :order (cmp::order-spec->order order)))))
+(defvprimop core::atomic-aset ((:object) :object :object :object :utfixnum) (inst)
+  (destructuring-bind (order etype rank)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (assert (and (eql etype 't) (eql rank 1)))
+    (let* ((val (in (first (bir:inputs inst))))
+           (vec (in (third (bir:inputs inst))))
+           (index (in (fourth (bir:inputs inst))))
+           (addr (%vector-element-address vec etype index)))
+      (cmp:irc-store-atomic val addr :order (cmp::order-spec->order order))
+      val)))
+(defvprimop core:acas ((:object) :object :object :object :object :utfixnum)
+  (inst)
+  (destructuring-bind (order etype rank)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (assert (and (eql etype 't) (eql rank 1)))
+    (let* ((old (in (second (bir:inputs inst))))
+           (new (in (third (bir:inputs inst))))
+           (vec (in (fourth (bir:inputs inst))))
+           (index (in (fifth (bir:inputs inst))))
+           (addr (%vector-element-address vec etype index)))
+      (cmp:irc-cmpxchg addr old new :order (cmp::order-spec->order order)))))

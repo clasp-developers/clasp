@@ -809,5 +809,17 @@ CL_DEFUN void mp__check_pending_interrupts() {
   gctools::handle_all_queued_interrupts();
 }
 
+CL_DOCSTRING(R"dx(Establish a fence that prevents the compiler or CPU from reordering some accesses across it. Returns no values.)dx");
+CL_DOCSTRING_LONG(R"dx(ORDER is the same as accepted by ATOMIC, except that :relaxed does not make sense for fences and will be rejected")dx");
+DOCGROUP(clasp);
+CL_DEFUN void mp__fence(core::T_sp order) {
+  // For the function call, we do not check the order. This is kind of a KLUDGE,
+  // but really, if you're doing the kind of programming that needs fences you
+  // don't want a runtime branch.
+  // cclasp will inline calls to this function with constant ORDER.
+  (void)order;
+  std::atomic_thread_fence(std::memory_order_seq_cst);
+}
+
 };
 

@@ -256,18 +256,18 @@
   (declare (ignore next))
   (error "Don't know how to translate this conditional test ~a." instruction))
 
-(defmethod translate-conditional-test ((instruction bir:eq-test) next)
+(defmethod translate-simple-instruction ((instruction bir:eq-test) abi)
+  (declare (ignore abi))
   (let ((inputs (bir:inputs instruction)))
-    (cmp:irc-cond-br
-     (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs))
-                      (datum-name-as-string (bir:output instruction)))
-     (first next) (second next))))
+    (out (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs))
+                          (datum-name-as-string (bir:output instruction)))
+         (bir:output instruction))))
 
 (defmacro define-tag-test (inst mask tag)
-  `(defmethod translate-conditional-test ((instruction ,inst) next)
-     (cmp:compile-tag-check (in (first (bir:inputs instruction)))
-                            ,mask ,tag
-                            (first next) (second next))))
+  `(defmethod translate-simple-instruction ((instruction ,inst) abi)
+     (declare (ignore abi))
+     (out (cmp:tag-check-cond (in (bir:input instruction)) ,mask ,tag)
+          (bir:output instruction))))
 (define-tag-test cc-bmir:fixnump cmp:+fixnum-mask+ cmp:+fixnum00-tag+)
 (define-tag-test cc-bmir:consp cmp:+immediate-mask+ cmp:+cons-tag+)
 (define-tag-test cc-bmir:characterp cmp:+immediate-mask+ cmp:+character-tag+)
@@ -275,28 +275,47 @@
   cmp:+immediate-mask+ cmp:+single-float-tag+)
 (define-tag-test cc-bmir:generalp cmp:+immediate-mask+ cmp:+general-tag+)
 
+(defmethod translate-simple-instruction ((inst cc-bmir:headerq) abi)
+  (declare (ignore abi))
+  ;; We can only actually look at the header value if we have a general,
+  ;; so we have to use a phi.
+  ;; LLVM's jump-threading analysis ought to take care of the if-if.
+  (let ((curb (cmp:irc-get-insert-block))
+        (hedb (cmp:irc-basic-block-create "headerq-check"))
+        (merge (cmp:irc-basic-block-create "headerq-merge"))
+        (in (in (bir:input inst))))
+    (cmp:compile-tag-check in cmp:+immediate-mask+ cmp:+general-tag+
+                           hedb merge)
+    (cmp:irc-begin-block hedb)
+    (let ((hedp (cmp:header-check-cond (cc-bmir:info inst) in)))
+      (cmp:irc-br merge)
+      (cmp:irc-begin-block merge)
+      (let ((phi (cmp:irc-phi cmp:%i1% 2 "headerq-check")))
+        (cmp:irc-phi-add-incoming phi (%i1 0) curb)
+        (cmp:irc-phi-add-incoming phi hedp hedb)
+        (out phi (bir:output inst))))))
+
+#+(or)
 (defmethod translate-conditional-test ((instruction cc-bmir:headerq) next)
   (cmp:compile-header-check
    (cc-bmir:info instruction)
    (in (first (bir:inputs instruction)))
    (first next) (second next)))
 
-(defmethod translate-conditional-test ((inst cc-vaslist:nendp) next)
-  (cmp:irc-cond-br
-   (cmp:irc-icmp-ugt (cmp:irc-vaslist-nvals (in (bir:input inst)))
-                     (%size_t 0))
-   (first next) (second next)))
-
-(defmethod translate-conditional-test ((inst bir:primop) next)
-  (translate-conditional-primop (cleavir-primop-info:name (bir:info inst))
-                                inst next))
+(defmethod translate-simple-instruction ((inst cc-vaslist:nendp) abi)
+  (declare (ignore abi))
+  (out (cmp:irc-icmp-ugt (cmp:irc-vaslist-nvals (in (bir:input inst)))
+                         (%size_t 0))
+       (bir:output inst)))
 
 (defmethod translate-terminator ((instruction bir:ifi) abi next)
   (declare (ignore abi))
   (let ((in (first (bir:inputs instruction))))
     (etypecase in
       (bir:output
-       (translate-conditional-test (bir:definition in) next))
+       (if (equal (cc-bmir:rtype in) '(:boolean))
+           (cmp:irc-cond-br (in in) (first next) (second next))
+           (translate-conditional-test (bir:definition in) next)))
       ((or bir:phi bir:argument)
        (cmp:irc-cond-br (cmp:irc-icmp-eq (in in) (%nil))
                         (second next) (first next))))))
@@ -578,21 +597,6 @@
                      (list (first store) (second store)))
     (%intrinsic-call "cc_set_dynenv_stack" (list (third store)))))
 
-(defmethod translate-terminator
-    ((instruction cc-bir:header-stamp-case) abi next)
-  (declare (ignore abi))
-  (let* ((stamp (in (first (bir:inputs instruction))))
-         (stamp-i64 (cmp:irc-ptr-to-int stamp cmp:%i64%))
-         (where (cmp:irc-and stamp-i64 (%i64 cmp:+where-tag-mask+)))
-         (defaultb (cmp:irc-basic-block-create "impossible-default"))
-         (sw (cmp:irc-switch where defaultb 4)))
-    (cmp:irc-add-case sw (%i64 cmp:+derivable-where-tag+) (first next))
-    (cmp:irc-add-case sw (%i64 cmp:+rack-where-tag+) (second next))
-    (cmp:irc-add-case sw (%i64 cmp:+wrapped-where-tag+) (third next))
-    (cmp:irc-add-case sw (%i64 cmp:+header-where-tag+) (fourth next))
-    (cmp:irc-begin-block defaultb)
-    (cmp:irc-unreachable)))
-
 (defmethod translate-simple-instruction ((instruction bir:thei) abi)
   (declare (ignore abi))
   (out (in (bir:input instruction)) (bir:output instruction)))
@@ -711,7 +715,7 @@
         if arguments
           collect (translate-cast (pop arguments) '(:object)
                                   (cc-bmir:rtype op))
-          and collect (cmp::irc-t)
+          and collect (%t)
         else
           collect (cmp:irc-undef-value-get (argument-rtype->llvm op))
           and collect (%nil)))
@@ -1098,6 +1102,27 @@
         value
         (error "BUG: Don't know how to cast ~a ~a to ~a" from value to))))
 
+(defmethod cast-one ((from (eql :boolean)) (to (eql :object)) value)
+  ;; we could use a select instruction, but then we'd have a redundant memory load.
+  ;; which really shouldn't be a big deal, but why risk it.
+  (let* ((thenb (cmp:irc-basic-block-create "bool-t"))
+         (elseb (cmp:irc-basic-block-create "bool-nil"))
+         (_0 (cmp:irc-cond-br value thenb elseb))
+         (merge (cmp:irc-basic-block-create "bool"))
+         (_1 (cmp:irc-begin-block merge))
+         (phi (cmp:irc-phi cmp:%t*% 2 "bool")))
+    (declare (ignore _0 _1))
+    (cmp:irc-begin-block thenb)
+    (cmp:irc-phi-add-incoming phi (%t) thenb)
+    (cmp:irc-br merge)
+    (cmp:irc-begin-block elseb)
+    (cmp:irc-phi-add-incoming phi (%nil) elseb)
+    (cmp:irc-br merge)
+    (cmp:irc-begin-block merge)
+    phi))
+(defmethod cast-one ((from (eql :object)) (to (eql :boolean)) value)
+  (cmp:irc-icmp-ne value (%nil)))
+
 (defmethod cast-one ((from (eql :single-float)) (to (eql :object)) value)
   (cmp:irc-box-single-float value))
 (defmethod cast-one ((from (eql :object)) (to (eql :single-float)) value)
@@ -1277,10 +1302,6 @@
    (in (second (bir:inputs inst)))
    :order (cmp::order-spec->order (cc-bir:order inst))))
 
-(defmethod translate-simple-instruction ((inst cc-bir:fence) abi)
-  (declare (ignore abi))
-  (cmp::gen-fence (cc-bir:order inst)))
-
 (defmethod translate-simple-instruction ((inst cc-blir:cas) abi)
   (declare (ignore abi))
   (out (cmp:irc-cmpxchg (in (first (bir:inputs inst)))
@@ -1338,20 +1359,6 @@
   (declare (ignore abi))
   (translate-primop (cleavir-primop-info:name (bir:info inst)) inst))
 
-(defmethod translate-primop ((name (eql 'symbol-value)) inst)
-  (out (%intrinsic-invoke-if-landing-pad-or-call
-        "cc_safe_symbol_value" (list (in (first (bir:inputs inst))))
-        (datum-name-as-string (first (bir:outputs inst))))
-       (first (bir:outputs inst))))
-(defmethod translate-primop ((name (eql 'fdefinition)) inst)
-  (let ((symbol (in (first (bir:inputs inst))))
-        (out (first (bir:outputs inst))))
-    (out (cmp:irc-fdefinition symbol (datum-name-as-string out)) out)))
-(defmethod translate-primop ((name (eql 'cc-bir::setf-fdefinition)) inst)
-  (let ((setf-symbol (in (first (bir:inputs inst))))
-        (outp (first (bir:outputs inst))))
-    (out (cmp:irc-setf-fdefinition setf-symbol (datum-name-as-string outp))
-         outp)))
 (defmethod translate-primop ((name (eql 'cleavir-primop:slot-read)) inst)
   (out (cmp::gen-instance-ref (in (first (bir:inputs inst)))
                               (in (second (bir:inputs inst))))
@@ -1398,78 +1405,6 @@
   (cmp:gen-rack-set (in (first (bir:inputs inst)))
                     (in (second (bir:inputs inst)))
                     (in (third (bir:inputs inst)))))
-
-(defmethod translate-primop ((name cons) inst) ; FIXME
-  (cond ((equal name '(setf symbol-value))
-         (%intrinsic-invoke-if-landing-pad-or-call
-          "cc_setSymbolValue" (mapcar #'in (bir:inputs inst))))
-        (t
-         (error "BUG: Don't know how to translate primop ~a" name))))
-
-(defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-read) abi)
-  (declare (ignore abi))
-  (out (cmp:gen-rack-ref (in (first (bir:inputs inst)))
-                         (in (second (bir:inputs inst)))
-                         :order (cmp::order-spec->order (cc-bir:order inst)))
-       (bir:output inst)))
-(defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-write) abi)
-  (declare (ignore abi))
-  (cmp:gen-rack-set (in (second (bir:inputs inst)))
-                    (in (third (bir:inputs inst)))
-                    (in (first (bir:inputs inst)))
-                    :order (cmp::order-spec->order (cc-bir:order inst))))
-(defmethod translate-simple-instruction ((inst cc-bir:cas-rack) abi)
-  (declare (ignore abi))
-  (out (cmp:irc-cmpxchg (cmp::irc-rack-slot-address
-                         (in (third (bir:inputs inst)))
-                         (cmp:irc-untag-fixnum
-                          (in (fourth (bir:inputs inst)))
-                          cmp:%size_t% "slot-location"))
-                        (in (first (bir:inputs inst)))
-                        (in (second (bir:inputs inst)))
-                        :order (cmp::order-spec->order (cc-bir:order inst))
-                        :label (datum-name-as-string (bir:output inst)))
-       (bir:output inst)))
-
-(defun gen-vector-effective-address (array index element-type fixnum-type)
-  (let* ((vtype (cmp::simple-vector-llvm-type element-type))
-         (type (llvm-sys:type-get-pointer-to vtype))
-         (cast (cmp:irc-bit-cast array type))
-         (untagged (cmp:irc-untag-fixnum index fixnum-type "vector-index")))
-    ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
-    ;; For layout of the vector, check simple-vector-llvm-type's definition.
-    ;; untagged is the actual offset.
-    (cmp:irc-typed-gep-variable vtype
-                          cast
-                          (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged)
-                          "aref")))
-
-(defmethod translate-simple-instruction ((inst cc-bir:vref) abi)
-  (let ((inputs (bir:inputs inst)))
-    (out (cmp:irc-t*-load-atomic
-          (gen-vector-effective-address
-           (in (first inputs)) (in (second inputs)) (cc-bir:element-type inst)
-           (%default-int-type abi))
-          :order (cmp::order-spec->order (cc-bir:order inst)))
-         (bir:output inst))))
-(defmethod translate-simple-instruction ((inst cc-bir:vset) abi)
-  (let ((inputs (bir:inputs inst)))
-    (cmp:irc-store-atomic
-     (in (first inputs))
-     (gen-vector-effective-address
-      (in (second inputs)) (in (third inputs)) (cc-bir:element-type inst)
-      (%default-int-type abi))
-     :order (cmp::order-spec->order (cc-bir:order inst)))))
-(defmethod translate-simple-instruction ((inst cc-bir:vcas) abi)
-  (let ((et (cc-bir:element-type inst))
-        (inputs (bir:inputs inst)))
-    (out (cmp:irc-cmpxchg
-          ;; This will err if et = bit or the like.
-          (gen-vector-effective-address
-           (in (third inputs)) (in (fourth inputs)) et
-           (%default-int-type abi))
-          (in (first inputs)) (in (second inputs)))
-         (bir:output inst))))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:mtf) abi)
   (declare (ignore abi))
@@ -1715,21 +1650,50 @@
              imm-or-index))
        (bir:output inst)))
 
+(defun translate-constant-value (constant)
+  (let* (;; NOTE: Printing out the constant for a label is problematic,
+         ;; because LLVM will reject (assert failure) if a label has
+         ;; any null bytes in it. Null bytes can arise in non-obvious
+         ;; ways, e.g. from non-ASCII Unicode characters.
+         (label "")
+         (immediate-or-index (gethash constant *constant-values*)))
+    (assert immediate-or-index () "Constant not found!")
+    (if (integerp immediate-or-index)
+        (cmp:irc-t*-load (%indexed-literal-ref immediate-or-index label))
+        immediate-or-index)))
+
 (defmethod translate-simple-instruction ((inst bir:constant-reference)
                                          abi)
   (declare (ignore abi))
-  (out (let* ((constant (first (bir:inputs inst)))
-              ;; NOTE: Printing out the constant for a label is problematic,
-              ;; because LLVM will reject (assert failure) if a label has
-              ;; any null bytes in it. Null bytes can arise in non-obvious
-              ;; ways, e.g. from non-ASCII Unicode characters.
-              (label "")
-              (immediate-or-index (gethash constant *constant-values*)))
-         (assert immediate-or-index () "Constant not found!")
-         (if (integerp immediate-or-index)
-             (cmp:irc-t*-load (%indexed-literal-ref immediate-or-index label))
-             immediate-or-index))
-       (bir:output inst)))
+  (out (translate-constant-value (bir:input inst)) (bir:output inst)))
+
+(defmethod translate-simple-instruction ((inst bir:constant-fdefinition) abi)
+  (declare (ignore abi))
+  (let* ((output (bir:output inst))
+         (name (datum-name-as-string output)))
+    (out (let* ((constant (bir:input inst))
+                (value (bir:constant-value constant)))
+           (etypecase value
+             (symbol
+              (cmp:irc-fdefinition (translate-constant-value constant) name))
+             ((cons (eql setf) (cons symbol null))
+              (cmp:irc-setf-fdefinition (%literal-value (second value)) name))))
+         output)))
+
+(defmethod translate-simple-instruction ((inst bir:constant-symbol-value) abi)
+  (declare (ignore abi))
+  (let ((output (bir:output inst)))
+    (out (%intrinsic-invoke-if-landing-pad-or-call
+          "cc_safe_symbol_value" (list (translate-constant-value (bir:input inst)))
+          (datum-name-as-string output))
+         output)))
+
+(defmethod translate-simple-instruction ((inst bir:set-constant-symbol-value) abi)
+  (declare (ignore abi))
+  (let ((sym (translate-constant-value (first (bir:inputs inst))))
+        (val (in (second (bir:inputs inst)))))
+    (%intrinsic-invoke-if-landing-pad-or-call
+     "cc_setSymbolValue" (list sym val))))
 
 (defmethod translate-simple-instruction
     ((inst cc-bmir:unboxed-constant-reference) abi)

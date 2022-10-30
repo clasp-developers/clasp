@@ -162,20 +162,10 @@
     ;; with macros.
     ((member name '(catch throw progv)) nil)
     ((special-operator-p name) t)
-    ((eq name 'core:debug-message) t)      ;; special operator
-    ((eq name 'core:debug-break) t)      ;; special operator
     ((eq name 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
     ((eq name 'core:foreign-call-pointer) t) ;; Call function pointers
     ((eq name 'core:foreign-call) t)         ;; Call foreign function
-    ((eq name 'core:bind-vaslist) t)         ;; bind-vaslist
-    ((eq name 'core::vector-length) t)
-    ((eq name 'core::%array-dimension) t)
-    ((eq name 'core::fence) t)
     ((eq name 'core:defcallback) t)
-    ((eq name 'core::atomic-vref) t)
-    ((eq name 'core::atomic-vset) t)
-    ((eq name 'core::vcas) t)
-    ((eq name 'core::bind-vaslist) t)
     ((eq name 'core::primop) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))

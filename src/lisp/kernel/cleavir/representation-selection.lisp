@@ -13,6 +13,7 @@
 ;;; * a list of value rtypes.
 ;;; A value rtype can be either
 ;;; * :object, meaning T_O*
+;;; * :boolean, meaning a boolean (an i1 0 or 1, not T or NIL)
 ;;; * :single-float, meaning an unboxed single float
 ;;; * :double-float, meaning an unboxed double float
 ;;; * :base-char, meaning an untagged base-char
@@ -52,6 +53,8 @@
 (defmethod %definition-rtype ((inst bir:instruction) (datum bir:datum))
   ;; usually correct default
   '(:object))
+(defmethod %definition-rtype ((inst bir:conditional-test) (datum bir:datum))
+  '(:boolean))
 (defmethod %definition-rtype ((inst bir:abstract-call) (datum bir:datum))
   :multiple-values)
 ;; The ABI can only handle aggregates of a certain size before it starts
@@ -230,6 +233,9 @@
   ;; Having this as a default is mildly dicey but should work: instructions
   ;; that need multiple value inputs are a definite minority.
   '(:object))
+#+(or)
+(defmethod %use-rtype ((inst bir:ifi) (datum bir:datum))
+  '(:boolean))
 (defmethod %use-rtype ((inst bir:mv-call) (datum bir:datum))
   (if (member datum (rest (bir:inputs inst)))
       :vaslist '(:object)))
@@ -547,6 +553,17 @@
   (object-inputs instruction)
   (unless (null (bir:outputs instruction)) (object-output instruction)))
 
+(defmethod insert-casts ((instruction bir:ifi))
+  (let* ((input (bir:input instruction))
+         (irt (cc-bmir:rtype input)))
+    ;; We're cool with boolean inputs and, transitionally, object inputs.
+    (unless (and (consp irt) (member (first irt) '(:boolean :object)))
+      (object-input instruction input))))
+
+(defmethod insert-casts ((instruction bir:conditional-test))
+  (object-inputs instruction)
+  (cast-output instruction '(:boolean)))
+
 (defmethod insert-casts ((instruction bir:fixed-to-multiple))
   ;; If the output rtype is nil, don't bother inserting casts.
   (unless (null (cc-bmir:rtype (bir:output instruction)))
@@ -756,13 +773,13 @@
          :origin (bir:origin instruction) :policy (bir:policy instruction)
          :inputs () :outputs () :next (bir:next instruction))
        instruction))))
-          
+
 (defmethod insert-casts ((instruction cc-vaslist:values-list))
   (cast-inputs instruction '(:vaslist))
   (cast-output instruction :vaslist))
 (defmethod insert-casts ((instruction cc-vaslist:nendp))
   (cast-inputs instruction '(:vaslist))
-  (object-output instruction))
+  (cast-output instruction '(:boolean)))
 (defmethod insert-casts ((instruction cc-vaslist:nth))
   (let ((inputs (bir:inputs instruction)))
     (maybe-cast-before instruction (first inputs) '(:object))

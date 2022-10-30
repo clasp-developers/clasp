@@ -223,11 +223,13 @@
             irc-typed-gep
             irc-typed-gep-variable
             irc-smart-ptr-extract
+            irc-get-insert-block
             irc-set-insert-point-basic-block
             irc-size_t-*current-source-pos-info*-filepos
             irc-size_t-*current-source-pos-info*-column
             irc-size_t-*current-source-pos-info*-lineno
             irc-icmp-eq
+            irc-icmp-ne
             irc-icmp-ule
             irc-icmp-ult
             irc-icmp-uge
@@ -365,6 +367,8 @@
             irc-calculate-call-info
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
             compute-rest-alloc
+            tag-check-cond
+            header-check-cond
             compile-tag-check
             compile-header-check
             ensure-xep-function-not-placeholder

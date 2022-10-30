@@ -56,8 +56,7 @@ core::T_O* template_read_stamp(TTT* obj)
       ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_SINGLE_FLOAT));
       return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMPWTAG_SINGLE_FLOAT);
   }
-  unreachableError();
-  return (core::T_O*)0;
+  UNREACHABLE();
 }
 #endif
 

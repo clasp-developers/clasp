@@ -910,6 +910,8 @@
      sys)))
 
 (define-deriver ash (num shift) (sv (ty-ash num shift)))
+(define-deriver core:ash-left (num shift) (sv (ty-ash num shift)))
+(define-deriver core:ash-right (num shift) (sv (ty-ash num (ty-negate shift))))
 
 (defun derive-to-float (realtype format sys)
   ;; TODO: disjunctions
@@ -1437,3 +1439,26 @@
 (define-deriver princ (object &optional stream)
   (declare (ignore stream))
   (sv object))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; CONCURRENCY
+
+;;; This is a KLUDGE put in so that FENCE has an identity,
+;;; so that the transform (bir-to-bmir.lisp) can fire.
+
+(define-deriver mp:fence (order)
+  (declare (ignore order))
+  (ctype:values-bottom *clasp-system*))
+
+(define-deriver core:atomic-aref (order array &rest indices)
+  (declare (ignore order))
+  (derive-aref array indices))
+
+(define-deriver (setf core:atomic-aref) (new order array &rest indices)
+  (declare (ignore order array indices))
+  (sv new))
+
+(define-deriver core:acas (order cmp new array &rest indices)
+  (declare (ignore order cmp new))
+  (derive-aref array indices))

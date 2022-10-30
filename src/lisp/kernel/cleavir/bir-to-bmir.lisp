@@ -137,6 +137,7 @@
                          ',argtypes)
           ',name))
 
+#+(or)
 (deftransform symbol-value symbol-value symbol)
 
 (deftransform core:to-single-float core::double-to-single double-float)
@@ -153,6 +154,22 @@
   (define-two-arg-ff core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
   (define-two-arg-ff core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/)
   (define-two-arg-ff expt           core::sf-expt      core::df-expt))
+
+(macrolet ((define-float-conditional (name sf-primop df-primop)
+             `(progn
+                (deftransform ,name ,sf-primop single-float single-float)
+                (deftransform ,name ,df-primop double-float double-float))))
+  (define-float-conditional core:two-arg-= core::two-arg-sf-= core::two-arg-df-=)
+  (define-float-conditional core:two-arg-< core::two-arg-sf-< core::two-arg-df-<)
+  (define-float-conditional core:two-arg-<= core::two-arg-sf-<= core::two-arg-df-<=)
+  (define-float-conditional core:two-arg-> core::two-arg-sf-> core::two-arg-df->)
+  (define-float-conditional core:two-arg->= core::two-arg-sf->= core::two-arg-df->=))
+
+(deftransform core:two-arg-=  core::two-arg-fixnum-=  fixnum fixnum)
+(deftransform core:two-arg-<  core::two-arg-fixnum-<  fixnum fixnum)
+(deftransform core:two-arg-<= core::two-arg-fixnum-<= fixnum fixnum)
+(deftransform core:two-arg->  core::two-arg-fixnum->  fixnum fixnum)
+(deftransform core:two-arg->= core::two-arg-fixnum->= fixnum fixnum)
 
 (deftransform ftruncate core::sf-ftruncate single-float single-float)
 (deftransform ftruncate core::df-ftruncate double-float double-float)
@@ -221,7 +238,13 @@
 
 (deftransform logcount core::fixnum-positive-logcount (and fixnum unsigned-byte))
 
+;;; 63 is magic - fixnums are i64 so llvm will shift them 63 at most.
+;;; should be done more elegantly, FIXME
 (deftransform-wr ash core::fixnum-shl fixnum fixnum (integer 0 63))
+(deftransform-wr core:ash-left core::fixnum-shl fixnum fixnum (integer 0 63))
+(deftransform core:ash-right core::fixnum-ashr fixnum (integer 0 63))
+(deftransform core:ash-right core::fixnum-ashr-min
+  fixnum (and fixnum (integer 0)))
 
 ;;(deftransform car cleavir-primop:car cons)
 ;;(deftransform cdr cleavir-primop:cdr cons)
@@ -259,6 +282,45 @@
 (deftransform rplaca cleavir-primop:rplaca cons t)
 (deftransform rplacd cleavir-primop:rplacd cons t)
 
+(deftransform mp:fence (mp:fence :sequentially-consistent)
+  (eql :sequentially-consistent))
+(deftransform mp:fence (mp:fence :acquire-release) (eql :acquire-release))
+(deftransform mp:fence (mp:fence :acquire) (eql :acquire))
+(deftransform mp:fence (mp:fence :release) (eql :release))
+
+(deftransform core:atomic-aref (core:atomic-aref :sequentially-consistent t 1)
+  (eql :sequentially-consistent) simple-vector fixnum)
+(deftransform core:atomic-aref (core:atomic-aref :acquire-release t 1)
+  (eql :acquire-release) simple-vector fixnum)
+(deftransform core:atomic-aref (core:atomic-aref :acquire t 1)
+  (eql :acquire) simple-vector fixnum)
+(deftransform core:atomic-aref (core:atomic-aref :release t 1)
+  (eql :release) simple-vector fixnum)
+(deftransform core:atomic-aref (core:atomic-aref :relaxed t 1)
+  (eql :relaxed) simple-vector fixnum)
+
+(deftransform (setf core:atomic-aref) (core::atomic-aset :sequentially-consistent t 1)
+  t (eql :sequentially-consistent) simple-vector fixnum)
+(deftransform (setf core:atomic-aref) (core::atomic-aset :acquire-release t 1)
+  t (eql :acquire-release) simple-vector fixnum)
+(deftransform (setf core:atomic-aref) (core::atomic-aset :acquire t 1)
+  t (eql :acquire) simple-vector fixnum)
+(deftransform (setf core:atomic-aref) (core::atomic-aset :release t 1)
+  t (eql :release) simple-vector fixnum)
+(deftransform (setf core:atomic-aref) (core::atomic-aset :relaxed t 1)
+  t (eql :relaxed) simple-vector fixnum)
+
+(deftransform core:acas (core:acas :sequentially-consistent t 1)
+  (eql :sequentially-consistent) t t simple-vector fixnum)
+(deftransform core:acas (core:acas :acquire-release t 1)
+  (eql :acquire-release) t t simple-vector fixnum)
+(deftransform core:acas (core:acas :acquire t 1)
+  (eql :acquire) t t simple-vector fixnum)
+(deftransform core:acas (core:acas :release t 1)
+  (eql :release) t t simple-vector fixnum)
+(deftransform core:acas (core:acas :relaxed t 1)
+  (eql :relaxed) t t simple-vector fixnum)
+
 (defmethod reduce-instruction ((inst bir:call))
   (let ((ids (cleavir-attributes:identities (bir:attributes inst))))
     (when ids
@@ -277,19 +339,12 @@
                           (cleavir-ctype:values-subtypep
                            prtype trtype clasp-cleavir:*clasp-system*))
                   ;; Do the reduction to primop.
-                  ;; If the callee is an fdefinition primop, delete that.
+                  ;; If the callee is an fdefinition, delete that.
                   ;; KLUDGEy as we don't do a fully usedness analysis.
                   do (when (typep callee 'bir:output)
                        (let ((fdef (bir:definition callee)))
-                         (when (and (typep fdef 'bir:primop)
-                                    (eq 'fdefinition (cleavir-primop-info:name
-                                                      (bir:info fdef))))
-                           (let ((sym (first (bir:inputs fdef))))
-                             (bir:delete-instruction fdef)
-                             (when (typep sym 'bir:output)
-                               (let ((symdef (bir:definition sym)))
-                                 (when (typep symdef 'bir:constant-reference)
-                                   (bir:delete-instruction symdef))))))))
+                         (when (typep fdef 'bir:constant-fdefinition)
+                           (bir:delete-instruction fdef))))
                      (change-class inst 'bir:primop :inputs args
                                                     :info (cleavir-primop-info:info primop))
                      (return-from reduce-instruction)))))))

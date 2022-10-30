@@ -662,6 +662,39 @@ CL_DEFUN T_sp cl__aref(Array_sp array, Vaslist_sp vargs)
   return array->rowMajorAref(rowMajorIndex);
 }
 
+// Big evil FIXME: These are functions are basically backup for when the
+// compiler can't inline an atomic access. BUT: They aren't actually atomic.
+// This is difficult to fix as the underlying GCArrays are actually not atomic.
+// Perhaps C++20's atomic_ref could help in the future?
+// And a bit of a KLUDGE: These ignore the atomic order, since figuring that
+// out at runtime seems a little silly.
+CL_LISPIFY_NAME("core:atomic-aref");
+CL_LAMBDA(order array core:&va-rest core::indices);
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__atomic_aref(T_sp order, Array_sp array, Vaslist_sp vargs) {
+  (void)order; // ignore
+  return cl__aref(array, vargs);
+}
+
+CL_LISPIFY_NAME("core:atomic-aref");
+CL_LAMBDA(value order array core:&va-rest core::indices);
+DOCGROUP(clasp);
+CL_DEFUN_SETF T_sp core__atomic_aset(T_sp value, T_sp order,
+                                     Array_sp array, Vaslist_sp indices) {
+  (void)order; // ignore
+  return core__aset(value, array, indices);
+}
+
+CL_LAMBDA(order old value array core:&va-rest core::indices);
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__acas(T_sp order, T_sp cmp, T_sp nvalue,
+                         Array_sp array, Vaslist_sp indices) {
+  (void)order; // ignore
+  T_sp old = cl__aref(array, indices);
+  if (cmp == old) core__aset(nvalue, array, indices);
+  return old;
+}
+
 CL_LAMBDA(array core:&va-rest indices);
 CL_LISPIFY_NAME("core:index");
 DOCGROUP(clasp);

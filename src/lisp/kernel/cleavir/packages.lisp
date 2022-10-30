@@ -46,8 +46,6 @@
   (:local-nicknames (#:ast #:cleavir-ast))
   (:use #:common-lisp)
   (:export
-   #:debug-message-ast
-   #:debug-break-ast
    #:multiple-value-foreign-call-ast
    #:foreign-call-ast
    #:foreign-call-pointer-ast
@@ -55,31 +53,13 @@
    #:function-name
    #:foreign-types
    #:defcallback-ast #:defcallback-args
-   #:header-stamp-case-ast #:make-header-stamp-case-ast
-   #:stamp-ast #:derivable-ast #:rack-ast #:wrapped-ast #:header-ast
-   #:instance-rack-ast #:instance-rack-set-ast
-   #:rack-read-ast #:rack-write-ast
    #:make-throw-ast
    #:make-setf-fdefinition-ast
-   #:debug-message
-   #:debug-break
    #:setf-fdefinition-ast
    #:throw-ast
    #:result-ast
    #:tag-ast
    #:datum-id
-   #:vaslist-pop-ast
-   #:vaslist-length-ast
-   #:header-stamp-ast #:rack-stamp-ast
-   #:wrapped-stamp-ast #:derivable-stamp-ast
-   #:bind-vaslist-ast #:rest-alloc #:make-bind-vaslist-ast #:vaslist-ast
-   #:atomic-car-ast #:atomic-cdr-ast #:atomic-rplaca-ast #:atomic-rplacd-ast
-   #:fence-ast #:cmp-ast #:order
-   #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast
-   #:atomic-vref-ast #:atomic-vset-ast #:vcas-ast
-   #:atomic-rack-read-ast #:atomic-rack-write-ast #:cas-rack-ast #:rack-ast
-   #:invoke-ast #:multiple-value-invoke-ast #:destinations
-   #:introduce-invoke
    ))
 
 (defpackage #:clasp-cleavir-bir
@@ -91,9 +71,7 @@
            #:foreign-call-pointer #:foreign-types
            #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name
-           #:atomic #:order #:fence
-           #:atomic-rack-read #:atomic-rack-write #:cas-rack
-           #:vref #:vset #:vcas #:element-type #:simple-p #:boxed-p))
+           #:atomic #:order))
 
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)
