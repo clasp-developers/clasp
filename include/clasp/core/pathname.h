@@ -161,7 +161,8 @@ public:
 namespace core {
 bool clasp_stringMatch(T_sp s, size_t j, size_t ls,
                        T_sp p, size_t i, size_t lp);
-bool clasp_logical_hostname_p(T_sp host);
+bool core__logical_host_p(T_sp host);
+T_sp core__list_all_logical_hosts();
 bool clasp_wild_string_p(T_sp item);
 T_sp clasp_namestring(T_sp x, int flags);
 Pathname_sp clasp_mergePathnames(T_sp path, T_sp def, T_sp defaultVersion);

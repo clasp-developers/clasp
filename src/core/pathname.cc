@@ -138,7 +138,7 @@ static Symbol_sp
 host_case(T_sp host) {
   if (host.nilp())
     return kw::_sym_local;
-  if (clasp_logical_hostname_p(host))
+  if (core__logical_host_p(host))
     return kw::_sym_upcase;
   return kw::_sym_downcase;
 }
@@ -317,7 +317,7 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
     p = LogicalPathname_O::create();
   } else {
     if (cl__stringp(host)) {
-      if (clasp_logical_hostname_p(host)) {
+      if (core__logical_host_p(host)) {
         p = LogicalPathname_O::create();
         logical = true;
       } else {
@@ -690,10 +690,15 @@ CL_DEFUN_SETF T_sp cl__setf_logical_pathname_translations(List_sp translations, 
   return translations;
 }
 
-bool clasp_logical_hostname_p(T_sp host) {
+CL_DOCSTRING("Returns true if host is a logical hostname; otherwise returns false.");
+CL_DEFUN bool core__logical_host_p(T_sp host) {
   return cl__stringp(host) && _lisp->pathnameTranslations_()->contains(host);
 }
 
+CL_DOCSTRING("list-all-logical-hosts returns a fresh list of all logical hosts.");
+CL_DEFUN T_sp core__list_all_logical_hosts() {
+  return _lisp->pathnameTranslations_()->keysAsCons();
+}
 
 /*
  * Parses a lisp namestring until the whole substring is parsed or an
@@ -744,7 +749,7 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
     if (host.nilp() || host == kw::_sym_error)
       host = default_host;
   }
-  if (!clasp_logical_hostname_p(host))
+  if (!core__logical_host_p(host))
     goto physical;
   /*
 	 * Logical pathname format:
