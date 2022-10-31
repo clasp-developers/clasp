@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -36,13 +36,13 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 
 namespace kw {
-extern core::Symbol_sp& _sym_unspecific;
-extern core::Symbol_sp& _sym_local;
-extern core::Symbol_sp& _sym_newest;
-}
+extern core::Symbol_sp &_sym_unspecific;
+extern core::Symbol_sp &_sym_local;
+extern core::Symbol_sp &_sym_newest;
+} // namespace kw
 
 namespace cl {
-extern core::Symbol_sp& _sym_STARdefaultPathnameDefaultsSTAR;
+extern core::Symbol_sp &_sym_STARdefaultPathnameDefaultsSTAR;
 };
 
 namespace core {
@@ -51,14 +51,11 @@ FORWARD(Pathname);
 Pathname_sp cl__pathname(T_sp x);
 Pathname_sp core__safe_default_pathname_defaults();
 Pathname_sp core__safe_default_pathname_defaults_host_only();
-Pathname_sp cl__merge_pathnames(T_sp arg, T_sp defaultPathname = core__safe_default_pathname_defaults(), T_sp defaultVersion = kw::_sym_newest);
+Pathname_sp cl__merge_pathnames(T_sp arg, T_sp defaultPathname = core__safe_default_pathname_defaults(),
+                                T_sp defaultVersion = kw::_sym_newest);
 
-T_mv cl__parse_namestring(T_sp thing,
-                          T_sp host = nil<T_O>(),
-                          T_sp defaultPathname = core__safe_default_pathname_defaults(),
-                          Fixnum_sp start = make_fixnum(0),
-                          T_sp end = nil<T_O>(),
-                          bool junkAllowed = false);
+T_mv cl__parse_namestring(T_sp thing, T_sp host = nil<T_O>(), T_sp defaultPathname = core__safe_default_pathname_defaults(),
+                          Fixnum_sp start = make_fixnum(0), T_sp end = nil<T_O>(), bool junkAllowed = false);
 
 T_sp cl__pathname_host(T_sp pathname, Symbol_sp acase);
 T_sp cl__pathname_device(T_sp pathname, Symbol_sp acase);
@@ -75,13 +72,13 @@ Pathname_sp core__coerce_to_physical_pathname(T_sp x);
 String_sp core__coerce_to_filename(T_sp pathname_orig);
 Pathname_sp core__coerce_to_file_pathname(T_sp tpathname);
 
-};
+}; // namespace core
 
 namespace core {
 
 SMART(Pathname);
 class Pathname_O : public General_O {
-  LISP_CLASS(core, ClPkg, Pathname_O, "pathname",General_O);
+  LISP_CLASS(core, ClPkg, Pathname_O, "pathname", General_O);
 
   friend bool cl__wild_pathname_p(T_sp tpathname, T_sp component);
   friend Pathname_sp core__coerce_to_physical_pathname(T_sp x);
@@ -89,7 +86,8 @@ class Pathname_O : public General_O {
   friend String_sp core__coerce_to_filename(T_sp pathname);
   friend T_sp clasp_namestring(T_sp tx, int flags);
   friend Pathname_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp defaults, Fixnum_sp start, Fixnum_sp end, bool junk_allowed);
-  friend Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp defaults);
+  friend Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name,
+                                       bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp defaults);
   friend T_sp cl__pathname_host(T_sp tpname, Symbol_sp scase);
   friend T_sp cl__pathname_device(T_sp tpname, Symbol_sp scase);
   friend T_sp cl__pathname_directory(T_sp tpname, Symbol_sp scase);
@@ -114,9 +112,8 @@ public:
 
 public:
   /*! Returns either a Pathname_sp or LogicalPathname_sp depending on host */
-  static Pathname_sp makePathname(T_sp host, T_sp device, T_sp directory,
-                                  T_sp name, T_sp type, T_sp version=nil<core::T_O>(),
-                                  T_sp fromcase=kw::_sym_local, bool logical = false);
+  static Pathname_sp makePathname(T_sp host, T_sp device, T_sp directory, T_sp name, T_sp type, T_sp version = nil<core::T_O>(),
+                                  T_sp fromcase = kw::_sym_local, bool logical = false);
 
 public:
   static Pathname_sp tilde_expand(Pathname_sp pathname);
@@ -124,12 +121,9 @@ public:
 public:
   Pathname_O(const Pathname_O &ss); //!< Copy constructor
 
-  Pathname_O() : _Host(kw::_sym_unspecific),
-                 _Device(kw::_sym_unspecific),
-                 _Directory(nil<T_O>()),
-                 _Name(nil<T_O>()),
-                 _Type(nil<T_O>()),
-                 _Version(kw::_sym_unspecific){};
+  Pathname_O()
+      : _Host(kw::_sym_unspecific), _Device(kw::_sym_unspecific), _Directory(nil<T_O>()), _Name(nil<T_O>()), _Type(nil<T_O>()),
+        _Version(kw::_sym_unspecific){};
 
   virtual ~Pathname_O(){};
 
@@ -138,29 +132,28 @@ public:
   virtual void sxhash_(HashGenerator &hg) const;
   virtual void sxhash_equal(HashGenerator &hg) const;
   virtual void sxhash_equalp(HashGenerator &hg) const;
-  
+
   virtual string __repr__() const;
   //! Common Lisp __write__(T_sp strm)
   virtual void __write__(T_sp strm) const;
   virtual void __writeReadable__(T_sp strm) const;
 };
-};
+}; // namespace core
 
 namespace core {
 SMART(LogicalPathname);
 class LogicalPathname_O : public Pathname_O {
-  LISP_CLASS(core, ClPkg, LogicalPathname_O, "logical-pathname",Pathname_O);
+  LISP_CLASS(core, ClPkg, LogicalPathname_O, "logical-pathname", Pathname_O);
 
 public:
   LogicalPathname_O(const LogicalPathname_O &ss); //!< Copy constructor
   LogicalPathname_O(){};
   virtual ~LogicalPathname_O(){};
 };
-};
+}; // namespace core
 
 namespace core {
-bool clasp_stringMatch(T_sp s, size_t j, size_t ls,
-                       T_sp p, size_t i, size_t lp);
+bool clasp_stringMatch(T_sp s, size_t j, size_t ls, T_sp p, size_t i, size_t lp);
 bool core__logical_host_p(T_sp host);
 T_sp core__list_all_logical_hosts();
 bool clasp_wild_string_p(T_sp item);
@@ -194,14 +187,9 @@ T_sp cl__setf_logical_pathname_translations(List_sp translations, String_sp host
 							     this->_OriginalPathname, // defaults 
 							     )
     */
-Pathname_sp cl__make_pathname(T_sp host, bool hostp,
-                            T_sp device, bool devicep,
-                            T_sp directory, bool directoryp,
-                            T_sp name, bool namep,
-                            T_sp type, bool typep,
-                            T_sp version, bool versionp,
-                            T_sp scase = kw::_sym_local,
+Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name,
+                              bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase = kw::_sym_local,
                               T_sp defaults = core__safe_default_pathname_defaults_host_only());
-};
+}; // namespace core
 
 #endif //]
