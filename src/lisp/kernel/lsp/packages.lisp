@@ -133,6 +133,8 @@
           core:argv
           core:getpid
           core:hash-table-weakness
+          core:list-all-logical-hosts
+          core:logical-host-p
           core:make-weak-pointer
           core:temporary-directory
           core:mkstemp
@@ -157,6 +159,8 @@
             source-location-description
             compiled-function-name
             compiled-function-file
+            list-all-logical-hosts
+            logical-host-p
             array-index
             byte8
             integer8
