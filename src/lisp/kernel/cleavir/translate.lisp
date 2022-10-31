@@ -403,6 +403,7 @@
 
 ;; fixme2022 simple-unwinding screws up the VM so we disable it everywhere
 (defmethod bir-transformations:simple-unwinding-p :around (instruction system)
+  (declare (ignore instruction system))
   nil)
 
 (defun translate-come-from (come-from successors)
@@ -615,18 +616,18 @@
         (let* ((frame (%intrinsic-call "llvm.frameaddress.p0i8"
                                        (list (%i32 0)) "stepper-frame"))
                (raw (cst:raw origin))
-               (index
+               ;; See #1376: Sometimes the source form will be a literal.
+               ;; This may be due to inadequacies in constant folding.
+               (imm-or-index
                  (handler-case (literal:reference-literal raw t)
                    (serious-condition ()
                      (literal:reference-literal
                       "<error dumping form>" t))))
                (lit
-                 (multiple-value-bind (literals literals-type)
-                     (literal:ltv-global)
-                   (cmp:irc-t*-load
-                    (cmp:irc-typed-gep-variable literals-type literals
-                                                (list (%size_t 0) (%i64 index))
-                                                "step-source")))))
+                 (if (integerp imm-or-index)
+                     (cmp:irc-t*-load
+                      (%indexed-literal-ref imm-or-index "step-source"))
+                     imm-or-index)))
           (%intrinsic-invoke-if-landing-pad-or-call
            "cc_breakstep" (list lit frame)))))))
 
