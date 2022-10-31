@@ -1095,7 +1095,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_Bignum_v_SingleFloat:
   case_Ratio_v_SingleFloat: {
       float s = nb.unsafe_single_float();
-      if (isinf(s)) return false;
+      if (std::isinf(s)) return false;
       else return basic_equalp(na, DoubleFloat_O::rational(s));
     }
   case_Fixnum_v_DoubleFloat:
@@ -1120,7 +1120,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_SingleFloat_v_Bignum:
   case_SingleFloat_v_Ratio: {
       float s = na.unsafe_single_float();
-      if (isinf(s)) return false;
+      if (std::isinf(s)) return false;
       else return basic_equalp(DoubleFloat_O::rational(s), nb);
     }
   case_SingleFloat_v_SingleFloat : {
