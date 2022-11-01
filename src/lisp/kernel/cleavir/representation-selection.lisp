@@ -402,8 +402,16 @@
         dest)))
 
 (defun variable-rtype (datum)
-  ;; Just take the minimum of the writers and readers. FIXME: Think harder.
-  (min-rtype (definition-rtype datum) (use-rtype datum)))
+  ;; To do this correctly, we cannot insert possibly-incompatible casts
+  ;; when writing into a variable, because some unused writes may then
+  ;; cause spurious type errors: see #1371. (writevar will cast its inputs
+  ;; as seen in the insert-casts method below.) So we take the max-rtype
+  ;; instead of the min-rtype as we used to.
+  ;; This will cause some suboptimalities, as in for example LOOP code
+  ;; with NIL initial definitions that are never used. The correct
+  ;; optimization there is probably to delete or otherwise disconnect
+  ;; the unused definition before we reach bir-to-bmir.
+  (max-rtype (definition-rtype datum) (use-rtype datum)))
 
 ;;; Determine the use rtype of the return value of a function.
 (defun return-use-rtype (function returni-input)
