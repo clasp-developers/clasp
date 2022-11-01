@@ -231,3 +231,52 @@
          nil)))
 
 ;;; TODO: Visibility tests?
+
+;;; STEP tests
+
+;;; we can compile code with breakstep in special positions - this has
+;;; sometimes been a problem, since the compiler inlines them specially.
+(test breakstep-compile
+      (values-list
+       (cdr
+       (multiple-value-list
+        (compile nil '(lambda (f)
+                       (clasp-debug:set-breakstep)
+                       (unwind-protect
+                            (funcall f)
+                         (clasp-debug:unset-breakstep)))))))
+      (nil nil))
+
+;;; stepping means a break condition is actually signaled.
+(test-true step
+           (block nil
+             (let ((ext:*invoke-debugger-hook*
+                     (lambda (condition old-hook)
+                       (declare (ignore old-hook))
+                       (return (typep condition 'clasp-debug:step-form)))))
+               (step (print 4)))))
+
+(test breakstepping-p
+      (values (progn (clasp-debug:set-breakstep)
+                     (clasp-debug:breakstepping-p))
+              (progn (clasp-debug:unset-breakstep)
+                     (clasp-debug:breakstepping-p)))
+      (t nil))
+
+;;; breakstep can also be used to enable the stepper, without STEP itself.
+(test-true breakstep
+           (block nil
+             (let ((ext:*invoke-debugger-hook*
+                     (lambda (condition old-hook)
+                       (declare (ignore old-hook))
+                       (return (typep condition 'clasp-debug:step-form)))))
+               (clasp-debug:set-breakstep)
+               (unwind-protect
+                    (locally
+                        ;; FIXME: Export declaration? DEBUG 3 instead?
+                        ;; We are of course assuming cclasp is being used
+                        ;; to compile the tests.
+                        (declare (optimize
+                                  clasp-cleavir::insert-step-conditions))
+                      (print 4))
+                 (clasp-debug:unset-breakstep)))))

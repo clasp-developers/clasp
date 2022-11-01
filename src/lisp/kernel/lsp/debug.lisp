@@ -41,7 +41,9 @@
     ;; misc
     (%export '(#:function-name-package))
     ;; stepper
-    (%export '(#:step-form #:step-into #:step-over))))
+    (%export '(#:step-form #:step-into #:step-over))
+    (import '(core:set-breakstep core:unset-breakstep core:breakstepping-p))
+    (export '(core:set-breakstep core:unset-breakstep core:breakstepping-p))))
 
 ;;; Low level interface
 
