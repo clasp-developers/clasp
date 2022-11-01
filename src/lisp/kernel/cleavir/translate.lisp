@@ -2253,7 +2253,7 @@ COMPILE-FILE will use the default *clasp-env*."
       (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
-             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value)))
+             (cst (eclector.concrete-syntax-tree:read source-sin nil eof-value)))
         #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
         (if (eq cst eof-value)
             (return nil)
