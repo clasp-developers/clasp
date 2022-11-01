@@ -101,7 +101,8 @@
          (setf (gethash ',name *primop-rtypes*) '(,@param-info))
          (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
            ,@body
-           (out nil (first (bir:outputs ,instparam))))
+           (when (bir:outputs ,instparam)
+             (out nil (first (bir:outputs ,instparam)))))
          ',name))))
 
 ;;; Define a primop used as a conditional test.
