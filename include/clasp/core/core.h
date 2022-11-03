@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 /** @defgroup exports
-    @defgroup clasp 
+    @defgroup clasp
         @ingroup exports
  */
 
@@ -61,7 +61,7 @@ THE SOFTWARE.
 #ifdef DEBUG_RELEASE
 #define DONT_OPTIMIZE_WHEN_DEBUG_RELEASE __attribute__((optnone))
 #else
-#define DONT_OPTIMIZE_WHEN_DEBUG_RELEASE 
+#define DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 #endif
 #define DONT_OPTIMIZE_ALWAYS __attribute__((optnone))
 #define NEVER_OPTIMIZE __attribute__((optnone))
@@ -79,7 +79,6 @@ THE SOFTWARE.
 namespace std {
 class type_info;
 };
-
 
 //
 // USE_TAGGED_PTR_P0  determines whether a p0 pointer,  the most-derived-pointer is stored
@@ -117,7 +116,6 @@ class type_info;
 #define DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS()
 #endif
 
-
 #define clasp_unlikely(x) __builtin_expect(!!(x), 0)
 #define clasp_likely(x) __builtin_expect(!!(x), 1)
 #define UNLIKELY(x) clasp_unlikely(x)
@@ -128,7 +126,6 @@ class type_info;
 #define LIKELY_if(x) if (LIKELY(x))
 
 typedef std::size_t class_id;
-
 
 /*! Configure architecture dependent types */
 #include <clasp/core/configure_clasp.h>
@@ -142,7 +139,7 @@ struct BytecodeWrapper {
 // Use bytecode wrappers for all exposed functions
 using DefaultWrapper = BytecodeWrapper;
 
-};
+}; // namespace clbind
 
 /*! Use old Conditions system baked into C++
   OLD_CONDITIONS = 1
@@ -204,15 +201,15 @@ using DefaultWrapper = BytecodeWrapper;
 #define CLOS 1
 
 #ifdef SOURCE_DEBUG
- #ifdef DEBUG_LEVEL_FULL //[
-  #define DEBUG_ON 1
-  #define CALLSTACK_ON 1
-  #define DEBUG_ASSERT 1
- #else                     //][
-  #ifdef DEBUG_LEVEL_SILENT //[
-   #define CALLSTACK_SILENT 1
-  #endif //]
- #endif //]
+#ifdef DEBUG_LEVEL_FULL //[
+#define DEBUG_ON 1
+#define CALLSTACK_ON 1
+#define DEBUG_ASSERT 1
+#else                     //][
+#ifdef DEBUG_LEVEL_SILENT //[
+#define CALLSTACK_SILENT 1
+#endif //]
+#endif //]
 #endif
 
 /*! Use this in initializeCandoPrimitives to define a function
@@ -283,23 +280,21 @@ struct size_t_pair {
 #include <serializerNode.fwd.h>
 #endif
 
-
 namespace core {
-  extern bool _ClassesAreInitialized;
-  typedef uint handleType;
-  const uint handleNumberFlag = (uint)(1 << 31);
-  const uint handleNumberMask = handleNumberFlag - 1;
-  const uint MaxHandle = handleNumberFlag - 1;
-  const uint IllegalHandle = MaxHandle;
-  const handleType EmptyStringHandle = 0;
-  const handleType UniqueIdHandle = 1;
+extern bool _ClassesAreInitialized;
+typedef uint handleType;
+const uint handleNumberFlag = (uint)(1 << 31);
+const uint handleNumberMask = handleNumberFlag - 1;
+const uint MaxHandle = handleNumberFlag - 1;
+const uint IllegalHandle = MaxHandle;
+const handleType EmptyStringHandle = 0;
+const handleType UniqueIdHandle = 1;
 
-};
+}; // namespace core
 
 /*! Associate a namespace name with a Package.
   This is scraped out of the code by "registerClasses.py"
 */
-
 
 #define UndefinedUnsignedInt UINT_MAX
 #define UNDEF_UINT UndefinedUnsignedInt
@@ -334,9 +329,6 @@ namespace core {
  */
 /*@}*/
 
-
-
-
 #include <string>
 #include <vector>
 #include <queue>
@@ -349,26 +341,19 @@ namespace core {
 
 using string = std::string;
 using type_info = std::type_info;
-template <typename X, typename Y>
-using map = std::map<X, Y>;
-template <typename X>
-using vector = std::vector<X>;
+template <typename X, typename Y> using map = std::map<X, Y>;
+template <typename X> using vector = std::vector<X>;
 using stringstream = std::stringstream;
-template <typename X, typename Y>
-using pair = std::pair<X, Y>;
-template <typename X>
-using list = std::list<X>;
-template <typename X, typename Y>
-using multimap = std::multimap<X, Y>;
-template <typename X>
-using set = std::set<X>;
-template <typename X>
-using deque = std::deque<X>;
+template <typename X, typename Y> using pair = std::pair<X, Y>;
+template <typename X> using list = std::list<X>;
+template <typename X, typename Y> using multimap = std::multimap<X, Y>;
+template <typename X> using set = std::set<X>;
+template <typename X> using deque = std::deque<X>;
 
-
-void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size=sizeof(void*), const std::string& name="", size_t arityCode=0);
-void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size=sizeof(void*), const std::string& name="", size_t arityCode=0);
-
+void maybe_register_symbol_using_dladdr(void *functionPointer, size_t size = sizeof(void *), const std::string &name = "",
+                                        size_t arityCode = 0);
+void maybe_register_symbol_using_dladdr_ep(void *functionPointer, size_t size = sizeof(void *), const std::string &name = "",
+                                           size_t arityCode = 0);
 
 #ifdef WIN32
 #include <limits>
@@ -392,8 +377,6 @@ typedef long long int LongLongInt;
 #define LongLongMaxScale 4096 // was 256
 #define LongLongIntBoundary LongLongMax / LongLongMaxScale
 
-
-
 /* --------------------------------------------------
    --------------------------------------------------
 
@@ -409,10 +392,10 @@ typedef long long int LongLongInt;
   STATIC_ROOT_FRAME_BEGIN(StaticFrame,staticFrame);
 */
 #define STATIC_ROOT_FRAME_BEGIN(X) struct X : public gctools::HeapRoot
-#define STATIC_ROOT_FRAME_END(X, N) \
-  ;                                 \
-  static X *N = NULL;               \
-  if (!N)                           \
+#define STATIC_ROOT_FRAME_END(X, N)                                                                                                \
+  ;                                                                                                                                \
+  static X *N = NULL;                                                                                                              \
+  if (!N)                                                                                                                          \
     N = new X();
 
 void dbg_hook(const char *errorString);
@@ -436,48 +419,31 @@ class StackBoundClass {};
       contains absolutely no smart_ptrs or weak_ptrs either directly
       or indirectly - DON'T PUT ANY POINTERS IN THE DERIVED CLASS */
 class GCIgnoreClass {};
-};
+}; // namespace gctools
 
-namespace reg
-{
+namespace reg {
 
 struct null_type : public gctools::GCIgnoreClass {};
 class_id const unknown_class = (std::numeric_limits<class_id>::max)();
 class type_id {
 public:
-  type_id()
-    : id(&typeid(null_type)) {}
+  type_id() : id(&typeid(null_type)) {}
 
-  type_id(std::type_info const &id)
-    : id(&id) {}
+  type_id(std::type_info const &id) : id(&id) {}
 
-  bool operator!=(type_id const &other) const {
-    return *id != *other.id;
-  }
+  bool operator!=(type_id const &other) const { return *id != *other.id; }
 
-  bool operator==(type_id const &other) const {
-    return *id == *other.id;
-  }
+  bool operator==(type_id const &other) const { return *id == *other.id; }
 
-  bool operator<(type_id const &other) const {
-    return id->before(*other.id);
-  }
+  bool operator<(type_id const &other) const { return id->before(*other.id); }
 
-  bool operator<=(type_id const& other) const {
-    return id->before(*other.id)||(*id == *other.id);
-  }
-    
-  bool operator>=(type_id const& other) const {
-    return !id->before(*other.id);
-  }
+  bool operator<=(type_id const &other) const { return id->before(*other.id) || (*id == *other.id); }
 
-  bool operator>(type_id const& other) const {
-    return (*id!=*other.id)&&!id->before(*other.id);
-  }
+  bool operator>=(type_id const &other) const { return !id->before(*other.id); }
 
-  char const *name() const {
-    return id->name();
-  }
+  bool operator>(type_id const &other) const { return (*id != *other.id) && !id->before(*other.id); }
+
+  char const *name() const { return id->name(); }
 
   std::type_info const *get_type_info() const { return this->id; };
 
@@ -486,16 +452,10 @@ private:
 };
 
 class_id allocate_class_id(type_id const &cls);
-template <class T>
-struct registered_class {
-  static class_id const id;
-};
-template <class T>
-class_id const registered_class<T>::id = allocate_class_id(typeid(T));
-template <class T>
-struct registered_class<T const>
-  : registered_class<T> {};
-};
+template <class T> struct registered_class { static class_id const id; };
+template <class T> class_id const registered_class<T>::id = allocate_class_id(typeid(T));
+template <class T> struct registered_class<T const> : registered_class<T> {};
+}; // namespace reg
 
 /*! This function is provided by the main.cc file */
 std::string program_name();
@@ -509,37 +469,35 @@ class HashTableEqual_O;
 class SimpleVector_O;
 class SimpleVector_byte8_t_O;
 
+[[noreturn]] void lisp_error_sprintf(const char *file, int lineno, const char *function, const char *fmt, ...);
+[[noreturn]] void lisp_errorDereferencedNonPointer(core::T_O *objP);
+[[noreturn]] void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP);
+[[noreturn]] void lisp_errorBadCastStampWtag(size_t toStampWtag, core::T_O *objP);
+[[noreturn]] void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP);
+[[noreturn]] void lisp_errorBadCastToFixnum(class_id fromType, core::T_O *objP);
+[[noreturn]] void lisp_errorBadCastFromT_OToCons_O(core::T_O *objP);
+[[noreturn]] void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O *objP);
+[[noreturn]] void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP);
+[[noreturn]] void lisp_errorUnexpectedNil(class_id expectedTyp);
+[[noreturn]] void lisp_errorDereferencedNil();
+[[noreturn]] void lisp_error_no_stamp(void *obj);
+[[noreturn]] void lisp_errorDereferencedUnbound();
+[[noreturn]] void lisp_errorIllegalDereference(void *v);
+[[noreturn]] void lisp_errorExpectedList(core::T_O *objP);
 
-  [[noreturn]]void lisp_error_sprintf(const char* file, int lineno, const char* function, const char* fmt, ... );
-  [[noreturn]]void lisp_errorDereferencedNonPointer(core::T_O *objP);
-  [[noreturn]]void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP);
-  [[noreturn]]void lisp_errorBadCastStampWtag(size_t toStampWtag, core::T_O *objP);
-  [[noreturn]]void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP);
-  [[noreturn]]void lisp_errorBadCastToFixnum(class_id fromType, core::T_O *objP);
-  [[noreturn]]void lisp_errorBadCastFromT_OToCons_O(core::T_O *objP);
-  [[noreturn]]void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O *objP);
-  [[noreturn]]void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP);
-  [[noreturn]]void lisp_errorUnexpectedNil(class_id expectedTyp);
-  [[noreturn]]void lisp_errorDereferencedNil();
-  [[noreturn]]void lisp_error_no_stamp(void* obj);
-  [[noreturn]]void lisp_errorDereferencedUnbound();
-  [[noreturn]]void lisp_errorIllegalDereference(void *v);
-  [[noreturn]]void lisp_errorExpectedList(core::T_O* objP);
-
-  template <typename To, typename From, typename ObjPtrType>
-    [[noreturn]]void lisp_errorCast(ObjPtrType objP) {
-    class_id to_typ = reg::registered_class<To>::id;
-    class_id from_typ = reg::registered_class<From>::id;
-    lisp_errorBadCast(to_typ, from_typ, reinterpret_cast<core::T_O *>(objP));
-    __builtin_unreachable();
-  }
-};
+template <typename To, typename From, typename ObjPtrType> [[noreturn]] void lisp_errorCast(ObjPtrType objP) {
+  class_id to_typ = reg::registered_class<To>::id;
+  class_id from_typ = reg::registered_class<From>::id;
+  lisp_errorBadCast(to_typ, from_typ, reinterpret_cast<core::T_O *>(objP));
+  __builtin_unreachable();
+}
+}; // namespace core
 
 namespace core {
-  class MultipleValues;
-  MultipleValues &lisp_multipleValues();
+class MultipleValues;
+MultipleValues &lisp_multipleValues();
 //  MultipleValues &lisp_callArgs();
-};
+}; // namespace core
 
 extern "C" {
 
@@ -549,37 +507,36 @@ void drag_cxx_calls();
 void drag_interpret_dtree();
 void drag_cons_allocation();
 void drag_general_allocation();
-
 };
 
 #ifdef DEBUG_DRAG_NATIVE_CALLS
-# define DO_DRAG_NATIVE_CALLS() drag_native_calls()
+#define DO_DRAG_NATIVE_CALLS() drag_native_calls()
 #else
-# define DO_DRAG_NATIVE_CALLS()
+#define DO_DRAG_NATIVE_CALLS()
 #endif
 
 #ifdef DEBUG_DRAG_CXX_CALLS
-# define DO_DRAG_CXX_CALLS() drag_cxx_calls()
+#define DO_DRAG_CXX_CALLS() drag_cxx_calls()
 #else
-# define DO_DRAG_CXX_CALLS()
+#define DO_DRAG_CXX_CALLS()
 #endif
 
 #ifdef DEBUG_DRAG_INTERPRET_DTREE
-# define DO_DRAG_INTERPRET_DTREE() drag_interpret_dtree()
+#define DO_DRAG_INTERPRET_DTREE() drag_interpret_dtree()
 #else
-# define DO_DRAG_INTERPRET_DTREE()
+#define DO_DRAG_INTERPRET_DTREE()
 #endif
 
 #ifdef DEBUG_DRAG_CONS_ALLOCATION
-# define DO_DRAG_CONS_ALLOCATION() drag_cons_allocation()
+#define DO_DRAG_CONS_ALLOCATION() drag_cons_allocation()
 #else
-# define DO_DRAG_CONS_ALLOCATION()
+#define DO_DRAG_CONS_ALLOCATION()
 #endif
 
 #ifdef DEBUG_DRAG_GENERAL_ALLOCATION
-# define DO_DRAG_GENERAL_ALLOCATION() drag_general_allocation()
+#define DO_DRAG_GENERAL_ALLOCATION() drag_general_allocation()
 #else
-# define DO_DRAG_GENERAL_ALLOCATION()
+#define DO_DRAG_GENERAL_ALLOCATION()
 #endif
 
 extern void clasp_mps_debug_allocation(const char *poolName, void *base, void *objAddr, int size, int kind);
@@ -610,13 +567,10 @@ extern void clasp_mps_debug_container(const char *ctype, const char *name, int s
 
 #include <clasp/gctools/multiple_value_pointers.h>
 
-
 namespace gctools {
-  void register_thread(mp::Process_sp process, void* stackTop);
-  void unregister_thread(mp::Process_sp process);
-};
-   
-
+void register_thread(mp::Process_sp process, void *stackTop);
+void unregister_thread(mp::Process_sp process);
+}; // namespace gctools
 
 #if 0
 namespace dummy_namespace {
@@ -650,7 +604,6 @@ namespace dummy_namespace {
 };
 #endif
 
-
 namespace core {
 class Instance_O;
 typedef gc::smart_ptr<Instance_O> Instance_sp;
@@ -662,21 +615,18 @@ typedef gc::smart_ptr<FuncallableInstance_O> FuncallableInstance_sp;
 #define LCC_PROTOTYPES
 #include <clasp/core/lispCallingConvention.h>
 #undef LCC_PROTOTYPES
-};
+}; // namespace core
 
 namespace core {
 core::T_sp lisp_true();
 uint lisp_hash(uintptr_t v);
-};
+}; // namespace core
 
 #include <clasp/gctools/gc_interface.h>
 
-
 class RootClass;
 
-
-#define EXTERN_SYMBOL(sym) extern core::Symbol_sp& _sym_##sym;
-
+#define EXTERN_SYMBOL(sym) extern core::Symbol_sp &_sym_##sym;
 
 namespace core {
 
@@ -710,12 +660,8 @@ string trimWhiteSpace(const string &inp);
 string stripCharacters(const string &inp, const string &strip);
 
 vector<string> split(const string &str, const string &delim = " \t");
-void tokenize(const string &str,
-              vector<string> &tokens,
-              const string &delimiters = " ");
-void queueSplitString(const string &str,
-                      std::queue<string> &tokens,
-                      const string &delimiters = " ");
+void tokenize(const string &str, vector<string> &tokens, const string &delimiters = " ");
+void queueSplitString(const string &str, std::queue<string> &tokens, const string &delimiters = " ");
 
 string stringUpper(const string &s);
 string stringUpper(const char *s);
@@ -723,8 +669,7 @@ string stringUpper(const char *s);
 string concatenateVectorStrings(VectorStrings strs);
 void appendVectorStrings(VectorStrings &app, VectorStrings strs);
 
-bool wildcmp(string sWild,
-             string sRegular);
+bool wildcmp(string sWild, string sRegular);
 
 /*
  * Documentation macros
@@ -743,10 +688,10 @@ typedef unsigned int AtomFlags; // Minimum 32 bits
 
 #ifndef MAX
 #define MAX(x, y) ((x) < (y) ? (y) : (x))
-#endif //MAX
+#endif // MAX
 #ifndef MIN
 #define MIN(x, y) ((x) > (y) ? (y) : (x))
-#endif //MIN
+#endif // MIN
 
 typedef unsigned int AtomHandle; // Implement the AtomHandle as an index into
 // a vector of atoms that maintains a constant
@@ -768,7 +713,7 @@ typedef vector<AtomHandle> VectorAtomHandle;
 // # p r a g m a warning( disable : 4290 )
 #endif
 
-};
+}; // namespace core
 
 /*! A type for an array of arguments */
 typedef core::T_O **ArgArray;
@@ -781,39 +726,38 @@ typedef gctools::tagged_pointer<Lisp> LispPtr;
 typedef void (*MakePackageCallback)(string const &packageName, LispPtr);
 typedef void (*ExportSymbolCallback)(Symbol_sp symbol, LispPtr);
 
- typedef void (*module_startup_function_type)(gctools::Tagged);
- typedef void (*module_shutdown_function_type)();
+typedef void (*module_startup_function_type)(gctools::Tagged);
+typedef void (*module_shutdown_function_type)();
 
 /* A few symbols associated with error handling that everything needs */
-extern Symbol_sp& _sym_error;
-extern Symbol_sp& _sym_setThrowPosition;
-extern Symbol_sp& _sym_makeCondition;
-extern Symbol_sp& _sym_simpleError;
+extern Symbol_sp &_sym_error;
+extern Symbol_sp &_sym_setThrowPosition;
+extern Symbol_sp &_sym_makeCondition;
+extern Symbol_sp &_sym_simpleError;
 /*! Search for multiple occurances of a string and replace it
  * \param str The string that is modified
  * \param search The string to search for
  * \param replace The string to replace with
  */
-string searchAndReplaceString(const string &str, const string &search, const string &replace );
+string searchAndReplaceString(const string &str, const string &search, const string &replace);
 
 /* The CallingConvention for Common Lisp functions is a pointer to where the multiple value result
-   should be written, the closed over environment for the function, the number of args, three explicit args that will pass in registers (or be NULL)
-   and a varargs list */
+   should be written, the closed over environment for the function, the number of args, three explicit args that will pass in
+   registers (or be NULL) and a varargs list */
 typedef void (*LispCallingConventionPtr)(T_mv *result, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, va_list rest);
-}
+} // namespace core
 
 #include <clasp/core/core_globals.h>
 
 namespace kw {
-extern core::Symbol_sp& _sym_format_control;
-extern core::Symbol_sp& _sym_format_arguments;
-};
+extern core::Symbol_sp &_sym_format_control;
+extern core::Symbol_sp &_sym_format_arguments;
+}; // namespace kw
 
 // Can I get rid of this?
 #define IS_SYMBOL_DEFINED(x) (x)
 #define IS_SYMBOL_UNDEFINED(x) (!x)
 #define UNDEFINED_SYMBOL (unbound<core::Symbol_O>())
-
 
 //
 //
@@ -823,7 +767,7 @@ namespace core {
 /*! Fix lambda lists for methods.
     It converts ! in the string to the class symbol.
  */
-extern std::string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda );
+extern std::string fix_method_lambda(core::Symbol_sp class_symbol, const string &lambda);
 
 /*! Create the class hierarchy
  */
@@ -845,7 +789,7 @@ extern void initializePythonScript();
 class Cons_O;
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
 
- class General_O;
+class General_O;
 typedef gctools::smart_ptr<General_O> General_sp;
 
 class Symbol_O;
@@ -858,165 +802,154 @@ class SimpleVector_O;
 typedef gctools::smart_ptr<SimpleVector_O> SimpleVector_sp;
 
 class Function_O;
- typedef gctools::smart_ptr<Function_O> Function_sp;
- class SimpleFun_O;
- typedef gctools::smart_ptr<SimpleFun_O> SimpleFun_sp;
- class CodeSimpleFun_O;
- typedef gctools::smart_ptr<CodeSimpleFun_O> CodeSimpleFun_sp; 
+typedef gctools::smart_ptr<Function_O> Function_sp;
+class SimpleFun_O;
+typedef gctools::smart_ptr<SimpleFun_O> SimpleFun_sp;
+class CodeSimpleFun_O;
+typedef gctools::smart_ptr<CodeSimpleFun_O> CodeSimpleFun_sp;
 
- class GlobalSimpleFunBase_O;
- typedef gctools::smart_ptr<GlobalSimpleFunBase_O> GlobalSimpleFunBase_sp;
+class GlobalSimpleFunBase_O;
+typedef gctools::smart_ptr<GlobalSimpleFunBase_O> GlobalSimpleFunBase_sp;
 
 class SymbolToEnumConverter_O;
 typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
-}
+} // namespace core
 
 namespace gctools {
-  class Layout_code;
-  // Defined in clasp/src/gctools/gc_interface.cc
-  extern Layout_code* get_stamp_layout_codes();
-};
+class Layout_code;
+// Defined in clasp/src/gctools/gc_interface.cc
+extern Layout_code *get_stamp_layout_codes();
+}; // namespace gctools
 
 #if defined(USE_BOEHM) || defined(USE_MMTK)
-# define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
+#define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code *gctools::get_stamp_layout_codes();
 #elif defined(USE_MPS)
-# ifdef RUNNING_PRECISEPREP
-#  define FRIEND_GC_SCANNER(nscl)
-# else
-//#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
-#  define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-# endif
+#ifdef RUNNING_PRECISEPREP
+#define FRIEND_GC_SCANNER(nscl)
+#else
+//#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs,
+//mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
+#define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code *gctools::get_stamp_layout_codes();
 #endif
-
+#endif
 
 namespace core {
 
 #define _NEW_(x) (new x)
 
-  class DebugStream;
+class DebugStream;
 
 /* Callbacks that initialize the Lisp environment have this structure*/
 
-  typedef void (*InitializationCallback)(LispPtr);
+typedef void (*InitializationCallback)(LispPtr);
 
-  [[noreturn]]void errorFormatted(const char *errorString);
-  [[noreturn]]void errorFormatted(const string &msg);
+[[noreturn]] void errorFormatted(const char *errorString);
+[[noreturn]] void errorFormatted(const string &msg);
 
 //
 //  Lisp class access functions for when we only have a forward
 //  definition for the Lisp class and for any other object
 //
 
-//extern "C" string _safe_rep_(core::T_sp obj);
-  string _rep_(T_sp obj);
+// extern "C" string _safe_rep_(core::T_sp obj);
+string _rep_(T_sp obj);
 /*! Convert underscores to "-" and "STAR" to "*" and "AMP" to "&"
       to convert a C++ name to a lisp symbol */
-  string lispify_symbol_name(string const &name);
-  string magic_name(const string& name, const string& optional_package="");
-  void colon_split(const string& name, string& package_part, string& symbol_part);
- 
-  Symbol_sp lispify_intern_keyword(string const &name);
+string lispify_symbol_name(string const &name);
+string magic_name(const string &name, const string &optional_package = "");
+void colon_split(const string &name, string &package_part, string &symbol_part);
+
+Symbol_sp lispify_intern_keyword(string const &name);
 //    Symbol_sp lispify_intern2(string const& name, string const& packageName);
 // lisp_lispifyAndInternWithPackageNameIfNotGiven
-  Symbol_sp lispify_intern(const string &name, const string &packageName = "", bool exportSymbol = true);
+Symbol_sp lispify_intern(const string &name, const string &packageName = "", bool exportSymbol = true);
 //    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
-  Symbol_sp lisp_upcase_intern(string const &name, string const &packageName);
-  Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
-  void* lisp_to_void_ptr(T_sp o);
-  T_sp lisp_from_void_ptr(void* p);
+Symbol_sp lisp_upcase_intern(string const &name, string const &packageName);
+Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
+void *lisp_to_void_ptr(T_sp o);
+T_sp lisp_from_void_ptr(void *p);
 uint64_t lisp_nameword(T_sp name);
- 
-  List_sp lisp_copy_default_special_bindings();
+
+List_sp lisp_copy_default_special_bindings();
 /*! Write characters to the stream */
 #if 0
   gc::GCStack &lisp_threadLocalStack();
 #endif
 
-  LispPtr lisp_fromObject(T_sp obj);
-  string lisp_currentPackageName();
-  string lisp_packageName(T_sp package);
-  string lisp_classNameAsString(Instance_sp c);
-  void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId);
-  core::T_sp lisp_false();
+LispPtr lisp_fromObject(T_sp obj);
+string lisp_currentPackageName();
+string lisp_packageName(T_sp package);
+string lisp_classNameAsString(Instance_sp c);
+void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId);
+core::T_sp lisp_false();
 //  T_sp lisp_vaslist_toCons(vaslist vargs);
-//bool lisp_fixnumP(core::T_sp obj);
-//gctools::Fixnum lisp_asFixnum(core::T_sp obj);
+// bool lisp_fixnumP(core::T_sp obj);
+// gctools::Fixnum lisp_asFixnum(core::T_sp obj);
 /*! Create a SourcePosInfo object for a C++ function */
-  SourcePosInfo_sp lisp_createSourcePosInfo(const string &sourceFile, size_t filePos, int lineno);
+SourcePosInfo_sp lisp_createSourcePosInfo(const string &sourceFile, size_t filePos, int lineno);
 
-  T_sp lisp_lookup_reader_patch(T_sp patches, T_sp key, bool &found);
-//bool lisp_characterP(core::T_sp obj);
-  bool lisp_BuiltInClassesInitialized();
-  Instance_sp lisp_built_in_class();
-  Instance_sp  lisp_standard_class();
-  Instance_sp  lisp_clbind_cxx_class();
-  Instance_sp  lisp_derivable_cxx_class();
-  void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol);
-  void lisp_defparameter(Symbol_sp sym, T_sp val);
-  T_sp lisp_symbolValue(Symbol_sp sym);
-  string symbol_symbolName(Symbol_sp);
-  string symbol_packageName(Symbol_sp);
-  Symbol_sp lisp_symbolNil();
-  bool lisp_boundp(Symbol_sp s);
-  T_sp lisp_adjust_array(T_sp array, T_sp new_size, T_sp fill_pointer);
-  [[noreturn]]void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp theClassSymbol);
-  T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
-  void lisp_addClassSymbol(Symbol_sp classSymbol, gctools::smart_ptr<Creator_O> cb, Symbol_sp baseClassSymbol1); //, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
-  void lisp_addClass(Symbol_sp classSymbol);
-//void lisp_addClassAndInitialize(Symbol_sp classSymbol, gctools::smart_ptr<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
-  void lisp_throwIfBuiltInClassesNotInitialized();
-  Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol);
-  Instance_sp lisp_instance_class(T_sp obj);
-  Instance_sp lisp_static_class(T_sp obj);
-  Function_sp lisp_symbolFunction(Symbol_sp sym);
-  string lisp_symbolNameAsString(Symbol_sp sym);
-  T_sp lisp_createStr(const string &str);
-  T_sp lisp_createFixnum(int num);
-  T_sp lisp_createList(T_sp a1);
-  T_sp lisp_createList(T_sp a1, T_sp a2);
-  T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3);
-  T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4);
-  T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5);
-  T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6);
-  T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7);
-  T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, T_sp a8);
+T_sp lisp_lookup_reader_patch(T_sp patches, T_sp key, bool &found);
+// bool lisp_characterP(core::T_sp obj);
+bool lisp_BuiltInClassesInitialized();
+Instance_sp lisp_built_in_class();
+Instance_sp lisp_standard_class();
+Instance_sp lisp_clbind_cxx_class();
+Instance_sp lisp_derivable_cxx_class();
+void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol);
+void lisp_defparameter(Symbol_sp sym, T_sp val);
+T_sp lisp_symbolValue(Symbol_sp sym);
+string symbol_symbolName(Symbol_sp);
+string symbol_packageName(Symbol_sp);
+Symbol_sp lisp_symbolNil();
+bool lisp_boundp(Symbol_sp s);
+T_sp lisp_adjust_array(T_sp array, T_sp new_size, T_sp fill_pointer);
+[[noreturn]] void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp theClassSymbol);
+T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
+void lisp_addClassSymbol(
+    Symbol_sp classSymbol, gctools::smart_ptr<Creator_O> cb,
+    Symbol_sp baseClassSymbol1); //, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
+void lisp_addClass(Symbol_sp classSymbol);
+// void lisp_addClassAndInitialize(Symbol_sp classSymbol, gctools::smart_ptr<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp
+// baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
+void lisp_throwIfBuiltInClassesNotInitialized();
+Instance_sp lisp_classFromClassSymbol(Symbol_sp classSymbol);
+Instance_sp lisp_instance_class(T_sp obj);
+Instance_sp lisp_static_class(T_sp obj);
+Function_sp lisp_symbolFunction(Symbol_sp sym);
+string lisp_symbolNameAsString(Symbol_sp sym);
+T_sp lisp_createStr(const string &str);
+T_sp lisp_createFixnum(int num);
+T_sp lisp_createList(T_sp a1);
+T_sp lisp_createList(T_sp a1, T_sp a2);
+T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3);
+T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4);
+T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5);
+T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6);
+T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7);
+T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, T_sp a8);
 
 //    void lisp_setGlobalInt(const string& package, const string& n, uint val );
 //    Symbol_sp lisp_allocate_packageless_sid(string const& n);
-  Symbol_sp lisp_getClassSymbolForClassName(const string &n);
-  string lisp_convertCNameToLispName(string const &cname, bool convertUnderscoreToDash = true);
-List_sp lisp_parse_arguments(const string &packageName, const string &args, int numberOfRequiredArguments=0, const std::set<int> skip_indices = std::set<int>() );
-List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
-  List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
+Symbol_sp lisp_getClassSymbolForClassName(const string &n);
+string lisp_convertCNameToLispName(string const &cname, bool convertUnderscoreToDash = true);
+List_sp lisp_parse_arguments(const string &packageName, const string &args, int numberOfRequiredArguments = 0,
+                             const std::set<int> skip_indices = std::set<int>());
+List_sp lisp_lexical_variable_names(List_sp lambda_list, bool &trivial_wrapper);
+List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
 
-void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specializer,
-                                     T_sp name,
-                                     Symbol_sp classSymbol,
-                                     GlobalSimpleFunBase_sp entry,
-                                     size_t TemplateDispatchOn = 0,
-                                     bool useTemplateDispatchOn = false,
-                                     const string &lambda_list = "",
-                                     const string &declares = "",
-                                     const string &docstring = "",
-                                     bool autoExport = true,
-                                     int number_of_required_arguments = -1,
-                                     std::set<int> pureOutIndices = std::set<int>());
+void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper &dummy_specializer, T_sp name, Symbol_sp classSymbol,
+                                     GlobalSimpleFunBase_sp entry, size_t TemplateDispatchOn = 0,
+                                     bool useTemplateDispatchOn = false, const string &lambda_list = "",
+                                     const string &declares = "", const string &docstring = "", bool autoExport = true,
+                                     int number_of_required_arguments = -1, std::set<int> pureOutIndices = std::set<int>());
 
+typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
 
-  typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
-  void lisp_bytecode_defun(SymbolFunctionEnum kind,
-                           int bytecodep,
-                           Symbol_sp sym,
-                           const string &packageName,
-                           GlobalSimpleFunBase_sp fc,
-                           const string& arguments = "",
-                           const string& declares = "",
-                           const string &docstring = "",
-                           const string &sourceFile = "",
-                           int lineNumber = 0,
-                           int numberOfRequiredArguments = 0,
-                           bool autoExport = true,
-                           const std::set<int> &skipIndices = std::set<int>() );
+void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, const string &packageName,
+                         GlobalSimpleFunBase_sp fc, const string &arguments = "", const string &declares = "",
+                         const string &docstring = "", const string &sourceFile = "", int lineNumber = 0,
+                         int numberOfRequiredArguments = 0, bool autoExport = true,
+                         const std::set<int> &skipIndices = std::set<int>());
 
 //
 // You define what is being sent to the debug log using these constants
@@ -1055,36 +988,35 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specia
 #define DEBUG_COMPILED_LISP_CATCH 0x000B0000
 #define DEBUG_COMPILED_LISP_UNWIND_PROTECT 0x000C0000
 
-  bool lisp_debugIsOn(const char *fileName, uint debugFlag = DEBUG_CPP_FUNCTION);
+bool lisp_debugIsOn(const char *fileName, uint debugFlag = DEBUG_CPP_FUNCTION);
 
-  DebugStream *lisp_debugLog();
+DebugStream *lisp_debugLog();
 /*! Return a string representation of the object */
-  string lisp_rep(T_sp obj);
-  uint32_t lisp_badge(T_sp obj);
-  uint32_t lisp_general_badge(General_sp obj);
-  Symbol_sp lisp_internKeyword(const string &name);
-  Symbol_sp lisp_intern(const string &name);
-  Symbol_sp lisp_intern(const string &symbolName, const string &packageName);
-  T_sp lisp_ComplexVector_TFromMultipleValues(T_mv values);
-  string symbol_fullName(Symbol_sp s);
-  void lisp_logException(const char *file, const char *fn, int line, const char *structure, T_sp condition);
-  void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const &name, Symbol_sp const &archiveName, int value);
+string lisp_rep(T_sp obj);
+uint32_t lisp_badge(T_sp obj);
+uint32_t lisp_general_badge(General_sp obj);
+Symbol_sp lisp_internKeyword(const string &name);
+Symbol_sp lisp_intern(const string &name);
+Symbol_sp lisp_intern(const string &symbolName, const string &packageName);
+T_sp lisp_ComplexVector_TFromMultipleValues(T_mv values);
+string symbol_fullName(Symbol_sp s);
+void lisp_logException(const char *file, const char *fn, int line, const char *structure, T_sp condition);
+void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const &name, Symbol_sp const &archiveName,
+                                      int value);
 /*! Return the index of the top of the stack */
-  size_t lisp_pushCatchThrowException(T_sp throwTag, T_sp value);
-  int lisp_lookupEnumForSymbol(Symbol_sp predefSymId, T_sp symbol);
-  core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
-};
+size_t lisp_pushCatchThrowException(T_sp throwTag, T_sp value);
+int lisp_lookupEnumForSymbol(Symbol_sp predefSymId, T_sp symbol);
+core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
+}; // namespace core
 
 #include <clasp/gctools/interrupt.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/exceptions.h>
 
-
 namespace kw {
-extern core::Symbol_sp& _sym_function;
-extern core::Symbol_sp& _sym_macro;
-};
-
+extern core::Symbol_sp &_sym_function;
+extern core::Symbol_sp &_sym_macro;
+}; // namespace kw
 
 namespace core {
 
@@ -1110,13 +1042,13 @@ typedef void (*PrintvFlushCallback)();
 
 const char *trimSourceFilePathName(const char *fullPathName);
 
-};
+}; // namespace core
 
 namespace llvm_interface {
 
 typedef void (*llvmAddSymbolCallbackType)(const core::Symbol_sp &sym);
 extern llvmAddSymbolCallbackType addSymbol;
-}
+} // namespace llvm_interface
 
 #include <clasp/core/clasp_gmpxx.h>
 
@@ -1124,16 +1056,14 @@ namespace reg {
 
 void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym);
 
-template <class T>
-void lisp_registerClassSymbol(core::Symbol_sp sym) {
+template <class T> void lisp_registerClassSymbol(core::Symbol_sp sym) {
   class_id cid = registered_class<T>::id;
   lisp_associateClassIdWithClassSymbol(cid, sym);
 }
 
 core::Symbol_sp lisp_classSymbolFromClassId(class_id cid);
 
-template <class T>
-core::Symbol_sp lisp_classSymbol() {
+template <class T> core::Symbol_sp lisp_classSymbol() {
   class_id cid = registered_class<T>::id;
   core::Symbol_sp sym = lisp_classSymbolFromClassId(cid); //_lisp->classSymbolsHolder()[cid];
   if (sym.nilp()) {
@@ -1143,7 +1073,7 @@ core::Symbol_sp lisp_classSymbol() {
   }
   return sym;
 }
-};
+}; // namespace reg
 #define KERNEL_NAME "kernel"
 
 #define clasp_disable_interrupts()
@@ -1153,7 +1083,6 @@ core::Symbol_sp lisp_classSymbol() {
 #include <dmalloc.h>
 #endif
 
-
 namespace core {
 struct cl_env {};
 typedef cl_env *cl_env_ptr;
@@ -1161,15 +1090,15 @@ typedef cl_env *cl_env_ptr;
 inline cl_env_ptr clasp_process_env() {
   return NULL;
 #if 0
-# ifdef ECL_WINDOWS_THREADS
+#ifdef ECL_WINDOWS_THREADS
   return TlsGetValue(cl_env_key);
-# else
+#else
   struct cl_env_struct *rv = pthread_getspecific(cl_env_key);
   if (rv)
     return rv;
   ecl_thread_internal_error("pthread_getspecific() failed.");
   return NULL;
-# endif
+#endif
 #endif
 };
 
@@ -1177,15 +1106,13 @@ inline void clasp_disable_interrupts_env(const cl_env_ptr){};
 inline void clasp_enable_interrupts_env(const cl_env_ptr){};
 //    inline void clasp_disable_interrupts() {};
 //    inline void clasp_enable_interrupts() {};
-};
-
+}; // namespace core
 
 namespace core {
-  void core__mangledSymbols(T_sp stream_designator);
+void core__mangledSymbols(T_sp stream_designator);
 };
 
-
-extern void* _ZTVN4core6LispE;
+extern void *_ZTVN4core6LispE;
 
 #define CLASP_DEFAULT_CTOR
 
