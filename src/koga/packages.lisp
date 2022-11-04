@@ -4,6 +4,7 @@
   (:documentation "A lisp based metabuilder for Clasp.")
   (:export #:configure
            #:*extensions*
+           #:framework
            #:help
            #:includes
            #:library
