@@ -1898,7 +1898,7 @@ CL_DEFUN void core__test_write_stream()
   write_bf_stream(fmt::sprintf("This is a test %d %d", 1, 2, T_sp() ));
 }
 
-CL_LAMBDA(filename &optional (max-lines 0));
+CL_LAMBDA(filename &optional (max-lines 0) approach);
 CL_DOCSTRING(R"dx(Count number of lines in text file up to max-lines if max-lines is not 0)dx");
 CL_DOCSTRING_LONG(R"dx(Return (valus number-of-lines file-position size-of-file).)dx");
 DOCGROUP(clasp);
