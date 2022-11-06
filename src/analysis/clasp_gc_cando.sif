@@ -2016,9 +2016,15 @@
 {class-kind :stamp-name "STAMPWTAG_chem__FFParameter_O" :stamp-key "chem::FFParameter_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFParameter_O"
+             :layout-offset-field-names ("_Comment")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFVdw_O" :stamp-key "chem::FFVdw_O"
             :parent-class "chem::FFParameter_O" :lisp-class-base "chem::FFParameter_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFVdw_O"
+             :layout-offset-field-names ("_Comment")}
 {fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
              :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "chem::FFVdw_O" :layout-offset-field-names ("_T1")}
@@ -2039,6 +2045,9 @@
             :parent-class "chem::FFParameter_O" :lisp-class-base "chem::FFParameter_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFStretch_O"
+             :layout-offset-field-names ("_Comment")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
              :offset-base-ctype "chem::FFStretch_O" :layout-offset-field-names ("_Type1")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -2048,10 +2057,13 @@
              :offset-base-ctype "chem::FFStretch_O" :layout-offset-field-names ("_R0_Nanometer")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::FFStretch_O"
-             :layout-offset-field-names ("_Kb_kJPerNanometerSquared")}
+             :layout-offset-field-names ("_Kb_kjPerNanometerSquared")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFPtor_O" :stamp-key "chem::FFPtor_O"
             :parent-class "chem::FFParameter_O" :lisp-class-base "chem::FFParameter_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFPtor_O"
+             :layout-offset-field-names ("_Comment")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Symbol_O>" :offset-base-ctype "chem::FFPtor_O"
              :layout-offset-field-names ("_T1")}
@@ -2072,12 +2084,12 @@
              :offset-base-ctype "chem::FFPtor_O" :layout-offset-field-names ("_HasScnb")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::FFPtor_O" :layout-offset-field-names ("_Scnb")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFPtor_O"
-             :layout-offset-field-names ("_Comment")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFItor_O" :stamp-key "chem::FFItor_O"
             :parent-class "chem::FFParameter_O" :lisp-class-base "chem::FFParameter_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFItor_O"
+             :layout-offset-field-names ("_Comment")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Symbol_O>" :offset-base-ctype "chem::FFItor_O"
              :layout-offset-field-names ("_T1")}
@@ -2094,13 +2106,16 @@
             :parent-class "chem::FFParameter_O" :lisp-class-base "chem::FFParameter_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFNonbond_O"
+             :layout-offset-field-names ("_Comment")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
              :offset-base-ctype "chem::FFNonbond_O" :layout-offset-field-names ("_Type")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::FFNonbond_O"
              :layout-offset-field-names ("_Radius_Nanometers")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::FFNonbond_O" :layout-offset-field-names ("_Epsilon_kJ")}
+             :offset-base-ctype "chem::FFNonbond_O" :layout-offset-field-names ("_Epsilon_kj")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::FFNonbond_O" :layout-offset-field-names ("_Apol")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -2118,9 +2133,18 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFNonbond_O"
              :layout-offset-field-names ("_SameParms")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFNonbond_O"
+             :layout-offset-field-names ("_TypeComment")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFNonbond_O"
+             :layout-offset-field-names ("_NonbondComment")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFAngle_O" :stamp-key "chem::FFAngle_O"
             :parent-class "chem::FFParameter_O" :lisp-class-base "chem::FFParameter_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFAngle_O"
+             :layout-offset-field-names ("_Comment")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
              :offset-base-ctype "chem::FFAngle_O" :layout-offset-field-names ("_Type1")}
@@ -2134,7 +2158,7 @@
              :offset-base-ctype "chem::FFAngle_O" :layout-offset-field-names ("_AngRad")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::FFAngle_O"
-             :layout-offset-field-names ("_K2__kJPerRadianSquared")}
+             :layout-offset-field-names ("_K2__kjPerRadianSquared")}
 {class-kind :stamp-name "STAMPWTAG_chem__Restraint_O" :stamp-key "chem::Restraint_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -2517,18 +2541,29 @@
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "chem::FFParameterBaseDb_O"
              :layout-offset-field-names ("_Parameters")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
+             :offset-base-ctype "chem::FFParameterBaseDb_O"
+             :layout-offset-field-names ("_ParameterVector")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFItorDb_O" :stamp-key "chem::FFItorDb_O"
             :parent-class "chem::FFParameterBaseDb_O" :lisp-class-base "chem::FFParameterBaseDb_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "chem::FFItorDb_O" :layout-offset-field-names ("_Parameters")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
+             :offset-base-ctype "chem::FFItorDb_O" :layout-offset-field-names ("_ParameterVector")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFStretchDb_O" :stamp-key "chem::FFStretchDb_O"
             :parent-class "chem::FFParameterBaseDb_O" :lisp-class-base "chem::FFParameterBaseDb_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "chem::FFStretchDb_O" :layout-offset-field-names ("_Parameters")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
+             :offset-base-ctype "chem::FFStretchDb_O"
+             :layout-offset-field-names ("_ParameterVector")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>>"
              :offset-base-ctype "chem::FFStretchDb_O"
@@ -2539,6 +2574,9 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "chem::FFAngleDb_O" :layout-offset-field-names ("_Parameters")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
+             :offset-base-ctype "chem::FFAngleDb_O" :layout-offset-field-names ("_ParameterVector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFAngleDb_O"
              :layout-offset-field-names ("_AngleFunction")}
@@ -2556,6 +2594,10 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "chem::FFNonbondDb_O" :layout-offset-field-names ("_Parameters")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
+             :offset-base-ctype "chem::FFNonbondDb_O"
+             :layout-offset-field-names ("_ParameterVector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::FFNonbondDb_O"
              :layout-offset-field-names ("_Name")}
@@ -2614,6 +2656,9 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "chem::FFPtorDb_O" :layout-offset-field-names ("_Parameters")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
+             :offset-base-ctype "chem::FFPtorDb_O" :layout-offset-field-names ("_ParameterVector")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFVdwDb_O" :stamp-key "chem::FFVdwDb_O"
             :parent-class "chem::FFBaseDb_O" :lisp-class-base "chem::FFBaseDb_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -2720,12 +2765,9 @@
 {class-kind :stamp-name "STAMPWTAG_chem__ForceField_O" :stamp-key "chem::ForceField_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
-             :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
-             :offset-base-ctype "chem::ForceField_O" :layout-offset-field-names ("_Title")}
-{fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
-             :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
-             :offset-base-ctype "chem::ForceField_O" :layout-offset-field-names ("_Ref")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleBaseString_O>"
+             :offset-base-ctype "chem::ForceField_O" :layout-offset-field-names ("_title")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>>"
              :offset-base-ctype "chem::ForceField_O"

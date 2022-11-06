@@ -32,18 +32,18 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-  size_t cl__length(T_sp arg);
+size_t cl__length(T_sp arg);
 
-  T_sp cl__reverse(T_sp obj);
-  T_sp cl__nreverse(T_sp obj);
+T_sp cl__reverse(T_sp obj);
+T_sp cl__nreverse(T_sp obj);
 
-  T_sp cl__elt(T_sp sequence, size_t index);
-  T_sp core_setf_elt(T_sp sequence, size_t index, T_sp value);
+T_sp cl__elt(T_sp sequence, size_t index);
+T_sp core_setf_elt(T_sp sequence, size_t index, T_sp value);
 
-  T_sp cl__subseq(T_sp sequence, size_t start, T_sp end);
-  T_sp core_setf_subseq(T_sp sequence, size_t start, T_sp end, T_sp newSubseq);
+T_sp cl__subseq(T_sp sequence, size_t start, T_sp end=nil<core::T_O>());
+T_sp core_setf_subseq(T_sp sequence, size_t start, T_sp end, T_sp newSubseq);
 
-  T_sp cl__copy_seq(T_sp seq);
+T_sp cl__copy_seq(T_sp seq);
 
 
 };
