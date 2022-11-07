@@ -35,6 +35,8 @@ namespace core {
 Float_sp cl__float(Real_sp x, T_sp y);
 Real_mv cl__integer_decode_float(Float_sp x);
 int clasp_signbit(Number_sp x);
+Integer_sp cl__numerator(Rational_sp r);
+Integer_sp cl__denominator(Rational_sp r);
 
 };
 
