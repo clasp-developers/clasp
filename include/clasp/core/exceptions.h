@@ -290,10 +290,10 @@ struct CxxFunctionInvocationLogger {
 #define TRY() try
 
 #define IMPLEMENT_ME() SIMPLE_ERROR("Implement function %s:%d %s", __FILE__ , __LINE__ , __FUNCTION__)
-#define IMPLEMENT_MEF(msg) SIMPLE_ERROR("Implement function %s:%s %s %s", __FILE__ , __LINE__ , __FUNCTION__ , msg)
+#define IMPLEMENT_MEF(msg) SIMPLE_ERROR("Implement function %s:%d %s %s", __FILE__ , __LINE__ , __FUNCTION__ , msg)
 
 #define WARN_IMPLEMENT_ME() printf("%s:%d:%s Implement function\n", __FILE__, __LINE__, __FUNCTION__ );
-#define WARN_IMPLEMENT_MEF(msg) printf("%s\n", (BF("Implement function %s:%s %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % (msg).str().c_str()).str().c_str());
+#define WARN_IMPLEMENT_MEF(msg) printf("%s\n", (BF("Implement function %s:%d %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % (msg).str().c_str()).str().c_str());
 
 #define NOT_SUPPORTED() SIMPLE_ERROR("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)", this->className() , __FUNCTION__ , __FILE__ , __LINE__);
 
