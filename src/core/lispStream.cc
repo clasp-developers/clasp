@@ -5869,7 +5869,7 @@ static T_sp
 not_a_file_stream(T_sp strm) {
   cl__error(cl::_sym_simpleTypeError,
            Cons_O::createList(kw::_sym_format_control,
-                              SimpleBaseString_O::make("~A is not an file stream"),
+                              SimpleBaseString_O::make("~A is not a file stream"),
                               kw::_sym_format_arguments, Cons_O::createList(strm),
                               kw::_sym_expected_type, cl::_sym_FileStream_O,
                               kw::_sym_datum, strm));

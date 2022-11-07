@@ -51,6 +51,7 @@ class Package_O : public General_O {
  public: // virtual functions inherited from Object
   void initialize() override;
   string __repr__() const override;
+  void __write__(T_sp stream) const override;
  public: // instance variables
   HashTableEqual_sp _InternalSymbols;
   HashTableEqual_sp _ExternalSymbols;

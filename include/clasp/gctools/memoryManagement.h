@@ -1094,8 +1094,6 @@ public:
 }; // namespace gctools
 
 
-
-
 #if defined(USE_BOEHM)
 # define NON_MOVING_GC 1
 # include <clasp/gctools/boehmGarbageCollection.h>
