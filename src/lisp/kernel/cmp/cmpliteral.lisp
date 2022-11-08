@@ -1157,7 +1157,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
       op
     (declare (ignore op-kind return-type ltvc))
     (let ((arg-types (nthcdr 2 argument-types)))
-      (format stream "void parse_~a(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {~%" name)
+      (format stream "void parse_~a(gctools::GCRootsInModule* roots, char*& bytecode, char* byteend, bool log) {~%" name)
       (format stream "  if (log) printf(\"%s:%d:%s parse_~a\\n\", __FILE__, __LINE__, __FUNCTION__);~%" name)
       (let* ((arg-index 0)
              (vars (let (names)
@@ -1178,7 +1178,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                               (read-variable-name (if (string= c++-arg-type "string")
                                                       (format nil "~a.c_str()" variable-name)
                                                       variable-name)))
-                         (format stream "  ~a ~a = ltvc_read_~a(~a fin, log, byte_index );~%" c++-arg-type variable-name
+                         (format stream "  ~a ~a = ltvc_read_~a(~a bytecode, byteend, log );~%" c++-arg-type variable-name
                                  suffix
                                  (if gcroots
                                      "roots, "
@@ -1188,7 +1188,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                      (nreverse names))))
         (when varargs
           (setf name (format nil "~a_varargs" name))
-          (format stream "  Cons_O* varargs = ltvc_read_list( roots, ~a, fin, log, byte_index );~%" (car (last vars )))
+          (format stream "  Cons_O* varargs = ltvc_read_list( roots, ~a, bytecode, byteend, log );~%" (car (last vars )))
           (setf vars (append vars (list "varargs"))))
         (format stream "  ~a( roots" name)
         (dolist (var vars)
@@ -1207,7 +1207,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
   (let ((code 65))
     (dolist (prim primitives)
       (let ((func-name (second prim)))
-        (format stream "  case ~a: parse_~a(roots,fin,log,byte_index);~%" code func-name)
+        (format stream "  case ~a: parse_~a(roots,bytecode,byteend,log);~%" code func-name)
         (format stream "           break;~%")
         (incf code))))
   (format stream "#endif // DEFINE_SWITCH~%"))
