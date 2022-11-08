@@ -1693,9 +1693,9 @@ void dump_start_code(T_sp fin, size_t length, bool useFrom = false, size_t from 
   write_bf_stream(fmt::sprintf("\n"));
 }
 
-#define DEFINE_PARSERS
-#include "byte-code-interpreter.cc"
-#undef DEFINE_PARSERS
+#define DEFINE_LTV_PARSERS
+#include <virtualMachine.h>
+#undef DEFINE_LTV_PARSERS
 
 void start_code_interpreter(gctools::GCRootsInModule *roots,
                             char* bytecode, size_t nbytes, bool log) {
@@ -1719,9 +1719,9 @@ void start_code_interpreter(gctools::GCRootsInModule *roots,
     switch (c) {
     case 0:
       goto DONE;
-#define DEFINE_SWITCH
-#include "byte-code-interpreter.cc"
-#undef DEFINE_SWITCH
+#define DEFINE_LTV_SWITCH
+#include <virtualMachine.h>
+#undef DEFINE_LTV_SWITCH
     default: {
       std::string fasoFile = "NotFaso";
       size_t fasoIndex = 0;
