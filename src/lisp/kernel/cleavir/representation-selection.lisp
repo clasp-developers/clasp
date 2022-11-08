@@ -668,14 +668,12 @@
 (defmethod insert-casts ((instruction bir:local-call))
   ;; KLUDGE: For now, we only consider required arguments as being
   ;; possible to pass unboxed.
-  (loop with requiredp = t
-        for item in (bir:lambda-list (bir:callee instruction))
-        for arg in (rest (bir:inputs instruction))
-        unless (typep item 'bir:argument)
-          do (setf requiredp nil)
-        do (maybe-cast-before instruction arg (if requiredp
-                                                  (cc-bmir:rtype item)
-                                                  '(:object))))
+  (let ((args (rest (bir:inputs instruction))))
+    (loop for item in (bir:lambda-list (bir:callee instruction))
+          while (typep item 'bir:argument)
+          do (maybe-cast-before instruction (pop args) (cc-bmir:rtype item)))
+    (loop until (null args)
+          do (maybe-cast-before instruction (pop args) '(:object))))
   (cast-local-call-output instruction))
 (defmethod insert-casts ((instruction bir:mv-local-call))
   (let* ((inputs (bir:inputs instruction))

@@ -267,3 +267,11 @@
                                (ignore-errors (>= x (the real nil))))))
                0)
       (nil))
+
+(test issue-1382
+      (nth-value 2
+                 (compile nil
+                          '(lambda ()
+                            ((lambda (&key x y z) (list x y z))
+                             :x 0s0 :y 0s0 :z (coerce (random 100) 'single-float)))))
+      (nil))
