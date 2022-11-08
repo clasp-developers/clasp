@@ -6897,6 +6897,40 @@ CL_DEFUN T_sp core__read_binary_single_float(T_sp stream) {
   return make_single_float(val);
 }
 
+CL_DOCSTRING(R"dx(Write a single float as IEEE format in 4 contiguous bytes))dx");
+DOCGROUP(clasp);
+CL_DEFUN void core__write_ieee_single_float(T_sp stream, T_sp val) {
+  if (!val.single_floatp()) TYPE_ERROR(val,cl::_sym_single_float);
+  unsigned char buffer[4];
+  *(float*)buffer = val.unsafe_single_float();
+  StreamOps(stream).write_byte8(stream, buffer, 4);
+}
+
+CL_DOCSTRING(R"dx(Write a C uint32 POD 4 contiguous bytes))dx");
+DOCGROUP(clasp);
+CL_DEFUN void core__write_c_uint32(T_sp stream, T_sp val) {
+  if (!val.fixnump() ||
+      val.unsafe_fixnum()<0 ||
+      val.unsafe_fixnum()>=(uint64_t)1<<32) {
+    TYPE_ERROR(val,ext::_sym_byte32);
+  }
+  unsigned char buffer[4];
+  *(uint32_t*)buffer = val.unsafe_fixnum();
+  StreamOps(stream).write_byte8(stream, buffer, 4);
+}
+
+CL_DOCSTRING(R"dx(Write a C uint16 POD 2 contiguous bytes))dx");
+DOCGROUP(clasp);
+CL_DEFUN void core__write_c_uint16(T_sp stream, T_sp val) {
+  if (!val.fixnump() ||
+      val.unsafe_fixnum()<0 ||
+      val.unsafe_fixnum()>=(uint64_t)1<<16) {
+    TYPE_ERROR(val,ext::_sym_byte16);
+  }
+  unsigned char buffer[2];
+  *(uint16_t*)buffer = (uint16_t)val.unsafe_fixnum();
+  StreamOps(stream).write_byte8(stream, buffer, 2);
+}
 
 CL_DOCSTRING(R"dx(Set filedescriptor to nonblocking)dx");
 DOCGROUP(clasp);
