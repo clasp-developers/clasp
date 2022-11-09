@@ -32,6 +32,10 @@
   :repository "https://github.com/trivial-gray-streams/trivial-gray-streams.git"
   :directory "src/lisp/kernel/contrib/trivial-gray-streams/"
   :branch "master")
+ (:name :nontrivial-gray-streams
+  :repository "https://github.com/yitzchak/nontrivial-gray-streams.git"
+  :directory "src/lisp/kernel/contrib/nontrivial-gray-streams/"
+  :branch "main")
  (:name :acclimation
   :repository "https://github.com/robert-strandh/Acclimation.git"
   :directory "src/lisp/kernel/contrib/Acclimation/"
@@ -135,6 +139,18 @@
   :directory "src/lisp/kernel/contrib/global-vars/"
   :commit "c749f32c9b606a1457daa47d59630708ac0c266e"
   :extension :cando)
+ (:name :incless
+  :repository "https://github.com/s-expressionists/Incless.git"
+  :directory "src/lisp/kernel/contrib/Incless/"
+  :commit "main")
+ (:name :inravina
+  :repository "https://github.com/s-expressionists/Inravina.git"
+  :directory "src/lisp/kernel/contrib/Inravina/"
+  :commit "main")
+ (:name :trivial-package-locks
+  :repository "https://github.com/yitzchak/trivial-package-locks.git"
+  :directory "src/lisp/kernel/contrib/trivial-package-locks/"
+  :commit "main")
  (:name :let-plus
   :repository "https://github.com/sharplispers/let-plus.git"
   :directory "src/lisp/kernel/contrib/let-plus/"
