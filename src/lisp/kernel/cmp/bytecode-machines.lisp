@@ -327,7 +327,7 @@
                                         (if info
                                             info
                                             (make-ltv-info :type (format nil "UNKNOWN_~a" arg-type)
-                                                           :ltv-type (format nil "UNKNOWN_~a" arg-type)
+                                                           :c++-type (format nil "UNKNOWN_~a" arg-type)
                                                            :suffix (format nil "UNKNOWN_~a" arg-type)))))
                             (c++-arg-type (ltv-info-c++-type ltv-info))
                             (suffix (ltv-info-suffix ltv-info))
