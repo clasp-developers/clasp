@@ -205,7 +205,8 @@
   (character #\Space :type base-char)
   (colonp nil :type (member t nil))
   (atsignp nil :type (member t nil))
-  (params nil :type list))
+  (params nil :type list)
+  (virtual nil :type (member t nil)))
 
 (deftype format-directive () 'vector)
 
@@ -1590,9 +1591,15 @@
           (if (and (not colonp)
                    directives
                    (simple-string-p (car directives)))
-              (cons (string-left-trim '(#\space #\newline #\tab)
-                                      (car directives))
-                    (cdr directives))
+              (let ((trimmed-string (string-left-trim '(#\space #\newline #\tab)
+                                                      (car directives))))
+                (cond ((not (zerop (length trimmed-string)))
+                       (cons trimmed-string (cdr directives)))
+                      ((and (typep (cadr directives) 'format-directive)
+                            (format-directive-virtual (cadr directives)))
+                       (cddr directives))
+                      (t
+                       (cdr directives))))
               directives)))
 
 (def-complex-format-interpreter #\newline (colonp atsignp params directives)
@@ -1606,10 +1613,16 @@
   (if (and (not colonp)
            directives
            (simple-string-p (car directives)))
-      (cons (string-left-trim '(#\space #\newline #\tab)
-                              (car directives))
-            (cdr directives))
-      directives))
+      (let ((trimmed-string (string-left-trim '(#\space #\newline #\tab)
+                                              (car directives))))
+        (cond ((not (zerop (length trimmed-string)))
+               (cons trimmed-string (cdr directives)))
+              ((and (typep (cadr directives) 'format-directive)
+                    (format-directive-virtual (cadr directives)))
+               (cddr directives))
+              (t
+               (cdr directives))))
+    directives))
 
 (def-complex-format-directive #\return (colonp atsignp params directives)
   (when (and colonp atsignp)
