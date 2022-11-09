@@ -2,6 +2,7 @@
 ;;; For more information see (info "(emacs) Directory Variables")
 
 ((nil
+  (compile-command . "ninja -C build")
   (indent-tabs-mode . nil) ; Make sure to disable smart-tabs-mode if you're using it.
   (whitespace-action . nil)
   (whitespace-style . '(face trailing empty tabs))
