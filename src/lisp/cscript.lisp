@@ -34,6 +34,7 @@
              #~"kernel/cmp/cmpsetup.lisp"
              #~"kernel/cmp/cmputil.lisp"
              #~"kernel/cmp/cmpintrinsics.lisp"
+             #~"kernel/cmp/startup-primitives.lisp"
              #~"kernel/cmp/primitives.lisp"
              #~"kernel/cmp/cmpir.lisp"
              #~"kernel/cmp/debuginfo.lisp"
@@ -216,4 +217,5 @@
            :clasp-analyzer)
 
 (k:sources :vm-header
+           #~"kernel/cmp/startup-primitives.lisp"
            #~"kernel/cmp/bytecode-machines.lisp")

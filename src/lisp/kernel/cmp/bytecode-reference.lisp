@@ -1,12 +1,4 @@
-
-#-sbcl
 (in-package :cmpref)
-
-#+sbcl
-(defpackage :cmpref
-  (:use #:common-lisp))
-      
-
 
 (defmacro logf (message &rest args)
   (declare (ignore message args))

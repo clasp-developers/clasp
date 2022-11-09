@@ -735,9 +735,6 @@ __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
 }
 
 void cc_invoke_start_code_interpreter(gctools::GCRootsInModule* roots, char* start_code, size_t bytes, void* caller) {
-  //printf("%s:%d start_code interpreter: %p caller: %p\n", __FILE__, __LINE__, start_code, caller);
-  core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(bytes,'\0',false,bytes,(const unsigned char*)start_code);
-  core::T_sp fin = core::cl__make_string_input_stream(str,0,nil<core::T_O>());
   bool log = false;
   if (core::global_debug_start_code) {
     log = true;
@@ -752,7 +749,7 @@ void cc_invoke_start_code_interpreter(gctools::GCRootsInModule* roots, char* sta
       printf("%s:%d:%s for caller %p - could not match to ObjectFile_O object\n", __FILE__, __LINE__, __FUNCTION__, caller );
     }
   }
-  start_code_interpreter(roots,fin,log);
+  start_code_interpreter(roots,start_code,bytes,log);
 }
 
 

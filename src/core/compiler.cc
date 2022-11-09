@@ -1410,10 +1410,9 @@ CL_DEFUN size_t core__ltvc_write_char(T_sp object, T_sp stream, size_t index) {
   return index;
 }
 
-char ltvc_read_char(T_sp stream, bool log, size_t &index) {
-  SELF_CHECK(char, stream, index);
-  char c = clasp_read_char(stream);
-  ++index;
+char ltvc_read_char(char*& bytecode, char* byteend, bool log) {
+  if (bytecode >= byteend) SIMPLE_ERROR("Unexpected EOF"); // FIXME
+  char c = *bytecode++;
   if (log)
     printf("%s:%d:%s -> '%c'/%d\n", __FILE__, __LINE__, __FUNCTION__, c, c);
   return c;
@@ -1431,17 +1430,18 @@ void compact_write_size_t(size_t data, T_sp stream, size_t &index) {
   index += nb + 1;
 }
 
-size_t compact_read_size_t(T_sp stream, size_t &index) {
+size_t compact_read_size_t(char*& bytecode, char* byteend) {
+  if (bytecode >= byteend) SIMPLE_ERROR("Unexpected EOF"); // FIXME
   size_t data = 0;
-  int64_t nb = clasp_read_char(stream) - '0';
+  int64_t nb = *bytecode++ - '0';
   if (nb < 0 || nb > 8) {
     printf("%s:%d Illegal size_t size %lld\n", __FILE__, __LINE__, (long long)nb);
     abort();
   }
+  if (bytecode > byteend - nb) SIMPLE_ERROR("Unexpected EOF");
   for (size_t ii = 0; ii < nb; ++ii) {
-    ((char *)&data)[ii] = clasp_read_char(stream);
+    ((char *)&data)[ii] = *bytecode++;
   }
-  index += nb + 1;
   return data;
 }
 
@@ -1453,9 +1453,8 @@ CL_DEFUN size_t core__ltvc_write_size_t(T_sp object, T_sp stream, size_t index) 
   return index;
 }
 
-size_t ltvc_read_size_t(T_sp stream, bool log, size_t &index) {
-  SELF_CHECK(size_t, stream, index);
-  size_t data = compact_read_size_t(stream, index);
+size_t ltvc_read_size_t(char*& bytecode, char* byteend, bool log) {
+  size_t data = compact_read_size_t(bytecode, byteend);
   if (log)
     printf("%s:%d:%s -> %lu\n", __FILE__, __LINE__, __FUNCTION__, data);
   return data;
@@ -1471,14 +1470,14 @@ CL_DEFUN size_t core__ltvc_write_string(T_sp object, T_sp stream, size_t index) 
   return index;
 }
 
-std::string ltvc_read_string(T_sp stream, bool log, size_t &index) {
-  SELF_CHECK(char *, stream, index);
-  size_t len = ltvc_read_size_t(stream, log, index);
+std::string ltvc_read_string(char*& bytecode, char* byteend, bool log) {
+  //SELF_CHECK(char *, stream, index);
+  size_t len = ltvc_read_size_t(bytecode, byteend, log);
+  if (bytecode > byteend - len) SIMPLE_ERROR("Unexpected EOF"); // FIXME
   std::string str(len, ' ');
   for (size_t i = 0; i < len; ++i) {
-    str[i] = clasp_read_char(stream);
+    str[i] = *bytecode++;
   }
-  index += len;
   if (log)
     printf("%s:%d:%s -> \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, str.c_str());
   return str;
@@ -1496,13 +1495,13 @@ CL_DEFUN size_t core__ltvc_write_bignum(T_sp object, T_sp stream, size_t index) 
   return index;
 }
 
-T_O *ltvc_read_bignum(T_sp stream, bool log, size_t &index) {
-  SELF_CHECK(long long, stream, index);
-  mp_size_t length = compact_read_size_t(stream, index);
+T_O *ltvc_read_bignum(char*& bytecode, char* byteend, bool log) {
+//  SELF_CHECK(long long, stream, index);
+  mp_size_t length = compact_read_size_t(bytecode, byteend);
   size_t size = std::abs(length);
   mp_limb_t limbs[size];
   for (mp_size_t i = 0; i < size; i++) {
-    limbs[i] = compact_read_size_t(stream, index);
+    limbs[i] = compact_read_size_t(bytecode, byteend);
   }
   return reinterpret_cast<T_O *>(Bignum_O::create_from_limbs(length, 0, false, size, limbs).raw_());
 }
@@ -1520,13 +1519,13 @@ CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index) {
   return index;
 }
 
-float ltvc_read_float(T_sp stream, bool log, size_t &index) {
-  SELF_CHECK(float, stream, index);
+float ltvc_read_float(char*& bytecode, char* byteend, bool log) {
+//  SELF_CHECK(float, stream, index);
   float data;
+  if (bytecode > byteend - sizeof(data)) SIMPLE_ERROR("Unexpected EOF");
   for (size_t i = 0; i < sizeof(data); ++i) {
-    ((char *)&data)[i] = clasp_read_char(stream);
+    ((char *)&data)[i] = *bytecode++;
   }
-  index += sizeof(data);
   if (log)
     printf("%s:%d:%s -> '%f'\n", __FILE__, __LINE__, __FUNCTION__, data);
   return data;
@@ -1541,13 +1540,13 @@ CL_DEFUN size_t core__ltvc_write_double(T_sp object, T_sp stream, size_t index) 
   return index;
 }
 
-double ltvc_read_double(T_sp stream, bool log, size_t &index) {
+double ltvc_read_double(char*& bytecode, char* byteend, bool log) {
   SELF_CHECK(double, stream, index);
   double data;
+  if (bytecode > byteend - sizeof(data)) SIMPLE_ERROR("Unexpected EOF");
   for (size_t i = 0; i < sizeof(data); ++i) {
-    ((char *)&data)[i] = clasp_read_char(stream);
+    ((char *)&data)[i] = *bytecode++;
   }
-  index += sizeof(data);
   if (log)
     printf("%s:%d:%s -> '%lf'\n", __FILE__, __LINE__, __FUNCTION__, data);
   return data;
@@ -1576,9 +1575,11 @@ CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp
   SIMPLE_ERROR(("tag must be 0, 1 or 2 - you passed %s"), _rep_(ttag));
 }
 
-T_O *ltvc_read_object(gctools::GCRootsInModule *roots, T_sp stream, bool log, size_t &index) {
-  SELF_CHECK(T_O *, stream, index);
-  char tag = clasp_read_char(stream);
+T_O *ltvc_read_object(gctools::GCRootsInModule *roots,
+                      char*& bytecode, char* byteend, bool log) {
+  //SELF_CHECK(T_O *, stream, index);
+  if (bytecode >= byteend) SIMPLE_ERROR("Unexpected EOF");
+  char tag = *bytecode++;
   char ttag;
   if (tag == 'l')
     ttag = 0; // literal
@@ -1590,11 +1591,10 @@ T_O *ltvc_read_object(gctools::GCRootsInModule *roots, T_sp stream, bool log, si
     printf("%s:%d The object tag must be 'l', 't' or 'i'\n", __FILE__, __LINE__);
     abort();
   }
-  ++index;
   if (log)
     printf("%s:%d:%s    tag = %c\n", __FILE__, __LINE__, __FUNCTION__, tag);
   size_t data;
-  data = compact_read_size_t(stream, index);
+  data = compact_read_size_t(bytecode, byteend);
   if (log)
     printf("%s:%d:%s    index = %lu\n", __FILE__, __LINE__, __FUNCTION__, data);
   switch (tag) {
@@ -1628,10 +1628,11 @@ T_O *ltvc_read_object(gctools::GCRootsInModule *roots, T_sp stream, bool log, si
   };
 }
 
-Cons_O *ltvc_read_list(gctools::GCRootsInModule *roots, size_t num, T_sp stream, bool log, size_t &index) {
+Cons_O *ltvc_read_list(gctools::GCRootsInModule *roots, size_t num,
+                       char*& bytecode, char* byteend, bool log) {
   ql::list result;
   for (size_t ii = 0; ii < num; ++ii) {
-    T_sp obj((gctools::Tagged)ltvc_read_object(roots, stream, log, index));
+    T_sp obj((gctools::Tagged)ltvc_read_object(roots, bytecode, byteend, log));
     result << obj;
   }
   if (log) {
@@ -1692,11 +1693,12 @@ void dump_start_code(T_sp fin, size_t length, bool useFrom = false, size_t from 
   write_bf_stream(fmt::sprintf("\n"));
 }
 
-#define DEFINE_PARSERS
-#include "byte-code-interpreter.cc"
-#undef DEFINE_PARSERS
+#define DEFINE_LTV_PARSERS
+#include <virtualMachine.h>
+#undef DEFINE_LTV_PARSERS
 
-void start_code_interpreter(gctools::GCRootsInModule *roots, T_sp fin, bool log) {
+void start_code_interpreter(gctools::GCRootsInModule *roots,
+                            char* bytecode, size_t nbytes, bool log) {
   volatile uint32_t i = 0x01234567;
   // return 0 for big endian, 1 for little endian.
   if ((*((uint8_t *)(&i))) == 0x67) {
@@ -1707,20 +1709,19 @@ void start_code_interpreter(gctools::GCRootsInModule *roots, T_sp fin, bool log)
            __FILE__, __LINE__);
     abort();
   }
-  size_t byte_index = 0;
+  char* byteend = bytecode + nbytes;
   while (1) {
     if (log) {
       printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__);
-      printf("%s:%d byte_index = %zu\n", __FILE__, __LINE__, byte_index);
     }
     // dump_start_code(fin,32);
-    char c = ltvc_read_char(fin, log, byte_index);
+    char c = ltvc_read_char(bytecode, byteend, log);
     switch (c) {
     case 0:
       goto DONE;
-#define DEFINE_SWITCH
-#include "byte-code-interpreter.cc"
-#undef DEFINE_SWITCH
+#define DEFINE_LTV_SWITCH
+#include <virtualMachine.h>
+#undef DEFINE_LTV_SWITCH
     default: {
       std::string fasoFile = "NotFaso";
       size_t fasoIndex = 0;
