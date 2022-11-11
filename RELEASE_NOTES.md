@@ -4,6 +4,9 @@
 * Add `ext:list-all-logical-hosts` and `ext:logical-host-p` functions to query
   the current logical host status.
 
+## Fixes
+* `ext:run-program` works with string streams.
+
 # Version 2.0.0 (LLVM14) 2022-10-26
 
 ## Added

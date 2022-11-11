@@ -69,7 +69,10 @@
              (setf (external-process-pid process) nil
                    (external-process-%status process) status
                    (external-process-%code process) code)
-             #+threads (mp:process-join (external-process-%pipe process)))
+             #+threads
+             (handler-case (mp:process-join (external-process-%pipe process))
+               ;; If the %pipe already quit, that's ok.
+               (mp:process-join-error ())))
             ((:stopped :resumed :running)
              (setf (external-process-%status process) status
                    (external-process-%code process) code))
@@ -145,8 +148,11 @@
                    ((or (stringp which)
                         (pathnamep which))
                     (apply #'open which :external-format external-format args))
-                   #+clos-streams
-                   ((typep which 'virtual-stream)
+                   ;; We can only pass streams with underlying FDs to the underlying
+                   ;; spawn-subprocess. For other "virtual" streams, we need some
+                   ;; shenanigans with threads.
+                   ((typep which '(or gray::fundamental-stream ; FIXME: Export
+                                   string-stream broadcast-stream concatenated-stream))
                     :virtual-stream)
                    ((or (eql which :stream)
                         (streamp which))
@@ -239,12 +245,11 @@
               (external-process-input process) stream-write
               (external-process-output process) stream-read
               (external-process-error-stream process) stream-error)
-        (format t "process.lisp:242 Returning process ~s~%" process)
         (when pipes
           #+threads
           (let ((thread (external-process-%pipe process)))
             (mp:process-preset thread #'pipe-streams process pipes)
-            (mp:process-enable thread))
+            (mp:process-start thread))
           #-threads
           (if wait
               (pipe-streams process pipes)
