@@ -5708,10 +5708,22 @@ file_listen(T_sp stream, int fileno) {
   if (UNLIKELY(retv < 0))
     file_libc_error(core::_sym_simpleStreamError, stream, "Error while listening to stream.", 0);
   else if (retv > 0)
-    if (fds[0].revents == POLLIN) {
+    // POLLIN just means there's data, so that's fine.
+    if (fds[0].revents & POLLIN) {
       return CLASP_LISTEN_AVAILABLE;
+    } else if (fds[0].revents & ~POLLHUP) { // error or something.
+      SIMPLE_ERROR(("Illegal revents value from poll -> %d%s%s%s%s%s%s"),
+                   fds[0].revents,
+                   (fds[0].revents & POLLPRI) ? " POLLPRI" : "",
+                   (fds[0].revents & POLLOUT) ? " POLLOUT" : "",
+                   (fds[0].revents & POLLOUT) ? " POLLRDHUP" : "",
+                   (fds[0].revents & POLLERR) ? " POLLERR" : "",
+                   (fds[0].revents & POLLHUP) ? " POLLHUP" : "",
+                   (fds[0].revents & POLLNVAL) ? " POLLNVAL" : "");
     } else {
-      SIMPLE_ERROR(("Illegal revents value from poll -> %d") , fds[0].revents);
+      // POLLHUP just means the other end hung up, which is kind of interesting
+      // but is not an error. Useful when the stream is a process output or something.
+      return CLASP_LISTEN_NO_CHAR;
     }
   else
     return CLASP_LISTEN_NO_CHAR;
