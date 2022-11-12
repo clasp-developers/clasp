@@ -24,4 +24,5 @@
            #~"gcalloc.cc"
            #~"gcweak.cc"
            #~"memoryManagement.cc"
+           #~"startRunStop.cc"
            #~"mygc.c")

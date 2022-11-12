@@ -50,7 +50,7 @@ namespace gctools {
       has the type: int startup(int argc, char* argv[]) just like main.
       Also pass an optional object-format for MPS
     */
-int initializeMemoryManagement(MainFunctionType startup, int argc, char *argv[], void *dummy);
+int initializeMemoryManagement( int argc, char *argv[], void *dummy);
 };
 
 namespace gctools {
@@ -101,7 +101,7 @@ namespace gctools {
   void clasp_warn_proc(char *msg, GC_word arg);
 
 void startupBoehm( gctools::ClaspInfo* claspInfo );
-int runBoehm( MainFunctionType startupFn, gctools::ClaspInfo* claspInfo );
+int runBoehm( gctools::ClaspInfo* claspInfo );
 void shutdownBoehm();
 
 };

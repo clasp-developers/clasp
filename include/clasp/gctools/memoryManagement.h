@@ -63,11 +63,17 @@ struct ClaspInfo {
   bool          _mpiEnabled;
   int           _mpiRank;
   int           _mpiSize;
-  ClaspInfo( int argc, const char** argv, size_t stackMax ) : _argc(argc), _argv(argv), _stackMax(stackMax) {};
+  bool          _loadSnapshotFile;
+  std::string   _snapshotFileName;
+  void*         _start_of_snapshot;
+  void*         _end_of_snapshot;
+  ClaspInfo( int argc, const char** argv, size_t stackMax ) : _argc(argc), _argv(argv), _stackMax(stackMax)
+                                                            , _loadSnapshotFile(false)
+                                                            , _start_of_snapshot(NULL)
+                                                            , _end_of_snapshot(NULL)
+  {};
 };
 };
-
-typedef int (*MainFunctionType)(gctools::ClaspInfo* claspInfo);
 
 #define GC_LOG(x)
 #define GCPRIVATE public
@@ -1202,15 +1208,7 @@ namespace gctools {
 int handleFatalCondition();
 
 
- 
-/* Start up the garbage collector and the main function.
-       The main function is wrapped within this function */
-int startupGarbageCollectorAndSystem(MainFunctionType startupFn, gctools::ClaspInfo* claspInfo );
-};
-
-
-namespace gctools {
-  void rawHeaderDescribe(const uintptr_t *headerP);
+void rawHeaderDescribe(const uintptr_t *headerP);
 };
 
 extern "C" {
@@ -1451,9 +1449,12 @@ size_t objectSize(BaseHeader_s* header);
 
 bool is_memory_readable(const void* address, size_t bytes=8);
 
+};
+
+extern "C" {
 void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo );
 
-int run_clasp(MainFunctionType startupFn, ClaspInfo* claspInfo);
+int run_clasp( gctools::ClaspInfo* claspInfo );
 
 void shutdown_clasp();
 

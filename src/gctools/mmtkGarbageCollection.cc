@@ -49,7 +49,7 @@ THREAD_LOCAL MMTk_Mutator my_mutator;
 
 namespace gctools {
 __attribute__((noinline))
-int initializeMmtk(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
+int initializeMmtk( int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
   gc_init((size_t)(1024*1024*1024)*(size_t)4);
   
   void* topOfStack;
