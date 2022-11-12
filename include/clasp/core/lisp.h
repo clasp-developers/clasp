@@ -192,8 +192,6 @@ public:
 	 to Cando-lisp or to Python depending on the value of (what) */
   virtual void expose(core::LispPtr lisp, WhatToExpose what) const = 0;
 
-  virtual void shutdown() {};
-   
 };
 
 template <typename oclass>
@@ -708,7 +706,7 @@ public:
 
   /*! Install a package */
   void installPackage(const Exposer_O *package);
-  void uninstallPackage(Exposer_O *package);
+
   /*! Create nils for all classes that don't have them yet */
   //	void	createNils();
   /*! When global initialization is locked then no more callbacks can be added
