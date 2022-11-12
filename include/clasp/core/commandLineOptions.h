@@ -40,7 +40,7 @@ typedef enum { cloLoad, cloEval, cloScript } LoadEvalEnum;
 typedef enum { cloDefault, cloImage, cloSnapshot } ImageTypeEnum;
 
 struct CommandLineOptions {
-  CommandLineOptions(int argc, char *argv[]);
+  CommandLineOptions(int argc, const char *argv[]);
   process_arguments_callback _ProcessArguments;
   std::string _ExecutableName;
   bool _JITLogSymbols;

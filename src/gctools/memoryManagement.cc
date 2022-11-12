@@ -41,8 +41,10 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/gcFunctions.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/gctools/memoryManagement.h>
 #include <clasp/core/mpPackage.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
 //#include "main/allHeaders.cc"
@@ -56,6 +58,22 @@ THE SOFTWARE.
 #else
 #define GCROOT_LOG(x)
 #endif
+
+
+// ---------------------------------------------------------------------------
+// GLOBAL VARS
+// ---------------------------------------------------------------------------
+
+#define CLASP_DEFAULT_PROGRAM_NAME "clasp"
+#define CLASP_DEFAULT_EXE_NAME CLASP_DEFAULT_PROGRAM_NAME
+
+static std::string g_exe_name;      // filename of the executable
+static std::string g_program_name;  // logical / settable program name
+
+static bool        g_abort_flag;
+
+static std::terminate_handler g_prev_terminate_handler;
+
 
 extern "C" {
 void gc_park() {
@@ -783,28 +801,185 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
   // MPS registers the roots with the GC and doesn't need a shadow table
   mps_register_roots(reinterpret_cast<void*>(module_mem),nargs);
 #endif
+
+}
+
+void set_abort_flag( bool abort_flag = false )
+{
+  g_abort_flag = abort_flag;
+}
+
+bool abort_flag( void )
+{
+  return g_abort_flag;
+}
+
+// EXECUTABLE MASTER DATA
+// - PROGRAM NAME
+void set_program_name( std::string program_name = CLASP_DEFAULT_PROGRAM_NAME )
+{
+  g_program_name = program_name;
+}
+
+std::string program_name()
+{
+  return g_program_name;
+}
+
+// - EXECUTABLE NAME
+void set_exe_name( std::string exe_name = CLASP_DEFAULT_EXE_NAME )
+{
+  g_exe_name = exe_name;
+}
+
+std::string exe_name()
+{
+  return g_exe_name;
+}
+
+// TERMINATION HANDLING
+
+static void clasp_terminate_handler( void )
+{
+  // TODO: Implement CLASP terminate handler, e.g.:
+  // - Call all functions registered via an atexit hook -
+  // to be implemented!
+
+  // Finally exit or abort
+
+  if( gctools::abort_flag() )
+    abort();
+  try { throw; }
+  catch (const std::exception& e) {
+      fprintf(stderr, "%s:%d There was an unhandled std::exception in process [pid: %d] e.what()=[%s] - do something about it.\n", __FILE__, __LINE__, getpid(), e.what()  );
+  } catch (...) {
+      fprintf(stderr, "%s:%d There was an unhandled unknown exception in process [pid: %d] - do something about it.\n", __FILE__, __LINE__, getpid() );
+  };
+  abort();
 }
 
 
-
-int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
+void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
 
   if (gctools::Header_s::weak_mtag != gctools::character_tag) {
     printf("%s:%d:%s The Header_s::weak_mtag (%lu) MUST have the same value as gctools::character_tag(%lu)\n",
            __FILE__, __LINE__, __FUNCTION__, (uintptr_t)gctools::Header_s::weak_mtag, (uintptr_t)gctools::character_tag);
     abort();
   }
-  void* stackMarker = &stackMarker;
-  gctools::_global_stack_marker = (const char*)&stackMarker;
-  gctools::_global_stack_max_size = stackMax;
-  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
-  global_sizeof_fwd = AlignUp(sizeof(Header_s));
+  gctools::_global_stack_marker = (const char*)stackMarker;
+  gctools::_global_stack_max_size = claspInfo->_stackMax;
+  gctools::global_alignup_sizeof_header = gctools::AlignUp(sizeof(gctools::Header_s));
+  gctools::global_sizeof_fwd = gctools::AlignUp(sizeof(gctools::Header_s));
+
+  const char* trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
+  if (trigger) {
+    size_t strigger = atoi(trigger);
+    core::global_compile_discriminating_function_trigger = strigger;
+    printf("%s:%d:%s Setting global_compile_discriminating_function_trigger = %lu\n", __FILE__, __LINE__, __FUNCTION__, strigger );
+  }
+  if (getenv("CLASP_TIME_EXIT")) {
+    atexit(core::last_exit);
+  }
+  const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
+  if (dof) {
+    if (strcmp(dof,"save")==0) {
+      llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrintSave;
+    } else {
+      llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrint;
+    }
+  }
+
+#ifdef DEBUG_DYN_ENV_STACK
+  const char* ddes = getenv("CLASP_DEBUG_DYN_ENV_STACK");
+  if (ddes) core::global_debug_dyn_env_stack = true;
+#endif
+  
+
+  // Do not touch debug log until after MPI init
+
+  bool mpiEnabled = false;
+  int  mpiRank    = 0;
+  int  mpiSize    = 1;
+
+
+  // DO BASIC EXE SETUP
+
+  set_abort_flag(); // Set abort flag to default value
+  g_prev_terminate_handler = std::set_terminate( [](){ clasp_terminate_handler(); } );
+
+  // - STORE NAME OF EXECUTABLE
+
+  {
+    std::string exename( claspInfo->_argv[ 0 ] );
+    set_exe_name( basename( (char *) exename.c_str() ) );
+  }
+
+  // - SET THE APPLICATION NAME
+
+  set_program_name();
+
+  
+  // - COMMAND LINE OPTONS HANDLING
+
+  core::CommandLineOptions options(claspInfo->_argc, claspInfo->_argv);
+
+  // - MPI ENABLEMENT
+
+#ifdef USE_MPI
+  if (!options._DisableMpi) {
+    printf("%s:%d Enabling MPI\n", __FILE__, __LINE__ );
+    try
+    {
+      mpip::Mpi_O::Init(argc, argv, mpiEnabled, mpiRank, mpiSize);
+    }
+    catch ( HardError &err )
+    {
+      fprintf( stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n",
+               exe_name().c_str(), __FILE__, __LINE__ );
+      abort();
+    }
+  } else {
+    mpiEnabled = false;
+  }
+#endif
+
+  fflush( stderr );
+
+  //
+  // Setup debugging info all the time
+  //
+  core::dumpDebuggingLayouts();
+  if (getenv("CLASP_DEBUGGER_SUPPORT")) {
+    stringstream ss;
+    char* username = getenv("USER");
+    if (!username) {
+      printf("%s:%d:%s Could not get USER environment variable\n", __FILE__, __LINE__, __FUNCTION__ );
+      exit(1);
+    }
+    ss << "/tmp/clasp_pid_" << getenv("USER");
+    printf("%s:%d:%s  Setting up clasp for debugging - writing PID to %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str());
+    FILE* fout = fopen(ss.str().c_str(),"w");
+    if (!fout) {
+      printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
+      exit(1);
+    }
+    fprintf(fout,"%d",getpid());
+    fclose(fout);
+  }
+  //
+  // Pause before any allocations take place
+  //
+  char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+  if (pause_startup) {
+    gctools::setup_user_signal();
+    gctools::wait_for_user_signal("Paused at startup before all initialization");
+  }
 
   //
   // Walk the stamp field layout tables.
   //
   stringstream ssdummy;
-  walk_stamp_field_layout_tables(precise_info,ssdummy);
+  walk_stamp_field_layout_tables(gctools::precise_info,ssdummy);
 #ifdef SIGRTMIN
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
 #else
@@ -813,15 +988,41 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
 
 #if defined(USE_MPS)
-  int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
+  gctools::startupMemoryPoolSystem(claspInfo);
 #elif defined(USE_BOEHM)
-  int exitCode = gctools::initializeBoehm(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
+  gctools::startupBoehm(claspInfo); // Correct
 #elif defined(USE_MMTK)
   int exitCode = gctools::initializeMmtk(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize );
 #endif
-  mp::ClaspThreads_exit(); // run pthreads_exit
-  return exitCode;
+
 }
+
+int run_clasp( MainFunctionType startupFn, gctools::ClaspInfo* claspInfo ) {
+  int exitCode;
+  try {
+    exitCode = startupFn(claspInfo);
+  } catch (core::SaveLispAndDie& ee) {
+#ifdef USE_PRECISE_GC
+    snapshotSaveLoad::snapshot_save(ee);
+#endif
+    exitCode = 0;
+  }
+  return exitCode;
+};
+
+
+
+void shutdown_clasp()
+{
+  mp::ClaspThreads_exit(); // run pthreads_exit
+  #ifdef USE_MPI
+  if (!options._DisableMpi) {
+    mpip::Mpi_O::Finalize();
+  }
+#endif
+
+};
+
 
 Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
   BOUNDS_ASSERT(raw_index<this->_capacity);

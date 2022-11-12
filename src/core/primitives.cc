@@ -208,7 +208,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(lispImplementationType)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__lisp_implementation_type() {
-  return SimpleBaseString_O::make(program_name());
+  return SimpleBaseString_O::make(gctools::program_name());
 };
 
 
@@ -228,7 +228,7 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   } else if (cclasp.notnilp()) {
     ss << "c";
   }
-  ss << program_name();
+  ss << gctools::program_name();
   ss << "-";
 #if defined(USE_MPS)
   ss << "mps-";

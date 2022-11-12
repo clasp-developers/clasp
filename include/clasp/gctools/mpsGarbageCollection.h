@@ -226,7 +226,8 @@ namespace gctools {
       has the type: int startup(int argc, char* argv[]) just like main.
       Also pass an optional object-format for MPS
     */
-  int initializeMemoryPoolSystem(MainFunctionType startup, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
+void startupMemoryPoolSystem(gctools::ClaspInfo* claspInfo );
+void shutdownMemoryPoolSystem();
 
 /*! Search the heap and the stack for an address and print hits
       This can't currently be called from within obj_skip - so it's not

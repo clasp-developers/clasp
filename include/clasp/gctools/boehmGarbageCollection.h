@@ -100,7 +100,9 @@ namespace gctools {
 
   void clasp_warn_proc(char *msg, GC_word arg);
 
-  int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
+void startupBoehm( gctools::ClaspInfo* claspInfo );
+int runBoehm( MainFunctionType startupFn, gctools::ClaspInfo* claspInfo );
+void shutdownBoehm();
 
 };
 
