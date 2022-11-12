@@ -50,7 +50,24 @@ extern "C" {
 };
 #endif
 
-typedef int (*MainFunctionType)(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize);
+namespace core {
+struct ThreadLocalState;
+}
+namespace gctools {
+
+struct ClaspInfo {
+  int           _argc;
+  const char**  _argv;
+  size_t        _stackMax;
+  core::ThreadLocalState* _threadLocalStateP;
+  bool          _mpiEnabled;
+  int           _mpiRank;
+  int           _mpiSize;
+  ClaspInfo( int argc, const char** argv, size_t stackMax ) : _argc(argc), _argv(argv), _stackMax(stackMax) {};
+};
+};
+
+typedef int (*MainFunctionType)(gctools::ClaspInfo* claspInfo);
 
 #define GC_LOG(x)
 #define GCPRIVATE public
@@ -1184,10 +1201,11 @@ namespace gctools {
 
 int handleFatalCondition();
 
+
  
 /* Start up the garbage collector and the main function.
        The main function is wrapped within this function */
-int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize);
+int startupGarbageCollectorAndSystem(MainFunctionType startupFn, gctools::ClaspInfo* claspInfo );
 };
 
 
@@ -1433,7 +1451,25 @@ size_t objectSize(BaseHeader_s* header);
 
 bool is_memory_readable(const void* address, size_t bytes=8);
 
+void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo );
+
+int run_clasp(MainFunctionType startupFn, ClaspInfo* claspInfo);
+
+void shutdown_clasp();
+
 };
+
+namespace core {
+extern size_t global_compile_discriminating_function_trigger;
+
+};
+
+namespace gctools {
+std::string program_name();
+std::string exe_name();
+bool abort_flag(void);
+};
+
 //#endif // _clasp_memoryManagement_H
 
 /*

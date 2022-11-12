@@ -108,11 +108,6 @@ void destroy_custom_allocation_point_info() {
 
 };
 
-
-
-
-
-
 extern "C" {
 void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(client));
@@ -900,7 +895,7 @@ void run_quick_tests()
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
 
 __attribute__((noinline))
-int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
+void startupMemoryPoolSystem(gctools::ClaspInfo* claspInfo ) {
 #if 0
     printf("%s:%d WARNING   Alignment is %lu \n",__FILE__,__LINE__, Alignment());
     printf("%s:%d           AlignUp(8) -> %lu\n", __FILE__, __LINE__, AlignUp(8));
@@ -1109,7 +1104,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
-  core::global_options = new core::CommandLineOptions(argc, argv);
+  core::global_options = new core::CommandLineOptions(claspInfo->_argc, claspInfo->_argv);
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS
@@ -1190,23 +1185,13 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();
     run_quick_tests();
-#if 1
-    try {
-      exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
-    } catch (core::SaveLispAndDie& ee) {
-#ifdef USE_PRECISE_GC
-      snapshotSaveLoad::snapshot_save(ee);
-#endif
-      exit_code = 0;
-    }
-#else
-    printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
-    test_mps_allocation();
-    exit_code = 0;
-#endif
-    my_thread_allocation_points.destroyAllocationPoints();
   }
 #endif
+}
+
+void shutdownMps() {
+#if 0
+  my_thread_allocation_points.destroyAllocationPoints();
   size_t finalizations;
   processMpsMessages(finalizations);
   delete_my_roots();
@@ -1231,8 +1216,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_fmt_destroy(obj_fmt);
   mps_fmt_destroy(cons_fmt);
   mps_arena_destroy(global_arena);
-
-  return exit_code;
+#endif
 };
 };
 
