@@ -172,8 +172,8 @@ public:
                  pythonGlobals } WhatToExpose;
  private:
   // The package is put here
-   Package_sp _Package;
-   SimpleBaseString_sp _PackageName;
+//   Package_sp _Package;
+   std::string _PackageName;
 public:
 
   /*! CTor that looks up a Package with packageName and if it
@@ -183,10 +183,10 @@ public:
   virtual ~Exposer_O();
 
   /*! Return the packageName */
-   string packageName() const { return this->_PackageName->get_std_string(); };
+   string packageName() const { return this->_PackageName; };
 
   /*! Return the Package that this Exposer holds */
-  Package_sp package() const { return this->_Package; };
+//   Package_sp package() const { return _lisp->findPackage(this->_PackageName); };
 
   /* Evaluate the code that exposes the package Classes/Functions/Globals
 	 to Cando-lisp or to Python depending on the value of (what) */

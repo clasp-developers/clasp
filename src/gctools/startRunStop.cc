@@ -319,7 +319,6 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
   char *cur = getenv("CLASP_MEMORY_PROFILE");
   size_t values[2];
   int numValues = 0;
-  int exit_code = 0;
   if (cur) {
     while (*cur && numValues < 2) {
       values[numValues] = strtol(cur, &cur, 10);
@@ -357,7 +356,7 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
   
 //  printf("%s:%d:%s About to get start_of_snapshot\n", __FILE__, __LINE__, __FUNCTION__ );
 #ifdef USE_PRECISE_GC
-#  ifdef _TARGET_OS_DARWIN
+# ifdef _TARGET_OS_DARWIN
   const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
   size_t size;
   claspInfo->_start_of_snapshot = getsectiondata(exec_header,
@@ -368,13 +367,13 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
   if (claspInfo->_start_of_snapshot) {
     claspInfo->_end_of_snapshot = (void*)((char*)claspInfo->_start_of_snapshot + size);
   }
-#  endif
-#  ifdef _TARGET_OS_LINUX
+# endif
+# ifdef _TARGET_OS_LINUX
   extern const char __attribute__((weak)) SNAPSHOT_START;
   extern const char __attribute__((weak)) SNAPSHOT_END;
   claspInfo->_start_of_snapshot = (void*)&SNAPSHOT_START;
   claspInfo->_end_of_snapshot = (void*)&SNAPSHOT_END;
-#  endif
+# endif
 #else
   claspInfo->_start_of_snapshot = NULL;
   claspInfo->_end_of_snapshot = NULL;
@@ -436,7 +435,7 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
       core::global_startupEnum = core::snapshotFile;
     }
     snapshotSaveLoad::snapshot_load( (void*)claspInfo->_start_of_snapshot, (void*)claspInfo->_end_of_snapshot, claspInfo->_snapshotFileName );
-
+#endif
   } else {
     //
     // Startup clasp using an image and running all toplevel forms
@@ -510,13 +509,7 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
       printf("%s:%d Setting core:*exit-backtrace* to T\n", __FILE__, __LINE__);
       core::_sym_STARexit_backtraceSTAR->setf_symbolValue(_lisp->_true());
     } else if (oCar(cur) == kw::_sym_pause_pid) {
-#ifdef USE_USER_SIGNAL
       gctools::wait_for_user_signal("Paused at startup");
-#else
-      printf("%s:%d PID = %d  Paused at startup - press enter to continue: \n", __FILE__, __LINE__, getpid() );
-      fflush(stdout);
-      getchar();
-#endif
     }
   }
   // The system is fully up now
@@ -531,6 +524,7 @@ int run_clasp( gctools::ClaspInfo* claspInfo ) {
   if ( claspInfo->_loadSnapshotFile ||          // We want to load a snapshot
        (claspInfo->_start_of_snapshot != NULL)) // We found an embedded snapshot
   {
+#ifdef USE_PRECISE_GC
     _lisp->parseCommandLineArguments(*core::global_options);
     try {
       if (ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue().notnilp()) {

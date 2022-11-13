@@ -825,7 +825,7 @@ Symbol_sp Lisp::errorUndefinedSymbol(const char *sym) {
 void Lisp::installPackage(const Exposer_O *pkg) {
   LOG("Installing package[%s]" , pkg->packageName());
   int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
-  ChangePackage change(pkg->package());
+  ChangePackage change(_lisp->findPackage(pkg->packageName()));
   {
     pkg->expose(_lisp, Exposer_O::candoClasses);
   }
@@ -2473,13 +2473,11 @@ LispHolder::~LispHolder() {
 }
 
 Exposer_O::Exposer_O(LispPtr lisp, const string &packageName) {
-  this->_PackageName = SimpleBaseString_O::make(packageName);
+  this->_PackageName = packageName;
   if (!lisp->recognizesPackage(packageName)) {
     list<string> lnnames;
     list<string> lpkgs;
-    this->_Package = lisp->makePackage(packageName, lnnames, lpkgs);
-  } else {
-    this->_Package = gc::As<Package_sp>(lisp->findPackage(packageName, true));
+    lisp->makePackage(packageName, lnnames, lpkgs);
   }
 }
 
