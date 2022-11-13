@@ -190,6 +190,7 @@ SYMBOL_EXPORT_SC_(ExtPkg,array_index);
 SYMBOL_EXPORT_SC_(CorePkg,index);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg,STARnumber_of_entry_pointsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg,STARcore_startup_functionSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg,read_only);
 SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
 SYMBOL_EXPORT_SC_(ExtPkg,assume_no_errors);
@@ -949,7 +950,7 @@ void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpose what) const {
 
 void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   {
-    Package_sp package = _lisp->findPackage(this->packageName());
+    Package_sp package = gc::As<Package_sp>(_lisp->findPackage(this->packageName()));
     package->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
 #define CorePkg_EXPORT
 #define DO_SYMBOL( ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
@@ -1205,6 +1206,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebug_hash_tableSTAR->defparameter(nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(nil<core::T_O>());
   _sym_STARnumber_of_entry_pointsSTAR->defparameter(make_fixnum(NUMBER_OF_ENTRY_POINTS));
+  _sym_STARcore_startup_functionSTAR->defparameter(nil<core::T_O>());
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(nil<core::T_O>());
   comp::_sym_STARdefault_object_typeSTAR->defparameter(kw::_sym_faso);
   comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(nil<core::T_O>());

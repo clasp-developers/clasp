@@ -61,6 +61,12 @@ THE SOFTWARE.
 #include <clasp/gctools/gc_interface.fwd.h>
 //#include "main/allHeaders.cc"
 
+#ifndef SCRAPING
+#define ALL_EXPOSES_EXTERN
+#include EXPOSE_INC_H
+#undef ALL_EXPOSES_EXTERN
+#endif
+
 // ---------------------------------------------------------------------------
 // GLOBAL VARS
 // ---------------------------------------------------------------------------
@@ -440,7 +446,7 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
     //
     // Startup clasp using an image and running all toplevel forms
     //
-    core::LispHolder lispHolder(claspInfo->_mpiEnabled, claspInfo->_mpiRank, claspInfo->_mpiSize);
+    claspInfo->_lispHolder = new core::LispHolder(claspInfo->_mpiEnabled, claspInfo->_mpiRank, claspInfo->_mpiSize);
     gctools::GcToolsExposer_O GcToolsPkg(_lisp);
     clbind::ClbindExposer_O ClbindPkg(_lisp);
     llvmo::LlvmoExposer_O llvmopkg(_lisp);
@@ -448,7 +454,7 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
     serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
     asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
 
-    lispHolder.startup(*core::global_options);
+    claspInfo->_lispHolder->startup(*core::global_options);
 
     _lisp->installPackage(&GcToolsPkg);
     _lisp->installPackage(&ClbindPkg);
@@ -477,10 +483,10 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
       core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
     }
 #endif
-  
+
   }
 
-    //
+  //
   // If --addresses was passed as a command line option - dump the addresses here
   //
   maybeHandleAddressesOption(core::global_options);
@@ -558,8 +564,9 @@ int run_clasp( gctools::ClaspInfo* claspInfo ) {
   return exitCode;
 };
 
-void shutdown_clasp()
+void shutdown_clasp(gctools::ClaspInfo* claspInfo)
 {
+  delete claspInfo->_lispHolder;
   _lisp->_Roots._ClaspJIT = nil<core::T_O>();
   mp::ClaspThreads_exit(); // run pthreads_exit
   #ifdef USE_MPI

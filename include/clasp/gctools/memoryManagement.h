@@ -52,6 +52,7 @@ extern "C" {
 
 namespace core {
 struct ThreadLocalState;
+struct LispHolder;
 }
 namespace gctools {
 
@@ -67,10 +68,13 @@ struct ClaspInfo {
   std::string   _snapshotFileName;
   void*         _start_of_snapshot;
   void*         _end_of_snapshot;
+  core::LispHolder* _lispHolder;
+  
   ClaspInfo( int argc, const char** argv, size_t stackMax ) : _argc(argc), _argv(argv), _stackMax(stackMax)
                                                             , _loadSnapshotFile(false)
                                                             , _start_of_snapshot(NULL)
                                                             , _end_of_snapshot(NULL)
+                                                            , _lispHolder(NULL)
   {};
 };
 };
@@ -1456,7 +1460,7 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo );
 
 int run_clasp( gctools::ClaspInfo* claspInfo );
 
-void shutdown_clasp();
+void shutdown_clasp( gctools::ClaspInfo* claspInfo );
 
 };
 

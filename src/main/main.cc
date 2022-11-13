@@ -253,7 +253,7 @@ int main( int argc, const char *argv[] )
 
   int exit_code = run_clasp( &claspInfo );
 
-  shutdown_clasp();
+  shutdown_clasp(&claspInfo);
 
   return exit_code;
 }
