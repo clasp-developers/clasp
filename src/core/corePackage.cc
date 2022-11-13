@@ -949,7 +949,8 @@ void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpose what) const {
 
 void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   {
-    this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
+    Package_sp package = _lisp->findPackage(this->packageName());
+    package->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
 #define CorePkg_EXPORT
 #define DO_SYMBOL( ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
 #ifndef SCRAPING
