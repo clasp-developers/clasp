@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef llvmo_intrinsics_H
 #define llvmo_intrinsics_H
 
+#include <clasp/llvmo/intrinsics.fwd.h>
 
 // If functions are defined with primitive-nounwind that means that they never unwind the stack and they can
 //   be invoked from generated code using 'call'.  If they do unwind the stack, then any function that invokes
@@ -256,10 +257,5 @@ namespace llvmo {
   [[noreturn]] void not_function_designator_error(core::T_sp datum);
   void initialize_raw_translators( void );
 }
-
-extern "C" {
-NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,
-                                           std::size_t min, std::size_t max);
-};
 
 #endif
