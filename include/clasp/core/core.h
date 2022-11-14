@@ -276,10 +276,6 @@ struct size_t_pair {
   size_t length;
 };
 
-#if defined(OLD_SERIALIZE)
-#include <serializerNode.fwd.h>
-#endif
-
 namespace core {
 extern bool _ClassesAreInitialized;
 typedef uint handleType;

@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/serialize.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h>

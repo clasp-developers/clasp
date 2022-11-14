@@ -106,7 +106,6 @@ THE SOFTWARE.
 #include <xmlSaveArchive.h>
 #endif // defined(XML_ARCHIVE)
 #if defined(OLD_SERIALIZE)
-#include <clasp/core/serialize.h>
 #endif // defined(OLD_SERIALIZE)
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/numerics.h>

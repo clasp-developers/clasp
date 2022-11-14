@@ -90,7 +90,6 @@ typedef bool _Bool;
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/arguments.h>
-#include <clasp/core/serialize.h>
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/lambdaListHandler.h>

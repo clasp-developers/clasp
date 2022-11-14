@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gcFunctions.h>
-#include <clasp/core/serialize.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/hashTable.h>

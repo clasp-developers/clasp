@@ -41,12 +41,6 @@ namespace core {
 FORWARD(WeakPointer);
 class WeakPointer_O : public General_O {
   LISP_CLASS(core, CorePkg, WeakPointer_O, "WeakPointer",General_O);
-#if defined(OLD_SERIALIZE)
-  DECLARE_SERIALIZE();
-#endif // defined(OLD_SERIALIZE)
-#if defined(XML_ARCHIVE)
-  DECLARE_ARCHIVE();
-#endif // defined(XML_ARCHIVE)
   WeakPointer_O() : _Link(NULL), _Object(NULL) {};
   WeakPointer_O(T_sp ptr) : _Link(ptr.raw_()), _Object(ptr.raw_()) {
 #ifdef USE_BOEHM
