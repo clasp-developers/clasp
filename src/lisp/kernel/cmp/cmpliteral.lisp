@@ -1124,94 +1124,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                                       (holder-type cmp:*load-time-value-holder-global-var-type*))
   (cmp:irc-t*-load (constants-table-reference index :holder holder)))
 
-
-
-;;; ------------------------------------------------------------
-;;;
-;;; Bytecode interpreter generator
-;;;
-;;;
-
-(defparameter *machine* cmp:*startup-primitives-as-list*)
-
-(defstruct (c++-info (:type vector) :named) type c++-type suffix gcroots)
-
-(defun set-c++-info (symbol c++-type suffix &optional gcroots)
-  (setf (gethash symbol *c++-info*) (make-c++-info :type symbol :c++-type c++-type :suffix suffix :gcroots gcroots)))
-
-(defparameter *c++-info* (make-hash-table :test #'equal))
-(eval-when (:load-toplevel :execute)
-  (set-c++-info :i8 "char" "char")
-  (set-c++-info :size_t "size_t" "size_t")
-  (set-c++-info :t* "T_O*" "object" t)
-  (set-c++-info :i8* "string" "string")
-  (set-c++-info :single-float "float" "float")
-  (set-c++-info :double-float "double" "double")
-  (set-c++-info :uintptr_t "uintptr_t" "size_t")
-  (set-c++-info :bignum "T_O*" "bignum")
-  (set-c++-info :unknown "UNKNOWN" "UNKNOWN")
-  )
-
-(defun build-one-c++-function (op &optional (stream *standard-output*))
-  (destructuring-bind (op-kind name return-type argument-types &key varargs ltvc)
-      op
-    (declare (ignore op-kind return-type ltvc))
-    (let ((arg-types (nthcdr 2 argument-types)))
-      (format stream "void parse_~a(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {~%" name)
-      (format stream "  if (log) printf(\"%s:%d:%s parse_~a\\n\", __FILE__, __LINE__, __FUNCTION__);~%" name)
-      (let* ((arg-index 0)
-             (vars (let (names)
-                     (dolist (arg-type arg-types)
-                       (let* ((c++-info (let ((info (gethash arg-type *c++-info*)))
-                                          (if info
-                                              info
-                                              (make-c++-info :type (format nil "UNKNOWN_~a" arg-type)
-                                                             :c++-type (format nil "UNKNOWN_~a" arg-type)
-                                                             :suffix (format nil "UNKNOWN_~a" arg-type)))))
-                              (c++-arg-type (c++-info-c++-type c++-info))
-                              (suffix (c++-info-suffix c++-info))
-                              (gcroots (c++-info-gcroots c++-info))
-                              (variable-name (cond
-                                               ((and (= arg-index 0) (string= c++-arg-type "char"))  "tag")
-                                               ((and (= arg-index 1) (string= c++-arg-type "size_t")) "index")
-                                               (t (format nil "arg~a" arg-index))))
-                              (read-variable-name (if (string= c++-arg-type "string")
-                                                      (format nil "~a.c_str()" variable-name)
-                                                      variable-name)))
-                         (format stream "  ~a ~a = ltvc_read_~a(~a fin, log, byte_index );~%" c++-arg-type variable-name
-                                 suffix
-                                 (if gcroots
-                                     "roots, "
-                                     ""))
-                         (incf arg-index)
-                         (push read-variable-name names)))
-                     (nreverse names))))
-        (when varargs
-          (setf name (format nil "~a_varargs" name))
-          (format stream "  Cons_O* varargs = ltvc_read_list( roots, ~a, fin, log, byte_index );~%" (car (last vars )))
-          (setf vars (append vars (list "varargs"))))
-        (format stream "  ~a( roots" name)
-        (dolist (var vars)
-          (format stream ", ~a" var))
-        (format stream ");~%")
-        (format stream "};~%")))))
-
-(defun build-c++-functions (primitives &optional (stream *standard-output*))
-  (format stream "#ifdef DEFINE_PARSERS~%")
-  (dolist (prim primitives)
-    (build-one-c++-function prim stream))
-  (format stream "#endif // DEFINE_PARSERS~%"))
-
-(defun build-c++-switch (primitives &optional (stream *standard-output*))
-  (format stream "#ifdef DEFINE_SWITCH~%")
-  (let ((code 65))
-    (dolist (prim primitives)
-      (let ((func-name (second prim)))
-        (format stream "  case ~a: parse_~a(roots,fin,log,byte_index);~%" code func-name)
-        (format stream "           break;~%")
-        (incf code))))
-  (format stream "#endif // DEFINE_SWITCH~%"))
-
 (defun build-c++-byte-codes (primitives)
   (let ((map (make-hash-table :test #'equal)))
     (let ((code 65))
@@ -1221,13 +1133,4 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
           (incf code))))
     map))
 
-
-
-(defun build-c++-machine (&optional (stream *standard-output*))
-  (build-c++-functions *machine* stream)
-  (build-c++-switch *machine* stream))
-
-
-(defvar *byte-codes* (build-c++-byte-codes cmp:*startup-primitives-as-list*))
-
-
+(defvar *byte-codes* (build-c++-byte-codes cmpref:*startup-primitives-as-list*))

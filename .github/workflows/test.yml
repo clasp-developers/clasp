@@ -38,9 +38,9 @@ jobs:
       run: |
         brew install boost fmt gmp llvm@14 ninja pkg-config sbcl ecl netcdf expat
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v2.2.0
       if: matrix.build == 'cando'
 
     - name: Install AmberTools

@@ -612,13 +612,6 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
 }
 
 
-void LlvmoExposer_O::shutdown() {
-  _lisp->_Roots._ClaspJIT = nil<core::T_O>();
-  gctools::gctools__garbage_collect();
-};
-
-
-
 /*!
    Install a trampoline that spills registers onto the stack
 

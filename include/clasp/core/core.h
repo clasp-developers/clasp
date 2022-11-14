@@ -457,9 +457,6 @@ template <class T> class_id const registered_class<T>::id = allocate_class_id(ty
 template <class T> struct registered_class<T const> : registered_class<T> {};
 }; // namespace reg
 
-/*! This function is provided by the main.cc file */
-std::string program_name();
-
 namespace core {
 class T_O;
 class Symbol_O;

@@ -172,8 +172,8 @@ public:
                  pythonGlobals } WhatToExpose;
  private:
   // The package is put here
-   Package_sp _Package;
-   SimpleBaseString_sp _PackageName;
+//   Package_sp _Package;
+   std::string _PackageName;
 public:
 
   /*! CTor that looks up a Package with packageName and if it
@@ -183,17 +183,15 @@ public:
   virtual ~Exposer_O();
 
   /*! Return the packageName */
-   string packageName() const { return this->_PackageName->get_std_string(); };
+   string packageName() const { return this->_PackageName; };
 
   /*! Return the Package that this Exposer holds */
-  Package_sp package() const { return this->_Package; };
+//   Package_sp package() const { return _lisp->findPackage(this->_PackageName); };
 
   /* Evaluate the code that exposes the package Classes/Functions/Globals
 	 to Cando-lisp or to Python depending on the value of (what) */
   virtual void expose(core::LispPtr lisp, WhatToExpose what) const = 0;
 
-  virtual void shutdown() {};
-   
 };
 
 template <typename oclass>
@@ -708,7 +706,7 @@ public:
 
   /*! Install a package */
   void installPackage(const Exposer_O *package);
-  void uninstallPackage(Exposer_O *package);
+
   /*! Create nils for all classes that don't have them yet */
   //	void	createNils();
   /*! When global initialization is locked then no more callbacks can be added
@@ -945,6 +943,8 @@ extern bool global_Started;
 
 void dumpDebuggingLayouts();
 T_mv cl__intern(String_sp symbol_name, T_sp package_desig);
+
+
 };
 
 

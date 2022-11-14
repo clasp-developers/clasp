@@ -1,0 +1,20 @@
+
+# Run so that we can connect in a debugger
+# Pause once object files are all added because udb/gdb do that very slowly
+#
+
+
+#export CLASP_DEBUG_OBJECT_FILES=save
+#export CLASP_DEBUG_OBJECT_FILES=1
+#export CLASP_DEBUG_SNAPSHOT=1
+export CLASP_DEBUGGER_SUPPORT=1
+#export CLASP_ENABLE_TRAMPOLINES=1
+export CLASP_DONT_HANDLE_CRASH_SIGNALS=1
+#export CLASP_PAUSE_INIT=1
+#export CLASP_PAUSE_STARTUP=1
+export CLASP_PAUSE_OBJECTS_ADDED=1
+#export CLASP_PAUSE_EXIT=1
+
+printenv | grep CLASP_
+
+$*

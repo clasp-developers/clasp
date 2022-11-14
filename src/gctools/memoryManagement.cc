@@ -41,10 +41,17 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/gcFunctions.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/gctools/memoryManagement.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
+#if 0
+#include <clasp/core/bundle.h>
+#include <clasp/core/posixTime.h>
+#include <clasp/core/compiler.h>
+#include <clasp/gctools/gc_interface.fwd.h>
+#endif
 //#include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_LINUX
@@ -56,6 +63,8 @@ THE SOFTWARE.
 #else
 #define GCROOT_LOG(x)
 #endif
+
+SYMBOL_EXPORT_SC_(GcToolsPkg,STARdebug_gcrootsSTAR);
 
 extern "C" {
 void gc_park() {
@@ -149,6 +158,163 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_
 namespace gctools {
 
 size_t global_sizeof_fwd;
+
+
+
+//GCStack _ThreadLocalStack;
+const char *_global_stack_marker;
+size_t _global_stack_max_size;
+/*! Keeps track of the next available header KIND value */
+stamp_t global_next_header_stamp = (stamp_t)STAMPWTAG_max+1;
+
+#if 0
+    HeapRoot* 	rooted_HeapRoots = NULL;
+    StackRoot* 	rooted_StackRoots = NULL;
+#endif
+
+stamp_t next_header_kind()
+{
+  stamp_t next = global_next_header_stamp;
+  ++global_next_header_stamp;
+  return next;
+}
+
+core::Fixnum ensure_fixnum(stamp_t val)
+{
+  return (core::Fixnum)val;
+}
+
+CL_LAMBDA();
+CL_DOCSTRING(R"dx(Return the next available header KIND value and increment the global variable global_next_header_stamp)dx");
+DOCGROUP(clasp);
+CL_DEFUN core::Fixnum gctools__next_header_kind()
+{
+  stamp_t next = global_next_header_stamp;
+  ++global_next_header_stamp;
+  return ensure_fixnum(next);
+}
+
+std::atomic<uint64_t> global_TotalRootTableSize;
+std::atomic<uint64_t> global_NumberOfRootTables;
+
+
+void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries) {
+  if (!transient_alloca && transient_entries!=0) {
+    printf("%s:%d:%s PROBLEM!!! transient_alloca is %p and transient_entries is %lu\n", __FILE__, __LINE__, __FUNCTION__, transient_alloca, transient_entries );
+    abort();
+  }
+  if (transient_alloca&&transient_entries>0) {
+    core::SimpleVector_sp sv = core::SimpleVector_O::make(transient_entries);
+    for (size_t ii = 0; ii<transient_entries; ++ii) {
+      (*sv)[ii] = core::make_fixnum(12345);
+    }
+    GCROOT_LOG(("%s:%d  Setup simple vector@%p\n", __FILE__, __LINE__, (void*)sv.tagged_()));
+    *transient_alloca = &(*sv);
+    this->_TransientAlloca = transient_alloca;
+  } else {
+    this->_TransientAlloca = nullptr;
+  }
+}
+
+GCRootsInModule::GCRootsInModule(void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+(sizeof(core::T_O*)*num_entries)));
+  llvmo::JITDataReadWriteMaybeExecute();
+  this->_function_pointer_count = function_pointer_count;
+  this->_function_pointers = fptrs;
+  this->_num_entries = num_entries;
+  this->_capacity = num_entries;
+  this->_module_memory = module_mem;
+  this->setup_transients(transient_alloca, transient_entries);
+  llvmo::JITDataReadExecute();
+}
+
+
+
+/*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
+*/
+void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
+  global_TotalRootTableSize += num_roots;
+  global_NumberOfRootTables++;
+  // Get the address of the memory space in the llvm::Module
+  uintptr_t address = reinterpret_cast<uintptr_t>(root_address);
+  core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
+//  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
+//  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
+  // Create a GCRootsInModule structure to write the constants with
+  // FIXME: The GCRootsInModule is on the stack - once it's gone we loose the ability
+  //        to keep track of the constants and in the future when we start GCing code
+  //        we need to keep track of the constants.
+  new (roots) GCRootsInModule(reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs );
+  size_t idx = 0;
+  if (initial_data != 0 ) {
+    core::List_sp args((gctools::Tagged)initial_data);
+    for ( auto c : args ) {
+      core::T_sp arg = CONS_CAR(c);
+
+      //
+      // This is where we translate some literals
+      // This is like load-time
+      //
+      if (gc::IsA<core::GlobalSimpleFunGenerator_sp>(arg)) {
+        core::GlobalSimpleFunGenerator_sp fdgen = gc::As_unsafe<core::GlobalSimpleFunGenerator_sp>(arg);
+//        printf("%s:%d:%s Hit a GlobalSimpleFunGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_SimpleFunFunctions).c_str());
+        arg = core::makeGlobalSimpleFunFromGenerator(fdgen,roots,fptrs);
+      } else if (gc::IsA<core::LocalSimpleFunGenerator_sp>(arg)) {
+        core::LocalSimpleFunGenerator_sp fdgen = gc::As_unsafe<core::LocalSimpleFunGenerator_sp>(arg);
+//        printf("%s:%d:%s Hit a LocalSimpleFunGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_SimpleFunFunctions).c_str());
+        arg = core::makeLocalSimpleFunFromGenerator(fdgen,fptrs);
+      }
+      
+      roots->setLiteral(idx,arg.tagged_());
+      ++idx;
+    }
+  }
+#ifdef USE_MPS
+  // MPS registers the roots with the GC and doesn't need a shadow table
+  mps_register_roots(reinterpret_cast<void*>(module_mem),num_roots);
+#endif
+}
+
+core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index) {
+  return (core::T_O*)(roots->getLiteral(index));
+}
+
+void shutdown_gcroots_in_module(GCRootsInModule* roots) {
+  roots->_TransientAlloca = NULL;
+}
+
+DOCGROUP(clasp);
+CL_DEFUN Fixnum gctools__nextStampValue() {
+  return Header_s::StampWtagMtag::shift_unshifted_stamp(global_NextUnshiftedStamp);
+}
+DOCGROUP(clasp);
+CL_DEFUN Fixnum gctools__NextUnshiftedStampValue() {
+  return global_NextUnshiftedStamp;
+}
+
+CL_LAMBDA(address args);
+DOCGROUP(clasp);
+CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
+  size_t nargs = core::cl__length(args);
+  // Get the address of the memory space in the llvm::Module
+  uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
+  core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
+//  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
+//  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
+  // Create a ConstantsTable structure to write the constants with
+  GCRootsInModule ct(reinterpret_cast<void*>(module_mem),nargs,NULL,0,0,NULL);
+  size_t i = 0;
+  for ( auto c : args ) {
+    core::T_sp arg = oCar(c);
+    ct.setLiteral(i,arg.tagged_());
+    ++i;
+  }
+#ifdef USE_MPS
+  // MPS registers the roots with the GC and doesn't need a shadow table
+  mps_register_roots(reinterpret_cast<void*>(module_mem),nargs);
+#endif
+
+}
 
 };
 namespace gctools {
@@ -591,238 +757,11 @@ void FinishAssingingBuiltinStamps() {
   global_NextUnshiftedStamp.store(nextGeneralStamp);
 }
 
-
-
-//GCStack _ThreadLocalStack;
-const char *_global_stack_marker;
-size_t _global_stack_max_size;
-/*! Keeps track of the next available header KIND value */
-stamp_t global_next_header_stamp = (stamp_t)STAMPWTAG_max+1;
-
-#if 0
-    HeapRoot* 	rooted_HeapRoots = NULL;
-    StackRoot* 	rooted_StackRoots = NULL;
-#endif
 };
 
+
+
 namespace gctools {
-
-size_t global_alignup_sizeof_header;
-
-void monitorAllocation(stamp_t k, size_t sz) {
-#ifdef DEBUG_MONITOR_ALLOCATIONS  
-  if (global_monitorAllocations.counter >= global_monitorAllocations.start && global_monitorAllocations.counter < global_monitorAllocations.end) {
-    core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
-  }
-  global_monitorAllocations.counter++;
-#endif
-}
-
-
-int handleFatalCondition() {
-  int exitCode = 0;
-  try {
-    throw;
-  } catch (core::ExitProgramException &ee) {
-    // Do nothing
-    //            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
-    exitCode = ee.getExitResult();
-  } catch (core::TerminateProgramIfBatch &ee) {
-    // Do nothing
-    printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
-  } catch (core::CatchThrow &ee) {
-    core::write_bf_stream(fmt::sprintf("%s:%d Uncaught THROW tag[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW", __FILE__ , __LINE__ , ee.getTag()));
-  } catch (core::Unwind &ee) {
-    core::write_bf_stream(fmt::sprintf("At %s:%d - Unwind caught frame: %p index: %d", __FILE__ , __LINE__ , (void*)ee.getFrame() , ee.index()));
-  } catch (HardError &ee) {
-    core::write_bf_stream(fmt::sprintf("At %s:%d - HardError caught: %s", __FILE__ , __LINE__ , ee.message()));
-  }
-  return exitCode;
-}
-
-stamp_t next_header_kind()
-{
-  stamp_t next = global_next_header_stamp;
-  ++global_next_header_stamp;
-  return next;
-}
-
-core::Fixnum ensure_fixnum(stamp_t val)
-{
-  return (core::Fixnum)val;
-}
-
-CL_LAMBDA();
-CL_DOCSTRING(R"dx(Return the next available header KIND value and increment the global variable global_next_header_stamp)dx");
-DOCGROUP(clasp);
-CL_DEFUN core::Fixnum gctools__next_header_kind()
-{
-  stamp_t next = global_next_header_stamp;
-  ++global_next_header_stamp;
-  return ensure_fixnum(next);
-}
-
-std::atomic<uint64_t> global_TotalRootTableSize;
-std::atomic<uint64_t> global_NumberOfRootTables;
-
-
-SYMBOL_EXPORT_SC_(GcToolsPkg,STARdebug_gcrootsSTAR);
-
-void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries) {
-  if (!transient_alloca && transient_entries!=0) {
-    printf("%s:%d:%s PROBLEM!!! transient_alloca is %p and transient_entries is %lu\n", __FILE__, __LINE__, __FUNCTION__, transient_alloca, transient_entries );
-    abort();
-  }
-  if (transient_alloca&&transient_entries>0) {
-    core::SimpleVector_sp sv = core::SimpleVector_O::make(transient_entries);
-    for (size_t ii = 0; ii<transient_entries; ++ii) {
-      (*sv)[ii] = core::make_fixnum(12345);
-    }
-    GCROOT_LOG(("%s:%d  Setup simple vector@%p\n", __FILE__, __LINE__, (void*)sv.tagged_()));
-    *transient_alloca = &(*sv);
-    this->_TransientAlloca = transient_alloca;
-  } else {
-    this->_TransientAlloca = nullptr;
-  }
-}
-
-GCRootsInModule::GCRootsInModule(void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+(sizeof(core::T_O*)*num_entries)));
-  llvmo::JITDataReadWriteMaybeExecute();
-  this->_function_pointer_count = function_pointer_count;
-  this->_function_pointers = fptrs;
-  this->_num_entries = num_entries;
-  this->_capacity = num_entries;
-  this->_module_memory = module_mem;
-  this->setup_transients(transient_alloca, transient_entries);
-  llvmo::JITDataReadExecute();
-}
-
-
-
-/*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
-*/
-void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
-  global_TotalRootTableSize += num_roots;
-  global_NumberOfRootTables++;
-  // Get the address of the memory space in the llvm::Module
-  uintptr_t address = reinterpret_cast<uintptr_t>(root_address);
-  core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
-//  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
-//  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
-  // Create a GCRootsInModule structure to write the constants with
-  // FIXME: The GCRootsInModule is on the stack - once it's gone we loose the ability
-  //        to keep track of the constants and in the future when we start GCing code
-  //        we need to keep track of the constants.
-  new (roots) GCRootsInModule(reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs );
-  size_t idx = 0;
-  if (initial_data != 0 ) {
-    core::List_sp args((gctools::Tagged)initial_data);
-    for ( auto c : args ) {
-      core::T_sp arg = CONS_CAR(c);
-
-      //
-      // This is where we translate some literals
-      // This is like load-time
-      //
-      if (gc::IsA<core::GlobalSimpleFunGenerator_sp>(arg)) {
-        core::GlobalSimpleFunGenerator_sp fdgen = gc::As_unsafe<core::GlobalSimpleFunGenerator_sp>(arg);
-//        printf("%s:%d:%s Hit a GlobalSimpleFunGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_SimpleFunFunctions).c_str());
-        arg = core::makeGlobalSimpleFunFromGenerator(fdgen,roots,fptrs);
-      } else if (gc::IsA<core::LocalSimpleFunGenerator_sp>(arg)) {
-        core::LocalSimpleFunGenerator_sp fdgen = gc::As_unsafe<core::LocalSimpleFunGenerator_sp>(arg);
-//        printf("%s:%d:%s Hit a LocalSimpleFunGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_SimpleFunFunctions).c_str());
-        arg = core::makeLocalSimpleFunFromGenerator(fdgen,fptrs);
-      }
-      
-      roots->setLiteral(idx,arg.tagged_());
-      ++idx;
-    }
-  }
-#ifdef USE_MPS
-  // MPS registers the roots with the GC and doesn't need a shadow table
-  mps_register_roots(reinterpret_cast<void*>(module_mem),num_roots);
-#endif
-}
-
-core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index) {
-  return (core::T_O*)(roots->getLiteral(index));
-}
-
-void shutdown_gcroots_in_module(GCRootsInModule* roots) {
-  roots->_TransientAlloca = NULL;
-}
-
-DOCGROUP(clasp);
-CL_DEFUN Fixnum gctools__nextStampValue() {
-  return Header_s::StampWtagMtag::shift_unshifted_stamp(global_NextUnshiftedStamp);
-}
-DOCGROUP(clasp);
-CL_DEFUN Fixnum gctools__NextUnshiftedStampValue() {
-  return global_NextUnshiftedStamp;
-}
-
-CL_LAMBDA(address args);
-DOCGROUP(clasp);
-CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
-  size_t nargs = core::cl__length(args);
-  // Get the address of the memory space in the llvm::Module
-  uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
-  core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
-//  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
-//  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
-  // Create a ConstantsTable structure to write the constants with
-  GCRootsInModule ct(reinterpret_cast<void*>(module_mem),nargs,NULL,0,0,NULL);
-  size_t i = 0;
-  for ( auto c : args ) {
-    core::T_sp arg = oCar(c);
-    ct.setLiteral(i,arg.tagged_());
-    ++i;
-  }
-#ifdef USE_MPS
-  // MPS registers the roots with the GC and doesn't need a shadow table
-  mps_register_roots(reinterpret_cast<void*>(module_mem),nargs);
-#endif
-}
-
-
-
-int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
-
-  if (gctools::Header_s::weak_mtag != gctools::character_tag) {
-    printf("%s:%d:%s The Header_s::weak_mtag (%lu) MUST have the same value as gctools::character_tag(%lu)\n",
-           __FILE__, __LINE__, __FUNCTION__, (uintptr_t)gctools::Header_s::weak_mtag, (uintptr_t)gctools::character_tag);
-    abort();
-  }
-  void* stackMarker = &stackMarker;
-  gctools::_global_stack_marker = (const char*)&stackMarker;
-  gctools::_global_stack_max_size = stackMax;
-  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
-  global_sizeof_fwd = AlignUp(sizeof(Header_s));
-
-  //
-  // Walk the stamp field layout tables.
-  //
-  stringstream ssdummy;
-  walk_stamp_field_layout_tables(precise_info,ssdummy);
-#ifdef SIGRTMIN
-# define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
-#else
-# define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
-#endif
-  gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
-
-#if defined(USE_MPS)
-  int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
-#elif defined(USE_BOEHM)
-  int exitCode = gctools::initializeBoehm(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
-#elif defined(USE_MMTK)
-  int exitCode = gctools::initializeMmtk(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize );
-#endif
-  mp::ClaspThreads_exit(); // run pthreads_exit
-  return exitCode;
-}
-
 Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
   BOUNDS_ASSERT(raw_index<this->_capacity);
   BOUNDS_ASSERT(raw_index<this->_num_entries);

@@ -50,7 +50,34 @@ extern "C" {
 };
 #endif
 
-typedef int (*MainFunctionType)(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize);
+namespace core {
+struct ThreadLocalState;
+struct LispHolder;
+}
+namespace gctools {
+
+struct ClaspInfo {
+  int           _argc;
+  const char**  _argv;
+  size_t        _stackMax;
+  core::ThreadLocalState* _threadLocalStateP;
+  bool          _mpiEnabled;
+  int           _mpiRank;
+  int           _mpiSize;
+  bool          _loadSnapshotFile;
+  std::string   _snapshotFileName;
+  void*         _start_of_snapshot;
+  void*         _end_of_snapshot;
+  core::LispHolder* _lispHolder;
+  
+  ClaspInfo( int argc, const char** argv, size_t stackMax ) : _argc(argc), _argv(argv), _stackMax(stackMax)
+                                                            , _loadSnapshotFile(false)
+                                                            , _start_of_snapshot(NULL)
+                                                            , _end_of_snapshot(NULL)
+                                                            , _lispHolder(NULL)
+  {};
+};
+};
 
 #define GC_LOG(x)
 #define GCPRIVATE public
@@ -1184,15 +1211,8 @@ namespace gctools {
 
 int handleFatalCondition();
 
- 
-/* Start up the garbage collector and the main function.
-       The main function is wrapped within this function */
-int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize);
-};
 
-
-namespace gctools {
-  void rawHeaderDescribe(const uintptr_t *headerP);
+void rawHeaderDescribe(const uintptr_t *headerP);
 };
 
 extern "C" {
@@ -1434,6 +1454,27 @@ size_t objectSize(BaseHeader_s* header);
 bool is_memory_readable(const void* address, size_t bytes=8);
 
 };
+
+extern "C" {
+void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo );
+
+int run_clasp( gctools::ClaspInfo* claspInfo );
+
+void shutdown_clasp( gctools::ClaspInfo* claspInfo );
+
+};
+
+namespace core {
+extern size_t global_compile_discriminating_function_trigger;
+
+};
+
+namespace gctools {
+std::string program_name();
+std::string exe_name();
+bool abort_flag(void);
+};
+
 //#endif // _clasp_memoryManagement_H
 
 /*

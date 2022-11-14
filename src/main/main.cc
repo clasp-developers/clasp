@@ -113,19 +113,6 @@ namespace llvmo {
 void initialize_llvm(int argc, char **argv);
 
 };
-// ---------------------------------------------------------------------------
-// GLOBAL VARS
-// ---------------------------------------------------------------------------
-
-#define CLASP_DEFAULT_PROGRAM_NAME "clasp"
-#define CLASP_DEFAULT_EXE_NAME CLASP_DEFAULT_PROGRAM_NAME
-
-static std::string g_exe_name;      // filename of the executable
-static std::string g_program_name;  // logical / settable program name
-
-static bool        g_abort_flag;
-
-static std::terminate_handler g_prev_terminate_handler;
 
 // ---------------------------------------------------------------------------
 // IMPLEMENTATION
@@ -216,60 +203,6 @@ static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames 
 
 // ABORT FLAG HANDLING
 
-void set_abort_flag( bool abort_flag = false )
-{
-  g_abort_flag = abort_flag;
-}
-
-bool abort_flag( void )
-{
-  return g_abort_flag;
-}
-
-// EXECUTABLE MASTER DATA
-// - PROGRAM NAME
-void set_program_name( std::string program_name = CLASP_DEFAULT_PROGRAM_NAME )
-{
-  g_program_name = program_name;
-}
-
-std::string program_name()
-{
-  return g_program_name;
-}
-
-// - EXECUTABLE NAME
-void set_exe_name( std::string exe_name = CLASP_DEFAULT_EXE_NAME )
-{
-  g_exe_name = exe_name;
-}
-
-std::string exe_name()
-{
-  return g_exe_name;
-}
-
-// TERMINATION HANDLING
-
-static void clasp_terminate_handler( void )
-{
-  // TODO: Implement CLASP terminate handler, e.g.:
-  // - Call all functions registered via an atexit hook -
-  // to be implemented!
-
-  // Finally exit or abort
-
-  if( abort_flag() )
-    abort();
-  try { throw; }
-  catch (const std::exception& e) {
-      fprintf(stderr, "%s:%d There was an unhandled std::exception in process [pid: %d] e.what()=[%s] - do something about it.\n", __FILE__, __LINE__, getpid(), e.what()  );
-  } catch (...) {
-      fprintf(stderr, "%s:%d There was an unhandled unknown exception in process [pid: %d] - do something about it.\n", __FILE__, __LINE__, getpid() );
-  };
-  abort();
-}
-
 // EXCEPTION HANDLING
 
 void handle_unhandled_exception( void )
@@ -291,342 +224,36 @@ void handle_unhandled_exception( void )
   }
 }
 
-// STARTUP HANDLING
-
-static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize)
-{
-  
-  // Register builtin function names
-  define_builtin_cxx_class_names();
-  
-  // Read the memory profiling settings <size-threshold> <number-theshold>
-  // as in export CLASP_MEMORY_PROFILE="16000000 1024"
-  // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
-  //        and call HitAllocationNumberThreshold every time 1024 allocations take place
-  char *cur = getenv("CLASP_MEMORY_PROFILE");
-  size_t values[2];
-  int numValues = 0;
-  int exit_code = 0;
-  if (cur) {
-    while (*cur && numValues < 2) {
-      values[numValues] = strtol(cur, &cur, 10);
-      ++numValues;
-    }
-    if (numValues == 2) {
-      my_thread_low_level->_Allocations._AllocationNumberThreshold = values[1];
-    }
-    if (numValues >= 1) {
-      my_thread_low_level->_Allocations._AllocationSizeThreshold = values[0];
-    }
-  }
-  
-  
-  //
-  // Walk all of the loaded dynamic libraries
-  //
-  core::add_library addlib;
-  startup_register_loaded_objects(&addlib);
-  {
-    core::global_initialize_builtin_classes = true;
-    initialize_clasp_Kinds();
-    core::global_initialize_builtin_classes = false;
-  }
-  
-  // Do some minimal argument processing
-  (core::global_options->_ProcessArguments)(core::global_options);
-  ::globals_ = new core::globals_t();
-  globals_->_DebugStream = new core::DebugStream(mpiRank);
-
-  const char* jls = getenv("CLASP_JIT_LOG_SYMBOLS");
-  if (jls || core::global_options->_JITLogSymbols) {
-    core::global_jit_log_symbols = true;
-  }
-  
-//  printf("%s:%d:%s About to get start_of_snapshot\n", __FILE__, __LINE__, __FUNCTION__ );
-#ifdef USE_PRECISE_GC
-#  ifdef _TARGET_OS_DARWIN
-  const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
-  size_t size;
-  void* start_of_snapshot = getsectiondata(exec_header,
-                                           SNAPSHOT_SEGMENT,
-                                           SNAPSHOT_SECTION,
-                                           &size);
-  void* end_of_snapshot = NULL;
-  if (start_of_snapshot) {
-    end_of_snapshot = (void*)((char*)start_of_snapshot + size);
-  }
-#  endif
-#  ifdef _TARGET_OS_LINUX
-  void* start_of_snapshot = NULL;
-  void* end_of_snapshot = NULL;
-  extern const char __attribute__((weak)) SNAPSHOT_START;
-  extern const char __attribute__((weak)) SNAPSHOT_END;
-  start_of_snapshot = (void*)&SNAPSHOT_START;
-  end_of_snapshot = (void*)&SNAPSHOT_END;
-#  endif
-#else
-  void* start_of_snapshot = NULL;
-  void* end_of_snapshot = NULL;
-#endif
-  //
-  // Look around the local directories for source and fasl files.
-  //
-  core::Bundle *bundle = new core::Bundle(core::global_options->_ExecutableName);
-  globals_->_Bundle = bundle;
-
-  //
-  // Figure out if we are starting up with a snapshot or an image
-  //  Set loadSnapshotFile = true if we load a snapshot
-  //
-  bool loadSnapshotFile = false;
-#ifdef USE_PRECISE_GC  
-  std::string snapshotFileName = "";
-  if (!start_of_snapshot) {
-    if (core::global_options->_StartupFileP &&
-        core::global_options->_StartupFileType == core::cloSnapshot) {
-      snapshotFileName = core::global_options->_StartupFile;
-      loadSnapshotFile = true;
-    } else if (core::global_options->_DefaultStartupType == core::cloDefault) {
-      snapshotFileName = core::startup_snapshot_name(*bundle);
-      if (std::filesystem::exists(std::filesystem::path(snapshotFileName))) {
-        loadSnapshotFile = true;
-      }
-    } else if (core::global_options->_DefaultStartupType == core::cloSnapshot) {
-      snapshotFileName = core::startup_snapshot_name(*bundle);
-      if (std::filesystem::exists(std::filesystem::path(snapshotFileName))) {
-        loadSnapshotFile = true;
-      } else {
-        printf("Could not find snapshot file %s - exiting.\n", snapshotFileName.c_str());
-        exit(1);
-      }
-    }
-  }
-#endif
-  if ( loadSnapshotFile ||          // We want to load a snapshot
-       (start_of_snapshot != NULL) // We found an embedded snapshot
-       ) {
-    //
-    // Load a snapshot from a file (loadSnapshotFile=true) or from memory (start_of_snapshot!=NULL)
-    //
-#ifdef USE_PRECISE_GC
-    if (loadSnapshotFile && core::startup_snapshot_is_stale(snapshotFileName)) {
-      printf("The startup snapshot file \"%s\" is stale - remove it or create a new one\n", snapshotFileName.c_str() );
-      std::exit(1);
-    }
-    llvmo::initialize_llvm();
-
-    clbind::initializeCastGraph();
-    if (start_of_snapshot) {
-      core::global_startupSourceName = "memory";
-      core::global_startupEnum = core::snapshotMemory;
-    } else {
-      core::global_startupSourceName = snapshotFileName;
-      core::global_startupEnum = core::snapshotFile;
-    }
-    exit_code = snapshotSaveLoad::snapshot_load( (void*)start_of_snapshot, (void*)end_of_snapshot, snapshotFileName );
-#else
-    printf("Core image loading is not supported unless precise GC is turned on\n");
-#endif
-  } else {
-    //
-    // Startup clasp using an image and running all toplevel forms
-    //
-    core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
-    gctools::GcToolsExposer_O GcToolsPkg(_lisp);
-    clbind::ClbindExposer_O ClbindPkg(_lisp);
-    llvmo::LlvmoExposer_O llvmopkg(_lisp);
-    sockets::SocketsExposer_O SocketsPkg(_lisp);
-    serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
-    asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
-
-    lispHolder.startup(*core::global_options);
-
-    _lisp->installPackage(&GcToolsPkg);
-    _lisp->installPackage(&ClbindPkg);
-    _lisp->installPackage(&llvmopkg);
-    _lisp->installPackage(&SocketsPkg);
-    _lisp->installPackage(&ServeEventPkg);
-    _lisp->installPackage(&AsttoolingPkg);
-
-#ifndef SCRAPING
-# define ALL_EXPOSES_CALLS
-# include EXPOSE_INC_H
-# undef ALL_EXPOSES_CALLS
-#endif
-
-    core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
-    core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
-
-#ifdef USE_MPI
-    mpip::MpiExposer_O TheMpiPkg(_lisp);
-    _lisp->installPackage(&TheMpiPkg);
-    if (mpiEnabled) {
-      core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
-      core::Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<core::Cons_O>();
-      cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
-      core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(mpiRank));
-      core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
-    }
-#endif
-
-    //
-    // Run lisp
-    //
-    exit_code = _lisp->run();
-
-    //
-    // Shutdown lisp
-    //
-    _lisp->uninstallPackage(&AsttoolingPkg);
-    _lisp->uninstallPackage(&ServeEventPkg);
-    _lisp->uninstallPackage(&SocketsPkg);
-    _lisp->uninstallPackage(&llvmopkg);
-    _lisp->uninstallPackage(&ClbindPkg);
-    _lisp->uninstallPackage(&GcToolsPkg);
-
-  }
-  return exit_code;
-}
-
 // -------------------------------------------------------------------------
 //     M A I N
 // -------------------------------------------------------------------------
 
 
-#define clasp_desired_stack_cur 16 * 1024 * 1024
 
-
-int main( int argc, char *argv[] )
+int main( int argc, const char *argv[] )
 {
-  const char* trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
-  if (trigger) {
-    size_t strigger = atoi(trigger);
-    core::global_compile_discriminating_function_trigger = strigger;
-    printf("%s:%d:%s Setting global_compile_discriminating_function_trigger = %lu\n", __FILE__, __LINE__, __FUNCTION__, strigger );
-  }
-  if (getenv("CLASP_TIME_EXIT")) {
-    atexit(core::last_exit);
-  }
-  const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
-  if (dof) {
-    if (strcmp(dof,"save")==0) {
-      llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrintSave;
-    } else {
-      llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrint;
-    }
-  }
-
-#ifdef DEBUG_DYN_ENV_STACK
-  const char* ddes = getenv("CLASP_DEBUG_DYN_ENV_STACK");
-  if (ddes) core::global_debug_dyn_env_stack = true;
-#endif
-  
-
-  // Do not touch debug log until after MPI init
-
-  bool mpiEnabled = false;
-  int  mpiRank    = 0;
-  int  mpiSize    = 1;
-
-
-  // DO BASIC EXE SETUP
-
-  set_abort_flag(); // Set abort flag to default value
-  g_prev_terminate_handler = std::set_terminate( [](){ clasp_terminate_handler(); } );
-
-  // - STORE NAME OF EXECUTABLE
-
-  {
-    std::string exename( argv[ 0 ] );
-    set_exe_name( basename( (char *) exename.c_str() ) );
-  }
-
-  // - SET THE APPLICATION NAME
-
-  set_program_name();
-
   // - SET STACK SIZE
   rlimit rl;
   getrlimit(RLIMIT_STACK,&rl);
   //printf("%s:%d cur: %lu max %lu\n", __FILE__, __LINE__ , (unsigned long) rl.rlim_cur, (unsigned long) rl.rlim_max);
   // Only set the limits if current values are lower
-  if (rl.rlim_cur < clasp_desired_stack_cur) {
-    rl.rlim_cur = clasp_desired_stack_cur;      
+  if (rl.rlim_cur < CLASP_DESIRED_STACK_CUR) {
+    rl.rlim_cur = CLASP_DESIRED_STACK_CUR;      
     int rc = setrlimit(RLIMIT_STACK, &rl);
     if (rc != 0) {
       fprintf(stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d errno %d - rlim_cur %lu- rlim_max= %lu) !\n",
-              exe_name().c_str(), __FILE__, __LINE__, rc, errno, (unsigned long) rl.rlim_cur, (unsigned long) rl.rlim_max);
+              gctools::exe_name().c_str(), __FILE__, __LINE__, rc, errno, (unsigned long) rl.rlim_cur, (unsigned long) rl.rlim_max);
     }
   }
   getrlimit(RLIMIT_STACK, &rl);
-  
-  // - COMMAND LINE OPTONS HANDLING
 
-  core::CommandLineOptions options(argc, argv);
+  gctools::ClaspInfo claspInfo( argc, argv, rl.rlim_cur );
+  void* stackMarker = &stackMarker;
+  startup_clasp( &stackMarker, &claspInfo );
 
-  // - MPI ENABLEMENT
+  int exit_code = run_clasp( &claspInfo );
 
-#ifdef USE_MPI
-  if (!options._DisableMpi) {
-    printf("%s:%d Enabling MPI\n", __FILE__, __LINE__ );
-    try
-    {
-      mpip::Mpi_O::Init(argc, argv, mpiEnabled, mpiRank, mpiSize);
-    }
-    catch ( HardError &err )
-    {
-      fprintf( stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n",
-               exe_name().c_str(), __FILE__, __LINE__ );
-      abort();
-    }
-  } else {
-    mpiEnabled = false;
-  }
-#endif
-
-  fflush( stderr );
-
-  //
-  // Setup debugging info all the time
-  //
-  core::dumpDebuggingLayouts();
-  if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-    stringstream ss;
-    char* username = getenv("USER");
-    if (!username) {
-      printf("%s:%d:%s Could not get USER environment variable\n", __FILE__, __LINE__, __FUNCTION__ );
-      exit(1);
-    }
-    ss << "/tmp/clasp_pid_" << getenv("USER");
-    printf("%s:%d:%s  Setting up clasp for debugging - writing PID to %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str());
-    FILE* fout = fopen(ss.str().c_str(),"w");
-    if (!fout) {
-      printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
-      exit(1);
-    }
-    fprintf(fout,"%d",getpid());
-    fclose(fout);
-  }
-  //
-  // Pause before any allocations take place
-  //
-  char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
-  if (pause_startup) {
-    gctools::setup_user_signal();
-    gctools::wait_for_user_signal("Paused at startup before all initialization");
-  }
-  
-  //
-  // Startup the garbage collector and the lisp system
-  //  
-  int exit_code;
-  exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_cur, mpiEnabled, mpiRank, mpiSize );
-  
-#ifdef USE_MPI
-  if (!options._DisableMpi) {
-    mpip::Mpi_O::Finalize();
-  }
-#endif
+  shutdown_clasp(&claspInfo);
 
   return exit_code;
 }

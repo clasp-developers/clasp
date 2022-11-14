@@ -2777,7 +2777,7 @@ struct CodeFixup_t {
 };
 
 
-int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
+void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
   global_InSnapshotLoad = true;
   // Keep track of objects that we have already allocated
   
@@ -3769,33 +3769,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       }
     }
   }
-
-  _lisp->parseCommandLineArguments(*core::global_options);
-
-  int exitCode;
-  try {
-    if (ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue().notnilp()) {
-      core::T_sp fn = ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue();
-      core::eval::funcall(fn);
-    } else {
-      core::write_bf_stream(fmt::sprintf("Clasp (copyright Christian E. Schafmeister 2014)\n"));
-      core::write_bf_stream(fmt::sprintf("ext:*snapshot-save-load-startup* is nil so dropping into a simple repl\n"));
-      core::write_bf_stream(fmt::sprintf("Low level repl\n"));
-      _lisp->readEvalPrintInteractive();
-      core::write_bf_stream(fmt::sprintf("\n"));
-    }
-  } catch (core::ExitProgramException &ee) {
-    exitCode = ee.getExitResult();
-  }
-
-
-  //
-  // Clear out a few things
-  //
-
-  global_InSnapshotLoad = false;
- 
-  return exitCode;
 }
 
 

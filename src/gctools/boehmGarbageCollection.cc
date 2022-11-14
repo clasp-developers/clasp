@@ -429,7 +429,7 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
 
 namespace gctools {
 __attribute__((noinline))
-int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
+void startupBoehm(gctools::ClaspInfo* claspInfo ) {
   GC_set_handle_fork(1);
   GC_INIT();
   GC_allow_register_threads();
@@ -439,12 +439,18 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   GC_set_warn_proc(clasp_warn_proc);
   //  GC_enable_incremental();
   GC_init();
-  void* topOfStack;
   // ctor sets up my_thread
-  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(&topOfStack);
+  gctools::ThreadLocalStateLowLevel* thread_local_state_low_level = new gctools::ThreadLocalStateLowLevel(claspInfo);
+  my_thread_low_level = thread_local_state_low_level;
+
+#if 1
+  core::ThreadLocalState* thread_local_stateP = (core::ThreadLocalState*)ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::ThreadLocalState));
+  new (thread_local_stateP) core::ThreadLocalState(false);
+  claspInfo->_threadLocalStateP = thread_local_stateP;
+#else
   core::ThreadLocalState thread_local_state(false); // special ctor that does not require _Nil be defined
-  my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
+#endif
   core::transfer_StartupInfo_to_my_thread();
 #if 1
   // I'm not sure if this needs to be done for the main thread
@@ -452,7 +458,7 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
 #endif
-  core::global_options = new core::CommandLineOptions(argc, argv);
+  core::global_options = new core::CommandLineOptions(claspInfo->_argc, claspInfo->_argv);
  
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS
@@ -472,21 +478,15 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   GC_add_roots((void*)symbolRoots,(void*)((char*)symbolRoots+sizeof(void*)*global_symbol_count));
 
 //  void* dummy = GC_generic_malloc_uncollectable(592,4);
-  
-  int exitCode;
-  try {
-    exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
-  } catch (core::SaveLispAndDie& ee) {
-#ifdef USE_PRECISE_GC
-    snapshotSaveLoad::snapshot_save(ee);
-#endif
-    exitCode = 0;
-  }
-    
+}
+
+
+void shutdownBoehm() {
+  GC_FREE(my_thread);
 #if 0
   GC_unregister_my_thread();
 #endif
-  return exitCode;
+  delete my_thread_low_level;
 }
 
 

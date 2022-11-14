@@ -51,7 +51,7 @@ inline bool tagged_pointer_from_interior_pointer<core::Cons_O>( clasp_ptr_t inte
 
 namespace gctools {
 
-int initializeMmtk(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
+int initializeMmtk( int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
 
 };
 

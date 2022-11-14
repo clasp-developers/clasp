@@ -62,8 +62,6 @@ template <int N> struct testType {};
 
 template <int N> struct adopt {};
 
-template <typename Policies> struct is_policy_list { typedef boost::mpl::false_ type; };
-
 enum return_value_policy { reference = return_value_policy_reference_, copy = return_value_policy_copy_ };
 
 struct Keyword {
@@ -209,7 +207,6 @@ template <class Policy, class PType, class... PTypes> void walk_policy(Policy &p
   walk_policy(policy, args...);
 }
 
-template <typename... Pols> struct is_policy_list<policies<Pols...>> { typedef boost::mpl::true_ type; };
 }; // namespace clbind
 
 inline clbind::LambdaList operator"" _ll(const char *arg, size_t len) { return clbind::LambdaList(std::string(arg, len)); }

@@ -146,7 +146,7 @@ struct not_pureOutValue {
 
 template <typename Policies, int N>
 struct AdoptPointer {
-  typedef typename boost::mpl::if_<typename Contains_<Policies, adopt<N>>::type, translate::adopt_pointer, translate::dont_adopt_pointer>::type type;
+  typedef std::conditional_t<Contains_<Policies, adopt<N>>::type::value, translate::adopt_pointer, translate::dont_adopt_pointer> type;
 };
 
 //

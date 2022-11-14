@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
 #include <clasp/core/singleDispatchMethod.h>
+#include <clasp/llvmo/intrinsics.fwd.h>
 #include <atomic>
 
 namespace core {
@@ -117,7 +118,8 @@ public:
                  , _rep_(dispatchArg).c_str());
   }
   static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
+    cc_wrong_number_of_arguments(lcc_closure,0,1,0);
+    UNREACHABLE();
   }
   static inline LISP_ENTRY_1() {
     core::T_O* args[1] = {lcc_farg0};

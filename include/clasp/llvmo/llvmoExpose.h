@@ -1346,6 +1346,7 @@ public:
 
   bool llvm_sys_value_p() const { return true; };
   string __repr__() const;
+  void __write__(core::T_sp stream) const;
   bool valid() const;
 }; // Value_O
 }; // llvmo
@@ -4141,6 +4142,7 @@ public:
   bool Type_equal(core::T_sp obj) const;
   LLVMContext_sp getContext() const;
   string __repr__() const;
+  void __write__(core::T_sp stream) const;
 
 }; // Type_O
 }; // llvmo

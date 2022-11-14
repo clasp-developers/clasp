@@ -1350,6 +1350,10 @@ string Value_O::__repr__() const {
   return ss.str();
 }
 
+void Value_O::__write__(core::T_sp stream) const {
+  core::clasp_write_string(this->__repr__(), stream);
+}
+
 bool Value_O::valid() const {
   return this->wrappedPtr() != NULL;
 }
@@ -3561,7 +3565,9 @@ string Type_O::__repr__() const {
   return ss.str();
 }
 
-
+void Type_O::__write__(core::T_sp stream) const {
+  core::clasp_write_string(this->__repr__(), stream);
+}
 
 CL_LAMBDA((self llvm-sys::type) &optional (addressSpace 0));
 CL_DOCSTRING(R"dx(Return a PointerType to the llvm Type)dx");

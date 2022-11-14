@@ -108,6 +108,9 @@
 /// 1 MB is large - if we have a lot of threads we will want to knock this down
 #define SIGNAL_STACK_SIZE (1024*1024) 
 
+#define CLASP_DESIRED_STACK_CUR 16 * 1024 * 1024
+
+
 /// ----------------------------------------------------------------------
 ///
 /// MPS debugging options

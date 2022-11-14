@@ -64,57 +64,6 @@
   "Define primitives that do NOT unwind the stack directly or through transitive calls"
   (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :returns-twice returns-twice :ltvc ltvc))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; ltvc intrinsics are for initialization of memory at load time
-;;; ltvc stands for Load Time Virtual machine Call
-;;; They are used to construct the a byte-code machine
-;;; Each function takes arguments ( GCRootsInModule* gcroots, char tag, size_t targetIndex, ...args...)
-;;;   The gcroots, tag, targetIndex are used to get a reference to a cell in the gcroots
-;;;   and the ...args... are used to construct the object.
-;;; If you add a new ltvc_xxxx function then do the following to rebuild the virtual machine
-;;; To build the machine in the src/core/byte-code-interpreter.cc file use:
-;;; (0) Erase the code in byte-code-interpreter.cc
-;;; (1) ./waf build_rboehm
-;;; (2) (literal::build-c++-machine)
-;;; (3) copy the result into byte-code-interpreter.cc
-;;;
-(defvar *startup-primitives-as-list*
-  '((primitive         "ltvc_make_nil" :ltvc-return (list :gcroots-in-module* :i8 :size_t) :ltvc t)
-    (primitive         "ltvc_make_t" :ltvc-return (list :gcroots-in-module* :i8 :size_t) :ltvc t)
-    (primitive         "ltvc_make_ratio" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t* :t*) :ltvc t)
-    (primitive         "ltvc_make_complex" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t* :t*) :ltvc t)
-    (primitive         "ltvc_make_cons" :ltvc-return (list :gcroots-in-module* :i8 :size_t) :ltvc t)
-    (primitive         "ltvc_rplaca" :ltvc-return (list :gcroots-in-module* :t* :t*) :ltvc t)
-    (primitive         "ltvc_rplacd" :ltvc-return (list :gcroots-in-module* :t* :t*) :ltvc t)
-    (primitive         "ltvc_make_list" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t) :ltvc t)
-    (primitive         "ltvc_fill_list" :ltvc-return (list :gcroots-in-module* :t* :size_t) :varargs t :ltvc t)
-    (primitive         "ltvc_make_array" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t* :t*) :ltvc t)
-    (primitive         "ltvc_setf_row_major_aref" :ltvc-return (list :gcroots-in-module* :t* :size_t :t*) :ltvc t)
-    (primitive         "ltvc_make_hash_table" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t*) :ltvc t)
-    (primitive         "ltvc_setf_gethash" :ltvc-return (list :gcroots-in-module* :t* :t* :t*) :ltvc t)
-    (primitive         "ltvc_make_fixnum" :ltvc-return (list :gcroots-in-module* :i8 :size_t :uintptr_t) :ltvc t)
-    (primitive         "ltvc_make_package" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t*) :ltvc t)
-    (primitive         "ltvc_make_next_bignum" :ltvc-return (list :gcroots-in-module* :i8 :size_t :bignum) :ltvc t)
-    (primitive         "ltvc_make_bitvector" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t*) :ltvc t)
-    (primitive         "ltvc_make_symbol" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t* :t*) :ltvc t)
-    (primitive         "ltvc_make_character" :ltvc-return (list :gcroots-in-module* :i8 :size_t :uintptr_t) :ltvc t)
-    (primitive         "ltvc_make_base_string" :ltvc-return (list :gcroots-in-module* :i8 :size_t :i8*) :ltvc t)
-    (primitive         "ltvc_make_pathname" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t* :t* :t* :t* :t* :t*) :ltvc t)
-    (primitive         "ltvc_make_function_description" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t* :t* :t* :t* :t* :size_t :size_t :size_t) :ltvc t)
-    (primitive         "ltvc_make_global_entry_point" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t :t* :size_t) :ltvc t)
-    (primitive         "ltvc_make_local_entry_point" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t :t*) :ltvc t)
-    (primitive         "ltvc_make_random_state" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t*) :ltvc t)
-    (primitive         "ltvc_make_float" :ltvc-return (list :gcroots-in-module* :i8 :size_t :single-float) :ltvc t)
-    (primitive         "ltvc_make_double" :ltvc-return (list :gcroots-in-module* :i8 :size_t :double-float) :ltvc t)
-    (primitive         "ltvc_make_closurette" :ltvc-return (list :gcroots-in-module* :i8 :size_t #|:size_t|# :size_t) :ltvc t)
-    (primitive-unwinds "ltvc_set_mlf_creator_funcall" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t :i8*) :ltvc t)
-    (primitive-unwinds "ltvc_mlf_init_funcall" :ltvc-return (list :gcroots-in-module* :size_t :i8*) :ltvc t)
-    (primitive-unwinds "ltvc_mlf_init_basic_call" :ltvc-return (list :gcroots-in-module* :t* :size_t) :varargs t :ltvc t)
-    (primitive-unwinds "ltvc_mlf_create_basic_call" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t* :size_t) :varargs t :ltvc t)
-    (primitive-unwinds "ltvc_set_ltv_funcall" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t :i8*) :ltvc t)
-    (primitive-unwinds "ltvc_toplevel_funcall" :ltvc-return (list :gcroots-in-module* :size_t :i8*) :ltvc t)))
-
 (defvar *primitives* (make-hash-table :test 'equal :thread-safe t))
 
 (defun general-entry-point-redirect-name (arity)
@@ -124,7 +73,13 @@
 (defmacro primitives-macro ()
   "ltvc functions are used to construct the byte-code interpreter"
   `(progn
-     ,@*startup-primitives-as-list*
+     ,@(mapcar (lambda (op)
+                 (list* (if (first op) 'primitive-unwinds 'primitive)
+                        (second op)
+                        :ltvc-return
+                        (list* 'list :gcroots-in-module* (third op))
+                        :ltvc t (cdddr op)))
+               cmpref:*startup-primitives-as-list*)
      ,@'((primitive         "ltvc_lookup_literal" :t* (list :gcroots-in-module* :size_t))
          (primitive         "ltvc_lookup_transient" :t* (list :gcroots-in-module* :i8 :size_t))
          (primitive         "cc_match" :t* (list :t* :t*))    

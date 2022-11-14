@@ -246,7 +246,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
       clasp_unpack_faso(*++arg);
       exit(0);
     } else if (*arg == "-v" || *arg == "--version") {
-      std::cout << program_name();
+      std::cout << gctools::program_name();
 #ifdef USE_MPS
       std::cout << "-mps-";
 #endif
@@ -359,7 +359,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
   }
 }
 
-CommandLineOptions::CommandLineOptions(int argc, char *argv[])
+CommandLineOptions::CommandLineOptions(int argc, const char *argv[])
     : _ProcessArguments(process_clasp_arguments), _IgnoreInitImage(false), _IgnoreInitLsp(false), _DisableMpi(false),
       _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _Stage(DEFAULT_STAGE),
       _StartupFile(""), _DefaultStartupType(cloDefault), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0), _NoInform(false),

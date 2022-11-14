@@ -825,7 +825,7 @@ Symbol_sp Lisp::errorUndefinedSymbol(const char *sym) {
 void Lisp::installPackage(const Exposer_O *pkg) {
   LOG("Installing package[%s]" , pkg->packageName());
   int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
-  ChangePackage change(pkg->package());
+  ChangePackage change(gc::As<Package_sp>(_lisp->findPackage(pkg->packageName())));
   {
     pkg->expose(_lisp, Exposer_O::candoClasses);
   }
@@ -844,20 +844,9 @@ void Lisp::installPackage(const Exposer_O *pkg) {
   }
 }
 
-void Lisp::uninstallPackage(Exposer_O *pkg) {
-  pkg->shutdown();
-}
-
 void Lisp::installGlobalInitializationCallback(InitializationCallback c) {
   globals_->_GlobalInitializationCallbacks.push_back(c);
 }
-
-#if defined(XML_ARCHIVE)
-void Lisp::archive(::core::ArchiveP node) {
-  
-  SIMPLE_ERROR(("Never archive Lisp objects"));
-}
-#endif // defined(XML_ARCHIVE)
 
 void Lisp::addClassNameToPackageAsDynamic(const string &package, const string &name, Instance_sp mc) {
   Symbol_sp classSymbol = _lisp->intern(name, gc::As<Package_sp>(_lisp->findPackage(package, true)));
@@ -2333,49 +2322,7 @@ void Lisp::dump_apropos(const char *part) const {
 }
 
 int Lisp::run() {
-  //
-  // If --addresses was passed as a command line option - dump the addresses here
-  //
-  maybeHandleAddressesOption(global_options);
-  
-  int exit_code = 0;
-  if ( initializer_functions_are_waiting() ) {
-    initializer_functions_invoke();
-  }
-  
-#ifdef DEBUG_PROGRESS
-  printf("%s:%d run\n", __FILE__, __LINE__ );
-#endif
-
-  // If the user adds "-f debug-startup" to the command line
-  // then set core::*debug-startup* to true
-  // This will print timings of top-level forms as they load at startup
-  // See llvmo::intrinsics.cc
-  // cl__member isn't available yet so check for the feature by hand.
-  for (auto cur : (List_sp)cl::_sym_STARfeaturesSTAR->symbolValue()) {
-    if (oCar(cur) == kw::_sym_debugStartup) {
-      printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
-      _sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
-    } else if (oCar(cur) == kw::_sym_debugStartupVerbose) {
-      printf("%s:%d Setting core:*debug-startup* to :verbose\n", __FILE__, __LINE__);
-      _sym_STARdebugStartupSTAR->setf_symbolValue(kw::_sym_verbose);
-    } else if (oCar(cur) == kw::_sym_exit_backtrace) {
-      printf("%s:%d Setting core:*exit-backtrace* to T\n", __FILE__, __LINE__);
-      _sym_STARexit_backtraceSTAR->setf_symbolValue(_lisp->_true());
-    } else if (oCar(cur) == kw::_sym_pause_pid) {
-#ifdef USE_USER_SIGNAL
-      gctools::wait_for_user_signal("Paused at startup");
-#else
-      printf("%s:%d PID = %d  Paused at startup - press enter to continue: \n", __FILE__, __LINE__, getpid() );
-      fflush(stdout);
-      getchar();
-#endif
-    }
-  }
-  // The system is fully up now
-  _lisp->_Roots._TheSystemIsUp = true;
-  Package_sp cluser = gc::As<Package_sp>(_lisp->findPackage("COMMON-LISP-USER"));
-  cl::_sym_STARpackageSTAR->defparameter(cluser);
+  int exitCode;
   MultipleValues& mvn = core::lisp_multipleValues();
   try {
     if (!global_options->_IgnoreInitImage) {
@@ -2421,9 +2368,9 @@ int Lisp::run() {
       this->readEvalPrintInteractive();
       write_bf_stream("\n");
     }
-    exit_code = 0;
+    exitCode = 0;
   } catch (core::ExitProgramException &ee) {
-    exit_code = ee.getExitResult();
+    exitCode = ee.getExitResult();
   }
   if (global_options->_ExportedSymbolsAccumulate) {
     T_sp stream = core::cl__open(core::SimpleBaseString_O::make(global_options->_ExportedSymbolsFilename),
@@ -2431,7 +2378,7 @@ int Lisp::run() {
     core::core__mangledSymbols(stream);
     cl__close(stream);
   }
-  return exit_code;
+  return exitCode;
 };
 
 FileScope_mv Lisp::getOrRegisterFileScope(const string &fileName) {
@@ -2526,13 +2473,11 @@ LispHolder::~LispHolder() {
 }
 
 Exposer_O::Exposer_O(LispPtr lisp, const string &packageName) {
-  this->_PackageName = SimpleBaseString_O::make(packageName);
+  this->_PackageName = packageName;
   if (!lisp->recognizesPackage(packageName)) {
     list<string> lnnames;
     list<string> lpkgs;
-    this->_Package = lisp->makePackage(packageName, lnnames, lpkgs);
-  } else {
-    this->_Package = gc::As<Package_sp>(lisp->findPackage(packageName, true));
+    lisp->makePackage(packageName, lnnames, lpkgs);
   }
 }
 
