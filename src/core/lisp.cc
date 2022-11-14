@@ -101,12 +101,6 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/print.h>
 #include <clasp/core/multipleValues.h>
-#if defined(XML_ARCHIVE)
-#include <xmlLoadArchive.h>
-#include <xmlSaveArchive.h>
-#endif // defined(XML_ARCHIVE)
-#if defined(OLD_SERIALIZE)
-#endif // defined(OLD_SERIALIZE)
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/numerics.h>
 #include <clasp/core/singleDispatchGenericFunction.h>

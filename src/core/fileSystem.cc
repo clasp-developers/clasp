@@ -179,26 +179,6 @@ CL_DEFMETHOD Path_sp Path_O::path_append(string const &pp) {
   return this->sharedThis<Path_O>();
 }
 
-#if defined(XML_ARCHIVE)
-void Path_O::archiveBase(ArchiveP node) {
-  if (node->loading()) {
-    VectorStrings vec;
-    this->_Path.clear();
-    node->archiveVectorStrings("parts", vec);
-    for (VectorStrings::iterator si = vec.begin(); si != vec.end(); si++) {
-      this->_Path /= *si;
-    }
-  } else {
-    VectorStrings vec;
-    for (std::filesystem::path::iterator pi = this->_Path.begin();
-         pi != this->_Path.end(); pi++) {
-      vec.push_back((*pi).string());
-    }
-    node->archiveVectorStrings("parts", vec);
-  }
-}
-#endif // defined(XML_ARCHIVE)
-
 void Path_O::setPath(const std::filesystem::path &path) {
   
   this->_Path = path;

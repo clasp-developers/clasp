@@ -60,13 +60,6 @@ HashTableEqualp_sp HashTableEqualp_O::create_default() {
     }
 #endif
 
-#if defined(XML_ARCHIVE)
-void HashTableEqualp_O::archiveBase(::core::ArchiveP node) {
-  this->Base::archiveBase(node);
-  // Archive other instance variables here
-}
-#endif // defined(XML_ARCHIVE)
-
 bool HashTableEqualp_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   
   bool equalp = cl__equalp(entryKey, searchKey);

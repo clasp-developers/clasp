@@ -37,9 +37,6 @@ namespace core {
 FORWARD(HashTableEql);
 class HashTableEql_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableEql_O, "HashTableEql",HashTable_O);
-#if defined(XML_ARCHIVE)
-  DECLARE_ARCHIVE();
-#endif // defined(XML_ARCHIVE)
   DEFAULT_CTOR_DTOR(HashTableEql_O);
 
 private: // instance variables here

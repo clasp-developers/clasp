@@ -55,15 +55,4 @@ void Iterator_O::initialize() {
   this->Base::initialize();
 }
 
-
-#if defined(XML_ARCHIVE)
-void Iterator_O::archive(ArchiveP node) {
-  IMPLEMENT_ME();
-}
-#endif // defined(XML_ARCHIVE)
-
-
-
-
-
 };
