@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <libgen.h>
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcalloc.h>
 #include <clasp/core/object.h>
@@ -60,6 +61,10 @@ THE SOFTWARE.
 #include <clasp/clbind/open.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 //#include "main/allHeaders.cc"
+
+#ifdef _TARGET_OS_DARWIN
+#include <mach-o/getsect.h>
+#endif
 
 #ifndef SCRAPING
 #define ALL_EXPOSES_EXTERN
@@ -369,7 +374,7 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
                                                  SNAPSHOT_SEGMENT,
                                                  SNAPSHOT_SECTION,
                                                  &size);
-  void* claspInfo->_end_of_snapshot = NULL;
+  claspInfo->_end_of_snapshot = NULL;
   if (claspInfo->_start_of_snapshot) {
     claspInfo->_end_of_snapshot = (void*)((char*)claspInfo->_start_of_snapshot + size);
   }
