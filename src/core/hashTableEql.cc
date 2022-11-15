@@ -56,21 +56,6 @@ HashTableEql_sp HashTableEql_O::create_default() {
   return ht;
 }
 
-#if 0
-    void HashTableEql_O::serialize(::serialize::SNodeP node)
-    {
-        this->Bases::serialize(node);
-	// Archive other instance variables here
-    }
-#endif
-
-#if defined(XML_ARCHIVE)
-void HashTableEql_O::archiveBase(::core::ArchiveP node) {
-  this->Base::archiveBase(node);
-  // Archive other instance variables here
-}
-#endif // defined(XML_ARCHIVE)
-
 bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   
   return cl__eql(entryKey, searchKey);

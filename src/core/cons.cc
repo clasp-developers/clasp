@@ -36,7 +36,6 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/serialize.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/designators.h>

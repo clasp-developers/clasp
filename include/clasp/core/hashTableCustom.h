@@ -37,9 +37,6 @@ namespace core {
 FORWARD(HashTableCustom);
 class HashTableCustom_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableCustom_O, "HashTableCustom",HashTable_O);
-#if defined(XML_ARCHIVE)
-  DECLARE_ARCHIVE();
-#endif // defined(XML_ARCHIVE)
   DEFAULT_CTOR_DTOR(HashTableCustom_O);
 
 public:

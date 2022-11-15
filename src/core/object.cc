@@ -32,12 +32,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/symbolTable.h>
-#if defined(XML_ARCHIVE)
-#include <xmlSaveAorchive.h>
-#include <xmlLoadArchive.h>
-#endif // defined(XML_ARCHIVE)
-//#i n c l u d e "hierarchy.h"
-//#i n c l u d e "render.h"
 
 #include <clasp/core/externalObject.h>
 #include <clasp/core/null.h>

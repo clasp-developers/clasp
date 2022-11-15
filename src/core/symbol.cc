@@ -450,17 +450,6 @@ void Symbol_O::serialize(serialize::SNode node) {
 }
 #endif
 
-#if defined(XML_ARCHIVE)
-void Symbol_O::archiveBase(ArchiveP node) {
-  if (node->loading()) {
-    SIMPLE_ERROR(("You can't load symbols with archiveBase!! See Dumb_Node::createYourSymbol"));
-  } else {
-    string name = this->formattedName(true);
-    node->attribute("_sym", name);
-  }
-}
-#endif // defined(XML_ARCHIVE)
-
 Symbol_sp Symbol_O::asKeywordSymbol() {
   if (this->getPackage().notnilp()) {
     Package_sp pkg = gc::As<Package_sp>(this->getPackage());

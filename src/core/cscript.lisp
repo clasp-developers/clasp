@@ -61,7 +61,6 @@
            #~"bundle.cc"
            #~"write_ugly.cc"
            #~"wrappedPointer.cc"
-           #~"serialize.cc"
            #~"readtable.cc"
            #~"float_to_digits.cc"
            #~"pathname.cc"

@@ -60,7 +60,6 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/clbind/class_registry.h>
-#include <clasp/core/serialize.h>
 #include <clasp/core/character.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/cxxObject.h>
