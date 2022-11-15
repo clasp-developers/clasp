@@ -580,7 +580,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, type_error);
 SYMBOL_EXPORT_SC_(KeywordPkg, datum);
 SYMBOL_EXPORT_SC_(KeywordPkg, expected_type);
 SYMBOL_EXPORT_SC_(ClPkg, type_error);
-SYMBOL_EXPORT_SC_(CorePkg, STARliteral_print_objectSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, printObject);
 SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
@@ -1093,7 +1092,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebugLoadTimeValuesSTAR->defparameter(nil<T_O>());
   _sym_STARdebugEvalSTAR->defparameter(nil<T_O>());
   _sym_STARdebugStartupSTAR->defparameter(nil<T_O>());
-  _sym_STARliteral_print_objectSTAR->defparameter(nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(nil<T_O>());
   _sym_STARuseInterpreterForEvalSTAR->defparameter(nil<T_O>()); // _lisp->_true());
   _sym_STARcxxDocumentationSTAR->defparameter(nil<T_O>());
