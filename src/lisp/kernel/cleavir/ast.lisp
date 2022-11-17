@@ -65,7 +65,7 @@
 ;;; This AST is used to represent a call to a named foreign function
 ;;;   inserted into the generated code.
 
-(defclass foreign-call-ast (ast:one-value-ast-mixin base-foreign-call-ast)
+(defclass foreign-call-ast (base-foreign-call-ast)
   ((%function-name :initarg :function-name :accessor function-name)))
 
 (cleavir-io:define-save-info foreign-call-ast
@@ -83,8 +83,7 @@
 ;;;
 ;;; This AST is used to represent a call to an pointer to a function inserted into the generated code.
 
-(defclass foreign-call-pointer-ast (ast:one-value-ast-mixin
-                                    base-foreign-call-ast)
+(defclass foreign-call-pointer-ast (base-foreign-call-ast)
   ())
 
 (defmethod cleavir-ast-graphviz::label ((ast foreign-call-pointer-ast))
@@ -99,7 +98,7 @@
 ;;;
 ;;; This AST is used to represent a callback definition.
 
-(defclass defcallback-ast (ast:no-value-ast-mixin ast:ast)
+(defclass defcallback-ast (ast:ast)
   (;; None of these are evaluated and there's a ton of them
    ;; so why bother splitting them up
    (%args :initarg :args :reader defcallback-args)
