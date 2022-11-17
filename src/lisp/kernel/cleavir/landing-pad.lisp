@@ -273,7 +273,7 @@
                   and collect (cons jump-id tag-block) into used-ids)
           bb))))
 
-(defmethod compute-maybe-entry-processor ((instruction bir:bind) tags)
+(defmethod compute-maybe-entry-processor ((instruction bir:constant-bind) tags)
   (destructuring-bind (symbol old-value de-stack) (dynenv-storage instruction)
     (generate-unbind symbol old-value de-stack
                      (maybe-entry-processor
@@ -333,7 +333,7 @@
   (etypecase dynenv
     (cleavir-bir:function nil)
     ((or cleavir-bir:leti cleavir-bir:values-save bir:values-collect
-         bir:unwind-protect bir:bind)
+         bir:unwind-protect bir:constant-bind)
      (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
     (bir:come-from
      (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
@@ -364,7 +364,7 @@
               (never-entry-processor dynenv)
               (dynenv-needs-cleanup-p dynenv)
               dynenv)))
-        ((or bir:bind cleavir-bir:values-save bir:values-collect
+        ((or bir:constant-bind cleavir-bir:values-save bir:values-collect
              cleavir-bir:leti bir:unwind-protect
              cleavir-bir:function)
          (generate-maybe-entry-landing-pad
@@ -413,7 +413,7 @@
 (defmethod compute-never-entry-processor ((dynenv cleavir-bir:leti))
   (never-entry-processor (cleavir-bir:parent dynenv)))
 
-(defmethod compute-never-entry-processor ((instruction bir:bind))
+(defmethod compute-never-entry-processor ((instruction bir:constant-bind))
   (destructuring-bind (symbol old-value de-stack) (dynenv-storage instruction)
     (generate-unbind symbol old-value de-stack
                      (compute-never-entry-processor
@@ -434,7 +434,7 @@
      (dynenv-needs-cleanup-p (cleavir-bir:parent dynenv)))
     ;; Definitive answers
     (cleavir-bir:function nil)
-    ((or bir:bind bir:unwind-protect)
+    ((or bir:constant-bind bir:unwind-protect)
      t)))
 
 (defun compute-never-entry-landing-pad (dynenv)
@@ -443,7 +443,7 @@
          bir:values-collect)
      ;; We never come-from, so just keep going up.
      (never-entry-landing-pad (cleavir-bir:parent dynenv)))
-    ((or bir:bind bir:unwind-protect)
+    ((or bir:constant-bind bir:unwind-protect)
      (generate-never-entry-landing-pad (never-entry-processor dynenv)))
     (cleavir-bir:function
      ;; Nothing to do
