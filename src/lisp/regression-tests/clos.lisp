@@ -123,3 +123,20 @@
 (test-true eql-specializers-from-irc (q t))
 
 (test-true issue-1244 (typep (clos:ensure-class-using-class nil (gentemp)) 'standard-class))
+
+(test class-slot-inheritance ; issue #1392
+      (progn (setf (find-class 'testp) nil
+                   (find-class 'testc1) nil
+                   (find-class 'testc2) nil
+                   (find-class 'testgc1) nil
+                   (find-class 'testgc2) nil)
+             (defclass testp ()
+               ((%s :initform :parent :allocation :class :reader s)))
+             (defclass testc1 (testp) ())
+             (defclass testc2 (testp)
+               ((%s :initform :child :allocation :class)))
+             (defclass testgc1 (testc1 testc2) ())
+             (defclass testgc2 (testc2 testc1) ())
+             (values (s (make-instance 'testgc1))
+                     (s (make-instance 'testgc2))))
+      (:child :child))
