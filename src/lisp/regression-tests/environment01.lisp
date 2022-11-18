@@ -13,12 +13,14 @@
       (* arg 2)
       form))
 
-(test-true DOCUMENTATION.LIST.COMPILER-MACRO.2
-           (let ((doc "Buh"))
-             (setf (documentation '%%test%% 'compiler-macro) doc)
-             (string= doc (documentation '%%test%% 'compiler-macro))))
+(test DOCUMENTATION.LIST.COMPILER-MACRO.2
+      (progn (setf (documentation '%%test%% 'compiler-macro) "Buh")
+             (documentation '%%test%% 'compiler-macro))
+      ("Buh"))
 
-;;; (funcall (compiler-macro-function '%%test%%) '(%%test%% 2) nil)
-
+(test funcall-compiler-macro
+      (funcall (compiler-macro-function '%%test%%)
+               '(funcall #'%%test%% 2) nil)
+      (4))
 
 

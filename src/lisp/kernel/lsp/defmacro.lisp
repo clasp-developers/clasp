@@ -103,7 +103,8 @@
          :macro-name macro-name :lambda-list vl :arguments current-form
          :problem :too-few))
 
-(defun sys::destructure (vldestructure context &optional macro-name
+(defun sys::destructure (vldestructure context
+                         &optional display-name cm-name
                          &aux dl arg-check (basis-form (gensym))
                            (destructure-symbols (list basis-form)))
   (labels ((tempsym ()
@@ -114,20 +115,20 @@
              (if (eq context 'destructuring-bind)
                  whole
                  ;; Special handling if define-compiler-macro called this
-                 (if (eq context 'define-compiler-macro)
+                 (if (eq context 'cl:define-compiler-macro)
                      `(if (and (eq (car ,whole) 'cl:funcall)
                                (consp (cadr ,whole))
                                (eq (caadr ,whole) 'cl:function)
                                (consp (cdadr ,whole))
-                               (equal (second (second ,whole)) ',macro-name))
+                               (equal (second (second ,whole)) ',cm-name))
                           (cddr (the cons ,whole))
                           (cdr (the cons ,whole)))
                      ;; deftype- allow bare symbols- symbol = (symbol)
-                     (if (eq context 'deftype)
+                     (if (eq context 'cl:deftype)
                          `(if (symbolp ,whole)
                               nil
                               (cdr (the cons ,whole)))
-                         ;; defmacro
+                         ;; defmacro (or setf expander)
                          `(cdr (the cons ,whole))))))
 	   (dm-vl (vldestructure whole context)
 	     (multiple-value-bind (reqs opts rest key-flag keys allow-other-keys auxs)
@@ -145,7 +146,7 @@
 		   (dm-v v `(progn
 			      (if (null ,pointer)
 				  (dm-too-few-arguments
-                                   ,basis-form ',vldestructure ',macro-name))
+                                   ,basis-form ',vldestructure ',display-name))
 			      (prog1 ,unsafe-car ,unsafe-pop))))
 		 (dotimes (i (pop opts))
 		   (let* ((x (first opts))
@@ -189,7 +190,7 @@
 		       ((not no-check)
 			(push `(if ,pointer
                                    (dm-too-many-arguments
-                                    ,basis-form ',vldestructure ',macro-name))
+                                    ,basis-form ',vldestructure ',display-name))
 			      arg-check))))))
 	   (dm-v (v init)
 	     (cond ((and v (symbolp v))
@@ -272,9 +273,12 @@
     (values (if decls `((declare ,@decls)) nil)
 	    body doc)))
 
-;; Optional argument CONTEXT can be deftype or defmacro (default)
+;; Optional argument CONTEXT can be setf-expander, type-expander,
+;; or macro-function (default). This is kind of ugly because the underlying
+;; DESTRUCTURE accepts instead DEFMACRO, DEFTYPE, DEFINE-COMPILER-MACRO, or
+;; DESTRUCTURING-BIND, but we want fancy names.
 (defun expand-defmacro (name vledm body
-                        &optional (context 'cl:defmacro)
+                        &optional (context 'cl:macro-function)
                           (block-name (function-block-name name)))
   (multiple-value-bind (decls body doc)
       (find-declarations body)
@@ -285,17 +289,22 @@
         (setq vledm (nconc (butlast vledm 0) (list '&rest (rest cell))))))
     ;; If we find an &environment variable in the lambda list, we take note of the
     ;; name and remove it from the list so that DESTRUCTURE does not get confused
-    (let ((env-part (member '&environment vledm :test #'eq)))
+    (let ((env-part (member '&environment vledm :test #'eq))
+          (lambda-name `(,context ,name)))
       (if env-part
           (setq vledm (nconc (ldiff vledm env-part) (cddr env-part))
                 env-part (second env-part))
           (setq env-part (gensym)
                 decls (list* `(declare (ignore ,env-part)) decls)))
       (multiple-value-bind (whole dl arg-check ignorables)
-          (destructure vledm context name)
+          (destructure vledm (if (eq context 'ext::type-expander)
+                                 'cl:deftype
+                                 'cl:defmacro)
+                       lambda-name name)
         (values
          `(lambda (,whole ,env-part &aux ,@dl)
-            (declare (ignorable ,@ignorables) (core:lambda-name ,name))
+            (declare (ignorable ,@ignorables)
+                     (core:lambda-name ,lambda-name))
             ,@decls
             ,@(when doc (list doc))
             (block ,block-name
@@ -336,10 +345,12 @@
           (setq env-part (gensym)
                 decls (list* `(declare (ignore ,env-part)) decls)))
       (multiple-value-bind (whole dl arg-check ignorables)
-          (destructure vldm 'cl:define-compiler-macro name)
+          (destructure vldm 'cl:define-compiler-macro
+                       `(compiler-macro-function ,name) name)
         (values
          `(lambda (,whole ,env-part &aux ,@dl)
-            (declare (ignorable ,@ignorables) (core:lambda-name ,name))
+            (declare (ignorable ,@ignorables)
+                     (core:lambda-name (compiler-macro-function ,name)))
             ,@decls
             ,@(when doc (list doc))
             (block ,block-name
@@ -356,24 +367,19 @@
 
 (defun parse-macro (name lambda-list body &optional env)
   (declare (ignore env)) ; for now.
-  (sys::expand-defmacro `(macro-function ,name) lambda-list body 'cl:defmacro
-                        (core:function-block-name name)))
+  (sys::expand-defmacro name lambda-list body 'macro-function))
 
 (defun parse-compiler-macro (name lambda-list body &optional env)
   (declare (ignore env)) ; also for now
-  (sys::expand-define-compiler-macro `(compiler-macro-function ,name) lambda-list body
-                                     (core:function-block-name name)))
+  (sys::expand-define-compiler-macro name lambda-list body))
 
 (defun parse-deftype (name lambda-list body &optional env)
   (declare (ignore env))
-  (sys::expand-defmacro `(type-expander ,name) lambda-list body 'cl:deftype
-                        (core:function-block-name name)))
+  (sys::expand-defmacro name lambda-list body 'type-expander))
 
 (defun parse-define-setf-expander (name lambda-list body &optional env)
   (declare (ignore env))
-  ;; define-setf-expander uses macro lambda lists exactly.
-  (sys::expand-defmacro `(setf-expander ,name) lambda-list body 'cl:defmacro
-                        (core:function-block-name name)))
+  (sys::expand-defmacro name lambda-list body 'setf-expander))
 
 ;; FIXME: move
 (export '(parse-macro parse-compiler-macro parse-deftype
