@@ -168,11 +168,15 @@ Return the source-location for the name/kind pair"
       (:function
        (when (fboundp name)
          (if (symbolp name)
-             (if (special-operator-p name)
-                 (special-operator-source-locations name)
-                 (let ((func (or (macro-function name)
-                                 (fdefinition name))))
-                   (get-source-info-for-function-object func)))
+             (cond ((special-operator-p name)
+                    (special-operator-source-locations name))
+                   ((macro-function name)
+                    (source-locations-set-info
+                     (get-source-info-for-function-object
+                      (macro-function name))
+                     'defmacro))
+                   ((fdefinition name)
+                    (get-source-info-for-function-object (fdefinition name))))
              ;name is (setf sym)
              (get-source-info-for-function-object (fdefinition name)))))
       (:compiler-macro

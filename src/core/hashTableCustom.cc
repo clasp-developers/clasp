@@ -52,13 +52,6 @@ HashTableCustom_sp HashTableCustom_O::create(uint sz, Number_sp rehashSize,
   return hashTable;
 }
 
-#if defined(XML_ARCHIVE)
-void HashTableCustom_O::archiveBase(::core::ArchiveP node) {
-  this->Base::archiveBase(node);
-  // Archive other instance variables here (TODO?)
-}
-#endif // defined(XML_ARCHIVE)
-
 bool HashTableCustom_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   
   T_sp c = eval::funcall(comparator, entryKey, searchKey);

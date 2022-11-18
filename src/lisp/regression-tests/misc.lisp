@@ -275,3 +275,7 @@
                             ((lambda (&key x y z) (list x y z))
                              :x 0s0 :y 0s0 :z (coerce (random 100) 'single-float)))))
       (nil))
+
+;;; Hit this and it crashed SLIME.
+(test-true positive-bytes-allocated
+           (plusp (gctools:bytes-allocated)))

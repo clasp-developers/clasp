@@ -57,7 +57,6 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/serialize.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/weakHashTable.h>

@@ -335,7 +335,8 @@
            (push option class-options))
           (:REPORT
            (let ((reporter (cadr option)))
-             (push `(reporter :initform #',(if (stringp reporter)
+             (push `(reporter :allocation :class
+                              :initform #',(if (stringp reporter)
                                                `(lambda (condition stream)
                                                   (declare (ignore condition))
                                                   (write-string ,reporter stream))

@@ -37,9 +37,6 @@ namespace core {
 FORWARD(HashTableEqualp);
 class HashTableEqualp_O : public HashTable_O {
   LISP_CLASS(core, CorePkg, HashTableEqualp_O, "HashTableEqualp",HashTable_O);
-#if defined(XML_ARCHIVE)
-  DECLARE_ARCHIVE();
-#endif // defined(XML_ARCHIVE)
   DEFAULT_CTOR_DTOR(HashTableEqualp_O);
 
 public:

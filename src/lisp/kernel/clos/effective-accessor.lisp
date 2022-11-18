@@ -29,14 +29,14 @@
                    effective-class-reader))
          (let ((val (car location)))
            (if (cleavir-primop:eq val (core:unbound))
-               (slot-unbound (class-of val) object slot-name)
+               (slot-unbound (class-of object) object slot-name)
                val)))
        (lambda (object)
          (declare (core:lambda-name
                    effective-instance-reader))
          (let ((val (si:instance-ref object location)))
            (if (cleavir-primop:eq val (core:unbound))
-               (slot-unbound (class-of val) object slot-name)
+               (slot-unbound (class-of object) object slot-name)
                val))))))
 
 ;;; Hash tables from (direct-slotd . location) to methods.

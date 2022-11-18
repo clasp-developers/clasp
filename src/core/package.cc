@@ -552,12 +552,6 @@ void Package_O::__write__(T_sp stream) const {
   clasp_write_string(this->__repr__(), stream);
 }
 
-#if defined(XML_ARCHIVE)
-void Package_O::archiveBase(ArchiveP node) {
-  IMPLEMENT_MEF("Handle archiving the package hash-tables");
-}
-#endif // defined(XML_ARCHIVE)
-
 class PackageMapper : public KeyValueMapper {
 public:
   stringstream *ssP;

@@ -111,15 +111,14 @@
          (cases (if default-provided-p (butlast clauses) clauses))
          (seen-keys (make-hash-table)))
     (flet ((filter-keys (keys)
-             ;; Return a shrunken key list if there are redundant keys.
-             ;; Otherwise return the original.
-             (loop with redundantp = nil
-                   for k in keys
-                   if (gethash k seen-keys)
-                     do (setf redundantp t)
-                   else collect k into new-keys
+             ;; Return two values: A list with the duplicates removed,
+             ;; and the list of duplicates removed.
+             (loop for k in keys
+                   when (gethash k seen-keys)
+                     collect k into redundant-keys
+                   else collect k into cleaned-keys
                    do (setf (gethash k seen-keys) t)
-                   finally (return (if redundantp new-keys keys)))))
+                   finally (return (values cleaned-keys redundant-keys)))))
       (loop with redundantp = nil
             with optimizablep = t
             for case in cases
@@ -131,16 +130,14 @@
                          ;; Normal case
                          ((listp keything) keything)
                          (t (list keything)))
-            for skeys = (filter-keys keys)
+            for (skeys rkeys) = (multiple-value-list (filter-keys keys))
             unless (every #'core:create-tagged-immediate-value-or-nil skeys)
               do (setf optimizablep nil)
-            unless (eq keys skeys)
+            unless (null rkeys)
               do (ext:with-current-source-form (keys)
                    (warn 'core::simple-style-warning
-                         :format-control
-                         "Redundant keys in CASE: ~a"
-                         :format-arguments
-                         (list (set-difference keys skeys))))
+                         :format-control "Redundant keys in CASE: ~a"
+                         :format-arguments (list rkeys)))
                  (setf redundantp t optimizablep nil)
             unless (null skeys)
               collect (cons skeys body) into new-cases

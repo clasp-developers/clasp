@@ -3376,31 +3376,21 @@
 {class-kind :stamp-name "STAMPWTAG_core__Exposer_O" :stamp-key "core::Exposer_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Package_O>"
-             :offset-base-ctype "core::Exposer_O" :layout-offset-field-names ("_Package")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleBaseString_O>"
+{fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
+             :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "core::Exposer_O" :layout-offset-field-names ("_PackageName")}
 {class-kind :stamp-name "STAMPWTAG_core__CoreExposer_O" :stamp-key "core::CoreExposer_O"
             :parent-class "core::Exposer_O" :lisp-class-base "core::Exposer_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Package_O>"
-             :offset-base-ctype "core::CoreExposer_O" :layout-offset-field-names ("_Package")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleBaseString_O>"
+{fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
+             :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "core::CoreExposer_O" :layout-offset-field-names ("_PackageName")}
 {class-kind :stamp-name "STAMPWTAG_asttooling__AsttoolingExposer_O"
             :stamp-key "asttooling::AsttoolingExposer_O" :parent-class "core::Exposer_O"
             :lisp-class-base "core::Exposer_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Package_O>"
-             :offset-base-ctype "asttooling::AsttoolingExposer_O"
-             :layout-offset-field-names ("_Package")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleBaseString_O>"
+{fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
+             :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "asttooling::AsttoolingExposer_O"
              :layout-offset-field-names ("_PackageName")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__StructLayout_O" :stamp-key "llvmo::StructLayout_O"

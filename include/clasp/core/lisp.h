@@ -544,13 +544,6 @@ public:
   uint nextEnvironmentId();
 
 public:
-#if defined(XML_ARCHIVE)
-  /*! Like read but uses serialization code to deserialize objects from a stream */
-  T_sp sread(T_sp sin, bool eofErrorP, T_sp eofValue);
-  /*! Like print but uses serialization to serialize objects to a stream */
-  void sprint(T_sp obj, T_sp sout);
-#endif // defined(XML_ARCHIVE)
-public:
   /*! Create a setfDefinition */
   //	void set_setfDefinition(Symbol_sp fnName, Function_sp fnDef);
   /*! Return the function or nil if not found */
