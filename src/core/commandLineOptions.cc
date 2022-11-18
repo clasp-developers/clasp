@@ -41,14 +41,17 @@ bool global_debug_start_code = false;
 
 const char *help = R"dx(Usage: clasp <options>
 Options:
+  -n, --noinit
+      Don't load the default image or init.lisp (very minimal environment)
   -I, --ignore-image
-      Don't load the boot image/start with init.lisp
+      Don't load the boot image, instead load init.lisp
+  -B, --base
+      Load the base image instead of the extension image. If Clasp was not
+      built with extensions this has no effect.
   -i, --image <file>
-      Use <file> as the boot image. If file ends in .snapshot then treat as a
-      snapshot.
-  -T, --type default|snapshot|image
-      Set the type> o the default startup file to use. default means
-      snapshot->image.
+      Use <file> as the boot image.
+  --snapshot <file>
+      Use <file> as the boot snapshot.
   -L, --llvm-debug <options>
       Pass <options> to llvm::cl::ParseCommandLineOptions --debug-only. Lets you
       debug llvm with LLVM_DEBUG(...)
@@ -56,8 +59,6 @@ Options:
       Describe the clasp data structures for lldb Python API to /tmp/clasp.py
   -d, --describe <file>
       Describe the clasp data structures for lldb Python API to <file>
-  -t, --stage (a|b|c|e)
-      Start the specified stage of clasp.
   -U, --unpack-faso <file>
       Unpack the faso <file> into separate object files
   --noinform
@@ -98,8 +99,6 @@ Options:
       Specify name of the RC file (default .clasprc)
   -r, --norc
       Don't load the RC file
-  -n, --noinit
-      Don't load the init.lisp (very minimal environment)
   -S, --seed <n>
       Seed the random number generator with <n>
   -w, --wait
@@ -209,31 +208,65 @@ Environment variables:
                    <nurseryMortalityPercent> <generation1Kb>
                    <generation1MortalityPercent> <keyExtendByKb>)dx";
 
+bool CommandLineOptions::validStartupTypeOption(const std::string &arg) {
+  if (this->_FreezeStartupType) {
+    fmt::print(std::cerr, "Ignoring {} option because startup type has already been set to ", arg);
+    switch (this->_StartupType) {
+    case cloNone:
+      fmt::print("ignore init.\n");
+      break;
+    case cloInitLisp:
+      fmt::print("init.lisp.\n");
+      break;
+    case cloBaseImage:
+      fmt::print("base image.\n");
+      break;
+    case cloExtensionImage:
+      fmt::print("extension image.\n");
+      break;
+    case cloImageFile:
+      fmt::print("image file.\n");
+      break;
+    case cloSnapshotFile:
+      fmt::print("snapshot file.\n");
+      break;
+    case cloEmbeddedSnapshot:
+      fmt::print("embedded snapshot.\n");
+      break;
+    }
+    return false;
+  }
+
+  this->_FreezeStartupType = true;
+  return true;
+}
+
+void CommandLineOptions::printVersion() {
+  std::cout << gctools::program_name();
+#ifdef USE_MPS
+  std::cout << "-mps-";
+#endif
+#if defined(USE_BOEHM)
+#ifdef USE_PRECISE_GC
+  std::cout << "-boehmprecise-";
+#else
+  std::cout << "-boehm-";
+#endif
+#elif defined(USE_MMTK)
+#ifdef USE_PRECISE_GC
+  std::cout << "-mmtkprecise-";
+#else
+  std::cout << "-mmtk-";
+#endif
+#endif
+  std::cout << CLASP_VERSION;
+}
+
 void process_clasp_arguments(CommandLineOptions *options) {
-  std::set<std::string> parameter_required = {"-i",
-                                              "--image",
-                                              "-T",
-                                              "--type",
-                                              "-L",
-                                              "--llvm-debug",
-                                              "-t",
-                                              "--stage",
-                                              "-d",
-                                              "--describe",
-                                              "-a",
-                                              "--addresses",
-                                              "-e",
-                                              "--eval",
-                                              "-l",
-                                              "--load",
-                                              "--script",
-                                              "-y",
-                                              "--snapshot-symbols",
-                                              "--rc",
-                                              "-S",
-                                              "--seed",
-                                              "-f",
-                                                "--feature"};
+  std::set<std::string> parameter_required = {
+      "-i",          "--image", "--snapshot", "--type",   "-L",     "--llvm-debug", "-d", "--describe",         "-a",
+      "--addresses", "-e",      "--eval",     "-l",       "--load", "--script",     "-y", "--snapshot-symbols", "--rc",
+      "-S",          "--seed",  "-f",         "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
     if (parameter_required.find(*arg) != parameter_required.end() && (arg + 1) == end) {
       std::cerr << "Missing parameter for " << *arg << " option." << std::endl;
@@ -246,30 +279,12 @@ void process_clasp_arguments(CommandLineOptions *options) {
       clasp_unpack_faso(*++arg);
       exit(0);
     } else if (*arg == "-v" || *arg == "--version") {
-      std::cout << gctools::program_name();
-#ifdef USE_MPS
-      std::cout << "-mps-";
-#endif
-#if defined(USE_BOEHM)
-#ifdef USE_PRECISE_GC
-      std::cout << "-boehmprecise-";
-#else
-      std::cout << "-boehm-";
-#endif
-#elif defined(USE_MMTK)
-#ifdef USE_PRECISE_GC
-      std::cout << "-mmtkprecise-";
-#else
-      std::cout << "-mmtk-";
-#endif
-#endif
-      std::cout << CLASP_VERSION << std::endl;
+      options->printVersion();
+      std::cout << std::endl;
       exit(0);
     } else if (*arg == "-a" || *arg == "--addresses") {
       options->_AddressesP = true;
       options->_AddressesFileName = *++arg;
-    } else if (*arg == "-I" || *arg == "--ignore-image") {
-      options->_IgnoreInitImage = true;
     } else if (*arg == "--noinform") {
       options->_NoInform = true;
     } else if (*arg == "--noprint") {
@@ -286,17 +301,6 @@ void process_clasp_arguments(CommandLineOptions *options) {
     } else if (*arg == "-N" || *arg == "--non-interactive") {
       options->_DebuggerDisabled = true;
       options->_Interactive = false;
-    } else if (*arg == "-T" || *arg == "--type") {
-      std::string type = *++arg;
-      if (type == "default" || type == "DEFAULT" || type == "Default") {
-        options->_DefaultStartupType = cloDefault;
-      } else if (type == "snapshot" || type == "SNAPSHOT" || type == "Snapshot") {
-        options->_DefaultStartupType = cloSnapshot;
-      } else if (type == "image" || type == "IMAGE" || type == "Image") {
-        options->_DefaultStartupType = cloImage;
-      } else {
-        options->_DefaultStartupType = cloDefault;
-      }
     } else if (*arg == "--rc") {
       options->_RCFileName = *++arg;
     } else if (*arg == "-r" || *arg == "--norc") {
@@ -308,21 +312,37 @@ void process_clasp_arguments(CommandLineOptions *options) {
       options->_ExportedSymbolsFilename = *++arg;
     } else if (*arg == "-m" || *arg == "--disable-mpi") {
       options->_DisableMpi = true;
-    } else if (*arg == "-n" || *arg == "--noinit") {
-      options->_IgnoreInitLsp = true;
     } else if (*arg == "-v" || *arg == "--version") {
       options->_Version = true;
     } else if (*arg == "-s" || *arg == "--verbose") {
       options->_SilentStartup = false;
     } else if (*arg == "-f" || *arg == "--feature") {
       options->_Features.insert(core::lispify_symbol_name(*++arg));
+    } else if (*arg == "-n" || *arg == "--noinit") {
+      if (options->validStartupTypeOption(*arg)) {
+        options->_StartupType = cloNone;
+      }
+    } else if (*arg == "-I" || *arg == "--ignore-image") {
+      if (options->validStartupTypeOption(*arg)) {
+        options->_StartupType = cloInitLisp;
+      }
+    } else if (*arg == "-B" || *arg == "--base") {
+      if (options->validStartupTypeOption(*arg)) {
+        options->_StartupType = cloBaseImage;
+      }
     } else if (*arg == "-i" || *arg == "--image") {
-      options->_StartupFileP = true;
-      options->_StartupFile = *++arg;
-      if (options->_StartupFile.compare(options->_StartupFile.length() - 9, 9, ".snapshot") == 0) {
-        options->_StartupFileType = cloSnapshot;
+      if (options->validStartupTypeOption(*arg)) {
+        options->_StartupFile = *++arg;
+        options->_StartupType = cloImageFile;
       } else {
-        options->_StartupFileType = cloImage;
+        ++arg;
+      }
+    } else if (*arg == "--snapshot") {
+      if (options->validStartupTypeOption(*arg)) {
+        options->_StartupFile = *++arg;
+        options->_StartupType = cloSnapshotFile;
+      } else {
+        ++arg;
       }
     } else if (*arg == "-L" || *arg == "--llvm-debug") {
       const char *bogus_args[3];
@@ -339,8 +359,6 @@ void process_clasp_arguments(CommandLineOptions *options) {
     } else if (*arg == "-d" || *arg == "--describe") {
       options->_HasDescribeFile = true;
       options->_DescribeFile = *++arg;
-    } else if (*arg == "-t" || *arg == "--stage") {
-      options->_Stage = (*++arg)[0];
     } else if (*arg == "-e" || *arg == "--eval") {
       options->_LoadEvalList.push_back(pair<LoadEvalEnum, std::string>(std::make_pair(cloEval, *++arg)));
     } else if (*arg == "-l" || *arg == "--load") {
@@ -357,16 +375,41 @@ void process_clasp_arguments(CommandLineOptions *options) {
       // Unknown option.
     }
   }
+
+  if (!options->_NoInform) {
+    fmt::print("Starting ");
+    options->printVersion();
+    switch (options->_StartupType) {
+    case cloNone:
+      fmt::print(" with no init\n");
+      break;
+    case cloInitLisp:
+      fmt::print(" from init.lisp\n");
+      break;
+    case cloBaseImage:
+      fmt::print(" from base image\n");
+      break;
+    case cloExtensionImage:
+      fmt::print(" from extension image\n");
+      break;
+    case cloImageFile:
+      fmt::print(" from image file {}\n", options->_StartupFile);
+      break;
+    case cloSnapshotFile:
+      fmt::print(" from snapshot file {}\n", options->_StartupFile);
+      break;
+    case cloEmbeddedSnapshot:
+      fmt::print(" from embedded snapshot\n");
+      break;
+    }
+  }
 }
 
 CommandLineOptions::CommandLineOptions(int argc, const char *argv[])
-    : _ProcessArguments(process_clasp_arguments), _IgnoreInitImage(false), _IgnoreInitLsp(false), _DisableMpi(false),
-      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _Stage(DEFAULT_STAGE),
-      _StartupFile(""), _DefaultStartupType(cloDefault), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0), _NoInform(false),
-      _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
-      _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), // FIXME should be initialized later with user-homedir-pathname?
-      _NoRc(false), _PauseForDebugger(false)
-{
+    : _ProcessArguments(process_clasp_arguments), _DisableMpi(false), _AddressesP(false), _StartupType(DEFAULT_STARTUP_TYPE),
+      _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0),
+      _NoInform(false), _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
+      _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false), _PauseForDebugger(false) {
   if (argc == 0) {
     this->_RawArguments.push_back("./");
   } else {

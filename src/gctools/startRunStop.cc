@@ -79,29 +79,26 @@ THE SOFTWARE.
 #define CLASP_DEFAULT_PROGRAM_NAME "clasp"
 #define CLASP_DEFAULT_EXE_NAME CLASP_DEFAULT_PROGRAM_NAME
 
-static std::string g_exe_name;      // filename of the executable
-static std::string g_program_name;  // logical / settable program name
+static std::string g_exe_name;     // filename of the executable
+static std::string g_program_name; // logical / settable program name
 
-static bool        g_abort_flag;
+static bool g_abort_flag;
 
 static std::terminate_handler g_prev_terminate_handler;
-
-
-
 
 namespace gctools {
 
 size_t global_alignup_sizeof_header;
 
 void monitorAllocation(stamp_t k, size_t sz) {
-#ifdef DEBUG_MONITOR_ALLOCATIONS  
-  if (global_monitorAllocations.counter >= global_monitorAllocations.start && global_monitorAllocations.counter < global_monitorAllocations.end) {
+#ifdef DEBUG_MONITOR_ALLOCATIONS
+  if (global_monitorAllocations.counter >= global_monitorAllocations.start &&
+      global_monitorAllocations.counter < global_monitorAllocations.end) {
     core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
   }
   global_monitorAllocations.counter++;
 #endif
 }
-
 
 int handleFatalCondition() {
   int exitCode = 0;
@@ -115,99 +112,84 @@ int handleFatalCondition() {
     // Do nothing
     printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
   } catch (core::CatchThrow &ee) {
-    core::write_bf_stream(fmt::sprintf("%s:%d Uncaught THROW tag[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW", __FILE__ , __LINE__ , ee.getTag()));
+    core::write_bf_stream(fmt::sprintf("%s:%d Uncaught THROW tag[%s] - this should NEVER happen - the stack should never be "
+                                       "unwound unless there is a CATCH clause that matches the THROW",
+                                       __FILE__, __LINE__, ee.getTag()));
   } catch (core::Unwind &ee) {
-    core::write_bf_stream(fmt::sprintf("At %s:%d - Unwind caught frame: %p index: %d", __FILE__ , __LINE__ , (void*)ee.getFrame() , ee.index()));
+    core::write_bf_stream(
+        fmt::sprintf("At %s:%d - Unwind caught frame: %p index: %d", __FILE__, __LINE__, (void *)ee.getFrame(), ee.index()));
   } catch (HardError &ee) {
-    core::write_bf_stream(fmt::sprintf("At %s:%d - HardError caught: %s", __FILE__ , __LINE__ , ee.message()));
+    core::write_bf_stream(fmt::sprintf("At %s:%d - HardError caught: %s", __FILE__, __LINE__, ee.message()));
   }
   return exitCode;
 }
 
+void set_abort_flag(bool abort_flag = false) { g_abort_flag = abort_flag; }
 
-void set_abort_flag( bool abort_flag = false )
-{
-  g_abort_flag = abort_flag;
-}
-
-bool abort_flag( void )
-{
-  return g_abort_flag;
-}
+bool abort_flag(void) { return g_abort_flag; }
 
 // EXECUTABLE MASTER DATA
 // - PROGRAM NAME
-void set_program_name( std::string program_name = CLASP_DEFAULT_PROGRAM_NAME )
-{
-  g_program_name = program_name;
-}
+void set_program_name(std::string program_name = CLASP_DEFAULT_PROGRAM_NAME) { g_program_name = program_name; }
 
-std::string program_name()
-{
-  return g_program_name;
-}
+std::string program_name() { return g_program_name; }
 
 // - EXECUTABLE NAME
-void set_exe_name( std::string exe_name = CLASP_DEFAULT_EXE_NAME )
-{
-  g_exe_name = exe_name;
-}
+void set_exe_name(std::string exe_name = CLASP_DEFAULT_EXE_NAME) { g_exe_name = exe_name; }
 
-std::string exe_name()
-{
-  return g_exe_name;
-}
+std::string exe_name() { return g_exe_name; }
 
 // TERMINATION HANDLING
 
-static void clasp_terminate_handler( void )
-{
+static void clasp_terminate_handler(void) {
   // TODO: Implement CLASP terminate handler, e.g.:
   // - Call all functions registered via an atexit hook -
   // to be implemented!
 
   // Finally exit or abort
 
-  if( gctools::abort_flag() )
+  if (gctools::abort_flag())
     abort();
-  try { throw; }
-  catch (const std::exception& e) {
-      fprintf(stderr, "%s:%d There was an unhandled std::exception in process [pid: %d] e.what()=[%s] - do something about it.\n", __FILE__, __LINE__, getpid(), e.what()  );
+  try {
+    throw;
+  } catch (const std::exception &e) {
+    fprintf(stderr, "%s:%d There was an unhandled std::exception in process [pid: %d] e.what()=[%s] - do something about it.\n",
+            __FILE__, __LINE__, getpid(), e.what());
   } catch (...) {
-      fprintf(stderr, "%s:%d There was an unhandled unknown exception in process [pid: %d] - do something about it.\n", __FILE__, __LINE__, getpid() );
+    fprintf(stderr, "%s:%d There was an unhandled unknown exception in process [pid: %d] - do something about it.\n", __FILE__,
+            __LINE__, getpid());
   };
   abort();
 }
 
-};
-
+}; // namespace gctools
 
 extern "C" {
 
-void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
+int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCode) {
 
   if (gctools::Header_s::weak_mtag != gctools::character_tag) {
-    printf("%s:%d:%s The Header_s::weak_mtag (%lu) MUST have the same value as gctools::character_tag(%lu)\n",
-           __FILE__, __LINE__, __FUNCTION__, (uintptr_t)gctools::Header_s::weak_mtag, (uintptr_t)gctools::character_tag);
+    printf("%s:%d:%s The Header_s::weak_mtag (%lu) MUST have the same value as gctools::character_tag(%lu)\n", __FILE__, __LINE__,
+           __FUNCTION__, (uintptr_t)gctools::Header_s::weak_mtag, (uintptr_t)gctools::character_tag);
     abort();
   }
-  gctools::_global_stack_marker = (const char*)stackMarker;
+  gctools::_global_stack_marker = (const char *)stackMarker;
   gctools::_global_stack_max_size = claspInfo->_stackMax;
   gctools::global_alignup_sizeof_header = gctools::AlignUp(sizeof(gctools::Header_s));
   gctools::global_sizeof_fwd = gctools::AlignUp(sizeof(gctools::Header_s));
 
-  const char* trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
+  const char *trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
   if (trigger) {
     size_t strigger = atoi(trigger);
     core::global_compile_discriminating_function_trigger = strigger;
-    printf("%s:%d:%s Setting global_compile_discriminating_function_trigger = %lu\n", __FILE__, __LINE__, __FUNCTION__, strigger );
+    printf("%s:%d:%s Setting global_compile_discriminating_function_trigger = %lu\n", __FILE__, __LINE__, __FUNCTION__, strigger);
   }
   if (getenv("CLASP_TIME_EXIT")) {
     atexit(core::last_exit);
   }
-  const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
+  const char *dof = getenv("CLASP_DEBUG_OBJECT_FILES");
   if (dof) {
-    if (strcmp(dof,"save")==0) {
+    if (strcmp(dof, "save") == 0) {
       llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrintSave;
     } else {
       llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrint;
@@ -215,35 +197,33 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
   }
 
 #ifdef DEBUG_DYN_ENV_STACK
-  const char* ddes = getenv("CLASP_DEBUG_DYN_ENV_STACK");
-  if (ddes) core::global_debug_dyn_env_stack = true;
+  const char *ddes = getenv("CLASP_DEBUG_DYN_ENV_STACK");
+  if (ddes)
+    core::global_debug_dyn_env_stack = true;
 #endif
-  
 
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;
-  int  mpiRank    = 0;
-  int  mpiSize    = 1;
-
+  int mpiRank = 0;
+  int mpiSize = 1;
 
   // DO BASIC EXE SETUP
 
   gctools::set_abort_flag(); // Set abort flag to default value
-  g_prev_terminate_handler = std::set_terminate( [](){ gctools::clasp_terminate_handler(); } );
+  g_prev_terminate_handler = std::set_terminate([]() { gctools::clasp_terminate_handler(); });
 
   // - STORE NAME OF EXECUTABLE
 
   {
-    std::string exename( claspInfo->_argv[ 0 ] );
-    gctools::set_exe_name( basename( (char *) exename.c_str() ) );
+    std::string exename(claspInfo->_argv[0]);
+    gctools::set_exe_name(basename((char *)exename.c_str()));
   }
 
   // - SET THE APPLICATION NAME
 
   gctools::set_program_name();
 
-  
   // - COMMAND LINE OPTONS HANDLING
 
   core::CommandLineOptions options(claspInfo->_argc, claspInfo->_argv);
@@ -252,15 +232,11 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
 
 #ifdef USE_MPI
   if (!options._DisableMpi) {
-    printf("%s:%d Enabling MPI\n", __FILE__, __LINE__ );
-    try
-    {
+    printf("%s:%d Enabling MPI\n", __FILE__, __LINE__);
+    try {
       mpip::Mpi_O::Init(argc, argv, mpiEnabled, mpiRank, mpiSize);
-    }
-    catch ( HardError &err )
-    {
-      fprintf( stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n",
-               exe_name().c_str(), __FILE__, __LINE__ );
+    } catch (HardError &err) {
+      fprintf(stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n", exe_name().c_str(), __FILE__, __LINE__);
       abort();
     }
   } else {
@@ -268,7 +244,7 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
   }
 #endif
 
-  fflush( stderr );
+  fflush(stderr);
 
   //
   // Setup debugging info all the time
@@ -276,25 +252,25 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
   core::dumpDebuggingLayouts();
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
     stringstream ss;
-    char* username = getenv("USER");
+    char *username = getenv("USER");
     if (!username) {
-      printf("%s:%d:%s Could not get USER environment variable\n", __FILE__, __LINE__, __FUNCTION__ );
+      printf("%s:%d:%s Could not get USER environment variable\n", __FILE__, __LINE__, __FUNCTION__);
       exit(1);
     }
     ss << "/tmp/clasp_pid_" << getenv("USER");
     printf("%s:%d:%s  Setting up clasp for debugging - writing PID to %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str());
-    FILE* fout = fopen(ss.str().c_str(),"w");
+    FILE *fout = fopen(ss.str().c_str(), "w");
     if (!fout) {
-      printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
+      printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str());
       exit(1);
     }
-    fprintf(fout,"%d",getpid());
+    fprintf(fout, "%d", getpid());
     fclose(fout);
   }
   //
   // Pause before any allocations take place
   //
-  char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+  char *pause_startup = getenv("CLASP_PAUSE_STARTUP");
   if (pause_startup) {
     gctools::setup_user_signal();
     gctools::wait_for_user_signal("Paused at startup before all initialization");
@@ -304,11 +280,11 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
   // Walk the stamp field layout tables.
   //
   stringstream ssdummy;
-  walk_stamp_field_layout_tables(gctools::precise_info,ssdummy);
+  walk_stamp_field_layout_tables(gctools::precise_info, ssdummy);
 #ifdef SIGRTMIN
-# define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
+#define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
 #else
-# define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
+#define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGUSR1
 #endif
   gctools::initialize_signals(DEFAULT_THREAD_INTERRUPT_SIGNAL);
 
@@ -317,12 +293,12 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
 #elif defined(USE_BOEHM)
   gctools::startupBoehm(claspInfo); // Correct
 #elif defined(USE_MMTK)
-  int exitCode = gctools::initializeMmtk(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize );
+  int exitCode = gctools::initializeMmtk(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
 
   // Register builtin function names
   define_builtin_cxx_class_names();
-  
+
   // Read the memory profiling settings <size-threshold> <number-theshold>
   // as in export CLASP_MEMORY_PROFILE="16000000 1024"
   // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
@@ -342,8 +318,7 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
       my_thread_low_level->_Allocations._AllocationSizeThreshold = values[0];
     }
   }
-  
-  
+
   //
   // Walk all of the loaded dynamic libraries
   //
@@ -354,41 +329,43 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
     initialize_clasp_Kinds();
     core::global_initialize_builtin_classes = false;
   }
-  
+
+  void *start_of_snapshot = NULL;
+  void *end_of_snapshot = NULL;
+
+#ifdef USE_PRECISE_GC
+#ifdef _TARGET_OS_DARWIN
+  const struct mach_header_64 *exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT, "_mh_execute_header");
+  size_t size;
+  start_of_snapshot = getsectiondata(exec_header, SNAPSHOT_SEGMENT, SNAPSHOT_SECTION, &size);
+  end_of_snapshot = NULL;
+  if (start_of_snapshot) {
+    end_of_snapshot = (void *)((char *)start_of_snapshot + size);
+  }
+#endif
+#ifdef _TARGET_OS_LINUX
+  extern const char __attribute__((weak)) SNAPSHOT_START;
+  extern const char __attribute__((weak)) SNAPSHOT_END;
+  start_of_snapshot = (void *)&SNAPSHOT_START;
+  end_of_snapshot = (void *)&SNAPSHOT_END;
+#endif
+#endif
+
+  if (start_of_snapshot) {
+    core::global_options->_StartupType = core::cloEmbeddedSnapshot;
+    core::global_options->_FreezeStartupType = true;
+  }
+
   // Do some minimal argument processing
   (core::global_options->_ProcessArguments)(core::global_options);
   ::globals_ = new core::globals_t();
   globals_->_DebugStream = new core::DebugStream(claspInfo->_mpiRank);
 
-  const char* jls = getenv("CLASP_JIT_LOG_SYMBOLS");
+  const char *jls = getenv("CLASP_JIT_LOG_SYMBOLS");
   if (jls || core::global_options->_JITLogSymbols) {
     core::global_jit_log_symbols = true;
   }
-  
-//  printf("%s:%d:%s About to get start_of_snapshot\n", __FILE__, __LINE__, __FUNCTION__ );
-#ifdef USE_PRECISE_GC
-# ifdef _TARGET_OS_DARWIN
-  const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
-  size_t size;
-  claspInfo->_start_of_snapshot = getsectiondata(exec_header,
-                                                 SNAPSHOT_SEGMENT,
-                                                 SNAPSHOT_SECTION,
-                                                 &size);
-  claspInfo->_end_of_snapshot = NULL;
-  if (claspInfo->_start_of_snapshot) {
-    claspInfo->_end_of_snapshot = (void*)((char*)claspInfo->_start_of_snapshot + size);
-  }
-# endif
-# ifdef _TARGET_OS_LINUX
-  extern const char __attribute__((weak)) SNAPSHOT_START;
-  extern const char __attribute__((weak)) SNAPSHOT_END;
-  claspInfo->_start_of_snapshot = (void*)&SNAPSHOT_START;
-  claspInfo->_end_of_snapshot = (void*)&SNAPSHOT_END;
-# endif
-#else
-  claspInfo->_start_of_snapshot = NULL;
-  claspInfo->_end_of_snapshot = NULL;
-#endif
+
   //
   // Look around the local directories for source and fasl files.
   //
@@ -400,52 +377,22 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
   //  Set loadSnapshotFile = true if we load a snapshot
   //
 
-#ifdef USE_PRECISE_GC  
-  claspInfo->_snapshotFileName = "";
-  if (!claspInfo->_start_of_snapshot) {
-    if (core::global_options->_StartupFileP &&
-        core::global_options->_StartupFileType == core::cloSnapshot) {
-      claspInfo->_snapshotFileName = core::global_options->_StartupFile;
-      claspInfo->_loadSnapshotFile = true;
-    } else if (core::global_options->_DefaultStartupType == core::cloDefault) {
-      claspInfo->_snapshotFileName = core::startup_snapshot_name(*bundle);
-      if (std::filesystem::exists(std::filesystem::path(claspInfo->_snapshotFileName))) {
-        claspInfo->_loadSnapshotFile = true;
-      }
-    } else if (core::global_options->_DefaultStartupType == core::cloSnapshot) {
-      claspInfo->_snapshotFileName = core::startup_snapshot_name(*bundle);
-      if (std::filesystem::exists(std::filesystem::path(claspInfo->_snapshotFileName))) {
-        claspInfo->_loadSnapshotFile = true;
-      } else {
-        printf("Could not find snapshot file %s - exiting.\n", claspInfo->_snapshotFileName.c_str());
-        exit(1);
-      }
-    }
-  }
-#endif
-
-  if ( claspInfo->_loadSnapshotFile ||          // We want to load a snapshot
-       (claspInfo->_start_of_snapshot != NULL) // We found an embedded snapshot
-       ) {
+  if (core::global_options->_StartupType == core::cloSnapshotFile ||
+      core::global_options->_StartupType == core::cloEmbeddedSnapshot) {
     //
     // Load a snapshot from a file (loadSnapshotFile=true) or from memory (start_of_snapshot!=NULL)
     //
 #ifdef USE_PRECISE_GC
-    if (claspInfo->_loadSnapshotFile && core::startup_snapshot_is_stale(claspInfo->_snapshotFileName)) {
-      printf("The startup snapshot file \"%s\" is stale - remove it or create a new one\n", claspInfo->_snapshotFileName.c_str() );
+    if (core::global_options->_StartupType == core::cloSnapshotFile &&
+        core::startup_snapshot_is_stale(core::global_options->_StartupFile)) {
+      fmt::print("The startup snapshot file \"{}\" is stale - remove it or create a new one\n", core::global_options->_StartupFile);
       std::exit(1);
     }
     llvmo::initialize_llvm();
 
     clbind::initializeCastGraph();
-    if (claspInfo->_start_of_snapshot) {
-      core::global_startupSourceName = "memory";
-      core::global_startupEnum = core::snapshotMemory;
-    } else {
-      core::global_startupSourceName = claspInfo->_snapshotFileName;
-      core::global_startupEnum = core::snapshotFile;
-    }
-    snapshotSaveLoad::snapshot_load( (void*)claspInfo->_start_of_snapshot, (void*)claspInfo->_end_of_snapshot, claspInfo->_snapshotFileName );
+    snapshotSaveLoad::snapshot_load(start_of_snapshot, end_of_snapshot, core::global_options->_StartupFile);
+    _lisp->parseCommandLineArguments(*core::global_options);
 #endif
   } else {
     //
@@ -469,9 +416,9 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
     _lisp->installPackage(&AsttoolingPkg);
 
 #ifndef SCRAPING
-# define ALL_EXPOSES_CALLS
-# include EXPOSE_INC_H
-# undef ALL_EXPOSES_CALLS
+#define ALL_EXPOSES_CALLS
+#include EXPOSE_INC_H
+#undef ALL_EXPOSES_CALLS
 #endif
 
     core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
@@ -488,20 +435,19 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
       core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
     }
 #endif
-
   }
 
   //
   // If --addresses was passed as a command line option - dump the addresses here
   //
   maybeHandleAddressesOption(core::global_options);
-  
-  if ( core::initializer_functions_are_waiting() ) {
+
+  if (core::initializer_functions_are_waiting()) {
     core::initializer_functions_invoke();
   }
-  
+
 #ifdef DEBUG_PROGRESS
-  printf("%s:%d run\n", __FILE__, __LINE__ );
+  printf("%s:%d run\n", __FILE__, __LINE__);
 #endif
 
   // If the user adds "-f debug-startup" to the command line
@@ -528,58 +474,30 @@ void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo ) {
   core::Package_sp cluser = gc::As<core::Package_sp>(_lisp->findPackage("COMMON-LISP-USER"));
   cl::_sym_STARpackageSTAR->defparameter(cluser);
 
+  return _lisp->load(*exitCode);
 }
 
-int run_clasp( gctools::ClaspInfo* claspInfo ) {
+int run_clasp(gctools::ClaspInfo *claspInfo) {
   int exitCode;
-  if ( claspInfo->_loadSnapshotFile ||          // We want to load a snapshot
-       (claspInfo->_start_of_snapshot != NULL)) // We found an embedded snapshot
-  {
+  try {
+    exitCode = _lisp->run();
+  } catch (core::SaveLispAndDie &ee) {
 #ifdef USE_PRECISE_GC
-    _lisp->parseCommandLineArguments(*core::global_options);
-    try {
-      if (ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue().notnilp()) {
-        core::T_sp fn = ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue();
-        core::eval::funcall(fn);
-      } else {
-        core::write_bf_stream(fmt::sprintf("Clasp (copyright Christian E. Schafmeister 2014)\n"));
-        core::write_bf_stream(fmt::sprintf("ext:*snapshot-save-load-startup* is nil so dropping into a simple repl\n"));
-        core::write_bf_stream(fmt::sprintf("Low level repl\n"));
-        _lisp->readEvalPrintInteractive();
-        core::write_bf_stream(fmt::sprintf("\n"));
-      }
-    } catch (core::ExitProgramException &ee) {
-      exitCode = ee.getExitResult();
-    }
-    snapshotSaveLoad::global_InSnapshotLoad = false;
-
-#else
-    printf("Core image loading is not supported unless precise GC is turned on\n");
+    snapshotSaveLoad::snapshot_save(ee);
 #endif
-  } else {
-    try {
-      exitCode = _lisp->run();
-    } catch (core::SaveLispAndDie& ee) {
-#ifdef USE_PRECISE_GC
-      snapshotSaveLoad::snapshot_save(ee);
-#endif
-      exitCode = 0;
-    }
+    exitCode = 0;
   }
   return exitCode;
 };
 
-void shutdown_clasp(gctools::ClaspInfo* claspInfo)
-{
+void shutdown_clasp(gctools::ClaspInfo *claspInfo) {
   delete claspInfo->_lispHolder;
   _lisp->_Roots._ClaspJIT = nil<core::T_O>();
   mp::ClaspThreads_exit(); // run pthreads_exit
-  #ifdef USE_MPI
+#ifdef USE_MPI
   if (!options._DisableMpi) {
     mpip::Mpi_O::Finalize();
   }
 #endif
-
 };
-
 };

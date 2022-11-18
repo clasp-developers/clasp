@@ -37,15 +37,21 @@ extern bool global_debug_start_code;
 
 typedef enum { cloLoad, cloEval, cloScript } LoadEvalEnum;
 
-typedef enum { cloDefault, cloImage, cloSnapshot } ImageTypeEnum;
+typedef enum {
+  cloNone,
+  cloInitLisp,
+  cloBaseImage,
+  cloExtensionImage,
+  cloImageFile,
+  cloSnapshotFile,
+  cloEmbeddedSnapshot
+} StartupTypeEnum;
 
 struct CommandLineOptions {
   CommandLineOptions(int argc, const char *argv[]);
   process_arguments_callback _ProcessArguments;
   std::string _ExecutableName;
   bool _JITLogSymbols;
-  bool _IgnoreInitImage;
-  bool _IgnoreInitLsp;
   bool _DisableMpi{false};
   std::vector<std::string> _RawArguments;
   std::vector<std::string> _KernelArguments;
@@ -54,13 +60,11 @@ struct CommandLineOptions {
   std::vector<pair<LoadEvalEnum, std::string>> _LoadEvalList;
   bool _AddressesP;
   std::string _AddressesFileName;
-  bool _StartupFileP;
-  ImageTypeEnum _StartupFileType;
+  bool _FreezeStartupType;
+  StartupTypeEnum _StartupType;
   std::string _StartupFile;
-  ImageTypeEnum _DefaultStartupType;
   bool _HasDescribeFile;
   std::string _DescribeFile;
-  char _Stage;
   long _RandomNumberSeed;
   bool _ExportedSymbolsAccumulate;
   std::string _ExportedSymbolsFilename;
@@ -73,10 +77,12 @@ struct CommandLineOptions {
   std::string _RCFileName;
   bool _NoRc;
   bool _PauseForDebugger;
+
+  bool validStartupTypeOption(const std::string &arg);
+  void printVersion();
 };
 
 void maybeHandleAddressesOption(CommandLineOptions *options);
 
 }; // namespace core
 #endif
-

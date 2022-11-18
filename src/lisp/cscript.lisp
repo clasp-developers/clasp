@@ -52,7 +52,7 @@
              #~"kernel/cmp/bytecode-machines.lisp"
              #~"kernel/cmp/bytecode-reference.lisp"
              #~"kernel/cmp/cmprepl-bytecode.lisp"
-             #@"cclasp-translations.lisp"
+             #@"base-translations.lisp"
              #~"kernel/stage/base/0-end.lisp"
              #~"kernel/cmp/cmpwalk.lisp"
              #~"kernel/lsp/assert.lisp"
@@ -149,29 +149,27 @@
              #~"kernel/lsp/process.lisp"
              #~"kernel/lsp/encodings.lisp"
              #~"kernel/lsp/cltl2.lisp"
-             #@"cclasp-immutable.lisp"
+             #@"base-immutable.lisp"
              #~"kernel/stage/base/2-end.lisp"
              #~"kernel/cmp/compile-file-parallel.lisp"
-             #~"kernel/lsp/epilogue-cclasp.lisp"))
+             #~"kernel/lsp/top-hook.lisp"))
 
 (defun add-eclasp-sources (target)
   (add-cclasp-sources target)
   (k:sources target
              #~"kernel/stage/extension/0-begin.lisp"
-             #@"eclasp-immutable.lisp"
-             #@"eclasp-translations.lisp"
+             #@"extension-immutable.lisp"
+             #@"extension-translations.lisp"
              #~"modules/asdf/build/asdf.lisp"
              :extension-systems
-             #~"kernel/stage/extension/0-end.lisp"
-             #~"kernel/tag/pre-epilogue-eclasp.lisp"
-             #~"kernel/lsp/epilogue-eclasp.lisp"
-             #~"kernel/tag/eclasp.lisp"))
+             #~"kernel/stage/extension/0-end.lisp"))
 
 (add-cclasp-sources :cclasp)
 
 (add-eclasp-sources :eclasp)
 
-(k:sources :eclasp-translations :extension-systems)
+(k:sources :extension-translations
+           :extension-systems)
 
 (k:sources :modules
            #~"modules/asdf/build/asdf.lisp"

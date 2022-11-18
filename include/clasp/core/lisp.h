@@ -825,6 +825,7 @@ public:
   void initializeEnvironments();
 
   /*! Run the program, if returns _ExitStatus != 0 there was an error */
+  bool load(int &exitCode);
   int run();
 
   string errorMessage();

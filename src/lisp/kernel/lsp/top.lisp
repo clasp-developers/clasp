@@ -329,7 +329,7 @@
         See also: :variables.~%")
   ))
 
-(defun top-level (&key set-package noprint)
+(defun top-level (&key set-package (noprint (core:noprint-p)))
   "Args: ()
 Clasp specific.
 The top-level loop of Clasp. It is called by default when Clasp is invoked."

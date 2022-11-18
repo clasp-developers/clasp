@@ -1234,11 +1234,19 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
     printf("%s:%d  Lisp smart_ptr width -> %d  sizeof(Lisp) -> %d\n", __FILE__, __LINE__, (int)(sizeof(_lisp->_Roots)/8), (int)sizeof(Lisp));
   }
 
-  if (options._StartupFileP) {
-    SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
+  SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
+  switch (options._StartupType) {
+  case cloImageFile:
     _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(SimpleBaseString_O::make(options._StartupFile)));
-  } else {
-    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._Stage));
+    break;
+  case cloBaseImage:
+    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(false));
+    break;
+  case cloExtensionImage:
+    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(true));
+    break;
+  default:
+    break;
   }
 }
 
@@ -1340,6 +1348,26 @@ CL_DEFUN List_sp core__singleDispatchGenericFunctions()
 }
 
 DOCGROUP(clasp);
+CL_DEFUN T_sp core__startup_type() {
+  switch (global_options->_StartupType) {
+  case cloNone:
+    return INTERN_(kw, none);
+  case cloInitLisp:
+    return INTERN_(kw, init_lisp);
+  case cloBaseImage:
+    return INTERN_(kw, base_image);
+  case cloExtensionImage:
+    return INTERN_(kw, extension_image);
+  case cloImageFile:
+    return INTERN_(kw, image_file);
+  case cloSnapshotFile:
+    return INTERN_(kw, snapshot_file);
+  case cloEmbeddedSnapshot:
+    return INTERN_(kw, embedded_snapshot);
+  }
+}
+
+DOCGROUP(clasp);
 CL_DEFUN bool core__noinform_p() {
   return global_options->_NoInform;
 }
@@ -1385,9 +1413,10 @@ CL_DEFUN bool core__no_rc_p() {
 }
 
 void Lisp::readEvalPrintInteractive() {
-  Cons_sp expression;
-  //	TopLevelIHF topFrame(my_thread->invocationHistoryStack(),nil<T_O>());
+  core::write_bf_stream(fmt::sprintf("Clasp (copyright Christian E. Schafmeister 2014-2022)\n"));
+  core::write_bf_stream(fmt::sprintf("Low level repl\n"));
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), nil<T_O>(), true, true);
+  write_bf_stream("\n");
 }
 
 CL_LAMBDA();
@@ -2314,60 +2343,74 @@ void Lisp::dump_apropos(const char *part) const {
   searchForApropos(packages, substring, true);
 }
 
-int Lisp::run() {
-  int exitCode;
-  MultipleValues& mvn = core::lisp_multipleValues();
+bool Lisp::load(int &exitCode) {
+  MultipleValues &mvn = core::lisp_multipleValues();
   try {
-    if (!global_options->_IgnoreInitImage) {
-      if ( startup_functions_are_waiting() ) {
+    switch (global_options->_StartupType) {
+    case cloInitLisp: {
+      Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(globals_->_InitFileName));
+      if (!global_options->_SilentStartup) {
+        printf("Loading image %s\n", _rep_(initPathname).c_str());
+      }
+      T_mv result = core__load_no_package_set(initPathname);
+      if (result.nilp()) {
+        T_sp err = mvn.second(result.number_of_values());
+        printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+        exitCode = 1;
+        return false;
+      }
+    } break;
+    case cloBaseImage:
+    case cloExtensionImage:
+    case cloImageFile:
+      if (startup_functions_are_waiting()) {
         startup_functions_invoke(NULL);
       } else {
         Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
         DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
         if (!global_options->_SilentStartup) {
-          printf("Loading image %s\n", _rep_(initPathname).c_str() );
+          printf("Loading image %s\n", _rep_(initPathname).c_str());
         }
-        global_startupEnum = imageFile;
-        global_startupSourceName = gc::As<String_sp>(cl__namestring(initPathname))->get_std_string();
         T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
         if (result.nilp()) {
           T_sp err = mvn.second(result.number_of_values());
           printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+          exitCode = 1;
+          return false;
         }
-        char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
+        char *pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
         if (pause_startup) {
           gctools::setup_user_signal();
           gctools::wait_for_user_signal("Paused at startup after object files added");
         }
       }
-    } else if (!global_options->_IgnoreInitLsp) {
-    // Assume that if there is no program then
-    // we want an interactive script
-    //
-      {
-        Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(globals_->_InitFileName));
-        if (!global_options->_SilentStartup) {
-          printf("Loading image %s\n", _rep_(initPathname).c_str() );
-        }
-        T_mv result = core__load_no_package_set(initPathname);
-        if (result.nilp()) {
-          T_sp err = mvn.second(result.number_of_values());
-          printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
-        }
-      }
+      break;
+    default:
+      break;
+    }
+  } catch (core::ExitProgramException &ee) {
+    exitCode = ee.getExitResult();
+    return false;
+  }
+  return true;
+};
+
+int Lisp::run() {
+  int exitCode;
+  MultipleValues &mvn = core::lisp_multipleValues();
+  try {
+    if (ext::_sym_STARtoplevel_hookSTAR->symbolValue().notnilp()) {
+      core::T_sp fn = ext::_sym_STARtoplevel_hookSTAR->symbolValue();
+      core::eval::funcall(fn);
     } else if (global_options->_Interactive) {
-      write_bf_stream("Clasp (copyright Christian E. Schafmeister 2014)\n");
-      write_bf_stream("Low level repl\n");
       this->readEvalPrintInteractive();
-      write_bf_stream("\n");
     }
     exitCode = 0;
   } catch (core::ExitProgramException &ee) {
     exitCode = ee.getExitResult();
   }
   if (global_options->_ExportedSymbolsAccumulate) {
-    T_sp stream = core::cl__open(core::SimpleBaseString_O::make(global_options->_ExportedSymbolsFilename),
-                                 kw::_sym_output);
+    T_sp stream = core::cl__open(core::SimpleBaseString_O::make(global_options->_ExportedSymbolsFilename), kw::_sym_output);
     core::core__mangledSymbols(stream);
     cl__close(stream);
   }

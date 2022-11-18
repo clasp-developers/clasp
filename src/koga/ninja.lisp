@@ -61,17 +61,17 @@
                     :restat 1
                     :description "Generating VM header from $in")
   (ninja:write-rule output-stream :compile-systems
-                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load compile-systems.lisp -- $out $systems"
+                    :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load compile-systems.lisp -- $out $systems"
                     :description "Compiling systems: $systems"
                     :restat 1
                     :pool "console")
   (ninja:write-rule output-stream :analyze-generate
-                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load analyze-generate.lisp -- $sif $in"
+                    :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load analyze-generate.lisp -- $sif $in"
                     :description "Analyzing clasp"
                     :restat 1
                     :pool "console")
   (ninja:write-rule output-stream :analyze-file
-                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load analyze-file.lisp -- $out $in $log $database"
+                    :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load analyze-file.lisp -- $out $in $log $database"
                     :depfile "$out.d"
                     :description "Analyzing $in")
   (ninja:write-rule output-stream :ar
@@ -107,23 +107,23 @@
                     :pool "console")
   (when (extensions configuration)
     (ninja:write-rule output-stream :load-eclasp
-                      :command "$clasp --norc --disable-mpi -t c --feature ignore-extension-systems --feature cclasp --load load-clasp.lisp -- extension $position $source"
+                      :command "$clasp --norc --disable-mpi --base --feature ignore-extension-systems --feature cclasp --load load-clasp.lisp -- extension $position $source"
                       :description "Loading eclasp"
                       :pool "console")
     (ninja:write-rule output-stream :snapshot-eclasp
-                      :command "$clasp --norc --disable-mpi -t c --feature ignore-extension-systems --feature cclasp --load snapshot-clasp.lisp -- $out extension $position $source"
+                      :command "$clasp --norc --disable-mpi --base --feature ignore-extension-systems --feature cclasp --load snapshot-clasp.lisp -- $out extension $position $source"
                       :description "Snapshot eclasp"
                       :pool "console")
     (ninja:write-rule output-stream :compile-eclasp
-                      :command "$clasp --norc --disable-mpi -t c --feature ignore-extension-systems --feature cclasp --load compile-clasp.lisp -- extension $position $source"
+                      :command "$clasp --norc --disable-mpi --base --feature ignore-extension-systems --feature cclasp --load compile-clasp.lisp -- extension $position $source"
                       :description "Compiling eclasp"
                       :restat 1
                       :pool "console"))
   (ninja:write-rule output-stream :compile-module
-                    :command "$clasp --non-interactive --norc --disable-mpi -t c --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
+                    :command "$clasp --non-interactive --norc --disable-mpi --base --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
-                    :command "$clasp --norc --non-interactive -t c --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
+                    :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
                     :description "Running regression tests"
                     :pool "console")
   (ninja:write-rule output-stream :cando-regression-tests
@@ -131,11 +131,11 @@
                     :description "Running Cando regression tests"
                     :pool "console")
   (ninja:write-rule output-stream :bench
-                    :command "$clasp --norc -t c --feature ignore-extensions --load bench.lisp"
+                    :command "$clasp --norc --base --feature ignore-extensions --load bench.lisp"
                     :description "Running benchmarks"
                     :pool "console")
   (ninja:write-rule output-stream :ansi-test
-                    :command "$clasp --norc -t c --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
+                    :command "$clasp --norc --base --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
                     :description "Running ANSI tests"
                     :pool "console")
   (ninja:write-rule output-stream :ansi-test-subset
@@ -143,7 +143,7 @@
                     :description "Running ANSI tests"
                     :pool "console")
   (ninja:write-rule output-stream :test-random-integer
-                    :command "$clasp --norc -t c --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
+                    :command "$clasp --norc --base --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
   (ninja:write-rule output-stream :link-fasl
@@ -521,7 +521,7 @@
 
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :modules)) (source lisp-source))
-  (let* ((image (image-source configuration :cclasp))
+  (let* ((image (image-source configuration nil))
          (name (pathname-name (source-path source)))
          (module-name (format nil "modules/~a.~a"
                               name (module-fasl-extension configuration)))
@@ -547,8 +547,8 @@
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :cclasp)) sources
      &key &allow-other-keys)
-  (let ((vimage (image-source configuration :cclasp))
-        (vimage-installed (image-source configuration :cclasp :package-lib))
+  (let ((vimage (image-source configuration nil))
+        (vimage-installed (image-source configuration nil :package-lib))
         (iclasp (make-source "iclasp" :variant))
         (lib (make-source "libclasp.a" :variant-lib)))
     (ninja:write-build output-stream :load-cclasp
@@ -671,9 +671,9 @@
     (configuration (name (eql :ninja)) output-stream (target (eql :eclasp)) sources
      &key &allow-other-keys)
   (when (extensions configuration)
-    (let ((cimage (image-source configuration :cclasp))
-          (eimage (image-source configuration :eclasp))
-          (eimage-installed (image-source configuration :eclasp :package-lib))
+    (let ((cimage (image-source configuration nil))
+          (eimage (image-source configuration t))
+          (eimage-installed (image-source configuration t :package-lib))
           (iclasp (make-source "iclasp" :variant))
           (eclasp-sources (member #P"src/lisp/kernel/stage/extension/0-begin.lisp" sources :key #'source-path :test #'equal)))
       (ninja:write-build output-stream :load-eclasp
@@ -872,7 +872,7 @@
              (ninja:write-build output-stream :make-snapshot
                                 :clasp iclasp
                                 :arguments (when ignore-extensions
-                                             "-t c --feature ignore-extensions")
+                                             "--base --feature ignore-extensions")
                                 :variant-path *variant-path*
                                 :inputs (list cclasp)
                                 :outputs (list executable))

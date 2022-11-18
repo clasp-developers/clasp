@@ -1,9 +1,4 @@
-#+debug-lexical-var-reference-depth
-(eval-when (:compile-toplevel)
-  (report-lexical-var-reference-depth))
-
-#+(or cclasp eclasp)
-(cl:defun sys::cclasp-snapshot-load-foreign-libraries ()
+(defun sys::load-foreign-libraries ()
   (when (find-package :cffi)
     (loop with list-foreign-libraries = (find-symbol "LIST-FOREIGN-LIBRARIES" :cffi)
           with load-foreign-library = (find-symbol "LOAD-FOREIGN-LIBRARY" :cffi)
@@ -12,8 +7,7 @@
           for name = (ignore-errors (funcall foreign-library-name lib))
           do (ignore-errors (funcall load-foreign-library name)))))
 
-#+(or cclasp eclasp)
-(cl:defun sys::load-extensions ()
+(defun sys::load-extensions ()
   (unless (some (lambda (feature)
                   (member feature '(:ignore-extensions :ignore-extension-systems)))
                 *features*)
@@ -23,46 +17,29 @@
           for system in core:*extension-systems*
           do (funcall load-system system))))
 
-#+(or cclasp eclasp)
 (defun sys::call-initialize-hooks ()
   (loop for hook in core:*initialize-hooks*
         do (funcall hook)))
 
-#+(or cclasp eclasp)
 (defun sys::call-terminate-hooks ()
   (loop for hook in core:*terminate-hooks*
         do (funcall hook)))
 
-#+(or cclasp eclasp)
-(cl:defun sys::cclasp-snapshot-load-top-level ()
+(defun sys::standard-toplevel ()
   (let ((core:*use-interpreter-for-eval* nil))
-    (sys::cclasp-snapshot-load-foreign-libraries)
+    (case (core:startup-type)
+      ((:snapshot-file :embedded-snapshot)
+       (sys::load-foreign-libraries))
+      (otherwise
+       (core:maybe-load-clasprc)
+       (sys::load-extensions)))
     (sys::call-initialize-hooks)
     (unwind-protect
         (progn
           (core:process-command-line-load-eval-sequence)
           (if (core:is-interactive-lisp)
-              (core:top-level :noprint (core:noprint-p))
+              (core:top-level)
               (core:exit 0)))
       (sys::call-terminate-hooks))))
 
-#+(or cclasp eclasp)
-(cl:defun sys::cclasp-top-level ()
-  (let ((core:*use-interpreter-for-eval* nil))
-    (core:maybe-load-clasprc)
-    (sys::load-extensions)
-    (sys::call-initialize-hooks)
-    (unwind-protect
-        (progn
-          (core:process-command-line-load-eval-sequence)
-          (if (core:is-interactive-lisp)
-              (core:top-level :noprint (core:noprint-p))
-              (core:exit 0)))
-      (sys::call-terminate-hooks))))
-
-#+cclasp
-(eval-when (:load-toplevel)
-  (when (member :cclasp *features*)
-    (cl:in-package :cl-user)
-    (setf ext:*snapshot-save-load-startup* 'sys::cclasp-snapshot-load-top-level)
-    (sys::cclasp-top-level)))
+(setf ext:*toplevel-hook* 'sys::standard-toplevel)

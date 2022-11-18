@@ -146,7 +146,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARsave_hookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
-SYMBOL_EXPORT_SC_(ExtPkg, STARsnapshot_save_load_startupSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg, STARtoplevel_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARinterrupts_enabledSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_threadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_dtree_interpreterSTAR);
@@ -1155,7 +1155,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   ext::_sym_STARinspectorHookSTAR->defparameter(nil<T_O>());
   core::_sym_STARsave_hookSTAR->defparameter(nil<T_O>());
   ext::_sym_STARclasp_clang_pathSTAR->defparameter(SimpleBaseString_O::make(CLASP_CLANG_PATH));
-  ext::_sym_STARsnapshot_save_load_startupSTAR->defparameter(nil<T_O>());
+  ext::_sym_STARtoplevel_hookSTAR->defparameter(nil<T_O>());
   _sym_STARloadSearchListSTAR->defparameter(nil<T_O>());
   _sym_STARcurrent_dlopen_handleSTAR->defparameter(nil<T_O>());
   _sym_STARdebugInterpretedClosureSTAR->defparameter(nil<T_O>());

@@ -12,7 +12,4 @@
                              #-extensions :cclasp
                              *features*)))
     (unless (member :clos *features*)
-      (setq *features* (cons :clos *features*)))
-    (unless (core:noinform-p)
-      (format t "Starting ~a ... loading image...~%"
-              (lisp-implementation-version)))))
+      (setq *features* (cons :clos *features*)))))
