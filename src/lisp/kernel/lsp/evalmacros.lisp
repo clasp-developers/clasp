@@ -168,7 +168,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
             (eq (car (cadr form)) 'cl:function)
             (let ((expander (compiler-macro-function (cadr (cadr form)) env)))
               (if expander
-                  (funcall *macroexpand-hook* expander (cons (cadr (cadr form)) (cddr form)) env)
+                  (funcall *macroexpand-hook* expander form env)
                   form)))
        (let ((expander (compiler-macro-function (car form) env)))
          (if expander
