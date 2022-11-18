@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <time.h>
 #endif
 #include <clasp/core/bignum.h>
+#include <clasp/core/ql.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
@@ -95,6 +96,27 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
   }
   LOG("digits[0] = %d" , digits[0]);
   return digits;
+}
+CL_DEFUN
+List_sp core__positive_integer_to_mixed_base_digits(core::Integer_sp number, List_sp bases) {
+  if (!(clasp_zerop(number) || clasp_plusp(number))) {
+    SIMPLE_ERROR("The number %s must be zero or positive", _rep_(number));
+  }
+  vector<int> ibases;
+  for ( auto cur : bases ) {
+    T_sp val = CONS_CAR(cur);
+    if (!val.fixnump()) {
+      SIMPLE_ERROR("Bases %s must all be fixnums", _rep_(bases));
+    }
+    ibases.push_back(val.unsafe_fixnum());
+  }
+  Bignum bn = core::clasp_to_mpz(number);
+  vector<int> digits = bignumToMixedBaseDigits(bn,ibases);
+  ql::list ll;
+  for ( int ii : digits ) {
+    ll << clasp_make_fixnum(ii);
+  }
+  return ll.cons();
 }
 
 CL_LAMBDA();
