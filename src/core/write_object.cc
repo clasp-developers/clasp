@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -109,13 +109,46 @@ Fixnum search_print_circle(T_sp x) {
   }
 }
 
+T_sp do_write_object(T_sp x, T_sp stream) {
+  return cl::_sym_printObject->fboundp() ? core::eval::funcall(cl::_sym_printObject, x, stream) : write_ugly_object(x, stream);
+}
+
+T_sp do_write_object_circle(T_sp x, T_sp stream) {
+  T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
+  Fixnum code = search_print_circle(x);
+
+  if (!circle_counter.fixnump()) {
+    /* We are only inspecting the object to be printed. */
+    /* Only run X if it was not referenced before */
+    if (code != 0)
+      return x;
+  } else if (code == 0) {
+    /* Object is not referenced twice */
+  } else if (code < 0) {
+    /* Object is referenced twice. We print its definition */
+    stringstream ss;
+    ss << '#' << -code << '=';
+    SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
+    clasp_writeString(out, stream);
+  } else {
+    /* Second reference to the object */
+    stringstream ss;
+    ss << '#' << code << '#';
+    SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
+    clasp_writeString(out, stream);
+    return x;
+  }
+
+  return do_write_object(x, stream);
+}
+
 T_sp write_object(T_sp x, T_sp stream) {
   // With *print-pretty*, go immediately to the pretty printer, which does its own *print-circle* etc.
   if (!cl::_sym_STARprint_prettySTAR.unboundp() && cl::_sym_STARprint_prettySTAR->symbolValueUnsafe().notnilp()) {
     T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, x);
     T_sp f0 = mv_f;
-    MultipleValues& mvn = core::lisp_multipleValues();
-    T_sp f1 = mvn.valueGet(1,mv_f.number_of_values());
+    MultipleValues &mvn = core::lisp_multipleValues();
+    T_sp f1 = mvn.valueGet(1, mv_f.number_of_values());
     if (f1.notnilp()) {
       eval::funcall(f0, stream, x);
       return x;
@@ -126,55 +159,24 @@ T_sp write_object(T_sp x, T_sp stream) {
   bool circle = clasp_print_circle();
   // We only worry about *print-circle* for objects that aren't numbers, valists, characters,
   // or interned symbols.
-  if (circle &&
-      (x) &&
-      !x.fixnump() &&
-      !x.valistp() &&
-      !x.characterp() &&
-      !cl__numberp(x) &&
+  if (circle && (x) && !x.fixnump() && !x.valistp() && !x.characterp() && !cl__numberp(x) &&
       (!cl__symbolp(x) || gc::As<Symbol_sp>(x)->homePackage().nilp())) {
-    Fixnum code;
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
+
     if (circle_counter.nilp()) {
-      HashTable_sp hash = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(cl::_sym_eq,
-                                                                          make_fixnum(1024),
-                                                                          _lisp->rehashSize(),
-                                                                          _lisp->rehashThreshold()));
+      HashTable_sp hash = gc::As_unsafe<HashTable_sp>(
+          cl__make_hash_table(cl::_sym_eq, make_fixnum(1024), _lisp->rehashSize(), _lisp->rehashThreshold()));
       DynamicScopeManager scope(_sym_STARcircle_counterSTAR, _lisp->_true());
       DynamicScopeManager scope2(_sym_STARcircle_stackSTAR, hash);
-      write_object(x, _lisp->nullStream());
+      do_write_object_circle(x, _lisp->nullStream());
       _sym_STARcircle_counterSTAR->setf_symbolValue(gc::make_tagged_fixnum<core::Fixnum_I>(0));
-      write_object(x, stream);
-      hash->clrhash();
-      goto OUTPUT;
+      return do_write_object_circle(x, stream);
     }
-    code = search_print_circle(x);
-    if (!circle_counter.fixnump()) {
-      /* We are only inspecting the object to be printed. */
-      /* Only run X if it was not referenced before */
-      if (code != 0)
-        goto OUTPUT;
-    } else if (code == 0) {
-      /* Object is not referenced twice */
-    } else if (code < 0) {
-      /* Object is referenced twice. We print its definition */
-      stringstream ss;
-      ss << '#' << -code << '=';
-      SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
-      clasp_writeString(out, stream);
-    } else {
-      /* Second reference to the object */
-      stringstream ss;
-      ss << '#' << code << '#';
-      SimpleBaseString_sp out = SimpleBaseString_O::make(ss.str());
-      clasp_writeString(out, stream);
-      goto OUTPUT;
-    }
+
+    return do_write_object_circle(x, stream);
   }
-  // ...and then do the actual printing in write_ugly_object.
-  return write_ugly_object(x, stream);
-OUTPUT:
-  return x;
+
+  return do_write_object(x, stream);
 }
 
 CL_LAMBDA(obj &optional strm);
@@ -185,5 +187,4 @@ CL_DEFUN T_sp core__write_object(T_sp obj, T_sp ostrm) {
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_object(obj, strm);
 };
-
-};
+}; // namespace core

@@ -6,6 +6,7 @@
 
 ## Fixes
 * `ext:run-program` works with string streams.
+* `print-object` is now invoked for all calls to `write`.
 
 # Version 2.0.0 (LLVM14) 2022-10-26
 
