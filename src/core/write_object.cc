@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -110,9 +110,7 @@ Fixnum search_print_circle(T_sp x) {
 }
 
 T_sp do_write_object(T_sp x, T_sp stream) {
-  return cl::_sym_printObject->fboundp() ?
-   core::eval::funcall(cl::_sym_printObject, x, stream) :
-  write_ugly_object(x, stream);
+  return cl::_sym_printObject->fboundp() ? core::eval::funcall(cl::_sym_printObject, x, stream) : write_ugly_object(x, stream);
 }
 
 T_sp do_write_object_circle(T_sp x, T_sp stream) {
@@ -189,4 +187,4 @@ CL_DEFUN T_sp core__write_object(T_sp obj, T_sp ostrm) {
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_object(obj, strm);
 };
-};
+}; // namespace core

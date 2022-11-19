@@ -118,16 +118,16 @@ const char *CorePkg_nicknames[] = {
 };
 SYMBOL_EXPORT_SC_(CorePkg, fixnump);
 SYMBOL_EXPORT_SC_(CorePkg, single_float_p);
-SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
+SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR); // nil (clasp) or T (cleavir)
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_gcroots_in_module_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_literals_name_PLUS_);
-SYMBOL_EXPORT_SC_(KeywordPkg,object);
-SYMBOL_EXPORT_SC_(KeywordPkg,fasl);
-SYMBOL_EXPORT_SC_(KeywordPkg,faso);
-SYMBOL_EXPORT_SC_(KeywordPkg,fasoll);
-SYMBOL_EXPORT_SC_(KeywordPkg,fasobc);
-SYMBOL_EXPORT_SC_(KeywordPkg,bitcode);
-SYMBOL_EXPORT_SC_(KeywordPkg,linkage);
+SYMBOL_EXPORT_SC_(KeywordPkg, object);
+SYMBOL_EXPORT_SC_(KeywordPkg, fasl);
+SYMBOL_EXPORT_SC_(KeywordPkg, faso);
+SYMBOL_EXPORT_SC_(KeywordPkg, fasoll);
+SYMBOL_EXPORT_SC_(KeywordPkg, fasobc);
+SYMBOL_EXPORT_SC_(KeywordPkg, bitcode);
+SYMBOL_EXPORT_SC_(KeywordPkg, linkage);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
@@ -138,7 +138,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARuseParallelBuildSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseBuildForkRedirectSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_generate_cstSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_cst_resultSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, arguments );
+SYMBOL_EXPORT_SC_(CorePkg, arguments);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_valuesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_dispatchSTAR);
@@ -163,10 +163,10 @@ SYMBOL_EXPORT_SC_(CorePkg, STARcache_macroexpandSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARmodule_startup_function_nameSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARmodule_shutdown_function_nameSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
-SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
-SYMBOL_EXPORT_SC_(CorePkg,STARdebug_hash_tableSTAR)
-SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
-SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
+SYMBOL_EXPORT_SC_(CorePkg, class_source_location)
+SYMBOL_EXPORT_SC_(CorePkg, STARdebug_hash_tableSTAR)
+SYMBOL_EXPORT_SC_(CorePkg, STARdebug_fastgfSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CorePkg, STARdrag_native_callsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_function_namesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_single_dispatch_method_namesSTAR);
@@ -176,28 +176,28 @@ SYMBOL_EXPORT_SC_(CompPkg, STARcompile_file_parallelSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdefault_object_typeSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARforce_startup_external_linkageSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARthread_safe_contextSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR );
+SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARoptimization_levelSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARprimitivesSTAR);
-SYMBOL_EXPORT_SC_(CorePkg,c_local);
-SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg,_PLUS_class_name_to_lisp_name_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg,_PLUS_type_header_value_map_PLUS_);
-SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);
-SYMBOL_EXPORT_SC_(ExtPkg,array_index);
-SYMBOL_EXPORT_SC_(CorePkg,index);
-SYMBOL_EXPORT_SC_(CorePkg,cxx_class);
-SYMBOL_EXPORT_SC_(CorePkg,STARnumber_of_entry_pointsSTAR);
-SYMBOL_EXPORT_SC_(CorePkg,STARcore_startup_functionSTAR);
-SYMBOL_EXPORT_SC_(KeywordPkg,read_only);
-SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
-SYMBOL_EXPORT_SC_(ExtPkg,assume_no_errors);
-SYMBOL_EXPORT_SC_(ExtPkg,ignore_signal);
-SYMBOL_EXPORT_SC_(ExtPkg,unix_signal_received);
-SYMBOL_EXPORT_SC_(KeywordPkg,process);
-SYMBOL_EXPORT_SC_(KeywordPkg,code);
-SYMBOL_EXPORT_SC_(KeywordPkg,handler);
+SYMBOL_EXPORT_SC_(CorePkg, c_local);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_known_typep_predicates_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_class_name_to_lisp_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_type_header_value_map_PLUS_);
+SYMBOL_EXPORT_SC_(ExtPkg, check_arguments_type);
+SYMBOL_EXPORT_SC_(ExtPkg, array_index);
+SYMBOL_EXPORT_SC_(CorePkg, index);
+SYMBOL_EXPORT_SC_(CorePkg, cxx_class);
+SYMBOL_EXPORT_SC_(CorePkg, STARnumber_of_entry_pointsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARcore_startup_functionSTAR);
+SYMBOL_EXPORT_SC_(KeywordPkg, read_only);
+SYMBOL_EXPORT_SC_(CorePkg, type_assertions);
+SYMBOL_EXPORT_SC_(ExtPkg, assume_no_errors);
+SYMBOL_EXPORT_SC_(ExtPkg, ignore_signal);
+SYMBOL_EXPORT_SC_(ExtPkg, unix_signal_received);
+SYMBOL_EXPORT_SC_(KeywordPkg, process);
+SYMBOL_EXPORT_SC_(KeywordPkg, code);
+SYMBOL_EXPORT_SC_(KeywordPkg, handler);
 
 SYMBOL_EXPORT_SC_(CorePkg, STARmpi_rankSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARmpi_sizeSTAR);
@@ -261,7 +261,7 @@ SYMBOL_EXPORT_SC_(ClPkg, dynamic_extent);
 SYMBOL_EXPORT_SC_(ClPkg, ftype);
 SYMBOL_EXPORT_SC_(ClPkg, boole);
 SYMBOL_EXPORT_SC_(ClPkg, ignorable);
-SYMBOL_EXPORT_SC_(ClPkg, notinline );
+SYMBOL_EXPORT_SC_(ClPkg, notinline);
 SYMBOL_EXPORT_SC_(ClPkg, callArgumentsLimit);
 SYMBOL_EXPORT_SC_(ClPkg, arrayDimensionLimit);
 SYMBOL_EXPORT_SC_(ClPkg, arrayTotalSizeLimit);
@@ -303,11 +303,11 @@ SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_notinlineSTAR);
 SYMBOL_SC_(CorePkg, printf);
 
-//SYMBOL_EXPORT_SC_(CorePkg, asin);
-//SYMBOL_EXPORT_SC_(CorePkg, asinh);
-//SYMBOL_EXPORT_SC_(CorePkg, acos);
-//SYMBOL_EXPORT_SC_(CorePkg, acosh);
-//SYMBOL_EXPORT_SC_(CorePkg, atanh);
+// SYMBOL_EXPORT_SC_(CorePkg, asin);
+// SYMBOL_EXPORT_SC_(CorePkg, asinh);
+// SYMBOL_EXPORT_SC_(CorePkg, acos);
+// SYMBOL_EXPORT_SC_(CorePkg, acosh);
+// SYMBOL_EXPORT_SC_(CorePkg, atanh);
 
 SYMBOL_EXPORT_SC_(ClPkg, nil);
 SYMBOL_EXPORT_SC_(CorePkg, STARpollTicksPerGcSTAR);
@@ -451,7 +451,7 @@ SYMBOL_EXPORT_SC_(ClPkg, Bit);
 SYMBOL_EXPORT_SC_(ClPkg, parseNamestring);
 SYMBOL_EXPORT_SC_(KeywordPkg, start);
 SYMBOL_EXPORT_SC_(KeywordPkg, end);
-SYMBOL_EXPORT_SC_(ClPkg, or );
+SYMBOL_EXPORT_SC_(ClPkg, or);
 SYMBOL_EXPORT_SC_(KeywordPkg, test);
 SYMBOL_EXPORT_SC_(KeywordPkg, junkAllowed);
 SYMBOL_EXPORT_SC_(ClPkg, STARdefaultPathnameDefaultsSTAR);
@@ -610,9 +610,9 @@ SYMBOL_EXPORT_SC_(CorePkg, array_out_of_bounds);
 SYMBOL_EXPORT_SC_(CorePkg, sequence_out_of_bounds);
 SYMBOL_EXPORT_SC_(KeywordPkg, array);
 SYMBOL_EXPORT_SC_(CorePkg, replaceArray);
-SYMBOL_EXPORT_SC_(CorePkg, fillArrayWithElt );
-SYMBOL_EXPORT_SC_(CorePkg, fillPointerSet );
-SYMBOL_SC_(CorePkg, swapElements );
+SYMBOL_EXPORT_SC_(CorePkg, fillArrayWithElt);
+SYMBOL_EXPORT_SC_(CorePkg, fillPointerSet);
+SYMBOL_SC_(CorePkg, swapElements);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_variant_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_bitcode_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_executable_name_PLUS_);
@@ -695,7 +695,7 @@ SYMBOL_EXPORT_SC_(ClPkg, AMPkey);
 SYMBOL_EXPORT_SC_(ClPkg, AMPallow_other_keys);
 SYMBOL_EXPORT_SC_(ClPkg, AMPaux);
 SYMBOL_EXPORT_SC_(ClPkg, AMPrest);
-SYMBOL_EXPORT_SC_(CorePkg, valist );
+SYMBOL_EXPORT_SC_(CorePkg, valist);
 SYMBOL_EXPORT_SC_(ClPkg, AMPbody);
 SYMBOL_EXPORT_SC_(ClPkg, integer);
 SYMBOL_EXPORT_SC_(ClPkg, sequence);
@@ -715,11 +715,11 @@ SYMBOL_SC_(CorePkg, input_stream_designator);
 /*! Set to true if you want the repl to print what was read */
 SYMBOL_SC_(CorePkg, STARechoReplReadSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg, brcl);
-SYMBOL_EXPORT_SC_(KeywordPkg, not);
+SYMBOL_EXPORT_SC_(KeywordPkg, not );
 SYMBOL_EXPORT_SC_(KeywordPkg, and);
-SYMBOL_EXPORT_SC_(KeywordPkg, or );
+SYMBOL_EXPORT_SC_(KeywordPkg, or);
 SYMBOL_EXPORT_SC_(ClPkg, and);
-SYMBOL_EXPORT_SC_(ClPkg, or );
+SYMBOL_EXPORT_SC_(ClPkg, or);
 SYMBOL_EXPORT_SC_(ClPkg, car);
 SYMBOL_EXPORT_SC_(ClPkg, cdr);
 SYMBOL_EXPORT_SC_(ClPkg, dotimes);
@@ -789,10 +789,10 @@ SYMBOL_SC_(CorePkg, foreach);
 SYMBOL_SC_(CorePkg, STARPATHSTAR);
 SYMBOL_SC_(CorePkg, STARargsSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARpackageSTAR);
-//SYMBOL_SC_(CorePkg, STARcurrent_working_directorySTAR);
+// SYMBOL_SC_(CorePkg, STARcurrent_working_directorySTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARmodulesSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, progn);
-SYMBOL_EXPORT_SC_(ClPkg,multipleValueCall);
+SYMBOL_EXPORT_SC_(ClPkg, multipleValueCall);
 SYMBOL_SC_(CorePkg, backquote);
 SYMBOL_SC_(CorePkg, double_backquote);
 SYMBOL_SC_(CorePkg, unquote);
@@ -830,7 +830,6 @@ SYMBOL_EXPORT_SC_(CorePkg, sharp_a_reader);
 SYMBOL_EXPORT_SC_(CorePkg, sharp_s_reader);
 SYMBOL_EXPORT_SC_(CorePkg, sharpmacros_lisp_redefine);
 
-
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
   List_sp cur = nil<T_O>();
@@ -851,7 +850,8 @@ void testConses() {
       }
     }
     fastTimer.stop();
-    printf("%s:%d Fast list traversal time: %lf counted %lld elements\n", __FILE__, __LINE__, fastTimer.getAccumulatedTime(), fastCount);
+    printf("%s:%d Fast list traversal time: %lf counted %lld elements\n", __FILE__, __LINE__, fastTimer.getAccumulatedTime(),
+           fastCount);
     long long normalCount = 0;
     LightTimer normalTimer;
     normalTimer.reset();
@@ -863,7 +863,8 @@ void testConses() {
       }
     }
     normalTimer.stop();
-    printf("%s:%d Normal list traversal time: %lf counted %lld elements\n", __FILE__, __LINE__, normalTimer.getAccumulatedTime(), normalCount);
+    printf("%s:%d Normal list traversal time: %lf counted %lld elements\n", __FILE__, __LINE__, normalTimer.getAccumulatedTime(),
+           normalCount);
   }
 };
 
@@ -907,14 +908,9 @@ void testFeatures() {
   testConses();
 }
 
+CoreExposer_O::CoreExposer_O(LispPtr lisp) : Exposer_O(lisp, CorePkg){};
 
-CoreExposer_O::CoreExposer_O(LispPtr lisp) : Exposer_O(lisp, CorePkg) {
-};
-
-
-
-__attribute((optnone))
-void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpose what) const {
+__attribute((optnone)) void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpose what) const {
   switch (what) {
   case candoClasses:
     break;
@@ -951,7 +947,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
     Package_sp package = gc::As<Package_sp>(_lisp->findPackage(this->packageName()));
     package->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
 #define CorePkg_EXPORT
-#define DO_SYMBOL( ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
+#define DO_SYMBOL(ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
 #ifndef SCRAPING
 #include SYMBOLS_SCRAPED_INC_H
 #endif
@@ -1021,7 +1017,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   T_sp stdin_stream = IOStreamStream_O::makeInput("*STDIN*", stdin);
   T_sp stdout_stream = IOStreamStream_O::makeOutput("*STDOUT*", stdout);
   T_sp stderr_stream = IOStreamStream_O::makeOutput("*STDERR*", stderr);
- 
+
   ext::_sym__PLUS_processStandardInput_PLUS_->defparameter(stdin_stream);
   ext::_sym__PLUS_processStandardOutput_PLUS_->defparameter(stdout_stream);
   ext::_sym__PLUS_processErrorOutput_PLUS_->defparameter(stderr_stream);
@@ -1032,7 +1028,8 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   cl::_sym_STARtrace_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
   cl::_sym_STARdebug_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
   cl::_sym_STARquery_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
-  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), SimpleBaseString_O::make("help_file.dat")));
+  _sym_STARdocumentation_poolSTAR->defparameter(
+      Cons_O::createList(HashTableEql_O::create_default(), SimpleBaseString_O::make("help_file.dat")));
   _sym_STARdocumentation_poolSTAR->exportYourself();
   TwoWayStream_sp terminal = gc::As_unsafe<TwoWayStream_sp>(TwoWayStream_O::make(stdin_stream, stdout_stream));
   _lisp->_Roots._TerminalIO = terminal;
@@ -1053,7 +1050,8 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(nil<T_O>());
-  _lisp->_Roots._ClassTable = HashTable_O::create_thread_safe(cl::_sym_eq,SimpleBaseString_O::make("CLTBLRD"),SimpleBaseString_O::make("CLTBLWR"));
+  _lisp->_Roots._ClassTable =
+      HashTable_O::create_thread_safe(cl::_sym_eq, SimpleBaseString_O::make("CLTBLRD"), SimpleBaseString_O::make("CLTBLWR"));
   _sym_STARsharpEqContextSTAR->defparameter(nil<T_O>());
   cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_single_float);
   _sym_STARnestedErrorDepthSTAR->defparameter(make_fixnum(0));
@@ -1120,7 +1118,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   // When threading - make *jit-saved-symbol-info* a thread safe hash table
   SimpleBaseString_sp sbsr = SimpleBaseString_O::make("JITSAVR");
   SimpleBaseString_sp sbsw = SimpleBaseString_O::make("JITSAVW");
-  jit_save->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw);
+  jit_save->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbsr, sbsw);
 #endif
   comp::_sym_STARjit_saved_symbol_infoSTAR->defparameter(jit_save);
   //
@@ -1171,7 +1169,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   SimpleBaseString_sp sbsr1 = SimpleBaseString_O::make("SYSPMNR");
   SimpleBaseString_sp sbsw1 = SimpleBaseString_O::make("SYSPMNW");
   _lisp->_Roots._Finalizers = WeakKeyHashTable_O::create();
-  _lisp->_Roots._Sysprop = gc::As<HashTableEql_sp>(HashTable_O::create_thread_safe(cl::_sym_eql,sbsr1,sbsw1));
+  _lisp->_Roots._Sysprop = gc::As<HashTableEql_sp>(HashTable_O::create_thread_safe(cl::_sym_eql, sbsr1, sbsw1));
   _sym_STARdebug_accessorsSTAR->defparameter(nil<T_O>());
   _sym_STARmodule_startup_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_STARTUP_FUNCTION_NAME)));
   _sym_STARmodule_shutdown_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_SHUTDOWN_FUNCTION_NAME)));
@@ -1209,17 +1207,21 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(nil<core::T_O>());
   gctools::_sym_STARdebug_gcrootsSTAR->defparameter(nil<core::T_O>());
   int optimization_level = 3;
-  const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
+  const char *optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
   if (optLevel) {
-    optimization_level = strtol(optLevel,NULL,10);
-    if (optimization_level < 0) optimization_level = 0;
-    if (optimization_level > 3) optimization_level = 3;
-    printf("%s:%d Due to CLASP_OPTIMIZATION_LEVEL environment variable --> cmp:*optimization-level* = %d\n", __FILE__, __LINE__, optimization_level);
+    optimization_level = strtol(optLevel, NULL, 10);
+    if (optimization_level < 0)
+      optimization_level = 0;
+    if (optimization_level > 3)
+      optimization_level = 3;
+    printf("%s:%d Due to CLASP_OPTIMIZATION_LEVEL environment variable --> cmp:*optimization-level* = %d\n", __FILE__, __LINE__,
+           optimization_level);
   } else {
     optimization_level = 3;
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
     optimization_level = 0;
-    printf("%s:%d Due to DEBUG_LLVM_OPTIMIZATION_LEVEL_0 --> cmp:*optimization-level* = %d\n", __FILE__, __LINE__, optimization_level);
+    printf("%s:%d Due to DEBUG_LLVM_OPTIMIZATION_LEVEL_0 --> cmp:*optimization-level* = %d\n", __FILE__, __LINE__,
+           optimization_level);
 #else
     optimization_level = 3;
 #endif
@@ -1237,49 +1239,49 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   SYMBOL_EXPORT_SC_(KeywordPkg, 64_bit);
   Symbol_sp address_model = kw::_sym_64_bit;
 
-# if defined(__APPLE__) && defined(__MACH__)
-#  include <TargetConditionals.h>
+#if defined(__APPLE__) && defined(__MACH__)
+#include <TargetConditionals.h>
 
-#  if TARGET_OS_IPHONE == 1
-#   error Currently iPhone simulator and iOS are not supported
-#  elif TARGET_OS_MAC == 1
+#if TARGET_OS_IPHONE == 1
+#error Currently iPhone simulator and iOS are not supported
+#elif TARGET_OS_MAC == 1
 
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_darwin);
   Symbol_sp target_os = kw::_sym_target_os_darwin;
 
-#  else
-#   error Your TargetConditionals.h file says you are not a Mac or iPhone?????
-#  endif
+#else
+#error Your TargetConditionals.h file says you are not a Mac or iPhone?????
+#endif
 
-# elif defined(__linux__)
+#elif defined(__linux__)
 
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
-# elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__)
 
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_freebsd);
   Symbol_sp target_os = kw::_sym_target_os_freebsd;
 
-# elif defined(CLASP_APPLE_SILICON)
-#  error "__arm__ is defined"
-# else
-#  error Currently only MacOSX, linux and FreeBSD are supported for x86_64
-# endif
+#elif defined(CLASP_APPLE_SILICON)
+#error "__arm__ is defined"
+#else
+#error Currently only MacOSX, linux and FreeBSD are supported for x86_64
+#endif
 
 #elif defined(__i386__)
 
   SYMBOL_EXPORT_SC_(KeywordPkg, 32_bit);
   Symbol_sp address_model = kw::_sym_32_bit;
 
-# if defined(__linux__)
+#if defined(__linux__)
 
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
-# else
-#  error Currently only linux is supported for i386
-# endif
+#else
+#error Currently only linux is supported for i386
+#endif
 
 #elif defined(CLASP_APPLE_SILICON)
 
@@ -1289,7 +1291,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   Symbol_sp address_model = kw::_sym_64_bit;
 
 #else
-# error Currently only x86_64 and i386 is supported
+#error Currently only x86_64 and i386 is supported
 #endif
 
   ql::list features;
@@ -1307,7 +1309,7 @@ void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
   List_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue();
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(Cons_O::create(pair, list));
 }
-};
+}; // namespace core
 
 #define EXPAND_CLASS_MACROS
 #define _CLASS_MACRO(_T_) STATIC_CLASS_INFO(_T_);
