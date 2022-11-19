@@ -74,22 +74,17 @@ namespace core {
 
 void Pathname_O::__writeReadable__(T_sp strm) const {
   ql::list l;
-  l << cl::_sym_makePathname
-    << kw::_sym_host << this->_Host
-    << kw::_sym_device << this->_Device
-    << kw::_sym_directory
-    << eval::funcall(ext::_sym_maybeQuote, this->_Directory)
-    << kw::_sym_name << this->_Name
-    << kw::_sym_type << this->_Type
-    << kw::_sym_version << this->_Version
-    << kw::_sym_defaults << nil<T_O>();
+  l << cl::_sym_makePathname << kw::_sym_host << this->_Host << kw::_sym_device << this->_Device << kw::_sym_directory
+    << eval::funcall(ext::_sym_maybeQuote, this->_Directory) << kw::_sym_name << this->_Name << kw::_sym_type << this->_Type
+    << kw::_sym_version << this->_Version << kw::_sym_defaults << nil<T_O>();
   clasp_write_string("#.", strm);
   write_object(l.cons(), strm);
 }
 
 void Pathname_O::__write__(T_sp strm) const {
   Pathname_sp path = this->const_sharedThis<Pathname_O>();
-  if (path.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
+  if (path.nilp())
+    SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring"), __FUNCTION__);
   T_sp namestring = clasp_namestring(path, 0);
   bool readably = clasp_print_readably();
   if (namestring.nilp()) {
@@ -97,7 +92,8 @@ void Pathname_O::__write__(T_sp strm) const {
       path->__writeReadable__(strm);
       return;
     }
-    if (path.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
+    if (path.nilp())
+      SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring"), __FUNCTION__);
     namestring = clasp_namestring(path, 1);
     if (namestring.nilp()) {
       clasp_write_string("#<Unprintable pathname>", strm);
@@ -109,50 +105,25 @@ void Pathname_O::__write__(T_sp strm) const {
   write_ugly_object(namestring, strm);
 }
 
-void Instance_O::__write__(T_sp stream) const {
-  if (_sym_STARliteral_print_objectSTAR->symbolValue().notnilp()) {
-    eval::funcall(_sym_STARliteral_print_objectSTAR->symbolValue(), this->const_sharedThis<Instance_O>(), stream);
-  } else if ( cl::_sym_printObject->fboundp() ) {
-    eval::funcall(cl::_sym_printObject, this->const_sharedThis<Instance_O>(), stream);
-  } else {
-    std::string str = _rep_(this->asSmartPtr());
-    clasp_write_string(str,stream);
-  }
-}
+void Instance_O::__write__(T_sp stream) const { clasp_write_string(_rep_(this->asSmartPtr()), stream); }
 
-void FuncallableInstance_O::__write__(T_sp stream) const {
-  if (_sym_STARliteral_print_objectSTAR->symbolValue().notnilp()) {
-    eval::funcall(_sym_STARliteral_print_objectSTAR->symbolValue(), this->const_sharedThis<FuncallableInstance_O>(), stream);
-  } else if ( cl::_sym_printObject->fboundp() ) {
-    eval::funcall(cl::_sym_printObject, this->const_sharedThis<FuncallableInstance_O>(), stream);
-  } else {
-    std::string str = _rep_(this->asSmartPtr());
-    clasp_write_string(str,stream);
-  }
-}
+void FuncallableInstance_O::__write__(T_sp stream) const { clasp_write_string(_rep_(this->asSmartPtr()), stream); }
 
 void Integer_O::__write__(T_sp stream) const {
   SafeBufferStr8Ns buffer;
   int print_base = clasp_print_base();
-  core__integer_to_string(buffer._Buffer, this->const_sharedThis<Integer_O>(),
-                       make_fixnum(print_base),
-                       cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
-                       true);
+  core__integer_to_string(buffer._Buffer, this->const_sharedThis<Integer_O>(), make_fixnum(print_base),
+                          cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), nil<T_O>());
 }
 
-void Ratio_O::__write__(T_sp stream) const {  
+void Ratio_O::__write__(T_sp stream) const {
   SafeBufferStr8Ns buffer;
   int print_base = clasp_print_base();
-  core__integer_to_string(buffer._Buffer, this->numerator(),
-                       make_fixnum(print_base),
-                       cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
-                       false);
+  core__integer_to_string(buffer._Buffer, this->numerator(), make_fixnum(print_base),
+                          cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), false);
   buffer._Buffer->vectorPushExtend('/');
-  core__integer_to_string(buffer._Buffer, this->denominator(),
-                       make_fixnum(print_base),
-                       false,
-                       false);
+  core__integer_to_string(buffer._Buffer, this->denominator(), make_fixnum(print_base), false, false);
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), nil<T_O>());
 }
 
@@ -168,17 +139,16 @@ void Complex_O::__write__(T_sp stream) const {
 // generic functions go through the instance printer, not this.
 void Function_O::__write__(T_sp stream) const {
   clasp_write_string("#<", stream);
-  clasp_write_string(this->className(),stream);
+  clasp_write_string(this->className(), stream);
   clasp_write_char(' ', stream);
   write_ugly_object(this->functionName(), stream);
   clasp_write_char('>', stream);
 }
 
-void
-_clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
+void _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
   SafeBufferStr8Ns buffer;
-  core__integer_to_string(buffer._Buffer,
-                       clasp_make_fixnum(i), clasp_make_fixnum(clasp_print_base()), cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
+  core__integer_to_string(buffer._Buffer, clasp_make_fixnum(i), clasp_make_fixnum(clasp_print_base()),
+                          cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), nil<T_O>());
 }
 
@@ -186,10 +156,7 @@ void write_fixnum(T_sp strm, T_sp i) {
   Fixnum_sp fn = gc::As<Fixnum_sp>(i);
   SafeBufferStr8Ns buffer;
   int print_base = clasp_print_base();
-  core__integer_to_string(buffer._Buffer, fn,
-                       make_fixnum(print_base),
-                       cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
-                       true);
+  core__integer_to_string(buffer._Buffer, fn, make_fixnum(print_base), cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
   cl__write_sequence(buffer._Buffer, strm, make_fixnum(0), nil<T_O>());
 }
 
@@ -199,8 +166,7 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
   clasp_write_string(ss.str(), strm);
 }
 
-void
-write_float(Float_sp f, T_sp stream) {
+void write_float(Float_sp f, T_sp stream) {
   T_sp result = core_float_to_string_free(f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
   cl__write_sequence(result, stream, clasp_make_fixnum(0), nil<T_O>());
 }
@@ -237,14 +203,14 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     write_character(stream, x);
   } else if (x.single_floatp()) {
     write_float(gc::As<SingleFloat_sp>(x), stream);
-  } else if (x.generalp() ) {
+  } else if (x.generalp()) {
     General_sp gx(x.unsafe_general());
     if (Float_sp fx = gx.asOrNull<Float_O>()) {
       write_float(fx, stream);
     } else {
       gx->__write__(stream);
     }
-  } else if (x.consp() ) {
+  } else if (x.consp()) {
     Cons_sp cx(x.unsafe_cons());
     cx->__write__(stream);
   } else if (x.valistp()) {
@@ -254,9 +220,10 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     Vaslist_sp xa(&valist_scopy); // = gc::smart_ptr<Vaslist>((gc::Tagged)last.raw_());
     ql::list l;
     int nargs = xa->nargs();
-    for (int i(0); i < nargs; ++i) l << xa->next_arg_indexed(i);
-    core::write_object(l.cons(),stream);
-    clasp_write_string(">",stream);
+    for (int i(0); i < nargs; ++i)
+      l << xa->next_arg_indexed(i);
+    core::write_object(l.cons(), stream);
+    clasp_write_string(">", stream);
   } else if (x.unboundp()) {
     clasp_write_string("#<UNBOUND>");
   } else if (gctools::tagged_no_thread_local_bindingp(x.raw_())) {
@@ -282,4 +249,4 @@ CL_DEFUN T_sp core__write_ugly_object(T_sp obj, T_sp ostrm) {
   return write_ugly_object(obj, strm);
 };
 
-};
+}; // namespace core

@@ -548,7 +548,7 @@ Prints information about OBJECT to STREAM."
            (describe-object "[Variable]" 'variable)))
 
     (cond ((documentation symbol 'TYPE)
-           (describe-object"[Type]" 'type)))
+           (describe-object "[Type]" 'type)))
 
     (cond ((names-structure-p symbol)
            ;; FIXME: not sure of a good way to handle :named.

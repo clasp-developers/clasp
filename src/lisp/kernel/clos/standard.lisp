@@ -680,7 +680,7 @@ because it contains a reference to the undefined class~%  ~A"
   object)
 
 (defmethod describe-object ((obj standard-object) (stream t))
-  (let* ((class (si:instance-class obj)))
+  (let* ((class (class-of obj)))
     (format stream "~&~S - ~S"
 	    obj (class-name class))
     (describe-slots obj stream))
@@ -781,30 +781,4 @@ because it contains a reference to the undefined class~%  ~A"
                              nconcing methods2)))
                (member name methods :test #'member :key #'method-keywords)))
             (t (push name unknown-key-names))))))
-
-;;; ----------------------------------------------------------------------
-;;; Methods
-
-(defmethod describe-object ((obj std-class) (stream t))
-  (let ((slotds (class-slots (si:instance-class obj))))
-    (format stream "~%~A is an instance of class ~A"
-	    obj (class-name (si:instance-class obj)))
-    (do ((scan slotds (cdr scan))
-	 (i 0 (1+ i)))
-	((null scan))
-      (declare (fixnum i))
-      (print (slot-definition-name (car scan)) stream)
-      (princ ":	" stream)
-      (case (slot-definition-name (car scan))
-	    ((SUPERIORS INFERIORS PRECEDENCE-LIST)
-	     (princ "(" stream)
-	     (do* ((scan (si:instance-ref obj i) (cdr scan))
-		   (e (car scan) (car scan)))
-		  ((null scan))
-		  (prin1 (class-name e) stream)
-		  (when (cdr scan) (princ " " stream)))
-	     (princ ")"))
-	    (otherwise (prin1 (si:instance-ref obj i) stream)))))
-  obj)
-
 

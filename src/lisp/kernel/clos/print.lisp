@@ -280,6 +280,23 @@ printer and we should rather use MAKE-LOAD-FORM."
     (write-string ")" stream)
     obj))
 
+#-staging
+(defmethod print-object ((l cons) stream)
+  (if (cdr l)
+      (case (first l)
+        (eclector.reader:quasiquote
+         (write-char #\` stream)
+         (core:write-object (second l) stream))
+        (eclector.reader:unquote
+         (write-char #\, stream)
+         (core:write-object (second l) stream))
+        (eclector.reader:unquote-splicing
+         (write-string ",@" stream)
+         (core:write-object (second l) stream))
+        (otherwise
+         (call-next-method)))
+      (call-next-method)))
+
 (defun ext::float-nan-string (x)
   (when *print-readably*
     (error 'print-not-readable :object x))
@@ -332,47 +349,8 @@ printer and we should rather use MAKE-LOAD-FORM."
 ;;; ----------------------------------------------------------------------
 
 (defmethod describe-object ((obj t) (stream t))
-  (let* ((class (class-of obj))
-	 (slotds (class-slots class)))
-    (format stream "~%~A is an instance of class ~A"
-	    obj (class-name class))
-    (do ((scan slotds (cdr scan))
-	 (i 0 (1+ i))
-	 (sv))
-	((null scan))
-	(declare (fixnum i))
-	(setq sv (si:instance-ref obj i))
-	(print (slot-definition-name (car scan)) stream) (princ ":	" stream)
-	(if (si:sl-boundp sv)
-	    (prin1 sv stream)
-	  (prin1 "Unbound" stream))))
-  obj)
-
-(defmethod describe-object ((obj class) (stream t))
-  (let* ((class  (si:instance-class obj))
-	 (slotds (class-slots class)))
-    (format stream "~%~A is an instance of class ~A"
-	    obj (class-name class))
-    (do ((scan slotds (cdr scan))
-	 (i 0 (1+ i))
-	 (sv))
-	((null scan))
-	(declare (fixnum i))
-	(print (slot-definition-name (car scan)) stream) (princ ":	" stream)
-	(case (slot-definition-name (car scan))
-	      ((superiors inferiors)
-	       (princ "(" stream)
-	       (do* ((scan (si:instance-ref obj i) (cdr scan))
-		     (e (car scan) (car scan)))
-		    ((null scan))
-		    (prin1 (class-name e) stream)
-		    (when (cdr scan) (princ " " stream)))
-	       (princ ")" stream))
-	      (otherwise 
-	       (setq sv (si:instance-ref obj i))
-	       (if (si:sl-boundp sv)
-		   (prin1 sv stream)
-		 (prin1 "Unbound" stream))))))
+  (format stream "~%~S is an instance of class ~S"
+          obj (class-name (class-of obj)))
   obj)
 
 ;;; ----------------------------------------------------------------------
