@@ -138,6 +138,10 @@
                     :command "$clasp --norc -t c --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
                     :description "Running ANSI tests"
                     :pool "console")
+  (ninja:write-rule output-stream :ansi-test-subset
+                    :command "$clasp --norc -t c --feature ignore-extensions --load ansi-test-subset.lisp"
+                    :description "Running ANSI tests"
+                    :pool "console")
   (ninja:write-rule output-stream :test-random-integer
                     :command "$clasp --norc -t c --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
@@ -740,6 +744,10 @@
                      :clasp (make-source "iclasp" :variant)
                      :inputs (list (build-name "cclasp"))
                      :outputs (list (build-name "ansi-test")))
+  (ninja:write-build output-stream :ansi-test-subset
+                     :clasp (make-source "iclasp" :variant)
+                     :inputs (list (build-name "cclasp"))
+                     :outputs (list (build-name "ansi-test-subset")))
   (ninja:write-build output-stream :test-random-integer
                      :clasp (make-source "iclasp" :variant)
                      :inputs (list (build-name "cclasp"))
@@ -759,6 +767,9 @@
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "ansi-test"))
                        :outputs (list "ansi-test"))
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "ansi-test-subset"))
+                       :outputs (list "ansi-test-subset"))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test-random-integer"))
                        :outputs (list "test-random-integer"))
