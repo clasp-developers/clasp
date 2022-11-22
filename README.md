@@ -95,7 +95,7 @@ Clasp was supported by:
 [Wiki]: https://github.com/clasp-developers/clasp/wiki/
 [Cando Docker]: https://hub.docker.com/r/thirdlaw/cando
 [#clasp]: irc://irc.libera.chat/#clasp
-[Clasp Manual]: https://github.com/clasp-developers/clasp/wiki/Manual
+[Clasp Manual]: https://clasp-developers.github.io/manual.html
 [clbind Documentation]: https://clasp-developers.github.io/clbind-doc.html
 [Common Lisp]: https://common-lisp.net/
 [Contributing]: https://github.com/clasp-developers/clasp/blob/main/CONTRIBUTING.md
