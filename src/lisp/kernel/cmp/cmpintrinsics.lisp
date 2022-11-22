@@ -692,8 +692,7 @@ Boehm and MPS use a single pointer"
   (cmp-log "maybe-spill-to-register-save-area register-save-area* -> {}%N" register-save-area*)
   (cmp-log "maybe-spill-to-register-save-area registers -> {}%N" registers)
   (when register-save-area*
-    (multiple-value-bind (words index)
-        (irc-arity-info arity)
+    (let ((words (irc-arity-info arity)))
       (flet ((spill-reg (idx reg addr-name)
                (let ((addr          (irc-typed-gep (llvm-sys:array-type-get %t*% words) register-save-area* (list 0 idx) addr-name))
                      (reg-i8*       (cond
