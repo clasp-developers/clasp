@@ -283,3 +283,12 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions -t c \"$@\""))
   (cl-bench::bench-analysis-page))
 (ext:quit)"))
 
+(defmethod print-prologue (configuration (name (eql :ansi-test-subset)) output-stream)
+  (format output-stream "(setf *default-pathname-defaults*
+      (truename (make-pathname :directory '(:relative :up \"dependencies\" \"ansi-test\"))))
+(load #P\"doit1.lsp\")
+(load #P\"gclload2.lsp\")
+(dolist (name (core:split (string-upcase (ext:getenv \"ANSI_TEST_SUBSET\")) \",\"))
+  (write-line name)
+  (rt:do-test (find-symbol name :cl-test) :catch-errors nil))
+(ext:quit)"))
