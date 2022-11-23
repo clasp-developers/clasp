@@ -632,16 +632,22 @@ because it contains a reference to the undefined class~%  ~A"
 	              (value (if initfunc (funcall initfunc) (si:unbound))))
 	         (setf (%slot-definition-location slotd) (list value))))
 	      (t			; inherited shared slot
-	       (dolist (c (class-precedence-list class))
-		 (unless (eql c class)
-		   (let ((other (find (slot-definition-name slotd)
-				      (class-slots c)
-				      :key #'slot-definition-name)))
-		     (when (and other
-				(eq (slot-definition-allocation other) allocation)
-				(setf (%slot-definition-location slotd)
-				      (slot-definition-location other)))
-		       (return)))))))))
+	       (dolist (c (rest (class-precedence-list class)))
+		 (let ((other (find (slot-definition-name slotd)
+				    (class-slots c)
+				    :key #'slot-definition-name)))
+		   (when (and other
+			      (eq (slot-definition-allocation other) allocation)
+                              ;; Only use this location if it's directly
+                              ;; specified. See #1392.
+                              ;; We don't just search through the direct
+                              ;; slots because they don't have locations set.
+                              (find (slot-definition-name slotd)
+                                    (class-direct-slots c)
+                                    :key #'slot-definition-name)
+			      (setf (%slot-definition-location slotd)
+				    (slot-definition-location other)))
+		     (return))))))))
     slots))
 
 (defmethod compute-slots :around ((class std-class))
