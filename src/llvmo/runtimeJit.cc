@@ -775,14 +775,14 @@ bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& 
 #error You need to decide here
 #endif
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s do_lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__, __FUNCTION__, mangledName.c_str(), dylibsp.raw_(), &dylib, llvm::cast<JITLinkDylib>(&dylib)));
-  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->_LLJIT->lookup(dylib,mangledName);
+  auto symbol = this->_LLJIT->lookup(dylib,mangledName);
   if (!symbol) {
     // printf("%s:%d could not find external linkage symbol named: %s\n", __FILE__, __LINE__, mangledName.c_str() );
     // dylib.dump(llvm::errs());
     return false;
   }
 //  printf("%s:%d:%s !!symbol -> %d  symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, !!symbol, (void*)symbol->getAddress());
-  ptr = (void*)symbol->getAddress();
+  ptr = (void*)symbol->getValue();
   return true;
 }
 

@@ -178,6 +178,7 @@
    nil ; 11 Decl = nullptr
    nil ; 12 ThrownTypes = nullptr
    nil ; 13 Annotations = nullptr
+   "" ; 14 TargetFunctionName = ""
    #|
 (DIScope *Scope, ; 1
  StringRef Name, ; 2

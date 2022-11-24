@@ -761,24 +761,7 @@ Otherwise do a variable shift."
   (apply #'irc-typed-load-atomic %t*% source rest))
 
 (defun irc-store (val destination &optional (is-volatile nil))
-  ;; Mismatch in store types is a very common bug we hit when rewriting codegen.
-  ;; LLVM doesn't deal with it gracefully except with a debug build, so we just
-  ;; check it ourselves. We also check that types are in the same context-
-  ;; another reasonably common issue.
-  (let ((val-type (llvm-sys:get-type val))
-        (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
-    ;;(core:fmt t "irc-store val-type: {}    dest-contained-type: {}%N" val-type dest-contained-type)
-    (cond ((llvm-sys:type-equal val-type dest-contained-type)
-           (llvm-sys:create-store *irbuilder* val destination is-volatile))
-          ((llvm-sys:llvmcontext-equal
-            (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
-           (cmp-log-dump-module *the-module*)
-           (error "BUG: Mismatch in irc-store between val type ~a and destination contained type ~a"
-                  val-type dest-contained-type))
-          (t
-           (error "BUG: Mismatch in irc-store involving the val type ~a and destination type ~a -
-the type LLVMContexts don't match - so they were defined in different threads!"
-                  val-type dest-contained-type)))))
+  (llvm-sys:create-store *irbuilder* val destination is-volatile))
 
 (defun irc-store-atomic (val destination
                          &key (is-volatile nil) (align 8)
@@ -796,13 +779,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     ((llvm-sys:release) 'llvm-sys:monotonic)))
 
 (defun irc-%cmpxchg (ptr cmp new order)
-  ;; Sanity check I'm putting in when this is new that should maybe be removed, future reader
-  (let ((cmp-type (llvm-sys:get-type cmp)))
-    (unless (and (llvm-sys:type-equal cmp-type (llvm-sys:get-type new))
-                 (llvm-sys:type-equal cmp-type
-                                      (llvm-sys:get-contained-type (llvm-sys:get-type ptr) 0)))
-      (error "BUG: Type mismatch in IRC-%CMPXCHG")))
-  ;; actual gen
   (llvm-sys:create-atomic-cmp-xchg *irbuilder*
                                    ptr cmp new
                                    8 ; llvm::MaybeAlign(0)

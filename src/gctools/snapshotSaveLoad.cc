@@ -43,9 +43,6 @@
 #include <elf.h>
 #endif
 
-#define __EX(var) #var
-#define CXX_MACRO_STRING(var) __EX(var)
-
 namespace snapshotSaveLoad {
 
 size_t memory_test(bool dosleep, FILE* fout, const char* message = NULL );

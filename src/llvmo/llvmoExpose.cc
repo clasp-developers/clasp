@@ -1683,11 +1683,6 @@ CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getOrEmitGlobalVa
 
 namespace llvmo {
 
-
-CL_DEFMETHOD llvm::Type* PointerType_O::getElementType() const {
-  return dyn_cast<llvm::PointerType>(this->wrappedPtr())->getElementType();
-}
-
 CL_DEFUN bool llvm_sys__isOpaqueOrPointeeTypeMatches(Type_sp ptrType, Type_sp ty) {
   return dyn_cast<llvm::PointerType>(ptrType->wrappedPtr())->isOpaqueOrPointeeTypeMatches(ty->wrappedPtr());
 }  
@@ -1885,11 +1880,6 @@ CL_LISPIFY_NAME(populateModulePassManager);
 CL_EXTERN_DEFMETHOD(PassManagerBuilder_O, &llvm::PassManagerBuilder::populateModulePassManager);
 CL_LISPIFY_NAME(populateFunctionPassManager);
 CL_EXTERN_DEFMETHOD(PassManagerBuilder_O, &llvm::PassManagerBuilder::populateFunctionPassManager);
-CL_LISPIFY_NAME(populateLTOPassManager);
-CL_EXTERN_DEFMETHOD(PassManagerBuilder_O, &llvm::PassManagerBuilder::populateLTOPassManager);;
-
-;
-
 
 }; // llvmo
 
@@ -3359,8 +3349,6 @@ CL_DEFUN Function_sp llvm_sys__FunctionCreate(FunctionType_sp tysp, llvm::Global
 
 CL_LISPIFY_NAME(getParent);
 CL_EXTERN_DEFMETHOD(Function_O,(llvm::Module *(llvm::Function::*)())&llvm::Function::getParent);
-CL_LISPIFY_NAME("setHasUWTable");
-CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setHasUWTable);
 CL_LISPIFY_NAME("setDoesNotThrow");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setDoesNotThrow);
 CL_LISPIFY_NAME("isVarArg");
@@ -3542,6 +3530,10 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(get_contained_type);
 CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getContainedType);
+
+CL_LISPIFY_NAME(get_num_contained_types);
+CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getNumContainedTypes);
+
 CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::isPointerTy);
 
 CL_DEFMETHOD LLVMContext_sp Type_O::getContext() const {
@@ -3905,16 +3897,11 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple)
   CL_VALUE_ENUM(_sym_AvailableExternallyLinkage, llvm::GlobalValue::AvailableExternallyLinkage);
   CL_VALUE_ENUM(_sym_LinkOnceAnyLinkage, llvm::GlobalValue::LinkOnceAnyLinkage);
   CL_VALUE_ENUM(_sym_LinkOnceODRLinkage, llvm::GlobalValue::LinkOnceODRLinkage);
-      //	.value(_sym_LinkOnceODRAutoHideLinkage,llvm::GlobalValue::LinkOnceODRAutoHideLinkage)
   CL_VALUE_ENUM(_sym_WeakAnyLinkage, llvm::GlobalValue::WeakAnyLinkage);
   CL_VALUE_ENUM(_sym_WeakODRLinkage, llvm::GlobalValue::WeakODRLinkage);
   CL_VALUE_ENUM(_sym_AppendingLinkage, llvm::GlobalValue::AppendingLinkage);
   CL_VALUE_ENUM(_sym_InternalLinkage, llvm::GlobalValue::InternalLinkage);
   CL_VALUE_ENUM(_sym_PrivateLinkage, llvm::GlobalValue::PrivateLinkage);
-      //	.value(_sym_LinkerPrivateLinkage,llvm::GlobalValue::LinkerPrivateLinkage)
-      //	.value(_sym_LinkerPrivateWeakLinkage,llvm::GlobalValue::LinkerPrivateWeakLinkage)
-      //	.value(_sym_DLLImportLinkage,llvm::GlobalValue::DLLImportLinkage)
-      //	.value(_sym_DLLExportLinkage,llvm::GlobalValue::DLLExportLinkage)
   CL_VALUE_ENUM(_sym_ExternalWeakLinkage, llvm::GlobalValue::ExternalWeakLinkage);
   CL_VALUE_ENUM(_sym_CommonLinkage, llvm::GlobalValue::CommonLinkage);
   CL_END_ENUM(_sym_STARglobal_value_linkage_typesSTAR);
@@ -3934,23 +3921,20 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple)
   CL_END_ENUM(_sym_STARglobal_ThreadLocalModesSTAR);
 
 
-SYMBOL_EXPORT_SC_(LlvmoPkg, STARGlobalValueUnnamedAddrSTAR);
-SYMBOL_EXPORT_SC_(LlvmoPkg, None);
-SYMBOL_EXPORT_SC_(LlvmoPkg, Local);
-SYMBOL_EXPORT_SC_(LlvmoPkg, Global);
-CL_BEGIN_ENUM(llvm::GlobalValue::UnnamedAddr,_sym_STARGlobalValueUnnamedAddrSTAR, "llvm::GlobalValue::UnnamedAddr");
-CL_VALUE_ENUM(_sym_None, llvm::GlobalValue::UnnamedAddr::None);
-CL_VALUE_ENUM(_sym_Local, llvm::GlobalValue::UnnamedAddr::Local);
-CL_VALUE_ENUM(_sym_Global, llvm::GlobalValue::UnnamedAddr::Global);
-CL_END_ENUM(_sym_STARGlobalValueUnnamedAddrSTAR);
-//
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARGlobalValueUnnamedAddrSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, None);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Local);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, Global);
+  CL_BEGIN_ENUM(llvm::GlobalValue::UnnamedAddr,_sym_STARGlobalValueUnnamedAddrSTAR, "llvm::GlobalValue::UnnamedAddr");
+  CL_VALUE_ENUM(_sym_None, llvm::GlobalValue::UnnamedAddr::None);
+  CL_VALUE_ENUM(_sym_Local, llvm::GlobalValue::UnnamedAddr::Local);
+  CL_VALUE_ENUM(_sym_Global, llvm::GlobalValue::UnnamedAddr::Global);
+  CL_END_ENUM(_sym_STARGlobalValueUnnamedAddrSTAR);
+  //
   // Compiler optimization passes
   //
-  //    core::af_def(LlvmoPkg,"createDebugIRPass",&llvmo::af_createDebugIRPass);
-//  CL_LISPIFY_NAME(createAliasAnalysisCounterPass);
-//  CL_EXTERN_DEFUN( &llvm::createAliasAnalysisCounterPass);
   CL_LISPIFY_NAME(createFunctionInliningPass);
-CL_EXTERN_DEFUN((llvm::Pass * (*)(unsigned, unsigned,bool)) & llvm::createFunctionInliningPass);
+  CL_EXTERN_DEFUN((llvm::Pass * (*)(unsigned, unsigned,bool)) & llvm::createFunctionInliningPass);
 
   CL_LISPIFY_NAME(createAlwaysInlinerLegacyPass);
   CL_EXTERN_DEFUN( (llvm::Pass * (*)()) & llvm::createAlwaysInlinerLegacyPass);
@@ -3958,32 +3942,20 @@ CL_EXTERN_DEFUN((llvm::Pass * (*)(unsigned, unsigned,bool)) & llvm::createFuncti
   CL_LISPIFY_NAME(createAAEvalPass);
   CL_EXTERN_DEFUN( &llvm::createAAEvalPass);
 
-//  CL_LISPIFY_NAME(createScalarEvolutionAliasAnalysisPass);
-//  CL_EXTERN_DEFUN( &llvm::createScalarEvolutionAliasAnalysisPass);
   CL_LISPIFY_NAME(createLazyValueInfoPass);
   CL_EXTERN_DEFUN( &llvm::createLazyValueInfoPass);
   CL_LISPIFY_NAME(createInstCountPass);
   CL_EXTERN_DEFUN( &llvm::createInstCountPass);
-  //    core::af_def(LlvmoPkg,"createDbgInfoPrinterPass",&llvm::createDbgInfoPrinterPass);
   CL_LISPIFY_NAME(createRegionInfoPass);
   CL_EXTERN_DEFUN( &llvm::createRegionInfoPass);
 
-#if 0
-CL_LISPIFY_NAME(createCountingFunctionInserterPass);
-CL_EXTERN_DEFUN( &llvm::createCountingFunctionInserterPass);
-#endif
-
-CL_LISPIFY_NAME(createModuleDebugInfoPrinterPass);
-CL_EXTERN_DEFUN( &llvm::createModuleDebugInfoPrinterPass);
-CL_LISPIFY_NAME(createMemDepPrinter);
-CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
-  //    core::af_def(LlvmoPkg,"createReassociatePass",&llvm::createReassociatePass);
-  //    core::af_def(LlvmoPkg,"createPostDomTree",&llvm::createPostDomTree);
+  CL_LISPIFY_NAME(createModuleDebugInfoPrinterPass);
+  CL_EXTERN_DEFUN( &llvm::createModuleDebugInfoPrinterPass);
+  CL_LISPIFY_NAME(createMemDepPrinter);
+  CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   CL_LISPIFY_NAME(InitializeNativeTarget);
   CL_EXTERN_DEFUN( &llvm::InitializeNativeTarget);
 
-//CL_LISPIFY_NAME(createThreadSanitizerLegacyPassPass);
-//CL_EXTERN_DEFUN(&llvm::createThreadSanitizerLegacyPassPass);
   CL_LISPIFY_NAME(createAggressiveDCEPass);
   CL_EXTERN_DEFUN( &llvm::createAggressiveDCEPass);
   CL_LISPIFY_NAME(createCFGSimplificationPass);
@@ -3995,13 +3967,9 @@ CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   CL_LISPIFY_NAME(createIndVarSimplifyPass);
   CL_EXTERN_DEFUN( &llvm::createIndVarSimplifyPass);
   CL_LISPIFY_NAME(createInstructionCombiningPass);
-CL_EXTERN_DEFUN( (llvm::FunctionPass* (*)(unsigned))&llvm::createInstructionCombiningPass);
+  CL_EXTERN_DEFUN( (llvm::FunctionPass* (*)(unsigned))&llvm::createInstructionCombiningPass);
   CL_LISPIFY_NAME(createJumpThreadingPass);
   CL_EXTERN_DEFUN( &llvm::createJumpThreadingPass);
-#if 0
-CL_LISPIFY_NAME(createLICMPass);
-  CL_EXTERN_DEFUN( &llvm::createLICMPass);
-#endif
   CL_LISPIFY_NAME(createLoopDeletionPass);
   CL_EXTERN_DEFUN( &llvm::createLoopDeletionPass);
   CL_LISPIFY_NAME(createLoopIdiomPass);
@@ -4010,8 +3978,6 @@ CL_LISPIFY_NAME(createLICMPass);
   CL_EXTERN_DEFUN( &llvm::createLoopRotatePass);
   CL_LISPIFY_NAME(createLoopUnrollPass);
   CL_EXTERN_DEFUN( &llvm::createLoopUnrollPass);
-  CL_LISPIFY_NAME(createLoopUnswitchPass);
-  CL_EXTERN_DEFUN( &llvm::createLoopUnswitchPass);
   CL_LISPIFY_NAME(createMemCpyOptPass);
   CL_EXTERN_DEFUN( &llvm::createMemCpyOptPass);
   CL_LISPIFY_NAME(createPromoteMemoryToRegisterPass);
@@ -4020,16 +3986,8 @@ CL_LISPIFY_NAME(createLICMPass);
   CL_EXTERN_DEFUN( &llvm::createReassociatePass);
   CL_LISPIFY_NAME(createSCCPPass);
   CL_EXTERN_DEFUN( &llvm::createSCCPPass);
-//  CL_LISPIFY_NAME(createScalarReplAggregatesPass);
-//  CL_EXTERN_DEFUN( &llvm::createScalarReplAggregatesPass);
-  //    core::af_def(LlvmoPkg,"createScalarReplAggregatesPassSSA",&llvm::createScalarReplAggregatesPassSSA);
-  //    core::af_def(LlvmoPkg,"createScalarReplAggregatesPassWithThreshold",&llvm::createScalarReplAggregatesPassWithThreshold);
-  //    core::af_def(LlvmoPkg,"createSimplifyLibCallsPass",&llvm::createSimplifyLibCallsPass);
   CL_LISPIFY_NAME(createTailCallEliminationPass);
   CL_EXTERN_DEFUN(&llvm::createTailCallEliminationPass);
-//  CL_LISPIFY_NAME(createConstantPropagationPass);
-//  CL_EXTERN_DEFUN(&llvm::createConstantPropagationPass);
-  //    core::af_def(LlvmoPkg,"createDemoteMemoryToRegisterPass",&llvm::createDemoteMemoryToRegisterPass);
   CL_LISPIFY_NAME(createVerifierPass);
   CL_EXTERN_DEFUN(&llvm::createVerifierPass);
   CL_LISPIFY_NAME(createCorrelatedValuePropagationPass);
@@ -4037,11 +3995,7 @@ CL_LISPIFY_NAME(createLICMPass);
   CL_LISPIFY_NAME(createEarlyCSEPass);
   CL_EXTERN_DEFUN(&llvm::createEarlyCSEPass);
   CL_LISPIFY_NAME(createLowerExpectIntrinsicPass);
-  CL_EXTERN_DEFUN(   &llvm::createLowerExpectIntrinsicPass);
-//  CL_LISPIFY_NAME(createTypeBasedAliasAnalysisPass);
-//  CL_EXTERN_DEFUN( &llvm::createTypeBasedAliasAnalysisPass);
-//  CL_LISPIFY_NAME(createBasicAliasAnalysisPass);
-//  CL_EXTERN_DEFUN( &llvm::createBasicAliasAnalysisPass);
+  CL_EXTERN_DEFUN(&llvm::createLowerExpectIntrinsicPass);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARatomic_orderingSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, NotAtomic);
