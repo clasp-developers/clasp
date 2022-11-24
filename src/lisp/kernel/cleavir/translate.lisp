@@ -573,7 +573,7 @@
           (%intrinsic-call "cc_load_values" (list nvals mv-temp)))
         (cleanup))))
 
-(defmethod translate-terminator ((instruction bir:bind) abi next)
+(defmethod translate-terminator ((instruction bir:constant-bind) abi next)
   (declare (ignore abi))
   (let* ((bde-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
                                       :label "binding-dynenv-cons-mem"))
@@ -581,17 +581,17 @@
                                  :alignment cmp:+alignment+
                                  :label "binding-dynenv-mem"))
          (inputs (bir:inputs instruction))
-         (sym (in (first inputs)))
+         (symv (translate-constant-value (first inputs)))
          (val (in (second inputs)))
-         (old (%intrinsic-call "cc_TLSymbolValue" (list sym)))
+         (old (%intrinsic-call "cc_TLSymbolValue" (list symv)))
          (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil)))
     (%intrinsic-call "cc_initializeAndPushBindingDynenv"
-                     (list bde-mem bde-cons-mem sym old))
-    (setf (dynenv-storage instruction) (list sym old old-de-stack))
-    (%intrinsic-call "cc_setTLSymbolValue" (list sym val)))
+                     (list bde-mem bde-cons-mem symv old))
+    (setf (dynenv-storage instruction) (list symv old old-de-stack))
+    (%intrinsic-call "cc_setTLSymbolValue" (list symv val)))
   (cmp:irc-br (first next)))
 
-(defmethod undo-dynenv ((dynenv bir:bind) tmv)
+(defmethod undo-dynenv ((dynenv bir:constant-bind) tmv)
   (declare (ignore tmv))
   (let ((store (dynenv-storage dynenv)))
     (%intrinsic-call "cc_resetTLSymbolValue"

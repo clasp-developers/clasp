@@ -54,8 +54,6 @@
    #:foreign-types
    #:defcallback-ast #:defcallback-args
    #:make-throw-ast
-   #:make-setf-fdefinition-ast
-   #:setf-fdefinition-ast
    #:throw-ast
    #:result-ast
    #:tag-ast
