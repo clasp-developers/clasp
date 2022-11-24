@@ -438,26 +438,6 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   return Values(nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
-/*! Return the default snapshot name
- */
-std::string startup_snapshot_name(Bundle &bundle) {
-
-  stringstream sn;
-  sn << global_options->_Stage << "clasp-" << VARIANT_NAME;
-  stringstream ss;
-  std::string executablePath;
-  core::executablePath(executablePath);
-  std::string name;
-  size_t pos = executablePath.find_last_of('/');
-  if (pos == std::string::npos) {
-    name = executablePath;
-  } else {
-    name = executablePath.substr(pos + 1);
-  }
-  ss << bundle._Directories->_LibDir.string() << "/" << name << ".snapshot";
-  return ss.str();
-};
-
 bool startup_snapshot_is_stale(const std::string &snapshotFileName) {
   stringstream ss;
   std::string executablePath;
@@ -473,9 +453,9 @@ CL_LAMBDA("&optional (stage #\\c)");
 CL_DECLARE();
 CL_DOCSTRING(R"dx(startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__startup_image_pathname(char stage) {
+CL_DEFUN T_sp core__startup_image_pathname(bool extension) {
   stringstream ss;
-  ss << "sys:lib;images;" << stage << "clasp";
+  ss << "sys:lib;images;" << (extension ? "extension" : "base");
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
   if (mode == kw::_sym_faso) {
     ss << ".fasp";

@@ -2805,7 +2805,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
     DBG_SL("1 FunctionDescription_O vtable pointer is: %p\n" , *(void**)&funcdes );
     DBG_SL("     snapshot_load entered\n");
     if (filename.size() == 0 && maybeStartOfSnapshot == NULL) {
-      printf("You must specify a snapshot with -i or one must be embedded within the executable\n");
+      fmt::print("You must specify a snapshot with --snapshot or one must be embedded within the executable\n");
       std::exit(1);
     }
     off_t fsize = 0;

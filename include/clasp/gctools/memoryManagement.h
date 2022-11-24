@@ -64,16 +64,9 @@ struct ClaspInfo {
   bool          _mpiEnabled;
   int           _mpiRank;
   int           _mpiSize;
-  bool          _loadSnapshotFile;
-  std::string   _snapshotFileName;
-  void*         _start_of_snapshot;
-  void*         _end_of_snapshot;
   core::LispHolder* _lispHolder;
   
   ClaspInfo( int argc, const char** argv, size_t stackMax ) : _argc(argc), _argv(argv), _stackMax(stackMax)
-                                                            , _loadSnapshotFile(false)
-                                                            , _start_of_snapshot(NULL)
-                                                            , _end_of_snapshot(NULL)
                                                             , _lispHolder(NULL)
   {};
 };
@@ -1456,7 +1449,7 @@ bool is_memory_readable(const void* address, size_t bytes=8);
 };
 
 extern "C" {
-void startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo );
+int startup_clasp( void** stackMarker, gctools::ClaspInfo* claspInfo, int *exitCode );
 
 int run_clasp( gctools::ClaspInfo* claspInfo );
 

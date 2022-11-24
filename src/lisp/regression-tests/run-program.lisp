@@ -16,6 +16,7 @@ Return the result of the body and the results of external-process-wait."
   `(multiple-value-bind (,name code process)
        (ext:run-program *binary*
                         '("--norc"
+                          "--base"
                           "--feature" "ignore-extensions"
                           "--eval" ,(format nil "(defparameter *args-number* ~d)" (+ 14 (length args)))
                           "--eval" "(setf *load-verbose* nil)"
@@ -37,7 +38,7 @@ Return the result of the body and the results of external-process-wait."
 (test run-program-argcount
       (with-run-program (argcount-test ("a" "b c" "d \\" "e\ 4\\
 ")))
-      (nil :exited 0))
+      (nil :exited 19))
 
 (test output-streams.1
       (with-run-program (print-test () :output :stream :error :stream)

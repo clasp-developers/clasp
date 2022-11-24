@@ -971,16 +971,9 @@ a relative path from there."
 
 (export 'core:top-level)
 
-#-(or aclasp bclasp cclasp eclasp)
-(eval-when (:execute)
+(defun init-toplevel ()
   (process-command-line-load-eval-sequence)
-  (if (core:noinform-p)
-      nil
-      (core:fmt t "Low level repl - in init.lisp%N"))
   (core:low-level-repl))
 
-#-(or aclasp bclasp cclasp eclasp)
-(eval-when (:execute :load-toplevel)
-  (core:fmt t "init.lisp  %N!\n!\n! Hello from the bottom of init.lisp - for some reason execution is passing through here\n!\n!\n"))
-
-
+;(eval-when (:load-toplevel)
+  (setq ext:*toplevel-hook* 'init-toplevel);)

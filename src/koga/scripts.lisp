@@ -154,7 +154,7 @@
 (defmethod print-prologue (configuration (name (eql :clasp-sh)) output-stream)
   (declare (ignore configuration))
   (format output-stream "#!/usr/bin/env bash
-exec $(dirname \"$0\")/iclasp -f ignore-extensions -t c \"$@\""))
+exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
 
 (defmethod print-prologue (configuration (name (eql :jupyter-kernel)) output-stream)
   (let ((candop (member :cando (extensions configuration))))
@@ -243,21 +243,21 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions -t c \"$@\""))
   (format output-stream "(logical-pathname-translations \"SYS\"))))~%"))
 
 (defmethod print-variant-target-sources
-    (configuration (name (eql :cclasp-translations)) output-stream
+    (configuration (name (eql :base-translations)) output-stream
      (target (eql :cclasp)) sources
      &key &allow-other-keys)
   (print-translations output-stream sources))
 
 (defmethod print-variant-target-sources
-    (configuration (name (eql :eclasp-translations)) output-stream
-     (target (eql :eclasp-translations)) sources
+    (configuration (name (eql :extension-translations)) output-stream
+     (target (eql :extension-translations)) sources
      &key &allow-other-keys)
   (print-translations output-stream sources))
 
-(defmethod print-prologue (configuration (name (eql :cclasp-immutable)) output-stream)
+(defmethod print-prologue (configuration (name (eql :base-immutable)) output-stream)
   (pprint-immutable-systems output-stream (gethash :cclasp (target-systems configuration))))
 
-(defmethod print-prologue (configuration (name (eql :eclasp-immutable)) output-stream)
+(defmethod print-prologue (configuration (name (eql :extension-immutable)) output-stream)
   (pprint-immutable-systems output-stream (gethash :eclasp (target-systems configuration))))
 
 (defmethod print-prologue (configuration (name (eql :bench)) output-stream)

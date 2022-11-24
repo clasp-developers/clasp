@@ -639,16 +639,16 @@ is not compatible with snapshots.")
                                                                :scraper)
                                                          :version-h
                                                          (list (make-source #P"version.h" :variant))
-                                                         :cclasp-translations
-                                                         (list (make-source #P"generated/cclasp-translations.lisp" :variant)
+                                                         :base-translations
+                                                         (list (make-source #P"generated/base-translations.lisp" :variant)
                                                                :cclasp)
-                                                         :eclasp-translations
-                                                         (list (make-source #P"generated/eclasp-translations.lisp" :variant)
-                                                               :eclasp-translations)
-                                                         :cclasp-immutable
-                                                         (list (make-source #P"generated/cclasp-immutable.lisp" :variant))
-                                                         :eclasp-immutable
-                                                         (list (make-source #P"generated/eclasp-immutable.lisp" :variant))
+                                                         :extension-translations
+                                                         (list (make-source #P"generated/extension-translations.lisp" :variant)
+                                                               :extension-translations)
+                                                         :base-immutable
+                                                         (list (make-source #P"generated/base-immutable.lisp" :variant))
+                                                         :extension-immutable
+                                                         (list (make-source #P"generated/extension-immutable.lisp" :variant))
                                                          :compile-commands
                                                          (list (make-source #P"compile_commands.json" :variant)
                                                                :iclasp)))
@@ -779,11 +779,11 @@ then they will overide the current variant's corresponding property."
     (:fasoll "faspll")
     (otherwise "fasl")))
 
-(defun image-source (configuration target &optional (root :variant-lib))
+(defun image-source (configuration extension &optional (root :variant-lib))
   "Return the name of an image based on a target name, the bitcode name
 and the build mode."
-  (make-source (format nil "images/~(~a~).~a"
-                       target (image-fasl-extension configuration))
+  (make-source (format nil "images/~:[base~;extension~].~a"
+                       extension (image-fasl-extension configuration))
                root))
 
 (defun funcall-variant (configuration func
