@@ -246,7 +246,7 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
   size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
 //    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
-    if (entry.second._TextStart <= address && address < entry.second._TextEnd
+    if ((entry.second._TextStart <= address && address < entry.second._TextEnd)
         || (entry.second._VtableSectionStart <= address && address < entry.second._VtableSectionEnd ) ){
       libraryName = entry.second._Filename;
       start = entry.second._TextStart;
@@ -266,7 +266,7 @@ bool library_with_name( const std::string& name, bool isExecutable, std::string&
   size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
     std::string libName = entry.second._Filename;
-    if ( name.size()<= libName.size() && name == libName.substr(libName.size()-name.size())
+    if ((name.size()<= libName.size() && name == libName.substr(libName.size()-name.size()))
          || ( isExecutable && entry.second._IsExecutable)) {
       libraryName = entry.second._Filename;
       start = (uintptr_t)(entry.second._TextStart);
