@@ -110,7 +110,7 @@ public:
   virtual void ExecuteAction() {
     clang::CompilerInstance &CI = this->getCompilerInstance();
     CI.getFrontendOpts().DisableFree = true;
-    this->ExecuteAction();
+    this->Base::ExecuteAction();
   }
 };
 
