@@ -188,7 +188,7 @@
 -Wno-unused-but-set-variable -Wno-delete-non-abstract-non-virtual-dtor ~
 -Wno-unused-lambda-capture -Wno-unused-label -Wno-unused-function ~
 -Wno-logical-op-parentheses -Wno-uninitialized -Wno-sometimes-uninitialized ~
--Wno-infinite-recursion -Wno-pessimizing-move"))
+-Wno-infinite-recursion"))
   (loop for variant in (variants configuration)
         do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant)))
            (append-cflags variant (format nil "-I~a/generated" (variant-bitcode-name variant))))

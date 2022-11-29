@@ -1198,7 +1198,7 @@ CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::T_sp tfilename, LLVMContext_
   if (!eom)
     SIMPLE_ERROR(("Could not parse bitcode for file %s - there was an error\n%s")
                  , spathname->get_std_string()
-                 , llvm::toString(std::move(eom.takeError())));
+                 , llvm::toString(eom.takeError()));
   Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>((*eom).release());
   return omodule;
 };
