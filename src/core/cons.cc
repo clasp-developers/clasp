@@ -413,15 +413,6 @@ T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
   return ((defVal));
 }
 
-#if defined(OLD_SERIALIZE)
-void Cons_O::serialize(serialize::SNode node) {
-  
-  node->attribute("cdrl", this->_CdrLength);
-  node->attributeIfNotNil("car", this->ocar());
-  node->attributeIfNotNil("cdr", this->cdr());
-}
-#endif
-
 bool Cons_O::equal(T_sp obj) const {
   if (!obj.consp()) return false;
   if (this == obj.unsafe_cons()) return true;

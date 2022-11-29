@@ -439,17 +439,6 @@ bool Symbol_O::isKeywordSymbol() {
   return pkg->isKeywordPackage();
 };
 
-#if defined(OLD_SERIALIZE)
-void Symbol_O::serialize(serialize::SNode node) {
-  
-  if (node->loading()) {
-    SIMPLE_ERROR(("You can't load symbols with serialize!!"));
-  } else {
-    SIMPLE_ERROR(("You can't save symbols with serialize!!!"));
-  }
-}
-#endif
-
 Symbol_sp Symbol_O::asKeywordSymbol() {
   if (this->getPackage().notnilp()) {
     Package_sp pkg = gc::As<Package_sp>(this->getPackage());
