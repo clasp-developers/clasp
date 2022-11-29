@@ -664,7 +664,7 @@ bool accessible_memory_p(void* ptr) {
       res = false;
     close(fd[0]);
     close(fd[1]);
-  }
+  } else return false; // Not sure if correct
   return res;
 }
 

@@ -359,14 +359,6 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
     abort();
   }
 //  printf("%s:%d:%s Executable header _mh_execute_header %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)exec_header);
-  SymbolTable symbol_table;
-  size_t section_size;
-//  printf("%s:%d:%s About to load_stackmap_info library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin );
-  uintptr_t p_section = load_stackmap_info(libraryName.c_str(),library_origin,section_size);
-  if (p_section) {
-    symbol_table._StackmapStart = p_section;
-    symbol_table._StackmapEnd = p_section+section_size;
-  }    
   BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t text_segment_start;
   uintptr_t text_segment_size;
@@ -384,7 +376,7 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
     found = vmmap(seek,vtableRegionStart,vtableRegionEnd,false);
   }
   OpenDynamicLibraryInfo odli(is_executable,
-                              libraryName,handle,symbol_table,
+                              libraryName,handle,
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size),

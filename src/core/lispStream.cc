@@ -1351,7 +1351,7 @@ static int utf_8_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
     c >>= 6;
     buffer[0] = c | 0xE0;
     nbytes = 3;
-  } else if (c <= 0x1FFFFFL) {
+  } else if (c <= 0x1FFFFFL) { // upper limit of encoding - unicode is 10ffff
     buffer[3] = (c & 0x3f) | 0x80;
     c >>= 6;
     buffer[2] = (c & 0x3f) | 0x80;
@@ -1360,7 +1360,7 @@ static int utf_8_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
     c >>= 6;
     buffer[0] = c | 0xF0;
     nbytes = 4;
-  }
+  } else UNREACHABLE();
   return nbytes;
 }
 #endif
@@ -4286,6 +4286,8 @@ CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T
     smm_mode = clasp_smm_output;
   } else if (direction == kw::_sym_io || direction == kw::_sym_input_output) {
     smm_mode = clasp_smm_io;
+  } else {
+    SIMPLE_ERROR("Illegal direction %s", _rep_(direction));
   }
   if (cl__integerp(element_type)) {
     external_format = nil<T_O>();

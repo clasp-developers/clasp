@@ -186,8 +186,7 @@
 -Wdeprecated-anon-enum-enum-conversion -Wimplicit-fallthrough ~
 -Wno-reorder-ctor -Wno-mismatched-tags -Wno-overloaded-virtual -Wno-unused-variable ~
 -Wno-unused-but-set-variable -Wno-delete-non-abstract-non-virtual-dtor ~
--Wno-unused-lambda-capture -Wno-unused-label -Wno-unused-function ~
--Wno-uninitialized -Wno-sometimes-uninitialized"))
+-Wno-unused-lambda-capture -Wno-unused-label -Wno-unused-function"))
   (loop for variant in (variants configuration)
         do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant)))
            (append-cflags variant (format nil "-I~a/generated" (variant-bitcode-name variant))))

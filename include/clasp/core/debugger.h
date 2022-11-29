@@ -70,19 +70,17 @@ struct OpenDynamicLibraryInfo {
   bool           _IsExecutable;
   std::string    _Filename;
   void*          _Handle;
-  SymbolTable    _SymbolTable;
   gctools::clasp_ptr_t      _LibraryStart;
   gctools::clasp_ptr_t      _TextStart;
   gctools::clasp_ptr_t      _TextEnd;
   bool                      _HasVtableSection;
   gctools::clasp_ptr_t      _VtableSectionStart;
   gctools::clasp_ptr_t      _VtableSectionEnd;
-  OpenDynamicLibraryInfo(bool is_executable, const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd,
+  OpenDynamicLibraryInfo(bool is_executable, const std::string& f, void* h, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd,
                          bool hasVtableSection, gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd ) :
     _IsExecutable(is_executable),
     _Filename(f),
     _Handle(h),
-    _SymbolTable(symbol_table),
     _LibraryStart(libstart),
     _TextStart(textStart),
     _TextEnd(textEnd),

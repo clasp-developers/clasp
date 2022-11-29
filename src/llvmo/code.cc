@@ -487,7 +487,6 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
 {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s entered looking for instruction_pointer@%p search Code_O objects\n", __FILE__, __LINE__, __FUNCTION__, instruction_pointer ));
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
-  size_t count;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, (char*)instruction_pointer, cur.raw_()));
   if ((cur.nilp()) && verbose){
     core::write_bf_stream(fmt::sprintf("No object files registered - cannot find object file for address %p\n" , (void*)instruction_pointer));
@@ -501,7 +500,6 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
       return Values(sectionedAddress,ofi);
     }
     cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
-    count++;
   }
   return Values(nil<core::T_O>());
 }

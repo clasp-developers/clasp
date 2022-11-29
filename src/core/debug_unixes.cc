@@ -437,29 +437,9 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
       library_origin = (uintptr_t)data.dli_fbase;
     }
   }
-//  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
-  uintptr_t stackmap_start;
-  size_t section_size;
-//  SymbolTable symbol_table = load_linux_symbol_table(libraryName.c_str(),library_origin,stackmap_start,section_size);
-  SymbolTable symbol_table;
-  if (is_executable) {
-    symbol_table._StackmapStart = stackmap_start;
-    symbol_table._StackmapEnd = stackmap_start+section_size;
-  } else {
-    if (stackmap_start) {
-      symbol_table._StackmapStart = stackmap_start+library_origin;
-      symbol_table._StackmapEnd = stackmap_start+section_size+library_origin;
-    }
-  }
-//  symbol_table.optimize();
-//  symbol_table.sort();
-//  if (!symbol_table.is_sorted()) {
-//    printf("%s:%d The symbol table for %s is not sorted\n", __FILE__, __LINE__, libraryName.c_str());
-//    abort();
-//  }
   BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t library_end = (gctools::clasp_ptr_t)library_origin;
-  OpenDynamicLibraryInfo odli(is_executable,libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end,
+  OpenDynamicLibraryInfo odli(is_executable,libraryName,handle,(gctools::clasp_ptr_t)library_origin,text_start,text_end,
                               hasVtableSection,vtableSectionStart,vtableSectionEnd);
   if (callback) {
     (*callback)(odli);
