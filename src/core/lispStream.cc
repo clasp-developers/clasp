@@ -3520,17 +3520,20 @@ T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gct
   switch (smm) {
   case clasp_smm_input:
     smm = clasp_smm_input_file;
+    [[fallthrough]];
   case clasp_smm_input_file:
   case clasp_smm_probe:
     StreamOps(stream) = duplicate_dispatch_table(input_file_ops);
     break;
   case clasp_smm_output:
     smm = clasp_smm_output_file;
+    [[fallthrough]];
   case clasp_smm_output_file:
     StreamOps(stream) = duplicate_dispatch_table(output_file_ops);
     break;
   case clasp_smm_io:
     smm = clasp_smm_io_file;
+    [[fallthrough]];
   case clasp_smm_io_file:
     StreamOps(stream) = duplicate_dispatch_table(io_file_ops);
     break;

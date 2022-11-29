@@ -102,7 +102,7 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
 #endif
     if (y.nilp() || ty == tx)
       return gc::As_unsafe<Float_sp>(x);
-    // otherwise, fall through
+    [[fallthrough]];
   case number_Fixnum:
   case number_Bignum:
   case number_Ratio:

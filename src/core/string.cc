@@ -1119,10 +1119,8 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
       break;
     }
     case itrailspace: {
-      if (!isspace(c)) {
-        state = ijunk;
-        break;
-      }
+      if (!isspace(c)) state = ijunk;
+      break;
     }
     case ijunk:
         break;

@@ -1126,6 +1126,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
       throwUnrecognizedKeywordArgumentError(tclosure, tunknown);
     }
     pc += 9;
+    break;
   }
   case vm_check_arg_count_LE : {
     uint8_t low = *(pc + 1);

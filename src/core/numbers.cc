@@ -75,7 +75,7 @@ core::Fixnum not_fixnum_error( core::T_sp o )
                  , naclass , nbclass);
 }
 
-void clasp_report_divide_by_zero(Number_sp x) {
+[[noreturn]] void clasp_report_divide_by_zero(Number_sp x) {
    ERROR_DIVISION_BY_ZERO(clasp_make_fixnum(1),x);
 }
 

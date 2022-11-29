@@ -403,6 +403,7 @@ NEWMODE:
     switch (mode) {
     case keyword:
       key_flag = _lisp->_true();
+      [[fallthrough]];
     case allowOtherKeys:
       if (context == cl::_sym_define_modify_macro)
         goto ILLEGAL_MODE;

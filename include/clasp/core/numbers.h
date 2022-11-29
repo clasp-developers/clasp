@@ -150,7 +150,7 @@ namespace core
   SingleFloat_sp clasp_make_single_float(float d);
   DoubleFloat_sp clasp_make_double_float(double d);
   Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
-  void clasp_report_divide_by_zero(Number_sp x);
+  [[noreturn]] void clasp_report_divide_by_zero(Number_sp x);
 };
 
 namespace core {
