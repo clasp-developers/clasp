@@ -4323,8 +4323,6 @@ public: // static methods
         //	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 public: // static methods
   static PointerType_sp get(Type_sp elementType, uint addressSpace);
-
-  llvm::Type* getElementType() const;
     
 }; // PointerType_O
 }; // llvmo

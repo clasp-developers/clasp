@@ -1684,10 +1684,6 @@ CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getOrEmitGlobalVa
 namespace llvmo {
 
 
-CL_DEFMETHOD llvm::Type* PointerType_O::getElementType() const {
-  return dyn_cast<llvm::PointerType>(this->wrappedPtr())->getElementType();
-}
-
 CL_DEFUN bool llvm_sys__isOpaqueOrPointeeTypeMatches(Type_sp ptrType, Type_sp ty) {
   return dyn_cast<llvm::PointerType>(ptrType->wrappedPtr())->isOpaqueOrPointeeTypeMatches(ty->wrappedPtr());
 }  

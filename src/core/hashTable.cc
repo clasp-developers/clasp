@@ -1002,11 +1002,7 @@ KeyValuePair* HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp find
       this->_Mutex->write_unlock( false /*releaseReadLock*/);
       return result;
     }
-#ifdef _TARGET_OS_DARWIN
-    pthread_yield_np();
-#else
-    pthread_yield();
-#endif
+    sched_yield();
     goto tryAgain;
   } else {
     return this->rehash_no_lock(expandTable,findKey);
