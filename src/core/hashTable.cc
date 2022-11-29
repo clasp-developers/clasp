@@ -965,13 +965,13 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   }
 #ifdef DEBUG_REHASH_COUNT
   this->_RehashCount++;
-  MONITOR(BF("Hash-table rehash id %lu initial-size %lu rehash-number %lu rehash-size %lu oldHashTableCount %lu _HashTableCount %lu\n")
-          % this->_HashTableId
-          % this->_InitialSize
-          % this->_RehashCount
-          % newSize
-          % oldHashTableCount
-          % this->_HashTableCount);
+  MONITOR(fmt::sprintf("Hash-table rehash id %lu initial-size %lu rehash-number %lu rehash-size %lu oldHashTableCount %lu _HashTableCount %lu\n"
+                       , this->_HashTableId
+                       , this->_InitialSize
+                       , this->_RehashCount
+                       , newSize
+                       , oldHashTableCount
+                       , this->_HashTableCount));
 #endif
   VERIFY_HASH_TABLE(this);
   //

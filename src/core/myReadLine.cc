@@ -43,7 +43,6 @@ string myReadLine(const string &prompt, bool &end_of_transmission) {
 #ifdef READLINE
   char *line_read;
   /* Get a line from the user. */
-  //      lisp->print(BF("%s")%prompt);
   stringstream ss;
   ss << std::endl
      << prompt;

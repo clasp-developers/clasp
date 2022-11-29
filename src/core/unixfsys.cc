@@ -103,9 +103,9 @@ typedef int mode_t;
 #include <clasp/core/wrappers.h>
 
 #if defined( DEBUG_LEVEL_FULL )
-#define DEBUG_PRINT(_msg_) fprintf( stderr, "%s", (_msg_).str().c_str())
+#define DEBUG_PRINT(...) fmt::fprintf( stderr, __VA_ARGS__ )
 #else
-#define DEBUG_PRINT(msg)
+#define DEBUG_PRINT(...)
 #endif
 
 
@@ -2016,7 +2016,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
         if( WIFEXITED( status ) )
         {
           child_exit_status = WEXITSTATUS( status );
-          DEBUG_PRINT(BF("%s (%s:%d) | Child process exited with status %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % child_exit_status );
+          DEBUG_PRINT(("%s (%s:%d) | Child process exited with status %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , child_exit_status );
 
           b_done = true;
         }
@@ -2026,14 +2026,14 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
           int signal = 0;
 
           signal = WTERMSIG( status );
-          DEBUG_PRINT(BF("%s (%s:%d) | Child process got signal %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % signal );
+          DEBUG_PRINT(("%s (%s:%d) | Child process got signal %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , signal );
 
           // Continue waiting !
         }
       }
 
-      DEBUG_PRINT(BF("%s (%s:%d) | Child process cmd = %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % execvp_args[ 0 ] );
-      DEBUG_PRINT(BF("%s (%s:%d) | Child process wait(): return code = %d, errno = %d, error = %s\n.") % __FUNCTION__ % __FILE__ % __LINE__ % wait_ret % errno % strerror(errno) );
+      DEBUG_PRINT(("%s (%s:%d) | Child process cmd = %s\n.") , __FUNCTION__ , __FILE__ , __LINE__ , execvp_args[ 0 ] );
+      DEBUG_PRINT(("%s (%s:%d) | Child process wait(): return code = %d, errno = %d, error = %s\n.") , __FUNCTION__ , __FILE__ , __LINE__ , wait_ret , errno , strerror(errno) );
 
       // Clean up args
       for ( int i(0); i < execvp_args.size() - 1; ++i )
@@ -2053,19 +2053,19 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
           fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
           T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
 
-          DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %p )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % stream );
+          DEBUG_PRINT(("%s (%s:%d) | Values( %d %d %p )\n.") , __FUNCTION__ , __FILE__ , __LINE__ , 0 , child_PID , stream );
 
 
           return Values( clasp_make_fixnum( 0 ), clasp_make_fixnum( child_PID ), stream);
         }
 
-          DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % 0 );
+          DEBUG_PRINT(("%s (%s:%d) | Values( %d %d %d )\n.") , __FUNCTION__ , __FILE__ , __LINE__ , 0 , child_PID , 0 );
 
           return Values( clasp_make_fixnum( 0 ), clasp_make_fixnum( child_PID ), nil<T_O>() );
       }
 
       // error
-      DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % errno % strerror( errno ) % 0 );
+      DEBUG_PRINT(("%s (%s:%d) | Values( %d %d %d )\n.") , __FUNCTION__ , __FILE__ , __LINE__ , errno , strerror( errno ) , 0 );
 
       char* serr = std::strerror(errno);
       return Values( clasp_make_fixnum( errno ), SimpleBaseString_O::make(serr), nil<T_O>() );

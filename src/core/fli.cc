@@ -117,9 +117,9 @@ THE SOFTWARE.
 // ---------------------------------------------------------------------------
 
 #if defined( DEBUG_LEVEL_FULL )
-#define DEBUG_PRINT(_msg_) LOG(_msg_)
+#define DEBUG_PRINT(...) LOG(__VA_ARGS__)
 #else
-#define DEBUG_PRINT(msg)
+#define DEBUG_PRINT(...)
 #endif
 
 // ---------------------------------------------------------------------------
@@ -301,7 +301,7 @@ void register_foreign_type_spec( core::ComplexVector_T_sp sp_tst,
 
   sp_tst->rowMajorAset( n_index, sp_fts->asSmartPtr() );
 
-  DEBUG_PRINT(BF("%s (%s:%d) | Registered type %s with size = %d and alignment = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % lisp_name % size % alignment );
+  DEBUG_PRINT(("%s (%s:%d) | Registered type %s with size = %d and alignment = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , lisp_name , size , alignment );
 
 };
 
@@ -721,7 +721,7 @@ int64_t foreign_type_size( core::Symbol_sp atype )
 
 RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE:
 
-  DEBUG_PRINT(BF("%s (%s:%d) | size = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % result );
+  DEBUG_PRINT(("%s (%s:%d) | size = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , result );
 
   return result;
 }
@@ -968,182 +968,182 @@ inline T mem_ref( uintptr_t address )
 core::T_sp PERCENTmem_ref_short( core::Integer_sp address )
 {
   short v = mem_ref< short >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_short( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_short( core::Integer_sp address )
 {
   unsigned short v = mem_ref< unsigned short >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_ushort( v );
 }
 
 core::T_sp PERCENTmem_ref_int( core::Integer_sp address )
 {
   int v = mem_ref< int >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_int( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_int( core::Integer_sp address )
 {
   unsigned int v = mem_ref< unsigned int >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_uint( v );
 }
 
 core::T_sp PERCENTmem_ref_int8( core::Integer_sp address )
 {
   int8_t v = mem_ref< int8_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_int8( v );
 }
 
 core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address )
 {
   int8_t v = mem_ref< int8_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_uint8( v );
 }
 
 core::T_sp PERCENTmem_ref_int16( core::Integer_sp address )
 {
   int16_t v = mem_ref< int16_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_int16( v );
 }
 
 core::T_sp PERCENTmem_ref_uint16( core::Integer_sp address )
 {
   uint16_t v = mem_ref< uint16_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_uint16( v );
 }
 
 core::T_sp PERCENTmem_ref_int32( core::Integer_sp address )
 {
   int32_t v = mem_ref< int32_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_int32( v );
 }
 
 core::T_sp PERCENTmem_ref_uint32( core::Integer_sp address )
 {
   uint32_t v = mem_ref< uint32_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_uint32( v );
 }
 
 core::T_sp PERCENTmem_ref_int64( core::Integer_sp address )
 {
   int64_t v = mem_ref< int64_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_integer_int64( v );
 }
 
 core::T_sp PERCENTmem_ref_uint64( core::Integer_sp address )
 {
   uint64_t v = mem_ref< uint64_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_integer_uint64( v );
 }
 
 core::T_sp PERCENTmem_ref_long( core::Integer_sp address )
 {
   long v = mem_ref< long >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_integer_long( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address )
 {
   unsigned long v = mem_ref< unsigned long >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_integer_ulong( v );
 }
 
 core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address )
 {
   long long v = mem_ref< long long >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_integer_longlong( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address )
 {
   unsigned long long v = mem_ref< unsigned long long >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_integer_ulonglong( v );
 }
 
 core::T_sp PERCENTmem_ref_double( core::Integer_sp address )
 {
   double v = mem_ref< double >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_double_float( v );
 }
 
 core::T_sp PERCENTmem_ref_float( core::Integer_sp address )
 {
   float v = mem_ref< float >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_single_float( v );
 }
 
 core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address )
 {
   long double v = mem_ref< long double >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_long_double( v );
 }
 
 core::T_sp PERCENTmem_ref_time( core::Integer_sp address )
 {
   time_t v = mem_ref< time_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_time( v );
 }
 
 core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address )
 {
   void *v = mem_ref< void * >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %p\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_pointer( v );
 }
 
 core::T_sp PERCENTmem_ref_size( core::Integer_sp address )
 {
   size_t v = mem_ref< size_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_size( v );
 }
 
 core::T_sp PERCENTmem_ref_ssize( core::Integer_sp address )
 {
   ssize_t v = mem_ref< ssize_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_ssize( v );
 }
 
 core::T_sp PERCENTmem_ref_ptrdiff( core::Integer_sp address )
 {
   ptrdiff_t v = mem_ref< ptrdiff_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_ptrdiff( v );
 }
 
 core::T_sp PERCENTmem_ref_char( core::Integer_sp address )
 {
   int8_t v = mem_ref< int8_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_int8( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_char( core::Integer_sp address )
 {
   uint8_t v = mem_ref< uint8_t >( core::clasp_to_uintptr_t( address ) );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v );
   return mk_fixnum_uint8( v );
 }
 
@@ -1296,7 +1296,7 @@ core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value 
   long long tmp;
   translate::from_object< long long > v( value );
   tmp = mem_set< long long >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_integer_longlong( tmp );
 }
 
@@ -1305,7 +1305,7 @@ core::T_sp PERCENTmem_set_unsigned_long_long( core::Integer_sp address, core::T_
   unsigned long long tmp;
   translate::from_object< uint64_t /*unsigned long long*/ > v( value );
   tmp = mem_set< unsigned long long >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_integer_ulonglong( tmp );
 }
 
@@ -1314,7 +1314,7 @@ core::T_sp PERCENTmem_set_double( core::Integer_sp address, core::T_sp value )
   double tmp;
   translate::from_object< double > v( value );
   tmp = mem_set< double >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_double_float( tmp );
 }
 
@@ -1323,7 +1323,7 @@ core::T_sp PERCENTmem_set_float( core::Integer_sp address, core::T_sp value )
   float tmp;
   translate::from_object< float > v( value );
   tmp = mem_set< float >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_single_float( tmp );
 }
 
@@ -1340,7 +1340,7 @@ core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value )
   time_t tmp;
   translate::from_object< time_t > v( value );
   tmp = mem_set< time_t >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_time( tmp );
 }
 
@@ -1349,7 +1349,7 @@ core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value )
   void * tmp;
   translate::from_object< void * > v( value );
   tmp = mem_set< void * >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %p\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_pointer( tmp );
 }
 
@@ -1358,7 +1358,7 @@ core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value )
   size_t tmp;
   translate::from_object< size_t > v( value );
   tmp = mem_set< size_t >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_size( tmp );
 }
 
@@ -1367,7 +1367,7 @@ core::T_sp PERCENTmem_set_ssize( core::Integer_sp address, core::T_sp value )
   ssize_t tmp;
   translate::from_object< ssize_t > v( value );
   tmp = mem_set< ssize_t >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_ssize( tmp );
 }
 
@@ -1376,7 +1376,7 @@ core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value )
   ptrdiff_t tmp;
   translate::from_object< ptrdiff_t > v( value );
   tmp = mem_set< ptrdiff_t >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_ptrdiff( tmp );
 }
 
@@ -1385,7 +1385,7 @@ core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value )
   int8_t tmp;
   translate::from_object< int8_t > v( value );
   tmp = mem_set< int8_t >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_fixnum_int8( tmp );
 }
 
@@ -1394,7 +1394,7 @@ core::T_sp PERCENTmem_set_unsigned_char( core::Integer_sp address, core::T_sp va
   uint8_t tmp;
   translate::from_object< uint8_t > v( value );
   tmp = mem_set< uint8_t >( core::clasp_to_uintptr_t( address ), v._v );
-  DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
+  DEBUG_PRINT(("%s (%s:%d) | v = %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , v._v );
   return mk_fixnum_uint8( tmp );
 }
 

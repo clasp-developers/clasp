@@ -427,7 +427,7 @@ void Lisp::startupLispEnvironment() {
   printf("%s:%d There are DEBUG_xxxx flags on - check the top of configure_clasp.h !!!!\n", __FILE__, __LINE__ );
 #endif
   
-  MONITOR(BF("Starting lisp environment\n"));
+  MONITOR(("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
   char* debug_start_code = getenv("CLASP_DEBUG_START_CODE");
   if (debug_start_code) {
@@ -1306,7 +1306,6 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
         if (printResults) {
           for (int i(0); i < vresults.size(); i++) {
             T_sp obj = vresults[i];
-            //			    this->print(BF("; --> %s\n")% _rep_(obj));
             eval::funcall(cl::_sym_print, obj);
           }
         }
