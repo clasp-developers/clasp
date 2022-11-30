@@ -58,7 +58,6 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <unistd.h>
 #include <dlfcn.h>
-#define _GNU_SOURCE
 #include <elf.h>
 #include <link.h>
 #endif

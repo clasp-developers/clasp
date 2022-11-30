@@ -382,11 +382,14 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
+#undef ENABLE_REGISTER
       default:
         printf("%s:%d:%s Invalid dtree opcode ip0: %p  ip: %p  opcode %u %s\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op,
                dtree_op_name(op).c_str());
@@ -445,10 +448,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER
@@ -502,10 +507,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER
@@ -560,10 +567,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER
@@ -618,10 +627,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER
@@ -676,10 +687,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER

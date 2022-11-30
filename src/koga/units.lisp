@@ -179,11 +179,9 @@
   "Add base cflags and ldflags."
   (message :emph "Configuring base")
   (append-cflags configuration
-                 (format nil "-Wall -Wno-macro-redefined -Wdeprecated-declarations ~
--Wdeprecated-register -Wexpansion-to-defined -Wno-return-type-c-linkage ~
+                 (format nil "-Wall -Wno-return-type-c-linkage ~
 -Wno-invalid-offsetof -Wno-#pragma-messages -Wno-inconsistent-missing-override ~
--Wno-error=c++11-narrowing -Wno-c++11-narrowing -Wdeprecated-enum-enum-conversion ~
--Wdeprecated-anon-enum-enum-conversion -Wimplicit-fallthrough ~
+-Wno-error=c++11-narrowing -Wno-c++11-narrowing ~
 -Wno-reorder-ctor -Wno-mismatched-tags -Wno-overloaded-virtual ~
 -Wno-delete-non-abstract-non-virtual-dtor ~
 -Wno-unused-lambda-capture -Wno-unused-label -Wno-unused-function"))
