@@ -342,7 +342,9 @@ case MAYBE_LONG_ADD + DTREE_OP_SD_EQ_BRANCH: {
   }
   break;
 }
+/*
 case MAYBE_LONG_ADD + DTREE_OP_SINGLE_DISPATCH_MISS:
 goto SINGLE_DISPATCH_MISS;
+*/
 
 #endif

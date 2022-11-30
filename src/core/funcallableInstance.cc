@@ -404,6 +404,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /* TODO
   SINGLE_DISPATCH_MISS : {
     DTILOG("dispatch miss. arg %lu stamp %lu\n", arg, stamp);
     Vaslist vaslist(lcc_nargs, lcc_args);
@@ -411,6 +412,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 #undef GENERAL_ARITY_CALL
 
@@ -471,6 +473,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[1] = {lcc_farg0};
     Vaslist vaslist(1, args);
@@ -478,6 +481,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 
   static inline LCC_RETURN error_entry_point_2(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1) {
@@ -530,6 +534,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[2] = {lcc_farg0, lcc_farg1};
     Vaslist vaslist(2, args);
@@ -537,6 +542,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 
   static inline LCC_RETURN error_entry_point_3(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1,
@@ -590,6 +596,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
     Vaslist vaslist(3, args);
@@ -597,6 +604,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 
   static inline LCC_RETURN error_entry_point_4(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1,
@@ -650,6 +658,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
     Vaslist vaslist(4, args);
@@ -657,6 +666,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 
   static inline LCC_RETURN error_entry_point_5(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1,
@@ -710,6 +720,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
     Vaslist vaslist(5, args);
@@ -717,6 +728,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 };
 

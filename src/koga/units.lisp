@@ -181,10 +181,9 @@
   (append-cflags configuration
                  (format nil "-Wall -Wno-return-type-c-linkage ~
 -Wno-invalid-offsetof -Wno-#pragma-messages -Wno-inconsistent-missing-override ~
--Wno-error=c++11-narrowing -Wno-c++11-narrowing ~
 -Wno-mismatched-tags -Wno-overloaded-virtual ~
 -Wno-delete-non-abstract-non-virtual-dtor ~
--Wno-unused-lambda-capture -Wno-unused-label -Wno-unused-function"))
+-Wno-unused-lambda-capture -Wno-unused-function"))
   (loop for variant in (variants configuration)
         do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant)))
            (append-cflags variant (format nil "-I~a/generated" (variant-bitcode-name variant))))
