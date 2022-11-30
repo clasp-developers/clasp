@@ -151,7 +151,7 @@ struct LibraryLookup {
   uintptr_t  _loadAddress;
   std::string _libraryPath;
   
-  LibraryLookup( const std::string libraryPath ) : _libraryPath(libraryPath), _loadAddress(0) {};
+  LibraryLookup( const std::string libraryPath ) : _loadAddress(0), _libraryPath(libraryPath) {};
   std::map<std::string,uintptr_t> _symbolToAddress;
   std::map<uintptr_t,std::string> _addressToSymbol;
 

@@ -283,8 +283,8 @@ template <>
   {
     typedef bool *DeclareType;
 
-    DeclareType _v;
     bool _val;
+    DeclareType _v;
   from_object( T_P o ) : _val( false ), _v( &_val ){};
   };
 
@@ -293,8 +293,8 @@ template <>
   {
     typedef bool *DeclareType;
 
-    DeclareType _v;
     bool _val;
+    DeclareType _v;
     from_object( T_P o ) : _val( false ), _v( &_val ){};
     ~from_object() {/*non trivial*/};
   };
@@ -304,8 +304,8 @@ template <>
   {
     typedef bool *DeclareType;
 
-    DeclareType _v;
     bool _val;
+    DeclareType _v;
   from_object( T_P o ) : _val( true ), _v( &_val ){};
   };
 

@@ -182,7 +182,7 @@
                  (format nil "-Wall -Wno-return-type-c-linkage ~
 -Wno-invalid-offsetof -Wno-#pragma-messages -Wno-inconsistent-missing-override ~
 -Wno-error=c++11-narrowing -Wno-c++11-narrowing ~
--Wno-reorder-ctor -Wno-mismatched-tags -Wno-overloaded-virtual ~
+-Wno-mismatched-tags -Wno-overloaded-virtual ~
 -Wno-delete-non-abstract-non-virtual-dtor ~
 -Wno-unused-lambda-capture -Wno-unused-label -Wno-unused-function"))
   (loop for variant in (variants configuration)

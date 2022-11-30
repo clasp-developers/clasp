@@ -4436,8 +4436,8 @@ namespace translate {
 template <>
 struct from_object<const llvm::StringRef, std::true_type> {
   typedef llvm::StringRef DeclareType;
-  DeclareType _v;
   string _Storage;
+  DeclareType _v;
   from_object(T_P object) : _Storage(gc::As<core::String_sp>(object)->get_std_string()), _v(this->_Storage) {};
   from_object(const from_object& orig) = delete;
   from_object(from_object&& orig) : _Storage(std::move(orig._Storage)), _v(_Storage) {};

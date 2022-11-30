@@ -40,14 +40,15 @@ namespace gctools {
 #endif
    
  GlobalAllocationProfiler() :
+   _HitAllocationNumberCounter(0),
+   _HitAllocationSizeCounter(0),
+   _AllocationNumberThreshold(16386),
    _AllocationSizeThreshold(1024*1024)
-   , _AllocationNumberThreshold(16386)
-     , _HitAllocationNumberCounter(0)
-     , _HitAllocationSizeCounter(0)
    {};
- GlobalAllocationProfiler(size_t size, size_t number) : _AllocationSizeThreshold(size), _AllocationNumberThreshold(number)
-     , _HitAllocationNumberCounter(0)
-     , _HitAllocationSizeCounter(0)
+ GlobalAllocationProfiler(size_t size, size_t number) :
+   _HitAllocationNumberCounter(0),
+   _HitAllocationSizeCounter(0),
+   _AllocationNumberThreshold(number), _AllocationSizeThreshold(size)
    {};
     
    inline void registerAllocation(stamp_t stamp, size_t size) {

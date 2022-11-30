@@ -12,7 +12,7 @@ public:
 
 public:
   WRAPPER_Getter(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code) {
+    : GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), mptr(ptr) {
     trapGetterMethoid();
   };
 

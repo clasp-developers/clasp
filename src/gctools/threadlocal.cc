@@ -137,8 +137,7 @@ bool DynamicBindingStack::thread_local_boundp(int32_t index) const {
 
 namespace gctools {
 ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top) :
-  _DisableInterrupts(false)
-  ,  _StackTop(stack_top)
+  _StackTop(stack_top), _DisableInterrupts(false)
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   , _RecursiveAllocationCounter(0)
 #endif
@@ -213,16 +212,16 @@ VirtualMachine::~VirtualMachine() {
 // ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy) :
-  _unwinds(0)
-  ,_CleanupFunctions(NULL)
+  _ObjectFiles()
   ,_PendingInterrupts()
-  ,_ObjectFiles()
   ,_BufferStr8NsPool()
   ,_BufferStrWNsPool()
+  ,_unwinds(0)
   ,_Breakstep(false)
   ,_BreakstepFrame(NULL)
   ,_DynEnvStackBottom()
   ,_UnwindDest()
+  ,_CleanupFunctions(NULL)
   ,_DtreeInterpreterCallCount(0)
 {
   my_thread = this;
@@ -289,14 +288,14 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
 
 // This is for constructing ThreadLocalState for threads
 ThreadLocalState::ThreadLocalState() :
-  _unwinds(0)
+  _ObjectFiles(nil<core::T_O>())
   , _PendingInterrupts(nil<core::T_O>())
-  , _ObjectFiles(nil<core::T_O>())
-  , _CleanupFunctions(NULL)
+  , _unwinds(0)
   , _Breakstep(false)
   , _BreakstepFrame(NULL)
   , _DynEnvStackBottom(nil<core::T_O>())
   , _UnwindDest(nil<core::T_O>())
+  , _CleanupFunctions(NULL)
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN

@@ -118,7 +118,7 @@ public:
   enum { NumParams = sizeof...(ARGS)+1 };
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
+    : core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), mptr(ptr)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
 
@@ -190,7 +190,7 @@ public:
   enum { NumParams = sizeof...(ARGS)+1 };
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : mptr(ptr), core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code)  {
+    : core::GlobalSimpleFunBase_O(fdesc,core::ClaspXepFunction::make<MyType>(),code), mptr(ptr)  {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
 

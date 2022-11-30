@@ -257,21 +257,18 @@ public:
   // ------------------------------------------------------------
   // ------------------------------------------------------------
   // ------------------------------------------------------------
-  globals_t() : _MakePackageCallback(NULL),
-                _ExportSymbolCallback(NULL),
-                _PathMax(CLASP_MAXPATHLEN),
-                _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
+  globals_t() : _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
                 _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
                 _FinalizersMutex(MPSMESSG_NAMEWORD),
                 _SourceFilesMutex(SRCFILES_NAMEWORD),
                 _PackagesMutex(PKGSMUTX_NAMEWORD),
-#ifdef DEBUG_MONITOR_SUPPORT
-                _MonitorMutex(LOGMUTEX_NAMEWORD),
-#endif
                 _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD),
                 _JITLogMutex(JITLOG___NAMEWORD),
                 _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD),
-                _CodeBlocksMutex(CODEBLOK_NAMEWORD),
+                _CodeBlocksMutex(CODEBLOK_NAMEWORD),              
+#ifdef DEBUG_MONITOR_SUPPORT
+                _MonitorMutex(LOGMUTEX_NAMEWORD),
+#endif
                 _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                 _StackSampleCount(0),
                 _StackSampleSize(0),
@@ -279,7 +276,10 @@ public:
                 _ReplCounter(1),
                 _Bundle(NULL),
                 _DebugStream(NULL),
-                _SingleStepLevel(UndefinedUnsignedInt)
+                _SingleStepLevel(UndefinedUnsignedInt),
+                _MakePackageCallback(NULL),
+                _ExportSymbolCallback(NULL),
+                _PathMax(CLASP_MAXPATHLEN)
   {
     this->_GlobalInitializationCallbacks.clear();
     this->_TraceLevel = 0;

@@ -196,9 +196,9 @@ public:
 //
 Lisp::GCRoots::GCRoots() :
   _ClaspJIT(nil<T_O>()),
+  _AllLibraries(nil<T_O>()),
   _AllObjectFiles(nil<T_O>()),
   _AllCodeBlocks(nil<T_O>()),
-  _AllLibraries(nil<T_O>()),
 #ifdef CLASP_THREADS
     _UnboundSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
     _UnboundSetfSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
@@ -215,11 +215,11 @@ Lisp::GCRoots::GCRoots() :
   this->_SingleDispatchGenericFunctions.store(nil<core::T_O>());
 };
 
-Lisp::Lisp() : _Booted(false),
-                   _MpiEnabled(false),
-                   _MpiRank(0),
-                   _MpiSize(1),
-                   _BootClassTableIsValid(true) {
+Lisp::Lisp() : _BootClassTableIsValid(true),
+               _Booted(false), 
+               _MpiEnabled(false),
+               _MpiRank(0),
+               _MpiSize(1) {
 //  this->_Roots._Bindings.reserve(1024); // moved to Lisp::initialize()
 }
 

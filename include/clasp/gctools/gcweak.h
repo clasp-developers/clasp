@@ -302,7 +302,7 @@ public:
     mutable mp::SharedMutex_sp _Mutex;
 #endif
 public:
-  WeakKeyHashTable(size_t length, core::Number_sp rehashSize, double rehashThreshold) : _Length(length), _RehashSize(rehashSize), _RehashThreshold(rehashThreshold) {};
+  WeakKeyHashTable(size_t length, core::Number_sp rehashSize, double rehashThreshold) : _RehashSize(rehashSize), _RehashThreshold(rehashThreshold), _Length(length)  {};
   void initialize();
 public:
   static uint sxhashKey(const value_type &key);

@@ -746,7 +746,7 @@ public:
 #define GUARD2 0xC0FFEEE0
 
   Header_s(const BadgeStampWtagMtag &k, size_t tstart = 0, size_t tsize = 0, size_t total_size = sizeof(Header_s))
-      : BaseHeader_s(k), _guard(GUARD1), _tail_start(tstart), _tail_size(tsize), _source((uintptr_t)this), _guard2(GUARD2),
+    : BaseHeader_s(k), _tail_start(tstart), _tail_size(tsize), _guard(GUARD1), _source((uintptr_t)this), _guard2(GUARD2),
         _dup_badge_stamp_wtag_mtag(k) {
 #ifdef DEBUG_GUARD_BACKTRACE
     this->maybe_fill_backtrace(k._value);

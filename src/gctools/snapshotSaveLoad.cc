@@ -1109,7 +1109,9 @@ struct ISLFileHeader {
   size_t _global_JITDylibCounter;
   size_t _global_JITCompileCounter;
 
-  ISLFileHeader(size_t sz,size_t num, uintptr_t sbs) : _Magic(MAGIC_NUMBER), _MemorySize(sz), _NumberOfObjects(num), _MemoryStart(sbs) {
+  ISLFileHeader(size_t sz,size_t num, uintptr_t sbs)
+    : _Magic(MAGIC_NUMBER), _MemoryStart(sbs), _NumberOfObjects(num),
+      _MemorySize(sz) {
     this->_global_JITDylibCounter = llvmo::global_JITDylibCounter.load();
     this->_global_JITCompileCounter = core::core__get_jit_compile_counter();
   };
@@ -1541,10 +1543,10 @@ struct copy_objects_t : public walker_callback_t {
   copy_buffer_t* _objectFiles;
 
   copy_objects_t( copy_buffer_t* objects, copy_buffer_t* objectFiles, ISLInfo* info)
-    : _objects(objects),
-      _objectFiles(objectFiles),
+    : walker_callback_t(info),
+      _objects(objects),
       _NumberOfObjects(0),
-      walker_callback_t(info) {};
+      _objectFiles(objectFiles) {};
   
   void callback(gctools::BaseHeader_s* header) {
     std::string str;

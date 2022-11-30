@@ -224,8 +224,9 @@ class Package_O : public General_O {
 
  public:
   // Not default constructable
- Package_O() : _Nicknames(nil<T_O>()), _LocalNicknames(nil<T_O>()),
-                                   _Documentation(nil<T_O>()), _Lock(PACKAGE__NAMEWORD), _ActsLikeKeywordPackage(false)
+  Package_O() :  _ActsLikeKeywordPackage(false),
+                 _Nicknames(nil<T_O>()), _LocalNicknames(nil<T_O>()),
+                 _Documentation(nil<T_O>()), _Lock(PACKAGE__NAMEWORD)
   {};
 
   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
