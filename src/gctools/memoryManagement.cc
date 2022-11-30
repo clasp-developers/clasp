@@ -1000,18 +1000,20 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
 #include "obj_scan.cc"
 #undef OBJECT_SKIP
 
+/*
+// Forwarding pointers are unused for now.
 #define OBJECT_SKIP_IN_OBJECT_FWD mw_obj_skip
 #define OBJECT_FWD mw_obj_fwd
 #include "obj_scan.cc"
 #undef OBJECT_FWD
-
+*/
 
 #define CONS_SCAN mw_cons_scan
 #define CONS_SKIP mw_cons_skip
-#define CONS_FWD mw_cons_fwd
-#define CONS_SKIP_IN_CONS_FWD mw_cons_skip
+//#define CONS_FWD mw_cons_fwd
+//#define CONS_SKIP_IN_CONS_FWD mw_cons_skip
 #include "cons_scan.cc"
-#undef CONS_FWD
+//#undef CONS_FWD
 #undef CONS_SKIP
 #undef CONS_SCAN
 
