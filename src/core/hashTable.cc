@@ -790,7 +790,6 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   HT_READ_LOCK(this);
   VERIFY_HASH_TABLE(this);
   HashGenerator hg;
-  size_t sz = this->_Table.size();
   cl_index index = this->sxhashKey(key, this->_Table.size(), hg );
   KeyValuePair* keyValuePair = this->tableRef_no_read_lock(key, false /*under_write_lock*/, index, hg);
   LOG("Found keyValueCons"); // % keyValueCons->__repr__() ); INFINITE-LOOP
@@ -937,7 +936,9 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   }
   gc::Vec0<KeyValuePair> oldTable;
   oldTable.swap(this->_Table);
+#if DEBUG_REHASH_COUNT
   size_t oldHashTableCount = this->_HashTableCount;
+#endif
   newSize = this->resizeEmptyTable_no_lock(newSize);
   LOG("Resizing table to size: %d" , newSize);
   size_t oldSize = oldTable.size();

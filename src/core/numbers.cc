@@ -2486,13 +2486,12 @@ expt_zero(Number_sp x, Number_sp y) {
 
 Number_sp
 clasp_expt(Number_sp x, Number_sp y) {
-  NumberType ty, tx;
+  NumberType ty;
   Number_sp z;
   if (clasp_unlikely(clasp_zerop(y))) {
     return expt_zero(x, y);
   }
   ty = clasp_t_of(y);
-  tx = clasp_t_of(x);
   if (clasp_unlikely(!gc::IsA<Number_sp>(x))) {
     QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
   }

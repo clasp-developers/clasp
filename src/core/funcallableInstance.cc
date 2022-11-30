@@ -300,7 +300,7 @@ template <> struct ReadArg<2> {
     unsigned char high = *(addr + 1 + 2 * (offset - 1) + 1);
     size_t val = (high << 8) + low;
     //    printf("%s:%d:%s read low %u  high %u  val = %lu\n", __FILE__, __LINE__, __FUNCTION__, low, high, val );
-    return (high << 8) + low;
+    return val;
   }
   inline static T_sp read_literal(unsigned char *addr, uintptr_t offset, T_sp *literals) {
     size_t index = read(addr, offset);
@@ -721,7 +721,6 @@ GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make(Function_sp generic_function)
   T_mv compiled = eval::funcall(clos::_sym_bytecode_dtree_compile, generic_function);
   SimpleVector_byte8_t_sp bytecode = gc::As<SimpleVector_byte8_t_sp>(compiled);
   MultipleValues &mv = my_thread->_MultipleValues;
-  SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
   SimpleVector_sp literals = mv.third(compiled.number_of_values());
   size_t specialized_length = mv.fourth(compiled.number_of_values()).unsafe_fixnum();
   auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate(fdesc, 0, bytecode, literals, generic_function, specialized_length);

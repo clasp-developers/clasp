@@ -559,7 +559,6 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       if (myPackage->isKeywordPackage()) {
         ss << ":" << this->_Name->get_std_string();
       } else {
-        Package_sp currentPackage = _lisp->getCurrentPackage();
         if (prefixAlways) {
           ss << myPackage->getName() << "::" << this->_Name->get_std_string();
         } else {

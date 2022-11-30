@@ -146,7 +146,6 @@ String_sp clasp_strerror(int e) {
 
  void rmtree(const char* path)
  {
-   size_t path_len;
    DIR *dir;
    struct stat stat_path, stat_entry;
    struct dirent *entry;
@@ -171,9 +170,6 @@ String_sp clasp_strerror(int e) {
      fprintf(stderr, "%s: %s\n", "Can`t open directory", path);
      return;
    }
-
-    // the length of the path
-   path_len = strlen(path);
 
     // iteration through entries in the directory
    while ((entry = readdir(dir)) != NULL) {
@@ -837,8 +833,6 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       SIMPLE_ERROR(("Unprintable pathname %s found in TRUENAME") , _rep_(pathname));
     }
   }
-  T_sp original_pathname = pathname;
-  T_sp original_filename = filename;
   kind = file_kind((char *)gc::As<String_sp>(filename)->get_std_string().c_str(), false);
   //  kind = smart_file_kind( filename, false);
   if (kind.nilp()) {
@@ -2026,6 +2020,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
           int signal = 0;
 
           signal = WTERMSIG( status );
+          (void)signal; // sham use
           DEBUG_PRINT(("%s (%s:%d) | Child process got signal %d\n.") , __FUNCTION__ , __FILE__ , __LINE__ , signal );
 
           // Continue waiting !

@@ -146,8 +146,7 @@ JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::str
 //    printf("%s:%d      ptr->%p\n", __FILE__, __LINE__, startup);
     (startup)();
   }
-  size_t num = core::startup_functions_are_waiting();
-//  printf("%s:%d There are %lu startup functions waiting to be evaluated\n", __FILE__, __LINE__, num);
+//  printf("%s:%d There are %lu startup functions waiting to be evaluated\n", __FILE__, __LINE__, core::startup_functions_are_waiting());
   core::startup_functions_invoke(NULL);
 //  printf("%s:%d Invoked startup functions - continuing\n", __FILE__, __LINE__ );
   return jitDylib;

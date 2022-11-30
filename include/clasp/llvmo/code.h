@@ -396,7 +396,6 @@ template <typename Stage>
 inline void allocateInCodeBlock( BasicLayout& BL, CodeBlock_sp& codeBlock ) {
   WITH_READ_WRITE_LOCK(globals_->_CodeBlocksMutex);
   size_t PageSize = getpagesize();
-  bool newCodeBlock = false;
   auto SegsSizes = BL.getContiguousPageBasedLayoutSizes(PageSize);
   if (_lisp->_Roots._AllCodeBlocks.load().consp()) {
     core::Cons_sp ll = gc::As_unsafe<core::Cons_sp>(_lisp->_Roots._AllCodeBlocks.load());

@@ -386,8 +386,6 @@ public:
   static void initializeGlobals(LispPtr lisp);
   
 public:
-  static void lisp_initSymbols(LispPtr lisp);
-public:
   static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 public:
   void initialize();

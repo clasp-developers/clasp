@@ -114,11 +114,7 @@ CL_DEFUN T_sp core__cas_rack(T_sp order, T_sp old, T_sp newval, Rack_sp rack, si
   if (order != kw::_sym_SequentiallyConsistent) {
     SIMPLE_ERROR("Add support for order %s", _rep_(order).c_str());
   }
-  bool result = rack->low_level_rack_compare_exchange_strong(index, old, newval);
-#if 0
-  printf("%s:%d:%s order = %s old = %p newval = %p rack = %p index = %zu result = %d\n",
-         __FILE__, __LINE__, __FUNCTION__, _rep_(order).c_str(), old.raw_(), newval.raw_(), rack.raw_(), index, result );
-#endif
+  rack->low_level_rack_compare_exchange_strong(index, old, newval);
   return old;
 }
 

@@ -524,8 +524,7 @@ void DebugStream::setSuppressMessages(bool s) {
 
 char *internalPrintf(const LispPtr &lisp, const char *fmt, va_list arg_ptr) {
   char *outBuffer;
-  int n;
-  n = vasprintf(&outBuffer, fmt, arg_ptr);
+  vasprintf(&outBuffer, fmt, arg_ptr);
   if (outBuffer == NULL) {
     SIMPLE_ERROR(("Could not allocate a large enough internalPrintf buffer"));
   }

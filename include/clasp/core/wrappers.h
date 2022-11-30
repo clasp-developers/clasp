@@ -250,7 +250,6 @@ namespace core {
   inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string& filename,  const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
     Symbol_sp symbol = lispify_intern(name, packageName);
     using VariadicType = WRAPPER_Translator_O;
-    FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
     auto entry = gctools::GC<VariadicType>::allocate(fp);
     lisp_bytecode_defun( symbol_function, clbind::DefaultWrapper::BytecodeP, symbol, packageName, entry, arguments, declares, docstring, sourceFile, sourceLine, 1 );
   }

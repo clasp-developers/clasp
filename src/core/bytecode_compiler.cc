@@ -895,7 +895,7 @@ CL_DEFUN void compile_locally(List_sp body, Lexenv_sp env, Context_sp ctxt) {
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
   Lexenv_sp inner1 = env->add_specials(specials);
-  Lexenv_sp inner2 = env->add_notinlines(decl_notinlines(declares));
+  Lexenv_sp inner2 = inner1->add_notinlines(decl_notinlines(declares));
   compile_progn(code, inner2, ctxt);
 }
 
@@ -1777,7 +1777,6 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_s
   // not a special form
   else {
     if (gc::IsA<Symbol_sp>(head)) {
-      Symbol_sp shead = gc::As_unsafe<Symbol_sp>(head);
       T_sp info = fun_info(head, env);
       if (gc::IsA<GlobalMacroInfo_sp>(info)) {
         GlobalMacroInfo_sp minfo = gc::As_unsafe<GlobalMacroInfo_sp>(info);
@@ -1893,7 +1892,7 @@ CL_DEFUN T_mv bytecode_toplevel_locally(List_sp body, Lexenv_sp env) {
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
   Lexenv_sp inner1 = env->add_specials(specials);
-  Lexenv_sp inner2 = env->add_notinlines(decl_notinlines(declares));
+  Lexenv_sp inner2 = inner1->add_notinlines(decl_notinlines(declares));
   return bytecode_toplevel_progn(code, inner2);
 }
 

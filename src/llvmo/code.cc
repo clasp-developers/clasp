@@ -49,7 +49,6 @@ void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& BL) {
   size_t PageSize = getpagesize();
   auto rwxProt = llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE | llvm::sys::Memory::MF_EXEC;
   for (auto &KV : BL.segments()) {
-    const auto &AG = KV.first;
     auto &Seg = KV.second;
     uint64_t SegSize =
         alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize );
@@ -611,7 +610,6 @@ CL_DEFUN void ext__generate_perf_map() {
   FILE* fout = fopen(ss.str().c_str(),"w");
   jit_code_entry* jce = __jit_debug_descriptor.first_entry;
   ql::list ll;
-  size_t idx;
   while (jce) {
     const char* of_start = jce->symfile_addr;
     size_t of_length = jce->symfile_size;
@@ -711,6 +709,7 @@ bool CodeBlock_O::calculate(BasicLayout& BL) {
       base = this->calculateHead( SegmentSize, Seg.Alignment.value(), headOffset);
       allocKind = "head";
     }
+    (void)allocKind; // sham use
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s calculated %s from the base = %p - %p = %lu bytes \n", __FILE__, __LINE__, __FUNCTION__, allocKind, base, (void*)((uintptr_t)base+SegmentSize), SegmentSize ));
     Seg.Addr = (llvm::orc::ExecutorAddr)(uintptr_t)base;
     Seg.WorkingMem = jitTargetAddressToPointer<char*>((llvm::JITTargetAddress)base);
@@ -780,7 +779,6 @@ size_t countObjectFileNames(const std::string& name) {
 };
 
 CL_DEFUN core::T_sp llvm_sys__allObjectFileNames() {
-  size_t count = 0;
   core::T_sp result = nil<core::T_O>();
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   while ( cur.consp() ) {

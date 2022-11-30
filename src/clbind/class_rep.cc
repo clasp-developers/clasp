@@ -224,8 +224,8 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
   // to tell clbind that it derives.
   ASSERTF(base.objectp(), ("You cannot derive from an unregistered type"));
 
-  ClassRep_sp bcrep = base;
 #if 0
+  ClassRep_sp bcrep = base;
 	// import all static constants
 	for (std::map<const char*, int, ltstr>::const_iterator i = bcrep->m_static_constants.begin(); 
              i != bcrep->m_static_constants.end(); ++i)

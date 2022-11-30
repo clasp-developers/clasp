@@ -490,7 +490,7 @@ LtvcReturnVoid ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, ch
 LtvcReturnVoid ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t simpleFunIndex, const char* name) {
 //  printf("%s:%d:%s make entry-point-index got simpleFunIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, simpleFunIndex, name );
   core::GlobalSimpleFun_sp ep((gctools::Tagged)holder->getLiteral(simpleFunIndex));
-  LCC_RETURN ret = ep->entry()(ep.raw_(),0,NULL);
+  ep->entry()(ep.raw_(),0,NULL);
 }
 
 // Similar to the above, but puts value in the table.
@@ -510,7 +510,7 @@ LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t si
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
 #endif
-  LCC_RETURN ret = ep->entry()(ep.raw_(),0,NULL);
+  ep->entry()(ep.raw_(),0,NULL);
 }
 
 };

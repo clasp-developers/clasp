@@ -1104,13 +1104,13 @@ size_t objectSize( BaseHeader_s* header ) {
       // It's a cons object
     size_t consSize;
     uintptr_t client = (uintptr_t)HeaderPtrToConsPtr(header);
-    uintptr_t clientLimit = mw_cons_skip(client,consSize);
+    mw_cons_skip(client,consSize);
     return consSize;
   } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
          // It's a weak object
     size_t objectSize;
     uintptr_t client = (uintptr_t)HeaderPtrToWeakPtr(header);
-    uintptr_t clientLimit = mw_weak_skip( client, false, objectSize );
+    mw_weak_skip( client, false, objectSize );
     return objectSize;
   } else {
         // It's a general object - walk it

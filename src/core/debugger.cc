@@ -204,7 +204,6 @@ bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
 
 void executablePath(std::string& name) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  size_t index;
   for ( auto& entry : debugInfo()._OpenDynamicLibraryHandles ) {
     if (entry.second._IsExecutable) {
       name = entry.second._Filename;
@@ -215,7 +214,6 @@ void executablePath(std::string& name) {
 }  
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  size_t index;
   for ( auto& entry : debugInfo()._OpenDynamicLibraryHandles ) {
     if (entry.second._IsExecutable) {
       start = entry.second._VtableSectionStart;
@@ -228,7 +226,6 @@ void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_p
 
 void executableTextSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  size_t index;
   for ( auto& entry : debugInfo()._OpenDynamicLibraryHandles ) {
     if (entry.second._IsExecutable) {
       start = entry.second._TextStart;
@@ -243,7 +240,6 @@ void executableTextSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr
 bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName, bool& executable, uintptr_t& vtableStart, uintptr_t& vtableEnd )
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
 //    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
     if ((entry.second._TextStart <= address && address < entry.second._TextEnd)
@@ -263,7 +259,6 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
 bool library_with_name( const std::string& name, bool isExecutable, std::string& libraryName, uintptr_t& start, uintptr_t& end, uintptr_t& vtableStart, uintptr_t& vtableEnd )
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
     std::string libName = entry.second._Filename;
     if ((name.size()<= libName.size() && name == libName.substr(libName.size()-name.size()))

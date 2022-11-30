@@ -152,7 +152,6 @@ case MAYBE_LONG_ADD + DTREE_OP_SLOT_WRITE: {
 case MAYBE_LONG_ADD + DTREE_OP_RPLACA: {
   DTILOG("class cell\n");
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
-  size_t index = location.unsafe_fixnum();
   Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
   T_sp value = T_sp((gctools::Tagged)(lcc_args[0]));
   DTILOG("Got value@%p %s\n", (void *)value.raw_(), _safe_rep_(value));
@@ -215,7 +214,6 @@ case MAYBE_LONG_ADD + DTREE_OP_SLOT_WRITE: {
 case MAYBE_LONG_ADD + DTREE_OP_RPLACA: {
   DTILOG("class cell\n");
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
-  size_t index = location.unsafe_fixnum();
   Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
   T_sp value((gc::Tagged)lcc_farg0);
   DTILOG("Got value@%p %s\n", (void *)value.raw_(), _safe_rep_(value));

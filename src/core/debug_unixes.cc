@@ -150,20 +150,11 @@ void walk_elf_symbol_table(struct dl_phdr_info *info,
       for (ii = 0; ii < count; ++ii) {
         GElf_Sym sym;
         gelf_getsym(data, ii, &sym);
-        int seg = sym.st_shndx;
         uintptr_t addr = 0;
         symbol_start = (uintptr_t)sym.st_value + addr; // symbols are loaded at 0x0 // +start;
         symbol_end = symbol_start+sym.st_size;
         if (symbol_end>highest_end_address) {
           highest_end_address = symbol_end;
-        }
-        char type = '?';
-        if (ELF64_ST_TYPE(sym.st_info) == STT_FUNC) {
-          if (ELF64_ST_BIND(sym.st_info) == STB_GLOBAL) type = 'T';
-          else type = 't';
-        } else if (ELF64_ST_TYPE(sym.st_info) == STT_OBJECT) {
-          if (ELF64_ST_BIND(sym.st_info) == STB_GLOBAL) type = 'D';
-          else type = 'd';
         }
         BT_LOG(("Looking at symbol %s type: %d\n", elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name), ELF64_ST_TYPE(sym.st_info)));
         const char* sname = elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name);
@@ -283,17 +274,6 @@ int elf_walk_loaded_object_callback(struct dl_phdr_info *info, size_t size, void
   for (int j = 0; j < info->dlpi_phnum; j++) {
     int p_type = info->dlpi_phdr[j].p_type;
 #if 1
-    const char* type;
-    type =  (p_type == PT_LOAD) ? "PT_LOAD" :
-      (p_type == PT_DYNAMIC) ? "PT_DYNAMIC" :
-      (p_type == PT_INTERP) ? "PT_INTERP" :
-      (p_type == PT_NOTE) ? "PT_NOTE" :
-      (p_type == PT_INTERP) ? "PT_INTERP" :
-      (p_type == PT_PHDR) ? "PT_PHDR" :
-      (p_type == PT_TLS) ? "PT_TLS" :
-      (p_type == PT_GNU_EH_FRAME) ? "PT_GNU_EH_FRAME" :
-      (p_type == PT_GNU_STACK) ? "PT_GNU_STACK" :
-      (p_type == PT_GNU_RELRO) ? "PT_GNU_RELRO" : NULL;
     printf("    %2d: [%14p; memsz:%7jx; END: %14p] flags: %#jx; \n", j,
            (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr),
            (uintmax_t) info->dlpi_phdr[j].p_memsz,
@@ -420,7 +400,6 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
     library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
     if (library_origin==0) {
       // Try looking for _init symbol
-      void* lorigin;
       Dl_info data;
       dlerror();
       void* addr = dlsym(handle,"_init");
@@ -438,7 +417,6 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
     }
   }
   BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
-  gctools::clasp_ptr_t library_end = (gctools::clasp_ptr_t)library_origin;
   OpenDynamicLibraryInfo odli(is_executable,libraryName,handle,(gctools::clasp_ptr_t)library_origin,text_start,text_end,
                               hasVtableSection,vtableSectionStart,vtableSectionEnd);
   if (callback) {

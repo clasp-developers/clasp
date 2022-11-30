@@ -193,9 +193,11 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
   Field_layout* local_field_layout = new Field_layout[number_of_fixable_fields]; // (Field_layout*)malloc(sizeof(Field_layout)*number_of_fixable_fields);
   Field_layout* cur_field_layout= local_field_layout;
   Field_layout* max_field_layout = (Field_layout*)((char*)local_field_layout + sizeof(Field_layout)*number_of_fixable_fields);
+  (void)max_field_layout; // used in assert below
   Field_info* local_field_info = new Field_info[number_of_fixable_fields]; // (Field_info*)malloc(sizeof(Field_info)*(number_of_fixable_fields));
   Field_info* cur_field_info = local_field_info;
   Field_info* max_field_info = (Field_info*)((char*)local_field_info + sizeof(Field_info)*number_of_fixable_fields);
+  (void)max_field_info; // used in assert below
   Container_layout* local_container_layout = new Container_layout[number_of_containers+1]; // (Container_layout*)malloc(sizeof(Container_layout)*(number_of_containers+1));
   Container_info* local_container_info = new Container_info[number_of_containers+1]; // (Container_info*)malloc(sizeof(Container_info)*(number_of_containers+1));
   // Fill in the immediate stamps
@@ -207,12 +209,16 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
   idx = 0;
   size_t fixed_index = 0;
   size_t container_variable_index = 0;
+#if DEBUG_ASSERT
   size_t prev_field_offset = ~0;
+#endif
   for ( idx=0; idx<num_codes; ++idx ) {
     DGC_PRINT("%s:%d Loading scan   idx = %d\n", __FILE__, __LINE__, idx);
     switch (codes[idx].cmd) {
     case class_kind:
+#if DEBUG_ASSERT
         prev_field_offset = ~0;
+#endif
         cur_stamp = STAMP(codes[idx].data0);
         if (cur_stamp>local_stamp_max) {
           printf("%s:%d  class_kind  cur_stamp = %d local_stamp_max = %lu\n", __FILE__, __LINE__, cur_stamp, local_stamp_max );
@@ -237,7 +243,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
     case fixed_field:
       {
         size_t data_type = codes[idx].data0;
-        size_t index = local_stamp_layout[cur_stamp].number_of_fields;
         const char* field_name = codes[idx].description;
         size_t field_offset = codes[idx].data2;
         if (walk == lldb_info) {
@@ -295,7 +300,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
           }
 #endif
           cur_field_layout->field_offset = field_offset;
+#ifdef DEBUG_ASSERT
           prev_field_offset = field_offset;
+#endif
           GCTOOLS_ASSERT(cur_field_info<max_field_info);
           if ( local_stamp_info[cur_stamp].field_info_ptr == NULL )
             local_stamp_info[cur_stamp].field_info_ptr = cur_field_info;
@@ -308,7 +315,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
       }
       break;
     case container_kind:
+#ifdef DEBUG_ASSERT
       prev_field_offset = ~0;
+#endif
       cur_stamp = STAMP(codes[idx].data0);
       DGC_PRINT("%s:%d   container_kind  cur_stamp = %d name = %s\n", __FILE__, __LINE__, cur_stamp, codes[idx].description);
       local_stamp_layout[cur_stamp].layout_op = class_container_op;
@@ -329,7 +338,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
                                      local_stamp_layout[cur_stamp].size);
       break;
     case bitunit_container_kind:
+#ifdef DEBUG_ASSERT
       prev_field_offset = ~0;
+#endif
       cur_stamp = STAMP(codes[idx].data0);
       DGC_PRINT("%s:%d   bitunit_container_kind  cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].layout_op = bitunit_container_op;
@@ -387,7 +398,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
     case variable_field:
       {
         size_t data_type = codes[idx].data0;
-        size_t index = local_stamp_layout[cur_stamp].container_layout->number_of_fields;
         size_t field_offset = codes[idx].data2;
         const char* field_name = codes[idx].description;
         if (walk == lldb_info) fmt::print(fout, "{}Init__variable_field( stamp={}, index={}, data_type={}, field_name=\"{}\", field_offset={} )\n",
@@ -430,7 +440,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
       break;
     case templated_kind:
       {
+#ifdef DEBUG_ASSERT
         prev_field_offset = ~0;
+#endif
         cur_stamp = STAMP(codes[idx].data0);
         size_t size = codes[idx].data1;
         const char* name = codes[idx].description;

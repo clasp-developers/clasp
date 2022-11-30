@@ -115,7 +115,6 @@ CL_DEFUN SimpleString_sp cl__string_upcase(T_sp arg) {
     T_sp cc = str->rowMajorAref(i);
     claspCharacter c = cc.unsafe_character();
     claspCharacter u = char_upcase(c);
-    Character_sp cu = clasp_make_character(u);
     result->rowMajorAset(i,clasp_make_character(u));
   }
   return (result);

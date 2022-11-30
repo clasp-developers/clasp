@@ -831,7 +831,6 @@ CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) {
 };
 
 bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& ss) {
-  bool metrics_file = false;
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   bool debugging = false;
   bool use_boehm_memory_marker = false;
@@ -980,9 +979,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (fmt::sprintf("DEBUG_GFDISPATCH = %s\n" , (debug_gfdispatch ? "**DEFINED**" : "undefined") ));
 
-  bool debug_cst = false;
 #ifdef CST
-  debug_cst = true;
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("CST"),features);
 #endif
@@ -1196,9 +1193,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (fmt::sprintf("DISABLE_TYPE_INFERENCE = %s\n" , (disable_type_inference ? "**DEFINED**" : "undefined") ));
 
-  bool use_compile_file_parallel = true;
 #if USE_COMPILE_FILE_PARALLEL == 0
-  use_compile_file_parallel = false;
   INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(nil<core::T_O>());
   printf("%s:%d You have turned off compile-file-parallel\n   - you can enable it by setting USE_COMPILE_FILE_PARALLEL in the wscript.config\n   - compile-file-parallel should be enabled by default\n", __FILE__, __LINE__ );
 #else
@@ -1206,41 +1201,32 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (fmt::sprintf("USE_COMPILE_FILE_PARALLEL = %s\n" , USE_COMPILE_FILE_PARALLEL));
   
-  bool force_startup_external_linkage = true;
 #if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
-  force_startup_external_linkage = false;
   INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(nil<core::T_O>());
 #else
   INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
 #endif
   if (buildReport) ss << (fmt::sprintf("FORCE_STARTUP_EXTERNAL_LINKAGE = %s\n" , FORCE_STARTUP_EXTERNAL_LINKAGE));
                           
-  bool use_lto = false;
   // CLASP_BUILD_MODE == 0 means generate fasls
 #if CLASP_BUILD_MODE == 0
-  use_lto = false;
   debugging = true;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasl);
   // CLASP_BUILD_MODE == 1 means generate object files
 #elif CLASP_BUILD_MODE == 1
-  use_lto = false;
   debugging = true;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_object);
   // CLASP_BUILD_MODE == 2 means generate bitcode and use thinlto
 #elif CLASP_BUILD_MODE == 2
-  use_lto = true;
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_bitcode);
 #elif CLASP_BUILD_MODE == 3
-  use_lto = false;
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_faso);
 #elif CLASP_BUILD_MODE == 4
-  use_lto = false;
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasoll);
 #elif CLASP_BUILD_MODE == 5
-  use_lto = false;
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasobc);
 #endif
@@ -1306,7 +1292,7 @@ DOCGROUP(clasp);
 CL_DEFUN void gctools__configuration()
 {
   stringstream ss;
-  bool debugging = debugging_configuration(false,true,ss);
+  debugging_configuration(false,true,ss);
   core::clasp_writeln_string(ss.str());
 }
 

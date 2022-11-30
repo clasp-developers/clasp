@@ -125,7 +125,7 @@ CL_DEFUN T_sp cl__sleep(Real_sp oseconds) {
   if (dsec < 0.0) {
     TYPE_ERROR(oseconds,Cons_O::createList(cl::_sym_float,clasp_make_single_float(0.0)));
   }
-  int retval = clasp_musleep(dsec,false);
+  clasp_musleep(dsec,false);
   return nil<T_O>();
 }
 
@@ -628,7 +628,7 @@ CL_DOCSTRING(R"dx(validFunctionNameP)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__valid_function_name_p(T_sp arg) {
   bool correct;
-  Symbol_sp name = functionBlockName(arg, &correct);
+  functionBlockName(arg, &correct);
   if (!correct)
     return nil<T_O>();
   return _lisp->_true();
@@ -1880,7 +1880,6 @@ CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string
     AbstractSimpleVector_sp basesv;
     size_t start, end;
     sarray->asAbstractSimpleVectorRange(basesv,start,end);
-    SimpleCharacterString_sp sbs = gc::As_unsafe<SimpleCharacterString_sp>(basesv);
     SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end-start),0,false);
     for ( int i=0; i<sarray->length(); ++i ) {
       int c = (*sarray)[i];

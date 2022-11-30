@@ -450,7 +450,7 @@ CL_DEFUN core::T_mv llvm_sys__linkModules(Module_sp linkedModule, Module_sp modu
   // Take ownership of the pointer and give it to the linker
   llvm::Module* linkedModulePtr = linkedModule->wrappedPtr();
   llvm::Module* mptr = module->wrappedPtr();
-  llvm::LLVMContext &Ctx = mptr->getContext();
+//  llvm::LLVMContext &Ctx = mptr->getContext();
   module->reset_wrappedPtr();
   std::unique_ptr<llvm::Module> u_module(mptr);
 //  Ctx.setDiagnosticHandler(std::make_unique<ClaspDiagnosticHandler>(), true);
@@ -536,6 +536,7 @@ CL_DEFUN void llvm_sys__dump_instruction_list(BasicBlock_sp cbb)
   }
 }
 
+// FIXME: Delete this, probably? What is it supposed to do?
 DOCGROUP(clasp);
 CL_DEFUN void llvm_sys__sanity_check_module(Module_sp module, int depth)
 {
@@ -547,7 +548,7 @@ CL_DEFUN void llvm_sys__sanity_check_module(Module_sp module, int depth)
         for ( auto &B : F ) {
           if (depth > 1) {
             for ( auto &I : B )
-              /*nothing*/;
+              (void)I/*nothing*/;
           }
         }
       }
@@ -610,10 +611,8 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
   }
   Safe_raw_pwrite_stream ostream;
   llvm::SmallString<1024> stringOutput;
-  bool stringOutputStream = false;
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
     ostream.set_stream(new llvm::raw_svector_ostream(stringOutput));
-    stringOutputStream = true;
   } else if ( stream == kw::_sym_simple_vector_byte8 ) {
     (void)sos;
     ostream.set_stream(new llvm::raw_svector_ostream(stringOutput));
@@ -627,11 +626,9 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
   }
   llvm::SmallString<1024> dwo_stringOutput;
   Safe_raw_pwrite_stream dwo_ostream;
-  bool dwo_stringOutputStream = false;
   if (core::StringOutputStream_sp sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
     (void)sos;
     dwo_ostream.set_stream(new llvm::raw_svector_ostream(dwo_stringOutput));
-    dwo_stringOutputStream = true;
   } else if (core::IOFileStream_sp fs = dwo_stream.asOrNull<core::IOFileStream_O>()) {
     dwo_ostream.set_stream(new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true));
   } else if (core::IOStreamStream_sp iostr = dwo_stream.asOrNull<core::IOStreamStream_O>()) {
@@ -1373,7 +1370,6 @@ CL_DEFUN bool llvm_sys__valid(core::T_sp value) {
 namespace llvmo {
 
 void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type *> &velements) {
-  core::T_sp save_elements = elements;
   if (elements.nilp()) {
     return;
   } else if (core::Cons_sp celements = elements.asOrNull<core::Cons_O>()) {
@@ -1517,7 +1513,6 @@ CL_DEFMETHOD void Module_O::moduleDelete() {
 
 CL_LISPIFY_NAME("dump_namedMDList");
 CL_DEFMETHOD void Module_O::dump_namedMDList() const {
-  llvm::Module *M = this->wrappedPtr();
   IMPLEMENT_MEF("Come up with a way to dump the MDList without using dump() (only enabled when LLVM_ENABLE_DUMP is on)");
 }
 
@@ -1720,7 +1715,6 @@ CL_EXTERN_DEFMETHOD(DataLayout_O,&llvm::DataLayout::getStringRepresentation);
 CL_LISPIFY_NAME(struct-layout-get-element-offset);
 CL_DEFMETHOD size_t StructLayout_O::getElementOffset(size_t idx) const
 {
-  size_t offset = this->_StructLayout->getElementOffset(idx);
   return this->_StructLayout->getElementOffset(idx);
 }
 
@@ -2054,11 +2048,11 @@ CL_DEFUN core::T_mv llvm_sys__getDebugLocInfo(Instruction_sp instr) {
   }
   return Values(nil<core::T_O>());
 }
-CL_DOCSTRING(R"dx(Erase the instruction from its parent basic block and return the next instruction or NIL)dx");
+CL_DOCSTRING(R"dx(Erase the instruction from its parent basic block.)dx");
 DOCGROUP(clasp);
 CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr)
 {
-  llvm::SymbolTableList<llvm::Instruction>::iterator next = instr->wrappedPtr()->eraseFromParent();
+  instr->wrappedPtr()->eraseFromParent();
 }
 
 CL_DOCSTRING(R"dx(Return the next non-debug instruction or NIL if there is none)dx");
@@ -2460,14 +2454,12 @@ DOCGROUP(clasp);
 CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bool sign) {
   auto  self = gctools::GC<APInt_O>::allocate_with_default_constructor();
   llvm::APInt apint;
-  int numbits;
   if (value.fixnump()) {
     Fixnum fixnum_value = value.unsafe_fixnum();
     if (!sign && fixnum_value < 0) {
       SIMPLE_ERROR(("You tried to create an unsigned APInt32 with the negative value: %d") , fixnum_value);
     }
     apint = llvm::APInt(width, fixnum_value, sign);
-    numbits = gc::fixnum_bits;
   } else { // bignum
     // TODO: use As_unsafe
     core::Bignum_sp bignum_value = gc::As<core::Bignum_sp>(value);
@@ -3421,7 +3413,6 @@ CL_DEFMETHOD BasicBlock_sp Function_O::getEntryBlock() const {
 
 CL_LISPIFY_NAME("basic-blocks");
 CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
-  llvm::Function::BasicBlockListType& Blocks = this->wrappedPtr()->getBasicBlockList();
   ql::list result;
   for (llvm::Function::iterator b = this->wrappedPtr()->begin(), be = this->wrappedPtr()->end(); b != be; ++b) {
     llvm::BasicBlock& BB = *b;
@@ -4495,7 +4486,6 @@ std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
   //     by clang before we need them.
     llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
     if (used) {
-      Value* init = used->getInitializer();
       used->eraseFromParent();
     }
 

@@ -184,8 +184,8 @@
 -Wno-invalid-offsetof -Wno-#pragma-messages -Wno-inconsistent-missing-override ~
 -Wno-error=c++11-narrowing -Wno-c++11-narrowing -Wdeprecated-enum-enum-conversion ~
 -Wdeprecated-anon-enum-enum-conversion -Wimplicit-fallthrough ~
--Wno-reorder-ctor -Wno-mismatched-tags -Wno-overloaded-virtual -Wno-unused-variable ~
--Wno-unused-but-set-variable -Wno-delete-non-abstract-non-virtual-dtor ~
+-Wno-reorder-ctor -Wno-mismatched-tags -Wno-overloaded-virtual ~
+-Wno-delete-non-abstract-non-virtual-dtor ~
 -Wno-unused-lambda-capture -Wno-unused-label -Wno-unused-function"))
   (loop for variant in (variants configuration)
         do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant)))

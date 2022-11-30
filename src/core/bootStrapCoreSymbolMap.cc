@@ -97,13 +97,11 @@ bool BootStrapCoreSymbolMap::find_symbol(string const &packageName, string const
 
 void BootStrapCoreSymbolMap::finish_setup_of_symbols() {
   //printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
-  int idxEnd = this->_SymbolNamesToIndex.size();
   for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin();
        it != this->_SymbolNamesToIndex.end(); it++) {
     int idx = it->second;
     SymbolStorage &ss = this->_IndexToSymbol[idx];
     string packageName = ss._PackageName;
-//    printf("%s:%d  Adding symbol(%s)[%d/%d] to package: %s\n", __FILE__, __LINE__, ss._SymbolName.c_str(), idx, idxEnd, packageName.c_str());
     T_sp tpackage = _lisp->findPackage(packageName,true);
     Package_sp pkg = gc::As<Package_sp>(tpackage);
 //    printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.raw_());

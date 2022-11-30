@@ -244,7 +244,6 @@ size_t Array_O::arrayRowMajorIndex(Vaslist_sp indices) const {
   }
   size_t offset = 0;
   size_t idx = 0;
-  size_t idxEnd(indices_passed);
   for ( ; idx<rank; ++idx ) {
     core::T_sp one((gctools::Tagged)(*indices)[idx]);
     size_t curDimension = this->arrayDimension(idx);

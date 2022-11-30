@@ -935,7 +935,6 @@ static claspCharacter eformat_write_char_crlf(T_sp strm, claspCharacter c) {
  */
 
 static claspCharacter passthrough_decoder(T_sp stream, unsigned char **buffer, unsigned char *buffer_end) {
-  unsigned char aux;
   if (*buffer >= buffer_end)
     return EOF;
   else
@@ -2673,7 +2672,7 @@ static FILE *safe_fdopen(int fildes, const char *mode) {
   if (output == NULL) {
     std::string serr = strerror(errno);
     struct stat info;
-    int fstat_error = fstat(fildes, &info);
+    fstat(fildes, &info);
     int flags, fdflags, tmp, oflags;
     if ((flags = sflags(mode, &oflags)) == 0)
       perror("sflags failed");
@@ -4641,7 +4640,6 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
       T_sp elt_type = cl__stream_element_type(stream);
       bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
       seq = cl__nthcdr(clasp_make_integer(start), seq);
-      T_sp orig = seq;
       for (; seq.notnilp(); seq = oCdr(seq)) {
         if (start >= end) {
           return make_fixnum(start);
@@ -6206,7 +6204,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, file_stream_file_descriptor);
 CL_DOCSTRING(R"dx(Use read to read characters if they are available - return (values num-read errno-or-nil))dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
-  char c;
   size_t buffer_length = cl__length(buffer);
   unsigned char *buffer_data = &(*buffer)[0];
   while (1) {

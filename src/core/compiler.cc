@@ -434,7 +434,6 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
     }
     return Values(nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
-  Function_sp fsym = coerce::functionDesignator(sym);
   return Values(nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
@@ -769,10 +768,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     std::string uniqueName = llvmo::ensureUniqueMemoryBufferName(tryUniqueName.str());
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false));
-    llvmo::ObjectFile_sp objectFile =
-        jit->addObjectFile(jitDylib, std::move(memoryBuffer), print.notnilp(), header->_ObjectFiles[fasoIndex]._ObjectId);
-    //    printf("%s:%d:%s addObjectFile objectFile = %p badge: 0x%0x jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__,
-    //    objectFile.raw_(), lisp_badge(objectFile), jitDylib.raw_());
+    jit->addObjectFile(jitDylib, std::move(memoryBuffer), print.notnilp(), header->_ObjectFiles[fasoIndex]._ObjectId);
     T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId, nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
@@ -837,14 +833,9 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig) {
     close(fd);
     SIMPLE_ERROR(("Could not mmap %s because of %s"), _rep_(pathDesig), strerror(errno));
   }
-  llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
   FasoHeader *header = (FasoHeader *)memory;
   write_bf_stream(fmt::sprintf("NumberOfObjectFiles %d\n", header->_NumberOfObjectFiles));
   for (size_t fasoIndex = 0; fasoIndex < header->_NumberOfObjectFiles; ++fasoIndex) {
-    size_t fasoIndexd = header->_ObjectFiles[fasoIndex]._ObjectId;
-    void *of_start = (void *)((char *)header + header->_ObjectFiles[fasoIndex]._StartPage * header->_PageSize);
-    size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
-    //    write_bf_stream(fmt::sprintf("Adding faso %s object file %d to jit\n" , _rep_(filename) , fasoIndex));
     write_bf_stream(fmt::sprintf("Object file %d  ObjectId: %lu start-page: %lu  bytes: %lu pages: %lu\n", fasoIndex,
                                  header->_ObjectFiles[fasoIndex]._ObjectId, header->_ObjectFiles[fasoIndex]._StartPage,
                                  header->_ObjectFiles[fasoIndex]._ObjectFileSize, header->_ObjectFiles[fasoIndex]._NumberOfPages));
@@ -1221,7 +1212,6 @@ CL_DOCSTRING(R"dx(multipleValueFuncall)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
   MAKE_STACK_FRAME(frame, MultipleValues::MultipleValuesLimit);
-  size_t numArgs = 0;
   size_t idx = 0;
   for (auto cur : thunks) {
     Function_sp tfunc = gc::As<Function_sp>(oCar(cur));
@@ -1560,14 +1550,7 @@ T_O *ltvc_read_object(gctools::GCRootsInModule *roots,
   //SELF_CHECK(T_O *, stream, index);
   if (bytecode >= byteend) SIMPLE_ERROR("Unexpected EOF");
   char tag = *bytecode++;
-  char ttag;
-  if (tag == 'l')
-    ttag = 0; // literal
-  else if (tag == 't')
-    ttag = 1; // transient
-  else if (tag == 'i')
-    ttag = 2; // immediate
-  else {
+  if (!((tag == 'l') || (tag == 't') || (tag == 'i'))) {
     printf("%s:%d The object tag must be 'l', 't' or 'i'\n", __FILE__, __LINE__);
     abort();
   }
