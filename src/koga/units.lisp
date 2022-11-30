@@ -182,8 +182,7 @@
                  (format nil "-Wall -Wno-return-type-c-linkage ~
 -Wno-invalid-offsetof -Wno-inconsistent-missing-override ~
 -Wno-mismatched-tags -Wno-overloaded-virtual ~
--Wno-delete-non-abstract-non-virtual-dtor ~
--Wno-unused-lambda-capture"))
+-Wno-delete-non-abstract-non-virtual-dtor"))
   (loop for variant in (variants configuration)
         do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant)))
            (append-cflags variant (format nil "-I~a/generated" (variant-bitcode-name variant))))

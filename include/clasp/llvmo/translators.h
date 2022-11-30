@@ -215,7 +215,7 @@ struct from_object<llvm::ArrayRef<int>> {
   from_object(core::T_sp o) {
     if ( core::Function_sp func = gc::As<core::Function_sp>(o) ) {
         printf("%s:%d  translate::from_object<std::function<bool (const llvm::Function&)> passing dummy for now \n", __FILE__, __LINE__ );
-        this->_v = std::function<bool (const llvm::Function&)> ([&func] (const llvm::Function& f)->bool {
+        this->_v = std::function<bool (const llvm::Function&)> ([] (const llvm::Function& f)->bool {
           return true;
       }
         );

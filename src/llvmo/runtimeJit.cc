@@ -348,7 +348,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       MR.getTargetJITDylib().getExecutionSession().intern("DW.ref.__gxx_personality_v0");
     if (!MR.getSymbols().count(PersonalitySymbol))
       Config.PrePrunePasses.insert( Config.PrePrunePasses.begin(),
-                                  [this](jitlink::LinkGraph&G) -> Error {
+                                  [](jitlink::LinkGraph&G) -> Error {
                                     for (auto ssym : G.defined_symbols()) {
                                       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
                                         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -360,7 +360,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                     return Error::success();
                                   });
     Config.PrePrunePasses.push_back(
-                                    [this](jitlink::LinkGraph &G) -> Error {
+                                    [](jitlink::LinkGraph &G) -> Error {
                                       size_t count = 0;
                                       for (auto &Sec : G.sections()) {
                                         if (Sec.getName() == EH_FRAME_NAME )
@@ -693,7 +693,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
       .setExecutionSession(std::make_unique<ExecutionSession>(std::move(TPC)))
       .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
       .setJITTargetMachineBuilder(std::move(JTMB))
-      .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
+      .setObjectLinkingLayerCreator([&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
         auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
         ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));

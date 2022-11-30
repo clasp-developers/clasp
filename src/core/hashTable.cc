@@ -1138,7 +1138,7 @@ void HashTable_O::hash_table_early_dump() {
 
   string HashTable_O::keysAsString() {
     stringstream ss;
-    this->mapHash([&ss, this](T_sp key, T_sp val) {
+    this->mapHash([&ss](T_sp key, T_sp val) {
         ss << _rep_(key) << " ";
       });
     return ss.str();
