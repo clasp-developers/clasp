@@ -121,7 +121,7 @@ namespace llvmo {
       SIMPLE_ERROR(("The object with pointer %p is not a cell") , (void*)arg0.raw_());
     }
   default:
-      SIMPLE_ERROR(("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") , err , _rep_(arg0) , _rep_(arg1) , _rep_(arg2));
+      SIMPLE_ERROR(("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") , (int)err , _rep_(arg0) , _rep_(arg1) , _rep_(arg2));
   };
 };
 

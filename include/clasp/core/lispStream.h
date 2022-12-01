@@ -233,8 +233,6 @@ struct FileOps {
 // Define types of streams
 // See ecl object.h:600
 
-#define C_STREAM 1
-
 typedef enum { clasp_stream_mode_input, clasp_stream_mode_output, clasp_stream_mode_io } ClaspStreamModeEnum;
 
 class StreamCursor {

@@ -4290,6 +4290,36 @@ CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T
   return stream;
 }
 
+static const char* stream_mode_string(enum StreamMode mode) {
+  switch (mode) {
+  case clasp_smm_input: return "input";
+  case clasp_smm_input_file: return "input file";
+  case clasp_smm_output: return "output";
+  case clasp_smm_output_file: return "output file";
+  case clasp_smm_io: return "input/output";
+  case clasp_smm_io_file: return "input/output file";
+  case clasp_smm_synonym: return "synonym";
+  case clasp_smm_broadcast: return "broadcast";
+  case clasp_smm_concatenated: return "concatenated";
+  case clasp_smm_two_way: return "two-way";
+  case clasp_smm_echo: return "echo";
+  case clasp_smm_string_input: return "string input";
+  case clasp_smm_string_output: return "string output";
+  case clasp_smm_probe: return "probe";
+#if defined(ECL_WSOCK)
+  case clasp_smm_input_wsock: return "input Windows socket";
+  case clasp_smm_output_wsock: return "output Windows socket";
+  case clasp_smm_io_wsock: return "input/output Windows socket";
+#endif
+#if defined(CLASP_MS_WINDOWS_HOST)
+  case clasp_smm_io_wcon: return "Windows console";
+#endif
+  case clasp_smm_sequence_input: return "sequence input";
+  case clasp_smm_sequence_output: return "sequence output";
+  default: return "[unknown]";
+  }
+}
+
 int clasp_stream_to_handle(T_sp s, bool output) {
 BEGIN:
   if (UNLIKELY(!AnsiStreamP(s)))
@@ -4355,7 +4385,7 @@ CL_DEFUN T_sp ext__file_stream_file_descriptor(T_sp s) {
     ret = make_fixnum(IOFileStreamDescriptor(s));
     break;
   default:
-    SIMPLE_ERROR(("Internal error: %s:%d Wrong Stream Mode %d\n"), __FILE__, __LINE__, StreamMode(s));
+    SIMPLE_ERROR(("Internal error: %s:%d No file descriptor for a stream with this mode %s\n") , __FILE__ , __LINE__ , stream_mode_string(StreamMode(s)));
   }
   return ret;
 }
@@ -4930,7 +4960,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
       }
     }
   } else {
-    FEerror("Illegal stream mode ~S", 1, make_fixnum(smm).raw_());
+    FEerror("Illegal stream mode ~S", 1, stream_mode_string(smm));
   }
   if (flags & CLASP_STREAM_C_STREAM) {
     FILE *fp = NULL;
@@ -4948,8 +4978,10 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
     case clasp_smm_io:
       fp = safe_fopen(fname.c_str(), OPEN_RW);
       break;
-    default:; /* never reached */
-      SIMPLE_ERROR(("Illegal smm mode: %d for CLASP_STREAM_C_STREAM"), smm);
+    default:
+      /* should never be reached */
+      SIMPLE_ERROR(("Illegal smm mode: %s for CLASP_STREAM_C_STREAM"),
+                   stream_mode_string(smm));
       UNREACHABLE();
     }
     output = clasp_make_stream_from_FILE(fn, fp, smm, byte_size, flags, external_format);

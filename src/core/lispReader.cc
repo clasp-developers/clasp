@@ -726,7 +726,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     case tsymbad:
       ELSE(tsymbad);
     default:
-      SIMPLE_ERROR(("unhandled state[%d] for token assignment") , state);
+        SIMPLE_ERROR(("BUG: unhandled state[%d] for token assignment") , (int)state);
     }
   NEXT:
     ++cur;

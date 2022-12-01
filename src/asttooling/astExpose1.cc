@@ -232,7 +232,7 @@ core::T_sp mostDerivedType(const clang::Type *x) {
   llvm::raw_string_ostream out(buf);
   clang::ASTDumper dumper(out,false);
   dumper.Visit(s);
-  SIMPLE_ERROR(("astExpose.cc>mostDerivedType. Could not cast clang::Type s->getTypeClass()-> %d. typename: %s ") , s->getTypeClass() , out.str() );
+  SIMPLE_ERROR(("astExpose.cc>mostDerivedType. Could not cast clang::Type s->getTypeClass()-> %d. typename: %s ") , (int)(s->getTypeClass()) , out.str() );
 }
 
 

@@ -1329,7 +1329,7 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
   } else if (k==Weak) {
     headerSize = sizeof(ISLWeakHeader_s);
   } else {
-    SIMPLE_ERROR(("Add support to calculate size of ISLKind %d") , k );
+    SIMPLE_ERROR(("Add support to calculate size of ISLKind %d") , (int)k );
   }
   return (ISLHeader_s*)((char*)this + headerSize + this->_Size);
 }

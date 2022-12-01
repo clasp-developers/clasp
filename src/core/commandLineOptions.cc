@@ -461,7 +461,7 @@ CL_DEFUN List_sp core__command_line_load_eval_sequence() {
       one = Cons_O::create(kw::_sym_script, SimpleBaseString_O::make(it.second));
       break;
     default:
-      SIMPLE_ERROR("Unknown load type %d for %s%N", it.first, it.second);
+      SIMPLE_ERROR("BUG: Unknown load type %d for %s%N", it.second);
       break;
     }
     loadEvals = Cons_O::create(one, loadEvals);

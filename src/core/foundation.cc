@@ -579,7 +579,7 @@ bool lispify_match(const char *&cur, const char *match, NextCharTest nextCharTes
     }
     return false;
   }
-  SIMPLE_ERROR(("Unknown nextCharTest(%d)"), nextCharTest);
+  SIMPLE_ERROR(("Internal error: Unknown nextCharTest"));
 }
 
 string lispify_symbol_name(const string &s) {
@@ -1282,9 +1282,9 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp 
 
 [[noreturn]] void lisp_error_no_stamp(void *ptr) {
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(ptr));
-  SIMPLE_ERROR(("This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one "
+  SIMPLE_ERROR(("BUG: This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one "
                 " - the subclass header stamp value is %lu"),
-               ((void *)ptr), header->_badge_stamp_wtag_mtag.stamp_());
+               ((void *)ptr), (unsigned long)(header->_badge_stamp_wtag_mtag.stamp_()));
 }
 
 void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass_symbol) {
