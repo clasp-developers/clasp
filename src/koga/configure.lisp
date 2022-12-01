@@ -909,6 +909,7 @@ the function to the overall configuration."
                   (uiop:version<= max-version version))
              (failure "Module ~a with a version of ~a is not less then maximum version of ~a." library version max-version))
             (t
+             (message nil "Found library ~a with a version of ~a." library version)
              (apply #'append-cflags configuration
                                     (run-program-capture (list (pkg-config configuration) "--cflags" library))
                                     rest)
