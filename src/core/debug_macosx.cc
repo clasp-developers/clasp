@@ -110,6 +110,7 @@ format_display_size(char buf[5], uint64_t size) {
 		precision = 1;
 	}
 	int len = snprintf(buf, 5, "%.*f%c", precision, display_size, scale[scale_index]);
+        (void)len; // sham
 	assert(len > 0 && len < 5);
 }
 
@@ -119,6 +120,7 @@ format_memory_protection(char buf[4], int prot) {
 			(prot & VM_PROT_READ    ? 'r' : '-'),
 			(prot & VM_PROT_WRITE   ? 'w' : '-'),
 			(prot & VM_PROT_EXECUTE ? 'x' : '-'));
+        (void)len; // sham
 	assert(len == 3);
 }
 
@@ -222,19 +224,12 @@ bool mygetsegmentsize( bool errorP,
 {
   const struct mach_header_64* mhp = (const struct mach_header_64*)vmhp;
   struct segment_command_64 *sgp;
-  struct section_64 *sp;
-  uint32_t i, j;
-  intptr_t slide;
+  uint32_t i;
   uintptr_t address = (uintptr_t)vmhp;
-  slide = 0;
-  sp = 0;
   sgp = (struct segment_command_64 *)
     ((char *)mhp + sizeof(struct mach_header_64));
   for(i = 0; i < mhp->ncmds; i++, sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize)){
     if(sgp->cmd == LC_SEGMENT_64){
-      if(strcmp(sgp->segname, "__TEXT") == 0){
-        slide = (uintptr_t)mhp - sgp->vmaddr;
-      }
 //      printf("%s:%d:%s Looking at segment: %s\n", __FILE__, __LINE__, __FUNCTION__, sgp->segname);
       if (strcmp(sgp->segname, segname) == 0){
         segment_start = (gctools::clasp_ptr_t)address; // (gctools::clasp_ptr_t)sgp->vmaddr;
@@ -349,16 +344,14 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
     //printf("%s:%d:%s library: %s given library_origin @%p !!!! I need the size!!!!!!\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), (void*)library_origin);
   }
     
-  uintptr_t exec_header;
 //  printf("%s:%d:%s library_origin %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin);
   dlerror();
-  exec_header = (uintptr_t)dlsym(RTLD_DEFAULT,"_mh_execute_header");
+  dlsym(RTLD_DEFAULT,"_mh_execute_header");
   const char* dle = dlerror();
   if (dle) {
     printf("Could not find the symbol _mh_execute_header\n");
     abort();
   }
-//  printf("%s:%d:%s Executable header _mh_execute_header %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)exec_header);
   BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t text_segment_start;
   uintptr_t text_segment_size;
