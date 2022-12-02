@@ -4643,7 +4643,7 @@ std::string SectionedAddress_O::__repr__() const {
 void python_dump_field(std::ostream& fout, const char* name, bool comma, gctools::Data_types dt, size_t offset, size_t sz=0)
 {
   if (comma) fmt::print(fout, ",");
-  fmt::print(fout, "[ \"{}\", {}, {}, {} ]\n", name, dt, offset, sz );
+  fmt::print(fout, "[ \"{}\", {}, {}, {} ]\n", name, (int)dt, offset, sz );
 }
 
 void dump_objects_for_debugger(std::ostream& fout,std::string indent)
