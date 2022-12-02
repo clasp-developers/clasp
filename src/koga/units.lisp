@@ -178,10 +178,24 @@
 (defmethod configure-unit (configuration (unit (eql :base)))
   "Add base cflags and ldflags."
   (message :emph "Configuring base")
+  ;; Some explanation as to the warnings we allow:
+  ;; invalid-offsetof means we use offsetof on non-standard-layout classes.
+  ;; This is I think required for precise GC, and should be okay since we're
+  ;; clang-only and clang lets us do this.
+  ;; mismatched-tags means we sometimes declare classes in one place with
+  ;; "struct" and some with "class". This is okay in C++, but the Microsoft
+  ;; ABI apparently mangles names differently for some ungodly reason.
+  ;; To keep things consistent we'd probably have to track struct vs. class
+  ;; in the scraper codegen.
+  ;; deprecated-(anon-)enum-enum-conversion is triggered by Clang's own
+  ;; headers for the time being. This conversion is only deprecated as of
+  ;; C++20, so clang has probably just not kept up.
+  ;; The othere warnings I'm not sure about.
   (append-cflags configuration
                  (format nil "-Wall -Wno-return-type-c-linkage ~
 -Wno-invalid-offsetof -Wno-inconsistent-missing-override ~
 -Wno-mismatched-tags -Wno-overloaded-virtual ~
+-Wno-deprecated-enum-enum-conversion -Wno-deprecated-anon-enum-enum-conversion ~
 -Wno-delete-non-abstract-non-virtual-dtor"))
   (loop for variant in (variants configuration)
         do (append-cflags variant (format nil "-I~a" (variant-bitcode-name variant)))
