@@ -128,16 +128,16 @@
 
 (eclector.readtable::init-clasp-as-eclector-reader)  
 
-(defun patch-object (client value-old seen-objects mapping)
-  (multiple-value-bind (value-new found-p)
-      (gethash value-old mapping)
-    (if found-p
-        value-new
-        (progn
-          (eclector.reader:fixup client value-old seen-objects mapping)
-          value-old))))
+(defun patch-object (client value-old seen-objects)
+  (multiple-value-bind (state object*)
+      (labeled-object-state client value-old)
+    (cond ((null state)
+           (eclector.reader:fixup client value-old seen-objects)
+           value-old)
+          ((eq state :final)
+           object*))))
 
-(defmethod eclector.reader:fixup (client (object core:cxx-object) seen-objects mapping)
+(defmethod eclector.reader:fixup (client (object core:cxx-object) seen-objects)
   (let ((patcher (core:make-record-patcher (lambda (object)
-                                             (patch-object client object seen-objects mapping)))))
+                                             (patch-object client object seen-objects)))))
     (core:patch-object object patcher)))
