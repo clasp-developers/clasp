@@ -134,6 +134,10 @@ Lexenv_sp Lexenv_O::macroexpansion_environment() {
   return Lexenv_O::make(new_vars.cons(), nil<T_O>(), nil<T_O>(), new_funs.cons(), this->notinlines(), 0);
 }
 
+CL_DEFUN Lexenv_sp make_null_lexical_environment() {
+  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
+}
+
 CL_LAMBDA(context opcode &rest operands);
 CL_DEFUN void assemble(Context_sp context, uint8_t opcode, List_sp operands) {
   Cfunction_sp func = context->cfunction();
@@ -273,6 +277,7 @@ size_t Context_O::literal_index(T_sp literal) {
 // Like literal-index, but forces insertion. This is used when generating
 // a keyword argument parser, since the keywords must be sequential even if
 // they've previously appeared in the literals vector.
+// This is also used by LTV processing to put in a placeholder.
 size_t Context_O::new_literal_index(T_sp literal) {
   Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(literal);
   return nind.unsafe_fixnum();
@@ -743,6 +748,8 @@ GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
   ComplexVector_T_sp cmodule_literals = cmodule->literals();
   size_t literal_length = cmodule_literals->length();
   SimpleVector_sp literals = SimpleVector_O::make(literal_length);
+  ComplexVector_T_sp ltvs = cmodule->ltvs();
+  size_t ltvs_length = ltvs->length();
   SimpleVector_byte8_t_sp bytecode = cmodule->create_bytecode();
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make();
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
@@ -770,7 +777,7 @@ GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
         fdesc, bytecode_module, cfunction->nlocals(), cfunction->closed()->length(), ep.unsafe_fixnum(), trampoline);
     cfunction->setInfo(func);
   }
-  // Now replace the cfunctions in the cmodule literal vector with
+  // Replace the cfunctions in the cmodule literal vector with
   // real bytecode functions in the module vector.
   for (size_t i = 0; i < literal_length; ++i) {
     T_sp cfunc_lit = (*cmodule_literals)[i];
@@ -778,6 +785,14 @@ GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
       (*literals)[i] = gc::As_unsafe<Cfunction_sp>(cfunc_lit)->info();
     else
       (*literals)[i] = cfunc_lit;
+  }
+  // Evaluate all load-time-value forms and put their values into the
+  // literals vector.
+  for (size_t i = 0; i < ltvs_length; ++i) {
+    auto info = gc::As<LoadTimeValueInfo_sp>((*ltvs)[i]);
+    Lexenv_sp nenv = make_null_lexical_environment();
+    T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(), info->form());
+    (*literals)[info->iindex()] = eval::funcall(bytecompile(lexpr, nenv));
   }
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
@@ -1654,19 +1669,44 @@ static void compile_call(T_sp args, Lexenv_sp env, Context_sp context) {
   context->emit_call(argcount);
 }
 
-CL_DEFUN Lexenv_sp make_null_lexical_environment() {
-  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
-}
-
-CL_DEFUN void compile_load_time_value(T_sp form, Lexenv_sp env, Context_sp ctxt) {
-  // TODO: compile-file semantics?
-  // Here we just use funcall of bytecompile to do eval. In the future we might
-  // want to just call eval, which may or may not go through bytecompilation.
-  Lexenv_sp nenv = make_null_lexical_environment();
-  T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(), form);
-  GlobalBytecodeSimpleFun_sp thunk = bytecompile(lexpr, nenv);
-  T_sp value = eval::funcall(thunk);
-  compile_literal(value, env, ctxt);
+CL_DEFUN void compile_load_time_value(T_sp form, T_sp tread_only_p,
+                                      Lexenv_sp env, Context_sp context) {
+  // load-time-value forms are compiled by putting their information into
+  // a slot in the cmodule. This is so that (this part of) the compiler can
+  // be used uniformly for eval, compile, or compile-file. It is slightly
+  // inefficient for the former two cases, compared to evaluating forms
+  // immediately, but load-time-value is not exactly heavily used.
+  // The standard specifies the behavior when read-only-p is a literal t or
+  // nil, and nothing else.
+  bool read_only_p;
+  if (tread_only_p.nilp()) read_only_p = false;
+  else if (tread_only_p == cl::_sym_T_O) read_only_p = true;
+  // FIXME: Better error
+  else SIMPLE_ERROR("load-time-value read-only-p is not T or NIL: %s"
+                    , _rep_(tread_only_p));
+  
+  size_t ind = context->new_literal_index(nil<T_O>()); // placeholder nil
+  auto ltv = LoadTimeValueInfo_O::make(form, read_only_p, ind);
+  // Add the LTV to the cmodule.
+  context->cfunction()->module()->ltvs()->vectorPushExtend(ltv);
+  // With that done, we basically just need to compile a literal load.
+  // (Note that we do always need to register the LTV, since it may have
+  //  some weird side effect. We could hypothetically save some space by
+  //  not allocating a spot in the constants if the value isn't actually
+  //  used, but that's a very marginal case.)
+  T_sp rec = context->receiving();
+  if (rec.fixnump()) {
+    gc::Fixnum frec = rec.unsafe_fixnum();
+    switch (frec) {
+    case 0: return; // no value required, so compile nothing
+    case 1: context->assemble1(vm_const, ind); return;
+    default:
+        SIMPLE_ERROR("BUG: Don't know how to compile LTV returning %" PFixnum " values", frec);
+    }
+  } else { // must be T, i.e. values
+    context->assemble1(vm_const, ind);
+    context->assemble0(vm_pop);
+  }
 }
 
 static T_sp symbol_macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp vars) {
@@ -1748,7 +1788,7 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_s
   else if (head == cl::_sym_quote)
     compile_literal(oCar(rest), env, context);
   else if (head == cl::_sym_load_time_value)
-    compile_load_time_value(oCar(rest), env, context);
+    compile_load_time_value(oCar(rest), oCadr(rest), env, context);
   else if (head == cl::_sym_macrolet)
     compile_macrolet(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_symbol_macrolet)
