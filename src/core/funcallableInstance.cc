@@ -169,19 +169,13 @@ CL_DEFUN T_sp core__low_level_standard_generic_function_name(FuncallableInstance
 
 string FuncallableInstance_O::__repr__() const {
   stringstream ss;
-  ss << "#S(";
+  ss << "#<";
   if (Instance_sp mc = this->_Class.asOrNull<Instance_O>()) {
-    ss << mc->_classNameAsString() << " ";
+    ss << mc->_classNameAsString();
   } else {
-    ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
+    ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class);
   }
-  ss << _rep_(this->functionName());
-  if (rack()) {
-    ss << " #slots[" << this->numberOfSlots() << "]";
-  } else {
-    ss << " rack-undef";
-  }
-  ss << ")";
+  ss << " " << _rep_(this->functionName()) << ">";
   return ss.str();
 }
 
