@@ -347,46 +347,17 @@ T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 }
 
 string Instance_O::__repr__() const {
+  // This should match print-unreadable-object.
+  // The only reason we don't just fall back to General_O::__repr__
+  // is that it doesn't display the pointer.
   stringstream ss;
-  ss << "#S(";
+  ss << "#<";
   if (Instance_sp mc = this->_Class.asOrNull<Instance_O>()) {
-    ss << mc->_classNameAsString() << " ";
+    ss << mc->_classNameAsString();
   } else {
-    ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
+    ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class);
   }
-  if (clos__classp(this->asSmartPtr())) {
-    ss << _rep_(this->instanceRef(REF_CLASS_CLASS_NAME)) << " ";
-  }
-  {
-    //    ss << " #slots[" << this->numberOfSlots() << "]";
-#if 0
-    for (size_t i(1); i < this->numberOfSlots(); ++i) {
-      T_sp obj = low_level_instanceRef(rack(), i);
-      ss << "        :slot" << i << " ";
-      if (obj) {
-        stringstream sslot;
-        if ((obj).consp()) {
-          sslot << "CONS...";
-          ss << sslot.str() << std::endl;
-        } else if (gc::IsA<Instance_sp>(obj)) {
-          sslot << "INSTANCE...";
-          ss << sslot.str() << std::endl;
-        } else {
-          sslot << _rep_(obj);
-          if (sslot.str().size() > 80) {
-            ss << sslot.str().substr(0, 80) << "...";
-          } else {
-            ss << sslot.str();
-          }
-          ss << " " << std::endl;
-        }
-      } else {
-        ss << "UNDEFINED " << std::endl;
-      }
-    }
-#endif
-  }
-  ss << ")" ;
+  ss << " @" << this << ">";
   return ss.str();
 }
 
