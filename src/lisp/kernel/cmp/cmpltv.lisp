@@ -16,9 +16,6 @@
 ;;; We collect a sequence of specialized "instructions" that, when executed,
 ;;; will create and initialize the LTV table.
 
-;;; Next available index for a constant.
-(defvar *next-index*)
-
 (defclass instruction () ())
 ;;; An instruction that allocates or otherwise creates an object.
 ;;; The object may be fully initialized or may require further initialization.
@@ -26,8 +23,7 @@
   (;; T if the object outlasts loading (e.g. is referred to directly in code)
    ;; otherwise NIL
    (%permanency :initform nil :accessor permanency :type boolean)
-   (%index :initform (prog1 *next-index* (incf *next-index*))
-           :accessor index :type (integer 0))))
+   (%index :accessor index :type (integer 0))))
 ;;; A creator for which a prototype value (which the eventual LTV will be
 ;;; similar to) is available.
 (defclass vcreator (creator)
@@ -151,8 +147,7 @@
 
 (defmacro with-constants ((&key ((:compiler *compiler*))) &body body)
   (declare (ignore options))
-  `(let ((*instructions* nil)
-         (*next-index* 0))
+  `(let ((*instructions* nil))
      ,@body))
 
 (defun find-constant (value)
@@ -248,6 +243,22 @@
                      :function (add-form form)
                      :form form :read-only-p read-only-p)))
 
+;;; Loop over the instructions, assigning indices to the creators such that
+;;; the permanent objects come first. This only affects their position in the
+;;; similar vector, not the order the instructions must be executed in.
+;;; The instructions must be in forward order, i.e. reversed from how they're
+;;; pushed in above. (FIXME: The reversal is too awkward.)
+;;; This could probably be done in one pass somehow?
+(defun assign-indices (instructions)
+  (let ((next-index 0))
+    (loop for inst in instructions
+          when (and (typep inst 'creator) (permanency inst))
+            do (setf (index inst) next-index next-index (1+ next-index)))
+    (loop for inst in instructions
+          when (and (typep inst 'creator) (not (permanency inst)))
+            do (setf (index inst) next-index next-index (1+ next-index))))
+  (values))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Bytecode
@@ -322,6 +333,7 @@
          (nobjs (count-if (lambda (i) (typep i 'creator)) insts))
          ;; Next highest power of two bytes, roughly
          (*position-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8)))))
+    (assign-indices insts)
     (write-magic stream)
     (write-version stream)
     (write-b64 nobjs stream)
