@@ -41,11 +41,18 @@
 
 (defconstant +magic+ #x8d7498b1) ; randomly chosen bytes.
 
+(defvar *verbose* nil) ; T for debug messages during load
+
+(defmacro dbgprint (message &rest args)
+  `(when *verbose*
+     (format *error-output* ,(concatenate 'string "~&" message "~%") ,@args)))
+
 (defun load-magic (stream)
   (let ((magic (read-ub32 stream)))
     (unless (= magic +magic+)
       (error "~s is not a valid bytecode FASL: invalid magic identifier ~d"
-             stream magic))))
+             stream magic))
+    (dbgprint "Magic number matches: ~x" magic)))
 
 ;; Bounds for major and minor version understood by this loader.
 ;; It might be smarter for reverse compatibility to make the version
@@ -72,6 +79,9 @@
 (This loader only understands ~d.~d to ~d.~d)"
              major minor (first *min-version*) (second *min-version*)
              (first *max-version*) (second *max-version*)))
+    (dbgprint "File version ~d.~d (loader accepts ~d.~d-~d.~d)"
+              major minor (first *min-version*) (second *min-version*)
+              (first *max-version*) (second *max-version*))
     (values major minor)))
 
 ;; how many bytes are needed to represent an index?
@@ -94,49 +104,63 @@
 (defgeneric %load-instruction (mnemonic constants stream))
 
 (defmethod %load-instruction ((mnemonic (eql 'nil)) constants stream)
-  (setf (aref constants (read-index stream)) nil))
+  (let ((index (read-index stream)))
+    (dbgprint " (nil ~d)" index)
+    (setf (aref constants index) nil)))
 
 (defmethod %load-instruction ((mnemonic (eql 't)) constants stream)
-  (setf (aref constants (read-index stream)) t))
+  (let ((index (read-index stream)))
+    (dbgprint " (t ~d)" index)
+    (setf (aref constants index) t)))
 
 (defmethod %load-instruction ((mnemonic (eql 'cons)) constants stream)
-  (setf (aref constants (read-index stream)) (cons nil nil)))
+  (let ((index (read-index stream)))
+    (dbgprint " (cons ~d)" index)
+    (setf (aref constants index) (cons nil nil))))
 
 (defmethod %load-instruction ((mnemonic (eql 'rplaca)) constants stream)
-  (setf (car (aref constants (read-index stream)))
-        (aref constants (read-index stream))))
+  (let ((cons (read-index stream)) (value (read-index stream)))
+    (dbgprint " (rplaca ~d ~d)" cons value)
+    (setf (car (aref constants cons)) (aref constants value))))
 
 (defmethod %load-instruction ((mnemonic (eql 'rplacd)) constants stream)
-  (setf (car (aref constants (read-index stream)))
-        (aref constants (read-index stream))))
+  (let ((cons (read-index stream)) (value (read-index stream)))
+    (dbgprint " (rplacd ~d ~d)" cons value)
+    (setf (cdr (aref constants cons)) (aref constants value))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-array)) constants stream)
-  (let* ((index (read-index stream))
-         (rank (read-byte stream))
-         (dimensions (loop repeat rank collect (read-ub16 stream))))
-    (setf (aref constants index) (make-array dimensions))))
+  (let ((index (read-index stream)) (rank (read-byte stream)))
+    (dbgprint " (make-array ~d ~d)" index rank)
+    (let ((dimensions (loop repeat rank collect (read-ub16 stream))))
+      (dbgprint "  dimensions ~a" dimensions)
+      (setf (aref constants index) (make-array dimensions)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'setf-row-major-aref))
                               constants stream)
-  (setf (row-major-aref (aref constants (read-index stream))
-                        (read-ub16 stream))
-        (aref constants (read-index stream))))
+  (let ((index (read-index stream)) (aindex (read-ub16 stream))
+        (value (read-index stream)))
+    (dbgprint " ((setf row-major-aref) ~d ~d ~d" index aindex value)
+    (setf (row-major-aref (aref constants index) aindex)
+          (aref constants value))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-hash-table))
                               constants stream)
-  (let* ((index (read-index stream))
-         (testcode (read-byte stream))
-         (test (ecase testcode
-                 ((#b00) 'eq)
-                 ((#b01) 'eql)
-                 ((#b10) 'equal)
-                 ((#b11) 'equalp)))
-         (count (read-ub16 stream)))
-    (setf (aref constants index) (make-hash-table :test test :size count))))
+  (let ((index (read-index stream)))
+    (dbgprint " (make-hash-table ~d)" index)
+    (let* ((testcode (read-byte stream))
+           (test (ecase testcode
+                   ((#b00) 'eq)
+                   ((#b01) 'eql)
+                   ((#b10) 'equal)
+                   ((#b11) 'equalp)))
+          (count (read-ub16 stream)))
+      (dbgprint "  test = ~a, count = ~d" test count)
+      (setf (aref constants index) (make-hash-table :test test :size count)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'setf-gethash)) constants stream)
   (let ((htind (read-index stream))
         (keyind (read-index stream)) (valind (read-index stream)))
+    (dbgprint " ((setf gethash) ~d ~d ~d)" htind keyind valind)
     (setf (gethash (aref constants keyind) (aref constants htind))
           (aref constants valind))))
 
@@ -147,31 +171,37 @@
     (- word (ash (ldb (byte 1 63) word) 64))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-sb64)) constants stream)
-  (setf (aref constants (read-index stream)) (read-sb64 stream)))
+  (let ((index (read-index stream)) (sb64 (read-sb64 stream)))
+    (dbgprint " (make-sb64 ~d ~d)" index sb64)
+    (setf (aref constants index) sb64)))
 
 (defmethod %load-instruction ((mnemonic (eql 'find-package)) constants stream)
-  (setf (aref constants (read-index stream))
-        (find-package (aref constants (read-index stream)))))
+  (let ((index (read-index stream)) (name (read-index stream)))
+    (dbgprint " (find-package ~d ~d)" index name)
+    (setf (aref constants index) (find-package (aref constants name)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-bignum)) constants stream)
-  (setf (aref constants (read-index stream))
-        (let* ((ssize (read-sb64 stream))
-               (size (abs ssize))
-               (negp (minusp ssize)))
-          (loop with result = 0
-                repeat size
-                do (setf result (logior (ash result 64) (read-ub64 stream)))
-                finally (return (if negp (- result) result))))))
+  (let ((index (read-index stream)) (ssize (read-sb64 stream)))
+    (dbgprint " (make-bignum ~d ~d)" index ssize)
+    (setf (aref constants index)
+          ;; Using loop repeat is messy for fencepost reasons.
+          (let ((result 0) (size (abs ssize)) (negp (minusp ssize)))
+            (loop (when (zerop size) (return (if negp (- result) result)))
+                  (let ((word (read-ub64 stream)))
+                    (dbgprint  "#x~x" word)
+                    (setf result (logior (ash result 64) word))))))))
 
 (defmethod %load-instruction ((mnemonic (eql 'intern)) constants stream)
-  (setf (aref constants (read-index stream))
-        (let ((package (aref constants (read-index stream)))
-              (name (aref constants (read-index stream))))
-          (intern name package))))
+  (let ((index (read-index stream))
+        (package (read-index stream)) (name (read-index stream)))
+    (setf (aref constants index)
+          (intern (aref constants name) (aref constants package)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-character)) constants stream)
-  (setf (aref constants (read-index stream))
-        (code-char (read-ub32 stream))))
+  (let* ((index (read-index stream)) (code (read-ub32 stream))
+         (char (code-char code)))
+    (dbgprint " (make-character ~d #x~x) ; ~c" index code char)
+    (setf (aref constants index) char)))
 
 (defvar +uaet-codes+
   '((t         #b00000000)
@@ -184,21 +214,25 @@
 
 (defmethod %load-instruction ((mnemonic (eql 'make-specialized-array))
                               constants stream)
-  (let* ((index (read-index stream))
-         (rank (read-byte stream))
-         (dims (loop repeat rank collect (read-ub16 stream)))
-         (total-size (reduce #'* dims))
-         (etype-code (read-byte stream))
-         (etype (decode-uaet etype-code))
-         (arr (make-array dims :element-type etype)))
-    (setf (aref constants index) arr)
-    (ecase etype
-      (base-char
-       (dotimes (i total-size)
-         (setf (row-major-aref arr i) (code-char (read-byte stream)))))
-      (character
-       (dotimes (i total-size)
-         (setf (row-major-aref arr i) (code-char (read-ub32 stream))))))))
+  (let ((index (read-index stream))
+        (rank (read-byte stream)))
+    (dbgprint " (make-specialized-array ~d ~d)" index rank)
+    (let* ((dims (loop repeat rank collect (read-ub16 stream)))
+           (total-size (reduce #'* dims))
+           (etype-code (read-byte stream))
+           (etype (decode-uaet etype-code))
+           (arr (make-array dims :element-type etype)))
+      (dbgprint "  dimensions ~a" dims)
+      (dbgprint "  element type ~a" etype)
+      (setf (aref constants index) arr)
+      (ecase etype
+        (base-char
+         (dotimes (i total-size)
+           (setf (row-major-aref arr i) (code-char (read-byte stream)))))
+        (character
+         (dotimes (i total-size)
+           (setf (row-major-aref arr i) (code-char (read-ub32 stream))))))
+      (dbgprint "  array ~s" arr))))
 
 (defun load-instruction (constants stream)
   (%load-instruction (read-mnemonic stream) constants stream))
@@ -208,13 +242,16 @@
 ;; portions of the vector.
 ;; Shrink the constants after loading.
 
-(defun load-bytecode (stream)
+(defun load-bytecode (stream &key ((:verbose *verbose*)))
   (load-magic stream)
   (load-version stream)
   (let* ((nobjs (read-ub64 stream))
          ;; Next power of two.
          (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
          (constants (make-array nobjs)))
+    (dbgprint "File reports ~d objects. Index length = ~d bytes."
+              nobjs *index-bytes*)
+    (dbgprint "Executing FASL bytecode")
     ;; CLHS is sort of written like LISTEN only works on character streams,
     ;; but that would be pretty pointless. Clasp and SBCL at least allow it
     ;; on byte streams.
