@@ -742,7 +742,13 @@ SimpleVector_byte8_t_sp Module_O::create_bytecode() {
 CL_DEFUN T_sp lambda_list_for_name(T_sp raw_lambda_list) { return core::lambda_list_for_name(raw_lambda_list); }
 
 GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
-  Module_sp cmodule = this->module();
+  this->module()->link(compile_info);
+  // Linking installed the GBEP in this cfunction's info. Return that.
+  return this->info();
+}
+
+void Module_O::link(T_sp compile_info) {
+  Module_sp cmodule = this->asSmartPtr();
   cmodule->initialize_cfunction_positions();
   cmodule->resolve_fixup_sizes();
   ComplexVector_T_sp cmodule_literals = cmodule->literals();
@@ -798,8 +804,6 @@ GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
   bytecode_module->setf_literals(literals);
   bytecode_module->setf_bytecode(bytecode);
   bytecode_module->setf_compileInfo(compile_info);
-  // Finally, return the GBEP for the main function.
-  return this->info();
 }
 
 CL_DEFUN void compile_literal(T_sp literal, Lexenv_sp env, Context_sp context) {
@@ -1878,14 +1882,21 @@ CL_DEFUN void compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
     compile_literal(form, env, context);
 }
 
-CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment)));
-CL_DEFUN GlobalBytecodeSimpleFun_sp bytecompile(T_sp lambda_expression, Lexenv_sp env) {
+CL_LAMBDA(module lambda-expression &optional (env (cmp::make-null-lexical-environment)));
+CL_DOCSTRING(R"dx(Compile the given lambda-expression into an existing module. Return a handle to it.)dx");
+CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
+                                       Lexenv_sp env) {
   if (!gc::IsA<Cons_sp>(lambda_expression) || (oCar(lambda_expression) != cl::_sym_lambda))
-    SIMPLE_ERROR("bytecompile passed a non-lambda-expression: %s", _rep_(lambda_expression));
-  Module_sp module = Module_O::make();
+    SIMPLE_ERROR("bytecompiler passed a non-lambda-expression: %s", _rep_(lambda_expression));
   T_sp lambda_list = oCadr(lambda_expression);
   T_sp body = oCddr(lambda_expression);
-  Cfunction_sp cf = compile_lambda(lambda_list, body, env, module);
+  return compile_lambda(lambda_list, body, env, module);
+}
+
+CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment)));
+CL_DEFUN GlobalBytecodeSimpleFun_sp bytecompile(T_sp lambda_expression, Lexenv_sp env) {
+  Module_sp module = Module_O::make();
+  Cfunction_sp cf = bytecompile_into(module, lambda_expression, env);
   return cf->link_function(Cons_O::create(lambda_expression, env));
 }
 
