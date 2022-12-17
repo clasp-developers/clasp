@@ -23,6 +23,8 @@
     (make-character 83 sind ub32) ; ub64 in clasp, i think?
     (make-pathname 85) ; TODO
     (make-bytecode-function 87)
+    (make-single-float 90 sind ub32)
+    (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
     (funcall-initialize 94 fnind)
     ;; set-ltv-funcall in clasp- redundant
@@ -202,9 +204,23 @@
           (let ((result 0) (size (abs ssize)) (negp (minusp ssize)))
             (loop (when (zerop size) (return (if negp (- result) result)))
                   (let ((word (read-ub64 stream)))
-                    (dbgprint  "#x~x" word)
+                    (dbgprint  "#x~8,'0x" word)
                     (setf result (logior (ash result 64) word))))))
     (+ *index-bytes* 8 (* 8 (abs ssize)))))
+
+(defmethod %load-instruction ((mnemonic (eql 'make-single-float))
+                              constants stream)
+  (let ((index (read-index stream)) (bits (read-ub32 stream)))
+    (dbgprint " (make-single-float ~d #x~4,'0x)" index bits)
+    (setf (aref constants index) (ext:bits-to-single-float bits)))
+  (+ *index-bytes* 4))
+
+(defmethod %load-instruction ((mnemonic (eql 'make-double-float))
+                              constants stream)
+  (let ((index (read-index stream)) (bits (read-ub64 stream)))
+    (dbgprint " (make-double-float ~d #x~8,'0x)" index bits)
+    (setf (aref constants index) (ext:bits-to-double-float bits)))
+  (+ *index-bytes* 8))
 
 (defmethod %load-instruction ((mnemonic (eql 'intern)) constants stream)
   (let ((index (read-index stream))

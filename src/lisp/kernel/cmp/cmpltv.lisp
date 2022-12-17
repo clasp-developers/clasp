@@ -93,6 +93,8 @@
 (defclass sb64-creator (number-creator) ())
 (defclass bignum-creator (number-creator) ())
 (defclass ratio-creator (number-creator) ())
+(defclass single-float-creator (number-creator) ())
+(defclass double-float-creator (number-creator) ())
 ;; TODO: ratio, float, complex
 ;; float presents some issues if this is supposed to be a truly portable
 ;; form. Probably we should use the IEEE formats (binary16, 32, etc.) but
@@ -247,6 +249,12 @@
      ((signed-byte 64) (make-instance 'sb64-creator :prototype value))
      (integer (make-instance 'bignum-creator :prototype value)))))
 
+(defmethod add-constant ((value float))
+  (add-instruction
+   (etypecase value
+     (double-float (make-instance 'double-float-creator :prototype value))
+     (single-float (make-instance 'single-float-creator :prototype value)))))
+
 (defmethod add-constant ((value character))
   (add-instruction (make-instance 'character-creator :prototype value)))
 
@@ -323,6 +331,8 @@
     (make-character 83 sind ub32) ; ub64 in clasp, i think?
     (make-pathname 85) ; TODO
     (make-bytecode-function 87) ; ltvc_make_global_entry_point
+    (make-single-float 90 sind ub32)
+    (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
     (funcall-initialize 94 fnind)
     ;; set-ltv-funcall in clasp- redundant
@@ -571,6 +581,22 @@
 
 (defmethod instruction-bytes ((inst bignum-creator) indbytes)
   (+ 1 indbytes 8 (* (ceiling (integer-length (abs (prototype inst))) 64) 8)))
+
+(defmethod encode ((inst single-float-creator) stream)
+  (write-mnemonic 'make-single-float stream)
+  (write-index inst stream)
+  (write-b32 (ext:single-float-to-bits (prototype inst)) stream))
+
+(defmethod instruction-bytes ((inst single-float-creator) indbytes)
+  (+ 1 indbytes 4))
+
+(defmethod encode ((inst double-float-creator) stream)
+  (write-mnemonic 'make-double-float stream)
+  (write-index inst stream)
+  (write-b64 (ext:double-float-to-bits (prototype inst)) stream))
+
+(defmethod instruction-bytes ((inst double-float-creator) indbytes)
+  (+ 1 indbytes 8))
 
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)
