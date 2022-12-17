@@ -742,21 +742,26 @@ SimpleVector_byte8_t_sp Module_O::create_bytecode() {
 CL_DEFUN T_sp lambda_list_for_name(T_sp raw_lambda_list) { return core::lambda_list_for_name(raw_lambda_list); }
 
 GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
-  this->module()->link(compile_info);
+  this->module()->link_load(compile_info);
   // Linking installed the GBEP in this cfunction's info. Return that.
   return this->info();
 }
 
-void Module_O::link(T_sp compile_info) {
+SimpleVector_byte8_t_sp Module_O::link() {
   Module_sp cmodule = this->asSmartPtr();
   cmodule->initialize_cfunction_positions();
   cmodule->resolve_fixup_sizes();
+  return cmodule->create_bytecode();
+}
+
+void Module_O::link_load(T_sp compile_info) {
+  Module_sp cmodule = this->asSmartPtr();
+  SimpleVector_byte8_t_sp bytecode = cmodule->link();
   ComplexVector_T_sp cmodule_literals = cmodule->literals();
   size_t literal_length = cmodule_literals->length();
   SimpleVector_sp literals = SimpleVector_O::make(literal_length);
   ComplexVector_T_sp ltvs = cmodule->ltvs();
   size_t ltvs_length = ltvs->length();
-  SimpleVector_byte8_t_sp bytecode = cmodule->create_bytecode();
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make();
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   // Create the real function objects.

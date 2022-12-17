@@ -1,7 +1,10 @@
 (defpackage #:cmpltv
   (:use #:cl)
-  (:export #:with-constants #:ensure-constant #:add-constant
-           #:write-bytecode))
+  (:export #:with-constants
+           #:ensure-constant #:add-constant #:find-constant-index
+           #:add-load-time-value)
+  (:export #:instruction #:creator #:vcreator #:effect)
+  (:export #:write-bytecode #:encode))
 
 (in-package #:cmpltv)
 
@@ -23,7 +26,7 @@
   (;; T if the object outlasts loading (e.g. is referred to directly in code)
    ;; otherwise NIL
    (%permanency :initform nil :accessor permanency :type boolean)
-   (%index :accessor index :type (integer 0))))
+   (%index :initform nil :accessor index :type (integer 0))))
 ;;; A creator for which a prototype value (which the eventual LTV will be
 ;;; similar to) is available.
 (defclass vcreator (creator)
@@ -33,6 +36,9 @@
 (defclass effect (instruction) ())
 
 (defun permanentize (creator) (setf (permanency creator) t) creator)
+
+;;; How many bytes does this instruction take to represent?
+(defgeneric instruction-bytes (instruction index-bytes))
 
 ;;;
 
@@ -145,13 +151,19 @@
 ;;; cmpltv can treat as a constant.
 (defvar *compiler*)
 
-(defmacro with-constants ((&key ((:compiler *compiler*))) &body body)
-  (declare (ignore options))
-  `(let ((*instructions* nil))
+(defmacro with-constants ((&key (compiler '*compiler*)) &body body)
+  `(let ((*instructions* nil)
+         (*compiler* ,compiler))
      ,@body))
 
 (defun find-constant (value)
   (%find-constant value *instructions*))
+
+(defun find-constant-index (value)
+  (let ((creator (%find-constant value *instructions*)))
+    (if creator
+        (index creator)
+        nil)))
 
 (defun add-instruction (instruction)
   (push instruction *instructions*)
@@ -159,9 +171,17 @@
 
 (defgeneric add-constant (value))
 
-(defun ensure-constant (value permanentp)
+(defun ensure-constant (value &key permanent index)
   (let ((creator (or (find-constant value) (add-constant value))))
-    (when permanentp (permanentize creator))
+    (when index
+      (when (and (index creator) (/= index (index creator)))
+        ;; We can get duplicates from keyword parameters (I think that's the
+        ;; only place right now). In this event we need the same constant in
+        ;; multiple indices. If no index is provided it doesn't matter which
+        ;; creator is retrieved, though.
+        (setf creator (add-constant value)))
+      (setf (index creator) index))
+    (when permanent (permanentize creator))
     creator))
 
 ;;; Given a form, get a constant handle to a function that at load time will
@@ -174,9 +194,9 @@
   (let ((cons (add-instruction
                (make-instance 'cons-creator :prototype value))))
     (add-instruction (make-instance 'rplaca-init
-                       :cons cons :value (ensure-constant (car value) nil)))
+                       :cons cons :value (ensure-constant (car value))))
     (add-instruction (make-instance 'rplacd-init
-                       :cons cons :value (ensure-constant (cdr value) nil)))
+                       :cons cons :value (ensure-constant (cdr value))))
     cons))
 
 (defmethod add-constant ((value array))
@@ -190,7 +210,7 @@
                 do (add-instruction
                     (make-instance 'setf-aref
                       :array arr :index i
-                      :value (ensure-constant (row-major-aref value i) nil))))
+                      :value (ensure-constant (row-major-aref value i)))))
           arr))))
 
 (defmethod add-constant ((value hash-table))
@@ -200,15 +220,15 @@
                (add-instruction
                 (make-instance 'setf-gethash
                   :hash-table ht
-                  :key (ensure-constant k nil) :value (ensure-constant v nil))))
+                  :key (ensure-constant k) :value (ensure-constant v))))
              value)
     ht))
 
 (defmethod add-constant ((value symbol))
   (add-instruction (make-instance 'symbol-creator
                      :prototype value
-                     :name (ensure-constant (symbol-name value) nil)
-                     :package (ensure-constant (symbol-package value) nil))))
+                     :name (ensure-constant (symbol-name value))
+                     :package (ensure-constant (symbol-package value)))))
 
 (defmethod add-constant ((value (eql nil)))
   (add-instruction (make-instance 'singleton-creator :prototype value)))
@@ -218,7 +238,7 @@
 (defmethod add-constant ((value package))
   (add-instruction (make-instance 'package-creator
                      :prototype value
-                     :name (ensure-constant (package-name value) nil))))
+                     :name (ensure-constant (package-name value)))))
 
 (defmethod add-constant ((value integer))
   (add-instruction
@@ -238,9 +258,9 @@
         (add-instruction (make-instance 'general-initializer
                            :function initializer))))))
 
-(defun add-load-time-value (form read-only-p)
+(defun add-load-time-value (form read-only-p &key index)
   (add-instruction (make-instance 'load-time-value-creator
-                     :function (add-form form)
+                     :function (add-form form) :index index
                      :form form :read-only-p read-only-p)))
 
 ;;; Loop over the instructions, assigning indices to the creators such that
@@ -251,11 +271,20 @@
 ;;; This could probably be done in one pass somehow?
 (defun assign-indices (instructions)
   (let ((next-index 0))
+    ;; Move past any forced indices.
+    ;; TODO: Check for gaps?
     (loop for inst in instructions
-          when (and (typep inst 'creator) (permanency inst))
+          when (and (typep inst 'creator) (index inst))
+            do (setf next-index (max next-index (1+ (index inst)))))
+    ;; Assign permanents early in the vector.
+    (loop for inst in instructions
+          when (and (typep inst 'creator) (permanency inst)
+                    (not (index inst)))
             do (setf (index inst) next-index next-index (1+ next-index)))
+    ;; Assign impermanents to the rest.
     (loop for inst in instructions
-          when (and (typep inst 'creator) (not (permanency inst)))
+          when (and (typep inst 'creator) (not (permanency inst))
+                    (not (index inst)))
             do (setf (index inst) next-index next-index (1+ next-index))))
   (values))
 
@@ -293,6 +322,7 @@
     (intern 82 sind packageind nameind) ; make-symbol
     (make-character 83 sind ub32) ; ub64 in clasp, i think?
     (make-pathname 85) ; TODO
+    (make-bytecode-function 87) ; ltvc_make_global_entry_point
     (funcall-create 93 sind fnind)
     (funcall-initialize 94 fnind)
     ;; set-ltv-funcall in clasp- redundant
@@ -321,7 +351,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 0)
+(defparameter *minor-version* 1)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -329,14 +359,17 @@
 
 (defun %write-bytecode (instructions stream)
   (let* (;; lol efficiency
-         (insts (nreverse instructions))
+         (insts (reverse instructions))
          (nobjs (count-if (lambda (i) (typep i 'creator)) insts))
          ;; Next highest power of two bytes, roughly
-         (*position-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8)))))
+         (*position-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
+         (nbytes (loop for inst in insts
+                       summing (instruction-bytes inst *position-bytes*))))
     (assign-indices insts)
     (write-magic stream)
     (write-version stream)
     (write-b64 nobjs stream)
+    (write-b64 nbytes stream)
     (map nil (lambda (inst) (encode inst stream)) insts)))
 
 (defun write-bytecode (stream)
@@ -362,15 +395,23 @@
   (write-mnemonic 'cons stream)
   (write-index inst stream))
 
+(defmethod instruction-bytes ((inst cons-creator) indbytes) (1+ indbytes))
+
 (defmethod encode ((inst rplaca-init) stream)
   (write-mnemonic 'rplaca stream)
   (write-index (rplac-cons inst) stream)
   (write-index (rplac-value inst) stream))
 
+(defmethod instruction-bytes ((inst rplaca-init) indbytes)
+  (+ 1 indbytes indbytes))
+
 (defmethod encode ((inst rplacd-init) stream)
   (write-mnemonic 'rplacd stream)
   (write-index (rplac-cons inst) stream)
   (write-index (rplac-value inst) stream))
+
+(defmethod instruction-bytes ((inst rplacd-init) indbytes)
+  (+ 1 indbytes indbytes))
 
 (defun write-dimensions (dimensions stream)
   (let ((rank (length dimensions)))
@@ -391,11 +432,17 @@
          (dims (array-dimensions arr)))
     (write-dimensions dims stream)))
 
+(defmethod instruction-bytes ((inst general-array-creator) indbytes)
+  (+ 1 indbytes 1 (* 2 (array-rank (prototype inst)))))
+
 (defmethod encode ((inst setf-aref) stream)
   (write-mnemonic '(setf row-major-aref) stream)
   (write-index (setf-aref-array inst) stream)
   (write-b16 (setf-aref-index inst) stream)
   (write-index (setf-aref-value inst) stream))
+
+(defmethod instruction-bytes ((inst setf-aref) indbytes)
+  (+ 1 indbytes 2 indbytes))
 
 (defvar +uaet-codes+
   '((t         #b00000000)
@@ -422,6 +469,14 @@
          ;; FIXME: UTF-8 would be more compact
          (write-b32 (char-code (row-major-aref arr i)) stream))))))
 
+(defmethod instruction-bytes ((inst specialized-array-creator) indbytes)
+  (let* ((arr (prototype inst))
+         (elembytes (ecase (array-element-type arr)
+                     (base-char 1)
+                     (character 4))))
+    (+ 1 indbytes 1 (* 2 (array-rank arr)) 1
+       (* (array-total-size arr) elembytes))))
+
 (defmethod encode ((inst hash-table-creator) stream)
   (let* ((ht (prototype inst))
          ;; TODO: Custom hash-table tests.
@@ -443,8 +498,12 @@
          ;; in a portable fashion. (we could just invert a provided rehash-size?)
          (count (max (hash-table-count ht) #xffff)))
     (write-mnemonic 'make-hash-table stream)
+    (write-index inst stream)
     (write-byte testcode stream)
     (write-b16 count stream)))
+
+(defmethod instruction-bytes ((inst hash-table-creator) indbytes)
+  (+ 1 indbytes 1 2))
 
 (defmethod encode ((inst setf-gethash) stream)
   (write-mnemonic '(setf gethash) stream)
@@ -452,11 +511,16 @@
   (write-index (setf-gethash-key inst) stream)
   (write-index (setf-gethash-value inst) stream))
 
+(defmethod instruction-bytes ((inst setf-gethash) indbytes)
+  (+ 1 indbytes indbytes indbytes))
+
 (defmethod encode ((inst singleton-creator) stream)
   (ecase (prototype inst)
     ((nil) (write-mnemonic 'nil stream))
     ((t) (write-mnemonic 't stream)))
   (write-index inst stream))
+
+(defmethod instruction-bytes ((inst singleton-creator) indbytes) (1+ indbytes))
 
 (defmethod encode ((inst symbol-creator) stream)
   (write-mnemonic 'intern stream)
@@ -464,20 +528,32 @@
   (write-index (symbol-creator-package inst) stream)
   (write-index (symbol-creator-name inst) stream))
 
+(defmethod instruction-bytes ((inst symbol-creator) indbytes)
+  (+ 1 indbytes indbytes indbytes))
+
 (defmethod encode ((inst package-creator) stream)
   (write-mnemonic 'find-package stream)
   (write-index inst stream)
   (write-index (package-creator-name inst) stream))
+
+(defmethod instruction-bytes ((inst package-creator) indbytes)
+  (+ 1 indbytes indbytes))
 
 (defmethod encode ((inst character-creator) stream)
   (write-mnemonic 'make-character stream)
   (write-index inst stream)
   (write-b32 (char-code (prototype inst)) stream))
 
+(defmethod instruction-bytes ((inst character-creator) indbytes)
+  (+ 1 indbytes 4))
+
 (defmethod encode ((inst sb64-creator) stream)
   (write-mnemonic 'make-sb64 stream)
   (write-index inst stream)
   (write-b64 (prototype inst) stream))
+
+(defmethod instruction-bytes ((inst sb64-creator) indbytes)
+  (+ 1 indbytes 8))
 
 (defmethod encode ((inst bignum-creator) stream)
   ;; uses sign-magnitude representation.
@@ -493,11 +569,163 @@
           for word = (ldb (byte 64 pos) anumber)
           do (write-b64 word stream))))
 
+(defmethod instruction-bytes ((inst bignum-creator) indbytes)
+  (+ 1 indbytes 8 (* (ceiling (integer-length (abs (prototype inst))) 64) 8)))
+
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)
   (write-index inst stream)
   (write-index (general-creator-function inst) stream))
 
+(defmethod instruction-bytes ((inst general-creator) indbytes)
+  (+ 1 indbytes indbytes))
+
 (defmethod encode ((inst general-initializer) stream)
   (write-mnemonic 'funcall-initialize stream)
   (write-index (general-initializer-function inst) stream))
+
+(defmethod instruction-bytes ((inst general-initializer) indbytes)
+  (+ 1 indbytes))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; File compiler
+;;;
+
+(defun write-lispcode (bytecode stream)
+  ;; Length, four bytes. Enough for four GB of code. We can reevaluate if more
+  ;; is needed at some point, but I hope not.
+  (let ((len (length bytecode)))
+    (when (> len #.(ash 1 32))
+      (error "Bytecode length is ~d, too long to dump" len))
+    (write-b32 len stream))
+  (write-sequence bytecode stream))   
+
+(defclass compilation-state ()
+  ((%module :initform (cmp:module/make) :reader state/module)
+   ;; Reverse order
+   (%toplevels :initform nil :accessor toplevels)))
+
+(defvar *state*)
+
+(defun bytecode-compile-file-form (form)
+  (let ((cfun
+          (cmp:bytecompile-into
+           (state/module *state*) `(lambda () (progn ,form)))))
+    (ensure-constant cfun) ; not permanent since they're only need during load.
+    (push cfun (toplevels *state*))))
+
+(defun bytecode-cf-compile-lexpr (lambda-expression environment)
+  (cmp:bytecompile-into (state/module *state*)
+                        lambda-expression environment))
+
+(defclass bytefunction-creator (creator)
+  ((%cfunction :initarg :cfunction :reader cfunction)
+   (%name :initarg :name :reader name :type creator)
+   (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)
+   (%docstring :initarg :docstring :reader docstring :type creator)
+   (%nlocals :initarg :nlocals :reader nlocals :type (unsigned-byte 16))
+   (%nclosed :initarg :nclosed :reader nclosed :type (unsigned-byte 16))))
+
+(defmethod add-constant ((value cmp:cfunction))
+  (add-instruction (make-instance 'bytefunction-creator
+                     :cfunction value
+                     :name (ensure-constant (cmp:cfunction/name value))
+                     :lambda-list (ensure-constant
+                                   (cmp:cfunction/lambda-list value))
+                     :docstring (ensure-constant (cmp:cfunction/doc value))
+                     :nlocals (cmp:cfunction/nlocals value)
+                     :nclosed (length (cmp:cfunction/closed value)))))
+
+(defmethod encode ((inst bytefunction-creator) stream)
+  ;; four bytes for the entry point, two for the nlocals and nclosed,
+  ;; then indices. TODO: Source info.
+  (write-mnemonic 'make-bytecode-function stream)
+  (write-index inst stream)
+  (write-b32 (cmp:annotation/module-position
+              (cmp:cfunction/entry-point (cfunction inst)))
+             stream)
+  (write-b16 (nlocals inst) stream)
+  (write-b16 (nclosed inst) stream)
+  (write-index (name inst) stream)
+  (write-index (lambda-list inst) stream)
+  (write-index (docstring inst) stream))
+
+(defmethod instruction-bytes ((inst bytefunction-creator) indbytes)
+  (+ 1 indbytes 4 2 2 indbytes indbytes indbytes))
+
+(defun find-bytecode-function (cfunction)
+  (find-if (lambda (c)
+             (and (typep c 'bytefunction-creator)
+                  (eql (cfunction c) cfunction)))
+           *instructions*))
+
+(defun write-toplevels (toplevels stream)
+  (let ((len (length toplevels)))
+    (when (> len #.(ash 1 32))
+      (error "~d toplevels, too many to dump" len))
+    (write-b32 len stream))
+  (loop for tl in toplevels
+        for creator = (find-bytecode-function tl)
+        if creator
+          do (write-index creator stream)
+        else
+          do (error "BUG: Unknown toplevel? ~s" tl)))
+
+;; Prototype. Does not do compile time side effects.
+;; input is a character stream. output is a ub8 stream.
+(defun bytecode-cf-stream (input output)
+  (let* ((*state* (make-instance 'compilation-state))
+         (module (state/module *state*)))
+    (with-constants (:compiler #'bytecode-cf-compile-lexpr)
+      ;; Read and compile the forms.
+      (loop with eof = (gensym "EOF")
+            with *readtable* = *readtable*
+            with *package* = *package*
+            for form = (read input nil eof)
+            until (eq form eof)
+            when *compile-print*
+              do (cmp::describe-form form)
+            do (bytecode-compile-file-form form))
+      ;; Register constants.
+      (loop for const across (cmp:module/literals module)
+            for i from 0
+            do (ensure-constant const :permanent t :index i))
+      ;; Register load-time-value forms.
+      (loop for ltv across (cmp:module/ltvs module)
+            for form = (cmp:load-time-value-info/form ltv)
+            for read-only-p = (cmp:load-time-value-info/read-only-p ltv)
+            for index = (cmp:load-time-value-info/index ltv)
+            do (add-load-time-value form read-only-p :index index))
+      (let ((lispcode
+              ;; Link the module and get its final bytecode.
+              ;; Linking assigns each cfunction its final entry point,
+              ;; so that they can be dumped correctly.
+              (cmp:module/link module)))
+        ;; Write out the FASO bytecode.
+        (write-bytecode output)
+        ;; Write the bytecode bytecode.
+        (write-lispcode lispcode output)
+        ;; Finally, write the toplevels.
+        (let* ((nobjs (count-if (lambda (i) (typep i 'creator)) *instructions*))
+               (*position-bytes*
+                 (ash 1 (1- (ceiling (integer-length nobjs) 8)))))
+          (write-toplevels (reverse (toplevels *state*)) output))))))
+
+(defun bytecode-compile-file (input-file
+                              &key
+                                (output-file
+                                 (make-pathname
+                                  :type "lbc" :defaults input-file))
+                                ((:verbose *compile-verbose*) *compile-verbose*)
+                                ((:print *compile-print*) *compile-print*)
+                                (external-format :default))
+  (with-open-file (input input-file :external-format external-format)
+    (when *compile-verbose*
+      (format t "~&; Compiling file: ~a~%" (namestring input-file)))
+    (with-open-file (output output-file
+                            :element-type '(unsigned-byte 8)
+                            :direction :output :if-does-not-exist :create)
+      (when *compile-verbose*
+        (format t "~&; Destination file: ~a~%" (namestring output-file)))
+      (bytecode-cf-stream input output))))

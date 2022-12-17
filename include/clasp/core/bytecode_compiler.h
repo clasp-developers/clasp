@@ -581,9 +581,11 @@ public:
   // Create the bytecode module vector. We scan over the fixups in the
   // module and copy segments of bytecode between fixup positions.
   CL_DEFMETHOD SimpleVector_byte8_t_sp create_bytecode();
-  // Run down the hierarchy and link the compile time representations
-  // of functions together into runtime objects.
-  CL_DEFMETHOD void link(T_sp compile_info);
+  // Compute and return the final fixed-up bytecode.
+  CL_DEFMETHOD SimpleVector_byte8_t_sp link();
+  // Link, then create actual run-time function objects and a bytecode module.
+  // Suitable for cl:compile.
+  CL_DEFMETHOD void link_load(T_sp compile_info);
 };
 
 class Cfunction_O : public General_O {
