@@ -4,6 +4,12 @@
 * Add `ext:list-all-logical-hosts` and `ext:logical-host-p` functions to query
   the current logical host status.
 
+## Changed
+* Removed stage and image format command line options (`-t` and `-T`) and
+  replaced with options to specify image or snapshot file (`--image` or
+  `--snapshot`) and `--base` option for loading base image when extensions
+  are present.
+  
 ## Fixes
 * `ext:run-program` works with string streams.
 * `print-object` is now invoked for all calls to `write`.
