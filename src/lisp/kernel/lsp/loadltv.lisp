@@ -45,8 +45,17 @@
 
 (defconstant +magic+ #x8d7498b1) ; randomly chosen bytes.
 
-(defmacro dbgprint (message &rest args)
+(defmacro verboseprint (message &rest args)
   `(when *load-verbose*
+     (format t ,(concatenate 'string "~&; " message "~%") ,@args)))
+(defmacro printprint (message &rest args)
+  `(when *load-print*
+     (format t ,(concatenate 'string "~&; " message "~%") ,@args)))
+
+(defvar *debug-loader* nil)
+
+(defmacro dbgprint (message &rest args)
+  `(when *debug-loader*
      (format *error-output* ,(concatenate 'string "~&; " message "~%") ,@args)))
 
 (defun load-magic (stream)
@@ -431,9 +440,14 @@
                       &key
                         ((:verbose *load-verbose*) *load-verbose*)
                         ((:print *load-print*) *load-print*)
+                        ((:debug *debug-loader*) *debug-loader*)
                         (if-does-not-exist :error)
                         (external-format :default))
   (with-open-file (input filespec :element-type '(unsigned-byte 8)
                                   :if-does-not-exist if-does-not-exist
                                   :external-format external-format)
-    (load-bytecode-stream input)))
+    ;; check for :if-does-not-exist nil failure
+    (unless input (return-from load-bytecode nil))
+    (verboseprint "Loading ~a as FASL" filespec)
+    (load-bytecode-stream input)
+    t))
