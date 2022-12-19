@@ -92,15 +92,18 @@
 (defclass number-creator (vcreator) ())
 (defclass sb64-creator (number-creator) ())
 (defclass bignum-creator (number-creator) ())
-(defclass ratio-creator (number-creator) ())
+(defclass ratio-creator (number-creator)
+  ((%numerator :initarg :numerator :reader ratio-creator-numerator
+               :type creator)
+   (%denominator :initarg :denominator :reader ratio-creator-denominator
+                 :type creator)))
+(defclass complex-creator (number-creator)
+  ((%realpart :initarg :realpart :reader complex-creator-realpart
+              :type creator)
+   (%imagpart :initarg :imagpart :reader complex-creator-imagpart
+              :type creator)))
 (defclass single-float-creator (number-creator) ())
 (defclass double-float-creator (number-creator) ())
-;; TODO: ratio, float, complex
-;; float presents some issues if this is supposed to be a truly portable
-;; form. Probably we should use the IEEE formats (binary16, 32, etc.) but
-;; it is not technically guaranteed that Lisp implementations use these,
-;; and encoding/decoding them portably is a little weird.
-;; Maybe should just use float-features.
 
 (defclass character-creator (vcreator) ())
 
@@ -255,6 +258,22 @@
      (double-float (make-instance 'double-float-creator :prototype value))
      (single-float (make-instance 'single-float-creator :prototype value)))))
 
+(defmethod add-constant ((value ratio))
+  ;; In most cases it's probably pointless to try to coalesce the numerator
+  ;; and denominator. It would probably be smarter to have a small ratio
+  ;; where the number is embedded versus a large ratio where they're indirect.
+  (add-instruction
+   (make-instance 'ratio-creator :prototype value
+                  :numerator (ensure-constant (numerator value))
+                  :denominator (ensure-constant (denominator value)))))
+
+(defmethod add-constant ((value complex))
+  ;; Similar considerations to ratios here.
+  (add-instruction
+   (make-instance 'complex-creator :prototype value
+                  :realpart (ensure-constant (realpart value))
+                  :imagpart (ensure-constant (imagpart value)))))
+
 (defmethod add-constant ((value character))
   (add-instruction (make-instance 'character-creator :prototype value)))
 
@@ -315,8 +334,8 @@
 (defparameter +ops+
   '((nil 65 sind)
     (t 66 sind)
-    (ratio 67) ; TODO
-    (complex 68) ; TODO
+    (ratio 67)
+    (complex 68)
     (cons 69 sind)
     (rplaca 70 ind1 ind2) ; (setf (car [ind1]) [ind2])
     (rplacd 71 ind1 ind2)
@@ -598,6 +617,24 @@
 
 (defmethod instruction-bytes ((inst double-float-creator) indbytes)
   (+ 1 indbytes 8))
+
+(defmethod encode ((inst ratio-creator) stream)
+  (write-mnemonic 'ratio stream)
+  (write-index inst stream)
+  (write-index (ratio-creator-numerator inst) stream)
+  (write-index (ratio-creator-denominator inst) stream))
+
+(defmethod instruction-bytes ((inst ratio-creator) indbytes)
+  (+ 1 (* 3 indbytes)))
+
+(defmethod encode ((inst complex-creator) stream)
+  (write-mnemonic 'complex stream)
+  (write-index inst stream)
+  (write-index (complex-creator-realpart inst) stream)
+  (write-index (complex-creator-imagpart inst) stream))
+
+(defmethod instruction-bytes ((inst complex-creator) indbytes)
+  (+ 1 (* 3 indbytes)))
 
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)

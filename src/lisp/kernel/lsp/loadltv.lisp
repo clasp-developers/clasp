@@ -7,8 +7,8 @@
 (defparameter +ops+
   '((nil 65 sind)
     (t 66 sind)
-    (ratio 67) ; TODO
-    (complex 68) ; TODO
+    (ratio 67)
+    (complex 68)
     (cons 69 sind)
     (rplaca 70 ind1 ind2) ; (setf (car [ind1]) [ind2])
     (rplacd 71 ind1 ind2)
@@ -226,6 +226,23 @@
     (dbgprint " (make-double-float ~d #x~8,'0x)" index bits)
     (setf (aref constants index) (ext:bits-to-double-float bits)))
   (+ *index-bytes* 8))
+
+(defmethod %load-instruction ((mnemonic (eql 'ratio)) constants stream)
+  (let ((index (read-index stream))
+        (numi (read-index stream)) (deni (read-index stream)))
+    (dbgprint " (ratio ~d ~d ~d)" index numi deni)
+    (setf (aref constants index)
+          ;; a little inefficient.
+          (/ (aref constants numi) (aref constants deni))))
+  (* 3 *index-bytes*))
+
+(defmethod %load-instruction ((mnemonic (eql 'complex)) constants stream)
+  (let ((index (read-index stream))
+        (reali (read-index stream)) (imagi (read-index stream)))
+    (dbgprint " (complex ~d ~d ~d)" index reali imagi)
+    (setf (aref constants index)
+          (complex (aref constants reali) (aref constants imagi))))
+  (* 3 *index-bytes*))
 
 (defmethod %load-instruction ((mnemonic (eql 'intern)) constants stream)
   (let ((index (read-index stream))
