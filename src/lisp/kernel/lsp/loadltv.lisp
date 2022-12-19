@@ -21,7 +21,7 @@
     (make-bignum 80 sind size . words) ; size is signed
     (intern 82 sind packageind nameind) ; make-symbol
     (make-character 83 sind ub32) ; ub64 in clasp, i think?
-    (make-pathname 85) ; TODO
+    (make-pathname 85)
     (make-bytecode-function 87)
     (make-bytecode-module 88)
     (make-single-float 90 sind ub32)
@@ -258,6 +258,22 @@
     (dbgprint " (make-character ~d #x~x) ; ~c" index code char)
     (setf (aref constants index) char))
   (+ *index-bytes* 4))
+
+(defmethod %load-instruction ((mnemonic (eql 'make-pathname)) constants stream)
+  (let ((index (read-index stream))
+        (hosti (read-index stream)) (devicei (read-index stream))
+        (directoryi (read-index stream)) (namei (read-index stream))
+        (typei (read-index stream)) (versioni (read-index stream)))
+    (dbgprint " (make-pathname ~d ~d ~d ~d ~d ~d ~d)"
+              index hosti devicei directoryi namei typei versioni)
+    (setf (aref constants index)
+          (make-pathname :host (aref constants hosti)
+                         :device (aref constants devicei)
+                         :directory (aref constants directoryi)
+                         :name (aref constants namei)
+                         :type (aref constants typei)
+                         :version (aref constants versioni))))
+  (* *index-bytes* 7))
 
 (defvar +uaet-codes+
   '((t         #b00000000)

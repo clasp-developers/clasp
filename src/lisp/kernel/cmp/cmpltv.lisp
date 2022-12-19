@@ -107,6 +107,17 @@
 
 (defclass character-creator (vcreator) ())
 
+;;; FIXME: Trying to coalesce all this stuff might be pointless.
+;;; But maybe not - lots of stuff probably shares a type, I guess.
+(defclass pathname-creator (vcreator)
+  ((%host :initarg :host :reader pathname-creator-host :type creator)
+   (%device :initarg :device :reader pathname-creator-device :type creator)
+   (%directory :initarg :directory :reader pathname-creator-directory
+               :type creator)
+   (%name :initarg :name :reader pathname-creator-name :type creator)
+   (%type :initarg :type :reader pathname-creator-type :type creator)
+   (%version :initarg :version :reader pathname-creator-version :type creator)))
+
 (defclass general-creator (vcreator)
   (;; Reference to a function to call to allocate the object, i.e. a
    ;; function made of the first return value from make-load-form.
@@ -277,6 +288,17 @@
 (defmethod add-constant ((value character))
   (add-instruction (make-instance 'character-creator :prototype value)))
 
+(defmethod add-constant ((value pathname))
+  (add-instruction
+   (make-instance 'pathname-creator
+     :prototype value
+     :host (ensure-constant (pathname-host value))
+     :device (ensure-constant (pathname-device value))
+     :directory (ensure-constant (pathname-directory value))
+     :name (ensure-constant (pathname-name value))
+     :type (ensure-constant (pathname-type value))
+     :version (ensure-constant (pathname-version value)))))
+
 (defmethod add-constant ((value t))
   (multiple-value-bind (create initialize) (make-load-form value)
     (let ((creator (add-form create)) (initializer (add-form initialize)))
@@ -348,7 +370,7 @@
     (make-bignum 80 sind size . words) ; size is signed
     (intern 82 sind packageind nameind) ; make-symbol
     (make-character 83 sind ub32) ; ub64 in clasp, i think?
-    (make-pathname 85) ; TODO
+    (make-pathname 85)
     (make-bytecode-function 87) ; ltvc_make_global_entry_point
     (make-bytecode-module 88) ; ltvc_make_local_entry_point - overriding
     (make-single-float 90 sind ub32)
@@ -576,6 +598,19 @@
 
 (defmethod instruction-bytes ((inst character-creator) indbytes)
   (+ 1 indbytes 4))
+
+(defmethod encode ((inst pathname-creator) stream)
+  (write-mnemonic 'make-pathname stream)
+  (write-index inst stream)
+  (write-index (pathname-creator-host inst) stream)
+  (write-index (pathname-creator-device inst) stream)
+  (write-index (pathname-creator-directory inst) stream)
+  (write-index (pathname-creator-name inst) stream)
+  (write-index (pathname-creator-type inst) stream)
+  (write-index (pathname-creator-version inst) stream))
+
+(defmethod instruction-bytes ((inst pathname-creator) indbytes)
+  (+ 1 (* 7 indbytes)))
 
 (defmethod encode ((inst sb64-creator) stream)
   (write-mnemonic 'make-sb64 stream)
