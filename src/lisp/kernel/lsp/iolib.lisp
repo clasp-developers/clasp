@@ -302,10 +302,33 @@ the one defined in the ANSI standard. *print-base* is 10, *print-array* is t,
 	   (si:cons-cdr %progv-list)
 	 ,@body))))
 
-(defmacro print-unreadable-object
-	  ((object stream &key type identity) &body body)
-  (if body
-      `(flet ((.print-unreadable-object-body. () ,@body))
-	 (print-unreadable-object-function
-	   ,object ,stream ,type ,identity #'.print-unreadable-object-body.))
-    `(print-unreadable-object-function ,object ,stream ,type ,identity nil)))
+(defun print-unreadable-object-contents (object stream type identity body)
+  (when type
+    (write (type-of object) :stream stream :circle nil
+                            :level nil :length nil)
+    (write-char #\space stream))
+  (when body
+    (funcall body))
+  (when identity
+    (when (or body (not type))
+      (write-char #\space stream))
+    (write-char #\@ stream)
+    (core:write-addr object stream)))
+
+;;; The guts of print-unreadable-object, inspired by SBCL.
+;;; pprint-logical-block isn't available yet, so this function
+;;; will be redefined later in pprint.lisp once the pretty
+;;; printer is available.
+(defun %print-unreadable-object (object stream type identity body)
+  (cond (*print-readably*
+         (error 'print-not-readable :object object))
+        (t
+         (write-string "#<" stream)
+         (print-unreadable-object-contents object stream type identity body)
+         (write-char #\> stream)))
+  nil)
+
+(defmacro print-unreadable-object ((object stream &key type identity) &body body)
+  `(%print-unreadable-object ,object ,stream ,type ,identity
+                             ,(when body
+                                `(lambda () ,@body))))

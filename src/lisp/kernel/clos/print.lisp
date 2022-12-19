@@ -280,6 +280,10 @@ printer and we should rather use MAKE-LOAD-FORM."
     (write-string ")" stream)
     obj))
 
+(defmethod print-object ((object standard-object) stream)
+  (print-unreadable-object (object stream :type t :identity t))
+  object)
+
 #-staging
 (defmethod print-object ((l cons) stream)
   (if (cdr l)
