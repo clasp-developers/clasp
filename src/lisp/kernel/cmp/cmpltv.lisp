@@ -331,6 +331,7 @@
     (make-character 83 sind ub32) ; ub64 in clasp, i think?
     (make-pathname 85) ; TODO
     (make-bytecode-function 87) ; ltvc_make_global_entry_point
+    (make-bytecode-module 88) ; ltvc_make_local_entry_point - overriding
     (make-single-float 90 sind ub32)
     (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
@@ -361,7 +362,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 1)
+(defparameter *minor-version* 2)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -628,25 +629,28 @@
   (write-sequence bytecode stream))   
 
 (defclass compilation-state ()
-  ((%module :initform (cmp:module/make) :reader state/module)
-   ;; Reverse order
-   (%toplevels :initform nil :accessor toplevels)))
+  (;; This is used as the constants vector of all cmp:module's.
+   (%constants :initform (make-array 0 :fill-pointer 0 :adjustable t)
+               :accessor constants)))
 
 (defvar *state*)
 
-(defun bytecode-compile-file-form (form)
-  (let ((cfun
-          (cmp:bytecompile-into
-           (state/module *state*) `(lambda () (progn ,form)))))
-    (ensure-constant cfun) ; not permanent since they're only need during load.
-    (push cfun (toplevels *state*))))
-
 (defun bytecode-cf-compile-lexpr (lambda-expression environment)
-  (cmp:bytecompile-into (state/module *state*)
-                        lambda-expression environment))
+  (let ((module (cmp:module/make-with-literals (constants *state*)))
+        (environment (or environment (cmp:make-null-lexical-environment))))
+    ;; Compile the code.
+    (cmp:bytecompile-into module lambda-expression environment)))
+
+(defun bytecode-compile-file-form (form)
+  ;; The cfun constant is not permanent, since it's only needed during load.
+  (add-instruction
+   (make-instance 'general-initializer
+     :function (ensure-constant
+                (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) nil)))))
 
 (defclass bytefunction-creator (creator)
   ((%cfunction :initarg :cfunction :reader cfunction)
+   (%module :initarg :module :reader module)
    (%name :initarg :name :reader name :type creator)
    (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)
    (%docstring :initarg :docstring :reader docstring :type creator)
@@ -656,6 +660,7 @@
 (defmethod add-constant ((value cmp:cfunction))
   (add-instruction (make-instance 'bytefunction-creator
                      :cfunction value
+                     :module (ensure-constant (cmp:cfunction/module value))
                      :name (ensure-constant (cmp:cfunction/name value))
                      :lambda-list (ensure-constant
                                    (cmp:cfunction/lambda-list value))
@@ -673,6 +678,7 @@
              stream)
   (write-b16 (nlocals inst) stream)
   (write-b16 (nclosed inst) stream)
+  (write-index (module inst) stream)
   (write-index (name inst) stream)
   (write-index (lambda-list inst) stream)
   (write-index (docstring inst) stream))
@@ -686,23 +692,53 @@
                   (eql (cfunction c) cfunction)))
            *instructions*))
 
-(defun write-toplevels (toplevels stream)
-  (let ((len (length toplevels)))
+;;; Having this be a vcreator with a prototype is a slight abuse of notation,
+;;; since what we actually create is a bytecode module, not a compiler module.
+;;; But this allows functions in the same module to share their module.
+;;; This does mean that if someone tries to dump a literal compiler module
+;;; they will hit problems. Unlikely, but nonetheless, FIXME
+(defclass bytemodule-creator (vcreator)
+  ((%lispcode :initform nil :initarg :lispcode :reader bytemodule-lispcode)))
+
+(defmethod add-constant ((value cmp:module))
+  ;; Add the module first to prevent recursion.
+  (prog1
+      (add-instruction
+       (make-instance 'bytemodule-creator
+         :prototype value :lispcode (cmp:module/link value)))
+    ;; Register constants.
+    ;; FIXME: This does a lot of redundant work/lookups since previously
+    ;; registered constants will be tried again.
+    ;; But we don't want to delay this to the end, because adding constants
+    ;; can add more modules due to make-load-form and load-time-value.
+    (loop for const across (cmp:module/literals value)
+          for i from 0
+          do (ensure-constant const :permanent t :index i))
+    ;; Register load-time-value forms.
+    (loop for ltv across (cmp:module/ltvs value)
+          for form = (cmp:load-time-value-info/form ltv)
+          for read-only-p = (cmp:load-time-value-info/read-only-p ltv)
+          for index = (cmp:load-time-value-info/index ltv)
+          do (add-load-time-value form read-only-p :index index))))
+
+(defmethod encode ((inst bytemodule-creator) stream)
+  ;; Write instructions.
+  (write-mnemonic 'make-bytecode-module stream)
+  (write-index inst stream)
+  (let* ((lispcode (bytemodule-lispcode inst))
+         (len (length lispcode)))
     (when (> len #.(ash 1 32))
-      (error "~d toplevels, too many to dump" len))
-    (write-b32 len stream))
-  (loop for tl in toplevels
-        for creator = (find-bytecode-function tl)
-        if creator
-          do (write-index creator stream)
-        else
-          do (error "BUG: Unknown toplevel? ~s" tl)))
+      (error "Bytecode length is ~d, too long to dump" len))
+    (write-b32 len stream)
+    (write-sequence lispcode stream)))
+
+(defmethod instruction-bytes ((inst bytemodule-creator) indbytes)
+  (+ 1 indbytes 4 (length (bytemodule-lispcode inst))))
 
 ;; Prototype. Does not do compile time side effects.
 ;; input is a character stream. output is a ub8 stream.
 (defun bytecode-cf-stream (input output)
-  (let* ((*state* (make-instance 'compilation-state))
-         (module (state/module *state*)))
+  (let* ((*state* (make-instance 'compilation-state)))
     (with-constants (:compiler #'bytecode-cf-compile-lexpr)
       ;; Read and compile the forms.
       (loop with eof = (gensym "EOF")
@@ -713,30 +749,8 @@
             when *compile-print*
               do (cmp::describe-form form)
             do (bytecode-compile-file-form form))
-      ;; Register constants.
-      (loop for const across (cmp:module/literals module)
-            for i from 0
-            do (ensure-constant const :permanent t :index i))
-      ;; Register load-time-value forms.
-      (loop for ltv across (cmp:module/ltvs module)
-            for form = (cmp:load-time-value-info/form ltv)
-            for read-only-p = (cmp:load-time-value-info/read-only-p ltv)
-            for index = (cmp:load-time-value-info/index ltv)
-            do (add-load-time-value form read-only-p :index index))
-      (let ((lispcode
-              ;; Link the module and get its final bytecode.
-              ;; Linking assigns each cfunction its final entry point,
-              ;; so that they can be dumped correctly.
-              (cmp:module/link module)))
-        ;; Write out the FASO bytecode.
-        (write-bytecode output)
-        ;; Write the bytecode bytecode.
-        (write-lispcode lispcode output)
-        ;; Finally, write the toplevels.
-        (let* ((nobjs (count-if (lambda (i) (typep i 'creator)) *instructions*))
-               (*position-bytes*
-                 (ash 1 (1- (ceiling (integer-length nobjs) 8)))))
-          (write-toplevels (reverse (toplevels *state*)) output))))))
+      ;; Write out the FASO bytecode.
+      (write-bytecode output))))
 
 (defun bytecode-compile-file (input-file
                               &key

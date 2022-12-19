@@ -23,6 +23,7 @@
     (make-character 83 sind ub32) ; ub64 in clasp, i think?
     (make-pathname 85) ; TODO
     (make-bytecode-function 87)
+    (make-bytecode-module 88)
     (make-single-float 90 sind ub32)
     (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
@@ -60,7 +61,7 @@
 ;; look up a loader? This will become more obvious once there are actually
 ;; multiple versions in existence.
 (defparameter *min-version* '(0 0))
-(defparameter *max-version* '(0 1))
+(defparameter *max-version* '(0 2))
 
 (defun loadable-version-p (major minor)
   (and
@@ -85,7 +86,11 @@
               (first *max-version*) (second *max-version*))
     (values major minor)))
 
-;; Module of Lisp bytecode.
+;; Major and minor version of the file being read.
+(defvar *major*)
+(defvar *minor*)
+
+;; Module of Lisp bytecode (only used for 0.1).
 (defvar *module*)
 
 ;; how many bytes are needed to represent an index?
@@ -276,12 +281,15 @@
         (entry-point (read-ub32 stream))
         (nlocals (read-ub16 stream))
         (nclosed (read-ub16 stream))
+        (modulei (when (>= *minor* 2) (read-index stream)))
         (namei (read-index stream))
         (lambda-listi (read-index stream))
         (docstringi (read-index stream)))
-    (dbgprint " (make-bytecode-function ~d ~d ~d ~d ~d ~d ~d)"
-              index entry-point nlocals nclosed namei lambda-listi docstringi)
-    (let ((name (aref constants namei))
+    (dbgprint " (make-bytecode-function ~d ~d ~d ~d~@[ ~d~] ~d ~d ~d)"
+              index entry-point nlocals nclosed
+              modulei namei lambda-listi docstringi)
+    (let ((module (if (<= *minor* 1) *module* (aref constants modulei)))
+          (name (aref constants namei))
           (lambda-list (aref constants lambda-listi))
           (docstring (aref constants docstringi))
           ;; TODO
@@ -293,9 +301,36 @@
               :function-name name :lambda-list lambda-list :docstring docstring
               :source-pathname source-pathname
               :lineno lineno :column column :filepos filepos)
-             *module* nlocals nclosed entry-point
+             module nlocals nclosed entry-point
              (cmp:compile-trampoline name)))))
   (+ *index-bytes* 4 2 2 *index-bytes* *index-bytes* *index-bytes*))
+
+(defmethod %load-instruction ((mnemonic (eql 'make-bytecode-module))
+                              constants stream)
+  (let* ((index (read-index stream))
+         (len (read-ub32 stream))
+         (bytecode (make-array len :element-type '(unsigned-byte 8)))
+         (module (core:bytecode-module/make)))
+    (dbgprint " (make-bytecode-module ~d ~d)" index len)
+    (read-sequence bytecode stream)
+    (setf (aref constants index) module)
+    (core:bytecode-module/setf-bytecode module bytecode)
+    (core:bytecode-module/setf-literals module constants)
+    (+ *index-bytes* 4 len)))
+
+(defmethod %load-instruction ((mnemonic (eql 'funcall-create))
+                              constants stream)
+  (let ((index (read-index stream)) (funi (read-index stream)))
+    (dbgprint " (funcall-create ~d ~d)" index funi)
+    (setf (aref constants index) (funcall (aref constants funi))))
+  (* 2 *index-bytes*))
+
+(defmethod %load-instruction ((mnemonic (eql 'funcall-initialize))
+                              constants stream)
+  (let ((funi (read-index stream)))
+    (dbgprint " (funcall-initialize ~d)" funi)
+    (funcall (aref constants funi)))
+  *index-bytes*)
 
 ;; Return how many bytes were read.
 (defun load-instruction (constants stream)
@@ -331,18 +366,18 @@
 (defun load-bytecode-stream (stream
                              &key ((:verbose *load-verbose*) *load-verbose*))
   (load-magic stream)
-  (multiple-value-bind (major minor) (load-version stream)
-    (declare (ignore major))
+  (multiple-value-bind (*major* *minor*) (load-version stream)
     (let* ((nobjs (read-ub64 stream))
-           (nfbytes (when (>= minor 1) (read-ub64 stream)))
+           (nfbytes (when (>= *minor* 1) (read-ub64 stream)))
            ;; Next power of two.
            (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
-           (*module* (when (>= minor 1) (core:bytecode-module/make)))
+           (*module* (when (= *minor* 1) (core:bytecode-module/make)))
            (constants (make-array nobjs)))
       (dbgprint "File reports ~d objects. Index length = ~d bytes."
                 nobjs *index-bytes*)
       (dbgprint "Executing FASL bytecode")
-      (when (>= minor 1) (dbgprint "File reports bytecode is ~d bytes" nfbytes))
+      (when (>= *minor* 1)
+        (dbgprint "File reports bytecode is ~d bytes" nfbytes))
       ;; CLHS is sort of written like LISTEN only works on character streams,
       ;; but that would be pretty pointless. Clasp and SBCL at least allow it
       ;; on byte streams.
@@ -354,7 +389,7 @@
                (unless (= bytes-read nfbytes)
                  (error "Mismatch in bytecode between reported length ~d and actual length ~d"
                         nfbytes bytes-read)))
-      (when (>= minor 1)
+      (when (= *minor* 1)
         (load-bytecode-module constants stream)
         (load-toplevels constants stream))))
   (values))

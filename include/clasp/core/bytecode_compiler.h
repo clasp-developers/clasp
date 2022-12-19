@@ -559,10 +559,20 @@ public:
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
       _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
       _ltvs(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
+  Module_O(ComplexVector_T_sp literals)
+    : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
+      _literals(literals),
+      _ltvs(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
   CL_LISPIFY_NAME(Module/make)
   CL_DEF_CLASS_METHOD
   static Module_sp make() {
     return gctools::GC<Module_O>::allocate<gctools::RuntimeStage>();
+  }
+  // Ugly. Can we do keyword parameters w/defaults instead?
+  CL_LISPIFY_NAME(Module/make_with_literals)
+    CL_DEF_CLASS_METHOD
+    static Module_sp make_with_literals(ComplexVector_T_sp nliterals) {
+    return gctools::GC<Module_O>::allocate<gctools::RuntimeStage>(nliterals);
   }
   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
   CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
