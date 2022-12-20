@@ -71,7 +71,7 @@
 ;; look up a loader? This will become more obvious once there are actually
 ;; multiple versions in existence.
 (defparameter *min-version* '(0 0))
-(defparameter *max-version* '(0 2))
+(defparameter *max-version* '(0 3))
 
 (defun loadable-version-p (major minor)
   (and
@@ -153,13 +153,83 @@
     (setf (cdr (aref constants cons)) (aref constants value)))
   (* 2 *index-bytes*))
 
+(defmacro read-sub-byte (array stream nbits)
+  (let ((perbyte (floor 8 nbits))
+        (a (gensym "ARRAY")) (s (gensym "STREAM")))
+    `(let* ((,a ,array) (,s ,stream)
+            (total-size (array-total-size ,a)))
+       (multiple-value-bind (full-bytes remainder) (floor total-size 8)
+         (loop for byteindex below full-bytes
+               for index = (* ,perbyte byteindex)
+               for byte = (read-byte ,s)
+               do ,@(loop for j below perbyte
+                          for bit-index
+                            = (* nbits (- perbyte j 1))
+                          for bits = `(ldb (byte ,nbits ,bit-index)
+                                           byte)
+                          for arrindex = `(+ index ,j)
+                          collect `(setf (row-major-aref array ,arrindex) ,bits)))
+         ;; write remainder
+         (let* ((index (* ,perbyte full-bytes))
+                (byte (read-byte ,s)))
+           (loop for j below remainder
+                 for bit-index = (* ,nbits (- ,perbyte j 1))
+                 for bits = (ldb (byte ,nbits bit-index) byte)
+                 do (setf (row-major-aref ,a (+ index j)) bits)))))))
+
 (defmethod %load-instruction ((mnemonic (eql 'make-array)) constants stream)
-  (let ((index (read-index stream)) (rank (read-byte stream)))
-    (dbgprint " (make-array ~d ~d)" index rank)
-    (let ((dimensions (loop repeat rank collect (read-ub16 stream))))
-      (dbgprint "  dimensions ~a" dimensions)
-      (setf (aref constants index) (make-array dimensions)))
-    (+ *index-bytes* 1 (* rank 2))))
+  (if (<= *minor* 2)
+      (let ((index (read-index stream)) (rank (read-byte stream)))
+        (dbgprint " (make-array ~d ~d)" index rank)
+        (let ((dimensions (loop repeat rank collect (read-ub16 stream))))
+          (dbgprint "  dimensions ~a" dimensions)
+          (setf (aref constants index) (make-array dimensions)))
+        (+ *index-bytes* 1 (* rank 2)))
+      (let* ((index (read-index stream)) (uaet-code (read-byte stream))
+             (uaet (decode-uaet uaet-code))
+             (packing-code (read-byte stream))
+             (packing-type (decode-packing packing-code))
+             (rank (read-byte stream))
+             (dimensions (loop repeat rank collect (read-ub16 stream)))
+             (array (make-array dimensions :element-type uaet)))
+        (setf (aref constants index) array)
+        (macrolet ((undump (form)
+                     `(loop for i below (array-total-size array)
+                            for elem = ,form
+                            do (setf (row-major-aref array i) elem))))
+          (cond ((equal packing-type 'nil))
+                ((equal packing-type 'base-char)
+                 (undump (code-char (read-byte stream))))
+                ((equal packing-type 'character)
+                 (undump (code-char (read-ub32 stream))))
+                ((equal packing-type 'single-float)
+                 (undump (ext:bits-to-single-float (read-ub32 stream))))
+                ((equal packing-type 'double-float)
+                 (undump (ext:bits-to-double-float (read-ub64 stream))))
+                ((equal packing-type '(complex single-float))
+                 (undump
+                  (complex (ext:bits-to-single-float (read-ub32 stream))
+                           (ext:bits-to-single-float (read-ub32 stream)))))
+                ((equal packing-type '(complex double-float))
+                 (undump
+                  (complex (ext:bits-to-double-float (read-ub64 stream))
+                           (ext:bits-to-double-float (read-ub64 stream)))))
+                ((equal packing-type 'bit) (read-sub-byte array stream 1))
+                ((equal packing-type '(unsigned-byte 2))
+                 (read-sub-byte array stream 2))
+                ((equal packing-type '(unsigned-byte 4))
+                 (read-sub-byte array stream 4))
+                ((equal packing-type '(unsigned-byte 8))
+                 (read-sequence array stream))
+                ((equal packing-type '(unsigned-byte 16))
+                 (undump (read-ub16 stream)))
+                ((equal packing-type '(unsigned-byte 32))
+                 (undump (read-ub32 stream)))
+                ((equal packing-type '(unsigned-byte 64))
+                 (undump (read-ub64 stream)))
+                ;; TODO: signed bytes
+                ((equal packing-type 't)) ; setf-aref takes care of it
+                (t (error "BUG: Unknown packing-type ~s" packing-type)))))))
 
 (defmethod %load-instruction ((mnemonic (eql 'setf-row-major-aref))
                               constants stream)
@@ -293,14 +363,37 @@
                          :version (aref constants versioni))))
   (* *index-bytes* 7))
 
-(defvar +uaet-codes+
-  '((t         #b00000000)
-    (base-char #b10000000)
-    (character #b11000000)))
+(defvar +array-packing-infos+
+  '((nil                    #b00000000)
+    (base-char              #b10000000)
+    (character              #b11000000)
+    ;;(short-float          #b10100000) ; i.e. binary16
+    (single-float           #b00100000) ; binary32
+    (double-float           #b01100000) ; binary64
+    ;;(long-float           #b11100000) ; binary128?
+    ;;((complex short...)   #b10110000)
+    ((complex single-float) #b00110000)
+    ((complex double-float) #b01110000)
+    ;;((complex long...)    #b11110000)
+    (bit                    #b00000001) ; (2^(code-1)) bits
+    ((unsigned-byte 2)      #b00000010)
+    ((unsigned-byte 4)      #b00000011)
+    ((unsigned-byte 8)      #b00000100)
+    ((unsigned-byte 16)     #b00000101)
+    ((unsigned-byte 32)     #b00000110)
+    ((unsigned-byte 64)     #b00000111)
+    ;;((unsigned-byte 128) ??)
+    ((signed-byte 8)        #b10000100)
+    ((signed-byte 16)       #b10000101)
+    ((signed-byte 32)       #b10000110)
+    ((signed-byte 64)       #b10000111)
+    (t                      #b11111111)))
 
 (defun decode-uaet (uaet-code)
-  (or (first (find uaet-code +uaet-codes+ :key #'second))
+  (or (first (find uaet-code +array-packing-infos+ :key #'second))
       (error "BUG: Unknown UAET code ~x" uaet-code)))
+
+(defun decode-packing (code) (decode-uaet code)) ; same for now
 
 (defmethod %load-instruction ((mnemonic (eql 'make-specialized-array))
                               constants stream)
@@ -385,7 +478,9 @@
 
 ;; Return how many bytes were read.
 (defun load-instruction (constants stream)
-  (1+ (%load-instruction (read-mnemonic stream) constants stream)))
+  (if (<= *minor* 2)
+      (1+ (%load-instruction (read-mnemonic stream) constants stream))
+      (%load-instruction (read-mnemonic stream) constants stream)))
 
 ;; TODO: Check that the FASL actually defines all of the constants.
 ;; Make sure it defines them in order, i.e. not reading from uninitialized
@@ -419,7 +514,8 @@
   (load-magic stream)
   (multiple-value-bind (*major* *minor*) (load-version stream)
     (let* ((nobjs (read-ub64 stream))
-           (nfbytes (when (>= *minor* 1) (read-ub64 stream)))
+           (nfbytes (when (<= 1 *minor* 2) (read-ub64 stream)))
+           (ninsts (when (>= *minor* 3) (read-ub64 stream)))
            ;; Next power of two.
            (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
            (*module* (when (= *minor* 1) (core:bytecode-module/make)))
@@ -427,19 +523,29 @@
       (dbgprint "File reports ~d objects. Index length = ~d bytes."
                 nobjs *index-bytes*)
       (dbgprint "Executing FASL bytecode")
-      (when (>= *minor* 1)
-        (dbgprint "File reports bytecode is ~d bytes" nfbytes))
+      (cond ((<= 1 *minor* 2)
+             (dbgprint "File reports bytecode is ~d bytes" nfbytes))
+            ((>= *minor* 3)
+             (dbgprint "File reports ~d instructions" ninsts)))
       ;; CLHS is sort of written like LISTEN only works on character streams,
       ;; but that would be pretty pointless. Clasp and SBCL at least allow it
       ;; on byte streams.
-      (loop for bytes-read = 0
-              then (+ bytes-read (load-instruction constants stream))
-            do (dbgprint "  read ~d bytes" bytes-read)
-            while (< bytes-read nfbytes)
-            finally
-               (unless (= bytes-read nfbytes)
-                 (error "Mismatch in bytecode between reported length ~d and actual length ~d"
-                        nfbytes bytes-read)))
+      (cond ((<= 1 *minor* 2)
+             (loop for bytes-read = 0
+                     then (+ bytes-read (load-instruction constants stream))
+                   do (dbgprint "  read ~d bytes" bytes-read)
+                   while (< bytes-read nfbytes)
+                   finally
+                      (unless (= bytes-read nfbytes)
+                        (error "Mismatch in bytecode between reported length ~d and actual length ~d"
+                               nfbytes bytes-read))))
+            ((>= *minor* 3)
+             (loop repeat ninsts
+                   do (load-instruction constants stream))
+             #-clasp ; listen is broken on clasp
+             (when (listen stream)
+               (error "Bytecode continues beyond end of instructions: ~a"
+                      (alexandria:read-stream-content-into-byte-vector stream)))))
       (when (= *minor* 1)
         (load-bytecode-module constants stream)
         (load-toplevels constants stream))))
