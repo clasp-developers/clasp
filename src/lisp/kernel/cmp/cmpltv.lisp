@@ -167,8 +167,15 @@
 ;;; cmpltv can treat as a constant.
 (defvar *compiler*)
 
+;;; Stack of objects we are in the middle of computing creation forms for.
+;;; This is used to detect circular dependencies.
+;;; We only do this for MAKE-LOAD-FORM because we assume our own
+;;; computations never recurse inappropriately. If they do, it's a bug,
+;;; rather than the user's problem.
+(defvar *creating*)
+
 (defmacro with-constants ((&key (compiler '*compiler*)) &body body)
-  `(let ((*instructions* nil)
+  `(let ((*instructions* nil) (*creating* nil)
          (*compiler* ,compiler))
      ,@body))
 
@@ -299,13 +306,24 @@
      :type (ensure-constant (pathname-type value))
      :version (ensure-constant (pathname-version value)))))
 
+(define-condition circular-dependency (error)
+  ((%path :initarg :path :reader path))
+  (:report (lambda (condition stream)
+             (format stream "~s circular dependency detected:~%~t~{~s~^ ~}"
+                     'make-load-form (path condition)))))
+
 (defmethod add-constant ((value t))
+  (when (member value *creating*)
+    (error 'circular-dependency :path *creating*))
   (multiple-value-bind (create initialize) (make-load-form value)
-    (let ((creator (add-form create)) (initializer (add-form initialize)))
-      (prog1 (add-instruction (make-instance 'general-creator
-                                :prototype value :function creator))
-        (add-instruction (make-instance 'general-initializer
-                           :function initializer))))))
+    (prog1
+        (add-instruction
+         (make-instance 'general-creator
+           :prototype value
+           :function (let ((*creating* (cons value *creating*)))
+                       (add-form create))))
+      (add-instruction (make-instance 'general-initializer
+                         :function (add-form initialize))))))
 
 (defun add-load-time-value (form read-only-p &key index)
   (add-instruction (make-instance 'load-time-value-creator
