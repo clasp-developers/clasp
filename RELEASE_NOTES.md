@@ -9,6 +9,8 @@
   replaced with options to specify image or snapshot file (`--image` or
   `--snapshot`) and `--base` option for loading base image when extensions
   are present.
+* `print-unreadable-object` now prints qualified symbols for the `:type t`
+  option and uses `pprint-logical-block` when pretty printing.
   
 ## Fixes
 * `ext:run-program` works with string streams.
