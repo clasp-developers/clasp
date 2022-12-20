@@ -19,7 +19,8 @@
     (make-sb64 78 sind sb64)
     (find-package 79 sind nameind)
     (make-bignum 80 sind size . words) ; size is signed
-    (intern 82 sind packageind nameind) ; make-symbol
+    (make-symbol 81) ; make-bitvector in clasp, but that's under arrays here
+    (intern 82 sind packageind nameind) ; make-symbol in clasp
     (make-character 83 sind ub32) ; ub64 in clasp, i think?
     (make-pathname 85)
     (make-bytecode-function 87)
@@ -252,6 +253,14 @@
     (setf (aref constants index)
           (complex (aref constants reali) (aref constants imagi))))
   (* 3 *index-bytes*))
+
+(defmethod %load-instruction ((mnemonic (eql 'make-symbol))
+                              constants stream)
+  (let ((index (read-index stream))
+        (namei (read-index stream)))
+    (dbgprint " (make-symbol ~d ~d)" index namei)
+    (setf (aref constants index) (make-symbol (aref constants namei))))
+  (+ *index-bytes* *index-bytes*))
 
 (defmethod %load-instruction ((mnemonic (eql 'intern)) constants stream)
   (let ((index (read-index stream))

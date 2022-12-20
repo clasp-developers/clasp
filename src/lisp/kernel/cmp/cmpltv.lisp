@@ -80,8 +80,10 @@
 
 (defclass symbol-creator (vcreator)
   (;; Is there actually a point to trying to coalesce symbol names?
-   (%name :initarg :name :reader symbol-creator-name :type creator)
-   (%package :initarg :package :reader symbol-creator-package :type creator)))
+   (%name :initarg :name :reader symbol-creator-name :type creator)))
+
+(defclass interned-symbol-creator (symbol-creator)
+  ((%package :initarg :package :reader symbol-creator-package :type creator)))
 
 (defclass package-creator (vcreator)
   (;; Is there actually a point to trying to coalesce package names?
@@ -248,10 +250,16 @@
     ht))
 
 (defmethod add-constant ((value symbol))
-  (add-instruction (make-instance 'symbol-creator
-                     :prototype value
-                     :name (ensure-constant (symbol-name value))
-                     :package (ensure-constant (symbol-package value)))))
+  (add-instruction
+   (let ((package (symbol-package value)))
+     (if package
+         (make-instance 'interned-symbol-creator
+           :prototype value
+           :name (ensure-constant (symbol-name value))
+           :package (ensure-constant package))
+         (make-instance 'symbol-creator
+           :prototype value
+           :name (ensure-constant (symbol-name value)))))))
 
 (defmethod add-constant ((value (eql nil)))
   (add-instruction (make-instance 'singleton-creator :prototype value)))
@@ -386,7 +394,8 @@
     (make-sb64 78 sind sb64)
     (find-package 79 sind nameind)
     (make-bignum 80 sind size . words) ; size is signed
-    (intern 82 sind packageind nameind) ; make-symbol
+    (make-symbol 81) ; make-bitvector in clasp
+    (intern 82 sind packageind nameind) ; make-symbol in clasp
     (make-character 83 sind ub32) ; ub64 in clasp, i think?
     (make-pathname 85)
     (make-bytecode-function 87) ; ltvc_make_global_entry_point
@@ -593,12 +602,20 @@
 (defmethod instruction-bytes ((inst singleton-creator) indbytes) (1+ indbytes))
 
 (defmethod encode ((inst symbol-creator) stream)
+  (write-mnemonic 'make-symbol stream)
+  (write-index inst stream)
+  (write-index (symbol-creator-name inst) stream))
+
+(defmethod instruction-bytes ((inst symbol-creator) indbytes)
+  (+ 1 indbytes indbytes))
+
+(defmethod encode ((inst interned-symbol-creator) stream)
   (write-mnemonic 'intern stream)
   (write-index inst stream)
   (write-index (symbol-creator-package inst) stream)
   (write-index (symbol-creator-name inst) stream))
 
-(defmethod instruction-bytes ((inst symbol-creator) indbytes)
+(defmethod instruction-bytes ((inst interned-symbol-creator) indbytes)
   (+ 1 indbytes indbytes indbytes))
 
 (defmethod encode ((inst package-creator) stream)
@@ -731,12 +748,12 @@
     ;; Compile the code.
     (cmp:bytecompile-into module lambda-expression environment)))
 
-(defun bytecode-compile-file-form (form)
+(defun bytecode-compile-file-form (form env)
   ;; The cfun constant is not permanent, since it's only needed during load.
   (add-instruction
    (make-instance 'general-initializer
      :function (ensure-constant
-                (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) nil)))))
+                (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) env)))))
 
 (defclass bytefunction-creator (creator)
   ((%cfunction :initarg :cfunction :reader cfunction)
@@ -825,6 +842,102 @@
 (defmethod instruction-bytes ((inst bytemodule-creator) indbytes)
   (+ 1 indbytes 4 (length (bytemodule-lispcode inst))))
 
+(defvar *compile-time-too*)
+
+(defun bytecode-compile-toplevel-progn (forms env)
+  (dolist (form forms)
+    (bytecode-compile-toplevel form env)))
+
+(defun bytecode-compile-toplevel-eval-when (situations forms env)
+  (let ((ct (or (member :compile-toplevel situations)
+                (member 'cl:compile situations)))
+        (lt (or (member :load-toplevel situations)
+                (member 'cl:load situations)))
+        (e (or (member :execute situations)
+               (member 'cl:eval situations)))
+        (ctt *compile-time-too*))
+    ;; Following CLHS figure 3-7 pretty exactly.
+    (cond ((or (and ct lt) (and lt e ctt)) ; process compile-time-too
+           (let ((*compile-time-too* t))
+             (bytecode-compile-toplevel-progn forms env)))
+          ((or (and lt e (not ctt)) (and (not ct) lt (not e)))
+           ;; process not-compile-time
+           (let ((*compile-time-too* nil))
+             (bytecode-compile-toplevel-progn forms env)))
+          ((or (and ct (not lt)) (and (not ct) (not lt) e ctt))
+           ;; evaluate
+           (funcall (cmp:bytecompile `(lambda () (progn ,@forms)) env)))
+          (t
+           ;; (or (and (not ct) (not lt) e (not ctt)) (and (not ct) (not lt) (not e)))
+           ;; discard
+           nil))))
+
+(defun bytecode-compile-toplevel-locally (body env)
+  (multiple-value-bind (decls body docs specials)
+      (core:process-declarations body nil)
+    (declare (ignore decls docs))
+    (let* ((env (or env (cmp:make-null-lexical-environment)))
+           (new-env
+             (if specials
+                 (cmp:lexenv/add-specials env specials)
+                 env)))
+      (bytecode-compile-toplevel-progn body new-env))))
+
+(defun bytecode-compile-toplevel-macrolet (bindings body env)
+  (let ((macros nil)
+        (env (or env (cmp:make-null-lexical-environment))))
+    (dolist (binding bindings)
+      (let* ((name (car binding)) (lambda-list (cadr binding))
+             (body (cddr binding))
+             (eform (ext:parse-macro name lambda-list body env))
+             (aenv (cmp:lexenv/macroexpansion-environment env))
+             (expander (cmp:bytecompile eform aenv))
+             (info (cmp:local-macro-info/make expander)))
+        (push (cons name info) macros)))
+    (bytecode-compile-toplevel-locally
+     body (cmp:lexenv/make
+           (cmp:lexenv/vars env)
+           (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
+           (append macros (cmp:lexenv/funs env))
+           (cmp:lexenv/notinlines env) (cmp:lexenv/frame-end env)))))
+
+(defun bytecode-compile-toplevel-symbol-macrolet (bindings body env)
+  (let ((smacros nil) (env (or env (cmp:make-null-lexical-environment))))
+    (dolist (binding bindings)
+      (push (cons (car binding)
+                  (cmp:symbol-macro-var-info/make
+                   (lambda (form env)
+                     (declare (ignore form env))
+                     (cadr binding))))
+            smacros))
+    (bytecode-compile-toplevel-locally
+     body (cmp:lexenv/make
+           (append (nreverse smacros) (cmp:lexenv/vars env))
+           (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
+           (cmp:lexenv/funs env) (cmp:lexenv/notinlines env)
+           (cmp:lexenv/frame-end env)))))
+
+(defun bytecode-compile-toplevel (form &optional (env (cmp:make-null-lexical-environment)))
+  (let ((form (macroexpand form env)))
+    (if (consp form)
+        (case (car form)
+          ((progn) (bytecode-compile-toplevel-progn (cdr form) env))
+          ((eval-when)
+           (bytecode-compile-toplevel-eval-when (cadr form) (cddr form) env))
+          ((locally) (bytecode-compile-toplevel-locally (cdr form) env))
+          ((macrolet)
+           (bytecode-compile-toplevel-macrolet (cadr form) (cddr form) env))
+          ((symbol-macrolet)
+           (bytecode-compile-toplevel-symbol-macrolet (cadr form) (cddr form) env))
+          (otherwise
+           (when *compile-time-too*
+             (funcall (cmp:bytecompile `(lambda () (progn ,form)) env)))
+           (bytecode-compile-file-form form env)))
+        (progn
+          (when *compile-time-too*
+            (funcall (cmp:bytecompile `(lambda () (progn ,form)) env)))
+          (bytecode-compile-file-form form env)))))
+
 ;; Prototype. Does not do compile time side effects.
 ;; input is a character stream. output is a ub8 stream.
 (defun bytecode-cf-stream (input output)
@@ -834,11 +947,12 @@
       (loop with eof = (gensym "EOF")
             with *readtable* = *readtable*
             with *package* = *package*
+            with *compile-time-too* = nil
             for form = (read input nil eof)
             until (eq form eof)
             when *compile-print*
               do (cmp::describe-form form)
-            do (bytecode-compile-file-form form))
+            do (bytecode-compile-toplevel form))
       ;; Write out the FASO bytecode.
       (write-bytecode output))))
 
