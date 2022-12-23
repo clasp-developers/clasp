@@ -956,7 +956,6 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
 #endif
 
 List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
-  core__stack_monitor();
   bool got_dotted = false;
   T_sp dotted_object = nil<T_O>();
   Cons_sp first = Cons_O::create(nil<T_O>(), nil<T_O>());

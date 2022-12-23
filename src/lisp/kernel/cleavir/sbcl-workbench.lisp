@@ -20,7 +20,6 @@
                        #:get-parent-environment
                        #:*top-level-form-stack*
                        #:create-tagged-immediate-value-or-nil
-                       #:stack-monitor
                        #:specialp
                        #:cleavir-ast
                        #:global-inline-status

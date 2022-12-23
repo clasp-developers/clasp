@@ -26,7 +26,6 @@
 
 (defmethod env:variable-info ((system clasp)
                               (environment clasp-global-environment) symbol)
-  (core:stack-monitor)
   (cond (;; We can check whether this symbol names a constant variable
 	 ;; by checking the return value of CONSTANTP. 
 	 (constantp symbol)

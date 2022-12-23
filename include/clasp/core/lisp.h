@@ -98,9 +98,7 @@ SMART(Binder);
 SMART(Hierarchy);
 SMART(Environment);
 
- void core__stack_monitor(T_sp fn=nil<T_O>());
-void af_stackSizeWarning(size_t size);
- T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=nil<core::T_O>() );
+T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=nil<core::T_O>() );
  
 List_sp cl__member(T_sp item, T_sp list, T_sp key = nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = nil<T_O>());
 [[noreturn]]void core__invoke_internal_debugger(T_sp condition);
@@ -419,19 +417,6 @@ public:
   void push_default_special_binding(Symbol_sp sym, T_sp form);
   List_sp copy_default_special_bindings() const;
 #endif
-public:
-
-public:
-  /*! Signal a problem if the stack gets too full*/
-  inline void stack_monitor() {
-    int x;
-    char *xaddr = (char *)(&x);
-    size_t stack = (size_t)(((const char*)my_thread_low_level->_StackTop) - xaddr);
-    if (stack > globals_->_StackWarnSize) {
-      af_stackSizeWarning(stack);
-    }
-  }
-
 public:
   DebugStream &debugLog() {
     return *(globals_->_DebugStream);

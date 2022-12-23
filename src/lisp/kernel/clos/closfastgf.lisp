@@ -635,9 +635,6 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                  (dispatch-miss-info generic-function old-call-history arguments)))
 
 (defun dispatch-miss (generic-function &rest arguments)
-  (core:stack-monitor
-   (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
-                      (clos::generic-function-name generic-function))))
   (#+debug-fastgf unwind-protect #-debug-fastgf multiple-value-prog1
    (progn
      (incf-debug-fastgf-indent)

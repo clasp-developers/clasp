@@ -1458,54 +1458,12 @@ void stackSizeWarning(size_t stackUsed) {
   }
 };
 
-CL_LAMBDA(&optional fn);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(monitor stack for problems - warn if getting too large)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__stack_monitor(T_sp fn) {
-  uint stackUsed = core__stack_used();
-  if (stackUsed > globals_->_StackSampleMax)
-    globals_->_StackSampleMax = stackUsed;
-  if (globals_->_StackSampleSize > 0) {
-    globals_->_StackSampleCount++;
-    if (globals_->_StackSampleCount >= globals_->_StackSampleSize) {
-      printf("STACK-USED samples: %u high-water: %u     %s:%d\n",
-             globals_->_StackSampleSize,
-             globals_->_StackSampleMax,
-             __FILE__, __LINE__);
-      globals_->_StackSampleCount = 0;
-      globals_->_StackSampleMax = 0;
-    }
-  }
-  if (stackUsed > globals_->_StackWarnSize) {
-    if (fn.notnilp()) {
-      eval::funcall(fn);
-    }
-    stackSizeWarning(stackUsed);
-  }
-};
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return the stack warn size)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__stack_limit() {
   return clasp_make_fixnum(globals_->_StackWarnSize);
-};
-
-CL_LAMBDA(&key warn-size sample-size);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(setupStackMonitor)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__setup_stack_monitor(T_sp warnSize, T_sp sampleSize) {
-  if (!warnSize.nilp()) {
-    globals_->_StackWarnSize = unbox_fixnum(gc::As<Fixnum_sp>(warnSize));
-  }
-  if (!sampleSize.nilp()) {
-    globals_->_StackSampleSize = unbox_fixnum(gc::As<Fixnum_sp>(sampleSize));
-    globals_->_StackSampleCount = 0;
-    globals_->_StackSampleMax = 0;
-  }
 };
 
 CL_LAMBDA(&optional (exit-value 0));
@@ -2532,8 +2490,6 @@ ChangePackage::~ChangePackage() {
 SYMBOL_SC_(CorePkg, find_single_dispatch_generic_function);
 SYMBOL_SC_(CorePkg, setf_find_single_dispatch_generic_function);
 SYMBOL_SC_(CorePkg, forget_all_single_dispatch_generic_functions);
-SYMBOL_SC_(CorePkg, stackMonitor);
-SYMBOL_SC_(CorePkg, setupStackMonitor);
 SYMBOL_SC_(CorePkg, invokeInternalDebugger);
 SYMBOL_SC_(CorePkg, invokeInternalDebuggerFromGdb);
 SYMBOL_SC_(CorePkg, universalErrorHandler);
