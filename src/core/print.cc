@@ -177,44 +177,6 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
   return Values(x);
 };
 
-
-CL_LAMBDA(o stream type id function);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(print-unreadable-object-function: What CL:PRINT-UNREADABLE-OBJECT expands into.)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__print_unreadable_object_function(T_sp object, T_sp output_stream_desig, T_sp type, T_sp id, T_sp function) {
-  if (clasp_print_readably()) {
-    PRINT_NOT_READABLE_ERROR(object);
-  } else if (object.unboundp()) {
-    SIMPLE_ERROR(("Error! printUnreadableObjectFunction object is Unbound"));
-  } else {
-    stringstream ss;
-    ss << "#<";
-    if (type.notnilp()) {
-      type = cl__type_of(object);
-      if (!gc::IsA<Symbol_sp>(type)) {
-        type = cl::_sym_standard_object;
-      }
-      Symbol_sp typesym = gc::As<Symbol_sp>(type);
-      ss << typesym->symbolNameAsString();
-      ss << " ";
-    }
-    T_sp ostream = coerce::outputStreamDesignator(output_stream_desig);
-    clasp_write_string(ss.str(), ostream);
-    if (function.notnilp()) {
-      eval::funcall(function);
-    }
-    stringstream stail;
-    if (id.notnilp()) {
-      stail << " @";
-      stail << object.raw_();
-    }
-    stail << ">";
-    clasp_write_string(stail.str(), ostream);
-  }
-  return nil<T_O>();
-};
-
 CL_LAMBDA(obj &optional stream);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(pprint)dx");

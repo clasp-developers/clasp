@@ -646,7 +646,7 @@ void clasp_write_characters(const char *buf, int sz, T_sp strm);
  void writestr_stream(const char *str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void write_bf_stream(const std::string& fmt, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
 void writeln_bf_stream(const std::string& fmt, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
- void clasp_write_addr(T_sp x, T_sp strm);
+void core__write_addr(T_sp x, T_sp strm);
 claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 
 

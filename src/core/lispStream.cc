@@ -5069,7 +5069,11 @@ void writeln_bf_stream(const std::string& fmt, T_sp strm)
   clasp_terpri(strm);
 }
 
-void clasp_write_addr(T_sp x, T_sp strm) {
+CL_LAMBDA(oject stream);
+CL_DECLARE();
+CL_DOCSTRING("Write the address of an object to the stream.");
+DOCGROUP(clasp);
+CL_DEFUN void core__write_addr(T_sp x, T_sp strm) {
   stringstream ss;
   ss << (void *)x.raw_();
   writestr_stream(ss.str().c_str(), strm);

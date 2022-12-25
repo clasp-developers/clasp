@@ -1213,3 +1213,18 @@
 			:key #'pprint-dispatch-entry-type
 			:test #'equal))))
   nil)
+
+;;; The guts of print-unreadable-object, inspired by SBCL. This is
+;;; a redefinition of the function in iolib.lisp which add support
+;;; for pprint-logical-block.
+(defun %print-unreadable-object (object stream type identity body)
+  (cond (*print-readably*
+         (error 'print-not-readable :object object))
+        ((and *print-pretty* (pretty-stream-p stream))
+         (pprint-logical-block (stream nil :prefix "#<" :suffix ">")
+           (print-unreadable-object-contents object stream type identity body)))
+        (t
+         (write-string "#<" stream)
+         (print-unreadable-object-contents object stream type identity body)
+         (write-char #\> stream)))
+  nil)
