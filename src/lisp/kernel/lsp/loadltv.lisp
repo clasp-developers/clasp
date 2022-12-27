@@ -44,6 +44,20 @@
 (defun read-ub32 (stream) (read-ub 4 stream))
 (defun read-ub16 (stream) (read-ub 2 stream))
 
+;;; Read a signed n-byte integer from a ub8 stream, big-endian.
+(defun read-sb (n stream)
+  (let ((word (read-ub n stream))
+        (nbits (* n 8)))
+    (declare (type (integer 1 64) nbits))
+    ;; Read sign bit and make this negative if it's set.
+    ;; FIXME: Do something more efficient probably.
+    (- word (ash (ldb (byte 1 (1- nbits)) word) nbits))))
+
+(defun read-sb64 (stream) (read-sb 8 stream))
+(defun read-sb32 (stream) (read-sb 4 stream))
+(defun read-sb16 (stream) (read-sb 2 stream))
+(defun read-sb8  (stream) (read-sb 1 stream))
+
 (defconstant +magic+ #x8d7498b1) ; randomly chosen bytes.
 
 (defmacro verboseprint (message &rest args)
@@ -227,6 +241,14 @@
                  (undump (read-ub32 stream)))
                 ((equal packing-type '(unsigned-byte 64))
                  (undump (read-ub64 stream)))
+                ((equal packing-type '(signed-byte 8))
+                 (undump (read-sb8  stream)))
+                ((equal packing-type '(signed-byte 16))
+                 (undump (read-sb16 stream)))
+                ((equal packing-type '(signed-byte 32))
+                 (undump (read-sb32 stream)))
+                ((equal packing-type '(signed-byte 64))
+                 (undump (read-sb64 stream)))
                 ;; TODO: signed bytes
                 ((equal packing-type 't)) ; setf-aref takes care of it
                 (t (error "BUG: Unknown packing-type ~s" packing-type)))))))
@@ -262,12 +284,6 @@
     (setf (gethash (aref constants keyind) (aref constants htind))
           (aref constants valind)))
   (+ *index-bytes* *index-bytes* *index-bytes*))
-
-(defun read-sb64 (stream)
-  (let ((word (read-ub64 stream)))
-    ;; Read sign bit and make this negative if it's set.
-    ;; FIXME: Do something more efficient probably.
-    (- word (ash (ldb (byte 1 63) word) 64))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-sb64)) constants stream)
   (let ((index (read-index stream)) (sb64 (read-sb64 stream)))

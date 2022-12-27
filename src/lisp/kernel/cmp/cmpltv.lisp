@@ -565,6 +565,14 @@
              (dump (write-b32 elem stream)))
             ((equal packing-type '(unsigned-byte 64))
              (dump (write-b64 elem stream)))
+            ((equal packing-type '(signed-byte 8))
+             (dump (write-byte (ldb (byte 8 0) elem) stream)))
+            ((equal packing-type '(signed-byte 16))
+             (dump (write-b16 elem stream)))
+            ((equal packing-type '(signed-byte 32))
+             (dump (write-b32 elem stream)))
+            ((equal packing-type '(signed-byte 64))
+             (dump (write-b64 elem stream)))
             ;; TODO: Signed bytes
             ((equal packing-type 't)) ; handled by setf-aref instructions
             (t (error "BUG: Unknown packing-type ~s" packing-type))))))
