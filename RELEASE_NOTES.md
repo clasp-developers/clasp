@@ -15,6 +15,9 @@
 ## Fixes
 * `ext:run-program` works with string streams.
 * `print-object` is now invoked for all calls to `write`.
+* `slot-unbound` is called for unbound condition slots ([#1390][]).
+* Multiple inheritance of class-allocated slots is resolved
+  breadth-first ([#1392][]).
 
 # Version 2.0.0 (LLVM14) 2022-10-26
 
@@ -204,3 +207,5 @@
 [ECLECTOR]: https://github.com/s-expressionists/Eclector
 [#175]: https://github.com/clasp-developers/clasp/issues/175
 [#1368]: https://github.com/clasp-developers/clasp/issues/1368
+[#1390]: https://github.com/clasp-developers/clasp/issues/1390
+[#1392]: https://github.com/clasp-developers/clasp/issues/1392
