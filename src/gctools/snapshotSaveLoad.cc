@@ -119,7 +119,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
   uintptr_t search_dlsym = 0;
   uintptr_t loadAddress = 0;
   bool gotLoadAddress = false;
-#if defined(_TARGET_OS_LINUX)
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   std::string dynamic = "";
   if (filename.find(".so") != std::string::npos) dynamic = "--dynamic ";
   nm_cmd << NM_BINARY << " " << dynamic << "-p --defined-only --no-sort \"" << filename << "\"";
@@ -274,7 +274,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
 #if defined(_TARGET_OS_DARWIN)
           std::string realSearchSymbol = searchSymbol.substr(1); // WHY DO WE NEED TO STRIP AN UNDERSCORE!!!!!!!
           if (fout) fprintf( fout, "# DARWIN mangled name: %s\n", realSearchSymbol.c_str());
-#elif defined(_TARGET_OS_LINUX)
+#elif defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
           std::string realSearchSymbol = searchSymbol;
 #else
 # error "Handle name mangling for other OS"

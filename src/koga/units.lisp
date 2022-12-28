@@ -43,6 +43,7 @@
     (append-ldflags configuration (run-program-capture (list llvm-config "--ldflags")))
     (append-ldlibs configuration (run-program-capture (list llvm-config "--system-libs")))
     (append-ldlibs configuration (run-program-capture (list llvm-config "--libs")))
+    #+freebsd (append-ldlibs configuration "-lexecinfo")
     (when (ld configuration)
       (append-ldflags configuration (format nil "-fuse-ld=~(~a~)" (ld configuration))))
     (append-ldflags configuration "-pthread -fvisibility=default -rdynamic")))

@@ -31,11 +31,11 @@
 // For MPS extensions can define custom allocation points - but only up to this many
 #define MAX_CUSTOM_ALLOCATION_POINTS 4
 
-#define LITTLE_ENDIAN       0
-#define BIG_ENDIAN          7
-#define ENDIANNESS          LITTLE_ENDIAN
-#define ENDIAN_LSB_OFFSET   LITTLE_ENDIAN
-
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define ENDIAN_LSB_OFFSET 0
+#else
+#define ENDIAN_LSB_OFFSET 7
+#endif
 // Match tags using (ptr&MATCH_TAG_MASK)==MATCH_TAG_EQ
 // These values are used in point
 //

@@ -343,7 +343,7 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
     end_of_snapshot = (void *)((char *)start_of_snapshot + size);
   }
 #endif
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   extern const char __attribute__((weak)) SNAPSHOT_START;
   extern const char __attribute__((weak)) SNAPSHOT_END;
   start_of_snapshot = (void *)&SNAPSHOT_START;
