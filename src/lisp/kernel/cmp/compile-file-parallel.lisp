@@ -368,49 +368,37 @@ multithreaded performance that we should explore."
     ast-jobs))
 
 
-(defun compile-file-to-result (given-input-pathname
-                               &key
-                               output-type
-                               output-path
-                               environment
-                               (optimize t)
-                               (optimize-level *optimization-level*)
-                               ast-only
-                               write-bitcode
-                               external-format)
+(defun compile-stream-to-result (input-stream
+                                 &key
+                                   output-type
+                                   output-path
+                                   environment
+                                   (optimize t)
+                                   (optimize-level *optimization-level*)
+                                   ast-only
+                                   write-bitcode)
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
-  (let* ((*package* *package*)
-         (*readtable* *readtable*)
-         (clasp-source-root (translate-logical-pathname "sys:"))
-         (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
-         (source-sin (open given-input-pathname :direction :input :external-format (or external-format :default))))
-    (declare (ignore clasp-source))
-    (with-open-stream (sin source-sin)
-      (when *compile-verbose*
-        (core:fmt t "; Compiling file parallel: {}%N" (namestring given-input-pathname)))
-      (let ((intermediate-output-type (case output-type
-                                        #+(or)(:fasl :object)
-                                        (:fasl :in-memory-object)
-                                        (:faso :in-memory-object)
-                                        (:fasoll :in-memory-module)
-                                        (:fasobc :in-memory-module)
-                                        (:faspll :in-memory-module)
-                                        (:faspbc :in-memory-module)
-                                        (:fasp :in-memory-object)
-                                        (:object :in-memory-object)
-                                        (:bitcode :bitcode)
-                                        (otherwise (error "Figure out intermediate-output-type for output-type ~s" output-type)))))
-        (cclasp-loop2 source-sin environment
-                      :optimize optimize
-                      :optimize-level optimize-level
-                      :output-path output-path
-                      :intermediate-output-type intermediate-output-type
-                      :ast-only ast-only
-                      :write-bitcode write-bitcode)))))
+  (let ((intermediate-output-type (ecase output-type
+                                    (:fasl :in-memory-object)
+                                    (:faso :in-memory-object)
+                                    (:fasoll :in-memory-module)
+                                    (:fasobc :in-memory-module)
+                                    (:faspll :in-memory-module)
+                                    (:faspbc :in-memory-module)
+                                    (:fasp :in-memory-object)
+                                    (:object :in-memory-object)
+                                    (:bitcode :bitcode))))
+    (cclasp-loop2 input-stream environment
+                  :optimize optimize
+                  :optimize-level optimize-level
+                  :output-path output-path
+                  :intermediate-output-type intermediate-output-type
+                  :ast-only ast-only
+                  :write-bitcode write-bitcode)))
 
 
 
@@ -457,91 +445,39 @@ Compile a lisp source file into an LLVM module."
   "Force compile-file-parallel to write out bitcode for each module. 
 Each bitcode filename will contain the form-index.")
 
-
-(defun compile-file-parallel (input-file
-                              &key
-                                (output-file nil output-file-p)
-                                ((:verbose *compile-verbose*) *compile-verbose*)
-                                ((:print *compile-print*) *compile-print*)
-                                (optimize t)
-                                (optimize-level *optimization-level*)
-                                (external-format :default)
-                                ;; Used for C-c C-c in SLIME.
-                                (source-debug-pathname nil cfsdpp)
-                                ((:source-debug-offset *compile-file-source-debug-offset*) 0)
-                                ((:source-debug-lineno *compile-file-source-debug-lineno*) 0)
-                                ;; output-type can be (or :fasl :bitcode :object)
-                                (output-type (default-library-type) output-type-p)
-                                ;; type can be either :kernel or :user (FIXME? unused)
-                                (type :user)
-                                ;; ignored by bclasp
-                                ;; but passed to hook functions
-                                environment
-                                ;; Use as little llvm as possible for timing
-                                dry-run ast-only
-                                ;; Cleanup temporary files
-                                (cleanup nil)
-                                (write-bitcode *compile-file-parallel-write-bitcode*))
-  "See CLHS compile-file."
-  (declare (ignore type cleanup))
-  (setf output-type (maybe-fixup-output-type output-type output-type-p))
-  (let ((*compile-file-parallel* t))
-    (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
+(defun compile-stream/parallel (input-stream output-path
+                                &key
+                                  (optimize t)
+                                  (optimize-level *optimization-level*)
+                                  (output-type (default-library-type)
+                                               output-type-p)
+                                  environment
+                                  ;; Use as little llvm as possible for timing
+                                  dry-run ast-only
+                                  (write-bitcode *compile-file-parallel-write-bitcode*)
+                                &allow-other-keys)
+  (let ((output-type (if output-type-p
+                         (fixup-output-type output-type)
+                         output-type)))
     (with-compiler-env ()
-      (let* ((input-pathname (or (probe-file input-file)
-                                 (error 'core:simple-file-error
-                                        :pathname input-file
-                                        :format-control "compile-file-to-module could not find the file ~s to open it"
-                                        :format-arguments (list input-file))))
-             (output-path (if output-type-p
-                              (compile-file-pathname input-file :output-file output-file :output-type output-type)
-                              (compile-file-pathname input-file :output-file output-file)))
-             (*compilation-module-index* 0)
-             (*compile-file-pathname* (pathname (merge-pathnames input-file)))
-             (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-             (*compile-file-source-debug-pathname*
-               (if cfsdpp source-debug-pathname *compile-file-truename*))
-             (*compile-file-file-scope*
-               (core:file-scope *compile-file-source-debug-pathname*))
-             (*compile-file-output-pathname* output-path))
-        (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose *compile-verbose*)
-          (with-compilation-results ()
-            (let ((ast-jobs
-                    (compile-file-to-result input-pathname
-                     :output-type output-type
-                     :output-path output-path
-                     :environment environment
-                     :optimize optimize
-                     :optimize-level optimize-level
-                     :ast-only ast-only
-                     :write-bitcode write-bitcode
-                     :external-format external-format)))
-              (cond (dry-run (format t "Doing nothing further~%") nil)
-                    ((null output-path)
-                     (error "The output-file is nil for input filename ~a~%" input-file))
-                    ((some #'job-serious-condition ast-jobs)
-                     ;; There was an insurmountable error - stop.
-                     nil)
-                    ;; Usual result
-                    (t (output-cfp-result ast-jobs output-path output-type)
-                       (truename output-path))))))))))
-
-(defun cl:compile-file (input-file &rest args &key (output-type (default-library-type) output-type-p)
-                                                output-file (verbose *compile-verbose*) &allow-other-keys)
-  (setf output-type (maybe-fixup-output-type output-type output-type-p))
-  (flet ((do-compile-file ()
-           (cond ((or output-type-p (null output-file))
-                  (if *compile-file-parallel*
-                      (apply #'compile-file-parallel input-file
-                             :output-type output-type args)
-                      (apply #'compile-file-serial input-file
-                             :output-type output-type args)))
-                 (t (if *compile-file-parallel*
-                        (apply #'compile-file-parallel input-file args)
-                        (apply #'compile-file-serial input-file args))))))
-    (if verbose
-        (time (do-compile-file))
-        (do-compile-file))))
+      (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose *compile-verbose*)
+        (let ((ast-jobs
+                (compile-stream-to-result
+                 input-stream
+                 :output-type output-type
+                 :output-path output-path
+                 :environment environment
+                 :optimize optimize
+                 :optimize-level optimize-level
+                 :ast-only ast-only
+                 :write-bitcode write-bitcode)))
+          (cond (dry-run (format t "Doing nothing further~%") nil)
+                ((some #'job-serious-condition ast-jobs)
+                 ;; There was an insurmountable error - fail.
+                 nil)
+                ;; Usual result
+                (t (output-cfp-result ast-jobs output-path output-type)
+                   (truename output-path))))))))
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* *use-compile-file-parallel*))

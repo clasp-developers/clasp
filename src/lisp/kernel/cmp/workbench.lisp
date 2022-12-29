@@ -9,7 +9,6 @@
          COMPILER::TRANSFORM-LAMBDA-PARTS COMPILE-FILE
          cmp::do-new-function
          cmp::do-dbg-function
-         cmp::compile-file-serial
          cmp::compile-file-to-module
          cmp::loop-read-and-compile-file-forms
          cmp::bclasp-loop-read-and-compile-file-forms

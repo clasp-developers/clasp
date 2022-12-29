@@ -107,13 +107,13 @@
     (if verbose
         (let ((before-ms (get-internal-run-time))
               (before-bytes (gctools:bytes-allocated)))
-          (apply #'cmp::compile-file-serial compile-file-arguments)
+          (apply #'compile-file compile-file-arguments)
           (let ((after-ms (get-internal-run-time))
                 (after-bytes (gctools:bytes-allocated)))
             (message :info "Compile time run({:.3f} secs) consed({} bytes)"
                      (float (/ (- after-ms before-ms) internal-time-units-per-second))
                      (- after-bytes before-bytes))))
-        (apply #'cmp::compile-file-serial compile-file-arguments))
+        (apply #'compile-file compile-file-arguments))
     (when reload
       (load-kernel-file (make-pathname :type "fasl" :defaults output-path) :silent silent))
     output-path))
