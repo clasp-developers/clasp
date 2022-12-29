@@ -628,6 +628,8 @@ a relative path from there."
          "ll")
         ((eq type :object)
          "o")
+        ((eq type :bytecode)
+         "lbc")
         ((eq type :fasp)
          "fasp")
         ((eq type :faso)

@@ -90,23 +90,9 @@
 
 ;;; I wonder, why that doesn't take core:*clasp-build-mode* into account
 (defun cfp-output-extension (output-type)
-  (let ((result (cond
-                  ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
-                  ((and (eq *default-object-type* :faso) (eq output-type :object)) "faso")
-                  ((eq output-type :object) "o")
-                  ((eq output-type :fasl) "fasl")
-                  ((eq output-type :faso) "faso")
-                  ((eq output-type :fasoll) "fasoll")
-                  ((eq output-type :fasobc) "fasobc")
-                  ((eq output-type :faspll) "faspll")
-                  ((eq output-type :faspbc) "faspbc")
-                  ((eq output-type :fasp) "fasp")
-                  ((eq output-type :executable) #-windows "" #+windows "exe")
-                  (t (error "unsupported output-type ~a" output-type)))))
-    (let ((build-extension (core:build-extension output-type)))
-      (unless (string= build-extension result)
-        (error "For output-type ~s there is a mismatch between cfp-extension (~s) and build-extension (~s) - if this never happens then get rid of cfp-extension" output-type result build-extension)))
-    result))
+  (if (eq output-type :object)
+      (core:build-extension *default-object-type*)
+      (core:build-extension output-type)))
 
 (defun cfp-output-file-default (input-file output-type &key target-backend)
   (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*)))
@@ -252,6 +238,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
   (case output-type
     (:faso :fasp)
     (:object :fasl)
+    (:bytecode :bytecode)
     (:fasoll :faspll)
     (:fasobc :faspbc)
     (:faspll :faspll)
@@ -333,7 +320,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
              (apply #'compile-stream/parallel source-sin output-path
                     args))))))))
 
-(defun compile-stream/serial (input-stream output-path
+(defun compile-stream/serial (input-stream output-path &rest args
                               &key
                                 (optimize t)
                                 (optimize-level *optimization-level*)
@@ -348,18 +335,22 @@ Compile a Lisp source stream and return a corresponding LLVM module."
          (output-type (if output-type-p
                           (fixup-output-type output-type)
                           output-type)))
-    (with-compiler-env ()
-      (with-compiler-timer (:message "Compile-file"
-                            :report-link-time t
-                            :verbose *compile-verbose*)
-        (let ((module (compile-stream-to-module input-stream
-                                                :environment environment
-                                                :image-startup-position image-startup-position
-                                                :optimize optimize
-                                                :optimize-level optimize-level)))
-          (compile-file-output-module module output-path output-type
-                                      type
-                                      :position image-startup-position)))))
+    (case output-type
+      ((:bytecode)
+       (apply #'cmpltv:bytecode-compile-stream input-stream output-path args))
+      (otherwise
+       (with-compiler-env ()
+         (with-compiler-timer (:message "Compile-file"
+                               :report-link-time t
+                               :verbose *compile-verbose*)
+           (let ((module (compile-stream-to-module input-stream
+                                                   :environment environment
+                                                   :image-startup-position image-startup-position
+                                                   :optimize optimize
+                                                   :optimize-level optimize-level)))
+             (compile-file-output-module module output-path output-type
+                                         type
+                                         :position image-startup-position)))))))
   (truename output-path))
 
 (defun reloc-model ()

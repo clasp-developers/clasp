@@ -5,7 +5,7 @@
            #:add-load-time-value)
   (:export #:instruction #:creator #:vcreator #:effect)
   (:export #:write-bytecode #:encode)
-  (:export #:bytecode-compile-file))
+  (:export #:bytecode-compile-stream))
 
 (in-package #:cmpltv)
 
@@ -968,38 +968,25 @@
             (funcall (cmp:bytecompile `(lambda () (progn ,form)) env)))
           (bytecode-compile-file-form form env)))))
 
-;; Prototype. Does not do compile time side effects.
-;; input is a character stream. output is a ub8 stream.
-(defun bytecode-cf-stream (input output)
-  (let* ((*state* (make-instance 'compilation-state)))
-    (with-constants (:compiler #'bytecode-cf-compile-lexpr)
-      ;; Read and compile the forms.
-      (loop with eof = (gensym "EOF")
-            with *readtable* = *readtable*
-            with *package* = *package*
-            with *compile-time-too* = nil
-            for form = (read input nil eof)
-            until (eq form eof)
-            when *compile-print*
-              do (cmp::describe-form form)
-            do (bytecode-compile-toplevel form))
-      ;; Write out the FASO bytecode.
-      (write-bytecode output))))
-
-(defun bytecode-compile-file (input-file
-                              &key
-                                (output-file
-                                 (make-pathname
-                                  :type "lbc" :defaults input-file))
-                                ((:verbose *compile-verbose*) *compile-verbose*)
-                                ((:print *compile-print*) *compile-print*)
-                                (external-format :default))
-  (with-open-file (input input-file :external-format external-format)
-    (when *compile-verbose*
-      (format t "~&; Compiling file: ~a~%" (namestring input-file)))
-    (with-open-file (output output-file
-                            :element-type '(unsigned-byte 8)
-                            :direction :output :if-does-not-exist :create)
-      (when *compile-verbose*
-        (format t "~&; Destination file: ~a~%" (namestring output-file)))
-      (bytecode-cf-stream input output))))
+;; input is a character stream.
+(defun bytecode-compile-stream (input output-path
+                                &key (environment
+                                      (cmp:make-null-lexical-environment))
+                                &allow-other-keys)
+  (with-open-file (output output-path
+                          :direction :output
+                          :if-does-not-exist :create
+                          :element-type '(unsigned-byte 8))
+    (let* ((*state* (make-instance 'compilation-state)))
+      (with-constants (:compiler #'bytecode-cf-compile-lexpr)
+        ;; Read and compile the forms.
+        (loop with eof = (gensym "EOF")
+              with *compile-time-too* = nil
+              for form = (read input nil eof)
+              until (eq form eof)
+              when *compile-print*
+                do (cmp::describe-form form)
+              do (bytecode-compile-toplevel form))
+        ;; Write out the FASO bytecode.
+        (write-bytecode output))))
+  (truename output-path))
