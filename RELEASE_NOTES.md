@@ -1,4 +1,4 @@
-# Version 2.1.0 (LLVM14) Pending
+# Version 2.1.0 (LLVM14) 2023-01-01
 
 ## Added
 * Add `ext:list-all-logical-hosts` and `ext:logical-host-p` functions to query
