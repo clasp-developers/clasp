@@ -526,26 +526,25 @@ FORWARD(LoadTimeValueInfo);
 class LoadTimeValueInfo_O : public General_O {
   LISP_CLASS(comp, CompPkg, LoadTimeValueInfo_O, "LoadTimeValueInfo", General_O);
 public:
-  LoadTimeValueInfo_O(T_sp form, bool read_only_p, size_t index)
-    : _form(form), _read_only_p(read_only_p), _index(index) {}
+  LoadTimeValueInfo_O(T_sp form, bool read_only_p)
+    : _form(form), _read_only_p(read_only_p) {}
 public:
   T_sp _form; // the form that will produce the value
   // Whether the load-time-value was marked read-only.
   // This is currently unused, but it's included in case we want it later.
   bool _read_only_p;
-  // The index into the constants table at which the LTV will reside.
-  size_t _index;
 public:
-  static LoadTimeValueInfo_sp make(T_sp form, bool read_only_p, size_t index) {
-    return gctools::GC<LoadTimeValueInfo_O>::allocate<gctools::RuntimeStage>(form, read_only_p, index);
+  static LoadTimeValueInfo_sp make(T_sp form, bool read_only_p) {
+    return gctools::GC<LoadTimeValueInfo_O>::allocate<gctools::RuntimeStage>(form, read_only_p);
   }
 public:
   CL_LISPIFY_NAME(LoadTimeValueInfo/form)
   CL_DEFMETHOD T_sp form() { return this->_form; }
   CL_LISPIFY_NAME(LoadTimeValueInfo/ReadOnlyP)
   CL_DEFMETHOD bool read_only_p() { return this->_read_only_p; }
-  CL_LISPIFY_NAME(LoadTimeValueInfo/index)
-  CL_DEFMETHOD size_t iindex() { return this->_index; }
+  // Evaluate the load time value form.
+  CL_LISPIFY_NAME(LoadTimeValueInfo/eval)
+  CL_DEFMETHOD T_sp eval();
 };
  
 class Module_O : public General_O {
@@ -553,16 +552,13 @@ class Module_O : public General_O {
 public:
   ComplexVector_T_sp _cfunctions;
   ComplexVector_T_sp _literals;
-  ComplexVector_T_sp _ltvs; // load time values
 public:
   Module_O()
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
-      _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
-      _ltvs(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
+      _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
   Module_O(ComplexVector_T_sp literals)
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
-      _literals(literals),
-      _ltvs(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
+      _literals(literals) {}
   CL_LISPIFY_NAME(Module/make)
   CL_DEF_CLASS_METHOD
   static Module_sp make() {
@@ -577,8 +573,6 @@ public:
   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
   CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
   CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
-  CL_LISPIFY_NAME(module/ltvs)
-  CL_DEFMETHOD ComplexVector_T_sp ltvs() { return this->_ltvs; }
 public:
   // Use the optimistic bytecode vector sizes to initialize the optimistic
   // cfunction position.

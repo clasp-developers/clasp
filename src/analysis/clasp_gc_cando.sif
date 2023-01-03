@@ -6470,9 +6470,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
              :offset-base-ctype "comp::Module_O" :layout-offset-field-names ("_literals")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
-             :offset-base-ctype "comp::Module_O" :layout-offset-field-names ("_ltvs")}
 {class-kind :stamp-name "STAMPWTAG_core__ImmobileObject_O" :stamp-key "core::ImmobileObject_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -10034,8 +10031,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "comp::LoadTimeValueInfo_O"
              :layout-offset-field-names ("_read_only_p")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "comp::LoadTimeValueInfo_O" :layout-offset-field-names ("_index")}
 {class-kind :stamp-name "STAMPWTAG_core__DebuggerLocal_O" :stamp-key "core::DebuggerLocal_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

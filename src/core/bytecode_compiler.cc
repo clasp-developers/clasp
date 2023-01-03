@@ -760,8 +760,6 @@ void Module_O::link_load(T_sp compile_info) {
   ComplexVector_T_sp cmodule_literals = cmodule->literals();
   size_t literal_length = cmodule_literals->length();
   SimpleVector_sp literals = SimpleVector_O::make(literal_length);
-  ComplexVector_T_sp ltvs = cmodule->ltvs();
-  size_t ltvs_length = ltvs->length();
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make();
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   // Create the real function objects.
@@ -790,20 +788,15 @@ void Module_O::link_load(T_sp compile_info) {
   }
   // Replace the cfunctions in the cmodule literal vector with
   // real bytecode functions in the module vector.
+  // Also replace load-time-value infos with the evaluated forms.
   for (size_t i = 0; i < literal_length; ++i) {
-    T_sp cfunc_lit = (*cmodule_literals)[i];
-    if (gc::IsA<Cfunction_sp>(cfunc_lit))
-      (*literals)[i] = gc::As_unsafe<Cfunction_sp>(cfunc_lit)->info();
+    T_sp lit = (*cmodule_literals)[i];
+    if (gc::IsA<Cfunction_sp>(lit))
+      (*literals)[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
+    else if (gc::IsA<LoadTimeValueInfo_sp>(lit))
+      (*literals)[i] = gc::As_unsafe<LoadTimeValueInfo_sp>(lit)->eval();
     else
-      (*literals)[i] = cfunc_lit;
-  }
-  // Evaluate all load-time-value forms and put their values into the
-  // literals vector.
-  for (size_t i = 0; i < ltvs_length; ++i) {
-    auto info = gc::As<LoadTimeValueInfo_sp>((*ltvs)[i]);
-    Lexenv_sp nenv = make_null_lexical_environment();
-    T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(), info->form());
-    (*literals)[info->iindex()] = eval::funcall(bytecompile(lexpr, nenv));
+      (*literals)[i] = lit;
   }
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
@@ -1694,10 +1687,9 @@ CL_DEFUN void compile_load_time_value(T_sp form, T_sp tread_only_p,
   else SIMPLE_ERROR("load-time-value read-only-p is not T or NIL: %s"
                     , _rep_(tread_only_p));
   
-  size_t ind = context->new_literal_index(nil<T_O>()); // placeholder nil
-  auto ltv = LoadTimeValueInfo_O::make(form, read_only_p, ind);
+  auto ltv = LoadTimeValueInfo_O::make(form, read_only_p);
   // Add the LTV to the cmodule.
-  context->cfunction()->module()->ltvs()->vectorPushExtend(ltv);
+  size_t ind = context->new_literal_index(ltv);
   // With that done, we basically just need to compile a literal load.
   // (Note that we do always need to register the LTV, since it may have
   //  some weird side effect. We could hypothetically save some space by
@@ -1921,6 +1913,11 @@ CL_DEFUN T_mv cmp__bytecode_implicit_compile_form(T_sp form, T_sp env) {
   //  printf("%s:%d:%s lexpr = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lexpr).c_str());
   Function_sp thunk = bytecompile(lexpr, coerce_lexenv_desig(env));
   return eval::funcall(thunk);
+}
+
+T_sp LoadTimeValueInfo_O::eval() {
+  return cmp__bytecode_implicit_compile_form(this->form(),
+                                             make_null_lexical_environment());
 }
 
 T_mv bytecode_toplevel_eval(T_sp, T_sp);

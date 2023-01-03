@@ -1,8 +1,7 @@
 (defpackage #:cmpltv
   (:use #:cl)
   (:export #:with-constants
-           #:ensure-constant #:add-constant #:find-constant-index
-           #:add-load-time-value)
+           #:ensure-constant #:add-constant #:find-constant-index)
   (:export #:instruction #:creator #:vcreator #:effect)
   (:export #:write-bytecode #:encode)
   (:export #:bytecode-compile-stream))
@@ -12,6 +11,19 @@
 ;;; For this first version, I'm going to track permanency but not do anything
 ;;; with it - cutting out transients can be later, since I think it will need
 ;;; more coordination with the compiler.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Debugging
+;;;
+
+(defvar *debug-compiler* nil)
+
+(defmacro dbgprint (message &rest args)
+  `(when *debug-compiler*
+     (let ((*print-level* 2) (*print-length* 1) (*print-circle* t))
+       (format *error-output* ,(concatenate 'string "~&; " message "~%")
+               ,@args))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -27,11 +39,26 @@
   (;; T if the object outlasts loading (e.g. is referred to directly in code)
    ;; otherwise NIL
    (%permanency :initform nil :accessor permanency :type boolean)
-   (%index :initform nil :accessor index :type (integer 0))))
+   (%index :initform nil :initarg :index :accessor index
+           :type (integer 0))))
 ;;; A creator for which a prototype value (which the eventual LTV will be
 ;;; similar to) is available.
 (defclass vcreator (creator)
   ((%prototype :initarg :prototype :reader prototype)))
+
+(defmethod print-object ((object creator) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "~a ~d"
+            (if (permanency object) :permanent :transient)
+            (index object))))
+
+(defmethod print-object ((object vcreator) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "~s ~a ~d"
+            (prototype object)
+            (if (permanency object) :permanent :transient)
+            (index object))))
+
 ;;; An instruction that performs some action for effect. This can include
 ;;; initialization as well as arbitrary side effects (as from make-load-form).
 (defclass effect (instruction) ())
@@ -140,18 +167,28 @@
                  :reader load-time-value-creator-read-only-p)
    ;; The original form, for debugging/display
    (%form :initarg :form :reader load-time-value-creator-form)
+   ;; The info object, for similarity checking
+   (%info :initarg :info :reader load-time-value-creator-info)
    ;; If something's referenced directly from load-time-value, it's permanent.
    (%permanency :initform t)))
 
 ;;;
 
+;;; Return true iff the value is similar to the existing creator.
+(defgeneric similarp (creator value)
+  (:method (creator value) (declare (ignore creator value)) nil))
+
+(defmethod similarp ((creator vcreator) value)
+  (eql (prototype creator) value))
+
+(defmethod similarp ((creator load-time-value-creator) ltvi)
+  (eql (load-time-value-creator-info creator) ltvi))
+
 ;; Look up a value in the instructions.
 ;; On success returns the creator, otherwise NIL.
 ;; Could be extended with coalescence relations or made more efficient.
 (defun %find-constant (value sequence)
-  (find-if (lambda (c)
-             (and (typep c 'vcreator)
-                  (eql (prototype c) value)))
+  (find-if (lambda (c) (and (typep c 'creator) (similarp c value)))
            sequence))
 
 ;;; List of instructions to be executed by the loader.
@@ -324,18 +361,21 @@
     (error 'circular-dependency :path *creating*))
   (multiple-value-bind (create initialize) (make-load-form value)
     (prog1
-        (add-instruction
-         (make-instance 'general-creator
-           :prototype value
-           :function (let ((*creating* (cons value *creating*)))
-                       (add-form create))))
+        (let ((*creating* (cons value *creating*)))
+          (add-instruction
+           (make-instance 'general-creator
+             :prototype value
+             :function (add-form create))))
       (add-instruction (make-instance 'general-initializer
                          :function (add-form initialize))))))
 
-(defun add-load-time-value (form read-only-p &key index)
-  (add-instruction (make-instance 'load-time-value-creator
-                     :function (add-form form) :index index
-                     :form form :read-only-p read-only-p)))
+(defmethod add-constant ((value cmp:load-time-value-info))
+  (add-instruction
+   (make-instance 'load-time-value-creator
+     :function (add-form (cmp:load-time-value-info/form value))
+     :read-only-p (cmp:load-time-value-info/read-only-p value)
+     :form (cmp:load-time-value-info/form value)
+     :info value)))
 
 ;;; Loop over the instructions, assigning indices to the creators such that
 ;;; the permanent objects come first. This only affects their position in the
@@ -399,6 +439,7 @@
     (make-pathname 85)
     (make-bytecode-function 87) ; ltvc_make_global_entry_point
     (make-bytecode-module 88) ; ltvc_make_local_entry_point - overriding
+    (setf-literals 89) ; make_random_state. compatibility is a sham here anyway
     (make-single-float 90 sind ub32)
     (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
@@ -444,6 +485,7 @@
          (*position-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
          (ninsts (length insts)))
     (assign-indices insts)
+    (dbgprint "Instructions:~{~&~a~}" insts)
     (write-magic stream)
     (write-version stream)
     (write-b64 nobjs stream)
@@ -757,6 +799,11 @@
   (write-mnemonic 'funcall-initialize stream)
   (write-index (general-initializer-function inst) stream))
 
+(defmethod encode ((inst load-time-value-creator) stream)
+  (write-mnemonic 'funcall-create stream)
+  (write-index inst stream)
+  (write-index (load-time-value-creator-function inst) stream))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; File compiler
@@ -771,15 +818,8 @@
     (write-b32 len stream))
   (write-sequence bytecode stream))   
 
-(defclass compilation-state ()
-  (;; This is used as the constants vector of all cmp:module's.
-   (%constants :initform (make-array 0 :fill-pointer 0 :adjustable t)
-               :accessor constants)))
-
-(defvar *state*)
-
 (defun bytecode-cf-compile-lexpr (lambda-expression environment)
-  (let ((module (cmp:module/make-with-literals (constants *state*)))
+  (let ((module (cmp:module/make))
         (environment (or environment (cmp:make-null-lexical-environment))))
     ;; Compile the code.
     (cmp:bytecompile-into module lambda-expression environment)))
@@ -826,12 +866,6 @@
   (write-index (lambda-list inst) stream)
   (write-index (docstring inst) stream))
 
-(defun find-bytecode-function (cfunction)
-  (find-if (lambda (c)
-             (and (typep c 'bytefunction-creator)
-                  (eql (cfunction c) cfunction)))
-           *instructions*))
-
 ;;; Having this be a vcreator with a prototype is a slight abuse of notation,
 ;;; since what we actually create is a bytecode module, not a compiler module.
 ;;; But this allows functions in the same module to share their module.
@@ -840,26 +874,22 @@
 (defclass bytemodule-creator (vcreator)
   ((%lispcode :initform nil :initarg :lispcode :reader bytemodule-lispcode)))
 
+(defclass setf-literals (effect)
+  ((%module :initarg :module :reader setf-literals-module :type creator)
+   (%literals :initarg :literals :reader setf-literals-literals :type creator)))
+
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
-  (prog1
-      (add-instruction
-       (make-instance 'bytemodule-creator
-         :prototype value :lispcode (cmp:module/link value)))
-    ;; Register constants.
-    ;; FIXME: This does a lot of redundant work/lookups since previously
-    ;; registered constants will be tried again.
-    ;; But we don't want to delay this to the end, because adding constants
-    ;; can add more modules due to make-load-form and load-time-value.
-    (loop for const across (cmp:module/literals value)
-          for i from 0
-          do (ensure-constant const :permanent t :index i))
-    ;; Register load-time-value forms.
-    (loop for ltv across (cmp:module/ltvs value)
-          for form = (cmp:load-time-value-info/form ltv)
-          for read-only-p = (cmp:load-time-value-info/read-only-p ltv)
-          for index = (cmp:load-time-value-info/index ltv)
-          do (add-load-time-value form read-only-p :index index))))
+  (let ((mod
+          (add-instruction
+           (make-instance 'bytemodule-creator
+             :prototype value :lispcode (cmp:module/link value)))))
+    ;; Modules can indirectly refer to themselves recursively through
+    ;; cfunctions, so we need to 2stage it here.
+    (add-instruction
+     (make-instance 'setf-literals
+       :module mod :literals (ensure-constant (cmp:module/literals value))))
+    mod))
 
 (defmethod encode ((inst bytemodule-creator) stream)
   ;; Write instructions.
@@ -871,6 +901,11 @@
       (error "Bytecode length is ~d, too long to dump" len))
     (write-b32 len stream)
     (write-sequence lispcode stream)))
+
+(defmethod encode ((inst setf-literals) stream)
+  (write-mnemonic 'setf-literals stream)
+  (write-index (setf-literals-module inst) stream)
+  (write-index (setf-literals-literals inst) stream))
 
 (defvar *compile-time-too*)
 
@@ -977,16 +1012,15 @@
                           :direction :output
                           :if-does-not-exist :create
                           :element-type '(unsigned-byte 8))
-    (let* ((*state* (make-instance 'compilation-state)))
-      (with-constants (:compiler #'bytecode-cf-compile-lexpr)
-        ;; Read and compile the forms.
-        (loop with eof = (gensym "EOF")
-              with *compile-time-too* = nil
-              for form = (read input nil eof)
-              until (eq form eof)
-              when *compile-print*
-                do (cmp::describe-form form)
-              do (bytecode-compile-toplevel form))
-        ;; Write out the FASO bytecode.
-        (write-bytecode output))))
+    (with-constants (:compiler #'bytecode-cf-compile-lexpr)
+      ;; Read and compile the forms.
+      (loop with eof = (gensym "EOF")
+            with *compile-time-too* = nil
+            for form = (read input nil eof)
+            until (eq form eof)
+            when *compile-print*
+              do (cmp::describe-form form)
+            do (bytecode-compile-toplevel form environment))
+      ;; Write out the FASO bytecode.
+      (write-bytecode output)))
   (truename output-path))

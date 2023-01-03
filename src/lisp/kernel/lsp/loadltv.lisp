@@ -25,6 +25,7 @@
     (make-pathname 85)
     (make-bytecode-function 87)
     (make-bytecode-module 88)
+    (setf-literals 89 modind litsind)
     (make-single-float 90 sind ub32)
     (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
@@ -455,6 +456,11 @@
           ;; TODO
           (source-pathname nil)
           (lineno -1) (column -1) (filepos -1))
+      (dbgprint "  entry-point = ~d, nlocals = ~d, nclosed = ~d"
+                entry-point nlocals nclosed)
+      (dbgprint "  module-index = ~d" modulei)
+      (dbgprint "  name = ~a, lambda-list = ~a, docstring = ~a"
+                name lambda-list docstring)
       (setf (aref constants index)
             (core:global-bytecode-simple-fun/make
              (core:function-description/make
@@ -473,10 +479,18 @@
          (module (core:bytecode-module/make)))
     (dbgprint " (make-bytecode-module ~d ~d)" index len)
     (read-sequence bytecode stream)
+    (dbgprint "  bytecode:~{ ~2,'0x~}" (coerce bytecode 'list))
     (setf (aref constants index) module)
     (core:bytecode-module/setf-bytecode module bytecode)
+    ;; pointless but harmless if followed by a setf-literals instruction.
     (core:bytecode-module/setf-literals module constants)
     (+ *index-bytes* 4 len)))
+
+(defmethod %load-instruction ((mnemonic (eql 'setf-literals)) constants stream)
+  (let ((modi (read-index stream)) (litsi (read-index stream)))
+    (dbgprint " (setf-literals ~d ~d)" modi litsi)
+    (core:bytecode-module/setf-literals
+     (aref constants modi) (aref constants litsi))))
 
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create))
                               constants stream)
@@ -489,6 +503,7 @@
                               constants stream)
   (let ((funi (read-index stream)))
     (dbgprint " (funcall-initialize ~d)" funi)
+    (dbgprint "  calling ~s" (aref constants funi))
     (funcall (aref constants funi)))
   *index-bytes*)
 
