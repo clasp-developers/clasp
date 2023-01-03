@@ -137,6 +137,7 @@ void clasp_force_output(T_sp strm);
 void clasp_finish_output(T_sp strm);
 void clasp_finish_output_t(); // finish output to *standard-output*
 int clasp_file_column(T_sp strm);
+int clasp_file_column_set(T_sp strm, int column);
 size_t clasp_input_filePos(T_sp strm);
 int clasp_input_lineno(T_sp strm);
 int clasp_input_column(T_sp strm);
@@ -225,6 +226,7 @@ struct FileOps {
   T_sp (*get_position)(T_sp strm);
   T_sp (*set_position)(T_sp strm, T_sp pos);
   int (*column)(T_sp strm);
+  int (*set_column)(T_sp strm, int column);
 
   T_sp (*close)(T_sp strm);
 };

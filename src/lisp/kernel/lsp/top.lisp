@@ -551,7 +551,12 @@ Use special code 0 to cancel this operation.")
 		   ""
 		 (package-name *package*))
 	       (- *tpl-level* *step-level* -1)
-	       ""))))
+	       "")))
+  ;; Because by default *standard-output* is not
+  ;; *terminal-io* but STDOUT the column is not reset
+  ;; after pressing enter. Reduce confusion by resetting
+  ;; the column to 0
+  (setf (core:file-column *standard-output*) 0))
 
 (defun tpl-read (&aux (*read-suppress* nil))
   (finish-output)

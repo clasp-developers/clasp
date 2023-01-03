@@ -783,6 +783,11 @@ generic_column(T_sp strm) {
   return 0;
 }
 
+static int
+generic_set_column(T_sp strm, int column) {
+  return column;
+}
+
 static T_sp
 generic_set_position(T_sp strm, T_sp pos) {
   return nil<T_O>();
@@ -1661,6 +1666,12 @@ illegal_op_int__T_sp(T_sp strm) {
   abort();
 }
 
+static int
+illegal_op_int__T_sp_int(T_sp strm, int c) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
 static cl_index
 illegal_op_cl_index__T_sp_char_cl_index(T_sp strm, unsigned char *c, cl_index n) {
   printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
@@ -1746,6 +1757,7 @@ const FileOps startup_stream_ops = {
     illegal_op_T_sp__T_sp,
     illegal_op_T_sp__T_sp_T_sp,
     illegal_op_int__T_sp,
+    illegal_op_int__T_sp_int,
     illegal_op_T_sp__T_sp };
 
 const FileOps clos_stream_ops = {
@@ -1778,6 +1790,7 @@ const FileOps clos_stream_ops = {
     clos_stream_get_position,
     clos_stream_set_position,
     clos_stream_column,
+    generic_set_column,
     clos_stream_close};
 
 /**********************************************************************
@@ -1828,6 +1841,11 @@ str_out_column(T_sp strm) {
   return StreamOutputColumn(strm);
 }
 
+static int
+str_out_set_column(T_sp strm, int column) {
+  return StreamOutputColumn(strm) = column;
+}
+
 const FileOps str_out_ops = {
     not_output_write_byte8,
     not_binary_read_byte8,
@@ -1858,6 +1876,7 @@ const FileOps str_out_ops = {
     str_out_get_position,
     str_out_set_position,
     str_out_column,
+    str_out_set_column,
     generic_close};
 
 CL_LAMBDA(s);
@@ -2051,6 +2070,7 @@ const FileOps str_in_ops = {
     str_in_get_position,
     str_in_set_position,
     generic_column,
+    generic_set_column,
     generic_close};
 
 T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) {
@@ -2205,6 +2225,11 @@ two_way_column(T_sp strm) {
   return clasp_file_column(TwoWayStreamOutput(strm));
 }
 
+static int
+two_way_set_column(T_sp strm, int column) {
+  return clasp_file_column_set(TwoWayStreamOutput(strm), column);
+}
+
 static T_sp
 two_way_close(T_sp strm) {
   if (StreamFlags(strm) & CLASP_STREAM_CLOSE_COMPONENTS) {
@@ -2244,6 +2269,7 @@ const FileOps two_way_ops = {
     generic_always_nil, /* get_position */
     generic_set_position,
     two_way_column,
+    two_way_set_column,
     two_way_close};
 
 CL_LAMBDA(istrm ostrm);
@@ -2385,6 +2411,14 @@ broadcast_column(T_sp strm) {
   return clasp_file_column(oCar(l));
 }
 
+static int
+broadcast_set_column(T_sp strm, int column) {
+  for (T_sp cur = BroadcastStreamList(strm); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) {
+    clasp_file_column_set(oCar(cur), column);
+  }
+  return column;
+}
+
 static T_sp
 broadcast_close(T_sp strm) {
   if (StreamFlags(strm) & CLASP_STREAM_CLOSE_COMPONENTS) {
@@ -2423,6 +2457,7 @@ const FileOps broadcast_ops = {
     broadcast_get_position,
     broadcast_set_position,
     broadcast_column,
+    broadcast_set_column,
     broadcast_close};
 
 CL_LAMBDA(&rest ap);
@@ -2565,6 +2600,11 @@ echo_column(T_sp strm) {
   return clasp_file_column(EchoStreamOutput(strm));
 }
 
+static int
+echo_set_column(T_sp strm, int column) {
+  return clasp_file_column_set(EchoStreamOutput(strm), column);
+}
+
 static T_sp
 echo_close(T_sp strm) {
   if (StreamFlags(strm) & CLASP_STREAM_CLOSE_COMPONENTS) {
@@ -2604,6 +2644,7 @@ const FileOps echo_ops = {
     generic_always_nil, /* get_position */
     generic_set_position,
     echo_column,
+    echo_set_column,
     echo_close};
 
 CL_LAMBDA(strm1 strm2);
@@ -2763,6 +2804,7 @@ const FileOps concatenated_ops = {
     generic_always_nil, /* get_position */
     generic_set_position,
     generic_column,
+    generic_set_column,
     concatenated_close};
 
 CL_LAMBDA(&rest ap);
@@ -2927,6 +2969,11 @@ synonym_column(T_sp strm) {
   return clasp_file_column(SynonymStreamStream(strm));
 }
 
+static int
+synonym_set_column(T_sp strm, int column) {
+  return clasp_file_column_set(SynonymStreamStream(strm), column);
+}
+
 const FileOps synonym_ops = {
     synonym_write_byte8,
     synonym_read_byte8,
@@ -2957,6 +3004,7 @@ const FileOps synonym_ops = {
     synonym_get_position,
     synonym_set_position,
     synonym_column,
+    synonym_set_column,
     generic_close};
 
 CL_LAMBDA(strm1);
@@ -3298,6 +3346,11 @@ io_file_column(T_sp strm) {
   return StreamOutputColumn(strm);
 }
 
+static int
+io_file_set_column(T_sp strm, int column) {
+  return StreamOutputColumn(strm) = column;
+}
+
 static T_sp
 io_file_close(T_sp strm) {
   int f = IOFileStreamDescriptor(strm);
@@ -3591,6 +3644,7 @@ const FileOps io_file_ops = {
     io_file_get_position,
     io_file_set_position,
     io_file_column,
+    io_file_set_column,
     io_file_close};
 
 const FileOps output_file_ops = {
@@ -3623,6 +3677,7 @@ const FileOps output_file_ops = {
     io_file_get_position,
     io_file_set_position,
     io_file_column,
+    io_file_set_column,
     io_file_close};
 
 const FileOps input_file_ops = {
@@ -3655,6 +3710,7 @@ const FileOps input_file_ops = {
     io_file_get_position,
     io_file_set_position,
     generic_column,
+    generic_set_column,
     io_file_close};
 
 
@@ -4179,6 +4235,11 @@ io_stream_column(T_sp strm) {
   return StreamOutputColumn(strm);
 }
 
+static int
+io_stream_set_column(T_sp strm, int column) {
+  return StreamOutputColumn(strm) = column;
+}
+
 static T_sp
 io_stream_close(T_sp strm) {
   FILE *f = IOStreamStreamFile(strm);
@@ -4238,6 +4299,7 @@ const FileOps io_stream_ops = {
     io_stream_get_position,
     io_stream_set_position,
     io_stream_column,
+    io_stream_set_column,
     io_stream_close};
 
 const FileOps output_stream_ops = {
@@ -4270,6 +4332,7 @@ const FileOps output_stream_ops = {
     io_stream_get_position,
     io_stream_set_position,
     io_stream_column,
+    io_stream_set_column,
     io_stream_close};
 
 const FileOps input_stream_ops = {
@@ -4302,6 +4365,7 @@ const FileOps input_stream_ops = {
     io_stream_get_position,
     io_stream_set_position,
     generic_column,
+    generic_set_column,
     io_stream_close};
 
 /**********************************************************************
@@ -4446,6 +4510,7 @@ const FileOps winsock_stream_io_ops = {
     not_implemented_get_position,
     not_implemented_set_position,
     generic_column,
+    generic_set_column,
 
     winsock_stream_close};
 
@@ -4479,6 +4544,7 @@ const FileOps winsock_stream_output_ops = {
     not_implemented_get_position,
     not_implemented_set_position,
     generic_column,
+    generic_set_column,
 
     winsock_stream_close};
 
@@ -4512,6 +4578,7 @@ const FileOps winsock_stream_input_ops = {
     not_implemented_get_position,
     not_implemented_set_position,
     generic_column,
+    generic_set_column,
 
     winsock_stream_close};
 #endif
@@ -4625,6 +4692,7 @@ const FileOps wcon_stream_io_ops = {
     not_implemented_get_position,
     not_implemented_set_position,
     generic_column,
+    generic_set_column,
 
     generic_close,
 };
@@ -5004,6 +5072,10 @@ void clasp_finish_output_t() {
 
 int clasp_file_column(T_sp strm) {
   return stream_dispatch_table(strm).column(strm);
+}
+
+int clasp_file_column_set(T_sp strm, int column) {
+  return stream_dispatch_table(strm).set_column(strm, column);
 }
 
 T_sp clasp_file_length(T_sp strm) {
@@ -6762,6 +6834,13 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__file_column(T_sp strm) {
   strm = coerce::outputStreamDesignator(strm);
   return make_fixnum(clasp_file_column(strm));
+};
+
+CL_LISPIFY_NAME("core:file-column");
+DOCGROUP(clasp);
+CL_DEFUN_SETF T_sp core__setf_file_column(int column, T_sp strm) {
+  strm = coerce::outputStreamDesignator(strm);
+  return make_fixnum(clasp_file_column_set(strm, column));
 };
 
 /*! Translated from ecl::si_do_write_sequence */
