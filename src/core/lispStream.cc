@@ -380,8 +380,8 @@ void StreamCursor::backup(T_sp strm, claspCharacter c) {
 const FileOps &duplicate_dispatch_table(const FileOps &ops);
 const FileOps &stream_dispatch_table(T_sp strm);
 
-static int flisten(T_sp, FILE *);
-static int file_listen(T_sp, int);
+static int file_listen(T_sp, FILE *);
+static int fd_listen(T_sp, int);
 
 //    static T_sp alloc_stream();
 
@@ -2782,7 +2782,7 @@ static int io_file_listen(T_sp strm) {
       }
     }
   }
-  return file_listen(strm, IOFileStreamDescriptor(strm));
+  return fd_listen(strm, IOFileStreamDescriptor(strm));
 }
 
 #if defined(CLASP_MS_WINDOWS_HOST)
@@ -2804,7 +2804,7 @@ static void io_file_clear_input(T_sp strm) {
     /* Do not stop here: the FILE structure needs also to be flushed */
   }
 #endif
-  while (file_listen(strm, f) == CLASP_LISTEN_AVAILABLE) {
+  while (fd_listen(strm, f) == CLASP_LISTEN_AVAILABLE) {
     claspCharacter c = eformat_read_char(strm);
     if (c == EOF)
       return;
@@ -3612,7 +3612,7 @@ static cl_index io_stream_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
 static int io_stream_listen(T_sp strm) {
   if (StreamByteStack(strm).notnilp()) // != nil<T_O>())
     return CLASP_LISTEN_AVAILABLE;
-  return flisten(strm, IOStreamStreamFile(strm));
+  return file_listen(strm, IOStreamStreamFile(strm));
 }
 
 static void io_stream_clear_input(T_sp strm) {
@@ -3625,7 +3625,7 @@ static void io_stream_clear_input(T_sp strm) {
     /* Do not stop here: the FILE structure needs also to be flushed */
   }
 #endif
-  while (flisten(strm, fp) == CLASP_LISTEN_AVAILABLE) {
+  while (file_listen(strm, fp) == CLASP_LISTEN_AVAILABLE) {
     clasp_disable_interrupts();
     getc(fp);
     clasp_enable_interrupts();
@@ -5054,60 +5054,8 @@ CL_DEFUN T_sp cl__close(T_sp strm, T_sp abort) { return core__closeSTAR(strm, ab
  * BACKEND
  */
 
-static int file_listen(T_sp stream, int fileno) {
-#if !defined(CLASP_MS_WINDOWS_HOST)
-#if defined(HAVE_POLL)
-  struct pollfd fds[1];
-  int retv;
-  fds[0].fd = fileno;
-  fds[0].events = POLLIN;
-  fds[0].revents = 0;
-  retv = poll(fds, 1, 0);
-  if (UNLIKELY(retv < 0))
-    file_libc_error(core::_sym_simpleStreamError, stream, "Error while listening to stream.", 0);
-  else if (retv > 0)
-    // POLLIN just means there's data, so that's fine.
-    if (fds[0].revents & POLLIN) {
-      return CLASP_LISTEN_AVAILABLE;
-    } else if (fds[0].revents & ~POLLHUP) { // error or something.
-      SIMPLE_ERROR(("Illegal revents value from poll -> %d%s%s%s%s%s%s"), fds[0].revents,
-                   (fds[0].revents & POLLPRI) ? " POLLPRI" : "", (fds[0].revents & POLLOUT) ? " POLLOUT" : "",
-                   (fds[0].revents & POLLOUT) ? " POLLRDHUP" : "", (fds[0].revents & POLLERR) ? " POLLERR" : "",
-                   (fds[0].revents & POLLHUP) ? " POLLHUP" : "", (fds[0].revents & POLLNVAL) ? " POLLNVAL" : "");
-    } else {
-      // POLLHUP just means the other end hung up, which is kind of interesting
-      // but is not an error. Useful when the stream is a process output or something.
-      return CLASP_LISTEN_NO_CHAR;
-    }
-  else
-    return CLASP_LISTEN_NO_CHAR;
-#elif defined(HAVE_SELECT)
-  fd_set fds;
-  int retv;
-  struct timeval tv = {0, 0};
-  /*
-   * Note that the following code is fragile. If the file is closed (/dev/null)
-   * then select() may return 1 (at least on OS X), so that we return a flag
-   * saying characters are available but will find none to read. See also the
-   * code in cl_clear_input().
-   */
-  FD_ZERO(&fds);
-  FD_SET(fileno, &fds);
-  retv = select(fileno + 1, &fds, NULL, NULL, &tv);
-  if (UNLIKELY(retv < 0))
-    file_libc_error(core::_sym_simpleStreamError, stream, "Error while listening to stream.", 0);
-  else if (retv > 0)
-    return CLASP_LISTEN_AVAILABLE;
-  else
-    return CLASP_LISTEN_NO_CHAR;
-#elif defined(FIONREAD)
-  {
-    long c = 0;
-    ioctl(fileno, FIONREAD, &c);
-    return (c > 0) ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_NO_CHAR;
-  }
-#endif /* FIONREAD */
-#else
+static int fd_listen(T_sp stream, int fileno) {
+#ifdef CLASP_MS_WINDOWS_HOST
   HANDLE hnd = (HANDLE)_get_osfhandle(fileno);
   switch (GetFileType(hnd)) {
   case FILE_TYPE_CHAR: {
@@ -5152,11 +5100,88 @@ static int file_listen(T_sp stream, int fileno) {
     FEerror("Unsupported Windows file type: ~A", 1, make_fixnum(GetFileType(hnd)).raw_());
     break;
   }
+#else
+  /* Method 1: poll, see POLL(2)
+     Method 2: select, see SELECT(2)
+     Method 3: ioctl FIONREAD, see FILIO(4)
+     Method 4: read a byte. Use non-blocking I/O if poll or select were not
+               available. */
+  int result;
+#if defined(HAVE_POLL)
+  struct pollfd fd = {fileno, POLLIN, 0};
+restart_poll:
+  result = poll(&fd, 1, 0);
+  if (UNLIKELY(result < 0)) {
+    if (errno == EINTR)
+      goto restart_poll;
+    goto listen_error;
+  }
+  if (fd.revents == 0) {
+    return CLASP_LISTEN_NO_CHAR;
+  }
+  /* When read() returns a result without blocking, this can also be
+     EOF! (Example: Linux and pipes.) We therefore refrain from simply
+     doing  { return CLASP_LISTEN_AVAILABLE; }  and instead try methods
+     3 and 4. */
+#elif defined(HAVE_SELECT)
+  fd_set fds;
+  struct timeval tv = {0, 0};
+  FD_ZERO(&fds);
+  FD_SET(fileno, &fds);
+restart_select:
+  result = select(fileno + 1, &fds, NULL, NULL, &tv);
+  if (UNLIKELY(result < 0)) {
+    if (errno == EINTR)
+      goto restart_select;
+    if (errno != EBADF) /* UNIX_LINUX returns EBADF for files! */
+      goto listen_error;
+  } else if (result == 0) {
+    return CLASP_LISTEN_NO_CHAR;
+  }
 #endif
-  return -3;
+#ifdef FIONREAD
+  long c = 0;
+  if (ioctl(fileno, FIONREAD, &c) < 0) {
+    if (!((errno == ENOTTY) || IS_EINVAL))
+      goto listen_error;
+    return (c > 0) ? CLASP_LISTEN_AVAILABLE : CLASP_LISTEN_EOF;
+  }
+#endif
+#if !defined(HAVE_POLL) && !defined(HAVE_SELECT)
+  int flags = fcntl(fd, F_GETFL, 0);
+#endif
+  int read_errno;
+  cl_index b;
+restart_read:
+#if !defined(HAVE_POLL) && !defined(HAVE_SELECT)
+  fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+#endif
+  result = read(fileno, &b, 1);
+  read_errno = errno;
+#if !defined(HAVE_POLL) && !defined(HAVE_SELECT)
+  fcntl(fd, F_SETFL, flags);
+#endif
+  if (result < 0) {
+    if (read_errno == EINTR)
+      goto restart_read;
+    if (read_errno == EAGAIN || read_errno == EWOULDBLOCK)
+      return CLASP_LISTEN_NO_CHAR;
+    goto listen_error;
+  }
+
+  if (result == 0) {
+    return CLASP_LISTEN_EOF;
+  }
+
+  StreamByteStack(stream) = Cons_O::createList(make_fixnum(b));
+  return CLASP_LISTEN_AVAILABLE;
+listen_error:
+  file_libc_error(core::_sym_simpleStreamError, stream, "Error while listening to stream.", 0);
+#endif
+  return CLASP_LISTEN_UNKNOWN;
 }
 
-static int flisten(T_sp stream, FILE *fp) {
+static int file_listen(T_sp stream, FILE *fp) {
   ASSERT(stream.notnilp());
   int aux;
   if (feof(fp))
@@ -5165,8 +5190,8 @@ static int flisten(T_sp stream, FILE *fp) {
   if (FILE_CNT(fp) > 0)
     return CLASP_LISTEN_AVAILABLE;
 #endif
-  aux = file_listen(stream, fileno(fp));
-  if (aux != -3)
+  aux = fd_listen(stream, fileno(fp));
+  if (aux != CLASP_LISTEN_UNKNOWN)
     return aux;
   /* This code is portable, and implements the expected behavior for regular files.
             It will fail on noninteractive streams. */
