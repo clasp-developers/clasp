@@ -1224,7 +1224,13 @@
          (pprint-logical-block (stream nil :prefix "#<" :suffix ">")
            (print-unreadable-object-contents object stream type identity body)))
         (t
-         (write-string "#<" stream)
-         (print-unreadable-object-contents object stream type identity body)
-         (write-char #\> stream)))
+         (let ((stream (cond ((null stream)
+                              *standard-output*)
+                             ((eq t stream)
+                              *terminal-io*)
+                             (t
+                              stream))))
+           (write-string "#<" stream)
+           (print-unreadable-object-contents object stream type identity body)
+           (write-char #\> stream))))
   nil)

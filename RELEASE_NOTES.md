@@ -1,3 +1,8 @@
+# Version 2.2.0 (LLVM14) Pending
+
+## Fixes
+* Ensure that `print-unreadable-object` can accept output stream designators.
+
 # Version 2.1.0 (LLVM14) 2023-01-01
 
 ## Added

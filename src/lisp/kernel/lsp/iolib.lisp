@@ -323,9 +323,15 @@ the one defined in the ANSI standard. *print-base* is 10, *print-array* is t,
   (cond (*print-readably*
          (error 'print-not-readable :object object))
         (t
-         (write-string "#<" stream)
-         (print-unreadable-object-contents object stream type identity body)
-         (write-char #\> stream)))
+         (let ((stream (cond ((null stream)
+                              *standard-output*)
+                             ((eq t stream)
+                              *terminal-io*)
+                             (t
+                              stream))))
+           (write-string "#<" stream)
+           (print-unreadable-object-contents object stream type identity body)
+           (write-char #\> stream))))
   nil)
 
 (defmacro print-unreadable-object ((object stream &key type identity) &body body)
