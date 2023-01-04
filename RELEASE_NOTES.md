@@ -2,6 +2,7 @@
 
 ## Fixes
 * Ensure that `print-unreadable-object` can accept output stream designators.
+* Set stream column to zero after printing the prompt in a REPL. Fixes [#1348][].
 
 # Version 2.1.0 (LLVM14) 2023-01-01
 
@@ -25,6 +26,11 @@
   breadth-first ([#1392][]).
 
 # Version 2.0.0 (LLVM14) 2022-10-26
+
+This release is dedicated to Dr. Karsten Poeck, who died after a short illness
+in July of 2022. Karsten made many significant contributions to Clasp, including
+reviving and solidifying our test frameworks. We are saddened by his sudden
+passing, and will miss the insightful conversations with him. 
 
 ## Added
 * Lisp based koga metabuilder that outputs Ninja build files.
@@ -211,6 +217,7 @@
 [ANSI]: https://gitlab.common-lisp.net/ansi-test/ansi-test
 [ECLECTOR]: https://github.com/s-expressionists/Eclector
 [#175]: https://github.com/clasp-developers/clasp/issues/175
+[#1348]: https://github.com/clasp-developers/clasp/issues/1348
 [#1368]: https://github.com/clasp-developers/clasp/issues/1368
 [#1390]: https://github.com/clasp-developers/clasp/issues/1390
 [#1392]: https://github.com/clasp-developers/clasp/issues/1392
