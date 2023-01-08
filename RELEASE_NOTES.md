@@ -3,6 +3,9 @@
 ## Fixes
 * Ensure that `print-unreadable-object` can accept output stream designators.
 * Set stream column to zero after printing the prompt in a REPL. Fixes [#1348][].
+* Return correct values for `listen` when applied to file streams. This is done
+  by checking for available bytes using read when poll/select indicate the next
+  read will not block. Otherwise use non-blocking read. Fixes [#1404][].
 
 # Version 2.1.0 (LLVM14) 2023-01-01
 
@@ -221,3 +224,4 @@ passing, and will miss the insightful conversations with him.
 [#1368]: https://github.com/clasp-developers/clasp/issues/1368
 [#1390]: https://github.com/clasp-developers/clasp/issues/1390
 [#1392]: https://github.com/clasp-developers/clasp/issues/1392
+[#1404]: https://github.com/clasp-developers/clasp/issues/1404

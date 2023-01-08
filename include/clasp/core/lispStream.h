@@ -189,6 +189,7 @@ T_sp cl__close(T_sp strm, T_sp abort = nil<T_O>());
 #define CLASP_LISTEN_NO_CHAR 0
 #define CLASP_LISTEN_AVAILABLE 1
 #define CLASP_LISTEN_EOF -1
+#define CLASP_LISTEN_UNKNOWN -3
 
 typedef claspCharacter (*cl_eformat_decoder)(T_sp stream, unsigned char **buffer, unsigned char *buffer_end);
 typedef int (*cl_eformat_encoder)(T_sp stream, unsigned char *buffer, claspCharacter c);

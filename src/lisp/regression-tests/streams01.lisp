@@ -20,6 +20,18 @@
                   (END-OF-FILE () (LISTEN S)))))
       (nil nil))
 
+(test-type listen-4
+    (progn
+      (with-open-file (blah "nada.txt" :direction :output
+                                       :if-does-not-exist :create
+                                       :if-exists :supersede)
+        (write-char #\a blah))
+      (with-open-file (blah "nada.txt" :direction :input)
+        (values (listen blah)
+                (read-char blah)
+                (listen blah))))
+    (t #\a nil))
+
 (test-expect-error broadcast-stream (make-broadcast-stream 1 2 3)
                    :type type-error)
 
