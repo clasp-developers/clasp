@@ -366,6 +366,7 @@ void process_clasp_arguments(CommandLineOptions *options) {
     } else if (*arg == "--script") {
       options->_NoInform = true;
       options->_NoRc = true;
+      options->_NoPrint = true;
       options->_DebuggerDisabled = true;
       options->_Interactive = false;
       options->_LoadEvalList.push_back(pair<LoadEvalEnum, std::string>(std::make_pair(cloScript, *++arg)));

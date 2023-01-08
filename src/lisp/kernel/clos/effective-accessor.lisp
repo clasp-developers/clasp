@@ -43,8 +43,8 @@
 ;;; This is important so that comparing methods to get identical
 ;;; effective methods works.
 ;;; FIXME: Should be weak-value.
-(defvar *cached-effective-readers* (make-hash-table :test #'equal))
-(defvar *cached-effective-writers* (make-hash-table :test #'equal))
+(defvar *cached-effective-readers* (make-hash-table :test #'equal :thread-safe t))
+(defvar *cached-effective-writers* (make-hash-table :test #'equal :thread-safe t))
 
 (defun intern-effective-reader (method location)
   (let* ((direct-slotd (accessor-method-slot-definition method))
