@@ -113,7 +113,7 @@
     (let* ((location-table (make-hash-table :size (if slots 24 0)))
            (direct-slot-class (find-class 'standard-direct-slot-definition nil))
 	   (direct-slots (loop for slotd in slots
-                               collect (apply #'make-simple-slotd direct-slot-class slotd)))
+                               collect (apply #'make-simple-direct-slotd direct-slot-class slotd)))
            (effective-slot-class (find-class 'standard-effective-slot-definition nil))
 	   (effective-slots (loop for i fixnum from 0
                                   for slotd in slots

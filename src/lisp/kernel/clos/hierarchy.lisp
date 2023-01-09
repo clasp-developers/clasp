@@ -254,6 +254,13 @@
                 :accessor %slot-definition-location)
       )))
 
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
+  (core:defconstant-equal +direct-slot-definition-slots+
+    `(,@+slot-definition-slots+
+      ;; see effective-accessor.lisp
+      (%effective-readers :initform nil :reader %direct-slotd-effective-readers)
+      (%effective-writers :initform nil :reader %direct-slotd-effective-writers))))
+
 ;;; ----------------------------------------------------------------------
 ;;; %METHOD-FUNCTION
 ;;;
@@ -388,9 +395,9 @@
          :metaclass nil                 ; Special-cased in boot.lisp
          :direct-slots #.+standard-class-slots+)
         (standard-direct-slot-definition
-         :direct-slots #3=#.+slot-definition-slots+)
+         :direct-slots #3=#.+direct-slot-definition-slots+)
         (standard-effective-slot-definition
-         :direct-slots #3#)
+         :direct-slots #5=#.+slot-definition-slots+)
         (t)
         (class :direct-slots #.+class-slots+)
         (standard-object
@@ -403,22 +410,22 @@
          :direct-superclasses (standard-object))
         (slot-definition
          :direct-superclasses (metaobject)
-         :direct-slots #3#)
+         :direct-slots #5#)
         (standard-slot-definition
          :direct-superclasses (slot-definition)
-         :direct-slots #3#)
+         :direct-slots #5#)
         (direct-slot-definition
          :direct-superclasses (slot-definition)
-         :direct-slots #3#)
+         :direct-slots #5#)
         (effective-slot-definition
          :direct-superclasses (slot-definition)
-         :direct-slots #3#)
+         :direct-slots #5#)
         (standard-direct-slot-definition
          :direct-superclasses (standard-slot-definition direct-slot-definition)
          :direct-slots #3#)
         (standard-effective-slot-definition
          :direct-superclasses (standard-slot-definition effective-slot-definition)
-         :direct-slots #3#)
+         :direct-slots #5#)
         (method-combination
          :direct-superclasses (metaobject)
          :direct-slots #.+method-combination-slots+)
