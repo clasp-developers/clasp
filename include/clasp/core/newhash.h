@@ -41,7 +41,7 @@ THE SOFTWARE.
  * 64 bit version
  */
 #define GOLDEN_RATIO 0x9e3779b97f4a7c13L
-#define hash_mix(a, b, c)   \
+#define clasp_hash_mix(a, b, c)   \
   {                    \
     a = a - b;         \
     a = a - c;         \
@@ -97,7 +97,7 @@ hash_string(int initval, const unsigned char *k, int length) {
     k += 8;
     c += extract_word(k);
     k += 8;
-    hash_mix(a, b, c);
+    clasp_hash_mix(a, b, c);
   }
 
   /*------------------------------------- handle the last 11 bytes */
@@ -153,7 +153,7 @@ hash_string(int initval, const unsigned char *k, int length) {
     a += k[0];
     /* case 0: nothing left to add */
   }
-  hash_mix(a, b, c);
+  clasp_hash_mix(a, b, c);
   /*-------------------------------------------- report the result */
   return c;
 }
@@ -164,7 +164,7 @@ hash_string(int initval, const unsigned char *k, int length) {
  */
 
 #define GOLDEN_RATIO 0x9e3779b9L
-#define hash_mix(a, b, c) \
+#define clasp_hash_mix(a, b, c) \
   {                  \
     a -= b;          \
     a -= c;          \
@@ -208,7 +208,7 @@ hash_string(int initval, const unsigned char *k, int length) {
     k += 4;
     c += extract_word(k);
     k += 4;
-    hash_mix(a, b, c);
+    clasp_hash_mix(a, b, c);
   }
 
   /*------------------------------------- handle the last 11 bytes */
@@ -240,7 +240,7 @@ hash_string(int initval, const unsigned char *k, int length) {
     a += k[0];
     /* case 0: nothing left to add */
   }
-  hash_mix(a, b, c);
+  clasp_hash_mix(a, b, c);
   /*-------------------------------------------- report the result */
   return c;
 }
@@ -248,7 +248,7 @@ hash_string(int initval, const unsigned char *k, int length) {
 
 inline uintptr_t hash_word(uintptr_t c, uintptr_t w) {
   uintptr_t a = w + GOLDEN_RATIO, b = GOLDEN_RATIO;
-  hash_mix(a, b, c);
+  clasp_hash_mix(a, b, c);
   return c;
 }
 #if 0
@@ -261,7 +261,7 @@ inline uintptr_t hash_base_string(const char *s, int len, uintptr_t h) {
     s++;
     h += *s;
     s++;
-    hash_mix(a, b, h);
+    clasp_hash_mix(a, b, h);
   }
   switch (i) {
   case 2:
@@ -272,7 +272,7 @@ inline uintptr_t hash_base_string(const char *s, int len, uintptr_t h) {
   default:
     h += len;
   }
-  hash_mix(a, b, h);
+  clasp_hash_mix(a, b, h);
   return h;
 }
 
