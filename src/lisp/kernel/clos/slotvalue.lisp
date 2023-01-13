@@ -74,24 +74,6 @@
                          new-value))
       ((:class) (setf (mp:atomic (car loc)) new-value)))))
 
-#+threads
-(mp:define-atomic-expander slot-value-using-class (class object slotd)
-  (&rest keys)
-  "Same requirements as STANDARD-INSTANCE-ACCESS, except the slot can have
-allocation :class.
-Also, methods on SLOT-VALUE-USING-CLASS, SLOT-BOUNDP-USING-CLASS, and
-(SETF SLOT-VALUE-USING-CLASS) are ignored (not invoked).
-In the future, the CAS behavior may be customizable with a generic function."
-  (declare (ignore keys))
-  (let ((gclass (gensym "CLASS")) (gobject (gensym "OBJECT"))
-        (gslotd (gensym "SLOTD")) (oldv (gensym "OLD")) (newv (gensym "NEWV")))
-    (values (list gclass gobject gslotd) (list class object slotd) oldv newv
-            `(atomic-slot-value-using-class ,gclass ,gobject ,gslotd)
-            `(setf (atomic-slot-value-using-class ,gclass ,gobject ,gslotd)
-                   ,newv)
-            `(cas-slot-value-using-class ,oldv ,newv
-                                         ,gclass ,gobject ,gslotd))))
-
 ;;;
 ;;; 3) Error messages related to slot access
 ;;;

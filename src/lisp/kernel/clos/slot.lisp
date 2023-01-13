@@ -39,6 +39,27 @@
 	   :location location)
     slotd))
 
+(defun make-simple-direct-slotd
+    (class &key name (initform +initform-unsupplied+) initfunction
+	     (type 'T) (allocation :instance)
+	     initargs readers writers documentation location)
+  (when (and (eq allocation :class)
+	     (functionp initfunction))
+    (setf initfunction (constantly (funcall initfunction))))
+  (with-early-make-instance +direct-slot-definition-slots+
+    (slotd class
+	   :name name
+	   :initform initform
+	   :initfunction initfunction
+	   :type type
+	   :allocation allocation
+	   :initargs initargs
+	   :readers readers
+	   :writers writers
+	   :documentation documentation
+	   :location location)
+    slotd))
+
 (defun freeze-class-slot-initfunction (slotd)
   (when (eq (getf slotd :allocation) :class)
     (let ((initfunc (getf slotd :initfunction)))
@@ -55,7 +76,7 @@
 	     (apply #'direct-slot-definition-class class
 		    (freeze-class-slot-initfunction slotd))
 	     slotd)
-      (apply #'make-simple-slotd class slotd)))
+      (apply #'make-simple-direct-slotd class slotd)))
 
 ;;; ----------------------------------------------------------------------
 ;;;
