@@ -52,7 +52,8 @@
 
 ;; aesthetic
 (defun constructor-name (class)
-  (make-symbol (format nil "OPTIMIZED-~a-CONSTRUCTOR" (class-name class))))
+  (make-symbol (with-standard-io-syntax
+                 (format nil "OPTIMIZED-~a-CONSTRUCTOR" (class-name class)))))
 
 (defun constructor-form (class class-form keys)
   (let ((params (make-params keys)))

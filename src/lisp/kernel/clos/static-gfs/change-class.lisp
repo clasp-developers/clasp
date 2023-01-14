@@ -108,8 +108,9 @@
   (:metaclass clos:funcallable-standard-class))
 
 (defun class-changer-name (to-class keys)
-  (make-symbol (format nil "CLASS-CHANGER-~a~{-~a~}"
-                       (class-name to-class) keys)))
+  (make-symbol (with-standard-io-syntax
+                 (format nil "CLASS-CHANGER-~a~{-~a~}"
+                         (class-name to-class) keys))))
 
 (defun generate-class-changer-function (class-changer)
   (let* ((call-history (changer-call-history class-changer))

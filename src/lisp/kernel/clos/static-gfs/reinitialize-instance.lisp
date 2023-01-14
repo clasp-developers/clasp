@@ -80,7 +80,8 @@
     r))
 
 (defun reinitializer-name (keys)
-  (make-symbol (format nil "REINITIALIZER~{-~a~}" keys)))
+  (make-symbol (with-standard-io-syntax
+                 (format nil "REINITIALIZER~{-~a~}" keys))))
 
 (defun generate-reinitializer-function (reinitializer)
   (let* ((call-history (reinitializer-call-history reinitializer))
