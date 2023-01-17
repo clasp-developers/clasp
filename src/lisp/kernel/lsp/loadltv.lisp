@@ -86,7 +86,7 @@
 ;; look up a loader? This will become more obvious once there are actually
 ;; multiple versions in existence.
 (defparameter *min-version* '(0 0))
-(defparameter *max-version* '(0 3))
+(defparameter *max-version* '(0 4))
 
 (defun loadable-version-p (major minor)
   (and
@@ -453,7 +453,7 @@
           (name (aref constants namei))
           (lambda-list (aref constants lambda-listi))
           (docstring (aref constants docstringi))
-          ;; TODO
+          ;; See 'source-pos-info attribute for one way to do this.
           (source-pathname nil)
           (lineno -1) (column -1) (filepos -1))
       (dbgprint "  entry-point = ~d, nlocals = ~d, nclosed = ~d"
@@ -507,11 +507,43 @@
     (funcall (aref constants funi)))
   *index-bytes*)
 
-;; Return how many bytes were read.
+;; Return how many bytes were read (for early versions, anyway)
 (defun load-instruction (constants stream)
   (if (<= *minor* 2)
       (1+ (%load-instruction (read-mnemonic stream) constants stream))
       (%load-instruction (read-mnemonic stream) constants stream)))
+
+(defparameter *attributes*
+  (alexandria:alist-hash-table
+   '(#+clasp("clasp:source-pos-info" . source-pos-info))
+   :test #'equal))
+
+(defgeneric %load-attribute (mnemonic constants stream))
+
+(defmethod %load-attribute ((mnemonic string) constants stream)
+  (declare (ignore constants))
+  (let ((nbytes (read-ub32 stream)))
+    (dbgprint " (unknown-attribute ~s ~d)" mnemonic nbytes)
+    ;; FIXME: would file-position be better? Is it guaranteed to work here?
+    (loop repeat nbytes do (read-byte stream))))
+
+#+clasp
+(defmethod %load-attribute ((mnemonic (eql 'source-pos-info)) constants stream)
+  ;; read and ignore nbytes.
+  (read-ub32 stream)
+  ;; now the actual code.
+  (let ((function (aref constants (read-index stream)))
+        (path (aref constants (read-index stream)))
+        (lineno (read-ub64 stream))
+        (column (read-ub64 stream))
+        (filepos (read-ub64 stream)))
+    (dbgprint " (source-pos-info ~s ~s ~d ~d ~d)"
+              function path lineno column filepos)
+    (core:function/set-source-pos-info function path filepos lineno column)))
+
+(defun load-attribute (constants stream)
+  (let ((aname (aref constants (read-index stream))))
+    (%load-attribute (or (gethash aname *attributes*) aname) constants stream)))
 
 ;; TODO: Check that the FASL actually defines all of the constants.
 ;; Make sure it defines them in order, i.e. not reading from uninitialized
@@ -573,6 +605,11 @@
             ((>= *minor* 3)
              (loop repeat ninsts
                    do (load-instruction constants stream))
+             (when (>= *minor* 4)
+               (let ((nattrs (read-ub32 stream)))
+                 (dbgprint "File reports ~d attributes" nattrs)
+                 (loop repeat nattrs
+                       do (load-attribute constants stream))))
              #-clasp ; listen is broken on clasp
              (when (listen stream)
                (error "Bytecode continues beyond end of instructions: ~a"

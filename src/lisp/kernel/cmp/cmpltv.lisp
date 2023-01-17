@@ -172,6 +172,28 @@
    ;; If something's referenced directly from load-time-value, it's permanent.
    (%permanency :initform t)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Attributes are bonus, possibly implementation-defined stuff also in the file.
+;;; Based closely on Java attributes, the loader has to ignore any it doesn't
+;;; understand, so it's verboten for attributes to do anything semantically
+;;; important in general.
+;;; All attributes go in the file after the bytecode.
+
+(defclass attribute ()
+  (;; Creator for the name of the attribute, a string.
+   ;; FIXME: Do this more cleanly.
+   (%name :reader name :type creator)))
+
+#+clasp
+(defclass spi-attr (attribute)
+  ((%name :initform (ensure-constant "clasp:source-pos-info"))
+   (%function :initarg :function :reader spi-attr-function :type creator)
+   (%pathname :initarg :pathname :reader spi-attr-pathname :type creator)
+   (%lineno :initarg :lineno :reader lineno :type (unsigned-byte 64))
+   (%column :initarg :column :reader column :type (unsigned-byte 64))
+   (%filepos :initarg :filepos :reader filepos :type (unsigned-byte 64))))
+
 ;;;
 
 ;;; Return true iff the value is similar to the existing creator.
@@ -195,6 +217,9 @@
 ;;; In reverse.
 (defvar *instructions*)
 
+;;; List of extra information for the loader.
+(defvar *attributes*)
+
 ;;; Bound by the client to a function that compiles a lambda expression
 ;;; relative to an environment, and then returns some object that
 ;;; cmpltv can treat as a constant.
@@ -208,7 +233,7 @@
 (defvar *creating*)
 
 (defmacro with-constants ((&key (compiler '*compiler*)) &body body)
-  `(let ((*instructions* nil) (*creating* nil)
+  `(let ((*instructions* nil) (*attributes* nil) (*creating* nil)
          (*compiler* ,compiler))
      ,@body))
 
@@ -224,6 +249,10 @@
 (defun add-instruction (instruction)
   (push instruction *instructions*)
   instruction)
+
+(defun add-attribute (attribute)
+  (push attribute *attributes*)
+  attribute)
 
 (defgeneric add-constant (value))
 
@@ -471,13 +500,13 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 3)
+(defparameter *minor-version* 4)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
   (write-b16 *minor-version* stream))
 
-(defun %write-bytecode (instructions stream)
+(defun %write-bytecode (instructions attributes stream)
   (let* (;; lol efficiency
          (insts (reverse instructions))
          (nobjs (count-if (lambda (i) (typep i 'creator)) insts))
@@ -490,10 +519,13 @@
     (write-version stream)
     (write-b64 nobjs stream)
     (write-b64 ninsts stream)
-    (map nil (lambda (inst) (encode inst stream)) insts)))
+    (map nil (lambda (inst) (encode inst stream)) insts)
+    ;; now write attributes
+    (write-b32 (length attributes) stream)
+    (map nil (lambda (attr) (encode attr stream)) attributes)))
 
 (defun write-bytecode (stream)
-  (%write-bytecode *instructions* stream))
+  (%write-bytecode *instructions* *attributes* stream))
 
 (defun opcode (mnemonic)
   (let ((inst (assoc mnemonic +ops+ :test #'equal)))
@@ -841,15 +873,29 @@
    (%nclosed :initarg :nclosed :reader nclosed :type (unsigned-byte 16))))
 
 (defmethod add-constant ((value cmp:cfunction))
-  (add-instruction (make-instance 'bytefunction-creator
-                     :cfunction value
-                     :module (ensure-constant (cmp:cfunction/module value))
-                     :name (ensure-constant (cmp:cfunction/name value))
-                     :lambda-list (ensure-constant
-                                   (cmp:cfunction/lambda-list value))
-                     :docstring (ensure-constant (cmp:cfunction/doc value))
-                     :nlocals (cmp:cfunction/nlocals value)
-                     :nclosed (length (cmp:cfunction/closed value)))))
+  (let ((inst
+          (add-instruction (make-instance 'bytefunction-creator
+                             :cfunction value
+                             :module (ensure-constant (cmp:cfunction/module value))
+                             :name (ensure-constant (cmp:cfunction/name value))
+                             :lambda-list (ensure-constant
+                                           (cmp:cfunction/lambda-list value))
+                             :docstring (ensure-constant (cmp:cfunction/doc value))
+                             :nlocals (cmp:cfunction/nlocals value)
+                             :nclosed (length (cmp:cfunction/closed value))))))
+    #+clasp ; source info
+    (let ((cspi core:*current-source-pos-info*))
+      (add-attribute
+       (make-instance 'spi-attr
+         :function inst
+         :pathname (ensure-constant
+                    (core:file-scope-pathname
+                     (core:file-scope
+                      (core:source-pos-info-file-handle cspi))))
+         :lineno (core:source-pos-info-lineno cspi)
+         :column (core:source-pos-info-column cspi)
+         :filepos (core:source-pos-info-filepos cspi))))
+    inst))
 
 (defmethod encode ((inst bytefunction-creator) stream)
   ;; four bytes for the entry point, two for the nlocals and nclosed,
@@ -906,6 +952,24 @@
   (write-mnemonic 'setf-literals stream)
   (write-index (setf-literals-module inst) stream)
   (write-index (setf-literals-literals inst) stream))
+
+;;;
+
+(defmethod encode :before ((attr attribute) stream)
+  (write-index (name attr) stream))
+
+#+clasp
+(defmethod encode ((attr spi-attr) stream)
+  ;; Write the length.
+  (write-b32 (+ *position-bytes* *position-bytes* 8 8 8) stream)
+  ;; And the data.
+  (write-index (spi-attr-function attr) stream)
+  (write-index (spi-attr-pathname attr) stream)
+  (write-b64 (lineno attr) stream)
+  (write-b64 (column attr) stream)
+  (write-b64 (filepos attr) stream))
+
+;;;
 
 (defvar *compile-time-too*)
 
@@ -1016,6 +1080,11 @@
       ;; Read and compile the forms.
       (loop with eof = (gensym "EOF")
             with *compile-time-too* = nil
+            with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
+            with cfsdl = cmp::*compile-file-source-debug-lineno*
+            with cfsdo = cmp::*compile-file-source-debug-offset*
+            for core:*current-source-pos-info*
+              = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
             for form = (read input nil eof)
             until (eq form eof)
             when *compile-print*
