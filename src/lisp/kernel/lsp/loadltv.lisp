@@ -135,37 +135,79 @@
         (first info)
         (error "BUG: Unknown opcode ~x" opcode))))
 
-;; Return how many bytes were read.
-(defgeneric %load-instruction (mnemonic constants stream))
+;; Constants vector we're producing.
+(defvar *constants*)
+(declaim (type simple-vector *constants*))
 
-(defmethod %load-instruction ((mnemonic (eql 'nil)) constants stream)
+;; Bit vector that is 1 only at indices that have been initialized.
+(defvar *initflags*)
+(declaim (type (simple-array bit (*)) *initflags*))
+
+(define-condition loader-error (file-error)
+  ()
+  (:default-initargs :pathname *load-pathname*))
+
+(define-condition invalid-fasl (loader-error) ())
+
+(define-condition uninitialized-constant (invalid-fasl)
+  ((%index :initarg :index :reader offending-index))
+  (:report (lambda (condition stream)
+             (format stream "FASL ~s is invalid:
+Tried to read constant #~d before initializing it"
+                     (file-error-pathname condition)
+                     (offending-index condition)))))
+
+(defun constant (index)
+  (if (zerop (sbit *initflags* index))
+      (error 'uninitialized-constant :index index)
+      (aref *constants* index)))
+
+(define-condition set-uninitialized-constant (invalid-fasl)
+  ((%index :initarg :index :reader offending-index))
+  (:report (lambda (condition stream)
+             (format stream "FASL ~s is invalid:
+Tried to define constant #~d, but it was already defined"
+                     (file-error-pathname condition)
+                     (offending-index condition)))))
+
+(defun (setf constant) (value index)
+  (if (zerop (sbit *initflags* index))
+      (setf (aref *constants* index) value
+            (sbit *initflags* index) 1)
+      (error 'set-uninitialized-constant :index index)))
+
+;; Versions 0.0-0.2: Return how many bytes were read.
+;; Versions 0.3-: Return value irrelevant.
+(defgeneric %load-instruction (mnemonic stream))
+
+(defmethod %load-instruction ((mnemonic (eql 'nil)) stream)
   (let ((index (read-index stream)))
     (dbgprint " (nil ~d)" index)
-    (setf (aref constants index) nil))
+    (setf (constant index) nil))
   *index-bytes*)
 
-(defmethod %load-instruction ((mnemonic (eql 't)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 't)) stream)
   (let ((index (read-index stream)))
     (dbgprint " (t ~d)" index)
-    (setf (aref constants index) t))
+    (setf (constant index) t))
   *index-bytes*)
 
-(defmethod %load-instruction ((mnemonic (eql 'cons)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'cons)) stream)
   (let ((index (read-index stream)))
     (dbgprint " (cons ~d)" index)
-    (setf (aref constants index) (cons nil nil)))
+    (setf (constant index) (cons nil nil)))
   *index-bytes*)
 
-(defmethod %load-instruction ((mnemonic (eql 'rplaca)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'rplaca)) stream)
   (let ((cons (read-index stream)) (value (read-index stream)))
     (dbgprint " (rplaca ~d ~d)" cons value)
-    (setf (car (aref constants cons)) (aref constants value)))
+    (setf (car (constant cons)) (constant value)))
   (* 2 *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'rplacd)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'rplacd)) stream)
   (let ((cons (read-index stream)) (value (read-index stream)))
     (dbgprint " (rplacd ~d ~d)" cons value)
-    (setf (cdr (aref constants cons)) (aref constants value)))
+    (setf (cdr (constant cons)) (constant value)))
   (* 2 *index-bytes*))
 
 (defmacro read-sub-byte (array stream nbits)
@@ -192,13 +234,13 @@
                  for bits = (ldb (byte ,nbits bit-index) byte)
                  do (setf (row-major-aref ,a (+ index j)) bits)))))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-array)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-array)) stream)
   (if (<= *minor* 2)
       (let ((index (read-index stream)) (rank (read-byte stream)))
         (dbgprint " (make-array ~d ~d)" index rank)
         (let ((dimensions (loop repeat rank collect (read-ub16 stream))))
           (dbgprint "  dimensions ~a" dimensions)
-          (setf (aref constants index) (make-array dimensions)))
+          (setf (constant index) (make-array dimensions)))
         (+ *index-bytes* 1 (* rank 2)))
       (let* ((index (read-index stream)) (uaet-code (read-byte stream))
              (uaet (decode-uaet uaet-code))
@@ -207,7 +249,9 @@
              (rank (read-byte stream))
              (dimensions (loop repeat rank collect (read-ub16 stream)))
              (array (make-array dimensions :element-type uaet)))
-        (setf (aref constants index) array)
+        (dbgprint " (make-array ~d ~x ~x ~d)" index uaet-code packing-code rank)
+        (dbgprint "  dimensions ~a" dimensions)
+        (setf (constant index) array)
         (macrolet ((undump (form)
                      `(loop for i below (array-total-size array)
                             for elem = ,form
@@ -254,17 +298,15 @@
                 ((equal packing-type 't)) ; setf-aref takes care of it
                 (t (error "BUG: Unknown packing-type ~s" packing-type)))))))
 
-(defmethod %load-instruction ((mnemonic (eql 'setf-row-major-aref))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'setf-row-major-aref)) stream)
   (let ((index (read-index stream)) (aindex (read-ub16 stream))
         (value (read-index stream)))
     (dbgprint " ((setf row-major-aref) ~d ~d ~d" index aindex value)
-    (setf (row-major-aref (aref constants index) aindex)
-          (aref constants value)))
+    (setf (row-major-aref (constant index) aindex)
+          (constant value)))
   (+ *index-bytes* 2 *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-hash-table))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-hash-table)) stream)
   (let ((index (read-index stream)))
     (dbgprint " (make-hash-table ~d)" index)
     (let* ((testcode (read-byte stream))
@@ -275,33 +317,33 @@
                    ((#b11) 'equalp)))
           (count (read-ub16 stream)))
       (dbgprint "  test = ~a, count = ~d" test count)
-      (setf (aref constants index) (make-hash-table :test test :size count))))
+      (setf (constant index) (make-hash-table :test test :size count))))
   (+ *index-bytes* 1 2))
 
-(defmethod %load-instruction ((mnemonic (eql 'setf-gethash)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'setf-gethash)) stream)
   (let ((htind (read-index stream))
         (keyind (read-index stream)) (valind (read-index stream)))
     (dbgprint " ((setf gethash) ~d ~d ~d)" htind keyind valind)
-    (setf (gethash (aref constants keyind) (aref constants htind))
-          (aref constants valind)))
+    (setf (gethash (constant keyind) (constant htind))
+          (constant valind)))
   (+ *index-bytes* *index-bytes* *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-sb64)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-sb64)) stream)
   (let ((index (read-index stream)) (sb64 (read-sb64 stream)))
     (dbgprint " (make-sb64 ~d ~d)" index sb64)
-    (setf (aref constants index) sb64))
+    (setf (constant index) sb64))
   (+ *index-bytes* 8))
 
-(defmethod %load-instruction ((mnemonic (eql 'find-package)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'find-package)) stream)
   (let ((index (read-index stream)) (name (read-index stream)))
     (dbgprint " (find-package ~d ~d)" index name)
-    (setf (aref constants index) (find-package (aref constants name))))
+    (setf (constant index) (find-package (constant name))))
   (+ *index-bytes* *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-bignum)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-bignum)) stream)
   (let ((index (read-index stream)) (ssize (read-sb64 stream)))
     (dbgprint " (make-bignum ~d ~d)" index ssize)
-    (setf (aref constants index)
+    (setf (constant index)
           ;; Using loop repeat is messy for fencepost reasons.
           (let ((result 0) (size (abs ssize)) (negp (minusp ssize)))
             (loop (when (zerop size) (return (if negp (- result) result)))
@@ -310,74 +352,71 @@
                     (setf result (logior (ash result 64) word))))))
     (+ *index-bytes* 8 (* 8 (abs ssize)))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-single-float))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-single-float)) stream)
   (let ((index (read-index stream)) (bits (read-ub32 stream)))
     (dbgprint " (make-single-float ~d #x~4,'0x)" index bits)
-    (setf (aref constants index) (ext:bits-to-single-float bits)))
+    (setf (constant index) (ext:bits-to-single-float bits)))
   (+ *index-bytes* 4))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-double-float))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-double-float)) stream)
   (let ((index (read-index stream)) (bits (read-ub64 stream)))
     (dbgprint " (make-double-float ~d #x~8,'0x)" index bits)
-    (setf (aref constants index) (ext:bits-to-double-float bits)))
+    (setf (constant index) (ext:bits-to-double-float bits)))
   (+ *index-bytes* 8))
 
-(defmethod %load-instruction ((mnemonic (eql 'ratio)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'ratio)) stream)
   (let ((index (read-index stream))
         (numi (read-index stream)) (deni (read-index stream)))
     (dbgprint " (ratio ~d ~d ~d)" index numi deni)
-    (setf (aref constants index)
+    (setf (constant index)
           ;; a little inefficient.
-          (/ (aref constants numi) (aref constants deni))))
+          (/ (constant numi) (constant deni))))
   (* 3 *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'complex)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'complex)) stream)
   (let ((index (read-index stream))
         (reali (read-index stream)) (imagi (read-index stream)))
     (dbgprint " (complex ~d ~d ~d)" index reali imagi)
-    (setf (aref constants index)
-          (complex (aref constants reali) (aref constants imagi))))
+    (setf (constant index)
+          (complex (constant reali) (constant imagi))))
   (* 3 *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-symbol))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-symbol)) stream)
   (let ((index (read-index stream))
         (namei (read-index stream)))
     (dbgprint " (make-symbol ~d ~d)" index namei)
-    (setf (aref constants index) (make-symbol (aref constants namei))))
+    (setf (constant index) (make-symbol (constant namei))))
   (+ *index-bytes* *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'intern)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'intern)) stream)
   (let ((index (read-index stream))
         (package (read-index stream)) (name (read-index stream)))
     (dbgprint " (intern ~d ~d ~d)" index package name)
-    (setf (aref constants index)
-          (intern (aref constants name) (aref constants package))))
+    (setf (constant index)
+          (intern (constant name) (constant package))))
   (+ *index-bytes* *index-bytes* *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-character)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-character)) stream)
   (let* ((index (read-index stream)) (code (read-ub32 stream))
          (char (code-char code)))
     (dbgprint " (make-character ~d #x~x) ; ~c" index code char)
-    (setf (aref constants index) char))
+    (setf (constant index) char))
   (+ *index-bytes* 4))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-pathname)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-pathname)) stream)
   (let ((index (read-index stream))
         (hosti (read-index stream)) (devicei (read-index stream))
         (directoryi (read-index stream)) (namei (read-index stream))
         (typei (read-index stream)) (versioni (read-index stream)))
     (dbgprint " (make-pathname ~d ~d ~d ~d ~d ~d ~d)"
               index hosti devicei directoryi namei typei versioni)
-    (setf (aref constants index)
-          (make-pathname :host (aref constants hosti)
-                         :device (aref constants devicei)
-                         :directory (aref constants directoryi)
-                         :name (aref constants namei)
-                         :type (aref constants typei)
-                         :version (aref constants versioni))))
+    (setf (constant index)
+          (make-pathname :host (constant hosti)
+                         :device (constant devicei)
+                         :directory (constant directoryi)
+                         :name (constant namei)
+                         :type (constant typei)
+                         :version (constant versioni))))
   (* *index-bytes* 7))
 
 (defvar +array-packing-infos+
@@ -412,8 +451,7 @@
 
 (defun decode-packing (code) (decode-uaet code)) ; same for now
 
-(defmethod %load-instruction ((mnemonic (eql 'make-specialized-array))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-specialized-array)) stream)
   (let ((index (read-index stream))
         (rank (read-byte stream)))
     (dbgprint " (make-specialized-array ~d ~d)" index rank)
@@ -424,7 +462,7 @@
            (arr (make-array dims :element-type etype)))
       (dbgprint "  dimensions ~a" dims)
       (dbgprint "  element type ~a" etype)
-      (setf (aref constants index) arr)
+      (setf (constant index) arr)
       (ecase etype
         (base-char
          (dotimes (i total-size)
@@ -436,8 +474,7 @@
       (+ *index-bytes* 1 (* rank 2)
          1 (* (ecase etype (base-char 1) (character 4)) total-size)))))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-bytecode-function))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-bytecode-function)) stream)
   (let ((index (read-index stream))
         (entry-point (read-ub32 stream))
         (nlocals (read-ub16 stream))
@@ -449,10 +486,10 @@
     (dbgprint " (make-bytecode-function ~d ~d ~d ~d~@[ ~d~] ~d ~d ~d)"
               index entry-point nlocals nclosed
               modulei namei lambda-listi docstringi)
-    (let ((module (if (<= *minor* 1) *module* (aref constants modulei)))
-          (name (aref constants namei))
-          (lambda-list (aref constants lambda-listi))
-          (docstring (aref constants docstringi))
+    (let ((module (if (<= *minor* 1) *module* (constant modulei)))
+          (name (constant namei))
+          (lambda-list (constant lambda-listi))
+          (docstring (constant docstringi))
           ;; See 'source-pos-info attribute for one way to do this.
           (source-pathname nil)
           (lineno -1) (column -1) (filepos -1))
@@ -461,7 +498,7 @@
       (dbgprint "  module-index = ~d" modulei)
       (dbgprint "  name = ~a, lambda-list = ~a, docstring = ~a"
                 name lambda-list docstring)
-      (setf (aref constants index)
+      (setf (constant index)
             (core:global-bytecode-simple-fun/make
              (core:function-description/make
               :function-name name :lambda-list lambda-list :docstring docstring
@@ -471,8 +508,7 @@
              (cmp:compile-trampoline name)))))
   (+ *index-bytes* 4 2 2 *index-bytes* *index-bytes* *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'make-bytecode-module))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'make-bytecode-module)) stream)
   (let* ((index (read-index stream))
          (len (read-ub32 stream))
          (bytecode (make-array len :element-type '(unsigned-byte 8)))
@@ -480,60 +516,57 @@
     (dbgprint " (make-bytecode-module ~d ~d)" index len)
     (read-sequence bytecode stream)
     (dbgprint "  bytecode:~{ ~2,'0x~}" (coerce bytecode 'list))
-    (setf (aref constants index) module)
+    (setf (constant index) module)
     (core:bytecode-module/setf-bytecode module bytecode)
     ;; pointless but harmless if followed by a setf-literals instruction.
-    (core:bytecode-module/setf-literals module constants)
+    (core:bytecode-module/setf-literals module *constants*)
     (+ *index-bytes* 4 len)))
 
-(defmethod %load-instruction ((mnemonic (eql 'setf-literals)) constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'setf-literals)) stream)
   (let ((modi (read-index stream)) (litsi (read-index stream)))
     (dbgprint " (setf-literals ~d ~d)" modi litsi)
     (core:bytecode-module/setf-literals
-     (aref constants modi) (aref constants litsi))))
+     (constant modi) (constant litsi))))
 
-(defmethod %load-instruction ((mnemonic (eql 'funcall-create))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
   (let ((index (read-index stream)) (funi (read-index stream)))
     (dbgprint " (funcall-create ~d ~d)" index funi)
-    (setf (aref constants index) (funcall (aref constants funi))))
+    (setf (constant index) (funcall (constant funi))))
   (* 2 *index-bytes*))
 
-(defmethod %load-instruction ((mnemonic (eql 'funcall-initialize))
-                              constants stream)
+(defmethod %load-instruction ((mnemonic (eql 'funcall-initialize)) stream)
   (let ((funi (read-index stream)))
     (dbgprint " (funcall-initialize ~d)" funi)
-    (dbgprint "  calling ~s" (aref constants funi))
-    (funcall (aref constants funi)))
+    (dbgprint "  calling ~s" (constant funi))
+    (funcall (constant funi)))
   *index-bytes*)
 
 ;; Return how many bytes were read (for early versions, anyway)
-(defun load-instruction (constants stream)
+(defun load-instruction (stream)
   (if (<= *minor* 2)
-      (1+ (%load-instruction (read-mnemonic stream) constants stream))
-      (%load-instruction (read-mnemonic stream) constants stream)))
+      (1+ (%load-instruction (read-mnemonic stream) stream))
+      (%load-instruction (read-mnemonic stream) stream)))
 
 (defparameter *attributes*
   (alexandria:alist-hash-table
    '(#+clasp("clasp:source-pos-info" . source-pos-info))
    :test #'equal))
 
-(defgeneric %load-attribute (mnemonic constants stream))
+(defgeneric %load-attribute (mnemonic stream))
 
-(defmethod %load-attribute ((mnemonic string) constants stream)
-  (declare (ignore constants))
+(defmethod %load-attribute ((mnemonic string) stream)
   (let ((nbytes (read-ub32 stream)))
     (dbgprint " (unknown-attribute ~s ~d)" mnemonic nbytes)
     ;; FIXME: would file-position be better? Is it guaranteed to work here?
     (loop repeat nbytes do (read-byte stream))))
 
 #+clasp
-(defmethod %load-attribute ((mnemonic (eql 'source-pos-info)) constants stream)
+(defmethod %load-attribute ((mnemonic (eql 'source-pos-info)) stream)
   ;; read and ignore nbytes.
   (read-ub32 stream)
   ;; now the actual code.
-  (let ((function (aref constants (read-index stream)))
-        (path (aref constants (read-index stream)))
+  (let ((function (constant (read-index stream)))
+        (path (constant (read-index stream)))
         (lineno (read-ub64 stream))
         (column (read-ub64 stream))
         (filepos (read-ub64 stream)))
@@ -541,9 +574,9 @@
               function path lineno column filepos)
     (core:function/set-source-pos-info function path filepos lineno column)))
 
-(defun load-attribute (constants stream)
-  (let ((aname (aref constants (read-index stream))))
-    (%load-attribute (or (gethash aname *attributes*) aname) constants stream)))
+(defun load-attribute (stream)
+  (let ((aname (constant (read-index stream))))
+    (%load-attribute (or (gethash aname *attributes*) aname) stream)))
 
 ;; TODO: Check that the FASL actually defines all of the constants.
 ;; Make sure it defines them in order, i.e. not reading from uninitialized
@@ -561,16 +594,32 @@
       (dbgprint "Loaded Lisp bytecode module")
       *module*)))
 
-(defun load-toplevels (constants stream)
+(defun load-toplevels (stream)
   (dbgprint "Loading toplevels")
   (let ((ntops (read-ub32 stream)))
     (dbgprint "File reports ~d toplevel forms." ntops)
     (loop repeat ntops
           for i from 0
           for index = (read-index stream)
-          for tl = (aref constants index)
+          for tl = (constant index)
           do (dbgprint "Calling toplevel #~d" i)
              (funcall tl))))
+
+(define-condition not-all-initialized (invalid-fasl)
+  ((%indices :initarg :indices :reader offending-indices))
+  (:report (lambda (condition stream)
+             (format stream "FASL ~s is invalid:
+Did not initialize constants~{ #~d~}"
+                     (file-error-pathname condition)
+                     (offending-indices condition)))))
+
+(defun check-initialization (flags)
+  (when (find 0 flags)
+    (error 'not-all-initialized
+           :indices (loop for i from 0
+                          for e across flags
+                          when (zerop e) collect i)))
+  (values))
 
 (defun load-bytecode-stream (stream
                              &key ((:verbose *load-verbose*) *load-verbose*))
@@ -582,7 +631,9 @@
            ;; Next power of two.
            (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
            (*module* (when (= *minor* 1) (core:bytecode-module/make)))
-           (constants (make-array nobjs)))
+           (*constants* (make-array nobjs))
+           (*initflags* (make-array nobjs
+                                    :element-type 'bit :initial-element 0)))
       (dbgprint "File reports ~d objects. Index length = ~d bytes."
                 nobjs *index-bytes*)
       (dbgprint "Executing FASL bytecode")
@@ -595,7 +646,7 @@
       ;; on byte streams.
       (cond ((<= 1 *minor* 2)
              (loop for bytes-read = 0
-                     then (+ bytes-read (load-instruction constants stream))
+                     then (+ bytes-read (load-instruction stream))
                    do (dbgprint "  read ~d bytes" bytes-read)
                    while (< bytes-read nfbytes)
                    finally
@@ -604,19 +655,20 @@
                                nfbytes bytes-read))))
             ((>= *minor* 3)
              (loop repeat ninsts
-                   do (load-instruction constants stream))
+                   do (load-instruction stream))
              (when (>= *minor* 4)
                (let ((nattrs (read-ub32 stream)))
                  (dbgprint "File reports ~d attributes" nattrs)
                  (loop repeat nattrs
-                       do (load-attribute constants stream))))
+                       do (load-attribute stream))))
              #-clasp ; listen is broken on clasp
              (when (listen stream)
                (error "Bytecode continues beyond end of instructions: ~a"
                       (alexandria:read-stream-content-into-byte-vector stream)))))
       (when (= *minor* 1)
-        (load-bytecode-module constants stream)
-        (load-toplevels constants stream))))
+        (load-bytecode-module *constants* stream)
+        (load-toplevels stream))
+      (check-initialization *initflags*)))        
   (values))
 
 (defun load-bytecode (filespec
@@ -626,11 +678,12 @@
                         ((:debug *debug-loader*) *debug-loader*)
                         (if-does-not-exist :error)
                         (external-format :default))
-  (with-open-file (input filespec :element-type '(unsigned-byte 8)
-                                  :if-does-not-exist if-does-not-exist
-                                  :external-format external-format)
-    ;; check for :if-does-not-exist nil failure
-    (unless input (return-from load-bytecode nil))
-    (verboseprint "Loading ~a as FASL" filespec)
-    (load-bytecode-stream input)
-    t))
+  (let ((*load-pathname* (pathname (merge-pathnames filespec))))
+    (with-open-file (input filespec :element-type '(unsigned-byte 8)
+                                    :if-does-not-exist if-does-not-exist
+                                    :external-format external-format)
+      ;; check for :if-does-not-exist nil failure
+      (unless input (return-from load-bytecode nil))
+      (verboseprint "Loading ~a as FASL" filespec)
+      (load-bytecode-stream input)
+      t)))
