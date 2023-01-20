@@ -60,7 +60,8 @@ THE SOFTWARE.
 #include <clasp/llvmo/code.h>
 #include <clasp/clbind/open.h>
 #include <clasp/gctools/gc_interface.fwd.h>
-//#include "main/allHeaders.cc"
+#include <clasp/mpip/claspMpi.h>
+// #include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_DARWIN
 #include <mach-o/getsect.h>
@@ -202,12 +203,6 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
     core::global_debug_dyn_env_stack = true;
 #endif
 
-  // Do not touch debug log until after MPI init
-
-  bool mpiEnabled = false;
-  int mpiRank = 0;
-  int mpiSize = 1;
-
   // DO BASIC EXE SETUP
 
   gctools::set_abort_flag(); // Set abort flag to default value
@@ -223,26 +218,6 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   // - SET THE APPLICATION NAME
 
   gctools::set_program_name();
-
-  // - COMMAND LINE OPTONS HANDLING
-
-  core::CommandLineOptions options(claspInfo->_argc, claspInfo->_argv);
-
-  // - MPI ENABLEMENT
-
-#ifdef USE_MPI
-  if (!options._DisableMpi) {
-    printf("%s:%d Enabling MPI\n", __FILE__, __LINE__);
-    try {
-      mpip::Mpi_O::Init(argc, argv, mpiEnabled, mpiRank, mpiSize);
-    } catch (HardError &err) {
-      fprintf(stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n", exe_name().c_str(), __FILE__, __LINE__);
-      abort();
-    }
-  } else {
-    mpiEnabled = false;
-  }
-#endif
 
   fflush(stderr);
 
@@ -293,7 +268,8 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
 #elif defined(USE_BOEHM)
   gctools::startupBoehm(claspInfo); // Correct
 #elif defined(USE_MMTK)
-  int exitCode = gctools::initializeMmtk(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
+  int exitCode = gctools::initializeMmtk(startupFn, claspInfo->_argc, claspInfo->_argv, claspInfo->_mpiEnabled, claspInfo->_mpiRank,
+                                         claspInfo->_mpiSize);
 #endif
 
   // Register builtin function names
@@ -361,6 +337,26 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   ::globals_ = new core::globals_t();
   globals_->_DebugStream = new core::DebugStream(claspInfo->_mpiRank);
 
+  // - MPI ENABLEMENT
+
+#ifdef USE_MPI
+  if (!core::global_options->_DisableMpi) {
+    if (!core::global_options->_NoInform) {
+      fmt::print("Enabling MPI...\n");
+    }
+    try {
+      int argc = claspInfo->_argc;
+      char **argv = (char **)claspInfo->_argv;
+      mpip::Mpi_O::Init(argc, argv, claspInfo->_mpiEnabled, claspInfo->_mpiRank, claspInfo->_mpiSize);
+    } catch (HardError &err) {
+      fprintf(stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n", gctools::exe_name().c_str(), __FILE__, __LINE__);
+      abort();
+    }
+  } else {
+    claspInfo->_mpiEnabled = false;
+  }
+#endif
+
   const char *jls = getenv("CLASP_JIT_LOG_SYMBOLS");
   if (jls || core::global_options->_JITLogSymbols) {
     core::global_jit_log_symbols = true;
@@ -427,12 +423,12 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
 #ifdef USE_MPI
     mpip::MpiExposer_O TheMpiPkg(_lisp);
     _lisp->installPackage(&TheMpiPkg);
-    if (mpiEnabled) {
+    if (claspInfo->_mpiEnabled) {
       core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
       core::Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<core::Cons_O>();
       cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
-      core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(mpiRank));
-      core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
+      core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(claspInfo->_mpiRank));
+      core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(claspInfo->_mpiSize));
     }
 #endif
   }
@@ -495,7 +491,7 @@ void shutdown_clasp(gctools::ClaspInfo *claspInfo) {
   _lisp->_Roots._ClaspJIT = nil<core::T_O>();
   mp::ClaspThreads_exit(); // run pthreads_exit
 #ifdef USE_MPI
-  if (!options._DisableMpi) {
+  if (claspInfo->_mpiEnabled) {
     mpip::Mpi_O::Finalize();
   }
 #endif

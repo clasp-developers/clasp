@@ -177,6 +177,16 @@
         :initform t
         :type boolean
         :documentation "If T use the CST build, otherwise use the AST build.")
+   (mpi :accessor mpi
+        :initarg :mpi
+        :initform nil
+        :type boolean
+        :documentation "If T enable OpenMPI support.")
+   (mpicxx :accessor mpicxx
+           :initarg :mpicxx
+           :initform nil
+           :type (or null pathname)
+           :documentation "Path to mpic++ binary.")
    (clang-cpp :accessor clang-cpp
               :initarg :clang-cpp
               :initform t
@@ -589,7 +599,7 @@ is not compatible with snapshots.")
                   :documentation "Default stage for installation")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
-                      :clang :llvm :ar :cc :cxx :nm :etags :ctags :objcopy :jupyter :reproducible)
+                      :clang :llvm :ar :cc :cxx :mpi :nm :etags :ctags :objcopy :jupyter :reproducible)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs

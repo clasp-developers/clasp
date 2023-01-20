@@ -88,6 +88,20 @@
                                 (or nm (merge-pathnames #P"llvm-nm" llvm-bindir))
                                 :required t))))
 
+(defmethod configure-unit (configuration (unit (eql :mpi)))
+  (with-accessors ((cxx cxx)
+                   (mpi mpi)
+                   (mpicxx mpicxx))
+      configuration
+    (when mpi
+      (message :emph "Configuring OpenMPI")
+      (let ((mpicxx (configure-program "mpic++" (or mpicxx #P"mpic++") :required t)))
+        (append-cflags configuration
+                       (run-program-capture (format nil "OMPI_CXX=~a ~a --showme:compile" cxx mpicxx)))
+        (append-ldlibs configuration
+                       (run-program-capture (format nil "OMPI_CXX=~a ~a --showme:link" cxx mpicxx)))
+        (append-ldlibs configuration "-lboost_mpi")))))
+
 ;; TODO This needs to be improved and made more automatic.
 (defmethod configure-unit (configuration (unit (eql :clang)))
   "Find the clang libraries."
