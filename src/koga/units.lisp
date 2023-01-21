@@ -100,7 +100,7 @@
                        (run-program-capture (format nil "OMPI_CXX=~a ~a --showme:compile" cxx mpicxx)))
         (append-ldlibs configuration
                        (run-program-capture (format nil "OMPI_CXX=~a ~a --showme:link" cxx mpicxx)))
-        (append-ldlibs configuration "-lboost_mpi")))))
+        (append-ldlibs configuration "-lboost_mpi -lboost_serialization")))))
 
 ;; TODO This needs to be improved and made more automatic.
 (defmethod configure-unit (configuration (unit (eql :clang)))
