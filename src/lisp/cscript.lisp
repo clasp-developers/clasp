@@ -142,9 +142,6 @@
              #~"kernel/stage/base/2-begin.lisp"  
              :clasp-cleavir
              #~"kernel/lsp/queue.lisp" ;; cclasp sources
-             #~"kernel/cleavir/auto-compile.lisp"
-             #~"kernel/cleavir/bytecode-adaptor.lisp"
-             #~"kernel/cleavir/inline.lisp"
              #~"kernel/lsp/generated-encodings.lisp"
              #~"kernel/lsp/process.lisp"
              #~"kernel/lsp/encodings.lisp"
