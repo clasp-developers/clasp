@@ -6,7 +6,9 @@
   (:export #:write-bytecode #:encode)
   (:export #:bytecode-compile-stream)
   ;; introspection
-  (:export #:load-bytecode))
+  (:export #:load-bytecode-stream #:load-bytecode)
+  (:export #:write-fasl #:save-fasl)
+  (:export #:concatenate-fasls))
 
 (in-package #:cmpltv)
 
@@ -86,7 +88,8 @@
 ;;; dimensions and element-type are encoded with the array since
 ;;; they shouldn't really need to be coalesced.
 (defclass array-creator (vcreator)
-  ((%packing-info :initarg :packing-info :reader packing-info)
+  ((%dimensions :initarg :dimensions :reader dimensions)
+   (%packing-info :initarg :packing-info :reader packing-info)
    (%uaet-code :initarg :uaet-code :reader uaet-code)))
 
 ;; row-major.
@@ -292,7 +295,7 @@
          (uaet-code (find-uaet-code uaet))
          (arr (add-instruction
                (make-instance 'array-creator
-                 :prototype value
+                 :prototype value :dimensions (array-dimensions value)
                  :packing-info info :uaet-code uaet-code))))
     (when (eq info-type t) ; general - dump setf-arefs for elements.
       ;; (we have to separate initialization here in case the array
@@ -418,15 +421,17 @@
 (defun assign-indices (instructions)
   (let ((next-index 0))
     ;; Assign permanents early in the vector.
-    (loop for inst in instructions
-          when (and (typep inst 'creator) (permanency inst)
-                    (not (index inst)))
-            do (setf (index inst) next-index next-index (1+ next-index)))
+    (map nil (lambda (inst)
+               (when (and (typep inst 'creator) (permanency inst)
+                          (not (index inst)))
+                 (setf (index inst) next-index next-index (1+ next-index))))
+         instructions)
     ;; Assign impermanents to the rest.
-    (loop for inst in instructions
-          when (and (typep inst 'creator) (not (permanency inst))
-                    (not (index inst)))
-            do (setf (index inst) next-index next-index (1+ next-index))))
+    (map nil (lambda (inst)
+               (when (and (typep inst 'creator) (not (permanency inst))
+                          (not (index inst)))
+                 (setf (index inst) next-index next-index (1+ next-index))))
+         instructions))
   (values))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -504,26 +509,26 @@
   (write-b16 *major-version* stream)
   (write-b16 *minor-version* stream))
 
-(defun %write-bytecode (instructions attributes stream)
-  (let* (;; lol efficiency
-         (insts (reverse instructions))
-         (nobjs (count-if (lambda (i) (typep i 'creator)) insts))
+;; Used in disltv as well.
+(defun write-bytecode (instructions attributes stream)
+  (let* ((nobjs (count-if (lambda (i) (typep i 'creator)) instructions))
          ;; Next highest power of two bytes, roughly
          (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
-         (ninsts (length insts)))
-    (assign-indices insts)
-    (dbgprint "Instructions:~{~&~a~}" insts)
+         (ninsts (length instructions)))
+    (assign-indices instructions)
+    (dbgprint "Instructions:~{~&~a~}" instructions)
     (write-magic stream)
     (write-version stream)
     (write-b64 nobjs stream)
     (write-b64 ninsts stream)
-    (map nil (lambda (inst) (encode inst stream)) insts)
+    (map nil (lambda (inst) (encode inst stream)) instructions)
     ;; now write attributes
     (write-b32 (length attributes) stream)
     (map nil (lambda (attr) (encode attr stream)) attributes)))
 
-(defun write-bytecode (stream)
-  (%write-bytecode *instructions* *attributes* stream))
+(defun %write-bytecode (stream)
+  ;; lol efficiency with the reverse
+  (write-bytecode (reverse *instructions*) *attributes* stream))
 
 (defun opcode (mnemonic)
   (let ((inst (assoc mnemonic +ops+ :test #'equal)))
@@ -570,7 +575,7 @@
 (defmacro write-sub-byte (array stream nbits)
   (let ((perbyte (floor 8 nbits))
         (a (gensym "ARRAY")) (s (gensym "STREAM")))
-    `(let ((,a ,array) (,s ,stream) (total-size (array-total-size arr)))
+    `(let* ((,a ,array) (,s ,stream) (total-size (array-total-size ,a)))
        (multiple-value-bind (full-bytes remainder) (floor total-size 8)
          (loop for byteindex below full-bytes
                for index = (* ,perbyte byteindex)
@@ -593,15 +598,15 @@
   (write-mnemonic 'make-array stream)
   (write-index inst stream)
   (write-byte (uaet-code inst) stream)
-  (let* ((arr (prototype inst))
-         (packing-info (packing-info inst))
-         (dims (array-dimensions arr))
+  (let* ((packing-info (packing-info inst))
+         (dims (dimensions inst))
          (packing-type (first packing-info))
          (packing-code (second packing-info)))
     (write-byte packing-code stream)
     (write-dimensions dims stream)
     (macrolet ((dump (&rest forms)
-                 `(loop for i below (array-total-size arr)
+                 `(loop with arr = (prototype inst)
+                        for i below (array-total-size arr)
                         for elem = (row-major-aref arr i)
                         do ,@forms)))
       (cond ((equal packing-type 'nil)) ; just need dims
@@ -624,13 +629,14 @@
                               stream)
                    (write-b64 (ext:double-float-to-bits (imagpart elem))
                               stream)))
-            ((equal packing-type 'bit) (write-sub-byte arr stream 1))
+            ((equal packing-type 'bit)
+             (write-sub-byte (prototype inst) stream 1))
             ((equal packing-type '(unsigned-byte 2))
-             (write-sub-byte arr stream 2))
+             (write-sub-byte (prototype inst) stream 2))
             ((equal packing-type '(unsigned-byte 4))
-             (write-sub-byte arr stream 4))
+             (write-sub-byte (prototype inst) stream 4))
             ((equal packing-type '(unsigned-byte 8))
-             (write-sequence arr stream))
+             (write-sequence (prototype inst) stream))
             ((equal packing-type '(unsigned-byte 16))
              (dump (write-b16 elem stream)))
             ((equal packing-type '(unsigned-byte 32))
@@ -860,7 +866,6 @@
    (%docstring :initarg :docstring :reader docstring :type creator)
    (%nlocals :initarg :nlocals :reader nlocals :type (unsigned-byte 16))
    (%nclosed :initarg :nclosed :reader nclosed :type (unsigned-byte 16))
-   ;; Used in disltv
    (%entry-point :initarg :entry-point :reader entry-point
                  :type (unsigned-byte 32))))
 
@@ -874,7 +879,9 @@
                                            (cmp:cfunction/lambda-list value))
                              :docstring (ensure-constant (cmp:cfunction/doc value))
                              :nlocals (cmp:cfunction/nlocals value)
-                             :nclosed (length (cmp:cfunction/closed value))))))
+                             :nclosed (length (cmp:cfunction/closed value))
+                             :entry-point (cmp:annotation/module-position
+                                           (cmp:cfunction/entry-point value))))))
     #+clasp ; source info
     (let ((cspi core:*current-source-pos-info*))
       (add-attribute
@@ -894,9 +901,7 @@
   ;; then indices. TODO: Source info.
   (write-mnemonic 'make-bytecode-function stream)
   (write-index inst stream)
-  (write-b32 (cmp:annotation/module-position
-              (cmp:cfunction/entry-point (cfunction inst)))
-             stream)
+  (write-b32 (entry-point inst) stream)
   (write-b16 (nlocals inst) stream)
   (write-b16 (nclosed inst) stream)
   (write-index (module inst) stream)
@@ -1083,5 +1088,5 @@
               do (cmp::describe-form form)
             do (bytecode-compile-toplevel form environment))
       ;; Write out the FASO bytecode.
-      (write-bytecode output)))
+      (%write-bytecode output)))
   (truename output-path))

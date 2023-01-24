@@ -72,7 +72,10 @@
     (values major minor)))
 
 (defclass fasl ()
-  ((%major-version :initarg :major :reader major-version
+  (;; The version is recorded for introspection but is ignored when
+   ;; writing out a FASL object. The writer just puts out whatever
+   ;; version of the format it does.
+   (%major-version :initarg :major :reader major-version
                    :type (unsigned-byte 16))
    (%minor-version :initarg :minor :reader minor-version
                    :type (unsigned-byte 16))
@@ -82,6 +85,13 @@
                   :type (simple-array t (*)))
    (%attributes :initarg :attributes :reader attributes
                 :type (simple-array t (*)))))
+
+(defmethod print-object ((object fasl) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "(~d ~d ~d)"
+            (object-count object)
+            (length (instructions object))
+            (length (attributes object)))))
 
 ;; Major and minor version of the file being loaded.
 (defvar *load-major*)
@@ -221,9 +231,11 @@
     (setf (creator index)
           (if (eq packing-type 't)
               (make-instance 'array-creator
+                :dimensions dimensions
                 :packing-info (%uaet-info 't) ; kludgeish
                 :uaet-code uaet-code)
               (make-instance 'array-creator
+                :dimensions dimensions
                 :packing-info (%uaet-info uaet) ; kludgeish
                 :uaet-code uaet-code
                 :prototype array)))))
@@ -356,23 +368,25 @@
 
 ;;;
 
-(defgeneric %load-attribute (mnemonic stream))
+(defgeneric %load-attribute (mnemonic name-creator stream))
 
-(defmethod %load-attribute ((mnemonic string) stream)
+(defmethod %load-attribute ((mnemonic string) ncreator stream)
+  (declare (ignore ncreator))
   ;; skip. we could record this as a pseudo-attribute, hypothetically
   (loop repeat (read-ub32 stream) do (read-byte stream)))
 
 ;;; Results from non-string (invalid) attribute name.
-(defmethod %load-attribute ((mnemonic null) stream)
+(defmethod %load-attribute ((mnemonic null) ncreator stream)
+  (declare (ignore ncreator))
   (loop repeat (read-ub32 stream) do (read-byte stream)))
 
 #+clasp
-(defmethod %load-attribute ((mnemonic (eql 'source-pos-info)) stream)
+(defmethod %load-attribute ((mnemonic (eql 'source-pos-info)) ncreator stream)
   ;; read and ignore nbytes.
   (read-ub32 stream)
   ;; read SPI.
   (make-instance 'spi-attr
-    :name nil ; FIXME
+    :name ncreator
     :function (read-creator stream)
     :pathname (read-creator stream)
     :lineno (read-ub64 stream)
@@ -397,7 +411,7 @@
                     (prototype acreator)
                     (warn "Invalid FASL: Attribute name ~a is not a string"
                           acreator))))
-    (%load-attribute (or (gethash aname *attr-map*) aname) stream)))
+    (%load-attribute (or (gethash aname *attr-map*) aname) acreator stream)))
 
 ;;;
 
@@ -438,3 +452,49 @@
     ;; check for :if-does-not-exist nil failure
     (unless input (return-from load-bytecode nil))
     (load-bytecode-stream input)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Operations on FASLs
+;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Saving
+;;;
+;;; Write a FASL object out to a stream/file.
+
+(defun write-fasl (fasl stream)
+  (write-bytecode (instructions fasl) (attributes fasl) stream))
+
+(defun save-fasl (fasl output-path)
+  (with-open-file (output output-path
+                          :direction :output
+                          :if-does-not-exist :create
+                          :element-type '(unsigned-byte 8))
+    (write-fasl fasl output)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Concatenation
+;;; Make a new FASL that has the same effects as loading the original two
+;;; fasls in order would have. This is a dumb concatenation that doesn't try
+;;; to coalesce anything; that can be called "linking" maybe.
+
+(defun concatenate-fasls (&rest fasls)
+  (cond ((null fasls)
+         ;; weird, but ok
+         (make-instance 'fasl
+           :major *major-version* :minor *minor-version* :nobjs 0
+           :instructions #() :attributes #()))
+        ((null (rest fasls)) (first fasls))
+        (t
+         (make-instance 'fasl
+           :major *major-version* :minor *minor-version*
+           :nobjs (reduce #'+ fasls :key #'object-count)
+           ;; We could save a few bytes by skipping the mapcars,
+           ;; but it would make the code uglier
+           :instructions (apply #'concatenate 'vector
+                                (mapcar #'instructions fasls))
+           :attributes (apply #'concatenate 'vector
+                              (mapcar #'attributes fasls))))))
