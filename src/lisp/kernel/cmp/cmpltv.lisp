@@ -4,7 +4,9 @@
            #:ensure-constant #:add-constant #:find-constant-index)
   (:export #:instruction #:creator #:vcreator #:effect)
   (:export #:write-bytecode #:encode)
-  (:export #:bytecode-compile-stream))
+  (:export #:bytecode-compile-stream)
+  ;; introspection
+  (:export #:load-bytecode))
 
 (in-package #:cmpltv)
 
@@ -54,8 +56,10 @@
 
 (defmethod print-object ((object vcreator) stream)
   (print-unreadable-object (object stream :type t)
-    (format stream "~s ~a ~d"
-            (prototype object)
+    (if (slot-boundp object '%prototype)
+        (prin1 (prototype object) stream)
+        (write-string "[no prototype]" stream))
+    (format stream " ~a ~d"
             (if (permanency object) :permanent :transient)
             (index object))))
 
@@ -91,7 +95,11 @@
    (%index :initarg :index :reader setf-aref-index :type (integer 0))
    (%value :initarg :value :reader setf-aref-value :type creator)))
 
-(defclass hash-table-creator (vcreator) ())
+(defclass hash-table-creator (vcreator)
+  (;; used in disltv
+   (%test :initarg :test :reader hash-table-creator-test :type symbol)
+   (%count :initarg :count :reader hash-table-creator-count
+           :type (integer 0))))
 
 (defclass setf-gethash (effect)
   ((%hash-table :initarg :hash-table :reader setf-gethash-hash-table
@@ -187,7 +195,8 @@
 
 #+clasp
 (defclass spi-attr (attribute)
-  ((%name :initform (ensure-constant "clasp:source-pos-info"))
+  ((%name :initarg :name
+          :initform (ensure-constant "clasp:source-pos-info"))
    (%function :initarg :function :reader spi-attr-function :type creator)
    (%pathname :initarg :pathname :reader spi-attr-pathname :type creator)
    (%lineno :initarg :lineno :reader lineno :type (unsigned-byte 64))
@@ -256,16 +265,8 @@
 
 (defgeneric add-constant (value))
 
-(defun ensure-constant (value &key permanent index)
+(defun ensure-constant (value &key permanent)
   (let ((creator (or (find-constant value) (add-constant value))))
-    (when index
-      (when (and (index creator) (/= index (index creator)))
-        ;; We can get duplicates from keyword parameters (I think that's the
-        ;; only place right now). In this event we need the same constant in
-        ;; multiple indices. If no index is provided it doesn't matter which
-        ;; creator is retrieved, though.
-        (setf creator (add-constant value)))
-      (setf (index creator) index))
     (when permanent (permanentize creator))
     creator))
 
@@ -305,7 +306,9 @@
 
 (defmethod add-constant ((value hash-table))
   (let ((ht (add-instruction
-             (make-instance 'hash-table-creator :prototype value))))
+             (make-instance 'hash-table-creator :prototype value
+                            :test (hash-table-test value)
+                            :count (hash-table-count value)))))
     (maphash (lambda (k v)
                (add-instruction
                 (make-instance 'setf-gethash
@@ -414,11 +417,6 @@
 ;;; This could probably be done in one pass somehow?
 (defun assign-indices (instructions)
   (let ((next-index 0))
-    ;; Move past any forced indices.
-    ;; TODO: Check for gaps?
-    (loop for inst in instructions
-          when (and (typep inst 'creator) (index inst))
-            do (setf next-index (max next-index (1+ (index inst)))))
     ;; Assign permanents early in the vector.
     (loop for inst in instructions
           when (and (typep inst 'creator) (permanency inst)
@@ -456,7 +454,7 @@
     (rplaca 70 ind1 ind2) ; (setf (car [ind1]) [ind2])
     (rplacd 71 ind1 ind2)
     (make-array 74 sind rank . dims)
-    ((setf row-major-aref) 75 arrayind rmindex valueind)
+    (setf-row-major-aref 75 arrayind rmindex valueind)
     (make-hash-table 76 sind test count)
     ((setf gethash) 77 htind keyind valueind)
     (make-sb64 78 sind sb64)
@@ -480,8 +478,8 @@
 ;;; STREAM is a ub8 stream.
 (defgeneric encode (instruction stream))
 
-;; how many bytes are needed to represent a position?
-(defvar *position-bytes*)
+;; how many bytes are needed to represent an index?
+(defvar *index-bytes*)
 
 ;;; Write an n-byte integer to a ub8 stream, big-endian.
 (defun write-b (int n stream)
@@ -511,7 +509,7 @@
          (insts (reverse instructions))
          (nobjs (count-if (lambda (i) (typep i 'creator)) insts))
          ;; Next highest power of two bytes, roughly
-         (*position-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
+         (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
          (ninsts (length insts)))
     (assign-indices insts)
     (dbgprint "Instructions:~{~&~a~}" insts)
@@ -537,7 +535,7 @@
 
 (defun write-index (creator stream)
   (let ((position (index creator)))
-    (ecase *position-bytes*
+    (ecase *index-bytes*
       ((1) (write-byte position stream))
       ((2) (write-b16 position stream))
       ((4) (write-b32 position stream))
@@ -652,7 +650,7 @@
             (t (error "BUG: Unknown packing-type ~s" packing-type))))))
 
 (defmethod encode ((inst setf-aref) stream)
-  (write-mnemonic '(setf row-major-aref) stream)
+  (write-mnemonic 'setf-row-major-aref stream)
   (write-index (setf-aref-array inst) stream)
   (write-b16 (setf-aref-index inst) stream)
   (write-index (setf-aref-value inst) stream))
@@ -839,16 +837,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; File compiler
-;;;
-
-(defun write-lispcode (bytecode stream)
-  ;; Length, four bytes. Enough for four GB of code. We can reevaluate if more
-  ;; is needed at some point, but I hope not.
-  (let ((len (length bytecode)))
-    (when (> len #.(ash 1 32))
-      (error "Bytecode length is ~d, too long to dump" len))
-    (write-b32 len stream))
-  (write-sequence bytecode stream))   
+;;;   
 
 (defun bytecode-cf-compile-lexpr (lambda-expression environment)
   (let ((module (cmp:module/make))
@@ -870,7 +859,10 @@
    (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)
    (%docstring :initarg :docstring :reader docstring :type creator)
    (%nlocals :initarg :nlocals :reader nlocals :type (unsigned-byte 16))
-   (%nclosed :initarg :nclosed :reader nclosed :type (unsigned-byte 16))))
+   (%nclosed :initarg :nclosed :reader nclosed :type (unsigned-byte 16))
+   ;; Used in disltv
+   (%entry-point :initarg :entry-point :reader entry-point
+                 :type (unsigned-byte 32))))
 
 (defmethod add-constant ((value cmp:cfunction))
   (let ((inst
@@ -961,7 +953,7 @@
 #+clasp
 (defmethod encode ((attr spi-attr) stream)
   ;; Write the length.
-  (write-b32 (+ *position-bytes* *position-bytes* 8 8 8) stream)
+  (write-b32 (+ *index-bytes* *index-bytes* 8 8 8) stream)
   ;; And the data.
   (write-index (spi-attr-function attr) stream)
   (write-index (spi-attr-pathname attr) stream)

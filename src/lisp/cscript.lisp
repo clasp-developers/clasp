@@ -134,6 +134,7 @@
              #~"kernel/lsp/packlib2.lisp"
              #~"kernel/clos/inspect.lisp"
              #~"kernel/cmp/cmpltv.lisp"
+             #~"kernel/cmp/disltv.lisp"
              #~"kernel/cmp/compile-file.lisp"
              #~"kernel/lsp/fli.lisp"
              #~"kernel/lsp/posix.lisp"
