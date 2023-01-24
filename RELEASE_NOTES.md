@@ -6,6 +6,7 @@
 * Return correct values for `listen` when applied to file streams. This is done
   by checking for available bytes using read when poll/select indicate the next
   read will not block. Otherwise use non-blocking read. Fixes [#1404][].
+* Prevent format parameters from appearing after colon or at sign modifiers.
 
 # Version 2.1.0 (LLVM14) 2023-01-01
 

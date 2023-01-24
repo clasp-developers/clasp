@@ -535,3 +535,35 @@ BBBBCCCC**DDDD"))
 (test ansi-test-format-e
       (FORMAT NIL "~,2,,2e" 0.05)
       ("50.0e-3"))
+
+(test-expect-error format-parameters-colon-at-01
+                   (format nil "a~@4A" nil)
+                   :type error)
+
+(test-expect-error format-parameters-colon-at-02
+                   (format nil "a~:4A" nil)
+                   :type error)
+
+(test-expect-error format-parameters-colon-at-03
+                   (format nil "a~:@4A" nil)
+                   :type error)
+
+(test-expect-error format-parameters-colon-at-04
+                   (format nil "a~@:4A" nil)
+                   :type error)
+
+(test format-parameters-colon-at-05
+      (format nil "a~4@A" nil)
+      ("a NIL"))
+
+(test format-parameters-colon-at-06
+      (format nil "a~4:A" nil)
+      ("a()  "))
+
+(test format-parameters-colon-at-07
+      (format nil "a~4:@A" nil)
+      ("a  ()"))
+
+(test format-parameters-colon-at-08
+      (format nil "a~4@:A" nil)
+      ("a  ()"))
