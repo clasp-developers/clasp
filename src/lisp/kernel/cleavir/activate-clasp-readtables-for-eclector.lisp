@@ -131,11 +131,12 @@
 (defun patch-object (client value-old seen-objects)
   (multiple-value-bind (state object*)
       (labeled-object-state client value-old)
-    (cond ((null state)
-           (eclector.reader:fixup client value-old seen-objects)
-           value-old)
-          ((eq state :final)
-           object*))))
+    (case state
+      ((nil) ; normal object
+       (eclector.reader:fixup client value-old seen-objects)
+       value-old)
+      ((:final :final/circular) object*) ; fully resolved circular reference
+      (otherwise value-old)))) ; unresolved reference - leave for later
 
 (defmethod eclector.reader:fixup (client (object core:cxx-object) seen-objects)
   (let ((patcher (core:make-record-patcher (lambda (object)
