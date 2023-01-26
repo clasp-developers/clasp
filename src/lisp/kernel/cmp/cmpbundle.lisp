@@ -380,6 +380,11 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
                        (:fasobc
                         (link-fasobc-modules out-file lisp-files)
                         (truename out-file))
+                       (:bytecode
+                        (cmpltv:save-fasl
+                         (apply #'cmpltv:concatenate-fasl-files lisp-files)
+                         out-file)
+                        (truename out-file))
                        (:object
                         (build-fasl-serial out-file :lisp-files lisp-files)
                         (truename out-file))

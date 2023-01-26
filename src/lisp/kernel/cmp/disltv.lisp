@@ -498,3 +498,6 @@
                                 (mapcar #'instructions fasls))
            :attributes (apply #'concatenate 'vector
                               (mapcar #'attributes fasls))))))
+
+(defun concatenate-fasl-files (&rest pathnames)
+  (apply #'concatenate-fasls (mapcar #'load-bytecode pathnames)))
