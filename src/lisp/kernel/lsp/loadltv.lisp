@@ -345,12 +345,12 @@ Tried to define constant #~d, but it was already defined"
   (let ((index (read-index stream)) (ssize (read-sb64 stream)))
     (dbgprint " (make-bignum ~d ~d)" index ssize)
     (setf (constant index)
-          ;; Using loop repeat is messy for fencepost reasons.
           (let ((result 0) (size (abs ssize)) (negp (minusp ssize)))
-            (loop (when (zerop size) (return (if negp (- result) result)))
-                  (let ((word (read-ub64 stream)))
-                    (dbgprint  "#x~8,'0x" word)
-                    (setf result (logior (ash result 64) word))))))
+            (loop repeat size
+                  do (let ((word (read-ub64 stream)))
+                       (dbgprint  "#x~8,'0x" word)
+                       (setf result (logior (ash result 64) word)))
+                  finally (return (if negp (- result) result)))))
     (+ *index-bytes* 8 (* 8 (abs ssize)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-single-float)) stream)
