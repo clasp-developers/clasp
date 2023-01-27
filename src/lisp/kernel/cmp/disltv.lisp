@@ -350,11 +350,20 @@
 
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
   (setf (read-creator stream)
-        (make-instance 'general-creator
-          :function (read-creator stream))))
+        (if (and (= *load-major* 0) (<= *load-minor* 4))
+            (make-instance 'general-creator
+              :function (read-creator stream))
+            (make-instance 'general-creator
+              :function (read-creator stream)
+              :arguments (loop repeat (read-ub16 stream)
+                               collect (read-creator stream))))))
 
 (defmethod %load-instruction ((mnemonic (eql 'funcall-initialize)) stream)
-  (make-instance 'general-initializer :function (read-creator stream)))
+  (if (and (= *load-major* 0) (<= *load-minor* 4))
+      (make-instance 'general-initializer :function (read-creator stream))
+      (make-instance 'general-initializer :function (read-creator stream)
+                     :arguments (loop repeat (read-ub16 stream)
+                                      collect (read-creator stream)))))
 
 (defun read-mnemonic (stream)
   (let* ((opcode (read-byte stream))

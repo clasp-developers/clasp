@@ -153,18 +153,29 @@
    (%version :initarg :version :reader pathname-creator-version :type creator)))
 
 (defclass general-creator (vcreator)
-  (;; Reference to a function to call to allocate the object, i.e. a
-   ;; function made of the first return value from make-load-form.
-   ;; The function is called with no arguments and returns the new value.
-   (%function :initarg :function :reader general-creator-function
-              :type creator)))
+  (;; Reference to a function designator to call to allocate the object,
+   ;; e.g. a function made of the first return value from make-load-form.
+   ;; The function returns the new value as its primary.
+   ;; Other values are ignored.
+   ;; FIXME: Maybe should be a definite function, but this would require
+   ;; an FDEFINITION instruction.
+   (%function :initarg :function :reader general-function
+              :type creator)
+   ;; List of arguments (creators) to be passed to the function.
+   (%arguments :initarg :arguments :reader general-arguments :type list)))
 
 (defclass general-initializer (effect)
-  (;; Reference to a function to call to initialize the object, i.e. a
-   ;; function made of the second return value from make-load-form.
-   ;; The function is called with no arguments and its value is ignored.
-   (%function :initarg :function :reader general-initializer-function
-              :type creator)))
+  (;; Reference to a function designator to call to initialize the object,
+   ;; e.g. a function made of the second return value from make-load-form.
+   ;; The function's return values are ignored.
+   (%function :initarg :function :reader general-function
+              :type creator)
+   ;; List of arguments (creators) to be passed to the function.
+   (%arguments :initarg :arguments :reader general-arguments :type list)))
+
+;;; Created from certain make-load-form results.
+(defclass class-creator (vcreator)
+  ((%name :initarg :name :reader class-creator-name)))
 
 (defclass singleton-creator (vcreator) ())
 
@@ -391,18 +402,64 @@
              (format stream "~s circular dependency detected:~%~t~{~s~^ ~}"
                      'make-load-form (path condition)))))
 
+(defconstant +max-call-args+ (ash 1 16))
+
+;;; Return true iff the proper list FORM represents a call to a global
+;;; function with all constant arguments (and not too many).
+(defun call-with-constant-arguments-p (form &optional env)
+  (and (symbolp (car form))
+       (fboundp (car form))
+       (not (macro-function (car form)))
+       (not (special-operator-p (car form)))
+       (< (length (rest form)) +max-call-args+)
+       (every (lambda (f) (constantp f env)) (rest form))))
+
+;;; Make a possibly-special creator based on an MLF creation form.
+(defun creation-form-creator (value form)
+  (let ((*creating* (cons value *creating*)))
+    (flet ((default ()
+             (make-instance 'general-creator
+               :prototype value
+               :function (add-form form) :arguments ()))
+           (form->const (form)
+             (ensure-constant (ext:constant-form-value form))))
+      (cond ((not (core:proper-list-p form)) (default))
+            ;; (find-class 'something)
+            ((and (eq (car form) 'cl:find-class)
+                  (= (length form) 2)
+                  (constantp (second form)))
+             (make-instance 'class-creator
+               :prototype value
+               :name (form->const (second form))))
+            ;; (foo 'bar 'baz)
+            ((call-with-constant-arguments-p form)
+             (make-instance 'general-creator
+               :prototype value
+               :function (ensure-constant (car form))
+               :arguments (mapcar #'form->const (rest form))))
+            (t (default))))))
+
+;;; Make a possibly-special initializer.
+(defun initializer-form-initializer (form)
+  (flet ((default ()
+           (make-instance 'general-initializer
+             :function (add-form form) :arguments ()))
+         (form->const (form)
+           (ensure-constant (ext:constant-form-value form))))
+    (cond ((not (core:proper-list-p form)) (default))
+          ((call-with-constant-arguments-p form)
+           (make-instance 'general-initializer
+             :function (ensure-constant (car form))
+             :arguments (mapcar #'form->const (rest form))))
+          (t (default)))))
+
 (defmethod add-constant ((value t))
   (when (member value *creating*)
     (error 'circular-dependency :path *creating*))
   (multiple-value-bind (create initialize) (make-load-form value)
     (prog1
-        (let ((*creating* (cons value *creating*)))
-          (add-instruction
-           (make-instance 'general-creator
-             :prototype value
-             :function (add-form create))))
-      (add-instruction (make-instance 'general-initializer
-                         :function (add-form initialize))))))
+        (add-instruction (creation-form-creator value create))
+      (add-instruction (initializer-form-initializer initialize)))))
 
 (defmethod add-constant ((value cmp:load-time-value-info))
   (add-instruction
@@ -476,6 +533,7 @@
     (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
     (funcall-initialize 94 fnind)
+    (find-class 98 sind cnind)
     ;; set-ltv-funcall in clasp- redundant
     #+(or) ; obsolete as of v0.3
     (make-specialized-array 97 sind rank dims etype . elems)))
@@ -503,7 +561,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 4)
+(defparameter *minor-version* 5)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -829,11 +887,22 @@
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)
   (write-index inst stream)
-  (write-index (general-creator-function inst) stream))
+  (write-index (general-function inst) stream)
+  (write-b16 (length (general-arguments inst)) stream)
+  (loop for arg in (general-arguments inst)
+        do (write-index arg stream)))
 
 (defmethod encode ((inst general-initializer) stream)
   (write-mnemonic 'funcall-initialize stream)
-  (write-index (general-initializer-function inst) stream))
+  (write-index (general-function inst) stream)
+  (write-b16 (length (general-arguments inst)) stream)
+  (loop for arg in (general-arguments inst)
+        do (write-index arg stream)))
+
+(defmethod encode ((inst class-creator) stream)
+  (write-mnemonic 'find-class stream)
+  (write-index inst stream)
+  (write-index (class-creator-name inst) stream))
 
 (defmethod encode ((inst load-time-value-creator) stream)
   (write-mnemonic 'funcall-create stream)
@@ -856,7 +925,8 @@
   (add-instruction
    (make-instance 'general-initializer
      :function (ensure-constant
-                (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) env)))))
+                (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) env))
+     :arguments ())))
 
 (defclass bytefunction-creator (creator)
   ((%cfunction :initarg :cfunction :reader cfunction)

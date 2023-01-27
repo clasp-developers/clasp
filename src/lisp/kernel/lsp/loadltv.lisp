@@ -30,6 +30,7 @@
     (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
     (funcall-initialize 94 fnind)
+    (find-class 98 sind cnind)
     ;; set-ltv-funcall in clasp- redundant
     (make-specialized-array 97 sind rank dims etype . elems)))
 
@@ -86,7 +87,7 @@
 ;; look up a loader? This will become more obvious once there are actually
 ;; multiple versions in existence.
 (defparameter *min-version* '(0 0))
-(defparameter *max-version* '(0 4))
+(defparameter *max-version* '(0 5))
 
 (defun loadable-version-p (major minor)
   (and
@@ -133,7 +134,7 @@
          (info (find opcode +ops+ :key #'second)))
     (if info
         (first info)
-        (error "BUG: Unknown opcode ~x" opcode))))
+        (error "BUG: Unknown opcode #x~x" opcode))))
 
 ;; Constants vector we're producing.
 (defvar *constants*)
@@ -529,17 +530,31 @@ Tried to define constant #~d, but it was already defined"
      (constant modi) (constant litsi))))
 
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
-  (let ((index (read-index stream)) (funi (read-index stream)))
-    (dbgprint " (funcall-create ~d ~d)" index funi)
-    (setf (constant index) (funcall (constant funi))))
+  (let ((index (read-index stream)) (funi (read-index stream))
+        (args (if (and (= *major* 0) (<= *minor* 4))
+                  ()
+                  (loop repeat (read-ub16 stream)
+                        collect (read-index stream)))))
+    (dbgprint " (funcall-create ~d ~d~{ ~d~})" index funi args)
+    (setf (constant index)
+          (apply (constant funi) (mapcar #'constant args))))
   (* 2 *index-bytes*))
 
 (defmethod %load-instruction ((mnemonic (eql 'funcall-initialize)) stream)
-  (let ((funi (read-index stream)))
-    (dbgprint " (funcall-initialize ~d)" funi)
+  (let ((funi (read-index stream))
+        (args (if (and (= *major* 0) (<= *minor* 4))
+                  ()
+                  (loop repeat (read-ub16 stream)
+                        collect (read-index stream)))))
+    (dbgprint " (funcall-initialize ~d~{ ~d~})" funi args)
     (dbgprint "  calling ~s" (constant funi))
-    (funcall (constant funi)))
+    (apply (constant funi) (mapcar #'constant args)))
   *index-bytes*)
+
+(defmethod %load-instruction ((mnemonic (eql 'find-class)) stream)
+  (let ((index (read-index stream)) (cni (read-index stream)))
+    (dbgprint " (find-class ~d ~d)" index cni)
+    (setf (constant index) (find-class (constant cni)))))
 
 ;; Return how many bytes were read (for early versions, anyway)
 (defun load-instruction (stream)
