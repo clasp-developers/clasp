@@ -229,10 +229,16 @@
 (defmethod similarp ((creator load-time-value-creator) ltvi)
   (eql (load-time-value-creator-info creator) ltvi))
 
-;; Look up a value in the instructions.
+;;; EQL hash table from objects to creators.
+(defvar *coalesce*)
+
+;; Look up a value in the existing instructions.
 ;; On success returns the creator, otherwise NIL.
-;; Could be extended with coalescence relations or made more efficient.
-(defun %find-constant (value sequence)
+;; Could be extended with coalescence relations or made more efficient,
+;; for example by multiple tables discriminated by type.
+(defun %find-constant (value)
+  (values (gethash value *coalesce*))
+  #+(or)
   (find-if (lambda (c) (and (typep c 'creator) (similarp c value)))
            sequence))
 
@@ -257,11 +263,12 @@
 
 (defmacro with-constants ((&key (compiler '*compiler*)) &body body)
   `(let ((*instructions* nil) (*attributes* nil) (*creating* nil)
+         (*coalesce* (make-hash-table))
          (*compiler* ,compiler))
      ,@body))
 
 (defun find-constant (value)
-  (%find-constant value *instructions*))
+  (%find-constant value #+(or) *instructions*))
 
 (defun find-constant-index (value)
   (let ((creator (%find-constant value *instructions*)))
@@ -272,6 +279,10 @@
 (defun add-instruction (instruction)
   (push instruction *instructions*)
   instruction)
+
+(defun add-creator (value instruction)
+  (setf (gethash value *coalesce*) instruction)
+  (add-instruction instruction))
 
 (defun add-attribute (attribute)
   (push attribute *attributes*)
@@ -291,8 +302,8 @@
   (add-constant (funcall *compiler* `(lambda () (progn ,form)) nil)))
 
 (defmethod add-constant ((value cons))
-  (let ((cons (add-instruction
-               (make-instance 'cons-creator :prototype value))))
+  (let ((cons (add-creator
+               value (make-instance 'cons-creator :prototype value))))
     (add-instruction (make-instance 'rplaca-init
                        :cons cons :value (ensure-constant (car value))))
     (add-instruction (make-instance 'rplacd-init
@@ -304,7 +315,8 @@
          (info (array-packing-info value))
          (info-type (first info))
          (uaet-code (find-uaet-code uaet))
-         (arr (add-instruction
+         (arr (add-creator
+               value
                (make-instance 'array-creator
                  :prototype value :dimensions (array-dimensions value)
                  :packing-info info :uaet-code uaet-code))))
@@ -319,7 +331,8 @@
     arr))
 
 (defmethod add-constant ((value hash-table))
-  (let ((ht (add-instruction
+  (let ((ht (add-creator
+             value
              (make-instance 'hash-table-creator :prototype value
                             :test (hash-table-test value)
                             :count (hash-table-count value)))))
@@ -332,7 +345,8 @@
     ht))
 
 (defmethod add-constant ((value symbol))
-  (add-instruction
+  (add-creator
+   value
    (let ((package (symbol-package value)))
      (if package
          (make-instance 'interned-symbol-creator
@@ -344,24 +358,27 @@
            :name (ensure-constant (symbol-name value)))))))
 
 (defmethod add-constant ((value (eql nil)))
-  (add-instruction (make-instance 'singleton-creator :prototype value)))
+  (add-creator value (make-instance 'singleton-creator :prototype value)))
 (defmethod add-constant ((value (eql t)))
-  (add-instruction (make-instance 'singleton-creator :prototype value)))
+  (add-creator value (make-instance 'singleton-creator :prototype value)))
 
 (defmethod add-constant ((value package))
-  (add-instruction (make-instance 'package-creator
-                     :prototype value
-                     :name (ensure-constant (package-name value)))))
+  (add-creator value
+               (make-instance 'package-creator
+                 :prototype value
+                 :name (ensure-constant (package-name value)))))
 
 (defmethod add-constant ((value integer))
-  (add-instruction
+  (add-creator
+   value
    (etypecase value
      ;; TODO? Could have different opcodes for smaller integers.
      ((signed-byte 64) (make-instance 'sb64-creator :prototype value))
      (integer (make-instance 'bignum-creator :prototype value)))))
 
 (defmethod add-constant ((value float))
-  (add-instruction
+  (add-creator
+   value
    (etypecase value
      (double-float (make-instance 'double-float-creator :prototype value))
      (single-float (make-instance 'single-float-creator :prototype value)))))
@@ -370,23 +387,26 @@
   ;; In most cases it's probably pointless to try to coalesce the numerator
   ;; and denominator. It would probably be smarter to have a small ratio
   ;; where the number is embedded versus a large ratio where they're indirect.
-  (add-instruction
+  (add-creator
+   value
    (make-instance 'ratio-creator :prototype value
                   :numerator (ensure-constant (numerator value))
                   :denominator (ensure-constant (denominator value)))))
 
 (defmethod add-constant ((value complex))
   ;; Similar considerations to ratios here.
-  (add-instruction
+  (add-creator
+   value
    (make-instance 'complex-creator :prototype value
                   :realpart (ensure-constant (realpart value))
                   :imagpart (ensure-constant (imagpart value)))))
 
 (defmethod add-constant ((value character))
-  (add-instruction (make-instance 'character-creator :prototype value)))
+  (add-creator value (make-instance 'character-creator :prototype value)))
 
 (defmethod add-constant ((value pathname))
-  (add-instruction
+  (add-creator
+   value
    (make-instance 'pathname-creator
      :prototype value
      :host (ensure-constant (pathname-host value))
@@ -458,7 +478,7 @@
     (error 'circular-dependency :path *creating*))
   (multiple-value-bind (create initialize) (make-load-form value)
     (prog1
-        (add-instruction (creation-form-creator value create))
+        (add-creator value (creation-form-creator value create))
       (add-instruction (initializer-form-initializer initialize)))))
 
 (defmethod add-constant ((value cmp:load-time-value-info))
@@ -941,17 +961,19 @@
 
 (defmethod add-constant ((value cmp:cfunction))
   (let ((inst
-          (add-instruction (make-instance 'bytefunction-creator
-                             :cfunction value
-                             :module (ensure-constant (cmp:cfunction/module value))
-                             :name (ensure-constant (cmp:cfunction/name value))
-                             :lambda-list (ensure-constant
-                                           (cmp:cfunction/lambda-list value))
-                             :docstring (ensure-constant (cmp:cfunction/doc value))
-                             :nlocals (cmp:cfunction/nlocals value)
-                             :nclosed (length (cmp:cfunction/closed value))
-                             :entry-point (cmp:annotation/module-position
-                                           (cmp:cfunction/entry-point value))))))
+          (add-creator
+           value
+           (make-instance 'bytefunction-creator
+             :cfunction value
+             :module (ensure-constant (cmp:cfunction/module value))
+             :name (ensure-constant (cmp:cfunction/name value))
+             :lambda-list (ensure-constant
+                           (cmp:cfunction/lambda-list value))
+             :docstring (ensure-constant (cmp:cfunction/doc value))
+             :nlocals (cmp:cfunction/nlocals value)
+             :nclosed (length (cmp:cfunction/closed value))
+             :entry-point (cmp:annotation/module-position
+                           (cmp:cfunction/entry-point value))))))
     #+clasp ; source info
     (let ((cspi core:*current-source-pos-info*))
       (add-attribute
@@ -994,7 +1016,8 @@
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
   (let ((mod
-          (add-instruction
+          (add-creator
+           value
            (make-instance 'bytemodule-creator
              :prototype value :lispcode (cmp:module/link value)))))
     ;; Modules can indirectly refer to themselves recursively through
