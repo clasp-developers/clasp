@@ -563,6 +563,10 @@ Tried to define constant #~d, but it was already defined"
       (%load-instruction (read-mnemonic stream) stream)))
 
 (defparameter *attributes*
+  (let ((ht (make-hash-table :test #'equal)))
+    #+clasp (setf (gethash "clasp:source-pos-info" ht) 'source-pos-info)
+    ht)
+  #+(or)
   (alexandria:alist-hash-table
    '(#+clasp("clasp:source-pos-info" . source-pos-info))
    :test #'equal))
@@ -702,3 +706,14 @@ Did not initialize constants~{ #~d~}"
       (verboseprint "Loading ~a as FASL" filespec)
       (load-bytecode-stream input)
       t)))
+
+#+clasp
+(defun load-hook (source &optional verbose print
+                           (external-format :default))
+  (load-bytecode source :verbose verbose :print print
+                        :external-format external-format))
+
+#+clasp
+(pushnew '("faslbc" . load-hook) core:*load-hooks* :test #'equal)
+#+clasp
+(pushnew '("faslbcl" . load-hook) core:*load-hooks* :test #'equal)

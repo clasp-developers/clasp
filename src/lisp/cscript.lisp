@@ -132,6 +132,7 @@
              #~"kernel/cmp/compiler-conditions.lisp"
              #~"kernel/lsp/packlib2.lisp"
              #~"kernel/clos/inspect.lisp"
+             #~"kernel/lsp/loadltv.lisp"
              #~"kernel/cmp/cmpltv.lisp"
              #~"kernel/cmp/disltv.lisp"
              #~"kernel/cmp/compile-file.lisp"
