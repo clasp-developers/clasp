@@ -97,6 +97,9 @@
 (defpackage #:clasp-cleavir-blir
   (:nicknames #:cc-blir)
   (:local-nicknames (#:bir #:cleavir-bir))
+  ;; Shadowing cl:load isn't strictly necessary, but will keep it from
+  ;; showing up in M-. or the like.
+  (:shadow #:load)
   (:export #:memref2 #:offset #:load #:store #:cas))
 
 (defpackage #:clasp-cleavir-vaslist
