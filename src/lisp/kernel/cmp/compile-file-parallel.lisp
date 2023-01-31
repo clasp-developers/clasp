@@ -274,12 +274,14 @@ multithreaded performance that we should explore."
                                    :optimize-level optimize-level
                                    :intermediate-output-type intermediate-output-type))
                (incf form-counter)
-               (setf form-index (core:next-startup-position)))))
-      ;; Now send :quit messages to all threads
-      (loop for thread in ast-threads
-            do (cfp-log "Sending two :quit (why not?) for thread ~a~%" (mp:process-name thread))
-            do (core:atomic-enqueue ast-queue :quit)
-               (core:atomic-enqueue ast-queue :quit))
+               (setf form-index (core:next-startup-position))))
+        ;; Now send :quit messages to all threads.
+        ;; It's important to do this in the cleanup, so that if there is a read
+        ;; error we actually clean up the threads.
+        (loop for thread in ast-threads
+              do (cfp-log "Sending two :quit (why not?) for thread ~a~%" (mp:process-name thread))
+              do (core:atomic-enqueue ast-queue :quit)
+                 (core:atomic-enqueue ast-queue :quit)))
       ;; Now wait for all threads to join
       (loop for thread in ast-threads
             do (mp:process-join thread)
