@@ -85,7 +85,7 @@
                   :optimize (when optimize #'optimize-module-for-compile-file)
                   :optimize-level optimize-level)
       (with-debug-info-generator (:module module
-                                  :pathname *compile-file-truename*)
+                                  :pathname *compile-file-source-debug-pathname*)
         (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
           (with-literal-table (:id (ast-job-form-index job))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
@@ -222,6 +222,13 @@ multithreaded performance that we should explore."
                       (*package* . ',*package*)
                       (*compile-file-pathname* . ',*compile-file-pathname*)
                       (*compile-file-truename* . ',*compile-file-truename*)
+                      (*compile-file-source-debug-pathname*
+                       . ',*compile-file-source-debug-pathname*)
+                      (*compile-file-source-debug-offset*
+                       . ',*compile-file-source-debug-offset*)
+                      (*compile-file-source-debug-lineno*
+                       . ',*compile-file-source-debug-lineno*)
+                      (*compile-file-file-scope* . ',*compile-file-file-scope*)
                       #+(or cclasp eclasp)(cleavir-cst-to-ast:*compiler*
                                . ',cleavir-cst-to-ast:*compiler*)
                       #+(or cclasp eclasp)(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
