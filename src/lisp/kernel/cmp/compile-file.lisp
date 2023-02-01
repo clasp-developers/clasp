@@ -251,6 +251,12 @@ Compile a Lisp source stream and return a corresponding LLVM module."
     ((eq output-type :fasl) (default-library-type))
     (t output-type)))
 
+(defun enable-bytecode-file-compiler ()
+  (setf *default-object-type* :bytecode))
+
+(defun disable-bytecode-file-compiler ()
+  (setf *default-object-type* :faso))
+
 (defun compile-file (input-file
                      &rest args
                      &key
@@ -291,7 +297,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                        (optimize-level *optimization-level*)
                      &allow-other-keys)
   ;; These are all just passed along to other functions.
-  (declare (ignore output-file environment output-type type
+  (declare (ignore output-file environment type
                    image-startup-position optimize optimize-level))
   "See CLHS compile-file."
   (with-compilation-unit ()
@@ -305,7 +311,13 @@ Compile a Lisp source stream and return a corresponding LLVM module."
           (*compile-file-source-debug-pathname*
             (if cfsdpp source-debug-pathname *compile-file-truename*))
           (*compile-file-file-scope*
-            (core:file-scope *compile-file-source-debug-pathname*)))
+            (core:file-scope *compile-file-source-debug-pathname*))
+          ;; bytecode compilation can't be done in parallel at the moment.
+          ;; we could possibly warn about it if execution was specified,
+          ;; but practically speaking it would mostly be noise.
+          (execution (if (member output-type '(:bytecode :bytecodel))
+                         :serial
+                         execution)))
       (with-open-file (source-sin input-file
                                   :external-format external-format)
         (with-compilation-results ()
@@ -336,7 +348,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                           (fixup-output-type output-type)
                           output-type)))
     (case output-type
-      ((:bytecode)
+      ((:bytecode :bytecodel)
        (apply #'cmpltv:bytecode-compile-stream input-stream output-path args))
       (otherwise
        (with-compiler-env ()
