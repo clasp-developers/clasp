@@ -13,19 +13,122 @@
     `(unwind-protect
           (progn
             (mp:get-lock *cfp-message-mutex*)
-            (format *error-output* ,fmt ,@args))
+            (format *error-output* ,fmt ,@args)
+            (finish-output *error-output*))
        (mp:giveup-lock *cfp-message-mutex*))))
 ;;;#+(or)
 (defmacro cfp-log (fmt &rest args) (declare (ignore fmt args)))
 
-(defstruct (ast-job (:type vector) :named)
-  form ast environment output-object
-  form-index   ; Uses (core:next-startup-position) to keep count
-  form-counter ; Counts from zero
-  module
-  (serious-condition nil) (warnings nil) (notes nil) (other-conditions nil)
-  current-source-pos-info startup-function-name form-output-path)
+(defclass thread-pool ()
+  ((%queue :initarg :queue :reader thread-pool-queue)
+   (%threads :initarg :threads :reader thread-pool-threads)))
 
+(defclass job ()
+  ((%serious-condition :initform nil :accessor job-serious-condition
+                       :type (or null serious-condition))
+   (%warnings :initform nil :accessor job-warnings :type list)
+   (%notes :initform nil :accessor job-notes :type list)
+   (%other-conditions :initform nil :accessor job-other-conditions :type list)))
+
+(defun thread-pool-jobber (queue function arguments)
+  (lambda ()
+    (unwind-protect
+         (loop for job = (core:dequeue queue :timeout 1.0 :timeout-val nil)
+               until (eq job :quit)
+               when job
+                 do (cfp-log "Thread ~a working on ~s~%"
+                             (mp:process-name mp:*current-process*) job)
+                    (block nil
+                      (handler-bind
+                          ((serious-condition
+                             (lambda (e)
+                               (setf (job-serious-condition job) e)
+                               ;; Cannot continue with this job,
+                               ;; so return to the loop to wait for more jobs.
+                               (return)))
+                           ;; Other conditions are suppressed and saved for the manager.
+                           (warning
+                             (lambda (w) (push w (job-warnings job)) (muffle-warning w)))
+                           (ext:compiler-note
+                             (lambda (n) (push n (job-notes job)) (muffle-note n)))
+                           ((not (or ext:compiler-note serious-condition warning))
+                             (lambda (c) (push c (job-other-conditions job)))))
+                        (apply function job arguments)))
+                    (cfp-log "Thread ~a done with job~%"
+                             (mp:process-name mp:*current-process*)))
+      (cfp-log "Leaving thread ~a~%" (mp:process-name mp:*current-process*)))))
+
+(defgeneric report-job-conditions (job)
+  (:method ((job job))
+    (mapc #'signal (job-other-conditions job))
+    ;; The WARN calls here never actually print warnings - the
+    ;; with-compilation-results handlers do, and then muffle the warnings
+    ;; (which is why we use WARN and not SIGNAL). Kind of ugly.
+    (mapc #'warn (job-warnings job))
+    (mapc #'cmp:note (job-notes job))
+    (when (job-serious-condition job)
+      ;; We use SIGNAL rather than ERROR although the condition is serious.
+      ;; This is because the job has already exited and therefore there
+      ;; is no way to debug the problem. with-compilation-results will
+      ;; still understand that it's an error and report compilation failure.
+      ;; It's possible we could save the original backtrace and so on, but
+      ;; if you want to debug problems, it would probably be easier to
+      ;; use the serial compiler and debug them as they appear.
+      (signal (job-serious-condition job)))))
+
+(defun make-thread-pool (function &key arguments (name 'thread-pool)
+                                  (nthreads (core:num-logical-processors))
+                                  special-bindings)
+  (loop with queue = (core:make-queue name)
+        with conc-name = (format nil "~(~a~)-" (symbol-name name))
+        for thread-num below nthreads
+        collect (mp:process-run-function
+                 (format nil "~a-~d" conc-name thread-num)
+                 (thread-pool-jobber queue function arguments)
+                 special-bindings)
+          into threads
+        finally (return (make-instance 'thread-pool
+                          :queue queue :threads threads))))
+
+(defun thread-pool-enqueue (pool job)
+  (core:atomic-enqueue (thread-pool-queue pool) job))
+
+(defun thread-pool-quit (pool)
+  (loop with queue = (thread-pool-queue pool)
+        for thread in (thread-pool-threads pool)
+        do (cfp-log "Sending two :quit (why not?) for thread ~a~%"
+                    (mp:process-name thread))
+           (core:atomic-enqueue queue :quit)
+           (core:atomic-enqueue queue :quit)))
+
+(defun thread-pool-join (pool)
+  (loop for thread in (thread-pool-threads pool)
+        do (mp:process-join thread)
+           (cfp-log "Process-join of thread ~a~%" (mp:process-name thread))))
+
+;;;
+
+(defclass ast-job (job)
+  ((%form :initarg :form :reader ast-job-form)
+   (%ast :initarg :ast :reader ast-job-ast)
+   (%output-object :initarg :output-object :accessor ast-job-output-object)
+   (%form-index :initarg :form-index :reader ast-job-form-index)
+   (%form-counter :initarg :form-counter :reader ast-job-form-counter)
+   (%module :accessor ast-job-module)
+   (%source-pos-info :initarg :source-pos-info :reader ast-job-source-pos-info)
+   (%startup-function-name :accessor ast-job-startup-function-name)
+   (%form-output-path :initarg :form-output-path :reader ast-job-form-output-path)))
+
+(defmethod report-job-conditions :around ((job ast-job))
+  (let ((*default-condition-origin*
+          (ignore-errors
+           (loop for origin = (cleavir-ast:origin (ast-job-ast job))
+                   then (cst:source origin)
+                 while (typep origin 'cst:cst)
+                 finally (return origin)))))
+    (call-next-method)))
+
+;;;
 
 (defun compile-from-module (job &key
                                   optimize
@@ -80,12 +183,12 @@
 
 (defun ast-job-to-module (job &key optimize optimize-level)
   (let ((module (llvm-create-module (format nil "module~a" (ast-job-form-index job))))
-        (core:*current-source-pos-info* (ast-job-current-source-pos-info job)))
+        (core:*current-source-pos-info* (ast-job-source-pos-info job)))
     (with-module (:module module
                   :optimize (when optimize #'optimize-module-for-compile-file)
                   :optimize-level optimize-level)
       (with-debug-info-generator (:module module
-                                  :pathname *compile-file-truename*)
+                                  :pathname *compile-file-source-debug-pathname*)
         (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
           (with-literal-table (:id (ast-job-form-index job))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
@@ -124,43 +227,50 @@
                            :intermediate-output-type intermediate-output-type
                            :write-bitcode write-bitcode))
 
-(defparameter *ast-job* nil)
-(defun wait-for-ast-job (queue &key compile-func optimize optimize-level intermediate-output-type write-bitcode)
-  (unwind-protect
-       (loop for ast-job = (core:dequeue queue :timeout 1.0 :timeout-val nil)
-             until (eq ast-job :quit)
-             do (if ast-job
-                    (let ((*ast-job* ast-job))
-                      (cfp-log "Thread ~a compiling form~%" (mp:process-name mp:*current-process*))
-                      (block nil
-                        (handler-bind
-                            ((serious-condition
-                               (lambda (e)
-                                 (setf (ast-job-serious-condition ast-job) e)
-                                 ;; Cannot continue with this job
-                                 (return)))
-                             (warning
-                               (lambda (w)
-                                 (push w (ast-job-warnings ast-job))
-                                 ;; Will be reported in the main thread instead.
-                                 (muffle-warning w)))
-                             (ext:compiler-note
-                               (lambda (n)
-                                 (push n (ast-job-notes ast-job))
-                                 (muffle-note n)))
-                             ((not (or ext:compiler-note
-                                       serious-condition warning))
-                               (lambda (c)
-                                 (push c (ast-job-other-conditions ast-job)))))
-                          (funcall compile-func ast-job
-                                   :optimize optimize
-                                   :optimize-level optimize-level
-                                   :intermediate-output-type intermediate-output-type
-                                   :write-bitcode write-bitcode)))
-                      (cfp-log "Thread ~a done with form~%" (mp:process-name mp:*current-process*)))
-                    (cfp-log "Thread ~a timed out during dequeue - trying again~%" (mp:process-name mp:*current-process*))))
-    (cfp-log "Leaving thread ~a~%" (mp:process-name mp:*current-process*))))
+(defun read-one-ast (source-sin environment eof-value)
+  ;; Required to update the source pos info. FIXME!?
+  (peek-char t source-sin nil)
+  ;; FIXME: if :environment is provided,
+  ;; we should probably use a different read somehow
+  (let* ((current-source-pos-info (compile-file-source-pos-info source-sin))
+         (core:*current-source-pos-info* current-source-pos-info)
+         ;; since cst-read returns a cst normally, we can use eof = nil.
+         ;; ...except that eclector.cst:read of "#+(or) 4 #.(or)" returns nil.
+         ;; Not sure if bug.
+         (cst (eclector.concrete-syntax-tree:read source-sin nil eof-value))
+         (_ (when (eq cst eof-value)
+              (return-from read-one-ast (values nil nil nil))))
+         (form (cst:raw cst))
+         (pre-ast
+           (if *debug-compile-file*
+               (with-compiler-timer ()
+                 (clasp-cleavir-translate-bir::cst->ast cst environment))
+               (clasp-cleavir-translate-bir::cst->ast cst environment))))
+    (declare (ignore _))
+    (when *compile-print* (describe-form form))
+    (values (clasp-cleavir-translate-bir::wrap-ast pre-ast)
+            form current-source-pos-info)))
 
+(defun ast-job-special-bindings ()
+  `((*compile-print* . ',*compile-print*)
+    (*compile-file-parallel* . ',*compile-file-parallel*)
+    (*default-object-type* . ',*default-object-type*)
+    (*compile-verbose* . ',*compile-verbose*)
+    (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
+    (*package* . ',*package*)
+    (*compile-file-pathname* . ',*compile-file-pathname*)
+    (*compile-file-truename* . ',*compile-file-truename*)
+    (*compile-file-source-debug-pathname*
+     . ',*compile-file-source-debug-pathname*)
+    (*compile-file-source-debug-offset*
+     . ',*compile-file-source-debug-offset*)
+    (*compile-file-source-debug-lineno*
+     . ',*compile-file-source-debug-lineno*)
+    (*compile-file-file-scope* . ',*compile-file-file-scope*)
+    #+(or cclasp eclasp)(cleavir-cst-to-ast:*compiler*
+                         . ',cleavir-cst-to-ast:*compiler*)
+    #+(or cclasp eclasp)(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
+    (*global-function-refs* . ',*global-function-refs*)))
 
 (defun cclasp-loop2 (source-sin
                      environment
@@ -186,126 +296,68 @@ then leave the LLVM stuff to be done in parallel.   That slows down so much
 that it's not worth it either.   It would be better to improve the garbage collector (MPS)
 to work better in a multithreaded way.  There are also options for Boehm to improve
 multithreaded performance that we should explore."
-  (let ((form-index (core:next-startup-position))
-        (form-counter 0)
-        (eof-value (gensym))
-        #+(or cclasp eclasp) (cleavir-cst-to-ast:*compiler*
-                  'cl:compile-file)
-        #+(or cclasp eclasp)(core:*use-cleavir-compiler* t)
-        #+(or cclasp eclasp)(eclector.reader:*client* clasp-cleavir::*cst-client*)
-        #+(or cclasp eclasp)(eclector.readtable:*readtable* cl:*readtable*)
-        ast-jobs)
-    (cfp-log "Starting the pool of threads~%")
-    (finish-output)
-    (let* ((number-of-threads (core:num-logical-processors))
-           (ast-queue (core:make-queue 'compile-file-parallel))
-           ;; Setup a pool of threads
-           (ast-threads
-             (loop for thread-num below number-of-threads
-                   collect
-                   (mp:process-run-function
-                    (format nil "compile-file-parallel-~a" thread-num)
-                    (lambda ()
-                      (wait-for-ast-job ast-queue
-                                        :compile-func (if compile-from-module
-                                                          'compile-from-module
-                                                          'compile-from-ast)
+  (let* ((output-object
+           (cond
+             ((eq intermediate-output-type :in-memory-object)
+              :simple-vector-byte8)
+             ((eq intermediate-output-type :in-memory-module)
+              nil)
+             (t
+              (error "Handle intermediate-output-type ~a" intermediate-output-type))))
+         #+(or cclasp eclasp) (cleavir-cst-to-ast:*compiler*
+                                'cl:compile-file)
+         #+(or cclasp eclasp)(core:*use-cleavir-compiler* t)
+         #+(or cclasp eclasp)(eclector.reader:*client* clasp-cleavir::*cst-client*)
+         #+(or cclasp eclasp)(eclector.readtable:*readtable* cl:*readtable*)
+         ast-jobs
+         (_ (cfp-log "Starting the pool of threads~%"))
+         (job-args `(:optimize ,optimize :optimize-level ,optimize-level
+                     :intermediate-output-type ,intermediate-output-type
+                     :write-bitcode ,write-bitcode))
+         (pool (make-thread-pool (if compile-from-module
+                                     'compile-from-module
+                                     'compile-from-ast)
+                                 :arguments job-args
+                                 :name 'compile-file-parallel
+                                 :special-bindings (ast-job-special-bindings)))
+         (output-path-name (pathname-name output-path)))
+    (declare (ignore _))
+    (unwind-protect
+         (loop with eof-value = (gensym "EOF")
+               for form-counter from 0
+               for form-index = (core:next-startup-position)
+               for form-output-path = (make-pathname
+                                       :name (format nil "~a_~d" output-path-name
+                                                     form-counter)
+                                       :defaults output-path)
+               do (multiple-value-bind (ast form cspi)
+                      (read-one-ast source-sin environment eof-value)
+                    (when (null ast) (return nil)) ; EOF
+                    (let ((ast-job (make-instance 'ast-job
+                                     :form form :ast ast
+                                     :source-pos-info cspi
+                                     :form-output-path form-output-path
+                                     :output-object output-object
+                                     :form-index form-index
+                                     :form-counter form-counter)))
+                      (when compile-from-module
+                        (let ((module (ast-job-to-module ast-job :optimize optimize :optimize-level optimize-level)))
+                          (setf (ast-job-module ast-job) module)))
+                      (unless ast-only
+                        (push ast-job ast-jobs)
+                        (thread-pool-enqueue pool ast-job))
+                      #+(or)
+                      (compile-from-ast ast-job
                                         :optimize optimize
                                         :optimize-level optimize-level
-                                        :intermediate-output-type intermediate-output-type
-                                        :write-bitcode write-bitcode))
-                    `((*compile-print* . ',*compile-print*)
-                      (*compile-file-parallel* . ',*compile-file-parallel*)
-                      (*default-object-type* . ',*default-object-type*)
-                      (*compile-verbose* . ',*compile-verbose*)
-                      (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
-                      (*package* . ',*package*)
-                      (*compile-file-pathname* . ',*compile-file-pathname*)
-                      (*compile-file-truename* . ',*compile-file-truename*)
-                      #+(or cclasp eclasp)(cleavir-cst-to-ast:*compiler*
-                               . ',cleavir-cst-to-ast:*compiler*)
-                      #+(or cclasp eclasp)(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
-                      (*global-function-refs* . ',*global-function-refs*))))))
-      (unwind-protect
-           (loop
-             ;; Required to update the source pos info. FIXME!?
-             (peek-char t source-sin nil)
-             ;; FIXME: if :environment is provided we should probably use a different read somehow
-             (let* ((current-source-pos-info (compile-file-source-pos-info source-sin))
-                    (core:*current-source-pos-info* current-source-pos-info)
-                    (form-output-path
-                      (make-pathname
-                       :name (format nil "~a_~d" (pathname-name output-path) form-counter)
-                       :defaults output-path))
-                    (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
-                    (_ (when (eq cst eof-value) (return nil)))
-                    (form (cst:raw cst))
-                    (pre-ast
-                      (if *debug-compile-file*
-                          (with-compiler-timer ()
-                           (clasp-cleavir-translate-bir::cst->ast cst))
-                          (clasp-cleavir-translate-bir::cst->ast cst)))
-                    (ast (clasp-cleavir-translate-bir::wrap-ast pre-ast)))
-               (declare (ignore _))
-               (let ((ast-job (make-ast-job :form form
-                                            :ast ast
-                                            :environment environment
-                                            :current-source-pos-info current-source-pos-info
-                                            :form-output-path form-output-path
-                                            :output-object (cond
-                                                             ((eq intermediate-output-type :in-memory-object)
-                                                              :simple-vector-byte8)
-                                                             ((eq intermediate-output-type :in-memory-module)
-                                                              nil)
-                                                             (t
-                                                              (error "Handle intermediate-output-type ~a" intermediate-output-type)))
-                                            :form-index form-index
-                                            :form-counter form-counter)))
-                 (when compile-from-module
-                   (let ((module (ast-job-to-module ast-job :optimize optimize :optimize-level optimize-level)))
-                     (setf (ast-job-module ast-job) module)))
-                 (when *compile-print* (describe-form form))
-                 (unless ast-only
-                   (push ast-job ast-jobs)
-                   (core:atomic-enqueue ast-queue ast-job))
-                 #+(or)
-                 (compile-from-ast ast-job
-                                   :optimize optimize
-                                   :optimize-level optimize-level
-                                   :intermediate-output-type intermediate-output-type))
-               (incf form-counter)
-               (setf form-index (core:next-startup-position)))))
-      ;; Now send :quit messages to all threads
-      (loop for thread in ast-threads
-            do (cfp-log "Sending two :quit (why not?) for thread ~a~%" (mp:process-name thread))
-            do (core:atomic-enqueue ast-queue :quit)
-               (core:atomic-enqueue ast-queue :quit))
-      ;; Now wait for all threads to join
-      (loop for thread in ast-threads
-            do (mp:process-join thread)
-               (cfp-log "Process-join of thread ~a~%" (mp:process-name thread))))
-    (dolist (job ast-jobs)
-      (let ((*default-condition-origin*
-              (ignore-errors
-               (loop for origin = (cleavir-ast:origin (ast-job-ast job))
-                       then (cst:source origin)
-                     while (typep origin 'cst:cst)
-                     finally (return origin)))))
-        (mapc #'signal (ast-job-other-conditions job))
-        ;; The WARN calls here never actually print warnings - the
-        ;; with-compilation-results handlers do, and then muffle the warnings
-        ;; (which is why we use WARN and not SIGNAL). Kind of ugly.
-        (mapc #'warn (ast-job-warnings job))
-        (mapc #'cmp:note (ast-job-notes job))
-        (when (ast-job-serious-condition job)
-          ;; We use SIGNAL rather than ERROR although the condition is serious.
-          ;; This is because the AST job has already exited and therefore there
-          ;; is no way to debug the problem. with-compilation-results will
-          ;; still understand that it's an error and report compilation failure.
-          ;; It's possible we could save the original backtrace and so on, but
-          ;; if you want to debug problems, it would probably be easier to
-          ;; use the serial compiler and debug them as they appear.
-          (signal (ast-job-serious-condition job)))))
+                                        :intermediate-output-type intermediate-output-type))))
+      ;; Send :quit messages to all threads.
+      ;; It's important to do this in the unwind-protect cleanup,
+      ;; so that if there is a read error we actually clean up the threads.
+      (thread-pool-quit pool))
+    ;; Now wait for all threads to join
+    (thread-pool-join pool)
+    (mapc #'report-job-conditions ast-jobs)
     ;; Now print the names of the startup ctor functions
     ;;     Next we need to compile a new module that declares these ctor functions and puts them in a ctor list
     ;;      then it should add this new module to the result list so it can be linked with the others.
@@ -467,7 +519,7 @@ Each bitcode filename will contain the form-index.")
               (cond (dry-run (format t "Doing nothing further~%") nil)
                     ((null output-path)
                      (error "The output-file is nil for input filename ~a~%" input-file))
-                    ((some #'ast-job-serious-condition ast-jobs)
+                    ((some #'job-serious-condition ast-jobs)
                      ;; There was an insurmountable error - stop.
                      nil)
                     ;; Usual result
