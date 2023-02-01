@@ -106,7 +106,9 @@
 ;;;; Miscellaneous Environment Things
 
 (defmacro loop-unsafe (&rest x)
-  `(locally (declare (optimize ext:assume-right-type)) ,@x))
+  ;; This is mostly in so as to elide type checks.
+  ;; See cleavir/policy.lisp for details of when Clasp inserts type checks.
+  `(locally (declare (optimize (safety 0))) ,@x))
 
 (defun loop-optimization-quantities (env)
   ;; The ANSI conditionalization here is for those lisps that implement
@@ -471,7 +473,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 	     (do ((tail var)) ((not (consp tail)) tail)
 	       (when (find-non-null (pop tail)) (return t))))
 	   (loop-desetq-internal (var val &optional temp)
-	     ;; if the value is declared 'unsafe', then the assignemnt
+	     ;; if the value is declared 'unsafe', then the assignment
 	     ;; is also unsafe.
 	     (when (and (consp val)
 			(eq (first val) 'LOOP-UNSAFE))

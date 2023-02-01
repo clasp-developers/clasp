@@ -174,7 +174,6 @@
             sequence-stream
             all-encodings
             make-encoding
-            assume-right-type
             assert-error
             float-nan-p
             float-infinity-p

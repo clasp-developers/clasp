@@ -110,10 +110,7 @@
     (note-untransformed-calls boolean t)
     (note-boxing boolean t)
     (note-consing-&rest boolean t)
-    (core::insert-array-bounds-checks boolean t)
-    (ext:assume-right-type boolean nil)
-    (do-type-inference boolean t)
-    (do-dx-analysis boolean t)))
+    (core::insert-array-bounds-checks boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
@@ -126,10 +123,7 @@
     (note-untransformed-calls boolean t)
     (note-boxing boolean t)
     (note-consing-&rest boolean t)
-    (core::insert-array-bounds-checks boolean t)
-    (ext:assume-right-type boolean nil)
-    (do-type-inference boolean t)
-    (do-dx-analysis boolean t)))
+    (core::insert-array-bounds-checks boolean t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -164,30 +158,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Policies DO-TYPE-INFERENCE, DO-DX-ANALYSIS.
-;;;
-;;; Since Kildall analyses are tragically slow at the moment,
-;;; they need to be suppessed for reasonable compile times.
-;;; If DO-TYPE-INFERENCE is false no type inference is done.
-;;; If DO-DX-ANALYSIS is false no DX analysis is done.
-;;; See MY-HIR-TRANSFORMATIONS for use.
-
-(defmethod policy:compute-policy-quality
-    ((quality (eql 'do-type-inference))
-     optimize
-     (environment clasp-global-environment))
-  (> (policy:optimize-value optimize 'speed)
-     (policy:optimize-value optimize 'compilation-speed)))
-
-(defmethod policy:compute-policy-quality
-    ((quality (eql 'do-dx-analysis))
-     optimize
-     (environment clasp-global-environment))
-  (> (policy:optimize-value optimize 'space)
-     (policy:optimize-value optimize 'compilation-speed)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Policy CORE::INSERT-ARRAY-BOUNDS-CHECKS
 
 ;;; Should calls to aref and such do a bounds check?
@@ -198,26 +168,6 @@
      optimize
      (environment clasp-global-environment))
   (> (policy:optimize-value optimize 'safety) 0))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; POLICY EXT:ASSUME-RIGHT-TYPE
-;;;
-;;; Should type declarations be trusted for unsafe transforms?
-;;; If this is true, crashes can result if type declarations
-;;; are wrong, so per the definition of "safe code" it must be
-;;; false at safety 3.
-;;; NOTE: This is only really necessary because of our non
-;;; existent type inference. Policies need a FIXME rethink
-;;; once things are less broken.
-
-(defmethod policy:compute-policy-quality
-    ((quality (eql 'ext:assume-right-type))
-     optimize
-     (environment clasp-global-environment))
-  (let ((safety (policy:optimize-value optimize 'safety)))
-    (and (zerop safety)
-         (> (policy:optimize-value optimize 'speed) safety))))
 
 ;;;
 
