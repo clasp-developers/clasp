@@ -63,7 +63,7 @@ struct ClaspInfo {
   core::LispHolder *_lispHolder;
 
   ClaspInfo(int argc, const char **argv, size_t stackMax)
-      : _argc(argc), _argv(argv), _stackMax(stackMax), _lispHolder(NULL), _mpiEnabled(false), _mpiRank(0), _mpiSize(1){};
+    : _argc(argc), _argv(argv), _stackMax(stackMax), _mpiEnabled(false), _mpiRank(0), _mpiSize(1), _lispHolder(NULL){};
 };
 }; // namespace gctools
 
@@ -755,7 +755,7 @@ public:
   };
 
   Header_s(Header_s *headerptr)
-      : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag), _guard(GUARD1), _tail_start(0), _tail_size(0), _source(headerptr->_source),
+    : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag), _tail_start(0), _tail_size(0), _guard(GUARD1), _source(headerptr->_source),
         _guard2(GUARD2), _dup_badge_stamp_wtag_mtag(headerptr->_badge_stamp_wtag_mtag){};
 
 #endif

@@ -1521,6 +1521,11 @@ static void illegal_op_void__T_sp_char(T_sp strm, claspCharacter c) {
   abort();
 }
 
+static cl_index illegal_op_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__);
+  abort();
+}
+
 static claspCharacter illegal_op_char__T_sp(T_sp strm) {
   printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
   abort();
