@@ -8,6 +8,9 @@
   read will not block. Otherwise use non-blocking read. Fixes [#1404][].
 * Prevent format parameters from appearing after colon or at sign modifiers.
 
+## Optimizations
+* Arithmetic comparisons between floats and fixnums no longer cons.
+
 # Version 2.1.0 (LLVM14) 2023-01-01
 
 ## Added
