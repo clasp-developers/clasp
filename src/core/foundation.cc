@@ -167,9 +167,6 @@ uint64_t lisp_nameword(core::T_sp name) {
     nw.name[7] = '\0';
     return nw.word;
   } else if (gc::IsA<Symbol_sp>(name)) {
-    if (name.nilp()) {
-      SIMPLE_ERROR(("The name must not be NIL"));
-    }
     String_sp sname = gc::As_unsafe<Symbol_sp>(name)->symbolName();
     size_t i = 0;
     size_t iEnd(std::min((size_t)sname->length(), (size_t)8));

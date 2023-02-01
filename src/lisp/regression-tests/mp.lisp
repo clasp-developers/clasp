@@ -31,6 +31,14 @@
             nil (lambda () (mp:get-lock mut nil))))))
       (nil))
 
+;;; These are used in slime, so make sure we get them right.
+(test-type recursive-mutex-anonymous
+           (mp:make-recursive-mutex) mp:recursive-mutex)
+(test-type recursive-mutex-symbol
+           (mp:make-recursive-mutex 'bla) mp:recursive-mutex)
+(test-type recursive-mutex-string
+           (mp:make-recursive-mutex "bla") mp:recursive-mutex)
+
 (test process-active-p-1
       (let ((p (mp:process-run-function nil (lambda ()))))
         (mp:process-join p)
