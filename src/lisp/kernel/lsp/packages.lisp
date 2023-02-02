@@ -224,6 +224,8 @@
             tpl-frame tpl-argument tpl-arguments
             ;; GC
             garbage-collect finalize save-lisp-and-die
-            ;; Misc
+            ;; Compiler
+            describe-compiler-policy
             with-current-source-form
+            ;; Misc
             printing-char-p)))
