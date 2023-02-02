@@ -340,8 +340,6 @@
             dbg-variable-alloca
             dbg-variable-value
             compile-file-source-pos-info
-            compile-file-serial
-            compile-file-parallel
             c++-field-offset
             c++-field-index
             c++-struct-type

@@ -57,6 +57,30 @@
 (defmethod env:variable-info ((system clasp) (environment null) symbol)
   (env:variable-info system *clasp-env* symbol))
 
+(defmethod env:variable-info ((system clasp) (environment cmp:lexenv) symbol)
+  ;; This whole structure is getting redundant wrt cleavir-env.
+  ;; TODO: Move to trucler, forget cleavir environments.
+  ;; (But Trucler still has its own info structures, I think, so maybe not?)
+  ;; Also TODO: Types etc.?
+  (let ((info (cmp:var-info symbol environment)))
+    (etypecase info
+      (null
+       ;; Not locally bound: Check the global environment.
+       (env:variable-info system *clasp-env* symbol))
+      (cmp:lexical-var-info
+       ;; This will probably not go well - cleavir expects an identity, etc.
+       (make-instance 'env:lexical-variable-info :name symbol))
+      (cmp:special-var-info
+       (make-instance 'env:special-variable-info :name symbol :global-p nil))
+      (cmp:symbol-macro-var-info
+       (make-instance 'env:symbol-macro-info
+         :name symbol
+         :expansion (funcall (cmp:symbol-macro-var-info/expander info)
+                             symbol environment)))
+      (cmp:constant-var-info
+       (make-instance 'env:constant-variable-info
+         :name symbol :value (ext:constant-form-value symbol environment))))))
+
 (defvar *fn-flags* (make-hash-table :test #'equal))
 (defvar *fn-transforms* (make-hash-table :test #'equal))
 (defvar *derivers* (make-hash-table :test #'equal))
@@ -249,6 +273,25 @@
 (defmethod env:function-info ((sys clasp) (environment null) symbol)
   (env:function-info sys *clasp-env* symbol))
 
+(defmethod env:function-info ((sys clasp) (environment cmp:lexenv) symbol)
+  (let ((info (cmp:fun-info symbol environment)))
+    (etypecase info
+      (null (env:function-info sys *clasp-env* symbol)) ; check global
+      (cmp:global-fun-info
+       (make-instance 'env:global-function-info
+         :name symbol
+         :compiler-macro (cmp:global-fun-info/cmexpander info)))
+      (cmp:local-fun-info
+       ;; As with lexical variables, this may not end well
+       ;; as there will be no identity or anything.
+       (make-instance 'env:local-function-info :name symbol))
+      (cmp:global-macro-info
+       (make-instance 'env:global-macro-info
+         :name symbol :expander (cmp:global-macro-info/expander info)))
+      (cmp:local-macro-info
+       (make-instance 'env:local-macro-info
+         :name symbol :expander (cmp:local-macro-info/expander info))))))
+
 (defmethod env:declarations ((environment null))
   (env:declarations *clasp-env*))
 
@@ -257,6 +300,8 @@
     ((environment clasp-global-environment))
   '(;; behavior as in convert-form.lisp
     core:lambda-name))
+
+(defmethod env:declarations ((env cmp:lexenv)) (env:declarations *clasp-env*))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *global-optimize*
@@ -280,6 +325,10 @@
     :policy *global-policy*))
 
 (defmethod env:optimize-info ((environment NULL))
+  (env:optimize-info *clasp-env*))
+
+(defmethod env:optimize-info ((env cmp:lexenv))
+  ;; FIXME: We will probably need lexenvs to track this eventually
   (env:optimize-info *clasp-env*))
 
 

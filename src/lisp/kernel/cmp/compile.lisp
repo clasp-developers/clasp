@@ -34,15 +34,16 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                        &optional (compile-hook *cleavir-compile-hook*)
                          (linkage 'llvm-sys:internal-linkage) name)
   "Compile in the given environment"
-  (with-compiler-env ()
-    (let* ((module (create-run-time-module-for-compile)))
-      ;; Link the C++ intrinsics into the module
-      (with-module (:module module
-                    :optimize nil)
-        (cmp-log "Dumping module%N")
-        (cmp-log-dump-module module)
-        (let ((pathname (if *load-pathname* (namestring *load-pathname*) "repl-code")))
-          (compile-with-hook compile-hook definition env pathname :linkage linkage :name name))))))
+  (with-compilation-unit ()
+    (with-compiler-env ()
+      (let* ((module (create-run-time-module-for-compile)))
+        ;; Link the C++ intrinsics into the module
+        (with-module (:module module
+                      :optimize nil)
+          (cmp-log "Dumping module%N")
+          (cmp-log-dump-module module)
+          (let ((pathname (if *load-pathname* (namestring *load-pathname*) "repl-code")))
+            (compile-with-hook compile-hook definition env pathname :linkage linkage :name name)))))))
 
 (defun builtin-wrapper-form (name)
   (when (and (fboundp name)

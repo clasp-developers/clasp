@@ -521,6 +521,31 @@ public:
   virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
   virtual size_t resize();
 };
+
+FORWARD(LoadTimeValueInfo);
+class LoadTimeValueInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, LoadTimeValueInfo_O, "LoadTimeValueInfo", General_O);
+public:
+  LoadTimeValueInfo_O(T_sp form, bool read_only_p)
+    : _form(form), _read_only_p(read_only_p) {}
+public:
+  T_sp _form; // the form that will produce the value
+  // Whether the load-time-value was marked read-only.
+  // This is currently unused, but it's included in case we want it later.
+  bool _read_only_p;
+public:
+  static LoadTimeValueInfo_sp make(T_sp form, bool read_only_p) {
+    return gctools::GC<LoadTimeValueInfo_O>::allocate<gctools::RuntimeStage>(form, read_only_p);
+  }
+public:
+  CL_LISPIFY_NAME(LoadTimeValueInfo/form)
+  CL_DEFMETHOD T_sp form() { return this->_form; }
+  CL_LISPIFY_NAME(LoadTimeValueInfo/ReadOnlyP)
+  CL_DEFMETHOD bool read_only_p() { return this->_read_only_p; }
+  // Evaluate the load time value form.
+  CL_LISPIFY_NAME(LoadTimeValueInfo/eval)
+  CL_DEFMETHOD T_sp eval();
+};
  
 class Module_O : public General_O {
   LISP_CLASS(comp, CompPkg, Module_O, "Module", General_O);
@@ -531,10 +556,19 @@ public:
   Module_O()
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
       _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
+  Module_O(ComplexVector_T_sp literals)
+    : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
+      _literals(literals) {}
   CL_LISPIFY_NAME(Module/make)
   CL_DEF_CLASS_METHOD
   static Module_sp make() {
     return gctools::GC<Module_O>::allocate<gctools::RuntimeStage>();
+  }
+  // Ugly. Can we do keyword parameters w/defaults instead?
+  CL_LISPIFY_NAME(Module/make_with_literals)
+    CL_DEF_CLASS_METHOD
+    static Module_sp make_with_literals(ComplexVector_T_sp nliterals) {
+    return gctools::GC<Module_O>::allocate<gctools::RuntimeStage>(nliterals);
   }
   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
   CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
@@ -551,6 +585,11 @@ public:
   // Create the bytecode module vector. We scan over the fixups in the
   // module and copy segments of bytecode between fixup positions.
   CL_DEFMETHOD SimpleVector_byte8_t_sp create_bytecode();
+  // Compute and return the final fixed-up bytecode.
+  CL_DEFMETHOD SimpleVector_byte8_t_sp link();
+  // Link, then create actual run-time function objects and a bytecode module.
+  // Suitable for cl:compile.
+  CL_DEFMETHOD void link_load(T_sp compile_info);
 };
 
 class Cfunction_O : public General_O {
@@ -648,9 +687,8 @@ public:
   CL_DEFMETHOD T_sp lambda_list() { return _lambda_list; }
   T_sp sourcePosInfo() { return _source_pos_info; }
 public:
-// Run down the hierarchy and link the compile time representations
-// of modules and functions together into runtime objects. Return the
-// bytecode function corresponding to this cfunction.
+  // Convenience method to link the module and return the new bytecode function
+  // corresponding to this cfunction. Good for cl:compile.
   CL_DEFMETHOD GlobalBytecodeSimpleFun_sp link_function(T_sp compile_info);
 };
 

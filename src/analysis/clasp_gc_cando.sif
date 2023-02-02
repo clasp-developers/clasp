@@ -70,10 +70,11 @@
                           "chem::WildElementDict_O" "chem::RootMatchNode_O" "chem::Chain_O"
                           "llvmo::AtomicCmpXchgInst_O" "core::ComplexVector_int8_t_O"
                           "core::SimpleMDArray_int4_t_O" "core::SimpleVector_int32_t_O"
-                          "core::SimpleMDArray_double_O" "chem::ScoringFunction_O"
-                          "core::Complex_O" "chem::ConformationCollectionEntry_O"
-                          "core::TagbodyDynEnv_O" "geom::OMatrix_O" "llvmo::ValueAsMetadata_O"
-                          "chem::RingClosingMate_O" "chem::EnergyDihedral" "llvmo::ConstantExpr_O"
+                          "comp::LoadTimeValueInfo_O" "core::SimpleMDArray_double_O"
+                          "chem::ScoringFunction_O" "core::Complex_O"
+                          "chem::ConformationCollectionEntry_O" "core::TagbodyDynEnv_O"
+                          "geom::OMatrix_O" "llvmo::ValueAsMetadata_O" "chem::RingClosingMate_O"
+                          "chem::EnergyDihedral" "llvmo::ConstantExpr_O"
                           "llvmo::ConstantPointerNull_O" "llvmo::VectorType_O" "chem::FFStretch_O"
                           "chem::IterateRestraints_O" "chem::FFNonbondDb_O" "llvmo::StructType_O"
                           "chem::EnergyNonbond_O" "core::ComplexVector_int16_t_O"
@@ -10020,6 +10021,16 @@
              :offset-base-ctype "core::DebuggerFrame_O" :layout-offset-field-names ("down")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::DebuggerFrame_O" :layout-offset-field-names ("is_xep")}
+{class-kind :stamp-name "STAMPWTAG_comp__LoadTimeValueInfo_O"
+            :stamp-key "comp::LoadTimeValueInfo_O" :parent-class "core::General_O"
+            :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "comp::LoadTimeValueInfo_O" :layout-offset-field-names ("_form")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "comp::LoadTimeValueInfo_O"
+             :layout-offset-field-names ("_read_only_p")}
 {class-kind :stamp-name "STAMPWTAG_core__DebuggerLocal_O" :stamp-key "core::DebuggerLocal_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

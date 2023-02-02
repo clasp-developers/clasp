@@ -972,66 +972,6 @@ CL_DOCSTRING(R"dx(load-binary)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   DEPRECATED();
-#if 0
-  DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
-  DynamicScopeManager scope2(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
-  DynamicScopeManager scope3(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
-  if (pathDesig.nilp()) SIMPLE_ERROR(("load-binary was about to pass nil to pathname"));
-  Pathname_sp path = cl__pathname(pathDesig);
-  if (cl__probe_file(path).notnilp())
-    goto LOAD;
-  path->_Type = SimpleBaseString_O::make("bundle");
-  if (cl__probe_file(path).notnilp())
-    goto LOAD;
-  path->_Type = SimpleBaseString_O::make("fasl");
-  if (cl__probe_file(path).notnilp())
-    goto LOAD;
-  path->_Type = SimpleBaseString_O::make("fasb"); // ECL uses fasb
-  if (cl__probe_file(path).notnilp())
-    goto LOAD;
-  path->_Type = SimpleBaseString_O::make("dylib");
-  if (cl__probe_file(path).notnilp())
-    goto LOAD;
-  path->_Type = SimpleBaseString_O::make("so");
-  if (cl__probe_file(path).notnilp())
-    goto LOAD;
-  SIMPLE_ERROR(("Could not find bundle %s") , _rep_(pathDesig));
- LOAD:
-  String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
-  string name = nameStr->get_std_string();
-
-  // Check if we already have this dynamic library loaded
-  bool handleIt = if_dynamic_library_loaded_remove(name);
-  //	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
-  int mode = RTLD_NOW | RTLD_LOCAL; // | RTLD_FIRST;
-  void *handle = dlopen(name.c_str(), mode);
-  if (handle == NULL) {
-    string error = dlerror();
-    SIMPLE_ERROR(("Error in dlopen: %s") , error);
-    //    return (Values(nil<T_O>(), SimpleBaseString_O::make(error)));
-  }
-  // Static constructors must be available and they were run by dlopen
-  //   and they registered startup_functions that we will now invoke
-  //   to run the top-level forms.
-  if (!startup_functions_are_waiting()) {
-    printf("%s:%d No static constructors were run - what do we do in this situation????\n", __FILE__, __LINE__ );
-    abort();
-  }
-  add_library adder;
-  add_dynamic_library_using_handle(&adder,name,handle);
-  Pointer_sp handle_ptr = Pointer_O::create(handle);
-  DynamicScopeManager scope4(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
-  if (startup_functions_are_waiting()) {
-    if (print.notnilp()) {
-      write_bf_stream(fmt::sprintf("Running startup_functions\n"));
-    }
-    startup_functions_invoke(NULL);
-  } else {
-    SIMPLE_ERROR(("This is not a proper FASL file - there are no startup functions waiting to be invoked"));
-  }
-  T_mv result;
-  return (Values(Pointer_O::create(handle), nil<T_O>()));
-#endif
 };
 
 // -----------------------------------------------------------------------------

@@ -145,10 +145,8 @@
 	 (*generate-compile-file-load-time-values* nil)
 	 (*load-time-value-holder-global-var-type* nil)
 	 (*load-time-value-holder-global-var* nil)
-	 (*the-module-dibuilder* nil)
-	 (*readtable* *readtable*)
-	 (*package* *package*))
-     (with-compilation-unit () ,@body)))
+	 (*the-module-dibuilder* nil))
+     ,@body))
 
 (defmacro with-compilation-unit ((&rest options) &body body)
   `(do-compilation-unit #'(lambda () ,@body) ,@options))
@@ -291,13 +289,15 @@
      (if *use-human-readable-bitcode*
          (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path))))
            (with-atomic-file-rename (temp-pathname filename)
-             (with-open-file (fout temp-pathname :direction :output)
+             (with-open-file (fout temp-pathname :direction :output
+                                   :if-does-not-exist :create)
                (llvm-sys:dump-module module fout))))
          (with-atomic-file-rename (temp-pathname output-path)
            (llvm-sys:write-bitcode-to-file module (namestring temp-pathname)))))
     ((eq output-type :faspll)
      (with-atomic-file-rename (temp-pathname output-path)
-       (with-open-file (fout temp-pathname :direction :output)
+       (with-open-file (fout temp-pathname :direction :output
+                             :if-does-not-exist :create)
          (llvm-sys:dump-module module fout))))
     ((eq output-type :faspbc)
      (with-atomic-file-rename (temp-pathname output-path)

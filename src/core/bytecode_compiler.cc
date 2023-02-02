@@ -134,6 +134,10 @@ Lexenv_sp Lexenv_O::macroexpansion_environment() {
   return Lexenv_O::make(new_vars.cons(), nil<T_O>(), nil<T_O>(), new_funs.cons(), this->notinlines(), 0);
 }
 
+CL_DEFUN Lexenv_sp make_null_lexical_environment() {
+  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
+}
+
 CL_LAMBDA(context opcode &rest operands);
 CL_DEFUN void assemble(Context_sp context, uint8_t opcode, List_sp operands) {
   Cfunction_sp func = context->cfunction();
@@ -273,6 +277,7 @@ size_t Context_O::literal_index(T_sp literal) {
 // Like literal-index, but forces insertion. This is used when generating
 // a keyword argument parser, since the keywords must be sequential even if
 // they've previously appeared in the literals vector.
+// This is also used by LTV processing to put in a placeholder.
 size_t Context_O::new_literal_index(T_sp literal) {
   Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(literal);
   return nind.unsafe_fixnum();
@@ -737,13 +742,24 @@ SimpleVector_byte8_t_sp Module_O::create_bytecode() {
 CL_DEFUN T_sp lambda_list_for_name(T_sp raw_lambda_list) { return core::lambda_list_for_name(raw_lambda_list); }
 
 GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
-  Module_sp cmodule = this->module();
+  this->module()->link_load(compile_info);
+  // Linking installed the GBEP in this cfunction's info. Return that.
+  return this->info();
+}
+
+SimpleVector_byte8_t_sp Module_O::link() {
+  Module_sp cmodule = this->asSmartPtr();
   cmodule->initialize_cfunction_positions();
   cmodule->resolve_fixup_sizes();
+  return cmodule->create_bytecode();
+}
+
+void Module_O::link_load(T_sp compile_info) {
+  Module_sp cmodule = this->asSmartPtr();
+  SimpleVector_byte8_t_sp bytecode = cmodule->link();
   ComplexVector_T_sp cmodule_literals = cmodule->literals();
   size_t literal_length = cmodule_literals->length();
   SimpleVector_sp literals = SimpleVector_O::make(literal_length);
-  SimpleVector_byte8_t_sp bytecode = cmodule->create_bytecode();
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make();
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   // Create the real function objects.
@@ -770,21 +786,22 @@ GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
         fdesc, bytecode_module, cfunction->nlocals(), cfunction->closed()->length(), ep.unsafe_fixnum(), trampoline);
     cfunction->setInfo(func);
   }
-  // Now replace the cfunctions in the cmodule literal vector with
+  // Replace the cfunctions in the cmodule literal vector with
   // real bytecode functions in the module vector.
+  // Also replace load-time-value infos with the evaluated forms.
   for (size_t i = 0; i < literal_length; ++i) {
-    T_sp cfunc_lit = (*cmodule_literals)[i];
-    if (gc::IsA<Cfunction_sp>(cfunc_lit))
-      (*literals)[i] = gc::As_unsafe<Cfunction_sp>(cfunc_lit)->info();
+    T_sp lit = (*cmodule_literals)[i];
+    if (gc::IsA<Cfunction_sp>(lit))
+      (*literals)[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
+    else if (gc::IsA<LoadTimeValueInfo_sp>(lit))
+      (*literals)[i] = gc::As_unsafe<LoadTimeValueInfo_sp>(lit)->eval();
     else
-      (*literals)[i] = cfunc_lit;
+      (*literals)[i] = lit;
   }
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
   bytecode_module->setf_bytecode(bytecode);
   bytecode_module->setf_compileInfo(compile_info);
-  // Finally, return the GBEP for the main function.
-  return this->info();
 }
 
 CL_DEFUN void compile_literal(T_sp literal, Lexenv_sp env, Context_sp context) {
@@ -1654,19 +1671,43 @@ static void compile_call(T_sp args, Lexenv_sp env, Context_sp context) {
   context->emit_call(argcount);
 }
 
-CL_DEFUN Lexenv_sp make_null_lexical_environment() {
-  return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
-}
-
-CL_DEFUN void compile_load_time_value(T_sp form, Lexenv_sp env, Context_sp ctxt) {
-  // TODO: compile-file semantics?
-  // Here we just use funcall of bytecompile to do eval. In the future we might
-  // want to just call eval, which may or may not go through bytecompilation.
-  Lexenv_sp nenv = make_null_lexical_environment();
-  T_sp lexpr = Cons_O::createList(cl::_sym_lambda, nil<T_O>(), form);
-  GlobalBytecodeSimpleFun_sp thunk = bytecompile(lexpr, nenv);
-  T_sp value = eval::funcall(thunk);
-  compile_literal(value, env, ctxt);
+CL_DEFUN void compile_load_time_value(T_sp form, T_sp tread_only_p,
+                                      Lexenv_sp env, Context_sp context) {
+  // load-time-value forms are compiled by putting their information into
+  // a slot in the cmodule. This is so that (this part of) the compiler can
+  // be used uniformly for eval, compile, or compile-file. It is slightly
+  // inefficient for the former two cases, compared to evaluating forms
+  // immediately, but load-time-value is not exactly heavily used.
+  // The standard specifies the behavior when read-only-p is a literal t or
+  // nil, and nothing else.
+  bool read_only_p;
+  if (tread_only_p.nilp()) read_only_p = false;
+  else if (tread_only_p == cl::_sym_T_O) read_only_p = true;
+  // FIXME: Better error
+  else SIMPLE_ERROR("load-time-value read-only-p is not T or NIL: %s"
+                    , _rep_(tread_only_p));
+  
+  auto ltv = LoadTimeValueInfo_O::make(form, read_only_p);
+  // Add the LTV to the cmodule.
+  size_t ind = context->new_literal_index(ltv);
+  // With that done, we basically just need to compile a literal load.
+  // (Note that we do always need to register the LTV, since it may have
+  //  some weird side effect. We could hypothetically save some space by
+  //  not allocating a spot in the constants if the value isn't actually
+  //  used, but that's a very marginal case.)
+  T_sp rec = context->receiving();
+  if (rec.fixnump()) {
+    gc::Fixnum frec = rec.unsafe_fixnum();
+    switch (frec) {
+    case 0: return; // no value required, so compile nothing
+    case 1: context->assemble1(vm_const, ind); return;
+    default:
+        SIMPLE_ERROR("BUG: Don't know how to compile LTV returning %" PFixnum " values", frec);
+    }
+  } else { // must be T, i.e. values
+    context->assemble1(vm_const, ind);
+    context->assemble0(vm_pop);
+  }
 }
 
 static T_sp symbol_macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp vars) {
@@ -1748,7 +1789,7 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_s
   else if (head == cl::_sym_quote)
     compile_literal(oCar(rest), env, context);
   else if (head == cl::_sym_load_time_value)
-    compile_load_time_value(oCar(rest), env, context);
+    compile_load_time_value(oCar(rest), oCadr(rest), env, context);
   else if (head == cl::_sym_macrolet)
     compile_macrolet(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_symbol_macrolet)
@@ -1838,14 +1879,21 @@ CL_DEFUN void compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
     compile_literal(form, env, context);
 }
 
-CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment)));
-CL_DEFUN GlobalBytecodeSimpleFun_sp bytecompile(T_sp lambda_expression, Lexenv_sp env) {
+CL_LAMBDA(module lambda-expression &optional (env (cmp::make-null-lexical-environment)));
+CL_DOCSTRING(R"dx(Compile the given lambda-expression into an existing module. Return a handle to it.)dx");
+CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
+                                       Lexenv_sp env) {
   if (!gc::IsA<Cons_sp>(lambda_expression) || (oCar(lambda_expression) != cl::_sym_lambda))
-    SIMPLE_ERROR("bytecompile passed a non-lambda-expression: %s", _rep_(lambda_expression));
-  Module_sp module = Module_O::make();
+    SIMPLE_ERROR("bytecompiler passed a non-lambda-expression: %s", _rep_(lambda_expression));
   T_sp lambda_list = oCadr(lambda_expression);
   T_sp body = oCddr(lambda_expression);
-  Cfunction_sp cf = compile_lambda(lambda_list, body, env, module);
+  return compile_lambda(lambda_list, body, env, module);
+}
+
+CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment)));
+CL_DEFUN GlobalBytecodeSimpleFun_sp bytecompile(T_sp lambda_expression, Lexenv_sp env) {
+  Module_sp module = Module_O::make();
+  Cfunction_sp cf = bytecompile_into(module, lambda_expression, env);
   return cf->link_function(Cons_O::create(lambda_expression, env));
 }
 
@@ -1865,6 +1913,11 @@ CL_DEFUN T_mv cmp__bytecode_implicit_compile_form(T_sp form, T_sp env) {
   //  printf("%s:%d:%s lexpr = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lexpr).c_str());
   Function_sp thunk = bytecompile(lexpr, coerce_lexenv_desig(env));
   return eval::funcall(thunk);
+}
+
+T_sp LoadTimeValueInfo_O::eval() {
+  return cmp__bytecode_implicit_compile_form(this->form(),
+                                             make_null_lexical_environment());
 }
 
 T_mv bytecode_toplevel_eval(T_sp, T_sp);
