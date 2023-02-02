@@ -92,6 +92,11 @@
   defined for this function, although it is permissible for it to
   always return NIL."))
 
+;; Extension from CMUCL, SBCL, Mezzano and SICL
+
+(defgeneric stream-line-length (stream)
+  (:documentation "Return the stream line length or NIL."))
+
 (defgeneric stream-listen (stream)
   #+sb-doc
   (:documentation
@@ -371,6 +376,8 @@
 (defmethod stream-fresh-line ((stream ansi-stream))
   (cl:fresh-line stream))
 
+(defmethod stream-fresh-line ((stream t))
+  (bug-or-error stream 'stream-fresh-line))
 
 ;; INPUT-STREAM-P
 
@@ -404,6 +411,24 @@
   (declare (ignore stream))
   nil)
 
+(defmethod stream-line-column ((stream ansi-stream))
+  (let ((column (sys:file-column stream)))
+    (and (not (minusp column))
+         column)))
+
+(defmethod stream-line-column ((stream t))
+  (bug-or-error stream 'stream-line-column))
+
+;; LINE-LENGTH
+
+(defmethod stream-line-length ((stream fundamental-character-output-stream))
+  nil)
+
+(defmethod stream-line-length ((stream ansi-stream))
+  nil)
+
+(defmethod stream-line-length ((stream t))
+  (bug-or-error stream 'stream-line-length))
 
 ;; LISTEN
 
@@ -581,6 +606,12 @@
 (defmethod stream-start-line-p ((stream fundamental-character-output-stream))
   (eql (stream-line-column stream) 0))
 
+(defmethod stream-start-line-p ((stream ansi-stream))
+  (eql (stream-line-column stream) 0))
+
+(defmethod stream-start-line-p ((stream t))
+  (bug-or-error stream 'stream-start-line-p))
+
 ;; FILE-POSITION
 
 (defmethod stream-file-position ((stream ansi-stream) &optional position)
@@ -740,24 +771,19 @@
 (core:defconstant-equal +conflicting-symbols+ '(cl:close cl:stream-element-type cl:input-stream-p
                                                 cl:open-stream-p cl:output-stream-p cl:streamp))
 
-(let ((p (find-package "GRAY")))
-  (export '(nil) p)
-  (do-external-symbols (s (find-package "COMMON-LISP"))
-    (unless (member s '#.+conflicting-symbols+)
-      (export s p))))
-
 (defun redefine-cl-functions ()
   "Some functions in CL package are expected to be generic. We make them so."
-  (let ((x (si::package-lock "COMMON-LISP" nil)))
-    (loop for cl-symbol in '#.+conflicting-symbols+
-       with gray-package = (find-package "GRAY")
-       do (unless (typep (fdefinition cl-symbol) 'generic-function) 
-	    (let ((gray-symbol (find-symbol (symbol-name cl-symbol) gray-package)))
-	      (setf (fdefinition cl-symbol) (fdefinition gray-symbol))
-	      (unintern gray-symbol gray-package)
-	      (import cl-symbol gray-package)
-	      (export cl-symbol gray-package))))
-    (si::package-lock "COMMON-LISP" x)
+  (unless (member :staging *features*)
+    (loop with previous-lock = (si::package-lock "COMMON-LISP" nil)
+          with gray-package = (find-package "GRAY")
+          finally (si::package-lock "COMMON-LISP" previous-lock)
+          for cl-symbol in '#.+conflicting-symbols+
+          for gray-symbol = (find-symbol (symbol-name cl-symbol) gray-package)
+          unless (typep (fdefinition cl-symbol) 'generic-function)
+            do (setf (fdefinition cl-symbol) (fdefinition gray-symbol))
+	       (unintern gray-symbol gray-package)
+               (import cl-symbol gray-package)
+               (export cl-symbol gray-package))
     nil))
 
 #+(or cclasp eclasp) (eval-when (:load-toplevel) (setf clos:*clos-booted* t))

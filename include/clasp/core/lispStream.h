@@ -285,6 +285,14 @@ class Stream_O : public General_O {
   LISP_CLASS(core, ClPkg, Stream_O, "stream", General_O);
 
 public:
+  DEFAULT_CTOR_DTOR(Stream_O);
+};
+
+SMART(Stream);
+class AnsiStream_O : public Stream_O {
+  LISP_CLASS(core, ExtPkg, AnsiStream_O, "ansi-stream", Stream_O);
+
+public:
   FileOps ops;
   int _Closed;
   StreamMode _Mode;
@@ -305,24 +313,16 @@ public:
   StreamCursor _InputCursor;
 
 public:
-  Stream_O()
+  AnsiStream_O()
       : _Closed(0), _Buffer(NULL), _Format(nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(nil<T_O>()), _Encoder(NULL),
         _Decoder(NULL), _FormatTable(nil<T_O>()), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(nil<T_O>()),
         _OutputColumn(0){};
-  virtual ~Stream_O(); // nontrivial
+  virtual ~AnsiStream_O(); // nontrivial
 
 public:
   virtual T_sp filename() const;
   virtual int lineno() const;
   virtual int column() const;
-};
-
-SMART(Stream);
-class AnsiStream_O : public Stream_O {
-  LISP_CLASS(core, ExtPkg, AnsiStream_O, "AnsiStream", Stream_O);
-
-public:
-  DEFAULT_CTOR_DTOR(AnsiStream_O);
 };
 
 class FileStream_O : public AnsiStream_O {
