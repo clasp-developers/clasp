@@ -1000,18 +1000,20 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
 #include "obj_scan.cc"
 #undef OBJECT_SKIP
 
+/*
+// Forwarding pointers are unused for now.
 #define OBJECT_SKIP_IN_OBJECT_FWD mw_obj_skip
 #define OBJECT_FWD mw_obj_fwd
 #include "obj_scan.cc"
 #undef OBJECT_FWD
-
+*/
 
 #define CONS_SCAN mw_cons_scan
 #define CONS_SKIP mw_cons_skip
-#define CONS_FWD mw_cons_fwd
-#define CONS_SKIP_IN_CONS_FWD mw_cons_skip
+//#define CONS_FWD mw_cons_fwd
+//#define CONS_SKIP_IN_CONS_FWD mw_cons_skip
 #include "cons_scan.cc"
-#undef CONS_FWD
+//#undef CONS_FWD
 #undef CONS_SKIP
 #undef CONS_SCAN
 
@@ -1104,13 +1106,13 @@ size_t objectSize( BaseHeader_s* header ) {
       // It's a cons object
     size_t consSize;
     uintptr_t client = (uintptr_t)HeaderPtrToConsPtr(header);
-    uintptr_t clientLimit = mw_cons_skip(client,consSize);
+    mw_cons_skip(client,consSize);
     return consSize;
   } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
          // It's a weak object
     size_t objectSize;
     uintptr_t client = (uintptr_t)HeaderPtrToWeakPtr(header);
-    uintptr_t clientLimit = mw_weak_skip( client, false, objectSize );
+    mw_weak_skip( client, false, objectSize );
     return objectSize;
   } else {
         // It's a general object - walk it

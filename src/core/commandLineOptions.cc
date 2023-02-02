@@ -407,10 +407,15 @@ void process_clasp_arguments(CommandLineOptions *options) {
 }
 
 CommandLineOptions::CommandLineOptions(int argc, const char *argv[])
-    : _ProcessArguments(process_clasp_arguments), _DisableMpi(false), _AddressesP(false), _StartupType(DEFAULT_STARTUP_TYPE),
-      _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0),
-      _NoInform(false), _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
-      _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false), _PauseForDebugger(false) {
+    : _ProcessArguments(process_clasp_arguments),
+      _DisableMpi(false), _AddressesP(false),
+      _FreezeStartupType(false), _StartupType(DEFAULT_STARTUP_TYPE),
+      _StartupFile(""), _HasDescribeFile(false),
+      _RandomNumberSeed(0), _ExportedSymbolsAccumulate(false),
+      _NoInform(false), _NoPrint(false), _DebuggerDisabled(false),
+      _Interactive(true), _Version(false), _SilentStartup(true),
+      _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false),
+      _PauseForDebugger(false) {
   if (argc == 0) {
     this->_RawArguments.push_back("./");
   } else {
@@ -456,7 +461,7 @@ CL_DEFUN List_sp core__command_line_load_eval_sequence() {
       one = Cons_O::create(kw::_sym_script, SimpleBaseString_O::make(it.second));
       break;
     default:
-      SIMPLE_ERROR("Unknown load type %d for %s%N", it.first, it.second);
+      SIMPLE_ERROR("BUG: Unknown load type %d for %s%N", it.second);
       break;
     }
     loadEvals = Cons_O::create(one, loadEvals);

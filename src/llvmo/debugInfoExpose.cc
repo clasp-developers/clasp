@@ -542,7 +542,7 @@ CL_DEFUN DWARFContext_sp DWARFContext_O::createDWARFContext(ObjectFile_sp ofi) {
     return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
   }
   SIMPLE_ERROR(("Could not get ObjectFile:\n%s")
-               , llvm::toString(std::move(errOrObj.takeError())));
+               , llvm::toString(errOrObj.takeError()));
 }
 
 CL_DEFMETHOD size_t DWARFContext_O::getNumCompileUnits() const {

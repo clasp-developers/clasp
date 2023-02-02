@@ -4,7 +4,6 @@ template <typename TTT>
 core::T_O* template_read_stamp(TTT* obj)
 {
   uintptr_t tag = reinterpret_cast<uintptr_t>(obj)&gctools::ptag_mask;
-  int64_t stamp;
   switch (tag) {
   case FIXNUM0_TAG:
   case FIXNUM1_TAG:

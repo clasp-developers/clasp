@@ -232,7 +232,7 @@ core::T_sp mostDerivedType(const clang::Type *x) {
   llvm::raw_string_ostream out(buf);
   clang::ASTDumper dumper(out,false);
   dumper.Visit(s);
-  SIMPLE_ERROR(("astExpose.cc>mostDerivedType. Could not cast clang::Type s->getTypeClass()-> %d. typename: %s ") , s->getTypeClass() , out.str() );
+  SIMPLE_ERROR(("astExpose.cc>mostDerivedType. Could not cast clang::Type s->getTypeClass()-> %d. typename: %s ") , (int)(s->getTypeClass()) , out.str() );
 }
 
 
@@ -256,7 +256,6 @@ CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp stream) {
 //    .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
 //    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
 //    .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
-  bool stringOutputStream = false;
   llvm::SmallString<1024> stringOutput;
   llvm::raw_svector_ostream ostream(stringOutput);
   core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(obj);

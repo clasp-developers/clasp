@@ -196,9 +196,9 @@ public:
 //
 Lisp::GCRoots::GCRoots() :
   _ClaspJIT(nil<T_O>()),
+  _AllLibraries(nil<T_O>()),
   _AllObjectFiles(nil<T_O>()),
   _AllCodeBlocks(nil<T_O>()),
-  _AllLibraries(nil<T_O>()),
 #ifdef CLASP_THREADS
     _UnboundSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
     _UnboundSetfSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
@@ -215,11 +215,11 @@ Lisp::GCRoots::GCRoots() :
   this->_SingleDispatchGenericFunctions.store(nil<core::T_O>());
 };
 
-Lisp::Lisp() : _Booted(false),
-                   _MpiEnabled(false),
-                   _MpiRank(0),
-                   _MpiSize(1),
-                   _BootClassTableIsValid(true) {
+Lisp::Lisp() : _BootClassTableIsValid(true),
+               _Booted(false), 
+               _MpiEnabled(false),
+               _MpiRank(0),
+               _MpiSize(1) {
 //  this->_Roots._Bindings.reserve(1024); // moved to Lisp::initialize()
 }
 
@@ -234,10 +234,6 @@ void Lisp::shutdownLispEnvironment() {
     delete globals_->_DebugStream;
   }
 //  my_thread->destroy_sigaltstack();
-}
-
-void Lisp::lisp_initSymbols(LispPtr lisp) {
-  Package_sp corePackage = lisp->_Roots._CorePackage;
 }
 
 /*! Allocations go here
@@ -427,7 +423,7 @@ void Lisp::startupLispEnvironment() {
   printf("%s:%d There are DEBUG_xxxx flags on - check the top of configure_clasp.h !!!!\n", __FILE__, __LINE__ );
 #endif
   
-  MONITOR(BF("Starting lisp environment\n"));
+  MONITOR(("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
   char* debug_start_code = getenv("CLASP_DEBUG_START_CODE");
   if (debug_start_code) {
@@ -1306,7 +1302,6 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
         if (printResults) {
           for (int i(0); i < vresults.size(); i++) {
             T_sp obj = vresults[i];
-            //			    this->print(BF("; --> %s\n")% _rep_(obj));
             eval::funcall(cl::_sym_print, obj);
           }
         }
@@ -1846,7 +1841,6 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
           ss << cl__class_of(cl__symbol_function((sym)))->_classNameAsString();
           T_sp tfn = cl__symbol_function(sym);
           if ( !tfn.unboundp() && gc::IsA<Function_sp>(tfn)) {
-            Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
             if (sym->macroP()) ss << "(MACRO)";
           }
         }
@@ -2043,8 +2037,11 @@ DOCGROUP(clasp);
 NEVER_OPTIMIZE
 CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
   // These are volatile in an effort to make them available to debuggers.
+  // How well that actually works is not clear.
   volatile T_sp saved_datum = datum;
   volatile List_sp saved_initializers = initializers;
+  (void)saved_datum;
+  (void)saved_initializers;
   T_sp objErrorDepth = _sym_STARnestedErrorDepthSTAR->symbolValue();
   int nestedErrorDepth;
   /* *nested-error-depth* should be a fixnum, but if it's not we can't signal
@@ -2194,12 +2191,10 @@ void Lisp::parseStringIntoPackageAndSymbolName(const string &name, bool &package
     packageDefined = false;
     return;
   }
-  bool doubleColon = false;
   size_t secondPart = colonPos + 1;
   if (name[secondPart] == ':') {
     LOG("It's a non-exported symbol");
     exported = false;
-    doubleColon = true;
     secondPart++;
     if (name.find_first_of(":", secondPart) != string::npos) {
       SIMPLE_ERROR(("There can only be one ':' or '::' in a symbol name"));
@@ -2214,7 +2209,6 @@ void Lisp::parseStringIntoPackageAndSymbolName(const string &name, bool &package
 Symbol_mv Lisp::intern(const string &name, T_sp optionalPackageDesignator) {
   Package_sp package;
   string symbolName;
-  bool exported, packageDefined;
   symbolName = name;
   package = coerce::packageDesignator(optionalPackageDesignator);
   ASSERTNOTNULL(package);
@@ -2355,7 +2349,6 @@ bool Lisp::load(int &exitCode) {
 
 int Lisp::run() {
   int exitCode;
-  MultipleValues &mvn = core::lisp_multipleValues();
   try {
     if (ext::_sym_STARtoplevel_hookSTAR->symbolValue().notnilp()) {
       core::T_sp fn = ext::_sym_STARtoplevel_hookSTAR->symbolValue();

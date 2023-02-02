@@ -790,7 +790,6 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   HT_READ_LOCK(this);
   VERIFY_HASH_TABLE(this);
   HashGenerator hg;
-  size_t sz = this->_Table.size();
   cl_index index = this->sxhashKey(key, this->_Table.size(), hg );
   KeyValuePair* keyValuePair = this->tableRef_no_read_lock(key, false /*under_write_lock*/, index, hg);
   LOG("Found keyValueCons"); // % keyValueCons->__repr__() ); INFINITE-LOOP
@@ -937,7 +936,9 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   }
   gc::Vec0<KeyValuePair> oldTable;
   oldTable.swap(this->_Table);
+#if DEBUG_REHASH_COUNT
   size_t oldHashTableCount = this->_HashTableCount;
+#endif
   newSize = this->resizeEmptyTable_no_lock(newSize);
   LOG("Resizing table to size: %d" , newSize);
   size_t oldSize = oldTable.size();
@@ -965,13 +966,13 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   }
 #ifdef DEBUG_REHASH_COUNT
   this->_RehashCount++;
-  MONITOR(BF("Hash-table rehash id %lu initial-size %lu rehash-number %lu rehash-size %lu oldHashTableCount %lu _HashTableCount %lu\n")
-          % this->_HashTableId
-          % this->_InitialSize
-          % this->_RehashCount
-          % newSize
-          % oldHashTableCount
-          % this->_HashTableCount);
+  MONITOR(fmt::sprintf("Hash-table rehash id %lu initial-size %lu rehash-number %lu rehash-size %lu oldHashTableCount %lu _HashTableCount %lu\n"
+                       , this->_HashTableId
+                       , this->_InitialSize
+                       , this->_RehashCount
+                       , newSize
+                       , oldHashTableCount
+                       , this->_HashTableCount));
 #endif
   VERIFY_HASH_TABLE(this);
   //
@@ -1002,11 +1003,7 @@ KeyValuePair* HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp find
       this->_Mutex->write_unlock( false /*releaseReadLock*/);
       return result;
     }
-#ifdef _TARGET_OS_DARWIN
-    pthread_yield_np();
-#else
-    pthread_yield();
-#endif
+    sched_yield();
     goto tryAgain;
   } else {
     return this->rehash_no_lock(expandTable,findKey);
@@ -1141,7 +1138,7 @@ void HashTable_O::hash_table_early_dump() {
 
   string HashTable_O::keysAsString() {
     stringstream ss;
-    this->mapHash([&ss, this](T_sp key, T_sp val) {
+    this->mapHash([&ss](T_sp key, T_sp val) {
         ss << _rep_(key) << " ";
       });
     return ss.str();

@@ -146,8 +146,7 @@ JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::str
 //    printf("%s:%d      ptr->%p\n", __FILE__, __LINE__, startup);
     (startup)();
   }
-  size_t num = core::startup_functions_are_waiting();
-//  printf("%s:%d There are %lu startup functions waiting to be evaluated\n", __FILE__, __LINE__, num);
+//  printf("%s:%d There are %lu startup functions waiting to be evaluated\n", __FILE__, __LINE__, core::startup_functions_are_waiting());
   core::startup_functions_invoke(NULL);
 //  printf("%s:%d Invoked startup functions - continuing\n", __FILE__, __LINE__ );
   return jitDylib;
@@ -342,7 +341,6 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "ENTRY-POINT-ARITY-BEGIN",make_fixnum(ENTRY_POINT_ARITY_BEGIN));
   ENTRY(list, "ENTRY-POINT-ARITY-END",make_fixnum(ENTRY_POINT_ARITY_END));
   ENTRY(list, "NUMBER-OF-ENTRY-POINTS",make_fixnum(NUMBER_OF_ENTRY_POINTS));
-  ENTRY(list, "ENDIAN-LSB-OFFSET", make_fixnum(ENDIAN_LSB_OFFSET) );
   ENTRY(list, "UNBOUND-MASK", make_fixnum(UNBOUND_MASK) );
   ENTRY(list, "UNBOUND-BYTE", make_fixnum(UNBOUND_BYTE) );
   return list;

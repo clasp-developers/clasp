@@ -228,7 +228,6 @@ public:
       }
     private:
       Error applyProtections() {
-        size_t PageSize = getpagesize();
         JITMemoryReadExecute(BL);
         return Error::success();
       }
@@ -242,6 +241,7 @@ public:
     BasicLayout BL(G);
     size_t segmentCount = 0;
     for ( auto& KV : BL.segments() ) {
+      (void)KV;
       segmentCount++;
     }
     
@@ -282,12 +282,10 @@ public:
 #endif
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating JD = %p \n", __FILE__, __LINE__, __FUNCTION__, JD ));
       ObjectFile_sp codeObject;
-      size_t objectId = objectIdFromName(G.getName());
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to allocate ObjectFile_sp with name %s  objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str(), objectId ));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to allocate ObjectFile_sp with name %s  objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str(), objectIdFromName(G.getName()) ));
       codeObject = lookupObjectFile(G.getName());
       codeObject->_CodeBlock = codeBlock;
-      core::SimpleBaseString_sp codeName = createSimpleBaseStringForStage(G.getName());
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s looked up codeObject = %p with name: %s\n", __FILE__, __LINE__, __FUNCTION__, &*codeObject, _rep_(codeName).c_str() ));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s looked up codeObject = %p with name: %s\n", __FILE__, __LINE__, __FUNCTION__, &*codeObject, _rep_(createSimpleBaseStringForStage(G.getName())).c_str() ));
     } else {
       for ( auto& KV : BL.segments() ) {
 #ifdef DEBUG_OBJECT_FILES
@@ -350,7 +348,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       MR.getTargetJITDylib().getExecutionSession().intern("DW.ref.__gxx_personality_v0");
     if (!MR.getSymbols().count(PersonalitySymbol))
       Config.PrePrunePasses.insert( Config.PrePrunePasses.begin(),
-                                  [this](jitlink::LinkGraph&G) -> Error {
+                                  [](jitlink::LinkGraph&G) -> Error {
                                     for (auto ssym : G.defined_symbols()) {
                                       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
                                         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -362,7 +360,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                     return Error::success();
                                   });
     Config.PrePrunePasses.push_back(
-                                    [this](jitlink::LinkGraph &G) -> Error {
+                                    [](jitlink::LinkGraph &G) -> Error {
                                       size_t count = 0;
                                       for (auto &Sec : G.sections()) {
                                         if (Sec.getName() == EH_FRAME_NAME )
@@ -455,7 +453,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered with G.getName() = %s\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str() ));
     uintptr_t textStart = ~0;
     uintptr_t textEnd = 0;
-    bool gotGcroots = false;
     ObjectFile_sp currentCode = lookupObjectFile(G.getName());
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     currentCode: %p\n", __FILE__, __LINE__, __FUNCTION__, &*currentCode ));
     for (auto &S : G.sections()) {
@@ -467,9 +464,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         llvm::jitlink::SectionRange range(S);
         for ( auto& sym : S.symbols() ) {
           std::string name = sym->getName().str();
-          void* address = (void*)sym->getAddress().getValue();
-          size_t size = sym->getSize();
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), (void*)sym->getAddress().getValue(), sym->getSize));
         }
       }
 #if 0
@@ -510,9 +505,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         }
       } else if (sectionName.find(EH_FRAME_NAME)!=string::npos) {
         llvm::jitlink::SectionRange range(S);
-        void* start = (void*)range.getStart().getValue();
-        uintptr_t size = range.getSize();
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)range.getStart().getValue(), range.getSize() ));
       } else if (sectionName.find(STACKMAPS_NAME)!=string::npos) {
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range currentCode %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(currentCode).c_str() ));
         llvm::jitlink::SectionRange range(S);
@@ -537,8 +530,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       printf("%s:%d:%s No executable region was found for the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
     }
     //
-    size_t gcroots_in_module_name_len = gcroots_in_module_name.size();
-    size_t literals_name_len = literals_name.size();
     bool found_gcroots_in_module = false;
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
@@ -566,10 +557,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         if (pos!=std::string::npos) {
           found_gcroots_in_module = true;
           void* address = (void*)ssym->getAddress().getValue();
-          size_t size = ssym->getSize();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
                                     gcroots_in_module_name.c_str(),
-                                    address, size ));
+                                    address, ssym->getSize ));
           currentCode->_gcRoots = (gctools::GCRootsInModule*)address;
           continue;
         }
@@ -703,7 +693,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
       .setExecutionSession(std::make_unique<ExecutionSession>(std::move(TPC)))
       .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
       .setJITTargetMachineBuilder(std::move(JTMB))
-      .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
+      .setObjectLinkingLayerCreator([&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
         auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
         ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -853,7 +843,6 @@ ObjectFile_sp ClaspJIT_O::addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm
  */
 void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startupName, core::T_sp initialDataOrUnbound )
 {
-  JITDylib& dylib = *dylibsp->wrappedPtr();
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
   void* ptr;
   bool found = this->do_lookup(dylibsp,startupName,ptr);

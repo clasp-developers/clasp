@@ -102,7 +102,6 @@ namespace core {
     virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
       if (hg.isFilling()) {
         Fixnum hash = 5381;
-        Fixnum c;
         for ( size_t i(start); i<end; ++i ) {
           const value_type& c = (*this)[i];
           hash = ((hash << 5) + hash) + c;
@@ -177,7 +176,6 @@ namespace core {
     virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const override {
       if (hg.isFilling()) {
         Fixnum hash = 5381;
-        Fixnum c;
         for ( size_t i(start); i<end; ++i ) {
           const value_type& c = (*this)[i];
           hash = ((hash << 5) + hash) + c;

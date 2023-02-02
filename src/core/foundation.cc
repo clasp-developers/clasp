@@ -95,7 +95,6 @@ void dump_class_ids() {
     printf("The global_registered_ids_ptr is NULL\n");
     return;
   }
-  char buffer[1024];
   for (auto it : (*global_registered_ids_ptr)) {
     const char *fnName = it.first.name();
     size_t length;
@@ -577,7 +576,7 @@ bool lispify_match(const char *&cur, const char *match, NextCharTest nextCharTes
     }
     return false;
   }
-  SIMPLE_ERROR(("Unknown nextCharTest(%d)"), nextCharTest);
+  SIMPLE_ERROR(("Internal error: Unknown nextCharTest"));
 }
 
 string lispify_symbol_name(const string &s) {
@@ -876,7 +875,6 @@ List_sp lisp_lexical_variable_names(List_sp lambda_list, bool &trivial_wrapper) 
   RestArgument restarg;
   T_sp key_flag;
   T_sp allow_other_keys;
-  T_sp decl_dict = nil<T_O>();
   parse_lambda_list(lambda_list, cl::_sym_function, reqs, optionals, restarg, key_flag, keys, allow_other_keys, auxs);
   //
   // trivial_wrapper is true if only required arguments are in lambda_list
@@ -1255,7 +1253,6 @@ T_sp lisp_createFixnum(int fn) { return make_fixnum(fn); }
 SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos, int lineno) {
   SimpleBaseString_sp fn = SimpleBaseString_O::make(fileName);
   T_mv sfi_mv = core__file_scope(fn);
-  FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
   MultipleValues &mvn = core::lisp_multipleValues();
   Fixnum_sp handle = gc::As<Fixnum_sp>(mvn.valueGet(1, sfi_mv.number_of_values()));
   int sfindex = unbox_fixnum(handle);
@@ -1282,9 +1279,9 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp 
 
 [[noreturn]] void lisp_error_no_stamp(void *ptr) {
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(ptr));
-  SIMPLE_ERROR(("This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one "
+  SIMPLE_ERROR(("BUG: This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one "
                 " - the subclass header stamp value is %lu"),
-               ((void *)ptr), header->_badge_stamp_wtag_mtag.stamp_());
+               ((void *)ptr), (unsigned long)(header->_badge_stamp_wtag_mtag.stamp_()));
 }
 
 void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass_symbol) {

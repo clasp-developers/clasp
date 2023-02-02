@@ -176,6 +176,7 @@ T_sp dwarf_ep(size_t frameIndex,
         llvmo::ObjectFile_sp code = ofi;
         codeStart = (void*)code->codeStart();
         uintptr_t codeEnd = code->codeEnd();
+        (void)codeEnd; // sham use - used below in D
         uintptr_t absolute_LowPC = ranges.begin()->LowPC+(uintptr_t)codeStart;
         functionStartAddress = (void*)(absolute_LowPC);
         D(printf("%s:%d:%s Calculated functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress ););
@@ -664,7 +665,7 @@ bool accessible_memory_p(void* ptr) {
       res = false;
     close(fd[0]);
     close(fd[1]);
-  }
+  } else return false; // Not sure if correct
   return res;
 }
 
@@ -724,14 +725,14 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func ) {
 }
 static bool os_sanity_check_backtrace() {
   MaybeTrace trace(__FUNCTION__);
-  uintptr_t stacktop = (uintptr_t)my_thread_low_level->_StackTop;
+  // uintptr_t stacktop = (uintptr_t)my_thread_low_level->_StackTop;
   size_t num = START_BACKTRACE_SIZE;
   void** buffer = (void**)calloc(sizeof(void*), num);
   for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
     size_t returned = backtrace(buffer, num);
     if (returned < num) {
       void* fbp = __builtin_frame_address(0);
-      uintptr_t stackbot = (uintptr_t)&fbp;
+      // uintptr_t stackbot = (uintptr_t)&fbp;
       for (size_t j = 0; j < returned; ++j) {
         /*
         if (fbp && !((stackbot <= (uintptr_t)fbp) && ((uintptr_t)fbp <= stacktop))) {

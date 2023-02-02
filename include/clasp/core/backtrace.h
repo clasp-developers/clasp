@@ -32,10 +32,10 @@ public:
   DebuggerFrame_O(T_sp a_fname, T_sp a_return_address, T_sp a_sp, T_sp a_fd,
                   T_sp a_closure, T_sp a_args, bool a_av, T_sp a_lang,
                   bool a_is_xep)
-      : fname(a_fname), return_address(a_return_address),
+    : fname(a_fname), return_address(a_return_address),
       source_position(a_sp), function_description(a_fd),
-      closure(a_closure), args(a_args), args_available(a_av), is_xep(a_is_xep),
-      lang(a_lang), up(nil<T_O>()), down(nil<T_O>())
+      closure(a_closure), args(a_args), args_available(a_av),
+      lang(a_lang), up(nil<T_O>()), down(nil<T_O>()), is_xep(a_is_xep)
   {}
   static DebuggerFrame_sp make(T_sp fname, T_sp ra,
                                T_sp sp, T_sp fd,

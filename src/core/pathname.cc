@@ -1640,6 +1640,8 @@ bool clasp_stringMatch(T_sp s, size_t j, size_t ls, T_sp p, size_t i, size_t lp)
                    Trailing slash is interpreted as a slash. */
       if (++i >= lp)
         i--;
+      cp = cl__char(gc::As<String_sp>(p), i).unsafe_character();
+      [[fallthrough]];
     default:
       if ((j >= ls) || (cp != cl__char(gc::As<String_sp>(s), j).unsafe_character())) {
         /* Either there are no characters left in "s"

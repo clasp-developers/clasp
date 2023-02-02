@@ -714,7 +714,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_entry: {
       uint8_t n = *(++pc);
       DBG_VM("entry %" PRIu8 "\n", n);
-      T_O** old_sp = sp;
       pc++;
       jmp_buf target;
       void* frame = __builtin_frame_address(0);
@@ -1126,6 +1125,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
       throwUnrecognizedKeywordArgumentError(tclosure, tunknown);
     }
     pc += 9;
+    break;
   }
   case vm_check_arg_count_LE : {
     uint8_t low = *(pc + 1);

@@ -103,7 +103,6 @@ public:
     n->setf_name(snm);
     n->fmakunbound();
     n->fmakunbound_setf();
-//    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
     return n;
   };
 public:

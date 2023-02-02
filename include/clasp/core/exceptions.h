@@ -293,7 +293,6 @@ struct CxxFunctionInvocationLogger {
 #define IMPLEMENT_MEF(msg) SIMPLE_ERROR("Implement function %s:%d %s %s", __FILE__ , __LINE__ , __FUNCTION__ , msg)
 
 #define WARN_IMPLEMENT_ME() printf("%s:%d:%s Implement function\n", __FILE__, __LINE__, __FUNCTION__ );
-#define WARN_IMPLEMENT_MEF(msg) printf("%s\n", (BF("Implement function %s:%d %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % (msg).str().c_str()).str().c_str());
 
 #define NOT_SUPPORTED() SIMPLE_ERROR("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)", this->className() , __FUNCTION__ , __FILE__ , __LINE__);
 
@@ -304,9 +303,6 @@ struct CxxFunctionInvocationLogger {
 #define FIX_ME() SIMPLE_ERROR(("Fix me!!! function(%s) file(%s) lineNumber(%s)") , __FUNCTION__ , __FILE__ , __LINE__);
 #define DEPRECATED() SIMPLE_ERROR(("Depreciated!!! function(%s) file(%s) lineNumber(%d)") , __FUNCTION__ , __FILE__ , __LINE__);
 #define STUB() printf("%s:%d>%s  stub\n", __FILE__, __LINE__, __FUNCTION__ )
-
-#define MAY_BE_DEPRECATED() printf("%s\n", (BF("May be depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__).str().c_str());
-#define DEPRECATEDP(s) SIMPLE_ERROR(("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") , __FUNCTION__ , __FILE__ , __LINE__ , (s));
 
 FORWARD(Cons);
 
@@ -495,10 +491,6 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
     SIMPLE_ERROR(("Assertion [%s>%s] failed values are (%s) and (%s)") , #x , #y , (x) , (y)); \
   }
 #define ASSERT_gt(x, y) ASSERT_greaterThan(x, y)
-#define FATAL_ASSERTP(x, e)                                                                             \
-  if (!(x)) {                                                                                           \
-    SIMPLE_ERROR(_lisp, core::LispError_O::create(BF("Assertion [%s] failed - %s") % #x % (e), _lisp)); \
-  };
 
 #if DEBUG_TRAP_NULLS == 1
 #define ASSERTNOTNULLP(x, e)                                                      \
@@ -534,8 +526,6 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #define ASSERT_greaterThan(x, y) \
   {}
 #define ASSERT_gt(x, y) \
-  {}
-#define FATAL_ASSERTP(x, e) \
   {}
 #define ASSERTNOTNULLP(x, e) \
   {}

@@ -740,7 +740,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
 #define Init_templated_kind(_class_) \
   fmt::print(fout, "Init_templated_kind( stamp={}, name=\"{}\", size={});\n", LAYOUT_STAMP(_class_),#_class_,sizeof(*(_class_*)0x0));
 #define Init__fixed_field(_class_,_index_,_type_,_field_name_) \
-  fmt::print(fout, "Init__fixed_field( stamp={}, index={}, data_type={},field_name=\"{}\",field_offset={});\n", LAYOUT_STAMP(_class_),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
+  fmt::print(fout, "Init__fixed_field( stamp={}, index={}, data_type={},field_name=\"{}\",field_offset={});\n", LAYOUT_STAMP(_class_),_index_,(int)_type_,#_field_name_,offsetof(_class_,_field_name_));
 #define Init__variable_array0(_class_,_data_field_) \
   fmt::print(fout,"Init__variable_array0( stamp={}, name=\"{}\", offset={} );\n", LAYOUT_STAMP(_class_),#_data_field_,offsetof(_class_,_data_field_));
 #define Init__variable_capacity(_class_,_value_type_,_end_,_capacity_) \

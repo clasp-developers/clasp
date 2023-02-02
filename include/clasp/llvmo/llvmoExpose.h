@@ -4323,8 +4323,6 @@ public: // static methods
         //	static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 public: // static methods
   static PointerType_sp get(Type_sp elementType, uint addressSpace);
-
-  llvm::Type* getElementType() const;
     
 }; // PointerType_O
 }; // llvmo
@@ -4438,8 +4436,8 @@ namespace translate {
 template <>
 struct from_object<const llvm::StringRef, std::true_type> {
   typedef llvm::StringRef DeclareType;
-  DeclareType _v;
   string _Storage;
+  DeclareType _v;
   from_object(T_P object) : _Storage(gc::As<core::String_sp>(object)->get_std_string()), _v(this->_Storage) {};
   from_object(const from_object& orig) = delete;
   from_object(from_object&& orig) : _Storage(std::move(orig._Storage)), _v(_Storage) {};

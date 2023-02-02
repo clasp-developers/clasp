@@ -103,52 +103,51 @@ hash_string(int initval, const unsigned char *k, int length) {
   /*------------------------------------- handle the last 11 bytes */
   c += length;
   switch (len) {
-  /* all the case statements fall through */
   case 23:
-    c += ((uintptr_t)k[22] << 52);
+      c += ((uintptr_t)k[22] << 52); [[fallthrough]];
   case 22:
-    c += ((uintptr_t)k[21] << 48);
+    c += ((uintptr_t)k[21] << 48); [[fallthrough]];
   case 21:
-    c += ((uintptr_t)k[20] << 40);
+    c += ((uintptr_t)k[20] << 40); [[fallthrough]];
   case 20:
-    c += ((uintptr_t)k[19] << 32);
+    c += ((uintptr_t)k[19] << 32); [[fallthrough]];
   case 19:
-    c += ((uintptr_t)k[18] << 24);
+    c += ((uintptr_t)k[18] << 24); [[fallthrough]];
   case 18:
-    c += ((uintptr_t)k[17] << 16);
+    c += ((uintptr_t)k[17] << 16); [[fallthrough]];
   case 17:
-    c += ((uintptr_t)k[16] << 8);
+    c += ((uintptr_t)k[16] << 8); [[fallthrough]];
   /* the first byte of c is reserved for the length */
   case 16:
-    b += ((uintptr_t)k[15] << 52);
+    b += ((uintptr_t)k[15] << 52); [[fallthrough]];
   case 15:
-    b += ((uintptr_t)k[14] << 48);
+    b += ((uintptr_t)k[14] << 48); [[fallthrough]];
   case 14:
-    b += ((uintptr_t)k[13] << 40);
+    b += ((uintptr_t)k[13] << 40); [[fallthrough]];
   case 13:
-    b += ((uintptr_t)k[12] << 32);
+    b += ((uintptr_t)k[12] << 32); [[fallthrough]];
   case 12:
-    b += ((uintptr_t)k[11] << 24);
+    b += ((uintptr_t)k[11] << 24); [[fallthrough]];
   case 11:
-    b += ((uintptr_t)k[10] << 16);
+    b += ((uintptr_t)k[10] << 16); [[fallthrough]];
   case 10:
-    b += ((uintptr_t)k[9] << 8);
+    b += ((uintptr_t)k[9] << 8); [[fallthrough]];
   case 9:
-    b += k[8];
+    b += k[8]; [[fallthrough]];
   case 8:
-    a += ((uintptr_t)k[7] << 52);
+    a += ((uintptr_t)k[7] << 52); [[fallthrough]];
   case 7:
-    a += ((uintptr_t)k[6] << 48);
+    a += ((uintptr_t)k[6] << 48); [[fallthrough]];
   case 6:
-    a += ((uintptr_t)k[5] << 40);
+    a += ((uintptr_t)k[5] << 40); [[fallthrough]];
   case 5:
-    a += ((uintptr_t)k[4] << 32);
+    a += ((uintptr_t)k[4] << 32); [[fallthrough]];
   case 4:
-    a += ((uintptr_t)k[3] << 24);
+    a += ((uintptr_t)k[3] << 24); [[fallthrough]];
   case 3:
-    a += ((uintptr_t)k[2] << 16);
+    a += ((uintptr_t)k[2] << 16); [[fallthrough]];
   case 2:
-    a += ((uintptr_t)k[1] << 8);
+    a += ((uintptr_t)k[1] << 8); [[fallthrough]];
   case 1:
     a += k[0];
     /* case 0: nothing left to add */

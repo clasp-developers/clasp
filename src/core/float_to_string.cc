@@ -82,7 +82,7 @@ print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
     break;
 #endif
   default:
-                  SIMPLE_ERROR(("Handle additional enumeration values value=%s t_of=%d") , _rep_(number).c_str() , clasp_t_of(gc::As<Number_sp>(number)));
+                  TYPE_ERROR(number, cl::_sym_float);
   }
   if (e != 'e' || exp != 0) {
     StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);

@@ -403,6 +403,7 @@ NEWMODE:
     switch (mode) {
     case keyword:
       key_flag = _lisp->_true();
+      [[fallthrough]];
     case allowOtherKeys:
       if (context == cl::_sym_define_modify_macro)
         goto ILLEGAL_MODE;
@@ -718,7 +719,6 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   RestArgument restarg;
   T_sp key_flag;
   T_sp allow_other_keys;
-  T_sp decl_dict = nil<T_O>();
   parse_lambda_list(lambdaList,
                     context,
                     reqs,

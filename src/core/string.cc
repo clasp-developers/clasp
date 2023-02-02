@@ -115,7 +115,6 @@ CL_DEFUN SimpleString_sp cl__string_upcase(T_sp arg) {
     T_sp cc = str->rowMajorAref(i);
     claspCharacter c = cc.unsafe_character();
     claspCharacter u = char_upcase(c);
-    Character_sp cu = clasp_make_character(u);
     result->rowMajorAset(i,clasp_make_character(u));
   }
   return (result);
@@ -189,7 +188,7 @@ struct StringCharPointer {
   size_t _pos;
   size_t _start;
   typedef typename T::simple_element_type CharacterType;
-  StringCharPointer(const T* strP, size_t start) : _stringPtr(strP), _start(start), _pos(start) {}
+  StringCharPointer(const T* strP, size_t start) : _stringPtr(strP), _pos(start), _start(start) {}
   inline size_t offset() { return this->_pos - this->_start;};
   CharacterType operator*() {
     CharacterType c = (*this->_stringPtr)[this->_pos];
@@ -1119,10 +1118,8 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
       break;
     }
     case itrailspace: {
-      if (!isspace(c)) {
-        state = ijunk;
-        break;
-      }
+      if (!isspace(c)) state = ijunk;
+      break;
     }
     case ijunk:
         break;

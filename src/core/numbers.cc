@@ -75,7 +75,7 @@ core::Fixnum not_fixnum_error( core::T_sp o )
                  , naclass , nbclass);
 }
 
-void clasp_report_divide_by_zero(Number_sp x) {
+[[noreturn]] void clasp_report_divide_by_zero(Number_sp x) {
    ERROR_DIVISION_BY_ZERO(clasp_make_fixnum(1),x);
 }
 
@@ -772,62 +772,6 @@ CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
 
     See file '../Copyright' for full details.
 */
-
-/*
- * In Common Lisp, comparisons between floats and integers are performed
- * via an intermediate rationalization of the floating point number. In C,
- * on the other hand, the comparison is performed by converting the integer
- * into a floating point number. However, if the double type is too small
- * this may lead to a loss of precision and two numbers being told equal
- * when, by Common Lisp standards, would not.
- */
-static int
-double_fix_compare(Fixnum n, double d) {
-  if ((double)n < d) {
-    return -1;
-  } else if ((double)n > d) {
-    return +1;
-  } else if (sizeof(double) > sizeof(Fixnum)) {
-    return 0;
-  } else {
-    /* When we reach here, the double type has no
-		 * significant decimal part. However, as explained
-		 * above, the double type is too small and integers
-		 * may coerce to the same double number giving a false
-		 * positive. Hence we perform the comparison in
-		 * integer space. */
-    Fixnum m = d;
-    if (n == m) {
-      return 0;
-    } else if (n > m) {
-      return +1;
-    } else {
-      return -1;
-    }
-  }
-}
-
-#ifdef CLASP_LONG_FLOAT
-static int
-long_double_fix_compare(Fixnum n, LongFloat d) {
-  if ((LongFloat)n < d) {
-    return -1;
-  } else if ((LongFloat)n > d) {
-    return +1;
-  } else if (sizeof(LongFloat) > sizeof(Fixnum)) {
-    return 0;
-  } else {
-    Fixnum m = d;
-    if (n == m) {
-      return 0;
-    } else if (n > m) {
-      return +1;
-    } else {
-      return -1;
-    }
-  }
-}
-#endif
 
 /* ----------------------------------------------------------------------
 
@@ -2542,13 +2486,12 @@ expt_zero(Number_sp x, Number_sp y) {
 
 Number_sp
 clasp_expt(Number_sp x, Number_sp y) {
-  NumberType ty, tx;
+  NumberType ty;
   Number_sp z;
   if (clasp_unlikely(clasp_zerop(y))) {
     return expt_zero(x, y);
   }
   ty = clasp_t_of(y);
-  tx = clasp_t_of(x);
   if (clasp_unlikely(!gc::IsA<Number_sp>(x))) {
     QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
   }

@@ -193,23 +193,7 @@ CL_DEFUN void core__weak_splat(WeakKeyHashTable_sp ht, Fixnum_sp idx) {
   TESTING();         // Test the NULL value
   (*ht->_HashTable._Keys).set(unbox_fixnum(idx), WeakKeyHashTable_O::value_type(splatted));
 };
-CL_LAMBDA(ht &optional sz);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(weakRehash)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__weak_rehash(WeakKeyHashTable_sp ht, T_sp sz) {
-  size_t newLength;
-  if (sz.nilp()) {
-    newLength = ht->_HashTable._Keys->length() * 2;
-  } else {
-    newLength = unbox_fixnum(gc::As<Fixnum_sp>(sz));
-    //	    newLength = unbox_fixnum(As<Fixnum_O>(sz));
-  }
-  WeakKeyHashTable_O::value_type dummyKey;
-  size_t dummyPos;
-  ht->_HashTable.rehash(dummyKey, dummyPos);
-};
-};
+}; // namespace core
 
 
 

@@ -300,7 +300,7 @@ template <> struct ReadArg<2> {
     unsigned char high = *(addr + 1 + 2 * (offset - 1) + 1);
     size_t val = (high << 8) + low;
     //    printf("%s:%d:%s read low %u  high %u  val = %lu\n", __FILE__, __LINE__, __FUNCTION__, low, high, val );
-    return (high << 8) + low;
+    return val;
   }
   inline static T_sp read_literal(unsigned char *addr, uintptr_t offset, T_sp *literals) {
     size_t index = read(addr, offset);
@@ -382,11 +382,14 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
+#undef ENABLE_REGISTER
       default:
         printf("%s:%d:%s Invalid dtree opcode ip0: %p  ip: %p  opcode %u %s\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op,
                dtree_op_name(op).c_str());
@@ -401,6 +404,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /* TODO
   SINGLE_DISPATCH_MISS : {
     DTILOG("dispatch miss. arg %lu stamp %lu\n", arg, stamp);
     Vaslist vaslist(lcc_nargs, lcc_args);
@@ -408,6 +412,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 #undef GENERAL_ARITY_CALL
 
@@ -445,10 +450,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER
@@ -466,6 +473,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[1] = {lcc_farg0};
     Vaslist vaslist(1, args);
@@ -473,6 +481,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 
   static inline LCC_RETURN error_entry_point_2(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1) {
@@ -502,10 +511,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER
@@ -523,6 +534,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[2] = {lcc_farg0, lcc_farg1};
     Vaslist vaslist(2, args);
@@ -530,6 +542,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 
   static inline LCC_RETURN error_entry_point_3(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1,
@@ -560,10 +573,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER
@@ -581,6 +596,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
     Vaslist vaslist(3, args);
@@ -588,6 +604,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 
   static inline LCC_RETURN error_entry_point_4(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1,
@@ -618,10 +635,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER
@@ -639,6 +658,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
     Vaslist vaslist(4, args);
@@ -646,6 +666,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 
   static inline LCC_RETURN error_entry_point_5(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1,
@@ -676,10 +697,12 @@ struct GFBytecodeEntryPoint {
 #define MAYBE_LONG_MUL 1
 #define MAYBE_LONG_ADD 0
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #define MAYBE_LONG_MUL 2
 #define MAYBE_LONG_ADD DTREE_OP_COUNT
 #include "src/core/dtree-interpreter.cc"
+#undef MAYBE_LONG_ADD
 #undef MAYBE_LONG_MUL
 #undef GENERAL_ARITY_CALL
 #undef ENABLE_REGISTER
@@ -697,6 +720,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_dispatch_miss_va, generic_function, error_args);
   }
+    /*
   SINGLE_DISPATCH_MISS : {
     core::T_O *args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
     Vaslist vaslist(5, args);
@@ -704,6 +728,7 @@ struct GFBytecodeEntryPoint {
     Function_sp generic_function = gfep->_GenericFunction;
     return core::eval::funcall(clos::_sym_single_dispatch_miss_va, generic_function, error_args);
   }
+*/
   }
 };
 
@@ -721,7 +746,6 @@ GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make(Function_sp generic_function)
   T_mv compiled = eval::funcall(clos::_sym_bytecode_dtree_compile, generic_function);
   SimpleVector_byte8_t_sp bytecode = gc::As<SimpleVector_byte8_t_sp>(compiled);
   MultipleValues &mv = my_thread->_MultipleValues;
-  SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
   SimpleVector_sp literals = mv.third(compiled.number_of_values());
   size_t specialized_length = mv.fourth(compiled.number_of_values()).unsafe_fixnum();
   auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate(fdesc, 0, bytecode, literals, generic_function, specialized_length);

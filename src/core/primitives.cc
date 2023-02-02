@@ -125,7 +125,7 @@ CL_DEFUN T_sp cl__sleep(Real_sp oseconds) {
   if (dsec < 0.0) {
     TYPE_ERROR(oseconds,Cons_O::createList(cl::_sym_float,clasp_make_single_float(0.0)));
   }
-  int retval = clasp_musleep(dsec,false);
+  clasp_musleep(dsec,false);
   return nil<T_O>();
 }
 
@@ -628,7 +628,7 @@ CL_DOCSTRING(R"dx(validFunctionNameP)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__valid_function_name_p(T_sp arg) {
   bool correct;
-  Symbol_sp name = functionBlockName(arg, &correct);
+  functionBlockName(arg, &correct);
   if (!correct)
     return nil<T_O>();
   return _lisp->_true();
@@ -1880,7 +1880,6 @@ CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string
     AbstractSimpleVector_sp basesv;
     size_t start, end;
     sarray->asAbstractSimpleVectorRange(basesv,start,end);
-    SimpleCharacterString_sp sbs = gc::As_unsafe<SimpleCharacterString_sp>(basesv);
     SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end-start),0,false);
     for ( int i=0; i<sarray->length(); ++i ) {
       int c = (*sarray)[i];
@@ -2011,106 +2010,6 @@ void print_add_two_numbers(int x, int y) {
   SYMBOL_SC_(CorePkg, bdsTop);
   SYMBOL_SC_(CorePkg, bdsVar);
   SYMBOL_SC_(CorePkg, bdsVal);
-
-
-
-
-namespace core {
-
-
-
-
-int tak_aux(int x, int y, int z, bool allocate)
-{
-  if (y < x) {
-    return tak_aux(tak_aux(x-1,y,z,allocate),tak_aux(y-1,z,x,allocate),tak_aux(z-1,x,y,allocate),allocate);
-  } else {
-    if (allocate) {
-#ifdef USE_BOEHM      
-      GC_MALLOC(128);
-#endif
-    }
-    return z;
-  }
-}
-
-int tak(int x, int y, int z, bool allocate, int times) {
-  int ret;
-  for ( int ii=0; ii<times; ++ii ) {
-    ret = tak_aux(x,y,z,allocate);
-  }
-  return ret;
-}
-
-struct Ctak {
-  int val;
-  Ctak(int v) : val(v) {};
-};
-
-int ctak_aux(int x, int y, int z, bool allocate)
-{
-  if (!(y < x)) {
-    Ctak ret(z);
-    if (allocate) {
-#ifdef USE_BOEHM
-      GC_MALLOC(128);
-#endif
-    }
-    throw ret;
-  } else {
-    int rx;
-    try {
-      ctak_aux(x-1,y,z,allocate);
-    } catch (Ctak& val) {
-      rx = val.val;
-    }
-    int ry;
-    try {
-      ctak_aux(y-1,z,x,allocate);
-    } catch (Ctak& val) {
-      ry = val.val;
-    }
-    int rz;
-    try {
-      ctak_aux(z-1,x,y,allocate);
-    } catch (Ctak& val) {
-      rz = val.val;
-    }
-    return ctak_aux(rx,ry,rz,allocate);
-  }
-}
-
-int ctak(int x, int y, int z, bool allocate,int times) {
-  int ret;
-  for (int ii=0; ii<times; ++ii) {
-    try {
-      ctak_aux(x,y,z,allocate);
-    } catch (Ctak& val) {
-      ret = val.val;
-    }
-  }
-  return ret;
-}
-
-
-CL_DOCSTRING(R"dx(Run the ctak test function (google 'tak function' - this is a try/catch/throw version))dx");
-CL_LAMBDA(x y z &key allocate (times 1));
-DOCGROUP(clasp);
-CL_DEFUN void core__ctak(int x, int y, int z, bool allocate, int times)
-{
-  ctak(x,y,z,allocate,times);
-}
-
-CL_DOCSTRING(R"dx(Run the tak test function (google 'tak function'))dx");
-CL_LAMBDA(x y z &key allocate (times 1));
-DOCGROUP(clasp);
-CL_DEFUN void core__tak(int x, int y, int z, bool allocate,int times)
-{
-  tak(x,y,z,allocate,times);
-}
-
-};
-
 
 namespace core {
 

@@ -202,7 +202,8 @@ int WeakKeyHashTable::rehash_not_safe(const value_type &key, size_t &key_bucket)
       size_t found;
       size_t b;
       found = WeakKeyHashTable::find_no_lock(newHashTable._Keys, old_key, b);
-      GCTOOLS_ASSERT(found);// assert(found);            /* new table shouldn't be full */
+      (void)found;
+      GCTOOLS_ASSERT(found); /* new table shouldn't be full */
       if ( !(*newHashTable._Keys)[b].unboundp() ) {
         printf("%s:%d About to copy key: %12p   at index %zu    to newHashTable at index: %zu\n", __FILE__, __LINE__,
                old_key.raw_(), i, b );
@@ -382,6 +383,7 @@ void WeakKeyHashTable::set(core::T_sp key, core::T_sp value) {
 		    size_t dummyPos;
 		    this->rehash( dummyKey, dummyPos );
 		    res = this->trySet( key, value);
+                    (void)res; // sham use
 		    GCTOOLS_ASSERT(res);
 		}
   });
@@ -478,7 +480,6 @@ DOCGROUP(clasp);
 CL_DEFUN core::Vector_sp weak_key_hash_table_pairs(const gctools::WeakKeyHashTable& ht) {
   size_t len = (*ht._Keys).length();
   core::ComplexVector_T_sp keyvalues = core::ComplexVector_T_O::make(len*2,nil<core::T_O>(),core::make_fixnum(0));
-  size_t idx(0);
   HT_READ_LOCK(&ht);
   for ( size_t i(0); i<len; ++i ) {
     if ( (*ht._Keys)[i].raw_() &&

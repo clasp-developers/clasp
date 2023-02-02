@@ -935,7 +935,6 @@ static claspCharacter eformat_write_char_crlf(T_sp strm, claspCharacter c) {
  */
 
 static claspCharacter passthrough_decoder(T_sp stream, unsigned char **buffer, unsigned char *buffer_end) {
-  unsigned char aux;
   if (*buffer >= buffer_end)
     return EOF;
   else
@@ -1351,7 +1350,7 @@ static int utf_8_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
     c >>= 6;
     buffer[0] = c | 0xE0;
     nbytes = 3;
-  } else if (c <= 0x1FFFFFL) {
+  } else if (c <= 0x1FFFFFL) { // upper limit of encoding - unicode is 10ffff
     buffer[3] = (c & 0x3f) | 0x80;
     c >>= 6;
     buffer[2] = (c & 0x3f) | 0x80;
@@ -1360,7 +1359,7 @@ static int utf_8_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
     c >>= 6;
     buffer[0] = c | 0xF0;
     nbytes = 4;
-  }
+  } else UNREACHABLE();
   return nbytes;
 }
 #endif
@@ -1527,13 +1526,8 @@ static cl_index illegal_op_vector(T_sp strm, T_sp data, cl_index start, cl_index
   abort();
 }
 
-static T_sp illegal_op_T_sp__T_sp(T_sp strm, T_sp c) {
-  printf("%s:%d Illegal op\n", __FILE__, __LINE__);
-  abort();
-}
-
 static claspCharacter illegal_op_char__T_sp(T_sp strm) {
-  printf("%s:%d Illegal op\n", __FILE__, __LINE__);
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
   abort();
 }
 
@@ -2673,7 +2667,7 @@ static FILE *safe_fdopen(int fildes, const char *mode) {
   if (output == NULL) {
     std::string serr = strerror(errno);
     struct stat info;
-    int fstat_error = fstat(fildes, &info);
+    fstat(fildes, &info);
     int flags, fdflags, tmp, oflags;
     if ((flags = sflags(mode, &oflags)) == 0)
       perror("sflags failed");
@@ -3520,17 +3514,20 @@ T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gct
   switch (smm) {
   case clasp_smm_input:
     smm = clasp_smm_input_file;
+    [[fallthrough]];
   case clasp_smm_input_file:
   case clasp_smm_probe:
     StreamOps(stream) = duplicate_dispatch_table(input_file_ops);
     break;
   case clasp_smm_output:
     smm = clasp_smm_output_file;
+    [[fallthrough]];
   case clasp_smm_output_file:
     StreamOps(stream) = duplicate_dispatch_table(output_file_ops);
     break;
   case clasp_smm_io:
     smm = clasp_smm_io_file;
+    [[fallthrough]];
   case clasp_smm_io_file:
     StreamOps(stream) = duplicate_dispatch_table(io_file_ops);
     break;
@@ -4283,6 +4280,8 @@ CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T
     smm_mode = clasp_smm_output;
   } else if (direction == kw::_sym_io || direction == kw::_sym_input_output) {
     smm_mode = clasp_smm_io;
+  } else {
+    SIMPLE_ERROR("Illegal direction %s", _rep_(direction));
   }
   if (cl__integerp(element_type)) {
     external_format = nil<T_O>();
@@ -4294,6 +4293,36 @@ CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T
     core__set_buffering_mode(stream, byte_size ? kw::_sym_full : kw::_sym_line);
   }
   return stream;
+}
+
+static const char* stream_mode_string(enum StreamMode mode) {
+  switch (mode) {
+  case clasp_smm_input: return "input";
+  case clasp_smm_input_file: return "input file";
+  case clasp_smm_output: return "output";
+  case clasp_smm_output_file: return "output file";
+  case clasp_smm_io: return "input/output";
+  case clasp_smm_io_file: return "input/output file";
+  case clasp_smm_synonym: return "synonym";
+  case clasp_smm_broadcast: return "broadcast";
+  case clasp_smm_concatenated: return "concatenated";
+  case clasp_smm_two_way: return "two-way";
+  case clasp_smm_echo: return "echo";
+  case clasp_smm_string_input: return "string input";
+  case clasp_smm_string_output: return "string output";
+  case clasp_smm_probe: return "probe";
+#if defined(ECL_WSOCK)
+  case clasp_smm_input_wsock: return "input Windows socket";
+  case clasp_smm_output_wsock: return "output Windows socket";
+  case clasp_smm_io_wsock: return "input/output Windows socket";
+#endif
+#if defined(CLASP_MS_WINDOWS_HOST)
+  case clasp_smm_io_wcon: return "Windows console";
+#endif
+  case clasp_smm_sequence_input: return "sequence input";
+  case clasp_smm_sequence_output: return "sequence output";
+  default: return "[unknown]";
+  }
 }
 
 int clasp_stream_to_handle(T_sp s, bool output) {
@@ -4361,7 +4390,7 @@ CL_DEFUN T_sp ext__file_stream_file_descriptor(T_sp s) {
     ret = make_fixnum(IOFileStreamDescriptor(s));
     break;
   default:
-    SIMPLE_ERROR(("Internal error: %s:%d Wrong Stream Mode %d\n"), __FILE__, __LINE__, StreamMode(s));
+    SIMPLE_ERROR(("Internal error: %s:%d No file descriptor for a stream with this mode %s\n") , __FILE__ , __LINE__ , stream_mode_string(StreamMode(s)));
   }
   return ret;
 }
@@ -4636,7 +4665,6 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
       T_sp elt_type = cl__stream_element_type(stream);
       bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
       seq = cl__nthcdr(clasp_make_integer(start), seq);
-      T_sp orig = seq;
       for (; seq.notnilp(); seq = oCdr(seq)) {
         if (start >= end) {
           return make_fixnum(start);
@@ -4937,7 +4965,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
       }
     }
   } else {
-    FEerror("Illegal stream mode ~S", 1, make_fixnum(smm).raw_());
+    FEerror("Illegal stream mode ~S", 1, stream_mode_string(smm));
   }
   if (flags & CLASP_STREAM_C_STREAM) {
     FILE *fp = NULL;
@@ -4955,8 +4983,10 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
     case clasp_smm_io:
       fp = safe_fopen(fname.c_str(), OPEN_RW);
       break;
-    default:; /* never reached */
-      SIMPLE_ERROR(("Illegal smm mode: %d for CLASP_STREAM_C_STREAM"), smm);
+    default:
+      /* should never be reached */
+      SIMPLE_ERROR(("Illegal smm mode: %s for CLASP_STREAM_C_STREAM"),
+                   stream_mode_string(smm));
       UNREACHABLE();
     }
     output = clasp_make_stream_from_FILE(fn, fp, smm, byte_size, flags, external_format);
@@ -6201,7 +6231,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, file_stream_file_descriptor);
 CL_DOCSTRING(R"dx(Use read to read characters if they are available - return (values num-read errno-or-nil))dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
-  char c;
   size_t buffer_length = cl__length(buffer);
   unsigned char *buffer_data = &(*buffer)[0];
   while (1) {

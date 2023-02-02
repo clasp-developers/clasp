@@ -103,7 +103,6 @@ inline Header_s* do_boehm_general_allocation(const Header_s::BadgeStampWtagMtag&
 #endif
 #ifdef USE_PRECISE_GC
   auto stamp = the_header.stamp();
-  auto kind_defined = global_stamp_layout[stamp].boehm._kind_defined;
   auto& kind = global_stamp_layout[stamp].boehm._kind;
   GCTOOLS_ASSERT(kind!=KIND_UNDEFINED);
   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND( stamp, true_size, kind, &kind));
