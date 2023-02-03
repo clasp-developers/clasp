@@ -32,7 +32,8 @@
     (funcall-initialize 94 fnind)
     (find-class 98 sind cnind)
     ;; set-ltv-funcall in clasp- redundant
-    (make-specialized-array 97 sind rank dims etype . elems)))
+    (make-specialized-array 97 sind rank dims etype . elems) ; obsolete as of 0.3
+    (attribute 255 name nbytes . data)))
 
 ;;; Read an unsigned n-byte integer from a ub8 stream, big-endian.
 (defun read-ub (n stream)
@@ -83,11 +84,8 @@
     (dbgprint "Magic number matches: ~x" magic)))
 
 ;; Bounds for major and minor version understood by this loader.
-;; It might be smarter for reverse compatibility to make the version
-;; look up a loader? This will become more obvious once there are actually
-;; multiple versions in existence.
 (defparameter *min-version* '(0 0))
-(defparameter *max-version* '(0 5))
+(defparameter *max-version* '(0 6))
 
 (defun loadable-version-p (major minor)
   (and
@@ -612,6 +610,9 @@ Tried to define constant #~d, but it was already defined"
   (let ((aname (constant (read-index stream))))
     (%load-attribute (or (gethash aname *attributes*) aname) stream)))
 
+(defmethod %load-instruction ((mnemonic (eql 'attribute)) stream)
+  (load-attribute stream))
+
 ;; TODO: Check that the FASL actually defines all of the constants.
 ;; Make sure it defines them in order, i.e. not reading from uninitialized
 ;; portions of the vector.
@@ -690,7 +691,7 @@ Did not initialize constants~{ #~d~}"
             ((>= *minor* 3)
              (loop repeat ninsts
                    do (load-instruction stream))
-             (when (>= *minor* 4)
+             (when (<= 4 *minor* 5)
                (let ((nattrs (read-ub32 stream)))
                  (dbgprint "File reports ~d attributes" nattrs)
                  (loop repeat nattrs

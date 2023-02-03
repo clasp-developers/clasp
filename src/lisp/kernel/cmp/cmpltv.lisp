@@ -199,10 +199,13 @@
 ;;; Attributes are bonus, possibly implementation-defined stuff also in the file.
 ;;; Based closely on Java attributes, the loader has to ignore any it doesn't
 ;;; understand, so it's verboten for attributes to do anything semantically
-;;; important in general.
-;;; All attributes go in the file after the bytecode.
+;;; important in general. And, attributes include inline information about their
+;;; size, so they can be skipped if not understood.
+;;; Unlike Java attributes, our attributes are instructions in the normal
+;;; sequence. This is so that, for example, functions can be annotated with
+;;; source or other debug information before they are called.
 
-(defclass attribute ()
+(defclass attribute (effect)
   (;; Creator for the name of the attribute, a string.
    ;; FIXME: Do this more cleanly.
    (%name :reader name :type creator)))
@@ -246,9 +249,6 @@
 ;;; In reverse.
 (defvar *instructions*)
 
-;;; List of extra information for the loader.
-(defvar *attributes*)
-
 ;;; Bound by the client to a function that compiles a lambda expression
 ;;; relative to an environment, and then returns some object that
 ;;; cmpltv can treat as a constant.
@@ -262,7 +262,7 @@
 (defvar *creating*)
 
 (defmacro with-constants ((&key (compiler '*compiler*)) &body body)
-  `(let ((*instructions* nil) (*attributes* nil) (*creating* nil)
+  `(let ((*instructions* nil) (*creating* nil)
          (*coalesce* (make-hash-table))
          (*compiler* ,compiler))
      ,@body))
@@ -283,10 +283,6 @@
 (defun add-creator (value instruction)
   (setf (gethash value *coalesce*) instruction)
   (add-instruction instruction))
-
-(defun add-attribute (attribute)
-  (push attribute *attributes*)
-  attribute)
 
 (defgeneric add-constant (value))
 
@@ -556,7 +552,8 @@
     (find-class 98 sind cnind)
     ;; set-ltv-funcall in clasp- redundant
     #+(or) ; obsolete as of v0.3
-    (make-specialized-array 97 sind rank dims etype . elems)))
+    (make-specialized-array 97 sind rank dims etype . elems)
+    (attribute 255 name nbytes . data)))
 
 ;;; STREAM is a ub8 stream.
 (defgeneric encode (instruction stream))
@@ -581,14 +578,14 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 5)
+(defparameter *minor-version* 6)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
   (write-b16 *minor-version* stream))
 
 ;; Used in disltv as well.
-(defun write-bytecode (instructions attributes stream)
+(defun write-bytecode (instructions stream)
   (let* ((nobjs (count-if (lambda (i) (typep i 'creator)) instructions))
          ;; Next highest power of two bytes, roughly
          (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
@@ -599,14 +596,11 @@
     (write-version stream)
     (write-b64 nobjs stream)
     (write-b64 ninsts stream)
-    (map nil (lambda (inst) (encode inst stream)) instructions)
-    ;; now write attributes
-    (write-b32 (length attributes) stream)
-    (map nil (lambda (attr) (encode attr stream)) attributes)))
+    (map nil (lambda (inst) (encode inst stream)) instructions)))
 
 (defun %write-bytecode (stream)
   ;; lol efficiency with the reverse
-  (write-bytecode (reverse *instructions*) *attributes* stream))
+  (write-bytecode (reverse *instructions*) stream))
 
 (defun opcode (mnemonic)
   (let ((inst (assoc mnemonic +ops+ :test #'equal)))
@@ -978,7 +972,7 @@
                            (cmp:cfunction/entry-point value))))))
     #+clasp ; source info
     (let ((cspi core:*current-source-pos-info*))
-      (add-attribute
+      (add-instruction
        (make-instance 'spi-attr
          :function inst
          :pathname (ensure-constant
@@ -1048,6 +1042,7 @@
 ;;;
 
 (defmethod encode :before ((attr attribute) stream)
+  (write-mnemonic 'attribute stream)
   (write-index (name attr) stream))
 
 #+clasp
