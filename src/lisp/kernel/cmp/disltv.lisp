@@ -46,7 +46,7 @@
 
 ;; Bounds for major and minor version understood by this loader.
 (defparameter *min-version* '(0 4))
-(defparameter *max-version* '(0 6))
+(defparameter *max-version* '(0 7))
 
 (defun loadable-version-p (major minor)
   (and
@@ -380,10 +380,18 @@
             (make-instance 'bytemodule-creator :lispcode lispcode)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'setf-literals)) stream)
-  (let ((module (read-creator stream)) (literals (read-creator stream)))
-    (dbgprint " (setf (literals ~s) ~s)" module literals)
-    (make-instance 'setf-literals
-      :module module :literals literals)))
+  (if (and (= *load-major* 0) (<= *load-minor* 6))
+      (let ((module (read-creator stream)) (literals (read-creator stream)))
+        (dbgprint " (setf (literals ~s) ~s)" module literals)
+        (make-instance 'setf-literals
+          :module module :literals literals))
+      (let* ((module (read-creator stream)) (nliterals (read-ub16 stream))
+             (literals (make-array nliterals)))
+        (loop for i below nliterals
+              do (setf (aref literals i) (read-creator stream)))
+        (dbgprint " (setf (literals ~s) ~s)" module literals)
+        (make-instance 'setf-literals
+          :module module :literals literals))))
 
 (defmethod %load-instruction ((mnemonic (eql 'fdefinition)) stream)
   (let ((index (read-index stream)) (name (read-creator stream)))

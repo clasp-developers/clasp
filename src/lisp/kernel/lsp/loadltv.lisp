@@ -86,7 +86,7 @@
 
 ;; Bounds for major and minor version understood by this loader.
 (defparameter *min-version* '(0 0))
-(defparameter *max-version* '(0 6))
+(defparameter *max-version* '(0 7))
 
 (defun loadable-version-p (major minor)
   (and
@@ -538,10 +538,17 @@ Tried to define constant #~d, but it was already defined"
     (+ *index-bytes* 4 len)))
 
 (defmethod %load-instruction ((mnemonic (eql 'setf-literals)) stream)
-  (let ((modi (read-index stream)) (litsi (read-index stream)))
-    (dbgprint " (setf-literals ~d ~d)" modi litsi)
-    (core:bytecode-module/setf-literals
-     (constant modi) (constant litsi))))
+  (if (and (= *major* 0) (<= *minor* 6))
+      (let ((modi (read-index stream)) (litsi (read-index stream)))
+        (dbgprint " (setf-literals ~d ~d)" modi litsi)
+        (core:bytecode-module/setf-literals
+         (constant modi) (constant litsi)))
+      (let* ((mod (constant (read-index stream))) (nlits (read-ub16 stream))
+             (lits (make-array nlits)))
+        (loop for i below nlits
+              do (setf (aref lits i) (constant (read-index stream))))
+        (dbgprint " (setf-literals ~s ~s)" mod lits)
+        (core:bytecode-module/setf-literals mod lits))))
 
 (defmethod %load-instruction ((mnemonic (eql 'fdefinition)) stream)
   (let ((find (read-index stream)) (namei (read-index stream)))

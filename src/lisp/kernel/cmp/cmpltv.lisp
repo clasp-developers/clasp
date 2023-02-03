@@ -615,7 +615,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 6)
+(defparameter *minor-version* 7)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -1044,7 +1044,10 @@
 
 (defclass setf-literals (effect)
   ((%module :initarg :module :reader setf-literals-module :type creator)
-   (%literals :initarg :literals :reader setf-literals-literals :type creator)))
+   ;; The literals are not practically coalesceable and are always a T vector,
+   ;; so they're just encoded inline.
+   (%literals :initarg :literals :reader setf-literals-literals
+              :type simple-vector)))
 
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
@@ -1057,7 +1060,8 @@
     ;; cfunctions, so we need to 2stage it here.
     (add-instruction
      (make-instance 'setf-literals
-       :module mod :literals (ensure-constant (cmp:module/literals value))))
+       :module mod :literals (map 'simple-vector #'ensure-constant
+                                  (cmp:module/literals value))))
     mod))
 
 (defmethod encode ((inst bytemodule-creator) stream)
@@ -1074,7 +1078,10 @@
 (defmethod encode ((inst setf-literals) stream)
   (write-mnemonic 'setf-literals stream)
   (write-index (setf-literals-module inst) stream)
-  (write-index (setf-literals-literals inst) stream))
+  (let ((literals (setf-literals-literals inst)))
+    (write-b16 (length literals) stream)
+    (loop for creator across literals
+          do (write-index creator stream))))
 
 ;;;
 
