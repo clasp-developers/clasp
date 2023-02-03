@@ -1633,7 +1633,12 @@ CL_DEFUN void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, C
 }
 
 CL_DEFUN void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, Context_sp ctxt) {
+  // Compile the function. Coerce it as a designator.
+  // TODO: When the fform is a #'foo form we could skip coercion.
+  compile_function(core::_sym_coerce_fdesignator, env, ctxt->sub(clasp_make_fixnum(1)));
   compile_form(fform, env, ctxt->sub(clasp_make_fixnum(1)));
+  ctxt->sub(clasp_make_fixnum(1))->emit_call(1);
+  // Compile the arguments
   T_sp first = oCar(aforms);
   List_sp rest = gc::As<List_sp>(oCdr(aforms));
   compile_form(first, env, ctxt->sub(cl::_sym_T_O));
@@ -1814,6 +1819,12 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_s
     // function instead.
     compile_function(cl::_sym_eq, env, context->sub(clasp_make_fixnum(1)));
     compile_call(rest, env, context);
+  } else if (head == cleavirPrimop::_sym_typeq) {
+    // KLUDGE: call to typep.
+    compile_function(cl::_sym_typep, env, context->sub(clasp_make_fixnum(1)));
+    compile_form(oCar(rest), env, context->sub(clasp_make_fixnum(1)));
+    compile_literal(oCadr(rest), env, context->sub(clasp_make_fixnum(1)));
+    context->emit_call(2);
   }
   // not a special form
   else {
