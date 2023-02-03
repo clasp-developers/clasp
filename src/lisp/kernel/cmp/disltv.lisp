@@ -385,6 +385,11 @@
     (make-instance 'setf-literals
       :module module :literals literals)))
 
+(defmethod %load-instruction ((mnemonic (eql 'fdefinition)) stream)
+  (let ((index (read-index stream)) (name (read-creator stream)))
+    (dbgprint " (fdefinition ~d ~s)" index name)
+    (setf (creator index) (make-instance 'fdefinition-lookup :name name))))
+
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
   (let ((index (read-index stream)) (fun (read-creator stream))
         (args (if (and (= *load-major* 0) (<= *load-minor* 4))

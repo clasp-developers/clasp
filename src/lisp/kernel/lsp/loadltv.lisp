@@ -30,6 +30,7 @@
     (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
     (funcall-initialize 94 fnind)
+    (fdefinition 95 find nameind)
     (find-class 98 sind cnind)
     ;; set-ltv-funcall in clasp- redundant
     (make-specialized-array 97 sind rank dims etype . elems) ; obsolete as of 0.3
@@ -541,6 +542,11 @@ Tried to define constant #~d, but it was already defined"
     (dbgprint " (setf-literals ~d ~d)" modi litsi)
     (core:bytecode-module/setf-literals
      (constant modi) (constant litsi))))
+
+(defmethod %load-instruction ((mnemonic (eql 'fdefinition)) stream)
+  (let ((find (read-index stream)) (namei (read-index stream)))
+    (dbgprint " (fdefinition ~d ~d)" find namei)
+    (setf (constant find) (fdefinition (constant namei)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
   (let ((index (read-index stream)) (funi (read-index stream))
