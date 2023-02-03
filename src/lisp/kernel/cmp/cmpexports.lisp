@@ -24,6 +24,8 @@
             load-bitcode
             *irbuilder*
             *compile-file-unique-symbol-prefix*
+            *optimize* *policy*
+            policy ; used as a doc-type
             %ltv*%
             irc-function-create
             irc-make-function-description

@@ -304,6 +304,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
     (let ((output-path (apply #'compile-file-pathname input-file args))
           (*compilation-module-index* 0) ; FIXME: necessary?
           (*readtable* *readtable*) (*package* *package*)
+          (*optimize* *optimize*) (*policy* *policy*)
           (*compile-file-pathname*
             (pathname (merge-pathnames input-file)))
           (*compile-file-truename*

@@ -303,26 +303,17 @@
 
 (defmethod env:declarations ((env cmp:lexenv)) (env:declarations *clasp-env*))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *global-optimize*
-    ;; initial value, changed by de/proclaim
-    '((compilation-speed 1)
-      (debug 1)
-      (space 1)
-      (speed 1)
-      (safety 1))))
-
 (eval-when (:compile-toplevel)
   (format t "about to compute-policy~%"))
 
-(defvar *global-policy*
-  '#.(policy:compute-policy *global-optimize* *clasp-env*))
+(setf cmp:*policy*
+  '#.(policy:compute-policy cmp:*optimize* *clasp-env*))
 
 (defmethod env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
   (make-instance 'env:optimize-info
-    :optimize *global-optimize*
-    :policy *global-policy*))
+    :optimize cmp:*optimize*
+    :policy cmp:*policy*))
 
 (defmethod env:optimize-info ((environment NULL))
   (env:optimize-info *clasp-env*))

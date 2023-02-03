@@ -18,11 +18,11 @@
        (destructuring-bind (type &rest vnames) (cdr decl)
          (proclaim-type type vnames)))
       ((eq head 'cl:optimize)
-       (setf *global-optimize*
+       (setf cmp:*optimize*
              (policy:normalize-optimize
-              (append (rest decl) *global-optimize*) *clasp-env*)
-             *global-policy*
-             (policy:compute-policy *global-optimize* *clasp-env*)))
+              (append (rest decl) cmp:*optimize*) *clasp-env*)
+             cmp:*policy*
+             (policy:compute-policy cmp:*optimize* *clasp-env*)))
       ;; Add other clauses here
       (t #+(or)(warn "Add support for proclaim ~s~%" decl)))))
 
