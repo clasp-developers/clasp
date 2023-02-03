@@ -927,7 +927,9 @@
 (defmethod encode ((inst load-time-value-creator) stream)
   (write-mnemonic 'funcall-create stream)
   (write-index inst stream)
-  (write-index (load-time-value-creator-function inst) stream))
+  (write-index (load-time-value-creator-function inst) stream)
+  ;; no arguments
+  (write-b16 0 stream))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
