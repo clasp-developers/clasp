@@ -91,12 +91,9 @@ expansion function is called with no argument.
 The doc-string DOC, if supplied, is saved as a TYPE doc and can be retrieved
 by (documentation 'NAME 'type)."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     ;; See note in DEFMACRO in evalmacros.lisp
-     (core:setf-lambda-list
-      (funcall #'(setf ext:type-expander)
-               ,(ext:parse-deftype name lambda-list body env)
-               ',name)
-      ',lambda-list)
+     (funcall #'(setf ext:type-expander)
+              ,(ext:parse-deftype name lambda-list body env)
+              ',name)
      ',name))
 
 ;;; Some DEFTYPE definitions.

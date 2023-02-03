@@ -303,7 +303,7 @@
 (defmethod env:declarations
     ((environment clasp-global-environment))
   '(;; behavior as in convert-form.lisp
-    core:lambda-name))
+    core:lambda-name core:lambda-list))
 
 (defmethod env:declarations ((env cmp:lexenv)) (env:declarations *clasp-env*))
 

@@ -21,16 +21,9 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     ;; NOTE: Written in this funny way because LET binding would force an
-     ;; extra compile at compile-file time
-     ;; (as the eval-when :compile-toplevel is executed)
-     ;; Need a more comprehensive solution though, since the actual macro
-     ;; lambda will be compiled twice anyway.
-     (core:setf-lambda-list
-      (funcall #'(setf macro-function)
-               #',(ext:parse-macro name lambda-list body env)
-               ',name)
-      ',lambda-list)
+     (funcall #'(setf macro-function)
+              #',(ext:parse-macro name lambda-list body env)
+              ',name)
      ',name))
 
 (defmacro destructuring-bind (vl list &body body)
