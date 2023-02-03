@@ -158,10 +158,22 @@ Tried to read constant #~d before initializing it"
                      (file-error-pathname condition)
                      (offending-index condition)))))
 
+(define-condition index-out-of-range (invalid-fasl)
+  ((%index :initarg :index :reader offending-index)
+   (%nobjs :initarg :nobjs :reader nobjs))
+  (:report (lambda (condition stream)
+             (format stream "FASL ~s is invalid:
+Tried to access constant #~d, but there are only ~d constants in the FASL."
+                     (file-error-pathname condition)
+                     (offending-index condition) (nobjs condition)))))
+
 (defun constant (index)
-  (if (zerop (sbit *initflags* index))
-      (error 'uninitialized-constant :index index)
-      (aref *constants* index)))
+  (cond ((not (array-in-bounds-p *initflags* index))
+         (error 'index-out-of-range :index index
+                                    :nobjs (length *initflags*)))
+        ((zerop (sbit *initflags* index))
+         (error 'uninitialized-constant :index index))
+        (t (aref *constants* index))))
 
 (define-condition set-uninitialized-constant (invalid-fasl)
   ((%index :initarg :index :reader offending-index))
@@ -172,10 +184,13 @@ Tried to define constant #~d, but it was already defined"
                      (offending-index condition)))))
 
 (defun (setf constant) (value index)
-  (if (zerop (sbit *initflags* index))
-      (setf (aref *constants* index) value
-            (sbit *initflags* index) 1)
-      (error 'set-uninitialized-constant :index index)))
+  (cond ((not (array-in-bounds-p *initflags* index))
+         (error 'index-out-of-range :index index
+                                    :nobjs (length *initflags*)))
+        ((zerop (sbit *initflags* index))
+         (setf (aref *constants* index) value
+               (sbit *initflags* index) 1))
+        (t (error 'set-uninitialized-constant :index index))))
 
 ;; Versions 0.0-0.2: Return how many bytes were read.
 ;; Versions 0.3-: Return value irrelevant.
