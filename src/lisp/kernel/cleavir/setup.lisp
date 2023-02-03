@@ -274,23 +274,27 @@
   (env:function-info sys *clasp-env* symbol))
 
 (defmethod env:function-info ((sys clasp) (environment cmp:lexenv) symbol)
-  (let ((info (cmp:fun-info symbol environment)))
-    (etypecase info
-      (null (env:function-info sys *clasp-env* symbol)) ; check global
-      (cmp:global-fun-info
-       (make-instance 'env:global-function-info
-         :name symbol
-         :compiler-macro (cmp:global-fun-info/cmexpander info)))
-      (cmp:local-fun-info
-       ;; As with lexical variables, this may not end well
-       ;; as there will be no identity or anything.
-       (make-instance 'env:local-function-info :name symbol))
-      (cmp:global-macro-info
-       (make-instance 'env:global-macro-info
-         :name symbol :expander (cmp:global-macro-info/expander info)))
-      (cmp:local-macro-info
-       (make-instance 'env:local-macro-info
-         :name symbol :expander (cmp:local-macro-info/expander info))))))
+  (if (and (symbolp symbol) (treat-as-special-operator-p symbol))
+      ;; The bytecode compiler doesn't know about special operators.
+      ;; (It might need to learn for Trucler, later.)
+      (make-instance 'env:special-operator-info :name symbol)
+      (let ((info (cmp:fun-info symbol environment)))
+        (etypecase info
+          (null (env:function-info sys *clasp-env* symbol)) ; check global
+          (cmp:global-fun-info
+           (make-instance 'env:global-function-info
+             :name symbol
+             :compiler-macro (cmp:global-fun-info/cmexpander info)))
+          (cmp:local-fun-info
+           ;; As with lexical variables, this may not end well
+           ;; as there will be no identity or anything.
+           (make-instance 'env:local-function-info :name symbol))
+          (cmp:global-macro-info
+           (make-instance 'env:global-macro-info
+             :name symbol :expander (cmp:global-macro-info/expander info)))
+          (cmp:local-macro-info
+           (make-instance 'env:local-macro-info
+             :name symbol :expander (cmp:local-macro-info/expander info)))))))
 
 (defmethod env:declarations ((environment null))
   (env:declarations *clasp-env*))
