@@ -18,10 +18,10 @@ override_dh_auto_test:
 
 override_dh_auto_configure:
 ifneq (,$(filter clasp-cl,$(DOPACKAGES)))
-	./koga --broken-stdlib --reproducible-build --build-path=clasp-build/ --ldlibs=-ldl --package-path=$$(pwd)/debian/clasp-cl/ --bin-path=/usr/bin/ --share-path=/usr/share/clasp/ --lib-path=/usr/lib/clasp/
+	./koga --reproducible-build --build-path=clasp-build/ --ldlibs=-ldl --package-path=$$(pwd)/debian/clasp-cl/ --bin-path=/usr/bin/ --share-path=/usr/share/clasp/ --lib-path=/usr/lib/clasp/
 endif
 ifneq (,$(filter cando,$(DOPACKAGES)))
-	./koga --broken-stdlib --reproducible-build --build-path=cando-build/ --extensions=cando,seqan-clasp --ldlibs=-ldl --package-path=$$(pwd)/debian/cando/ --bin-path=/usr/bin/ --share-path=/usr/share/clasp/ --lib-path=/usr/lib/clasp/
+	./koga --reproducible-build --build-path=cando-build/ --extensions=cando,seqan-clasp --ldlibs=-ldl --package-path=$$(pwd)/debian/cando/ --bin-path=/usr/bin/ --share-path=/usr/share/clasp/ --lib-path=/usr/lib/clasp/
 endif
 
 override_dh_auto_build:

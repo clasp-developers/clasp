@@ -1,10 +1,10 @@
 BootStrap: docker
-From: ubuntu:jammy
+From: ubuntu:kinetic
 
 %post
     apt-get update
     apt-get upgrade -y
-    apt-get install -y -o Dpkg::Options::="--force-overwrite" nano wget sudo git locales curl python3-pip nodejs npm binutils-gold clang-14 libclang-14-dev libfmt-dev libboost-dev libclang-cpp14-dev libelf-dev libgmp-dev libunwind-dev llvm-14 ninja-build sbcl pkg-config libnetcdf-dev libczmq-dev libexpat1-dev
+    apt-get install -y -o Dpkg::Options::="--force-overwrite" nano wget sudo git locales curl python3-pip nodejs npm binutils-gold clang-15 libclang-15-dev libfmt-dev libboost-dev libclang-cpp15-dev libelf-dev libgmp-dev libunwind-dev llvm-15 ninja-build sbcl pkg-config libnetcdf-dev libczmq-dev libexpat1-dev
     echo 'en_US.UTF-8 UTF-8' >/etc/locale.gen
     locale-gen
     cd /mnt
