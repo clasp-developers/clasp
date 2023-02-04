@@ -130,9 +130,9 @@ JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::str
   std::vector<std::string> startup_functions;
   for (auto &F : *module->wrappedPtr()) {
     std::string function_name = F.getName().str();
-    // printf("%s:%d Function: %s looking for %s\n", __FILE__, __LINE__, function_name.c_str(), MODULE_STARTUP_FUNCTION_NAME);
-    if (function_name.find(MODULE_STARTUP_FUNCTION_NAME) != std::string::npos) {
-      // printf("%s:%d !!!!!        Function: %s found %s\n", __FILE__, __LINE__, function_name.c_str(), MODULE_STARTUP_FUNCTION_NAME);
+    // printf("%s:%d Function: %s looking for %s\n", __FILE__, __LINE__, function_name.c_str(), clasp_startup_FUNCTION_NAME);
+    if (function_name.find(clasp_startup_FUNCTION_NAME) != std::string::npos) {
+      // printf("%s:%d !!!!!        Function: %s found %s\n", __FILE__, __LINE__, function_name.c_str(), clasp_startup_FUNCTION_NAME);
       startup_functions.push_back(function_name);
     }
   }

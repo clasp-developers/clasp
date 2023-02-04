@@ -301,8 +301,8 @@ ENTRY_POINT_MAX_ARGS_IN_REGISTER_SAVE_AREA includes the closure
 
 #endif
 
-#define MODULE_STARTUP_FUNCTION_NAME "clasp_startup"
-#define MODULE_SHUTDOWN_FUNCTION_NAME "clasp_shutdown"
+#define clasp_startup_FUNCTION_NAME "clasp_startup"
+#define clasp_shutdown_FUNCTION_NAME "clasp_shutdown"
 
 // On linux and OS X we have mkstemp so use it
 #define HAVE_MKSTEMP

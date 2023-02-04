@@ -932,8 +932,8 @@ void startup_shutdown_names(size_t id, const std::string &prefix, std::string &s
     sstart << prefix << "-";
     sshutdown << prefix << "-";
   }
-  sstart << MODULE_STARTUP_FUNCTION_NAME << "_" << id;
-  sshutdown << MODULE_SHUTDOWN_FUNCTION_NAME << "_" << id;
+  sstart << clasp_startup_FUNCTION_NAME << "_" << id;
+  sshutdown << clasp_shutdown_FUNCTION_NAME << "_" << id;
   start = sstart.str();
   shutdown = sshutdown.str();
 }

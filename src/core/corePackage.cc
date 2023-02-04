@@ -160,8 +160,8 @@ SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_object);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcache_macroexpandSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARmodule_startup_function_nameSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARmodule_shutdown_function_nameSTAR);
+//SYMBOL_EXPORT_SC_(CorePkg, STARclasp_startup_function_nameSTAR);
+//SYMBOL_EXPORT_SC_(CorePkg, STARclasp_shutdown_function_nameSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, class_source_location)
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_hash_tableSTAR)
@@ -1171,8 +1171,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _lisp->_Roots._Finalizers = WeakKeyHashTable_O::create();
   _lisp->_Roots._Sysprop = gc::As<HashTableEql_sp>(HashTable_O::create_thread_safe(cl::_sym_eql, sbsr1, sbsw1));
   _sym_STARdebug_accessorsSTAR->defparameter(nil<T_O>());
-  _sym_STARmodule_startup_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_STARTUP_FUNCTION_NAME)));
-  _sym_STARmodule_shutdown_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_SHUTDOWN_FUNCTION_NAME)));
   std::list<string> nicknames;
   std::list<string> use_packages;
   _sym_STARdebug_fsetSTAR->defparameter(nil<core::T_O>());
