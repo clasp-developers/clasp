@@ -176,12 +176,16 @@
        :reader generic-function-declarations)
       (dependents :initform nil :accessor generic-function-dependents)
       ;; An indicator that the GF is being traced somehow.
-      ;; Acceptable values so far are NIL, meaning no tracing, and :PERF,
-      ;; meaning information about the discriminator's subpar performance
-      ;; is printed to *trace-output*. Could be used for more later, such as
-      ;; cl:trace of methods.
+      ;; If not being traced, this is NIL (the default).
+      ;; Otherwise, it's a cons. The car of the cons is either
+      ;; :PROFILE-ONGOING, meaning dispatch misses are printed to
+      ;; *TRACE-OUTPUT*, or
+      ;; :PROFILE-RECORD, meaning they aren't. In either case, the
+      ;; cadr is then the overhead recorded in seconds, and the
+      ;; cddr is a list of argument lists that have caused misses.
+      ;; More to come. See telemetry.lisp for interface.
       (tracy :initform nil :accessor %generic-function-tracy
-             :type (or null (eql :perf))))))
+             :type list))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-METHOD

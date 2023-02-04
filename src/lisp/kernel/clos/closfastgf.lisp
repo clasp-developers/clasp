@@ -635,21 +635,23 @@ FIXME!!!! This code will have problems with multithreading if a generic function
        (dolist (arg arguments)
          (gf-log "{}[{}/{}] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
        (gf-log-noindent "%N"))
-     (let ((tracyp
-             (eq (and (typep generic-function 'standard-generic-function)
-                      (with-early-accessors (+standard-generic-function-slots+)
-                        (%generic-function-tracy generic-function)))
-                 :perf))
-           #+debug-fastgf
-           (*dispatch-miss-start-time* (get-internal-real-time))
-           ;; We have to recompute the new entries in the CAS loop because we need to
-           ;; ensure that outcome= works, i.e. that we don't end up with two distinct outcome
-           ;; objects in the call history that represent the same effective method. This would
-           ;; screw up discriminator generation; see #
-           outcome updatedp)
+     (let* ((tracy
+              (and (typep generic-function 'standard-generic-function)
+                   (with-early-accessors (+standard-generic-function-slots+)
+                     (mp:atomic (%generic-function-tracy generic-function)))))
+            (report (and tracy (eq (car tracy) :profile-ongoing)))
+            (dispatch-miss-start-time
+              (when tracy (get-internal-real-time)))
+            #+debug-fastgf
+            (*dispatch-miss-start-time* (get-internal-real-time))
+            ;; We have to recompute the new entries in the CAS loop because we need to
+            ;; ensure that outcome= works, i.e. that we don't end up with two distinct outcome
+            ;; objects in the call history that represent the same effective method. This would
+            ;; screw up discriminator generation; see #
+            outcome updatedp)
        ;; If performance trace is on, squawk.
-       (when tracyp
-         (format *trace-output* "~& Dispatch miss: (~a~{ ~s~})~%"
+       (when report
+         (format *trace-output* "~&; Dispatch miss: (~a~{ ~s~})~%"
                  (core:low-level-standard-generic-function-name generic-function)
                  arguments))
        ;; Do the miss.
@@ -657,13 +659,6 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                          (lambda (call-history)
                            (multiple-value-bind (noutcome new-entries)
                                (dispatch-miss-info generic-function call-history arguments)
-                             (when tracyp
-                               (if new-entries
-                                   (format *trace-output*
-                                           "~&  New call history entries:~%~{   ~s~%~}"
-                                           (mapcar #'car new-entries))
-                                   (format *trace-output*
-                                           "~&  New call history entries: None~%")))
                              (setf outcome noutcome)
                              (cond ((null new-entries)
                                     (setf updatedp nil)
@@ -672,6 +667,20 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                                       (union-entries call-history new-entries))))))
        (when updatedp (force-dispatcher generic-function))
        (gf-log "Performing outcome {}%N" outcome)
+       (when report
+         (format *trace-output*
+                 "~&;  ~fs overhead~%"
+                 (/ (float (- (get-internal-real-time)
+                              dispatch-miss-start-time))
+                    internal-time-units-per-second)))
+       (when tracy
+         (let (;; dumb hack - atomics don't know about cadr etc
+               (info (cdr tracy)))
+           (mp:atomic-incf (car info)
+               (/ (float (- (get-internal-real-time)
+                            dispatch-miss-start-time))
+                  internal-time-units-per-second))
+           (mp:atomic-push arguments (cdr info))))
        #+debug-fastgf
        (let ((results (multiple-value-list
                        (perform-outcome outcome arguments))))
