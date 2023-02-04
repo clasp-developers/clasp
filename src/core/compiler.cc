@@ -774,9 +774,9 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     //    printf("%s:%d:%s addObjectFile objectFile = %p badge: 0x%0x jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__,
     //    objectFile.raw_(), lisp_badge(objectFile), jitDylib.raw_());
     T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId, nil<core::T_O>());
-    String_sp str = gc::As<String_sp>(startupName);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
-    jit->runStartupCode(jitDylib, str->get_std_string(), unbound<core::T_O>());
+    String_sp startupName_str = gc::As<String_sp>(startupName);
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, startupName_str->get_std_string().c_str()));
+    jit->runStartupCode(jitDylib, startupName_str->get_std_string(), unbound<core::T_O>());
   }
   return _lisp->_true();
 }
