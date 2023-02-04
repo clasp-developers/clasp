@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/cons.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/mpip/claspMpi.h>
 #include <clasp/core/wrappers.h>
@@ -47,68 +48,6 @@ Complex {\CANDOSCRIPT} objects are sent back and forth between processes using {
 In this example code worker processes create Rectangle objects and send them back to a manager process which prints them on the screen.
 
 You can run it by saving it in the file mpi.csc and running: mpirun -np 5 candoMpi mpi.csc
-
-\begin{verbatim}
-#
-# declare a Rectangle class that stores a width and height
-#
-[defClass Rectangle [ _width _height ] ]
-[defcore::Method init Rectangle [ self w h ] [block
-    ( _width = w )
-    ( _height = h )
-] ]
-[defcore::Method repr Rectangle [self] [
-    return ("Rectangle(w:%lf h:%lf)" % _width _height ) 
-] ]
-[defcore::Method area Rectangle [self] [ return ( _width * _height ) ] ]
-
-#
-# Get the mpiCommWorld object, the number of worker processes and
-# the rank of our process
-#
-( mpi := [mpiCommWorld] )
-( workers := ( [ GetSize mpi ] - 1 ) )
-( rank := [ GetRank mpi ] )
-
-
-[if [ mpiEnabled ] [block 
-    [println [format "Process with MPI rank %d started" rank ] ]
-#
-# If rank == 0 then we are the manager process, 
-# wait for messages from the workers.
-#
-    [if ( rank == 0 ) [block
-        # Manager process
-    ( cnt := 0 )
-    [println ("I'm the manager, waiting for %d objects" % workers )]
-    [while (cnt < workers)
-        [block
-        ( msg := [Recv mpi MPI::ANY_SOURCE MPI::ANY_TAG ] )
-        ( source := [ GetSource mpi ] )
-        [println ( "Master received message from source: %d" % source ) ]
-        [println ( "      Received Rectangle: %s" % ( msg repr ) ) ]
-        (cnt := (cnt + 1))
-        ]
-    ]
-    [println "Master done" ]
-    ] [ block
-# 
-# We are a worker process, seed the random number generator with 
-# our rank so that every worker starts with different random numbers
-# generate a rectangle and send it back to the Manager
-#
-    [println "Seeding random number generator" ]
-    [ seedRandomcore::NumberGenerators [ mpiRank ] ]
-    ( rect := [new Rectangle] )
-    ( rect init ([randomcore::Number01] * 100.0) ([randomcore::Number01] * 100.0))
-    [println ( "Worker rank: %d Rectangle: %s" % [mpiRank] (rect repr) ) ]
-    [Send mpi rect 0 0]
-    ] ]
-] [block
-    [println "Not running mpi" ]
-] ]
-\end{verbatim}
-
 
 
 __END_DOC
@@ -261,6 +200,10 @@ CL_DEFMETHOD int Mpi_O::Get_rank() {
 #endif
 }
 
+
+SYMBOL_EXPORT_SC_(MpiPkg,STARencode_object_hookSTAR);
+SYMBOL_EXPORT_SC_(MpiPkg,STARdecode_object_hookSTAR);
+
 // Object_sp obj, int dest, int tag )
 /*
   __BEGIN_DOC( mpi.MpiObject.Send, subsection, Send)
@@ -270,17 +213,11 @@ CL_DEFMETHOD int Mpi_O::Get_rank() {
   __END_DOC
 */
 CL_DEFMETHOD core::T_sp Mpi_O::prim_Send(int dest, int tag, core::T_sp obj) {
-  _G();
 #ifdef USE_MPI
-  IMPLEMENT_ME();
-#if 0
-  core::SexpSaveArchive_sp archive = core::SexpSaveArchive_O::create();
-  archive->put(KW("only"), obj);
-  core::StringOutStream_sp sos = core::StringOutStream_O::make();
-  archive->sexpSaveArchiveWrite(sos);
-  LOG("About to call MPI_Send\n%s\n" , sos->str());
-  this->_Communicator.send(dest, tag, sos->str());
-#endif
+  core::T_sp msg = core::eval::funcall(_sym_STARencode_object_hookSTAR->symbolValue(),obj);
+  core::SimpleBaseString_sp sbs = gc::As<core::SimpleBaseString_sp>(msg);
+  LOG("About to call MPI_Send\n%s\n" , sbs->get_std_string());
+  this->_Communicator.send(dest, tag, sbs->get_std_string());
 #endif
   return nil<core::T_O>();
 }
@@ -293,10 +230,7 @@ CL_DEFMETHOD core::T_sp Mpi_O::prim_Send(int dest, int tag, core::T_sp obj) {
   __END_DOC
 */
 CL_DEFMETHOD core::T_mv Mpi_O::prim_Recv(int source, int tag) {
-  _G();
 #ifdef USE_MPI
-  IMPLEMENT_ME();
-#if 0
   LOG("About to call MPI_Probe"); // vp0(("About to call MPI_Probe"));
   boost::mpi::status stat = this->_Communicator.probe(source, tag);
   this->_Source = stat.source();
@@ -304,15 +238,11 @@ CL_DEFMETHOD core::T_mv Mpi_O::prim_Recv(int source, int tag) {
   LOG("Probe command returned source %d" , this->_Source); // vp0(("Probe command returned source %d", this->_Source ));
   string buffer;
   this->_Communicator.recv(source, tag, buffer);
-  core::StringInputStream_sp sis = core::StringInputStream_O::create(buffer);
-  core::SexpLoadArchive_sp arch = core::SexpLoadArchive_O::create();
-  arch->parseFromStream(sis);
-  core::T_sp obj = arch->get(KW("only"));
-  //    free(buffer);
+  core::SimpleBaseString_sp sis = core::SimpleBaseString_O::make(buffer);
+  core::T_sp obj = core::eval::funcall(_sym_STARdecode_object_hookSTAR->symbolValue(),sis);
   return Values(obj, core::make_fixnum(this->_Source), core::make_fixnum(this->_Tag));
-#endif
 #else
-  return nil<T_O>();
+  return nil<core::T_O>();
 #endif
 }
 
