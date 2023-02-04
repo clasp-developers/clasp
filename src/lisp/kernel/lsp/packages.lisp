@@ -171,7 +171,6 @@
             byte64
             integer64
             assume-no-errors
-            sequence-stream
             all-encodings
             make-encoding
             assume-right-type

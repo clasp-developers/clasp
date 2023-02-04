@@ -283,10 +283,6 @@
 
 ;;; ----------------------------------------------------------------------
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel )
-  ;;
-  ;; All changes to this are connected to the changes in 
-  ;; the code of cl_class_of() in src/instance.d
-  ;;
   (core:defconstant-equal +builtin-classes-list+
       '( ;;(t object)
         (core:general t)
@@ -319,7 +315,6 @@
         (synonym-stream ext:ansi-stream)
         (broadcast-stream ext:ansi-stream)
         (concatenated-stream ext:ansi-stream)
-        (ext:sequence-stream ext:ansi-stream)
         (character t)
         (number t)
         (real number)
@@ -340,18 +335,6 @@
 ;;; (hash-table)  ;;No longer inherits from (core:general) 
         (random-state core:general)
         (readtable core:general)
-        (si::code-block core:general)
-        (si::foreign-data core:general)
-        (si::frame core:general)
-        (si::weak-pointer core:general)
-        (si::external-object core:general)
-        (si::iterator core:general)
-        (si::directory-iterator si::iterator)
-        (si::recursive-directory-iterator si::iterator)
-        #+threads (mp::process core:general)
-        #+threads (mp::lock core:general)
-        #+threads (mp::rwlock core:general)
-        #+threads (mp::condition-variable core:general)
         #+sse2 (ext::sse-pack))))
 
 ;;; FROM AMOP:
