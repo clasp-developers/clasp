@@ -174,7 +174,14 @@
        :initarg :declarations
        :initform nil
        :reader generic-function-declarations)
-      (dependents :initform nil :accessor generic-function-dependents))))
+      (dependents :initform nil :accessor generic-function-dependents)
+      ;; An indicator that the GF is being traced somehow.
+      ;; Acceptable values so far are NIL, meaning no tracing, and :PERF,
+      ;; meaning information about the discriminator's subpar performance
+      ;; is printed to *trace-output*. Could be used for more later, such as
+      ;; cl:trace of methods.
+      (tracy :initform nil :accessor %generic-function-tracy
+             :type (or null (eql :perf))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-METHOD
