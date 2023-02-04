@@ -259,13 +259,6 @@ hash table; otherwise it signals that we have reached the end of the hash table.
     (macrolet ((,iterator () (list 'funcall ',iterator)))
       ,@body)))
 
-(defun sharp-!-reader (stream subchar arg)
-  (declare (ignore arg subchar))
-  (read-line stream)
-  (values))
-
-(set-dispatch-macro-character #\# #\! 'sharp-!-reader)
-
 #+debug-count-allocations
 (defun do-allocations (closure)
   (let ((start-memory (gctools:allocation-counts)))
