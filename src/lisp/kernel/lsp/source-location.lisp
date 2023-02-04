@@ -158,10 +158,11 @@ Return the source-location for the name/kind pair"
                       (function-source-locations func)))))
     (case kind
       (:class
-       (let ((class (find-class name nil)))
-         (when class
-           (let ((source-loc (class-source-location class)))
-             (when source-loc (list source-loc))))))
+       (when (symbolp name)
+         (let ((class (find-class name nil)))
+           (when class
+             (let ((source-loc (class-source-location class)))
+               (when source-loc (list source-loc)))))))
       (:method
           (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
             (fix-paths-and-make-source-locations source-loc)))
@@ -203,13 +204,14 @@ Return the source-location for the name/kind pair"
            (source-locations-set-info (source-location expander t)
                                       'deftype))))
       (:variable
-       (let ((spi (core::variable-source-info name))
-             (definer (cond ((ext:specialp name) 'defvar)
-                            ((constantp name) 'defconstant)
-                            (t 'define-symbol-macro))))
-         (when spi
-           (list
-            (source-position-info->source-location spi definer))))))))
+       (when (symbolp name)
+         (let ((spi (core::variable-source-info name))
+               (definer (cond ((ext:specialp name) 'defvar)
+                              ((constantp name) 'defconstant)
+                              (t 'define-symbol-macro))))
+           (when spi
+             (list
+              (source-position-info->source-location spi definer)))))))))
 
 (defparameter *source-location-kinds* '(:class :method :function :compiler-macro
                                         :method-combination :type :setf-expander
