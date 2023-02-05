@@ -1,0 +1,7 @@
+#! /bin/bash
+#
+# In the clasp toplevel directory use...
+#   make -f apptainer/makefile
+#
+
+apptainer build --bind $PWD:/mnt cando.sif apptainer/cando.def
