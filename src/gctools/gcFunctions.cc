@@ -667,7 +667,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
     core::T_sp count = oCar(one);
     core::T_sp func = oCdr(one);
     if ( count.unsafe_fixnum() > 0) {
-      core::write_bf_stream(fmt::sprintf("%d : %s\n" , count.unsafe_fixnum() , _rep_(func)));
+      core::write_bf_stream(fmt::format("{} : {}\n" , count.unsafe_fixnum() , _rep_(func)));
     }
   }
 };
@@ -806,7 +806,7 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
   size_t finalizations;
   size_t messages = processMpsMessages(finalizations);
   if (verbose) {
-    core::write_bf_stream(fmt::sprintf("Processed %d finalization messages and %d total messages\n" , messages , finalizations ));
+    core::write_bf_stream(fmt::format("Processed {} finalization messages and {} total messages\n" , messages , finalizations ));
   }
 #endif
 }
@@ -839,26 +839,26 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   use_boehm_memory_marker = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("USE_BOEHM_MEMORY_MARKER = %s\n" , (use_boehm_memory_marker ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("USE_BOEHM_MEMORY_MARKER = {}\n" , (use_boehm_memory_marker ? "**DEFINED**" : "undefined") ));
 
   bool mps_recognize_zero_tags = false;
 #ifdef MPS_RECOGNIZE_ZERO_TAGS
   mps_recognize_zero_tags = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("MPS_RECOGNIZE_ZERO_TAGS = %s\n" , (mps_recognize_zero_tags ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("MPS_RECOGNIZE_ZERO_TAGS = {}\n" , (mps_recognize_zero_tags ? "**DEFINED**" : "undefined") ));
 
   bool use_symbols_in_global_array = false;
 #ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
   use_symbols_in_global_array = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("USE_SYMBOLS_IN_GLOBAL_ARRAY = %s\n" , (use_symbols_in_global_array ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("USE_SYMBOLS_IN_GLOBAL_ARRAY = {}\n" , (use_symbols_in_global_array ? "**DEFINED**" : "undefined") ));
 
   bool use_static_analyzer_global_symbols = false;
 #ifdef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
   use_static_analyzer_global_symbols = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n" , (use_static_analyzer_global_symbols ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = {}\n" , (use_static_analyzer_global_symbols ? "**DEFINED**" : "undefined") ));
 
   
   bool debug_throw_if_invalid_client_on = false;
@@ -866,35 +866,35 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debug_throw_if_invalid_client_on = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_THROW_IF_INVALID_CLIENT_ON = %s\n" , (debug_throw_if_invalid_client_on ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_THROW_IF_INVALID_CLIENT_ON = {}\n" , (debug_throw_if_invalid_client_on ? "**DEFINED**" : "undefined") ));
 
     bool debug_telemetry = false;
 #ifdef DEBUG_TELEMETRY
   debug_telemetry = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_TELEMETRY = %s\n" , (debug_telemetry ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_TELEMETRY = {}\n" , (debug_telemetry ? "**DEFINED**" : "undefined") ));
 
   bool debug_alloc_alignment = false;
 #ifdef DEBUG_ALLOC_ALIGNMENT
   debug_alloc_alignment = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_ALLOC_ALIGNMENT = %s\n" , (debug_alloc_alignment ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_ALLOC_ALIGNMENT = {}\n" , (debug_alloc_alignment ? "**DEFINED**" : "undefined") ));
 
   bool debug_stackmaps = false;
 #ifdef DEBUG_STACKMAPS
   debug_stackmaps = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_STACKMAPS = %s\n" , (debug_stackmaps ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_STACKMAPS = {}\n" , (debug_stackmaps ? "**DEFINED**" : "undefined") ));
 
   bool debug_stack_telemetry = false;
 #ifdef DEBUG_STACK_TELEMETRY
   debug_stack_telemetry = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_STACK_TELEMETRY = %s\n" , (debug_stack_telemetry ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_STACK_TELEMETRY = {}\n" , (debug_stack_telemetry ? "**DEFINED**" : "undefined") ));
 
   bool debug_mps_underscanning = false;
 #ifdef DEBUG_MPS_UNDERSCANNING
@@ -904,22 +904,22 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #else
   bool debug_mps_underscanning_initial = false;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_MPS_UNDERSCANNING = %s\n" , (debug_mps_underscanning ? "**DEFINED**" : "undefined") ));
-  if (buildReport) ss << (fmt::sprintf("DEBUG_MPS_UNDERSCANNING_INITIAL = %s\n" , (debug_mps_underscanning_initial ? "true" : "false") ));
+  if (buildReport) ss << (fmt::format("DEBUG_MPS_UNDERSCANNING = {}\n" , (debug_mps_underscanning ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_MPS_UNDERSCANNING_INITIAL = {}\n" , (debug_mps_underscanning_initial ? "true" : "false") ));
 
   bool debug_recursive_allocations = false;
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   debug_recursive_allocations = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_RECURSIVE_ALLOCATIONS = %s\n" , (debug_recursive_allocations ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_RECURSIVE_ALLOCATIONS = {}\n" , (debug_recursive_allocations ? "**DEFINED**" : "undefined") ));
 
   bool config_var_cool = false;
 #ifdef CONFIG_VAR_COOL
   config_var_cool = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("CONFIG_VAR_COOL = %s\n" , (config_var_cool ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("CONFIG_VAR_COOL = {}\n" , (config_var_cool ? "**DEFINED**" : "undefined") ));
 
   bool debug_guard = false;
 #ifdef DEBUG_GUARD
@@ -927,7 +927,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-GUARD"), features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_GUARD = %s\n" , (debug_guard ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_GUARD = {}\n" , (debug_guard ? "**DEFINED**" : "undefined") ));
 
   bool debug_guard_backtrace = false;
 #ifdef DEBUG_GUARD_BACKTRACE
@@ -935,21 +935,21 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-GUARD-BACKTRACE"), features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_GUARD_BACKTRACE = %s\n" , (debug_guard_backtrace ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_GUARD_BACKTRACE = {}\n" , (debug_guard_backtrace ? "**DEFINED**" : "undefined") ));
   
   bool debug_validate_guard = false;
 #ifdef DEBUG_VALIDATE_GUARD
   debug_validate_guard = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_VALIDATE_GUARD = %s\n" , (debug_validate_guard ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_VALIDATE_GUARD = {}\n" , (debug_validate_guard ? "**DEFINED**" : "undefined") ));
 
   bool debug_function_call_counter = false;
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
   debug_function_call_counter = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_FUNCTION_CALL_COUNTER = %s\n" , (debug_function_call_counter ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_FUNCTION_CALL_COUNTER = {}\n" , (debug_function_call_counter ? "**DEFINED**" : "undefined") ));
 
   bool debug_ensure_valid_object = false;
 #ifdef DEBUG_ENSURE_VALID_OBJECT
@@ -957,28 +957,28 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-ENSURE-VALID-OBJECT"),features);
 #endif  
-  if (buildReport) ss << (fmt::sprintf("DEBUG_ENSURE_VALID_OBJECT = %s\n" , (debug_ensure_valid_object ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_ENSURE_VALID_OBJECT = {}\n" , (debug_ensure_valid_object ? "**DEFINED**" : "undefined") ));
   
   bool debug_cache = false;
 #ifdef DEBUG_CACHE
   debug_cache = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_CACHE = %s\n" , (debug_cache ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_CACHE = {}\n" , (debug_cache ? "**DEFINED**" : "undefined") ));
 
   bool debug_threads = false;
 #ifdef DEBUG_THREADS
   debug_threads = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_THREADS = %s\n" , (debug_threads ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_THREADS = {}\n" , (debug_threads ? "**DEFINED**" : "undefined") ));
 
   bool debug_gfdispatch = false;
 #ifdef DEBUG_GFDISPATCH
   debug_gfdispatch = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_GFDISPATCH = %s\n" , (debug_gfdispatch ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_GFDISPATCH = {}\n" , (debug_gfdispatch ? "**DEFINED**" : "undefined") ));
 
   bool debug_cst = false;
 #ifdef CST
@@ -986,14 +986,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("CST"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("CST = %s\n" , (debug_gfdispatch ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("CST = {}\n" , (debug_gfdispatch ? "**DEFINED**" : "undefined") ));
 
   bool debug_ihs = false;
 #ifdef DEBUG_IHS
   debug_ihs = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_IHS = %s\n" , (debug_ihs ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_IHS = {}\n" , (debug_ihs ? "**DEFINED**" : "undefined") ));
 
   bool debug_enable_profiling = false;
 #ifdef ENABLE_PROFILING
@@ -1001,21 +1001,21 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("ENABLE-PROFILING"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("ENABLE_PROFILING = %s\n" , (debug_enable_profiling ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("ENABLE_PROFILING = {}\n" , (debug_enable_profiling ? "**DEFINED**" : "undefined") ));
 
   bool debug_release = false;
 #ifdef DEBUG_RELEASE
   debug_release = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_RELEASE = %s\n" , (debug_release ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_RELEASE = {}\n" , (debug_release ? "**DEFINED**" : "undefined") ));
 
   bool debug_bounds_assert = false;
 #ifdef DEBUG_BOUNDS_ASSERT
   debug_bounds_assert = true;
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_BOUNDS_ASSERT = %s\n" , (debug_bounds_assert ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_BOUNDS_ASSERT = {}\n" , (debug_bounds_assert ? "**DEFINED**" : "undefined") ));
 
   bool debug_slot_accessors = false;
 #ifdef DEBUG_SLOT_ACCESSORS
@@ -1023,7 +1023,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-SLOT-ACCESSORS"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_SLOT_ACCESSORS = %s\n" , (debug_slot_accessors ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_SLOT_ACCESSORS = {}\n" , (debug_slot_accessors ? "**DEFINED**" : "undefined") ));
 
   bool debug_fastgf = false;
 #ifdef DEBUG_FASTGF
@@ -1031,7 +1031,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FASTGF"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_FASTGF = %s\n" , (debug_fastgf ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_FASTGF = {}\n" , (debug_fastgf ? "**DEFINED**" : "undefined") ));
  
  bool debug_rehash_count = false;
 #ifdef DEBUG_REHASH_COUNT
@@ -1042,7 +1042,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_REHASH_COUNT = %s\n" , (debug_rehash_count ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_REHASH_COUNT = {}\n" , (debug_rehash_count ? "**DEFINED**" : "undefined") ));
 
     
   bool debug_jit_log_symbols = false;
@@ -1054,7 +1054,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("JIT-LOG-SYMBOLS"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_JIT_LOG_SYMBOLS = %s\n" , (debug_jit_log_symbols ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_JIT_LOG_SYMBOLS = {}\n" , (debug_jit_log_symbols ? "**DEFINED**" : "undefined") ));
 
 
   bool debug_mps_size = false;
@@ -1063,7 +1063,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MPS_SIZE"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_MPS_SIZE = %s\n" , (debug_mps_size ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_MPS_SIZE = {}\n" , (debug_mps_size ? "**DEFINED**" : "undefined") ));
 
   bool sanitize_memory = false;
 #ifdef SANITIZE_MEMORY
@@ -1071,7 +1071,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("SANITIZE-MEMORY"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("SANITIZE_MEMORY = %s\n" , (sanitize_memory ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("SANITIZE_MEMORY = {}\n" , (sanitize_memory ? "**DEFINED**" : "undefined") ));
 
 
   bool debug_bclasp_lisp = false;
@@ -1080,7 +1080,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-BCLASP-LISP"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_BCLASP_LISP = %s\n" , (debug_bclasp_lisp ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_BCLASP_LISP = {}\n" , (debug_bclasp_lisp ? "**DEFINED**" : "undefined") ));
 
   bool track_allocations = false;
 #ifdef DEBUG_TRACK_ALLOCATIONS
@@ -1088,7 +1088,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("TRACK-ALLOCATIONS"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("TRACK_ALLOCATIONS = %s\n" , (track_allocations ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("TRACK_ALLOCATIONS = {}\n" , (track_allocations ? "**DEFINED**" : "undefined") ));
 
   bool debug_dtree_interpreter = false;
 #ifdef DEBUG_DTREE_INTERPRETER
@@ -1098,7 +1098,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   debugging = true;
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_DTREE_INTERPRETER = %s\n" , (debug_dtree_interpreter ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_DTREE_INTERPRETER = {}\n" , (debug_dtree_interpreter ? "**DEFINED**" : "undefined") ));
   
   bool debug_cclasp_lisp = false;
 #ifdef DEBUG_CCLASP_LISP
@@ -1106,7 +1106,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-CCLASP-LISP"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_CCLASP_LISP = %s\n" , (debug_cclasp_lisp ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_CCLASP_LISP = {}\n" , (debug_cclasp_lisp ? "**DEFINED**" : "undefined") ));
 
     bool debug_long_call_history = false;
 #ifdef DEBUG_LONG_CALL_HISTORY
@@ -1114,7 +1114,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LONG-CALL-HISTORY"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_LONG_CALL_HISTORY = %s\n" , (debug_long_call_history ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_LONG_CALL_HISTORY = {}\n" , (debug_long_call_history ? "**DEFINED**" : "undefined") ));
 
   bool debug_memory_profile = false;
 #ifdef DEBUG_MEMORY_PROFILE
@@ -1122,7 +1122,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MEMORY-PROFILE"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_MEMORY_PROFILE = %s\n" , (debug_memory_profile ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_MEMORY_PROFILE = {}\n" , (debug_memory_profile ? "**DEFINED**" : "undefined") ));
 
   bool debug_compiler = false;
 #ifdef DEBUG_COMPILER
@@ -1130,7 +1130,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COMPILER"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_COMPILER = %s\n" , (debug_compiler ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_COMPILER = {}\n" , (debug_compiler ? "**DEFINED**" : "undefined") ));
 
   bool debug_verify_modules = false;
 #ifdef DEBUG_VERIFY_MODULES
@@ -1138,7 +1138,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-VERIFY-MODULES"), features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_VERIFY_MODULES = %s\n" , (debug_verify_modules ? "**DEFINED**" : "undefined")));
+  if (buildReport) ss << (fmt::format("DEBUG_VERIFY_MODULES = {}\n" , (debug_verify_modules ? "**DEFINED**" : "undefined")));
 
   bool debug_verify_transformations = false;
 #ifdef DEBUG_VERIFY_TRANSFORMATIONS
@@ -1146,7 +1146,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-VERIFY-TRANSFORMATIONS"), features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_VERIFY_TRANSFORMATIONS = %s\n" , (debug_verify_transformations ? "**DEFINED**" : "undefined")));
+  if (buildReport) ss << (fmt::format("DEBUG_VERIFY_TRANSFORMATIONS = {}\n" , (debug_verify_transformations ? "**DEFINED**" : "undefined")));
 
   bool debug_assert_type_cast = false;
 #ifdef DO_ASSERT_TYPE_CAST
@@ -1154,7 +1154,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-ASSERT-TYPE-CAST"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DO_ASSERT_TYPE_CAST = %s\n" , (debug_assert_type_cast ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DO_ASSERT_TYPE_CAST = {}\n" , (debug_assert_type_cast ? "**DEFINED**" : "undefined") ));
   
   bool debug_llvm_optimization_level_0 = false;
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
@@ -1162,7 +1162,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LLVM-OPTIMIZATION-LEVEL-0"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_LLVM_OPTIMIZATION_LEVEL_0 = %s\n" , (debug_llvm_optimization_level_0 ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_LLVM_OPTIMIZATION_LEVEL_0 = {}\n" , (debug_llvm_optimization_level_0 ? "**DEFINED**" : "undefined") ));
 
   bool debug_dont_optimize_bclasp = false;
 #ifdef DEBUG_DONT_OPTIMIZE_BCLASP
@@ -1170,7 +1170,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DONT-OPTIMIZE-BCLASP"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_DONT_OPTIMIZE_BCLASP = %s\n" , (debug_dont_optimize_bclasp ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_DONT_OPTIMIZE_BCLASP = {}\n" , (debug_dont_optimize_bclasp ? "**DEFINED**" : "undefined") ));
 
   bool debug_dtrace_lock_probe = false;
 #ifdef DEBUG_DTRACE_LOCK_PROBE
@@ -1178,7 +1178,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DTRACE-LOCK-PROBE"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_DTRACE_LOCK_PROBE = %s\n" , (debug_dtrace_lock_probe ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_DTRACE_LOCK_PROBE = {}\n" , (debug_dtrace_lock_probe ? "**DEFINED**" : "undefined") ));
   
   bool debug_stores = false;
 #ifdef DEBUG_STORES
@@ -1186,7 +1186,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-STORES"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_STORES = %s\n" , (debug_stores ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_STORES = {}\n" , (debug_stores ? "**DEFINED**" : "undefined") ));
 
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
@@ -1194,7 +1194,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DISABLE-TYPE-INFERENCE"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DISABLE_TYPE_INFERENCE = %s\n" , (disable_type_inference ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DISABLE_TYPE_INFERENCE = {}\n" , (disable_type_inference ? "**DEFINED**" : "undefined") ));
 
   bool use_compile_file_parallel = true;
 #if USE_COMPILE_FILE_PARALLEL == 0
@@ -1204,7 +1204,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #else
   INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
 #endif
-  if (buildReport) ss << (fmt::sprintf("USE_COMPILE_FILE_PARALLEL = %s\n" , USE_COMPILE_FILE_PARALLEL));
+  if (buildReport) ss << (fmt::format("USE_COMPILE_FILE_PARALLEL = {}\n" , USE_COMPILE_FILE_PARALLEL));
   
   bool force_startup_external_linkage = true;
 #if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
@@ -1213,7 +1213,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #else
   INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
 #endif
-  if (buildReport) ss << (fmt::sprintf("FORCE_STARTUP_EXTERNAL_LINKAGE = %s\n" , FORCE_STARTUP_EXTERNAL_LINKAGE));
+  if (buildReport) ss << (fmt::format("FORCE_STARTUP_EXTERNAL_LINKAGE = {}\n" , FORCE_STARTUP_EXTERNAL_LINKAGE));
                           
   bool use_lto = false;
   // CLASP_BUILD_MODE == 0 means generate fasls
@@ -1244,7 +1244,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasobc);
 #endif
-  if (buildReport) ss << (fmt::sprintf("CLASP_BUILD_MODE = %s\n" , CLASP_BUILD_MODE));
+  if (buildReport) ss << (fmt::format("CLASP_BUILD_MODE = {}\n" , CLASP_BUILD_MODE));
   
   bool use_human_readable_bitcode = false;
 #if USE_HUMAN_READABLE_BITCODE==1
@@ -1252,7 +1252,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("USE-HUMAN-READABLE-BITCODE"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("USE_HUMAN_READABLE_BITCODE = %s\n", (use_human_readable_bitcode ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("USE_HUMAN_READABLE_BITCODE = {}\n", (use_human_readable_bitcode ? "**DEFINED**" : "undefined") ));
 
   bool debug_compile_file_output_info = false;
 #if DEBUG_COMPILE_FILE_OUTPUT_INFO==1
@@ -1260,7 +1260,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COMPILE-FILE-OUTPUT-INFO"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_COMPILE_FILE_OUTPUT_INFO = %s\n" , (debug_compile_file_output_info ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_COMPILE_FILE_OUTPUT_INFO = {}\n" , (debug_compile_file_output_info ? "**DEFINED**" : "undefined") ));
 
   bool debug_dyn_env_stack = false;
 #if DEBUG_DYN_ENV_STACK==1
@@ -1268,7 +1268,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DYN-ENV-STACK"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_DYN_ENV_STACK = %s\n", (debug_dyn_env_stack ? "**DEFINED**" : "undefined")));
+  if (buildReport) ss << (fmt::format("DEBUG_DYN_ENV_STACK = {}\n", (debug_dyn_env_stack ? "**DEFINED**" : "undefined")));
   
   //
   // DEBUG_MONITOR must be last - other options turn this on
@@ -1282,7 +1282,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_MONITOR = %s\n" , (debug_monitor ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_MONITOR = {}\n" , (debug_monitor ? "**DEFINED**" : "undefined") ));
 
   bool debug_monitor_support = false;
 #ifdef DEBUG_MONITOR_SUPPORT
@@ -1290,7 +1290,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR-SUPPORT"),features);
 #endif
-  if (buildReport) ss << (fmt::sprintf("DEBUG_MONITOR_SUPPORT = %s\n" , (debug_monitor_support ? "**DEFINED**" : "undefined") ));
+  if (buildReport) ss << (fmt::format("DEBUG_MONITOR_SUPPORT = {}\n" , (debug_monitor_support ? "**DEFINED**" : "undefined") ));
   
   // -------------------------------------------------------------
   //
