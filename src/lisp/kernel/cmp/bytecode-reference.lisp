@@ -385,7 +385,17 @@
 
 ;;; The context contains information about what the current form needs
 ;;; to know about what it is enclosed by.
-(defstruct (context (:type vector)) receiving function)
+(defstruct (context (:type vector))
+  receiving ; either an integer, meaning that many values, or T, meaning all
+  ;; A list of lexical variable infos and symbols. A symbol means a special
+  ;; variable binding is in place, while a lexical variable info is the variable
+  ;; for a tagbody or block dynenv.
+  ;; Note that the symbol may not be the special variable in question, since
+  ;; we don't really need that information.
+  ;; Since this is only used for exits, it may not include specials bound by
+  ;; a function's lambda list.
+  (dynenv nil)
+  function)
 
 (defun context-module (context)
   (cfunction-cmodule (context-function context)))
@@ -409,8 +419,11 @@
         (vector-push-extend info closed))))
 
 (defun new-context (parent &key (receiving (context-receiving parent))
-                                (function (context-function parent)))
-  (make-context :receiving receiving :function function))
+                             (dynenv nil) ; prepended
+                             (function (context-function parent)))
+  (make-context :receiving receiving
+                :dynenv (append dynenv (context-dynenv parent))
+                :function function))
 
 (defun bytecompile (lambda-expression
                     &optional (env (make-null-lexical-environment)))
@@ -674,7 +687,7 @@
     (compile-form (first args) env (new-context context :receiving 1))))
 
 (defun compile-funcall (callee args env context)
-  (compile-form callee env (cmp:context/sub context 1))
+  (compile-form callee env (new-context context :receiving 1))
   (compile-call args env context))
 
 (defun compile-eval-when (situations body env context)
@@ -709,30 +722,36 @@
                   (nth-value 1 (var-info var post-binding-env)) context)))))
       (emit-bind context lexical-binding-count
                  (cmp:lexenv/frame-end env))
-      (compile-progn body post-binding-env context)
+      (compile-progn body post-binding-env
+                     (new-context context
+                                  :dynenv (make-list special-binding-count
+                                                     :initial-element :special)))
       (emit-unbind context special-binding-count))))
 
 (defun compile-let* (bindings body env context)
   (multiple-value-bind (decls body docs specials)
       (core:process-declarations body nil)
     (declare (ignore decls docs))
-    (let ((special-binding-count 0))
+    (let ((special-binding-count 0)
+          (inner-context context))
       (dolist (binding bindings)
         (let ((var (if (consp binding) (car binding) binding))
               (valf (if (and (consp binding) (consp (cdr binding)))
                         (cadr binding)
                         'nil)))
-          (compile-form valf env (new-context context :receiving 1))
+          (compile-form valf env (new-context inner-context :receiving 1))
           (cond ((or (member var specials) (ext:specialp var))
                  (incf special-binding-count)
                  (setq env (add-specials (list var) env))
-                 (emit-special-bind context var))
+                 (emit-special-bind inner-context var)
+                 (setq inner-context (new-context inner-context
+                                                  :dynenv '(:special))))
                 (t
                  (let ((frame-start (cmp:lexenv/frame-end env)))
-                   (setq env (bind-vars (list var) env context))
+                   (setq env (bind-vars (list var) env inner-context))
                    (maybe-emit-make-cell (nth-value 1 (var-info var env))
-                                         context)
-                   (assemble-maybe-long context +set+ frame-start))))))
+                                         inner-context)
+                   (assemble-maybe-long inner-context +set+ frame-start))))))
       (compile-progn body
                      (if specials
                          ;; We do this to make sure special declarations get
@@ -741,7 +760,7 @@
                          ;; that _is_ bound here, but that's not a big deal.
                          (add-specials specials env)
                          env)
-                     context)
+                     inner-context)
       (emit-unbind context special-binding-count))))
 
 (defun compile-setq (pairs env context)
@@ -1168,7 +1187,9 @@
   (let* ((new-tags (cmp:lexenv/tags env))
          (tagbody-dynenv (gensym "TAG-DYNENV"))
          (env (bind-vars (list tagbody-dynenv) env context))
-         (dynenv-info (nth-value 1 (var-info tagbody-dynenv env))))
+         (dynenv-info (nth-value 1 (var-info tagbody-dynenv env)))
+         (stmt-context (new-context context
+                                    :receiving 0 :dynenv (list dynenv-info))))
     (dolist (statement statements)
       (when (go-tag-p statement)
         (push (list* statement dynenv-info (make-label))
@@ -1179,8 +1200,9 @@
       ;; Compile the body, emitting the tag destination labels.
       (dolist (statement statements)
         (if (go-tag-p statement)
-            (emit-label context (cddr (assoc statement (cmp:lexenv/tags env))))
-            (compile-form statement env (new-context context :receiving 0)))))
+            (emit-label stmt-context
+                        (cddr (assoc statement (cmp:lexenv/tags env))))
+            (compile-form statement env stmt-context))))
     (maybe-emit-entry-close context dynenv-info))
   ;; return nil if we really have to
   (unless (eql (context-receiving context) 0)
@@ -1192,6 +1214,17 @@
   (destructuring-bind (dynenv-info . label) exit-info
     (cond ((eq (cmp:lexical-var-info/cfunction dynenv-info)
                (context-function context))
+           ;; Local unwind.
+           (dolist (entry (context-dynenv context))
+             (when (eq entry dynenv-info) (return))
+             (cond
+               ((symbolp entry) ; special binding
+                ;; TODO: Doesn't matter now, but if we had an unbind-n
+                ;; instruction we could leverage that here.
+                (emit-unbind context 1))
+               ((typep entry 'cmp:lexical-var-info)
+                (maybe-emit-entry-close context entry))))
+           ;; Exit.
            (emit-ref-or-restore-sp context dynenv-info)
            (emit-exit-or-jump context dynenv-info label))
           (t
@@ -1209,6 +1242,7 @@
   (let* ((block-dynenv (gensym "BLOCK-DYNENV"))
          (env (bind-vars (list block-dynenv) env context))
          (dynenv-info (nth-value 1 (var-info block-dynenv env)))
+         (body-context (new-context context :dynenv (list dynenv-info)))
          (label (make-label))
          (normal-label (make-label)))
     ;; Bind the dynamic environment.
@@ -1217,7 +1251,7 @@
                 env
                 :blocks (acons name (cons dynenv-info label) (cmp:lexenv/blocks env)))))
       ;; Force single values into multiple so that we can uniformly PUSH afterward.
-      (compile-progn body env context))
+      (compile-progn body env body-context))
     (when (eql (context-receiving context) 1)
       (emit-jump context normal-label))
     (emit-label context label)
