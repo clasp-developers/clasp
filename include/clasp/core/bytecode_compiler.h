@@ -21,6 +21,8 @@ class LexicalVarInfo_O : public VarInfo_O {
 public:
   size_t frame_index;
   T_sp _funct;
+  // This field is a little abused for block/tagbody dynenvs at the moment.
+  // They will be marked as "closed over" if they are used at all.
   bool closed_over_p = false;
   bool set_p = false;
 public:
@@ -283,7 +285,9 @@ public:
                           uint8_t opcode8, uint8_t opcode16, uint8_t opcode24);
   CL_DEFMETHOD void emit_jump(Label_sp label);
   CL_DEFMETHOD void emit_jump_if(Label_sp label);
+  CL_DEFMETHOD void emit_entry(LexicalVarInfo_sp info);
   CL_DEFMETHOD void emit_exit(Label_sp label);
+  CL_DEFMETHOD void emit_entry_close(LexicalVarInfo_sp info);
   CL_DEFMETHOD void emit_catch(Label_sp label);
   CL_DEFMETHOD void emit_jump_if_supplied(Label_sp label, size_t indx);
   CL_DEFMETHOD void reference_lexical_info(LexicalVarInfo_sp info);
@@ -521,6 +525,42 @@ public:
   virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
   virtual size_t resize();
 };
+
+// Used to add a vm_entry at nonlocal entrance points.
+// The LexicalVarInfo is that of the dynenv.
+FORWARD(EntryFixup);
+class EntryFixup_O : public LexFixup_O {
+  LISP_CLASS(comp, CompPkg, EntryFixup_O, "EntryFixup", LexFixup_O);
+public:
+  EntryFixup_O() : LexFixup_O() {}
+  EntryFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  CL_LISPIFY_NAME(EntryFixup/make)
+  CL_DEF_CLASS_METHOD
+  static EntryFixup_sp make(LexicalVarInfo_sp lex) {
+    return gctools::GC<EntryFixup_O>::allocate<gctools::RuntimeStage>(lex);
+  }
+public:
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+
+// Similar to EntryFixup, adds a vm_entry_close.
+FORWARD(EntryCloseFixup);
+class EntryCloseFixup_O : public LexFixup_O {
+  LISP_CLASS(comp, CompPkg, EntryCloseFixup_O, "EntryCloseFixup", LexFixup_O);
+public:
+  EntryCloseFixup_O() : LexFixup_O() {}
+  EntryCloseFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  CL_LISPIFY_NAME(EntryCloseFixup/make)
+  CL_DEF_CLASS_METHOD
+  static EntryCloseFixup_sp make(LexicalVarInfo_sp lex) {
+    return gctools::GC<EntryCloseFixup_O>::allocate<gctools::RuntimeStage>(lex);
+  }
+public:
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+
 
 FORWARD(LoadTimeValueInfo);
 class LoadTimeValueInfo_O : public General_O {
