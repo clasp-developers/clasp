@@ -195,12 +195,10 @@ void FuncallableInstance_O::describe(T_sp stream) {
   clasp_write_string(ss.str(), stream);
 }
 
+// FIXME: Don't export this.
 DOCGROUP(clasp);
-CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
-  if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
-    return Values(_lisp->_true(), Pointer_O::create((void *)iobj->entry()));
-  } else
-    return Values(nil<T_O>(), nil<T_O>());
+CL_DEFUN Function_sp clos__getFuncallableInstanceFunction(FuncallableInstance_sp obj) {
+  return obj->REAL_FUNCTION();
 };
 
 DOCGROUP(clasp);

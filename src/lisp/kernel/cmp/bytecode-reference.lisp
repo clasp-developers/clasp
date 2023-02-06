@@ -1663,6 +1663,8 @@
                               (core:bytecode-module/literals module)))))
   (values))
 
+(export 'disassemble-bytecode-function)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;;  Now the Generic-function dtree interpreter virtual machine instructions
@@ -1692,6 +1694,3 @@
 
 (export '(dump-gf-bytecode-virtual-machine
           dump-python-gf-bytecode-virtual-machine) :clos)
-
-
-
