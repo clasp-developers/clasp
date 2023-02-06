@@ -636,19 +636,12 @@
              ;; unknown function warning handled by compile-function
              ;; note we do a double lookup, which is inefficient
              (compile-function head env (new-context context :receiving 1))
-             (do ((args rest (rest args))
-                  (arg-count 0 (1+ arg-count)))
-                 ((endp args)
-                  (emit-call context arg-count))
-               (compile-form (first args) env (new-context context :receiving 1))))
+             (compile-call rest env context))
             (t (error "Unknown kind ~a" kind)))))
        ((and (consp head) (eq (car head) 'cl:lambda))
         ;; lambda form
         (compile-function head env (new-context context :receiving 1))
-        (do ((args rest (rest args))
-             (arg-count 0 (1+ arg-count)))
-            ((endp args) (emit-call context arg-count))
-          (compile-form (first args) env (new-context context :receiving 1))))
+        (compile-call rest env context))
        (t (error "Illegal form: ~s" (cons head rest)))))))
 
 (defun compile-progn (forms env context)
@@ -671,6 +664,14 @@
       (core:process-declarations body nil)
     (declare (ignore decls docs))
     (compile-progn body (if specials (add-specials specials env) env) context)))
+
+;;; Compile a call, where the callee is already on the stack.
+(defun compile-call (args env context)
+  (do ((args args (rest args))
+       (arg-count 0 (1+ arg-count)))
+      ((endp args)
+       (emit-call context arg-count))
+    (compile-form (first args) env (new-context context :receiving 1))))
 
 (defun compile-funcall (callee args env context)
   (compile-form callee env (cmp:context/sub context 1))
@@ -1476,10 +1477,9 @@
                   :docstring (cfunction-doc cfunction))
                  bytecode-module
                  (cfunction-nlocals cfunction)
-                 0 0 0 0 nil 0          ; unused at the moment
                  (length (cfunction-closed cfunction))
-                 (make-list 7 :initial-element
-                            (annotation-module-position (cfunction-entry-point cfunction)))))))
+                 (annotation-module-position (cfunction-entry-point cfunction))
+                 (cmp:compile-trampoline (cfunction-name cfunction))))))
       ;; Now replace the cfunctions in the cmodule literal vector with
       ;; real bytecode functions.
       (dotimes (index literal-length)
