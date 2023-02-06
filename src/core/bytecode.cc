@@ -1274,50 +1274,6 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
 
 }; // extern C
 
-
-
-
-namespace core {
-
-
-void GFBytecodeModule_O::initialize() {
-  this->_Literals = nil<core::T_O>();
-  this->_GFBytecode = nil<core::T_O>();
-}
-
-CL_DEFMETHOD
-GFBytecodeModule_O::Literals_sp_Type GFBytecodeModule_O::literals() const {
-  return this->_Literals;
-}
-
-CL_DEFMETHOD
-void GFBytecodeModule_O::setf_literals(GFBytecodeModule_O::Literals_sp_Type o) {
-  this->_Literals = o;
-}
-
-CL_DEFMETHOD
-GFBytecodeModule_O::GFBytecode_sp_Type GFBytecodeModule_O::bytecode() const {
-  return this->_GFBytecode;
-}
-
-CL_DEFMETHOD
-void GFBytecodeModule_O::setf_bytecode(GFBytecodeModule_O::GFBytecode_sp_Type o) {
-  this->_GFBytecode = o;
-}
-
-CL_DEFMETHOD
-T_sp GFBytecodeModule_O::compileInfo() const {
-  return this->_CompileInfo;
-}
-
-CL_DEFMETHOD
-void GFBytecodeModule_O::setf_compileInfo(T_sp o) {
-  this->_CompileInfo = o;
-}
-
-};
-
-
 namespace core {
 
 
