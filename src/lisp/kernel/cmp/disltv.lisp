@@ -46,7 +46,7 @@
 
 ;; Bounds for major and minor version understood by this loader.
 (defparameter *min-version* '(0 4))
-(defparameter *max-version* '(0 5))
+(defparameter *max-version* '(0 7))
 
 (defun loadable-version-p (major minor)
   (and
@@ -83,6 +83,7 @@
                   :type (unsigned-byte 64))
    (%instructions :initarg :instructions :reader instructions
                   :type (simple-array t (*)))
+   ;; obsolete as of 0.6.
    (%attributes :initarg :attributes :reader attributes
                 :type (simple-array t (*)))))
 
@@ -379,10 +380,23 @@
             (make-instance 'bytemodule-creator :lispcode lispcode)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'setf-literals)) stream)
-  (let ((module (read-creator stream)) (literals (read-creator stream)))
-    (dbgprint " (setf (literals ~s) ~s)" module literals)
-    (make-instance 'setf-literals
-      :module module :literals literals)))
+  (if (and (= *load-major* 0) (<= *load-minor* 6))
+      (let ((module (read-creator stream)) (literals (read-creator stream)))
+        (dbgprint " (setf (literals ~s) ~s)" module literals)
+        (make-instance 'setf-literals
+          :module module :literals literals))
+      (let* ((module (read-creator stream)) (nliterals (read-ub16 stream))
+             (literals (make-array nliterals)))
+        (loop for i below nliterals
+              do (setf (aref literals i) (read-creator stream)))
+        (dbgprint " (setf (literals ~s) ~s)" module literals)
+        (make-instance 'setf-literals
+          :module module :literals literals))))
+
+(defmethod %load-instruction ((mnemonic (eql 'fdefinition)) stream)
+  (let ((index (read-index stream)) (name (read-creator stream)))
+    (dbgprint " (fdefinition ~d ~s)" index name)
+    (setf (creator index) (make-instance 'fdefinition-lookup :name name))))
 
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
   (let ((index (read-index stream)) (fun (read-creator stream))
@@ -467,6 +481,9 @@
                           acreator))))
     (%load-attribute (or (gethash aname *attr-map*) aname) acreator stream)))
 
+(defmethod %load-instruction ((mnemonic (eql 'attribute)) stream)
+  (load-attribute stream))
+
 ;;;
 
 (defun load-bytecode-stream (stream)
@@ -487,12 +504,17 @@
              (loop for i below ninsts
                    do (setf (aref *instructions* i)
                             (load-instruction stream))))
-           (nattrs (read-ub32 stream))
-           (*attributes* (make-array nattrs)))
+           (nattrs
+             (when (and (= *load-major* 0) (< *load-minor* 6))
+               (read-ub32 stream)))
+           (*attributes*
+             (when (and (= *load-major* 0) (< *load-minor* 6))
+               (make-array nattrs))))
       (declare (ignore _1 _2 _3))
-      (dbgprint "File reports ~d attributes" nattrs)
-      (loop for i below nattrs
-            do (setf (aref *attributes* i) (load-attribute stream)))
+      (when (and (= *load-major* 0) (< *load-minor* 6))
+        (dbgprint "File reports ~d attributes" nattrs)
+        (loop for i below nattrs
+              do (setf (aref *attributes* i) (load-attribute stream))))
       (make-instance 'fasl
         :major *load-major* :minor *load-minor* :nobjs nobjs
         :instructions *instructions* :attributes *attributes*)))

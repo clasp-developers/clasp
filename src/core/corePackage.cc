@@ -298,9 +298,11 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebugVaslistSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugConditionSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
+SYMBOL_EXPORT_SC_(CorePkg, lambdaList);
 SYMBOL_EXPORT_SC_(CorePkg, dump_module);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_notinlineSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, coerce_fdesignator);
 SYMBOL_SC_(CorePkg, printf);
 
 // SYMBOL_EXPORT_SC_(CorePkg, asin);

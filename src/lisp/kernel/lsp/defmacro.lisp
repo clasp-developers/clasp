@@ -277,40 +277,43 @@
 ;; or macro-function (default). This is kind of ugly because the underlying
 ;; DESTRUCTURE accepts instead DEFMACRO, DEFTYPE, DEFINE-COMPILER-MACRO, or
 ;; DESTRUCTURING-BIND, but we want fancy names.
-(defun expand-defmacro (name vledm body
+(defun expand-defmacro (name original-lambda-list body
                         &optional (context 'cl:macro-function)
                           (block-name (function-block-name name)))
-  (multiple-value-bind (decls body doc)
-      (find-declarations body)
-    ;; We turn (a . b) into (a &rest b)
-    ;; This is required because MEMBER (used below) does not like improper lists
-    (let ((cell (last vledm)))
-      (when (rest cell)
-        (setq vledm (nconc (butlast vledm 0) (list '&rest (rest cell))))))
-    ;; If we find an &environment variable in the lambda list, we take note of the
-    ;; name and remove it from the list so that DESTRUCTURE does not get confused
-    (let ((env-part (member '&environment vledm :test #'eq))
-          (lambda-name `(,context ,name)))
-      (if env-part
-          (setq vledm (nconc (ldiff vledm env-part) (cddr env-part))
-                env-part (second env-part))
-          (setq env-part (gensym)
-                decls (list* `(declare (ignore ,env-part)) decls)))
-      (multiple-value-bind (whole dl arg-check ignorables)
-          (destructure vledm (if (eq context 'ext::type-expander)
-                                 'cl:deftype
-                                 'cl:defmacro)
-                       lambda-name name)
-        (values
-         `(lambda (,whole ,env-part &aux ,@dl)
-            (declare (ignorable ,@ignorables)
-                     (core:lambda-name ,lambda-name))
-            ,@decls
-            ,@(when doc (list doc))
-            (block ,block-name
-              ,@arg-check
-              ,@body))
-         doc)))))
+  (let ((vledm original-lambda-list))
+    (multiple-value-bind (decls body doc)
+        (find-declarations body)
+      ;; We turn (a . b) into (a &rest b)
+      ;; This is required because MEMBER (below) does not like improper lists.
+      (let ((cell (last vledm)))
+        (when (rest cell)
+          (setq vledm (nconc (butlast vledm 0) (list '&rest (rest cell))))))
+      ;; If we find an &environment variable in the lambda list,
+      ;; we take note of the name and remove it from the list,
+      ;; so that DESTRUCTURE does not get confused.
+      (let ((env-part (member '&environment vledm :test #'eq))
+            (lambda-name `(,context ,name)))
+        (if env-part
+            (setq vledm (nconc (ldiff vledm env-part) (cddr env-part))
+                  env-part (second env-part))
+            (setq env-part (gensym)
+                  decls (list* `(declare (ignore ,env-part)) decls)))
+        (multiple-value-bind (whole dl arg-check ignorables)
+            (destructure vledm (if (eq context 'ext::type-expander)
+                                   'cl:deftype
+                                   'cl:defmacro)
+                         lambda-name name)
+          (values
+           `(lambda (,whole ,env-part &aux ,@dl)
+              (declare (ignorable ,@ignorables)
+                       (core:lambda-name ,lambda-name)
+                       (core:lambda-list ,@original-lambda-list))
+              ,@decls
+              ,@(when doc (list doc))
+              (block ,block-name
+                ,@arg-check
+                ,@body))
+           doc))))))
 
 #+clasp-min
 (si::fset 'defmacro

@@ -684,6 +684,7 @@ public:
   CL_LISPIFY_NAME(Cfunction/name)
   CL_DEFMETHOD T_sp nname() { return _name; }
   CL_DEFMETHOD T_sp doc() { return _doc; }
+  CL_LISPIFY_NAME(Cfunction/lambda-list)
   CL_DEFMETHOD T_sp lambda_list() { return _lambda_list; }
   T_sp sourcePosInfo() { return _source_pos_info; }
 public:

@@ -324,7 +324,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "WRAPPED-WHERE-TAG", make_fixnum(gctools::Header_s::wrapped_wtag));
   ENTRY(list, "HEADER-WHERE-TAG", make_fixnum(gctools::Header_s::header_wtag));
   ENTRY(list, "WHERE-TAG-WIDTH", make_fixnum(gctools::Header_s::where_tag_width));
-  ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMPWTAG_max));
+  ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMPWTAG_max<<(gctools::BaseHeader_s::general_mtag_shift-gctools::fixnum_shift)));
   ENTRY(list, "CONS-STAMP", make_fixnum(gctools::STAMPWTAG_CONS));
   ENTRY(list, "VASLIST_S-STAMP", make_fixnum(gctools::STAMPWTAG_VASLIST_S));
   ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::STAMPWTAG_CHARACTER));

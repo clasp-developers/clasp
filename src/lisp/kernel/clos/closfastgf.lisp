@@ -78,8 +78,6 @@
        (lazy-initialize-debug-fastgf)
        (core:fmt (debug-fastgf-stream) (subseq *dmspaces* 0 (min (length *dmspaces*) (debug-fastgf-indent))))
        (core:fmt (debug-fastgf-stream) ,fmt ,@args)))
-  (defun graph-call-history (generic-function output)
-    (generate-dot-file generic-function output))
   (defun log-cmpgf-filename (gfname suffix extension)
     (pathname (core:fmt nil "{}/dispatch-thread{}-{:0>5d}-{}.{}"
                             *dispatch-history-dir*
@@ -88,20 +86,12 @@
                             (debug-fastgf-didx)
                             (core:tostring gfname)
                             extension)))
-  (defmacro gf-log-dispatch-graph (gf)
-    `(graph-call-history ,gf (log-cmpgf-filename (clos::generic-function-name gf) "graph" "dot")))
   (defmacro gf-log-dispatch-miss-followup (msg &rest args)
     `(progn
        (fmt-indent "------- ")
        (fmt-noindent ,msg ,@args)))
   (defmacro gf-log-dispatch-miss-message (msg &rest args)
     `(fmt-indent ,msg ,@args))
-  (defmacro gf-log-sorted-roots (roots)
-    `(progn
-       (fmt-indent ">>> sorted roots%N")
-       (let ((x 0))
-         (mapc (lambda (root)
-                 (fmt-indent "  root[{}]: {}%N" (prog1 x (incf x)) root))))))
   (defun pretty-selector-as-string (selector)
     (cond
       ((eql-specializer-p selector)
@@ -129,8 +119,7 @@
     (fmt-indent "------- DIDX:{} {}%N" (debug-fastgf-didx) msg)
     (fmt-indent "Dispatch miss #{} for {}%N" (debug-fastgf-miss-count gf)
                     (generic-function-name gf))
-       (let* ((call-history (mp:atomic (safe-gf-call-history gf)))
-              (specializer-profile (safe-gf-specializer-profile gf)))
+       (let* ((call-history (mp:atomic (safe-gf-call-history gf))))
          (fmt-indent "    args (num args -> {}):  %N" (length args))
          (let ((arg-index -1))
            (dolist (arg args)
@@ -142,7 +131,6 @@
            (dolist (entry call-history)
              (gf-print-entry index entry)))
          (let* ((call-history (mp:atomic (safe-gf-call-history gf)))
-                (specializer-profile (safe-gf-specializer-profile gf))
                 (index 0))
            (fmt-indent "    call-history (length -> {}):%N" (length call-history))
            (dolist (entry call-history)
@@ -156,8 +144,6 @@
 
 #-debug-fastgf
 (eval-when (:execute :load-toplevel)
-  (defmacro gf-log-sorted-roots (roots) (declare (ignore roots)))
-  (defmacro gf-log-dispatch-graph (gf) (declare (ignore gf)))
   (defmacro gf-log-dispatch-miss (msg gf args)
     (declare (ignore msg gf args)))
   (defmacro gf-log-dispatch-miss-followup (msg &rest args)
@@ -649,13 +635,26 @@ FIXME!!!! This code will have problems with multithreading if a generic function
        (dolist (arg arguments)
          (gf-log "{}[{}/{}] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
        (gf-log-noindent "%N"))
-     (let (#+debug-fastgf
-           (*dispatch-miss-start-time* (get-internal-real-time))
-           ;; We have to recompute the new entries in the CAS loop because we need to
-           ;; ensure that outcome= works, i.e. that we don't end up with two distinct outcome
-           ;; objects in the call history that represent the same effective method. This would
-           ;; screw up discriminator generation; see #
-           outcome updatedp)
+     (let* ((tracy
+              (and (typep generic-function 'standard-generic-function)
+                   (with-early-accessors (+standard-generic-function-slots+)
+                     (mp:atomic (%generic-function-tracy generic-function)))))
+            (report (and tracy (eq (car tracy) :profile-ongoing)))
+            (dispatch-miss-start-time
+              (when tracy (get-internal-real-time)))
+            #+debug-fastgf
+            (*dispatch-miss-start-time* (get-internal-real-time))
+            ;; We have to recompute the new entries in the CAS loop because we need to
+            ;; ensure that outcome= works, i.e. that we don't end up with two distinct outcome
+            ;; objects in the call history that represent the same effective method. This would
+            ;; screw up discriminator generation; see #
+            outcome updatedp)
+       ;; If performance trace is on, squawk.
+       (when report
+         (format *trace-output* "~&; Dispatch miss: (~a~{ ~s~})~%"
+                 (core:low-level-standard-generic-function-name generic-function)
+                 arguments))
+       ;; Do the miss.
        (mp:atomic-update (safe-gf-call-history generic-function)
                          (lambda (call-history)
                            (multiple-value-bind (noutcome new-entries)
@@ -668,6 +667,20 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                                       (union-entries call-history new-entries))))))
        (when updatedp (force-dispatcher generic-function))
        (gf-log "Performing outcome {}%N" outcome)
+       (when report
+         (format *trace-output*
+                 "~&;  ~fs overhead~%"
+                 (/ (float (- (get-internal-real-time)
+                              dispatch-miss-start-time))
+                    internal-time-units-per-second)))
+       (when tracy
+         (let (;; dumb hack - atomics don't know about cadr etc
+               (info (cdr tracy)))
+           (mp:atomic-incf (car info)
+               (/ (float (- (get-internal-real-time)
+                            dispatch-miss-start-time))
+                  internal-time-units-per-second))
+           (mp:atomic-push arguments (cdr info))))
        #+debug-fastgf
        (let ((results (multiple-value-list
                        (perform-outcome outcome arguments))))
@@ -800,10 +813,10 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 (defun generic-function-call-history-separate-entries-with-specializer
     (call-history gf specializer)
   (declare (ignorable gf))
-  (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: {}%N    specializers: {}%N" gf specializers)
+  (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: {}%N    specializer: {}%N" gf specializer)
   (loop for entry in call-history
         for key = (car entry)
-        do (gf-log "         check if entry key: {}   contains specializer: {}%N" key specializers)
+        do (gf-log "         check if entry key: {}   contains specializer: {}%N" key specializer)
         if (call-history-entry-key-contains-specializers-p key specializer)
           do (gf-log "       It does - removing entry%N")
           and collect entry into removed

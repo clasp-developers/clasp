@@ -785,4 +785,60 @@
 
 (export 'bytecode-dtree-compile :clos)
 
+;;; Return a list of instruction specs and labels,
+;;; where each instruction spec is of the form (operator ...),
+;;; and labels are integers.
+;;; (Because discriminator bytecode never jumps backwards,
+;;;  we can do this in one pass.)
+(defun %disassemble-discriminator (bytecode literals)
+  (declare (type (simple-array (unsigned-byte 8) (*)) bytecode)
+           (type simple-vector literals))
+  (flet ((code (ip) (aref bytecode ip))
+         (literal (index) (aref literals index))
+         (arg (ip offset len)
+           (ecase len
+             ((1) (aref bytecode (+ ip offset)))
+             ((2) (+ (ash (aref bytecode (+ ip offset 1)) 8)
+                          (aref bytecode (+ ip offset)))))))
+    (loop with ops = *dtree-ops*
+          with long-code-add = (length *dtree-ops*)
+          with labels = nil
+          with len = (length bytecode)
+          with ip = 0
+          for opcode = (code ip)
+          for longp = (> opcode long-code-add)
+          for real-opcode = (if longp (- opcode long-code-add) opcode)
+          for op = (or (find real-opcode ops :key #'dtree-op-code)
+                       (error "Unknown opcode ~d" opcode))
+          for sym = (dtree-op-sym op)
+          for argspecs = (if longp
+                             (dtree-op-long-arguments op)
+                             (dtree-op-arguments op))
+          when (member ip labels)
+            collect ip
+          collect (list*
+                   sym
+                   (loop for offset = 1 then (+ offset len)
+                         for (type len) in argspecs
+                         collect (ecase type
+                                   ((label-arg)
+                                    (let ((label (+ ip (arg ip offset len))))
+                                      (push label labels)
+                                      label))
+                                   ((register-arg) (arg ip offset len))
+                                   ((constant-arg)
+                                    (literal (arg ip offset len))))))
+          do (incf ip (+ 1 (reduce #'+ argspecs :key #'second)))
+          until (>= ip len))))
 
+(defun disassemble-discriminator (function)
+  (format t "~&Disassembly (discriminator):~%")
+  (loop with bytecode = (core:gfbytecode-simple-fun/bytecode function)
+        with literals = (core:gfbytecode-simple-fun/literals function)
+        for item in (%disassemble-discriminator bytecode literals)
+        do (etypecase item
+             (unsigned-byte
+              (format t " ~d:~%" item))
+             (cons
+              (format t "~(~a~)~{ ~s~}~%"
+                      (symbol-name (car item)) (cdr item))))))

@@ -174,7 +174,18 @@
        :initarg :declarations
        :initform nil
        :reader generic-function-declarations)
-      (dependents :initform nil :accessor generic-function-dependents))))
+      (dependents :initform nil :accessor generic-function-dependents)
+      ;; An indicator that the GF is being traced somehow.
+      ;; If not being traced, this is NIL (the default).
+      ;; Otherwise, it's a cons. The car of the cons is either
+      ;; :PROFILE-ONGOING, meaning dispatch misses are printed to
+      ;; *TRACE-OUTPUT*, or
+      ;; :PROFILE-RECORD, meaning they aren't. In either case, the
+      ;; cadr is then the overhead recorded in seconds, and the
+      ;; cddr is a list of argument lists that have caused misses.
+      ;; More to come. See telemetry.lisp for interface.
+      (tracy :initform nil :accessor %generic-function-tracy
+             :type list))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-METHOD
@@ -276,10 +287,6 @@
 
 ;;; ----------------------------------------------------------------------
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel )
-  ;;
-  ;; All changes to this are connected to the changes in 
-  ;; the code of cl_class_of() in src/instance.d
-  ;;
   (core:defconstant-equal +builtin-classes-list+
       '( ;;(t object)
         (core:general t)
@@ -312,7 +319,6 @@
         (synonym-stream ext:ansi-stream)
         (broadcast-stream ext:ansi-stream)
         (concatenated-stream ext:ansi-stream)
-        (ext:sequence-stream ext:ansi-stream)
         (character t)
         (number t)
         (real number)
@@ -333,18 +339,6 @@
 ;;; (hash-table)  ;;No longer inherits from (core:general) 
         (random-state core:general)
         (readtable core:general)
-        (si::code-block core:general)
-        (si::foreign-data core:general)
-        (si::frame core:general)
-        (si::weak-pointer core:general)
-        (si::external-object core:general)
-        (si::iterator core:general)
-        (si::directory-iterator si::iterator)
-        (si::recursive-directory-iterator si::iterator)
-        #+threads (mp::process core:general)
-        #+threads (mp::lock core:general)
-        #+threads (mp::rwlock core:general)
-        #+threads (mp::condition-variable core:general)
         #+sse2 (ext::sse-pack))))
 
 ;;; FROM AMOP:

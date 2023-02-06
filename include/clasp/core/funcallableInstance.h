@@ -268,7 +268,10 @@ public:
 
 public:
   virtual Pointer_sp defaultEntryAddress() const;
-  BytecodeModule_sp code() const;
+  CL_LISPIFY_NAME(GFBytecodeSimpleFun/bytecode)
+  CL_DEFMETHOD SimpleVector_byte8_t_sp bytecode() const { return this->_Bytecode; }
+  CL_LISPIFY_NAME(GFBytecodeSimpleFun/literals)
+  CL_DEFMETHOD SimpleVector_sp literals() const { return this->_Literals; }
   string __repr__() const;
 
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);

@@ -11,17 +11,26 @@
       (declare (ignore documentation)) ; handled by cleavir
       (let* ((dspecs (loop for declaration-cst in declaration-csts
                            append (cdr (cst:listify declaration-cst))))
+             ;; Check for core:lambda-name declarations defining the name.
              (lambda-name-info (find 'core:lambda-name dspecs
                                      :key (lambda (cst) (cst:raw (cst:first cst)))))
              (lambda-name (when lambda-name-info
                             (car (cdr (cst:raw lambda-name-info)))))
              (cmp:*track-inlinee-name* (cons lambda-name cmp:*track-inlinee-name*))
-             (original-lambda-list (if lambda-list (cst:raw lambda-list) nil)))
+             ;; and for core:lambda-list declarations defining the lambda list.
+             ;; Both this name and lambda list are only for display/debug purposes.
+             (lambda-list-info (find 'core:lambda-list dspecs
+                                     :key (lambda (cst) (cst:raw (cst:first cst)))))
+             (lambda-list (cond (lambda-list-info
+                                 (cdr (cst:raw lambda-list-info)))
+                                (lambda-list (cst:raw lambda-list))
+                                (t nil))))
         (let ((function-ast (call-next-method)))
           (setf (ast:name function-ast)
                 (or lambda-name ; from declaration
                     (ast:name function-ast) ; local functions named by cleavir
-                    (list 'lambda (cmp::lambda-list-for-name original-lambda-list))))
+                    (list 'lambda (cmp::lambda-list-for-name lambda-list)))
+                (ast:original-lambda-list function-ast) lambda-list)
           function-ast)))))
 
 (defmethod print-object ((object cleavir-ast:function-ast) stream)

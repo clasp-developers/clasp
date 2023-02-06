@@ -152,6 +152,9 @@
    (%type :initarg :type :reader pathname-creator-type :type creator)
    (%version :initarg :version :reader pathname-creator-version :type creator)))
 
+(defclass fdefinition-lookup (creator)
+  ((%name :initarg :name :reader name :type creator)))
+
 (defclass general-creator (vcreator)
   (;; Reference to a function designator to call to allocate the object,
    ;; e.g. a function made of the first return value from make-load-form.
@@ -199,10 +202,13 @@
 ;;; Attributes are bonus, possibly implementation-defined stuff also in the file.
 ;;; Based closely on Java attributes, the loader has to ignore any it doesn't
 ;;; understand, so it's verboten for attributes to do anything semantically
-;;; important in general.
-;;; All attributes go in the file after the bytecode.
+;;; important in general. And, attributes include inline information about their
+;;; size, so they can be skipped if not understood.
+;;; Unlike Java attributes, our attributes are instructions in the normal
+;;; sequence. This is so that, for example, functions can be annotated with
+;;; source or other debug information before they are called.
 
-(defclass attribute ()
+(defclass attribute (effect)
   (;; Creator for the name of the attribute, a string.
    ;; FIXME: Do this more cleanly.
    (%name :reader name :type creator)))
@@ -246,9 +252,6 @@
 ;;; In reverse.
 (defvar *instructions*)
 
-;;; List of extra information for the loader.
-(defvar *attributes*)
-
 ;;; Bound by the client to a function that compiles a lambda expression
 ;;; relative to an environment, and then returns some object that
 ;;; cmpltv can treat as a constant.
@@ -262,7 +265,7 @@
 (defvar *creating*)
 
 (defmacro with-constants ((&key (compiler '*compiler*)) &body body)
-  `(let ((*instructions* nil) (*attributes* nil) (*creating* nil)
+  `(let ((*instructions* nil) (*creating* nil)
          (*coalesce* (make-hash-table))
          (*compiler* ,compiler))
      ,@body))
@@ -284,10 +287,6 @@
   (setf (gethash value *coalesce*) instruction)
   (add-instruction instruction))
 
-(defun add-attribute (attribute)
-  (push attribute *attributes*)
-  attribute)
-
 (defgeneric add-constant (value))
 
 (defun ensure-constant (value &key permanent)
@@ -297,9 +296,9 @@
 
 ;;; Given a form, get a constant handle to a function that at load time will
 ;;; have the effect of evaluating the form in a null lexical environment.
-(defun add-form (form)
+(defun add-form (form &optional env)
   ;; PROGN so that (declare ...) expressions for example correctly cause errors.
-  (add-constant (funcall *compiler* `(lambda () (progn ,form)) nil)))
+  (add-constant (funcall *compiler* `(lambda () (progn ,form)) env)))
 
 (defmethod add-constant ((value cons))
   (let ((cons (add-creator
@@ -424,54 +423,87 @@
 
 (defconstant +max-call-args+ (ash 1 16))
 
+(defun function-form-p (form)
+  (and (consp form) (eq (car form) 'cl:function)
+       (consp (cdr form)) (null (cddr form))))
+
+(defun lambda-expression-p (form)
+  (and (consp form) (eq (car form) 'cl:lambda)))
+
 ;;; Return true iff the proper list FORM represents a call to a global
-;;; function with all constant arguments (and not too many).
-(defun call-with-constant-arguments-p (form &optional env)
+;;; function with all constant or #' arguments (and not too many).
+(defun call-with-dumpable-arguments-p (form &optional env)
   (and (symbolp (car form))
        (fboundp (car form))
        (not (macro-function (car form)))
        (not (special-operator-p (car form)))
        (< (length (rest form)) +max-call-args+)
-       (every (lambda (f) (constantp f env)) (rest form))))
+       (every (lambda (f) (or (constantp f env)
+                              (function-form-p f)
+                              (lambda-expression-p f)))
+              (rest form))))
+
+(defun f-dumpable-form-creator (env)
+  (lambda (form)
+    (cond ((lambda-expression-p form)
+           (ensure-constant (bytecode-cf-compile-lexpr form env)))
+          ((not (function-form-p form)) ; must be a constant
+           (ensure-constant (ext:constant-form-value form env)))
+          ((and (consp (second form)) (eq (caadr form) 'cl:lambda))
+           ;; #'(lambda ...)
+           (ensure-constant (bytecode-cf-compile-lexpr (second form) env)))
+          (t
+           ;; #'function-name
+           (add-instruction
+            (make-instance 'fdefinition-lookup
+              :name (ensure-constant (second form))))))))
 
 ;;; Make a possibly-special creator based on an MLF creation form.
-(defun creation-form-creator (value form)
+(defun creation-form-creator (value form &optional env)
   (let ((*creating* (cons value *creating*)))
     (flet ((default ()
              (make-instance 'general-creator
                :prototype value
-               :function (add-form form) :arguments ()))
-           (form->const (form)
-             (ensure-constant (ext:constant-form-value form))))
+               :function (add-form form env) :arguments ())))
       (cond ((not (core:proper-list-p form)) (default))
             ;; (find-class 'something)
             ((and (eq (car form) 'cl:find-class)
                   (= (length form) 2)
-                  (constantp (second form)))
+                  (constantp (second form) env))
              (make-instance 'class-creator
                :prototype value
-               :name (form->const (second form))))
+               :name (ensure-constant
+                      (ext:constant-form-value (second form) env))))
             ;; (foo 'bar 'baz)
-            ((call-with-constant-arguments-p form)
+            ((call-with-dumpable-arguments-p form)
              (make-instance 'general-creator
                :prototype value
                :function (ensure-constant (car form))
-               :arguments (mapcar #'form->const (rest form))))
+               :arguments (mapcar (f-dumpable-form-creator env) (rest form))))
             (t (default))))))
 
 ;;; Make a possibly-special initializer.
-(defun initializer-form-initializer (form)
+(defun add-initializer-form (form &optional env)
   (flet ((default ()
-           (make-instance 'general-initializer
-             :function (add-form form) :arguments ()))
-         (form->const (form)
-           (ensure-constant (ext:constant-form-value form))))
-    (cond ((not (core:proper-list-p form)) (default))
-          ((call-with-constant-arguments-p form)
-           (make-instance 'general-initializer
-             :function (ensure-constant (car form))
-             :arguments (mapcar #'form->const (rest form))))
-          (t (default)))))
+           (add-instruction
+            (make-instance 'general-initializer
+              :function (add-form form env) :arguments ()))))
+    (cond ((constantp form env) nil) ; do nothing (good for e.g. defun's return)
+          ((not (core:proper-list-p form)) (default))
+          ((call-with-dumpable-arguments-p form env)
+           (let ((cre (f-dumpable-form-creator env)))
+             (if (eq (car form) 'cl:funcall)
+                 ;; cut off the funcall - general-initializer does the call itself.
+                 ;; this commonly arises from e.g. (funcall #'(setf fdefinition ...)
+                 (add-instruction
+                  (make-instance 'general-initializer
+                    :function (funcall cre (second form))
+                    :arguments (mapcar cre (cddr form))))
+                 (add-instruction
+                  (make-instance 'general-initializer
+                    :function (ensure-constant (car form))
+                    :arguments (mapcar cre (rest form)))))))
+           (t (default)))))
 
 (defmethod add-constant ((value t))
   (when (member value *creating*)
@@ -479,7 +511,7 @@
   (multiple-value-bind (create initialize) (make-load-form value)
     (prog1
         (add-creator value (creation-form-creator value create))
-      (add-instruction (initializer-form-initializer initialize)))))
+      (add-initializer-form initialize))))
 
 (defmethod add-constant ((value cmp:load-time-value-info))
   (add-instruction
@@ -551,12 +583,14 @@
     (setf-literals 89) ; make_random_state. compatibility is a sham here anyway
     (make-single-float 90 sind ub32)
     (make-double-float 91 sind ub64)
-    (funcall-create 93 sind fnind)
-    (funcall-initialize 94 fnind)
+    (funcall-create 93 sind find nargs . args)
+    (funcall-initialize 94 find nargs . args)
+    (fdefinition 95 find nameind)
     (find-class 98 sind cnind)
     ;; set-ltv-funcall in clasp- redundant
     #+(or) ; obsolete as of v0.3
-    (make-specialized-array 97 sind rank dims etype . elems)))
+    (make-specialized-array 97 sind rank dims etype . elems)
+    (attribute 255 name nbytes . data)))
 
 ;;; STREAM is a ub8 stream.
 (defgeneric encode (instruction stream))
@@ -581,14 +615,14 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 5)
+(defparameter *minor-version* 7)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
   (write-b16 *minor-version* stream))
 
 ;; Used in disltv as well.
-(defun write-bytecode (instructions attributes stream)
+(defun write-bytecode (instructions stream)
   (let* ((nobjs (count-if (lambda (i) (typep i 'creator)) instructions))
          ;; Next highest power of two bytes, roughly
          (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
@@ -599,14 +633,11 @@
     (write-version stream)
     (write-b64 nobjs stream)
     (write-b64 ninsts stream)
-    (map nil (lambda (inst) (encode inst stream)) instructions)
-    ;; now write attributes
-    (write-b32 (length attributes) stream)
-    (map nil (lambda (attr) (encode attr stream)) attributes)))
+    (map nil (lambda (inst) (encode inst stream)) instructions)))
 
 (defun %write-bytecode (stream)
   ;; lol efficiency with the reverse
-  (write-bytecode (reverse *instructions*) *attributes* stream))
+  (write-bytecode (reverse *instructions*) stream))
 
 (defun opcode (mnemonic)
   (let ((inst (assoc mnemonic +ops+ :test #'equal)))
@@ -904,6 +935,11 @@
   (write-index (complex-creator-realpart inst) stream)
   (write-index (complex-creator-imagpart inst) stream))
 
+(defmethod encode ((inst fdefinition-lookup) stream)
+  (write-mnemonic 'fdefinition stream)
+  (write-index inst stream)
+  (write-index (name inst) stream))
+
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)
   (write-index inst stream)
@@ -927,7 +963,9 @@
 (defmethod encode ((inst load-time-value-creator) stream)
   (write-mnemonic 'funcall-create stream)
   (write-index inst stream)
-  (write-index (load-time-value-creator-function inst) stream))
+  (write-index (load-time-value-creator-function inst) stream)
+  ;; no arguments
+  (write-b16 0 stream))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -941,12 +979,7 @@
     (cmp:bytecompile-into module lambda-expression environment)))
 
 (defun bytecode-compile-file-form (form env)
-  ;; The cfun constant is not permanent, since it's only needed during load.
-  (add-instruction
-   (make-instance 'general-initializer
-     :function (ensure-constant
-                (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) env))
-     :arguments ())))
+  (add-initializer-form form env))
 
 (defclass bytefunction-creator (creator)
   ((%cfunction :initarg :cfunction :reader cfunction)
@@ -976,7 +1009,7 @@
                            (cmp:cfunction/entry-point value))))))
     #+clasp ; source info
     (let ((cspi core:*current-source-pos-info*))
-      (add-attribute
+      (add-instruction
        (make-instance 'spi-attr
          :function inst
          :pathname (ensure-constant
@@ -1011,7 +1044,10 @@
 
 (defclass setf-literals (effect)
   ((%module :initarg :module :reader setf-literals-module :type creator)
-   (%literals :initarg :literals :reader setf-literals-literals :type creator)))
+   ;; The literals are not practically coalesceable and are always a T vector,
+   ;; so they're just encoded inline.
+   (%literals :initarg :literals :reader setf-literals-literals
+              :type simple-vector)))
 
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
@@ -1024,7 +1060,8 @@
     ;; cfunctions, so we need to 2stage it here.
     (add-instruction
      (make-instance 'setf-literals
-       :module mod :literals (ensure-constant (cmp:module/literals value))))
+       :module mod :literals (map 'simple-vector #'ensure-constant
+                                  (cmp:module/literals value))))
     mod))
 
 (defmethod encode ((inst bytemodule-creator) stream)
@@ -1041,11 +1078,15 @@
 (defmethod encode ((inst setf-literals) stream)
   (write-mnemonic 'setf-literals stream)
   (write-index (setf-literals-module inst) stream)
-  (write-index (setf-literals-literals inst) stream))
+  (let ((literals (setf-literals-literals inst)))
+    (write-b16 (length literals) stream)
+    (loop for creator across literals
+          do (write-index creator stream))))
 
 ;;;
 
 (defmethod encode :before ((attr attribute) stream)
+  (write-mnemonic 'attribute stream)
   (write-index (name attr) stream))
 
 #+clasp

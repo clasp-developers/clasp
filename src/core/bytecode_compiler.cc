@@ -1015,6 +1015,15 @@ static T_sp extract_lambda_name_from_declares(List_sp declares) {
   return nil<T_O>();
 }
 
+static T_sp extract_lambda_list_from_declares(List_sp declares, T_sp defaultll) {
+  for (auto cur : declares) {
+    List_sp decl = oCar(cur);
+    if (oCar(decl) == core::_sym_lambdaList)
+      return oCdr(decl);
+  }
+  return defaultll;
+}
+
 CL_DEFUN Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, size_t var_index, Symbol_sp supplied_var,
                                                 Label_sp next_label, bool var_specialp, bool supplied_specialp, Context_sp context,
                                                 Lexenv_sp env) {
@@ -1282,17 +1291,23 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
-  // We pass the original body w/declarations to compile-with-lambda-list
-  // so that it can do its own handling of specials, etc.
+  // Get a declared debug display lambda list if it exists.
+  // If not declared, use the actual lambda list.
+  // (This is useful for e.g. macros.)
+  T_sp oll = extract_lambda_list_from_declares(declares, lambda_list);
+  // Get a declared debug display name if it exists.
+  // If it doesn't, use (lambda lambda-list...)
   T_sp name = extract_lambda_name_from_declares(declares);
   if (name.nilp())
-    name = Cons_O::createList(cl::_sym_lambda, comp::lambda_list_for_name(lambda_list));
+    name = Cons_O::createList(cl::_sym_lambda, comp::lambda_list_for_name(oll));
   Cfunction_sp function =
-      Cfunction_O::make(module, name, docstring, lambda_list, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
+      Cfunction_O::make(module, name, docstring, oll, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
   Context_sp context = Context_O::make(cl::_sym_T_O, function);
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->notinlines(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
+  // We pass the original body w/declarations to compile-with-lambda-list
+  // so that it can do its own handling of specials, etc.
   compile_with_lambda_list(lambda_list, body, lenv, context);
   context->assemble0(vm_return);
   return function;
@@ -1633,7 +1648,12 @@ CL_DEFUN void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, C
 }
 
 CL_DEFUN void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, Context_sp ctxt) {
+  // Compile the function. Coerce it as a designator.
+  // TODO: When the fform is a #'foo form we could skip coercion.
+  compile_function(core::_sym_coerce_fdesignator, env, ctxt->sub(clasp_make_fixnum(1)));
   compile_form(fform, env, ctxt->sub(clasp_make_fixnum(1)));
+  ctxt->sub(clasp_make_fixnum(1))->emit_call(1);
+  // Compile the arguments
   T_sp first = oCar(aforms);
   List_sp rest = gc::As<List_sp>(oCdr(aforms));
   compile_form(first, env, ctxt->sub(cl::_sym_T_O));
@@ -1814,6 +1834,12 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_s
     // function instead.
     compile_function(cl::_sym_eq, env, context->sub(clasp_make_fixnum(1)));
     compile_call(rest, env, context);
+  } else if (head == cleavirPrimop::_sym_typeq) {
+    // KLUDGE: call to typep.
+    compile_function(cl::_sym_typep, env, context->sub(clasp_make_fixnum(1)));
+    compile_form(oCar(rest), env, context->sub(clasp_make_fixnum(1)));
+    compile_literal(oCadr(rest), env, context->sub(clasp_make_fixnum(1)));
+    context->emit_call(2);
   }
   // not a special form
   else {

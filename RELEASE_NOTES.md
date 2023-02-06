@@ -20,6 +20,7 @@
 ## Added
 * Add `ext:list-all-logical-hosts` and `ext:logical-host-p` functions to query
   the current logical host status.
+* Operators for profiling CLOS code: `clos:with-profiling`
 
 ## Changed
 * Removed stage and image format command line options (`-t` and `-T`) and

@@ -140,3 +140,26 @@
              (values (s (make-instance 'testgc1))
                      (s (make-instance 'testgc2))))
       (:child :child))
+
+;;; This test relates to a problem I hit where instances of certain
+;;; classes, like SIMPLE-BASE-STRING, always made calls go through
+;;; the slow path.
+;;; Incidentally also tests the CLOS profiler.
+(test dispatch-miss-perf
+      (progn
+        (fmakunbound 'dispatch-miss-perf.f)
+        (defmethod dispatch-miss-perf.f (x) x)
+        ;; Another method, to make the discriminator nontrivial.
+        (defmethod dispatch-miss-perf.f ((x integer)) x)
+        (let ((objects (list '(1) 'generic-function #() "hello"
+                             13 3.2 4/3 #c(1 2) #\d (make-hash-table)
+                             #'dispatch-miss-perf.f *readtable*
+                             *package* *load-pathname*
+                             *terminal-io* *random-state*)))
+          ;; Call the function with each argument to fill the call history.
+          (mapc #'dispatch-miss-perf.f objects)
+          ;; Call it again, and this time it ought to never miss.
+          (clos:with-profiling (dispatch-miss-perf.f) (:report nil)
+            (mapc #'dispatch-miss-perf.f objects)
+            (clos:profiling-data #'dispatch-miss-perf.f))))
+      (0 0.0))

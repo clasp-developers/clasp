@@ -30,9 +30,11 @@
     (make-double-float 91 sind ub64)
     (funcall-create 93 sind fnind)
     (funcall-initialize 94 fnind)
+    (fdefinition 95 find nameind)
     (find-class 98 sind cnind)
     ;; set-ltv-funcall in clasp- redundant
-    (make-specialized-array 97 sind rank dims etype . elems)))
+    (make-specialized-array 97 sind rank dims etype . elems) ; obsolete as of 0.3
+    (attribute 255 name nbytes . data)))
 
 ;;; Read an unsigned n-byte integer from a ub8 stream, big-endian.
 (defun read-ub (n stream)
@@ -83,11 +85,8 @@
     (dbgprint "Magic number matches: ~x" magic)))
 
 ;; Bounds for major and minor version understood by this loader.
-;; It might be smarter for reverse compatibility to make the version
-;; look up a loader? This will become more obvious once there are actually
-;; multiple versions in existence.
 (defparameter *min-version* '(0 0))
-(defparameter *max-version* '(0 5))
+(defparameter *max-version* '(0 7))
 
 (defun loadable-version-p (major minor)
   (and
@@ -158,10 +157,22 @@ Tried to read constant #~d before initializing it"
                      (file-error-pathname condition)
                      (offending-index condition)))))
 
+(define-condition index-out-of-range (invalid-fasl)
+  ((%index :initarg :index :reader offending-index)
+   (%nobjs :initarg :nobjs :reader nobjs))
+  (:report (lambda (condition stream)
+             (format stream "FASL ~s is invalid:
+Tried to access constant #~d, but there are only ~d constants in the FASL."
+                     (file-error-pathname condition)
+                     (offending-index condition) (nobjs condition)))))
+
 (defun constant (index)
-  (if (zerop (sbit *initflags* index))
-      (error 'uninitialized-constant :index index)
-      (aref *constants* index)))
+  (cond ((not (array-in-bounds-p *initflags* index))
+         (error 'index-out-of-range :index index
+                                    :nobjs (length *initflags*)))
+        ((zerop (sbit *initflags* index))
+         (error 'uninitialized-constant :index index))
+        (t (aref *constants* index))))
 
 (define-condition set-uninitialized-constant (invalid-fasl)
   ((%index :initarg :index :reader offending-index))
@@ -172,10 +183,13 @@ Tried to define constant #~d, but it was already defined"
                      (offending-index condition)))))
 
 (defun (setf constant) (value index)
-  (if (zerop (sbit *initflags* index))
-      (setf (aref *constants* index) value
-            (sbit *initflags* index) 1)
-      (error 'set-uninitialized-constant :index index)))
+  (cond ((not (array-in-bounds-p *initflags* index))
+         (error 'index-out-of-range :index index
+                                    :nobjs (length *initflags*)))
+        ((zerop (sbit *initflags* index))
+         (setf (aref *constants* index) value
+               (sbit *initflags* index) 1))
+        (t (error 'set-uninitialized-constant :index index))))
 
 ;; Versions 0.0-0.2: Return how many bytes were read.
 ;; Versions 0.3-: Return value irrelevant.
@@ -524,10 +538,22 @@ Tried to define constant #~d, but it was already defined"
     (+ *index-bytes* 4 len)))
 
 (defmethod %load-instruction ((mnemonic (eql 'setf-literals)) stream)
-  (let ((modi (read-index stream)) (litsi (read-index stream)))
-    (dbgprint " (setf-literals ~d ~d)" modi litsi)
-    (core:bytecode-module/setf-literals
-     (constant modi) (constant litsi))))
+  (if (and (= *major* 0) (<= *minor* 6))
+      (let ((modi (read-index stream)) (litsi (read-index stream)))
+        (dbgprint " (setf-literals ~d ~d)" modi litsi)
+        (core:bytecode-module/setf-literals
+         (constant modi) (constant litsi)))
+      (let* ((mod (constant (read-index stream))) (nlits (read-ub16 stream))
+             (lits (make-array nlits)))
+        (loop for i below nlits
+              do (setf (aref lits i) (constant (read-index stream))))
+        (dbgprint " (setf-literals ~s ~s)" mod lits)
+        (core:bytecode-module/setf-literals mod lits))))
+
+(defmethod %load-instruction ((mnemonic (eql 'fdefinition)) stream)
+  (let ((find (read-index stream)) (namei (read-index stream)))
+    (dbgprint " (fdefinition ~d ~d)" find namei)
+    (setf (constant find) (fdefinition (constant namei)))))
 
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
   (let ((index (read-index stream)) (funi (read-index stream))
@@ -596,6 +622,9 @@ Tried to define constant #~d, but it was already defined"
 (defun load-attribute (stream)
   (let ((aname (constant (read-index stream))))
     (%load-attribute (or (gethash aname *attributes*) aname) stream)))
+
+(defmethod %load-instruction ((mnemonic (eql 'attribute)) stream)
+  (load-attribute stream))
 
 ;; TODO: Check that the FASL actually defines all of the constants.
 ;; Make sure it defines them in order, i.e. not reading from uninitialized
@@ -675,7 +704,7 @@ Did not initialize constants~{ #~d~}"
             ((>= *minor* 3)
              (loop repeat ninsts
                    do (load-instruction stream))
-             (when (>= *minor* 4)
+             (when (<= 4 *minor* 5)
                (let ((nattrs (read-ub32 stream)))
                  (dbgprint "File reports ~d attributes" nattrs)
                  (loop repeat nattrs
