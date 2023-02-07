@@ -151,7 +151,7 @@
                    ;; We can only pass streams with underlying FDs to the underlying
                    ;; spawn-subprocess. For other "virtual" streams, we need some
                    ;; shenanigans with threads.
-                   ((typep which '(or gray::fundamental-stream ; FIXME: Export
+                   ((typep which '(or gray:fundamental-stream
                                    string-stream broadcast-stream concatenated-stream))
                     :virtual-stream)
                    ((or (eql which :stream)

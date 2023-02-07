@@ -3,6 +3,7 @@
 ## Added
 * `ext:describe-compiler-policy` to get information about the current
   behavior of the compiler.
+* `gray:stream-line-length` Gray stream extension method.
 
 ## Fixes
 * Ensure that `print-unreadable-object` can accept output stream designators.
