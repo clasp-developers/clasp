@@ -300,8 +300,24 @@ void Context_O::emit_jump_if(Label_sp label) {
   ControlLabelFixup_O::make(label, vm_jump_if_8, vm_jump_if_16, vm_jump_if_24)->contextualize(this->asSmartPtr());
 }
 
+void Context_O::emit_entry_or_save_sp(LexicalVarInfo_sp dynenv) {
+  EntryFixup_O::make(dynenv)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::emit_ref_or_restore_sp(LexicalVarInfo_sp dynenv) {
+  RestoreSPFixup_O::make(dynenv)->contextualize(this->asSmartPtr());
+}
+
 void Context_O::emit_exit(Label_sp label) {
   ControlLabelFixup_O::make(label, vm_exit_8, vm_exit_16, vm_exit_24)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::emit_exit_or_jump(LexicalVarInfo_sp dynenv, Label_sp label) {
+  ExitFixup_O::make(dynenv, label)->contextualize(this->asSmartPtr());
+}
+
+void Context_O::maybe_emit_entry_close(LexicalVarInfo_sp dynenv) {
+  EntryCloseFixup_O::make(dynenv)->contextualize(this->asSmartPtr());
 }
 
 void Context_O::emit_catch(Label_sp label) {
@@ -474,22 +490,24 @@ void Fixup_O::contextualize(Context_sp ctxt) {
 
 ptrdiff_t LabelFixup_O::delta() { return this->label()->module_position() - this->module_position(); }
 
-void ControlLabelFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
-  size_t size = this->size();
+static void emit_control_label_fixup(size_t size, size_t offset, size_t position,
+                                     SimpleVector_byte8_t_sp code,
+                                     uint8_t opcode8, uint8_t opcode16,
+                                     uint8_t opcode24) {
+  // Offset is a size_t so it's a positive integer i.e. dumpable.
   switch (size) {
   case 2:
-    (*code)[position] = this->_opcode8;
+    (*code)[position] = opcode8;
     break;
   case 3:
-    (*code)[position] = this->_opcode16;
+    (*code)[position] = opcode16;
     break;
   case 4:
-    (*code)[position] = this->_opcode24;
+    (*code)[position] = opcode24;
     break;
   default:
     SIMPLE_ERROR("Assembler bug: Impossible size %zu", size);
   }
-  size_t offset = this->delta(); // size_t to get a positive integer
   for (size_t i = 0; i < size - 1; ++i) {
     // Write the offset one byte at a time, starting with the LSB.
     (*code)[position + i + 1] = offset & 0xff;
@@ -497,8 +515,12 @@ void ControlLabelFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   }
 }
 
-size_t ControlLabelFixup_O::resize() {
-  ptrdiff_t delta = this->delta();
+void ControlLabelFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
+  emit_control_label_fixup(this->size(), this->delta(), position, code,
+                           this->_opcode8, this->_opcode16, this->_opcode24);
+}
+
+size_t resize_control_label_fixup(ptrdiff_t delta) {
   if ((-(1 << 7) <= delta) && (delta <= (1 << 7) - 1))
     return 2;
   if ((-(1 << 15) <= delta) && (delta <= (1 << 15) - 1))
@@ -507,6 +529,10 @@ size_t ControlLabelFixup_O::resize() {
     return 4;
   else
     SIMPLE_ERROR("Bytecode compiler limit reached: Fixup delta too large");
+}
+
+size_t ControlLabelFixup_O::resize() {
+  return resize_control_label_fixup(this->delta());
 }
 
 void JumpIfSuppliedFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
@@ -637,6 +663,73 @@ size_t LexSetFixup_O::resize() {
       return 4;
   else
     SIMPLE_ERROR("Bytecode compiler limit reached: Fixup delta too large");
+}
+
+void EntryFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
+  size_t index = this->lex()->frameIndex();
+  if (index >= 1 << 8)
+    (*code)[position++] = vm_long;
+  if (this->lex()->closedOverP())
+    (*code)[position] = vm_entry;
+  else
+    (*code)[position] = vm_save_sp;
+  if (index < 1 << 8)
+    (*code)[position + 1] = index;
+  else {
+    (*code)[position + 1] = index & 0xff;
+    (*code)[position + 2] = index >> 8;
+  }
+}
+
+size_t EntryFixup_O::resize() {
+  return (this->lex()->frameIndex() < 1 << 8) ? 2 : 4;
+}
+
+void RestoreSPFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
+  size_t index = this->lex()->frameIndex();
+  if (index >= 1 << 8)
+    (*code)[position++] = vm_long;
+  if (this->lex()->closedOverP())
+    (*code)[position] = vm_ref;
+  else
+    (*code)[position] = vm_restore_sp;
+  if (index < 1 << 8)
+    (*code)[position + 1] = index;
+  else {
+    (*code)[position + 1] = index & 0xff;
+    (*code)[position + 2] = index >> 8;
+  }
+}
+
+size_t RestoreSPFixup_O::resize() {
+  return (this->lex()->frameIndex() < 1 << 8) ? 2 : 4;
+}
+
+void ExitFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
+  if (this->lex()->closedOverP())
+    emit_control_label_fixup(this->size(), this->delta(), position, code,
+                             vm_exit_8, vm_exit_16, vm_exit_24);
+  else
+    emit_control_label_fixup(this->size(), this->delta(), position, code,
+                             vm_jump_8, vm_jump_16, vm_jump_24);
+}
+
+size_t ExitFixup_O::resize() {
+  return resize_control_label_fixup(this->delta());
+}
+
+void EntryCloseFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
+  switch (this->size()) {
+  case 1:
+    (*code)[position] = vm_entry_close;
+    break;
+  default:
+    UNREACHABLE();
+  }
+}
+
+size_t EntryCloseFixup_O::resize() {
+  return (this->lex()->closedOverP()) ? 1 : 0;
 }
 
 void Module_O::initialize_cfunction_positions() {
@@ -960,7 +1053,7 @@ CL_DEFUN void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, Context
   }
   ctxt->emit_bind(lexical_binding_count, env->frameEnd());
   post_binding_env = post_binding_env->add_notinlines(decl_notinlines(declares));
-  compile_progn(code, post_binding_env, ctxt);
+  compile_progn(code, post_binding_env, ctxt->subde(clasp_make_fixnum(special_binding_count)));
   ctxt->emit_unbind(special_binding_count);
 }
 
@@ -988,6 +1081,7 @@ CL_DEFUN void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, Con
       ++special_binding_count;
       new_env = new_env->add_specials(Cons_O::createList(var));
       ctxt->emit_special_bind(var);
+      ctxt = ctxt->subde(clasp_make_fixnum(1));
     } else {
       size_t frame_start = new_env->frameEnd();
       new_env = new_env->bind_vars(Cons_O::createList(var), ctxt);
@@ -1302,7 +1396,7 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
     name = Cons_O::createList(cl::_sym_lambda, comp::lambda_list_for_name(oll));
   Cfunction_sp function =
       Cfunction_O::make(module, name, docstring, oll, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
-  Context_sp context = Context_O::make(cl::_sym_T_O, function);
+  Context_sp context = Context_O::make(cl::_sym_T_O, nil<T_O>(), function);
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->notinlines(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
@@ -1532,14 +1626,16 @@ CL_DEFUN void compile_tagbody(List_sp statements, Lexenv_sp env, Context_sp ctxt
   Symbol_sp tagbody_dynenv = cl__gensym(SimpleBaseString_O::make("TAG-DYNENV"));
   Lexenv_sp nenv = env->bind_vars(Cons_O::createList(tagbody_dynenv), ctxt);
   LexicalVarInfo_sp dynenv_info = gc::As_assert<LexicalVarInfo_sp>(var_info(tagbody_dynenv, nenv));
+  Context_sp stmt_ctxt = ctxt->subde(dynenv_info);
   for (auto cur : statements) {
     T_sp statement = oCar(cur);
     if (go_tag_p(statement))
       new_tags = Cons_O::create(Cons_O::create(statement, Cons_O::create(dynenv_info, Label_O::make())), new_tags);
   }
   Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), new_tags, nenv->blocks(), nenv->funs(), nenv->notinlines(), nenv->frameEnd());
-  // Bind the dynamic environment.
-  ctxt->assemble1(vm_entry, dynenv_info->frameIndex());
+  // Bind the dynamic environment (or just save the stack pointer).
+  ctxt->emit_entry_or_save_sp(dynenv_info);
+  // ctxt->assemble1(vm_entry, dynenv_info->frameIndex());
   // Compile the body, emitting the tag destination labels.
   for (auto cur : statements) {
     T_sp statement = oCar(cur);
@@ -1548,14 +1644,36 @@ CL_DEFUN void compile_tagbody(List_sp statements, Lexenv_sp env, Context_sp ctxt
       Label_sp lab = gc::As_assert<Label_sp>(oCddr(info));
       lab->contextualize(ctxt);
     } else
-      compile_form(statement, nnenv, ctxt->sub(clasp_make_fixnum(0)));
+      compile_form(statement, nnenv, stmt_ctxt->sub(clasp_make_fixnum(0)));
   }
-  ctxt->assemble0(vm_entry_close);
+  ctxt->maybe_emit_entry_close(dynenv_info);
   // return nil if we really have to
   if (!(ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 0))) {
     ctxt->assemble0(vm_nil);
     if (!(ctxt->receiving().fixnump()))
       ctxt->assemble0(vm_pop);
+  }
+}
+
+static void compile_exit(LexicalVarInfo_sp exit_de, Label_sp exit,
+                         Context_sp context) {
+  if (exit_de->funct() == context->cfunction()) { // local return
+    // Unwind interposed dynenvs.
+    for (auto cur : context->dynenv()) {
+      T_sp interde = oCar(cur);
+      if (interde == exit_de) break;
+      if (gc::IsA<LexicalVarInfo_sp>(interde))
+        context->maybe_emit_entry_close(gc::As_unsafe<LexicalVarInfo_sp>(interde));
+      else // must be a count of specials
+        context->emit_unbind(interde.unsafe_fixnum());
+    }
+    // Actually exit.
+    context->emit_ref_or_restore_sp(exit_de);
+    context->emit_exit_or_jump(exit_de, exit);
+  } else { // nonlocal
+    exit_de->setClosedOverP(true);
+    context->reference_lexical_info(exit_de);
+    context->emit_exit(exit);
   }
 }
 
@@ -1566,8 +1684,9 @@ CL_DEFUN void compile_go(T_sp tag, Lexenv_sp env, Context_sp ctxt) {
     T_sp pair = core__alist_assoc_eql(gc::As<Cons_sp>(tags), tag);
     if (pair.consp()) {
       Cons_sp rpair = gc::As_assert<Cons_sp>(CONS_CDR(pair));
-      ctxt->reference_lexical_info(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)));
-      ctxt->emit_exit(gc::As_assert<Label_sp>(CONS_CDR(rpair)));
+      compile_exit(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)),
+                   gc::As_assert<Label_sp>(CONS_CDR(rpair)),
+                   ctxt);
       return;
     }
   }
@@ -1580,8 +1699,8 @@ CL_DEFUN void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, Context
   LexicalVarInfo_sp dynenv_info = gc::As_assert<LexicalVarInfo_sp>(var_info(block_dynenv, nenv));
   Label_sp label = Label_O::make();
   Label_sp normal_label = Label_O::make();
-  // Bind the dynamic environment.
-  ctxt->assemble1(vm_entry, dynenv_info->frameIndex());
+  // Bind the dynamic environment or save SP.
+  ctxt->emit_entry_or_save_sp(dynenv_info);
   Cons_sp new_pair = Cons_O::create(name, Cons_O::create(dynenv_info, label));
   Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), nenv->tags(), Cons_O::create(new_pair, nenv->blocks()), nenv->funs(),
                                    nenv->notinlines(), nenv->frameEnd());
@@ -1591,7 +1710,7 @@ CL_DEFUN void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, Context
   // store into the multiple values, so no problem there.
   // If we're returning exactly one value, the nonlocal just pushes one, and
   // the nonlocal stores into the MV which is then vm_push'd to the stack.
-  compile_progn(body, nnenv, ctxt);
+  compile_progn(body, nnenv, ctxt->subde(dynenv_info));
   bool r1p = ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 1);
   if (r1p)
     ctxt->emit_jump(normal_label);
@@ -1602,7 +1721,7 @@ CL_DEFUN void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, Context
     ctxt->assemble0(vm_push);
     normal_label->contextualize(ctxt);
   }
-  ctxt->assemble0(vm_entry_close);
+  ctxt->maybe_emit_entry_close(dynenv_info);
 }
 
 CL_DEFUN void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, Context_sp ctxt) {
@@ -1613,8 +1732,9 @@ CL_DEFUN void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, Context
     T_sp pair = core__alist_assoc_eq(gc::As_unsafe<Cons_sp>(blocks), name);
     if (pair.consp()) {
       Cons_sp rpair = gc::As_assert<Cons_sp>(CONS_CDR(pair));
-      ctxt->reference_lexical_info(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)));
-      ctxt->emit_exit(gc::As_assert<Label_sp>(CONS_CDR(rpair)));
+      compile_exit(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)),
+                   gc::As_assert<Label_sp>(CONS_CDR(rpair)),
+                   ctxt);
       return;
     }
   }
