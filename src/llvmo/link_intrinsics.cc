@@ -1275,13 +1275,13 @@ size_t cc_nvalues()
 
 void cc_save_all_values(size_t nvals, T_O** vector)
 {NO_UNWIND_BEGIN();
-  multipleValuesSaveToTemp(nvals, vector);
+  lisp_multipleValues().saveToTemp(nvals, vector);
   NO_UNWIND_END();
 }
 
 void cc_load_all_values(size_t nvals, T_O** vector)
 {NO_UNWIND_BEGIN();
-  multipleValuesLoadFromTemp(nvals, vector);
+  lisp_multipleValues().loadFromTemp(nvals, vector);
   NO_UNWIND_END();
 }
 

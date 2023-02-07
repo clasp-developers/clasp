@@ -656,9 +656,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_mv_call: {
       DBG_VM("mv-call\n");
       T_O* func = vm.pop(sp);
-      size_t nargs = lisp_multipleValues().getSize();
+      size_t nargs = multipleValues.getSize();
       T_O* args[nargs];
-      multipleValuesSaveToTemp(nargs, args);
+      multipleValues.saveToTemp(nargs, args);
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       multipleValues.setN(res.raw_(),res.number_of_values());
@@ -668,9 +668,9 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_mv_call_receive_one: {
       DBG_VM("mv-call-receive-one\n");
       T_O* func = vm.pop(sp);
-      size_t nargs = lisp_multipleValues().getSize();
+      size_t nargs = multipleValues.getSize();
       T_O* args[nargs];
-      multipleValuesSaveToTemp(nargs, args);
+      multipleValues.saveToTemp(nargs, args);
       vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       multipleValues.set1(res);
@@ -684,7 +684,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       T_O* func = vm.pop(sp);
       size_t nargs = multipleValues.getSize();
       T_O* args[nargs];
-      multipleValuesSaveToTemp(nargs, args);
+      multipleValues.saveToTemp(nargs, args);
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       multipleValues.setN(res.raw_(),res.number_of_values());
@@ -1167,7 +1167,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     T_O* func = vm.pop(sp);
     size_t nargs = multipleValues.getSize();
     T_O* args[nargs];
-    multipleValuesSaveToTemp(nargs, args);
+    multipleValues.saveToTemp(nargs, args);
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
     multipleValues.setN(res.raw_(),res.number_of_values());
