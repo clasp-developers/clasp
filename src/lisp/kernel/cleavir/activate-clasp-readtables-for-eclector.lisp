@@ -109,7 +109,6 @@
   (cl:set-dispatch-macro-character #\# #\a 'core:sharp-a-reader readtable)
   (cl:set-dispatch-macro-character #\# #\A 'core:sharp-a-reader readtable)
   (cl:set-dispatch-macro-character #\# #\I 'core::read-cxx-object readtable)
-  (cl:set-dispatch-macro-character #\# #\! 'core::sharp-!-reader readtable)
   ;;; see issue https://github.com/s-expressionists/Eclector/issues/59
   ;;; sharpsign-single-quote/relaxed will be exported, but isn't yet
   (cl:set-dispatch-macro-character #\# #\' (if (fboundp 'eclector.reader::sharpsign-single-quote/relaxed)
