@@ -157,19 +157,11 @@ int &StreamClosed(T_sp strm) {
 }
 
 bool AnsiStreamP(T_sp strm) {
-  if (gc::IsA<AnsiStream_sp>(strm)) {
-    return true;
-  }
-  return false;
+  return gc::IsA<AnsiStream_sp>(strm);
 }
 
 bool AnsiStreamTypeP(T_sp strm, int mode) {
-  if (AnsiStream_sp s = strm.asOrNull<Stream_O>()) {
-    if (StreamMode(s) == mode) {
-      return true;
-    }
-  }
-  return false;
+  return gc::IsA<AnsiStream_sp>(strm) && StreamMode(strm) == mode;
 }
 
 bool FileStreamP(T_sp strm) { return AnsiStreamP(strm) && (StreamMode(strm) < clasp_smm_synonym); }
