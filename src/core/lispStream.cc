@@ -4768,21 +4768,18 @@ CL_DEFUN T_sp cl__stream_element_type(T_sp strm) { return core__stream_element_t
 
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__stream_external_format(T_sp strm) {
-  T_sp output;
 AGAIN:
   if (gc::IsA<Instance_sp>(strm)) {
-    output = kw::_sym_default;
-    return output;
-  } else if (AnsiStream_sp s = strm.asOrNull<Stream_O>()) {
-    if (StreamMode(s) == clasp_smm_synonym) {
+    return kw::_sym_default;
+  } else if (gc::IsA<AnsiStream_sp>(strm)) {
+    if (StreamMode(strm) == clasp_smm_synonym) {
       strm = SynonymStreamStream(strm);
       goto AGAIN;
-    }
+    } else
+      return StreamFormat(strm);
   } else {
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_stream_external_format, strm, cl::_sym_Stream_O);
   }
-  output = StreamFormat(strm);
-  return output;
 }
 
 CL_LAMBDA(arg);
@@ -5420,19 +5417,15 @@ size_t clasp_input_filePos(T_sp strm) {
 }
 
 int clasp_input_lineno(T_sp strm) {
-  if (AnsiStream_sp sin = strm.asOrNull<Stream_O>()) {
-    StreamCursor &ic = StreamInputCursor(sin);
-    return ic._LineNumber;
-  }
-  return 0;
+  if (gc::IsA<AnsiStream_sp>(strm))
+    return StreamInputCursor(strm)._LineNumber;
+  else return 0;
 }
 
 int clasp_input_column(T_sp strm) {
-  if (AnsiStream_sp sin = strm.asOrNull<Stream_O>()) {
-    StreamCursor &ic = StreamInputCursor(sin);
-    return ic._Column;
-  }
-  return 0;
+  if (gc::IsA<AnsiStream_sp>(strm))
+    return StreamInputCursor(strm)._Column;
+  else return 0;
 }
 
 CL_LAMBDA(stream file line-offset positional-offset);
