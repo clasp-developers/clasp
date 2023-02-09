@@ -21,6 +21,8 @@ class LexicalVarInfo_O : public VarInfo_O {
 public:
   size_t frame_index;
   T_sp _funct;
+  // This field is a little abused for block/tagbody dynenvs at the moment.
+  // They will be marked as "closed over" if they are used at all.
   bool closed_over_p = false;
   bool set_p = false;
 public:
@@ -251,17 +253,20 @@ class Context_O : public General_O {
   LISP_CLASS(comp, CompPkg, Context_O, "Context", General_O);
 public:
   T_sp _receiving;
+  List_sp _dynenv;
   T_sp _cfunction;
 public:
-  Context_O(T_sp receiving, T_sp cfunction)
-    : _receiving(receiving), _cfunction(cfunction) {}
+  Context_O(T_sp receiving, T_sp dynenv, T_sp cfunction)
+    : _receiving(receiving), _dynenv(dynenv), _cfunction(cfunction) {}
   CL_LISPIFY_NAME(Context/make)
   CL_DEF_CLASS_METHOD
-  static Context_sp make(T_sp receiving, T_sp cfunction) {
-    return gctools::GC<Context_O>::allocate<gctools::RuntimeStage>(receiving, cfunction);
+  static Context_sp make(T_sp receiving, T_sp dynenv, T_sp cfunction) {
+    return gctools::GC<Context_O>::allocate<gctools::RuntimeStage>(receiving, dynenv, cfunction);
   }
   CL_LISPIFY_NAME(context/receiving)
   CL_DEFMETHOD T_sp receiving() { return this->_receiving; }
+  CL_LISPIFY_NAME(context/dynenv)
+  CL_DEFMETHOD List_sp dynenv() { return this->_dynenv; }
   CL_DEFMETHOD Cfunction_sp cfunction() {
     return gc::As<Cfunction_sp>(this->_cfunction);
   }
@@ -270,7 +275,13 @@ public:
   // Make a new context that's like this one but with a possibly-different
   // RECEIVING.
   CL_DEFMETHOD Context_sp sub(T_sp receiving) {
-    return Context_O::make(receiving, this->_cfunction);
+    return Context_O::make(receiving, this->_dynenv, this->_cfunction);
+  }
+  // Make a new context that's like this one but with the given thing
+  // plopped on the dynenv.
+  CL_DEFMETHOD Context_sp subde(T_sp de) {
+    return Context_O::make(this->_receiving, Cons_O::create(de, this->_dynenv),
+                           this->_cfunction);
   }
   CL_DEFMETHOD size_t literal_index(T_sp literal);
   CL_DEFMETHOD size_t new_literal_index(T_sp literal);
@@ -283,7 +294,11 @@ public:
                           uint8_t opcode8, uint8_t opcode16, uint8_t opcode24);
   CL_DEFMETHOD void emit_jump(Label_sp label);
   CL_DEFMETHOD void emit_jump_if(Label_sp label);
+  CL_DEFMETHOD void emit_entry_or_save_sp(LexicalVarInfo_sp info);
+  CL_DEFMETHOD void emit_ref_or_restore_sp(LexicalVarInfo_sp info);
   CL_DEFMETHOD void emit_exit(Label_sp label);
+  CL_DEFMETHOD void emit_exit_or_jump(LexicalVarInfo_sp info, Label_sp label);
+  CL_DEFMETHOD void maybe_emit_entry_close(LexicalVarInfo_sp info);
   CL_DEFMETHOD void emit_catch(Label_sp label);
   CL_DEFMETHOD void emit_jump_if_supplied(Label_sp label, size_t indx);
   CL_DEFMETHOD void reference_lexical_info(LexicalVarInfo_sp info);
@@ -521,6 +536,81 @@ public:
   virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
   virtual size_t resize();
 };
+
+// Used to add a vm_entry at nonlocal entrance points.
+// The LexicalVarInfo is that of the dynenv.
+FORWARD(EntryFixup);
+class EntryFixup_O : public LexFixup_O {
+  LISP_CLASS(comp, CompPkg, EntryFixup_O, "EntryFixup", LexFixup_O);
+public:
+  EntryFixup_O() : LexFixup_O() {}
+  EntryFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  CL_LISPIFY_NAME(EntryFixup/make)
+  CL_DEF_CLASS_METHOD
+  static EntryFixup_sp make(LexicalVarInfo_sp lex) {
+    return gctools::GC<EntryFixup_O>::allocate<gctools::RuntimeStage>(lex);
+  }
+public:
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+
+// Generate a ref or restore_sp for a (possibly nonlocal) exit.
+FORWARD(RestoreSPFixup);
+class RestoreSPFixup_O : public LexFixup_O {
+  LISP_CLASS(comp, CompPkg, RestoreSPFixup_O, "RestoreSPFixup", LexFixup_O);
+public:
+  RestoreSPFixup_O() : LexFixup_O() {}
+  RestoreSPFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  CL_LISPIFY_NAME(RestoreSPFixup/make)
+  CL_DEF_CLASS_METHOD
+  static RestoreSPFixup_sp make(LexicalVarInfo_sp lex) {
+    return gctools::GC<RestoreSPFixup_O>::allocate<gctools::RuntimeStage>(lex);
+  }
+public:
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+
+// Generate an exit or jump.
+FORWARD(ExitFixup);
+class ExitFixup_O : public LabelFixup_O {
+  LISP_CLASS(comp, CompPkg, ExitFixup_O, "ExitFixup", LexFixup_O);
+public:
+  // Clasp doesn't like C++ multiple inheritance.
+  LexicalVarInfo_sp _lex;
+public:
+  ExitFixup_O() : LabelFixup_O() {}
+  ExitFixup_O(LexicalVarInfo_sp lex, Label_sp label)
+    : LabelFixup_O(label, 2), _lex(lex) {}
+  CL_LISPIFY_NAME(ExitFixup/make)
+  CL_DEF_CLASS_METHOD
+  static ExitFixup_sp make(LexicalVarInfo_sp lex, Label_sp label) {
+    return gctools::GC<ExitFixup_O>::allocate<gctools::RuntimeStage>(lex, label);
+  }
+public:
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+  LexicalVarInfo_sp lex() { return this->_lex; }
+};
+
+// Similar to EntryFixup, adds a vm_entry_close.
+FORWARD(EntryCloseFixup);
+class EntryCloseFixup_O : public LexFixup_O {
+  LISP_CLASS(comp, CompPkg, EntryCloseFixup_O, "EntryCloseFixup", LexFixup_O);
+public:
+  EntryCloseFixup_O() : LexFixup_O() {}
+  EntryCloseFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  CL_LISPIFY_NAME(EntryCloseFixup/make)
+  CL_DEF_CLASS_METHOD
+  static EntryCloseFixup_sp make(LexicalVarInfo_sp lex) {
+    return gctools::GC<EntryCloseFixup_O>::allocate<gctools::RuntimeStage>(lex);
+  }
+public:
+  virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
+  virtual size_t resize();
+};
+
 
 FORWARD(LoadTimeValueInfo);
 class LoadTimeValueInfo_O : public General_O {

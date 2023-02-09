@@ -106,6 +106,19 @@ public: // Functions here
     this->setSize(val.number_of_values());
   }
 
+  // saveToTemp and loadFromTemp are like returnTypeSaveToTemp below,
+  // but only use the MultipleValues structure.
+  inline void saveToTemp(size_t nvals, T_O** temp) {
+    for (size_t i = 0; i < nvals; ++i)
+      temp[i] = this->_Values[i];
+  }
+
+  inline void loadFromTemp(size_t nvals, T_O** temp) {
+    this->setSize(nvals);
+    for (size_t i = 0; i < nvals; ++i)
+      this->_Values[i] = temp[i];
+  }
+
   void valueSet(int i, T_sp val) {
     this->_Values[i] = val.raw_();
   }
@@ -403,22 +416,6 @@ namespace core {
      mv._Values[i] = temp[i];
    }
    return gctools::return_type(nvals == 0 ? nil<core::T_O>().raw_() : temp[0], nvals);
- }
-
- // Similar to returnTypeSaveToTemp, but saves only from lisp_multipleValues.
- inline void multipleValuesSaveToTemp(size_t nvals, T_O** temp) {
-   core::MultipleValues& mv = core::lisp_multipleValues();
-   for (size_t i = 0; i < nvals; ++i) {
-     temp[i] = mv._Values[i];
-   }
- }
- // Similar to returnTypeLoadFromTemp, but just writes into lisp_multipleValues.
- inline void multipleValuesLoadFromTemp(size_t nvals, T_O** temp) {
-   core::MultipleValues& mv = core::lisp_multipleValues();
-   mv.setSize(nvals);
-   for (size_t i = 0; i < nvals; ++i) {
-     mv._Values[i] = temp[i];
-   }
  }
 };
 

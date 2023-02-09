@@ -213,11 +213,12 @@ T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
     // itself unwinds.
     T_sp dest = my_thread->_UnwindDest;
     size_t dindex = my_thread->_UnwindDestIndex;
-    size_t nvals = lisp_multipleValues().getSize();
+    MultipleValues& multipleValues = lisp_multipleValues();
+    size_t nvals = multipleValues.getSize();
     T_O* mv_temp[nvals];
-    multipleValuesSaveToTemp(nvals, mv_temp);
+    multipleValues.saveToTemp(nvals, mv_temp);
     cleanup_thunk();
-    multipleValuesLoadFromTemp(nvals, mv_temp);
+    multipleValues.loadFromTemp(nvals, mv_temp);
     my_thread->_UnwindDestIndex = dindex;
     my_thread->_UnwindDest = dest;
     // Continue unwinding.
@@ -231,11 +232,12 @@ T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       result = protected_thunk();
     } catch (...) { // C++ unwind. Do the same shit then rethrow
-      size_t nvals = lisp_multipleValues().getSize();
+      MultipleValues& multipleValues = core::lisp_multipleValues();
+      size_t nvals = multipleValues.getSize();
       T_O* mv_temp[nvals];
-      multipleValuesSaveToTemp(nvals, mv_temp);
+      multipleValues.saveToTemp(nvals, mv_temp);
       cleanup_thunk();
-      multipleValuesLoadFromTemp(nvals, mv_temp);
+      multipleValues.loadFromTemp(nvals, mv_temp);
       throw;
     }
     size_t nvals = result.number_of_values();

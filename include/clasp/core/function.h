@@ -23,7 +23,6 @@ namespace core {
   FORWARD(BuiltinClosure);
   FORWARD(Closure);
   FORWARD(BytecodeModule);
-  FORWARD(GFBytecodeModule);
   FORWARD(SimpleVector_byte32_t);
 };
 

@@ -31,7 +31,7 @@
                           "core::SimpleMDArray_O" "core::VMFrameDynEnv_O"
                           "core::SymbolClassHolderPair" "comp::EncageFixup_O"
                           "chem::EnergyAnchorRestraint_O" "chem::FFAngle_O" "chem::Smirks_O"
-                          "core::GFBytecodeModule_O" "core::ShortFloat_O" "llvmo::MDString_O"
+                          "core::ShortFloat_O" "llvmo::MDString_O"
                           "chem::EnergyDihedralRestraint_O" "core::T_O" "core::Number_O"
                           "llvmo::DICompileUnit_O" "core::BindingDynEnv_O"
                           "core::AbstractSimpleVector_O" "core::SimpleMDArray_byte16_t_O"
@@ -121,11 +121,11 @@
                           "chem::ConformationExplorerMatch_O" "llvmo::Library_O" "core::Closure_O"
                           "core::ComplexVector_size_t_O" "chem::RestraintAngle_O"
                           "chem::ChemExposer_O" "chem::EnergyStretch" "chem::CandoDatabase_O"
-                          "chem::SpanningInfo_O" "mpip::Mpi_O" "llvmo::DINodeArray_O"
-                          "chem::KeyEntry" "llvmo::ConstantDataArray_O" "llvmo::TargetOptions_O"
-                          "core::Instance_O" "chem::CDText_O" "chem::MessageReport_O"
-                          "core::SmallMap_O" "clasp_ffi::ForeignTypeSpec_O" "chem::BondTest_O"
-                          "core::Unused_dummy_O" "chem::EnergyChiralRestraint"
+                          "comp::RestoreSPFixup_O" "chem::SpanningInfo_O" "mpip::Mpi_O"
+                          "llvmo::DINodeArray_O" "chem::KeyEntry" "llvmo::ConstantDataArray_O"
+                          "llvmo::TargetOptions_O" "core::Instance_O" "chem::CDText_O"
+                          "chem::MessageReport_O" "core::SmallMap_O" "clasp_ffi::ForeignTypeSpec_O"
+                          "chem::BondTest_O" "core::Unused_dummy_O" "chem::EnergyChiralRestraint"
                           "llvmo::DWARFContext_O" "chem::EnergyOutOfZPlane_O"
                           "adapt::IterateCons_O" "core::HashTableEqual_O" "llvmo::Triple_O"
                           "core::SimpleMDArray_byte64_t_O" "geom::GeomExposer_O"
@@ -198,8 +198,9 @@
                           "core::SimpleMDArray_byte4_t_O" "core::Float_O"
                           "chem::EnergySketchStretch" "chem::ResidueTest_O"
                           "chem::RestraintDistance_O" "llvmo::DIDerivedType_O" "chem::SmartsRoot_O"
-                          "chem::TwisterDriver_O" "core::SimpleVector_int64_t_O"
-                          "llvmo::ConstantDataSequential_O" "chem::SuperposeEngine_O"
+                          "chem::TwisterDriver_O" "comp::EntryCloseFixup_O"
+                          "core::SimpleVector_int64_t_O" "llvmo::ConstantDataSequential_O"
+                          "chem::SuperposeEngine_O" "comp::EntryFixup_O"
                           "chem::BeyondThresholdFixedNonbondRestraint" "units::NamedUnit_O"
                           "core::MDArray_double_O" "chem::EntityNameSet_O" "llvmo::StoreInst_O"
                           "llvmo::DebugLoc_O" "chem::ResidueList_O" "core::WeakPointer_O"
@@ -208,8 +209,8 @@
                           "comp::LexSetFixup_O" "core::SimpleMDArray_byte8_t_O"
                           "core::UnwindProtectDynEnv_O" "comp::SymbolMacroVarInfo_O"
                           "chem::VirtualSphere_O" "chem::ProperTorsion_O" "chem::IterateResidues_O"
-                          "llvmo::Instruction_O" "core::FileStream_O" "core::Rational_O"
-                          "core::CatchDynEnv_O" "core::MDArrayCharacter_O"
+                          "llvmo::Instruction_O" "core::FileStream_O" "comp::ExitFixup_O"
+                          "core::Rational_O" "core::CatchDynEnv_O" "core::MDArrayCharacter_O"
                           "llvmo::LandingPadInst_O" "kinematics::KinematicsExposer_O"
                           "core::Function_O" "kinematics::BondedJoint_O"
                           "core::SimpleMDArray_int2_t_O" "core::ImmobileObject_O"
@@ -375,6 +376,29 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<comp::Label_O>"
              :offset-base-ctype "comp::LabelFixup_O" :layout-offset-field-names ("_label")}
+{class-kind :stamp-name "STAMPWTAG_comp__ExitFixup_O" :stamp-key "comp::ExitFixup_O"
+            :parent-class "comp::LabelFixup_O" :lisp-class-base "comp::LexFixup_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::ExitFixup_O"
+             :layout-offset-field-names ("_cfunction")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::ExitFixup_O" :layout-offset-field-names ("_index")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::ExitFixup_O" :layout-offset-field-names ("_position")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::ExitFixup_O"
+             :layout-offset-field-names ("_initial_position")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::ExitFixup_O" :layout-offset-field-names ("_size")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::ExitFixup_O" :layout-offset-field-names ("_initial_size")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<comp::Label_O>"
+             :offset-base-ctype "comp::ExitFixup_O" :layout-offset-field-names ("_label")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-base-ctype "comp::ExitFixup_O" :layout-offset-field-names ("_lex")}
 {class-kind :stamp-name "STAMPWTAG_comp__ControlLabelFixup_O"
             :stamp-key "comp::ControlLabelFixup_O" :parent-class "comp::LabelFixup_O"
             :lisp-class-base "comp::LabelFixup_O" :root-class "core::T_O" :stamp-wtag 3
@@ -472,6 +496,68 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
              :offset-base-ctype "comp::LexSetFixup_O" :layout-offset-field-names ("_lex")}
+{class-kind :stamp-name "STAMPWTAG_comp__EntryFixup_O" :stamp-key "comp::EntryFixup_O"
+            :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::EntryFixup_O"
+             :layout-offset-field-names ("_cfunction")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryFixup_O" :layout-offset-field-names ("_index")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryFixup_O" :layout-offset-field-names ("_position")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryFixup_O"
+             :layout-offset-field-names ("_initial_position")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryFixup_O" :layout-offset-field-names ("_size")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryFixup_O" :layout-offset-field-names ("_initial_size")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-base-ctype "comp::EntryFixup_O" :layout-offset-field-names ("_lex")}
+{class-kind :stamp-name "STAMPWTAG_comp__EntryCloseFixup_O" :stamp-key "comp::EntryCloseFixup_O"
+            :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "comp::EntryCloseFixup_O" :layout-offset-field-names ("_cfunction")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryCloseFixup_O" :layout-offset-field-names ("_index")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryCloseFixup_O" :layout-offset-field-names ("_position")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryCloseFixup_O"
+             :layout-offset-field-names ("_initial_position")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryCloseFixup_O" :layout-offset-field-names ("_size")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::EntryCloseFixup_O"
+             :layout-offset-field-names ("_initial_size")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-base-ctype "comp::EntryCloseFixup_O" :layout-offset-field-names ("_lex")}
+{class-kind :stamp-name "STAMPWTAG_comp__RestoreSPFixup_O" :stamp-key "comp::RestoreSPFixup_O"
+            :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "comp::RestoreSPFixup_O" :layout-offset-field-names ("_cfunction")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::RestoreSPFixup_O" :layout-offset-field-names ("_index")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::RestoreSPFixup_O" :layout-offset-field-names ("_position")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::RestoreSPFixup_O"
+             :layout-offset-field-names ("_initial_position")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::RestoreSPFixup_O" :layout-offset-field-names ("_size")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "comp::RestoreSPFixup_O"
+             :layout-offset-field-names ("_initial_size")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-base-ctype "comp::RestoreSPFixup_O" :layout-offset-field-names ("_lex")}
 {class-kind :stamp-name "STAMPWTAG_comp__LexRefFixup_O" :stamp-key "comp::LexRefFixup_O"
             :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3120,20 +3206,6 @@
              :offset-ctype "gctools::smart_ptr<chem::CalculatePosition_O>"
              :offset-base-ctype "chem::ConstitutionVirtualAtom_O"
              :layout-offset-field-names ("_CalculatePositionCode")}
-{class-kind :stamp-name "STAMPWTAG_core__GFBytecodeModule_O" :stamp-key "core::GFBytecodeModule_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::GFBytecodeModule_O" :layout-offset-field-names ("_Literals")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::GFBytecodeModule_O"
-             :layout-offset-field-names ("_GFBytecode")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::GFBytecodeModule_O"
-             :layout-offset-field-names ("_CompileInfo")}
 {class-kind :stamp-name "STAMPWTAG_chem__Smirks_O" :stamp-key "chem::Smirks_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -6292,6 +6364,9 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Context_O"
              :layout-offset-field-names ("_receiving")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "comp::Context_O"
+             :layout-offset-field-names ("_dynenv")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Context_O"
              :layout-offset-field-names ("_cfunction")}

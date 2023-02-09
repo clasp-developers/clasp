@@ -148,6 +148,9 @@
 (export '(no-applicable-method-error))
 
 #+clasp
+(export '(disassemble-discriminator))
+
+#+clasp
 (export '(start-profiling stop-profiling
           report-profiling profiling-data
           with-profiling))

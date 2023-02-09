@@ -69,11 +69,22 @@
   (values))
 
 (defun disassemble (desig &key (type :asm))
-  "If type is :ASM (the default) then disassemble to machine assembly language.
+  "If type is :ASM (the default) then disassemble to assembly language.
 If type is :IR then dump the LLVM-IR for all of the associated functions.
  Because Clasp does not normally store LLVM-IR for compiled functions,
  this case only works if a lambda expression or interpreted function is provided."
   (etypecase desig
+    (core:global-bytecode-simple-fun
+     (unless (eq type :asm)
+       (error "Only disassembly to bytecode is supported for bytecode function: ~a" desig))
+     (cmpref:disassemble-bytecode-function desig))
+    (core:funcallable-instance
+     (disassemble (clos:get-funcallable-instance-function desig) :type type))
+    (core:gfbytecode-simple-fun
+     (unless (eq type :asm)
+       (error "Only disassembly to bytecode is supported for bytecode discriminating function: ~a" desig))
+     ;; Defined later in clos/dtree.lisp.
+     (clos::disassemble-discriminator desig))
     (compiled-function
      (ecase type
        ((:ir)
