@@ -1,5 +1,7 @@
 #!/usr/bin/env -S sbcl --script
 
+#-(or ccl ecl sbcl) (error "Booting Clasp from implementation ~a is not currently supported." (lisp-implementation-type))
+
 #+sbcl
 (progn
   (in-package "SB-IMPL")
@@ -8,7 +10,7 @@
       (defun sb-impl::make-fd-stream (fd &rest rest)
         (apply old fd :auto-close nil rest)))))
 
-(require :asdf)
+(require "asdf")
 
 (defparameter *git* nil)
 
@@ -58,7 +60,8 @@
 (defparameter +option-parsers+
   (list :extensions #'split-keywords
         :skip-sync #'split-keywords
-        :jobs #'parse-integer))
+        :jobs #'parse-integer
+        :build-path #'parse-namestring))
 
 (defun parse-string-option (arg start eq-pos)
   (let ((name (intern (string-upcase (subseq arg start eq-pos))
@@ -121,8 +124,11 @@
           do (terpri))
   ;; Do the absolute minimum to inform ASDF about the location of systems
   ;; in order to find the clasp root and the desired build directory.
+  ;; Exclude our clone of ASDF so the host uses their own potentially
+  ;; customized version.
   (asdf:initialize-source-registry
-    `(:source-registry (:tree ,(uiop:getcwd))
+    `(:source-registry (:also-exclude "asdf")
+                       (:tree ,(uiop:getcwd))
                        :inherit-configuration))
   (asdf:load-system :koga)
   (apply #'uiop:symbol-call "KOGA" (if help "HELP" "SETUP") initargs))

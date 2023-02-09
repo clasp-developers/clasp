@@ -285,20 +285,30 @@
                                        :line% (getf plist :line)
                                        ,@keys)))))
 
+(defclass lambda-client (eclector.parse-result:parse-result-client)
+  ())
+
+(defmethod eclector.reader:interpret-symbol
+    ((client lambda-client) input-stream package-indicator symbol-name internp)
+  (declare (ignore client input-stream package-indicator symbol-name internp))
+  nil)
+
+(defmethod eclector.parse-result:make-expression-result
+    ((client lambda-client) result children source)
+  (declare (ignore client result children source))
+  nil)
+
 (defun wrapped-in-parentheses-p (str)
-  (let ((sis (make-string-input-stream str)))
-    (when (char= (elt str 0) #\()
-      (read-char sis)
+  (when (char= (elt str 0) #\()
+    (with-input-from-string (sis str)
       (handler-case
-          (handler-bind
-              (#+sbcl (SB-INT:SIMPLE-READER-PACKAGE-ERROR
-                 (lambda (err) 
-                   (use-value (find-package :keyword) err))))
-            (read-delimited-list #\) sis))
-        (end-of-file (err)
-          (declare (ignore err))
-          (return-from wrapped-in-parentheses-p nil)))
-      (= (file-position sis) (length str)))))
+          (eclector.parse-result:read (make-instance 'lambda-client) sis)
+        (error (condition)
+          (declare (ignore condition))
+          nil)
+        (:no-error (&rest results)
+          (declare (ignore results))
+          (= (file-position sis) (length str)))))))
 
 (defun verify-lambda-list (orig-str)
   (if (> (length orig-str) 0)

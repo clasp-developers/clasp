@@ -307,3 +307,8 @@ has not been set."
                                                                                          (variant-bitcode-name variant)
                                                                                          "lib")))
                                     (normalize-directory (root :install-lib)))))))                                    
+
+(defmethod configure-unit (configuration (unit (eql :asdf)))
+  "Configure ASDF"
+  (message :emph "Building ASDF sources")
+  (run-program "./make-asdf.sh" :directory #P"src/lisp/modules/asdf/"))

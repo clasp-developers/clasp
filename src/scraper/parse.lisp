@@ -1,6 +1,6 @@
 (in-package :cscrape)
 
-(defvar +white-space+ '(#\space #\return #\tab))
+(defvar +white-space+ '(#\space #\return #\newline #\tab))
 
 (defun maybe-remove-one-prefix-from-start (instr prefixes)
   (let ((str (string-trim '(#\newline #\space #\tab) instr)))

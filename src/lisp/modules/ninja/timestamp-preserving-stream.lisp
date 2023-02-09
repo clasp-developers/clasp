@@ -48,7 +48,8 @@
   #+allegro (excl:charpos (timestamp-preserving-stream-new-stream stream))
   #+(or clasp ecl) (sys:file-column (timestamp-preserving-stream-new-stream stream))
   #+cmucl (lisp::charpos (timestamp-preserving-stream-new-stream stream))
-  #+sbcl (sb-kernel:charpos (timestamp-preserving-stream-new-stream stream)))
+  #+sbcl (sb-kernel:charpos (timestamp-preserving-stream-new-stream stream))
+  #+ccl (ccl::ioblock-charpos (ccl::basic-stream.state (timestamp-preserving-stream-new-stream stream))))
 
 (defmethod cl:close ((stream timestamp-preserving-stream) &key abort)
   (with-accessors ((old-stream timestamp-preserving-stream-old-stream)

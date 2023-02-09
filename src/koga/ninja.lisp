@@ -4,6 +4,20 @@
   (declare (ignore configuration name))
   (ninja:make-line-wrapping-stream (ninja:make-timestamp-preserving-stream path)))
 
+(defun lisp-command (script &optional arguments)
+  (concatenate 'string
+               "$lisp "
+               #+abcl "--noinform --batch --noinit "
+               #+(or clasp sbcl) "--script "
+               #+ecl "--norc --shell "
+               #+ccl "--no-init --quiet --load "
+               #+clisp "-norc "
+               script
+               #+sbcl " "
+               #+(or abcl clasp ecl) " -- "
+               #+ccl " --eval \"(quit)\" -- "
+               arguments))  
+
 (defmethod print-prologue (configuration (name (eql :ninja)) output-stream
                            &aux (clasp-quicklisp-directory (uiop:getenvp "CLASP_QUICKLISP_DIRECTORY")))
   (ninja:write-bindings output-stream
@@ -16,7 +30,7 @@
                         :cxx (cxx configuration)
                         :ldflags (ldflags configuration)
                         :ldlibs (ldlibs configuration)
-                        :lisp "sbcl" ;(first (uiop:raw-command-line-arguments))
+                        :lisp (lisp configuration)
                         :ldflags_fasl (if (uiop:os-macosx-p)
                                           "-flat_namespace -undefined dynamic_lookup -bundle"
                                           "-shared")
@@ -49,15 +63,15 @@
                     :description "Preprocess $in for scraping"
                     :depfile "$out.d")
   (ninja:write-rule output-stream :generate-sif
-                    :command "$lisp --script generate-sif.lisp $out $in"
+                    :command (lisp-command "generate-sif.lisp" "$out $in")
                     :restat 1
                     :description "Scraping $in")
   (ninja:write-rule output-stream :generate-headers
-                    :command "$lisp --script ${variant-path}generate-headers.lisp $precise $in"
+                    :command (lisp-command "${variant-path}generate-headers.lisp" "$precise $in")
                     :restat 1
                     :description "Creating headers from sif files")
   (ninja:write-rule output-stream :generate-vm-header
-                    :command "$lisp --script generate-vm-header.lisp $out $in"
+                    :command (lisp-command "generate-vm-header.lisp" "$out $in")
                     :restat 1
                     :description "Generating VM header from $in")
   (ninja:write-rule output-stream :compile-systems
@@ -168,7 +182,7 @@
                     :pool "console"
                     :description "Creating snapshot $out")
   (ninja:write-rule output-stream :update-unicode
-                    :command "$lisp --script update-unicode.lisp $source"
+                    :command (lisp-command "update-unicode.lisp" "$source")
                     :description "Updating unicode tables"))
 
 (defmethod print-variant-target-sources
@@ -507,6 +521,7 @@
               (mapcar #'source-logical-namestring sources))))
 
 (defun jupyter-kernel-path (configuration name &key system)
+  (declare (ignore configuration))
   (merge-pathnames (make-pathname :directory (list :relative
                                                    "kernels"
                                                    name)
@@ -549,8 +564,7 @@
      &key &allow-other-keys)
   (let ((vimage (image-source configuration nil))
         (vimage-installed (image-source configuration nil :package-lib))
-        (iclasp (make-source "iclasp" :variant))
-        (lib (make-source "libclasp.a" :variant-lib)))
+        (iclasp (make-source "iclasp" :variant)))
     (ninja:write-build output-stream :load-cclasp
                        :clasp iclasp
                        :source (make-kernel-source-list configuration sources)
@@ -795,7 +809,7 @@
           (database (make-source (format nil "preciseprep~:[~;-d~]/compile_commands.json"
                                          *variant-debug*)
                                  :build)))
-  (declare (ignore configuration name output-stream target))
+  (declare (ignore configuration name target))
   (unless (or *variant-prep* *variant-precise* *variant-debug*)
     (ninja:write-build output-stream :analyze-file
                        :clasp (make-source "iclasp" :variant)

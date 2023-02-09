@@ -31,4 +31,5 @@
                                                (cdr (pathname-directory path)))))
                  :name (translate-component (pathname-name path))
                  :type (translate-component (pathname-type path))
-                 :version version))
+                 :version version
+                 :device :unspecific))
