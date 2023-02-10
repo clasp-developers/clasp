@@ -1,5 +1,5 @@
 BootStrap: docker
-From: ubuntu:jammy
+From: ubuntu:kinetic
 
 %post
     apt-get update
@@ -15,7 +15,7 @@ From: ubuntu:jammy
     export PATH="/home/cando/miniconda3/bin:${PATH}"
     conda install -y -c conda-forge jupyterlab ambertools
     cd /mnt
-    ./koga --extensions=cando,seqan-clasp --build-path=build-apptainer/
+    ./koga --broken-stdlib --extensions=cando,seqan-clasp --build-path=build-apptainer/
     ninja -C build-apptainer
     ninja -C build-apptainer install
     HOME=/home/cando cando-user-install
