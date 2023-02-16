@@ -210,7 +210,7 @@
    (jobs :accessor jobs
          :initarg :jobs
          :initform nil
-         :type boolean
+         :type (or null integer)
          :documentation "The number of concurrent jobs during aclasp, bclasp and clasp compilation.")
    (always-inline-mps-allocations :accessor always-inline-mps-allocations
                                   :initform t
@@ -513,10 +513,18 @@
         :initform nil
         :type (or null pathname)
         :documentation "The git binary to use.")
+   (lisp :accessor lisp
+         :initarg :lisp
+         :initform #+ccl #P"ccl"
+                   #+ecl #P"ecl"
+                   #+sbcl #P"sbcl"
+                   #-(or ccl ecl sbcl) (error "Booting Clasp from implementation ~a is not currently supported." (lisp-implementation-type))
+         :type (or null pathname)
+         :documentation "The Lisp binary to bootstrap from.")
    (llvm-config :accessor llvm-config
                 :initform nil
                 :initarg :llvm-config
-                :type (or null pathname)
+                :type (or null string pathname)
                 :documentation "The llvm-config binary to use. If not set then configure will attempt to
 find a compatible one.")
    (nm :accessor nm
@@ -599,7 +607,7 @@ is not compatible with snapshots.")
                   :documentation "Default stage for installation")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
-                      :clang :llvm :ar :cc :cxx :mpi :nm :etags :ctags :objcopy :jupyter :reproducible)
+                      :clang :llvm :ar :cc :cxx :mpi :nm :etags :ctags :objcopy :jupyter :reproducible :asdf)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
@@ -873,7 +881,7 @@ the function to the overall configuration."
         for path in paths
         do (message :info "Looking for configure scripts in ~a" path)
            (loop for subpath in (directory (merge-pathnames (merge-pathnames "cscript.lisp" path) script-path))
-                 for script = (uiop:subpathp subpath (uiop:getcwd))
+                 for script = (enough-namestring subpath (uiop:getcwd))
                  do (message :info "Found script ~a" script)
                     (push script (scripts *configuration*)))))
 
@@ -948,7 +956,7 @@ if provided."
   (loop for candidate in (if (listp candidates) candidates (list candidates))
         for path = (if (stringp candidate)
                        (format nil candidate major-version)
-                       candidate)
+                       (namestring candidate))
         for version = (run-program-capture (list path version-flag))
         when (and version
                   (or (null major-version)

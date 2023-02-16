@@ -4,6 +4,8 @@
 * `ext:describe-compiler-policy` to get information about the current
   behavior of the compiler.
 * `gray:stream-line-length` Gray stream extension method.
+* Support for building Clasp using CCL and ECL versus the default
+  implementation of SBCL.
 
 ## Fixes
 * Ensure that `print-unreadable-object` can accept output stream designators.

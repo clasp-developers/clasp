@@ -13,6 +13,7 @@
   (when host
     (pprint `(asdf:initialize-source-registry
                (list :source-registry
+                     ,(when host '(list :also-exclude "asdf"))
                      (list :tree (merge-pathnames ,(root :code) (uiop:getcwd)))
                      :inherit-configuration))
             output-stream))
@@ -187,7 +188,7 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
   (sleep 2) ; ensure that the sequence number if quickclasp is higher
   (ql-dist:install-dist \"http://thirdlaw.tech/quickclasp/quickclasp.txt\" :prompt nil))"))
 
-(defun pprint-immutable-systems (stream object)
+(defun pprint-immutable-systems (stream object &aux (*print-pretty* t))
   (format stream "(in-package \"SYSTEM\")~%~%(defparameter *immutable-systems*~%")
   (pprint-logical-block (stream (sort (copy-seq object)
                                       (lambda (x y)
