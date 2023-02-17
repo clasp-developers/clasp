@@ -564,20 +564,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
         (mpi (if (member :use-mpi *features*) "-mpi" "")))
     (core:fmt nil "{}-{}{}" (lisp-implementation-type) gc mpi)))
 
-(defun ensure-relative-pathname (input)
-  "If the input pathname is absolute then search for src, or generated and return
-a relative path from there."
-  (cond ((pathname-host input)
-         input)
-        ((eq :relative (car (pathname-directory input)))
-         (make-pathname :directory (pathname-directory input)
-                        :name (pathname-name input)))
-        ((eq :absolute (car (pathname-directory input)))
-         (make-pathname :directory (cons :relative (strip-root (pathname-directory input)))
-                        :name (pathname-name input)))
-        (t
-         (error "ensure-relative-pathname could not handle ~a" input))))
-
 (defun build-inline-bitcode-pathname (link-type &optional (filetype :intrinsics))
   (let ((name (cond
                 ((eq filetype :intrinsics) "intrinsics")
@@ -673,6 +659,7 @@ a relative path from there."
          (error "Unsupported build-extension type ~a" type))))
 
 (defun bitcode-pathname (pathname &optional (type cmp:*default-object-type*) stage)
+  (declare (ignore stage))
   (make-pathname :host "sys"
                  :directory (list* :absolute
                                    "LIB"

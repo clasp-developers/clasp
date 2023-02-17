@@ -7,20 +7,19 @@
 
 (in-package "EXT")
 
-(export '(ext::external-process-wait
+(export '(external-process-wait
           pipe-streams
           external-process-pid
           external-process-status
-          run-program
-          ) :ext)
-
+          run-program)
+        :ext)
 
 (defconstant +sigkill+ 9 )
 (defconstant +sigterm+ 15 )
 
 (defmacro with-process-lock ((process &optional (wait t)) &body body)
   #+threads
-  (ext:with-unique-names (lock wait-p)
+  (with-unique-names (lock wait-p)
     `(let ((,lock (external-process-%lock ,process))
            (,wait-p ,wait))
        (mp:without-interrupts
@@ -43,12 +42,6 @@
   (%code nil)
   #+threads (%lock (mp:make-lock :name "external-process-lock"))
   #+threads (%pipe (mp:make-process "external-process" 'missing-function)))
-
-(defun external-process-status (external-process)
-  (let ((status (external-process-%status external-process)))
-    (if (member status '(:stopped :resumed :running))
-        (ext:external-process-wait external-process nil)
-        (values status (external-process-%code external-process)))))
 
 ;;; ---------------------------------------------------------------------
 ;;; si:waitpid -> (values                              status  code  pid)
@@ -79,6 +72,12 @@
             ((nil) #| wait was nil and process didn't change |#))))))
   (values (external-process-%status process)
           (external-process-%code process)))
+
+(defun external-process-status (external-process)
+  (let ((status (external-process-%status external-process)))
+    (if (member status '(:stopped :resumed :running))
+        (external-process-wait external-process nil)
+        (values status (external-process-%code external-process)))))
 
 (defun terminate-process (process &optional force)
   (with-process-lock (process)
@@ -115,9 +114,68 @@
 ;;; We don't handle `sigchld' because we don't want races with
 ;;; `external-process-wait'. Take care of forgotten processes.
 (defun finalize-external-process (process)
-  (let ((wait-val (ext:external-process-wait process nil)))
+  (let ((wait-val (external-process-wait process nil)))
     (unless (member wait-val '(:exited :signaled :abort :error))
       (gctools:finalize process #'finalize-external-process))))
+
+#+windows
+(defun escape-arg (arg stream)
+  ;; Normally, #\\ doesn't have to be escaped But if #\" follows #\\, then they
+  ;; have to be escaped.  Do that by counting the number of consequent
+  ;; backslashes, and upon encoutering #\" immediately after them, output the
+  ;; same number of backslashes, plus one for #\"
+  (write-char #\" stream)
+  (loop with slashes = 0
+     for i below (length arg)
+     for previous-char = #\a then char
+     for char = (char arg i)
+     do
+       (case char
+         (#\"
+          (loop repeat slashes
+             do (write-char #\\ stream))
+          (write-string "\\\"" stream))
+         (t
+          (write-char char stream)))
+       (case char
+         (#\\
+          (incf slashes))
+         (t
+          (setf slashes 0)))
+     finally
+     ;; The final #\" counts too, but doesn't need to be escaped itself
+       (loop repeat slashes
+          do (write-char #\\ stream)))
+  (write-char #\" stream))
+
+(defun pipe-streams (process pipes &aux to-remove)
+  ;; note we don't use serve-event here because process input may be a virtual
+  ;; stream and `select' won't catch this stream change.
+  (flet ((thunk ()
+           (loop for pipe in pipes
+                 for (input output type) = pipe
+                 do (when (or (null (open-stream-p output))
+                              (null (open-stream-p input))
+                              (let ((next-char (read-char-no-hang input nil :eof)))
+                                (cond
+                                  ((eq next-char :eof)
+                                   t)
+                                  (next-char
+                                   (unread-char next-char input)
+                                   (si:copy-stream input output nil)))))
+                      (when (eq type :input)
+                        (close output))
+                      (push pipe to-remove)))))
+    (si:until (or (null pipes)
+                  (member (external-process-wait process nil)
+                          '(:exited :signaled :abort :error)))
+      (thunk)
+      ;; remove from the list exhausted streams
+      (when to-remove
+        (setf pipes (set-difference pipes to-remove)))
+      (sleep 0.001))
+    ;; something may still be in pipes after child termination
+    (thunk)))
 
 ;;;
 ;;; Almighty EXT:RUN-PROGRAM. Built on top of SI:SPAWN-SUBPROCESS. For simpler
@@ -264,63 +322,3 @@
                     (or stream-read stream-write))
                 (external-process-%code process)
                 process)))))
-
-#+windows
-(defun escape-arg (arg stream)
-  ;; Normally, #\\ doesn't have to be escaped But if #\" follows #\\, then they
-  ;; have to be escaped.  Do that by counting the number of consequent
-  ;; backslashes, and upon encoutering #\" immediately after them, output the
-  ;; same number of backslashes, plus one for #\"
-  (write-char #\" stream)
-  (loop with slashes = 0
-     for i below (length arg)
-     for previous-char = #\a then char
-     for char = (char arg i)
-     do
-       (case char
-         (#\"
-          (loop repeat slashes
-             do (write-char #\\ stream))
-          (write-string "\\\"" stream))
-         (t
-          (write-char char stream)))
-       (case char
-         (#\\
-          (incf slashes))
-         (t
-          (setf slashes 0)))
-     finally
-     ;; The final #\" counts too, but doesn't need to be escaped itself
-       (loop repeat slashes
-          do (write-char #\\ stream)))
-  (write-char #\" stream))
-
-
-(defun pipe-streams (process pipes &aux to-remove)
-  ;; note we don't use serve-event here because process input may be a virtual
-  ;; stream and `select' won't catch this stream change.
-  (flet ((thunk ()
-           (loop for pipe in pipes
-                 for (input output type) = pipe
-                 do (when (or (null (open-stream-p output))
-                              (null (open-stream-p input))
-                              (let ((next-char (read-char-no-hang input nil :eof)))
-                                (cond
-                                  ((eq next-char :eof)
-                                   t)
-                                  (next-char
-                                   (unread-char next-char input)
-                                   (si:copy-stream input output nil)))))
-                      (when (eq type :input)
-                        (close output))
-                      (push pipe to-remove)))))
-    (si:until (or (null pipes)
-                  (member (external-process-wait process nil)
-                          '(:exited :signaled :abort :error)))
-      (thunk)
-      ;; remove from the list exhausted streams
-      (when to-remove
-        (setf pipes (set-difference pipes to-remove)))
-      (sleep 0.001))
-    ;; something may still be in pipes after child termination
-    (thunk)))

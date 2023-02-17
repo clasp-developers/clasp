@@ -8,6 +8,7 @@
      (format t ,fmt ,@args)))
 
 (defmacro dtree-log (fmt &rest args)
+  (declare (ignore fmt args))
   nil)
 
 (defun insert-sorted (item lst &optional (test #'<) (key #'identity))
