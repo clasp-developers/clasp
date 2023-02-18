@@ -1,4 +1,4 @@
-# Version 2.2.0 (LLVM14) Pending
+# Version 2.2.0 (LLVM15) Pending
 
 ## Added
 * `ext:describe-compiler-policy` to get information about the current
@@ -6,6 +6,9 @@
 * `gray:stream-line-length` Gray stream extension method.
 * Support for building Clasp using CCL and ECL versus the default
   implementation of SBCL.
+
+## Changed
+* Updated to LLVM 15 and CLANG 15.
 
 ## Fixes
 * Ensure that `print-unreadable-object` can accept output stream designators.

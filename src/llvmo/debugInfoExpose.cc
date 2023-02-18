@@ -292,8 +292,10 @@ CL_END_ENUM(_sym_DNTKEnum);
 
 CL_LISPIFY_NAME(createCompileUnit);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,&llvm::DIBuilder::createCompileUnit);
+
 CL_LISPIFY_NAME(createFile);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createFile);
+
 CL_LISPIFY_NAME(createFunction);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,
                     (llvm::DISubprogram *
@@ -310,8 +312,10 @@ CL_EXTERN_DEFMETHOD(DIBuilder_O,
                       llvm::DITemplateParameterArray TParams,
                       llvm::DISubprogram *Decl,
                       llvm::DITypeArray ThrownTypes,
-                      llvm::DINodeArray Annotations ))
+                      llvm::DINodeArray Annotations,
+                      llvm::StringRef TargetFunctionName))
                     &llvm::DIBuilder::createFunction );
+
 CL_LISPIFY_NAME(createLexicalBlock);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
 CL_LISPIFY_NAME(createBasicType);

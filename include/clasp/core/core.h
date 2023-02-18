@@ -295,6 +295,10 @@ const handleType UniqueIdHandle = 1;
 #define UndefinedUnsignedInt UINT_MAX
 #define UNDEF_UINT UndefinedUnsignedInt
 
+// Double expansion here to make conversion of defined macros to strings
+#define __EX(var) #var
+#define CXX_MACRO_STRING(var) __EX(var)
+
 //
 // Define exceptions
 //

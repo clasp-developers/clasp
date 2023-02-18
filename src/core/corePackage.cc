@@ -1099,7 +1099,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym__PLUS_class_name_to_lisp_name_PLUS_->defparameter(nil<T_O>());
   _sym__PLUS_type_header_value_map_PLUS_->defparameter(nil<T_O>());
   initialize_typeq_map();
-#define CXX_MACRO_STRING(var) #var
   _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(CXX_MACRO_STRING(LLVM_VERSION)));
 #ifdef USE_PARALLEL_BUILD
   _sym_STARuseParallelBuildSTAR->defparameter(_lisp->_true());
