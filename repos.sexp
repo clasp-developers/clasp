@@ -105,7 +105,7 @@
  (:name :eclector
   :repository "https://github.com/s-expressionists/Eclector.git"
   :directory "src/lisp/kernel/contrib/Eclector/"
-  :commit "sharpsign-equals-protocol")
+  :commit "state-value-protocol")
  (:name :esrap ; Needed both by the host and eclasp
   :repository "https://github.com/scymtym/esrap.git"
   :directory "src/lisp/kernel/contrib/esrap/"

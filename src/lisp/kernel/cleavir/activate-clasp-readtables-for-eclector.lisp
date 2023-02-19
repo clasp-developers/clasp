@@ -53,6 +53,15 @@
 (defclass clasp-non-cst-elector-client (clasp-cleavir::clasp-eclector-client-mixin) ())
 (defvar *clasp-normal-eclector-client* (make-instance 'clasp-non-cst-elector-client))
 
+(defmethod eclector.reader:state-value
+    ((client clasp-non-cst-elector-client) (aspect (eql :readtable)))
+  cl:*readtable*)
+
+(defmethod eclector.reader:call-with-state-value
+    ((client clasp-non-cst-elector-client) thunk (aspect (eql :readtable)) value)
+  (let ((cl:*readtable* value))
+    (funcall thunk)))
+
 ;;; From eclector macro functions:
 ;;; So we need a way for readers for lists and vectors to explicitly
 ;;; allow for backquote and comma, whereas BY DEFAULT, they should not
@@ -70,9 +79,7 @@
                                       (eof-error-p t)
                                       (eof-value nil)
                                       (recursive-p nil))
-  (let ((eclector.readtable:*readtable* cl:*readtable*)
-        (eclector.reader:*client* *clasp-normal-eclector-client*)
-        #+(or)(eclector.reader::*backquote-in-subforms-allowed-p* t))
+  (let ((eclector.reader:*client* *clasp-normal-eclector-client*))
     (eclector.reader:read input-stream eof-error-p eof-value recursive-p)))
 
 ;;; to avoid cl:*readtable* and eclector.readtable:*readtable* get out of sync
@@ -81,9 +88,7 @@
                                                            (eof-error-p t)
                                                            (eof-value nil)
                                                            (recursive-p nil))
-  (let ((eclector.readtable:*readtable* cl:*readtable*)
-        (eclector.reader:*client* *clasp-normal-eclector-client*)
-        #+(or)(eclector.reader::*backquote-in-subforms-allowed-p* t))
+  (let ((eclector.reader:*client* *clasp-normal-eclector-client*))
     (eclector.reader:read-preserving-whitespace input-stream eof-error-p eof-value recursive-p)))
 
 ;;; need also sync in clasp-cleavir::cclasp-loop-read-and-compile-file-forms
@@ -92,15 +97,13 @@
                             &optional (eof-error-p t) eof-value
                             &key (start 0) (end (length string))
                               preserve-whitespace)
-  (let ((eclector.readtable:*readtable* cl:*readtable*)
-        (eclector.reader:*client* *clasp-normal-eclector-client*))
+  (let ((eclector.reader:*client* *clasp-normal-eclector-client*))
     (eclector.reader:read-from-string string eof-error-p eof-value
                                       :start start :end end :preserve-whitespace preserve-whitespace)))
 
 ;;; Fixed in https://github.com/s-expressionists/Eclector/commit/19d2d903bb04e3e59ff0557051e134e8ee6195c7
 (defun cl:read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
-  (let ((eclector.readtable:*readtable* cl:*readtable*)
-        (eclector.reader:*client* *clasp-normal-eclector-client*))
+  (let ((eclector.reader:*client* *clasp-normal-eclector-client*))
     (eclector.reader:read-delimited-list char input-stream recursive-p)))
 
 (defun core::set-eclector-reader-readmacros (readtable)
@@ -117,16 +120,14 @@
                                                readtable))
 
 (defun init-clasp-as-eclector-reader ()
-  (setq eclector.readtable:*readtable* cl:*readtable*)
   (core::set-eclector-reader-readmacros cl:*readtable*)
   (core::set-eclector-reader-readmacros (symbol-value 'core:+standard-readtable+))
   ;;; also change read 
-  (setq core:*read-hook* 'read-with-readtable-synced)
-  (setq core:*read-preserving-whitespace-hook* 'read-preserving-whitespace-with-readtable-synced)
   ;;; read-from-string is overwritten above
-  )
+  (setq core:*read-hook* 'read-with-readtable-synced)
+  (setq core:*read-preserving-whitespace-hook* 'read-preserving-whitespace-with-readtable-synced))
 
-(eclector.readtable::init-clasp-as-eclector-reader)  
+(eclector.readtable::init-clasp-as-eclector-reader)
 
 (defun patch-object (client value-old seen-objects)
   (multiple-value-bind (state object*)
