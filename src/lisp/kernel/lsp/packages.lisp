@@ -148,6 +148,7 @@
           core:rmdir
           core:weak-pointer-valid
           core:weak-pointer-value
+          core:num-logical-processors
           gctools:finalize
           gctools:garbage-collect
           gctools:save-lisp-and-die)
@@ -195,6 +196,7 @@
             ;;; for asdf and slime and trivial-garbage to use ext:
             getpid argc argv rmdir temporary-directory mkstemp weak-pointer-value
             make-weak-pointer weak-pointer-valid hash-table-weakness
+            num-logical-processors
             compiler-note
             muffle-note
             segmentation-violation

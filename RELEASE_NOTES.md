@@ -6,6 +6,7 @@
 * `gray:stream-line-length` Gray stream extension method.
 * Support for building Clasp using CCL and ECL versus the default
   implementation of SBCL.
+* Export of `ext:num-logical-processors` to return CPU count.
 
 ## Changed
 * Updated to LLVM 15 and CLANG 15.
