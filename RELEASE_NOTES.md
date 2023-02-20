@@ -17,6 +17,7 @@
   by checking for available bytes using read when poll/select indicate the next
   read will not block. Otherwise use non-blocking read. Fixes [#1404][].
 * Prevent format parameters from appearing after colon or at sign modifiers.
+* Avoid putting NIL into simple LOOP when compiling format directives.
 
 ## Optimizations
 * Arithmetic comparisons between floats and fixnums no longer cons.
