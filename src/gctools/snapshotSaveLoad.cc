@@ -2579,7 +2579,7 @@ void* snapshot_save_impl(void* data) {
     printf("%s:%d PID = %d  Paused at exit - press enter to continue: \n", __FILE__, __LINE__, getpid() );
     fflush(stdout);
     fseek(stdin,0,SEEK_END);
-    stdin = freopen(NULL,"r",stdin);
+    freopen(NULL,"r",stdin);
     int c;
     while ( (c = getchar()) != '\n' && c != EOF ) { };
   }
