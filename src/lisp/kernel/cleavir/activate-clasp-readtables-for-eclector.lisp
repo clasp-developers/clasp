@@ -45,8 +45,6 @@
 (defvar core:*read-hook*)
 (defvar core:*read-preserving-whitespace-hook*)
 
-
-;;; to avoid that cl:*readtable* and eclector.readtable:*readtable* get out of sync
 ;;; to avoid eclector.parse-result::*stack* being unbound, when *client* is bound to a parse-result-client
 ;;; Not sure whether this a a fortunate design in eclector
 
@@ -62,36 +60,21 @@
   (let ((cl:*readtable* value))
     (funcall thunk)))
 
-;;; From eclector macro functions:
-;;; So we need a way for readers for lists and vectors to explicitly
-;;; allow for backquote and comma, whereas BY DEFAULT, they should not
-;;; be allowed.  We solve this by introducing two variables:
-;;; *BACKQUOTE-ALLOWED-P* and *BACKQUOTE-IN-SUBFORMS-ALLOWED-P*.
-;;; Initially the two are TRUE.  Whenever READ is called, it binds the
-;;; variable *BACKQUOTE-ALLOWED-P* to the value of
-;;; *BACKQUOTE-IN-SUBFORMS-ALLOWED-P*, and it binds
-;;; *BACKQUOTE-IN-SUBFORMS-ALLOWED-P* to FALSE.  If no special action
-;;; is taken, when READ is called recursively from a reader macro,
-;;; the value of *BACKQUOTE-ALLOWED-P* will be FALSE.
-
-(defun read-with-readtable-synced (&optional
-                                      (input-stream *standard-input*)
-                                      (eof-error-p t)
-                                      (eof-value nil)
-                                      (recursive-p nil))
+(defun read-with-eclector (&optional (input-stream *standard-input*)
+                                     (eof-error-p t)
+                                     (eof-value nil)
+                                     (recursive-p nil))
   (let ((eclector.reader:*client* *clasp-normal-eclector-client*))
     (eclector.reader:read input-stream eof-error-p eof-value recursive-p)))
 
-;;; to avoid cl:*readtable* and eclector.readtable:*readtable* get out of sync
-(defun read-preserving-whitespace-with-readtable-synced (&optional
-                                                           (input-stream *standard-input*)
-                                                           (eof-error-p t)
-                                                           (eof-value nil)
-                                                           (recursive-p nil))
+(defun read-preserving-whitespace-with-eclector
+    (&optional (input-stream *standard-input*)
+               (eof-error-p t)
+               (eof-value nil)
+               (recursive-p nil))
   (let ((eclector.reader:*client* *clasp-normal-eclector-client*))
-    (eclector.reader:read-preserving-whitespace input-stream eof-error-p eof-value recursive-p)))
-
-;;; need also sync in clasp-cleavir::cclasp-loop-read-and-compile-file-forms
+    (eclector.reader:read-preserving-whitespace input-stream eof-error-p
+                                                eof-value recursive-p)))
 
 (defun cl:read-from-string (string
                             &optional (eof-error-p t) eof-value
@@ -99,7 +82,8 @@
                               preserve-whitespace)
   (let ((eclector.reader:*client* *clasp-normal-eclector-client*))
     (eclector.reader:read-from-string string eof-error-p eof-value
-                                      :start start :end end :preserve-whitespace preserve-whitespace)))
+                                      :start start :end end
+                                      :preserve-whitespace preserve-whitespace)))
 
 ;;; Fixed in https://github.com/s-expressionists/Eclector/commit/19d2d903bb04e3e59ff0557051e134e8ee6195c7
 (defun cl:read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
@@ -109,23 +93,16 @@
 (defun core::set-eclector-reader-readmacros (readtable)
   (eclector.reader::set-standard-macro-characters readtable)
   (eclector.reader::set-standard-dispatch-macro-characters readtable)
-  (cl:set-dispatch-macro-character #\# #\a 'core:sharp-a-reader readtable)
   (cl:set-dispatch-macro-character #\# #\A 'core:sharp-a-reader readtable)
-  (cl:set-dispatch-macro-character #\# #\I 'core::read-cxx-object readtable)
-  ;;; see issue https://github.com/s-expressionists/Eclector/issues/59
-  ;;; sharpsign-single-quote/relaxed will be exported, but isn't yet
-  (cl:set-dispatch-macro-character #\# #\' (if (fboundp 'eclector.reader::sharpsign-single-quote/relaxed)
-                                               'eclector.reader::sharpsign-single-quote/relaxed
-                                               'eclector.reader::sharpsign-single-quote)
-                                               readtable))
+  (cl:set-dispatch-macro-character #\# #\I 'core::read-cxx-object readtable))
 
 (defun init-clasp-as-eclector-reader ()
   (core::set-eclector-reader-readmacros cl:*readtable*)
   (core::set-eclector-reader-readmacros (symbol-value 'core:+standard-readtable+))
   ;;; also change read 
   ;;; read-from-string is overwritten above
-  (setq core:*read-hook* 'read-with-readtable-synced)
-  (setq core:*read-preserving-whitespace-hook* 'read-preserving-whitespace-with-readtable-synced))
+  (setq core:*read-hook* 'read-with-eclector)
+  (setq core:*read-preserving-whitespace-hook* 'read-preserving-whitespace-with-eclector))
 
 (eclector.readtable::init-clasp-as-eclector-reader)
 
