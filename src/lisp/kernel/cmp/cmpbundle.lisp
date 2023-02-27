@@ -303,8 +303,7 @@ The input files are passed as a list in **input-files**.
 The type of file generated is specified by **link-type** (:fasl|:executable).
 The type of the files to be linked is defined with **input-type** (:bitcode|:object).
 Return the **output-pathname**."
-  (let* ((*target-backend* target-backend)
-         (start-time (get-internal-real-time))
+  (let* ((start-time (get-internal-real-time))
          (output-pathname (pathname output-pathname)))
     (cond
       ((eq link-type :executable)

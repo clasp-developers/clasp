@@ -1121,7 +1121,8 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
     (cmp:irc-const-gep2-64 holder-type holder 0 index label)))
 
 (defun constants-table-value (index &key (holder cmp:*load-time-value-holder-global-var*)
-                                      (holder-type cmp:*load-time-value-holder-global-var-type*))
+                                    (holder-type cmp:*load-time-value-holder-global-var-type*))
+  (declare (ignore holder-type))
   (cmp:irc-t*-load (constants-table-reference index :holder holder)))
 
 (defun build-c++-byte-codes (primitives)

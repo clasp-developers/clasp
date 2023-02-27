@@ -758,6 +758,7 @@ Otherwise do a variable shift."
     inst))
 
 (defun irc-t*-load-atomic (source &rest rest &key (label "") (align 8) (order 'llvm-sys:monotonic))
+  (declare (ignore align label order))
   (apply #'irc-typed-load-atomic %t*% source rest))
 
 (defun irc-store (val destination &optional (is-volatile nil))

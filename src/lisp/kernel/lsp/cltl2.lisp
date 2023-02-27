@@ -73,23 +73,6 @@ Clasp reports IGNORE declarations on local functions analogously to variables."
     ((optimize) (env:optimize (env:optimize-info env)))
     ((declaration) (env:declarations env))))
 
-;;; TAG and BLOCK are provided as extensions to CLTL2.
-(defun augment-environment (env &key variable symbol-macro function macro
-                                  declare tag block)
-  "Given an environment, return environment augmented with the given information. The result is a syntactic environment only, e.g. does not include variable bindings etc. See CLTL2 8.5 for more information.
-As an extension, the TAG and BLOCK keyword may be used to provide lists of tag or block names, respectively, to include in the new environment."
-  (augment-environment-with-variables-and-decls
-   (augment-environment-with-symbol-macros
-    (augment-environment-with-functions
-     (augment-environment-with-macros
-      (augment-environment-with-tags
-       (augment-environment-with-blocks env block)
-       tag)
-      macro)
-     function)
-    symbol-macro)
-   variable declare))
-
 (defun augment-environment-with-blocks (env blocknames)
   (loop for blockname in blocknames
         do (setf env (env:add-block env blockname)))
@@ -271,6 +254,23 @@ As an extension, the TAG and BLOCK keyword may be used to provide lists of tag o
     (loop for dspec in other-dspecs
           do (setf env (augment-environment-with-one-dspec env dspec))))
   env)
+
+;;; TAG and BLOCK are provided as extensions to CLTL2.
+(defun augment-environment (env &key variable symbol-macro function macro
+                                  declare tag block)
+  "Given an environment, return environment augmented with the given information. The result is a syntactic environment only, e.g. does not include variable bindings etc. See CLTL2 8.5 for more information.
+As an extension, the TAG and BLOCK keyword may be used to provide lists of tag or block names, respectively, to include in the new environment."
+  (augment-environment-with-variables-and-decls
+   (augment-environment-with-symbol-macros
+    (augment-environment-with-functions
+     (augment-environment-with-macros
+      (augment-environment-with-tags
+       (augment-environment-with-blocks env block)
+       tag)
+      macro)
+     function)
+    symbol-macro)
+   variable declare))
 
 (defmacro define-declaration (decl-name lambda-list &body body)
   "Define a new type of declaration. See CLTL2 8.5 for more information.

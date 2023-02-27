@@ -28,6 +28,7 @@
   (values (macroexpand-1 '+gf-being-compiled+ env)))
 
 (defun check-clause (clause spec-length seen-specs &optional name)
+  (declare (ignore seen-specs))
   (unless (and (consp clause)
                (typep (car clause) 'sequence)
                (leaf-p (cdr clause)))

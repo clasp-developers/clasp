@@ -244,26 +244,6 @@
           (make-global-function-ref :name name :source-pos-info origin)))
     (setf (gethash name *global-function-refs*) (cons new-ref existing-refs))))
 
-(defun function-info (env func)
-  (let ((info (classify-function-lookup env func)))
-    (when (eq (car info) 'core::global-function)
-      (when (not *code-walking*)
-        (register-global-function-ref func)))
-    info))
-
-(defun variable-info (env var)
-  "Lookup the variable in the lexical environment - if not found then check if it is a special"
-  (let (#+(or)(core:*environment-debug* (null (symbol-package var))))
-    (let ((info (classify-variable env var)))
-      (cond (info)
-            (t
-             ;; We treat constants pretty much identically to specials in bclasp.
-             ;; It's not the best way to compile constants.
-             (unless (or (ext:specialp var) (core:symbol-constantp var))
-               (when (not *code-walking*)
-                 (warn-undefined-global-variable nil var)))
-             (cons 'ext:special-var var))))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Stuff for taking care of the second & third return values
