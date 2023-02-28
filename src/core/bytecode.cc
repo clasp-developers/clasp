@@ -305,7 +305,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
 #endif
       vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      multipleValues.set1(res);
       vm.drop(sp, nargs+1);
       vm.push(sp, res.raw_());
       VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
@@ -320,7 +319,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       T_O** args = vm.stackref(sp, nargs-1);
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      multipleValues.setN(res.raw_(),res.number_of_values());
       vm.drop(sp, nargs+1);
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
@@ -687,7 +685,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       multipleValues.saveToTemp(nargs, args);
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      multipleValues.setN(res.raw_(),res.number_of_values());
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
@@ -929,7 +926,6 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
 #endif
     vm._stackPointer = sp;
     T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    multipleValues.set1(res);
     vm.drop(sp, nargs+1);
     vm.push(sp, res.raw_());
     VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
@@ -946,7 +942,6 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     T_O** args = vm.stackref(sp, nargs-1);
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    multipleValues.setN(res.raw_(),res.number_of_values());
     vm.drop(sp, nargs+1);
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
@@ -1170,7 +1165,6 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     multipleValues.saveToTemp(nargs, args);
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    multipleValues.setN(res.raw_(),res.number_of_values());
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
