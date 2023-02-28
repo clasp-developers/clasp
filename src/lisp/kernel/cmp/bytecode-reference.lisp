@@ -1581,9 +1581,6 @@
   (let ((res (member opcode *full-codes* :key #'second)))
     (if res (first res) (error "unknown bytecode opcode ~d" opcode))))
 
-(defun instruction-length (instdesc)
-  (length (third instdesc)))
-
 ;;; Return a list of all IPs that are jumped to.
 (defun gather-labels (bytecode ip length)
   (let ((end (+ ip length))
