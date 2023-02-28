@@ -402,18 +402,23 @@ namespace core {
   * FIXME: Formalize with a macro or templates or something? */
  inline void returnTypeSaveToTemp(size_t nvals, T_O* primary, T_O** temp) {
    if (nvals > 0) { // don't store even the primary unless the space actually exists
-     core::MultipleValues& mv = core::lisp_multipleValues();
      temp[0] = primary;
-     for (size_t i = 1; i < nvals; ++i) {
-       temp[i] = mv._Values[i];
+     if (nvals > 1) {
+       // Only grab this when we really have to - thread local variable
+       // access is pretty expensive.
+       core::MultipleValues& mv = core::lisp_multipleValues();
+       for (size_t i = 1; i < nvals; ++i)
+         temp[i] = mv._Values[i];
      }
    }
  }
  // Build and return a return_type from a temporary vector. See above.
  inline gctools::return_type returnTypeLoadFromTemp(size_t nvals, T_O** temp) {
-   core::MultipleValues& mv = core::lisp_multipleValues();
-   for (size_t i = 1; i < nvals; ++i) {
-     mv._Values[i] = temp[i];
+   if (nvals > 1) {
+     core::MultipleValues& mv = core::lisp_multipleValues();
+     for (size_t i = 1; i < nvals; ++i) {
+       mv._Values[i] = temp[i];
+     }
    }
    return gctools::return_type(nvals == 0 ? nil<core::T_O>().raw_() : temp[0], nvals);
  }
