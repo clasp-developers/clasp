@@ -54,6 +54,7 @@ case "${ID-}" in
   arch )
     arch ;;
   ubuntu )
+  pop )
     ubuntu ;;
   debian )
     debian ;;
