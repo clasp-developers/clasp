@@ -1,4 +1,4 @@
-# Version 2.2.0 (LLVM15) Pending
+# Version 2.2.0 (LLVM15) 2023-03-01
 
 ## Added
 * `ext:describe-compiler-policy` to get information about the current
