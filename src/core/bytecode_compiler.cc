@@ -421,41 +421,33 @@ void Context_O::emit_bind(size_t count, size_t offset) {
 }
 
 void Context_O::emit_call(size_t argcount) {
-  T_sp receiving = this->receiving();
-  if (receiving.fixnump()) {
-    gc::Fixnum freceiving = receiving.unsafe_fixnum();
-    switch (freceiving) {
-    case 1:
+  switch (this->receiving()) {
+  case 1:
       this->assemble1(vm_call_receive_one, argcount);
       break;
-    case 0:
+  case -1:
+  case 0: // should be receive_fixed 0?
       this->assemble1(vm_call, argcount);
       break;
-    default:
-      this->assemble2(vm_call_receive_fixed, argcount, freceiving);
+  default:
+      this->assemble2(vm_call_receive_fixed, argcount, this->receiving());
       break;
-    }
-  } else
-    this->assemble1(vm_call, argcount); // must be T
+  }
 }
 
 void Context_O::emit_mv_call() {
-  T_sp receiving = this->receiving();
-  if (receiving.fixnump()) {
-    gc::Fixnum freceiving = receiving.unsafe_fixnum();
-    switch (freceiving) {
-    case 1:
+  switch (this->receiving()) {
+  case 1:
       this->assemble0(vm_mv_call_receive_one);
       break;
-    case 0:
+  case -1:
+  case 0: // should be receive_fixed 0?
       this->assemble0(vm_mv_call);
       break;
-    default:
-      this->assemble1(vm_mv_call_receive_fixed, freceiving);
+  default:
+      this->assemble1(vm_mv_call_receive_fixed, this->receiving());
       break;
-    }
-  } else
-    this->assemble0(vm_mv_call); // must be T
+  }
 }
 
 void Context_O::emit_special_bind(Symbol_sp sym) { this->assemble1(vm_special_bind, this->literal_index(sym)); }
@@ -899,27 +891,25 @@ void Module_O::link_load(T_sp compile_info) {
 
 CL_DEFUN void compile_literal(T_sp literal, Lexenv_sp env, Context_sp context) {
   (void)env;
-  T_sp rec = context->receiving();
-  if (rec.fixnump()) {
-    gc::Fixnum frec = rec.unsafe_fixnum();
-    switch (frec) {
-    case 0:
+  switch (context->receiving()) {
+  case 0:
       return; // No value required, so do nothing
-    case 1:
+  case 1:
       if (literal.nilp())
         context->assemble0(vm_nil);
       else
         context->assemble1(vm_const, context->literal_index(literal));
       return;
-    default:
-      SIMPLE_ERROR("BUG: Don't know how to compile literal returning %" PFixnum " values", frec);
-    }
-  } else { // must be T, i.e. values
-    if (literal.nilp())
-      context->assemble0(vm_nil);
-    else
-      context->assemble1(vm_const, context->literal_index(literal));
-    context->assemble0(vm_pop);
+  case -1: // values
+      if (literal.nilp())
+        context->assemble0(vm_nil);
+      else
+        context->assemble1(vm_const, context->literal_index(literal));
+      context->assemble0(vm_pop);
+      return;
+  default:
+      // FIXME: Just need to pad in some NILs.
+      SIMPLE_ERROR("BUG: Don't know how to compile literal returning %" PFixnum " values", context->receiving());
   }
 }
 
@@ -940,7 +930,7 @@ CL_DEFUN void compile_symbol(Symbol_sp sym, Lexenv_sp env, Context_sp context) {
     T_sp expansion = expand_macro(expander, sym, env);
     compile_form(expansion, env, context);
     return;
-  } else if (context->receiving().fixnump() && (context->receiving().unsafe_fixnum() == 0)) {
+  } else if (context->receiving() == 0) {
     // A symbol macro could expand into something with arbitrary side effects
     // so we always have to compile that, but otherwise, if no values are
     // wanted, we want to not compile anything.
@@ -966,8 +956,8 @@ CL_DEFUN void compile_symbol(Symbol_sp sym, Lexenv_sp env, Context_sp context) {
       // FIXME: Warn that the variable is unknown and we're assuming special.
       context->assemble1(vm_symbol_value, context->literal_index(sym));
     }
-    if (!(context->receiving().fixnump()))
-      // Not a fixnum, so must be T - put value in mv vector.
+    if (context->receiving() == -1)
+      // Values return - put value in mv vector.
       context->assemble0(vm_pop);
   }
 }
@@ -978,7 +968,7 @@ CL_DEFUN void compile_progn(List_sp forms, Lexenv_sp env, Context_sp ctxt) {
   else
     for (auto cur : forms) {
       if (oCdr(cur).notnilp()) // compile for effect
-        compile_form(oCar(cur), env, ctxt->sub(clasp_make_fixnum(0)));
+        compile_form(oCar(cur), env, ctxt->sub(0));
       else // compile for value
         compile_form(oCar(cur), env, ctxt);
     }
@@ -1041,7 +1031,7 @@ CL_DEFUN void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, Context
       var = gc::As<Symbol_sp>(binding);
       valf = nil<T_O>();
     }
-    compile_form(valf, env, ctxt->sub(clasp_make_fixnum(1)));
+    compile_form(valf, env, ctxt->sub(1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
       ctxt->emit_special_bind(var);
@@ -1076,7 +1066,7 @@ CL_DEFUN void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, Con
       var = gc::As<Symbol_sp>(binding);
       valf = nil<T_O>();
     }
-    compile_form(valf, new_env, ctxt->sub(clasp_make_fixnum(1)));
+    compile_form(valf, new_env, ctxt->sub(1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
       new_env = new_env->add_specials(Cons_O::createList(var));
@@ -1131,7 +1121,7 @@ CL_DEFUN Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_f
   context->emit_jump_if_supplied(supplied_label, var_index);
   // Emit code for the case of the variable not being supplied:
   // Bind the var to the default, and the suppliedvar to NIL if applicable.
-  compile_form(defaulting_form, env, context->sub(clasp_make_fixnum(1)));
+  compile_form(defaulting_form, env, context->sub(1));
   if (var_specialp)
     context->emit_special_bind(var);
   else {
@@ -1158,7 +1148,7 @@ CL_DEFUN Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_f
     context->maybe_emit_encage(gc::As_assert<LexicalVarInfo_sp>(varinfo));
   }
   if (supplied_var.notnilp()) {
-    compile_literal(cl::_sym_T_O, env, context->sub(clasp_make_fixnum(1)));
+    compile_literal(cl::_sym_T_O, env, context->sub(1));
     if (supplied_specialp)
       context->emit_special_bind(supplied_var);
     else {
@@ -1396,7 +1386,7 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
     name = Cons_O::createList(cl::_sym_lambda, comp::lambda_list_for_name(oll));
   Cfunction_sp function =
       Cfunction_O::make(module, name, docstring, oll, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
-  Context_sp context = Context_O::make(cl::_sym_T_O, nil<T_O>(), function);
+  Context_sp context = Context_O::make(-1, nil<T_O>(), function);
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->notinlines(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
@@ -1409,12 +1399,11 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
 
 CL_DEFUN void compile_function(T_sp fnameoid, Lexenv_sp env, Context_sp ctxt) {
   bool mvp;
-  if (!(ctxt->receiving().fixnump()))
-    mvp = true;
-  else if (ctxt->receiving().unsafe_fixnum() == 0)
-    return;
-  else
-    mvp = false;
+  switch (ctxt->receiving()) {
+  case -1: mvp = true; break;
+  case 0: return;
+  default: mvp = false; break;
+  }
   if (gc::IsA<Cons_sp>(fnameoid) && oCar(fnameoid) == cl::_sym_lambda) {
     Cfunction_sp fun = compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt->module());
     ComplexVector_T_sp closed = fun->closed();
@@ -1457,7 +1446,7 @@ CL_DEFUN void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, Con
     T_sp locally = Cons_O::create(cl::_sym_locally, oCddr(definition));
     T_sp block = Cons_O::createList(cl::_sym_block, core__function_block_name(name), locally);
     T_sp lambda = Cons_O::createList(cl::_sym_lambda, oCadr(definition), block);
-    compile_function(lambda, env, ctxt->sub(clasp_make_fixnum(1)));
+    compile_function(lambda, env, ctxt->sub(1));
     fun_vars << fun_var;
     funs << Cons_O::create(name, LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++, ctxt->cfunction())));
     ++fun_count;
@@ -1527,14 +1516,14 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, Context_sp c
     compile_form(setform, env, ctxt);
   } else if (info.nilp() || gc::IsA<SpecialVarInfo_sp>(info)) {
     // TODO: Warn on unknown variable
-    compile_form(valf, env, ctxt->sub(clasp_make_fixnum(1)));
+    compile_form(valf, env, ctxt->sub(1));
     // If we need to return the new value, stick it into a new local
     // variable, do the set, then return the lexical variable.
     // We can't just read from the special, since some other thread may
     // alter it.
     size_t index = env->frameEnd();
     // but if we're not returning a value we don't actually have to do that crap.
-    if (!(ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 0))) {
+    if (ctxt->receiving() != 0) {
       ctxt->assemble1(vm_set, index);
       ctxt->assemble1(vm_ref, index);
       // called for effect, i.e. to keep frame size correct
@@ -1542,9 +1531,9 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, Context_sp c
       env->bind_vars(Cons_O::createList(var), ctxt);
     }
     ctxt->assemble1(vm_symbol_value_set, ctxt->literal_index(var));
-    if (!(ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 0))) {
+    if (ctxt->receiving() != 0) {
       ctxt->assemble1(vm_ref, index);
-      if (!(ctxt->receiving().fixnump())) // need values
+      if (ctxt->receiving() == -1) // need values
         ctxt->assemble0(vm_pop);
     }
   } else if (gc::IsA<LexicalVarInfo_sp>(info)) {
@@ -1554,9 +1543,9 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, Context_sp c
     if (!localp)
       lvinfo->setClosedOverP(true);
     lvinfo->setSetP(true);
-    compile_form(valf, env, ctxt->sub(clasp_make_fixnum(1)));
+    compile_form(valf, env, ctxt->sub(1));
     // Similar concerns to specials above (for closure variables)
-    if (!(ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 0))) {
+    if (ctxt->receiving() != 0) {
       ctxt->assemble1(vm_set, index);
       ctxt->assemble1(vm_ref, index);
       env->bind_vars(Cons_O::createList(var), ctxt);
@@ -1567,9 +1556,9 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, Context_sp c
       ctxt->assemble1(vm_closure, ctxt->closure_index(lvinfo));
       ctxt->assemble0(vm_cell_set);
     }
-    if (!(ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 0))) {
+    if (ctxt->receiving() != 0) {
       ctxt->assemble1(vm_ref, index);
-      if (!(ctxt->receiving().fixnump()))
+      if (ctxt->receiving() == -1)
         ctxt->assemble0(vm_pop);
     }
   } else
@@ -1579,14 +1568,14 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, Context_sp c
 CL_DEFUN void compile_setq(List_sp pairs, Lexenv_sp env, Context_sp ctxt) {
   if (pairs.nilp()) {
     // degenerate case
-    if (!(ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 0)))
+    if (ctxt->receiving() != 0)
       ctxt->assemble0(vm_nil);
   } else {
     do {
       Symbol_sp var = gc::As<Symbol_sp>(oCar(pairs));
       T_sp valf = oCadr(pairs);
       pairs = gc::As<List_sp>(oCddr(pairs));
-      compile_setq_1(var, valf, env, pairs.notnilp() ? ctxt->sub(clasp_make_fixnum(0)) : ctxt);
+      compile_setq_1(var, valf, env, pairs.notnilp() ? ctxt->sub(0) : ctxt);
     } while (pairs.notnilp());
   }
 }
@@ -1608,7 +1597,7 @@ CL_DEFUN void compile_eval_when(List_sp situations, List_sp body, Lexenv_sp env,
 }
 
 CL_DEFUN void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(cond, env, ctxt->sub(clasp_make_fixnum(1)));
+  compile_form(cond, env, ctxt->sub(1));
   Label_sp then_label = Label_O::make();
   Label_sp done_label = Label_O::make();
   ctxt->emit_jump_if(then_label);
@@ -1644,13 +1633,13 @@ CL_DEFUN void compile_tagbody(List_sp statements, Lexenv_sp env, Context_sp ctxt
       Label_sp lab = gc::As_assert<Label_sp>(oCddr(info));
       lab->contextualize(ctxt);
     } else
-      compile_form(statement, nnenv, stmt_ctxt->sub(clasp_make_fixnum(0)));
+      compile_form(statement, nnenv, stmt_ctxt->sub(0));
   }
   ctxt->maybe_emit_entry_close(dynenv_info);
   // return nil if we really have to
-  if (!(ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 0))) {
+  if (ctxt->receiving() != 0) {
     ctxt->assemble0(vm_nil);
-    if (!(ctxt->receiving().fixnump()))
+    if (ctxt->receiving() == -1)
       ctxt->assemble0(vm_pop);
   }
 }
@@ -1711,7 +1700,7 @@ CL_DEFUN void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, Context
   // If we're returning exactly one value, the nonlocal just pushes one, and
   // the nonlocal stores into the MV which is then vm_push'd to the stack.
   compile_progn(body, nnenv, ctxt->subde(dynenv_info));
-  bool r1p = ctxt->receiving().fixnump() && (ctxt->receiving().unsafe_fixnum() == 1);
+  bool r1p = ctxt->receiving() == 1;
   if (r1p)
     ctxt->emit_jump(normal_label);
   label->contextualize(ctxt);
@@ -1725,7 +1714,7 @@ CL_DEFUN void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, Context
 }
 
 CL_DEFUN void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(valuef, env, ctxt->sub(cl::_sym_T_O));
+  compile_form(valuef, env, ctxt->sub(-1));
   T_sp blocks = env->blocks();
   if (blocks.consp()) {
     // blocks must be a cons now
@@ -1744,7 +1733,7 @@ CL_DEFUN void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, Context
 // catch, throw, and progv are actually handled by macros right now,
 // so these aren't used, but maybe will be in the fture.
 CL_DEFUN void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(tag, env, ctxt->sub(clasp_make_fixnum(1)));
+  compile_form(tag, env, ctxt->sub(1));
   Label_sp target = Label_O::make();
   ctxt->emit_catch(target);
   // FIXME: maybe should be a T context to match throw
@@ -1754,14 +1743,14 @@ CL_DEFUN void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, Context_sp ct
 }
 
 CL_DEFUN void compile_throw(T_sp tag, T_sp rform, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(tag, env, ctxt->sub(clasp_make_fixnum(1)));
-  compile_form(rform, env, ctxt->sub(cl::_sym_T_O));
+  compile_form(tag, env, ctxt->sub(1));
+  compile_form(rform, env, ctxt->sub(-1));
   ctxt->assemble0(vm_throw);
 }
 
 CL_DEFUN void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(syms, env, ctxt->sub(clasp_make_fixnum(1)));
-  compile_form(vals, env, ctxt->sub(clasp_make_fixnum(1)));
+  compile_form(syms, env, ctxt->sub(1));
+  compile_form(vals, env, ctxt->sub(1));
   ctxt->assemble0(vm_progv);
   compile_progn(body, env, ctxt);
   ctxt->emit_unbind(1);
@@ -1770,17 +1759,17 @@ CL_DEFUN void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, C
 CL_DEFUN void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, Context_sp ctxt) {
   // Compile the function. Coerce it as a designator.
   // TODO: When the fform is a #'foo form we could skip coercion.
-  compile_function(core::_sym_coerce_fdesignator, env, ctxt->sub(clasp_make_fixnum(1)));
-  compile_form(fform, env, ctxt->sub(clasp_make_fixnum(1)));
-  ctxt->sub(clasp_make_fixnum(1))->emit_call(1);
+  compile_function(core::_sym_coerce_fdesignator, env, ctxt->sub(1));
+  compile_form(fform, env, ctxt->sub(1));
+  ctxt->sub(1)->emit_call(1);
   // Compile the arguments
   T_sp first = oCar(aforms);
   List_sp rest = gc::As<List_sp>(oCdr(aforms));
-  compile_form(first, env, ctxt->sub(cl::_sym_T_O));
+  compile_form(first, env, ctxt->sub(-1));
   if (rest.notnilp()) {
     ctxt->assemble0(vm_push_values);
     for (auto cur : rest) {
-      compile_form(oCar(cur), env, ctxt->sub(cl::_sym_T_O));
+      compile_form(oCar(cur), env, ctxt->sub(-1));
       ctxt->assemble0(vm_append_values);
     }
     ctxt->assemble0(vm_pop_values);
@@ -1790,12 +1779,12 @@ CL_DEFUN void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp 
 
 CL_DEFUN void compile_multiple_value_prog1(T_sp fform, List_sp forms, Lexenv_sp env, Context_sp ctxt) {
   compile_form(fform, env, ctxt);
-  // Don't need to save anything with fixed value returns
-  if (!ctxt->receiving().fixnump())
+  // We only need to actually save anything with all-values returns.
+  if (ctxt->receiving() == -1)
     ctxt->assemble0(vm_push_values);
   for (auto cur : forms)
-    compile_form(oCar(cur), env, ctxt->sub(clasp_make_fixnum(0)));
-  if (!ctxt->receiving().fixnump())
+    compile_form(oCar(cur), env, ctxt->sub(0));
+  if (ctxt->receiving() == -1)
     ctxt->assemble0(vm_pop_values);
 }
 
@@ -1805,7 +1794,7 @@ static void compile_call(T_sp args, Lexenv_sp env, Context_sp context) {
   size_t argcount = 0;
   for (auto cur : gc::As<List_sp>(args)) {
     ++argcount;
-    compile_form(oCar(cur), env, context->sub(clasp_make_fixnum(1)));
+    compile_form(oCar(cur), env, context->sub(1));
   }
   // generate the call
   context->emit_call(argcount);
@@ -1835,18 +1824,15 @@ CL_DEFUN void compile_load_time_value(T_sp form, T_sp tread_only_p,
   //  some weird side effect. We could hypothetically save some space by
   //  not allocating a spot in the constants if the value isn't actually
   //  used, but that's a very marginal case.)
-  T_sp rec = context->receiving();
-  if (rec.fixnump()) {
-    gc::Fixnum frec = rec.unsafe_fixnum();
-    switch (frec) {
-    case 0: return; // no value required, so compile nothing
-    case 1: context->assemble1(vm_const, ind); return;
-    default:
-        SIMPLE_ERROR("BUG: Don't know how to compile LTV returning %" PFixnum " values", frec);
-    }
-  } else { // must be T, i.e. values
-    context->assemble1(vm_const, ind);
-    context->assemble0(vm_pop);
+  switch (context->receiving()) {
+  case 0: break; // no value required, so compile nothing
+  case 1: context->assemble1(vm_const, ind); break;
+  case -1: // all values
+      context->assemble1(vm_const, ind);
+      context->assemble0(vm_pop);
+      break;
+  default:
+      SIMPLE_ERROR("BUG: Don't know how to compile LTV returning %" PFixnum " values", context->receiving());
   }
 }
 
@@ -1897,7 +1883,7 @@ CL_DEFUN void compile_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, Co
 }
 
 CL_DEFUN void compile_funcall(T_sp callee, List_sp args, Lexenv_sp env, Context_sp context) {
-  compile_form(callee, env, context->sub(clasp_make_fixnum(1)));
+  compile_form(callee, env, context->sub(1));
   compile_call(args, env, context);
 }
 
@@ -1952,13 +1938,13 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_s
     // Better would be to use the EQ opcode. Better than that would be
     // eliminating the special operator entirely and working with the
     // function instead.
-    compile_function(cl::_sym_eq, env, context->sub(clasp_make_fixnum(1)));
+    compile_function(cl::_sym_eq, env, context->sub(1));
     compile_call(rest, env, context);
   } else if (head == cleavirPrimop::_sym_typeq) {
     // KLUDGE: call to typep.
-    compile_function(cl::_sym_typep, env, context->sub(clasp_make_fixnum(1)));
-    compile_form(oCar(rest), env, context->sub(clasp_make_fixnum(1)));
-    compile_literal(oCadr(rest), env, context->sub(clasp_make_fixnum(1)));
+    compile_function(cl::_sym_typep, env, context->sub(1));
+    compile_form(oCar(rest), env, context->sub(1));
+    compile_literal(oCadr(rest), env, context->sub(1));
     context->emit_call(2);
   }
   // not a special form
@@ -1993,19 +1979,19 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_s
             return;
           }
         } // no compiler macro, or expansion declined: call
-        compile_function(head, env, context->sub(clasp_make_fixnum(1)));
+        compile_function(head, env, context->sub(1));
         compile_call(rest, env, context);
       } else if (gc::IsA<LocalFunInfo_sp>(info) || info.nilp()) {
         // unknown function warning handled by compile-function (eventually)
         // note we do a double lookup of the fun info,
         // which is inefficient in the compiler (doesn't affect generated code)
-        compile_function(head, env, context->sub(clasp_make_fixnum(1)));
+        compile_function(head, env, context->sub(1));
         compile_call(rest, env, context);
       } else
         SIMPLE_ERROR("BUG: Unknown info %s", _rep_(info));
     } else if (gc::IsA<Cons_sp>(head) && (oCar(head) == cl::_sym_lambda)) {
       // Lambda form
-      compile_function(head, env, context->sub(clasp_make_fixnum(1)));
+      compile_function(head, env, context->sub(1));
       compile_call(rest, env, context);
     } else
       SIMPLE_ERROR("Illegal combination head: %s rest: %s", _rep_(head), _rep_(rest));

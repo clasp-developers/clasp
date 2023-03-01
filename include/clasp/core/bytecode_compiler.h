@@ -252,19 +252,19 @@ FORWARD(Module);
 class Context_O : public General_O {
   LISP_CLASS(comp, CompPkg, Context_O, "Context", General_O);
 public:
-  T_sp _receiving;
+  int _receiving;
   List_sp _dynenv;
   T_sp _cfunction;
 public:
-  Context_O(T_sp receiving, T_sp dynenv, T_sp cfunction)
+  Context_O(int receiving, T_sp dynenv, T_sp cfunction)
     : _receiving(receiving), _dynenv(dynenv), _cfunction(cfunction) {}
   CL_LISPIFY_NAME(Context/make)
   CL_DEF_CLASS_METHOD
-  static Context_sp make(T_sp receiving, T_sp dynenv, T_sp cfunction) {
+  static Context_sp make(int receiving, T_sp dynenv, T_sp cfunction) {
     return gctools::GC<Context_O>::allocate<gctools::RuntimeStage>(receiving, dynenv, cfunction);
   }
   CL_LISPIFY_NAME(context/receiving)
-  CL_DEFMETHOD T_sp receiving() { return this->_receiving; }
+  CL_DEFMETHOD int receiving() { return this->_receiving; }
   CL_LISPIFY_NAME(context/dynenv)
   CL_DEFMETHOD List_sp dynenv() { return this->_dynenv; }
   CL_DEFMETHOD Cfunction_sp cfunction() {
@@ -274,7 +274,7 @@ public:
 public:
   // Make a new context that's like this one but with a possibly-different
   // RECEIVING.
-  CL_DEFMETHOD Context_sp sub(T_sp receiving) {
+  CL_DEFMETHOD Context_sp sub(int receiving) {
     return Context_O::make(receiving, this->_dynenv, this->_cfunction);
   }
   // Make a new context that's like this one but with the given thing
