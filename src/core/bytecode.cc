@@ -323,7 +323,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
-        for (size_t i = 1; i < svalues; ++i)
+        for (size_t i = 1; i < nvals; ++i)
           vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
       }
       pc++;
@@ -688,7 +688,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
-        for (size_t i = 1; i < svalues; ++i)
+        for (size_t i = 1; i < nvals; ++i)
           vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
       }
       pc++;
@@ -946,7 +946,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
-      for (size_t i = 1; i < svalues; ++i)
+      for (size_t i = 1; i < nvals; ++i)
         vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
     }
     pc += 5;
@@ -1168,7 +1168,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
-      for (size_t i = 1; i < svalues; ++i)
+      for (size_t i = 1; i < nvals; ++i)
         vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
     }
     pc += 3;
