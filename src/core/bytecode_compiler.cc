@@ -74,12 +74,12 @@ T_sp Lexenv_O::lookupMacro(T_sp macroname) {
     return nil<T_O>();
 }
 
-Lexenv_sp Lexenv_O::bind_vars(List_sp vars, Context_sp ctxt) {
+Lexenv_sp Lexenv_O::bind_vars(List_sp vars, const Context ctxt) {
   if (vars.nilp())
     return this->asSmartPtr();
   size_t frame_start = this->frameEnd();
   size_t frame_end = frame_start + (vars.nilp() ? 0 : vars.unsafe_cons()->length());
-  Cfunction_sp cf = ctxt->cfunction();
+  Cfunction_sp cf = ctxt.cfunction();
 
   cf->setNlocals(std::max(frame_end, cf->nlocals()));
   size_t idx = frame_start;
@@ -138,9 +138,8 @@ CL_DEFUN Lexenv_sp make_null_lexical_environment() {
   return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
 }
 
-CL_LAMBDA(context opcode &rest operands);
-CL_DEFUN void assemble(Context_sp context, uint8_t opcode, List_sp operands) {
-  Cfunction_sp func = context->cfunction();
+void assemble(const Context context, uint8_t opcode, List_sp operands) {
+  Cfunction_sp func = context.cfunction();
   ComplexVector_byte8_t_sp bytecode = func->bytecode();
   bytecode->vectorPushExtend(opcode);
   for (auto cur : operands) {
@@ -154,9 +153,8 @@ CL_DEFUN void assemble_into(SimpleVector_byte8_t_sp code, size_t position, List_
     (*code)[position++] = clasp_to_integral<uint8_t>(oCar(cur));
 }
 
-CL_LAMBDA(context opcode &rest operands);
-CL_DEFUN void assemble_maybe_long(Context_sp context, uint8_t opcode, List_sp operands) {
-  Cfunction_sp func = context->cfunction();
+void assemble_maybe_long(const Context context, uint8_t opcode, List_sp operands) {
+  Cfunction_sp func = context.cfunction();
   ComplexVector_byte8_t_sp bytecode = func->bytecode();
   // Check for long operands. Also signal an error if something''s over 16 bits.
   bool longp = false;
@@ -261,10 +259,10 @@ bool Lexenv_O::notinlinep(T_sp fname) {
   return false;
 }
 
-// declared out of line for circularity reasons
-Module_sp Context_O::module() { return this->cfunction()->module(); }
+// defined out of line for circularity reasons
+Module_sp Context::module() const { return this->cfunction()->module(); }
 
-size_t Context_O::literal_index(T_sp literal) {
+size_t Context::literal_index(T_sp literal) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   // FIXME: Smarter POSITION
   for (size_t i = 0; i < literals->length(); ++i)
@@ -278,12 +276,12 @@ size_t Context_O::literal_index(T_sp literal) {
 // a keyword argument parser, since the keywords must be sequential even if
 // they've previously appeared in the literals vector.
 // This is also used by LTV processing to put in a placeholder.
-size_t Context_O::new_literal_index(T_sp literal) {
+size_t Context::new_literal_index(T_sp literal) const {
   Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(literal);
   return nind.unsafe_fixnum();
 }
 
-size_t Context_O::closure_index(T_sp info) {
+size_t Context::closure_index(T_sp info) const {
   ComplexVector_T_sp closed = this->cfunction()->closed();
   for (size_t i = 0; i < closed->length(); ++i)
     if ((*closed)[i] == info)
@@ -292,65 +290,65 @@ size_t Context_O::closure_index(T_sp info) {
   return nind.unsafe_fixnum();
 }
 
-void Context_O::emit_jump(Label_sp label) {
-  ControlLabelFixup_O::make(label, vm_jump_8, vm_jump_16, vm_jump_24)->contextualize(this->asSmartPtr());
+void Context::emit_jump(Label_sp label) const {
+  ControlLabelFixup_O::make(label, vm_jump_8, vm_jump_16, vm_jump_24)->contextualize(*this);
 }
 
-void Context_O::emit_jump_if(Label_sp label) {
-  ControlLabelFixup_O::make(label, vm_jump_if_8, vm_jump_if_16, vm_jump_if_24)->contextualize(this->asSmartPtr());
+void Context::emit_jump_if(Label_sp label) const {
+  ControlLabelFixup_O::make(label, vm_jump_if_8, vm_jump_if_16, vm_jump_if_24)->contextualize(*this);
 }
 
-void Context_O::emit_entry_or_save_sp(LexicalVarInfo_sp dynenv) {
-  EntryFixup_O::make(dynenv)->contextualize(this->asSmartPtr());
+void Context::emit_entry_or_save_sp(LexicalVarInfo_sp dynenv) const {
+  EntryFixup_O::make(dynenv)->contextualize(*this);
 }
 
-void Context_O::emit_ref_or_restore_sp(LexicalVarInfo_sp dynenv) {
-  RestoreSPFixup_O::make(dynenv)->contextualize(this->asSmartPtr());
+void Context::emit_ref_or_restore_sp(LexicalVarInfo_sp dynenv) const {
+  RestoreSPFixup_O::make(dynenv)->contextualize(*this);
 }
 
-void Context_O::emit_exit(Label_sp label) {
-  ControlLabelFixup_O::make(label, vm_exit_8, vm_exit_16, vm_exit_24)->contextualize(this->asSmartPtr());
+void Context::emit_exit(Label_sp label) const {
+  ControlLabelFixup_O::make(label, vm_exit_8, vm_exit_16, vm_exit_24)->contextualize(*this);
 }
 
-void Context_O::emit_exit_or_jump(LexicalVarInfo_sp dynenv, Label_sp label) {
-  ExitFixup_O::make(dynenv, label)->contextualize(this->asSmartPtr());
+void Context::emit_exit_or_jump(LexicalVarInfo_sp dynenv, Label_sp label) const {
+  ExitFixup_O::make(dynenv, label)->contextualize(*this);
 }
 
-void Context_O::maybe_emit_entry_close(LexicalVarInfo_sp dynenv) {
-  EntryCloseFixup_O::make(dynenv)->contextualize(this->asSmartPtr());
+void Context::maybe_emit_entry_close(LexicalVarInfo_sp dynenv) const {
+  EntryCloseFixup_O::make(dynenv)->contextualize(*this);
 }
 
-void Context_O::emit_catch(Label_sp label) {
-  ControlLabelFixup_O::make(label, vm_catch_8, vm_catch_16, 0)->contextualize(this->asSmartPtr());
+void Context::emit_catch(Label_sp label) const {
+  ControlLabelFixup_O::make(label, vm_catch_8, vm_catch_16, 0)->contextualize(*this);
 }
 
-void Context_O::emit_jump_if_supplied(Label_sp label, size_t ind) {
-  JumpIfSuppliedFixup_O::make(label, ind)->contextualize(this->asSmartPtr());
+void Context::emit_jump_if_supplied(Label_sp label, size_t ind) const {
+  JumpIfSuppliedFixup_O::make(label, ind)->contextualize(*this);
 }
 
 // Push the immutable value or cell of lexical in CONTEXT.
-void Context_O::reference_lexical_info(LexicalVarInfo_sp info) {
+void Context::reference_lexical_info(LexicalVarInfo_sp info) const {
   if (info->funct() == this->cfunction())
     this->assemble1(vm_ref, info->frameIndex());
   else
     this->assemble1(vm_closure, this->closure_index(info));
 }
 
-void Context_O::maybe_emit_make_cell(LexicalVarInfo_sp info) {
-  LexRefFixup_O::make(info, vm_make_cell)->contextualize(this->asSmartPtr());
+void Context::maybe_emit_make_cell(LexicalVarInfo_sp info) const {
+  LexRefFixup_O::make(info, vm_make_cell)->contextualize(*this);
 }
 
-void Context_O::maybe_emit_cell_ref(LexicalVarInfo_sp info) {
-  LexRefFixup_O::make(info, vm_cell_ref)->contextualize(this->asSmartPtr());
+void Context::maybe_emit_cell_ref(LexicalVarInfo_sp info) const {
+  LexRefFixup_O::make(info, vm_cell_ref)->contextualize(*this);
 }
 
 // FIXME: This is probably a good candidate for a specialized
 // instruction.
-void Context_O::maybe_emit_encage(LexicalVarInfo_sp info) { EncageFixup_O::make(info)->contextualize(this->asSmartPtr()); }
+void Context::maybe_emit_encage(LexicalVarInfo_sp info) const { EncageFixup_O::make(info)->contextualize(*this); }
 
-void Context_O::emit_lexical_set(LexicalVarInfo_sp info) { LexSetFixup_O::make(info)->contextualize(this->asSmartPtr()); }
+void Context::emit_lexical_set(LexicalVarInfo_sp info) const { LexSetFixup_O::make(info)->contextualize(*this); }
 
-void Context_O::emit_parse_key_args(size_t max_count, size_t key_count, size_t keystart, size_t indx, bool aokp) {
+void Context::emit_parse_key_args(size_t max_count, size_t key_count, size_t keystart, size_t indx, bool aokp) const {
   ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
   if ((max_count < (1 << 8)) && (key_count < (1 << 8)) && (keystart < (1 << 8)) && (indx < (1 << 8))) {
     bytecode->vectorPushExtend(vm_parse_key_args);
@@ -374,9 +372,9 @@ void Context_O::emit_parse_key_args(size_t max_count, size_t key_count, size_t k
                  indx);
 }
 
-void Context_O::assemble0(uint8_t opcode) { this->cfunction()->bytecode()->vectorPushExtend(opcode); }
+void Context::assemble0(uint8_t opcode) const { this->cfunction()->bytecode()->vectorPushExtend(opcode); }
 
-void Context_O::assemble1(uint8_t opcode, size_t operand) {
+void Context::assemble1(uint8_t opcode, size_t operand) const {
   ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
   if (operand < (1 << 8)) {
     bytecode->vectorPushExtend(opcode);
@@ -390,7 +388,7 @@ void Context_O::assemble1(uint8_t opcode, size_t operand) {
     SIMPLE_ERROR("Bytecode compiler limit reached: operand %zu too large", operand);
 }
 
-void Context_O::assemble2(uint8_t opcode, size_t operand1, size_t operand2) {
+void Context::assemble2(uint8_t opcode, size_t operand1, size_t operand2) const {
   ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
   if ((operand1 < (1 << 8)) && (operand2 < (1 << 8))) {
     bytecode->vectorPushExtend(opcode);
@@ -407,7 +405,7 @@ void Context_O::assemble2(uint8_t opcode, size_t operand1, size_t operand2) {
     SIMPLE_ERROR("Bytecode compiler limit reached: operands %zu %zu too large", operand1, operand2);
 }
 
-void Context_O::emit_bind(size_t count, size_t offset) {
+void Context::emit_bind(size_t count, size_t offset) const {
   switch (count) {
   case 1:
     this->assemble1(vm_set, offset);
@@ -420,7 +418,7 @@ void Context_O::emit_bind(size_t count, size_t offset) {
   }
 }
 
-void Context_O::emit_call(size_t argcount) {
+void Context::emit_call(size_t argcount) const {
   switch (this->receiving()) {
   case 1:
       this->assemble1(vm_call_receive_one, argcount);
@@ -435,7 +433,7 @@ void Context_O::emit_call(size_t argcount) {
   }
 }
 
-void Context_O::emit_mv_call() {
+void Context::emit_mv_call() const {
   switch (this->receiving()) {
   case 1:
       this->assemble0(vm_mv_call_receive_one);
@@ -450,25 +448,25 @@ void Context_O::emit_mv_call() {
   }
 }
 
-void Context_O::emit_special_bind(Symbol_sp sym) { this->assemble1(vm_special_bind, this->literal_index(sym)); }
+void Context::emit_special_bind(Symbol_sp sym) const { this->assemble1(vm_special_bind, this->literal_index(sym)); }
 
-void Context_O::emit_unbind(size_t count) {
+void Context::emit_unbind(size_t count) const {
   for (size_t i = 0; i < count; ++i)
     this->assemble0(vm_unbind);
 }
 
 size_t Annotation_O::module_position() { return this->pposition() + gc::As_assert<Cfunction_sp>(this->cfunction())->pposition(); }
 
-void Label_O::contextualize(Context_sp ctxt) {
-  Cfunction_sp cfunction = ctxt->cfunction();
+void Label_O::contextualize(const Context ctxt) {
+  Cfunction_sp cfunction = ctxt.cfunction();
   this->setPosition(cfunction->bytecode()->length());
   this->setCfunction(cfunction);
   Fixnum_sp nind = cfunction->annotations()->vectorPushExtend(this->asSmartPtr());
   this->setIndex(nind.unsafe_fixnum());
 }
 
-void Fixup_O::contextualize(Context_sp ctxt) {
-  Cfunction_sp cfunction = ctxt->cfunction();
+void Fixup_O::contextualize(const Context ctxt) {
+  Cfunction_sp cfunction = ctxt.cfunction();
   ComplexVector_byte8_t_sp assembly = cfunction->bytecode();
   size_t position = assembly->length();
   this->setCfunction(cfunction);
@@ -889,31 +887,31 @@ void Module_O::link_load(T_sp compile_info) {
   bytecode_module->setf_compileInfo(compile_info);
 }
 
-CL_DEFUN void compile_literal(T_sp literal, Lexenv_sp env, Context_sp context) {
+void compile_literal(T_sp literal, Lexenv_sp env, const Context context) {
   (void)env;
-  switch (context->receiving()) {
+  switch (context.receiving()) {
   case 0:
       return; // No value required, so do nothing
   case 1:
       if (literal.nilp())
-        context->assemble0(vm_nil);
+        context.assemble0(vm_nil);
       else
-        context->assemble1(vm_const, context->literal_index(literal));
+        context.assemble1(vm_const, context.literal_index(literal));
       return;
   case -1: // values
       if (literal.nilp())
-        context->assemble0(vm_nil);
+        context.assemble0(vm_nil);
       else
-        context->assemble1(vm_const, context->literal_index(literal));
-      context->assemble0(vm_pop);
+        context.assemble1(vm_const, context.literal_index(literal));
+      context.assemble0(vm_pop);
       return;
   default:
       // FIXME: Just need to pad in some NILs.
-      SIMPLE_ERROR("BUG: Don't know how to compile literal returning %" PFixnum " values", context->receiving());
+      SIMPLE_ERROR("BUG: Don't know how to compile literal returning %" PFixnum " values", context.receiving());
   }
 }
 
-void compile_form(T_sp, Lexenv_sp, Context_sp);
+void compile_form(T_sp, Lexenv_sp, const Context);
 
 static T_sp expand_macro(Function_sp expander, T_sp form, Lexenv_sp env) {
   // This is copied from cl__macroexpand. I guess eval::funcall doesn't do the
@@ -923,14 +921,14 @@ static T_sp expand_macro(Function_sp expander, T_sp form, Lexenv_sp env) {
   return eval::funcall(hook, expander, form, env);
 }
 
-CL_DEFUN void compile_symbol(Symbol_sp sym, Lexenv_sp env, Context_sp context) {
+void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
   T_sp info = var_info(sym, env);
   if (gc::IsA<SymbolMacroVarInfo_sp>(info)) {
     Function_sp expander = gc::As_unsafe<SymbolMacroVarInfo_sp>(info)->expander();
     T_sp expansion = expand_macro(expander, sym, env);
     compile_form(expansion, env, context);
     return;
-  } else if (context->receiving() == 0) {
+  } else if (context.receiving() == 0) {
     // A symbol macro could expand into something with arbitrary side effects
     // so we always have to compile that, but otherwise, if no values are
     // wanted, we want to not compile anything.
@@ -938,37 +936,37 @@ CL_DEFUN void compile_symbol(Symbol_sp sym, Lexenv_sp env, Context_sp context) {
   } else {
     if (gc::IsA<LexicalVarInfo_sp>(info)) {
       LexicalVarInfo_sp lvinfo = gc::As_unsafe<LexicalVarInfo_sp>(info);
-      if (lvinfo->funct() == context->cfunction())
+      if (lvinfo->funct() == context.cfunction())
         // Local variable, just read it.
-        context->assemble1(vm_ref, lvinfo->frameIndex());
+        context.assemble1(vm_ref, lvinfo->frameIndex());
       else { // closed over
         lvinfo->setClosedOverP(true);
-        context->assemble1(vm_closure, context->closure_index(lvinfo));
+        context.assemble1(vm_closure, context.closure_index(lvinfo));
       }
-      context->maybe_emit_cell_ref(lvinfo);
+      context.maybe_emit_cell_ref(lvinfo);
     } else if (gc::IsA<SpecialVarInfo_sp>(info))
-      context->assemble1(vm_symbol_value, context->literal_index(sym));
+      context.assemble1(vm_symbol_value, context.literal_index(sym));
     else if (gc::IsA<ConstantVarInfo_sp>(info)) {
       compile_literal(gc::As_unsafe<ConstantVarInfo_sp>(info)->value(), env, context);
       // Avoid the pop code below - compile-literal handles it.
       return;
     } else if (info.nilp()) {
       // FIXME: Warn that the variable is unknown and we're assuming special.
-      context->assemble1(vm_symbol_value, context->literal_index(sym));
+      context.assemble1(vm_symbol_value, context.literal_index(sym));
     }
-    if (context->receiving() == -1)
+    if (context.receiving() == -1)
       // Values return - put value in mv vector.
-      context->assemble0(vm_pop);
+      context.assemble0(vm_pop);
   }
 }
 
-CL_DEFUN void compile_progn(List_sp forms, Lexenv_sp env, Context_sp ctxt) {
+void compile_progn(List_sp forms, Lexenv_sp env, const Context ctxt) {
   if (forms.nilp())
     compile_literal(nil<T_O>(), env, ctxt);
   else
     for (auto cur : forms) {
       if (oCdr(cur).notnilp()) // compile for effect
-        compile_form(oCar(cur), env, ctxt->sub(0));
+        compile_form(oCar(cur), env, Context(ctxt, 0));
       else // compile for value
         compile_form(oCar(cur), env, ctxt);
     }
@@ -988,7 +986,7 @@ static List_sp decl_notinlines(List_sp declares) {
   return result.cons();
 }
 
-CL_DEFUN void compile_locally(List_sp body, Lexenv_sp env, Context_sp ctxt) {
+void compile_locally(List_sp body, Lexenv_sp env, const Context ctxt) {
   List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
   List_sp code;
@@ -999,7 +997,7 @@ CL_DEFUN void compile_locally(List_sp body, Lexenv_sp env, Context_sp ctxt) {
   compile_progn(code, inner2, ctxt);
 }
 
-CL_DEFUN bool special_binding_p(Symbol_sp sym, List_sp specials, Lexenv_sp env) {
+bool special_binding_p(Symbol_sp sym, List_sp specials, Lexenv_sp env) {
   if (specials.notnilp() && specials.unsafe_cons()->memberEq(sym).notnilp())
     return true;
   else {
@@ -1011,7 +1009,7 @@ CL_DEFUN bool special_binding_p(Symbol_sp sym, List_sp specials, Lexenv_sp env) 
   }
 }
 
-CL_DEFUN void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, Context_sp ctxt) {
+void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ctxt) {
   List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
   List_sp code;
@@ -1031,23 +1029,23 @@ CL_DEFUN void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, Context
       var = gc::As<Symbol_sp>(binding);
       valf = nil<T_O>();
     }
-    compile_form(valf, env, ctxt->sub(1));
+    compile_form(valf, env, Context(ctxt, 1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
-      ctxt->emit_special_bind(var);
+      ctxt.emit_special_bind(var);
     } else {
       post_binding_env = post_binding_env->bind_vars(Cons_O::createList(var), ctxt);
       ++lexical_binding_count;
-      ctxt->maybe_emit_make_cell(gc::As_assert<comp::LexicalVarInfo_sp>(var_info(var, post_binding_env)));
+      ctxt.maybe_emit_make_cell(gc::As_assert<comp::LexicalVarInfo_sp>(var_info(var, post_binding_env)));
     }
   }
-  ctxt->emit_bind(lexical_binding_count, env->frameEnd());
+  ctxt.emit_bind(lexical_binding_count, env->frameEnd());
   post_binding_env = post_binding_env->add_notinlines(decl_notinlines(declares));
-  compile_progn(code, post_binding_env, ctxt->subde(clasp_make_fixnum(special_binding_count)));
-  ctxt->emit_unbind(special_binding_count);
+  compile_progn(code, post_binding_env, Context(ctxt, Integer_O::create(special_binding_count)));
+  ctxt.emit_unbind(special_binding_count);
 }
 
-CL_DEFUN void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, Context_sp ctxt) {
+void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Context ectxt) {
   List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
   List_sp code;
@@ -1055,6 +1053,7 @@ CL_DEFUN void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, Con
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
   size_t special_binding_count = 0;
   Lexenv_sp new_env = env;
+  Context ctxt = ectxt;
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
     Symbol_sp var;
@@ -1066,17 +1065,17 @@ CL_DEFUN void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, Con
       var = gc::As<Symbol_sp>(binding);
       valf = nil<T_O>();
     }
-    compile_form(valf, new_env, ctxt->sub(1));
+    compile_form(valf, new_env, Context(ctxt, 1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
       new_env = new_env->add_specials(Cons_O::createList(var));
-      ctxt->emit_special_bind(var);
-      ctxt = ctxt->subde(clasp_make_fixnum(1));
+      ctxt.emit_special_bind(var);
+      ctxt = Context(ctxt, Integer_O::create(1));
     } else {
       size_t frame_start = new_env->frameEnd();
       new_env = new_env->bind_vars(Cons_O::createList(var), ctxt);
-      ctxt->maybe_emit_make_cell(gc::As_assert<comp::LexicalVarInfo_sp>(var_info(var, new_env)));
-      ctxt->assemble1(vm_set, frame_start);
+      ctxt.maybe_emit_make_cell(gc::As_assert<comp::LexicalVarInfo_sp>(var_info(var, new_env)));
+      ctxt.assemble1(vm_set, frame_start);
     }
   }
   new_env = new_env->add_notinlines(decl_notinlines(declares));
@@ -1085,7 +1084,7 @@ CL_DEFUN void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, Con
   // This creates duplicate alist entries for anything that _is_ bound
   // here, but that's not a big deal.
   compile_progn(code, new_env->add_specials(specials), ctxt);
-  ctxt->emit_unbind(special_binding_count);
+  ctxt.emit_unbind(special_binding_count);
 }
 
 // copied from evaluator.cc (on the premise that that will be deleted or
@@ -1108,8 +1107,8 @@ static T_sp extract_lambda_list_from_declares(List_sp declares, T_sp defaultll) 
   return defaultll;
 }
 
-CL_DEFUN Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, size_t var_index, Symbol_sp supplied_var,
-                                                Label_sp next_label, bool var_specialp, bool supplied_specialp, Context_sp context,
+Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, size_t var_index, Symbol_sp supplied_var,
+                                                Label_sp next_label, bool var_specialp, bool supplied_specialp, const Context context,
                                                 Lexenv_sp env) {
   Label_sp supplied_label = Label_O::make();
   T_sp varinfo = var_info(var, env);
@@ -1118,43 +1117,43 @@ CL_DEFUN Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_f
     env = env->bind_vars(Cons_O::createList(supplied_var), context);
     supinfo = var_info(supplied_var, env);
   }
-  context->emit_jump_if_supplied(supplied_label, var_index);
+  context.emit_jump_if_supplied(supplied_label, var_index);
   // Emit code for the case of the variable not being supplied:
   // Bind the var to the default, and the suppliedvar to NIL if applicable.
-  compile_form(defaulting_form, env, context->sub(1));
+  compile_form(defaulting_form, env, Context(context, 1));
   if (var_specialp)
-    context->emit_special_bind(var);
+    context.emit_special_bind(var);
   else {
-    context->maybe_emit_make_cell(gc::As_assert<LexicalVarInfo_sp>(varinfo));
-    context->assemble1(vm_set, var_index);
+    context.maybe_emit_make_cell(gc::As_assert<LexicalVarInfo_sp>(varinfo));
+    context.assemble1(vm_set, var_index);
   }
   if (supplied_var.notnilp()) { // bind supplied_var to NIL
-    context->assemble0(vm_nil);
+    context.assemble0(vm_nil);
     if (supplied_specialp)
-      context->emit_special_bind(supplied_var);
+      context.emit_special_bind(supplied_var);
     else {
       LexicalVarInfo_sp lsinfo = gc::As_assert<LexicalVarInfo_sp>(supinfo);
-      context->maybe_emit_make_cell(lsinfo);
-      context->assemble1(vm_set, lsinfo->frameIndex());
+      context.maybe_emit_make_cell(lsinfo);
+      context.assemble1(vm_set, lsinfo->frameIndex());
     }
   }
-  context->emit_jump(next_label);
+  context.emit_jump(next_label);
   // Now for when the variable is supplied.
   supplied_label->contextualize(context);
   if (var_specialp) { // we have it in a reg, so rebind
-    context->assemble1(vm_ref, var_index);
-    context->emit_special_bind(var);
+    context.assemble1(vm_ref, var_index);
+    context.emit_special_bind(var);
   } else { // in the reg already, but maybe needs a cell
-    context->maybe_emit_encage(gc::As_assert<LexicalVarInfo_sp>(varinfo));
+    context.maybe_emit_encage(gc::As_assert<LexicalVarInfo_sp>(varinfo));
   }
   if (supplied_var.notnilp()) {
-    compile_literal(cl::_sym_T_O, env, context->sub(1));
+    compile_literal(cl::_sym_T_O, env, Context(context, 1));
     if (supplied_specialp)
-      context->emit_special_bind(supplied_var);
+      context.emit_special_bind(supplied_var);
     else {
       LexicalVarInfo_sp lsinfo = gc::As_assert<LexicalVarInfo_sp>(supinfo);
-      context->maybe_emit_make_cell(lsinfo);
-      context->assemble1(vm_set, lsinfo->frameIndex());
+      context.maybe_emit_make_cell(lsinfo);
+      context.assemble1(vm_set, lsinfo->frameIndex());
     }
   }
   // That's it for code generation. Now return the new environment.
@@ -1165,7 +1164,7 @@ CL_DEFUN Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_f
   return env;
 }
 
-CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, Context_sp context) {
+void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, const Context context) {
   List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
   List_sp code;
@@ -1180,7 +1179,7 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp
   T_sp key_flag;
   T_sp aokp;
   parse_lambda_list(lambda_list, cl::_sym_Function_O, reqs, optionals, restarg, key_flag, keys, aokp, auxs);
-  Cfunction_sp function = context->cfunction();
+  Cfunction_sp function = context.cfunction();
   Label_sp entry_point = function->entry_point();
   size_t min_count = reqs.size();
   size_t optional_count = optionals.size();
@@ -1200,16 +1199,16 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp
   entry_point->contextualize(context);
   // Generate argument count check.
   if ((min_count > 0) && (min_count == max_count) && !morep)
-    context->assemble1(vm_check_arg_count_EQ, min_count);
+    context.assemble1(vm_check_arg_count_EQ, min_count);
   else {
     if (min_count > 0)
-      context->assemble1(vm_check_arg_count_GE, min_count);
+      context.assemble1(vm_check_arg_count_GE, min_count);
     if (!morep)
-      context->assemble1(vm_check_arg_count_LE, max_count);
+      context.assemble1(vm_check_arg_count_LE, max_count);
   }
   if (min_count > 0) {
     // Bind the required arguments.
-    context->assemble1(vm_bind_required_args, min_count);
+    context.assemble1(vm_bind_required_args, min_count);
     ql::list sreqs; // required parameters that are special
     for (auto &it : reqs) {
       // We account for special declarations in outer environments/globally
@@ -1218,11 +1217,11 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp
       LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(var, new_env));
       if (special_binding_p(var, specials, env)) {
         sreqs << var;
-        context->assemble1(vm_ref, lvinfo->frameIndex());
-        context->emit_special_bind(var);
+        context.assemble1(vm_ref, lvinfo->frameIndex());
+        context.emit_special_bind(var);
         ++special_binding_count; // not in lisp - bug?
       } else {
-        context->maybe_emit_encage(gc::As_assert<LexicalVarInfo_sp>(lvinfo));
+        context.maybe_emit_encage(gc::As_assert<LexicalVarInfo_sp>(lvinfo));
       }
     }
     new_env = new_env->add_specials(sreqs.cons());
@@ -1230,7 +1229,7 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp
   if (optional_count > 0) {
     // Generate code to bind the provided optional args, unprovided args will
     // be initialized with the unbound marker.
-    context->assemble2(vm_bind_optional_args, min_count, optional_count);
+    context.assemble2(vm_bind_optional_args, min_count, optional_count);
     // Mark the locations of each optional. Note that we do this even if
     // the variable will be specially bound.
     ql::list opts;
@@ -1261,13 +1260,13 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp
     bool set_first_key_index = false;
     for (auto &it : keys) {
       if (!set_first_key_index) {
-        first_key_index = context->new_literal_index(it._Keyword);
+        first_key_index = context.new_literal_index(it._Keyword);
         set_first_key_index = true;
       } else
-        context->new_literal_index(it._Keyword);
+        context.new_literal_index(it._Keyword);
     }
     // now the actual instruction
-    context->emit_parse_key_args(max_count, keys.size(), first_key_index, new_env->frameEnd(), aokp.notnilp());
+    context.emit_parse_key_args(max_count, keys.size(), first_key_index, new_env->frameEnd(), aokp.notnilp());
     ql::list keyvars;
     ql::list skeys;
     for (auto &it : keys) {
@@ -1313,20 +1312,20 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp
     Symbol_sp rest = restarg._ArgTarget;
     bool varestp = restarg.VaRest;
     if (varestp) {
-      context->assemble1(vm_vaslistify_rest_args, max_count);
+      context.assemble1(vm_vaslistify_rest_args, max_count);
     } else {
-      context->assemble1(vm_listify_rest_args, max_count);
+      context.assemble1(vm_listify_rest_args, max_count);
     }
-    context->assemble1(vm_set, new_env->frameEnd());
+    context.assemble1(vm_set, new_env->frameEnd());
     new_env = new_env->bind_vars(Cons_O::createList(rest), context);
     LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(rest, new_env));
     if (special_binding_p(rest, specials, env)) {
-      context->assemble1(vm_ref, lvinfo->frameIndex());
-      context->emit_special_bind(rest);
+      context.assemble1(vm_ref, lvinfo->frameIndex());
+      context.emit_special_bind(rest);
       ++special_binding_count;
       new_env = new_env->add_specials(Cons_O::createList(rest));
     } else
-      context->maybe_emit_encage(lvinfo);
+      context.maybe_emit_encage(lvinfo);
   }
   // Generate defaulting code for key args, and special-bind them if necessary
   if (key_flag.notnilp()) {
@@ -1365,7 +1364,7 @@ CL_DEFUN void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp
   T_sp lbody = Cons_O::create(declexpr, code);
   compile_letSTAR(auxbinds.cons(), lbody, new_env, context);
   // Finally, clean up any special bindings.
-  context->emit_unbind(special_binding_count);
+  context.emit_unbind(special_binding_count);
 }
 
 // Compile the lambda expression in MODULE, returning the resulting CFUNCTION.
@@ -1386,52 +1385,52 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
     name = Cons_O::createList(cl::_sym_lambda, comp::lambda_list_for_name(oll));
   Cfunction_sp function =
       Cfunction_O::make(module, name, docstring, oll, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
-  Context_sp context = Context_O::make(-1, nil<T_O>(), function);
+  Context context(-1, nil<T_O>(), function);
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->notinlines(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
   // We pass the original body w/declarations to compile-with-lambda-list
   // so that it can do its own handling of specials, etc.
   compile_with_lambda_list(lambda_list, body, lenv, context);
-  context->assemble0(vm_return);
+  context.assemble0(vm_return);
   return function;
 }
 
-CL_DEFUN void compile_function(T_sp fnameoid, Lexenv_sp env, Context_sp ctxt) {
+void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
   bool mvp;
-  switch (ctxt->receiving()) {
+  switch (ctxt.receiving()) {
   case -1: mvp = true; break;
   case 0: return;
   default: mvp = false; break;
   }
   if (gc::IsA<Cons_sp>(fnameoid) && oCar(fnameoid) == cl::_sym_lambda) {
-    Cfunction_sp fun = compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt->module());
+    Cfunction_sp fun = compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt.module());
     ComplexVector_T_sp closed = fun->closed();
     for (size_t i = 0; i < closed->length(); ++i) {
-      ctxt->reference_lexical_info(gc::As_assert<LexicalVarInfo_sp>((*closed)[i]));
+      ctxt.reference_lexical_info(gc::As_assert<LexicalVarInfo_sp>((*closed)[i]));
     }
     if (closed->length() == 0) // don't need to actually close
-      ctxt->assemble1(vm_const, ctxt->literal_index(fun));
+      ctxt.assemble1(vm_const, ctxt.literal_index(fun));
     else
-      ctxt->assemble1(vm_make_closure, ctxt->literal_index(fun));
+      ctxt.assemble1(vm_make_closure, ctxt.literal_index(fun));
   } else { // ought to be a function name
     T_sp info = fun_info(fnameoid, env);
     if (gc::IsA<GlobalFunInfo_sp>(info) || info.nilp()) {
       // TODO: Warn on unknown (nil)
-      ctxt->assemble1(vm_fdefinition, ctxt->literal_index(fnameoid));
+      ctxt.assemble1(vm_fdefinition, ctxt.literal_index(fnameoid));
     } else if (gc::IsA<LocalFunInfo_sp>(info)) {
       LocalFunInfo_sp lfinfo = gc::As_unsafe<LocalFunInfo_sp>(info);
       LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(lfinfo->funVar());
-      ctxt->reference_lexical_info(lvinfo);
+      ctxt.reference_lexical_info(lvinfo);
     } else
       SIMPLE_ERROR("BUG: Unknown fun info %s", _rep_(info));
   }
   // Coerce to values if necessary.
   if (mvp)
-    ctxt->assemble0(vm_pop);
+    ctxt.assemble0(vm_pop);
 }
 
-CL_DEFUN void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, Context_sp ctxt) {
+void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
   ql::list fun_vars;
   ql::list funs;
   size_t fun_count = 0;
@@ -1446,12 +1445,12 @@ CL_DEFUN void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, Con
     T_sp locally = Cons_O::create(cl::_sym_locally, oCddr(definition));
     T_sp block = Cons_O::createList(cl::_sym_block, core__function_block_name(name), locally);
     T_sp lambda = Cons_O::createList(cl::_sym_lambda, oCadr(definition), block);
-    compile_function(lambda, env, ctxt->sub(1));
+    compile_function(lambda, env, Context(ctxt, 1));
     fun_vars << fun_var;
-    funs << Cons_O::create(name, LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++, ctxt->cfunction())));
+    funs << Cons_O::create(name, LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++, ctxt.cfunction())));
     ++fun_count;
   }
-  ctxt->emit_bind(fun_count, env->frameEnd());
+  ctxt.emit_bind(fun_count, env->frameEnd());
   // KLUDGEy - we could do this in one new environment
   Lexenv_sp new_env1 = env->bind_vars(fun_vars.cons(), ctxt);
   Lexenv_sp new_env2 = Lexenv_O::make(new_env1->vars(), new_env1->tags(), new_env1->blocks(),
@@ -1459,7 +1458,7 @@ CL_DEFUN void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, Con
   compile_locally(body, new_env2, ctxt);
 }
 
-CL_DEFUN void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, Context_sp ctxt) {
+void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
   size_t fun_count = 0;
   ql::list funs;
   ql::list fun_vars;
@@ -1471,7 +1470,7 @@ CL_DEFUN void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, C
     T_sp name = oCar(definition);
     T_sp fun_var = cl__gensym(SimpleBaseString_O::make("LABELS-FUN"));
     fun_vars << fun_var;
-    funs << Cons_O::create(name, LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++, ctxt->cfunction())));
+    funs << Cons_O::create(name, LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++, ctxt.cfunction())));
     ++fun_count;
   }
   frame_slot = frame_start;
@@ -1483,31 +1482,31 @@ CL_DEFUN void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, C
     T_sp name = oCar(definition);
     T_sp locally = Cons_O::create(cl::_sym_locally, oCddr(definition));
     T_sp block = Cons_O::createList(cl::_sym_block, core__function_block_name(name), locally);
-    Cfunction_sp fun = compile_lambda(oCadr(definition), Cons_O::createList(block), new_env2, ctxt->module());
-    size_t literal_index = ctxt->literal_index(fun);
+    Cfunction_sp fun = compile_lambda(oCadr(definition), Cons_O::createList(block), new_env2, ctxt.module());
+    size_t literal_index = ctxt.literal_index(fun);
     if (fun->closed()->length() == 0) // not a closure- easy
-      ctxt->assemble1(vm_const, literal_index);
+      ctxt.assemble1(vm_const, literal_index);
     else {
       closures << Cons_O::create(fun, clasp_make_fixnum(frame_slot));
-      ctxt->assemble1(vm_make_uninitialized_closure, literal_index);
+      ctxt.assemble1(vm_make_uninitialized_closure, literal_index);
     }
     ++frame_slot;
   }
-  ctxt->emit_bind(fun_count, frame_start);
+  ctxt.emit_bind(fun_count, frame_start);
   // Make the closures
   for (auto cur : gc::As_assert<List_sp>(closures.cons())) {
     Cfunction_sp cf = gc::As_unsafe<Cfunction_sp>(oCaar(cur));
     ComplexVector_T_sp closed = cf->closed();
     for (size_t i = 0; i < closed->length(); ++i) {
       LexicalVarInfo_sp info = gc::As_assert<LexicalVarInfo_sp>((*closed)[i]);
-      ctxt->reference_lexical_info(info);
+      ctxt.reference_lexical_info(info);
     }
-    ctxt->assemble1(vm_initialize_closure, oCdar(cur).unsafe_fixnum());
+    ctxt.assemble1(vm_initialize_closure, oCdar(cur).unsafe_fixnum());
   }
   compile_locally(body, new_env2, ctxt);
 }
 
-static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, Context_sp ctxt) {
+static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Context ctxt) {
   T_sp info = var_info(var, env);
   if (gc::IsA<SymbolMacroVarInfo_sp>(info)) {
     Function_sp expander = gc::As_unsafe<SymbolMacroVarInfo_sp>(info)->expander();
@@ -1516,66 +1515,67 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, Context_sp c
     compile_form(setform, env, ctxt);
   } else if (info.nilp() || gc::IsA<SpecialVarInfo_sp>(info)) {
     // TODO: Warn on unknown variable
-    compile_form(valf, env, ctxt->sub(1));
+    compile_form(valf, env, Context(ctxt, 1));
     // If we need to return the new value, stick it into a new local
     // variable, do the set, then return the lexical variable.
     // We can't just read from the special, since some other thread may
     // alter it.
     size_t index = env->frameEnd();
     // but if we're not returning a value we don't actually have to do that crap.
-    if (ctxt->receiving() != 0) {
-      ctxt->assemble1(vm_set, index);
-      ctxt->assemble1(vm_ref, index);
+    if (ctxt.receiving() != 0) {
+      ctxt.assemble1(vm_set, index);
+      ctxt.assemble1(vm_ref, index);
       // called for effect, i.e. to keep frame size correct
       // FIXME: This is super kludgey.
       env->bind_vars(Cons_O::createList(var), ctxt);
     }
-    ctxt->assemble1(vm_symbol_value_set, ctxt->literal_index(var));
-    if (ctxt->receiving() != 0) {
-      ctxt->assemble1(vm_ref, index);
-      if (ctxt->receiving() == -1) // need values
-        ctxt->assemble0(vm_pop);
+    ctxt.assemble1(vm_symbol_value_set, ctxt.literal_index(var));
+    if (ctxt.receiving() != 0) {
+      ctxt.assemble1(vm_ref, index);
+      if (ctxt.receiving() == -1) // need values
+        ctxt.assemble0(vm_pop);
     }
   } else if (gc::IsA<LexicalVarInfo_sp>(info)) {
     LexicalVarInfo_sp lvinfo = gc::As_unsafe<LexicalVarInfo_sp>(info);
-    bool localp = (lvinfo->funct() == ctxt->cfunction());
+    bool localp = (lvinfo->funct() == ctxt.cfunction());
     size_t index = env->frameEnd();
     if (!localp)
       lvinfo->setClosedOverP(true);
     lvinfo->setSetP(true);
-    compile_form(valf, env, ctxt->sub(1));
+    compile_form(valf, env, Context(ctxt, 1));
     // Similar concerns to specials above (for closure variables)
-    if (ctxt->receiving() != 0) {
-      ctxt->assemble1(vm_set, index);
-      ctxt->assemble1(vm_ref, index);
+    if (ctxt.receiving() != 0) {
+      ctxt.assemble1(vm_set, index);
+      ctxt.assemble1(vm_ref, index);
       env->bind_vars(Cons_O::createList(var), ctxt);
     }
     if (localp)
-      ctxt->emit_lexical_set(lvinfo);
+      ctxt.emit_lexical_set(lvinfo);
     else { // we already know we need a cell, so don't bother w/ a fixup.
-      ctxt->assemble1(vm_closure, ctxt->closure_index(lvinfo));
-      ctxt->assemble0(vm_cell_set);
+      ctxt.assemble1(vm_closure, ctxt.closure_index(lvinfo));
+      ctxt.assemble0(vm_cell_set);
     }
-    if (ctxt->receiving() != 0) {
-      ctxt->assemble1(vm_ref, index);
-      if (ctxt->receiving() == -1)
-        ctxt->assemble0(vm_pop);
+    if (ctxt.receiving() != 0) {
+      ctxt.assemble1(vm_ref, index);
+      if (ctxt.receiving() == -1)
+        ctxt.assemble0(vm_pop);
     }
   } else
     SIMPLE_ERROR("BUG: Unknown info %s", _rep_(info));
 }
 
-CL_DEFUN void compile_setq(List_sp pairs, Lexenv_sp env, Context_sp ctxt) {
+void compile_setq(List_sp pairs, Lexenv_sp env, const Context ctxt) {
   if (pairs.nilp()) {
     // degenerate case
-    if (ctxt->receiving() != 0)
-      ctxt->assemble0(vm_nil);
+    if (ctxt.receiving() != 0)
+      ctxt.assemble0(vm_nil);
   } else {
     do {
       Symbol_sp var = gc::As<Symbol_sp>(oCar(pairs));
       T_sp valf = oCadr(pairs);
       pairs = gc::As<List_sp>(oCddr(pairs));
-      compile_setq_1(var, valf, env, pairs.notnilp() ? ctxt->sub(0) : ctxt);
+      compile_setq_1(var, valf, env,
+                     pairs.notnilp() ? Context(ctxt, 0) : ctxt);
     } while (pairs.notnilp());
   }
 }
@@ -1589,20 +1589,20 @@ static bool eval_when_execp(List_sp situations) {
   return false;
 }
 
-CL_DEFUN void compile_eval_when(List_sp situations, List_sp body, Lexenv_sp env, Context_sp ctxt) {
+void compile_eval_when(List_sp situations, List_sp body, Lexenv_sp env, const Context ctxt) {
   if (eval_when_execp(situations))
     compile_progn(body, env, ctxt);
   else
     compile_literal(nil<T_O>(), env, ctxt);
 }
 
-CL_DEFUN void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(cond, env, ctxt->sub(1));
+void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, const Context ctxt) {
+  compile_form(cond, env, Context(ctxt, 1));
   Label_sp then_label = Label_O::make();
   Label_sp done_label = Label_O::make();
-  ctxt->emit_jump_if(then_label);
+  ctxt.emit_jump_if(then_label);
   compile_form(els, env, ctxt);
-  ctxt->emit_jump(done_label);
+  ctxt.emit_jump(done_label);
   then_label->contextualize(ctxt);
   compile_form(thn, env, ctxt);
   done_label->contextualize(ctxt);
@@ -1610,12 +1610,12 @@ CL_DEFUN void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, Context_s
 
 static bool go_tag_p(T_sp object) { return object.fixnump() || gc::IsA<Integer_sp>(object) || gc::IsA<Symbol_sp>(object); }
 
-CL_DEFUN void compile_tagbody(List_sp statements, Lexenv_sp env, Context_sp ctxt) {
+void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
   List_sp new_tags = gc::As_assert<List_sp>(env->tags());
   Symbol_sp tagbody_dynenv = cl__gensym(SimpleBaseString_O::make("TAG-DYNENV"));
   Lexenv_sp nenv = env->bind_vars(Cons_O::createList(tagbody_dynenv), ctxt);
   LexicalVarInfo_sp dynenv_info = gc::As_assert<LexicalVarInfo_sp>(var_info(tagbody_dynenv, nenv));
-  Context_sp stmt_ctxt = ctxt->subde(dynenv_info);
+  Context stmt_ctxt(ctxt, dynenv_info);
   for (auto cur : statements) {
     T_sp statement = oCar(cur);
     if (go_tag_p(statement))
@@ -1623,8 +1623,7 @@ CL_DEFUN void compile_tagbody(List_sp statements, Lexenv_sp env, Context_sp ctxt
   }
   Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), new_tags, nenv->blocks(), nenv->funs(), nenv->notinlines(), nenv->frameEnd());
   // Bind the dynamic environment (or just save the stack pointer).
-  ctxt->emit_entry_or_save_sp(dynenv_info);
-  // ctxt->assemble1(vm_entry, dynenv_info->frameIndex());
+  ctxt.emit_entry_or_save_sp(dynenv_info);
   // Compile the body, emitting the tag destination labels.
   for (auto cur : statements) {
     T_sp statement = oCar(cur);
@@ -1633,40 +1632,40 @@ CL_DEFUN void compile_tagbody(List_sp statements, Lexenv_sp env, Context_sp ctxt
       Label_sp lab = gc::As_assert<Label_sp>(oCddr(info));
       lab->contextualize(ctxt);
     } else
-      compile_form(statement, nnenv, stmt_ctxt->sub(0));
+      compile_form(statement, nnenv, Context(stmt_ctxt, 0));
   }
-  ctxt->maybe_emit_entry_close(dynenv_info);
+  ctxt.maybe_emit_entry_close(dynenv_info);
   // return nil if we really have to
-  if (ctxt->receiving() != 0) {
-    ctxt->assemble0(vm_nil);
-    if (ctxt->receiving() == -1)
-      ctxt->assemble0(vm_pop);
+  if (ctxt.receiving() != 0) {
+    ctxt.assemble0(vm_nil);
+    if (ctxt.receiving() == -1)
+      ctxt.assemble0(vm_pop);
   }
 }
 
 static void compile_exit(LexicalVarInfo_sp exit_de, Label_sp exit,
-                         Context_sp context) {
-  if (exit_de->funct() == context->cfunction()) { // local return
+                         const Context context) {
+  if (exit_de->funct() == context.cfunction()) { // local return
     // Unwind interposed dynenvs.
-    for (auto cur : context->dynenv()) {
+    for (auto cur : context.dynenv()) {
       T_sp interde = oCar(cur);
       if (interde == exit_de) break;
       if (gc::IsA<LexicalVarInfo_sp>(interde))
-        context->maybe_emit_entry_close(gc::As_unsafe<LexicalVarInfo_sp>(interde));
+        context.maybe_emit_entry_close(gc::As_unsafe<LexicalVarInfo_sp>(interde));
       else // must be a count of specials
-        context->emit_unbind(interde.unsafe_fixnum());
+        context.emit_unbind(interde.unsafe_fixnum());
     }
     // Actually exit.
-    context->emit_ref_or_restore_sp(exit_de);
-    context->emit_exit_or_jump(exit_de, exit);
+    context.emit_ref_or_restore_sp(exit_de);
+    context.emit_exit_or_jump(exit_de, exit);
   } else { // nonlocal
     exit_de->setClosedOverP(true);
-    context->reference_lexical_info(exit_de);
-    context->emit_exit(exit);
+    context.reference_lexical_info(exit_de);
+    context.emit_exit(exit);
   }
 }
 
-CL_DEFUN void compile_go(T_sp tag, Lexenv_sp env, Context_sp ctxt) {
+void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
   T_sp tags = env->tags();
   if (tags.consp()) {
     // tags must be a cons now
@@ -1682,14 +1681,14 @@ CL_DEFUN void compile_go(T_sp tag, Lexenv_sp env, Context_sp ctxt) {
   SIMPLE_ERROR("The GO tag %s does not exist.", _rep_(tag));
 }
 
-CL_DEFUN void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, Context_sp ctxt) {
+void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ctxt) {
   Symbol_sp block_dynenv = cl__gensym(SimpleBaseString_O::make("BLOCK-DYNENV"));
   Lexenv_sp nenv = env->bind_vars(Cons_O::createList(block_dynenv), ctxt);
   LexicalVarInfo_sp dynenv_info = gc::As_assert<LexicalVarInfo_sp>(var_info(block_dynenv, nenv));
   Label_sp label = Label_O::make();
   Label_sp normal_label = Label_O::make();
   // Bind the dynamic environment or save SP.
-  ctxt->emit_entry_or_save_sp(dynenv_info);
+  ctxt.emit_entry_or_save_sp(dynenv_info);
   Cons_sp new_pair = Cons_O::create(name, Cons_O::create(dynenv_info, label));
   Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), nenv->tags(), Cons_O::create(new_pair, nenv->blocks()), nenv->funs(),
                                    nenv->notinlines(), nenv->frameEnd());
@@ -1699,22 +1698,22 @@ CL_DEFUN void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, Context
   // store into the multiple values, so no problem there.
   // If we're returning exactly one value, the nonlocal just pushes one, and
   // the nonlocal stores into the MV which is then vm_push'd to the stack.
-  compile_progn(body, nnenv, ctxt->subde(dynenv_info));
-  bool r1p = ctxt->receiving() == 1;
+  compile_progn(body, nnenv, Context(ctxt, dynenv_info));
+  bool r1p = ctxt.receiving() == 1;
   if (r1p)
-    ctxt->emit_jump(normal_label);
+    ctxt.emit_jump(normal_label);
   label->contextualize(ctxt);
   // When we need 1 value, we have to make sure that the
   // "exceptional" case pushes a single value onto the stack.
   if (r1p) {
-    ctxt->assemble0(vm_push);
+    ctxt.assemble0(vm_push);
     normal_label->contextualize(ctxt);
   }
-  ctxt->maybe_emit_entry_close(dynenv_info);
+  ctxt.maybe_emit_entry_close(dynenv_info);
 }
 
-CL_DEFUN void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(valuef, env, ctxt->sub(-1));
+void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ctxt) {
+  compile_form(valuef, env, Context(ctxt, -1));
   T_sp blocks = env->blocks();
   if (blocks.consp()) {
     // blocks must be a cons now
@@ -1732,76 +1731,76 @@ CL_DEFUN void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, Context
 
 // catch, throw, and progv are actually handled by macros right now,
 // so these aren't used, but maybe will be in the fture.
-CL_DEFUN void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(tag, env, ctxt->sub(1));
+void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, const Context ctxt) {
+  compile_form(tag, env, Context(ctxt, 1));
   Label_sp target = Label_O::make();
-  ctxt->emit_catch(target);
+  ctxt.emit_catch(target);
   // FIXME: maybe should be a T context to match throw
   compile_progn(body, env, ctxt);
-  ctxt->assemble0(vm_catch_close);
+  ctxt.assemble0(vm_catch_close);
   target->contextualize(ctxt);
 }
 
-CL_DEFUN void compile_throw(T_sp tag, T_sp rform, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(tag, env, ctxt->sub(1));
-  compile_form(rform, env, ctxt->sub(-1));
-  ctxt->assemble0(vm_throw);
+void compile_throw(T_sp tag, T_sp rform, Lexenv_sp env, const Context ctxt) {
+  compile_form(tag, env, Context(ctxt, 1));
+  compile_form(rform, env, Context(ctxt, -1));
+  ctxt.assemble0(vm_throw);
 }
 
-CL_DEFUN void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, Context_sp ctxt) {
-  compile_form(syms, env, ctxt->sub(1));
-  compile_form(vals, env, ctxt->sub(1));
-  ctxt->assemble0(vm_progv);
+void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Context ctxt) {
+  compile_form(syms, env, Context(ctxt, 1));
+  compile_form(vals, env, Context(ctxt, 1));
+  ctxt.assemble0(vm_progv);
   compile_progn(body, env, ctxt);
-  ctxt->emit_unbind(1);
+  ctxt.emit_unbind(1);
 }
 
-CL_DEFUN void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, Context_sp ctxt) {
+void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, const Context ctxt) {
   // Compile the function. Coerce it as a designator.
   // TODO: When the fform is a #'foo form we could skip coercion.
-  compile_function(core::_sym_coerce_fdesignator, env, ctxt->sub(1));
-  compile_form(fform, env, ctxt->sub(1));
-  ctxt->sub(1)->emit_call(1);
+  compile_function(core::_sym_coerce_fdesignator, env, Context(ctxt, 1));
+  compile_form(fform, env, Context(ctxt, 1));
+  Context(ctxt, 1).emit_call(1);
   // Compile the arguments
   T_sp first = oCar(aforms);
   List_sp rest = gc::As<List_sp>(oCdr(aforms));
-  compile_form(first, env, ctxt->sub(-1));
+  compile_form(first, env, Context(ctxt, -1));
   if (rest.notnilp()) {
-    ctxt->assemble0(vm_push_values);
+    ctxt.assemble0(vm_push_values);
     for (auto cur : rest) {
-      compile_form(oCar(cur), env, ctxt->sub(-1));
-      ctxt->assemble0(vm_append_values);
+      compile_form(oCar(cur), env, Context(ctxt, -1));
+      ctxt.assemble0(vm_append_values);
     }
-    ctxt->assemble0(vm_pop_values);
+    ctxt.assemble0(vm_pop_values);
   }
-  ctxt->emit_mv_call();
+  ctxt.emit_mv_call();
 }
 
-CL_DEFUN void compile_multiple_value_prog1(T_sp fform, List_sp forms, Lexenv_sp env, Context_sp ctxt) {
+void compile_multiple_value_prog1(T_sp fform, List_sp forms, Lexenv_sp env, const Context ctxt) {
   compile_form(fform, env, ctxt);
   // We only need to actually save anything with all-values returns.
-  if (ctxt->receiving() == -1)
-    ctxt->assemble0(vm_push_values);
+  if (ctxt.receiving() == -1)
+    ctxt.assemble0(vm_push_values);
   for (auto cur : forms)
-    compile_form(oCar(cur), env, ctxt->sub(0));
-  if (ctxt->receiving() == -1)
-    ctxt->assemble0(vm_pop_values);
+    compile_form(oCar(cur), env, Context(ctxt, 0));
+  if (ctxt.receiving() == -1)
+    ctxt.assemble0(vm_pop_values);
 }
 
 // Compile a call, where the function is already on the stack.
-static void compile_call(T_sp args, Lexenv_sp env, Context_sp context) {
+static void compile_call(T_sp args, Lexenv_sp env, const Context context) {
   // Compile the arguments.
   size_t argcount = 0;
   for (auto cur : gc::As<List_sp>(args)) {
     ++argcount;
-    compile_form(oCar(cur), env, context->sub(1));
+    compile_form(oCar(cur), env, Context(context, 1));
   }
   // generate the call
-  context->emit_call(argcount);
+  context.emit_call(argcount);
 }
 
-CL_DEFUN void compile_load_time_value(T_sp form, T_sp tread_only_p,
-                                      Lexenv_sp env, Context_sp context) {
+void compile_load_time_value(T_sp form, T_sp tread_only_p,
+                             Lexenv_sp env, const Context context) {
   // load-time-value forms are compiled by putting their information into
   // a slot in the cmodule. This is so that (this part of) the compiler can
   // be used uniformly for eval, compile, or compile-file. It is slightly
@@ -1818,21 +1817,21 @@ CL_DEFUN void compile_load_time_value(T_sp form, T_sp tread_only_p,
   
   auto ltv = LoadTimeValueInfo_O::make(form, read_only_p);
   // Add the LTV to the cmodule.
-  size_t ind = context->new_literal_index(ltv);
+  size_t ind = context.new_literal_index(ltv);
   // With that done, we basically just need to compile a literal load.
   // (Note that we do always need to register the LTV, since it may have
   //  some weird side effect. We could hypothetically save some space by
   //  not allocating a spot in the constants if the value isn't actually
   //  used, but that's a very marginal case.)
-  switch (context->receiving()) {
+  switch (context.receiving()) {
   case 0: break; // no value required, so compile nothing
-  case 1: context->assemble1(vm_const, ind); break;
+  case 1: context.assemble1(vm_const, ind); break;
   case -1: // all values
-      context->assemble1(vm_const, ind);
-      context->assemble0(vm_pop);
+      context.assemble1(vm_const, ind);
+      context.assemble0(vm_pop);
       break;
   default:
-      SIMPLE_ERROR("BUG: Don't know how to compile LTV returning %" PFixnum " values", context->receiving());
+      SIMPLE_ERROR("BUG: Don't know how to compile LTV returning %" PFixnum " values", context.receiving());
   }
 }
 
@@ -1854,7 +1853,7 @@ static T_sp symbol_macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp vars
   return vars;
 }
 
-CL_DEFUN void compile_symbol_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, Context_sp context) {
+void compile_symbol_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, const Context context) {
   T_sp vars = symbol_macrolet_bindings(env->macroexpansion_environment(), bindings, env->vars());
   Lexenv_sp nenv = Lexenv_O::make(vars, env->tags(), env->blocks(), env->funs(), env->notinlines(), env->frameEnd());
   compile_locally(body, nenv, context);
@@ -1876,18 +1875,18 @@ static T_sp macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp funs) {
   return funs;
 }
 
-CL_DEFUN void compile_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, Context_sp context) {
+void compile_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, const Context context) {
   T_sp funs = macrolet_bindings(env->macroexpansion_environment(), bindings, env->funs());
   Lexenv_sp nenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), funs, env->notinlines(), env->frameEnd());
   compile_locally(body, nenv, context);
 }
 
-CL_DEFUN void compile_funcall(T_sp callee, List_sp args, Lexenv_sp env, Context_sp context) {
-  compile_form(callee, env, context->sub(1));
+void compile_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Context context) {
+  compile_form(callee, env, Context(context, 1));
   compile_call(args, env, context);
 }
 
-CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_sp context) {
+void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context context) {
   if (head == cl::_sym_progn)
     compile_progn(rest, env, context);
   else if (head == cl::_sym_let)
@@ -1938,14 +1937,14 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_s
     // Better would be to use the EQ opcode. Better than that would be
     // eliminating the special operator entirely and working with the
     // function instead.
-    compile_function(cl::_sym_eq, env, context->sub(1));
+    compile_function(cl::_sym_eq, env, Context(context, 1));
     compile_call(rest, env, context);
   } else if (head == cleavirPrimop::_sym_typeq) {
     // KLUDGE: call to typep.
-    compile_function(cl::_sym_typep, env, context->sub(1));
-    compile_form(oCar(rest), env, context->sub(1));
-    compile_literal(oCadr(rest), env, context->sub(1));
-    context->emit_call(2);
+    compile_function(cl::_sym_typep, env, Context(context, 1));
+    compile_form(oCar(rest), env, Context(context, 1));
+    compile_literal(oCadr(rest), env, Context(context, 1));
+    context.emit_call(2);
   }
   // not a special form
   else {
@@ -1979,26 +1978,26 @@ CL_DEFUN void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, Context_s
             return;
           }
         } // no compiler macro, or expansion declined: call
-        compile_function(head, env, context->sub(1));
+        compile_function(head, env, Context(context, 1));
         compile_call(rest, env, context);
       } else if (gc::IsA<LocalFunInfo_sp>(info) || info.nilp()) {
         // unknown function warning handled by compile-function (eventually)
         // note we do a double lookup of the fun info,
         // which is inefficient in the compiler (doesn't affect generated code)
-        compile_function(head, env, context->sub(1));
+        compile_function(head, env, Context(context, 1));
         compile_call(rest, env, context);
       } else
         SIMPLE_ERROR("BUG: Unknown info %s", _rep_(info));
     } else if (gc::IsA<Cons_sp>(head) && (oCar(head) == cl::_sym_lambda)) {
       // Lambda form
-      compile_function(head, env, context->sub(1));
+      compile_function(head, env, Context(context, 1));
       compile_call(rest, env, context);
     } else
       SIMPLE_ERROR("Illegal combination head: %s rest: %s", _rep_(head), _rep_(rest));
   }
 }
 
-CL_DEFUN void compile_form(T_sp form, Lexenv_sp env, Context_sp context) {
+void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   // Code walk if we're doing that
   if (_sym_STARcodeWalkerSTAR->boundP() && _sym_STARcodeWalkerSTAR->symbolValue().notnilp())
     form = eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), form, env);

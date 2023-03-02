@@ -184,7 +184,7 @@ public:
 };
 
 FORWARD(Lexenv);
-FORWARD(Context);
+class Context; // forward decl
 class Lexenv_O : public General_O {
   LISP_CLASS(comp, CompPkg, Lexenv_O, "Lexenv", General_O);
 public:
@@ -219,7 +219,7 @@ public:
    * environment. The max local count in the current function is also
    * updated.
    */
-  CL_DEFMETHOD Lexenv_sp bind_vars(List_sp vars, Context_sp context);
+  Lexenv_sp bind_vars(List_sp vars, const Context context);
   // Add VARS as special in ENV.
   CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
   // Add FUNCTION NAMES as notinline in ENV.
@@ -246,74 +246,67 @@ public:
 
 // Context contains information about what the current form needs
 // to know about what it is enclosed by.
+// Because they are only ever passed "down" and used within the
+// compiler, they are POD rather than Lisp objects, to save some time
+// on consing and GC.
+// (Profiling has shown that the compiler spends a lot of time consing.)
 FORWARD(Label);
 FORWARD(Cfunction);
 FORWARD(Module);
-class Context_O : public General_O {
-  LISP_CLASS(comp, CompPkg, Context_O, "Context", General_O);
+class Context {
 public:
   int _receiving;
   List_sp _dynenv;
   T_sp _cfunction;
 public:
-  Context_O(int receiving, T_sp dynenv, T_sp cfunction)
+  Context(int receiving, T_sp dynenv, T_sp cfunction)
     : _receiving(receiving), _dynenv(dynenv), _cfunction(cfunction) {}
-  CL_LISPIFY_NAME(Context/make)
-  CL_DEF_CLASS_METHOD
-  static Context_sp make(int receiving, T_sp dynenv, T_sp cfunction) {
-    return gctools::GC<Context_O>::allocate<gctools::RuntimeStage>(receiving, dynenv, cfunction);
-  }
-  CL_LISPIFY_NAME(context/receiving)
-  CL_DEFMETHOD int receiving() { return this->_receiving; }
-  CL_LISPIFY_NAME(context/dynenv)
-  CL_DEFMETHOD List_sp dynenv() { return this->_dynenv; }
-  CL_DEFMETHOD Cfunction_sp cfunction() {
+  // Sub constructors
+  Context(const Context& parent, int receiving)
+    : _receiving(receiving), _dynenv(parent.dynenv()),
+      _cfunction(parent.cfunction()) {}
+  // Plop the de on the front.
+  Context(const Context& parent, T_sp de)
+    : _receiving(parent.receiving()),
+      _dynenv(Cons_O::create(de, parent.dynenv())),
+      _cfunction(parent.cfunction()) {}
+  int receiving() const { return this->_receiving; }
+  List_sp dynenv() const { return this->_dynenv; }
+  Cfunction_sp cfunction() const {
     return gc::As<Cfunction_sp>(this->_cfunction);
   }
-  CL_DEFMETHOD Module_sp module();
+  Module_sp module() const;
 public:
-  // Make a new context that's like this one but with a possibly-different
-  // RECEIVING.
-  CL_DEFMETHOD Context_sp sub(int receiving) {
-    return Context_O::make(receiving, this->_dynenv, this->_cfunction);
-  }
-  // Make a new context that's like this one but with the given thing
-  // plopped on the dynenv.
-  CL_DEFMETHOD Context_sp subde(T_sp de) {
-    return Context_O::make(this->_receiving, Cons_O::create(de, this->_dynenv),
-                           this->_cfunction);
-  }
-  CL_DEFMETHOD size_t literal_index(T_sp literal);
-  CL_DEFMETHOD size_t new_literal_index(T_sp literal);
-  CL_DEFMETHOD size_t closure_index(T_sp info);
-  CL_DEFMETHOD void assemble0(uint8_t opcode);
-  CL_DEFMETHOD void assemble1(uint8_t opcode, size_t operand1);
-  CL_DEFMETHOD void assemble2(uint8_t opcode,
-                              size_t operand1, size_t operand2);
+  size_t literal_index(T_sp literal) const;
+  size_t new_literal_index(T_sp literal) const;
+  size_t closure_index(T_sp info) const;
+  void assemble0(uint8_t opcode) const;
+  void assemble1(uint8_t opcode, size_t operand1) const;
+  void assemble2(uint8_t opcode, size_t operand1, size_t operand2) const;
   void emit_control_label(Label_sp,
-                          uint8_t opcode8, uint8_t opcode16, uint8_t opcode24);
-  CL_DEFMETHOD void emit_jump(Label_sp label);
-  CL_DEFMETHOD void emit_jump_if(Label_sp label);
-  CL_DEFMETHOD void emit_entry_or_save_sp(LexicalVarInfo_sp info);
-  CL_DEFMETHOD void emit_ref_or_restore_sp(LexicalVarInfo_sp info);
-  CL_DEFMETHOD void emit_exit(Label_sp label);
-  CL_DEFMETHOD void emit_exit_or_jump(LexicalVarInfo_sp info, Label_sp label);
-  CL_DEFMETHOD void maybe_emit_entry_close(LexicalVarInfo_sp info);
-  CL_DEFMETHOD void emit_catch(Label_sp label);
-  CL_DEFMETHOD void emit_jump_if_supplied(Label_sp label, size_t indx);
-  CL_DEFMETHOD void reference_lexical_info(LexicalVarInfo_sp info);
-  CL_DEFMETHOD void maybe_emit_make_cell(LexicalVarInfo_sp info);
-  CL_DEFMETHOD void maybe_emit_cell_ref(LexicalVarInfo_sp info);
-  CL_DEFMETHOD void maybe_emit_encage(LexicalVarInfo_sp info);
-  CL_DEFMETHOD void emit_lexical_set(LexicalVarInfo_sp info);
-  CL_DEFMETHOD void emit_parse_key_args(size_t max_count, size_t key_count,
-                                        size_t key_start, size_t indx,
-                                        bool aokp);
-  CL_DEFMETHOD void emit_bind(size_t count, size_t offset);
-  CL_DEFMETHOD void emit_call(size_t argcount);
-  CL_DEFMETHOD void emit_mv_call();
-  CL_DEFMETHOD void emit_special_bind(Symbol_sp sym);
-  CL_DEFMETHOD void emit_unbind(size_t count);
+                          uint8_t opcode8, uint8_t opcode16, uint8_t opcode24) const;
+  void emit_jump(Label_sp label) const;
+  void emit_jump_if(Label_sp label) const;
+  void emit_entry_or_save_sp(LexicalVarInfo_sp info) const;
+  void emit_ref_or_restore_sp(LexicalVarInfo_sp info) const;
+  void emit_exit(Label_sp label) const;
+  void emit_exit_or_jump(LexicalVarInfo_sp info, Label_sp label) const;
+  void maybe_emit_entry_close(LexicalVarInfo_sp info) const;
+  void emit_catch(Label_sp label) const;
+  void emit_jump_if_supplied(Label_sp label, size_t indx) const;
+  void reference_lexical_info(LexicalVarInfo_sp info) const;
+  void maybe_emit_make_cell(LexicalVarInfo_sp info) const;
+  void maybe_emit_cell_ref(LexicalVarInfo_sp info) const;
+  void maybe_emit_encage(LexicalVarInfo_sp info) const;
+  void emit_lexical_set(LexicalVarInfo_sp info) const;
+  void emit_parse_key_args(size_t max_count, size_t key_count,
+                           size_t key_start, size_t indx,
+                           bool aokp) const;
+  void emit_bind(size_t count, size_t offset) const;
+  void emit_call(size_t argcount) const;
+  void emit_mv_call() const;
+  void emit_special_bind(Symbol_sp sym) const;
+  void emit_unbind(size_t count) const;
 };
 
 FORWARD(Annotation);
@@ -374,7 +367,7 @@ public:
     return gctools::GC<Label_O>::allocate<gctools::RuntimeStage>();
   }
 public:
-  CL_DEFMETHOD void contextualize(Context_sp context);
+  void contextualize(const Context context);
 };
  
 FORWARD(Fixup);
@@ -399,7 +392,7 @@ public:
 public:
   // Mark the fixup in the instruction stream during assembly.
   // FIXME: This name sucks, but emit_fixup seems wayy too confusing.
-  CL_DEFMETHOD void contextualize(Context_sp context);
+  void contextualize(const Context context);
   // Compute the final size (in bytes) for the fixed up code.
   CL_DEFMETHOD virtual size_t resize() = 0;
   // Emit the final code into the bytecode vector.
