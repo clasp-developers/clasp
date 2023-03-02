@@ -171,12 +171,20 @@
     (cond ((null lists) 'nil)
           ((null (cdr lists)) `,(first lists))
           ((member-if #'constant-nil-p (butlast lists))
-          ;; Remove NILs
-          `(append ,@(remove-if #'constant-nil-p (butlast lists)) ,@(last lists)))
-          ((every #'list-form-p lists)
-           ;; if we have (append (list ...) (list ...)), simplify to (list ...)
-           `(list ,@(loop for (op . args) in lists
-                          appending args)))
+           ;; Remove NILs.
+           ;; We do butlast because of issue #799:
+           ;; (append x nil) has to copy x but (append x) doesn't.
+           `(append ,@(remove-if #'constant-nil-p (butlast lists))
+                    ,@(last lists)))
+          ;; (append (list ...) ...) => (list* ... (append ...))
+          ((list-form-p (first lists))
+           (loop for (list . rem) on lists
+                 if (list-form-p list)
+                   append (rest list) into elems
+                 else
+                   do (return `(list* ,@elems (append ,list ,@rem)))
+                 ;; every element was a list form.
+                 finally (return `(list ,@elems))))
           (t form))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
