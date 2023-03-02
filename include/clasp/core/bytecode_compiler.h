@@ -220,6 +220,8 @@ public:
    * updated.
    */
   Lexenv_sp bind_vars(List_sp vars, const Context context);
+  // Ditto but with just one.
+  Lexenv_sp bind1var(Symbol_sp var, const Context context);
   // Add VARS as special in ENV.
   CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
   // Add FUNCTION NAMES as notinline in ENV.

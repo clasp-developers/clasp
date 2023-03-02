@@ -78,7 +78,7 @@ Lexenv_sp Lexenv_O::bind_vars(List_sp vars, const Context ctxt) {
   if (vars.nilp())
     return this->asSmartPtr();
   size_t frame_start = this->frameEnd();
-  size_t frame_end = frame_start + (vars.nilp() ? 0 : vars.unsafe_cons()->length());
+  size_t frame_end = frame_start + vars.unsafe_cons()->length();
   Cfunction_sp cf = ctxt.cfunction();
 
   cf->setNlocals(std::max(frame_end, cf->nlocals()));
@@ -92,6 +92,18 @@ Lexenv_sp Lexenv_O::bind_vars(List_sp vars, const Context ctxt) {
     Cons_sp pair = Cons_O::create(var, info);
     new_vars = Cons_O::create(pair, new_vars);
   }
+  return Lexenv_O::make(new_vars, this->tags(), this->blocks(), this->funs(), this->notinlines(), frame_end);
+}
+
+// Save a cons and append call in a common case.
+Lexenv_sp Lexenv_O::bind1var(Symbol_sp var, const Context ctxt) {
+  size_t frame_start = this->frameEnd();
+  size_t frame_end = frame_start + 1;
+  Cfunction_sp cf = ctxt.cfunction();
+  cf->setNlocals(std::max(frame_end, cf->nlocals()));
+  auto info = LexicalVarInfo_O::make(frame_start, cf);
+  Cons_sp pair = Cons_O::create(var, info);
+  Cons_sp new_vars = Cons_O::create(pair, this->vars());
   return Lexenv_O::make(new_vars, this->tags(), this->blocks(), this->funs(), this->notinlines(), frame_end);
 }
 
@@ -1034,7 +1046,8 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
       ++special_binding_count;
       ctxt.emit_special_bind(var);
     } else {
-      post_binding_env = post_binding_env->bind_vars(Cons_O::createList(var), ctxt);
+      // FIXME: We don't need to cons actual lexenvs here.
+      post_binding_env = post_binding_env->bind1var(var, ctxt);
       ++lexical_binding_count;
       ctxt.maybe_emit_make_cell(gc::As_assert<comp::LexicalVarInfo_sp>(var_info(var, post_binding_env)));
     }
@@ -1073,7 +1086,7 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
       ctxt = Context(ctxt, Integer_O::create(1));
     } else {
       size_t frame_start = new_env->frameEnd();
-      new_env = new_env->bind_vars(Cons_O::createList(var), ctxt);
+      new_env = new_env->bind1var(var, ctxt);
       ctxt.maybe_emit_make_cell(gc::As_assert<comp::LexicalVarInfo_sp>(var_info(var, new_env)));
       ctxt.assemble1(vm_set, frame_start);
     }
@@ -1114,7 +1127,7 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, size
   T_sp varinfo = var_info(var, env);
   T_sp supinfo = nil<T_O>();
   if (supplied_var.notnilp()) {
-    env = env->bind_vars(Cons_O::createList(supplied_var), context);
+    env = env->bind1var(supplied_var, context);
     supinfo = var_info(supplied_var, env);
   }
   context.emit_jump_if_supplied(supplied_label, var_index);
@@ -1317,7 +1330,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       context.assemble1(vm_listify_rest_args, max_count);
     }
     context.assemble1(vm_set, new_env->frameEnd());
-    new_env = new_env->bind_vars(Cons_O::createList(rest), context);
+    new_env = new_env->bind1var(rest, context);
     LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(rest, new_env));
     if (special_binding_p(rest, specials, env)) {
       context.assemble1(vm_ref, lvinfo->frameIndex());
@@ -1454,7 +1467,7 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
   // KLUDGEy - we could do this in one new environment
   Lexenv_sp new_env1 = env->bind_vars(fun_vars.cons(), ctxt);
   Lexenv_sp new_env2 = Lexenv_O::make(new_env1->vars(), new_env1->tags(), new_env1->blocks(),
-                                      Cons_O::append(funs.cons(), new_env1->funs()), new_env1->notinlines(), new_env1->frameEnd());
+                                      funs.dot(new_env1->funs()).cons(), new_env1->notinlines(), new_env1->frameEnd());
   compile_locally(body, new_env2, ctxt);
 }
 
@@ -1476,7 +1489,7 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
   frame_slot = frame_start;
   Lexenv_sp new_env1 = env->bind_vars(fun_vars.cons(), ctxt);
   Lexenv_sp new_env2 = Lexenv_O::make(new_env1->vars(), new_env1->tags(), new_env1->blocks(),
-                                      Cons_O::append(funs.cons(), new_env1->funs()), new_env1->notinlines(), new_env1->frameEnd());
+                                      funs.dot(new_env1->funs()).cons(), new_env1->notinlines(), new_env1->frameEnd());
   for (auto cur : definitions) {
     Cons_sp definition = gc::As_unsafe<Cons_sp>(oCar(cur));
     T_sp name = oCar(definition);
@@ -1527,7 +1540,7 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
       ctxt.assemble1(vm_ref, index);
       // called for effect, i.e. to keep frame size correct
       // FIXME: This is super kludgey.
-      env->bind_vars(Cons_O::createList(var), ctxt);
+      env->bind1var(var, ctxt);
     }
     ctxt.assemble1(vm_symbol_value_set, ctxt.literal_index(var));
     if (ctxt.receiving() != 0) {
@@ -1547,7 +1560,7 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     if (ctxt.receiving() != 0) {
       ctxt.assemble1(vm_set, index);
       ctxt.assemble1(vm_ref, index);
-      env->bind_vars(Cons_O::createList(var), ctxt);
+      env->bind1var(var, ctxt);
     }
     if (localp)
       ctxt.emit_lexical_set(lvinfo);
@@ -1613,7 +1626,7 @@ static bool go_tag_p(T_sp object) { return object.fixnump() || gc::IsA<Integer_s
 void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
   List_sp new_tags = gc::As_assert<List_sp>(env->tags());
   Symbol_sp tagbody_dynenv = cl__gensym(SimpleBaseString_O::make("TAG-DYNENV"));
-  Lexenv_sp nenv = env->bind_vars(Cons_O::createList(tagbody_dynenv), ctxt);
+  Lexenv_sp nenv = env->bind1var(tagbody_dynenv, ctxt);
   LexicalVarInfo_sp dynenv_info = gc::As_assert<LexicalVarInfo_sp>(var_info(tagbody_dynenv, nenv));
   Context stmt_ctxt(ctxt, dynenv_info);
   for (auto cur : statements) {
@@ -1683,7 +1696,7 @@ void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
 
 void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ctxt) {
   Symbol_sp block_dynenv = cl__gensym(SimpleBaseString_O::make("BLOCK-DYNENV"));
-  Lexenv_sp nenv = env->bind_vars(Cons_O::createList(block_dynenv), ctxt);
+  Lexenv_sp nenv = env->bind1var(block_dynenv, ctxt);
   LexicalVarInfo_sp dynenv_info = gc::As_assert<LexicalVarInfo_sp>(var_info(block_dynenv, nenv));
   Label_sp label = Label_O::make();
   Label_sp normal_label = Label_O::make();
