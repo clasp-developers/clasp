@@ -3193,9 +3193,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::ConstitutionAtom_O" :layout-offset-field-names ("_Index")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "chem::ConstitutionAtom_O" :layout-offset-field-names ("_AtomType")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "chem::ConstitutionAtom_O"
              :layout-offset-field-names ("_Properties")}
@@ -3214,10 +3211,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::ConstitutionVirtualAtom_O"
              :layout-offset-field-names ("_Index")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "chem::ConstitutionVirtualAtom_O"
-             :layout-offset-field-names ("_AtomType")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "chem::ConstitutionVirtualAtom_O"
