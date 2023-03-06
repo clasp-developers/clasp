@@ -301,24 +301,25 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                    image-startup-position optimize optimize-level))
   "See CLHS compile-file."
   (with-compilation-unit ()
-    (let ((output-path (apply #'compile-file-pathname input-file args))
-          (*compilation-module-index* 0) ; FIXME: necessary?
-          (*readtable* *readtable*) (*package* *package*)
-          (*optimize* *optimize*) (*policy* *policy*)
-          (*compile-file-pathname*
-            (pathname (merge-pathnames input-file)))
-          (*compile-file-truename*
-            (translate-logical-pathname *compile-file-pathname*))
-          (*compile-file-source-debug-pathname*
-            (if cfsdpp source-debug-pathname *compile-file-truename*))
-          (*compile-file-file-scope*
-            (core:file-scope *compile-file-source-debug-pathname*))
-          ;; bytecode compilation can't be done in parallel at the moment.
-          ;; we could possibly warn about it if execution was specified,
-          ;; but practically speaking it would mostly be noise.
-          (execution (if (member output-type '(:bytecode :bytecodel))
-                         :serial
-                         execution)))
+    (let* ((output-type (fixup-output-type output-type))
+           (output-path (apply #'compile-file-pathname input-file args))
+           (*compilation-module-index* 0) ; FIXME: necessary?
+           (*readtable* *readtable*) (*package* *package*)
+           (*optimize* *optimize*) (*policy* *policy*)
+           (*compile-file-pathname*
+             (pathname (merge-pathnames input-file)))
+           (*compile-file-truename*
+             (translate-logical-pathname *compile-file-pathname*))
+           (*compile-file-source-debug-pathname*
+             (if cfsdpp source-debug-pathname *compile-file-truename*))
+           (*compile-file-file-scope*
+             (core:file-scope *compile-file-source-debug-pathname*))
+           ;; bytecode compilation can't be done in parallel at the moment.
+           ;; we could possibly warn about it if execution was specified,
+           ;; but practically speaking it would mostly be noise.
+           (execution (if (member output-type '(:bytecode :bytecodel))
+                          :serial
+                          execution)))
       (with-open-file (source-sin input-file
                                   :external-format external-format)
         (with-compilation-results ()
