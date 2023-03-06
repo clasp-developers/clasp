@@ -592,6 +592,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, print);
 SYMBOL_EXPORT_SC_(KeywordPkg, pathname);
 SYMBOL_SC_(CorePkg, setThrowPosition);
 SYMBOL_EXPORT_SC_(CorePkg, wrongNumberOfArguments);
+SYMBOL_EXPORT_SC_(CorePkg, oddKeywords);
 SYMBOL_EXPORT_SC_(KeywordPkg, object);
 SYMBOL_EXPORT_SC_(KeywordPkg, format_control);
 SYMBOL_EXPORT_SC_(KeywordPkg, format_arguments);

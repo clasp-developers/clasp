@@ -1122,12 +1122,19 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                              ((:too-few) "Too few arguments"))
                            (arguments condition) (lambda-list condition)))))))
 
+(define-condition core:odd-keywords (program-error)
+  ((%called-function :initarg :called-function :reader called-function))
+  (:report (lambda (condition stream)
+             (format stream "Odd number of keyword arguments~:[~; for ~s~]."
+                     (called-function condition)
+                     (core:function-name (called-function condition))))))
+
 (define-condition core:unrecognized-keyword-argument-error (program-error)
   ((called-function :initarg :called-function :reader called-function :initform nil)
-   (unrecognized-keyword :initarg :unrecognized-keyword :reader unrecognized-keyword))
+   (unrecognized-keywords :initarg :unrecognized-keywords :reader unrecognized-keywords))
   (:report (lambda (condition stream)
-             (format stream "Unrecognized keyword argument ~S~:[~; for ~S~]."
-                     (unrecognized-keyword condition)
+             (format stream "Unrecognized keyword arguments ~S~:[~; for ~S~]."
+                     (unrecognized-keywords condition)
                      (called-function condition)
                      (core:function-name (called-function condition))))))
 

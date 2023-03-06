@@ -1210,11 +1210,7 @@ T_O* cc_mvcGatherRest2(T_O** values, size_t nvalues) {
 
 void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
-  T_sp functionName = closure->functionName();
-  if (functionName.nilp())
-    SIMPLE_ERROR(("Odd number of keyword arguments"));
-  else
-    SIMPLE_ERROR(("In call to %s with lambda-list %s - got odd number of keyword arguments") , _rep_(functionName) , _rep_(closure->lambdaList()));
+  throwOddKeywordsError(closure);
 }
 
 T_O **cc_multipleValuesArrayAddress()
