@@ -805,7 +805,8 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   if (env.nilp()) { // nothing
   } else if (gc::IsA<comp::Lexenv_sp>(env)) {
-    return gc::As_unsafe<comp::Lexenv_sp>(env)->lookupSymbolMacro(sym);
+    T_sp local = gc::As_unsafe<comp::Lexenv_sp>(env)->lookupSymbolMacro(sym);
+    if (local.notnilp()) return local;
   } else { // pass to cleavir (which also checks global environment)
     SYMBOL_EXPORT_SC_(CorePkg, cleavirSymbolMacro);
     return eval::funcall(core::_sym_cleavirSymbolMacro, sym, env);

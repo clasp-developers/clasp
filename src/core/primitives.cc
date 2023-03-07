@@ -719,31 +719,24 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS: macro-function)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
-  T_sp func = nil<T_O>();
   if (env.nilp()) {
     if (symbol->fboundp() && symbol->macroP()) return symbol->symbolFunction();
     else return nil<T_O>();
-  } else if (comp::Lexenv_sp bce = env.asOrNull<comp::Lexenv_O>()) {
-    func = bce->lookupMacro(symbol);
-#if 0    
-  } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>()) {
-    clcenv::Info_sp info = clcenv::function_info(cenv,symbol);
-    if ( clcenv::LocalMacroInfo_sp lm = info.asOrNull<clcenv::LocalMacroInfo_O>() ) {
-      func = lm->_Expander;
-    } else if (clcenv::GlobalMacroInfo_sp gm = info.asOrNull<clcenv::GlobalMacroInfo_O>() ) {
-      func = gm->_Expander;
-    }
-#endif
+  } else if (gc::IsA<comp::Lexenv_sp>(env)) {
+    T_sp func = gc::As_unsafe<comp::Lexenv_sp>(env)->lookupMacro(symbol);
+    if (func.nilp() // not bound locally, try global
+        && symbol->fboundp() && symbol->macroP())
+      return symbol->symbolFunction();
+    else return func;
   } else {
     if (cleavirEnv::_sym_macroFunction->fboundp()) {
-      func = eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
+      return eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
     } else {
       printf("%s:%d Unexpected environment for MACRO-FUNCTION before Cleavir is available - using toplevel environment\n", __FILE__, __LINE__);
       if (symbol->fboundp() && symbol->macroP()) return symbol->symbolFunction();
       else return nil<T_O>();
     }
   }
-  return func;
 }
 
 CL_LISPIFY_NAME("cl:macro-function");
