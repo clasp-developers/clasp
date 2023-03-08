@@ -773,17 +773,17 @@
 
 (defun redefine-cl-functions ()
   "Some functions in CL package are expected to be generic. We make them so."
-  (unless (member :staging *features*)
+  (unless (and (not (member :eclasp *features*)) (member :staging *features*))
     (loop with previous-lock = (si::package-lock "COMMON-LISP" nil)
           with gray-package = (find-package "GRAY")
           finally (si::package-lock "COMMON-LISP" previous-lock)
           for cl-symbol in '#.+conflicting-symbols+
           for gray-symbol = (find-symbol (symbol-name cl-symbol) gray-package)
           unless (typep (fdefinition cl-symbol) 'generic-function)
-            do (setf (fdefinition cl-symbol) (fdefinition gray-symbol))
-	       (unintern gray-symbol gray-package)
-               (import cl-symbol gray-package)
-               (export cl-symbol gray-package))
+          do (setf (fdefinition cl-symbol) (fdefinition gray-symbol))
+	  (unintern gray-symbol gray-package)
+          (import cl-symbol gray-package)
+          (export cl-symbol gray-package))
     nil))
 
 #+(or cclasp eclasp) (eval-when (:load-toplevel) (setf clos:*clos-booted* t))
