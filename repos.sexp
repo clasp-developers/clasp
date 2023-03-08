@@ -60,6 +60,26 @@
   :directory "src/lisp/kernel/contrib/babel/"
   :commit "f892d0587c7f3a1e6c0899425921b48008c29ee3"
   :extension :cando)
+ (:name :fast-io
+  :repository "https://github.com/rpav/fast-io.git"
+  :directory "src/lisp/kernel/contrib/fast-io/"
+  :commit "a4c5ad600425842e8b6233b1fa22610ffcd874c3"
+  :extension :cando)
+ (:name :trivial-utf-8
+  :repository "https://gitlab.common-lisp.net/trivial-utf-8/trivial-utf-8.git"
+  :directory "src/lisp/kernel/contrib/trivial-utf-8/"
+  :commit "6ca9943588cbc61ad22a3c1ff81beb371e122394"
+  :extension :cando)
+ (:name :ieee-floats
+  :repository "https://github.com/marijnh/ieee-floats.git"
+  :directory "src/lisp/kernel/contrib/ieee-floats/"
+  :commit "9566ce8adfb299faef803d95736c780413a1373c"
+  :extension :cando)
+ (:name :cl-conspack
+  :repository "https://github.com/conspack/cl-conspack.git"
+  :directory "src/lisp/kernel/contrib/cl-conspack/"
+  :commit "6e529d7b3a7223ef1bb5c7b9f18384ba67b50b09"
+  :extension :cando)
  (:name :bordeaux-threads
   :repository "https://github.com/sionescu/bordeaux-threads.git"
   :directory "src/lisp/kernel/contrib/bordeaux-threads/"
