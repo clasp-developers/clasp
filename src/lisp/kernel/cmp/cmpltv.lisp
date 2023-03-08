@@ -570,7 +570,7 @@
     (make-array 74 sind rank . dims)
     (setf-row-major-aref 75 arrayind rmindex valueind)
     (make-hash-table 76 sind test count)
-    ((setf gethash) 77 htind keyind valueind)
+    (setf-gethash 77 htind keyind valueind)
     (make-sb64 78 sind sb64)
     (find-package 79 sind nameind)
     (make-bignum 80 sind size . words) ; size is signed
@@ -852,7 +852,7 @@
     (write-b16 count stream)))
 
 (defmethod encode ((inst setf-gethash) stream)
-  (write-mnemonic '(setf gethash) stream)
+  (write-mnemonic 'setf-gethash stream)
   (write-index (setf-gethash-hash-table inst) stream)
   (write-index (setf-gethash-key inst) stream)
   (write-index (setf-gethash-value inst) stream))
