@@ -4,78 +4,74 @@
                           "chem::EnergyRigidBodyNonbond_O" "core::ComplexVector_O"
                           "core::SimpleMDArray_int32_t_O" "core::Integer_O"
                           "chem::SparseLargeSquareMatrix_O" "clbind::ClassRegistry_O"
-                          "chem::OutPlug_O" "mp::Process_O" "chem::Isoname_O" "core::Record_O"
-                          "core::LightUserData_O" "core::MDArrayT_O" "core::DirectoryEntry_O"
-                          "chem::Atom_O" "llvmo::Linker_O" "comp::FunInfo_O" "chem::ZMatrix_O"
-                          "core::MDArray_float_O" "chem::StereoisomerAtom_O" "core::SimpleFun_O"
-                          "core::SourcePosInfo_O" "llvmo::BranchInst_O" "chem::IterateMatter_O"
-                          "llvmo::AllocaInst_O" "chem::AtomicInfo" "chem::FFTypesDb_O"
-                          "core::ComplexVector_float_O" "core::StandardClassCreator_O"
-                          "chem::Alias_O" "comp::LexicalVarInfo_O"
+                          "mp::Process_O" "core::Record_O" "core::LightUserData_O"
+                          "core::MDArrayT_O" "core::DirectoryEntry_O" "chem::Atom_O"
+                          "llvmo::Linker_O" "comp::FunInfo_O" "chem::ZMatrix_O"
+                          "core::MDArray_float_O" "core::SimpleFun_O" "core::SourcePosInfo_O"
+                          "llvmo::BranchInst_O" "chem::IterateMatter_O" "llvmo::AllocaInst_O"
+                          "chem::AtomicInfo" "chem::FFTypesDb_O" "core::ComplexVector_float_O"
+                          "core::StandardClassCreator_O" "chem::Alias_O" "comp::LexicalVarInfo_O"
                           "chem::MapOfMonomerNamesToAtomIndexers_O" "chem::ZMatrixInternal_O"
                           "core::HashTableCustom_O" "adapt::SymbolSet_O" "chem::Minimizer_O"
                           "core::ComplexVector_byte8_t_O" "core::OptionalArgument"
-                          "core::HashTable_O" "chem::SpecificContext_O" "chem::ChemDraw_O"
-                          "chem::Molecule_O" "chem::ReportBase_O" "core::SimpleVector_size_t_O"
-                          "chem::RotamerAtom" "chem::Dimacs_O" "llvmo::DIScope_O"
-                          "chem::FullLargeSquareMatrix_O" "core::FileStatus_O"
-                          "chem::EnergySketchStretch_O" "chem::EnergyChiralRestraint_O"
-                          "llvmo::IndirectBrInst_O" "core::CodeSimpleFun_O" "chem::MonomerPack_O"
-                          "geom::MDArrayCoordinate_O" "llvmo::ConstantArray_O"
-                          "chem::OligomerPart_Monomer_O" "chem::ElementsInfo_O" "llvmo::PHINode_O"
-                          "chem::EnergyFixedNonbondRestraint_O" "core::Package_O"
-                          "chem::EnergySketchNonbond" "chem::Structure_Old_List_O"
-                          "core::SimpleMDArrayBaseChar_O" "chem::OctNode_O" "chem::Entity_O"
-                          "llvmo::DWARFUnit_O" "chem::AtomTest_O" "core::Stream_O" "chem::AGEdge_O"
-                          "chem::ReadAmberParameters_O" "llvmo::DILocation_O"
-                          "core::SimpleMDArray_O" "core::VMFrameDynEnv_O"
-                          "core::SymbolClassHolderPair" "comp::EncageFixup_O"
-                          "chem::EnergyAnchorRestraint_O" "chem::FFAngle_O" "chem::Smirks_O"
-                          "core::ShortFloat_O" "llvmo::MDString_O"
+                          "core::HashTable_O" "chem::ChemDraw_O" "chem::Molecule_O"
+                          "chem::ReportBase_O" "core::SimpleVector_size_t_O" "chem::RotamerAtom"
+                          "chem::Dimacs_O" "llvmo::DIScope_O" "chem::FullLargeSquareMatrix_O"
+                          "core::FileStatus_O" "chem::EnergySketchStretch_O"
+                          "chem::EnergyChiralRestraint_O" "llvmo::IndirectBrInst_O"
+                          "core::CodeSimpleFun_O" "geom::MDArrayCoordinate_O"
+                          "llvmo::ConstantArray_O" "chem::ElementsInfo_O" "llvmo::PHINode_O"
+                          "chem::EnergySketchNonbond" "chem::EnergyFixedNonbondRestraint_O"
+                          "core::Package_O" "chem::Structure_Old_List_O"
+                          "core::SimpleMDArrayBaseChar_O" "chem::OctNode_O" "chem::AGEdge_O"
+                          "llvmo::DWARFUnit_O" "chem::ReadAmberParameters_O" "chem::AtomTest_O"
+                          "core::Stream_O" "llvmo::DILocation_O" "core::SimpleMDArray_O"
+                          "core::VMFrameDynEnv_O" "core::SymbolClassHolderPair"
+                          "comp::EncageFixup_O" "chem::EnergyAnchorRestraint_O" "chem::FFAngle_O"
+                          "chem::Smirks_O" "core::ShortFloat_O" "llvmo::MDString_O"
                           "chem::EnergyDihedralRestraint_O" "core::T_O" "core::Number_O"
                           "llvmo::DICompileUnit_O" "core::BindingDynEnv_O"
                           "core::AbstractSimpleVector_O" "core::SimpleMDArray_byte16_t_O"
                           "core::Pathname_O" "core::Str8Ns_O" "llvmo::FunctionPass_O"
                           "core::SimpleVector_byte4_t_O" "llvmo::UndefValue_O"
-                          "chem::ConstitutionAtom_O" "chem::EstimateStretch" "llvmo::CallBase_O"
-                          "chem::ChemInfoNode_O" "core::Path_O" "mp::SharedMutex_O"
-                          "chem::BoundingBox_O" "adapt::QDomNode_O" "chem::StructureComparer_O"
+                          "chem::EstimateStretch" "llvmo::CallBase_O" "chem::ChemInfoNode_O"
+                          "core::Path_O" "mp::SharedMutex_O" "chem::BoundingBox_O"
+                          "adapt::QDomNode_O" "chem::StructureComparer_O"
                           "asttooling::DerivableASTFrontendAction" "core::InstanceCreator_O"
                           "core::IOStreamStream_O" "core::Scope_O" "chem::BondLogical_O"
                           "chem::MoleculeGraph_O" "chem::BondToAtomTest_O" "chem::FFAngleDb_O"
                           "comp::Context_O" "chem::FFTypeRule_O" "llvmo::InsertPoint_O"
                           "core::FunctionDescription_O" "core::ComplexVector_double_O"
                           "core::StrWNs_O" "chem::Structure_Old_ListEntry_O"
-                          "core::UnknownDynEnv_O" "chem::Monomer_O" "chem::EnergyRigidBodyStaple_O"
-                          "core::EchoStream_O" "chem::ConstitutionAtoms_O" "core::HashTableBase_O"
-                          "core::SimpleMDArrayBit_O" "core::MDArrayBit_O"
-                          "core::ComplexVector_byte16_t_O" "chem::FFStretchDb_O" "geom::OVector2_O"
-                          "llvmo::DILocalScope_O" "chem::Branch_O" "geom::OVector3_O"
+                          "core::UnknownDynEnv_O" "chem::EnergyRigidBodyStaple_O"
+                          "core::EchoStream_O" "core::HashTableBase_O" "core::SimpleMDArrayBit_O"
+                          "core::MDArrayBit_O" "core::ComplexVector_byte16_t_O"
+                          "chem::FFStretchDb_O" "geom::OVector2_O" "llvmo::DILocalScope_O"
+                          "chem::Branch_O" "geom::OVector3_O"
                           "asttooling::DerivableFrontendActionFactory" "comp::Label_O"
-                          "core::ComplexVector_int2_t_O" "chem::ConstitutionBond_O"
-                          "chem::CDBond_O" "chem::CombinedForceField_O" "llvmo::DILexicalBlock_O"
+                          "core::ComplexVector_int2_t_O" "chem::CDBond_O"
+                          "chem::CombinedForceField_O" "llvmo::DILexicalBlock_O"
                           "llvmo::DITypeRefArray_O" "mp::Mutex_O"
                           "core::RecursiveDirectoryIterator_O" "chem::RestraintAnchor_O"
-                          "chem::InPlug_O" "chem::RestraintDihedral_O" "chem::AntechamberRoot_O"
+                          "chem::RestraintDihedral_O" "chem::AntechamberRoot_O"
                           "core::StringInputStream_O" "comp::Lexenv_O" "core::DebuggerLocal_O"
                           "llvmo::ModulePass_O" "chem::IterateAtoms_O" "core::LongFloat_O"
                           "core::ComplexVector_int4_t_O" "llvmo::DILocalVariable_O"
-                          "chem::DirectionalCoupling_O" "chem::FFPtorDb_O"
-                          "llvmo::TargetLibraryInfoWrapperPass_O" "asttooling::QualType_O"
-                          "chem::ComplexRestraint_O" "llvmo::LibraryFile_O"
-                          "core::GlobalBytecodeSimpleFun_O" "asttooling::DerivableSyntaxOnlyAction"
-                          "llvmo::User_O" "core::MDArray_int16_t_O"
-                          "chem::ZMatrixDihedralInternal_O" "core::ComplexVector_T_O"
-                          "chem::ForceMatchReport_O" "llvmo::CodeBlock_O" "llvmo::FenceInst_O"
-                          "chem::WildElementDict_O" "chem::RootMatchNode_O" "chem::Chain_O"
-                          "llvmo::AtomicCmpXchgInst_O" "core::ComplexVector_int8_t_O"
-                          "core::SimpleMDArray_int4_t_O" "core::SimpleVector_int32_t_O"
-                          "comp::LoadTimeValueInfo_O" "core::SimpleMDArray_double_O"
-                          "chem::ScoringFunction_O" "core::Complex_O"
-                          "chem::ConformationCollectionEntry_O" "core::TagbodyDynEnv_O"
-                          "geom::OMatrix_O" "llvmo::ValueAsMetadata_O" "chem::RingClosingMate_O"
-                          "chem::EnergyDihedral" "llvmo::ConstantExpr_O"
-                          "llvmo::ConstantPointerNull_O" "llvmo::VectorType_O" "chem::FFStretch_O"
+                          "chem::FFPtorDb_O" "llvmo::TargetLibraryInfoWrapperPass_O"
+                          "asttooling::QualType_O" "chem::ComplexRestraint_O"
+                          "llvmo::LibraryFile_O" "core::GlobalBytecodeSimpleFun_O"
+                          "asttooling::DerivableSyntaxOnlyAction" "llvmo::User_O"
+                          "core::MDArray_int16_t_O" "chem::ZMatrixDihedralInternal_O"
+                          "core::ComplexVector_T_O" "chem::ForceMatchReport_O" "llvmo::CodeBlock_O"
+                          "llvmo::FenceInst_O" "chem::WildElementDict_O" "chem::RootMatchNode_O"
+                          "chem::Chain_O" "llvmo::AtomicCmpXchgInst_O"
+                          "core::ComplexVector_int8_t_O" "core::SimpleMDArray_int4_t_O"
+                          "core::SimpleVector_int32_t_O" "comp::LoadTimeValueInfo_O"
+                          "core::SimpleMDArray_double_O" "chem::ScoringFunction_O"
+                          "core::Complex_O" "chem::ConformationCollectionEntry_O"
+                          "core::TagbodyDynEnv_O" "geom::OMatrix_O" "llvmo::ValueAsMetadata_O"
+                          "chem::EnergyDihedral" "llvmo::ConstantPointerNull_O"
+                          "llvmo::ConstantExpr_O" "llvmo::VectorType_O" "chem::FFStretch_O"
                           "chem::IterateRestraints_O" "chem::FFNonbondDb_O" "llvmo::StructType_O"
                           "chem::EnergyNonbond_O" "core::ComplexVector_int16_t_O"
                           "chem::EnergySketchNonbond_O" "core::GFBytecodeSimpleFun_O"
@@ -90,14 +86,13 @@
                           "core::SingleFloat_dummy_O" "chem::FFNonbond_O" "chem::Trajectory_O"
                           "llvmo::InvokeInst_O" "chem::RestraintFixedNonbond_O" "chem::AGVertex_O"
                           "core::StrNs_O" "comp::GlobalFunInfo_O" "clasp_ffi::ForeignData_O"
-                          "llvmo::CallInst_O" "chem::VirtualAtom_O" "chem::OriginPlug_O"
-                          "llvmo::FunctionPassManager_O" "chem::AfterMatchBondToAtomTest_O"
-                          "core::DoubleFloat_O" "chem::OligomerPart_Link_O" "adapt::AdaptExposer_O"
-                          "core::DebuggerFrame_O" "chem::ConformationExplorerEntryStage_O"
-                          "comp::LocalMacroInfo_O" "chem::FrameRecognizer_O"
-                          "chem::CalculatePositionAlongBond_O" "comp::LexFixup_O"
-                          "core::StringStream_O" "llvmo::LibraryBase_O" "core::Sigset_O"
-                          "core::MDArray_int32_t_O" "adapt::SymbolList_O"
+                          "llvmo::CallInst_O" "chem::VirtualAtom_O"
+                          "chem::AfterMatchBondToAtomTest_O" "llvmo::FunctionPassManager_O"
+                          "core::DoubleFloat_O" "adapt::AdaptExposer_O" "core::DebuggerFrame_O"
+                          "chem::ConformationExplorerEntryStage_O" "comp::LocalMacroInfo_O"
+                          "chem::FrameRecognizer_O" "chem::CalculatePositionAlongBond_O"
+                          "comp::LexFixup_O" "core::StringStream_O" "llvmo::LibraryBase_O"
+                          "core::Sigset_O" "core::MDArray_int32_t_O" "adapt::SymbolList_O"
                           "chem::CalculatePositionUsingInternals_O"
                           "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
                           "asttooling::AsttoolingExposer_O" "chem::HybridizationInfo"
@@ -109,20 +104,18 @@
                           "core::MDArray_int8_t_O" "chem::ZMatrixBondInternal_O"
                           "llvmo::ConstantFP_O" "core::BlockDynEnv_O" "core::Cons_O"
                           "core::WRAPPER_Translator_O" "clbind::detail::vertex"
-                          "chem::Constitution_O" "chem::ImproperTorsion_O"
-                          "chem::ZMatrixAngleInternal_O" "chem::Rotamer_O" "llvmo::LLVMContext_O"
-                          "chem::EnergyAnchorRestraint" "chem::EntityNameSetBase_O"
+                          "chem::ImproperTorsion_O" "chem::ZMatrixAngleInternal_O"
+                          "chem::Rotamer_O" "llvmo::LLVMContext_O" "chem::EnergyAnchorRestraint"
                           "core::MDArray_int4_t_O" "core::WeakKeyHashTable_O"
                           "chem::FFNonbondCrossTerm" "core::Rack_O" "core::MDArrayBaseChar_O"
                           "core::UserData_O" "core::ExternalObject_O" "llvmo::DINode_O"
                           "llvmo::GlobalVariable_O" "core::BroadcastStream_O" "chem::FFBaseDb_O"
                           "chem::AbstractLargeSquareMatrix_O" "core::General_O"
-                          "llvmo::ObjectFile_O" "chem::StereoisomerAtoms_O"
-                          "chem::ConformationExplorerMatch_O" "llvmo::Library_O" "core::Closure_O"
-                          "core::ComplexVector_size_t_O" "chem::RestraintAngle_O"
-                          "chem::ChemExposer_O" "chem::EnergyStretch" "chem::CandoDatabase_O"
-                          "comp::RestoreSPFixup_O" "chem::SpanningInfo_O" "mpip::Mpi_O"
-                          "llvmo::DINodeArray_O" "chem::KeyEntry" "llvmo::ConstantDataArray_O"
+                          "llvmo::ObjectFile_O" "chem::ConformationExplorerMatch_O"
+                          "llvmo::Library_O" "core::Closure_O" "core::ComplexVector_size_t_O"
+                          "chem::RestraintAngle_O" "chem::ChemExposer_O" "chem::EnergyStretch"
+                          "chem::CandoDatabase_O" "comp::RestoreSPFixup_O" "chem::SpanningInfo_O"
+                          "mpip::Mpi_O" "llvmo::DINodeArray_O" "llvmo::ConstantDataArray_O"
                           "llvmo::TargetOptions_O" "core::Instance_O" "chem::CDText_O"
                           "chem::MessageReport_O" "core::SmallMap_O" "clasp_ffi::ForeignTypeSpec_O"
                           "chem::BondTest_O" "core::Unused_dummy_O" "chem::EnergyChiralRestraint"
@@ -143,31 +136,28 @@
                           "chem::EnergyAngle" "chem::RigidBodyEnergyFunction_O"
                           "llvmo::ConstantInt_O" "comp::SpecialVarInfo_O"
                           "core::SimpleMDArray_int16_t_O" "chem::Logical_O"
-                          "comp::ControlLabelFixup_O" "llvmo::StructLayout_O" "chem::Mate_O"
+                          "comp::ControlLabelFixup_O" "llvmo::StructLayout_O"
                           "core::SimpleMDArrayT_O" "chem::ConformationExplorer_O"
                           "chem::BondList_O" "llvmo::PassManagerBase_O" "llvmo::LoadInst_O"
                           "core::Exposer_O" "llvmo::ConstantStruct_O" "chem::MacroModelFile_O"
                           "core::MDArray_byte2_t_O" "core::DirectoryIterator_O" "chem::Angle_O"
-                          "chem::JumpPlug_O" "llvmo::DISubroutineType_O" "comp::LabelFixup_O"
-                          "comp::Cfunction_O" "llvmo::MetadataAsValue_O" "kinematics::JumpJoint_O"
-                          "core::SimpleBitVector_O" "core::SimpleVector_int8_t_O"
-                          "chem::OligomerPart_Base_O" "chem::CDNode_O" "chem::SpecificContextSet_O"
+                          "llvmo::DISubroutineType_O" "comp::LabelFixup_O" "comp::Cfunction_O"
+                          "llvmo::MetadataAsValue_O" "kinematics::JumpJoint_O"
+                          "core::SimpleBitVector_O" "core::SimpleVector_int8_t_O" "chem::CDNode_O"
                           "llvmo::ResumeInst_O" "llvmo::Function_O" "llvmo::DIType_O"
-                          "chem::AddIonOctree_O" "chem::StereoInformation_O"
-                          "core::LocalSimpleFunGenerator_O" "chem::ZMatrixEntry_O"
-                          "geom::BoundingCuboid_O" "core::Readtable_O"
+                          "chem::AddIonOctree_O" "core::LocalSimpleFunGenerator_O"
+                          "chem::ZMatrixEntry_O" "geom::BoundingCuboid_O" "core::Readtable_O"
                           "chem::CalculatePositionRelativeToOrigin_O" "chem::AtomIndexer_O"
                           "chem::ChemInfoMatch_O" "chem::Restraint_O" "units::Quantity_O"
                           "llvmo::IRBuilder_O" "chem::AtomPdbRec" "llvmo::ClaspJIT_O"
                           "chem::FFParameter_O" "core::SimpleVector_byte8_t_O"
                           "llvmo::DILexicalBlockBase_O" "chem::RigidBodyAtomInfo" "llvmo::MDNode_O"
                           "core::ComplexVector_fixnum_O" "chem::GenericOctree_O"
-                          "mp::RecursiveMutex_O" "chem::RepresentedEntityNameSet_O"
-                          "chem::MonomerCoordinates_O" "core::Vaslist_dummy_O"
-                          "chem::MinimizerLog_O" "chem::EnergyFunction_O"
-                          "core::SimpleVector_float_O" "llvmo::VAArgInst_O" "chem::FFVdwDb_O"
-                          "core::SimpleVector_int4_t_O" "chem::Twister_O" "chem::FFPtor_O"
-                          "chem::InfoDb_O" "core::MDArray_fixnum_O" "core::SharpEqualWrapper_O"
+                          "mp::RecursiveMutex_O" "core::Vaslist_dummy_O" "chem::MinimizerLog_O"
+                          "chem::EnergyFunction_O" "core::SimpleVector_float_O"
+                          "llvmo::VAArgInst_O" "chem::FFVdwDb_O" "core::SimpleVector_int4_t_O"
+                          "chem::Twister_O" "chem::FFPtor_O" "chem::InfoDb_O"
+                          "core::MDArray_fixnum_O" "core::SharpEqualWrapper_O"
                           "geom::SimpleMDArrayCoordinate_O" "core::LoadTimeValues_O"
                           "comp::ConstantVarInfo_O" "asttooling::DerivableMatchCallback"
                           "llvmo::DIFile_O" "chem::AntechamberFocusAtomMatch_O"
@@ -188,11 +178,10 @@
                           "llvmo::TargetPassConfig_O" "chem::IterateBonds_O"
                           "core::RequiredArgument" "core::SingleDispatchMethod_O"
                           "chem::CDFragment_O" "comp::VarInfo_O" "core::CxxObject_O"
-                          "llvmo::ReturnInst_O" "chem::MonomerContext_O" "llvmo::FunctionType_O"
-                          "clbind::DummyCreator_O" "chem::EnergyDihedralRestraint"
-                          "core::MDArray_byte16_t_O" "llvmo::DIContext_O" "chem::Plug_O"
-                          "chem::FFNonbondCrossTermTable_O" "chem::StereoConfiguration_O"
-                          "llvmo::Type_O" "chem::Command_O" "llvmo::JITDylib_O" "core::Pointer_O"
+                          "llvmo::ReturnInst_O" "llvmo::FunctionType_O" "clbind::DummyCreator_O"
+                          "chem::EnergyDihedralRestraint" "core::MDArray_byte16_t_O"
+                          "llvmo::DIContext_O" "chem::FFNonbondCrossTermTable_O"
+                          "llvmo::JITDylib_O" "llvmo::Type_O" "chem::Command_O" "core::Pointer_O"
                           "llvmo::UnreachableInst_O" "core::ComplexVector_int64_t_O"
                           "chem::FFParameterBaseDb_O" "core::FileScope_O"
                           "core::SimpleMDArray_byte4_t_O" "core::Float_O"
@@ -202,11 +191,10 @@
                           "core::SimpleVector_int64_t_O" "llvmo::ConstantDataSequential_O"
                           "chem::SuperposeEngine_O" "comp::EntryFixup_O"
                           "chem::BeyondThresholdFixedNonbondRestraint" "units::NamedUnit_O"
-                          "core::MDArray_double_O" "chem::EntityNameSet_O" "llvmo::StoreInst_O"
-                          "llvmo::DebugLoc_O" "chem::ResidueList_O" "core::WeakPointer_O"
-                          "core::DestDynEnv_O" "core::IOFileStream_O" "chem::EnergyNonbond"
-                          "chem::ConstitutionVirtualAtom_O" "comp::Annotation_O" "core::DynEnv_O"
-                          "comp::LexSetFixup_O" "core::SimpleMDArray_byte8_t_O"
+                          "core::MDArray_double_O" "llvmo::StoreInst_O" "llvmo::DebugLoc_O"
+                          "chem::ResidueList_O" "core::WeakPointer_O" "core::DestDynEnv_O"
+                          "core::IOFileStream_O" "chem::EnergyNonbond" "comp::Annotation_O"
+                          "core::DynEnv_O" "comp::LexSetFixup_O" "core::SimpleMDArray_byte8_t_O"
                           "core::UnwindProtectDynEnv_O" "comp::SymbolMacroVarInfo_O"
                           "chem::VirtualSphere_O" "chem::ProperTorsion_O" "chem::IterateResidues_O"
                           "llvmo::Instruction_O" "core::FileStream_O" "comp::ExitFixup_O"
@@ -215,36 +203,33 @@
                           "core::Function_O" "kinematics::BondedJoint_O"
                           "core::SimpleMDArray_int2_t_O" "core::ImmobileObject_O"
                           "adapt::IndexedObjectBag_O" "chem::CipPrioritizer_O"
-                          "chem::StereoisomerVirtualAtom_O" "core::HashTableEql_O"
-                          "chem::AtomTable_O" "chem::SpanningLoop_O" "chem::PdbReader_O"
-                          "mp::ConditionVariable_O" "chem::ConformationExplorerEntry_O"
-                          "core::Real_O" "core::Lisp" "core::MDArray_byte8_t_O"
-                          "core::FuncallableInstanceCreator_O" "chem::BondListMatchNode_O"
-                          "chem::Topology_O" "core::StringOutputStream_O" "units::Dimension_O"
-                          "chem::EntityNameSetWithCap_O" "chem::BondMatcher_O"
-                          "llvmo::AttributeSet_O" "llvmo::AtomicRMWInst_O"
-                          "chem::PdbMonomerConnectivity_O" "chem::RigidBodyNonbondCrossTerm"
-                          "comp::Module_O" "llvmo::PassManager_O" "llvmo::MDBuilder_O"
-                          "core::SimpleVector_O" "chem::PlugWithMates_O" "llvmo::DISubprogram_O"
-                          "chem::Oligomer_O" "core::SymbolStorage" "chem::TrajectoryFrame_O"
-                          "adapt::ObjectSet_O" "llvmo::ArrayType_O" "core::SimpleMDArray_int64_t_O"
+                          "core::HashTableEql_O" "chem::AtomTable_O" "chem::SpanningLoop_O"
+                          "chem::PdbReader_O" "mp::ConditionVariable_O"
+                          "chem::ConformationExplorerEntry_O" "core::Real_O" "core::Lisp"
+                          "core::MDArray_byte8_t_O" "core::FuncallableInstanceCreator_O"
+                          "chem::BondListMatchNode_O" "core::StringOutputStream_O"
+                          "units::Dimension_O" "chem::BondMatcher_O" "llvmo::AttributeSet_O"
+                          "llvmo::AtomicRMWInst_O" "chem::PdbMonomerConnectivity_O"
+                          "chem::RigidBodyNonbondCrossTerm" "comp::Module_O" "llvmo::PassManager_O"
+                          "llvmo::MDBuilder_O" "core::SimpleVector_O" "llvmo::DISubprogram_O"
+                          "core::SymbolStorage" "chem::TrajectoryFrame_O" "adapt::ObjectSet_O"
+                          "llvmo::ArrayType_O" "core::SimpleMDArray_int64_t_O"
                           "core::SimpleString_O" "chem::PdbWriter_O" "llvmo::DIVariable_O"
-                          "chem::Stereoisomer_O" "llvmo::MCSubtargetInfo_O"
-                          "core::SimpleMDArray_byte2_t_O" "llvmo::BlockAddress_O"
-                          "llvmo::DICompositeType_O" "chem::Matter_O"
-                          "core::DerivableCxxClassCreator_O" "chem::Coupling_O"
-                          "core::HashTableEq_O" "chem::RestraintChiral_O" "chem::EnergyComponent_O"
+                          "llvmo::MCSubtargetInfo_O" "core::SimpleMDArray_byte2_t_O"
+                          "llvmo::BlockAddress_O" "llvmo::DICompositeType_O" "chem::Matter_O"
+                          "core::DerivableCxxClassCreator_O" "core::HashTableEq_O"
+                          "chem::RestraintChiral_O" "chem::EnergyComponent_O"
                           "geom::ComplexVectorCoordinate_O" "core::HashTableEqualp_O"
                           "asttooling::PresumedLoc_O" "core::ConcatenatedStream_O" "comp::Fixup_O"
                           "core::LexDynEnv_O" "chem::RestrainedExoCyclicAtom_O" "chem::EnergyAtom"
                           "llvmo::ImmutablePass_O" "kinematics::ComplexBondedJoint_O"
                           "core::FuncallableInstance_O" "clbind::detail::edge"
-                          "chem::NumericalFunction_O" "chem::RingCoupling_O"
-                          "core::SynonymStream_O" "core::Ratio_O" "core::BytecodeModule_O"
-                          "core::MDArray_int2_t_O" "core::ComplexVector_byte2_t_O"
-                          "chem::FixedNonbondRestraint" "llvmo::ExecutionEngine_O"
-                          "core::ClassRepCreator_O" "core::SimpleVector_int16_t_O"
-                          "llvmo::Attribute_O" "core::DerivableCxxObject_O" "llvmo::SwitchInst_O"
+                          "chem::NumericalFunction_O" "core::SynonymStream_O" "core::Ratio_O"
+                          "core::BytecodeModule_O" "core::MDArray_int2_t_O"
+                          "core::ComplexVector_byte2_t_O" "chem::FixedNonbondRestraint"
+                          "llvmo::ExecutionEngine_O" "core::ClassRepCreator_O"
+                          "core::SimpleVector_int16_t_O" "llvmo::Attribute_O"
+                          "core::DerivableCxxObject_O" "llvmo::SwitchInst_O"
                           "core::SymbolToEnumConverter_O" "chem::RestrainedPiBond_O"
                           "chem::ConformationCollection_O" "core::SingleDispatchGenericFunction_O"
                           "core::ComplexVector_int32_t_O" "llvmo::Pass_O" "chem::StepReport_O"
@@ -1714,34 +1699,6 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "llvmo::MDBuilder_O" :layout-offset-field-names ("_Builder")}
-{class-kind :stamp-name "STAMPWTAG_chem__Topology_O" :stamp-key "chem::Topology_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::Topology_O" :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::Constitution_O>"
-             :offset-base-ctype "chem::Topology_O" :layout-offset-field-names ("_Constitution")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::Topology_O"
-             :layout-offset-field-names ("_StereoisomerCoding")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>>"
-             :offset-base-ctype "chem::Topology_O"
-             :layout-offset-field-names ("_StereoisomerAtomProperties" "._Vector" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "chem::Topology_O"
-             :layout-offset-field-names ("_Properties")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::Topology_O"
-             :layout-offset-field-names ("_DefaultOutPlugName")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>>"
-             :offset-base-ctype "chem::Topology_O"
-             :layout-offset-field-names ("_Plugs" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__AtomTable_O" :stamp-key "chem::AtomTable_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -2104,26 +2061,6 @@
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>"
              :offset-base-ctype "chem::Twister_O"
              :layout-offset-field-names ("_Atoms" "._Vector" "._Contents")}
-{class-kind :stamp-name "STAMPWTAG_chem__MonomerCoordinates_O"
-            :stamp-key "chem::MonomerCoordinates_O" :parent-class "core::CxxObject_O"
-            :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
-             :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
-             :offset-base-ctype "chem::MonomerCoordinates_O"
-             :layout-offset-field-names ("_Comment")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::MonomerContext_O>"
-             :offset-base-ctype "chem::MonomerCoordinates_O"
-             :layout-offset-field-names ("_Context")}
-{fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
-             :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
-             :offset-base-ctype "chem::MonomerCoordinates_O"
-             :layout-offset-field-names ("_TrainerName")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>>"
-             :offset-base-ctype "chem::MonomerCoordinates_O"
-             :layout-offset-field-names ("_Rotamers" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFParameter_O" :stamp-key "chem::FFParameter_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -2380,22 +2317,6 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "geom::BoundingCuboid_O" :layout-offset-field-names ("_Defined")}
-{class-kind :stamp-name "STAMPWTAG_chem__StereoInformation_O"
-            :stamp-key "chem::StereoInformation_O" :parent-class "core::CxxObject_O"
-            :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>>"
-             :offset-base-ctype "chem::StereoInformation_O"
-             :layout-offset-field-names ("_Stereoisomers" "._Vector" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>>"
-             :offset-base-ctype "chem::StereoInformation_O"
-             :layout-offset-field-names ("_NameOrPdbToStereoisomer" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>>"
-             :offset-base-ctype "chem::StereoInformation_O"
-             :layout-offset-field-names ("_ComplexRestraints" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__AddIonOctree_O" :stamp-key "chem::AddIonOctree_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -2497,46 +2418,6 @@
 {fixed-field :offset-type-cxx-identifier "POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "chem::CDNode_O"
              :layout-offset-field-names ("_NextSpan" ".theObject")}
-{class-kind :stamp-name "STAMPWTAG_chem__OligomerPart_Base_O"
-            :stamp-key "chem::OligomerPart_Base_O" :parent-class "core::CxxObject_O"
-            :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{class-kind :stamp-name "STAMPWTAG_chem__OligomerPart_Link_O"
-            :stamp-key "chem::OligomerPart_Link_O" :parent-class "chem::OligomerPart_Base_O"
-            :lisp-class-base "chem::OligomerPart_Base_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OligomerPart_Link_O"
-             :layout-offset-field-names ("_Monomer1Id")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OligomerPart_Link_O"
-             :layout-offset-field-names ("_Coupling")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::OligomerPart_Monomer_O>"
-             :offset-base-ctype "chem::OligomerPart_Link_O"
-             :layout-offset-field-names ("_Monomer2")}
-{class-kind :stamp-name "STAMPWTAG_chem__OligomerPart_Monomer_O"
-            :stamp-key "chem::OligomerPart_Monomer_O" :parent-class "chem::OligomerPart_Base_O"
-            :lisp-class-base "chem::OligomerPart_Base_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OligomerPart_Monomer_O"
-             :layout-offset-field-names ("_MonomerId")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OligomerPart_Monomer_O"
-             :layout-offset-field-names ("_GroupName")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "chem::OligomerPart_Monomer_O"
-             :layout-offset-field-names ("_MonomerAliases")}
-{fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
-             :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
-             :offset-base-ctype "chem::OligomerPart_Monomer_O"
-             :layout-offset-field-names ("_Comment")}
 {class-kind :stamp-name "STAMPWTAG_chem__CoordinateSystem_O" :stamp-key "chem::CoordinateSystem_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -2564,17 +2445,6 @@
 {fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
              :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "chem::CandoDatabase_O" :layout-offset-field-names ("_DateUpdated")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>>"
-             :offset-base-ctype "chem::CandoDatabase_O"
-             :layout-offset-field-names ("_frameRecognizers" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>>"
-             :offset-base-ctype "chem::CandoDatabase_O"
-             :layout-offset-field-names ("_MonomerCoordinates" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
-             :offset-base-ctype "chem::CandoDatabase_O" :layout-offset-field-names ("_Entities")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "chem::CandoDatabase_O" :layout-offset-field-names ("_Topologys")}
@@ -3184,45 +3054,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "mp::SharedMutex_O"
              :layout-offset-field-names ("_SharedMutex" ".mReaders")}
-{class-kind :stamp-name "STAMPWTAG_chem__ConstitutionAtom_O" :stamp-key "chem::ConstitutionAtom_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::ConstitutionAtom_O" :layout-offset-field-names ("_AtomName")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "chem::ConstitutionAtom_O" :layout-offset-field-names ("_Index")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "chem::ConstitutionAtom_O"
-             :layout-offset-field-names ("_Properties")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>>"
-             :offset-base-ctype "chem::ConstitutionAtom_O"
-             :layout-offset-field-names ("_Bonds" "._Vector" "._Contents")}
-{class-kind :stamp-name "STAMPWTAG_chem__ConstitutionVirtualAtom_O"
-            :stamp-key "chem::ConstitutionVirtualAtom_O" :parent-class "chem::ConstitutionAtom_O"
-            :lisp-class-base "chem::ConstitutionAtom_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::ConstitutionVirtualAtom_O"
-             :layout-offset-field-names ("_AtomName")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "chem::ConstitutionVirtualAtom_O"
-             :layout-offset-field-names ("_Index")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "chem::ConstitutionVirtualAtom_O"
-             :layout-offset-field-names ("_Properties")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>>"
-             :offset-base-ctype "chem::ConstitutionVirtualAtom_O"
-             :layout-offset-field-names ("_Bonds" "._Vector" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::CalculatePosition_O>"
-             :offset-base-ctype "chem::ConstitutionVirtualAtom_O"
-             :layout-offset-field-names ("_CalculatePositionCode")}
 {class-kind :stamp-name "STAMPWTAG_chem__Smirks_O" :stamp-key "chem::Smirks_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3257,165 +3088,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<chem::AGVertex_O>"
              :offset-base-ctype "chem::AGEdge_O" :layout-offset-field-names ("_vertex2")}
-{class-kind :stamp-name "STAMPWTAG_chem__Entity_O" :stamp-key "chem::Entity_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{class-kind :stamp-name "STAMPWTAG_chem__Stereoisomer_O" :stamp-key "chem::Stereoisomer_O"
-            :parent-class "chem::Entity_O" :lisp-class-base "chem::Entity_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::Stereoisomer_O" :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::Stereoisomer_O" :layout-offset-field-names ("_Pdb")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Integer_O>"
-             :offset-base-ctype "chem::Stereoisomer_O"
-             :layout-offset-field-names ("_StereoisomerIndex")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>>"
-             :offset-base-ctype "chem::Stereoisomer_O"
-             :layout-offset-field-names ("_Configurations" "._Vector" "._Contents")}
-{class-kind :stamp-name "STAMPWTAG_chem__EntityNameSetBase_O"
-            :stamp-key "chem::EntityNameSetBase_O" :parent-class "chem::Entity_O"
-            :lisp-class-base "chem::Entity_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EntityNameSetBase_O"
-             :layout-offset-field-names ("_Optional")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<adapt::SymbolSet_O>"
-             :offset-base-ctype "chem::EntityNameSetBase_O"
-             :layout-offset-field-names ("_EntityNames")}
-{class-kind :stamp-name "STAMPWTAG_chem__EntityNameSetWithCap_O"
-            :stamp-key "chem::EntityNameSetWithCap_O" :parent-class "chem::EntityNameSetBase_O"
-            :lisp-class-base "chem::EntityNameSetBase_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EntityNameSetWithCap_O"
-             :layout-offset-field-names ("_Optional")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<adapt::SymbolSet_O>"
-             :offset-base-ctype "chem::EntityNameSetWithCap_O"
-             :layout-offset-field-names ("_EntityNames")}
-{class-kind :stamp-name "STAMPWTAG_chem__Mate_O" :stamp-key "chem::Mate_O"
-            :parent-class "chem::EntityNameSetWithCap_O"
-            :lisp-class-base "chem::EntityNameSetWithCap_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::Mate_O" :layout-offset-field-names ("_Optional")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<adapt::SymbolSet_O>"
-             :offset-base-ctype "chem::Mate_O" :layout-offset-field-names ("_EntityNames")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>" :offset-base-ctype "chem::Mate_O"
-             :layout-offset-field-names ("_Cap")}
-{class-kind :stamp-name "STAMPWTAG_chem__RingClosingMate_O" :stamp-key "chem::RingClosingMate_O"
-            :parent-class "chem::EntityNameSetWithCap_O"
-            :lisp-class-base "chem::EntityNameSetWithCap_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::RingClosingMate_O" :layout-offset-field-names ("_Optional")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<adapt::SymbolSet_O>"
-             :offset-base-ctype "chem::RingClosingMate_O"
-             :layout-offset-field-names ("_EntityNames")}
-{class-kind :stamp-name "STAMPWTAG_chem__EntityNameSet_O" :stamp-key "chem::EntityNameSet_O"
-            :parent-class "chem::EntityNameSetBase_O" :lisp-class-base "chem::EntityNameSetBase_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EntityNameSet_O" :layout-offset-field-names ("_Optional")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<adapt::SymbolSet_O>"
-             :offset-base-ctype "chem::EntityNameSet_O" :layout-offset-field-names ("_EntityNames")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::EntityNameSet_O" :layout-offset-field-names ("_Name")}
-{class-kind :stamp-name "STAMPWTAG_chem__RepresentedEntityNameSet_O"
-            :stamp-key "chem::RepresentedEntityNameSet_O" :parent-class "chem::EntityNameSet_O"
-            :lisp-class-base "chem::EntityNameSet_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::RepresentedEntityNameSet_O"
-             :layout-offset-field-names ("_Optional")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<adapt::SymbolSet_O>"
-             :offset-base-ctype "chem::RepresentedEntityNameSet_O"
-             :layout-offset-field-names ("_EntityNames")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::RepresentedEntityNameSet_O"
-             :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::RepresentedEntityNameSet_O"
-             :layout-offset-field-names ("_Representative")}
-{class-kind :stamp-name "STAMPWTAG_chem__MonomerPack_O" :stamp-key "chem::MonomerPack_O"
-            :parent-class "chem::EntityNameSet_O" :lisp-class-base "chem::EntityNameSet_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::MonomerPack_O" :layout-offset-field-names ("_Optional")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<adapt::SymbolSet_O>"
-             :offset-base-ctype "chem::MonomerPack_O" :layout-offset-field-names ("_EntityNames")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::MonomerPack_O" :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>"
-             :offset-base-ctype "chem::MonomerPack_O"
-             :layout-offset-field-names ("_InterestingAtomAliases")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::MapOfMonomerNamesToAtomIndexers_O>"
-             :offset-base-ctype "chem::MonomerPack_O" :layout-offset-field-names ("_AtomIndexers")}
-{class-kind :stamp-name "STAMPWTAG_chem__Constitution_O" :stamp-key "chem::Constitution_O"
-            :parent-class "chem::Entity_O" :lisp-class-base "chem::Entity_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::Constitution_O" :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Array_O>"
-             :offset-base-ctype "chem::Constitution_O" :layout-offset-field-names ("_Comment")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::ConstitutionAtoms_O>"
-             :offset-base-ctype "chem::Constitution_O"
-             :layout-offset-field-names ("_ConstitutionAtoms")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>>"
-             :offset-base-ctype "chem::Constitution_O"
-             :layout-offset-field-names ("_PlugsByName" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>>"
-             :offset-base-ctype "chem::Constitution_O"
-             :layout-offset-field-names ("_Topologies" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::StereoInformation_O>"
-             :offset-base-ctype "chem::Constitution_O"
-             :layout-offset-field-names ("_StereoInformation")}
-{class-kind :stamp-name "STAMPWTAG_chem__Monomer_O" :stamp-key "chem::Monomer_O"
-            :parent-class "chem::Entity_O" :lisp-class-base "chem::Entity_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::Monomer_O" :layout-offset-field-names ("_Id")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "chem::Monomer_O" :layout-offset-field-names ("_SequenceNumber")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>>"
-             :offset-base-ctype "chem::Monomer_O"
-             :layout-offset-field-names ("_Couplings" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "chem::Monomer_O"
-             :layout-offset-field-names ("_CurrentMonomerIndex")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "chem::Monomer_O"
-             :layout-offset-field-names ("_CurrentStereoisomerOffset")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>>"
-             :offset-base-ctype "chem::Monomer_O"
-             :layout-offset-field-names ("_Monomers" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__OctNode_O" :stamp-key "chem::OctNode_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3750,39 +3422,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "chem::ZMatrixAngleInternal_O"
              :layout-offset-field-names ("_AtomAngle")}
-{class-kind :stamp-name "STAMPWTAG_chem__StereoisomerAtom_O" :stamp-key "chem::StereoisomerAtom_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::StereoisomerAtom_O" :layout-offset-field-names ("_AtomName")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::StereoisomerAtom_O"
-             :layout-offset-field-names ("_ConstitutionAtomIndex")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::StereoisomerAtom_O"
-             :layout-offset-field-names ("_AtomCharge")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::StereoisomerAtom_O" :layout-offset-field-names ("_AtomType")}
-{class-kind :stamp-name "STAMPWTAG_chem__StereoisomerVirtualAtom_O"
-            :stamp-key "chem::StereoisomerVirtualAtom_O" :parent-class "chem::StereoisomerAtom_O"
-            :lisp-class-base "chem::StereoisomerAtom_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::StereoisomerVirtualAtom_O"
-             :layout-offset-field-names ("_AtomName")}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::StereoisomerVirtualAtom_O"
-             :layout-offset-field-names ("_ConstitutionAtomIndex")}
-{fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
-             :offset-base-ctype "chem::StereoisomerVirtualAtom_O"
-             :layout-offset-field-names ("_AtomCharge")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::StereoisomerVirtualAtom_O"
-             :layout-offset-field-names ("_AtomType")}
 {class-kind :stamp-name "STAMPWTAG_chem__ZMatrix_O" :stamp-key "chem::ZMatrix_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3797,17 +3436,6 @@
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>>"
              :offset-base-ctype "chem::ZMatrix_O"
              :layout-offset-field-names ("_Internals" "._Vector" "._Contents")}
-{class-kind :stamp-name "STAMPWTAG_chem__Isoname_O" :stamp-key "chem::Isoname_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::Isoname_O" :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "ctype_long" :offset-ctype "long"
-             :offset-base-ctype "chem::Isoname_O" :layout-offset-field-names ("_Isomer")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::Topology_O>"
-             :offset-base-ctype "chem::Isoname_O" :layout-offset-field-names ("_Topology")}
 {class-kind :stamp-name "STAMPWTAG_chem__PathMessage_O" :stamp-key "chem::PathMessage_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3886,61 +3514,12 @@
             :stamp-key "asttooling::PresumedLoc_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
-{class-kind :stamp-name "STAMPWTAG_chem__Coupling_O" :stamp-key "chem::Coupling_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{class-kind :stamp-name "STAMPWTAG_chem__RingCoupling_O" :stamp-key "chem::RingCoupling_O"
-            :parent-class "chem::Coupling_O" :lisp-class-base "chem::Coupling_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::RingCoupling_O" :layout-offset-field-names ("_Plug1")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::Monomer_O>"
-             :offset-base-ctype "chem::RingCoupling_O" :layout-offset-field-names ("_Monomer1")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::RingCoupling_O" :layout-offset-field-names ("_Plug2")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::Monomer_O>"
-             :offset-base-ctype "chem::RingCoupling_O" :layout-offset-field-names ("_Monomer2")}
-{class-kind :stamp-name "STAMPWTAG_chem__DirectionalCoupling_O"
-            :stamp-key "chem::DirectionalCoupling_O" :parent-class "chem::Coupling_O"
-            :lisp-class-base "chem::Coupling_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::DirectionalCoupling_O"
-             :layout-offset-field-names ("_SourcePlugName")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::DirectionalCoupling_O"
-             :layout-offset-field-names ("_TargetPlugName")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::Monomer_O>"
-             :offset-base-ctype "chem::DirectionalCoupling_O"
-             :layout-offset-field-names ("_SourceMonomer")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::Monomer_O>"
-             :offset-base-ctype "chem::DirectionalCoupling_O"
-             :layout-offset-field-names ("_TargetMonomer")}
 {class-kind :stamp-name "STAMPWTAG_adapt__ObjectSet_O" :stamp-key "adapt::ObjectSet_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::HashTableEq_O>"
              :offset-base-ctype "adapt::ObjectSet_O" :layout-offset-field-names ("_Set")}
-{class-kind :stamp-name "STAMPWTAG_chem__Oligomer_O" :stamp-key "chem::Oligomer_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>>"
-             :offset-base-ctype "chem::Oligomer_O"
-             :layout-offset-field-names ("_Monomers" "._Vector" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>>"
-             :offset-base-ctype "chem::Oligomer_O"
-             :layout-offset-field-names ("_Couplings" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__PdbMonomerConnectivity_O"
             :stamp-key "chem::PdbMonomerConnectivity_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
@@ -4120,18 +3699,6 @@
 {class-kind :stamp-name "STAMPWTAG_chem__Command_O" :stamp-key "chem::Command_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{class-kind :stamp-name "STAMPWTAG_chem__StereoConfiguration_O"
-            :stamp-key "chem::StereoConfiguration_O" :parent-class "core::CxxObject_O"
-            :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::StereoConfiguration_O"
-             :layout-offset-field-names ("_AtomName")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::StereoConfiguration_O"
-             :layout-offset-field-names ("_Configuration")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFNonbondCrossTermTable_O"
             :stamp-key "chem::FFNonbondCrossTermTable_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
@@ -4143,93 +3710,6 @@
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<chem::FFNonbondCrossTerm>>"
              :offset-base-ctype "chem::FFNonbondCrossTermTable_O"
              :layout-offset-field-names ("_CrossTerms" "._Vector" "._Contents")}
-{class-kind :stamp-name "STAMPWTAG_chem__Plug_O" :stamp-key "chem::Plug_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>" :offset-base-ctype "chem::Plug_O"
-             :layout-offset-field-names ("_Name")}
-{class-kind :stamp-name "STAMPWTAG_chem__JumpPlug_O" :stamp-key "chem::JumpPlug_O"
-            :parent-class "chem::Plug_O" :lisp-class-base "chem::Plug_O" :root-class "core::T_O"
-            :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::JumpPlug_O" :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::JumpPlug_O" :layout-offset-field-names ("_JumpPointName")}
-{class-kind :stamp-name "STAMPWTAG_chem__PlugWithMates_O" :stamp-key "chem::PlugWithMates_O"
-            :parent-class "chem::Plug_O" :lisp-class-base "chem::Plug_O" :root-class "core::T_O"
-            :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::PlugWithMates_O" :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::PlugWithMates_O" :layout-offset-field-names ("_B0")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::PlugWithMates_O" :layout-offset-field-names ("_B1")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>>"
-             :offset-base-ctype "chem::PlugWithMates_O"
-             :layout-offset-field-names ("_Mates" "._Vector" "._Contents")}
-{class-kind :stamp-name "STAMPWTAG_chem__InPlug_O" :stamp-key "chem::InPlug_O"
-            :parent-class "chem::PlugWithMates_O" :lisp-class-base "chem::PlugWithMates_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>" :offset-base-ctype "chem::InPlug_O"
-             :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>" :offset-base-ctype "chem::InPlug_O"
-             :layout-offset-field-names ("_B0")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>" :offset-base-ctype "chem::InPlug_O"
-             :layout-offset-field-names ("_B1")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>>"
-             :offset-base-ctype "chem::InPlug_O"
-             :layout-offset-field-names ("_Mates" "._Vector" "._Contents")}
-{class-kind :stamp-name "STAMPWTAG_chem__OutPlug_O" :stamp-key "chem::OutPlug_O"
-            :parent-class "chem::PlugWithMates_O" :lisp-class-base "chem::PlugWithMates_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OutPlug_O" :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OutPlug_O" :layout-offset-field-names ("_B0")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OutPlug_O" :layout-offset-field-names ("_B1")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>>"
-             :offset-base-ctype "chem::OutPlug_O"
-             :layout-offset-field-names ("_Mates" "._Vector" "._Contents")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OutPlug_O" :layout-offset-field-names ("_StubPivotAtom")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::OutPlug_O" :layout-offset-field-names ("_IsRingClosing")}
-{class-kind :stamp-name "STAMPWTAG_chem__OriginPlug_O" :stamp-key "chem::OriginPlug_O"
-            :parent-class "chem::Plug_O" :lisp-class-base "chem::Plug_O" :root-class "core::T_O"
-            :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OriginPlug_O" :layout-offset-field-names ("_Name")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::OriginPlug_O" :layout-offset-field-names ("_OriginAtomName")}
-{class-kind :stamp-name "STAMPWTAG_chem__MonomerContext_O" :stamp-key "chem::MonomerContext_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<chem::EntityNameSetBase_O>"
-             :offset-base-ctype "chem::MonomerContext_O" :layout-offset-field-names ("_Self")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>>"
-             :offset-base-ctype "chem::MonomerContext_O"
-             :layout-offset-field-names ("_Neighbors" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__CDFragment_O" :stamp-key "chem::CDFragment_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -4408,14 +3888,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<chem::ZMatrixDihedralInternal_O>"
              :offset-base-ctype "chem::ZMatrixEntry_O" :layout-offset-field-names ("_Dihedral")}
-{class-kind :stamp-name "STAMPWTAG_chem__SpecificContextSet_O"
-            :stamp-key "chem::SpecificContextSet_O" :parent-class "core::CxxObject_O"
-            :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>>"
-             :offset-base-ctype "chem::SpecificContextSet_O"
-             :layout-offset-field-names ("_KeySets" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__Angle_O" :stamp-key "chem::Angle_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -4534,18 +4006,6 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "chem::ConformationExplorerMatch_O"
              :layout-offset-field-names ("_MatchStageName")}
-{class-kind :stamp-name "STAMPWTAG_chem__StereoisomerAtoms_O"
-            :stamp-key "chem::StereoisomerAtoms_O" :parent-class "core::CxxObject_O"
-            :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::StereoisomerAtoms_O"
-             :layout-offset-field-names ("_StereoisomerName")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>>"
-             :offset-base-ctype "chem::StereoisomerAtoms_O"
-             :layout-offset-field-names ("_Atoms" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__Rotamer_O" :stamp-key "chem::Rotamer_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -4789,20 +4249,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<chem::CDNode_O>" :offset-base-ctype "chem::CDBond_O"
              :layout-offset-field-names ("_EndNode")}
-{class-kind :stamp-name "STAMPWTAG_chem__ConstitutionBond_O" :stamp-key "chem::ConstitutionBond_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
-             :offset-base-ctype "chem::ConstitutionBond_O"
-             :layout-offset-field-names ("_ToAtomIndex")}
-{class-kind :stamp-name "STAMPWTAG_chem__ConstitutionAtoms_O"
-            :stamp-key "chem::ConstitutionAtoms_O" :parent-class "core::CxxObject_O"
-            :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>>"
-             :offset-base-ctype "chem::ConstitutionAtoms_O"
-             :layout-offset-field-names ("_Atoms" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__MoleculeGraph_O" :stamp-key "chem::MoleculeGraph_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -5200,16 +4646,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::Dimacs_O"
              :layout-offset-field-names ("adjacencyMatrixSizeLimit")}
-{class-kind :stamp-name "STAMPWTAG_chem__SpecificContext_O" :stamp-key "chem::SpecificContext_O"
-            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "chem::SpecificContext_O" :layout-offset-field-names ("_SelfName")}
-{fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<chem::KeyEntry>>"
-             :offset-base-ctype "chem::SpecificContext_O"
-             :layout-offset-field-names ("_Neighbors" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__Minimizer_O" :stamp-key "chem::Minimizer_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -11945,17 +11381,6 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<chem::BondToAtomTest_O>"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoConfiguration_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::StereoConfiguration_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::StereoConfiguration_O>"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_short_"
                 :stamp-key "gctools::GCArray_moveable<short>" :parent-class "gctools::GCContainer"
                 :lisp-class-base nil :root-class "gctools::GCContainer" :stamp-wtag 3
@@ -11965,17 +11390,6 @@
                    :length-field-names ("_MaybeSignedLength")
                    :end-field-names ("_MaybeSignedLength")}
 {variable-field-only :offset-type-cxx-identifier "ctype_short" :fixup-type "short"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::Rotamer_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::Rotamer_O>"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_unsigned_long_"
                 :stamp-key "gctools::GCVector_moveable<unsigned long>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12198,23 +11612,6 @@
                 :fixup-ctype-offset-type-key "gctools::tagged_pointer<gctools::GCVector_moveable<int>>"
                 :fixup-ctype-key "gctools::Vec0<int>"
                 :layout-offset-field-names ("_Vector" "._Contents")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___"
-                :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>"
-                   :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>"
-                :layout-offset-field-names ("first")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::EntityNameSetBase_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>"
-                :layout-offset-field-names ("second")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_"
                 :stamp-key "gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12284,17 +11681,6 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<core::SimpleBitVector_O>"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::Monomer_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::Monomer_O>"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12306,23 +11692,6 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<chem::CDFragment_O>"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___"
-                :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>"
-                   :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>"
-                :layout-offset-field-names ("first")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::MonomerCoordinates_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>"
-                :layout-offset-field-names ("second")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12387,38 +11756,6 @@
 {variable-field :offset-type-cxx-identifier "ctype_int" :fixup-ctype-offset-type-key "int"
                 :fixup-ctype-key "core::KeywordArgument"
                 :layout-offset-field-names ("_Sensor" "._ArgTargetFrameIndex")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_chem__KeyEntry_"
-                :stamp-key "gctools::GCVector_moveable<chem::KeyEntry>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<chem::KeyEntry>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "chem::KeyEntry"
-                   :offset-base-ctype "gctools::GCVector_moveable<chem::KeyEntry>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
-                :fixup-ctype-key "chem::KeyEntry" :layout-offset-field-names ("_Coupling")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
-                :fixup-ctype-key "chem::KeyEntry" :layout-offset-field-names ("_Monomer")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_chem__Stereoisomer_O___"
-                :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>"
-                   :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::T_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>"
-                :layout-offset-field-names ("first")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::Stereoisomer_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>"
-                :layout-offset-field-names ("second")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ReportBase_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12466,34 +11803,6 @@
                 :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::Atom_O>"
                 :fixup-ctype-key "chem::EnergyAnchorRestraint"
                 :layout-offset-field-names ("_Atom1")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::StereoisomerAtom_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::StereoisomerAtom_O>"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___"
-                :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>"
-                   :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>"
-                :layout-offset-field-names ("first")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::SpecificContext_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>"
-                :layout-offset-field-names ("second")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_chem__HybridizationInfo_"
                 :stamp-key "gctools::GCVector_moveable<chem::HybridizationInfo>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12542,17 +11851,6 @@
 {variable-capacity :ctype "char" :offset-base-ctype "gctools::GCVector_moveable<char>"
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "ctype_char" :fixup-type "char"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::ConstitutionBond_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::ConstitutionBond_O>"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12618,23 +11916,6 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<chem::ConformationCollectionEntry_O>"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___"
-                :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>"
-                   :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>"
-                :layout-offset-field-names ("first")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::Coupling_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>"
-                :layout-offset-field-names ("second")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12674,17 +11955,6 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<chem::AGEdge_O>"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::ComplexRestraint_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::ComplexRestraint_O>"}
 {bitunit-container-kind :stamp-name "STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_"
                         :stamp-key "gctools::GCBitUnitArray_moveable<2,0>"
                         :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12695,17 +11965,6 @@
                    :offset-base-ctype "gctools::GCBitUnitArray_moveable<2,0>"
                    :length-field-names ("_Length") :end-field-names ("_Length")}
 {variable-field-only :offset-type-cxx-identifier "ctype_unsigned_long" :fixup-type "unsigned long"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::Coupling_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::Coupling_O>"}
 {bitunit-container-kind :stamp-name "STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_"
                         :stamp-key "gctools::GCBitUnitArray_moveable<1,0>"
                         :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -12739,17 +11998,6 @@
                 :fixup-ctype-offset-type-key "gctools::tagged_pointer<gctools::GCVector_moveable<char>>"
                 :fixup-ctype-key "gctools::Vec0<char>"
                 :layout-offset-field-names ("_Vector" "._Contents")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::Topology_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::Topology_O>"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_int_"
                 :stamp-key "gctools::GCVector_moveable<int>" :parent-class "gctools::GCContainer"
                 :lisp-class-base nil :root-class "gctools::GCContainer" :stamp-wtag 3
@@ -12758,45 +12006,6 @@
 {variable-capacity :ctype "int" :offset-base-ctype "gctools::GCVector_moveable<int>"
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "ctype_int" :fixup-type "int"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___"
-                :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>"
-                   :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>"
-                :layout-offset-field-names ("first")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::FrameRecognizer_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>"
-                :layout-offset-field-names ("second")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::Stereoisomer_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::Stereoisomer_O>"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::Mate_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::Mate_O>"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_float_"
                 :stamp-key "gctools::GCArray_moveable<float>" :parent-class "gctools::GCContainer"
                 :lisp-class-base nil :root-class "gctools::GCContainer" :stamp-wtag 3
@@ -13123,23 +12332,6 @@
 {variable-field :offset-type-cxx-identifier "ctype_double" :fixup-ctype-offset-type-key "double"
                 :fixup-ctype-key "chem::EnergyOutOfZPlane"
                 :layout-offset-field-names ("term" ".za")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___"
-                :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>"
-                   :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>"
-                :layout-offset-field-names ("first")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::Plug_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>"
-                :layout-offset-field-names ("second")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -13493,22 +12685,6 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<core::Instance_O>"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__"
-                :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "std::pair<gctools::smart_ptr<chem::Atom_O>,int>"
-                   :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::Atom_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<chem::Atom_O>,int>"
-                :layout-offset-field-names ("first")}
-{variable-field :offset-type-cxx-identifier "ctype_int" :fixup-ctype-offset-type-key "int"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<chem::Atom_O>,int>"
-                :layout-offset-field-names ("second")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_"
                 :stamp-key "gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -13524,17 +12700,6 @@
 {variable-field :offset-type-cxx-identifier "ctype_double" :fixup-ctype-offset-type-key "double"
                 :fixup-ctype-key "chem::RigidBodyNonbondCrossTerm"
                 :layout-offset-field-names ("dC")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::MonomerCoordinates_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::MonomerCoordinates_O>"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCArray_moveable_unsigned_long_"
                 :stamp-key "gctools::GCArray_moveable<unsigned long>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -13640,17 +12805,6 @@
                    :length-field-names ("_Capacity") :end-field-names ("_End")}
 {variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                      :fixup-type "gctools::smart_ptr<chem::FFVdw_O>"}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::ConstitutionAtom_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::ConstitutionAtom_O>"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_"
                 :stamp-key "gctools::GCVector_moveable<chem::EnergyAtom>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
@@ -13787,34 +12941,6 @@
                 :fixup-ctype-key "chem::RigidBodyAtomInfo" :layout-offset-field-names ("_Epsilon")}
 {variable-field :offset-type-cxx-identifier "ctype_double" :fixup-ctype-offset-type-key "double"
                 :fixup-ctype-key "chem::RigidBodyAtomInfo" :layout-offset-field-names ("_Charge")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___"
-                :stamp-key "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>"
-                   :offset-base-ctype "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>"
-                :layout-offset-field-names ("first")}
-{variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                :fixup-ctype-offset-type-key "gctools::smart_ptr<chem::Topology_O>"
-                :fixup-ctype-key "std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>"
-                :layout-offset-field-names ("second")}
-{container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__"
-                :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>"
-                :parent-class "gctools::GCContainer" :lisp-class-base nil
-                :root-class "gctools::GCContainer" :stamp-wtag 3 :definition-data "0"}
-{variable-array0 :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>"
-                 :field-names ("_Data")}
-{variable-capacity :ctype "gctools::smart_ptr<chem::StereoisomerAtoms_O>"
-                   :offset-base-ctype "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>"
-                   :length-field-names ("_Capacity") :end-field-names ("_End")}
-{variable-field-only :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-                     :fixup-type "gctools::smart_ptr<chem::StereoisomerAtoms_O>"}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil
