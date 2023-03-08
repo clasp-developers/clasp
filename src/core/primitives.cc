@@ -1526,6 +1526,22 @@ CL_DEFUN Symbol_sp core__gensym_quick(SimpleBaseString_sp prefix,
   return Symbol_O::create(name);
 }
 
+CL_DEFUN Symbol_sp core__gensym_quick_char(SimpleCharacterString_sp prefix,
+                                           size_t suffix) {
+  size_t prefixlen = prefix->length();
+  size_t suffixlen = (suffix < 2) ? 1 : std::ceil(std::log10(suffix));
+  auto name = SimpleCharacterString_O::make(prefixlen + suffixlen);
+  for (size_t i = 0; i < prefixlen; ++i)
+    (*name)[i] = (*prefix)[i];
+  for (size_t j = prefixlen + suffixlen - 1; j >= prefixlen; --j) {
+    auto div = std::div(suffix, 10);
+    (*name)[j] = div.rem + '0';
+    suffix = div.quot;
+  }
+  return Symbol_O::create(name);
+
+}
+
 CL_LAMBDA(&optional (x "G"));
 CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS gensym)dx");
@@ -1541,6 +1557,13 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
       //  bytecode-compiler. Profiling finds unexpected bottlenecks.)
       gctools::Fixnum fcounter = counter.unsafe_fixnum();
       Symbol_sp result = core__gensym_quick(gc::As_unsafe<SimpleBaseString_sp>(x), fcounter);
+      cl::_sym_STARgensym_counterSTAR->setf_symbolValue(Integer_O::create(1 + fcounter));
+      return result;
+    } else if (gc::IsA<SimpleCharacterString_sp>(x)
+               && counter.fixnump() && counter.unsafe_fixnum() >= 0) {
+      // other fast path
+      gctools::Fixnum fcounter = counter.unsafe_fixnum();
+      Symbol_sp result = core__gensym_quick_char(gc::As_unsafe<SimpleCharacterString_sp>(x), fcounter);
       cl::_sym_STARgensym_counterSTAR->setf_symbolValue(Integer_O::create(1 + fcounter));
       return result;
     }
