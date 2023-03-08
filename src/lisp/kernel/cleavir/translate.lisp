@@ -1884,11 +1884,14 @@
         #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
         (llvm-sys:set-personality-fn the-function
                                      (cmp:irc-personality-function))
-        (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
+        ;; we'd like to be able to be interruptable at any time, so we
+        ;; need async-safe unwinding tables basically everywhere.
+        ;; (Although in code that ignores interrupts we could loosen this.)
+        (llvm-sys:add-fn-attr2string the-function "uwtable" "async")
         (when (null (bir:returni function))
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-return))
         (unless (policy:policy-value (bir:policy function)
-                                             'perform-optimization)
+                                     'perform-optimization)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
         (cmp:with-irbuilder (body-irbuilder)
@@ -1945,7 +1948,8 @@
                                         :function xep-arity-function)
                   (llvm-sys:set-personality-fn xep-arity-function
                                                (cmp:irc-personality-function))
-                  (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-uwtable)
+                  (llvm-sys:add-fn-attr2string xep-arity-function
+                                               "uwtable" "async")
                   (when (null (bir:returni function))
                     (llvm-sys:add-fn-attr xep-arity-function
                                           'llvm-sys:attribute-no-return))

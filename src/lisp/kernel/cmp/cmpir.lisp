@@ -938,7 +938,7 @@ Otherwise do a variable shift."
     (irc-make-vaslist new-nvals new-vals label)))
 
 (defparameter *default-function-attributes*
-  '(llvm-sys:attribute-uwtable ("frame-pointer" "all")))
+  '(("uwtable" "async") ("frame-pointer" "all")))
 
 (defun function-description-name (function)
   (let ((function-name (llvm-sys:get-name function)))
