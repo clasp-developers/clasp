@@ -99,8 +99,7 @@
    (%value :initarg :value :reader setf-aref-value :type creator)))
 
 (defclass hash-table-creator (vcreator)
-  (;; used in disltv
-   (%test :initarg :test :reader hash-table-creator-test :type symbol)
+  ((%test :initarg :test :reader hash-table-creator-test :type symbol)
    (%count :initarg :count :reader hash-table-creator-count
            :type (integer 0))))
 
@@ -827,11 +826,10 @@
   (%uaet-info (array-element-type array)))
 
 (defmethod encode ((inst hash-table-creator) stream)
-  (let* ((ht (prototype inst))
-         ;; TODO: Custom hash-table tests.
+  (let* (;; TODO: Custom hash-table tests.
          ;; NOTE that for non-custom hash table tests, the standard
          ;; guarantees that hash-table-test returns a symbol.
-         (testcode (ecase (hash-table-test ht)
+         (testcode (ecase (hash-table-creator-test inst)
                      ((eq) #b00)
                      ((eql) #b01)
                      ((equal) #b10)
@@ -845,7 +843,7 @@
          ;; up, it might be rehashed and resized during initialization as it
          ;; reaches the rehash threshold. I am not sure how to deal with this
          ;; in a portable fashion. (we could just invert a provided rehash-size?)
-         (count (max (hash-table-count ht) #xffff)))
+         (count (min (hash-table-creator-count inst) #xffff)))
     (write-mnemonic 'make-hash-table stream)
     (write-index inst stream)
     (write-byte testcode stream)
