@@ -1,6 +1,7 @@
 #ifndef bytecode_compiler_H
 #define bytecode_compiler_H
 
+#include <variant>
 #include <clasp/core/common.h>
 #include <clasp/core/compPackage.fwd.h>
 
@@ -54,6 +55,14 @@ public:
   }
 };
 
+struct LexicalVarInfoV {
+  LexicalVarInfoV(LexicalVarInfo_sp info) : _info(info) {};
+  // Because we mutate infos, and store them in lexenvs, we have to
+  // allocate them. This wrapper is just for var_info_v purposes.
+  LexicalVarInfo_sp _info;
+  LexicalVarInfo_sp info() const { return _info; }
+};
+
 FORWARD(SpecialVarInfo);
 class SpecialVarInfo_O : public VarInfo_O {
   LISP_CLASS(comp, CompPkg, SpecialVarInfo_O, "SpecialVarInfo", VarInfo_O);
@@ -74,6 +83,13 @@ public:
   CL_DEFMETHOD bool globalp() const { return this->_globalp; }
 };
 
+struct SpecialVarInfoV {
+  SpecialVarInfoV(bool globalp) : _globalp(globalp) {};
+  SpecialVarInfoV(SpecialVarInfo_sp info) : _globalp(info->globalp()) {};
+  bool _globalp;
+  bool globalp() const { return _globalp; }
+};
+
 FORWARD(SymbolMacroVarInfo);
 class SymbolMacroVarInfo_O : public VarInfo_O {
   LISP_CLASS(comp, CompPkg, SymbolMacroVarInfo_O, "SymbolMacroVarInfo", VarInfo_O);
@@ -91,6 +107,13 @@ public:
   CL_DEFMETHOD Function_sp expander() const { return this->_expander; }
 };
 
+struct SymbolMacroVarInfoV {
+  SymbolMacroVarInfoV(Function_sp expander) : _expander(expander) {};
+  SymbolMacroVarInfoV(SymbolMacroVarInfo_sp info) : _expander(info->expander()) {};
+  Function_sp _expander;
+  Function_sp expander() const { return _expander; }
+};
+
 FORWARD(ConstantVarInfo);
 class ConstantVarInfo_O : public VarInfo_O {
   LISP_CLASS(comp, CompPkg, ConstantVarInfo_O, "ConstantVarInfo", VarInfo_O);
@@ -106,6 +129,19 @@ public:
   }
   CL_DEFMETHOD T_sp value() const { return this->_value; }
 };
+
+struct ConstantVarInfoV {
+  ConstantVarInfoV(T_sp value) : _value(value) {};
+  ConstantVarInfoV(ConstantVarInfo_sp info) : _value(info->value()) {};
+  T_sp _value;
+  T_sp value() const { return _value; }
+};
+
+// non-heaped infos, to avoid consing. see var_info_v.
+// We use this thing instead of monostate for clarity.
+struct NoVarInfoV {};
+
+typedef std::variant<NoVarInfoV, LexicalVarInfoV, SpecialVarInfoV, SymbolMacroVarInfoV, ConstantVarInfoV> VarInfoV;
 
 FORWARD(FunInfo);
 class FunInfo_O : public General_O {
@@ -131,6 +167,13 @@ public:
   CL_DEFMETHOD T_sp cmexpander() const { return this->_cmexpander; }
 };
 
+struct GlobalFunInfoV {
+  GlobalFunInfoV(T_sp cmexpander) : _cmexpander(cmexpander) {};
+  GlobalFunInfoV(GlobalFunInfo_sp info) : _cmexpander(info->cmexpander()) {};
+  T_sp _cmexpander;
+  T_sp cmexpander() const { return _cmexpander; }
+};
+
 FORWARD(LocalFunInfo);
 class LocalFunInfo_O : public FunInfo_O {
   LISP_CLASS(comp, CompPkg, LocalFunInfo_O, "LocalFunInfo", FunInfo_O);
@@ -145,6 +188,12 @@ public:
     return gctools::GC<LocalFunInfo_O>::allocate<gctools::RuntimeStage>(value);
   }
   CL_DEFMETHOD T_sp funVar() const { return this->fun_var; }
+};
+
+struct LocalFunInfoV {
+  LocalFunInfoV(LocalFunInfo_sp info) : _info(info) {};
+  LocalFunInfo_sp _info;
+  LocalFunInfo_sp info() const { return _info; }
 };
 
 // We have separate global and local macro classes because it is sometimes
@@ -167,6 +216,13 @@ public:
   CL_DEFMETHOD Function_sp expander() const { return this->_expander; }
 };
 
+struct GlobalMacroInfoV {
+  GlobalMacroInfoV(Function_sp expander) : _expander(expander) {};
+  GlobalMacroInfoV(GlobalMacroInfo_sp info) : _expander(info->expander()) {};
+  Function_sp _expander;
+  Function_sp expander() const { return _expander; }
+};
+
 FORWARD(LocalMacroInfo);
 class LocalMacroInfo_O : public FunInfo_O {
   LISP_CLASS(comp, CompPkg, LocalMacroInfo_O, "LocalMacroInfo", FunInfo_O);
@@ -182,6 +238,17 @@ public:
   }
   CL_DEFMETHOD Function_sp expander() const { return this->_expander; }
 };
+
+struct LocalMacroInfoV {
+  LocalMacroInfoV(Function_sp expander) : _expander(expander) {};
+  LocalMacroInfoV(LocalMacroInfo_sp info) : _expander(info->expander()) {};
+  Function_sp _expander;
+  Function_sp expander() const { return _expander; }
+};
+
+struct NoFunInfoV {};
+
+typedef std::variant<NoFunInfoV, GlobalFunInfoV, LocalFunInfoV, GlobalMacroInfoV, LocalMacroInfoV> FunInfoV;
 
 FORWARD(Lexenv);
 class Context; // forward decl

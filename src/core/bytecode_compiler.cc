@@ -183,7 +183,7 @@ CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
   if (info.notnilp())
     return info;
   // Constant?
-  // Constants are also specialP, so we have to check this first.
+  // (Constants are also specialP, so we have to check constancy first.)
   if (cl__keywordp(sym) || sym->getReadOnly())
     return ConstantVarInfo_O::make(sym->symbolValue());
   // Globally special?
@@ -199,6 +199,35 @@ CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
   }
   // Unknown.
   return nil<T_O>();
+}
+
+// Like the above, but returns a std::variant. Good when you don't need
+// to cons up info objects.
+VarInfoV var_info_v(Symbol_sp sym, Lexenv_sp env) {
+  T_sp info = env->variableInfo(sym);
+  if (gc::IsA<LexicalVarInfo_sp>(info)) // in_place_type_t?
+    return VarInfoV(LexicalVarInfoV(gc::As_unsafe<LexicalVarInfo_sp>(info)));
+  else if (gc::IsA<SpecialVarInfo_sp>(info))
+    return VarInfoV(SpecialVarInfoV(gc::As_unsafe<SpecialVarInfo_sp>(info)));
+  else if (gc::IsA<SymbolMacroVarInfo_sp>(info))
+    return VarInfoV(SymbolMacroVarInfoV(gc::As_unsafe<SymbolMacroVarInfo_sp>(info)));
+  ASSERT(info.nilp());
+  // Constant?
+  if (cl__keywordp(sym) || sym->getReadOnly())
+    return VarInfoV(ConstantVarInfoV(sym->symbolValue()));
+  // Globally special?
+  if (sym->specialP())
+    return VarInfoV(SpecialVarInfoV(true));
+  // Global symbol macro?
+  T_mv symmac = core__get_sysprop(sym, ext::_sym_symbolMacro);
+  MultipleValues &mvn = core::lisp_multipleValues();
+  if (gc::As_unsafe<T_sp>(mvn.valueGet(1, symmac.number_of_values())).notnilp()) {
+    T_sp symmac0 = symmac;
+    Function_sp fsymmac = gc::As_assert<Function_sp>(symmac0);
+    return VarInfoV(SymbolMacroVarInfoV(fsymmac));
+  }
+  // Unknown.
+  return VarInfoV(NoVarInfoV());
 }
 
 CL_DEFUN T_sp fun_info(T_sp name, Lexenv_sp env) {
@@ -250,6 +279,43 @@ CL_DEFUN T_sp fun_info(T_sp name, Lexenv_sp env) {
   }
 }
 
+FunInfoV fun_info_v(T_sp name, Lexenv_sp env) {
+  // Local?
+  T_sp info = env->functionInfo(name);
+  if (gc::IsA<LocalFunInfo_sp>(info))
+    return FunInfoV(LocalFunInfoV(gc::As_unsafe<LocalFunInfo_sp>(info)));
+  else if (gc::IsA<LocalMacroInfo_sp>(info))
+    return FunInfoV(LocalMacroInfoV(gc::As_unsafe<LocalMacroInfo_sp>(info)));
+  ASSERT(info.nilp());
+  // Split into setf and not versions.
+  if (name.consp()) {
+    List_sp cname = name;
+    T_sp dname = oCdr(cname);
+    if (oCar(cname) != cl::_sym_setf || !dname.consp()
+        || oCdr(dname).notnilp())
+      return FunInfoV(NoFunInfoV()); // TODO: error?
+    T_sp sss = CONS_CAR(dname);
+    Symbol_sp fname = gc::As<Symbol_sp>(sss);
+    if (!fname->fboundp_setf())
+      return FunInfoV(NoFunInfoV());
+    if (fname->macroP())
+      return FunInfoV(GlobalMacroInfoV(fname->getSetfFdefinition()));
+    else if (cl::_sym_compiler_macro_function->fboundp()) {
+      T_sp cmexpander = eval::funcall(cl::_sym_compiler_macro_function, name);
+      return FunInfoV(GlobalFunInfoV(cmexpander));
+    } else return FunInfoV(GlobalFunInfoV(nil<T_O>()));    
+  } else {
+    Symbol_sp fname = gc::As<Symbol_sp>(name);
+    if (!fname->fboundp()) return FunInfoV(NoFunInfoV());
+    else if (fname->macroP())
+      return FunInfoV(GlobalMacroInfoV(fname->symbolFunction()));
+    else if (cl::_sym_compiler_macro_function->fboundp()) {
+      T_sp cmexpander = eval::funcall(cl::_sym_compiler_macro_function, fname);
+      return FunInfoV(GlobalFunInfoV(cmexpander));
+    } else return FunInfoV(GlobalFunInfoV(nil<T_O>()));
+  }
+}
+  
 bool Lexenv_O::notinlinep(T_sp fname) {
   for (auto cur : this->notinlines())
     if (oCar(cur) == fname)
@@ -920,9 +986,9 @@ static T_sp expand_macro(Function_sp expander, T_sp form, Lexenv_sp env) {
 }
 
 void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
-  T_sp info = var_info(sym, env);
-  if (gc::IsA<SymbolMacroVarInfo_sp>(info)) {
-    Function_sp expander = gc::As_unsafe<SymbolMacroVarInfo_sp>(info)->expander();
+  VarInfoV info = var_info_v(sym, env);
+  if (std::holds_alternative<SymbolMacroVarInfoV>(info)) {
+    Function_sp expander = std::get<SymbolMacroVarInfoV>(info).expander();
     T_sp expansion = expand_macro(expander, sym, env);
     compile_form(expansion, env, context);
     return;
@@ -932,8 +998,8 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
     // wanted, we want to not compile anything.
     return;
   } else {
-    if (gc::IsA<LexicalVarInfo_sp>(info)) {
-      LexicalVarInfo_sp lvinfo = gc::As_unsafe<LexicalVarInfo_sp>(info);
+    if (std::holds_alternative<LexicalVarInfoV>(info)) {
+      LexicalVarInfo_sp lvinfo = std::get<LexicalVarInfoV>(info).info();
       if (lvinfo->funct() == context.cfunction())
         // Local variable, just read it.
         context.assemble1(vm_ref, lvinfo->frameIndex());
@@ -942,16 +1008,15 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
         context.assemble1(vm_closure, context.closure_index(lvinfo));
       }
       context.maybe_emit_cell_ref(lvinfo);
-    } else if (gc::IsA<SpecialVarInfo_sp>(info))
+    } else if (std::holds_alternative<SpecialVarInfoV>(info))
       context.assemble1(vm_symbol_value, context.literal_index(sym));
-    else if (gc::IsA<ConstantVarInfo_sp>(info)) {
-      compile_literal(gc::As_unsafe<ConstantVarInfo_sp>(info)->value(), env, context);
+    else if (std::holds_alternative<ConstantVarInfoV>(info)) {
+      compile_literal(std::get<ConstantVarInfoV>(info).value(), env, context);
       // Avoid the pop code below - compile-literal handles it.
       return;
-    } else if (info.nilp()) {
+    } else if (std::holds_alternative<NoVarInfoV>(info))
       // FIXME: Warn that the variable is unknown and we're assuming special.
       context.assemble1(vm_symbol_value, context.literal_index(sym));
-    }
     if (context.receiving() == -1)
       // Values return - put value in mv vector.
       context.assemble0(vm_pop);
@@ -999,9 +1064,9 @@ bool special_binding_p(Symbol_sp sym, List_sp specials, Lexenv_sp env) {
   if (specials.notnilp() && specials.unsafe_cons()->memberEq(sym).notnilp())
     return true;
   else {
-    T_sp info = var_info(sym, env);
-    if (gc::IsA<SpecialVarInfo_sp>(info))
-      return gc::As_unsafe<SpecialVarInfo_sp>(info)->globalp();
+    VarInfoV info = var_info_v(sym, env);
+    if (std::holds_alternative<SpecialVarInfoV>(info))
+      return std::get<SpecialVarInfoV>(info).globalp();
     else
       return false;
   }
@@ -1245,7 +1310,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     // default initforms properly treat them as special.
     ql::list sopts;
     for (auto &it : optionals)
-      if (gc::IsA<SpecialVarInfo_sp>(var_info(it._ArgTarget, env)))
+      if (std::holds_alternative<SpecialVarInfoV>(var_info_v(it._ArgTarget, env)))
         sopts << it._ArgTarget;
     new_env = new_env->add_specials(sopts.cons());
   }
@@ -1270,7 +1335,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     ql::list skeys;
     for (auto &it : keys) {
       keyvars << it._ArgTarget;
-      if (gc::IsA<SpecialVarInfo_sp>(var_info(it._ArgTarget, env)))
+      if (std::holds_alternative<SpecialVarInfoV>(var_info_v(it._ArgTarget, env)))
         skeys << it._ArgTarget;
     }
     new_env = new_env->bind_vars(keyvars.cons(), context);
@@ -1413,16 +1478,18 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
     else
       ctxt.assemble1(vm_make_closure, ctxt.literal_index(fun));
   } else { // ought to be a function name
-    T_sp info = fun_info(fnameoid, env);
-    if (gc::IsA<GlobalFunInfo_sp>(info) || info.nilp()) {
+    FunInfoV info = fun_info_v(fnameoid, env);
+    if (std::holds_alternative<GlobalFunInfoV>(info)
+        || std::holds_alternative<NoFunInfoV>(info)) {
       // TODO: Warn on unknown (nil)
       ctxt.assemble1(vm_fdefinition, ctxt.literal_index(fnameoid));
-    } else if (gc::IsA<LocalFunInfo_sp>(info)) {
-      LocalFunInfo_sp lfinfo = gc::As_unsafe<LocalFunInfo_sp>(info);
+    } else if (std::holds_alternative<LocalFunInfoV>(info)) {
+      LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
       LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(lfinfo->funVar());
       ctxt.reference_lexical_info(lvinfo);
     } else
-      SIMPLE_ERROR("BUG: Unknown fun info %s", _rep_(info));
+      // FIXME: e.g. #'with-open-file. needs better error.
+      SIMPLE_ERROR("%s does not name a function", _rep_(fnameoid));
   }
   // Coerce to values if necessary.
   if (mvp)
@@ -1506,13 +1573,14 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
 }
 
 static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Context ctxt) {
-  T_sp info = var_info(var, env);
-  if (gc::IsA<SymbolMacroVarInfo_sp>(info)) {
-    Function_sp expander = gc::As_unsafe<SymbolMacroVarInfo_sp>(info)->expander();
+  VarInfoV info = var_info_v(var, env);
+  if (std::holds_alternative<SymbolMacroVarInfoV>(info)) {
+    Function_sp expander = std::get<SymbolMacroVarInfoV>(info).expander();
     T_sp expansion = expand_macro(expander, var, env);
     T_sp setform = Cons_O::createList(cl::_sym_setf, expansion, valf);
     compile_form(setform, env, ctxt);
-  } else if (info.nilp() || gc::IsA<SpecialVarInfo_sp>(info)) {
+  } else if (std::holds_alternative<NoVarInfoV>(info)
+             || std::holds_alternative<SpecialVarInfoV>(info)) {
     // TODO: Warn on unknown variable
     compile_form(valf, env, Context(ctxt, 1));
     // If we need to return the new value, stick it into a new local
@@ -1534,8 +1602,8 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
       if (ctxt.receiving() == -1) // need values
         ctxt.assemble0(vm_pop);
     }
-  } else if (gc::IsA<LexicalVarInfo_sp>(info)) {
-    LexicalVarInfo_sp lvinfo = gc::As_unsafe<LexicalVarInfo_sp>(info);
+  } else if (std::holds_alternative<LexicalVarInfoV>(info)) {
+    LexicalVarInfo_sp lvinfo = std::get<LexicalVarInfoV>(info).info();
     bool localp = (lvinfo->funct() == ctxt.cfunction());
     size_t index = env->frameEnd();
     if (!localp)
@@ -1559,8 +1627,7 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
       if (ctxt.receiving() == -1)
         ctxt.assemble0(vm_pop);
     }
-  } else
-    SIMPLE_ERROR("BUG: Unknown info %s", _rep_(info));
+  } else UNREACHABLE();
 }
 
 void compile_setq(List_sp pairs, Lexenv_sp env, const Context ctxt) {
@@ -1949,20 +2016,18 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
   else {
     if (gc::IsA<Symbol_sp>(head)) {
       Symbol_sp shead = gc::As_unsafe<Symbol_sp>(head);
-      T_sp info = fun_info(head, env);
-      if (gc::IsA<GlobalMacroInfo_sp>(info)) {
-        GlobalMacroInfo_sp minfo = gc::As_unsafe<GlobalMacroInfo_sp>(info);
-        T_sp expansion = expand_macro(minfo->expander(), Cons_O::create(head, rest), env);
+      FunInfoV info = fun_info_v(head, env);
+      if (std::holds_alternative<GlobalMacroInfoV>(info)) {
+        Function_sp expander = std::get<GlobalMacroInfoV>(info).expander();
+        T_sp expansion = expand_macro(expander, Cons_O::create(head, rest), env);
         compile_form(expansion, env, context);
-      } else if (gc::IsA<LocalMacroInfo_sp>(info)) {
-        LocalMacroInfo_sp minfo = gc::As_unsafe<LocalMacroInfo_sp>(info);
-        T_sp expansion = expand_macro(minfo->expander(), Cons_O::create(head, rest), env);
+      } else if (std::holds_alternative<LocalMacroInfoV>(info)) {
+        Function_sp expander = std::get<LocalMacroInfoV>(info).expander();
+        T_sp expansion = expand_macro(expander, Cons_O::create(head, rest), env);
         compile_form(expansion, env, context);
-      } else if (gc::IsA<GlobalFunInfo_sp>(info)) {
-        GlobalFunInfo_sp gfinfo = gc::As_unsafe<GlobalFunInfo_sp>(info);
-        T_sp cmexpander = gfinfo->cmexpander();
-        if (cmexpander.notnilp() &&
-            !env->notinlinep(head)
+      } else if (std::holds_alternative<GlobalFunInfoV>(info)) {
+        T_sp cmexpander = std::get<GlobalFunInfoV>(info).cmexpander();
+        if (cmexpander.notnilp() && !env->notinlinep(head)
             // KLUDGE: The TYPEP compiler macro expands into TYPEQ, which
             // causes infinite recursion as we implement TYPEQ as TYPEP.
             // Better solution would be to have TYPEP expand into
@@ -1979,14 +2044,14 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
         } // no compiler macro, or expansion declined: call
         compile_function(head, env, Context(context, 1));
         compile_call(rest, env, context);
-      } else if (gc::IsA<LocalFunInfo_sp>(info) || info.nilp()) {
+      } else if (std::holds_alternative<LocalFunInfoV>(info)
+                 || std::holds_alternative<NoFunInfoV>(info)) {
         // unknown function warning handled by compile-function (eventually)
         // note we do a double lookup of the fun info,
         // which is inefficient in the compiler (doesn't affect generated code)
         compile_function(head, env, Context(context, 1));
         compile_call(rest, env, context);
-      } else
-        SIMPLE_ERROR("BUG: Unknown info %s", _rep_(info));
+      } else UNREACHABLE();
     } else if (gc::IsA<Cons_sp>(head) && (oCar(head) == cl::_sym_lambda)) {
       // Lambda form
       compile_function(head, env, Context(context, 1));
