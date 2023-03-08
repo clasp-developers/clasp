@@ -30,7 +30,7 @@
   :branch "master")
  (:name :trivial-gray-streams
   :repository "https://github.com/trivial-gray-streams/trivial-gray-streams.git"
-  :directory "dependencies/trivial-gray-streams/"
+  :directory "src/lisp/kernel/contrib/trivial-gray-streams/"
   :branch "master")
  (:name :acclimation
   :repository "https://github.com/robert-strandh/Acclimation.git"
