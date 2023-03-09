@@ -411,7 +411,7 @@
                    come-from *clasp-system*))
          (frame
            (unless simplep
-             (%intrinsic-call "llvm.frameaddress.p0i8"
+             (%intrinsic-call "llvm.frameaddress.p0"
                               (list (%i32 0)))))
          (normal-successor (first successors))
          (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "come-from-jmp-buf")))
@@ -613,7 +613,7 @@
                              'insert-step-conditions)
     (let ((origin (bir:origin inst)))
       (when (typep origin 'cst:cst)
-        (let* ((frame (%intrinsic-call "llvm.frameaddress.p0i8"
+        (let* ((frame (%intrinsic-call "llvm.frameaddress.p0"
                                        (list (%i32 0)) "stepper-frame"))
                (raw (cst:raw origin))
                ;; See #1376: Sometimes the source form will be a literal.
@@ -647,7 +647,7 @@
     ;; so now we need to put in the cc_breakstep_after to support
     ;; the step-over facility.
     (%intrinsic-call "cc_breakstep_after"
-                     (list (%intrinsic-call "llvm.frameaddress.p0i8"
+                     (list (%intrinsic-call "llvm.frameaddress.p0"
                                             (list (%i32 0))
                                             "stepper-frame")))))
 
@@ -1555,7 +1555,7 @@
                                   "adjusted-nret-variable"))
                (ncopy (cmp:irc-sub adjusted-nvalues (%size_t 1) "ntocopy")))
           ;; Copy the rest
-          (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
+          (%intrinsic-call "llvm.memcpy.p0.p0.i64"
                            (list (cmp:irc-bit-cast dest cmp:%i8*%
                                                    "var-dest-subsequent")
                                  ;; read from the 1st value of the mv vector
@@ -1576,7 +1576,7 @@
           for dest = (cmp:irc-typed-gep-variable cmp:%t*% valvec (list startn) "dest")
           do (ecase key
                ((:saved)
-                (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
+                (%intrinsic-call "llvm.memcpy.p0.p0.i64"
                                  (list (cmp:irc-bit-cast dest cmp:%i8*% "dest")
                                        (cmp:irc-bit-cast extra cmp:%i8*%
                                                          "source")
@@ -1884,11 +1884,14 @@
         #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
         (llvm-sys:set-personality-fn the-function
                                      (cmp:irc-personality-function))
-        (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
+        ;; we'd like to be able to be interruptable at any time, so we
+        ;; need async-safe unwinding tables basically everywhere.
+        ;; (Although in code that ignores interrupts we could loosen this.)
+        (llvm-sys:add-fn-attr2string the-function "uwtable" "async")
         (when (null (bir:returni function))
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-return))
         (unless (policy:policy-value (bir:policy function)
-                                             'perform-optimization)
+                                     'perform-optimization)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
         (cmp:with-irbuilder (body-irbuilder)
@@ -1945,7 +1948,8 @@
                                         :function xep-arity-function)
                   (llvm-sys:set-personality-fn xep-arity-function
                                                (cmp:irc-personality-function))
-                  (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-uwtable)
+                  (llvm-sys:add-fn-attr2string xep-arity-function
+                                               "uwtable" "async")
                   (when (null (bir:returni function))
                     (llvm-sys:add-fn-attr xep-arity-function
                                           'llvm-sys:attribute-no-return))

@@ -140,7 +140,7 @@
 
 (defmethod dynenv-frame ((dynenv bir:dynamic-environment))
   ;; default: just grab the frame pointer
-  (%intrinsic-call "llvm.frameaddress.p0i8" (list (%i32 0))
+  (%intrinsic-call "llvm.frameaddress.p0" (list (%i32 0))
                    "frame"))
 
 (defmethod dynenv-frame ((dynenv bir:come-from))
