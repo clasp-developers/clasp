@@ -718,31 +718,24 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS: macro-function)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
-  T_sp func = nil<T_O>();
   if (env.nilp()) {
     if (symbol->fboundp() && symbol->macroP()) return symbol->symbolFunction();
     else return nil<T_O>();
-  } else if (comp::Lexenv_sp bce = env.asOrNull<comp::Lexenv_O>()) {
-    func = bce->lookupMacro(symbol);
-#if 0    
-  } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>()) {
-    clcenv::Info_sp info = clcenv::function_info(cenv,symbol);
-    if ( clcenv::LocalMacroInfo_sp lm = info.asOrNull<clcenv::LocalMacroInfo_O>() ) {
-      func = lm->_Expander;
-    } else if (clcenv::GlobalMacroInfo_sp gm = info.asOrNull<clcenv::GlobalMacroInfo_O>() ) {
-      func = gm->_Expander;
-    }
-#endif
+  } else if (gc::IsA<comp::Lexenv_sp>(env)) {
+    T_sp func = gc::As_unsafe<comp::Lexenv_sp>(env)->lookupMacro(symbol);
+    if (func.nilp() // not bound locally, try global
+        && symbol->fboundp() && symbol->macroP())
+      return symbol->symbolFunction();
+    else return func;
   } else {
     if (cleavirEnv::_sym_macroFunction->fboundp()) {
-      func = eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
+      return eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
     } else {
       printf("%s:%d Unexpected environment for MACRO-FUNCTION before Cleavir is available - using toplevel environment\n", __FILE__, __LINE__);
       if (symbol->fboundp() && symbol->macroP()) return symbol->symbolFunction();
       else return nil<T_O>();
     }
   }
-  return func;
 }
 
 CL_LISPIFY_NAME("cl:macro-function");
@@ -1517,22 +1510,67 @@ CL_DEFUN T_mv core__sequence_start_end(T_sp sequence, Fixnum_sp start, T_sp end)
   return (Values(start, fnend, make_fixnum(len)));
 };
 
+CL_DEFUN Symbol_sp core__gensym_quick(SimpleBaseString_sp prefix,
+                                      size_t suffix) {
+  size_t prefixlen = prefix->length();
+  size_t suffixlen = (suffix < 2) ? 1 : std::ceil(std::log10(suffix));
+  auto name = SimpleBaseString_O::make(prefixlen + suffixlen);
+  for (size_t i = 0; i < prefixlen; ++i)
+    (*name)[i] = (*prefix)[i];
+  for (size_t j = prefixlen + suffixlen - 1; j >= prefixlen; --j) {
+    auto div = std::div(suffix, 10);
+    (*name)[j] = div.rem + '0';
+    suffix = div.quot;
+  }
+  return Symbol_O::create(name);
+}
+
+CL_DEFUN Symbol_sp core__gensym_quick_char(SimpleCharacterString_sp prefix,
+                                           size_t suffix) {
+  size_t prefixlen = prefix->length();
+  size_t suffixlen = (suffix < 2) ? 1 : std::ceil(std::log10(suffix));
+  auto name = SimpleCharacterString_O::make(prefixlen + suffixlen);
+  for (size_t i = 0; i < prefixlen; ++i)
+    (*name)[i] = (*prefix)[i];
+  for (size_t j = prefixlen + suffixlen - 1; j >= prefixlen; --j) {
+    auto div = std::div(suffix, 10);
+    (*name)[j] = div.rem + '0';
+    suffix = div.quot;
+  }
+  return Symbol_O::create(name);
+
+}
 
 CL_LAMBDA(&optional (x "G"));
 CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS gensym)dx");
 DOCGROUP(clasp);
 CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
-  // Should signal an error of type type-error if x is not a string or a non-negative integer.
-  if (x.nilp())
-    TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_UnsignedByte));
   if (cl__stringp(x)) {
+    Integer_sp counter = gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue());
+    if (gc::IsA<SimpleBaseString_sp>(x)
+        && counter.fixnump() && counter.unsafe_fixnum() >= 0) {
+      // fast path
+      // (GENSYM is actually very common in compile time due to
+      //  macroexpansion, at least with the otherwise-quick
+      //  bytecode-compiler. Profiling finds unexpected bottlenecks.)
+      gctools::Fixnum fcounter = counter.unsafe_fixnum();
+      Symbol_sp result = core__gensym_quick(gc::As_unsafe<SimpleBaseString_sp>(x), fcounter);
+      cl::_sym_STARgensym_counterSTAR->setf_symbolValue(Integer_O::create(1 + fcounter));
+      return result;
+    } else if (gc::IsA<SimpleCharacterString_sp>(x)
+               && counter.fixnump() && counter.unsafe_fixnum() >= 0) {
+      // other fast path
+      gctools::Fixnum fcounter = counter.unsafe_fixnum();
+      Symbol_sp result = core__gensym_quick_char(gc::As_unsafe<SimpleCharacterString_sp>(x), fcounter);
+      cl::_sym_STARgensym_counterSTAR->setf_symbolValue(Integer_O::create(1 + fcounter));
+      return result;
+    }
     String_sp sx = gc::As_unsafe<String_sp>(x);
     StrNs_sp ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sx->element_type(),16,true,clasp_make_fixnum(0)));
     StringPushString(ss,sx);
     core__integer_to_string(ss,gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
     // If and only if no explicit suffix is supplied, *gensym-counter* is incremented after it is used.
-    Integer_sp counter = gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue());
     if (clasp_minusp(counter))
       TYPE_ERROR(counter,cl::_sym_UnsignedByte);
     if (counter.fixnump()) {
@@ -1547,17 +1585,13 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
       counter = gc::As_unsafe<Integer_sp>(clasp_one_plus(counter));
       cl::_sym_STARgensym_counterSTAR->setf_symbolValue(counter);
     }
-    Symbol_sp sym = Symbol_O::create(ss->asMinimalSimpleString());
-    sym->setPackage(nil<T_O>());
-    return sym;
+    return Symbol_O::create(ss->asMinimalSimpleString());
   }
   if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(clasp_minusp(gc::As_unsafe<Integer_sp>(x))))) {
     SafeBufferStr8Ns ss;
     ss.string()->vectorPushExtend('G');
     core__integer_to_string(ss.string(),gc::As_unsafe<Integer_sp>(x),clasp_make_fixnum(10));
-    Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
-    sym->setPackage(nil<T_O>());
-    return sym;
+    return Symbol_O::create(ss.string()->asMinimalSimpleString());
   } else {
     TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_UnsignedByte));
   }

@@ -261,7 +261,8 @@ void throwTooFewArgumentsError(core::T_sp closure,size_t given, size_t required)
 
 void throwTooManyArgumentsError(core::T_sp closure, size_t given, size_t required);
 
-void throwUnrecognizedKeywordArgumentError(core::T_sp closure, T_sp kw);
+void throwOddKeywordsError(core::T_sp closure);
+void throwUnrecognizedKeywordArgumentError(core::T_sp closure, core::T_sp kw);
 
 void wrongNumberOfArguments(core::T_sp closure, size_t givenNumberOfArguments, size_t requiredNumberOfArguments);
 

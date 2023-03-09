@@ -23,7 +23,7 @@
                           "llvmo::UndefValue_O" "llvmo::CallBase_O" "core::Path_O"
                           "mp::SharedMutex_O" "asttooling::DerivableASTFrontendAction"
                           "core::InstanceCreator_O" "core::IOStreamStream_O" "core::Scope_O"
-                          "comp::Context_O" "llvmo::InsertPoint_O" "core::FunctionDescription_O"
+                          "llvmo::InsertPoint_O" "core::FunctionDescription_O"
                           "core::ComplexVector_double_O" "core::StrWNs_O" "core::UnknownDynEnv_O"
                           "core::EchoStream_O" "core::HashTableBase_O" "core::SimpleMDArrayBit_O"
                           "core::MDArrayBit_O" "core::ComplexVector_byte16_t_O"
@@ -4752,18 +4752,6 @@
 {class-kind :stamp-name "STAMPWTAG_llvmo__InsertPoint_O" :stamp-key "llvmo::InsertPoint_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{class-kind :stamp-name "STAMPWTAG_comp__Context_O" :stamp-key "comp::Context_O"
-            :parent-class "core::General_O" :lisp-class-base "core::General_O"
-            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Context_O"
-             :layout-offset-field-names ("_receiving")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "comp::Context_O"
-             :layout-offset-field-names ("_dynenv")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Context_O"
-             :layout-offset-field-names ("_cfunction")}
 {class-kind :stamp-name "STAMPWTAG_core__Scope_O" :stamp-key "core::Scope_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

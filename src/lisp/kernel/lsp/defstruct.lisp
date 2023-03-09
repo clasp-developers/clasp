@@ -920,7 +920,8 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
         (unless (or (subtypep '(vector symbol) type env)
                     (subtypep type 'list env))
           (simple-program-error
-           "Structure cannot have type ~S and be :NAMED." type))
+           "Structure type ~s cannot have type ~S and be :NAMED."
+           name type))
         (setq name-offset (or initial-offset 0)))
 
       ;; Parse slot-descriptions.

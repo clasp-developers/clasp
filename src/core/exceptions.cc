@@ -94,9 +94,14 @@ void throwTooManyArgumentsError(core::T_sp closure, size_t given, size_t require
                              kw::_sym_maxNargs, make_fixnum(required)));
 }
 
-void throwUnrecognizedKeywordArgumentError(core::T_sp closure, T_sp kw) {
+void throwOddKeywordsError(core::T_sp closure) {
+  lisp_error(core::_sym_oddKeywords,
+             lisp_createList(kw::_sym_called_function, closure));
+}
+
+void throwUnrecognizedKeywordArgumentError(core::T_sp closure, core::T_sp kws) {
   lisp_error(core::_sym_unrecognizedKeywordArgumentError,
-             lisp_createList(kw::_sym_unrecognizedKeyword, kw,
+             lisp_createList(kw::_sym_unrecognizedKeywords, kws,
                              kw::_sym_called_function,closure));
 }
 

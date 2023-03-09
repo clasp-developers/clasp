@@ -305,7 +305,6 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
 #endif
       vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      multipleValues.set1(res);
       vm.drop(sp, nargs+1);
       vm.push(sp, res.raw_());
       VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
@@ -320,12 +319,11 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       T_O** args = vm.stackref(sp, nargs-1);
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      multipleValues.setN(res.raw_(),res.number_of_values());
       vm.drop(sp, nargs+1);
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
-        for (size_t i = 1; i < svalues; ++i)
+        for (size_t i = 1; i < nvals; ++i)
           vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
       }
       pc++;
@@ -486,14 +484,18 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
              more_start, key_count_info, key_literal_start, key_frame_start);
       uint8_t key_count = key_count_info & 0x7f;
       bool ll_aokp = key_count_info & 0x80;
-      bool seen_aokp = false;
       bool aokp = false;
-      bool unknown_key_p = false;
-      T_O* unknown_key = unbound<T_O>().raw_();
+      T_sp unknown_keys = nil<T_O>();
       // Set keyword arguments to unbound.
       vm.fillreg(fp, unbound<T_O>().raw_(), key_count, key_frame_start);
       if (lcc_nargs > more_start) {
-        // FIXME: Check for odd keyword portion
+        if (((lcc_nargs - more_start) % 2) != 0) {
+          T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
+          throwOddKeywordsError(tclosure);
+        }
+        // We grab keyword arguments from the end to the beginning.
+        // This means that earlier arguments are put in their variables
+        // last, matching the CL semantics.
         // KLUDGE: We use a signed type so that if more_start is zero we don't
         // wrap arg_index around. There's probably a cleverer solution.
         ptrdiff_t arg_index;
@@ -504,7 +506,7 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
           if (key == kw::_sym_allow_other_keys.raw_()) {
             valid_key_p = true; // aok is always valid.
             T_sp value((gctools::Tagged)(lcc_args[arg_index]));
-            if (!seen_aokp) aokp = value.notnilp();
+            aokp = value.notnilp();
           }
           for (size_t key_id = 0; key_id < key_count; ++key_id) {
             T_O* ckey = literals[key_id + key_literal_start];
@@ -514,16 +516,15 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
               break;
             }
           }
-          if (!valid_key_p) {
-            if (!unknown_key_p) unknown_key = key;
-            unknown_key_p = true;
+          if (!valid_key_p & !ll_aokp) {
+            T_sp tunknown((gctools::Tagged)(lcc_args[arg_index - 1]));
+            unknown_keys = Cons_O::create(tunknown, unknown_keys);
           }
         }
       }
-      if (unknown_key_p && !aokp && !ll_aokp) {
+      if (unknown_keys.notnilp() && !aokp) {
         T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
-        T_sp tunknown((gctools::Tagged)unknown_key);
-        throwUnrecognizedKeywordArgumentError(tclosure, tunknown);
+        throwUnrecognizedKeywordArgumentError(tclosure, unknown_keys);
       }
       pc++;
       break;
@@ -687,11 +688,10 @@ static gctools::return_type bytecode_vm(VirtualMachine& vm,
       multipleValues.saveToTemp(nargs, args);
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      multipleValues.setN(res.raw_(),res.number_of_values());
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
-        for (size_t i = 1; i < svalues; ++i)
+        for (size_t i = 1; i < nvals; ++i)
           vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
       }
       pc++;
@@ -929,7 +929,6 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
 #endif
     vm._stackPointer = sp;
     T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    multipleValues.set1(res);
     vm.drop(sp, nargs+1);
     vm.push(sp, res.raw_());
     VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
@@ -946,12 +945,11 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     T_O** args = vm.stackref(sp, nargs-1);
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    multipleValues.setN(res.raw_(),res.number_of_values());
     vm.drop(sp, nargs+1);
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
-      for (size_t i = 1; i < svalues; ++i)
+      for (size_t i = 1; i < nvals; ++i)
         vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
     }
     pc += 5;
@@ -1086,14 +1084,15 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
            more_start, key_count_info, key_literal_start, key_frame_start);
     uint16_t key_count = key_count_info & 0x7fff;
     bool ll_aokp = key_count_info & 0x8000;
-    bool seen_aokp = false;
     bool aokp = false;
-    bool unknown_key_p = false;
-    T_O* unknown_key = unbound<T_O>().raw_();
+    T_sp unknown_keys = nil<T_O>();
       // Set keyword arguments to unbound.
     vm.fillreg(fp, unbound<T_O>().raw_(), key_count, key_frame_start);
     if (lcc_nargs > more_start) {
-      // FIXME: Check for odd keyword portion
+      if (((lcc_nargs - more_start) % 2) != 0) {
+        T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
+        throwOddKeywordsError(tclosure);
+      }
       // KLUDGE: We use a signed type so that if more_start is zero we don't
       // wrap arg_index around. There's probably a cleverer solution.
       ptrdiff_t arg_index;
@@ -1104,7 +1103,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
         if (key == kw::_sym_allow_other_keys.raw_()) {
           valid_key_p = true; // aok is always valid.
           T_sp value((gctools::Tagged)(lcc_args[arg_index]));
-          if (!seen_aokp) aokp = value.notnilp();
+          aokp = value.notnilp();
         }
         for (size_t key_id = 0; key_id < key_count; ++key_id) {
           T_O* ckey = literals[key_id + key_literal_start];
@@ -1114,16 +1113,15 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
             break;
           }
         }
-        if (!valid_key_p) {
-          if (!unknown_key_p) unknown_key = key;
-          unknown_key_p = true;
+        if (!valid_key_p && !ll_aokp) {
+          T_sp tunknown((gctools::Tagged)key);
+          unknown_keys = Cons_O::create(tunknown, unknown_keys);
         }
       }
     }
-    if (unknown_key_p && !aokp && !ll_aokp) {
+    if (unknown_keys.notnilp() && !aokp) {
       T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
-      T_sp tunknown((gctools::Tagged)unknown_key);
-      throwUnrecognizedKeywordArgumentError(tclosure, tunknown);
+      throwUnrecognizedKeywordArgumentError(tclosure, unknown_keys);
     }
     pc += 9;
   }
@@ -1170,11 +1168,10 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     multipleValues.saveToTemp(nargs, args);
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    multipleValues.setN(res.raw_(),res.number_of_values());
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
-      for (size_t i = 1; i < svalues; ++i)
+      for (size_t i = 1; i < nvals; ++i)
         vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
     }
     pc += 3;

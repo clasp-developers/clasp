@@ -45,7 +45,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
 SYMBOL_EXPORT_SC_(KeywordPkg, givenNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, minNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, maxNargs);
-SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
+SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeywords);
 SYMBOL_EXPORT_SC_(CorePkg, AMPva_rest );
 /*! Return true if the form represents a type
 */
