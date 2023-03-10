@@ -1171,25 +1171,37 @@ static T_sp extract_lambda_list_from_declares(List_sp declares, T_sp defaultll) 
   return defaultll;
 }
 
-Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, size_t var_index, Symbol_sp supplied_var,
+Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, LexicalVarInfo_sp varinfo, Symbol_sp supplied_var,
                                                 Label_sp next_label, bool var_specialp, bool supplied_specialp, const Context context,
                                                 Lexenv_sp env) {
   Label_sp supplied_label = Label_O::make();
-  T_sp varinfo = env->variableInfo(var);
   T_sp supinfo = nil<T_O>();
-  if (supplied_var.notnilp()) {
-    env = env->bind1var(supplied_var, context);
-    supinfo = env->variableInfo(supplied_var);
-  }
-  context.emit_jump_if_supplied(supplied_label, var_index);
+  context.emit_jump_if_supplied(supplied_label, varinfo->frameIndex());
   // Emit code for the case of the variable not being supplied:
   // Bind the var to the default, and the suppliedvar to NIL if applicable.
   compile_form(defaulting_form, env, Context(context, 1));
+  // Now that the default form is compiled, bind variables (for later vars)
+  if (var_specialp)
+    env = env->add_specials(Cons_O::createList(var));
+  else
+    // import the existing info.
+    env = Lexenv_O::make(Cons_O::create(Cons_O::create(var, varinfo),
+                                        env->vars()),
+                         env->tags(), env->blocks(), env->funs(),
+                         env->notinlines(), env->frameEnd());
+  if (supplied_var.notnilp()) {
+    if (supplied_specialp)
+      env = env->add_specials(Cons_O::createList(supplied_var));
+    else
+      env = env->bind1var(supplied_var, context);
+    supinfo = env->variableInfo(supplied_var);
+  }
+  // Actually generate the unsupplied case.
   if (var_specialp)
     context.emit_special_bind(var);
   else {
-    context.maybe_emit_make_cell(gc::As_assert<LexicalVarInfo_sp>(varinfo));
-    context.assemble1(vm_set, var_index);
+    context.maybe_emit_make_cell(varinfo);
+    context.assemble1(vm_set, varinfo->frameIndex());
   }
   if (supplied_var.notnilp()) { // bind supplied_var to NIL
     context.assemble0(vm_nil);
@@ -1205,10 +1217,10 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, size
   // Now for when the variable is supplied.
   supplied_label->contextualize(context);
   if (var_specialp) { // we have it in a reg, so rebind
-    context.assemble1(vm_ref, var_index);
+    context.assemble1(vm_ref, varinfo->frameIndex());
     context.emit_special_bind(var);
   } else { // in the reg already, but maybe needs a cell
-    context.maybe_emit_encage(gc::As_assert<LexicalVarInfo_sp>(varinfo));
+    context.maybe_emit_encage(varinfo);
   }
   if (supplied_var.notnilp()) {
     compile_literal(cl::_sym_T_O, env, Context(context, 1));
@@ -1221,10 +1233,6 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, size
     }
   }
   // That's it for code generation. Now return the new environment.
-  if (var_specialp)
-    env = env->add_specials(Cons_O::createList(var));
-  if (supplied_specialp)
-    env = env->add_specials(Cons_O::createList(supplied_var));
   return env;
 }
 
@@ -1253,12 +1261,8 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   for (auto &it : reqs)
     lreqs << it._ArgTarget;
   Lexenv_sp new_env = env->bind_vars(lreqs.cons(), context);
+  // This environment is only used for assigning indices to opt/key variables.
   size_t special_binding_count = 0;
-  // An alist from optional and key variables to their local indices.
-  // This is needed so that we can properly mark any that are special as
-  // such while leaving them temporarily "lexically" bound during
-  // argument parsing.
-  List_sp opt_key_indices = nil<T_O>();
 
   entry_point->contextualize(context);
   // Generate argument count check.
@@ -1290,29 +1294,23 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     }
     new_env = new_env->add_specials(sreqs.cons());
   }
+  Lexenv_sp optkey_env = new_env;
   if (optional_count > 0) {
     // Generate code to bind the provided optional args, unprovided args will
     // be initialized with the unbound marker.
     context.assemble2(vm_bind_optional_args, min_count, optional_count);
     // Mark the locations of each optional. Note that we do this even if
-    // the variable will be specially bound.
+    // the variable will be specially bound, to match the placement by
+    // bind_optional_args.
     ql::list opts;
     for (auto &it : optionals)
       opts << it._ArgTarget;
-    new_env = new_env->bind_vars(opts.cons(), context);
-    // Add everything to opt-key-indices.
-    for (auto &it : optionals) {
-      T_sp var = it._ArgTarget;
-      auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(var));
-      opt_key_indices = Cons_O::create(Cons_O::create(var, clasp_make_fixnum(lvinfo->frameIndex())), opt_key_indices);
-    }
-    // Re-mark anything that's special in the outer context as such, so that
-    // default initforms properly treat them as special.
-    ql::list sopts;
-    for (auto &it : optionals)
-      if (std::holds_alternative<SpecialVarInfoV>(var_info_v(it._ArgTarget, env)))
-        sopts << it._ArgTarget;
-    new_env = new_env->add_specials(sopts.cons());
+    optkey_env = optkey_env->bind_vars(opts.cons(), context);
+    // new_env has enough space for the optional arguments, but without the
+    // variables actually bound, so that default forms can be compiled correctly
+    new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(),
+                             optkey_env->blocks(), optkey_env->funs(),
+                             optkey_env->notinlines(), optkey_env->frameEnd());
   }
   if (key_flag.notnilp()) {
     // Generate code to parse the key args. As with optionals, we don't do
@@ -1330,24 +1328,16 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
         context.new_literal_index(it._Keyword);
     }
     // now the actual instruction
-    context.emit_parse_key_args(max_count, keys.size(), first_key_index, new_env->frameEnd(), aokp.notnilp());
+    context.emit_parse_key_args(max_count, keys.size(), first_key_index, optkey_env->frameEnd(), aokp.notnilp());
     ql::list keyvars;
-    ql::list skeys;
-    for (auto &it : keys) {
+    for (auto &it : keys)
       keyvars << it._ArgTarget;
-      if (std::holds_alternative<SpecialVarInfoV>(var_info_v(it._ArgTarget, env)))
-        skeys << it._ArgTarget;
-    }
-    new_env = new_env->bind_vars(keyvars.cons(), context);
-    for (auto &it : keys) {
-      T_sp var = it._ArgTarget;
-      auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(var));
-      opt_key_indices = Cons_O::create(Cons_O::create(var, clasp_make_fixnum(lvinfo->frameIndex())), opt_key_indices);
-    }
-    new_env = new_env->add_specials(skeys.cons());
+    optkey_env = optkey_env->bind_vars(keyvars.cons(), context);
+    new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(),
+                             optkey_env->blocks(), optkey_env->funs(),
+                             optkey_env->notinlines(), optkey_env->frameEnd());
   }
-  // Generate defaulting code for optional args, and special-bind them
-  // if necessary.
+  // Generate defaulting code for optional args, and bind them properly.
   if (optional_count > 0) {
     Label_sp optional_label = Label_O::make();
     Label_sp next_optional_label = Label_O::make();
@@ -1357,10 +1347,9 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       T_sp defaulting_form = it._Default;
       T_sp supplied_var = it._Sensor._ArgTarget;
       bool optional_special_p = special_binding_p(optional_var, specials, env);
-      T_sp pair = core__alist_assoc_eq(gc::As_assert<Cons_sp>(opt_key_indices), optional_var);
-      size_t index = oCdr(pair).unsafe_fixnum();
+      auto varinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(optional_var, optkey_env));
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
-      new_env = compile_optional_or_key_item(optional_var, defaulting_form, index, supplied_var, next_optional_label,
+      new_env = compile_optional_or_key_item(optional_var, defaulting_form, varinfo, supplied_var, next_optional_label,
                                              optional_special_p, supplied_special_p, context, new_env);
       if (optional_special_p)
         ++special_binding_count;
@@ -1401,10 +1390,9 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       T_sp defaulting_form = it._Default;
       T_sp supplied_var = it._Sensor._ArgTarget;
       bool key_special_p = special_binding_p(key_var, specials, env);
-      T_sp pair = core__alist_assoc_eq(gc::As<Cons_sp>(opt_key_indices), key_var);
-      size_t index = oCdr(pair).unsafe_fixnum();
+      auto varinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(key_var, optkey_env));
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
-      new_env = compile_optional_or_key_item(key_var, defaulting_form, index, supplied_var, next_key_label, key_special_p,
+      new_env = compile_optional_or_key_item(key_var, defaulting_form, varinfo, supplied_var, next_key_label, key_special_p,
                                              supplied_special_p, context, new_env);
       if (key_special_p)
         ++special_binding_count;
