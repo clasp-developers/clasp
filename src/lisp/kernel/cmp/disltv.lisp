@@ -546,7 +546,7 @@
 ;;; Write a FASL object out to a stream/file.
 
 (defun write-fasl (fasl stream)
-  (write-bytecode (instructions fasl) (attributes fasl) stream))
+  (write-bytecode (instructions fasl) stream))
 
 (defun save-fasl (fasl output-path)
   (with-open-file (output output-path

@@ -109,9 +109,12 @@
   
 (if (member :generate-faso *features*)
     (setq core:*clasp-build-mode* :faso))
-                                  
 
-(setq cmp:*default-object-type* core:*clasp-build-mode*)
+
+(setq cmp:*default-object-type*
+      (if (member :generate-bytecode *features*)
+          :bytecode
+          core:*clasp-build-mode*))
 
 ;;; ------------------------------------------------------------
 ;;;
