@@ -4492,7 +4492,7 @@ CL_DEFUN llvm::Module* llvm_sys__optimizeModule(llvm::Module* module)
 SYMBOL_EXPORT_SC_(CorePkg,repl);
 SYMBOL_EXPORT_SC_(KeywordPkg, dump_repl_object_files);
 DOCGROUP(clasp);
-CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& startupName, const string& shutdownName, core::T_sp initialData, core::T_sp fname) {
+CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
 #ifdef DEBUG_MONITOR  
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {

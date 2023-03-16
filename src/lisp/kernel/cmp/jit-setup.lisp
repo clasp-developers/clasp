@@ -800,9 +800,9 @@ No DIBuilder is defined for the default module")
 (progn
   (export '(jit-add-module-return-function))
   (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
-  (defun jit-add-module-return-function (original-module main-fn startup-shutdown-id literals-list
-                                         &key output-path name)
-    (declare (ignore main-fn output-path))
+  (defun jit-add-module-return-function (original-module startup-shutdown-id literals-list
+                                         &key output-path)
+    (declare (ignore output-path))
     ;; Link the builtins into the module and optimize them
     #+(or)
     (progn
@@ -831,7 +831,7 @@ No DIBuilder is defined for the default module")
                      (mp:get-lock *jit-lock*)
                      (if (member :dump-compile *features*) (llvm-sys:dump-module module))
                      (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context* startup-shutdown-id)
-                     (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list name))
+                     (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))
                 (progn
                   (gctools:thread-local-cleanup)
                   (mp:giveup-lock *jit-lock*)))))))))

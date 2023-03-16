@@ -194,9 +194,6 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
   return ensure_fixnum(next);
 }
 
-std::atomic<uint64_t> global_TotalRootTableSize;
-std::atomic<uint64_t> global_NumberOfRootTables;
-
 
 void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries) {
   if (!transient_alloca && transient_entries!=0) {
@@ -233,8 +230,6 @@ GCRootsInModule::GCRootsInModule(void* module_mem, size_t num_entries, core::Sim
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
 */
 void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
-  global_TotalRootTableSize += num_roots;
-  global_NumberOfRootTables++;
   // Get the address of the memory space in the llvm::Module
   uintptr_t address = reinterpret_cast<uintptr_t>(root_address);
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);

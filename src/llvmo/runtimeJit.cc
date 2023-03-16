@@ -853,7 +853,6 @@ ObjectFile_sp ClaspJIT_O::addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm
  */
 void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startupName, core::T_sp initialDataOrUnbound )
 {
-  JITDylib& dylib = *dylibsp->wrappedPtr();
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
   void* ptr;
   bool found = this->do_lookup(dylibsp,startupName,ptr);

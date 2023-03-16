@@ -1171,9 +1171,6 @@ struct GCRootsInModule {
   void *address(size_t index) { return reinterpret_cast<void *>(&reinterpret_cast<core::T_sp *>(this->_module_memory)[index + 1]); }
 };
 
-extern std::atomic<uint64_t> global_NumberOfRootTables;
-extern std::atomic<uint64_t> global_TotalRootTableSize;
-
 void initialize_gcroots_in_module(GCRootsInModule *gcroots_in_module, core::T_O **root_address, size_t num_roots,
                                   gctools::Tagged initial_data, core::SimpleVector_O **transientAlloca, size_t transient_entries,
                                   size_t function_pointer_number, void **fptrs);

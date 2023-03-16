@@ -2203,23 +2203,16 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir-compile-cst (cst env pathname
                         &key (linkage 'llvm-sys:internal-linkage) name)
-  (declare (ignore linkage))
-  (let* (function
-         ordered-raw-constants-list constants-table startup-shutdown-id
-         (cst-to-ast:*compiler* 'cl:compile)
-         (ast (cst->ast cst env))
-         (name (or name (ast:name ast))))
-    (declare (ignorable constants-table))
-    (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-      (multiple-value-setq (ordered-raw-constants-list constants-table startup-shutdown-id)
-        (literal:with-rtv
-            (setq function (translate-ast ast)))))
-    (unless function
-      (error "There was no function returned by translate-ast"))
-    ;;(llvm-sys:dump-module cmp:*the-module* *standard-output*)
-    (cmp:jit-add-module-return-function
-     cmp:*the-module*
-     function startup-shutdown-id ordered-raw-constants-list :name name)))
+  (declare (ignore linkage name))
+  (let* ((cst-to-ast:*compiler* 'cl:compile)
+         (ast (cst->ast cst env)))
+    (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
+        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+          (literal:with-rtv (translate-ast ast)))
+      (declare (ignore constants-table))
+      ;;(llvm-sys:dump-module cmp:*the-module* *standard-output*)
+      (cmp:jit-add-module-return-function
+       cmp:*the-module* startup-shutdown-id ordered-raw-constants-list))))
 
 (defun bir-compile-in-env (form &optional env)
   (bir-compile-cst-in-env (cst:cst-from-expression form) env))

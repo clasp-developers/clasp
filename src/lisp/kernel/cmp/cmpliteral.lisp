@@ -1077,35 +1077,6 @@ and  return the sorted values and the constant-table or (values nil nil)."
         (values (constants-table-reference data-or-index) literal-name)
         data-or-index)))
 
-(defun codegen-rtv-cclasp (obj)
-  "bclasp calls this to get copy the run-time-value for obj into result.
-Returns (value index t) if the value was put in the literal vector or it
-returns (value immediate nil) if the value is an immediate value."
-  (multiple-value-bind (immediate-datum?literal-node-runtime in-array)
-      (run-time-reference-literal obj t)
-    (if in-array
-        (let* ((literal-node-runtime immediate-datum?literal-node-runtime)
-               (index (literal-node-index literal-node-runtime)))
-          (values index t))
-        (let ((immediate-datum immediate-datum?literal-node-runtime))
-          (values (immediate-datum-value immediate-datum) nil)))))
-
-(defun codegen-literal (result object env)
-  "This is called by bclasp.  If result is nil then just return the ltv index.
-If it isn't NIL then copy the literal from its index in the LTV into result."
-  (declare (ignore env))
-  (multiple-value-bind (data-or-index in-array)
-      (reference-literal object t)
-    (if in-array
-        (progn
-          (when result
-            (cmp:irc-t*-result (constants-table-value data-or-index) result))
-          data-or-index)
-        (progn
-          (when result
-            (cmp:irc-t*-result data-or-index result))
-          :poison-value-from-codegen-literal))))
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Access load-time-values
