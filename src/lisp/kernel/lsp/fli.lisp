@@ -420,19 +420,15 @@
           (destructuring-bind (name &key convention) name-and-options
             (values name convention))
           (values name-and-options :cdecl))
-    (let ((return-type return-type-kw #+(or)(safe-translator-type return-type-kw))
-          (return-translator (from-translator-name return-type-kw))
-          (argument-types argument-type-kws #+(or)(mapcar #'safe-translator-type argument-type-kws))
-          (argument-translators (mapcar #'to-translator-name argument-type-kws)))
-      `(let ((callback-function (lambda (,@argument-symbols)
-                                  (declare (core:lambda-name ,(if (stringp function-name)
-                                                                  (make-symbol function-name)
-                                                                  function-name)))
-                                  ,@body)))
-         (core:defcallback ,(mangled-callback-name function-name) ,convention
-           ,return-type ,return-translator ,argument-types ,argument-translators
-           ,argument-symbols callback-function)
-         ',function-name))))
+    `(let ((callback-function (lambda (,@argument-symbols)
+                                (declare (core:lambda-name ,(if (stringp function-name)
+                                                                (make-symbol function-name)
+                                                                function-name)))
+                                ,@body)))
+       (core:defcallback ,(mangled-callback-name function-name) ,convention
+           ,return-type-kw ,argument-type-kws
+         ,argument-symbols callback-function)
+       ',function-name)))
 
 (defmacro %defcallback (name-and-options return-type-kw argument-symbols argument-type-kws &body body)
   (%expand-callback-definition name-and-options return-type-kw argument-symbols argument-type-kws body))
@@ -455,12 +451,11 @@
 ;;; to a Lisp closure, then translates the primary return value of that function
 ;;; back to C and returns it (or if the C function is return type void, doesn't).
 (defun gen-defcallback (c-name convention
-                        return-type-name return-translator-name
-                        argument-type-names argument-translator-names
+                        return-type-name argument-type-names
                         parameters closure-value)
   (declare (ignore convention))         ; FIXME
   ;; parameters should be a list of symbols, i.e. lambda list with only required.
-  (unless (= (length argument-type-names) (length parameters) (length argument-translator-names))
+  (unless (= (length argument-type-names) (length parameters))
     (error "BUG: Callback function parameters and types have a length mismatch"))
 ;;; Generate a variable and put the closure in it.
   (let* ((closure-literal-slot-index (literal:new-table-index))
@@ -473,7 +468,9 @@
     (cmp:with-landing-pad nil ; Since we're in a new function (which should never be an unwind dest)
       (let* ((c-argument-names (mapcar #'string parameters))
              (return-type (safe-translator-type return-type-name))
+             (return-translator-name (from-translator-name return-type-name))
              (argument-types (mapcar #'safe-translator-type argument-type-names))
+             (argument-translator-names (mapcar #'to-translator-name argument-type-names))
              (c-function-type (llvm-sys:function-type-get return-type argument-types))
              (new-func (llvm-sys:function-create c-function-type
                                                  'llvm-sys:external-linkage
@@ -514,8 +511,7 @@
                    (cl-result (cmp:irc-funcall-results-in-registers
                                closure-to-call cl-args (format nil "~a_closure" c-name))))
               ;; Now generate a call the translator for the return value if applicable, then return.
-              ;; NOTE: (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro
-              (if (string= return-translator-name "from_object_void")
+              (if (llvm-sys:type-equal return-type cmp:%void%)
                   (cmp:irc-ret-void)
                   (let ((c-result (cmp:irc-intrinsic-call
                                    return-translator-name

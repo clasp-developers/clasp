@@ -1073,8 +1073,7 @@
   (let* ((args (cc-bir:defcallback-args instruction))
          (closure (in (first (bir:inputs instruction)))))
     (clasp-ffi::gen-defcallback
-     (first args) (second args) (third args) (fourth args)
-     (fifth args) (sixth args) (seventh args)
+     (first args) (second args) (third args) (fourth args) (fifth args)
      closure)))
 
 (defmethod translate-simple-instruction
