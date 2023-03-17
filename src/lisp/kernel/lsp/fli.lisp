@@ -425,8 +425,7 @@
     (let ((return-type return-type-kw #+(or)(safe-translator-type return-type-kw))
           (return-translator (from-translator-name return-type-kw))
           (argument-types argument-type-kws #+(or)(mapcar #'safe-translator-type argument-type-kws))
-          (argument-translators (mapcar #'to-translator-name argument-type-kws))
-          (place-holder (gensym)))
+          (argument-translators (mapcar #'to-translator-name argument-type-kws)))
       `(let ((callback-function (lambda (,@argument-symbols)
                                   (declare (core:lambda-name ,(if (stringp function-name)
                                                                   (make-symbol function-name)
@@ -434,7 +433,7 @@
                                   ,@body)))
          (core:defcallback ,(mangled-callback-name function-name) ,convention
            ,return-type ,return-translator ,argument-types ,argument-translators
-           ,argument-symbols ,place-holder callback-function)
+           ,argument-symbols callback-function)
          ',function-name))))
 
 (defmacro %defcallback (name-and-options return-type-kw argument-symbols argument-type-kws &body body)

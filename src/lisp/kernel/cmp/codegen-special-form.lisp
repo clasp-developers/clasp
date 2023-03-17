@@ -142,8 +142,8 @@
 (defun gen-defcallback (c-name convention
                         return-type-name return-translator-name
                         argument-type-names argument-translator-names
-                        parameters place-holder closure-value)
-  (declare (ignore convention place-holder))         ; FIXME
+                        parameters closure-value)
+  (declare (ignore convention))         ; FIXME
   ;; parameters should be a list of symbols, i.e. lambda list with only required.
   (unless (= (length argument-type-names) (length parameters) (length argument-translator-names))
     (error "BUG: Callback function parameters and types have a length mismatch"))

@@ -1074,7 +1074,7 @@
          (closure (in (first (bir:inputs instruction)))))
     (cmp::gen-defcallback
      (first args) (second args) (third args) (fourth args)
-     (fifth args) (sixth args) (seventh args) (eighth args)
+     (fifth args) (sixth args) (seventh args)
      closure)))
 
 (defmethod translate-simple-instruction
