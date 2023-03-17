@@ -1072,7 +1072,7 @@
     ((instruction cc-bir:defcallback) (abi abi-x86-64))
   (let* ((args (cc-bir:defcallback-args instruction))
          (closure (in (first (bir:inputs instruction)))))
-    (cmp::gen-defcallback
+    (clasp-ffi::gen-defcallback
      (first args) (second args) (third args) (fourth args)
      (fifth args) (sixth args) (seventh args)
      closure)))
