@@ -285,11 +285,10 @@
 
 (defmethod cst-to-ast:convert-special
     ((symbol (eql 'core:defcallback)) form env (system clasp-cleavir:clasp))
-  (cst:db origin (name convention rtype atypes params lisp-callback)
+  (cst:db origin (name convention rtype atypes lisp-callback)
           (cst:rest form)
           (let ((args (list (cst:raw name) (cst:raw convention)
-                            (cst:raw rtype) (cst:raw atypes)
-                            (cst:raw params))))
+                            (cst:raw rtype) (cst:raw atypes))))
             (make-instance 'cc-ast:defcallback-ast
               :args args
               :callee (cst-to-ast:convert lisp-callback env system)

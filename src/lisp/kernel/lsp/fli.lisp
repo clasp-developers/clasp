@@ -414,24 +414,24 @@
 (defun mangled-callback-name (name)
   (format nil "clasp_ffi_cb_~a" name))
 
-(defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
+(defun %expand-callback-definition (name-and-options return-type-kw lambda-list argument-type-kws body)
   (multiple-value-bind (function-name convention)
       (if (consp name-and-options)
           (destructuring-bind (name &key convention) name-and-options
             (values name convention))
           (values name-and-options :cdecl))
-    `(let ((callback-function (lambda (,@argument-symbols)
+    `(let ((callback-function (lambda ,lambda-list
                                 (declare (core:lambda-name ,(if (stringp function-name)
                                                                 (make-symbol function-name)
                                                                 function-name)))
                                 ,@body)))
-       (core:defcallback ,(mangled-callback-name function-name) ,convention
+       (core:defcallback ,function-name ,convention
            ,return-type-kw ,argument-type-kws
-         ,argument-symbols callback-function)
+         callback-function)
        ',function-name)))
 
-(defmacro %defcallback (name-and-options return-type-kw argument-symbols argument-type-kws &body body)
-  (%expand-callback-definition name-and-options return-type-kw argument-symbols argument-type-kws body))
+(defmacro %defcallback (name-and-options return-type-kw lambda-list argument-type-kws &body body)
+  (%expand-callback-definition name-and-options return-type-kw lambda-list argument-type-kws body))
 
 (defmacro %callback (sym)
   `(%get-callback ',sym))
@@ -450,15 +450,12 @@
 ;;; that calls the translators on its arguments, passes those translated arguments
 ;;; to a Lisp closure, then translates the primary return value of that function
 ;;; back to C and returns it (or if the C function is return type void, doesn't).
-(defun gen-defcallback (c-name convention
-                        return-type-name argument-type-names
-                        parameters closure-value)
+(defun gen-defcallback (function-name convention
+                        return-type-name argument-type-names closure-value)
   (declare (ignore convention))         ; FIXME
-  ;; parameters should be a list of symbols, i.e. lambda list with only required.
-  (unless (= (length argument-type-names) (length parameters))
-    (error "BUG: Callback function parameters and types have a length mismatch"))
-;;; Generate a variable and put the closure in it.
-  (let* ((closure-literal-slot-index (literal:new-table-index))
+  ;; Generate a variable and put the closure in it.
+  (let* ((c-name (mangled-callback-name function-name))
+         (closure-literal-slot-index (literal:new-table-index))
          (closure-var-name (format nil "~a_closure_var" c-name)))
     (cmp:irc-t*-result closure-value
                        (literal:constants-table-reference
@@ -466,7 +463,7 @@
     ;; Now generate the C function.
     ;; We don't actually "do" anything with it- just leave it there to be linked/used like a C function.
     (cmp:with-landing-pad nil ; Since we're in a new function (which should never be an unwind dest)
-      (let* ((c-argument-names (mapcar #'string parameters))
+      (let* ((c-argument-names (mapcar #'string argument-type-names))
              (return-type (safe-translator-type return-type-name))
              (return-translator-name (from-translator-name return-type-name))
              (argument-types (mapcar #'safe-translator-type argument-type-names))
