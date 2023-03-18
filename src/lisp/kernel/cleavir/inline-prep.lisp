@@ -110,7 +110,7 @@
         ;; FIXME: This will mess up inline definitions within macrolets etc.
         (env nil)
         (cst (if *compiling-cst*
-                 (cst:reconstruct form *compiling-cst* *clasp-system*)
+                 (cst:reconstruct *clasp-system* form *compiling-cst*)
                  (cst:cst-from-expression form))))
     (fix-inline-ast (cst->ast cst env))))
 

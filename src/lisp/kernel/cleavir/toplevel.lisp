@@ -120,7 +120,7 @@
          (multiple-value-bind (expansion expandedp)
              (macroexpand (cst:raw cst) env)
            (let ((cst (if expandedp
-                          (cst:reconstruct expansion cst *cst-client*)
+                          (cst:reconstruct *cst-client* expansion cst)
                           cst)))
              (etypecase cst
                (cst:atom-cst
