@@ -88,7 +88,7 @@
  (:name :cleavir
   :repository "https://github.com/s-expressionists/Cleavir.git"
   :directory "src/lisp/kernel/contrib/Cleavir/"
-  :commit "a73d313735447c63b4b11b6f8984f9b1e3e74ec9")
+  :commit "cacdf4cca14647a258321effb3500ec4563fc570")
  (:name :closer-mop
   :repository "https://github.com/pcostanza/closer-mop.git"
   :directory "src/lisp/kernel/contrib/closer-mop/"
@@ -96,7 +96,7 @@
  (:name :concrete-syntax-tree
   :repository "https://github.com/s-expressionists/Concrete-Syntax-Tree.git"
   :directory "src/lisp/kernel/contrib/Concrete-Syntax-Tree/"
-  :commit "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
+  :commit "37291727196a3bc88a7be67c1427c52078d4b82c")
  (:name :documentation-utils
   :repository "https://github.com/Shinmera/documentation-utils.git"
   :directory "src/lisp/kernel/contrib/documentation-utils/"
@@ -105,7 +105,7 @@
  (:name :eclector
   :repository "https://github.com/s-expressionists/Eclector.git"
   :directory "src/lisp/kernel/contrib/Eclector/"
-  :commit "sharpsign-equals-protocol")
+  :commit "711140a1be3f957d5ef32df596b396f9c1ae7bd4")
  (:name :esrap ; Needed both by the host and eclasp
   :repository "https://github.com/scymtym/esrap.git"
   :directory "src/lisp/kernel/contrib/esrap/"

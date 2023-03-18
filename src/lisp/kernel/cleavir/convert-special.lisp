@@ -16,7 +16,7 @@
          ((,head (eql ',name)) ,cst ,environment (,system clasp-cleavir:clasp))
        (cst-to-ast:convert
         (destructuring-bind ,lambda-list (cst:raw (cst:rest ,cst))
-          (cst:reconstruct (progn ,@body) ,cst ,system))
+          (cst:reconstruct ,system (progn ,@body) ,cst))
         ,environment ,system))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

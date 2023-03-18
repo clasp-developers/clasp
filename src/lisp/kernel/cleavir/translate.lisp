@@ -2072,6 +2072,7 @@
          (origin (origin-source cst)))
     (invoke-restart 'cst-to-ast:substitute-cst
                     (cst:reconstruct
+                     clasp-cleavir:*clasp-system*
                      `(error 'cmp:compiled-program-error
                              :form ,(with-standard-io-syntax
                                       (write-to-string form
@@ -2079,7 +2080,7 @@
                                                        :circle t :array nil))
                              :origin ',(origin-spi origin)
                              :condition ,(princ-to-string condition))
-                     cst clasp-cleavir:*clasp-system* :default-source origin))))
+                     cst :default-source origin))))
 
 (defun cst->ast (cst &optional (env *clasp-env*))
   "Compile a cst into an AST and return it.
