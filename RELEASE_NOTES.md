@@ -1,3 +1,12 @@
+# Version 2.3.0 (LLVM15) Pending
+
+## Changed
+* Updated to Eclector v0.9.0
+
+## Fixed
+* Use Eclector state protocol to enable readtable changes during compiling.
+  Fixes [#1398][].
+
 # Version 2.2.0 (LLVM15) 2023-03-01
 
 ## Added
@@ -241,4 +250,5 @@ passing, and will miss the insightful conversations with him.
 [#1368]: https://github.com/clasp-developers/clasp/issues/1368
 [#1390]: https://github.com/clasp-developers/clasp/issues/1390
 [#1392]: https://github.com/clasp-developers/clasp/issues/1392
+[#1398]: https://github.com/clasp-developers/clasp/issues/1398
 [#1404]: https://github.com/clasp-developers/clasp/issues/1404
