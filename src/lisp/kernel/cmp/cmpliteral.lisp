@@ -739,9 +739,10 @@ Return the index of the load-time-value"
                                   nil
                                   'llvm-sys:internal-linkage
                                   (llvm-sys:constant-array-get function-vector-type
-                                                               (mapcar (lambda (fn)
-                                                                         (cmp:irc-bit-cast fn cmp:%opaque-fn-prototype*%))
-                                                                       (coerce (literal-machine-function-vector *literal-machine*) 'list)))
+                                                               (map 'list
+                                                                    (lambda (fn)
+                                                                      (cmp:irc-bit-cast fn cmp:%opaque-fn-prototype*%))
+                                                                    (literal-machine-function-vector *literal-machine*)))
                                   (core:fmt nil "function-vector-{}" id))))
     (values function-vector-length function-vector-global function-vector-type)))
 

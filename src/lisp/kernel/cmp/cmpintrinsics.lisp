@@ -1077,11 +1077,12 @@ and initialize it with an array consisting of one function pointer."
                                            %i8**%) ; fptrs
                                           ))))
             ;; If the constant/literal list is provided - then we may need to generate code for closurettes
-            (mapc (lambda (x)
-                    (when (and (literal:literal-node-creator-p x)
-                               (literal:literal-node-closure-p (literal:literal-node-creator-object x)))
-                      (literal:generate-run-time-code-for-closurette x)))
-                  ordered-literals))
+            (map nil
+                 (lambda (x)
+                   (when (and (literal:literal-node-creator-p x)
+                              (literal:literal-node-closure-p (literal:literal-node-creator-object x)))
+                     (literal:generate-run-time-code-for-closurette x)))
+                 ordered-literals))
           (when gcroots-in-module
             (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
           (let ((global-entry-point (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference THE-REPL-XEP-GROUP)))))
