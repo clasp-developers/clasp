@@ -297,10 +297,10 @@
   (clos:satiate #'cst:nthrest '(fixnum cst:cons-cst))
   ;; SP NIL T T
   (clos:satiate #'cst:reconstruct
-                '(cons cst:atom-cst clasp-64bit)
-                '(cons cst:cons-cst clasp-64bit)
-                '(cons null clasp-64bit)
-                '(cons cons clasp-64bit)))
+                '(clasp-64bit cons cst:atom-cst)
+                '(clasp-64bit cons cst:cons-cst)
+                '(clasp-64bit cons null)
+                '(clasp-64bit cons cons)))
 
 #+cst
 (eval-when (:load-toplevel)

@@ -2072,6 +2072,7 @@
          (origin (origin-source cst)))
     (invoke-restart 'cst-to-ast:substitute-cst
                     (cst:reconstruct
+                     clasp-cleavir:*clasp-system*
                      `(error 'cmp:compiled-program-error
                              :form ,(with-standard-io-syntax
                                       (write-to-string form
@@ -2079,7 +2080,7 @@
                                                        :circle t :array nil))
                              :origin ',(origin-spi origin)
                              :condition ,(princ-to-string condition))
-                     cst clasp-cleavir:*clasp-system* :default-source origin))))
+                     cst :default-source origin))))
 
 (defun cst->ast (cst &optional (env *clasp-env*))
   "Compile a cst into an AST and return it.
@@ -2253,7 +2254,7 @@ COMPILE-FILE will use the default *clasp-env*."
       (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
-             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value)))
+             (cst (eclector.concrete-syntax-tree:read source-sin nil eof-value)))
         #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
         (if (eq cst eof-value)
             (return nil)
