@@ -1102,9 +1102,12 @@ and  return the sorted values and the constant-table or (values nil nil)."
     (cmp:irc-const-gep2-64 holder-type holder 0 index label)))
 
 (defun constants-table-value (index &key (holder cmp:*load-time-value-holder-global-var*)
-                                    (holder-type cmp:*load-time-value-holder-global-var-type*))
-  (declare (ignore holder-type))
-  (cmp:irc-t*-load (constants-table-reference index :holder holder)))
+                                      (holder-type cmp:*load-time-value-holder-global-var-type*)
+                                      literal-name)
+  (cmp:irc-t*-load (constants-table-reference index
+                                              :holder holder
+                                              :holder-type holder-type
+                                              :literal-name literal-name)))
 
 (defun build-c++-byte-codes (primitives)
   (let ((map (make-hash-table :test #'equal)))

@@ -625,8 +625,8 @@
                       "<error dumping form>" t))))
                (lit
                  (if (integerp imm-or-index)
-                     (cmp:irc-t*-load
-                      (%indexed-literal-ref imm-or-index "step-source"))
+                     (literal:constants-table-value imm-or-index
+                                                    :literal-name "step-source")
                      imm-or-index)))
           (%intrinsic-invoke-if-landing-pad-or-call
            "cc_breakstep" (list lit frame)))))))
@@ -1645,7 +1645,7 @@
               (label (datum-name-as-string (bir:output inst))))
          (assert imm-or-index () "Load-time-value not found!")
          (if (integerp imm-or-index)
-             (cmp:irc-t*-load (%indexed-literal-ref imm-or-index label))
+             (literal:constants-table-value imm-or-index :literal-name label)
              imm-or-index))
        (bir:output inst)))
 
@@ -1658,7 +1658,7 @@
          (immediate-or-index (gethash constant *constant-values*)))
     (assert immediate-or-index () "Constant not found!")
     (if (integerp immediate-or-index)
-        (cmp:irc-t*-load (%indexed-literal-ref immediate-or-index label))
+        (literal:constants-table-value immediate-or-index :literal-name label)
         immediate-or-index)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-reference)
