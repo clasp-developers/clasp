@@ -861,6 +861,17 @@ Return the index of the load-time-value"
       ;; Return the orderered-raw-constants-list and the constants-table GlobalVariable
       (when (> num-elements 0)
         (let* ((ordered-literals-list (sort run-time-values #'< :key #'literal-node-index))
+               (ordered-raw-constants-list
+                 (mapcar (lambda (x)
+                                (cond
+                                  ((literal-node-runtime-p x)
+                                   (literal-node-runtime-object x))
+                                  ((and (literal-node-creator-p x)
+                                        (literal-node-closure-p
+                                         (literal-node-creator-object x)))
+                                   nil)
+                                  (t (error "Illegal object in ordered-literals-list it is: ~s" x))))
+                         ordered-literals-list))
                (array-type (llvm-sys:array-type-get cmp:%t*% (length ordered-literals-list))))
           (setf constant-table (llvm-sys:make-global-variable cmp:*the-module*
                                                               array-type
@@ -874,9 +885,8 @@ Return the index of the load-time-value"
             (let ((cmp:*load-time-value-holder-global-var-type* cmp:%t*[0]%)
                   (cmp:*load-time-value-holder-global-var* bitcast-constant-table))
               (cmp::cmp-log "do-rtv Replaced all {} with {}%N" cmp:*load-time-value-holder-global-var* bitcast-constant-table)
-              (multiple-value-bind (startup-shutdown-id ordered-raw-constant-list)
-                  (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* array-type constant-table num-elements ordered-literals-list bitcast-constant-table)
-                (values ordered-raw-constant-list constant-table startup-shutdown-id)))))))))
+              (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* array-type constant-table num-elements ordered-literals-list)
+              (values ordered-raw-constants-list constant-table module-id))))))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
