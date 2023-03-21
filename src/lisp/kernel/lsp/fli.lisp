@@ -411,112 +411,13 @@
 ;;;----------------------------------------------------------------------------
 ;;; C A L L B A C K  S U P P O R T
 
-(defun mangled-callback-name (name)
-  (format nil "clasp_ffi_cb_~a" name))
+;;; Mapping from (Lisp-function . signature) to callbacks (pointers)
+;;; Besides its importance for caching, this is also important for ensuring
+;;; that Lisp functions with C callbacks are not collected by GC.
+(defvar *callbacks* (make-hash-table :test 'eq))
 
-(defun %expand-callback-definition (name-and-options return-type-kw lambda-list argument-type-kws body)
-  (multiple-value-bind (function-name convention)
-      (if (consp name-and-options)
-          (destructuring-bind (name &key convention) name-and-options
-            (values name convention))
-          (values name-and-options :cdecl))
-    `(let ((callback-function (lambda ,lambda-list
-                                (declare (core:lambda-name ,(if (stringp function-name)
-                                                                (make-symbol function-name)
-                                                                function-name)))
-                                ,@body)))
-       (core:defcallback ,function-name ,convention
-           ,return-type-kw ,argument-type-kws
-         callback-function)
-       ',function-name)))
-
-(defmacro %defcallback (name-and-options return-type-kw lambda-list argument-type-kws &body body)
-  (%expand-callback-definition name-and-options return-type-kw lambda-list argument-type-kws body))
-
-(defmacro %callback (sym)
-  `(%get-callback ',sym))
-
-(defun %get-callback (sym-name)
-  (let ((mangled-sym-name (mangled-callback-name sym-name)))
-    (if sym-name
-        (let ((jit-ptr (llvm-sys:lookup-all-dylibs (llvm-sys:clasp-jit) mangled-sym-name)))
-          (if jit-ptr
-              jit-ptr
-              (%dlsym mangled-sym-name)))
-        nil)))
-
-;;; used by clasp-cleavir to translate defcallback.
-;;; What we're doing here is defining a C function
-;;; that calls the translators on its arguments, passes those translated arguments
-;;; to a Lisp closure, then translates the primary return value of that function
-;;; back to C and returns it (or if the C function is return type void, doesn't).
-(defun gen-defcallback (function-name convention
-                        return-type-name argument-type-names closure-value)
-  (declare (ignore convention))         ; FIXME
-  ;; Generate a variable and put the closure in it.
-  (let* ((c-name (mangled-callback-name function-name))
-         (closure-literal-slot-index (literal:new-table-index))
-         (closure-var-name (format nil "~a_closure_var" c-name)))
-    (cmp:irc-t*-result closure-value
-                       (literal:constants-table-reference
-                        closure-literal-slot-index))
-    ;; Now generate the C function.
-    ;; We don't actually "do" anything with it- just leave it there to be linked/used like a C function.
-    (cmp:with-landing-pad nil ; Since we're in a new function (which should never be an unwind dest)
-      (let* ((c-argument-names (mapcar #'string argument-type-names))
-             (return-type (safe-translator-type return-type-name))
-             (return-translator-name (from-translator-name return-type-name))
-             (argument-types (mapcar #'safe-translator-type argument-type-names))
-             (argument-translator-names (mapcar #'to-translator-name argument-type-names))
-             (c-function-type (llvm-sys:function-type-get return-type argument-types))
-             (new-func (llvm-sys:function-create c-function-type
-                                                 'llvm-sys:external-linkage
-                                                 c-name
-                                                 cmp:*the-module*))
-             (cmp:*current-function* new-func)
-             (cmp:*current-function-name* c-name))
-        (unless (llvm-sys:llvmcontext-equal (llvm-sys:get-context cmp:*the-module*)
-                                            (llvm-sys:get-context new-func))
-          (error "The llvm-context for the~%module ~s~%the thread LLVMContext is ~s~% doesn't match the one for the new-func ~s~%the c-function-type context is ~s~% The function return-type context is: ~s~% The argument types are ~s~%"
-                 (llvm-sys:get-context cmp:*the-module*)
-                 (cmp:thread-local-llvm-context)
-                 (llvm-sys:get-context new-func)
-                 (llvm-sys:get-context c-function-type)
-                 (llvm-sys:get-context return-type)
-                 (mapcar #'llvm-sys:get-context argument-types)))
-        (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-          (let ((bb (cmp:irc-basic-block-create "entry" new-func)))
-            (cmp:irc-set-insert-point-basic-block bb)
-            (let* ((c-args (mapcar (lambda (arg argname)
-                                     (llvm-sys:set-name arg argname)
-                                     arg)
-                                   (llvm-sys:get-argument-list new-func)
-                                   c-argument-names))
-                   ;; Generate code to translate the arguments.
-                   (cl-args (mapcar (lambda (c-arg c-arg-name translator)
-                                      (cmp:irc-intrinsic-call
-                                       translator
-                                       (list c-arg)
-                                       (format nil "translated-~a" c-arg-name)))
-                                    c-args c-argument-names argument-translator-names))
-                   ;; Generate code to get the closure from the global variable from earlier.
-                   (closure-to-call (cmp:irc-t*-load (literal:constants-table-reference closure-literal-slot-index) closure-var-name))
-                   ;; Generate the code to actually call the lisp function.
-                   ;; results-in-registers keeps things in the basic tmv format, because
-                   ;; here we don't need the store/load values dance.
-                   ;; (The C function only gets/needs/wants the primary value.)
-                   (cl-result (cmp:irc-funcall-results-in-registers
-                               closure-to-call cl-args (format nil "~a_closure" c-name))))
-              ;; Now generate a call the translator for the return value if applicable, then return.
-              (if (llvm-sys:type-equal return-type cmp:%void%)
-                  (cmp:irc-ret-void)
-                  (let ((c-result (cmp:irc-intrinsic-call
-                                   return-translator-name
-                                   ;; get the 0th value.
-                                   (list (cmp:irc-tmv-primary cl-result))
-                                   "c-result")))
-                    (cmp:irc-ret c-result)))
-              )))))))
+;;; Mapping from callback names to callbacks (pointers)
+(defvar *callbacks-by-name* (make-hash-table :test 'equal))
 
 (defun signature-return-type (signature) (first signature))
 (defun signature-argument-types (signature) (rest signature))
@@ -566,7 +467,6 @@
                             (list (cmp:irc-tmv-primary cl-result))
                             "c-result"))))))))
 
-;;#+(or)
 (defun make-callback (signature function)
   (declare (ignorable function))
   (cmp::with-compiler-env ()
@@ -597,11 +497,39 @@
                                         cmp:%gcroots-in-module%)
                                        (format nil "__clasp_gcroots_in_module_~a"
                                                callback-name))
-        (llvm-sys:dump-module module)
-        (cmp:irc-verify-module-safe module)
+        ;;(llvm-sys:dump-module module)
+        ;;(cmp:irc-verify-module-safe module)
         (let ((dylib (llvm-sys:jit-module-to-dylib module callback-name)))
           (setf (llvm-sys:jit-lookup-t dylib varname) function)
           (llvm-sys:jit-lookup dylib callback-name))))))
+
+(defun %ensure-callback (signature function)
+  (let ((key (cons function signature)))
+    (or (gethash key *callbacks*)
+        (setf (gethash key *callbacks*)
+              (make-callback signature function)))))
+
+(defmacro ensure-callback (signature function)
+  `(%ensure-callback ',signature ,function))
+
+(defun %get-callback (name)
+  (or (gethash name *callbacks-by-name*)
+      (error "No callback named ~a" name)))
+
+(defmacro %callback (name) `(%get-callback ',name))
+
+(defmacro %defcallback (name-and-options return-type-kw lambda-list argument-type-kws &body body)
+  (multiple-value-bind (function-name convention)
+      (if (consp name-and-options)
+          (destructuring-bind (name &key convention) name-and-options
+            (values name convention))
+          (values name-and-options :cdecl))
+    (declare (ignore convention)) ; FIXME
+    `(progn
+       (setf (gethash ',function-name *callbacks-by-name*)
+             (ensure-callback (,return-type-kw ,@argument-type-kws)
+                              (lambda ,lambda-list ,@body)))
+       ',function-name)))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
