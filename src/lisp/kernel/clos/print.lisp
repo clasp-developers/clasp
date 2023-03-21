@@ -401,17 +401,3 @@ printer and we should rather use MAKE-LOAD-FORM."
                          (setf ,slot-access ,valgs)))))))
 (export '(field with-record-serialize-slots))
 
-(in-package :clos)
-
-(defun print-object-readably-with-slots (obj stream skip-slot-names)
-  (format stream "#$(~s " (class-name (class-of obj)))
-  (loop for slot in (clos:class-slots (class-of obj))
-        for slot-name = (clos:slot-definition-name slot)
-        for initargs = (clos:slot-definition-initargs slot)
-        if (and (car initargs)
-                (not (position slot-name skip-slot-names))
-                (slot-boundp obj slot-name))
-          do (format stream "~s ~s " (car initargs) (slot-value obj slot-name)))
-  (format stream ") "))
-
-(export '(print-object-readably-with-slots))
