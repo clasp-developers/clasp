@@ -316,6 +316,39 @@
       (extract-signature arguments)
     `(core:foreign-call-pointer ,signature (ensure-core-pointer ,ptr "%foreign-funcall-pointer" ,ptr) ,@args)))
 
+;;; We'd like for the bytecode to be able to handle foreign calls, but it
+;;; doesn't make sense for it to handle them directly. So, we provide a
+;;; %%foreign-funcall function, and a definition of foreign-call-pointer
+;;; as a macro using it. clasp-cleavir will compile foreign-call-pointer as
+;;; a special form, but the bytecode will resort to calling the function, which
+;;; will in turn compile something to use.
+
+;;; Cache table from foreign-call signatures to caller functions.
+;;; A caller takes a function pointer and its arguments as arguments.
+(defvar *foreign-callers* (make-hash-table :test 'equal))
+
+(defun make-foreign-caller (signature)
+  (let ((fptr (gensym "FUNCTION-POINTER"))
+        (args (mapcar (lambda (argt) (gensym (write-to-string argt)))
+                      (second signature))))
+    (clasp-cleavir::cleavir-compile
+     nil
+     `(lambda (,fptr ,@args)
+       (core:foreign-call-pointer ,signature
+        (ensure-core-pointer ,fptr "%%foreign-funcall" ,fptr)
+        ,@args)))))
+
+(defun ensure-foreign-caller (signature)
+  (or (gethash signature *foreign-callers*)
+      (setf (gethash signature *foreign-callers*)
+            (make-foreign-caller signature))))
+
+(defun %%foreign-funcall (signature function-pointer &rest arguments)
+  (apply (ensure-foreign-caller signature) function-pointer arguments))
+
+(defmacro core:foreign-call-pointer (signature pointer &rest arguments)
+  `(%%foreign-funcall ',signature ,pointer ,@arguments))
+
 ;;; === F O R E I G N   L I B R A R Y   H A N D L I N G ===
 
 (declaim (inline %load-foreign-library))
