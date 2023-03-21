@@ -306,42 +306,6 @@
          (last (car (last types))))
     (values (list last arg-types) args)))
 
-(defun split-arguments (arguments)
-  (let* ((splits (split-list arguments))
-         (types-and-maybe-return-type (car splits))
-         (args (cadr splits))
-         (explicit-return-type (> (length types-and-maybe-return-type) (length args)))
-         (return-type (if explicit-return-type
-                          (car (last types-and-maybe-return-type))
-                          :void))
-         (types (if explicit-return-type
-                    (butlast types-and-maybe-return-type 1)
-                    types-and-maybe-return-type)))
-    (values (loop for type in types
-                  for arg in args
-                  collect `(core:foreign-call
-                            ,(from-translator-name type)
-                            ,arg))
-            return-type)))
-
-(defun process-arguments (arguments)
-  (cond
-    ((null arguments)
-     (values nil :void))
-    ((and (listp arguments)
-          (not (listp (car arguments)))
-          (> (length arguments) 1))
-     (split-arguments arguments))
-    ((and (listp arguments)
-          (not (listp (car arguments)))
-          (= (length arguments) 1))
-     (values nil (car arguments)))
-    ((and (listp arguments)
-          (listp (car arguments))
-          (= (length arguments) 1))
-     (split-arguments (car arguments)))
-    (t (error "%foreign-funcall/process-arguments: Malformed arguments for foreign funcall: ~S" arguments))))
-
 (defmacro %foreign-funcall (name &rest arguments)
   (multiple-value-bind (signature args)
       (extract-signature arguments)

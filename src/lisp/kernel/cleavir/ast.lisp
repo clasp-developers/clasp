@@ -60,25 +60,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class FOREIGN-call-AST
-;;;
-;;; This AST is used to represent a call to a named foreign function
-;;;   inserted into the generated code.
-
-(defclass foreign-call-ast (base-foreign-call-ast)
-  ((%function-name :initarg :function-name :accessor function-name)))
-
-(cleavir-io:define-save-info foreign-call-ast
-    (:function-name function-name))
-
-(defmethod cleavir-ast-graphviz::label ((ast foreign-call-ast))
-  (with-output-to-string (s)
-    (format s "foreign-call (~a)" (function-name ast))))
-
-(ast:define-children foreign-call-ast argument-asts)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Class foreign-call-pointer-AST
 ;;;
 ;;; This AST is used to represent a call to an pointer to a function inserted into the generated code.
@@ -91,17 +72,3 @@
     (format s "foreign-call-pointer")))
 
 (ast:define-children foreign-call-pointer-ast argument-asts)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class DEFCALLBACK-AST
-;;;
-;;; This AST is used to represent a callback definition.
-
-(defclass defcallback-ast (ast:ast)
-  (;; None of these are evaluated and there's a ton of them
-   ;; so why bother splitting them up
-   (%args :initarg :args :reader defcallback-args)
-   (%callee :initarg :callee :reader ast:callee-ast)))
-
-(ast:define-children defcallback-ast (ast:callee-ast))

@@ -247,24 +247,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE:FOREIGN-call
-;;;
-;;; This is converted into a pointer call
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core:foreign-call)) cst environment
-     (system clasp-cleavir:clasp))
-  (assert (listp (cst:raw (cst:second cst))))
-  (assert (stringp (cst:raw (cst:third cst))))
-  (make-instance 'clasp-cleavir-ast:foreign-call-ast
-    :foreign-types (cst:raw (cst:second cst))
-    :function-name (cst:raw (cst:third cst))
-    :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest (cst:rest cst))) environment system)
-    :origin cst))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Converting CORE:foreign-call-pointer
 ;;;
 ;;; This is converted into a pointer call
@@ -277,22 +259,6 @@
     :foreign-types (cst:raw (cst:second cst))
     :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
     :origin cst))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE:DEFCALLBACK
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core:defcallback)) form env (system clasp-cleavir:clasp))
-  (cst:db origin (name convention rtype atypes lisp-callback)
-          (cst:rest form)
-          (let ((args (list (cst:raw name) (cst:raw convention)
-                            (cst:raw rtype) (cst:raw atypes))))
-            (make-instance 'cc-ast:defcallback-ast
-              :args args
-              :callee (cst-to-ast:convert lisp-callback env system)
-              :origin form))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

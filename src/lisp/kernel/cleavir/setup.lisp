@@ -187,8 +187,6 @@
     ((special-operator-p name) t)
     ((eq name 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
     ((eq name 'core:foreign-call-pointer) t) ;; Call function pointers
-    ((eq name 'core:foreign-call) t)         ;; Call foreign function
-    ((eq name 'core:defcallback) t)
     ((eq name 'core::primop) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))

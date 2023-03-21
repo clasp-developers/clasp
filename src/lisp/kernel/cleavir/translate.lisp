@@ -1069,13 +1069,6 @@
          (bir:output instruction))))
 
 (defmethod translate-simple-instruction
-    ((instruction cc-bir:defcallback) (abi abi-x86-64))
-  (let* ((args (cc-bir:defcallback-args instruction))
-         (closure (in (first (bir:inputs instruction)))))
-    (clasp-ffi::gen-defcallback
-     (first args) (second args) (third args) (fourth args) closure)))
-
-(defmethod translate-simple-instruction
     ((instruction bir:fixed-to-multiple) (abi abi-x86-64))
   (let* ((inputs (bir:inputs instruction))
          (output (bir:output instruction))

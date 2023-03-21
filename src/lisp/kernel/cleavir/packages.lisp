@@ -52,7 +52,6 @@
    #:argument-asts
    #:function-name
    #:foreign-types
-   #:defcallback-ast #:defcallback-args
    #:make-throw-ast
    #:throw-ast
    #:result-ast
@@ -67,7 +66,6 @@
                     (#:ast-to-bir #:cleavir-ast-to-bir))
   (:export #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
-           #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name
            #:atomic #:order))
 
