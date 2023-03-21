@@ -699,6 +699,43 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
 
 };
 
+namespace llvmo {
+
+// Compile callbacks for FFI.
+CL_DEFUN JITDylib_sp jit_module_to_dylib(Module_sp module,
+                                         const std::string& libname) {
+  return loadModule(module, 0, libname);
+}
+
+CL_DEFUN core::Pointer_sp jit_lookup(JITDylib_sp dylib,
+                                     const std::string& name) {
+  return llvm_sys__clasp_jit()->lookup(dylib, name);
+}
+
+// Access a T_sp in a variable.
+CL_DEFUN core::T_sp jit_lookup_t(JITDylib_sp dylib,
+                                 const std::string& name) {
+  void* ptr;
+  bool found = llvm_sys__clasp_jit()->do_lookup(dylib, name, ptr);
+  if (!found) SIMPLE_ERROR("Could not find pointer for name |%s|", name);
+  core::T_O** tptr = (core::T_O**)ptr;
+  T_sp ret((gctools::Tagged)(*tptr));
+  return ret;
+}
+
+CL_LISPIFY_NAME("llvmo:jit-lookup-t");
+CL_DEFUN_SETF core::T_sp setf_jit_lookup_t(core::T_sp value, JITDylib_sp dylib,
+                                           const std::string& name) {
+  void* ptr;
+  bool found = llvm_sys__clasp_jit()->do_lookup(dylib, name, ptr);
+  if (!found) SIMPLE_ERROR("Could not find pointer for name |%s|", name);
+  core::T_O** tptr = (core::T_O**)ptr;
+  *tptr = value.raw_();
+  return value;
+}
+
+};
+
 #if defined(USE_MPS)||defined(USE_PRECISE_GC)
 //
 // Include the Kinds
