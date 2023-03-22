@@ -1361,8 +1361,10 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verb) {
   OutputStream << std::setw(12) << globalMpsMetrics.movingZeroRankAllocations.load() << "    moving zero-rank(AMCZ) allocations\n";
   OutputStream << std::setw(12) << globalMpsMetrics.unknownAllocations.load() << "    unknown(configurable) allocations\n";
   OutputStream << std::setw(12) << globalMpsMetrics.totalMemoryAllocated.load() << " total memory allocated\n";
+#ifndef RUNNING_PRECISEPREP
   OutputStream << std::setw(12) << global_NumberOfRootTables.load() << " module root tables\n";
   OutputStream << std::setw(12) << global_TotalRootTableSize.load() << " words - total module root table size\n";
+#endif
 }
 
 void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots)
