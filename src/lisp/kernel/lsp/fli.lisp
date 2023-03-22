@@ -306,42 +306,6 @@
          (last (car (last types))))
     (values (list last arg-types) args)))
 
-(defun split-arguments (arguments)
-  (let* ((splits (split-list arguments))
-         (types-and-maybe-return-type (car splits))
-         (args (cadr splits))
-         (explicit-return-type (> (length types-and-maybe-return-type) (length args)))
-         (return-type (if explicit-return-type
-                          (car (last types-and-maybe-return-type))
-                          :void))
-         (types (if explicit-return-type
-                    (butlast types-and-maybe-return-type 1)
-                    types-and-maybe-return-type)))
-    (values (loop for type in types
-                  for arg in args
-                  collect `(core:foreign-call
-                            ,(from-translator-name type)
-                            ,arg))
-            return-type)))
-
-(defun process-arguments (arguments)
-  (cond
-    ((null arguments)
-     (values nil :void))
-    ((and (listp arguments)
-          (not (listp (car arguments)))
-          (> (length arguments) 1))
-     (split-arguments arguments))
-    ((and (listp arguments)
-          (not (listp (car arguments)))
-          (= (length arguments) 1))
-     (values nil (car arguments)))
-    ((and (listp arguments)
-          (listp (car arguments))
-          (= (length arguments) 1))
-     (split-arguments (car arguments)))
-    (t (error "%foreign-funcall/process-arguments: Malformed arguments for foreign funcall: ~S" arguments))))
-
 (defmacro %foreign-funcall (name &rest arguments)
   (multiple-value-bind (signature args)
       (extract-signature arguments)
@@ -351,6 +315,39 @@
   (multiple-value-bind (signature args)
       (extract-signature arguments)
     `(core:foreign-call-pointer ,signature (ensure-core-pointer ,ptr "%foreign-funcall-pointer" ,ptr) ,@args)))
+
+;;; We'd like for the bytecode to be able to handle foreign calls, but it
+;;; doesn't make sense for it to handle them directly. So, we provide a
+;;; %%foreign-funcall function, and a definition of foreign-call-pointer
+;;; as a macro using it. clasp-cleavir will compile foreign-call-pointer as
+;;; a special form, but the bytecode will resort to calling the function, which
+;;; will in turn compile something to use.
+
+;;; Cache table from foreign-call signatures to caller functions.
+;;; A caller takes a function pointer and its arguments as arguments.
+(defvar *foreign-callers* (make-hash-table :test 'equal))
+
+(defun make-foreign-caller (signature)
+  (let ((fptr (gensym "FUNCTION-POINTER"))
+        (args (mapcar (lambda (argt) (gensym (write-to-string argt)))
+                      (second signature))))
+    (clasp-cleavir::cleavir-compile
+     nil
+     `(lambda (,fptr ,@args)
+       (core:foreign-call-pointer ,signature
+        (ensure-core-pointer ,fptr "%%foreign-funcall" ,fptr)
+        ,@args)))))
+
+(defun ensure-foreign-caller (signature)
+  (or (gethash signature *foreign-callers*)
+      (setf (gethash signature *foreign-callers*)
+            (make-foreign-caller signature))))
+
+(defun %%foreign-funcall (signature function-pointer &rest arguments)
+  (apply (ensure-foreign-caller signature) function-pointer arguments))
+
+(defmacro core:foreign-call-pointer (signature pointer &rest arguments)
+  `(%%foreign-funcall ',signature ,pointer ,@arguments))
 
 ;;; === F O R E I G N   L I B R A R Y   H A N D L I N G ===
 
@@ -411,46 +408,125 @@
 ;;;----------------------------------------------------------------------------
 ;;; C A L L B A C K  S U P P O R T
 
-;;; See cmp/codegen-special-form.lisp for the meat.
+;;; Mapping from (Lisp-function . signature) to callbacks (pointers)
+;;; Besides its importance for caching, this is also important for ensuring
+;;; that Lisp functions with C callbacks are not collected by GC.
+(defvar *callbacks* (make-hash-table :test 'eq))
 
-(defun mangled-callback-name (name)
-  (format nil "clasp_ffi_cb_~a" name))
+;;; Mapping from callback names to callbacks (pointers)
+(defvar *callbacks-by-name* (make-hash-table :test 'equal))
 
-(defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
+(defun signature-return-type (signature) (first signature))
+(defun signature-argument-types (signature) (rest signature))
+
+(defun codegen-callback (signature var &key (c-name "callback"))
+  (let* ((rett-kw (signature-return-type signature))
+         (rett (clasp-ffi:safe-translator-type rett-kw))
+         (args-kws (signature-argument-types signature))
+         (argsts (mapcar #'clasp-ffi:safe-translator-type args-kws))
+         (type (llvm-sys:function-type-get rett argsts))
+         (llfun (cmp:irc-function-create type 'llvm-sys:external-linkage
+                                         c-name cmp:*the-module*))
+         (cmp:*current-function* llfun)
+         (cmp:*current-function-name* c-name)
+         ;; FIXME
+         (c-argument-names (mapcar #'symbol-name args-kws)))
+    ;; Generate code.
+    (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+      (let ((bb (cmp:irc-basic-block-create "entry")))
+        (cmp:irc-set-insert-point-basic-block bb)
+        (let* ((c-args (llvm-sys:get-argument-list llfun))
+               ;; Generate code to translate the arguments.
+               (cl-args (mapcar (lambda (c-arg c-arg-name c-type)
+                                  (cmp:irc-intrinsic-call
+                                   (clasp-ffi::to-translator-name c-type)
+                                   (list c-arg)
+                                   (format nil "translated-~a" c-arg-name)))
+                                c-args c-argument-names args-kws))
+               ;; Grab the function.
+               (closure-to-call (cmp:irc-t*-load var))
+               ;; And call.
+               ;; results-in-registers keeps things in the basic tmv format,
+               ;; which is all we need here, as the C function only uses
+               ;; the primary value.
+               ;; TODO: We can probably skip the XEP in most cases.
+               (cl-result (cmp:irc-funcall-results-in-registers
+                           closure-to-call cl-args
+                           (core:fmt nil "{}_closure" c-name))))
+          ;; Slap names on the arguments.
+          (mapc (lambda (arg argname) (llvm-sys:set-name arg argname))
+                c-args c-argument-names)
+          ;; Translate the return value back to C if applicable.
+          (if (llvm-sys:type-equal rett cmp:%void%)
+              (cmp:irc-ret-void)
+              (cmp:irc-ret (cmp:irc-intrinsic-call
+                            (clasp-ffi::from-translator-name rett-kw)
+                            (list (cmp:irc-tmv-primary cl-result))
+                            "c-result"))))))))
+
+(defun make-callback (signature function)
+  (declare (ignorable function))
+  (cmp::with-compiler-env ()
+    (let* ((module (cmp::create-run-time-module-for-compile))
+           (id (cmp::next-jit-compile-counter))
+           (varname (format nil "callback-lisp-function-~d" id))
+           (callback-name (format nil "callback-~d" id)))
+      (cmp::with-module (:module module :optimize nil)
+        (let ((var (llvm-sys:make-global-variable module cmp:%t*% nil
+                                                  'llvm-sys:external-linkage
+                                                  (llvm-sys:undef-value-get
+                                                   cmp:%t*%)
+                                                  varname)))
+          (codegen-callback signature var :c-name callback-name))
+        ;; Some variables required by parseLinkGraph.
+        ;; We don't actually use them - this is a stupid sham.
+        ;; Initializers need to be put in to ensure the symbol actually
+        ;; exist in the lib - without initializers these are just declarations.
+        (llvm-sys:make-global-variable module cmp:%t*[0]% nil
+                                       'llvm-sys:external-linkage
+                                       (llvm-sys:constant-array-get
+                                        cmp:%t*[0]% nil)
+                                       (format nil "__clasp_literals_~a"
+                                               callback-name))
+        (llvm-sys:make-global-variable module cmp:%gcroots-in-module% nil
+                                       'llvm-sys:external-linkage
+                                       (llvm-sys:undef-value-get
+                                        cmp:%gcroots-in-module%)
+                                       (format nil "__clasp_gcroots_in_module_~a"
+                                               callback-name))
+        ;;(llvm-sys:dump-module module)
+        ;;(cmp:irc-verify-module-safe module)
+        (let ((dylib (llvm-sys:jit-module-to-dylib module callback-name)))
+          (setf (llvm-sys:jit-lookup-t dylib varname) function)
+          (llvm-sys:jit-lookup dylib callback-name))))))
+
+(defun %ensure-callback (signature function)
+  (let ((key (cons function signature)))
+    (or (gethash key *callbacks*)
+        (setf (gethash key *callbacks*)
+              (make-callback signature function)))))
+
+(defmacro ensure-callback (signature function)
+  `(%ensure-callback ',signature ,function))
+
+(defun %get-callback (name)
+  (or (gethash name *callbacks-by-name*)
+      (error "No callback named ~a" name)))
+
+(defmacro %callback (name) `(%get-callback ',name))
+
+(defmacro %defcallback (name-and-options return-type-kw lambda-list argument-type-kws &body body)
   (multiple-value-bind (function-name convention)
       (if (consp name-and-options)
           (destructuring-bind (name &key convention) name-and-options
             (values name convention))
           (values name-and-options :cdecl))
-    (let ((return-type return-type-kw #+(or)(safe-translator-type return-type-kw))
-          (return-translator (from-translator-name return-type-kw))
-          (argument-types argument-type-kws #+(or)(mapcar #'safe-translator-type argument-type-kws))
-          (argument-translators (mapcar #'to-translator-name argument-type-kws))
-          (place-holder (gensym)))
-      `(let ((callback-function (lambda (,@argument-symbols)
-                                  (declare (core:lambda-name ,(if (stringp function-name)
-                                                                  (make-symbol function-name)
-                                                                  function-name)))
-                                  ,@body)))
-         (core:defcallback ,(mangled-callback-name function-name) ,convention
-           ,return-type ,return-translator ,argument-types ,argument-translators
-           ,argument-symbols ,place-holder callback-function)
-         ',function-name))))
-
-(defmacro %defcallback (name-and-options return-type-kw argument-symbols argument-type-kws &body body)
-  (%expand-callback-definition name-and-options return-type-kw argument-symbols argument-type-kws body))
-
-(defmacro %callback (sym)
-  `(%get-callback ',sym))
-
-(defun %get-callback (sym-name)
-  (let ((mangled-sym-name (mangled-callback-name sym-name)))
-    (if sym-name
-        (let ((jit-ptr (llvm-sys:lookup-all-dylibs (llvm-sys:clasp-jit) mangled-sym-name)))
-          (if jit-ptr
-              jit-ptr
-              (%dlsym mangled-sym-name)))
-        nil)))
+    (declare (ignore convention)) ; FIXME
+    `(progn
+       (setf (gethash ',function-name *callbacks-by-name*)
+             (ensure-callback (,return-type-kw ,@argument-type-kws)
+                              (lambda ,lambda-list ,@body)))
+       ',function-name)))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------

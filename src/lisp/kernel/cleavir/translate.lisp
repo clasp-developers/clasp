@@ -625,8 +625,8 @@
                       "<error dumping form>" t))))
                (lit
                  (if (integerp imm-or-index)
-                     (cmp:irc-t*-load
-                      (%indexed-literal-ref imm-or-index "step-source"))
+                     (literal:constants-table-value imm-or-index
+                                                    :literal-name "step-source")
                      imm-or-index)))
           (%intrinsic-invoke-if-landing-pad-or-call
            "cc_breakstep" (list lit frame)))))))
@@ -1067,15 +1067,6 @@
           :call (cc-bir:foreign-types instruction) (in (first inputs))
           (mapcar #'in (rest inputs)) abi)
          (bir:output instruction))))
-
-(defmethod translate-simple-instruction
-    ((instruction cc-bir:defcallback) (abi abi-x86-64))
-  (let* ((args (cc-bir:defcallback-args instruction))
-         (closure (in (first (bir:inputs instruction)))))
-    (cmp::gen-defcallback
-     (first args) (second args) (third args) (fourth args)
-     (fifth args) (sixth args) (seventh args) (eighth args)
-     closure)))
 
 (defmethod translate-simple-instruction
     ((instruction bir:fixed-to-multiple) (abi abi-x86-64))
@@ -1647,7 +1638,7 @@
               (label (datum-name-as-string (bir:output inst))))
          (assert imm-or-index () "Load-time-value not found!")
          (if (integerp imm-or-index)
-             (cmp:irc-t*-load (%indexed-literal-ref imm-or-index label))
+             (literal:constants-table-value imm-or-index :literal-name label)
              imm-or-index))
        (bir:output inst)))
 
@@ -1660,7 +1651,7 @@
          (immediate-or-index (gethash constant *constant-values*)))
     (assert immediate-or-index () "Constant not found!")
     (if (integerp immediate-or-index)
-        (cmp:irc-t*-load (%indexed-literal-ref immediate-or-index label))
+        (literal:constants-table-value immediate-or-index :literal-name label)
         immediate-or-index)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-reference)
@@ -2204,23 +2195,16 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir-compile-cst (cst env pathname
                         &key (linkage 'llvm-sys:internal-linkage) name)
-  (declare (ignore linkage))
-  (let* (function
-         ordered-raw-constants-list constants-table startup-shutdown-id
-         (cst-to-ast:*compiler* 'cl:compile)
-         (ast (cst->ast cst env))
-         (name (or name (ast:name ast))))
-    (declare (ignorable constants-table))
-    (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-      (multiple-value-setq (ordered-raw-constants-list constants-table startup-shutdown-id)
-        (literal:with-rtv
-            (setq function (translate-ast ast)))))
-    (unless function
-      (error "There was no function returned by translate-ast"))
-    ;;(llvm-sys:dump-module cmp:*the-module* *standard-output*)
-    (cmp:jit-add-module-return-function
-     cmp:*the-module*
-     function startup-shutdown-id ordered-raw-constants-list :name name)))
+  (declare (ignore linkage name))
+  (let* ((cst-to-ast:*compiler* 'cl:compile)
+         (ast (cst->ast cst env)))
+    (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
+        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+          (literal:with-rtv (translate-ast ast)))
+      (declare (ignore constants-table))
+      ;;(llvm-sys:dump-module cmp:*the-module* *standard-output*)
+      (cmp:jit-add-module-return-function
+       cmp:*the-module* startup-shutdown-id ordered-raw-constants-list))))
 
 (defun bir-compile-in-env (form &optional env)
   (bir-compile-cst-in-env (cst:cst-from-expression form) env))

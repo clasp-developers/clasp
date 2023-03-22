@@ -431,9 +431,6 @@
           lookup-literal-index
           reference-literal
           load-time-reference-literal
-          codegen-rtv-cclasp
-          codegen-literal
-          codegen-quote
           compile-reference-to-literal
           ltv-global
           compile-load-time-value-thunk

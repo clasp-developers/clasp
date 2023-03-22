@@ -30,20 +30,6 @@
          :inputs args :outputs (list out)))
       (list out))))
 
-(defclass defcallback (bir:no-output bir:instruction)
-  ((%args :initarg :args :reader defcallback-args)))
-
-(defmethod ast-to-bir:compile-ast ((ast cc-ast:defcallback-ast)
-                                   inserter system)
-  (ast-to-bir:with-compiled-ast (rv (cleavir-ast:callee-ast ast)
-                                    inserter system)
-    (ast-to-bir:insert
-     inserter
-     (make-instance 'defcallback
-       :args (cc-ast:defcallback-args ast)
-       :inputs rv :outputs ())))
-  ())
-
 ;;; atomics
 
 (defclass atomic (bir:instruction)

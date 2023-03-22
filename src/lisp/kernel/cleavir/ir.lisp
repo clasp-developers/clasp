@@ -5,20 +5,12 @@
 
 (in-package :clasp-cleavir)
 
-(defun %indexed-literal-ref (index &optional (literal-label (bformat nil "values-table[%d]" index)) )
-  (multiple-value-bind (literals literals-type)
-      (literal:ltv-global)
-    (cmp:irc-const-gep2-64 literals-type
-                           literals
-                           0 index
-                           literal-label)))
-
 (defun %literal-ref (value &optional read-only-p)
   (multiple-value-bind (index in-array)
       (literal:reference-literal value read-only-p)
     (unless in-array
       (error "%literal-ref of immediate value ~s is illegal" value))
-    (%indexed-literal-ref index)))
+    (literal:constants-table-reference index)))
 
 (defun %literal-value (value &optional (label "literal"))
   (declare (ignore label))
@@ -28,7 +20,7 @@
   (unless (cmp:xep-group-p function)
     (error "The first argument to %closurette-index must be a xep-group - instead it is a ~s of class ~s" function (class-name (class-of function))))
   (let ((index (literal::reference-closure function)))
-    (%indexed-literal-ref index)))
+    (literal:constants-table-reference index)))
 
 (defun %closurette-value (function)
   (cmp:irc-t*-load (%closurette-ref function)))

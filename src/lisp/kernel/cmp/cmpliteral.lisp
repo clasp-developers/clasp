@@ -739,9 +739,10 @@ Return the index of the load-time-value"
                                   nil
                                   'llvm-sys:internal-linkage
                                   (llvm-sys:constant-array-get function-vector-type
-                                                               (mapcar (lambda (fn)
-                                                                         (cmp:irc-bit-cast fn cmp:%opaque-fn-prototype*%))
-                                                                       (coerce (literal-machine-function-vector *literal-machine*) 'list)))
+                                                               (map 'list
+                                                                    (lambda (fn)
+                                                                      (cmp:irc-bit-cast fn cmp:%opaque-fn-prototype*%))
+                                                                    (literal-machine-function-vector *literal-machine*)))
                                   (core:fmt nil "function-vector-{}" id))))
     (values function-vector-length function-vector-global function-vector-type)))
 
@@ -861,6 +862,17 @@ Return the index of the load-time-value"
       ;; Return the orderered-raw-constants-list and the constants-table GlobalVariable
       (when (> num-elements 0)
         (let* ((ordered-literals-list (sort run-time-values #'< :key #'literal-node-index))
+               (ordered-raw-constants-list
+                 (mapcar (lambda (x)
+                                (cond
+                                  ((literal-node-runtime-p x)
+                                   (literal-node-runtime-object x))
+                                  ((and (literal-node-creator-p x)
+                                        (literal-node-closure-p
+                                         (literal-node-creator-object x)))
+                                   nil)
+                                  (t (error "Illegal object in ordered-literals-list it is: ~s" x))))
+                         ordered-literals-list))
                (array-type (llvm-sys:array-type-get cmp:%t*% (length ordered-literals-list))))
           (setf constant-table (llvm-sys:make-global-variable cmp:*the-module*
                                                               array-type
@@ -874,9 +886,8 @@ Return the index of the load-time-value"
             (let ((cmp:*load-time-value-holder-global-var-type* cmp:%t*[0]%)
                   (cmp:*load-time-value-holder-global-var* bitcast-constant-table))
               (cmp::cmp-log "do-rtv Replaced all {} with {}%N" cmp:*load-time-value-holder-global-var* bitcast-constant-table)
-              (multiple-value-bind (startup-shutdown-id ordered-raw-constant-list)
-                  (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* array-type constant-table num-elements ordered-literals-list bitcast-constant-table)
-                (values ordered-raw-constant-list constant-table startup-shutdown-id)))))))))
+              (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* array-type constant-table num-elements ordered-literals-list)
+              (values ordered-raw-constants-list constant-table module-id))))))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
@@ -1077,35 +1088,6 @@ and  return the sorted values and the constant-table or (values nil nil)."
         (values (constants-table-reference data-or-index) literal-name)
         data-or-index)))
 
-(defun codegen-rtv-cclasp (obj)
-  "bclasp calls this to get copy the run-time-value for obj into result.
-Returns (value index t) if the value was put in the literal vector or it
-returns (value immediate nil) if the value is an immediate value."
-  (multiple-value-bind (immediate-datum?literal-node-runtime in-array)
-      (run-time-reference-literal obj t)
-    (if in-array
-        (let* ((literal-node-runtime immediate-datum?literal-node-runtime)
-               (index (literal-node-index literal-node-runtime)))
-          (values index t))
-        (let ((immediate-datum immediate-datum?literal-node-runtime))
-          (values (immediate-datum-value immediate-datum) nil)))))
-
-(defun codegen-literal (result object env)
-  "This is called by bclasp.  If result is nil then just return the ltv index.
-If it isn't NIL then copy the literal from its index in the LTV into result."
-  (declare (ignore env))
-  (multiple-value-bind (data-or-index in-array)
-      (reference-literal object t)
-    (if in-array
-        (progn
-          (when result
-            (cmp:irc-t*-result (constants-table-value data-or-index) result))
-          data-or-index)
-        (progn
-          (when result
-            (cmp:irc-t*-result data-or-index result))
-          :poison-value-from-codegen-literal))))
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Access load-time-values
@@ -1121,9 +1103,12 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
     (cmp:irc-const-gep2-64 holder-type holder 0 index label)))
 
 (defun constants-table-value (index &key (holder cmp:*load-time-value-holder-global-var*)
-                                    (holder-type cmp:*load-time-value-holder-global-var-type*))
-  (declare (ignore holder-type))
-  (cmp:irc-t*-load (constants-table-reference index :holder holder)))
+                                      (holder-type cmp:*load-time-value-holder-global-var-type*)
+                                      literal-name)
+  (cmp:irc-t*-load (constants-table-reference index
+                                              :holder holder
+                                              :holder-type holder-type
+                                              :literal-name literal-name)))
 
 (defun build-c++-byte-codes (primitives)
   (let ((map (make-hash-table :test #'equal)))
