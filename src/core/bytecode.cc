@@ -88,11 +88,11 @@ void BytecodeModule_O::register_for_debug() {
 static inline int16_t read_s16(unsigned char* pc) {
   uint8_t byte0 = *pc;
   uint8_t byte1 = *(pc + 1);
-  int32_t nibble = byte0 | (byte1 << 8);
-  if (byte1 & 0x80)
-    return nibble - 0x10000;
-  else
-    return nibble;
+  uint16_t nibble = byte0 | (byte1 << 8);
+  // Not sure how standard-conformant this is, but it seems to work.
+  union { uint16_t u; int16_t i; } convert;
+  convert.u = nibble;
+  return convert.i;
 }
 
 static inline int32_t read_label(unsigned char* pc, size_t nbytes) {
@@ -101,13 +101,10 @@ static inline int32_t read_label(unsigned char* pc, size_t nbytes) {
   for (size_t i = 0; i < nbytes - 1; ++i) result |= *(++pc) << i * 8;
   uint8_t msb = *(++pc);
   result |= (msb & 0x7f) << ((nbytes - 1) * 8);
-  // Signed conversion. TODO: Get something that optimizes well.
-  int32_t returnResult;
-  if (msb & 0x80)
-    returnResult = static_cast<int32_t>(result) - (1 << (8 * nbytes - 1));
-  else
-    returnResult = static_cast<int32_t>(result);
-  return returnResult;
+  // Signed conversion.
+  union { uint32_t u; int32_t i; } convert;
+  convert.u = result;
+  return convert.i;
 }
 
 #define DEBUG_VM_RECORD_PLAYBACK 0
