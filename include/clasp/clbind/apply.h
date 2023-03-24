@@ -98,7 +98,8 @@ template <typename RT, typename Func, typename Tuple>
 struct apply_and_return<core::policy::clasp_policy, gctools::smart_ptr<RT>, Func, Tuple> {
   static gc::return_type go( Func&& fn, Tuple&& tuple) {
     gctools::smart_ptr<RT> retval = clbind::apply(std::forward<Func>(fn),std::forward<Tuple>(tuple)); // why forward?
-    return Values(retval);
+    // return Values(retval);
+    return gctools::return_type(retval.raw_(),1);
   }
 };
 
