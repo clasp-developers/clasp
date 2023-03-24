@@ -300,13 +300,41 @@
   (add-constant (funcall *compiler* `(lambda () (progn ,form)) env)))
 
 (defmethod add-constant ((value cons))
-  (let ((cons (add-creator
-               value (make-instance 'cons-creator :prototype value))))
-    (add-instruction (make-instance 'rplaca-init
-                       :cons cons :value (ensure-constant (car value))))
-    (add-instruction (make-instance 'rplacd-init
-                       :cons cons :value (ensure-constant (cdr value))))
-    cons))
+  ;; We special case proper lists so as to avoid deep stack-blowing
+  ;; recursion when faced with long lists, which are quite common.
+  ;; (Tens of thousands of entries are required to actually blow the
+  ;;  stack, but recursion is less efficient here anyway.)
+  ;; TODO: Better actual representation in the FASL is possible, e.g. an
+  ;; instruction to make lists directly, instead of tens of thousands of
+  ;; cons initializations, but it's slightly complicated to reconcile that
+  ;; with the possibility of sublists being coalesced.
+  (cond ((core:proper-list-p value)
+         ;; First, register each cons in the list.
+         (mapl
+          (lambda (c)
+            (add-creator c (make-instance 'cons-creator :prototype value)))
+          value)
+         ;; Then go through and initialize them.
+         (mapl
+          (lambda (c)
+            (let ((const (find-constant c)))
+              (assert const)
+              (add-instruction (make-instance 'rplaca-init
+                                 :cons const
+                                 :value (ensure-constant (car c))))
+              (add-instruction (make-instance 'rplacd-init
+                                 :cons const
+                                 :value (ensure-constant (cdr c))))))
+          value)
+         (find-constant value))
+        (t
+         (let ((cons (add-creator
+                      value (make-instance 'cons-creator :prototype value))))
+           (add-instruction (make-instance 'rplaca-init
+                              :cons cons :value (ensure-constant (car value))))
+           (add-instruction (make-instance 'rplacd-init
+                              :cons cons :value (ensure-constant (cdr value))))
+           cons))))
 
 (defmethod add-constant ((value array))
   (let* ((uaet (array-element-type value))
