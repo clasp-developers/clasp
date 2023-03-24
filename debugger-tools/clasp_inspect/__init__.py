@@ -548,7 +548,6 @@ class SimpleVector_O(Array_O):
 class SimpleCharacterString_O(Array_O):
     def __init__(self,debugger,tptr):
         Array_O.__init__(self,debugger,tptr)
-        print("self._class = %s" % self._class)
         end_offset = self._class._variable_capacity._end_offset
         char_size = self._class._variable_capacity._element_size
         data_offset = self._class._variable_array0._offset
