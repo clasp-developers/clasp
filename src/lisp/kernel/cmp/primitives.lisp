@@ -126,7 +126,7 @@
          (primitive         "__cxa_begin_catch" :i8* (list :i8*) )
          (primitive-unwinds "__cxa_end_catch" :void nil)
          (primitive         "llvm.eh.typeid.for" :i32 (list :i8*))
-    
+         (primitive-unwinds "cc_overflowed_signed_bignum" :t* (list :i64))
          (primitive         "llvm.sadd.with.overflow.i32" :{i32.i1} (list :i32 :i32))
          (primitive         "llvm.sadd.with.overflow.i64" :{i64.i1} (list :i64 :i64))
          (primitive         "llvm.ssub.with.overflow.i32" :{i32.i1} (list :i32 :i32))

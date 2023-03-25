@@ -375,6 +375,40 @@
         (arg2 (in (second (bir:inputs inst)))))
     (cmp:irc-sub arg1 arg2)))
 
+;;; debugging: check whether a fixnum addition overflows
+#+(or)
+(defvprimop (core::fixnum-add-overflowp :flags (:flushable))
+    ((:boolean) :fixnum :fixnum) (inst)
+  (let* ((arg1 (in (first (bir:inputs inst))))
+         (arg2 (in (second (bir:inputs inst))))
+         (r (%intrinsic-call "llvm.sadd.with.overflow.i64" (list arg1 arg2))))
+    (cmp:irc-extract-value r '(1))))
+
+(defvprimop (core::fixnum-add-over :flags (:flushable))
+    ((:object) :fixnum :fixnum) (inst)
+  (let* ((arg1 (in (first (bir:inputs inst))))
+         (arg2 (in (second (bir:inputs inst))))
+         (r (%intrinsic-call "llvm.sadd.with.overflow.i64" (list arg1 arg2)))
+         (overflowp (cmp:irc-extract-value r '(1)))
+         (overflow-block (cmp:irc-basic-block-create "overflow"))
+         (no-overflow-block (cmp:irc-basic-block-create "no-overflow"))
+         (after-block (cmp:irc-basic-block-create "after"))
+         (_1 (cmp:irc-cond-br overflowp overflow-block no-overflow-block))
+         (_2 (cmp:irc-begin-block overflow-block))
+         (big (%intrinsic-invoke-if-landing-pad-or-call
+               "cc_overflowed_signed_bignum"
+               (list (cmp:irc-extract-value r '(0)))))
+         (_3 (cmp:irc-br after-block))
+         (_4 (cmp:irc-begin-block no-overflow-block))
+         (fix (cmp:irc-int-to-ptr (cmp:irc-extract-value r '(0)) cmp:%t*%)))
+    (declare (ignore _1 _2 _3 _4))
+    (cmp:irc-br after-block)
+    (cmp:irc-begin-block after-block)
+    (let ((phi (cmp:irc-phi cmp:%t*% 2 "sum")))
+      (cmp:irc-phi-add-incoming phi big overflow-block)
+      (cmp:irc-phi-add-incoming phi fix no-overflow-block)
+      phi)))
+
 ;; And multiplication. We just avoid tag bits.
 ;; We could possibly be a bit faster in some situations by shifting
 ;; in different ways. TODO.

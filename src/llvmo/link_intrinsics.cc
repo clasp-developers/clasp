@@ -1061,8 +1061,18 @@ extern "C" {
 
 //#define DEBUG_CC
 
-#define PROTO_cc_setSymbolValue "void (t* t*)"
-#define CATCH_cc_setSymbolValue false
+core::T_O* cc_overflowed_signed_bignum(uint64_t n) {
+  // Given the mod'd result of an overflowed sum or difference,
+  // allocate and return a bignum.
+  // This can unwind if we run out of memory or whatnot.
+  printf("cc_overflowed_signed_bignum n = %" PRIx64 "\n", n);
+  // FIXME: There's probably a way to avoid this arithmetic.
+  // The problem is that the sign bit was overflowed.
+  union { uint64_t u; int64_t i; } c;
+  c.u = (n ^ 0x8000000000000000) | ((gc::Fixnum)1 << gc::fixnum_bits);
+  return Integer_O::create(c.i >> gc::fixnum_shift).raw_();
+}
+
 void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
 {NO_UNWIND_BEGIN();
   //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
