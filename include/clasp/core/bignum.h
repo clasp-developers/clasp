@@ -52,7 +52,7 @@ public:
   }
 public:
   typedef mp_limb_t value_type;
-private: // instance variables here
+public: // instance variables here
   gctools::GCArraySignedLength_moveable<mp_limb_t> _limbs;
 
 public: // Functions here
