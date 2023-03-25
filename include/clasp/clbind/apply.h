@@ -64,7 +64,7 @@ template <typename...Policies, typename Func, typename Tuple>
 struct apply_and_return<policies<Policies...>, void, Func,Tuple> {
   static LCC_RETURN go( Func&& fn, Tuple&& tuple) {
     clbind::apply(std::forward<Func>(fn),std::forward<Tuple>(tuple));
-    return Values0<core::T_O>();
+    return gctools::return_type(nil<core::T_O>().raw_(),0);
   }
 };
 
@@ -88,9 +88,7 @@ struct apply_and_return<core::policy::clasp_policy, RT, Func, Tuple> {
   static gc::return_type go( Func&& fn, Tuple&& tuple) {
     RT retval = clbind::apply(std::forward<Func>(fn),std::forward<Tuple>(tuple)); // why forward?
     core::T_sp tretval = translate::to_object<RT>::convert(retval);
-//    printf("%s:%d Returning from apply_and_return value-> %s\n", __FILE__, __LINE__, _rep_(tretval).c_str() );
-    return Values(tretval);
-//    return gc::return_type(tretval.raw_(),1) ; // fixme2022 - maybe I need this... return Values(tretval);
+    return gctools::return_type(tretval.raw_(),1);
   }
 };
 
@@ -98,7 +96,6 @@ template <typename RT, typename Func, typename Tuple>
 struct apply_and_return<core::policy::clasp_policy, gctools::smart_ptr<RT>, Func, Tuple> {
   static gc::return_type go( Func&& fn, Tuple&& tuple) {
     gctools::smart_ptr<RT> retval = clbind::apply(std::forward<Func>(fn),std::forward<Tuple>(tuple)); // why forward?
-    // return Values(retval);
     return gctools::return_type(retval.raw_(),1);
   }
 };
@@ -201,7 +198,7 @@ struct method_apply_and_return<RT,core::policy::clasp_policy,MethodType,OT,Tuple
   static gc::return_type go( MethodType&& mptr, OT&& object, Tuple&& tuple) {
     RT retval = clbind::method_apply(std::forward<MethodType>(mptr), std::forward<OT>(object), std::forward<Tuple>(tuple) );
     core::T_sp rv = translate::to_object<RT>::convert(retval);
-    return Values(rv);
+    return gctools::return_type(rv.raw_(),1);
   }
 };
 

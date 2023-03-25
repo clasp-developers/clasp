@@ -349,8 +349,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
   template <class T0>
     inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0) {
     DUMP_VALUES_POS(v0,1);
-    //core::MultipleValues &me = (core::lisp_multipleValues());
-    //me.valueSet(0, v0);
     return gctools::return_type(v0.raw_(), 1);
   }
 

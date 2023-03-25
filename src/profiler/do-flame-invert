@@ -15,6 +15,7 @@ else
     ./do-dtrace $PID $TIME $RATE $FRAMES
 fi
 
+echo About to invert
 ./invert -i /tmp/out-$PID.stacks -o /tmp/out-$PID.invstacks -m 20
 # PRUNE_OUTFILE=${OUTFILE%.prune_stacks}
 # ./prune-trace.lisp $OUTFILE $PRUNE_OUTFILE
