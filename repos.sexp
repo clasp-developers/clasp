@@ -143,7 +143,7 @@
  (:name :cl-netcdf ; TODO remove once cando-user no longer needs
   :repository "https://github.com/clasp-developers/cl-netcdf.git"
   :directory "src/lisp/kernel/contrib/cl-netcdf/"
-  :commit "593c6c47b784ec02e67580aa12a7775ed6260200"
+  :commit "bd01e14c0bb02ebfdcea1ca592ea4c8807d3ba44"
   :extension :cando)
  (:name :lparallel
   :repository "https://github.com/yitzchak/lparallel.git"
