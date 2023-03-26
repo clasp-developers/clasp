@@ -1062,9 +1062,8 @@ extern "C" {
 //#define DEBUG_CC
 
 core::T_O* cc_overflowed_signed_bignum(int64_t add_over) {
-  //printf("%s:%d:%s add_over = %lx\n", __FILE__, __LINE__, __FUNCTION__, add_over );
   mp_limb_t limb;
-  int64_t len;
+  mp_size_t len;
   if ( add_over<0 ) { // positive
     len = 1;
     limb = ((uint64_t)add_over)>>2;
@@ -1075,19 +1074,7 @@ core::T_O* cc_overflowed_signed_bignum(int64_t add_over) {
     len = -1;
     limb = 0x4000000000000000;
   }
-  //printf("%s:%d:%s  len = %2ld limb = %lx\n", __FILE__, __LINE__, __FUNCTION__, len, limb );
   return core::Bignum_O::create_from_limbs(len,limb,true).raw_();
-#if 0
-  // Given the mod'd result of an overflowed sum or difference,
-  // allocate and return a bignum.
-  // This can unwind if we run out of memory or whatnot.
-  printf("cc_overflowed_signed_bignum n = %" PRIx64 "\n", n);
-  // FIXME: There's probably a way to avoid this arithmetic.
-  // The problem is that the sign bit was overflowed.
-  union { uint64_t u; int64_t i; } c;
-  c.u = (n ^ 0x8000000000000000) | ((gc::Fixnum)1 << gc::fixnum_bits);
-  return Integer_O::create(c.i >> gc::fixnum_shift).raw_();
-#endif
 }
 
 void cc_setSymbolValue(core::T_O *sym, core::T_O *val)

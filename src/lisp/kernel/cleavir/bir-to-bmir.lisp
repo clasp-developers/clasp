@@ -230,11 +230,12 @@
   (deflog2 core:logior-2op core::fixnum-logior)
   (deflog2 core:logxor-2op core::fixnum-logxor))
 
-;;; This is a very KLUDGEy way to find additions of fixnums whose result is
-;;; a fixnum as well. Plus it hardcodes the number of fixnum bits. FIXME
 (deftransform-wr core:two-arg-+ core::fixnum-add fixnum fixnum fixnum)
 (deftransform-wr core:two-arg-- core::fixnum-sub fixnum fixnum fixnum)
 (deftransform-wr core:two-arg-* core::fixnum-mul fixnum fixnum fixnum)
+
+(deftransform core:two-arg-+ core::fixnum-add-over fixnum fixnum)
+(deftransform core:two-arg-- core::fixnum-sub-over fixnum fixnum)
 
 (deftransform logcount core::fixnum-positive-logcount (and fixnum unsigned-byte))
 
