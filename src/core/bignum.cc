@@ -845,4 +845,42 @@ CL_DEFUN int core__next_compare(Bignum_sp left,
   }
 }
 
+
+CL_DEFUN Bignum_sp core__dump_bignum(Bignum_sp bignum)
+{
+  int64_t len = bignum->_limbs.signedLength();
+  printf("%s:%d:%s len = %ld\n", __FILE__, __LINE__, __FUNCTION__, len );
+  for (size_t ii = 0; ii<bignum->_limbs.size(); ii++ ) {
+    printf("%s:%d:%s  limb[%lu] = %lx\n", __FILE__, __LINE__, __FUNCTION__, ii, bignum->_limbs[ii] );
+  }
+  return bignum;
+}
+
+CL_DEFUN Bignum_sp core__bignum_from_fixnum_add_over(int64_t add_over)
+{
+  printf("%s:%d:%s       add_over = %lx\n", __FILE__, __LINE__, __FUNCTION__, add_over );
+  mp_limb_t limb;
+  int64_t len;
+  if ( add_over<0 ) { // positive
+    len = 1;
+    limb = ((uint64_t)add_over)>>2;
+  } if (add_over>0 ) { // negative
+    len = -1;
+    limb = ((uint64_t)((~add_over)+1))>>2;
+  } else { // add_over == 0
+    len = -1;
+    limb = 0x4000000000000000;
+  }
+  printf("%s:%d:%s  len = %2ld limb = %lx\n", __FILE__, __LINE__, __FUNCTION__, len, limb );
+  return Bignum_O::create_from_limbs(len,limb,true);
+}
+
+CL_DEFUN Bignum_sp core__bignum_do_fixnum_add_over(T_sp x, T_sp y)
+{
+  printf("%s:%d:%s x = %p y = %p\n", __FILE__, __LINE__, __FUNCTION__, x.raw_(), y.raw_() );
+  int64_t add_over = (int64_t)x.raw_() + (int64_t)y.raw_();
+  return core__bignum_from_fixnum_add_over(add_over);
+}
+
+
 }; // namespace core

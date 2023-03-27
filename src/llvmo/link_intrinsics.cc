@@ -1061,8 +1061,22 @@ extern "C" {
 
 //#define DEBUG_CC
 
-#define PROTO_cc_setSymbolValue "void (t* t*)"
-#define CATCH_cc_setSymbolValue false
+core::T_O* cc_overflowed_signed_bignum(int64_t add_over) {
+  mp_limb_t limb;
+  mp_size_t len;
+  if ( add_over<0 ) { // positive
+    len = 1;
+    limb = ((uint64_t)add_over)>>2;
+  } else if (add_over>0 ) { // negative
+    len = -1;
+    limb = ((uint64_t)((~add_over)+1))>>2;
+  } else { // add_over == 0
+    len = -1;
+    limb = 0x4000000000000000;
+  }
+  return core::Bignum_O::create_from_limbs(len,limb,true).raw_();
+}
+
 void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
 {NO_UNWIND_BEGIN();
   //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
