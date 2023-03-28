@@ -545,7 +545,7 @@ static void ltv_op_attribute(Stream_sp stream, SimpleVector_sp literals,
 void load_instruction(Stream_sp stream, SimpleVector_sp literals,
                       std::vector<bool>& initflags, uint8_t index_bytes) {
   uint8_t opcode = read_opcode(stream);
-  printf("op %" PRIx8 "\n", opcode);
+  //printf("op %" PRIx8 "\n", opcode);
 #define CALL_LOADER(NAME) ltv_op_##NAME(stream, literals, initflags, index_bytes)
   switch (opcode) {
   case LTV_OP_NIL: CALL_LOADER(nil); break;
@@ -604,6 +604,7 @@ CL_DEFUN bool load_bytecode(T_sp filename, bool verbose, bool print,
   DynamicScopeManager lpscope(cl::_sym_STARloadPathnameSTAR, cl__pathname(filename));
   DynamicScopeManager ltscope(cl::_sym_STARloadTruenameSTAR, cl__truename(filename));
   load_bytecode_stream(gc::As<Stream_sp>(strm));
+  cl__close(strm);
   return true;
 }
 
