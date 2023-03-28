@@ -113,6 +113,18 @@ static inline int64_t read_s64(Stream_sp stream) {
   return converter.i;
 }
 
+static inline float read_f32(Stream_sp stream) {
+  union { float f; uint32_t i; } converter;
+  converter.i = read_u32(stream);
+  return converter.f;
+}
+
+static inline double read_f64(Stream_sp stream) {
+  union { double d; uint64_t i; } converter;
+  converter.i = read_u64(stream);
+  return converter.d;
+}
+
 static inline uint8_t read_opcode(Stream_sp stream) {
   return read_u8(stream);
 }
@@ -264,29 +276,94 @@ static T_sp decode_uaet(uint8_t code) {
   }
 }
 
+static void fill_sub_byte(Array_sp array, size_t total_size,
+                          size_t nbits, Stream_sp stream) {
+  // FIXME: Very inefficient.
+  // In a best case scenario we can move in entire bit_array_words at a time,
+  // probably?
+  size_t perbyte = 8 / nbits;
+  size_t full_bytes = total_size / 8;
+  for (size_t byte_index = 0; byte_index < full_bytes; ++byte_index) {
+    size_t index = perbyte * byte_index;
+    uint8_t byte = read_u8(stream);
+    for (size_t j = 0; j < perbyte; ++j) {
+      size_t bit_index = nbits * (perbyte - j - 1);
+      uint8_t mask = (1 << nbits) - 1;
+      uint8_t bits = (byte & (mask << bit_index)) >> bit_index;
+      array->rowMajorAset(index + j, clasp_make_fixnum(bits));
+    }
+  }
+  // write remainder
+  size_t remainder = total_size % 8;
+  size_t index = perbyte * full_bytes;
+  uint8_t byte = read_u8(stream); // should this be read when remainder = 0?
+  for (size_t j = 0; j < remainder; ++j) {
+    size_t bit_index = nbits * (perbyte - j - 1);
+    uint8_t mask = (1 << nbits) - 1;
+    uint8_t bits = (byte & (mask << bit_index)) >> bit_index;
+    array->rowMajorAset(index + j, clasp_make_fixnum(bits));
+  }
+}
+
 static void fill_array(Array_sp array, size_t total_size,
                        uint8_t packing, Stream_sp stream) {
+  // FIXME: Inefficient.
+  // Really we ought to be able to read(2) stuff in directly sometimes.
+  // And can we do the simple form here for multidimensional arrays?
+#define READ_ARRAY(BaseType, EXPR, EXTEXPR)\
+  if (gc::IsA<BaseType>(array)) {\
+    BaseType sv = gc::As_unsafe<BaseType>(array);\
+    for (size_t i = 0; i < total_size; ++i)\
+      (*sv)[i] = (EXPR);\
+  } else {\
+    for (size_t i = 0; i < total_size; ++i)\
+      array->rowMajorAset(i, (EXTEXPR));\
+  }
   switch (UAETCode{packing}) {
   case UAETCode::nil: break;
-  case UAETCode::base_char: {
-    if (gc::IsA<SimpleBaseString_sp>(array)) {
-      SimpleBaseString_sp str = gc::As_unsafe<SimpleBaseString_sp>(array);
-      for (size_t i = 0; i < total_size; ++i)
-        (*str)[i] = read_u8(stream);
-    } else SIMPLE_ERROR("TODO: Base char packing");
-    break;
-  }
-  case UAETCode::character: {
-    if (gc::IsA<SimpleCharacterString_sp>(array)) {
-      SimpleCharacterString_sp str = gc::As_unsafe<SimpleCharacterString_sp>(array);
-      for (size_t i = 0; i < total_size; ++i)
-        (*str)[i] = read_u32(stream);
-    } else SIMPLE_ERROR("TODO: Char packing");
-    break;
-  }
+  case UAETCode::base_char:
+      READ_ARRAY(SimpleBaseString_sp, read_u8(stream), clasp_make_character(read_u8(stream)));
+      break;
+  case UAETCode::character:
+      READ_ARRAY(SimpleCharacterString_sp, read_u32(stream), clasp_make_character(read_u32(stream)));
+      break;
+  case UAETCode::single_float:
+      READ_ARRAY(SimpleVector_float_sp, read_f32(stream), clasp_make_single_float(read_f32(stream)));
+      break;
+  case UAETCode::double_float:
+      READ_ARRAY(SimpleVector_double_sp, read_f64(stream), clasp_make_double_float(read_f64(stream)));
+      break;
+  case UAETCode::bit: fill_sub_byte(array, total_size, 1, stream); break;
+  case UAETCode::ub2: fill_sub_byte(array, total_size, 2, stream); break;
+  case UAETCode::ub4: fill_sub_byte(array, total_size, 4, stream); break;
+  case UAETCode::ub8:
+      READ_ARRAY(SimpleVector_byte8_t_sp, read_u8(stream), clasp_make_fixnum(read_u8(stream)));
+      break;
+  case UAETCode::ub16:
+      READ_ARRAY(SimpleVector_byte16_t_sp, read_u16(stream), clasp_make_fixnum(read_u16(stream)));
+      break;
+  case UAETCode::ub32:
+      READ_ARRAY(SimpleVector_byte32_t_sp, read_u32(stream), clasp_make_fixnum(read_u32(stream)));
+      break;
+  case UAETCode::ub64:
+      READ_ARRAY(SimpleVector_byte64_t_sp, read_u64(stream), Integer_O::create(read_u64(stream)));
+      break;
+  case UAETCode::sb8:
+      READ_ARRAY(SimpleVector_int8_t_sp, read_s8(stream), clasp_make_fixnum(read_s8(stream)));
+      break;
+  case UAETCode::sb16:
+      READ_ARRAY(SimpleVector_int16_t_sp, read_s16(stream), clasp_make_fixnum(read_s16(stream)));
+      break;
+  case UAETCode::sb32:
+      READ_ARRAY(SimpleVector_int32_t_sp, read_s32(stream), clasp_make_fixnum(read_s32(stream)));
+      break;
+  case UAETCode::sb64:
+      READ_ARRAY(SimpleVector_int64_t_sp, read_s64(stream), Integer_O::create(read_s64(stream)));
+      break;
   case UAETCode::t: break; // handled by setf row-major-aref
   default: SIMPLE_ERROR("Not implemented: packing code %" PRIx8, packing);
   }
+#undef READ_ARRAY
 }
 
 static void ltv_op_array(Stream_sp stream, SimpleVector_sp literals,
@@ -382,17 +459,15 @@ static void ltv_op_bignum(Stream_sp stream, SimpleVector_sp literals,
 static void ltv_op_float(Stream_sp stream, SimpleVector_sp literals,
                          std::vector<bool>& initflags, uint8_t index_bytes) {
   size_t index = read_index(stream, index_bytes);
-  union { float f; uint32_t i; } converter;
-  converter.i = read_u32(stream);
-  set_ltv(clasp_make_single_float(converter.f), index, literals, initflags);
+  set_ltv(clasp_make_single_float(read_f32(stream)),
+          index, literals, initflags);
 }
 
 static void ltv_op_double(Stream_sp stream, SimpleVector_sp literals,
                           std::vector<bool>& initflags, uint8_t index_bytes) {
   size_t index = read_index(stream, index_bytes);
-  union { double d; uint64_t i; } converter;
-  converter.i = read_u64(stream);
-  set_ltv(clasp_make_double_float(converter.d), index, literals, initflags);
+  set_ltv(clasp_make_double_float(read_f64(stream)),
+          index, literals, initflags);
 }
 
 static void ltv_op_ratio(Stream_sp stream, SimpleVector_sp literals,
