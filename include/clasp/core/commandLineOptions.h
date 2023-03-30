@@ -77,6 +77,7 @@ struct CommandLineOptions {
   std::string _RCFileName;
   bool _NoRc;
   bool _PauseForDebugger;
+  bool _GenerateTrampolines;
 
   bool validStartupTypeOption(const std::string &arg);
   void printVersion();

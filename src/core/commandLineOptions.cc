@@ -77,6 +77,9 @@ Options:
       Short for --disable-debugger --quit
   -m, --disable-mpi
       Don't use mpi even if built with mpi
+  -t, --trampolines
+      Generate trampolines around bytecode functions for profiling and debugging.
+      This slows performance a bit.
   -v, --version
       Print version
   -s, --verbose
@@ -316,6 +319,8 @@ void process_clasp_arguments(CommandLineOptions *options) {
       options->_Version = true;
     } else if (*arg == "-s" || *arg == "--verbose") {
       options->_SilentStartup = false;
+    } else if (*arg == "-t" || *arg == "--trampolines") {
+      options->_GenerateTrampolines = true;
     } else if (*arg == "-f" || *arg == "--feature") {
       options->_Features.insert(core::lispify_symbol_name(*++arg));
     } else if (*arg == "-n" || *arg == "--noinit") {
@@ -409,8 +414,10 @@ void process_clasp_arguments(CommandLineOptions *options) {
 CommandLineOptions::CommandLineOptions(int argc, const char *argv[])
     : _ProcessArguments(process_clasp_arguments), _DisableMpi(false), _AddressesP(false), _StartupType(DEFAULT_STARTUP_TYPE),
       _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0),
-      _NoInform(false), _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
-      _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false), _PauseForDebugger(false) {
+      _NoInform(false), _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false)
+    , _SilentStartup(true)
+    , _GenerateTrampolines(false)
+    , _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false), _PauseForDebugger(false) {
   if (argc == 0) {
     this->_RawArguments.push_back("./");
   } else {

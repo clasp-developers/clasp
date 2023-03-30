@@ -534,7 +534,10 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 	       currentCode->_TextSectionEnd );
       }
     } else {
-      printf("%s:%d:%s No executable region was found for the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+      printf("%s:%d:%s No executable region was found for the Code_O object for graph %s\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str() );
+      for (auto *Sym : G.external_symbols()) {
+        printf("       Symbol: %s\n", Sym->getName().str().c_str());
+      }
     }
     //
     size_t gcroots_in_module_name_len = gcroots_in_module_name.size();

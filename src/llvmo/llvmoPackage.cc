@@ -640,12 +640,23 @@ gctools::return_type lambda_nil(unsigned char* pc, core::T_O* closure, uint64_t 
 namespace llvmo {
 #include "trampoline.h"
 
+std::atomic<size_t> global_trampoline_counter;
+#ifdef CLASP_THREADS
+mp::Mutex* global_trampoline_mutex = NULL;
+#endif
+
 CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
+  if (global_trampoline_mutex == NULL) {
+    global_trampoline_mutex = new mp::Mutex(DISSASSM_NAMEWORD);
+  }
+  WITH_READ_WRITE_LOCK(*global_trampoline_mutex);
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  if (!getenv("CLASP_ENABLE_TRAMPOLINES")) {
+  if (!global_options->_GenerateTrampolines) {
+    if (!getenv("CLASP_ENABLE_TRAMPOLINES")) {
     // If the JIT isn't ready then use the default trampoline
-    return Values(Pointer_O::create((void*)bytecode_call),
-                  SimpleBaseString_O::make("bytecode_call"));
+      return Values(Pointer_O::create((void*)bytecode_call),
+                    SimpleBaseString_O::make("bytecode_call"));
+    }
   }
   if (jit.nilp()) {
     // If the JIT isn't ready then use the default trampoline
@@ -675,7 +686,7 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
     }
     name = name.substr(1,name.size()-2);   // Strip double quotes
   }
-  name = name + "_bct";
+  name = name + "_bct" + std::to_string(global_trampoline_counter++);
   LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
   std::string trampoline = global_trampoline;
   trampoline = core::searchAndReplaceString( trampoline, "@WRAPPER_NAME", "@\""+name+"\"");
@@ -686,7 +697,7 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
   trampoline = ss_trampoline.str();
   //printf("%s:%d:%s About to parseIRString %s\n", __FILE__, __LINE__, __FUNCTION__, trampoline.c_str());
   Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline" );
-  //printf("%s:%d:%s About to call loadModule with module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
+  //printf("%s:%d:%s About to call loadModule with module = %p name = %s\n", __FILE__, __LINE__, __FUNCTION__, module.raw_(), name.c_str() );
   JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
   core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib,name);
   //  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
