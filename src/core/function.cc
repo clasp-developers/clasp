@@ -104,16 +104,18 @@ GlobalSimpleFun_O::GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXe
 };
 
 GlobalBytecodeSimpleFun_O::GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc,
-                                                       const ClaspXepFunction& entry_point,
-                                                       T_sp module,
-                                                       uint16_t localsFrameSize,
-                                                       unsigned int environmentSize,
-                                                       unsigned int entryPcN,
-                                                       BytecodeTrampolineFunction trampoline )
+                                                     const ClaspXepFunction& entry_point,
+                                                     T_sp module,
+                                                     uint16_t localsFrameSize,
+                                                     unsigned int environmentSize,
+                                                     unsigned int entryPcN,
+                                                     unsigned int bytecodeSize,
+                                                     BytecodeTrampolineFunction trampoline )
 : GlobalSimpleFunBase_O(fdesc, entry_point, module),
   _LocalsFrameSize(localsFrameSize),
   _EnvironmentSize(environmentSize),
   _EntryPcN(entryPcN),
+  _BytecodeSize(bytecodeSize),
   _Trampoline(trampoline)
 {
   llvmo::validateEntryPoint( module, entry_point );
@@ -463,22 +465,24 @@ struct BytecodeClosureEntryPoint {
 CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/make);
 CL_DEFUN
 GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc,
-                                                               BytecodeModule_sp module,
-                                                               size_t localsFrameSize,
-                                                               size_t environmentSize,
-                                                               size_t pcIndex,
-                                                               Pointer_sp trampoline )
+                                                             BytecodeModule_sp module,
+                                                             size_t localsFrameSize,
+                                                             size_t environmentSize,
+                                                             size_t pcIndex,
+                                                             size_t bytecodeSize,
+                                                             Pointer_sp trampoline )
 {
   size_t idx = 0;
   ClaspXepFunction xep;
   xep.setup<BytecodeClosureEntryPoint>();
   auto entryPoint = gctools::GC<GlobalBytecodeSimpleFun_O>::allocate( fdesc,
-                                                                       xep,
-                                                                       module,
-                                                                       localsFrameSize,
-                                                                       environmentSize,
-                                                                       pcIndex,
-                                                                       (BytecodeTrampolineFunction)trampoline->ptr() );
+                                                                      xep,
+                                                                      module,
+                                                                      localsFrameSize,
+                                                                      environmentSize,
+                                                                      pcIndex,
+                                                                      bytecodeSize,
+                                                                      (BytecodeTrampolineFunction)trampoline->ptr() );
   return entryPoint;
 }
 

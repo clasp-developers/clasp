@@ -839,7 +839,7 @@ size_t Module_O::bytecode_size() {
   ComplexVector_T_sp cfunctions = this->cfunctions();
   T_sp tlast_cfunction = (*cfunctions)[cfunctions->length() - 1];
   Cfunction_sp last_cfunction = gc::As_assert<Cfunction_sp>(tlast_cfunction);
-  return last_cfunction->pposition() + last_cfunction->bytecode()->length() + last_cfunction->extra();
+  return last_cfunction->pposition() + last_cfunction->final_size();
 }
 
 // Replacement for CL:REPLACE, which isn't available here.
@@ -929,8 +929,7 @@ void Module_O::link_load(T_sp compile_info) {
                                                            sourcePathname, lineno, column, filepos);
     Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
     Pointer_sp trampoline = llvmo::cmp__compile_trampoline(cfunction->nname());
-    GlobalBytecodeSimpleFun_sp func = core__makeGlobalBytecodeSimpleFun(
-        fdesc, bytecode_module, cfunction->nlocals(), cfunction->closed()->length(), ep.unsafe_fixnum(), trampoline);
+    GlobalBytecodeSimpleFun_sp func = core__makeGlobalBytecodeSimpleFun(fdesc, bytecode_module, cfunction->nlocals(), cfunction->closed()->length(), ep.unsafe_fixnum(), cfunction->final_size(), trampoline);
     cfunction->setInfo(func);
   }
   // Replace the cfunctions in the cmodule literal vector with

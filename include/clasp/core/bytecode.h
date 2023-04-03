@@ -37,6 +37,7 @@ public:
   Literals_sp_Type                   _Literals;
   Bytecode_sp_Type                   _Bytecode;
   T_sp                               _CompileInfo;
+  T_sp                               _DebugInfo;
 
 public:
   CL_LISPIFY_NAME(BytecodeModule/make)
@@ -53,6 +54,8 @@ public:
   void setf_bytecode(T_sp obj);
   Bytecode_sp_Type compileInfo() const;
   void setf_compileInfo(T_sp obj);
+  T_sp debugInfo() const { return this->_DebugInfo; }
+  void setf_debugInfo(T_sp info) { this->_DebugInfo = info; }
   BytecodeModule_O() {};
 };
 

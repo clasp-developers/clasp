@@ -820,6 +820,9 @@ public:
     this->_extra = next;
     return next;
   }
+  size_t final_size() {
+    return this->bytecode()->length() + this->extra();
+  }
   CL_LISPIFY_NAME(Cfunction/index)
   CL_DEFMETHOD size_t iindex() { return _index; }
   CL_LISPIFY_NAME(Cfunction/setf-index)

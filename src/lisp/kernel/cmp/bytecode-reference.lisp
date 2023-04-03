@@ -378,6 +378,9 @@
   ;; Stuff for the function description
   name doc)
 
+(defun final-size (cfunction)
+  (+ (length (cfunction-bytecode cfunction)) (cfunction-extra cfunction)))
+
 (defstruct (cmodule (:constructor make-cmodule (literals))
                     (:type vector))
   (cfunctions (make-array 1 :fill-pointer 0 :adjustable t))
@@ -1513,6 +1516,7 @@
                  (cfunction-nlocals cfunction)
                  (length (cfunction-closed cfunction))
                  (annotation-module-position (cfunction-entry-point cfunction))
+                 (final-size cfunction)
                  (cmp:compile-trampoline (cfunction-name cfunction))))))
       ;; Now replace the cfunctions in the cmodule literal vector with
       ;; real bytecode functions.
@@ -1602,10 +1606,10 @@
           (setq longp (string= (first op) "long"))
           (if (>= ip end) (return (sort result #'<))))))
 
-(defun %disassemble-bytecode (bytecode)
-  (let* ((length (length bytecode))
-         (labels (gather-labels bytecode 0 length))
-         (ip 0)
+(defun %disassemble-bytecode (bytecode start length)
+  (let* ((ip start)
+         (labels (gather-labels bytecode ip length))
+         (end (+ start length))
          (result nil)
          (longp nil)
          op)
@@ -1643,10 +1647,11 @@
                                  (incf ip nbytes)))))
                      result)
                (setq longp nil))))
-          (if (>= ip length) (return (nreverse result))))))
+          (if (>= ip end) (return (nreverse result))))))
 
-(defun disassemble-bytecode (bytecode literals)
-  (let ((dis (%disassemble-bytecode bytecode)))
+(defun disassemble-bytecode (bytecode literals
+                             &key (start 0) (length (length bytecode)))
+  (let ((dis (%disassemble-bytecode bytecode start length)))
     (flet ((textify-operand (thing)
              (destructuring-bind (kind value) thing
                (cond ((eq kind :constant) (format nil "'~s" (aref literals value)))
@@ -1689,9 +1694,12 @@
 (defun disassemble-bytecode-function (bcfunction)
   (let ((simple (core:function/entry-point bcfunction)))
     (when (typep simple 'core:global-bytecode-simple-fun)
-      (let ((module (core:global-bytecode-simple-fun/code simple)))
+      (let ((module (core:global-bytecode-simple-fun/code simple))
+            (start (core:global-bytecode-simple-fun/entry-pc-n simple))
+            (length (core:global-bytecode-simple-fun/bytecode-size simple)))
         (disassemble-bytecode (core:bytecode-module/bytecode module)
-                              (core:bytecode-module/literals module)))))
+                              (core:bytecode-module/literals module)
+                              :start start :length length))))
   (values))
 
 (export 'disassemble-bytecode-function)
