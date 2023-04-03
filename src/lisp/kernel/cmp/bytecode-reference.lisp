@@ -1649,40 +1649,57 @@
                (setq longp nil))))
           (if (>= ip end) (return (nreverse result))))))
 
-(defun disassemble-bytecode (bytecode literals
-                             &key (start 0) (length (length bytecode)))
-  (let ((dis (%disassemble-bytecode bytecode start length)))
+(defun disassemble-parse-key-args (name longp args literals)
+  ;; We special case this despite the keys-arg thing because it's
+  ;; just pretty weird all around.
+  (let* ((more-start (second (first args)))
+         (kci (second (second args)))
+         (aokp (logbitp (if longp 15 7) kci))
+         (key-count (logand kci (if longp #x7fff #x7f)))
+         (keystart (second (third args)))
+         (keys nil)
+         (framestart (second (fourth args))))
+    ;; Gather the keys
+    (do ((i 0 (1+ i)))
+        ((= i key-count) (setq keys (nreverse keys)))
+      (push (aref literals (+ keystart i)) keys))
+    ;; Print
+    (format t "~&  ~:[~;long ~]~a~:[~;-aok~] ~d ~d '~s ~d"
+            longp name aokp more-start key-count keys framestart)))
+
+(defvar *functions-to-disassemble*)
+
+(defun disassemble-bytecode (module
+                             &key (start 0) length (function-name nil fnp))
+  (let* ((bytecode (core:bytecode-module/bytecode module))
+         (literals (core:bytecode-module/literals module))
+         (length (or length (length bytecode)))
+         (dis (%disassemble-bytecode bytecode start length)))
     (flet ((textify-operand (thing)
              (destructuring-bind (kind value) thing
-               (cond ((eq kind :constant) (format nil "'~s" (aref literals value)))
+               (cond ((eq kind :constant)
+                      (let ((lit (aref literals value)))
+                        ;; This may not be the best place for this check,
+                        ;; but here we check for enclosed functions.
+                        (when (and (typep lit 'core:global-bytecode-simple-fun)
+                                   (eq (core:global-bytecode-simple-fun/code lit)
+                                       module)
+                                   (boundp '*functions-to-disassemble*))
+                          (push lit *functions-to-disassemble*))
+                        (format nil "'~s" (aref literals value))))
                      ((eq kind :label) (format nil "L~a" value))
                      ((eq kind :operand) (format nil "~d" value))
                      ;; :keys special cased below
                      (t (error "Illegal kind ~a" kind))))))
-      (format t "~&---module---~%")
+      (when fnp
+        (format t "function ~s~%" function-name))
       (dolist (item dis)
         (cond
           ((consp item)
            ;; instruction
            (destructuring-bind (name longp args) item
              (if (string= name "parse-key-args")
-                 ;; We special case this despite the keys-arg thing because it's
-                 ;; just pretty weird all around.
-                 (let* ((more-start (second (first args)))
-                        (kci (second (second args)))
-                        (aokp (logbitp (if longp 15 7) kci))
-                        (key-count (logand kci (if longp #x7fff #x7f)))
-                        (keystart (second (third args)))
-                        (keys nil)
-                        (framestart (second (fourth args))))
-                   ;; Gather the keys
-                   (do ((i 0 (1+ i)))
-                       ((= i key-count) (setq keys (nreverse keys)))
-                     (push (aref literals (+ keystart i)) keys))
-                   ;; Print
-                   (format t "~&  ~:[~;long ~]~a~:[~;-aok~] ~d ~d '~s ~d"
-                           longp name aokp more-start key-count keys framestart))
-                 ;; Normal case
+                 (disassemble-parse-key-args name longp args literals)
                  (format t "~&  ~:[~;long ~]~a~{ ~a~}~%"
                          longp name (mapcar #'textify-operand args)))))
           ((or (stringp item) (symbolp item))
@@ -1691,16 +1708,25 @@
           (t (error "Illegal item ~a" item))))))
   (values))
 
-(defun disassemble-bytecode-function (bcfunction)
-  (let ((simple (core:function/entry-point bcfunction)))
-    (when (typep simple 'core:global-bytecode-simple-fun)
-      (let ((module (core:global-bytecode-simple-fun/code simple))
-            (start (core:global-bytecode-simple-fun/entry-pc-n simple))
-            (length (core:global-bytecode-simple-fun/bytecode-size simple)))
-        (disassemble-bytecode (core:bytecode-module/bytecode module)
-                              (core:bytecode-module/literals module)
-                              :start start :length length))))
+(defun %disassemble-bytecode-function (bcfunction)
+  (let* ((simple (core:function/entry-point bcfunction))
+         (module (core:global-bytecode-simple-fun/code simple))
+         (start (core:global-bytecode-simple-fun/entry-pc-n simple))
+         (length (core:global-bytecode-simple-fun/bytecode-size simple)))
+    (disassemble-bytecode module
+                          :start start :length length
+                          :function-name (core:function-name bcfunction)))
   (values))
+
+(defun disassemble-bytecode-function (bcfunction)
+  (let ((disassembled-functions nil) ; prevent recursion
+        (*functions-to-disassemble* (list bcfunction)))
+    (loop (let ((fun (pop *functions-to-disassemble*)))
+            (unless (member fun disassembled-functions)
+              (push fun disassembled-functions)
+              (%disassemble-bytecode-function fun)))
+          (when (null *functions-to-disassemble*)
+            (return (values))))))
 
 (export 'disassemble-bytecode-function)
 
