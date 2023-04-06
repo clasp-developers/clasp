@@ -213,13 +213,13 @@ SYMBOL_EXPORT_SC_(KeywordPkg, name);
 #ifdef DEBUG_VIRTUAL_MACHINE
 __attribute__((optnone))
 #endif
-static gctools::return_type bytecode_vm(VirtualMachine& vm,
-                                        T_O** literals, T_O** closed,
-                                        Closure_O* closure,
-                                        core::T_O** fp, // frame pointer
-                                        core::T_O** sp, // stack pointer
-                                        size_t lcc_nargs,
-                                        core::T_O** lcc_args) {
+gctools::return_type bytecode_vm(VirtualMachine& vm,
+                                 T_O** literals, T_O** closed,
+                                 Closure_O* closure,
+                                 core::T_O** fp, // frame pointer
+                                 core::T_O** sp, // stack pointer
+                                 size_t lcc_nargs,
+                                 core::T_O** lcc_args) {
   ASSERT( literals==NULL || (uintptr_t)literals>65536);
   ASSERT((((uintptr_t)literals)&0x7)==0); // must be aligned
   ASSERT((((uintptr_t)closure)&0x7)==0); // must be aligned
