@@ -636,6 +636,9 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeModule_O"
              :layout-offset-field-names ("_CompileInfo")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeModule_O" :layout-offset-field-names ("_DebugInfo")}
 {class-kind :stamp-name "STAMPWTAG_chem__NumericalFunction_O"
             :stamp-key "chem::NumericalFunction_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
@@ -6302,6 +6305,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
              :offset-base-ctype "core::GlobalBytecodeSimpleFun_O"
              :layout-offset-field-names ("_EntryPcN")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_int" :offset-ctype "unsigned int"
+             :offset-base-ctype "core::GlobalBytecodeSimpleFun_O"
+             :layout-offset-field-names ("_BytecodeSize")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::GlobalBytecodeSimpleFun_O"
              :layout-offset-field-names ("_Trampoline")}
