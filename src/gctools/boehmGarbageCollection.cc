@@ -556,6 +556,10 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   }
   OutputStream << "Total object memory usage (bytes): " << std::setw(12) << totalSize << '\n';
 #endif
+  OutputStream << "Total number of JITDylibs:         " << cl__length(_lisp->_Roots._JITDylibs) << '\n';
+  OutputStream << "Total number of Libraries:         " << cl__length(_lisp->_Roots._AllLibraries) << '\n';
+  OutputStream << "Total number of ObjectFiles:       " << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
+  OutputStream << "Total number of CodeBlocks:        " << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
   OutputStream << "Total GC_get_heap_size():          " << std::setw(12) << GC_get_heap_size() << '\n';
   OutputStream << "Total GC_get_free_bytes():         " << std::setw(12) << GC_get_free_bytes() << '\n';
   OutputStream << "Total GC_get_bytes_since_gc():     " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
