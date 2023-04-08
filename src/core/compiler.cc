@@ -1126,8 +1126,13 @@ CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
   if (!ret) {
     return Values(nil<T_O>());
   } else {
-    return Values(SimpleBaseString_O::make(info.dli_fname), Pointer_O::create(info.dli_fbase),
-                  SimpleBaseString_O::make(info.dli_sname), Pointer_O::create(info.dli_saddr));
+    if (info.dli_sname != NULL && info.dli_saddr != NULL) {
+      return Values(SimpleBaseString_O::make(info.dli_fname), Pointer_O::create(info.dli_fbase),
+                    SimpleBaseString_O::make(info.dli_sname), Pointer_O::create(info.dli_saddr));
+    } else {
+      return Values(SimpleBaseString_O::make(info.dli_fname), Pointer_O::create(info.dli_fbase),
+                    SimpleBaseString_O::make("NULL"), Pointer_O::create(info.dli_saddr));
+    }
   }
 }
 
