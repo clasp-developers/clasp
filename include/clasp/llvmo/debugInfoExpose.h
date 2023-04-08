@@ -969,6 +969,7 @@ public:
  public:
   static DWARFContext_sp createDWARFContext(ObjectFile_sp);
   DWARFContext_O() : Base(), _ptr(NULL){};
+  DWARFContext_O(void* b) : Base(), _ptr((PointerToExternalType)b){};
   ~DWARFContext_O() {
     /* delete _ptr;*/
     _ptr = NULL;

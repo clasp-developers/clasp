@@ -228,8 +228,39 @@ struct to_object<llvm::FunctionCallee> {
 };
 ;
 
+namespace llvmo {
+FORWARD(MemoryBuffer);
+class MemoryBuffer_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::MemoryBuffer, MemoryBuffer_O, "MemoryBuffer", core::ExternalObject_O);
+  typedef llvm::MemoryBuffer ExternalType;
+  typedef llvm::MemoryBuffer *PointerToExternalType;
 
-  
+protected:
+  PointerToExternalType _ptr;
+
+public:
+public:
+  virtual void *externalObject() const {
+    return this->_ptr;
+  };
+  PointerToExternalType wrappedPtr() const {
+    return this->_ptr;
+  }
+
+public:
+  void set_wrapped(PointerToExternalType ptr) {
+    /* delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  MemoryBuffer_O() : Base(), _ptr(NULL){};
+  MemoryBuffer_O(void* buf) : Base(), _ptr((PointerToExternalType)buf){};
+  ~MemoryBuffer_O() {
+    /* delete _ptr;*/
+    _ptr = NULL;
+  }
+
+}; // Linker_O
+}; // llvmo
 
 namespace llvmo {
 FORWARD(Linker);

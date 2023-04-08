@@ -608,6 +608,16 @@ CL_DEFMETHOD core::List_sp LineTable_O::element(size_t index) const {
   return nil<core::T_O>();
 }
 
+
+
+CL_DEFUN void llvm_sys__dwarf_context_verify(DWARFContext_sp dwarfContext) {
+  llvm::raw_ostream &OS = llvm::errs();
+  dwarfContext->wrappedPtr()->verify(OS);
+}
+
+
+
+
 }; // llvmo, DWARFContext_O
 
 

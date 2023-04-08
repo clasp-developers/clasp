@@ -255,6 +255,16 @@ std::string Library_O::__repr__() const {
   return ss.str();
 };
 
+
+void Library_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
+    printf("%s:%d:%s for Library_O - resetting pointers for DWARFContext - make sure this works\n", __FILE__, __LINE__, __FUNCTION__ );
+    this->_MemoryBuffer = unbound<MemoryBuffer_O>();
+    this->_ObjectFile.release();
+    this->_DWARFContext = unbound<DWARFContext_O>();
+  }
+}
+
 }; // namespace llvmo, ObjectFile_O
 
 
@@ -332,6 +342,61 @@ Library_sp Library_O::make(bool executable, gctools::clasp_ptr_t start, gctools:
 
 std::string Library_O::filename() const {
   return this->_Name->get_std_string();
+}
+
+
+CL_DEFMETHOD DWARFContext_sp Library_O::getDwarfContext() {
+  if (this->_DWARFContext.unboundp()) {
+    std::string execPath = this->filename();
+  // Create a MemoryBuffer from the executable file
+    ErrorOr<std::unique_ptr<MemoryBuffer>> fileBuf =
+        MemoryBuffer::getFile(execPath);
+    if (!fileBuf) {
+      std::cerr << "Error: " << fileBuf.getError().message() << "\n";
+    }
+
+  // Get the file format based on the file extension
+    llvm::StringRef ext = llvm::sys::path::extension(execPath);
+    llvm::file_magic format = llvm::identify_magic(ext);
+
+  // Create an ObjectFile based on the file format
+    Expected<std::unique_ptr<llvm::object::ObjectFile>> objOrErr =
+        llvm::object::ObjectFile::createObjectFile(fileBuf.get()->getMemBufferRef(), format);
+    if (!objOrErr) {
+      std::cerr << "Error: " << toString(objOrErr.takeError()) << "\n";
+    }
+    std::unique_ptr<llvm::object::ObjectFile> obj = std::move(objOrErr.get());
+
+  // Create a DWARFContext from the ObjectFile
+    std::unique_ptr<llvm::DWARFContext> dwarfContext =
+        llvm::DWARFContext::create(*obj.get());
+    if (!dwarfContext) {
+      std::cerr << "Error: Failed to create DWARFContext\n";
+    }
+  // Use the DWARFContext to access debugging information
+  // ...
+
+#if 0
+    llvm::raw_ostream &OS = llvm::errs();
+    dwarfContext->verify(OS);
+#endif
+
+    void* rawFileBuf = fileBuf->release();
+    void* rawDwarfContext = dwarfContext.release();
+    printf("%s:%d:%s   rawFileBuf = %p    rawDwarfContext = %p\n", __FILE__, __LINE__, __FUNCTION__, rawFileBuf, rawDwarfContext );
+    auto claspFileBuf = gctools::GC<MemoryBuffer_O>::allocate(rawFileBuf);
+    auto claspDwarfContext = gctools::GC<DWARFContext_O>::allocate(rawDwarfContext);
+    this->_MemoryBuffer = claspFileBuf;
+    this->_ObjectFile.swap(obj);
+    this->_DWARFContext = claspDwarfContext;
+  } else {
+    printf("%s:%d:%s   rawFileBuf = %p    rawDwarfContext = %p\n", __FILE__, __LINE__, __FUNCTION__, this->_MemoryBuffer->wrappedPtr(), this->_DWARFContext->wrappedPtr());
+  }
+#if 0
+  llvm::raw_ostream &OS = llvm::errs();
+  this->_DWARFContext->wrappedPtr()->verify(OS);
+#endif
+  return this->_DWARFContext;
 }
 
 };
@@ -878,7 +943,14 @@ uintptr_t codeStart(core::T_sp codeOrLibrary) {
   }
   SIMPLE_ERROR("%s must be a Library or ObjectFile" , _rep_(codeOrLibrary) );
 }
-    
+
+CL_DEFUN core::T_sp llvm_sys__executable_and_libraries() {
+    core::T_sp allLibraries = _lisp->_Roots._AllLibraries.load();
+    return allLibraries;
+}
+
+
+
 };
 /*
 Copyright (c) 2014, Christian E. Schafmeister

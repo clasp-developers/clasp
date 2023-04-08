@@ -40,6 +40,8 @@ void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& bl);
 // ObjectFile_O
 namespace llvmo {
 
+FORWARD(DWARFContext);
+
 typedef enum { SaveState, RunState } CodeState_t;
 
   FORWARD(LibraryBase);
@@ -327,13 +329,20 @@ class Library_O : public CodeBase_O {
   uintptr_t _VtableStart;
   uintptr_t _VtableEnd;
   core::SimpleBaseString_sp _Name;
+  MemoryBuffer_sp _MemoryBuffer;
+  std::unique_ptr<llvm::object::ObjectFile> _ObjectFile;
+  DWARFContext_sp _DWARFContext;
  public:
-  Library_O(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd) : _Executable(executable), _Start(start), _End(end), _VtableStart(vtableStart), _VtableEnd(vtableEnd) {};
+  Library_O(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd) : _Executable(executable), _Start(start), _End(end), _VtableStart(vtableStart), _VtableEnd(vtableEnd)
+                                                                                                                               , _MemoryBuffer(unbound<MemoryBuffer_O>()), _DWARFContext(unbound<DWARFContext_O>()) {};
   static Library_sp make(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd, const std::string& name );
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
   std::string __repr__() const;
   uintptr_t codeStart() const { return (uintptr_t)this->_Start; };
   uintptr_t codeEnd() const { return (uintptr_t)this->_End; };
   std::string filename() const;
+  CL_DEFMETHOD bool executableP() const { return this->_Executable; };
+  DWARFContext_sp getDwarfContext();
 };
 };
 
