@@ -96,7 +96,9 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
     T_mv lookup = ht->gethash(key,nil<core::T_O>());
     if (mvn.second(lookup.number_of_values()).nilp()) {
       if (print) {
-        ss << filename << ":" << line << " Could not find key " << _rep_(key) << "\n";
+        HashGenerator hg;
+        cl_index index = ht->sxhashKey(key, ht->_Table.size(), hg );
+        ss << filename << ":" << line << " Could not find key " << _rep_(key) << "expected at " << index << "\n";
       } else {
         SIMPLE_ERROR(("Could not find key: %s") , _rep_(key) );
       }
@@ -791,7 +793,7 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   VERIFY_HASH_TABLE(this);
   HashGenerator hg;
   size_t sz = this->_Table.size();
-  cl_index index = this->sxhashKey(key, this->_Table.size(), hg );
+  cl_index index = this->sxhashKey(key, sz, hg );
   KeyValuePair* keyValuePair = this->tableRef_no_read_lock(key, false /*under_write_lock*/, index, hg);
   LOG("Found keyValueCons"); // % keyValueCons->__repr__() ); INFINITE-LOOP
   if (keyValuePair) {
