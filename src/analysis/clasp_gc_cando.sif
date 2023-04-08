@@ -110,11 +110,12 @@
                           "core::UserData_O" "core::ExternalObject_O" "llvmo::DINode_O"
                           "llvmo::GlobalVariable_O" "core::BroadcastStream_O" "chem::FFBaseDb_O"
                           "chem::AbstractLargeSquareMatrix_O" "core::General_O"
-                          "llvmo::ObjectFile_O" "chem::ConformationExplorerMatch_O"
-                          "llvmo::Library_O" "core::Closure_O" "core::ComplexVector_size_t_O"
-                          "chem::RestraintAngle_O" "chem::ChemExposer_O" "chem::EnergyStretch"
-                          "chem::CandoDatabase_O" "comp::RestoreSPFixup_O" "chem::SpanningInfo_O"
-                          "mpip::Mpi_O" "llvmo::DINodeArray_O" "llvmo::ConstantDataArray_O"
+                          "llvmo::MemoryBuffer_O" "llvmo::ObjectFile_O"
+                          "chem::ConformationExplorerMatch_O" "llvmo::Library_O" "core::Closure_O"
+                          "core::ComplexVector_size_t_O" "chem::RestraintAngle_O"
+                          "chem::ChemExposer_O" "chem::EnergyStretch" "chem::CandoDatabase_O"
+                          "comp::RestoreSPFixup_O" "chem::SpanningInfo_O" "mpip::Mpi_O"
+                          "llvmo::DINodeArray_O" "llvmo::ConstantDataArray_O"
                           "llvmo::TargetOptions_O" "core::Instance_O" "chem::CDText_O"
                           "chem::MessageReport_O" "core::SmallMap_O" "clasp_ffi::ForeignTypeSpec_O"
                           "chem::BondTest_O" "core::Unused_dummy_O" "chem::EnergyChiralRestraint"
@@ -3781,6 +3782,15 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleBaseString_O>"
              :offset-base-ctype "llvmo::Library_O" :layout-offset-field-names ("_Name")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<llvmo::MemoryBuffer_O>"
+             :offset-base-ctype "llvmo::Library_O" :layout-offset-field-names ("_MemoryBuffer")}
+{fixed-field :offset-type-cxx-identifier "CXX_FIXUP_OFFSET"
+             :offset-ctype "std::unique_ptr<llvm::object::ObjectFile,std::default_delete<llvm::object::ObjectFile>>"
+             :offset-base-ctype "llvmo::Library_O" :layout-offset-field-names ("_ObjectFile")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<llvmo::DWARFContext_O>"
+             :offset-base-ctype "llvmo::Library_O" :layout-offset-field-names ("_DWARFContext")}
 {class-kind :stamp-name "STAMPWTAG_chem__InfoDb_O" :stamp-key "chem::InfoDb_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -9126,6 +9136,14 @@
              :offset-base-ctype "llvmo::Triple_O" :layout-offset-field-names ("_Class")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "llvmo::Triple_O" :layout-offset-field-names ("_ptr")}
+{class-kind :stamp-name "STAMPWTAG_llvmo__MemoryBuffer_O" :stamp-key "llvmo::MemoryBuffer_O"
+            :parent-class "core::ExternalObject_O" :lisp-class-base "core::ExternalObject_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Instance_O>"
+             :offset-base-ctype "llvmo::MemoryBuffer_O" :layout-offset-field-names ("_Class")}
+{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "llvmo::MemoryBuffer_O" :layout-offset-field-names ("_ptr")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__LLVMContext_O" :stamp-key "llvmo::LLVMContext_O"
             :parent-class "core::ExternalObject_O" :lisp-class-base "core::ExternalObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
