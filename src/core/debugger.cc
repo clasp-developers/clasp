@@ -31,10 +31,6 @@ THE SOFTWARE.
 #include <execinfo.h>
 #include <iomanip>
 #include <clasp/core/foundation.h>
-#ifdef USE_LIBUNWIND
-#define UNW_LOCAL_ONLY
-#include <libunwind.h>
-#endif
 #include <dlfcn.h>
 #ifdef _TARGET_OS_DARWIN
 #include <sys/mman.h>
