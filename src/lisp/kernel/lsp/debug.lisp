@@ -279,7 +279,7 @@ The delimiters and visibility may be ignored by using the lower level FRAME-UP, 
   `(call-with-stack (lambda (,stack) (declare (core:lambda-name with-stack-lambda)) ,@body)
                     ,@kwargs))
 
-(defparameter *frame-filters* (list 'non-lisp-frame-p
+(defparameter *frame-filters* (list 'c++-frame-p
                                     'redundant-xep-p
                                     'package-hider
                                     'fname-hider)
@@ -393,8 +393,8 @@ Note that as such, the frame returned may not be visible."
 
 ;;; Some filters
 
-(defun non-lisp-frame-p (frame)
-  (not (eq (frame-language frame) :lisp)))
+(defun c++-frame-p (frame)
+  (eq (frame-language frame) :c++))
 
 ;;; With how Clasp works at this time, any given Lisp function has two "real"
 ;;; functions - an eXternal Entry Point (XEP), and a "local function". The XEP
