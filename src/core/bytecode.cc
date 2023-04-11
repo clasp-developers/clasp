@@ -282,10 +282,12 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       T_O* func = *(vm.stackref(sp, nargs));
       T_O** args = vm.stackref(sp, nargs-1);
       ASSERT(gctools::tagged_generalp<T_O*>(func));
+      vm.push(sp, (T_O*)pc);
+      vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
       multipleValues.setN(res.raw_(),res.number_of_values());
-      vm.drop(sp, nargs+1);
+      vm.drop(sp, nargs+2);
       pc++;
       break;
     }
@@ -303,9 +305,11 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
         VM_RECORD_PLAYBACK(args[ii],name_args.str().c_str() );
       }
 #endif
+      vm.push(sp, (T_O*)pc);
+      vm._pc = pc;
       vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.drop(sp, nargs+1);
+      vm.drop(sp, nargs+2);
       vm.push(sp, res.raw_());
       VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
       pc++;
@@ -317,9 +321,11 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("call-receive-fixed %" PRIu8 " %" PRIu8 "\n", nargs, nvals);
       T_O* func = *(vm.stackref(sp, nargs));
       T_O** args = vm.stackref(sp, nargs-1);
+      vm.push(sp, (T_O*)pc);
+      vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.drop(sp, nargs+1);
+      vm.drop(sp, nargs+2);
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
@@ -660,8 +666,11 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       size_t nargs = multipleValues.getSize();
       T_O* args[nargs];
       multipleValues.saveToTemp(nargs, args);
+      vm.push(sp, (T_O*)pc);
+      vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm.drop(sp, 1); // pc
       multipleValues.setN(res.raw_(),res.number_of_values());
       pc++;
       break;
@@ -672,8 +681,11 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       size_t nargs = multipleValues.getSize();
       T_O* args[nargs];
       multipleValues.saveToTemp(nargs, args);
+      vm.push(sp, (T_O*)pc);
+      vm._pc = pc;
       vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm.drop(sp, 1); // pc
       multipleValues.set1(res);
       vm.push(sp, res.raw_());
       pc++;
@@ -686,8 +698,11 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       size_t nargs = multipleValues.getSize();
       T_O* args[nargs];
       multipleValues.saveToTemp(nargs, args);
+      vm.push(sp, (T_O*)pc);
+      vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+      vm.drop(sp, 1); // pc
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
@@ -905,10 +920,12 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     DBG_VM1("long call %" PRIu16 "\n", nargs);
     T_O* func = *(vm.stackref(sp, nargs));
     T_O** args = vm.stackref(sp, nargs-1);
+    vm.push(sp, (T_O*)pc);
+    vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
     multipleValues.setN(res.raw_(),res.number_of_values());
-    vm.drop(sp, nargs+1);
+    vm.drop(sp, nargs+2);
     pc += 3;
     break;
   }
@@ -927,9 +944,11 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
       VM_RECORD_PLAYBACK(args[ii],name_args.str().c_str() );
     }
 #endif
+    vm.push(sp, (T_O*)pc);
+    vm._pc = pc;
     vm._stackPointer = sp;
     T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    vm.drop(sp, nargs+1);
+    vm.drop(sp, nargs+2);
     vm.push(sp, res.raw_());
     VM_RECORD_PLAYBACK(res.raw_(),"vm_call_receive_one");
     pc += 3;
@@ -943,9 +962,11 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     DBG_VM("long call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
     T_O* func = *(vm.stackref(sp, nargs));
     T_O** args = vm.stackref(sp, nargs-1);
+    vm.push(sp, (T_O*)pc);
+    vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    vm.drop(sp, nargs+1);
+    vm.drop(sp, nargs+2);
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
@@ -1166,8 +1187,11 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     size_t nargs = multipleValues.getSize();
     T_O* args[nargs];
     multipleValues.saveToTemp(nargs, args);
+    vm.push(sp, (T_O*)pc);
+    vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
+    vm.drop(sp, 1); // pc
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
@@ -1223,7 +1247,9 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
 }
 
 void VMFrameDynEnv_O::proceed() {
-  my_thread->_VM._stackPointer = this->old_sp;
+  VirtualMachine& vm = my_thread->_VM;
+  vm._stackPointer = this->old_sp;
+  vm._framePointer = this->old_fp;
 }
 
 }; // namespace core
@@ -1252,10 +1278,13 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // use a local variable. This means we start new frames appropriately when
   // we're called from wherever, and also that we use the correct sp when
   // being unwound to.
-  core::T_O** fp = vm._stackPointer;
+  core::T_O** old_fp = vm._framePointer;
+  core::T_O** old_sp = vm._stackPointer;
+  vm.push(vm._stackPointer, (core::T_O*)old_fp);
+  core::T_O** fp = vm._framePointer = vm._stackPointer;
   core::T_O** sp = vm.push_frame(fp, nlocals);
   try {
-    gctools::StackAllocate<core::VMFrameDynEnv_O> frame(fp);
+    gctools::StackAllocate<core::VMFrameDynEnv_O> frame(old_sp, old_fp);
     gctools::StackAllocate<core::Cons_O> sa_ec(frame.asSmartPtr(),
                                                my_thread->dynEnvStackGet());
     core::DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
@@ -1287,5 +1316,26 @@ CL_DEFUN void core__vm_stack_trigger(size_t trigger) {
   global_stackTrigger = trigger;
 }
 #endif
+
+bool bytecode_module_contains_address_p(BytecodeModule_sp module, void* pc) {
+  // FIXME: Not sure if this is the best way to go about it.
+  Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
+  void* start = bytecode->rowMajorAddressOfElement_(0);
+  void* end = (byte8_t*)start + bytecode->length() * sizeof(byte8_t);
+  return (start <= pc) && (pc <= end);
+}
+
+bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp fun,
+                                          void* pc) {
+  BytecodeModule_sp module = fun->code();
+  Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
+  void* start = bytecode->rowMajorAddressOfElement_(fun->entryPcN());
+  void* end = (byte8_t*)bytecode->rowMajorAddressOfElement_(fun->entryPcN() + fun->bytecodeSize()) + sizeof(byte8_t);
+  return (start <= pc) && (pc <= end);
+}
+
+void* bytecode_pc() {
+  return my_thread->_VM._pc;
+}
 
 }; // namespace core

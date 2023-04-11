@@ -260,6 +260,8 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::VMFrameDynEnv_O" :layout-offset-field-names ("old_sp")}
+{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "core::VMFrameDynEnv_O" :layout-offset-field-names ("old_fp")}
 {class-kind :stamp-name "STAMPWTAG_core__UnwindProtectDynEnv_O"
             :stamp-key "core::UnwindProtectDynEnv_O" :parent-class "core::DynEnv_O"
             :lisp-class-base "core::DynEnv_O" :root-class "core::T_O" :stamp-wtag 3

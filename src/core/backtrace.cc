@@ -7,6 +7,7 @@
 #include <clasp/core/pointer.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/function.h> // function description stuff
+#include <clasp/core/bytecode.h> // for bytecode frames
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/code.h>
@@ -442,6 +443,48 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex,
                                INTERN_(kw, lisp), XEPp);
 }
 
+static DebuggerFrame_sp make_bytecode_frame_from_function(GlobalBytecodeSimpleFun_sp fun, void* bpc) {
+  // We can get the closure easy if the function actually isn't one.
+  // Otherwise we'd have to poke through bytecode_vm arguments or maybe
+  // the vm stack?
+  T_sp closure = (fun->environmentSize() == 0) ? (T_sp)fun : nil<T_O>();
+  return DebuggerFrame_O::make(fun->functionName(), Pointer_O::create(bpc),
+                               nil<T_O>(), fun->fdesc(), closure, nil<T_O>(),
+                               false, INTERN_(kw, bytecode), false);
+                               
+}
+
+static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex,
+                                            unsigned char*& pc,
+                                            T_O**& fp) {
+  // Get the PC and frame pointer for the next frame.
+  void* bpc = pc;
+  if (fp) {// null fp means we've hit the end.
+    // PC was pushed just before the frame pointer.
+    pc = (unsigned char*)(*(fp - 1));
+    fp = (T_O**)(*fp);
+  }
+  // Find the bytecode module containing the current pc.
+  List_sp modules = core::_sym_STARallBytecodeModulesSTAR->symbolValue();
+  for (auto mods : modules) {
+    BytecodeModule_sp mod = gc::As_assert<BytecodeModule_sp>(oCar(mods));
+    if (bytecode_module_contains_address_p(mod, bpc)) {
+      for (auto fung : *(gc::As<SimpleVector_sp>(mod->debugInfo()))) {
+        GlobalBytecodeSimpleFun_sp fun = gc::As_assert<GlobalBytecodeSimpleFun_sp>(fung);
+        if (bytecode_function_contains_address_p(fun, bpc))
+          // Here we go.
+          return make_bytecode_frame_from_function(fun, bpc);
+      }
+      break; // should be impossible, but we don't want to err in backtrace
+    }
+  }
+  printf("Could not find bytecode module\n");
+  return DebuggerFrame_O::make(INTERN_(kw, bytecode), Pointer_O::create(bpc),
+                               nil<T_O>(), nil<T_O>(), nil<T_O>(),
+                               nil<T_O>(), false, INTERN_(kw, bytecode),
+                               false);
+}
+
 bool maybe_demangle(const std::string& fnName, std::string& output)
 {
   char *funcname = (char *)malloc(1024);
@@ -469,7 +512,7 @@ bool maybe_demangle(const std::string& fnName, std::string& output)
   return false;
 }
 
-static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring) {
+static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring, unsigned char*& bytecode_pc, T_O**& bytecode_fp) {
   MaybeTrace trace(__FUNCTION__);
 #ifdef USE_LIBUNWIND
   std::string linkname(cstring);
@@ -512,6 +555,10 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring)
   if (!(maybe_demangle(linkname, name)))
     // couldn't demangle, so just use the unadulterated string
     name = linkname;
+  // Look for bytecode frames.
+  // NOTE: This is a little fragile. Beware.
+  if (name == "bytecode_call")
+    return make_bytecode_frame(fi, bytecode_pc, bytecode_fp);
   T_sp lname = SimpleBaseString_O::make(name);
   D(printf("%s%s:%d:%s lname %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, name.c_str() ););
   return DebuggerFrame_O::make(lname, Pointer_O::create(ip),
@@ -520,10 +567,10 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring)
                                false);
 }
 
-static DebuggerFrame_sp make_frame(size_t fi, void* absolute_ip, const char* string, void* fbp) {
+static DebuggerFrame_sp make_frame(size_t fi, void* absolute_ip, const char* string, void* fbp, unsigned char*& bytecode_pc, T_O**& bytecode_fp) {
   MaybeTrace trace(__FUNCTION__);
   T_sp of = llvmo::only_object_file_for_instruction_pointer(absolute_ip);
-  if (of.nilp()) return make_cxx_frame(fi, absolute_ip, string);
+  if (of.nilp()) return make_cxx_frame(fi, absolute_ip, string, bytecode_pc, bytecode_fp);
   // The absolute_ip is in an ObjectFile_O object - so it must be a lisp frame
   else return make_lisp_frame(fi, absolute_ip, string, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
 }
@@ -598,6 +645,11 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
 
   int resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
   int resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+
+  VirtualMachine& vm = my_thread->_VM;
+  unsigned char* bytecode_pc = vm._pc;
+  T_O** bytecode_fp = vm._framePointer;
+  
   if (resip || resbp) {
     fprintf(stderr, "%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
   }
@@ -618,7 +670,7 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
     // as happens with return instructions sometimes.
     --ip;
     std::string sstring = lu_procname(&cursor)->get_std_string();
-    DebuggerFrame_sp frame = make_frame( fi++, (void*)ip, sstring.c_str(), (void*)fbp, false );
+    DebuggerFrame_sp frame = make_frame( fi++, (void*)ip, sstring.c_str(), (void*)fbp, bytecode_pc, bytecode_fp );
     frame->down = prev;
     prev->up = frame;
     prev = frame;
@@ -675,6 +727,11 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func ) {
   MaybeTrace trace(__FUNCTION__);
   size_t num = START_BACKTRACE_SIZE;
   void** buffer = (void**)calloc(sizeof(void*), num);
+
+  VirtualMachine& vm = my_thread->_VM;
+  unsigned char* bytecode_pc = vm._pc;
+  T_O** bytecode_fp = vm._framePointer;
+  
   for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
     size_t returned = backtrace(buffer,num);
     if (returned < num) {
@@ -682,7 +739,8 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func ) {
       void* fbp = __builtin_frame_address(0); // TODO later
       uintptr_t bplow = (uintptr_t)&fbp;
       uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
-      DebuggerFrame_sp bot = make_frame(0, buffer[0], strings[0], fbp);
+      DebuggerFrame_sp bot = make_frame(0, buffer[0], strings[0], fbp,
+                                        bytecode_pc, bytecode_fp);
       DebuggerFrame_sp prev = bot;
       void* newfbp;
       for (size_t j = 1; j < returned; ++j) {
@@ -705,7 +763,8 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func ) {
         // function, as happens with return instructions at times.
         void* absolute_ip = (void*)((uintptr_t)buffer[j] - 1);
         D(printf("%s%s:%d:%s top-frame[%lu] absolute_ip = %p %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, j, absolute_ip, strings[j] ););
-        DebuggerFrame_sp frame = make_frame(j, absolute_ip, strings[j], fbp);
+        DebuggerFrame_sp frame = make_frame(j, absolute_ip, strings[j], fbp,
+                                            bytecode_pc, bytecode_fp);
         frame->down = prev;
         prev->up = frame;
         prev = frame;
