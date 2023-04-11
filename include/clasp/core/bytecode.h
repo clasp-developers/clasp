@@ -37,14 +37,17 @@ public:
   Literals_sp_Type                   _Literals;
   Bytecode_sp_Type                   _Bytecode;
   T_sp                               _CompileInfo;
-  T_sp                               _DebugInfo;
+  T_sp                               _DebugInfo = nil<T_O>();
 
 public:
+  BytecodeModule_O() {};
   CL_LISPIFY_NAME(BytecodeModule/make)
   CL_DEF_CLASS_METHOD
   static BytecodeModule_sp make() {
     // When we can gc code allocate entire block in GC memory
     BytecodeModule_sp codeblock = gctools::GC<BytecodeModule_O>::allocate<gctools::RuntimeStage>();
+    // Register the new module for the debugger
+    codeblock->register_for_debug();
     return codeblock;
   };
 
@@ -57,7 +60,9 @@ public:
   CL_LISPIFY_NAME(BytecodeModule/debugInfo)
   CL_DEFMETHOD T_sp debugInfo() const { return this->_DebugInfo; }
   void setf_debugInfo(T_sp info) { this->_DebugInfo = info; }
-  BytecodeModule_O() {};
+
+  // Add the module to *all-bytecode-modules* for the debugger.
+  void register_for_debug();
 };
 
 // Dynenv used for VM call frames to ensure the unwinder properly

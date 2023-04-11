@@ -901,12 +901,6 @@ SimpleVector_byte8_t_sp Module_O::link() {
   return cmodule->create_bytecode();
 }
 
-void register_bytecode_module(BytecodeModule_sp mod) {
-  T_sp old = core::_sym_STARallBytecodeModulesSTAR->symbolValue();
-  Cons_sp c = Cons_O::create(mod, old);
-  core::_sym_STARallBytecodeModulesSTAR->setf_symbolValue(c);
-}
-
 void Module_O::link_load(T_sp compile_info) {
   Module_sp cmodule = this->asSmartPtr();
   SimpleVector_byte8_t_sp bytecode = cmodule->link();
@@ -917,8 +911,7 @@ void Module_O::link_load(T_sp compile_info) {
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   SimpleVector_sp functions = SimpleVector_O::make(cfunctions->length());
   size_t function_index = 0;
-  // Register the bytecode module for the debugger.
-  register_bytecode_module(bytecode_module);
+  // Set up info the debugger can use.
   bytecode_module->setf_debugInfo(functions);
   // Create the real function objects.
   for (T_sp tfun : *cfunctions) {
