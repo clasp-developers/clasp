@@ -303,11 +303,6 @@ SYMBOL_EXPORT_SC_(CorePkg, dump_module);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_notinlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, coerce_fdesignator);
-// This is a list of all bytecode modules created so far. It is used for
-// keeping track of debug information, similar to _Roots._AllObjectFiles.
-// NOTE: If we could garbage collect code, this would need to be full of
-// weak references to let modules ever be collectable.
-SYMBOL_EXPORT_SC_(CorePkg, STARallBytecodeModulesSTAR);
 SYMBOL_SC_(CorePkg, printf);
 
 // SYMBOL_EXPORT_SC_(CorePkg, asin);
@@ -1201,7 +1196,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARbuiltin_single_dispatch_method_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_macro_function_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_setf_function_namesSTAR->defparameter(nil<core::T_O>());
-  _sym_STARallBytecodeModulesSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_hash_tableSTAR->defparameter(nil<core::T_O>());

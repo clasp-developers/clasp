@@ -465,7 +465,7 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex,
     fp = (T_O**)(*fp);
   }
   // Find the bytecode module containing the current pc.
-  List_sp modules = core::_sym_STARallBytecodeModulesSTAR->symbolValue();
+  List_sp modules = _lisp->_Roots._AllBytecodeModules.load();
   for (auto mods : modules) {
     BytecodeModule_sp mod = gc::As_assert<BytecodeModule_sp>(oCar(mods));
     if (bytecode_module_contains_address_p(mod, bpc)) {

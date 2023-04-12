@@ -79,14 +79,10 @@ void BytecodeModule_O::setf_compileInfo(T_sp o) {
 
 void BytecodeModule_O::register_for_debug() {
   // An atomic push, as the variable is shared.
-  T_sp old = core::_sym_STARallBytecodeModulesSTAR->symbolValue();
+  T_sp old = _lisp->_Roots._AllBytecodeModules.load();
   Cons_sp newc = Cons_O::create(this->asSmartPtr(), old);
-  while (true) {
-    T_sp next = core::_sym_STARallBytecodeModulesSTAR->cas_globalValue(old, newc);
-    if (next == old) break;
-    old = next;
+  while (!_lisp->_Roots._AllBytecodeModules.compare_exchange_weak(old, newc))
     newc->setCdr(old);
-  }
 }
 
 static inline int16_t read_s16(unsigned char* pc) {
