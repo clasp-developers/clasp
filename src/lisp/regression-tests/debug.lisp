@@ -151,7 +151,25 @@
                  (return (clasp-debug:frame-function-documentation frame))))
              stack)))
          nil))
-      ("Dummy function for use in tests."))
+  ("Dummy function for use in tests."))
+
+;;; And now for bytecode frames.
+(test bytecode-frame-function-name
+  (progn
+    (funcall (cmp:bytecompile
+              '(lambda ()
+                (defun bc2 ()
+                  (let ((frames nil))
+                    (clasp-debug:map-backtrace
+                     (lambda (frame)
+                       (when (eq (clasp-debug:frame-language frame)
+                                 :bytecode)
+                         (push (clasp-debug:frame-function-name frame)
+                               frames))))
+                    frames))
+                (defun bc1 () (bc2)))))
+   (last (funcall (fdefinition 'bc1)) 2)) ; avoid compiler warning, hopefully
+  ((bc1 bc2)))
 
 ;;; ...that print errors don't escape print-backtrace
 ;;; Note that this result is meaningless if frame-arguments fails.
