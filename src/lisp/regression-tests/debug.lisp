@@ -171,6 +171,18 @@
    (last (funcall (fdefinition 'bc1)) 2)) ; avoid compiler warning, hopefully
   ((bc1 bc2)))
 
+(test bytecode-frame-locals
+  (progn
+    (funcall (cmp:bytecompile
+              '(lambda ()
+                (defun bcl (x)
+                  (clasp-debug:map-backtrace
+                   (lambda (frame)
+                     (when (eq (clasp-debug:frame-function-name frame) 'bcl)
+                       (return-from bcl (clasp-debug:frame-locals frame)))))))))
+    (bcl 137))
+  (((x . 137))))
+
 ;;; ...that print errors don't escape print-backtrace
 ;;; Note that this result is meaningless if frame-arguments fails.
 (defclass unprintable-object () ())
