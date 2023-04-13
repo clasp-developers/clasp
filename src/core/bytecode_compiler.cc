@@ -850,6 +850,47 @@ size_t Module_O::bytecode_size() {
   return last_cfunction->pposition() + last_cfunction->final_size();
 }
 
+
+// Resolve the labels to fixnums, and LVInfos to frame locations.
+// If a variable is stored in a cell, we indicate this by wrapping its
+// frame location in a cons.
+static void resolve_debug_vars(BytecodeDebugVars_sp info) {
+  T_sp open_label = info->start();
+  if (gc::IsA<Label_sp>(open_label))
+    info->setStart(clasp_make_fixnum(gc::As_unsafe<Label_sp>(open_label)->module_position()));
+  else // compiler screwed up, but this is just debug info, don't raise stink
+    info->setStart(clasp_make_fixnum(0));
+  T_sp close_label = info->end();
+  if (gc::IsA<Label_sp>(close_label))
+    info->setEnd(clasp_make_fixnum(gc::As_unsafe<Label_sp>(close_label)->module_position()));
+  else
+    info->setEnd(clasp_make_fixnum(0));
+  for (Cons_sp cur : info->bindings()) {
+    T_sp tentry = cur->ocar();
+    if (gc::IsA<Cons_sp>(tentry)) {
+      Cons_sp entry = gc::As_unsafe<Cons_sp>(tentry);
+      T_sp tlvinfo = entry->cdr();
+      if (gc::IsA<LexicalVarInfo_sp>(tlvinfo)) {
+        LexicalVarInfo_sp lvinfo = gc::As_unsafe<LexicalVarInfo_sp>(tlvinfo);
+        T_sp index = clasp_make_fixnum(lvinfo->frameIndex());
+        if (lvinfo->indirectLexicalP())
+          entry->setCdr(Cons_O::createList(index));
+        else
+          entry->setCdr(index);
+      }
+    }
+  }
+}
+
+
+void Module_O::resolve_debug_info() {
+  // Replace all labels.
+  for (T_sp info : *(this->debugInfo())) {
+    if (gc::IsA<BytecodeDebugVars_sp>(info))
+      resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
+  }
+}
+
 // Replacement for CL:REPLACE, which isn't available here.
 static void replace_bytecode(SimpleVector_byte8_t_sp dest, ComplexVector_byte8_t_sp src, size_t start1, size_t start2,
                              size_t end2) {
@@ -906,38 +947,8 @@ SimpleVector_byte8_t_sp Module_O::link() {
   Module_sp cmodule = this->asSmartPtr();
   cmodule->initialize_cfunction_positions();
   cmodule->resolve_fixup_sizes();
+  cmodule->resolve_debug_info();
   return cmodule->create_bytecode();
-}
-
-// Resolve the labels to fixnums, and LVInfos to frame locations.
-// If a variable is stored in a cell, we indicate this by wrapping its
-// frame location in a cons.
-static void fixup_debug_info(BytecodeDebugVars_sp info) {
-  T_sp open_label = info->start();
-  if (gc::IsA<Label_sp>(open_label))
-    info->setStart(clasp_make_fixnum(gc::As_unsafe<Label_sp>(open_label)->module_position()));
-  else // compiler screwed up, but this is just debug info, don't raise stink
-    info->setStart(clasp_make_fixnum(0));
-  T_sp close_label = info->end();
-  if (gc::IsA<Label_sp>(close_label))
-    info->setEnd(clasp_make_fixnum(gc::As_unsafe<Label_sp>(close_label)->module_position()));
-  else
-    info->setEnd(clasp_make_fixnum(0));
-  for (Cons_sp cur : info->bindings()) {
-    T_sp tentry = cur->ocar();
-    if (gc::IsA<Cons_sp>(tentry)) {
-      Cons_sp entry = gc::As_unsafe<Cons_sp>(tentry);
-      T_sp tlvinfo = entry->cdr();
-      if (gc::IsA<LexicalVarInfo_sp>(tlvinfo)) {
-        LexicalVarInfo_sp lvinfo = gc::As_unsafe<LexicalVarInfo_sp>(tlvinfo);
-        T_sp index = clasp_make_fixnum(lvinfo->frameIndex());
-        if (lvinfo->indirectLexicalP())
-          entry->setCdr(Cons_O::createList(index));
-        else
-          entry->setCdr(index);
-      }
-    }
-  }
 }
 
 void Module_O::link_load(T_sp compile_info) {
@@ -992,10 +1003,6 @@ void Module_O::link_load(T_sp compile_info) {
     T_sp info = (*cmodule_debug_info)[i];
     if (gc::IsA<Cfunction_sp>(info))
       (*debug_info)[i] = gc::As_unsafe<Cfunction_sp>(info)->info();
-    else if (gc::IsA<BytecodeDebugVars_sp>(info)) {
-      fixup_debug_info(gc::As_unsafe<BytecodeDebugVars_sp>(info));
-      (*debug_info)[i] = info;
-    }
     else
       (*debug_info)[i] = info;
   }

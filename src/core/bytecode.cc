@@ -1343,13 +1343,16 @@ bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp fun,
 }
 
 T_sp bytecode_function_for_pc(BytecodeModule_sp module, void* pc) {
-  for (auto info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
-    if (gc::IsA<GlobalBytecodeSimpleFun_sp>(info)
-        && bytecode_function_contains_address_p(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(info), pc))
-      return info;
-  }
+  T_sp debuginfo = module->debugInfo();
+  if (debuginfo.notnilp()) {
+    for (auto info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
+      if (gc::IsA<GlobalBytecodeSimpleFun_sp>(info)
+          && bytecode_function_contains_address_p(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(info), pc))
+        return info;
+    }
   // Should be impossible, but we don't want to err while a backtrace
   // is getting put together. TODO: Issue warning?
+  }
   return nil<T_O>();
 }
 

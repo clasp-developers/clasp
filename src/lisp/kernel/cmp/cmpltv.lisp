@@ -214,13 +214,19 @@
 
 #+clasp
 (defclass spi-attr (attribute)
-  ((%name :initarg :name
-          :initform (ensure-constant "clasp:source-pos-info"))
+  ((%name :initform (ensure-constant "clasp:source-pos-info"))
    (%function :initarg :function :reader spi-attr-function :type creator)
    (%pathname :initarg :pathname :reader spi-attr-pathname :type creator)
    (%lineno :initarg :lineno :reader lineno :type (unsigned-byte 64))
    (%column :initarg :column :reader column :type (unsigned-byte 64))
    (%filepos :initarg :filepos :reader filepos :type (unsigned-byte 64))))
+
+#+clasp
+(defclass module-debug-attr (attribute)
+  ((%name :initform (ensure-constant "clasp:module-debug-info"))
+   (%module :initarg :module :reader module :type creator)
+   (%cfunctions :initarg :cfunctions :reader cfunctions :type sequence)
+   (%vars :initarg :vars :reader vars :type sequence)))
 
 ;;;
 
@@ -642,7 +648,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 7)
+(defparameter *minor-version* 8)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -1016,7 +1022,8 @@
    (%nlocals :initarg :nlocals :reader nlocals :type (unsigned-byte 16))
    (%nclosed :initarg :nclosed :reader nclosed :type (unsigned-byte 16))
    (%entry-point :initarg :entry-point :reader entry-point
-                 :type (unsigned-byte 32))))
+                 :type (unsigned-byte 32))
+   (%size :initarg :size :reader size :type (unsigned-byte 32))))
 
 (defmethod add-constant ((value cmp:cfunction))
   (let ((inst
@@ -1032,7 +1039,8 @@
              :nlocals (cmp:cfunction/nlocals value)
              :nclosed (length (cmp:cfunction/closed value))
              :entry-point (cmp:annotation/module-position
-                           (cmp:cfunction/entry-point value))))))
+                           (cmp:cfunction/entry-point value))
+             :size (cmp:cfunction/final-size value)))))
     #+clasp ; source info
     (let ((cspi core:*current-source-pos-info*))
       (add-instruction
@@ -1053,6 +1061,7 @@
   (write-mnemonic 'make-bytecode-function stream)
   (write-index inst stream)
   (write-b32 (entry-point inst) stream)
+  (write-b32 (size inst) stream)
   (write-b16 (nlocals inst) stream)
   (write-b16 (nclosed inst) stream)
   (write-index (module inst) stream)
@@ -1075,6 +1084,16 @@
    (%literals :initarg :literals :reader setf-literals-literals
               :type simple-vector)))
 
+(defun process-debug-vars (item)
+  (list (core:bytecode-debug-vars/start item)
+        (core:bytecode-debug-vars/end item)
+        (loop for (var . index) in (core:bytecode-debug-vars/bindings item)
+              for cvar = (ensure-constant var)
+              if (consp index)
+                collect (list cvar t (car index))
+              else
+                collect (list cvar nil index))))
+
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
   (let ((mod
@@ -1088,6 +1107,18 @@
      (make-instance 'setf-literals
        :module mod :literals (map 'simple-vector #'ensure-constant
                                   (cmp:module/literals value))))
+    #+clasp ; debug info
+    (let ((info (cmp:module/debug-info value)))
+      (when info
+        (add-instruction
+         (make-instance 'module-debug-attr
+           :module mod
+           :cfunctions (loop for item across info
+                             when (typep item 'cmp:cfunction)
+                               collect (ensure-constant item))
+           :vars (loop for item across info
+                       when (typep item 'core:bytecode-debug-vars)
+                         collect (process-debug-vars item))))))
     mod))
 
 (defmethod encode ((inst bytemodule-creator) stream)
@@ -1125,6 +1156,35 @@
   (write-b64 (lineno attr) stream)
   (write-b64 (column attr) stream)
   (write-b64 (filepos attr) stream))
+
+#+clasp
+(defmethod encode ((attr module-debug-attr) stream)
+  (let* ((cfunctions (cfunctions attr))
+         (ncfunctions (length cfunctions))
+         (vars (vars attr)))
+    ;; Write the length.
+    (write-b32 (+ *index-bytes* 2 (* *index-bytes* ncfunctions)
+                  4 (loop for bv in vars
+                          sum (+ 4 4 2 (* (+ *index-bytes* 1 2)
+                                          (length (third bv))))))
+               stream)
+    ;; Module index
+    (write-index (module attr) stream)
+    ;; Number of cfunctions, followed by indices for those
+    (write-b16 (length cfunctions) stream)
+    (map nil (lambda (cf) (write-index cf stream)) cfunctions)
+    ;; Number of debug vars followed by debug vars.
+    (write-b32 (length vars) stream)
+    (map nil
+         (lambda (bv)
+           (write-b32 (first bv) stream) ; start
+           (write-b32 (second bv) stream) ; end
+           (write-b16 (length (third bv)) stream)
+           (loop for (var cellp index) in (third bv)
+                 do (write-index var stream)
+                    (write-byte (if cellp 1 0) stream)
+                    (write-b16 index stream)))
+         vars)))
 
 ;;;
 

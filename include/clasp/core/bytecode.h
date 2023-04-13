@@ -59,7 +59,8 @@ public:
   void setf_compileInfo(T_sp obj);
   CL_LISPIFY_NAME(BytecodeModule/debugInfo)
   CL_DEFMETHOD T_sp debugInfo() const { return this->_DebugInfo; }
-  void setf_debugInfo(T_sp info) { this->_DebugInfo = info; }
+  CL_LISPIFY_NAME(BytecodeModule/setfDebugInfo)
+  CL_DEFMETHOD void setf_debugInfo(T_sp info) { this->_DebugInfo = info; }
 
   // Add the module to *all-bytecode-modules* for the debugger.
   void register_for_debug();
@@ -72,6 +73,8 @@ class BytecodeDebugVars_O : public General_O {
 public:
   BytecodeDebugVars_O(T_sp start, T_sp end, List_sp bindings)
     : _start(start), _end(end), _bindings(bindings) {}
+  CL_LISPIFY_NAME(BytecodeDebugVars/make)
+  CL_DEF_CLASS_METHOD
   static BytecodeDebugVars_sp make(T_sp start, T_sp end, List_sp bindings) {
     return gctools::GC<BytecodeDebugVars_O>::allocate<gctools::RuntimeStage>(start, end, bindings);
   }

@@ -731,7 +731,8 @@ public:
   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
   CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
   CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
-  ComplexVector_T_sp debugInfo() { return this->_debugInfo; }
+  CL_LISPIFY_NAME(module/debugInfo)
+  CL_DEFMETHOD ComplexVector_T_sp debugInfo() { return this->_debugInfo; }
   void push_debug_info(T_sp info);
 public:
   // Use the optimistic bytecode vector sizes to initialize the optimistic
@@ -742,6 +743,8 @@ public:
   CL_DEFMETHOD void resolve_fixup_sizes();
   // The size of the module bytecode vector.
   CL_DEFMETHOD size_t bytecode_size();
+  // Fix up the debug info with resolved labels.
+  void resolve_debug_info();
   // Create the bytecode module vector. We scan over the fixups in the
   // module and copy segments of bytecode between fixup positions.
   CL_DEFMETHOD SimpleVector_byte8_t_sp create_bytecode();
@@ -828,7 +831,8 @@ public:
     this->_extra = next;
     return next;
   }
-  size_t final_size() {
+  CL_LISPIFY_NAME(Cfunction/final_size)
+  CL_DEFMETHOD size_t final_size() {
     return this->bytecode()->length() + this->extra();
   }
   CL_LISPIFY_NAME(Cfunction/index)
