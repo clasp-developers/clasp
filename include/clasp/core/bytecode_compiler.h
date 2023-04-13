@@ -51,7 +51,7 @@ public:
   }
   // Does the variable need a cell?
   bool indirectLexicalP() const {
-    return this->closedOverP() || this->setP();
+    return this->closedOverP() && this->setP();
   }
 };
 
