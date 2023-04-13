@@ -99,22 +99,16 @@
    '(&REST CLAUSES))
   'COND)
 
-(cond
-  ((member :generate-faso *features*)
-   (setq core:*clasp-build-mode* :faso))
-  ((member :generate-fasoll *features*)
-   (setq core:*clasp-build-mode* :fasoll))
-  ((member :generate-fasobc *features*)
-   (setq core:*clasp-build-mode* :fasobc)))
+(cond ((member :generate-bytecode *features*)
+       (setq core:*clasp-build-mode* :bytecode))
+      ((member :generate-faso *features*)
+       (setq core:*clasp-build-mode* :faso))
+      ((member :generate-fasoll *features*)
+       (setq core:*clasp-build-mode* :fasoll))
+      ((member :generate-fasobc *features*)
+       (setq core:*clasp-build-mode* :fasobc)))
   
-(if (member :generate-faso *features*)
-    (setq core:*clasp-build-mode* :faso))
-
-
-(setq cmp:*default-object-type*
-      (if (member :generate-bytecode *features*)
-          :bytecode
-          core:*clasp-build-mode*))
+(setq cmp:*default-object-type* core:*clasp-build-mode*)
 
 ;;; ------------------------------------------------------------
 ;;;

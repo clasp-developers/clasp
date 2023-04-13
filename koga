@@ -57,10 +57,14 @@
             until (>= right end))
       value))
 
+(defun parse-keyword (value)
+  (intern (string-upcase value) "KEYWORD"))
+
 (defparameter +option-parsers+
   (list :extensions #'split-keywords
         :skip-sync #'split-keywords
         :jobs #'parse-integer
+        :build-mode #'parse-keyword
         :build-path #'parse-namestring))
 
 (defun parse-string-option (arg start eq-pos)

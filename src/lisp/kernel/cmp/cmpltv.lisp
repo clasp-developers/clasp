@@ -8,7 +8,8 @@
   ;; introspection
   (:export #:load-bytecode-stream #:load-bytecode)
   (:export #:write-fasl #:save-fasl)
-  (:export #:concatenate-fasls #:concatenate-fasl-files))
+  (:export #:concatenate-fasls #:concatenate-fasl-files
+           #:link-bytecode-fasl-files))
 
 (in-package #:cmpltv)
 

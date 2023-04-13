@@ -661,7 +661,7 @@ CL_DEFUN void load_bytecode_stream(Stream_sp stream) {
   BCVersion vers = load_version(stream);
   uint64_t nobjs = read_u64(stream);
   uint64_t ninsts = read_u64(stream);
-  uint8_t index_bytes = std::bit_ceil(std::bit_width(nobjs) / CHAR_BIT);
+  uint8_t index_bytes = (std::bit_width(nobjs) + CHAR_BIT - 1) / CHAR_BIT;
   SimpleVector_sp literals = SimpleVector_O::make(nobjs);
   std::vector<bool> initflags(nobjs, false);
   for (size_t i = 0; i < ninsts; ++i)
@@ -679,6 +679,23 @@ CL_DEFUN bool load_bytecode(T_sp filename, bool verbose, bool print,
   DynamicScopeManager lpscope(cl::_sym_STARloadPathnameSTAR, cl__pathname(filename));
   DynamicScopeManager ltscope(cl::_sym_STARloadTruenameSTAR, cl__truename(filename));
   load_bytecode_stream(gc::As<Stream_sp>(strm));
+  cl__close(strm);
+  return true;
+}
+
+CL_DEFUN bool load_bytecodel(T_sp filename, bool verbose, bool print,
+                             T_sp external_format) {
+  T_sp strm = cl__open(filename, kw::_sym_input, ext::_sym_byte8,
+                       nil<T_O>(), false, nil<T_O>(), false,
+                       external_format, nil<T_O>());
+  if (strm.nilp()) return false;
+  DynamicScopeManager lpscope(cl::_sym_STARloadPathnameSTAR, cl__pathname(filename));
+  DynamicScopeManager ltscope(cl::_sym_STARloadTruenameSTAR, cl__truename(filename));
+  int i = 0;
+  while (cl__listen(strm)) {
+    fmt::print("seg {}\n", ++i);
+    load_bytecode_stream(gc::As<Stream_sp>(strm));
+  }
   cl__close(strm);
   return true;
 }

@@ -606,3 +606,7 @@
 
 (defun concatenate-fasl-files (&rest pathnames)
   (apply #'concatenate-fasls (mapcar #'load-bytecode pathnames)))
+
+(defun link-bytecode-fasl-files (output-path input-paths)
+  (save-fasl (apply #'concatenate-fasl-files input-paths)
+             output-path))

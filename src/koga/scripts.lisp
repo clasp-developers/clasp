@@ -76,6 +76,7 @@
               :output-file (elt core:*command-line-arguments* 0)
               :output-type ~s)"
           (case (build-mode configuration)
+            (:bytecode :faslbc)
             (:faso :fasp)
             (:fasoll :faspll)
             (:fasobc :faspbc)

@@ -119,7 +119,7 @@
   ((build-mode :accessor build-mode ; TODO Add logic for :bitcode, :object and :fasl
                :initarg :build-mode
                :initform :faso
-               :type (member :faso :bitcode :object :fasoll :fasobc :fasl)
+               :type (member :faso :bitcode :bytecode :object :fasoll :fasobc :fasl)
                :documentation "Define how clasp is built.
 - :bitcode compiles to bitcode and thinLTO is used to link everything.
   This gives the fastest product but linking takes a long time.
@@ -775,6 +775,7 @@ then they will overide the current variant's corresponding property."
 (defun file-faso-extension (configuration)
   "Return the file extension based on the build mode."
   (case (build-mode configuration)
+    (:bytecode "faslbc")
     (:faso "faso")
     (:fasobc "fasobc")
     (:fasoll "fasoll")
@@ -783,6 +784,7 @@ then they will overide the current variant's corresponding property."
 (defun module-fasl-extension (configuration)
   "Return the module extension, i.e. faso -> fasp, etc."
   (case (build-mode configuration)
+    (:bytecode "faslbcl")
     (:faso "fasp")
     (:fasobc "faspbc")
     (:fasoll "faspll")
@@ -791,6 +793,7 @@ then they will overide the current variant's corresponding property."
 (defun image-fasl-extension (configuration)
   "Return the extension for the clasp image."
   (case (build-mode configuration)
+    (:bytecode "faslbcl")
     (:fasl "lfasl")
     (:faso "fasp")
     (:fasobc "faspbc")
