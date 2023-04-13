@@ -492,7 +492,7 @@ Tried to define constant #~d, but it was already defined"
 (defmethod %load-instruction ((mnemonic (eql 'make-bytecode-function)) stream)
   (let ((index (read-index stream))
         (entry-point (read-ub32 stream))
-        (size (if (and (= *major* 0) (>= *minor* 8)) (read-ub32 stream) 0))
+        (size (if (and (= *major* 0) (< *minor* 8)) 0 (read-ub32 stream)))
         (nlocals (read-ub16 stream))
         (nclosed (read-ub16 stream))
         (modulei (when (>= *minor* 2) (read-index stream)))

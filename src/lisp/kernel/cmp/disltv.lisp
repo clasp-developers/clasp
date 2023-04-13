@@ -46,7 +46,7 @@
 
 ;; Bounds for major and minor version understood by this loader.
 (defparameter *min-version* '(0 4))
-(defparameter *max-version* '(0 7))
+(defparameter *max-version* '(0 8))
 
 (defun loadable-version-p (major minor)
   (and
@@ -356,16 +356,20 @@
 
 (defmethod %load-instruction ((mnemonic (eql 'make-bytecode-function)) stream)
   (let ((index (read-index stream))
-        (entry-point (read-ub32 stream)) (nlocals (read-ub16 stream))
+        (entry-point (read-ub32 stream))
+        (size (if (and (= *load-major* 0) (< *load-minor* 8))
+                  0
+                  (read-ub32 stream)))
+        (nlocals (read-ub16 stream))
         (nclosed (read-ub16 stream)) (module (read-creator stream))
         (name (read-creator stream)) (lambda-list (read-creator stream))
         (docstring (read-creator stream)))
-    (dbgprint " (make-bytecode-function ~d ~d ~d ~d ~s ~s ~s ~s)"
-              index entry-point nlocals nclosed module
+    (dbgprint " (make-bytecode-function ~d ~d ~d ~d ~d ~s ~s ~s ~s)"
+              index entry-point size nlocals nclosed module
               name lambda-list docstring)
     (setf (creator index)
           (make-instance 'bytefunction-creator
-            :entry-point entry-point
+            :entry-point entry-point :size size
             :nlocals nlocals :nclosed nclosed
             :module module
             :name name :lambda-list lambda-list
@@ -461,14 +465,34 @@
       :name ncreator :function fun :pathname path
       :lineno line :column col :filepos pos)))
 
+#+clasp
+(defmethod %load-attribute ((mnemonic (eql 'module-debug-info)) ncreator stream)
+  (let ((nbytes (read-ub32 stream))
+        (mod (read-creator stream))
+        (ncfunctions (read-ub16 stream)))
+    (dbgprint " (module-debug-info ~s ~d ~s ~d)"
+              ncreator nbytes mod ncfunctions)
+    (let ((cfunctions (loop repeat ncfunctions
+                            collect (read-creator stream)))
+          (vars (loop repeat (read-ub32 stream)
+                      collect (list (read-ub32 stream)
+                                    (read-ub32 stream)
+                                    (loop repeat (read-ub16 stream)
+                                          collect (list (read-creator stream)
+                                                        (ecase (read-byte stream)
+                                                          (0 nil)
+                                                          (1 t))
+                                                        (read-ub16 stream)))))))
+      (make-instance 'module-debug-attr
+        :name ncreator :module mod :cfunctions cfunctions
+        :vars vars))))
+
+
 (defparameter *attr-map*
   (let ((ht (make-hash-table :test #'equal)))
     #+clasp (setf (gethash "clasp:source-pos-info" ht) 'source-pos-info)
-    ht)
-  #+(or)
-  (alexandria:alist-hash-table
-   '(#+clasp("clasp:source-pos-info" . source-pos-info))
-   :test #'equal))
+    #+clasp (setf (gethash "clasp:module-debug-info" ht) 'module-debug-info)
+    ht))
 
 (defun load-attribute (stream)
   (let* ((acreator (read-creator stream))

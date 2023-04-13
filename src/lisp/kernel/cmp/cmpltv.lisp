@@ -210,7 +210,7 @@
 (defclass attribute (effect)
   (;; Creator for the name of the attribute, a string.
    ;; FIXME: Do this more cleanly.
-   (%name :reader name :type creator)))
+   (%name :reader name :initarg :name :type creator)))
 
 #+clasp
 (defclass spi-attr (attribute)
