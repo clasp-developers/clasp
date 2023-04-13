@@ -73,10 +73,10 @@
                           "clasp_ffi::ForeignTypeSpec_O" "core::Unused_dummy_O"
                           "llvmo::DWARFContext_O" "core::HashTableEqual_O" "llvmo::Triple_O"
                           "core::SimpleMDArray_byte64_t_O" "core::BitVectorNs_O"
-                          "core::CoreExposer_O" "comp::JumpIfSuppliedFixup_O" "core::KeyValuePair"
-                          "llvmo::NamedMDNode_O" "core::SimpleVector_byte16_t_O"
-                          "llvmo::ThreadSafeContext_O" "llvmo::TargetMachine_O"
-                          "core::SimpleVector_byte64_t_O" "llvmo::Value_O"
+                          "core::CoreExposer_O" "core::BytecodeDebugVars_O"
+                          "comp::JumpIfSuppliedFixup_O" "core::KeyValuePair" "llvmo::NamedMDNode_O"
+                          "core::SimpleVector_byte16_t_O" "llvmo::ThreadSafeContext_O"
+                          "llvmo::TargetMachine_O" "core::SimpleVector_byte64_t_O" "llvmo::Value_O"
                           "core::SimpleBaseString_O" "core::Test_O" "llvmo::Metadata_O"
                           "core::MDArray_O" "core::LocalSimpleFun_O" "clbind::ClassRep_O"
                           "llvmo::ConstantInt_O" "comp::SpecialVarInfo_O"
@@ -212,6 +212,9 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
              :offset-base-ctype "comp::Module_O" :layout-offset-field-names ("_literals")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
+             :offset-base-ctype "comp::Module_O" :layout-offset-field-names ("_debugInfo")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__AttributeSet_O" :stamp-key "llvmo::AttributeSet_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3489,6 +3492,20 @@
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "llvmo::StructLayout_O"
              :layout-offset-field-names ("_StructLayout")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugVars_O"
+            :stamp-key "core::BytecodeDebugVars_O" :parent-class "core::General_O"
+            :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugVars_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugVars_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::BytecodeDebugVars_O"
+             :layout-offset-field-names ("_bindings")}
 {class-kind :stamp-name "STAMPWTAG_clasp_ffi__ForeignTypeSpec_O"
             :stamp-key "clasp_ffi::ForeignTypeSpec_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
@@ -4536,6 +4553,9 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::DebuggerFrame_O"
              :layout-offset-field-names ("args_available")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::DebuggerFrame_O" :layout-offset-field-names ("locals")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::DebuggerFrame_O" :layout-offset-field-names ("lang")}
@@ -6633,6 +6653,9 @@
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._AllCodeBlocks")}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Lisp"
+             :layout-offset-field-names ("_Roots" "._AllBytecodeModules")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::GlobalSimpleFun_O>"
              :offset-base-ctype "core::Lisp"
