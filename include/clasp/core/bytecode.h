@@ -65,6 +65,31 @@ public:
   void register_for_debug();
 };
 
+// Debug information structure for bindings.
+FORWARD(BytecodeDebugVars);
+class BytecodeDebugVars_O : public General_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugVars_O, "BytecodeDebugVars", core::General_O);
+public:
+  BytecodeDebugVars_O(T_sp start, T_sp end, List_sp bindings)
+    : _start(start), _end(end), _bindings(bindings) {}
+  static BytecodeDebugVars_sp make(T_sp start, T_sp end, List_sp bindings) {
+    return gctools::GC<BytecodeDebugVars_O>::allocate<gctools::RuntimeStage>(start, end, bindings);
+  }
+public:
+  T_sp _start;
+  T_sp _end;
+  List_sp _bindings;
+public:
+  CL_LISPIFY_NAME(BytecodeDebugVars/start)
+  CL_DEFMETHOD T_sp start() const { return this->_start; }
+  void setStart(T_sp start) { this->_start = start; }
+  CL_LISPIFY_NAME(BytecodeDebugVars/end)
+  CL_DEFMETHOD T_sp end() const { return this->_end; }
+  void setEnd(T_sp end) { this->_end = end; }
+  CL_LISPIFY_NAME(BytecodeDebugVars/bindings)
+  CL_DEFMETHOD List_sp bindings() const { return this->_bindings; }
+};
+
 // Dynenv used for VM call frames to ensure the unwinder properly
 // cleans up stack frames.
 class VMFrameDynEnv_O : public DynEnv_O {
@@ -93,6 +118,8 @@ namespace core {
 
 bool bytecode_module_contains_address_p(BytecodeModule_sp, void*);
 bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp, void*);
+T_sp bytecode_function_for_pc(BytecodeModule_sp, void*);
+List_sp bytecode_bindings_for_pc(BytecodeModule_sp, void*, T_O**);
 void* bytecode_pc();
 
 }; // namespace core

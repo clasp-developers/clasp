@@ -1342,6 +1342,58 @@ bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp fun,
   return (start <= pc) && (pc <= end);
 }
 
+T_sp bytecode_function_for_pc(BytecodeModule_sp module, void* pc) {
+  for (auto info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
+    if (gc::IsA<GlobalBytecodeSimpleFun_sp>(info)
+        && bytecode_function_contains_address_p(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(info), pc))
+      return info;
+  }
+  // Should be impossible, but we don't want to err while a backtrace
+  // is getting put together. TODO: Issue warning?
+  return nil<T_O>();
+}
+
+List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void* pc, T_O** fp) {
+  Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
+  void* start = bytecode->rowMajorAddressOfElement_(0);
+  ptrdiff_t bpc = (byte8_t*)pc - (byte8_t*)start;
+  ql::list bindings;
+  for (T_sp info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
+    if (gc::IsA<BytecodeDebugVars_sp>(info)) {
+      BytecodeDebugVars_sp entry = gc::As_unsafe<BytecodeDebugVars_sp>(info);
+      size_t start = entry->start().unsafe_fixnum();
+      size_t end = entry->end().unsafe_fixnum();
+      if ((start <= bpc) && (bpc < end)) {
+        for (Cons_sp cur : entry->bindings()) {
+          T_sp tinfo = cur->ocar();
+          if (gc::IsA<Cons_sp>(tinfo)) {
+            Cons_sp info = gc::As_unsafe<Cons_sp>(tinfo);
+            T_sp name = info->ocar();
+            T_sp cdr = info->cdr();
+            if (cdr.fixnump()) {
+              gc::Fixnum index = cdr.unsafe_fixnum();
+              // We add one here because *fp is the previous fp.
+              T_O* tvalue = *(fp + index + 1);
+              T_sp value((gctools::Tagged)tvalue);
+              bindings << Cons_O::create(name, value);
+            } else if (gc::IsA<Cons_sp>(cdr)) {
+              // indirect cell
+              T_sp tindex = gc::As_unsafe<Cons_sp>(cdr)->ocar();
+              if (tindex.fixnump()) {
+                gc::Fixnum index = tindex.unsafe_fixnum();
+                T_sp cell((gctools::Tagged)(*(fp+index+1)));
+                T_sp value = gc::As<Cons_sp>(cell)->ocar();
+                bindings << Cons_O::create(name, value);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return bindings.cons();
+}
+
 void* bytecode_pc() {
   return my_thread->_VM._pc;
 }

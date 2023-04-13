@@ -30,18 +30,19 @@ public:
   void fields(Record_sp node) override;
   std::string __repr__() const;
   DebuggerFrame_O(T_sp a_fname, T_sp a_return_address, T_sp a_sp, T_sp a_fd,
-                  T_sp a_closure, T_sp a_args, bool a_av, T_sp a_lang,
-                  bool a_is_xep)
-      : fname(a_fname), return_address(a_return_address),
+                  T_sp a_closure, T_sp a_args, bool a_av, List_sp a_locals,
+                  T_sp a_lang, bool a_is_xep)
+    : fname(a_fname), return_address(a_return_address),
       source_position(a_sp), function_description(a_fd),
-      closure(a_closure), args(a_args), args_available(a_av), is_xep(a_is_xep),
+      closure(a_closure), args(a_args), args_available(a_av),
+      locals(a_locals), is_xep(a_is_xep),
       lang(a_lang), up(nil<T_O>()), down(nil<T_O>())
   {}
   static DebuggerFrame_sp make(T_sp fname, T_sp ra,
                                T_sp sp, T_sp fd,
                                T_sp closure, T_sp args, bool args_available,
-                               T_sp lang, bool is_xep) {
-    auto  ret = gctools::GC<DebuggerFrame_O>::allocate( fname, ra, sp, fd, closure, args, args_available, lang, is_xep);
+                               List_sp locals, T_sp lang, bool is_xep) {
+    auto  ret = gctools::GC<DebuggerFrame_O>::allocate( fname, ra, sp, fd, closure, args, args_available, locals, lang, is_xep);
     return ret;
   }
   T_sp returnAddress() const;
@@ -53,6 +54,7 @@ public:
   T_sp closure;
   T_sp args;
   bool args_available;
+  List_sp locals;
   T_sp lang;
   T_sp up;
   T_sp down;

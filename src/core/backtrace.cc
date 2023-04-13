@@ -439,18 +439,19 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex,
     fname = SimpleBaseString_O::make(std::string(string));
   }
   D(printf("%s%s:%d:%s string = %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, string ););
-  return DebuggerFrame_O::make(fname, Cons_O::create(sa,ofi), spi, functionDescriptionOrNil, closure, args, args_available,
+  return DebuggerFrame_O::make(fname, Cons_O::create(sa,ofi), spi, functionDescriptionOrNil, closure, args, args_available, nil<T_O>(),
                                INTERN_(kw, lisp), XEPp);
 }
 
-static DebuggerFrame_sp make_bytecode_frame_from_function(GlobalBytecodeSimpleFun_sp fun, void* bpc) {
+static DebuggerFrame_sp make_bytecode_frame_from_function(GlobalBytecodeSimpleFun_sp fun, void* bpc, T_O** bfp) {
   // We can get the closure easy if the function actually isn't one.
   // Otherwise we'd have to poke through bytecode_vm arguments or maybe
   // the vm stack?
   T_sp closure = (fun->environmentSize() == 0) ? (T_sp)fun : nil<T_O>();
+  List_sp bindings = bytecode_bindings_for_pc(fun->code(), bpc, bfp);
   return DebuggerFrame_O::make(fun->functionName(), Pointer_O::create(bpc),
                                nil<T_O>(), fun->fdesc(), closure, nil<T_O>(),
-                               false, INTERN_(kw, bytecode), false);
+                               false, bindings, INTERN_(kw, bytecode), false);
                                
 }
 
@@ -459,6 +460,7 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex,
                                             T_O**& fp) {
   // Get the PC and frame pointer for the next frame.
   void* bpc = pc;
+  T_O** bfp = fp;
   if (fp) {// null fp means we've hit the end.
     // PC was pushed just before the frame pointer.
     pc = (unsigned char*)(*(fp - 1));
@@ -469,20 +471,15 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex,
   for (auto mods : modules) {
     BytecodeModule_sp mod = gc::As_assert<BytecodeModule_sp>(oCar(mods));
     if (bytecode_module_contains_address_p(mod, bpc)) {
-      for (auto fung : *(gc::As<SimpleVector_sp>(mod->debugInfo()))) {
-        GlobalBytecodeSimpleFun_sp fun = gc::As_assert<GlobalBytecodeSimpleFun_sp>(fung);
-        if (bytecode_function_contains_address_p(fun, bpc))
-          // Here we go.
-          return make_bytecode_frame_from_function(fun, bpc);
-      }
-      break; // should be impossible, but we don't want to err in backtrace
+      T_sp fun = bytecode_function_for_pc(mod, bpc);
+      if (gc::IsA<GlobalBytecodeSimpleFun_sp>(fun))
+        return make_bytecode_frame_from_function(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(fun), bpc, bfp);
     }
   }
-  printf("Could not find bytecode module\n");
   return DebuggerFrame_O::make(INTERN_(kw, bytecode), Pointer_O::create(bpc),
                                nil<T_O>(), nil<T_O>(), nil<T_O>(),
-                               nil<T_O>(), false, INTERN_(kw, bytecode),
-                               false);
+                               nil<T_O>(), false, nil<T_O>(),
+                               INTERN_(kw, bytecode), false);
 }
 
 bool maybe_demangle(const std::string& fnName, std::string& output)
@@ -563,8 +560,8 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring,
   D(printf("%s%s:%d:%s lname %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, name.c_str() ););
   return DebuggerFrame_O::make(lname, Pointer_O::create(ip),
                                nil<T_O>(), nil<T_O>(), nil<T_O>(),
-                               nil<T_O>(), false, INTERN_(kw, c_PLUS__PLUS_),
-                               false);
+                               nil<T_O>(), false, nil<T_O>(),
+                               INTERN_(kw, c_PLUS__PLUS_), false);
 }
 
 static DebuggerFrame_sp make_frame(size_t fi, void* absolute_ip, const char* string, void* fbp, unsigned char*& bytecode_pc, T_O**& bytecode_fp) {
@@ -861,6 +858,10 @@ CL_DEFUN T_sp core__debugger_frame_function_description(DebuggerFrame_sp df) {
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__debugger_frame_lang(DebuggerFrame_sp df) {
   return df->lang;
+}
+DOCGROUP(clasp);
+CL_DEFUN List_sp core__debugger_frame_locals(DebuggerFrame_sp df) {
+  return df->locals;
 }
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__debugger_frame_closure(DebuggerFrame_sp df) {

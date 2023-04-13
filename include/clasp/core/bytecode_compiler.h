@@ -349,6 +349,7 @@ public:
   size_t literal_index(T_sp literal) const;
   size_t new_literal_index(T_sp literal) const;
   size_t closure_index(T_sp info) const;
+  void push_debug_info(T_sp info) const;
   void assemble0(uint8_t opcode) const;
   void assemble1(uint8_t opcode, size_t operand1) const;
   void assemble2(uint8_t opcode, size_t operand1, size_t operand2) const;
@@ -704,13 +705,18 @@ class Module_O : public General_O {
 public:
   ComplexVector_T_sp _cfunctions;
   ComplexVector_T_sp _literals;
+  ComplexVector_T_sp _debugInfo;
 public:
   Module_O()
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
-      _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))) {}
+      _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
+      _debugInfo(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0)))
+  {}
   Module_O(ComplexVector_T_sp literals)
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
-      _literals(literals) {}
+      _literals(literals),
+      _debugInfo(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0)))
+  {}
   CL_LISPIFY_NAME(Module/make)
   CL_DEF_CLASS_METHOD
   static Module_sp make() {
@@ -725,6 +731,8 @@ public:
   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
   CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
   CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
+  ComplexVector_T_sp debugInfo() { return this->_debugInfo; }
+  void push_debug_info(T_sp info);
 public:
   // Use the optimistic bytecode vector sizes to initialize the optimistic
   // cfunction position.
