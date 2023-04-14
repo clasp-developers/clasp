@@ -4,6 +4,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/ql.h> // ql::list
 #include <clasp/core/primitives.h> // cl__fdefinition
+#include <clasp/core/designators.h>
 #include <clasp/core/bytecode.h> // modules, functions
 #include <clasp/core/lispStream.h> // I/O
 #include <clasp/core/hashTable.h> // making hash tables
@@ -149,8 +150,8 @@ void load_magic(Stream_sp stream) {
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
 
-const BCVersion min_version = {0, 7};
-const BCVersion max_version = {0, 7};
+const BCVersion min_version = {0, 8};
+const BCVersion max_version = {0, 8};
 
 BCVersion load_version(Stream_sp stream) {
   // C++ guarantees sequencing in the aggregate initialization.
@@ -535,6 +536,7 @@ static void ltv_op_bcfunc(Stream_sp stream, SimpleVector_sp literals,
                           std::vector<bool>& initflags, uint8_t index_bytes) {
   size_t index = read_index(stream, index_bytes);
   uint32_t entry_point = read_u32(stream);
+  uint32_t final_size = read_u32(stream);
   uint16_t nlocals = read_u16(stream);
   uint16_t nclosed = read_u16(stream);
   BytecodeModule_sp module = gc::As<BytecodeModule_sp>(get_ltv(read_index(stream, index_bytes), literals, initflags));
@@ -546,7 +548,7 @@ static void ltv_op_bcfunc(Stream_sp stream, SimpleVector_sp literals,
                               nil<T_O>(), -1, -1, -1);
   GlobalBytecodeSimpleFun_sp fun
     = core__makeGlobalBytecodeSimpleFun(fdesc, module, nlocals, nclosed,
-                                        entry_point,
+                                        entry_point, final_size,
                                         llvmo::cmp__compile_trampoline(name));
   set_ltv(fun, index, literals, initflags);
 }
@@ -582,7 +584,7 @@ static void ltv_op_fdef(Stream_sp stream, SimpleVector_sp literals,
 static void ltv_op_create(Stream_sp stream, SimpleVector_sp literals,
                           std::vector<bool>& initflags, uint8_t index_bytes) {
   size_t index = read_index(stream, index_bytes);
-  Function_sp func = gc::As<Function_sp>(get_ltv(read_index(stream, index_bytes), literals, initflags));
+  Function_sp func = coerce::functionDesignator(get_ltv(read_index(stream, index_bytes), literals, initflags));
   uint16_t nargs = read_u16(stream);
   T_O* args[nargs];
   for (size_t i = 0; i < nargs; ++i)
@@ -593,7 +595,7 @@ static void ltv_op_create(Stream_sp stream, SimpleVector_sp literals,
 
 static void ltv_op_init(Stream_sp stream, SimpleVector_sp literals,
                         std::vector<bool>& initflags, uint8_t index_bytes) {
-  Function_sp func = gc::As<Function_sp>(get_ltv(read_index(stream, index_bytes), literals, initflags));
+  Function_sp func = coerce::functionDesignator(get_ltv(read_index(stream, index_bytes), literals, initflags));
   uint16_t nargs = read_u16(stream);
   T_O* args[nargs];
   for (size_t i = 0; i < nargs; ++i)
