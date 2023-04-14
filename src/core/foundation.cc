@@ -930,6 +930,32 @@ string fix_method_lambda(core::Symbol_sp class_symbol, const string &lambda) {
 SYMBOL_EXPORT_SC_(KeywordPkg, body);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
 
+static Function_sp bytecompile_wrapper(GlobalSimpleFunBase_sp entry, List_sp vars,
+                                       Symbol_sp name, List_sp lambda_list) {
+  /*
+  // Add the name to the list so we know to compile it later when the
+  // native compiler is up.
+  List_sp names = core::_sym_STARbytecode_wrappersSTAR->symbolValue();
+  names = Cons_O::create(name, names);
+  core::_sym_STARbytecode_wrappersSTAR->setf_symbolValue(names);
+*/
+  // Make and return the wrapper.
+  /*
+`(lambda ,lambda-list
+   (declare (core:lambda-name ,name))
+   (cleavir-primop:funcall ,entry ,@vars))
+*/
+  List_sp funcall_form
+    = Cons_O::create(cleavirPrimop::_sym_funcall, Cons_O::create(entry, vars));
+  List_sp declare_form
+    = Cons_O::createList(cl::_sym_declare,
+                         Cons_O::createList(core::_sym_lambdaName, name));
+  List_sp form
+    = Cons_O::createList(cl::_sym_lambda, lambda_list, declare_form,
+                         funcall_form);
+  return comp::bytecompile(form, comp::Lexenv_O::make_top_level());
+}
+
 void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper &specializer, T_sp name, Symbol_sp classSymbol,
                                      GlobalSimpleFunBase_sp method_body, size_t TemplateDispatchOn, bool useTemplateDispatchOn,
                                      const string &raw_arguments, const string &declares, const string &docstring, bool autoExport,
@@ -982,16 +1008,10 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper &specializer,
   bool trivial_wrapper;
   List_sp vars = lisp_lexical_variable_names(lambda_list, trivial_wrapper);
   Function_sp func;
-  if (trivial_wrapper) {
+  if (trivial_wrapper)
     func = method_body;
-  } else {
-    List_sp funcall_form = Cons_O::create(cleavirPrimop::_sym_funcall, Cons_O::create(method_body, vars));
-    List_sp declare_form = Cons_O::createList(cl::_sym_declare, Cons_O::createList(core::_sym_lambdaName, name));
-    // printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
-    List_sp form = Cons_O::createList(cl::_sym_lambda, lambda_list, declare_form, funcall_form);
-    // printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
-    func = comp::bytecompile(form, comp::Lexenv_O::make_top_level());
-  }
+  else
+    func = bytecompile_wrapper(method_body, vars, name, lambda_list);
 
   func->setf_sourcePathname(nil<T_O>());
   func->setf_lambdaList(lambda_list); // use this for lambda wrapper
@@ -1034,18 +1054,10 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, 
     printf("%s:%d:%s We don't support LambdaListHandler anymore\n", __FILE__, __LINE__, __FUNCTION__);
     abort();
   } else {
-    if (trivial_wrapper) {
+    if (trivial_wrapper)
       func = entry;
-    } else {
-      List_sp funcall_form = Cons_O::create(cleavirPrimop::_sym_funcall, Cons_O::create(entry, vars));
-      List_sp declare_form = Cons_O::createList(cl::_sym_declare, Cons_O::createList(core::_sym_lambdaName, sym));
-      // printf("%s:%d:%s funcall_form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(funcall_form).c_str() );
-      List_sp form = Cons_O::createList(cl::_sym_lambda, lambda_list, declare_form, funcall_form);
-      // printf("%s:%d:%s assembled form = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(form).c_str() );
-      func = comp::bytecompile(form, comp::Lexenv_O::make_top_level());
-      //    printf("%s:%d:%s compiled a non-trivial wrapper for %s %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sym).c_str(),
-      //    _rep_(lambda_list).c_str() );
-    }
+    else
+      func = bytecompile_wrapper(entry, vars, sym, lambda_list);
   }
   func->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   if (kind == symbol_function) {

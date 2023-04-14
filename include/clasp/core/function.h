@@ -335,16 +335,19 @@ FORWARD(GlobalBytecodeSimpleFun);
   // Entry point into the bytes vector in the containing module.
   // This is an offset instead of an interior pointer to make dumping/loading/GC considerations easier.
    unsigned int     _EntryPcN;
+   // Size of this function in bytes - used for debugging
+   unsigned int     _BytecodeSize;
    BytecodeTrampolineFunction _Trampoline;
  public:
   // Accessors
    GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc,
-                              const ClaspXepFunction& entry_point,
-                              T_sp code,
-                              unsigned short localsFrameSize,
-                              unsigned int environmentSize,
-                              unsigned int entryPcN,
-                              BytecodeTrampolineFunction trampoline);
+                             const ClaspXepFunction& entry_point,
+                             T_sp code,
+                             unsigned short localsFrameSize,
+                             unsigned int environmentSize,
+                             unsigned int entryPcN,
+                             unsigned int bytecodeSize,
+                             BytecodeTrampolineFunction trampoline);
 
  public:
    virtual Pointer_sp defaultEntryAddress() const;
@@ -356,7 +359,8 @@ FORWARD(GlobalBytecodeSimpleFun);
    CL_DEFMETHOD Fixnum localsFrameSize() const { return this->_LocalsFrameSize; };
    CL_DEFMETHOD Fixnum environmentSize() const { return this->_EnvironmentSize; };
    size_t entryPcN() const;
-
+   CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/bytecode-size)
+   CL_DEFMETHOD Fixnum bytecodeSize() const { return this->_BytecodeSize; }
  };
 
 
@@ -435,11 +439,12 @@ GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName,
 
 
 GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription_sp fdesc,
-                                                               BytecodeModule_sp module,
-                                                               size_t localsFrameSize,
-                                                               size_t environmentSize,
-                                                               size_t pcIndex,
-                                                               Pointer_sp trampoline);
+                                                             BytecodeModule_sp module,
+                                                             size_t localsFrameSize,
+                                                             size_t environmentSize,
+                                                             size_t pcIndex,
+                                                             size_t bytecodeSize,
+                                                             Pointer_sp trampoline);
 
 
 GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);

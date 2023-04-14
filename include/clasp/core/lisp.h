@@ -316,6 +316,7 @@ public:
     std::atomic<T_sp>          _AllLibraries;
     std::atomic<T_sp>          _AllObjectFiles;
     std::atomic<T_sp>          _AllCodeBlocks;
+    std::atomic<T_sp>          _AllBytecodeModules;
     GlobalSimpleFun_sp        _UnboundSymbolFunctionEntryPoint;
     GlobalSimpleFun_sp        _UnboundSetfSymbolFunctionEntryPoint;
     T_sp                       _TerminalIO;

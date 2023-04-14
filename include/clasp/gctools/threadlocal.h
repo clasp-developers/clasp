@@ -93,6 +93,9 @@ struct VirtualMachine {
   core::T_O**    _stackTop;
   core::T_O**    _stackGuard;
   core::T_O**    _stackPointer;
+  // only used by debugger
+  // has to be initialized because bytecode_call reads it
+  core::T_O**    _framePointer = NULL;
 #ifdef DEBUG_VIRTUAL_MACHINE
   core::T_O*     _data;
   core::T_O*     _data1;

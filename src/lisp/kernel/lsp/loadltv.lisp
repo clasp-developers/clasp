@@ -86,7 +86,7 @@
 
 ;; Bounds for major and minor version understood by this loader.
 (defparameter *min-version* '(0 0))
-(defparameter *max-version* '(0 7))
+(defparameter *max-version* '(0 8))
 
 (defun loadable-version-p (major minor)
   (and
@@ -492,6 +492,7 @@ Tried to define constant #~d, but it was already defined"
 (defmethod %load-instruction ((mnemonic (eql 'make-bytecode-function)) stream)
   (let ((index (read-index stream))
         (entry-point (read-ub32 stream))
+        (size (if (and (= *major* 0) (< *minor* 8)) 0 (read-ub32 stream)))
         (nlocals (read-ub16 stream))
         (nclosed (read-ub16 stream))
         (modulei (when (>= *minor* 2) (read-index stream)))
@@ -519,7 +520,7 @@ Tried to define constant #~d, but it was already defined"
               :function-name name :lambda-list lambda-list :docstring docstring
               :source-pathname source-pathname
               :lineno lineno :column column :filepos filepos)
-             module nlocals nclosed entry-point
+             module nlocals nclosed entry-point size
              (cmp:compile-trampoline name)))))
   (+ *index-bytes* 4 2 2 *index-bytes* *index-bytes* *index-bytes*))
 
@@ -591,11 +592,8 @@ Tried to define constant #~d, but it was already defined"
 (defparameter *attributes*
   (let ((ht (make-hash-table :test #'equal)))
     #+clasp (setf (gethash "clasp:source-pos-info" ht) 'source-pos-info)
-    ht)
-  #+(or)
-  (alexandria:alist-hash-table
-   '(#+clasp("clasp:source-pos-info" . source-pos-info))
-   :test #'equal))
+    #+clasp (setf (gethash "clasp:module-debug-info" ht) 'module-debug-info)
+    ht))
 
 (defgeneric %load-attribute (mnemonic stream))
 
@@ -618,6 +616,33 @@ Tried to define constant #~d, but it was already defined"
     (dbgprint " (source-pos-info ~s ~s ~d ~d ~d)"
               function path lineno column filepos)
     (core:function/set-source-pos-info function path filepos lineno column)))
+
+(defun read-debug-bindings (stream)
+  (let ((nbinds (read-ub16 stream)))
+    (loop repeat nbinds
+          collect (let ((name (constant (read-index stream)))
+                        (flag (read-byte stream))
+                        (framei (read-ub16 stream)))
+                    (cons name (ecase flag
+                                 (0 framei)
+                                 (1 (list framei))))))))
+
+#+clasp
+(defmethod %load-attribute ((mnemonic (eql 'module-debug-info)) stream)
+  (read-ub32 stream) ; ignore size
+  (let* ((mod (constant (read-index stream)))
+         (ncfunctions (read-ub16 stream))
+         (cfunctions (loop repeat ncfunctions
+                           collect (constant (read-index stream))))
+         (nvars (read-ub32 stream))
+         (vars (loop repeat nvars
+                     collect (let* ((start (read-ub32 stream))
+                                    (end (read-ub32 stream))
+                                    (binds (read-debug-bindings stream)))
+                               (core:bytecode-debug-vars/make start end binds)))))
+    (core:bytecode-module/setf-debug-info
+     mod
+     (concatenate 'simple-vector cfunctions vars))))
 
 (defun load-attribute (stream)
   (let ((aname (constant (read-index stream))))

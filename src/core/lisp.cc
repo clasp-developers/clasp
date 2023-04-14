@@ -199,6 +199,7 @@ Lisp::GCRoots::GCRoots() :
   _AllObjectFiles(nil<T_O>()),
   _AllCodeBlocks(nil<T_O>()),
   _AllLibraries(nil<T_O>()),
+  _AllBytecodeModules(nil<T_O>()),
 #ifdef CLASP_THREADS
     _UnboundSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
     _UnboundSetfSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
