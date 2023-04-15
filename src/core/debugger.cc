@@ -506,6 +506,20 @@ std::string dbg_safe_repr(uintptr_t raw) {
       ss << "#<$INSTANCE :class ";
       ss << _safe_rep_(ii->_Class->_className());
       ss << " " REPR_ADDR(raw) << "$>";
+    } else if (gc::IsA<core::Pathname_sp>(obj)) {
+      core::Pathname_sp ii = gc::As_unsafe<core::Pathname_sp>(obj);
+      ss << "#<$PATHNAME ";
+      if (CONS_CAR(ii->_Directory)==kw::_sym_absolute) {
+        ss << "/";
+      }
+      for (auto x : gc::As_unsafe<core::List_sp>(CONS_CDR(ii->_Directory))) {
+        ss << _safe_rep_(CONS_CAR(x));
+        ss << "/";
+      }
+      ss << _safe_rep_(ii->_Name);
+      ss << ".";
+      ss << _safe_rep_(ii->_Type);
+      ss << " " REPR_ADDR(raw) << "$>";
     } else {
       core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
       ss << "#<$" << gen->className() << " " REPR_ADDR(gen.raw_()) << "$>";

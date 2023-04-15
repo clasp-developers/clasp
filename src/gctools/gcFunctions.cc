@@ -476,6 +476,8 @@ CL_DEFUN void gctools__copy_memory() {
 }
 #endif // USE_MPS
 
+SYMBOL_EXPORT_SC_(KeywordPkg,test);
+
 CL_LAMBDA(&optional (x :default));
 CL_DECLARE();
 CL_DOCSTRING(R"dx(room - Return info about the reachable objects in memory. x can be T, nil, :default and they control the amount of output produced.)dx");
@@ -487,6 +489,8 @@ CL_DEFUN core::T_mv cl__room(core::Symbol_sp x) {
     verb = room_max;
   } else if (x == kw::_sym_default) {
     verb = room_default;
+  } else if (x == kw::_sym_test) {
+    verb = room_test;
   } else if (x.nilp()) {
     verb = room_min;
   } else {

@@ -2130,7 +2130,7 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message ) {
   //
   // For saving we may want to save snapshots and not die - so use noStomp forwarding.
   //
-  gctools::GatherObjects gather;
+  gctools::GatherObjects gather(gctools::room_test);
   gctools::gatherAllObjects(gather);
 
 #if 0
@@ -2219,7 +2219,7 @@ void* snapshot_save_impl(void* data) {
   // Gather all objects in memory
   //
 
-  gctools::GatherObjects allObjects;
+  gctools::GatherObjects allObjects(gctools::room_min);
   gctools::gatherAllObjects(allObjects);
 
   

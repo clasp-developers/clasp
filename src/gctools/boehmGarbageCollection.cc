@@ -209,9 +209,9 @@ size_t summarizeResults(T *data, Summary& summary ) {
 
 
 void* walk_garbage_collected_objects_with_alloc_lock(void* client_data) {
-  gctools::GatherObjects gather;
-  gatherAllObjects( gather );
-  for ( auto header : gather._Marked ) {
+  gctools::GatherObjects* gatherP = (gctools::GatherObjects*)client_data;
+  gatherAllObjects( *gatherP );
+  for ( auto header : gatherP->_Marked ) {
     callback_reachable_object( header, client_data );
   }
   return NULL;
@@ -528,7 +528,8 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   //
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
-  GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
+  gctools::GatherObjects gatherObjects(verbosity);
+  GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, (void*)&gatherObjects );
   size_t totalSize(0);
   if ( verbosity == room_max ) {
     OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
@@ -549,21 +550,36 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   } else if ( verbosity == room_min ) {
     Summary summary;
     totalSize += summarizeResults(static_ReachableClassKinds,summary);
+  } else if ( verbosity == room_test ) {
+    Summary summary;
+    totalSize += summarizeResults(static_ReachableClassKinds,summary);
   }
-
+  if (gatherObjects._corruptObjects.size()>0) {
+    OutputStream << fmt::format("There are {} object(s) that contain tagged pointers to invalid objects\n", gatherObjects._corruptObjects.size() );
+    for ( auto iter : gatherObjects._corruptObjects ) {
+      OutputStream << fmt::format("Bad tagged pointer base -> {}\n", (void*)iter.first );
+      for ( auto inner : iter.second ) {
+        OutputStream << fmt::format("    Referenced at {}\n", (void*)inner);
+      }
+    }
+  } else {
+    OutputStream << fmt::format("All objects contain valid tagged pointers - memory is CLEAN!\n");
+  }
   if (invalidHeaderTotalSize>0) {
     OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
   }
-  OutputStream << "Total object memory usage (bytes): " << std::setw(12) << totalSize << '\n';
+  if (totalSize>0) {
+    OutputStream << "Total object memory usage (bytes): " << std::setw(10) << totalSize << '\n';
+  }
 #endif
-  OutputStream << "Total number of JITDylibs:         " << cl__length(_lisp->_Roots._JITDylibs) << '\n';
-  OutputStream << "Total number of Libraries:         " << cl__length(_lisp->_Roots._AllLibraries) << '\n';
-  OutputStream << "Total number of ObjectFiles:       " << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
-  OutputStream << "Total number of CodeBlocks:        " << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
-  OutputStream << "Total GC_get_heap_size():          " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << "Total GC_get_free_bytes():         " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << "Total GC_get_bytes_since_gc():     " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << "Total GC_get_total_bytes():        " <<  std::setw(12) << GC_get_total_bytes() << '\n';
+  OutputStream << "Total GC_get_heap_size():        " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << "Total GC_get_free_bytes():       " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << "Total GC_get_bytes_since_gc():   " << std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << "Total GC_get_total_bytes():      " << std::setw(12) << GC_get_total_bytes() << '\n';
+  OutputStream << "Total number of JITDylibs:       " << std::setw(12) << cl__length(_lisp->_Roots._JITDylibs) << '\n';
+  OutputStream << "Total number of Libraries:       " << std::setw(12) << cl__length(_lisp->_Roots._AllLibraries) << '\n';
+  OutputStream << "Total number of ObjectFiles:     " << std::setw(12) << cl__length(_lisp->_Roots._AllObjectFiles) << '\n';
+  OutputStream << "Total number of CodeBlocks:      " << std::setw(12) << cl__length(_lisp->_Roots._AllCodeBlocks) << '\n';
   delete static_ReachableClassKinds;
 }
 

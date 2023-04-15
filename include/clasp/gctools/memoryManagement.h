@@ -80,7 +80,7 @@ inline void *GC_base(void *v) { return v; };
 
 namespace gctools {
 
-typedef enum { room_max, room_default, room_min } RoomVerbosity;
+typedef enum { room_test, room_max, room_default, room_min } RoomVerbosity;
 
 // The clasp pointer type.
 // This was introduced very late - but we can use it to recognize pointers that need fixup in save/load
@@ -662,13 +662,15 @@ public:
 #endif
 };
 
+struct GatherObjects; // forward decl
+
 class ConsHeader_s : public BaseHeader_s {
 public:
   ConsHeader_s(const BadgeStampWtagMtag &k) : BaseHeader_s(k){};
 
 public:
   static constexpr size_t size() { return sizeof(ConsHeader_s); };
-  bool isValidConsObject() const;
+  bool isValidConsObject(GatherObjects* gather) const;
 };
 
 class Header_s : public BaseHeader_s {
@@ -691,7 +693,7 @@ public:
 #endif
 
 public:
-  bool isValidGeneralObject() const;
+  bool isValidGeneralObject(GatherObjects* gather) const;
   void validate() const;
   void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE
@@ -1299,11 +1301,12 @@ struct MarkNode {
 };
 
 struct GatherObjects {
+  RoomVerbosity _Verbosity;
   std::set<BaseHeader_s *> _Marked;
   MarkNode *_Stack;
   std::map<BaseHeader_s *, std::vector<uintptr_t>> _corruptObjects;
 
-  GatherObjects() : _Stack(NULL){};
+  GatherObjects(RoomVerbosity v) : _Verbosity(v), _Stack(NULL){};
 
   MarkNode *popMarkStack() {
     if (this->_Stack) {

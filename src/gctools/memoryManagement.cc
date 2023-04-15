@@ -403,17 +403,27 @@ void clasp_dealloc(char* buffer) {
 
 namespace gctools {
 
-bool is_memory_readable(const void* address,size_t bytes) {
-  int filedes = open("/dev/null", O_WRONLY);
-  if (filedes<0) {
-    printf("%s:%d:%s Could not open /dev/null\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
+bool is_memory_readable(const void *address, size_t bytes) {
+  int fd[2];
+  int ret = pipe(fd);
+  if (ret == -1) {
+    printf("%s:%d:%s Error creating pipe\n", __FILE__, __LINE__, __FUNCTION__ );
+    wait_for_user_signal("Error creating pipe in is_memory_readable");
   }
-  ssize_t wrote = write( filedes, address, bytes );
-  close(filedes);
-  return (wrote!=-1);
+  
+    // Try to write to an unwritable file descriptor
+  ret = write(fd[1], address, bytes );
+  close(fd[0]);
+  close(fd[1]);
+  
+  if (ret == -1 && errno == EFAULT) {
+        // Memory is not readable
+    return false;
+  } else {
+        // Memory is readable
+    return true;
+  }
 }
-
 
 void rawHeaderDescribe(const uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
@@ -425,7 +435,7 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
       break;
   }
   case Header_s::stamp_mtag: {
-    if (is_memory_readable(headerP)) {
+    if (is_memory_readable((void*)headerP,8)) {
       printf("   %p : %18p <- header\n", headerP, (void*)*headerP);
     } else {
       printf("   %p : <<<<< The address is NOT readable\n", headerP );
@@ -570,12 +580,14 @@ void BaseHeader_s::validate() const {
   }
 }
 
-bool ConsHeader_s::isValidConsObject() const {
+bool ConsHeader_s::isValidConsObject(GatherObjects* gather) const {
   if (((uintptr_t)this&ptag_mask)!=0) {
     printf("%s:%d The cons header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  void* gcBase = GC_base((void*)this);
+  void* gcBase;
+  if (gather->_Verbosity==room_test && !is_memory_readable((void*)this,8)) goto bad;
+  gcBase = GC_base((void*)this);
   if (gcBase!=(void*)this) goto bad;
   if ( this->_badge_stamp_wtag_mtag._value == 0 ) goto bad;
   if ( this->_badge_stamp_wtag_mtag.invalidP() ) goto bad;
@@ -586,12 +598,14 @@ bool ConsHeader_s::isValidConsObject() const {
 }
 
 
-bool Header_s::isValidGeneralObject() const {
+bool Header_s::isValidGeneralObject(GatherObjects* gather) const {
   if (((uintptr_t)this&ptag_mask)!=0) {
     printf("%s:%d The general header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  void* gcBase = GC_base((void*)this);
+  void* gcBase;
+  if (gather->_Verbosity == room_test && !is_memory_readable((void*)this,8)) goto bad;
+  gcBase = GC_base((void*)this);
   if (gcBase!=(void*)this) goto bad;
   if ( this->_badge_stamp_wtag_mtag._value == 0 ) goto bad;
   #ifdef DEBUG_GUARD  
@@ -619,7 +633,7 @@ bool Header_s::isValidGeneralObject() const {
   }
   return true;
  bad:
-  printf("%s:%d:%s Encountered a bad general object at %p value: 0x%x\n", __FILE__, __LINE__, __FUNCTION__, this, this->_badge_stamp_wtag_mtag._value );
+  //printf("%s:%d:%s Encountered a bad general object at %p value: 0x%x\n", __FILE__, __LINE__, __FUNCTION__, this, this->_badge_stamp_wtag_mtag._value );
   return false;
 }
 
@@ -882,25 +896,22 @@ void walkRoots( RootWalkCallback callback, void* data ) {
   }
 };
 
-
 PointerFix globalMemoryWalkPointerFix;
 
-void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* userData ) {
+void gatherObjects( uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, void* userData ) {
   GatherObjects* gather = (GatherObjects*)userData;
   BaseHeader_s* base;
   if (tag == gctools::general_tag) {
     Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
     base = header;
-    if (!header->isValidGeneralObject()) {
+    if (!header->isValidGeneralObject(gather)) {
       auto ii = gather->_corruptObjects.find(header);
       if ( ii == gather->_corruptObjects.end() ) {
-        std::vector<uintptr_t> badPointers;
-        badPointers.push_back((uintptr_t)clientAddress);
-        gather->_corruptObjects[header] = badPointers;
+        gather->_corruptObjects[header].push_back((uintptr_t)fieldAddress);
       } else {
         std::vector<uintptr_t>& badPointers = ii->second;
-        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)clientAddress) != badPointers.end() ) {
-          badPointers.push_back((uintptr_t)clientAddress);
+        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)fieldAddress) != badPointers.end() ) {
+          badPointers.push_back((uintptr_t)fieldAddress);
         }
       }
       return;
@@ -908,16 +919,16 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
   } else if (tag==gctools::cons_tag) {
     ConsHeader_s* consHeader = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
     base = consHeader;
-    if (!consHeader->isValidConsObject()) {
+    if (!consHeader->isValidConsObject(gather)) {
       auto ii = gather->_corruptObjects.find(consHeader);
       if ( ii == gather->_corruptObjects.end() ) {
         std::vector<uintptr_t> badPointers;
-        badPointers.push_back((uintptr_t)clientAddress);
+        badPointers.push_back((uintptr_t)fieldAddress);
         gather->_corruptObjects[consHeader] = badPointers;
       } else {
         std::vector<uintptr_t>& badPointers = ii->second;
-        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)clientAddress) != badPointers.end() ) {
-          badPointers.push_back((uintptr_t)clientAddress);
+        if (std::find(badPointers.begin(), badPointers.end(), (uintptr_t)fieldAddress) != badPointers.end() ) {
+          badPointers.push_back((uintptr_t)fieldAddress);
         }
       }
       return;
@@ -926,22 +937,22 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
 #ifdef RUNNING_PRECISEPREP
     Header_s* base = NULL;
 #else
-    Header_s* base = (Header_s*)GC_base(clientAddress);
+    Header_s* base = (Header_s*)GC_base(fieldAddress);
 #endif
     if (base==NULL) {
-      printf("%s:%d:%s Hit NULL base pointer for %p\n", __FILE__, __LINE__, __FUNCTION__, clientAddress );
+      printf("%s:%d:%s Hit NULL base pointer for %p\n", __FILE__, __LINE__, __FUNCTION__, fieldAddress );
     }
     auto ii = gather->_corruptObjects.find(base);
     if ( ii == gather->_corruptObjects.end() ) {
       std::vector<uintptr_t> badPointers;
-      badPointers.push_back((uintptr_t)clientAddress);
+      badPointers.push_back((uintptr_t)fieldAddress);
       gather->_corruptObjects[base] = badPointers;
     } else {
       std::vector<uintptr_t>& badPointers = ii->second;
-      badPointers.push_back((uintptr_t)clientAddress);
+      badPointers.push_back((uintptr_t)fieldAddress);
     }
     printf("%s:%d:%s Somehow a non general/cons object at %p value %p got into gatherObjects - this indicates memory corruption - figure out why\n",
-           __FILE__, __LINE__, __FUNCTION__, (void*)clientAddress, (void*)(client|tag));
+           __FILE__, __LINE__, __FUNCTION__, (void*)fieldAddress, (void*)(client|tag));
     return; // It's an immediate - it shouldn't have gotten here
   }
   //
@@ -953,21 +964,19 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
   //
   // It hasn't been seen - mark it for scanning
   //
-  MarkNode* node = new MarkNode( clientAddress );
-  LOG("pushMarkStack: %p\n", *(void**)clientAddress );
+  MarkNode* node = new MarkNode( fieldAddress );
+  LOG("pushMarkStack: %p\n", *(void**)fieldAddress );
   gather->pushMarkStack(node);
 }
 
 #define POINTER_FIX(_ptr_) {\
-    uintptr_t *taggedP = reinterpret_cast<uintptr_t *>(_ptr_);\
-    if (gctools::tagged_objectp(*taggedP)) {\
-      uintptr_t tagged_obj = *taggedP;\
-      if (gctools::tagged_objectp(*taggedP)) { \
-        uintptr_t obj = gctools::untag_object<uintptr_t>(tagged_obj);\
-        uintptr_t tag = (uintptr_t)gctools::ptag<uintptr_t>(tagged_obj);\
-        /*printf("%s:%d fixing taggedP@%p obj-> %p tag-> 0x%lx\n", __FILE__, __LINE__, (void*)taggedP, (void*)obj, (uintptr_t)tag);*/ \
-        (globalMemoryWalkPointerFix)(taggedP,obj,tag,user_data); \
-      };\
+    uintptr_t *fieldP = reinterpret_cast<uintptr_t *>(_ptr_);\
+    if (gctools::tagged_objectp(*fieldP)) {\
+      uintptr_t tagged_obj_ptr = *fieldP;\
+      uintptr_t obj = gctools::untag_object<uintptr_t>(tagged_obj_ptr);\
+      uintptr_t tag = (uintptr_t)gctools::ptag<uintptr_t>(tagged_obj_ptr);\
+      /*printf("%s:%d fixing fieldP@%p obj-> %p tag-> 0x%lx\n", __FILE__, __LINE__, (void*)fieldP, (void*)obj, (uintptr_t)tag);*/ \
+      (globalMemoryWalkPointerFix)(fieldP,obj,tag,user_data); \
     };\
   }
 
@@ -1115,5 +1124,8 @@ size_t objectSize( BaseHeader_s* header ) {
     return objectSize;
   } 
 }
+
+
+
 
 };
