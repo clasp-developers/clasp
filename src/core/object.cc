@@ -391,6 +391,7 @@ bool General_O::equal(T_sp obj) const { return this->eq(obj); }
 
 bool General_O::equalp(T_sp obj) const { return this->equal(obj); }
 
+#if 0
 bool HashGenerator::addGeneralAddress(General_sp part) {
   ASSERT(part.generalp());
   if (this->isFull())
@@ -409,9 +410,10 @@ bool HashGenerator::addConsAddress(Cons_sp part) {
   this->_NextAddressIndex--;
   return true;
 }
-
+#endif
 void Hash1Generator::hashObject(T_sp obj) { clasp_sxhash(obj, *this); }
 
+#if 0
 // Add an address - this may need to work with location dependency
 bool Hash1Generator::addGeneralAddress(General_sp part) {
   ASSERT(part.generalp());
@@ -419,7 +421,7 @@ bool Hash1Generator::addGeneralAddress(General_sp part) {
   this->_PartIsPointer = true;
 #ifdef DEBUG_HASH_GENERATOR
   if (this->_debug) {
-    printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+    lisp_write(fmt::format("{}:{}:{} Added part --> {}\n", __FILE__, __LINE__, __FUNCTION__, _rep_(part)));
   }
 #endif
   return true;
@@ -431,11 +433,12 @@ bool Hash1Generator::addConsAddress(Cons_sp part) {
   this->_PartIsPointer = true;
 #ifdef DEBUG_HASH_GENERATOR
   if (this->_debug) {
-    printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+    lisp_write(fmt::format("{}:{}:{} Added part --> {}\n", __FILE__, __LINE__, __FUNCTION__, _rep_(part)));
   }
 #endif
   return true;
 }
+#endif
 
 /*! Recursive hashing of objects need to be prevented from
     infinite recursion.   So we keep track of the depth of
@@ -454,11 +457,6 @@ Fixnum bignum_hash(const mpz_class &bignum) {
   unsigned int size = bn->_mp_size;
   if (size < 0)
     size = -size;
-#ifdef DEBUG_HASH_GENERATOR
-  if (this->_debug) {
-    printf("%s:%d Adding hash bignum\n", __FILE__, __LINE__);
-  }
-#endif
   gc::Fixnum hash(5381);
   for (int i = 0; i < (int)size; i++) {
     hash = (gc::Fixnum)hash_word(hash, (uintptr_t)bn->_mp_d[i]);

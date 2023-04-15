@@ -35,6 +35,8 @@ THE SOFTWARE.
 #ifndef OBJECT_H //[
 #define OBJECT_H
 
+#include <fmt/printf.h>
+#include <fmt/ostream.h>
 #include <clasp/core/newhash.h>
 #include <clasp/core/commonLispPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
@@ -96,6 +98,7 @@ namespace core {
 //
 //
 //
+//#define DEBUG_HASH_GENERATOR 1
 
 class RootClass {
 public:
@@ -125,6 +128,10 @@ struct LispBases1 {
 
 
 namespace core {
+  extern void lisp_write(const std::string& s);
+};
+
+namespace core {
   class KeyValueMapper {
   public:
   /*! Return true if the mapper should continue */
@@ -142,6 +149,9 @@ class Hash1Generator : public HashGeneratorBase {
  public:
   uint64_t _Part;
   bool     _PartIsPointer;
+#ifdef DEBUG_HASH_GENERATOR
+  bool     _debug;
+#endif
  public:
   // Add a value  
   bool addValue(Fixnum part) {
@@ -149,7 +159,7 @@ class Hash1Generator : public HashGeneratorBase {
     this->_PartIsPointer = false;
 #ifdef DEBUG_HASH_GENERATOR
     if (this->_debug) {
-      printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+      lisp_write(fmt::format("{}:{}:{} Added part -> {}\n", __FILE__, __LINE__, __FUNCTION__, part));
     }
 #endif
     return true;
@@ -158,10 +168,10 @@ class Hash1Generator : public HashGeneratorBase {
   bool addValue(const mpz_class &bignum);
 
     // Add an address - this may need to work with location dependency
-  bool addConsAddress(Cons_sp part);
+  bool addConsAddress(Cons_sp part) { return this->addValue(lisp_badge(part)); };
 
   // Add an address - this may need to work with location dependency
-  bool addGeneralAddress(General_sp part);
+  bool addGeneralAddress(General_sp part) { return this->addValue(lisp_general_badge(part)); };
   
   // Hash1Generator is always filling
   bool isFilling() const { return true; };
@@ -181,40 +191,42 @@ class Hash1Generator : public HashGeneratorBase {
     gc::Fixnum hash = rawhash();
 #ifdef DEBUG_HASH_GENERATOR
     if (this->_debug) {
-      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+      lisp_write(fmt::format("{}:{}:{} final hash = {}\n", __FILE__, __LINE__, __FUNCTION__, hash));
     }
 #endif
     return ((uintptr_t)hash) % bound;
   }
 };
  
-//#define DEBUG_HASH_GENERATOR
 class HashGenerator : public HashGeneratorBase {
   static const int MaxParts = 32;
   static const int MaxDepth = 8;
 private:
   int _Depth;
   int _NextPartIndex;
-  int _NextAddressIndex;
   Fixnum _Parts[MaxParts];
 #ifdef DEBUG_HASH_GENERATOR
   bool _debug;
 #endif
 public:
-  HashGenerator(bool debug = false) : _Depth(0), _NextPartIndex(0), _NextAddressIndex(MaxParts-1)
+  HashGenerator(bool debug = false) : _Depth(0), _NextPartIndex(0)
 #ifdef DEBUG_HASH_GENERATOR
                                     , _debug(debug)
 #endif
-  {};
+  {
+#ifdef DEBUG_HASH_GENERATOR
+//    if (this->_debug) lisp_write(fmt::format("{} ctor HG@{}\n", CPP_SOURCE(), (void*)this));
+#endif
+  };
 
     /*! Return true if can still accept parts */
   bool isFilling() const {
-    return (this->_NextPartIndex <= this->_NextAddressIndex) || (this->_Depth>= MaxDepth);
+    return (this->_NextPartIndex < MaxParts) || (this->_Depth>= MaxDepth);
   }
 
   /*! Return true if not accepting any more parts */
   bool isFull() const {
-    return this->_NextPartIndex > this->_NextAddressIndex;
+    return this->_NextPartIndex >= MaxParts;
   }
 
   bool addValue(Fixnum part) {
@@ -224,7 +236,7 @@ public:
     this->_Parts[this->_NextPartIndex] = part;
 #ifdef DEBUG_HASH_GENERATOR
     if (this->_debug) {
-      printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part);
+      lisp_write(fmt::format("{}:{}:{} Added part[{}] = {}\n", __FILE__, __LINE__, __FUNCTION__, this->_NextPartIndex, part));
     }
 #endif
     ++this->_NextPartIndex;
@@ -237,9 +249,9 @@ public:
     return true;
   }
 
-  bool addConsAddress(Cons_sp part);
-  bool addGeneralAddress(General_sp part);
-  
+  bool addConsAddress(Cons_sp part) { return this->addValue(lisp_badge(part)); };
+  bool addGeneralAddress(General_sp part) { return this->addValue(lisp_general_badge(part)); };
+ 
   /*Add the bignum across multiple parts, return true if everything was added */
   bool addValue(const mpz_class &bignum);
 
@@ -249,19 +261,11 @@ public:
       hash = (gc::Fixnum)hash_word((uintptr_t)hash, (uintptr_t) this->_Parts[i]);
 #ifdef DEBUG_HASH_GENERATOR
       if (this->_debug) {
-        printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
+        lisp_write(fmt::format("{}  calculated hash = {} with part[{}] --> {}u\n", CPP_SOURCE(), hash, i, this->_Parts[i]));
       }
 #endif
     }
-    for (int ia = this->_NextAddressIndex+1; ia < MaxParts; ia++) {
-      hash = (gc::Fixnum)hash_word((uintptr_t)hash, (uintptr_t) this->_Parts[ia]);
-#ifdef DEBUG_HASH_GENERATOR
-      if (this->_debug) {
-        printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[ia]);
-      }
-#endif
-    }
-    return hash;
+    return hash&MOST_POSITIVE_FIXNUM;
   }
 
   gc::Fixnum hashBound(gc::Fixnum bound = 0) const {
@@ -270,7 +274,7 @@ public:
       return ((uintptr_t)hash) % bound;
 #ifdef DEBUG_HASH_GENERATOR
     if (this->_debug) {
-      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+      lisp_write(fmt::format("{}:{}:{} final hash = {}\n", __FILE__, __LINE__, __FUNCTION__, hash));
     }
 #endif
     return hash;
@@ -280,11 +284,7 @@ public:
     std::stringstream ss;
     ss << "#<HashGenerator ";
     for (int i = 0; i < this->_NextPartIndex; i++) {
-      ss << this->_Parts[i] << "-";
-    }
-    ss << "|-";
-    for (int i = this->_NextAddressIndex+1; i < MaxParts; i++) {
-      ss << this->_Parts[i] << "-";
+      ss << std::hex << this->_Parts[i] << " ";
     }
     ss << ">";
     return ss.str();

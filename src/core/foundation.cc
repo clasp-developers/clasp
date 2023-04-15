@@ -148,6 +148,7 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
 
 namespace core {
 
+
 union NW {
   uint64_t word;
   char name[8];
@@ -816,10 +817,10 @@ bool lisp_debugIsOn(const char *fileName, uint debugFlags) {
 
 DebugStream *lisp_debugLog() { return &(_lisp->debugLog()); }
 
-uint lisp_hash(uintptr_t x) {
+Fixnum lisp_hash(uintptr_t x) {
   HashGenerator hg;
   hg.addValue(x);
-  return static_cast<uint>(hg.rawhash());
+  return hg.rawhash();
 }
 
 T_sp lisp_true() { return _lisp->_true(); }

@@ -34,6 +34,8 @@ THE SOFTWARE.
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 
+// #define DEBUG_HASH_TABLE_DEBUG
+
 namespace core {
 double maybeFixRehashThreshold(double rt);
 #define DEFAULT_REHASH_THRESHOLD 0.7
@@ -72,6 +74,9 @@ struct KeyValuePair {
     _RehashSize(nil<Number_O>()),
     _RehashThreshold(maybeFixRehashThreshold(0.7)),
     _HashTableCount(0)
+#ifdef DEBUG_HASH_TABLE_DEBUG
+    ,_Debug(false)
+#endif
     {};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
     friend class HashTableEq_O;
@@ -91,6 +96,9 @@ struct KeyValuePair {
     double _RehashThreshold;
     gctools::Vec0<KeyValuePair> _Table;
     size_t _HashTableCount;
+#ifdef DEBUG_HASH_TABLE_DEBUG
+    bool   _Debug;
+#endif
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex_sp _Mutex;
 #endif
@@ -106,6 +114,7 @@ struct KeyValuePair {
     static void sxhash_equal(HashGenerator &running_hash, T_sp obj );
     static void sxhash_equalp(HashGenerator &running_hash, T_sp obj );
     void setupThreadSafeHashTable();
+    void setupDebug();
 
   private:
     void setup(uint sz, Number_sp rehashSize, double rehashThreshold);
@@ -142,7 +151,8 @@ struct KeyValuePair {
   /*! I'm not sure I need this and tableRef */
     List_sp bucketsFind_no_lock(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
-    virtual KeyValuePair* tableRef_no_read_lock(T_sp key,bool under_write_lock, cl_index index, HashGenerator& hg);
+    virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
+    KeyValuePair* tableRef_no_read_lock(T_sp key, cl_index index );
 //    List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
 
     T_sp hash_table_average_search_length();

@@ -77,22 +77,19 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
   return ht;
 }
 
-List_sp HashTableEq_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
-  cl_index length = this->_Table.size();
-  HashGenerator hg;
-  cl_index index = this->sxhashKey(key, length, hg );
+KeyValuePair* HashTableEq_O::searchTable_no_read_lock(T_sp key, cl_index index) {
   for (size_t cur = index, curEnd(this->_Table.size()); cur<curEnd; ++cur ) {
     KeyValuePair& entry = this->_Table[cur];
-    if (entry._Key == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
+    if (entry._Key == key) return &entry;
     if (entry._Key.no_keyp()) goto NOT_FOUND;
   }
   for (size_t cur = 0, curEnd(index); cur<curEnd; ++cur ) {
     KeyValuePair& entry = this->_Table[cur];
-    if (entry._Key == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
+    if (entry._Key == key) return &entry;
     if (entry._Key.no_keyp()) goto NOT_FOUND;
   }
  NOT_FOUND:
-  return nil<T_O>();
+  return nullptr;
 }
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {

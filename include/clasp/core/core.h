@@ -616,7 +616,7 @@ typedef gc::smart_ptr<FuncallableInstance_O> FuncallableInstance_sp;
 
 namespace core {
 core::T_sp lisp_true();
-uint lisp_hash(uintptr_t v);
+Fixnum lisp_hash(uintptr_t v);
 }; // namespace core
 
 #include <clasp/gctools/gc_interface.h>
