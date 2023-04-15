@@ -197,6 +197,9 @@
    ;; If something's referenced directly from load-time-value, it's permanent.
    (%permanency :initform t)))
 
+(defclass init-object-array (instruction)
+  ((%count :initarg :count :reader init-object-array-count)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Attributes are bonus, possibly implementation-defined stuff also in the file.
@@ -512,7 +515,9 @@
             ((call-with-dumpable-arguments-p form)
              (make-instance 'general-creator
                :prototype value
-               :function (ensure-constant (car form))
+               :function (add-instruction
+                          (make-instance 'fdefinition-lookup
+                            :name (ensure-constant (car form))))
                :arguments (mapcar (f-dumpable-form-creator env) (rest form))))
             (t (default))))))
 
@@ -535,7 +540,9 @@
                     :arguments (mapcar cre (cddr form))))
                  (add-instruction
                   (make-instance 'general-initializer
-                    :function (ensure-constant (car form))
+                    :function (add-instruction
+                               (make-instance 'fdefinition-lookup
+                                 :name (ensure-constant (car form))))
                     :arguments (mapcar cre (rest form)))))))
            (t (default)))))
 
@@ -624,6 +631,7 @@
     ;; set-ltv-funcall in clasp- redundant
     #+(or) ; obsolete as of v0.3
     (make-specialized-array 97 sind rank dims etype . elems)
+    (init-object-array 99 ub64)
     (attribute 255 name nbytes . data)))
 
 ;;; STREAM is a ub8 stream.
@@ -649,7 +657,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 8)
+(defparameter *minor-version* 9)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -660,13 +668,13 @@
   (let* ((nobjs (count-if (lambda (i) (typep i 'creator)) instructions))
          ;; Next highest power of two bytes, roughly
          (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
-         (ninsts (length instructions)))
+         (ninsts (1+ (length instructions))))
     (assign-indices instructions)
     (dbgprint "Instructions:~{~&~a~}" instructions)
     (write-magic stream)
     (write-version stream)
-    (write-b64 nobjs stream)
     (write-b64 ninsts stream)
+    (encode (make-instance 'init-object-array :count nobjs) stream)
     (map nil (lambda (inst) (encode inst stream)) instructions)))
 
 (defun %write-bytecode (stream)
@@ -1186,6 +1194,10 @@
                     (write-byte (if cellp 1 0) stream)
                     (write-b16 index stream)))
          vars)))
+
+(defmethod encode ((init init-object-array) stream)
+  (write-mnemonic 'init-object-array stream)
+  (write-b64 (init-object-array-count init) stream))
 
 ;;;
 

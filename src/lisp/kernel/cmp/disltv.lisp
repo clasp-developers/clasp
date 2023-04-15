@@ -79,6 +79,7 @@
                    :type (unsigned-byte 16))
    (%minor-version :initarg :minor :reader minor-version
                    :type (unsigned-byte 16))
+   ;; obsolete as of 0.9.
    (%object-count :initarg :nobjs :reader object-count
                   :type (unsigned-byte 64))
    (%instructions :initarg :instructions :reader instructions
@@ -427,6 +428,13 @@
     (dbgprint " (find-class ~d ~s)" index name)
     (setf (creator index) (make-instance 'class-creator :name name))))
 
+(defmethod %load-instruction ((mnemonic (eql 'init-object-array)) stream)
+  (let ((nobjs (read-ub64 stream)))
+    (dbgprint " (init-object-array ~d)" nobjs)
+    (setf *index-bytes* (max (ash 1 (1- (ceiling (integer-length nobjs) 8)))
+                             1))
+    (make-instance 'init-object-array :count nobjs)))
+
 (defun read-mnemonic (stream)
   (let* ((opcode (read-byte stream))
          (info (find opcode +ops+ :key #'second)))
@@ -513,8 +521,11 @@
 (defun load-bytecode-stream (stream)
   (load-magic stream)
   (multiple-value-bind (*load-major* *load-minor*) (load-version stream)
-    (let* ((nobjs (read-ub64 stream))
-           (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
+    (let* ((nobjs (if (and (= *load-major* 0) (< *load-minor* 9))
+                      (read-ub64 stream)
+                      0))
+           (*index-bytes* (max (ash 1 (1- (ceiling (integer-length nobjs) 8)))
+                               1))
            (_1 (dbgprint "File reports ~d objects. Index length = ~d bytes."
                          nobjs *index-bytes*))
            (ninsts (read-ub64 stream))
