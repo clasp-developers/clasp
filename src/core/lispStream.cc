@@ -6292,4 +6292,11 @@ CL_DEFUN T_sp core__copy_stream(T_sp in, T_sp out, T_sp wait) {
   return (c == EOF) ? _lisp->_true() : nil<T_O>();
 }
 
+
+void lisp_write(const std::string& s) {
+  write_bf_stream(s);
+}
+
+
+
 }; // namespace core
