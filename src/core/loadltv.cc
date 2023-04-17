@@ -630,12 +630,46 @@ struct loadltv {
     set_ltv(cl__find_class(name, true, nil<T_O>()), index);
   }
 
+  void attr_clasp_source_pos_info(uint32_t bytes) {
+    Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
+    T_sp path = get_ltv(read_index());
+    uint64_t line = read_u64(), column = read_u64(), filepos = read_u64();
+    func->setSourcePosInfo(path, filepos, line, column);
+  }
+
+  void attr_clasp_module_debug_info(uint32_t bytes) {
+    BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
+    gctools::Vec0<T_sp> vargs;
+
+    for (uint16_t fcount = read_u16(); fcount > 0; --fcount) {
+      vargs.push_back(get_ltv(read_index()));
+    }
+
+    for (uint32_t vcount = read_u32(); vcount > 0; --vcount) {
+      Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
+      gctools::Vec0<T_sp> bindings;
+      for (uint16_t bcount = read_u16(); bcount > 0; --bcount) {
+        T_sp name = get_ltv(read_index());
+        uint8_t flag = read_u8();
+        Integer_sp framei = Integer_O::create(read_u16());
+        bindings.push_back((flag == 0) ? Cons_O::create(name, framei) : Cons_O::createList(name, framei));
+      }
+      vargs.push_back(BytecodeDebugVars_O::make(start, end, Cons_O::createFromVec0(bindings)));
+    }
+    mod->setf_debugInfo(SimpleVector_O::make(vargs));
+  }
+
   void op_attribute() {
-    String_sp name = gc::As<String_sp>(get_ltv(read_index()));
+    std::string name = (gc::As<String_sp>(get_ltv(read_index())))->get_std_string();
     uint32_t attrbytes = read_u32();
-    // TODO: Actually load any attributes.
-    for (size_t i = 0; i < attrbytes; ++i)
-      read_u8();
+    if (name == "clasp:source-pos-info") {
+      attr_clasp_source_pos_info(attrbytes);
+    } else if (name == "clasp:module-debug-info") {
+      attr_clasp_module_debug_info(attrbytes);
+    } else {
+      for (size_t i = 0; i < attrbytes; ++i)
+        read_u8();
+    }
   }
 
   void op_init_object_array() {
