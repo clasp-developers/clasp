@@ -99,14 +99,13 @@ static void ltv_header_encode(uint8_t *header, uint64_t instruction_count) {
 }
 
 struct loadltv {
-  Stream_sp stream;
-  SimpleVector_sp _literals;
-  std::vector<bool> _initflags;
+  Stream_sp _stream;
+  gctools::Vec0<T_sp> _literals;
   uint8_t _index_bytes;
 
-  loadltv(Stream_sp stream) : stream(stream), _index_bytes(1), _literals(SimpleVector_O::make(0)) {}
+  loadltv(Stream_sp stream) : _stream(stream), _index_bytes(1) {}
 
-  inline uint8_t read_u8() { return clasp_read_byte(stream).unsafe_fixnum(); }
+  inline uint8_t read_u8() { return clasp_read_byte(_stream).unsafe_fixnum(); }
 
   inline int8_t read_s8() {
     uint8_t byte = read_u8();
@@ -213,26 +212,25 @@ struct loadltv {
   void check_initialization() {
     // bool vectors are apparently stupid and weird so using std algorithms
     // may not work. so we do something stupid.
-    for (size_t i = 0; i < _initflags.size(); ++i)
-      if (!_initflags[i]) // not initialized
+    for (size_t i = 0; i < _literals.size(); ++i)
+      if (_literals[i].unboundp()) // not initialized
         SIMPLE_ERROR("Invalid FASL: did not initialize object #%zu", i);
   }
 
   T_sp get_ltv(size_t index) {
-    if (index >= _initflags.size())
+    if (index >= _literals.size())
       SIMPLE_ERROR("Invalid FASL: requested object #%zu, which is out of range", index);
-    if (!_initflags[index])
+    if (_literals[index].unboundp())
       SIMPLE_ERROR("Invalid FASL: requested object #%zu, which has not yet been initialized", index);
-    return (*_literals)[index];
+    return _literals[index];
   }
 
   void set_ltv(T_sp value, size_t index) {
-    if (index >= _initflags.size())
+    if (index >= _literals.size())
       SIMPLE_ERROR("Invalid FASL: Tried to set object #%zu, which is out of range", index);
-    if (_initflags[index])
+    if (!_literals[index].unboundp())
       SIMPLE_ERROR("Invalid FASL: Tried to set object #%zu, which has already been initialized", index);
-    (*_literals)[index] = value;
-    _initflags[index] = true;
+    _literals[index] = value;
   }
 
   void op_nil() { set_ltv(nil<T_O>(), read_index()); }
@@ -324,7 +322,7 @@ struct loadltv {
     }
   }
 
-  void fill_sub_byte(Array_sp array, size_t total_size, size_t nbits, Stream_sp stream) {
+  void fill_sub_byte(Array_sp array, size_t total_size, size_t nbits) {
     // FIXME: Very inefficient.
     // In a best case scenario we can move in entire bit_array_words at a time,
     // probably?
@@ -352,7 +350,7 @@ struct loadltv {
     }
   }
 
-  void fill_array(Array_sp array, size_t total_size, uint8_t packing, Stream_sp stream) {
+  void fill_array(Array_sp array, size_t total_size, uint8_t packing) {
     // FIXME: Inefficient.
     // Really we ought to be able to read(2) stuff in directly sometimes.
     // And can we do the simple form here for multidimensional arrays?
@@ -381,13 +379,13 @@ struct loadltv {
       READ_ARRAY(SimpleVector_double_sp, read_f64(), clasp_make_double_float(read_f64()));
       break;
     case UAETCode::bit:
-      fill_sub_byte(array, total_size, 1, stream);
+      fill_sub_byte(array, total_size, 1);
       break;
     case UAETCode::ub2:
-      fill_sub_byte(array, total_size, 2, stream);
+      fill_sub_byte(array, total_size, 2);
       break;
     case UAETCode::ub4:
-      fill_sub_byte(array, total_size, 4, stream);
+      fill_sub_byte(array, total_size, 4);
       break;
     case UAETCode::ub8:
       READ_ARRAY(SimpleVector_byte8_t_sp, read_u8(), clasp_make_fixnum(read_u8()));
@@ -445,7 +443,7 @@ struct loadltv {
                   core__make_vector(uaet, total, false, nil<T_O>(), nil<T_O>(), clasp_make_fixnum(0), nil<T_O>(), false))
             : gc::As<Array_sp>(core__make_mdarray(dims.cons(), uaet, false, nil<T_O>(), clasp_make_fixnum(0), nil<T_O>(), false));
     set_ltv(arr, index);
-    fill_array(arr, total, packing_code, stream);
+    fill_array(arr, total, packing_code);
   }
 
   void op_srma() {
@@ -585,7 +583,7 @@ struct loadltv {
     BytecodeModule_sp mod = BytecodeModule_O::make();
     SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make(len);
     mod->setf_bytecode(bytes);
-    cl__read_sequence(bytes, stream, clasp_make_fixnum(0), nil<T_O>());
+    cl__read_sequence(bytes, _stream, clasp_make_fixnum(0), nil<T_O>());
     set_ltv(mod, index);
   }
 
@@ -607,6 +605,7 @@ struct loadltv {
   void op_create() {
     size_t index = read_index();
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
+    fmt::print("create {}\n", _rep_(func));
     uint16_t nargs = read_u16();
     T_O *args[nargs];
     for (size_t i = 0; i < nargs; ++i)
@@ -617,6 +616,7 @@ struct loadltv {
 
   void op_init() {
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
+    fmt::print("init {}\n", _rep_(func));
     uint16_t nargs = read_u16();
     T_O *args[nargs];
     for (size_t i = 0; i < nargs; ++i)
@@ -676,9 +676,7 @@ struct loadltv {
     check_initialization();
     uint64_t nobjs = read_u64();
     _index_bytes = (std::bit_width(nobjs) + CHAR_BIT - 1) / CHAR_BIT;
-    _literals = SimpleVector_O::make(nobjs);
-    _initflags.clear();
-    _initflags.resize(nobjs, false);
+    _literals.assign(nobjs, unbound<T_O>());
   }
 
   void load_instruction() {
@@ -779,7 +777,7 @@ struct loadltv {
 
   void load() {
     uint8_t header[BC_HEADER_SIZE];
-    clasp_read_byte8(stream, header, BC_HEADER_SIZE);
+    clasp_read_byte8(_stream, header, BC_HEADER_SIZE);
     uint64_t ninsts = ltv_header_decode(header);
     for (size_t i = 0; i < ninsts; ++i)
       load_instruction();
