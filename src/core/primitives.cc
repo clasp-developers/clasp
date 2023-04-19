@@ -968,24 +968,6 @@ CL_DEFUN T_sp cl__null(T_sp obj) {
   return nil<T_O>();
 };
 
-CL_LAMBDA(object type-specifier &optional environment);
-CL_DECLARE();
-DOCGROUP(clasp);
-CL_DEFUN bool cl__typep(T_sp obj, T_sp type, T_sp env) {
-  fmt::print("TYPEP {} {}\n", _rep_(obj), _rep_(type));
-  if (gc::IsA<Symbol_sp>(type)) {
-    Symbol_sp sym = gc::As<Symbol_sp>(type);
-    if (sym == cl::_sym_atom) return !obj.consp();
-    if (sym == cl::_sym_character) return obj.characterp();
-    if (sym == cl::_sym_cons) return obj.consp();
-    if (sym == cl::_sym_symbol) return gc::IsA<Symbol_sp>(obj);
-  }
-
-  SIMPLE_ERROR("Primitive TYPEP does not understand type %s", _rep_(type));
-
-  return false;
-};
-
 CL_LAMBDA(obj);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(return class of object - see CLHS)dx");

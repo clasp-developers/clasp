@@ -238,7 +238,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
   (case output-type
     (:faso :fasp)
     (:object :fasl)
-    (:bytecode :bytecodel)
+    (:bytecode :faslbc)
     (:fasoll :faspll)
     (:fasobc :faspbc)
     (:faspll :faspll)
@@ -317,7 +317,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
            ;; bytecode compilation can't be done in parallel at the moment.
            ;; we could possibly warn about it if execution was specified,
            ;; but practically speaking it would mostly be noise.
-           (execution (if (member output-type '(:bytecode :bytecodel))
+           (execution (if (eq output-type :bytecode)
                           :serial
                           execution)))
       (with-open-file (source-sin input-file
@@ -349,22 +349,20 @@ Compile a Lisp source stream and return a corresponding LLVM module."
          (output-type (if output-type-p
                           (fixup-output-type output-type)
                           output-type)))
-    (case output-type
-      ((:bytecode :bytecodel)
-       (apply #'cmpltv:bytecode-compile-stream input-stream output-path args))
-      (otherwise
-       (with-compiler-env ()
-         (with-compiler-timer (:message "Compile-file"
-                               :report-link-time t
-                               :verbose *compile-verbose*)
-           (let ((module (compile-stream-to-module input-stream
-                                                   :environment environment
-                                                   :image-startup-position image-startup-position
-                                                   :optimize optimize
-                                                   :optimize-level optimize-level)))
-             (compile-file-output-module module output-path output-type
-                                         type
-                                         :position image-startup-position)))))))
+    (if (eq output-type :bytecode)
+        (apply #'cmpltv:bytecode-compile-stream input-stream output-path args)
+        (with-compiler-env ()
+          (with-compiler-timer (:message "Compile-file"
+                                :report-link-time t
+                                :verbose *compile-verbose*)
+            (let ((module (compile-stream-to-module input-stream
+                                                    :environment environment
+                                                    :image-startup-position image-startup-position
+                                                    :optimize optimize
+                                                    :optimize-level optimize-level)))
+              (compile-file-output-module module output-path output-type
+                                          type
+                                          :position image-startup-position))))))
   (truename output-path))
 
 (defun reloc-model ()

@@ -796,8 +796,6 @@ CL_DEFUN bool load_bytecode(T_sp filename, bool verbose, bool print, T_sp extern
       cl__open(filename, kw::_sym_input, ext::_sym_byte8, nil<T_O>(), false, nil<T_O>(), false, external_format, nil<T_O>());
   if (strm.nilp())
     return false;
-  DynamicScopeManager lpscope(cl::_sym_STARloadPathnameSTAR, cl__pathname(filename));
-  DynamicScopeManager ltscope(cl::_sym_STARloadTruenameSTAR, cl__truename(filename));
   load_bytecode_stream(gc::As<Stream_sp>(strm));
   cl__close(strm);
   return true;

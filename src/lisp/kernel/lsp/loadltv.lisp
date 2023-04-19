@@ -32,6 +32,7 @@
     (funcall-initialize 94 fnind)
     (fdefinition 95 find nameind)
     (find-class 98 sind cnind)
+    (init-object-array 99 ub64)
     ;; set-ltv-funcall in clasp- redundant
     (make-specialized-array 97 sind rank dims etype . elems) ; obsolete as of 0.3
     (attribute 255 name nbytes . data)))
@@ -86,7 +87,7 @@
 
 ;; Bounds for major and minor version understood by this loader.
 (defparameter *min-version* '(0 0))
-(defparameter *max-version* '(0 8))
+(defparameter *max-version* '(0 9))
 
 (defun loadable-version-p (major minor)
   (and
@@ -583,6 +584,14 @@ Tried to define constant #~d, but it was already defined"
     (dbgprint " (find-class ~d ~d)" index cni)
     (setf (constant index) (find-class (constant cni)))))
 
+(defmethod %load-instruction ((mnemonic (eql 'init-object-array)) stream)
+  (check-initialization *initflags*)
+  (let ((nobjs (read-ub64)))
+    (dbgprint " (init-object-array ~d)" nobjs)
+    (setf *index-bytes* (max 1 (ash 1 (1- (ceiling (integer-length nobjs) 8))))
+          *constants* (make-array nobjs)
+          *initflags* (make-array nobjs :element-type 'bit :initial-element 0))))
+
 ;; Return how many bytes were read (for early versions, anyway)
 (defun load-instruction (stream)
   (if (<= *minor* 2)
@@ -698,11 +707,13 @@ Did not initialize constants~{ #~d~}"
                              &key ((:verbose *load-verbose*) *load-verbose*))
   (load-magic stream)
   (multiple-value-bind (*major* *minor*) (load-version stream)
-    (let* ((nobjs (read-ub64 stream))
+    (let* ((nobjs (if (and (= *major* 0) (<= *minor* 8))
+                      (read-ub64 stream)
+                      0))
            (nfbytes (when (<= 1 *minor* 2) (read-ub64 stream)))
            (ninsts (when (>= *minor* 3) (read-ub64 stream)))
            ;; Next power of two.
-           (*index-bytes* (ash 1 (1- (ceiling (integer-length nobjs) 8))))
+           (*index-bytes* (max 1 (ash 1 (1- (ceiling (integer-length nobjs) 8)))))
            (*module* (when (= *minor* 1) (core:bytecode-module/make)))
            (*constants* (make-array nobjs))
            (*initflags* (make-array nobjs
@@ -734,7 +745,6 @@ Did not initialize constants~{ #~d~}"
                  (dbgprint "File reports ~d attributes" nattrs)
                  (loop repeat nattrs
                        do (load-attribute stream))))
-             #-clasp ; listen is broken on clasp
              (when (listen stream)
                (error "Bytecode continues beyond end of instructions: ~a"
                       (alexandria:read-stream-content-into-byte-vector stream)))))
@@ -767,7 +777,5 @@ Did not initialize constants~{ #~d~}"
   (load-bytecode source :verbose verbose :print print
                         :external-format external-format))
 
-#+clasp
+#+(or)
 (pushnew '("faslbc" . load-hook) core:*load-hooks* :test #'equal)
-#+clasp
-(pushnew '("faslbcl" . load-hook) core:*load-hooks* :test #'equal)
