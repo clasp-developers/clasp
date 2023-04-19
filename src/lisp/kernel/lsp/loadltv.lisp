@@ -167,6 +167,22 @@ Tried to access constant #~d, but there are only ~d constants in the FASL."
                      (file-error-pathname condition)
                      (offending-index condition) (nobjs condition)))))
 
+(define-condition not-all-initialized (invalid-fasl)
+  ((%indices :initarg :indices :reader offending-indices))
+  (:report (lambda (condition stream)
+             (format stream "FASL ~s is invalid:
+Did not initialize constants~{ #~d~}"
+                     (file-error-pathname condition)
+                     (offending-indices condition)))))
+
+(defun check-initialization (flags)
+  (when (find 0 flags)
+    (error 'not-all-initialized
+           :indices (loop for i from 0
+                          for e across flags
+                          when (zerop e) collect i)))
+  (values))
+
 (defun constant (index)
   (cond ((not (array-in-bounds-p *initflags* index))
          (error 'index-out-of-range :index index
@@ -687,22 +703,6 @@ Tried to define constant #~d, but it was already defined"
           do (dbgprint "Calling toplevel #~d" i)
              (funcall tl))))
 
-(define-condition not-all-initialized (invalid-fasl)
-  ((%indices :initarg :indices :reader offending-indices))
-  (:report (lambda (condition stream)
-             (format stream "FASL ~s is invalid:
-Did not initialize constants~{ #~d~}"
-                     (file-error-pathname condition)
-                     (offending-indices condition)))))
-
-(defun check-initialization (flags)
-  (when (find 0 flags)
-    (error 'not-all-initialized
-           :indices (loop for i from 0
-                          for e across flags
-                          when (zerop e) collect i)))
-  (values))
-
 (defun load-bytecode-stream (stream
                              &key ((:verbose *load-verbose*) *load-verbose*))
   (load-magic stream)
@@ -746,8 +746,7 @@ Did not initialize constants~{ #~d~}"
                  (loop repeat nattrs
                        do (load-attribute stream))))
              (when (listen stream)
-               (error "Bytecode continues beyond end of instructions: ~a"
-                      (alexandria:read-stream-content-into-byte-vector stream)))))
+               (error "Bytecode continues beyond end of instructions"))))
       (when (= *minor* 1)
         (load-bytecode-module *constants* stream)
         (load-toplevels stream))
