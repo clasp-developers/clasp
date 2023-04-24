@@ -101,6 +101,7 @@
                  "DEBUG_SLOW" (debug-slow configuration)
                  "USE_HUMAN_READABLE_BITCODE" (human-readable-bitcode configuration)
                  "DEBUG_COMPILE_FILE_OUTPUT_INFO" (debug-compile-file-output-info configuration)
+                 "DEBUG_VIRTUAL_MACHINE" (debug-virtual-machine configuration)
                  "SNAPSHOT_START" :|_binary_snapshot_start|
                  "SNAPSHOT_END" :|_binary_snapshot_end|
                  "SNAPSHOT_SIZE" :|_binary_snapshot_size|

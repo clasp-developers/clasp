@@ -63,7 +63,7 @@ namespace core {
 extern int global_debug_virtual_machine;
 
 #define VM_ASSERT_ALIGNED(vm,ptr) if (((uintptr_t)(ptr))&0x7) { printf("%s:%d:%s Unaligned pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(ptr)); (vm).error(); }
-#define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&stackPointer&&!((vm)._stackBottom<=stackPointer && stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
+#define VM_STACK_POINTER_CHECK(vm) if ((vm)._Running&&_stackPointer&&!((vm)._stackBottom<=_stackPointer && _stackPointer<=(vm)._stackTop) ) { printf("%s:%d:%s _stackPointer %p is out of stack _stackTop %p _stackBottom %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(_stackPointer), (void*)((vm)._stackTop), (void*)((vm)._stackBottom)); (vm).error(); }
 #define VM_PC_CHECK(vm,pc,bytecode_start,bytecode_end) if ((uintptr_t)pc<(uintptr_t)bytecode_start || (uintptr_t)pc>=(uintptr_t)bytecode_end) {printf("%s:%d:%s vm._pc %p is outside of the bytecode vector range [ %p - %p ]\n", __FILE__, __LINE__, __FUNCTION__, (void*)pc, (void*)bytecode_start,(void*)bytecode_end);(vm).error();}
 #define VM_CHECK(vm) VM_STACK_POINTER_CHECK(vm);
 #define VM_CURRENT_DATA(vm,data) { (vm)._data = data; }

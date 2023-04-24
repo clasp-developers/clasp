@@ -483,6 +483,11 @@
                                    :initform nil
                                    :type boolean
                                    :documentation "")
+   (debug-virtual-machine :accessor debug-virtual-machine
+                          :initarg :debug-virtual-machine
+                          :initform nil
+                          :type boolean
+                          :documentation "")
    (config-var-cool :accessor config-var-cool
                     :initarg :config-var-cool
                     :initform t
