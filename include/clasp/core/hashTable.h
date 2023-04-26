@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 
-// #define DEBUG_HASH_TABLE_DEBUG
+//#define DEBUG_HASH_TABLE_DEBUG
 
 namespace core {
 double maybeFixRehashThreshold(double rt);
@@ -76,6 +76,7 @@ struct KeyValuePair {
     _HashTableCount(0)
 #ifdef DEBUG_HASH_TABLE_DEBUG
     ,_Debug(false)
+    ,_History(nil<T_O>())
 #endif
     {};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
@@ -98,6 +99,7 @@ struct KeyValuePair {
     size_t _HashTableCount;
 #ifdef DEBUG_HASH_TABLE_DEBUG
     bool   _Debug;
+    std::atomic<T_sp> _History;
 #endif
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex_sp _Mutex;

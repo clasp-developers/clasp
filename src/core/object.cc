@@ -391,6 +391,14 @@ bool General_O::equal(T_sp obj) const { return this->eq(obj); }
 
 bool General_O::equalp(T_sp obj) const { return this->equal(obj); }
 
+T_sp HashGenerator::asList() const {
+  ql::list l;
+  for ( int ii = 0; ii < this->_NextPartIndex; ii++ ) {
+    l << make_fixnum(this->_Parts[ii]);
+  }
+  return l.cons();
+}
+
 #if 0
 bool HashGenerator::addGeneralAddress(General_sp part) {
   ASSERT(part.generalp());

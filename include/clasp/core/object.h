@@ -229,6 +229,8 @@ public:
     return this->_NextPartIndex >= MaxParts;
   }
 
+  T_sp asList() const;
+  
   bool addValue(Fixnum part) {
     if (this->isFull()) {
       return false;

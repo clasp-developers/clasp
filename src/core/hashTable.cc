@@ -88,7 +88,6 @@ size_t next_hash_table_id() {
   return global_next_hash_table_id++;
 }
 
-
 void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* filename, size_t line, size_t index=0, T_sp key=nil<core::T_O>() )
 {
   if (print) {
@@ -106,15 +105,23 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
     }
   }
   if (print) {
+    bool bad = false;
     for (size_t it(0), itEnd(cl__length(keys)); it<itEnd; ++it ) {
       T_sp key = keys->rowMajorAref(it);
       HashGenerator hg;
       cl_index index = ht->sxhashKey(key, ht->_Table.size(), hg );
       KeyValuePair* keyValue = ht->searchTable_no_read_lock(key,index);
       if (!keyValue) {
-        write_bf_stream(fmt::format("{}:{} Could not find key {} badge = {} expected at index {} for ht->_Table.size() = {}\n",
+        write_bf_stream(fmt::format("{}:{} Could not find key {} badge = {} expected at or after Entry[{}] for ht->_Table.size() = {}\n",
                                     filename, line, _rep_(key), lisp_general_badge(gc::As_unsafe<General_sp>(key)), index, ht->_Table.size() ));
+        write_bf_stream(fmt::format("     hg.asList() -> \n{}\n", _rep_(hg.asList()) ));
+        bad = true;
       }
+    }
+    if (bad) {
+#ifdef DEBUG_HASH_TABLE_DEBUG      
+      write_bf_stream(fmt::format("     hash-table _History ->\n{}\n", _rep_(ht->_History.load())));
+#endif
     }
   }
   if (!print) {
@@ -880,6 +887,21 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
 #endif
 
   cl_index index = this->sxhashKey(key, this->_Table.size(), hg );
+#ifdef DEBUG_HASH_TABLE_DEBUG
+  if (this->_Debug) {
+    core::T_sp info = Cons_O::createList(INTERN_(kw,setf_gethash),
+                                         Cons_O::create(key,value),
+                                         INTERN_(kw,index), make_fixnum(index),
+                                         INTERN_(kw,generator),
+                                         hg.asList());
+    T_sp expected;
+    Cons_sp cell = core::Cons_O::create(info,nil<T_O>());
+    do {
+      expected = this->_History.load();
+      cell->rplacd(expected);
+    } while (!this->_History.compare_exchange_weak(expected,cell));
+  }
+#endif
   DEBUG_HASH_TABLE({core::write_bf_stream(fmt::format("{}:{}:{}   index = {}  this->_Table.size() = {}\n", __FILE__ , __LINE__ , __FUNCTION__ , index, this->_Table.size() ));});
   KeyValuePair* keyValuePair = this->tableRef_no_read_lock( key, index );
   if (keyValuePair) {
@@ -959,6 +981,18 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
   DEBUG_HASH_TABLE1({core::write_bf_stream(fmt::sprintf("%s:%d rehash_no_lock\n" , __FILE__ , __LINE__ ));});
   ASSERTF(!clasp_zerop(this->_RehashSize), "RehashSize is zero - it shouldn't be");
+#ifdef DEBUG_HASH_TABLE_DEBUG
+  if (this->_Debug) {
+    core::T_sp info = Cons_O::createList(INTERN_(kw,rehash),findKey);
+    T_sp expected;
+    Cons_sp cell = core::Cons_O::create(info,nil<T_O>());
+    do {
+      expected = this->_History.load();
+      cell->rplacd(expected);
+    } while (!this->_History.compare_exchange_weak(expected,cell));
+  }
+#endif
+
   gc::Fixnum curSize = this->_Table.size();
   ASSERTF(this->_Table.size() != 0, ("HashTable is empty in expandHashTable curSize=%ld  this->_Table.size()= %lu this shouldn't be") , curSize , this->_Table.size());
   KeyValuePair* foundKeyValuePair = nullptr;
