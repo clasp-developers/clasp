@@ -278,6 +278,9 @@ void wait_for_user_signal(const char* message) {
   printf("%s:%d:%s\n"
          "Paused for SIGUSR1 pid is %d\n"
          "%s\n", __FILE__, __LINE__, __FUNCTION__, getpid(), message );
+  if (std::getenv("CLASP_EXIT_ON_WAIT_FOR_USER_SIGNAL")) {
+    exit(1);
+  }
   double dsec = 0.1;
   double seconds = floor(dsec);
   double frac_seconds = dsec - seconds;

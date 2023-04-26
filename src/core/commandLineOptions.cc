@@ -178,6 +178,8 @@ Environment variables:
       Dump info during startup for every start-code
   CLASP_DEBUG_SNAPSHOT
       Dump info during snapshot loading
+  CLASP_EXIT_ON_WAIT_FOR_USER_SIGNAL
+      Exit if wait-for-user-signal is encountered. Used for debugging under live-record.
   CLASP_DEBUG_OBJECT_FILES=save
       Saves all object files, anything else prints info about object file
       generation
