@@ -1536,9 +1536,6 @@
              :layout-offset-field-names ("_Alias")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::Atom_O" :layout-offset-field-names ("_Flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::Atom_O"
-             :layout-offset-field-names ("_Type")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>>"
              :offset-base-ctype "chem::Atom_O"
@@ -1590,9 +1587,6 @@
              :offset-base-ctype "chem::VirtualAtom_O" :layout-offset-field-names ("_Alias")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "chem::VirtualAtom_O" :layout-offset-field-names ("_Flags")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "chem::VirtualAtom_O"
-             :layout-offset-field-names ("_Type")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>>"
              :offset-base-ctype "chem::VirtualAtom_O"
