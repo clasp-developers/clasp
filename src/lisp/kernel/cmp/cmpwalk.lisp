@@ -45,7 +45,8 @@
 code-walker-function takes two arguments (form env).
 Returns T if walked, NIL if not (e.g. because the compiler signaled an error)."
   (let ((*code-walking* t))
-    (if (not core:*use-cleavir-compiler*)
+    (if (or (not core:*use-cleavir-compiler*)
+            (eq core:*clasp-build-mode* :bytecode))
         (code-walk-using-bytecode code-walker-function form env)
         (let* ((clasp-cleavir-pkg (find-package :clasp-cleavir))
                (code-walk-using-cleavir-symbol (find-symbol "CODE-WALK-USING-CLEAVIR" clasp-cleavir-pkg)))
