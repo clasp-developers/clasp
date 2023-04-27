@@ -3,9 +3,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :core))
 
-(defun %reader-error (stream msg &rest arguments)
-  (apply #'simple-reader-error stream msg arguments))
-
 ;;; Based on the SBCL version
 (defconstant +sharp-marker+ '+sharp-marker+)
 
