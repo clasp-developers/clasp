@@ -1262,7 +1262,7 @@ struct ISLHeader_s {
   size_t      _Size;
   ISLHeader_s(ISLKind k, size_t s) : _Kind(k), _Size(s) {};
   ISLHeader_s* next(ISLKind k) const;
-  gctools::BaseHeader_s::BadgeStampWtagMtag stamp_wtag_mtag(ISLKind k) const;
+  gctools::BaseHeader_s::BadgeStampWtagMtag* stamp_wtag_mtag_P(ISLKind k) const;
 };
 
 struct ISLEndHeader_s : public ISLHeader_s {
@@ -1277,7 +1277,7 @@ struct ISLRootHeader_s : public ISLHeader_s {
   
 struct ISLConsHeader_s : public ISLHeader_s {
   gctools::Header_s::BadgeStampWtagMtag _badge_stamp_wtag_mtag;
-  ISLConsHeader_s(ISLKind k, size_t s, gctools::Header_s::BadgeStampWtagMtag swm) : ISLHeader_s(k,s), _badge_stamp_wtag_mtag(swm) {};
+  ISLConsHeader_s(ISLKind k, size_t s, gctools::Header_s::StampWtagMtag swm, gctools::Header_s::badge_t badge) : ISLHeader_s(k,s), _badge_stamp_wtag_mtag(swm,badge) {};
   gctools::ConsHeader_s* header() const { return (gctools::ConsHeader_s*)((char*)this + offsetof(ISLConsHeader_s,_badge_stamp_wtag_mtag)); }
 };
 
@@ -1330,7 +1330,7 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
   return (ISLHeader_s*)((char*)this + headerSize + this->_Size);
 }
 
-gctools::BaseHeader_s::BadgeStampWtagMtag ISLHeader_s::stamp_wtag_mtag(ISLKind k) const {
+gctools::BaseHeader_s::BadgeStampWtagMtag* ISLHeader_s::stamp_wtag_mtag_P(ISLKind k) const {
   if (k != this->_Kind) {
     printf("%s:%d:%s ISLKind k %lu does not match this->_Kind %lu\n",
            __FILE__, __LINE__, __FUNCTION__, k, this->_Kind );
@@ -1338,15 +1338,15 @@ gctools::BaseHeader_s::BadgeStampWtagMtag ISLHeader_s::stamp_wtag_mtag(ISLKind k
   if (k==General) {
     ISLGeneralHeader_s* generalCur = (ISLGeneralHeader_s*)this;
     gctools::Header_s* header = generalCur->header();
-    return header->_badge_stamp_wtag_mtag;
+    return &header->_badge_stamp_wtag_mtag;
   } else if (k==Cons) {
     ISLConsHeader_s* consCur = (ISLConsHeader_s*)this;
     gctools::ConsHeader_s* header = consCur->header();
-    return header->_badge_stamp_wtag_mtag;
+    return &header->_badge_stamp_wtag_mtag;
   } else if (k==Weak) {
     ISLWeakHeader_s* weakCur = (ISLWeakHeader_s*)this;
     gctools::Header_s* header = (gctools::Header_s*)((char*)this + offsetof(ISLWeakHeader_s,_Header));
-    return header->_badge_stamp_wtag_mtag;
+    return &header->_badge_stamp_wtag_mtag;
   }
   SIMPLE_ERROR(("Add support to get _badge_stamp_wtag_mtag of ISLKind %d") , k );
 }
@@ -1630,7 +1630,7 @@ struct copy_objects_t : public walker_callback_t {
       size_t consSize;
       isl_cons_skip(client,consSize);
       if (consSize==0) ISL_ERROR(fmt::sprintf("A zero size cons at %p was encountered" , (void*)client ));
-      ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O), header->_badge_stamp_wtag_mtag );
+      ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O), header->_badge_stamp_wtag_mtag, header->_badge_stamp_wtag_mtag._header_badge.load() );
       char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLConsHeader_s));
       char* new_addr = this->_objects->write_buffer((char*)client, consSize);
       core::Cons_O* cons = (core::Cons_O*)client;
@@ -3553,7 +3553,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
       {
         // Check if all snapshot objects have been allocated and have forwarding pointers
         for ( cur_header = start_header; cur_header->_Kind != End; ) {
-          if (!cur_header->stamp_wtag_mtag(cur_header->_Kind).fwdP()) {
+          if (!cur_header->stamp_wtag_mtag_P(cur_header->_Kind)->fwdP()) {
             printf("%s:%d:%s cur_header @%p is not forwarded\n", __FILE__, __LINE__, __FUNCTION__, cur_header );
           }
           

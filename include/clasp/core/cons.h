@@ -368,7 +368,7 @@ struct StackAllocate<core::Cons_O> {
   core::Cons_O  _Object;
 
   template <class...ARGS>
-  StackAllocate(ARGS&&...args) : _Header(ConsHeader_s::BadgeStampWtagMtag::make<core::Cons_O>(lisp_stack_badge())),
+  StackAllocate(ARGS&&...args) : _Header(ConsHeader_s::StampWtagMtag::make<core::Cons_O>()),
                                  _Object(std::forward<ARGS>(args)...) {};
 
   smart_ptr<core::Cons_O> asSmartPtr() {

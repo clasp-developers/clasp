@@ -1129,3 +1129,55 @@ size_t objectSize( BaseHeader_s* header ) {
 
 
 };
+
+
+namespace gctools {
+
+gctools::BaseHeader_s::badge_t lisp_general_badge(core::General_sp object) {
+  const gctools::Header_s *header = gctools::header_pointer(object.unsafe_general());
+  gctools::BaseHeader_s::badge_t read_badge = header->_badge_stamp_wtag_mtag._header_badge.load();
+  if ( read_badge == gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge) {
+    gctools::BaseHeader_s::badge_t expected_badge = gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge;
+    gctools::BaseHeader_s::badge_t badge = lisp_calculate_heap_badge();
+    if (!header->_badge_stamp_wtag_mtag._header_badge.compare_exchange_strong( expected_badge, badge )) {
+      return expected_badge;
+    }
+    return badge;
+  }
+  return read_badge;
+}
+
+gctools::BaseHeader_s::badge_t lisp_cons_badge(core::Cons_sp object) {
+  const gctools::Header_s *header = (gctools::Header_s *)gctools::ConsPtrToHeaderPtr(object.unsafe_cons());
+  gctools::BaseHeader_s::badge_t read_badge = header->_badge_stamp_wtag_mtag._header_badge.load();
+  if ( read_badge == gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge) {
+    gctools::BaseHeader_s::badge_t expected_badge = gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge;
+    gctools::BaseHeader_s::badge_t badge = lisp_calculate_heap_badge();
+    if (!header->_badge_stamp_wtag_mtag._header_badge.compare_exchange_strong( expected_badge, badge )) {
+      return expected_badge;
+    }
+    return badge;
+  }
+  return read_badge;
+}
+
+uint32_t lisp_badge(core::T_sp object) {
+  if (object.consp()) {
+    core::Cons_sp cobject = gc::As_unsafe<core::Cons_sp>(object);
+    return lisp_cons_badge(cobject);
+  } else if (object.generalp()) {
+    return lisp_general_badge(gc::As_unsafe<core::General_sp>(object));
+  } else
+    return 0;
+}
+
+uint32_t lisp_calculate_heap_badge() {
+  if (!my_thread)
+    return 123456;
+  return my_thread->random();
+}
+
+
+
+
+};

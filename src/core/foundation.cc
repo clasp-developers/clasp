@@ -1607,37 +1607,14 @@ CL_DEFUN void core__set_drag_general_allocation_delay(size_t num) {
 
 namespace core {
 
-uint32_t lisp_general_badge(General_sp object) {
-  const gctools::Header_s *header = gctools::header_pointer(object.unsafe_general());
-  if (header->_badge_stamp_wtag_mtag._header_badge == gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge) {
-    header->_badge_stamp_wtag_mtag._header_badge = lisp_calculate_heap_badge();
-  }
-  return header->_badge_stamp_wtag_mtag._header_badge;
-}
 
-uint32_t lisp_cons_badge(Cons_sp object) {
-  const gctools::Header_s *header = (gctools::Header_s *)gctools::ConsPtrToHeaderPtr(object.unsafe_cons());
-  if (header->_badge_stamp_wtag_mtag._header_badge == gctools::BaseHeader_s::BadgeStampWtagMtag::NoBadge) {
-    header->_badge_stamp_wtag_mtag._header_badge = lisp_calculate_heap_badge();
-  }
-  return header->_badge_stamp_wtag_mtag._header_badge;
-}
-
-uint32_t lisp_badge(T_sp object) {
-  if (object.consp()) {
-    Cons_sp cobject = gc::As_unsafe<Cons_sp>(object);
-    return lisp_cons_badge(cobject);
-  } else if (object.generalp()) {
-    return lisp_general_badge(gc::As_unsafe<General_sp>(object));
-  } else
-    return 0;
+DOCGROUP(clasp);
+CL_DEFUN size_t core__get_badge(T_sp object) {
+  return gctools::lisp_badge(object);
 }
 
 DOCGROUP(clasp);
-CL_DEFUN size_t core__get_badge(T_sp object) { return lisp_badge(object); }
-
-DOCGROUP(clasp);
-CL_DEFUN void core__set_badge(T_sp object, size_t badge) {
+CL_DEFUN void core__debug_only_set_badge(T_sp object, size_t badge) {
   if (object.consp()) {
     gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ConsPtrToHeaderPtr(object.unsafe_cons()));
     header->_badge_stamp_wtag_mtag._header_badge = badge;
@@ -1646,12 +1623,6 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge) {
     gctools::Header_s *header = const_cast<gctools::Header_s *>(gctools::header_pointer(object.unsafe_general()));
     header->_badge_stamp_wtag_mtag._header_badge = badge;
   }
-}
-
-uint32_t lisp_calculate_heap_badge() {
-  if (!my_thread)
-    return 123456;
-  return my_thread->random();
 }
 
 }; // namespace core

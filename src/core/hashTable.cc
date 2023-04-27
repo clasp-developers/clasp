@@ -113,7 +113,7 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
       KeyValuePair* keyValue = ht->searchTable_no_read_lock(key,index);
       if (!keyValue) {
         write_bf_stream(fmt::format("{}:{} Could not find key {} badge = {} expected at or after Entry[{}] for ht->_Table.size() = {}\n",
-                                    filename, line, _rep_(key), lisp_general_badge(gc::As_unsafe<General_sp>(key)), index, ht->_Table.size() ));
+                                    filename, line, _rep_(key), gctools::lisp_general_badge(gc::As_unsafe<General_sp>(key)), index, ht->_Table.size() ));
         write_bf_stream(fmt::format("     hg.asList() -> \n{}\n", _rep_(hg.asList()) ));
         bad = true;
       }

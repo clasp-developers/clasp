@@ -219,10 +219,10 @@ inline constexpr uintptr_t AlignDown(uintptr_t size, size_t alignment) { return 
 
 }; // namespace gctools
 
-namespace core {
+namespace gctools {
 class ThreadLocalState;
-uint32_t lisp_calculate_heap_badge();
-}; // namespace core
+};
+
 
 /*! Declare this in the top namespace */
 extern THREAD_LOCAL core::ThreadLocalState *my_thread;
@@ -231,10 +231,6 @@ namespace gctools {
 
 #define NO_BADGE 1
 #define ILLEGAL_BADGE 0
-
-inline uint32_t lisp_heap_badge() { return NO_BADGE; }
-
-inline uint32_t lisp_stack_badge() { return NO_BADGE; }
 
 /*! Stamp - integer value that is written into the header in normal general objects
             and into the Rack for Instance_O objects.
@@ -479,6 +475,19 @@ public:
       return mak;
     }
     static StampWtagMtag make_unknown(UnshiftedStamp the_stamp) { return the_stamp << general_mtag_shift; }
+    static StampWtagMtag make_StampWtagMtag(StampWtagMtag vvv) {
+      StampWtagMtag mak(vvv);
+      return mak;
+    }
+
+    static StampWtagMtag make_instance() {
+      StampWtagMtag v(STAMPWTAG_INSTANCE);
+      return v;
+    }
+    static StampWtagMtag make_funcallable_instance() {
+      StampWtagMtag v(STAMPWTAG_FUNCALLABLE_INSTANCE);
+      return v;
+    }
 
   public:
     inline size_t mtag() const { return (size_t)(this->_value & mtag_mask); };
@@ -493,10 +502,6 @@ public:
     bool weakObjectP() const { return (this->_value & mtag_mask) == weak_mtag; };
     bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
     bool fwdP() const {
-#if 0
-        printf("%s:%d:%s this->_value = %u\n mtag_mask = %u\n fwd_mtag = %u\n",
-               __FILE__, __LINE__, __FUNCTION__, this->_value, mtag_mask, fwd_mtag );
-#endif
       return (this->_value & mtag_mask) == fwd_mtag;
     };
     bool fwdV() const { return (this->_value & mtag_mask); };
@@ -556,31 +561,15 @@ public:
         that is not IllegalBadge or NoBadge.   This defers random number generation for hashing until it is
         needed.
      */
-    mutable badge_t _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
+    mutable std::atomic<badge_t> _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
                                    /* will treat it like a unused object residing on a free list          */
 
-    BadgeStampWtagMtag() : StampWtagMtag(), _header_badge(0xDEADBEEF){};
+    BadgeStampWtagMtag() : StampWtagMtag(), _header_badge(NoBadge) {};
     BadgeStampWtagMtag(core::Cons_O *cons) : StampWtagMtag(cons_mtag), _header_badge((badge_t)((uintptr_t)cons & 0xFFFFFFFF)){};
+//    BadgeStampWtagMtag(StampWtagMtag all, badge_t badge) : StampWtagMtag(all), _header_badge(badge){};
+    BadgeStampWtagMtag(StampWtagMtag all) : StampWtagMtag(all), _header_badge(NoBadge){};
     BadgeStampWtagMtag(StampWtagMtag all, badge_t badge) : StampWtagMtag(all), _header_badge(badge){};
     BadgeStampWtagMtag(WeakKinds kind) : StampWtagMtag(kind), _header_badge((uintptr_t)this & 0xFFFFFFFF){};
-
-    template <typename T> static BadgeStampWtagMtag make(badge_t badge) {
-      BadgeStampWtagMtag mak(StampWtagMtag((GCStamp<T>::StampWtag << general_mtag_shift)), badge);
-      return mak;
-    }
-    static BadgeStampWtagMtag make_StampWtagMtag(StampWtagMtag vvv, badge_t badge) {
-      BadgeStampWtagMtag mak(vvv, badge);
-      return mak;
-    }
-
-    static BadgeStampWtagMtag make_instance(badge_t badge) {
-      BadgeStampWtagMtag v(STAMPWTAG_INSTANCE, badge);
-      return v;
-    }
-    static BadgeStampWtagMtag make_funcallable_instance(badge_t badge) {
-      BadgeStampWtagMtag v(STAMPWTAG_FUNCALLABLE_INSTANCE, badge);
-      return v;
-    }
   };
 
   static inline int Stamp(StampWtagMtag stamp_wtag_mtag) {
@@ -613,11 +602,7 @@ public:
   // The header contains the stamp_wtag_mtag value.
   BadgeStampWtagMtag _badge_stamp_wtag_mtag; // This MUST be the first word of the guard.
 public:
-  BaseHeader_s(const BadgeStampWtagMtag &k) : _badge_stamp_wtag_mtag(k) {}
-  BaseHeader_s(BaseHeader_s *headptr) : _badge_stamp_wtag_mtag(headptr->_badge_stamp_wtag_mtag){};
-#if 0
-    static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)(StampWtagMtag::unshift_shifted_stamp(value)); };
-#endif
+  BaseHeader_s(const StampWtagMtag &k) : _badge_stamp_wtag_mtag(k) {}
 public:
   size_t mtag() const { return (size_t)(this->_badge_stamp_wtag_mtag._value & mtag_mask); };
   constexpr size_t tail_size() const { return 0; };
@@ -773,7 +758,7 @@ template <class LispClass> struct StackAllocate {
 
   template <class... ARGS>
   StackAllocate(ARGS &&...args)
-      : _Header(Header_s::BadgeStampWtagMtag::make<LispClass>(lisp_stack_badge())), _Object(std::forward<ARGS>(args)...){};
+      : _Header(Header_s::StampWtagMtag::make<LispClass>()), _Object(std::forward<ARGS>(args)...){};
 
   smart_ptr<LispClass> asSmartPtr() { return smart_ptr<LispClass>((LispClass *)&this->_Object); }
 };
@@ -785,7 +770,7 @@ template <class LispClass> struct InitializeObject {
 
   template <typename... ARGS> static LispClass *go(void *where, ARGS &&...args) {
     LispClass *object = (LispClass *)((Header_s *)where + 1);
-    new (where) Header_s(Header_s::BadgeStampWtagMtag::make<LispClass>(lisp_stack_badge()));
+    new (where) Header_s(Header_s::StampWtagMtag::make<LispClass>());
     return new (object) LispClass(std::forward<ARGS>(args)...);
   }
 };
@@ -797,7 +782,7 @@ template <> struct InitializeObject<core::Cons_O> {
   // But if we put in another layer of template, it's apparently okay.
   template <class ConsType, typename... ARGS> static ConsType *initialize_cons(void *where, ARGS &&...args) {
     ConsType *object = (ConsType *)((ConsHeader_s *)where + 1);
-    new (where) ConsHeader_s(ConsHeader_s::BadgeStampWtagMtag::make<ConsType>(lisp_stack_badge()));
+    new (where) ConsHeader_s(ConsHeader_s::StampWtagMtag::make<ConsType>());
     return new (object) ConsType(std::forward<ARGS>(args)...);
   }
 
@@ -1083,6 +1068,19 @@ namespace gctools {};
 #include <clasp/gctools/smart_pointers.h>
 
 #include <clasp/core/coretypes.h>
+
+namespace core {
+typedef gctools::smart_ptr<Cons_O> Cons_sp;
+typedef gctools::smart_ptr<General_O> General_sp;
+typedef gctools::smart_ptr<T_O> T_sp;
+};
+
+namespace gctools {
+uint32_t lisp_calculate_heap_badge();
+uint32_t lisp_general_badge(core::General_sp object);
+uint32_t lisp_cons_badge(core::Cons_sp object);
+uint32_t lisp_badge(core::T_sp object);
+}; // namespace gctools
 
 namespace gctools {
 extern int global_pollTicksPerCleanup;

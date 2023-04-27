@@ -179,11 +179,11 @@ template <class T>
 struct RootClassAllocator {
   template <class... ARGS>
   static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
-    return allocate_kind(Header_s::BadgeStampWtagMtag::make<T>(lisp_heap_badge()),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
+    return allocate_kind(Header_s::StampWtagMtag::make<T>(),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
   };
 
   template <class... ARGS>
-  static gctools::tagged_pointer<T> allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS &&... args) {
+  static gctools::tagged_pointer<T> allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
     Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
     T *obj = HeaderPtrToGeneralPtr<T>(base);
@@ -294,10 +294,11 @@ struct ConsAllocator {
 
 
 #ifdef USE_PRECISE_GC
-  static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag the_header, core::T_sp car, core::T_sp cdr ) {
+  static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag& the_header, core::T_sp car, core::T_sp cdr ) {
 # if defined(USE_BOEHM)
     Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons),global_cons_kind,&global_cons_kind)); // wasMTAG
-    header->_badge_stamp_wtag_mtag = the_header;
+    header->_badge_stamp_wtag_mtag._header_badge.store(the_header._header_badge.load());
+    header->_badge_stamp_wtag_mtag._value = the_header._value;
 # elif defined(USE_MMTK)
     Header_s* header = reinterpret_cast<Header_s*>do_mmtk_allocate_cons(STAMP_UNSHIFT_WTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons)); // wasMTAG
     header->_badge_stamp_wtag_mtag = the_header;
@@ -808,12 +809,12 @@ namespace gctools {
   public:
     template <typename... ARGS>
       static smart_pointer_type root_allocate(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
       static smart_pointer_type root_allocate_with_stamp(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
@@ -835,13 +836,13 @@ namespace gctools {
 
     template <typename Stage=RuntimeStage, typename... ARGS>
       static smart_pointer_type allocate( ARGS &&... args) {
-      auto kind = Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag, lisp_heap_badge());
+      auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
       size_t size = sizeof_with_header<OT>();
       return GCObjectAllocator<OT>::template allocate_kind<Stage>(kind,size, std::forward<ARGS>(args)...);
     }
 
     static smart_pointer_type allocate_with_default_constructor() {
-      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag, lisp_heap_badge()));
+      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag ));
     }
 
     /*! Allocate enough space for capacity elements, but set the length to length */
@@ -853,8 +854,8 @@ namespace gctools {
     static smart_pointer_type allocate_container( bool static_container_p, int64_t length, ARGS &&... args) {
       size_t capacity = std::abs(length);
       size_t size = sizeof_container_with_header<OT>(capacity);
-      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag,lisp_heap_badge()),size,length,std::forward<ARGS>(args)...);
-      return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::BadgeStampWtagMtag(OT::static_ValueStampWtagMtag,lisp_heap_badge()),size,length,std::forward<ARGS>(args)...);
+      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::BadgeStampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
     }
 
 
@@ -864,10 +865,10 @@ namespace gctools {
       size_t capacity = length+1;
       size_t size = sizeof_container_with_header<OT>(capacity);
       if (static_container_p)
-        return GCObjectAllocator<OT>::template static_allocate_kind(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag,lisp_heap_badge()), size, length,
+        return GCObjectAllocator<OT>::template static_allocate_kind(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
                                                            std::forward<ARGS>(args)...);
       else
-        return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag,lisp_heap_badge()), size, length,
+        return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
                                                     std::forward<ARGS>(args)...);
     }
 
@@ -895,10 +896,10 @@ namespace gctools {
 #endif
       smart_pointer_type result;
       if (static_container_p)
-        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),size,length,
+        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(),size,length,
                                                              std::forward<ARGS>(args)...);
       else
-        result = GCObjectAllocator<OT>::template allocate_kind<RuntimeStage>(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),size,length,
+        result = GCObjectAllocator<OT>::template allocate_kind<RuntimeStage>(Header_s::BadgeStampWtagMtag::make<OT>(),size,length,
                                                       std::forward<ARGS>(args)...);
 #if DEBUG_BITUNIT_CONTAINER
       {
@@ -911,7 +912,7 @@ namespace gctools {
     }
     
     static smart_pointer_type copy(const OT &that) {
-      return GCObjectAllocator<OT>::copy_kind(Header_s::BadgeStampWtagMtag::make<OT>(lisp_heap_badge()),sizeof_with_header<OT>(),that);
+      return GCObjectAllocator<OT>::copy_kind(Header_s::BadgeStampWtagMtag::make<OT>(),sizeof_with_header<OT>(),that);
     }
 
     static void deallocate_unmanaged_instance(OT* obj) {
@@ -951,7 +952,7 @@ public:
 
     // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
-    return allocate_kind(Header_s::BadgeStampWtagMtag::make<TY>(lisp_heap_badge()),num);
+    return allocate_kind(Header_s::BadgeStampWtagMtag::make<TY>(),num);
   }
 
   // allocate but don't initialize num elements of type value_type

@@ -168,10 +168,10 @@ class Hash1Generator : public HashGeneratorBase {
   bool addValue(const mpz_class &bignum);
 
     // Add an address - this may need to work with location dependency
-  bool addConsAddress(Cons_sp part) { return this->addValue(lisp_badge(part)); };
+  bool addConsAddress(Cons_sp part) { return this->addValue(gctools::lisp_cons_badge(part)); };
 
   // Add an address - this may need to work with location dependency
-  bool addGeneralAddress(General_sp part) { return this->addValue(lisp_general_badge(part)); };
+  bool addGeneralAddress(General_sp part) { return this->addValue(gctools::lisp_general_badge(part)); };
   
   // Hash1Generator is always filling
   bool isFilling() const { return true; };
@@ -251,8 +251,8 @@ public:
     return true;
   }
 
-  bool addConsAddress(Cons_sp part) { return this->addValue(lisp_badge(part)); };
-  bool addGeneralAddress(General_sp part) { return this->addValue(lisp_general_badge(part)); };
+  bool addConsAddress(Cons_sp part) { return this->addValue(gctools::lisp_cons_badge(part)); };
+  bool addGeneralAddress(General_sp part) { return this->addValue(gctools::lisp_general_badge(part)); };
  
   /*Add the bignum across multiple parts, return true if everything was added */
   bool addValue(const mpz_class &bignum);
