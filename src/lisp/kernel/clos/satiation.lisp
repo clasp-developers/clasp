@@ -427,7 +427,9 @@ a list (EQL object) - just like DEFMETHOD."
           gf
           ,(call-history-producer call-history (gf-arg-info generic-function)))
          (set-funcallable-instance-function
-          gf ,(compile-time-discriminator generic-function call-history))))))
+          gf ,(if (eq core:*clasp-build-mode* :bytecode)
+                  `(calculate-fastgf-dispatch-function gf)
+                  (compile-time-discriminator generic-function call-history)))))))
 
 ;;; Exported auxiliary version for the common case of wanting to skip recompilations
 ;;; of shared-initialize etc. Just pass it a list of class designators and it'll fix

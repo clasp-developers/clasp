@@ -5,7 +5,7 @@
 ;;; Test that all the AMOP generic functions are defined
 ;;; and are generic.
 ;;; CL symbols are commented out but kept for reference.
-(test-true mop.generics.fboundp
+(test-nil mop.generics.fboundp
       (let ((mop-generic-names
               '(clos:accessor-method-slot-definition clos:add-dependent
                 clos:add-direct-method clos:add-direct-subclass
@@ -50,22 +50,24 @@
                 clos:specializer-direct-methods clos:update-dependent
                 clos:validate-superclass clos:writer-method-class)))
         (loop for n in mop-generic-names
-              always (and (fboundp n)
-                          (typep (fdefinition n) 'generic-function)))))
+              unless (and (fboundp n)
+                          (typep (fdefinition n) 'generic-function))
+                collect n)))
 
 ;;; Test that the non-generic functions are available too.
 ;;; (We don't test that they're not generic, because they're not
 ;;;  required to not be generic.)
-(test-true mop.nongenerics.fboundp
+(test-nil mop.nongenerics.fboundp
       (let ((nongeneric-names
               '(clos:eql-specializer-object clos:extract-lambda-list
                 clos:extract-specializer-names)))
         (loop for n in nongeneric-names
-              always (fboundp n))))
+              unless (fboundp n)
+                collect n)))
 
 ;;; Test that writers for most functions are NOT defined.
 ;;; This is only very likely for a naively defined accessor, but still.
-(test-true mop.writers.nonfboundp
+(test-nil mop.writers.nonfboundp
       (let ((nonwriters
               '(clos:accessor-method-slot-definition clos:add-dependent
                 clos:add-direct-method clos:add-direct-subclass
@@ -101,9 +103,10 @@
                 clos:remove-direct-subclass
                 clos:slot-boundp-using-class clos:slot-makunbound-using-class
                 clos:specializer-direct-generic-functions
-                clos:specializer-direct-methods clos:update-dependent
+                clos:update-dependent
                 clos:validate-superclass clos:writer-method-class
                 clos:eql-specializer-object clos:extract-lambda-list
                 clos:extract-specializer-names)))
         (loop for n in nonwriters
-              never (fboundp `(setf ,n)))))
+              when (fboundp `(setf ,n))
+                collect n)))

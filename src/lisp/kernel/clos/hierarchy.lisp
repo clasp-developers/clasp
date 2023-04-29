@@ -41,16 +41,16 @@
     ;; Also note that boot.lisp ignores these locations for effective slots, just
     ;; using the position in the list here; so that must match the :location.
     ;; It checks this.
-    '((direct-methods :initform nil :reader specializer-direct-methods
-                      :accessor %specializer-direct-methods)
-      (call-history-generic-functions
-       :initform nil
-       :reader specializer-call-history-generic-functions
-       :location 1)
-      (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-                         :accessor specializer-mutex :location 2)
-      ;;; Any changes to the slots above need to be reflected in instance.h
-      )))
+    ;; Any changes to the slots below need to be reflected in instance.h
+    '((direct-methods :reader specializer-direct-methods
+                      :accessor %specializer-direct-methods
+                      :initform nil)
+      (call-history-generic-functions :reader specializer-call-history-generic-functions
+                                      :initform nil
+                                      :location 1)
+      (specializer-mutex :accessor specializer-mutex
+                         :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
+                         :location 2))))
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +eql-specializer-slots+
