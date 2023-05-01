@@ -74,6 +74,11 @@ If type is :IR then dump the LLVM-IR for all of the associated functions.
  Because Clasp does not normally store LLVM-IR for compiled functions,
  this case only works if a lambda expression or interpreted function is provided."
   (etypecase desig
+    (core:closure
+     ;; If given a closure, disassemble the underlying simple function.
+     ;; This allows both bytecode and native-compiled closures to be
+     ;; disassembled correctly.
+     (disassemble (core:function/entry-point desig) :type type))
     (core:global-bytecode-simple-fun
      (unless (eq type :asm)
        (error "Only disassembly to bytecode is supported for bytecode function: ~a" desig))
