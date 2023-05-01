@@ -1586,8 +1586,9 @@
     (if res (first res) (error "unknown bytecode opcode ~d" opcode))))
 
 ;;; Return a list of all IPs that are jumped to.
-(defun gather-labels (bytecode ip length)
-  (let ((end (+ ip length))
+(defun gather-labels (bytecode)
+  (let ((ip 0)
+        (end (length bytecode))
         (result nil)
         (longp nil)
         op)
@@ -1606,9 +1607,8 @@
           (setq longp (string= (first op) "long"))
           (if (>= ip end) (return (sort result #'<))))))
 
-(defun %disassemble-bytecode (bytecode start length)
+(defun %disassemble-bytecode (bytecode start length labels)
   (let* ((ip start)
-         (labels (gather-labels bytecode ip length))
          (end (+ start length))
          (result nil)
          (longp nil)
@@ -1670,11 +1670,12 @@
 (defvar *functions-to-disassemble*)
 
 (defun disassemble-bytecode (module
-                             &key (start 0) length (function-name nil fnp))
+                             &key (start 0) length labels
+                               (function-name nil fnp))
   (let* ((bytecode (core:bytecode-module/bytecode module))
          (literals (core:bytecode-module/literals module))
          (length (or length (length bytecode)))
-         (dis (%disassemble-bytecode bytecode start length)))
+         (dis (%disassemble-bytecode bytecode start length labels)))
     (flet ((textify-operand (thing)
              (destructuring-bind (kind value) thing
                (cond ((eq kind :constant)
@@ -1708,23 +1709,29 @@
           (t (error "Illegal item ~a" item))))))
   (values))
 
-(defun %disassemble-bytecode-function (bcfunction)
+(defun %disassemble-bytecode-function (bcfunction labels)
   (let* ((simple (core:function/entry-point bcfunction))
          (module (core:global-bytecode-simple-fun/code simple))
          (start (core:global-bytecode-simple-fun/entry-pc-n simple))
          (length (core:global-bytecode-simple-fun/bytecode-size simple)))
     (disassemble-bytecode module
-                          :start start :length length
+                          :start start :length length :labels labels
                           :function-name (core:function-name bcfunction)))
   (values))
 
 (defun disassemble-bytecode-function (bcfunction)
-  (let ((disassembled-functions nil) ; prevent recursion
-        (*functions-to-disassemble* (list bcfunction)))
+  (let* ((disassembled-functions nil) ; prevent recursion
+         (simple (core:function/entry-point bcfunction))
+         (module (core:global-bytecode-simple-fun/code simple))
+         (bytecode (core:bytecode-module/bytecode module))
+         ;; We grab labels for the entire module, so that nonlocal exit points
+         ;; are noted completely and deterministically.
+         (labels (gather-labels bytecode))
+         (*functions-to-disassemble* (list bcfunction)))
     (loop (let ((fun (pop *functions-to-disassemble*)))
             (unless (member fun disassembled-functions)
               (push fun disassembled-functions)
-              (%disassemble-bytecode-function fun)))
+              (%disassemble-bytecode-function fun labels)))
           (when (null *functions-to-disassemble*)
             (return (values))))))
 
