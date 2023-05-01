@@ -319,28 +319,6 @@ CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
                                  filePos);
 }
 
-#if 0
-GlobalSimpleFun_sp makeGlobalSimpleFunAndFunctionDescription(T_sp functionName,
-                                                               const ClaspXepFunction& entryPoint,
-                                                               T_sp lambda_list,
-                                                               T_sp docstring,
-                                                               T_sp declares,
-                                                               T_sp sourcePathname,
-                                                               int lineno,
-                                                               int column,
-                                                               int filePos) {
-  FunctionDescription_sp fdesc = makeFunctionDescription(functionName,
-                                                         lambda_list,
-                                                         docstring,
-                                                         declares,
-                                                         sourcePathname,
-                                                         lineno,
-                                                         column,
-                                                         filePos );
-  return makeGlobalSimpleFun(fdesc,entryPoint);
-}
-#endif
-
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                      T_sp lambda_list,
                                                      T_sp docstring,
