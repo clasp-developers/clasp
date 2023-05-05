@@ -676,7 +676,15 @@ struct loadltv {
   void op_init_object_array() {
     check_initialization();
     uint64_t nobjs = read_u64();
-    _index_bytes = nobjs == 0 ? 1 : std::bit_ceil((std::bit_width(nobjs) + CHAR_BIT - 1) / CHAR_BIT);
+    if (nobjs <= std::numeric_limits<uint8_t>::max()) {
+      _index_bytes = 1;
+    } else if (nobjs <= std::numeric_limits<uint16_t>::max()) {
+      _index_bytes = 2;
+    } else if (nobjs <= std::numeric_limits<uint32_t>::max()) {
+      _index_bytes = 4;
+    } else {
+      _index_bytes = 8;
+    }
     _literals.assign(nobjs, unbound<T_O>());
   }
 
