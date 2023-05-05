@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.build }}@${{ matrix.os }}
+    name: ${{ matrix.build }} / ${{ matrix.os }} / ${{ matrix.mode }}
 
     defaults:
       run:
@@ -23,6 +23,9 @@ jobs:
         os:
         - macos-latest
         - ubuntu-22.04
+        mode:
+        - bytecode
+        - faso
 
     runs-on: ${{ matrix.os }}
 
@@ -51,19 +54,19 @@ jobs:
     - name: Clasp koga @ Ubuntu
       if: ${{ matrix.os == 'ubuntu-22.04' && matrix.build == 'clasp' }}
       run: |
-        ./koga
+        ./koga --build-mode=${{ matrix.mode }}
     - name: Cando koga @ Ubuntu
       if: ${{ matrix.os == 'ubuntu-22.04' && matrix.build == 'cando' }}
       run: |
-        ./koga --extensions=cando,seqan-clasp
+        ./koga --build-mode=${{ matrix.mode }} --extensions=cando,seqan-clasp
     - name: Clasp koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'clasp' }}
       run: |
-        ./koga --llvm-config=/usr/local/opt/llvm@15/bin/llvm-config
+        ./koga --build-mode=${{ matrix.mode }} --llvm-config=/usr/local/opt/llvm@15/bin/llvm-config
     - name: Cando koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'cando' }}
       run: |
-        ./koga --extensions=cando,seqan-clasp --llvm-config=/usr/local/opt/llvm@15/bin/llvm-config
+        ./koga --build-mode=${{ matrix.mode }} --extensions=cando,seqan-clasp --llvm-config=/usr/local/opt/llvm@15/bin/llvm-config
     - name: Build
       run: |
         ninja -C build
