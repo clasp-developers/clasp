@@ -1,9 +1,9 @@
+(in-package :clasp-cleavir)
+
 #-bytecode
 (progn
 
-(in-package :clasp-cleavir)
-
-   #+(or)
+#+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to T~%")
   (setq core:*echo-repl-read* t))
@@ -14,21 +14,20 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*defun-inline-hook* 'defun-inline-hook))
 
-(progn
-  #+(or)
-  (eval-when (:execute)
-    (setq core:*echo-repl-read* t))
-  
-  #+(or)
-  (defmacro debug-inline (msg &rest msg-args)
-    `(progn
-       (core:fmt t "debug-inline>> ")
-       (core:fmt t ,msg ,@msg-args)
-       (core:fmt t "%N")
-       (finish-output)))
-  (defmacro debug-inline (msg &rest msg-args)
-    (declare (ignore msg msg-args))
-    nil))
+#+(or)
+(eval-when (:execute)
+  (setq core:*echo-repl-read* t))
+
+#+(or)
+(defmacro debug-inline (msg &rest msg-args)
+  `(progn
+     (core:fmt t "debug-inline>> ")
+     (core:fmt t ,msg ,@msg-args)
+     (core:fmt t "%N")
+     (finish-output)))
+(defmacro debug-inline (msg &rest msg-args)
+  (declare (ignore msg msg-args))
+  nil)
 
 ;;; This defines compiler macros that only come into effect when using cclasp.
 ;;; This is useful when their expansions involve cleavir-only special operators.
@@ -406,7 +405,7 @@
   (etypecase fdesignator
     (function fdesignator)
     (symbol (fdefinition fdesignator))))
-(declaim (ftype (function (t) function) core:coerce-to-function))
+(declaim (ftype (function (t) function) core:coerce-to-function)))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -415,7 +414,8 @@
 ;;;
 (in-package "SI")
 
-(declaim (inline index-posn posn-index posn-column))
+#-bytecode
+(progn (declaim (inline index-posn posn-index posn-column))
 (defun index-posn (index stream)
   (declare (type index index) (type pretty-stream stream))
   (+ index (pretty-stream-buffer-offset stream)))
@@ -429,5 +429,4 @@
 #+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to NIL~%")
-  (setq core:*echo-repl-read* nil))
-)
+  (setq core:*echo-repl-read* nil)))
