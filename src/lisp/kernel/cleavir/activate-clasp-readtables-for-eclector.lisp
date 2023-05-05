@@ -120,3 +120,60 @@
   (let ((patcher (core:make-record-patcher (lambda (object)
                                              (patch-object client object seen-objects)))))
     (core:patch-object object patcher)))
+
+(in-package :sys)
+
+(defun pprint-quote (stream list &rest noise)
+  (declare (ignore noise))
+  (if (and (consp list)
+	   (consp (cdr list))
+	   (null (cddr list)))
+      (case (car list)
+	(function
+	 (write-string "#'" stream)
+	 (write-object (cadr list) stream))
+	(quote
+	 (write-char #\' stream)
+	 (write-object (cadr list) stream))
+        (eclector.reader:quasiquote
+         (write-char #\` stream)
+         (write-object (cadr list) stream))
+        (eclector.reader:unquote
+         (write-char #\, stream)
+         (write-object (cadr list) stream))
+        (eclector.reader:unquote-splicing
+         (write-string ",@" stream)
+         (write-object (cadr list) stream))
+	(t
+	 (pprint-fill stream list)))
+      (pprint-fill stream list)))
+
+(defparameter +eclector-magic-forms+
+  '((eclector.reader:quasiquote pprint-quote)
+    (eclector.reader:unquote pprint-quote)
+    (eclector.reader:unquote-splicing pprint-quote)))
+
+(progn
+  (setf (pprint-dispatch-table-read-only-p *standard-pprint-dispatch*) nil)
+  (dolist (magic-form +eclector-magic-forms+)
+    (set-pprint-dispatch `(cons (eql ,(first magic-form)))
+			 (symbol-function (second magic-form))
+                         0 *standard-pprint-dispatch*))
+  (setf *print-pprint-dispatch* (copy-pprint-dispatch nil)
+        (pprint-dispatch-table-read-only-p *standard-pprint-dispatch*) t))
+
+(defmethod print-object ((l cons) stream)
+  (if (cdr l)
+      (case (first l)
+        (eclector.reader:quasiquote
+         (write-char #\` stream)
+         (core:write-object (second l) stream))
+        (eclector.reader:unquote
+         (write-char #\, stream)
+         (core:write-object (second l) stream))
+        (eclector.reader:unquote-splicing
+         (write-string ",@" stream)
+         (core:write-object (second l) stream))
+        (otherwise
+         (call-next-method)))
+      (call-next-method)))

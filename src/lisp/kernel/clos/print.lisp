@@ -282,23 +282,6 @@ printer and we should rather use MAKE-LOAD-FORM."
   (print-unreadable-object (object stream :type t :identity t))
   object)
 
-#-staging
-(defmethod print-object ((l cons) stream)
-  (if (cdr l)
-      (case (first l)
-        (eclector.reader:quasiquote
-         (write-char #\` stream)
-         (core:write-object (second l) stream))
-        (eclector.reader:unquote
-         (write-char #\, stream)
-         (core:write-object (second l) stream))
-        (eclector.reader:unquote-splicing
-         (write-string ",@" stream)
-         (core:write-object (second l) stream))
-        (otherwise
-         (call-next-method)))
-      (call-next-method)))
-
 (defun ext::float-nan-string (x)
   (when *print-readably*
     (error 'print-not-readable :object x))
