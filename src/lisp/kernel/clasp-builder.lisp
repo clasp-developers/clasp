@@ -408,6 +408,8 @@ been initialized with install path versus the build path of the source code file
                         (stage-count (when (ext:getenv "CLASP_STAGE_COUNT")
                                        (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))))
                         (system (command-line-paths)))
+  (when (eq core:*clasp-build-mode* :bytecode)
+    (setq *features* (list* :bytecode *features*)))
   (setq *features* (list* :staging *features*)
         system (construct-system system position reproducible))
   (let ((write-date 0)
