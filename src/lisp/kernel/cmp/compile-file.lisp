@@ -238,7 +238,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
   (case output-type
     (:faso :fasp)
     (:object :fasl)
-    (:bytecode :faslbc)
+    (:bytecode :bytecode)
     (:fasoll :faspll)
     (:fasobc :faspbc)
     (:faspll :faspll)

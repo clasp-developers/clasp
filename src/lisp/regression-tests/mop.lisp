@@ -103,7 +103,7 @@
                 clos:remove-direct-subclass
                 clos:slot-boundp-using-class clos:slot-makunbound-using-class
                 clos:specializer-direct-generic-functions
-                clos:update-dependent
+                clos:specializer-direct-methods clos:update-dependent
                 clos:validate-superclass clos:writer-method-class
                 clos:eql-specializer-object clos:extract-lambda-list
                 clos:extract-specializer-names)))

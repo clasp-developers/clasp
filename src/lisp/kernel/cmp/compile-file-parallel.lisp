@@ -388,6 +388,7 @@ Compile a lisp source file into an LLVM module."
                                     (:fasoll :in-memory-module)
                                     (:fasobc :in-memory-module)
                                     (:faspll :in-memory-module)
+                                    (:bytecode :in-memory-module)
                                     (:faspbc :in-memory-module)
                                     (:fasp :in-memory-object)
                                     (:object :in-memory-object)

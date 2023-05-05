@@ -157,8 +157,8 @@
 ;;; First generic function calls done here.
 
 (defun register-method-with-specializers (method)
-  (dolist (spec (safe-method-specializers method))
-    (add-direct-method spec method)))
+  (loop for spec in (method-specializers method)
+        do (add-direct-method spec method)))
 
 (defun fixup-early-methods ()
   (dolist (method-info *early-methods*)

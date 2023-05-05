@@ -650,6 +650,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
          :faspbc)
         ((eq type :faspbc)
          :faspbc)
+        ((eq type :bytecode)
+         :bytecode)
         (t
          (error "Unsupported build-extension type ~a" type))))
 

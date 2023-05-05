@@ -605,7 +605,7 @@ struct loadltv {
   void op_create() {
     size_t index = read_index();
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
-    fmt::print("create {}\n", _rep_(func));
+    // fmt::print("create {}\n", _rep_(func));
     uint16_t nargs = read_u16();
     T_O *args[nargs];
     for (size_t i = 0; i < nargs; ++i)
@@ -616,7 +616,7 @@ struct loadltv {
 
   void op_init() {
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
-    fmt::print("init {}\n", _rep_(func));
+    // fmt::print("init {}\n", _rep_(func));
     uint16_t nargs = read_u16();
     T_O *args[nargs];
     for (size_t i = 0; i < nargs; ++i)
@@ -634,6 +634,7 @@ struct loadltv {
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
     T_sp path = get_ltv(read_index());
     uint64_t line = read_u64(), column = read_u64(), filepos = read_u64();
+    // fmt::print("spi {} {} {} {}\n", _rep_(path), line, column, filepos);
     func->setSourcePosInfo(path, filepos, line, column);
   }
 
@@ -675,13 +676,13 @@ struct loadltv {
   void op_init_object_array() {
     check_initialization();
     uint64_t nobjs = read_u64();
-    _index_bytes = (std::bit_width(nobjs) + CHAR_BIT - 1) / CHAR_BIT;
+    _index_bytes = nobjs == 0 ? 1 : std::bit_ceil((std::bit_width(nobjs) + CHAR_BIT - 1) / CHAR_BIT);
     _literals.assign(nobjs, unbound<T_O>());
   }
 
   void load_instruction() {
     uint8_t opcode = read_opcode();
-    fmt::print("op {:02x}\n", opcode);
+    // fmt::print("op {:02x}\n", opcode);
     switch (opcode) {
     case LTV_OP_NIL:
       op_nil();
