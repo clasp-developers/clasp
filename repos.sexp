@@ -196,9 +196,9 @@
   :directory "src/lisp/kernel/contrib/usocket/"
   :commit "7ad6582cc1ce9e7fa5931a10e73b7d2f2688fa81")
  (:name :asdf
-  :repository "https://gitlab.common-lisp.net/asdf/asdf.git"
+  :repository "https://gitlab.common-lisp.net/yitzchak/asdf.git"
   :directory "src/lisp/modules/asdf/"
-  :commit "3.3.5")
+  :branch "clasp-bytecode")
  (:name :mps
   :repository "https://github.com/Ravenbrook/mps.git"
   :directory "src/mps/"
