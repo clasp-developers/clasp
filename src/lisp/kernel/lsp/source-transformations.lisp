@@ -36,6 +36,13 @@
                    (setq slow (cdr slow))
                    (go again))))))
 
+  #+bytecode
+  (defmacro the-single (type form &optional (return nil returnp))
+    (let ((var (gensym)))
+      `(let ((,var ,form))
+         (check-type ,var ,type)
+         ,(if returnp return var))))
+
   (defun simple-associate-args (fun first-arg more-args)
     (or more-args (error "more-args cannot be nil"))
     (let ((next (rest more-args))
@@ -58,7 +65,9 @@
       ;; Also also note that we have to use VALUES or else we'll get
       ;; (+ (values 1 nil)) => 1 NIL
       ;; which is unlikely in practice, but a bug.
-      (1 `(the (values ,one-arg-result-type &rest nil) (values ,(first args))))
+      (1
+       #+bytecode `(the-single ,one-arg-result-type ,(first args))
+       #-bytecode `(the (values ,one-arg-result-type &rest nil) (values ,(first args))))
       (2 (values `(,two-arg-fun ,@args) t))
       (t (simple-associate-args two-arg-fun (first args) (rest args)))))
 
@@ -79,7 +88,8 @@
            form)
           ((1)
            ;; preserve nontoplevelness and side effects
-           `(progn (the (values ,arg-type &rest nil) (values ,(first args))) t))
+           #+bytecode `(the-single ,arg-type ,(first args) t)
+           #-bytecode `(progn (the (values ,arg-type &rest nil) (values ,(first args))) t))
           ((2)
            `(,fun ,(first args) ,(second args)))
           (otherwise
@@ -98,7 +108,8 @@
         (case (length args)
           ((1)
            ;; preserve nontoplevelness and side effects.
-           `(progn (the (values ,arg-type &rest nil) (values ,(first args))) t))
+           #+bytecode `(the-single ,arg-type ,(first args) t)
+           #-bytecode `(progn (the (values ,arg-type &rest nil) (values ,(first args))) t))
           ((2) `(not (,fun ,(first args) ,(second args))))
           (otherwise form))
         form))

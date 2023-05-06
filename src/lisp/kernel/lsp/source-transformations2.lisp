@@ -188,7 +188,9 @@
   (let ((nargs (length args))
         (predicate (find-two-arg-function orig-predicate)))
     (cond ((< nargs 1) (values nil t))
-          ((= nargs 1) `(progn (the ,type ,@args) t))
+          ((= nargs 1)
+           #+bytecode `(the-single ,type ,(first args) t) 
+           #-bytecode `(progn (the ,type ,@args) t))
           ((= nargs 2)
            (if not-p
                `(if (,predicate ,(first args) ,(second args)) nil t)
