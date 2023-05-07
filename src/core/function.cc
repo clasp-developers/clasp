@@ -825,8 +825,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, local_function);
 SYMBOL_EXPORT_SC_(KeywordPkg, trampoline);
 CL_DOCSTRING("Return an alist of (cons entry-label pointer-or-nil )");
 CL_DEFUN T_sp core__function_pointer_alist(Function_sp func) {
-  ASSERT(gc::IsA<GlobalSimpleFun_sp>(func->entryPoint()));
-  GlobalSimpleFun_sp gep = gc::As_unsafe<GlobalSimpleFun_sp>(func->entryPoint());
+  GlobalSimpleFunBase_sp gep = gc::As<GlobalSimpleFunBase_sp>(func->entryPoint());
   ql::list res;
   res << Cons_O::create( kw::_sym_general_entry, Pointer_O::create((void*)gep->_EntryPoints._EntryPoints[0]) );
   for ( size_t ii=1; ii< NUMBER_OF_ENTRY_POINTS; ++ii ) {
@@ -837,10 +836,13 @@ CL_DEFUN T_sp core__function_pointer_alist(Function_sp func) {
       res << Cons_O::create(make_fixnum(ii-1+ENTRY_POINT_ARITY_BEGIN),Pointer_O::create((void*)ep));
     }
   }
-  T_sp tlep = gep->localSimpleFun();
-  if (tlep.notnilp()) {
-    LocalSimpleFun_sp lep = gc::As<LocalSimpleFun_sp>(tlep);
-    res << Cons_O::create(kw::_sym_local_function,Pointer_O::create((void*)lep->_Entry));
+  if (gc::IsA<GlobalSimpleFun_sp>(func->entryPoint())) {
+    GlobalSimpleFun_sp gsf = gc::As_unsafe<GlobalSimpleFun_sp>(func->entryPoint());
+    T_sp tlep = gsf->localSimpleFun();
+    if (tlep.notnilp()) {
+      LocalSimpleFun_sp lep = gc::As<LocalSimpleFun_sp>(tlep);
+      res << Cons_O::create(kw::_sym_local_function,Pointer_O::create((void*)lep->_Entry));
+    }
   }
   return res.cons();
 };
