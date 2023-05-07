@@ -206,12 +206,11 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make_list)dx");
 DOCGROUP(clasp);
-CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
+CL_DEFUN List_sp cl__make_list(Fixnum size, T_sp initial_element) {
   // Might be a negative Fixnum, take the right type, size_t is unsigned
-  gc::Fixnum size = osize.unsafe_fixnum();
   // osize must be 0 or positive
   if (size < 0)
-    TYPE_ERROR(osize, cl::_sym_UnsignedByte);
+    TYPE_ERROR(make_fixnum(size), cl::_sym_UnsignedByte);
   else {
     T_sp result = nil<T_O>();
     for (size_t i = 0; i < size; i++) {
