@@ -6,11 +6,12 @@
                           "chem::SparseLargeSquareMatrix_O" "clbind::ClassRegistry_O"
                           "mp::Process_O" "core::Record_O" "core::LightUserData_O"
                           "core::MDArrayT_O" "core::DirectoryEntry_O" "chem::Atom_O"
-                          "llvmo::Linker_O" "comp::FunInfo_O" "chem::ZMatrix_O"
-                          "core::MDArray_float_O" "core::SimpleFun_O" "core::SourcePosInfo_O"
-                          "llvmo::BranchInst_O" "chem::IterateMatter_O" "llvmo::AllocaInst_O"
-                          "chem::AtomicInfo" "chem::FFTypesDb_O" "core::ComplexVector_float_O"
-                          "core::StandardClassCreator_O" "chem::Alias_O" "comp::LexicalVarInfo_O"
+                          "chem::Kmeans_O" "llvmo::Linker_O" "comp::FunInfo_O" "chem::ZMatrix_O"
+                          "core::MDArray_float_O" "chem::KmeansPlusPlus_O" "core::SimpleFun_O"
+                          "core::SourcePosInfo_O" "llvmo::BranchInst_O" "chem::IterateMatter_O"
+                          "llvmo::AllocaInst_O" "chem::AtomicInfo" "chem::FFTypesDb_O"
+                          "core::ComplexVector_float_O" "core::StandardClassCreator_O"
+                          "chem::Alias_O" "comp::LexicalVarInfo_O"
                           "chem::MapOfMonomerNamesToAtomIndexers_O" "chem::ZMatrixInternal_O"
                           "core::HashTableCustom_O" "adapt::SymbolSet_O" "chem::Minimizer_O"
                           "core::ComplexVector_byte8_t_O" "core::OptionalArgument"
@@ -3439,6 +3440,32 @@
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>>"
              :offset-base-ctype "chem::ZMatrix_O"
              :layout-offset-field-names ("_Internals" "._Vector" "._Contents")}
+{class-kind :stamp-name "STAMPWTAG_chem__Kmeans_O" :stamp-key "chem::Kmeans_O"
+            :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_O>"
+             :offset-base-ctype "chem::Kmeans_O" :layout-offset-field-names ("_Points")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "chem::Kmeans_O" :layout-offset-field-names ("_MaxIteration")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "chem::Kmeans_O" :layout-offset-field-names ("_K")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "chem::Kmeans_O" :layout-offset-field-names ("_PointNumber")}
+{class-kind :stamp-name "STAMPWTAG_chem__KmeansPlusPlus_O" :stamp-key "chem::KmeansPlusPlus_O"
+            :parent-class "chem::Kmeans_O" :lisp-class-base "chem::Kmeans_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_O>"
+             :offset-base-ctype "chem::KmeansPlusPlus_O" :layout-offset-field-names ("_Points")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "chem::KmeansPlusPlus_O"
+             :layout-offset-field-names ("_MaxIteration")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "chem::KmeansPlusPlus_O" :layout-offset-field-names ("_K")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "chem::KmeansPlusPlus_O"
+             :layout-offset-field-names ("_PointNumber")}
 {class-kind :stamp-name "STAMPWTAG_chem__PathMessage_O" :stamp-key "chem::PathMessage_O"
             :parent-class "core::CxxObject_O" :lisp-class-base "core::CxxObject_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
