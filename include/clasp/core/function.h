@@ -354,6 +354,9 @@ FORWARD(GlobalBytecodeSimpleFun);
    BytecodeModule_sp code() const;
    string __repr__() const;
 
+   bool compiledP() const override {
+     return true;
+   }
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup);
 
    CL_DEFMETHOD Fixnum localsFrameSize() const { return this->_LocalsFrameSize; };
