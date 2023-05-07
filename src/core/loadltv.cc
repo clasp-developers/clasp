@@ -327,26 +327,27 @@ struct loadltv {
     // In a best case scenario we can move in entire bit_array_words at a time,
     // probably?
     size_t perbyte = 8 / nbits;
-    size_t full_bytes = total_size / 8;
+    size_t full_bytes = total_size / perbyte;
+    size_t remainder = total_size % perbyte;
+    uint8_t mask = (1 << nbits) - 1;
     for (size_t byte_index = 0; byte_index < full_bytes; ++byte_index) {
       size_t index = perbyte * byte_index;
       uint8_t byte = read_u8();
       for (size_t j = 0; j < perbyte; ++j) {
         size_t bit_index = nbits * (perbyte - j - 1);
-        uint8_t mask = (1 << nbits) - 1;
         uint8_t bits = (byte & (mask << bit_index)) >> bit_index;
         array->rowMajorAset(index + j, clasp_make_fixnum(bits));
       }
     }
     // write remainder
-    size_t remainder = total_size % 8;
-    size_t index = perbyte * full_bytes;
-    uint8_t byte = read_u8(); // should this be read when remainder = 0?
-    for (size_t j = 0; j < remainder; ++j) {
-      size_t bit_index = nbits * (perbyte - j - 1);
-      uint8_t mask = (1 << nbits) - 1;
-      uint8_t bits = (byte & (mask << bit_index)) >> bit_index;
-      array->rowMajorAset(index + j, clasp_make_fixnum(bits));
+    if (remainder != 0) {
+      size_t index = perbyte * full_bytes;
+      uint8_t byte = read_u8(); // should this be read when remainder = 0?
+      for (size_t j = 0; j < remainder; ++j) {
+        size_t bit_index = nbits * (perbyte - j - 1);
+        uint8_t bits = (byte & (mask << bit_index)) >> bit_index;
+        array->rowMajorAset(index + j, clasp_make_fixnum(bits));
+      }
     }
   }
 

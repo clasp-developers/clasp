@@ -737,13 +737,14 @@
                                    collect `(ash ,rma ,shift)))
                do (write-byte byte ,s))
          ;; write remainder
-         (let* ((index (* ,nbits full-bytes))
-                (byte 0))
-           (loop for i below remainder
-                 for shift = (- 8 (* i ,nbits) ,nbits)
-                 for rma = (row-major-aref ,a (+ index i))
-                 do (setf (ldb (byte ,nbits shift) byte) rma))
-           (write-byte byte ,s))))))
+         (unless (zerop remainder)
+           (let* ((index (* ,perbyte full-bytes))
+                  (byte 0))
+             (loop for i below remainder
+                   for shift = (- 8 (* i ,nbits) ,nbits)
+                   for rma = (row-major-aref ,a (+ index i))
+                   do (setf (ldb (byte ,nbits shift) byte) rma))
+             (write-byte byte ,s)))))))
 
 (defmethod encode ((inst array-creator) stream)
   (write-mnemonic 'make-array stream)
