@@ -56,6 +56,9 @@ T_sp Lexenv_O::lookupMacro(T_sp macroname) {
     return gc::As_unsafe<GlobalMacroInfo_sp>(info)->expander();
   else if (gc::IsA<LocalMacroInfo_sp>(info))
     return gc::As_unsafe<LocalMacroInfo_sp>(info)->expander();
+  else if (gc::IsA<LocalFunInfo_sp>(info)
+           || gc::IsA<GlobalFunInfo_sp>(info))
+    return nil<T_O>(); // not a macro, e.g. shadowed
   // no info
   else return info;
 }
