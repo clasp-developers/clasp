@@ -1206,6 +1206,51 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     pc += 3;
     break;
   }
+  case vm_save_sp: {
+    uint8_t low = *(pc + 1);
+    uint16_t n = low + (*(pc + 2) << 8);
+    DBG_VM("long save sp %" PRIu16 "\n", n);
+    vm.savesp(fp, sp, n);
+    pc += 3;
+    break;
+  }
+  case vm_restore_sp: {
+    uint8_t low = *(pc + 1);
+    uint16_t n = low + (*(pc + 2) << 8);
+    DBG_VM("long restore sp %" PRIu16 "\n", n);
+    vm.restoresp(fp, sp, n);
+    pc += 3;
+    break;
+  }
+  case vm_entry: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM("long entry %" PRIu16 "\n", n);
+    T_O** old_sp = sp;
+    pc++;
+    jmp_buf target;
+    void* frame = __builtin_frame_address(0);
+    vm._pc = pc;
+    TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
+    vm.setreg(fp, n, env.raw_());
+    gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
+    DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
+    setjmp(target);
+    again:
+    try {
+      bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
+      sp = vm._stackPointer;
+      pc = vm._pc;
+    }
+    catch (Unwind &uw) {
+      if (uw.getFrame() == frame) {
+        my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
+        goto again;
+      }
+      else throw;
+    }
+    break;
+  }
   case vm_special_bind: {
     uint8_t low = *(pc + 1);
     uint16_t c = low + (*(pc + 2) << 8);
