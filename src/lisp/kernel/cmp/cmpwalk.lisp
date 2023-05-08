@@ -35,7 +35,12 @@
 
 (defun code-walk-using-bytecode (code-walker-function form env)
   (let* ((*code-walker* code-walker-function)
-         (env (or env (make-null-lexical-environment)))
+         (env (cond ; early, so no typecase yet
+                ((null env) (make-null-lexical-environment))
+                ((typep env 'lexenv) env)
+                (t ; assume it's a cleavir environment. KLUDGE
+                 (funcall (find-symbol "CLEAVIR-ENV->BYTECODE" "CLASP-CLEAVIR")
+                          env))))
          (module (cmp:module/make)))
     (compile-lambda nil `(progn ,form) env module)))
 
