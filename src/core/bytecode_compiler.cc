@@ -1735,8 +1735,11 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
 void compile_setq(List_sp pairs, Lexenv_sp env, const Context ctxt) {
   if (pairs.nilp()) {
     // degenerate case
-    if (ctxt.receiving() != 0)
+    if (ctxt.receiving() != 0) {
       ctxt.assemble0(vm_nil);
+      if (ctxt.receiving() == -1)
+        ctxt.assemble0(vm_pop);
+    }
   } else {
     do {
       Symbol_sp var = gc::As<Symbol_sp>(oCar(pairs));

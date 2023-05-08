@@ -64,4 +64,6 @@
 ;;;
 
 (eval-when (:execute :load-toplevel)
-  (setq core:*eval-with-env-hook* 'cclasp-eval))
+  (setq core:*eval-with-env-hook* 
+        #+bytecode 'core:interpret-eval-with-env
+        #-bytecode 'cclasp-eval))
