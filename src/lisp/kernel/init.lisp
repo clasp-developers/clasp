@@ -612,7 +612,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
         ((eq type :object)
          "o")
         ((eq type :bytecode)
-         "faslbc")
+         "fasl")
         ((eq type :fasp)
          "fasp")
         ((eq type :faso)

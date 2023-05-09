@@ -380,7 +380,7 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
                         (link-fasobc-modules out-file lisp-files)
                         (truename out-file))
                        (:bytecode
-                        (core:link-faslbc-files out-file lisp-files)
+                        (core:link-fasl-files out-file lisp-files)
                         (truename out-file))
                        (:object
                         (build-fasl-serial out-file :lisp-files lisp-files)

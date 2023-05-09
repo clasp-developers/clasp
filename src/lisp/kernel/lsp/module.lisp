@@ -82,7 +82,7 @@ module."
                                 'require module-name)))))
       (set-difference *modules* saved-modules))))
 
-(defparameter *fasl-extensions* (list "FASL" "FASP" "FASPLL" "FASPBC" "FASLBC"))
+(defparameter *fasl-extensions* (list "FASL" "FASP" "FASPLL" "FASPBC"))
 (defparameter *lisp-extensions* (list "LSP" "LISP"))
 
 (defun clasp-module-provider (module)

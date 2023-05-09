@@ -818,7 +818,7 @@ struct ltv_MmapInfo {
 };
 
 CL_LAMBDA(output-designator files &optional (verbose nil));
-CL_DEFUN void core__link_faslbc_files(T_sp output, List_sp files, bool verbose) {
+CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
   size_t instruction_count = 0;
   std::vector<ltv_MmapInfo> mmaps;
 

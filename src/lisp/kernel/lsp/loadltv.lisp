@@ -777,4 +777,4 @@ Tried to define constant #~d, but it was already defined"
                         :external-format external-format))
 
 #+(or)
-(pushnew '("faslbc" . load-hook) core:*load-hooks* :test #'equal)
+(pushnew '("fasl" . load-hook) core:*load-hooks* :test #'equal)

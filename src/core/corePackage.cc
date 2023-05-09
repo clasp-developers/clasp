@@ -1130,18 +1130,13 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lfasl"), _sym_loadSource), hooks); // List of load commands
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_binary), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faslbc"), _sym_load_bytecode), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_bytecode), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faso"), _sym_load_faso), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasp"), _sym_load_faso), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasoll"), _sym_load_fasoll), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faspll"), _sym_load_fasoll), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasobc"), _sym_load_fasobc), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faspbc"), _sym_load_fasobc), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasb"), _sym_load_binary), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bundle"), _sym_load_binary), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("dylib"), _sym_load_binary), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("so"), _sym_load_binary), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("ll"), llvmo::_sym_load_ll), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bc"), llvmo::_sym_load_bc), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("l"), _sym_loadSource), hooks);

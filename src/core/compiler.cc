@@ -470,7 +470,7 @@ CL_DEFUN T_sp core__startup_image_pathname(bool extension) {
   } else if (mode == kw::_sym_fasl) {
     ss << ".lfasl";
   } else if (mode == kw::_sym_bytecode) {
-    ss << ".faslbc";
+    ss << ".fasl";
   } else {
     SIMPLE_ERROR(("Add support for *clasp-build-mode* = %s"), _rep_(mode));
   }
