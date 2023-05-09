@@ -1341,16 +1341,18 @@
 
 (defun compile-multiple-value-call (function-form forms env context)
   (compile-form function-form env (new-context context :receiving 1))
-  (let ((first (first forms))
-        (rest (rest forms)))
-    (compile-form first env (new-context context :receiving t))
-    (when rest
-      (assemble context +push-values+)
-      (dolist (form rest)
-        (compile-form form env (new-context context :receiving t))
-        (assemble context +append-values+))
-      (assemble context +pop-values+)))
-  (emit-mv-call context))
+  (if (null forms)
+      (emit-call 0 context)
+      (let ((first (first forms))
+            (rest (rest forms)))
+        (compile-form first env (new-context context :receiving t))
+        (when rest
+          (assemble context +push-values+)
+          (dolist (form rest)
+            (compile-form form env (new-context context :receiving t))
+            (assemble context +append-values+))
+          (assemble context +pop-values+))
+        (emit-mv-call context))))
 
 (defun compile-multiple-value-prog1 (first-form forms env context)
   (compile-form first-form env context)

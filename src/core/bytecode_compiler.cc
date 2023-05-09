@@ -1932,19 +1932,23 @@ void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, cons
   compile_function(core::_sym_coerce_fdesignator, env, Context(ctxt, 1));
   compile_form(fform, env, Context(ctxt, 1));
   Context(ctxt, 1).emit_call(1);
-  // Compile the arguments
-  T_sp first = oCar(aforms);
-  List_sp rest = gc::As<List_sp>(oCdr(aforms));
-  compile_form(first, env, Context(ctxt, -1));
-  if (rest.notnilp()) {
-    ctxt.assemble0(vm_push_values);
-    for (auto cur : rest) {
-      compile_form(oCar(cur), env, Context(ctxt, -1));
-      ctxt.assemble0(vm_append_values);
+  if (aforms.nilp()) {
+    ctxt.emit_call(0);
+  } else {
+    // Compile the arguments
+    T_sp first = oCar(aforms);
+    List_sp rest = gc::As<List_sp>(oCdr(aforms));
+    compile_form(first, env, Context(ctxt, -1));
+    if (rest.notnilp()) {
+      ctxt.assemble0(vm_push_values);
+      for (auto cur : rest) {
+        compile_form(oCar(cur), env, Context(ctxt, -1));
+        ctxt.assemble0(vm_append_values);
+      }
+      ctxt.assemble0(vm_pop_values);
     }
-    ctxt.assemble0(vm_pop_values);
+    ctxt.emit_mv_call();
   }
-  ctxt.emit_mv_call();
 }
 
 void compile_multiple_value_prog1(T_sp fform, List_sp forms, Lexenv_sp env, const Context ctxt) {
