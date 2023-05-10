@@ -117,7 +117,7 @@ inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3, T
 
 namespace eval {
  void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<String_sp> &documentation, List_sp &code, List_sp &specials);
- 
+
  void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code);
  };
 };

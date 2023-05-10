@@ -1577,12 +1577,13 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
     Cons_sp definition = gc::As<Cons_sp>(oCar(cur));
     T_sp name = oCar(definition);
     Symbol_sp fun_var = cl__gensym(SimpleBaseString_O::make("FLET-FUN"));
-    // Build up a lambda expression for the function.
-    // FIXME: Probably need to parse declarations so they can refer
-    // to the parameters.
-    T_sp locally = Cons_O::create(cl::_sym_locally, oCddr(definition));
-    T_sp block = Cons_O::createList(cl::_sym_block, core__function_block_name(name), locally);
-    T_sp lambda = Cons_O::createList(cl::_sym_lambda, oCadr(definition), block);
+    List_sp declares = nil<T_O>();
+    gc::Nilable<String_sp> docstring;
+    List_sp code;
+    List_sp specials;
+    eval::extract_declares_docstring_code_specials(oCddr(definition), declares, false, docstring, code, specials);
+    T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
+    T_sp lambda = Cons_O::createList(cl::_sym_lambda, oCadr(definition), Cons_O::create(cl::_sym_declare, declares), block);
     compile_function(lambda, env, Context(ctxt, 1));
     fun_vars << fun_var;
     funs << Cons_O::create(name, LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++, ctxt.cfunction())));
@@ -1618,9 +1619,14 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
   for (auto cur : definitions) {
     Cons_sp definition = gc::As_unsafe<Cons_sp>(oCar(cur));
     T_sp name = oCar(definition);
-    T_sp locally = Cons_O::create(cl::_sym_locally, oCddr(definition));
-    T_sp block = Cons_O::createList(cl::_sym_block, core__function_block_name(name), locally);
-    Cfunction_sp fun = compile_lambda(oCadr(definition), Cons_O::createList(block), new_env2, ctxt.module());
+    List_sp declares = nil<T_O>();
+    gc::Nilable<String_sp> docstring;
+    List_sp code;
+    List_sp specials;
+    eval::extract_declares_docstring_code_specials(oCddr(definition), declares, false, docstring, code, specials);
+    T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
+    T_sp fun_body = Cons_O::createList(Cons_O::create(cl::_sym_declare, declares), block);
+    Cfunction_sp fun = compile_lambda(oCadr(definition), fun_body, new_env2, ctxt.module());
     size_t literal_index = ctxt.literal_index(fun);
     if (fun->closed()->length() == 0) // not a closure- easy
       ctxt.assemble1(vm_const, literal_index);
