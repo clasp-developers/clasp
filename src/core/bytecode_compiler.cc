@@ -1120,9 +1120,8 @@ void compile_locally(List_sp body, Lexenv_sp env, const Context ctxt) {
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
-  Lexenv_sp inner1 = env->add_specials(specials);
-  Lexenv_sp inner2 = env->add_notinlines(decl_notinlines(declares));
-  compile_progn(code, inner2, ctxt);
+  env = env->add_specials(specials)->add_notinlines(decl_notinlines(declares));
+  compile_progn(code, env, ctxt);
 }
 
 bool special_binding_p(Symbol_sp sym, List_sp specials, Lexenv_sp env) {
@@ -2260,9 +2259,8 @@ CL_DEFUN T_mv bytecode_toplevel_locally(List_sp body, Lexenv_sp env) {
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
-  Lexenv_sp inner1 = env->add_specials(specials);
-  Lexenv_sp inner2 = env->add_notinlines(decl_notinlines(declares));
-  return bytecode_toplevel_progn(code, inner2);
+  env = env->add_specials(specials)->add_notinlines(decl_notinlines(declares));
+  return bytecode_toplevel_progn(code, env);
 }
 
 CL_DEFUN T_mv bytecode_toplevel_macrolet(List_sp bindings, List_sp body, Lexenv_sp env) {
