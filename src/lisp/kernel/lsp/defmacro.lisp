@@ -218,7 +218,7 @@
                (let ((named-whole (second vldestructure)))
                  (setq vldestructure (cddr vldestructure))
                  (if (listp named-whole)
-                     (dm-vl named-whole whole context)
+                     (dm-vl named-whole whole 'destructuring-bind)
                      (setq dl (list (list named-whole whole)))))))
 	    ((symbolp vldestructure)
 	     (setq vldestructure (list '&rest vldestructure)))
