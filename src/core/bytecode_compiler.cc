@@ -103,6 +103,8 @@ Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
   List_sp new_vars = this->vars();
   for (auto cur : vars) {
     Symbol_sp var = oCar(cur);
+    if (this->lookupSymbolMacro(var).notnilp())
+      SIMPLE_PROGRAM_ERROR("A symbol macro was declared SPECIAL:~%~s", var);
     auto info = SpecialVarInfo_O::make(var->specialP());
     Cons_sp pair = Cons_O::create(var, info);
     new_vars = Cons_O::create(pair, new_vars);
@@ -1989,6 +1991,10 @@ static T_sp symbol_macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp vars
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
     Symbol_sp name = gc::As<Symbol_sp>(oCar(binding));
+    if (name->getReadOnly())
+      SIMPLE_PROGRAM_ERROR("The symbol bound by SYMBOL-MACROLET must not be a constant variable: ~s", name);
+    if (name->specialP())
+      SIMPLE_PROGRAM_ERROR("The symbol bound by SYMBOL-MACROLET must not be a special variable: ~s", name);
     T_sp expansion = oCadr(binding);
     // FIXME: Compiling a new function for the expander is overkill
     T_sp formv = cl__gensym(SimpleBaseString_O::make("FORM"));

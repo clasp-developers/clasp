@@ -668,12 +668,12 @@
 
 ;;; Add VARS as specials in ENV.
 (defun add-specials (vars env)
-  (make-lexical-environment
-   env
-   :vars (append (mapcar (lambda (var)
-                           (cons var (cmp:special-var-info/make (ext:specialp var))))
-                         vars)
-                 (cmp:lexenv/vars env))))
+  (loop for var in vars
+        finally (return (make-lexical-environment env
+                          :vars (append new-vars (cmp:lexenv/vars env))))
+        when (eq (var-info var env) :symbol-macro)
+          do (error "A symbol macro was declared SPECIAL: ~s" var)
+        collect (cons var (cmp:special-var-info/make (ext:specialp var))) into new-vars))
 
 (defun compile-locally (body env context)
   (multiple-value-bind (decls body docs specials)
@@ -1301,14 +1301,18 @@
   (emit-unbind context 1))
 
 (defun compile-symbol-macrolet (bindings body env context)
-  (let ((smacros nil))
-    (dolist (binding bindings)
-      (push (cons (car binding) (make-symbol-macro-var-info (cadr binding)))
-            smacros))
-    (compile-locally body (make-lexical-environment
-                           env
-                           :vars (append (nreverse smacros) (cmp:lexenv/vars env)))
-                     context)))
+  (loop for (var form) in bindings
+        finally (return (compile-locally body
+                                         (make-lexical-environment env
+                                           :vars (append smacros (cmp:lexenv/vars env)))
+                                         context))
+        when (constantp var)
+          do (error "The symbol bound by SYMBOL-MACROLET must not be a constant variable: ~s"
+                    var)
+        when (ext:specialp var)
+          do (error "The symbol bound by SYMBOL-MACROLET must not be a special variable: ~s"
+                    var)
+        collect (cons var (make-symbol-macro-var-info form)) into smacros))
 
 (defun lexenv-for-macrolet (env)
   ;; Macrolet expanders need to be compiled in the local compilation environment,
