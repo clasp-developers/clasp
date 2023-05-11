@@ -50,11 +50,6 @@
 
 namespace core {
 
-#define BC_MAGIC_0 0x8d
-#define BC_MAGIC_1 0x74
-#define BC_MAGIC_2 0x98
-#define BC_MAGIC_3 0xb1
-
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
@@ -67,7 +62,7 @@ const BCVersion min_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
 const BCVersion max_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
 
 static uint64_t ltv_header_decode(uint8_t *header) {
-  if (header[0] != BC_MAGIC_0 || header[1] != BC_MAGIC_1 || header[2] != BC_MAGIC_2 || header[3] != BC_MAGIC_3)
+  if (header[0] != FASL_MAGIC_NUMBER_0 || header[1] != FASL_MAGIC_NUMBER_1 || header[2] != FASL_MAGIC_NUMBER_2 || header[3] != FASL_MAGIC_NUMBER_3)
     SIMPLE_ERROR("Invalid FASL: incorrect magic number 0x%" PRIx8 "%" PRIx8 "%" PRIx8 "%" PRIx8, header[0], header[1], header[2],
                  header[3]);
   // C++ guarantees sequencing in the aggregate initialization.
@@ -80,10 +75,10 @@ static uint64_t ltv_header_decode(uint8_t *header) {
 }
 
 static void ltv_header_encode(uint8_t *header, uint64_t instruction_count) {
-  header[0] = BC_MAGIC_0;
-  header[1] = BC_MAGIC_1;
-  header[2] = BC_MAGIC_2;
-  header[3] = BC_MAGIC_3;
+  header[0] = FASL_MAGIC_NUMBER_0;
+  header[1] = FASL_MAGIC_NUMBER_1;
+  header[2] = FASL_MAGIC_NUMBER_2;
+  header[3] = FASL_MAGIC_NUMBER_3;
   header[4] = (uint8_t)(BC_VERSION_MAJOR >> 8);
   header[5] = (uint8_t)(BC_VERSION_MAJOR >> 0);
   header[6] = (uint8_t)(BC_VERSION_MINOR >> 8);

@@ -1111,5 +1111,17 @@ extern void *_ZTVN4core6LispE;
 
 #define CLASP_DEFAULT_CTOR
 
+#define FASO_MAGIC_NUMBER_0 0xbe
+#define FASO_MAGIC_NUMBER_1 0xbe
+#define FASO_MAGIC_NUMBER_2 0xde
+#define FASO_MAGIC_NUMBER_3 0xde
+#define FASO_MAGIC_NUMBER 0xbebedede
+
+#define FASL_MAGIC_NUMBER_0 0x8d
+#define FASL_MAGIC_NUMBER_1 0x74
+#define FASL_MAGIC_NUMBER_2 0x98
+#define FASL_MAGIC_NUMBER_3 0xb1
+#define FASL_MAGIC_NUMBER 0x8d7498b1
+
 #endif
 #endif //]

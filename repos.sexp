@@ -7,7 +7,7 @@
 ((:name :ansi-test
   :repository "https://gitlab.common-lisp.net/yitzchak/ansi-test"
   :directory "dependencies/ansi-test/"
-  :branch "add-expected-failures")
+  :branch "bytecode")
  (:name :cl-bench
   :repository "https://gitlab.common-lisp.net/ansi-test/cl-bench.git"
   :directory "dependencies/cl-bench/"
