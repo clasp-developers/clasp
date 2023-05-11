@@ -56,48 +56,46 @@
 
 #+clasp-min
 (EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-  (CORE:SETF-LAMBDA-LIST
-   (FUNCALL #'(SETF MACRO-FUNCTION)
-            #'(LAMBDA
-                  (whole env
-                   &AUX (CLAUSES (CDR (THE CONS whole))))
-                (DECLARE (IGNORABLE rest whole)
-                         (CORE:LAMBDA-NAME (MACRO-FUNCTION COND)))
-                (DECLARE (IGNORE env))
-                (BLOCK COND
-                  (IF (CONSP CLAUSES)
-                      (LET* ((clauses1 CLAUSES)
-                             (clauses2 clauses1)
-                             (XXX
-                               (PROGN
-                                 (IF (NULL clauses2)
-                                     (error "too few arguments ~a ~a" clauses1
-                                            '((PRED . FORMS) . REST-CLAUSES)))
-                                 (let ((prog1-val (CAR (THE CONS clauses2))))
-                                   (SETQ clauses2 (CDR (THE CONS clauses2)))
-                                   prog1-val)))
-                             (YYY XXX)
-                             (PRED
-                               (PROGN
-                                 (IF (NULL YYY)
-                                     (error "too few arguments ~a ~a" clauses1 '(PRED . FORMS)))
-                                 (let ((PROG1-val (CAR (THE CONS YYY))))
-                                   (SETQ YYY (CDR (THE CONS YYY)))
-                                   prog1-val)))
-                             (FORMS YYY)
-                             (REST-CLAUSES clauses2))
-                        (DECLARE (IGNORABLE YYY XXX clauses2 clauses1))
-                        (IF (EQ PRED T)
-                            (core:quasiquote
-                             (PROGN (core::UNQUOTE-SPLICE FORMS)))
-                            (core:QUASIQUOTE
-                             (IF (core::UNQUOTE PRED)
-                                 (PROGN (core::UNQUOTE-SPLICE FORMS))
-                                 (COND (core::UNQUOTE-SPLICE REST-CLAUSES))))))
-                      NIL)))
-            'COND)
-   '(&REST CLAUSES))
-  'COND)
+  (FUNCALL #'(SETF MACRO-FUNCTION)
+           #'(LAMBDA
+                 (whole env
+                  &AUX (CLAUSES (CDR (THE CONS whole))))
+               (DECLARE (IGNORABLE rest whole)
+                        (CORE:LAMBDA-NAME (MACRO-FUNCTION COND))
+                        (core:lambda-list &rest clauses))
+               (DECLARE (IGNORE env))
+               (BLOCK COND
+                 (IF (CONSP CLAUSES)
+                     (LET* ((clauses1 CLAUSES)
+                            (clauses2 clauses1)
+                            (XXX
+                              (PROGN
+                                (IF (NULL clauses2)
+                                    (error "too few arguments ~a ~a" clauses1
+                                           '((PRED . FORMS) . REST-CLAUSES)))
+                                (let ((prog1-val (CAR (THE CONS clauses2))))
+                                  (SETQ clauses2 (CDR (THE CONS clauses2)))
+                                  prog1-val)))
+                            (YYY XXX)
+                            (PRED
+                              (PROGN
+                                (IF (NULL YYY)
+                                    (error "too few arguments ~a ~a" clauses1 '(PRED . FORMS)))
+                                (let ((PROG1-val (CAR (THE CONS YYY))))
+                                  (SETQ YYY (CDR (THE CONS YYY)))
+                                  prog1-val)))
+                            (FORMS YYY)
+                            (REST-CLAUSES clauses2))
+                       (DECLARE (IGNORABLE YYY XXX clauses2 clauses1))
+                       (IF (EQ PRED T)
+                           (core:quasiquote
+                            (PROGN (core::UNQUOTE-SPLICE FORMS)))
+                           (core:QUASIQUOTE
+                            (IF (core::UNQUOTE PRED)
+                                (PROGN (core::UNQUOTE-SPLICE FORMS))
+                                (COND (core::UNQUOTE-SPLICE REST-CLAUSES))))))
+                     NIL)))
+           'COND))
 
 (cond
   ((member :generate-faso *features*)
