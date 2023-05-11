@@ -154,7 +154,7 @@
   ("Dummy function for use in tests."))
 
 ;;; And now for bytecode frames.
-(test bytecode-frame-function-name
+(test-true bytecode-frame-function-name
   (progn
     (funcall (cmp:bytecompile
               '(lambda ()
@@ -168,8 +168,8 @@
                                frames))))
                     frames))
                 (defun bc1 () (bc2)))))
-   (last (funcall (fdefinition 'bc1)) 2)) ; avoid compiler warning, hopefully
-  ((bc1 bc2)))
+    ;; We use (fdefinition 'bc1) to avoid a compiler warning hopefully.
+    (search '(bc1 bc2) (funcall (fdefinition 'bc1)))))
 
 (test bytecode-frame-locals
   (progn
