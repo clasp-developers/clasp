@@ -1026,6 +1026,21 @@ static T_sp expand_macro(Function_sp expander, T_sp form, Lexenv_sp env) {
   return eval::funcall(hook, expander, form, env);
 }
 
+// Redefined in compiler-conditions.lisp.
+SYMBOL_EXPORT_SC_(CompPkg, expand_compiler_macro_safely);
+CL_DEFUN T_sp cmp__expand_compiler_macro_safely(Function_sp expander, T_sp form,
+                                                Lexenv_sp env) {
+  return expand_macro(expander, form, env);
+}
+
+static T_sp expand_compiler_macro(Function_sp expander, T_sp form,
+                                  Lexenv_sp env) {
+  // Go through symbolFunction to make it sensitive to redefinition.
+  // Also, slower! Too bad.
+  return eval::funcall(_sym_expand_compiler_macro_safely->symbolFunction(),
+                       expander, form, env);
+}
+
 void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
   VarInfoV info = var_info_v(sym, env);
   if (std::holds_alternative<SymbolMacroVarInfoV>(info)) {
@@ -2138,7 +2153,7 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
             && (head != cl::_sym_typep) && (head != cl::_sym_case)) {
           // Compiler macroexpand
           T_sp form = Cons_O::create(head, rest);
-          T_sp expansion = expand_macro(gc::As<Function_sp>(cmexpander), form, env);
+          T_sp expansion = expand_compiler_macro(gc::As<Function_sp>(cmexpander), form, env);
           if (expansion != form) {
             compile_form(expansion, env, context);
             return;
