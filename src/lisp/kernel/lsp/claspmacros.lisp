@@ -130,10 +130,11 @@
 ;;;
 (defmacro def-special-operator-function (name lambda-list &optional (vars lambda-list))
   `(unless (fboundp ',name)
-     (core:fset ',name
+     (funcall #'(setf fdefinition)
                 (lambda ,lambda-list
                   (declare (ignore ,@vars))
-                  (error 'do-not-funcall-special-operator :operator ',name)))))
+                  (error 'do-not-funcall-special-operator :operator ',name))
+                ',name)))
 (def-special-operator-function progn (&rest forms) (forms))
 (def-special-operator-function block (name &rest forms) (name forms))
 (def-special-operator-function catch (tag &rest forms) (tag forms))
@@ -161,11 +162,12 @@
 (def-special-operator-function load-time-value (form &optional read-only-p) (form read-only-p))
 (dolist (so (core::aclasp-list-of-all-special-operators))
   (when (null (fboundp so))
-    (core:fset so
-                (let ((so so))
-                  (lambda (&rest args)
-                    (declare (ignore args))
-                    (error 'do-not-funcall-special-operator :operator so))))))
+    (funcall #'(setf fdefinition)
+             (let ((so so))
+               (lambda (&rest args)
+                 (declare (ignore args))
+                 (error 'do-not-funcall-special-operator :operator so)))
+             so)))
 
 (export 'do-not-funcall-special-operator)
 

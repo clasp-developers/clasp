@@ -248,13 +248,13 @@ strings."
 (export (list (intern "OPTIONAL-ANNOTATION" "EXT")
               (intern "ANNOTATE" "EXT"))
               "EXT")
-(si::fset 'ext:optional-annotation
-          (function 
-           (lambda (whole env)
-	    (declare (ignore env #-clasp-min whole)
-		     (core:lambda-name ext:optional-annotation))
-            #+clasp-min `(ext:annotate ,@(rest whole))))
-	  t)
+(funcall #'(setf macro-function)
+         (function
+          (lambda (whole env)
+	   (declare (ignore env #-clasp-min whole)
+		    (core:lambda-name ext:optional-annotation))
+           #+clasp-min `(ext:annotate ,@(rest whole))))
+         'ext:optional-annotation)
 
 (defun default-annotation-logic (source-loc definition output-form
                                  &optional (dspec (make-dspec definition)))

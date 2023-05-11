@@ -696,16 +696,17 @@ No DIBuilder is defined for the default module")
       (let ((llvm-time (/ (- (get-internal-run-time) start-llvm-time) (float internal-time-units-per-second))))
         (llvm-sys:accumulate-llvm-usage-seconds llvm-time)))))
 
-(si::fset 'with-track-llvm-time
-	   #'(lambda (args env)
-               (declare (core:lambda-name with-track-llvm-time)
-                        (ignore env))
-               (let ((code (cdr args)))
-                 `(do-track-llvm-time
-                      (function
-                       (lambda ()
-                        ,@code)))))
-	  t)
+(funcall #'(setf macro-function)
+	 #'(lambda (args env)
+             (declare (core:lambda-name with-track-llvm-time)
+                      (core:lambda-list &body forms)
+                      (ignore env))
+             (let ((code (cdr args)))
+               `(do-track-llvm-time
+                    (function
+                     (lambda ()
+                      ,@code)))))
+         'with-track-llvm-time)
 
 (defun switch-always-inline-to-inline (module)
   (let ((functions (llvm-sys:module-get-function-list module))

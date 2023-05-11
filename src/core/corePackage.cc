@@ -1175,7 +1175,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebug_accessorsSTAR->defparameter(nil<T_O>());
   std::list<string> nicknames;
   std::list<string> use_packages;
-  _sym_STARdebug_fsetSTAR->defparameter(nil<core::T_O>());
   ext::_sym_ignore_signal->defparameter(SimpleBaseString_O::make("Ignore signal"));
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(nil<core::T_O>());
   _sym_STARuse_cleavir_compilerSTAR->defparameter(nil<core::T_O>());

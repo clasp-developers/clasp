@@ -13,45 +13,12 @@
 
 
 ;; Temporary check-type - everything is true
-(fset 'check-type
-      #'(lambda (whole env) (declare (ignore whole env)) t)
-      t)
+(funcall #'(setf macro-function)
+         #'(lambda (whole env) (declare (ignore whole env)) t)
+         'check-type)
 
 (defun 1- (num) (- num 1))
 (defun 1+ (num) (+ num 1))
-
-
-
-#||
-(si::fset 'and
-          #'(lambda (whole env)
-              (declare (ignore env))
-              (let ((forms (cdr whole)))
-                (if (null forms)
-                    t
-                    (if (null (cdr forms))
-                        (car forms)
-                        `(if ,(car forms)
-                             (and ,@(cdr forms)))))))
-          t)
-
-
-(si::fset 'or
-          #'(lambda (whole env)
-              (declare (ignore env))
-              (let ((forms (cdr whole)))
-                (if (null forms)
-                    nil
-                    (if ( null (cdr forms))
-                        (car forms)
-                        (let ((tmp (gensym)))
-                          `(let ((,tmp ,(car forms)))
-                             (if ,tmp
-                                 ,tmp
-                                 (or ,@(cdr forms)))))))))
-          t )
-||#
-
 
 
 (defun constantly (object)
@@ -66,15 +33,17 @@
   (apply 'error e1 args))
 
 
-(fset 'return #'(lambda (whole env)
-                  (declare (ignore env))
-                  (let ((val (cadr whole)))
-                    `(return-from nil ,val)))
-      t)
+(funcall #'(setf macro-function)
+         #'(lambda (whole env)
+             (declare (ignore env))
+             (let ((val (cadr whole)))
+               `(return-from nil ,val)))
+         'return)
 
 #| --- loose this - its in evalmacros where ecl had it |#
 #+clasp-min
-(si::fset 'psetq #'(lambda (whole env)
+(funcall #'(setf macro-function)
+         #'(lambda (whole env)
                      (declare (ignore env))
                      "Syntax: (psetq {var form}*)
 Similar to SETQ, but evaluates all FORMs first, and then assigns each value to
@@ -91,27 +60,23 @@ the corresponding VAR.  Returns NIL."
                               (push (list 'setq (car l) sym) forms))
                             (setq l (cddr l))
                             (go top)))))
-          t )
+         'psetq)
 
 
 
-(fset 'cons-car #'(lambda (def env)
-                    (declare (ignore env))
-                    `(car (the cons ,(cadr def))))
-      t)
-(fset 'cons-cdr #'(lambda (def env)
-                    (declare (ignore env))
-                    `(cdr (the cons ,(cadr def))))
-      t)
+(funcall #'(setf macro-function)
+         #'(lambda (def env)
+             (declare (ignore env))
+             `(car (the cons ,(cadr def))))
+         'cons-car)
+(funcall #'(setf macro-function)
+         #'(lambda (def env)
+             (declare (ignore env))
+             `(cdr (the cons ,(cadr def))))
+         'cons-cdr)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (select-package :ext))
-
-(core:fset 'checked-value
-           #'(lambda (whole env)
-               (declare (ignore env))
-               `(the ,@(cdr whole)))
-      t)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :core))
@@ -167,26 +132,23 @@ the corresponding VAR.  Returns NIL."
 
 
 ;; in-package macro is re-defined in evalmacros.lisp
-(si::fset 'in-package #'(lambda (whole env)
-                          (declare (ignore env))
-                          `(eval-when (:compile-toplevel :load-toplevel :execute)
-                             (si::select-package ,(string (cadr whole)))
-                             *package*))
-          t)
+(funcall #'(setf macro-function)
+         #'(lambda (whole env)
+             (declare (ignore env))
+             `(eval-when (:compile-toplevel :load-toplevel :execute)
+                (si::select-package ,(string (cadr whole)))
+                *package*))
+         'in-package)
 
-
-
-
-
-
-(fset 'apply-key #'(lambda (w e)
-                     (declare (ignore e))
-                     (let ((key (cadr w))
+(funcall #'(setf macro-function)
+         #'(lambda (w e)
+             (declare (ignore e))
+             (let ((key (cadr w))
                            (element (caddr w)))
-                       `(if ,key
-                            (funcall ,key ,element)
-                            ,element)))
-      t)
+               `(if ,key
+                    (funcall ,key ,element)
+                    ,element)))
+         'apply-key)
 
 ;;   "Add ITEM to LIST unless it is already a member."
 (defun adjoin (item list &key key (test #'eql) test-not)
@@ -207,12 +169,13 @@ the corresponding VAR.  Returns NIL."
 
 
 ;; Required by REGISTER-GLOBAL in cmp/cmpvar.lisp
-(si::fset 'pushnew #'(lambda (w e)
-                       (declare (ignore e))
-                       (let ((item (cadr w))
-                             (place (caddr w)))
-                         `(setq ,place (adjoin ,item ,place))))
-          t)
+(funcall #'(setf macro-function)
+         #'(lambda (w e)
+             (declare (ignore e))
+             (let ((item (cadr w))
+                   (place (caddr w)))
+               `(setq ,place (adjoin ,item ,place))))
+         'pushnew)
 
 
 (defun hash-table-iterator (hash-table)

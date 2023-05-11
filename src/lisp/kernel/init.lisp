@@ -235,9 +235,9 @@
 ;;; Function: (EXT:CURRENT-SOURCE-LOCATION)
 ;;; - Returns the source location of the current top-level form
 ;;;   or nil if it's not known.
-(core:fset
- 'current-source-location
- #'(lambda () core:*current-source-pos-info*))
+(funcall #'(setf fdefinition)
+         #'(lambda () core:*current-source-pos-info*)
+         'current-source-location)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core:select-package :core))
@@ -250,57 +250,66 @@
     (set '*variable-source-infos*
          (make-hash-table :test #'eq :thread-safe t)))
 
-(si:fset 'core::defvar #'(lambda (whole env)
-                           (declare (ignore env))
-                           (let ((var (cadr whole))
-                                 (formp (cddr whole))
-                                 (form (caddr whole)))
-                             "Syntax: (defvar name form [doc])
+(funcall #'(setf macro-function)
+         #'(lambda (whole env)
+             (declare (ignore env)
+                      (core:lambda-name defvar)
+                      (core:lambda-list var &optional form doc-string))
+             (let ((var (cadr whole))
+                   (formp (cddr whole))
+                   (form (caddr whole)))
+               "Syntax: (defvar name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-                             `(LOCALLY (DECLARE (SPECIAL ,var))
-                                (SYS:*MAKE-SPECIAL ',var)
-                                ,@(if formp
-                                      `((if (boundp ',var)
-                                            ',var
-                                            (progn
-                                              (setq ,var ,form)
-                                              ',var)))))))
-         t)
+               `(LOCALLY (DECLARE (SPECIAL ,var))
+                  (SYS:*MAKE-SPECIAL ',var)
+                  ,@(if formp
+                        `((if (boundp ',var)
+                              ',var
+                              (progn
+                                (setq ,var ,form)
+                                ',var)))))))
+         'defvar)
 (export 'defvar)
 
-(si:fset 'core::defparameter #'(lambda (whole env)
-                                 (declare (ignore env))
-                                 (let ((var (cadr whole))
-                                       (form (caddr whole)))
-                                   "Syntax: (defparameter name form [doc])
+(funcall #'(setf macro-function)
+         #'(lambda (whole env)
+             (declare (ignore env)
+                      (core:lambda-name defparameter)
+                      (core:lambda-list var form &optional docstring))
+             (let ((var (cadr whole))
+                   (form (caddr whole)))
+               "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-                                   `(LOCALLY (DECLARE (SPECIAL ,var))
-                                      (SYS:*MAKE-SPECIAL ',var)
-                                      (SETQ ,var ,form)
-                                      ',var)))
-         t)
+               `(LOCALLY (DECLARE (SPECIAL ,var))
+                  (SYS:*MAKE-SPECIAL ',var)
+                  (SETQ ,var ,form)
+                  ',var)))
+         'core::defparameter)
 (export 'defparameter)
 
 
 
-(si:fset 'core::defconstant #'(lambda (whole env)
-                                (declare (ignore env))
-                                (let ((var (cadr whole))
-                                      (form (caddr whole)))
-                                  "Syntax: (defconstant name form [doc])
+(funcall #'(setf macro-function)
+         #'(lambda (whole env)
+             (declare (ignore env)
+                      (core:lambda-name defconstant)
+                      (core:lambda-list name form &optional docstring))
+             (let ((var (cadr whole))
+                   (form (caddr whole)))
+               "Syntax: (defconstant name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-                                  `(if (core:symbol-constantp ',var)
-                                       nil
-                                       (progn
-                                         (set ',var ,form)
-                                         (funcall #'(setf core:symbol-constantp) t ',var)))))
-         t)
+               `(if (core:symbol-constantp ',var)
+                    nil
+                    (progn
+                      (set ',var ,form)
+                      (funcall #'(setf core:symbol-constantp) t ',var)))))
+         'defconstant)
 (export 'defconstant)
 
 (if (boundp '+ecl-safe-declarations+)
@@ -381,8 +390,10 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 ;;; A temporary definition of defun - the real one is in evalmacros
 #+clasp-min
 (eval-when (:execute)
-  (si:fset 'defun
+  (funcall #'(setf macro-function)
            #'(lambda (def env)
+               (declare (core:lambda-name defun)
+                        (core:lambda-list name lambda-list &body body))
                (let ((name (second def))      ;cadr
                      (lambda-list (third def)) ; caddr
                      (lambda-body (cdddr def))) ; cdddr
@@ -394,9 +405,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                          ;;(core:fmt t "PRIMITIVE DEFUN defun --> {}%N" func )
                           `(progn (eval-when (:compile-toplevel)
                                     (cmp::register-global-function-def 'defun ',name))
-                                  (si:fset ',name ,func nil ',lambda-list)))))
+                                  (funcall #'(setf fdefinition) ,func ',name)))))
                    (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
-           t))
+           'defun))
 
 (export '(defun))
 
@@ -474,9 +485,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export 'link-flags)
 
 
-(si:fset 'and
+(funcall #'(setf macro-function)
          #'(lambda (whole env)
-             (declare (ignore env))
+             (declare (ignore env)
+                      (core:lambda-name and)
+                      (core:lambda-list &rest forms))
              (let ((forms (cdr whole)))
                (if (null forms)
                    t
@@ -484,11 +497,13 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                        (car forms)
                          `(if ,(car forms)
                               (and ,@(cdr forms)))))))
-           t)
+         'and)
 
-(si:fset 'or
+(funcall #'(setf macro-function)
          #'(lambda (whole env)
-             (declare (ignore env))
+             (declare (ignore env)
+                      (core:lambda-name or)
+                      (core:lambda-name &rest forms))
              (let ((forms (cdr whole)))
                (if (null forms)
                    nil
@@ -499,7 +514,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                             (if ,tmp
                                 ,tmp
                                 (or ,@(cdr forms)))))))))
-           t )
+         'or)
 (export '(and or))
 
 (defun 1- (num) (- num 1))
@@ -507,26 +522,26 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 ;;; These definitions do not use setf, and are replaced in setf.lisp.
 #+clasp-min
-(si::fset 'incf
-	   #'(lambda (args env)
-               (declare (core:lambda-name incf))
-               (let* ((where (second args))
-                      (what (caddr args)))
-                 (if what
-                     `(setq ,where (+ ,where ,what))
-                     `(setq ,where (1+ ,where)))))
-	  t)
+(funcall #'(setf macro-function)
+	 #'(lambda (args env)
+             (declare (core:lambda-name incf))
+             (let* ((where (second args))
+                    (what (caddr args)))
+               (if what
+                   `(setq ,where (+ ,where ,what))
+                   `(setq ,where (1+ ,where)))))
+         'incf)
 
 #+clasp-min
-(si::fset 'decf
-	   #'(lambda (args env)
-               (declare (core:lambda-name decf))
-               (let* ((where (second args))
-                      (what (caddr args)))
-                 (if what
-                     `(setq ,where (- ,where ,what))
-                     `(setq ,where (1- ,where)))))
-	  t)
+(funcall #'(setf macro-function)
+	 #'(lambda (args env)
+             (declare (core:lambda-name decf))
+             (let* ((where (second args))
+                    (what (caddr args)))
+               (if what
+                   `(setq ,where (- ,where ,what))
+                   `(setq ,where (1- ,where)))))
+         'decf)
 
 (defun build-target-dir (type &optional stage)
   (declare (ignore type))
@@ -687,13 +702,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
   ;; This is needed only when bootstrapping CLASP using CLASP-MIN
   (eval-when (eval)
-    (si::fset 'in-package
-              #'(lambda (def env)
+    (funcall #'(setf macro-function)
+             #'(lambda (def env)
                   (declare (core:lambda-name in-package))
-		  `(eval-when (eval compile load)
-		     (si::select-package ,(string (second def)))))
-	      t)
-    )
+		 `(eval-when (eval compile load)
+		    (si::select-package ,(string (second def)))))
+	     'in-package))
 
   ;;
   ;; This is also needed for booting Clasp. In particular it is required in
@@ -701,32 +715,36 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   ;;
 
   ;; Required by REGISTER-GLOBAL in cmp/cmpvar.lisp
-  (si::fset 'pushnew #'(lambda (w e)
-                         (declare (ignore e))
-                         (let ((item (cadr w))
-                               (place (caddr w)))
-                           `(setq ,place (adjoin ,item ,place))))
-            t)
+  (funcall #'(setf macro-function)
+           #'(lambda (w e)
+               (declare (ignore e))
+               (let ((item (cadr w))
+                     (place (caddr w)))
+                 `(setq ,place (adjoin ,item ,place))))
+           'pushnew)
 
-  (si::fset 'push #'(lambda (w e)
-                      (declare (ignore e))
-                      (let ((item (cadr w))
-                            (place (caddr w)))
-                        `(setq ,place (cons ,item ,place))))
-            t)
-
-
-
-  (fset 'when #'(lambda (def env)
-                  (declare (ignore env))
-                  `(if ,(cadr def) (progn ,@(cddr def))))
-        t)
+  (funcall #'(setf macro-function)
+           #'(lambda (w e)
+               (declare (ignore e))
+               (let ((item (cadr w))
+                     (place (caddr w)))
+                 `(setq ,place (cons ,item ,place))))
+           'push)
 
 
-  (fset 'unless #'(lambda (def env)
-                    (declare (ignore env))
-                    `(if ,(cadr def) nil (progn ,@(cddr def))))
-        t)
+
+  (funcall #'(setf macro-function)
+           #'(lambda (def env)
+               (declare (ignore env))
+               `(if ,(cadr def) (progn ,@(cddr def))))
+           'when)
+
+
+  (funcall #'(setf macro-function)
+           #'(lambda (def env)
+               (declare (ignore env))
+               `(if ,(cadr def) nil (progn ,@(cddr def))))
+           'unless)
 
 
   (defun si::while-until (test body jmp-op)
@@ -739,31 +757,33 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
           ,exit
           (,jmp-op ,test (GO ,label)))))
 
-  (fset 'si::while #'(lambda (def env)
-                       (declare (ignore env))
-                       (si::while-until (cadr def) (cddr def) 'when))
-        t)
+  (funcall #'(setf macro-function)
+           #'(lambda (def env)
+               (declare (ignore env))
+               (si::while-until (cadr def) (cddr def) 'when))
+           'si::while)
 
 
-  (fset 'si::until #'(lambda (def env)
-                       (declare (ignore env))
-                       (si::while-until (cadr def) (cddr def) 'unless))
-        t)
+  (funcall #'(setf macro-function)
+           #'(lambda (def env)
+               (declare (ignore env))
+               (si::while-until (cadr def) (cddr def) 'unless))
+           'si::until)
 
-  (core:fset 'multiple-value-bind
-             #'(lambda (whole env)
-                 (declare (core:lambda-name multiple-value-bind-macro))
-                 (declare (ignore env))
-                 (let ((vars (cadr whole))
-                       (form (caddr whole))
-                       (body (cdddr whole))
-                       (restvar (gensym)))
-                   `(multiple-value-call
-                        #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
-                            (declare (ignore ,restvar))
-                            ,@body)
-                      ,form)))
-             t)
+  (funcall #'(setf macro-function)
+           #'(lambda (whole env)
+               (declare (core:lambda-name multiple-value-bind-macro))
+               (declare (ignore env))
+               (let ((vars (cadr whole))
+                     (form (caddr whole))
+                     (body (cdddr whole))
+                     (restvar (gensym)))
+                 `(multiple-value-call
+                      #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
+                          (declare (ignore ,restvar))
+                          ,@body)
+                    ,form)))
+           'multiple-value-bind)
 
 
   (defun filter-dolist-declarations (declarations)
@@ -777,7 +797,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
       (nreverse a)))
 
   (let ((f #'(lambda (whole env)
-               (declare (ignore env) (core:lambda-name dolist))
+               (declare (ignore env) (core:lambda-name dolist)
+                        (core:lambda-name
+                         ((var list-form &optional result-form) &body body)))
                (let (body control var expr exit)
                  (setq body (rest whole))
                  (when (endp body)
@@ -804,10 +826,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                             (declare (ignorable ,var)
                                      ,@(filter-dolist-declarations declarations))
                             ,@exit))))))))
-    (si::fset 'dolist f t '((var list-form &optional result-form) &body body)))
+    (funcall #'(setf macro-function) f 'dolist))
 
   (let ((f #'(lambda (whole env)
-               (declare (ignore env) (core:lambda-name dotimes))
+               (declare (ignore env) (core:lambda-name dotimes)
+                        (core:lambda-list
+                         (var count-form &optional result-form) &body body))
                (let (body control var expr exit)
                  (setq body (rest whole))
                  (when (endp body)
@@ -832,10 +856,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                                    ,@body
                                    (setq ,var (1+ ,var)))
                         ,@exit)))))))
-    (si::fset 'dotimes f t '((var count-form &optional result-form) &body body)))
+    (funcall #'(setf macro-function) f 'dotimes))
 
   (let ((f #'(lambda (whole env)
-               (declare (ignore env) (core:lambda-name do/do*-expand))
+               (declare (ignore env) (core:lambda-name do/do*-expand)
+                        (core:lambda-list vars test &body body))
                (let (do/do* control test result vlexport step let psetq body)
                  (setq do/do* (first whole) body (rest whole))
                  (if (eq do/do* 'do)
@@ -870,20 +895,21 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                                     ,@real-body
                                     ,@(when step (list (cons psetq (nreverse step)))))
                         ,@(or result '(nil)))))))))
-    (si::fset 'do f t '(vars test &body body))
-    (si::fset 'do* f t '(vars test &body body)))
+    (funcall #'(setf macro-function) f 'do)
+    (funcall #'(setf macro-function) f 'do*))
 
-  (si::fset 'prog1 #'(lambda (whole env)
-                       (declare (ignore env))
-                       (let ((sym (gensym))
-                             (first (cadr whole))
-                             (body (cddr whole)))
-                         (if body
-                             `(let ((,sym ,first))
-                                ,@body
-                                ,sym)
-                             first)))
-            t)
+  (funcall #'(setf macro-function)
+           #'(lambda (whole env)
+               (declare (ignore env))
+               (let ((sym (gensym))
+                     (first (cadr whole))
+                     (body (cddr whole)))
+                 (if body
+                     `(let ((,sym ,first))
+                        ,@body
+                        ,sym)
+                     first)))
+           'prog1)
   )
 
 

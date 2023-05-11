@@ -977,44 +977,7 @@ CL_DEFUN Instance_sp cl__class_of(T_sp obj) {
   return (result);
 }
 
-SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fsetSTAR);
-CL_LAMBDA(function-name fn &optional is-macro (lambda-list nil lambda-list-p));
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Primitive to setup a function/macro)dx");
-CL_DOCSTRING_LONG(R"dx(* Arguments
-- function-name :: The name of the function to bind.
-- fn :: The function object.
-- is-macro :: A boolean.
-- lambda-list : A lambda-list or nil.
-- lambda-list-p : T if lambda-list is passed
-* Description
-Bind a function to the function slot of a symbol
-- handles symbol function-name and (SETF XXXX) names.
-IS-MACRO defines if the function is a macro or not.
-LAMBDA-LIST passes the lambda-list.)dx")
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp lambda_list, T_sp lambda_list_p) {
-  if ( Function_sp functionObject = functor.asOrNull<Function_O>() ) {
-    if ( lambda_list_p.notnilp() ) {
-      functionObject->setf_lambdaList(lambda_list);
-    }
-  }
-  if (cl__symbolp(functionName)) {
-    Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
-    symbol->setf_macroP(is_macro.isTrue());
-    symbol->setf_symbolFunction(functor);
-    return functor;
-  } else if (functionName.consp()) {
-    SYMBOL_EXPORT_SC_(ClPkg, setf);
-    List_sp cur = functionName;
-    if (oCar(cur) == cl::_sym_setf) {
-      Symbol_sp symbol = gc::As<Symbol_sp>(oCadr(cur));
-      symbol->setSetfFdefinition(functor);
-      return functor;
-    }
-  }
-  TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
-};
+SYMBOL_EXPORT_SC_(ClPkg, setf);
 
 CL_LAMBDA(function-name);
 CL_DECLARE();

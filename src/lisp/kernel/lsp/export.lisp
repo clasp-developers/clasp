@@ -18,12 +18,12 @@
 
 ;; This is needed only when bootstrapping CLASP using CLASP-MIN
 (eval-when (eval)
-  (si::fset 'in-package
-            #'(lambda (def env)
-                (declare (core:lambda-name in-package))
-		`(eval-when (eval compile load)
-		   (si::select-package ,(string (second def)))))
-	    t)
+  (funcall #'(setf macro-function)
+           #'(lambda (def env)
+               (declare (core:lambda-name in-package))
+	       `(eval-when (eval compile load)
+		  (si::select-package ,(string (second def)))))
+           'in-package)
 )
 
 ;;
@@ -32,32 +32,40 @@
 ;;
 
 ;; Required by REGISTER-GLOBAL in cmp/cmpvar.lisp
-(si::fset 'pushnew #'(lambda (w e)
-                       (declare (ignore e))
-                       (let ((item (cadr w))
-                             (place (caddr w)))
-                         `(setq ,place (adjoin ,item ,place))))
-          t)
+(funcall #'(setf macro-function)
+         #'(lambda (w e)
+             (declare (ignore e)
+                      (core:lambda-name pushnew)
+                      (core:lambda-list item place))
+             (let ((item (cadr w))
+                   (place (caddr w)))
+               `(setq ,place (adjoin ,item ,place))))
+         'pushnew)
 
-(si::fset 'push #'(lambda (w e)
-                       (declare (ignore e))
-                       (let ((item (cadr w))
-                             (place (caddr w)))
-                         `(setq ,place (cons ,item ,place))))
-          t)
+(funcall #'(setf macro-function)
+         #'(lambda (w e)
+             (declare (ignore e))
+             (let ((item (cadr w))
+                   (place (caddr w)))
+               `(setq ,place (cons ,item ,place))))
+         'push)
+
+(funcall #'(setf macro-function)
+         #'(lambda (def env)
+             (declare (ignore env)
+                      (core:lambda-name when)
+                      (core:lambda-list condition &body forms))
+             `(if ,(cadr def) (progn ,@(cddr def))))
+         'when)
 
 
-
-(fset 'when #'(lambda (def env)
-                (declare (ignore env))
-                `(if ,(cadr def) (progn ,@(cddr def))))
-      t)
-
-
-(fset 'unless #'(lambda (def env)
-                  (declare (ignore env))
-                  `(if ,(cadr def) nil (progn ,@(cddr def))))
-      t)
+(funcall #'(setf macro-function)
+         #'(lambda (def env)
+             (declare (ignore env)
+                      (core:lambda-name unless)
+                      (core:lambda-list condition &body forms))
+             `(if ,(cadr def) nil (progn ,@(cddr def))))
+         'unless)
 
 
 (defun si::while-until (test body jmp-op)
@@ -70,34 +78,17 @@
       ,exit
         (,jmp-op ,test (GO ,label)))))
 
-(fset 'si::while #'(lambda (def env)
-                     (declare (ignore env))
-                     (si::while-until (cadr def) (cddr def) 'when))
-      t)
+(funcall #'(setf macro-function)
+         #'(lambda (def env)
+             (declare (ignore env))
+             (si::while-until (cadr def) (cddr def) 'when))
+         'si::while)
 
-
-(fset 'si::until #'(lambda (def env)
-                     (declare (ignore env))
-                     (si::while-until (cadr def) (cddr def) 'unless))
-      t)
-
-
-;; We do not use this macroexpansion, and thus we do not care whether
-;; it is efficiently compiled by ECL or not.
-(core:fset 'multiple-value-bind
-           #'(lambda (whole env)
-               (declare (core:lambda-name multiple-value-bind-macro))
-               (declare (ignore env))
-               (let ((vars (cadr whole))
-                     (form (caddr whole))
-                     (body (cdddr whole))
-                     (restvar (gensym)))
-                 `(multiple-value-call
-                      #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
-                          (declare (ignore ,restvar))
-                          ,@body)
-                    ,form)))
-           t)
+(funcall #'(setf macro-function)
+         #'(lambda (def env)
+             (declare (ignore env))
+             (si::while-until (cadr def) (cddr def) 'unless))
+         'si::until)
 
 
 (defun filter-dolist-declarations (declarations)
@@ -111,7 +102,9 @@
     (nreverse a)))
 
 (let ((f #'(lambda (whole env)
-             (declare (ignore env) (core:lambda-name dolist))
+             (declare (ignore env) (core:lambda-name dolist)
+                      (core:lambda-list
+                       ((var list-form &optional result-form) &body body)))
              (let (body control var expr exit)
                (setq body (rest whole))
                (when (endp body)
@@ -138,10 +131,12 @@
                           (declare (ignorable ,var)
                                    ,@(filter-dolist-declarations declarations))
                           ,@exit))))))))
-  (si::fset 'dolist f t '((var list-form &optional result-form) &body body)))
+  (funcall #'(setf macro-function) f 'dolist))
 
 (let ((f #'(lambda (whole env)
-             (declare (ignore env) (core:lambda-name dotimes))
+             (declare (ignore env) (core:lambda-name dotimes)
+                      (core:lambda-list
+                       ((var count-form &optional result-form) &body body)))
              (let (body control var expr exit)
                (setq body (rest whole))
                (when (endp body)
@@ -166,10 +161,11 @@
                                  ,@body
                                  (setq ,var (1+ ,var)))
                       ,@exit)))))))
-  (si::fset 'dotimes f t '((var count-form &optional result-form) &body body)))
+  (funcall #'(setf macro-function) f 'dotimes))
 
 (let ((f #'(lambda (whole env)
-             (declare (ignore env) (core:lambda-name do/do*-expand))
+             (declare (ignore env) (core:lambda-name do/do*-expand)
+                      (core:lambda-list (vars test &body body)))
              (let (do/do* control test result vlexport step let psetq body)
                (setq do/do* (first whole) body (rest whole))
                (if (eq do/do* 'do)
@@ -204,19 +200,18 @@
                                   ,@real-body
                                   ,@(when step (list (cons psetq (nreverse step)))))
                       ,@(or result '(nil)))))))))
-  (si::fset 'do f t '(vars test &body body))
-  (si::fset 'do* f t '(vars test &body body)))
+  (funcall #'(setf macro-function) f 'do)
+  (funcall #'(setf macro-function) f 'do*))
 
-(si::fset 'prog1 #'(lambda (whole env)
-                     (declare (ignore env))
-                     (let ((sym (gensym))
-                           (first (cadr whole))
-                           (body (cddr whole)))
-                       (if body
-                           `(let ((,sym ,first))
-                              ,@body
-                              ,sym)
-                           first)))
-          t)
-
-
+(funcall #'(setf macro-function)
+         #'(lambda (whole env)
+             (declare (ignore env))
+             (let ((sym (gensym))
+                   (first (cadr whole))
+                   (body (cddr whole)))
+               (if body
+                   `(let ((,sym ,first))
+                      ,@body
+                      ,sym)
+                   first)))
+         'prog1)

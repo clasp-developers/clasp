@@ -43,31 +43,33 @@
 #+(or)
 (progn
   (defparameter *log* (open "/tmp/clasp-builder-log.txt" :direction :output :if-exists :supersede))
-  (si:fset 'core::mmsg #'(lambda (whole env)
-                           (let ((fmt (cadr whole))
-                                 (args (cddr whole)))
-                             `(progn
-                                (core:fmt *log* ,fmt ,@args)
-                                (finish-output *log*))))
-           t))
+  (funcall #'(setf macro-function)
+           #'(lambda (whole env)
+               (let ((fmt (cadr whole))
+                     (args (cddr whole)))
+                 `(progn
+                    (core:fmt *log* ,fmt ,@args)
+                    (finish-output *log*))))
+           'core::mmsg))
 
 ;;;#+(or)
-(Si:fset 'core::mmsg #'(lambda (whole env)
-                         nil)
-         t)
+(funcall #'(setf macro-function)
+         #'(lambda (whole env)
+             nil)
+         'core::mmsg)
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (mmsg "Starting up%N"))
 
 #+clasp-min
-(core:fset 'cmp::with-compiler-timer
+(funcall #'(setf macro-function)
            (let ((body (gensym)))
              #+(or)(core:fmt t "body = {}%N" body)
              #'(lambda (whole env)
                  (let ((body (cddr whole)))
                    `(progn
                       ,@body))))
-           t)
+         'cmp::with-compiler-timer)
 
 (defun load-kernel-file (path &key (type core:*clasp-build-mode*) silent)
   (let ((filename (make-pathname :type (if (eq type :faso) "faso" "fasl")
@@ -119,12 +121,12 @@
     output-path))
 
 (eval-when (:compile-toplevel :execute)
-  (core:fset 'compile-execute-time-value
-             #'(lambda (whole env)
-                 (let* ((expression (second whole))
-                        (result (eval expression)))
-                   `',result))
-             t))
+  (funcall #'(setf macro-function)
+           #'(lambda (whole env)
+               (let* ((expression (second whole))
+                      (result (eval expression)))
+                 `',result))
+           'compile-execute-time-value))
 
 (defun compile-system-serial (system &key reload (output-type core:*clasp-build-mode*) &allow-other-keys
                                      &aux (count (length system)))

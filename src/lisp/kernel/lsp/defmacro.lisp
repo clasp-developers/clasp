@@ -15,24 +15,24 @@
 (in-package "SYSTEM")
 
 #+clasp-min
-(si::fset 'push
-	   #'(lambda (args env)
-               (declare (core:lambda-name push))
-               (let* ((what (second args))
+(funcall #'(setf macro-function)
+	 #'(lambda (args env)
+             (declare (core:lambda-name push))
+             (let* ((what (second args))
                       (where (caddr args)))
-                 `(setq ,where (cons ,what ,where))))
-	  t)
+               `(setq ,where (cons ,what ,where))))
+	 'push)
 
 #+clasp-min
-(si::fset 'pop
-	   #'(lambda (args env)
-               (declare (core:lambda-name pop))
-               (let ((where (cadr args)))
-                 `(let* ((l ,where)
-                         (v (car l)))
-                    (setq ,where (cdr l))
-                    v)))
-	  t)
+(funcall #'(setf macro-function)
+	 #'(lambda (args env)
+             (declare (core:lambda-name pop))
+             (let ((where (cadr args)))
+               `(let* ((l ,where)
+                       (v (car l)))
+                  (setq ,where (cdr l))
+                  v)))
+	 'pop)
 
 (defun sys::search-keyword (list key)
   (cond ((atom list) 'missing-keyword)
@@ -316,22 +316,19 @@
            doc))))))
 
 #+clasp-min
-(si::fset 'defmacro
-          #'(lambda (def env)
-              (declare (ignore env) (core:lambda-name defmacro))
-	      (let* ((name (second def))
-		     (vldm (third def))
-		     (body (cdddr def))
-		     (function))
-		(multiple-value-bind (function doc)
-		    (sys::expand-defmacro name vldm body)
-		  (declare (ignore doc))
-		  (setq function `(function ,function))
-		  `(si::fset ',name ,function
-                             t ; macro
-                             ',vldm ; lambda-list
-                             ))))
-	  t)
+(funcall #'(setf macro-function)
+         #'(lambda (def env)
+             (declare (ignore env) (core:lambda-name defmacro))
+	     (let* ((name (second def))
+		    (vldm (third def))
+		    (body (cdddr def))
+		    (function))
+	       (multiple-value-bind (function doc)
+		   (sys::expand-defmacro name vldm body)
+		 (declare (ignore doc))
+		 (setq function `(function ,function))
+                 `(funcall #'(setf macro-function) ,function ',name))))
+         'defmacro)
 
 ;;; Like EXPAND-DEFMACRO, but is slightly nicer about invalid arguments.
 (defun expand-define-compiler-macro (name vldm body
