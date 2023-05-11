@@ -75,31 +75,6 @@ the corresponding VAR.  Returns NIL."
              `(cdr (the cons ,(cadr def))))
          'cons-cdr)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (select-package :ext))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (core:select-package :core))
-
-
-(defvar *bytecodes-compiler* nil)
-
-
-
-;;
-;; TODO: Rewrite this in C++ when you get the chance - a lot of stuff depends on it
-;;  "Concatenate LISTS by changing them."
-
-#+(or)(defun nconc (&rest lists)
-        (setq lists (do ((p lists (cdr p)))
-                        ((or (car p) (null p)) p)))
-        (do* ((top (car lists))
-              (splice top)
-              (here (cdr lists) (cdr here)))
-             ((null here) top)
-          (rplacd (last splice) (car here))
-          (if (car here)
-              (setq splice (car here)))))
 
 ;;
 ;;   "Return true if OBJECT is the same as some tail of LIST, otherwise false."
@@ -189,38 +164,6 @@ the corresponding VAR.  Returns NIL."
             (incf hash-index)
             (values t key val)))))))
 
-#+(or)
-(defun hash-table-iterator (hash-table)
-  (let ((number-of-buckets (hash-table-number-of-hashes hash-table))
-        (hash 0))
-    (labels ((advance-hash-table-iterator ()
-               (declare (core:lambda-name advance-hash-table-iterator))
-               #+(or)(core:fmt t "Starting with hash -> {}%N" hash)
-               (tagbody
-                top
-                  (let ((entry (core:hash-table-bucket hash-table hash)))
-                    #+(or)(core:fmt t "  entry -> {}%N" entry)
-                    (if (and (null entry) (< hash number-of-buckets))
-                        (progn
-                          #+(or)(core:fmt t "Empty - incrementing hash%N")
-                          (incf hash)
-                          (if (< hash number-of-buckets)
-                              (go top))
-                          #+(or)(core:fmt t "a-h-t-i returning NIL%N")
-                          (return-from advance-hash-table-iterator nil))
-                        (progn
-                          #+(or)(core:fmt t "expr was nil entry -> {}%N" entry)
-                          (incf hash)
-                          (return-from advance-hash-table-iterator entry)))))))
-      (function (lambda ()
-        (if (>= hash number-of-buckets)
-            nil
-            (let ((entry (advance-hash-table-iterator)))
-              #+(or)(core:fmt t " returned entry -> {}%N" entry)
-              (if entry
-                  (values t (car entry) (cdr entry))
-                  nil))))))))
-
 ;   "Substitute data of ALIST for subtrees matching keys of ALIST."
 (defun sublis (alist tree &key key (test #'eql) test-not)
   (when test-not
@@ -276,11 +219,3 @@ the corresponding VAR.  Returns NIL."
   (core:invoke-internal-debugger cond))
 
 (export 'class-name)
-
-(in-package :core)
-
-(defun warn-or-ignore (x &rest args)
-  (declare (ignore x args))
-  nil)
-(export 'warn-or-ignore)
-
