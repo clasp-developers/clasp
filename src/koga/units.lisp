@@ -12,7 +12,8 @@
     "llvm-config"
     "llvm-config-64"
     #+darwin "/usr/local/opt/llvm/bin/llvm-config"
-    #+darwin "/usr/local/opt/llvm@~a/bin/llvm-config")
+    #+darwin "/usr/local/opt/llvm@~a/bin/llvm-config"
+    #+darwin "/opt/homebrew/opt/llvm@~a/bin/llvm-config")
   "Candidate names for the llvm-config binary.")
 
 (defmethod configure-unit (configuration (unit (eql :llvm)))
