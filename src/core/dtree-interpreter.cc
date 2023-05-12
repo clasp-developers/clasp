@@ -106,6 +106,8 @@ case MAYBE_LONG_ADD + DTREE_OP_EQL: {
 #if defined(GENERAL_ARITY_CALL)
 case MAYBE_LONG_ADD + DTREE_OP_SLOT_READ: {
   DTILOG("reading slot: ");
+  if (lcc_nargs != 1)
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_INDEX_OFFSET), literals);
   T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_SLOT_NAME_OFFSET), literals);
   DTILOG(" location: %s  name: %s\n", _safe_rep_(location), _safe_rep_(slot_name));
@@ -138,6 +140,8 @@ case MAYBE_LONG_ADD + DTREE_OP_CAR: {
 }
 case MAYBE_LONG_ADD + DTREE_OP_SLOT_WRITE: {
   DTILOG("writing slot: ");
+  if (lcc_nargs != 2)
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
   size_t index = location.unsafe_fixnum();
   DTILOG("index %lu\n", index);
@@ -164,6 +168,8 @@ case MAYBE_LONG_ADD + DTREE_OP_RPLACA: {
 #if ENABLE_REGISTER >= 0
 case MAYBE_LONG_ADD + DTREE_OP_SLOT_READ: {
   DTILOG("reading slot: ");
+  if (lcc_nargs != 1)
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_INDEX_OFFSET), literals);
   T_sp slot_name = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_READER_SLOT_NAME_OFFSET), literals);
   DTILOG(" location: %s  name: %s\n", _safe_rep_(location), _safe_rep_(slot_name));
@@ -199,6 +205,8 @@ case MAYBE_LONG_ADD + DTREE_OP_CAR: {
 #if ENABLE_REGISTER >= 1
 case MAYBE_LONG_ADD + DTREE_OP_SLOT_WRITE: {
   DTILOG("writing slot: ");
+  if (lcc_nargs != 2)
+    wrongNumberOfArgumentsForGenericFunction(lcc_closure, lcc_nargs);
   T_sp location = ReadArg<MAYBE_LONG_MUL>::read_literal(ip, (DTREE_SLOT_WRITER_INDEX_OFFSET), literals);
   size_t index = location.unsafe_fixnum();
   DTILOG("index %lu\n", index);
