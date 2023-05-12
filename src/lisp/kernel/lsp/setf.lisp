@@ -495,10 +495,10 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 	;; are set to nil.
 	(let ((extra (rest stores)))
 	  (unless (endp extra)
-	    (setf vars (append extra vars)
+	    (setq vars (append extra vars)
 		  vals (append (make-list (length extra)) vals)
 		  stores (list (first stores)))))
-	(setf all-vars (append vars all-vars)
+	(setq all-vars (append vars all-vars)
 	      all-vals (append vals all-vals)
 	      all-stores (append stores all-stores)
 	      all-storing-forms (cons storing-form all-storing-forms)
@@ -812,3 +812,13 @@ Returns the car of the old value in PLACE."
          (prog1 (car ,store-var)
            (setq ,store-var (cdr (the list ,store-var)))
            ,store-form)))))
+
+(defmacro multiple-value-setq ((&rest vars) form)
+  "Syntax: (multiple-value-setq {var}* form)
+
+Evaluates FORM and binds the N-th VAR to the N-th value of FORM or, if FORM
+returns less than N values, to NIL.  Returns the first value of FORM or, if
+FORM returns no value, NIL."
+  (if (null vars)
+      `(values ,form)
+      `(values (setf (values ,@vars) ,form))))

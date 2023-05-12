@@ -109,19 +109,6 @@
              (declare (ignore ,@dummies))
              ,keeper)))))
 
-;;; I'm not sure I understand the order of evaluation issues entirely,
-;;; so I'm antsy about using the m-v-setq primop directly... and this
-;;; equivalence is guaranteed.
-;;; SETF VALUES will expand into a multiple-value-bind, which will use
-;;; the m-v-setq primop as above, so it works out about the same.
-;;; Not a cleavir macro because all we need is setf.
-(define-compiler-macro multiple-value-setq ((&rest vars) form)
-  ;; SETF VALUES will return no values if it sets none, but m-v-setq
-  ;; always returns the primary value.
-  (if (null vars)
-      `(values ,form)
-      `(values (setf (values ,@vars) ,form))))
-
 ;;; This stupid little macro is to tighten up
 ;;; (if (and (fixnump x) (>= x c1) (< x c2)) ...)
 ;;; which is useful for bounds checks.
