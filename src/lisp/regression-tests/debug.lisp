@@ -77,21 +77,17 @@
 ;;; ...that arguments are retrievable
 ;;; NOTE about the FRAME-foo tests: they will probably have to be reduced or eliminated
 ;;; in the future, because that info is only sometimes available. For this one specifically,
-;;; maybe we'll need a high DEBUG to capture arguments, or more importantly, the locals
-;;; will be better to use than the arguments.
-(test-true frame-arguments
-      (block nil
-        (labels ((f ()
-                   (clasp-debug:with-stack (stack)
-                     (clasp-debug:map-stack
-                      (lambda (frame)
-                        (when (eq (clasp-debug:frame-function-name frame)
-                                'function-to-show-up-in-backtrace)
-                          (return
-                            (equal (clasp-debug:frame-arguments frame)
-                                   (list #'f nil)))))
-                      stack))))
-          (function-to-show-up-in-backtrace #'f nil))))
+;;; maybe we'll need a high DEBUG to capture locals.
+(test frame-locals
+  (block nil
+    (defun get-frame-locals ()
+      (clasp-debug:map-backtrace
+       (lambda (frame)
+         (when (eq (clasp-debug:frame-function-name frame)
+                   'function-to-show-up-in-backtrace)
+           (return (clasp-debug:frame-locals frame))))))
+    (function-to-show-up-in-backtrace 'get-frame-locals 357))
+  (((f . get-frame-locals) (x . 357))))
 
 ;;; ...that functions are retrievable (see NOTE above)
 (test-true frame-function
@@ -107,21 +103,6 @@
                      (return (clasp-debug:frame-function frame))))
                  stack)))
              nil))))
-
-;;; ...that lisp frames are marked as such
-(test frame-language
-      (block nil
-        (function-to-show-up-in-backtrace
-         (lambda ()
-          (clasp-debug:with-stack (stack)
-            (clasp-debug:map-stack
-             (lambda (frame)
-               (when (eq (clasp-debug:frame-function-name frame)
-                         'function-to-show-up-in-backtrace)
-                 (return (clasp-debug:frame-language frame))))
-             stack)))
-         nil))
-      (:lisp))
 
 ;;; ...that lambda lists are retrievable (see NOTE above)
 (test frame-function-lambda-list
