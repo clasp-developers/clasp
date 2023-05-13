@@ -1,5 +1,10 @@
 # Version 2.3.0 (LLVM15) Pending
 
+## Added
+* Bytecode compiled images via build mode `:bytecode`.
+* FASL magic number sniffing for CL:LOAD. This enables FASL files to be
+  loaded even if the filename extension is incorrect.
+
 ## Changed
 * Updated to Eclector v0.9.0
 
