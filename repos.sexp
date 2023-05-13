@@ -224,5 +224,5 @@
  (:name :seqan
   :repository "https://github.com/seqan/seqan.git"
   :directory "extensions/seqan-clasp/seqan/"
-  :branch "master"
+  :branch "main"
   :extension :seqan-clasp))
