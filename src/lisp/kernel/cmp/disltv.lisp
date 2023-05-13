@@ -45,8 +45,8 @@
     (dbgprint "Magic number matches: ~x" magic)))
 
 ;; Bounds for major and minor version understood by this loader.
-(defparameter *min-version* '(0 4))
-(defparameter *max-version* '(0 8))
+(defparameter *min-version* '(0 9))
+(defparameter *max-version* '(0 9))
 
 (defun loadable-version-p (major minor)
   (and
@@ -79,21 +79,13 @@
                    :type (unsigned-byte 16))
    (%minor-version :initarg :minor :reader minor-version
                    :type (unsigned-byte 16))
-   ;; obsolete as of 0.9.
-   (%object-count :initarg :nobjs :reader object-count
-                  :type (unsigned-byte 64))
    (%instructions :initarg :instructions :reader instructions
-                  :type (simple-array t (*)))
-   ;; obsolete as of 0.6.
-   (%attributes :initarg :attributes :reader attributes
-                :type (simple-array t (*)))))
+                  :type (simple-array t (*)))))
 
 (defmethod print-object ((object fasl) stream)
   (print-unreadable-object (object stream :type t)
-    (format stream "(~d ~d ~d)"
-            (object-count object)
-            (length (instructions object))
-            (length (attributes object)))))
+    (format stream "COUNT ~s"
+            (length (instructions object)))))
 
 ;; Major and minor version of the file being loaded.
 (defvar *load-major*)
@@ -432,7 +424,8 @@
   (let ((nobjs (read-ub64 stream)))
     (dbgprint " (init-object-array ~d)" nobjs)
     (setf *index-bytes* (max (ash 1 (1- (ceiling (integer-length nobjs) 8)))
-                             1))
+                             1)
+          *index-to-creator* (make-array nobjs :initial-element nil))
     (make-instance 'init-object-array :count nobjs)))
 
 (defun read-mnemonic (stream)
@@ -520,43 +513,22 @@
 
 (defun load-bytecode-stream (stream)
   (load-magic stream)
-  (multiple-value-bind (*load-major* *load-minor*) (load-version stream)
-    (let* ((nobjs (if (and (= *load-major* 0) (< *load-minor* 9))
-                      (read-ub64 stream)
-                      0))
-           (*index-bytes* (max (ash 1 (1- (ceiling (integer-length nobjs) 8)))
-                               1))
-           (_1 (dbgprint "File reports ~d objects. Index length = ~d bytes."
-                         nobjs *index-bytes*))
-           (ninsts (read-ub64 stream))
-           (_2 (dbgprint "Executing FASL bytecode~%File reports ~d instructions"
-                         ninsts))
-           ;; Unlike in the compiler, here instructions and attributes
-           ;; are vectors, and in forward order.
-           (*instructions* (make-array ninsts))
-           (*index-to-creator* (make-array nobjs :initial-element nil))
-           (_3
-             (loop for i below ninsts
-                   do (setf (aref *instructions* i)
-                            (load-instruction stream))))
-           (nattrs
-             (when (and (= *load-major* 0) (< *load-minor* 6))
-               (read-ub32 stream)))
-           (*attributes*
-             (when (and (= *load-major* 0) (< *load-minor* 6))
-               (make-array nattrs))))
-      (declare (ignore _1 _2 _3))
-      (when (and (= *load-major* 0) (< *load-minor* 6))
-        (dbgprint "File reports ~d attributes" nattrs)
-        (loop for i below nattrs
-              do (setf (aref *attributes* i) (load-attribute stream))))
-      (make-instance 'fasl
-        :major *load-major* :minor *load-minor* :nobjs nobjs
-        :instructions *instructions* :attributes *attributes*)))
-  #-clasp ; listen is broken on clasp
-  (when (listen stream)
-    (error "Bytecode continues beyond end of instructions: ~a"
-           (alexandria:read-stream-content-into-byte-vector stream))))
+  (multiple-value-bind (*load-major* *load-minor*)
+      (load-version stream)
+    (loop with *index-bytes* = 1
+          with ninsts = (read-ub64 stream)
+          with *instructions* = (make-array ninsts)
+          with *index-to-creator* = (make-array 0)
+          for i below ninsts
+          initially (dbgprint "Executing FASL bytecode~%File reports ~d instructions"
+                              ninsts)
+          finally (when (listen stream)
+                    (error "Bytecode continues beyond end of instructions."))
+                  (return (make-instance 'fasl
+                                         :major *load-major* :minor *load-minor*
+                                         :instructions *instructions*))
+          do (setf (aref *instructions* i)
+                   (load-instruction stream)))))
 
 (defun load-bytecode (filespec
                       &key
@@ -601,19 +573,16 @@
   (cond ((null fasls)
          ;; weird, but ok
          (make-instance 'fasl
-           :major *major-version* :minor *minor-version* :nobjs 0
-           :instructions #() :attributes #()))
+           :major *major-version* :minor *minor-version*
+           :instructions #()))
         ((null (rest fasls)) (first fasls))
         (t
          (make-instance 'fasl
            :major *major-version* :minor *minor-version*
-           :nobjs (reduce #'+ fasls :key #'object-count)
            ;; We could save a few bytes by skipping the mapcars,
            ;; but it would make the code uglier
            :instructions (apply #'concatenate 'vector
-                                (mapcar #'instructions fasls))
-           :attributes (apply #'concatenate 'vector
-                              (mapcar #'attributes fasls))))))
+                                (mapcar #'instructions fasls))))))
 
 (defun concatenate-fasl-files (&rest pathnames)
   (apply #'concatenate-fasls (mapcar #'load-bytecode pathnames)))
