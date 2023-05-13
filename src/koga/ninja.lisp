@@ -160,10 +160,6 @@
                     :command "$clasp --norc --base --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
                     :pool "console")
-  (ninja:write-rule output-stream :link-bytecode
-                    :command "cat $in > $out"
-                    :restat 1
-                    :description "Linking $target")
   (ninja:write-rule output-stream :link-fasl
                     :command "$clasp --norc --type image --disable-mpi --ignore-image --feature clasp-min --load link-fasl.lisp -- $out $in"
                     :restat 1
@@ -592,8 +588,7 @@
                                                                        :variant-lib)))
                                        sources))
     (ninja:write-build output-stream (case (build-mode configuration)
-                                       (:bytecode :link-bytecode)
-                                       ((:faso :fasoll :fasobc) :link-fasl)
+                                       ((:bytecode :faso :fasoll :fasobc) :link-fasl)
                                        (otherwise "link-fasl-abc"))
                        :variant-ldflags *variant-ldflags*
                        :variant-ldlibs *variant-ldlibs*
@@ -721,8 +716,7 @@
                                                                           :variant-lib)))
                                           eclasp-sources))
       (ninja:write-build output-stream (case (build-mode configuration)
-                                         (:bytecode :link-bytecode)
-                                         ((:faso :fasoll :fasobc) :link-fasl)
+                                         ((:bytecode :faso :fasoll :fasobc) :link-fasl)
                                          (otherwise "link-fasl-abc"))
                          :variant-ldflags *variant-ldflags*
                          :variant-ldlibs *variant-ldlibs*

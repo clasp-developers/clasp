@@ -784,7 +784,7 @@ then they will overide the current variant's corresponding property."
 (defun module-fasl-extension (configuration)
   "Return the module extension, i.e. faso -> fasp, etc."
   (case (build-mode configuration)
-    (:bytecode "faslbcl")
+    (:bytecode "faslbc")
     (:faso "fasp")
     (:fasobc "faspbc")
     (:fasoll "faspll")
@@ -793,7 +793,7 @@ then they will overide the current variant's corresponding property."
 (defun image-fasl-extension (configuration)
   "Return the extension for the clasp image."
   (case (build-mode configuration)
-    (:bytecode "faslbcl")
+    (:bytecode "faslbc")
     (:fasl "lfasl")
     (:faso "fasp")
     (:fasobc "faspbc")

@@ -261,7 +261,7 @@ been initialized with install path versus the build path of the source code file
   (cond ((eq core:*clasp-build-mode* :bitcode)
          (cmp:link-bitcode-modules output-file all-modules))
         ((eq core:*clasp-build-mode* :bytecode)
-         (funcall (find-symbol "LINK-BYTECODE-FASL-FILES" "CMPLTV") output-file all-modules))
+         (core:link-faslbc-files output-file all-modules))
         ((eq core:*clasp-build-mode* :object)) ; Do nothing - object files are the result
         ((eq core:*clasp-build-mode* :faso)
          (core:link-faso-files output-file all-modules nil))
@@ -279,7 +279,7 @@ been initialized with install path versus the build path of the source code file
   (cond ((eq core:*clasp-build-mode* :bitcode)
          (cmp:link-bitcode-modules output-file system))
         ((eq core:*clasp-build-mode* :bytecode)
-         (funcall (find-symbol "LINK-BYTECODE-FASL-FILES" "CMPLTV") output-file system))
+         (core:link-faslbc-files output-file system))
         ((eq core:*clasp-build-mode* :object)) ; Do nothing - object files are the result
         ((eq core:*clasp-build-mode* :faso)
          ;; Do nothing - faso files are the result

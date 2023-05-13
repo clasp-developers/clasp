@@ -186,8 +186,6 @@ T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp cl__close(T_sp strm, T_sp abort = nil<T_O>());
 
-bool cl__listen(T_sp strm);
-
 #define CLASP_LISTEN_NO_CHAR 0
 #define CLASP_LISTEN_AVAILABLE 1
 #define CLASP_LISTEN_EOF -1
