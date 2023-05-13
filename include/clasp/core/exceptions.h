@@ -436,6 +436,7 @@ extern bool stackmap_log;
     }                                                                        \
   }
 #define LOG(...) lisp_LOG(fmt::sprintf(__VA_ARGS__))
+#define FLOG(...) lisp_LOG(fmt::format(__VA_ARGS__))
 
 #define lisp_SHOUT(___fmt)                                                   \
   {                                                                          \
@@ -448,8 +449,8 @@ extern bool stackmap_log;
 #else //DEBUG_ON
 #define HARD_BREAK_POINT() \
   {}
-#define LOG(...) \
-  {}
+#define LOG(...) {}
+#define FLOG(...) {}
 #define lisp_LOG(___fmt) \
   {}
 #define SHOUT(___fmt) \
