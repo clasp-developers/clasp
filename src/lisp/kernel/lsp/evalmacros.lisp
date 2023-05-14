@@ -297,23 +297,6 @@ SECOND-FORM."
   "Evaluates FORM and returns a list of all values FORM returns."
   `(MULTIPLE-VALUE-CALL #'LIST ,form))
 
-(defmacro multiple-value-setq (vars form)
-  "Syntax: (multiple-value-setq {var}* form)
-
-Evaluates FORM and binds the N-th VAR to the N-th value of FORM or, if FORM
-returns less than N values, to NIL.  Returns the first value of FORM or, if
-FORM returns no value, NIL."
-  (do ((vl vars (cdr vl))
-       (sym (gensym))
-       (forms nil)
-       (n 0 (the fixnum (1+ n))))
-      ((endp vl) (if (null forms)
-                     `(values ,form)
-                    `(LET ((,sym (MULTIPLE-VALUE-LIST ,form)))
-                       (prog1 ,@(reverse forms)))))
-    (declare (fixnum n))
-    (push `(SETQ ,(car vl) (NTH ,n ,sym)) forms)))
-
 (defmacro multiple-value-bind (vars form &rest body)
   "Syntax: (multiple-value-bind ({var}*) init {decl}* {form}*)
 

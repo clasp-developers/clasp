@@ -702,9 +702,10 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (if (mp:atomic (safe-gf-call-history generic-function))
       (let ((timer-start (get-internal-real-time)))
         (unwind-protect
-             (if (and #-cclasp nil compile cmp:*cleavir-compile-hook*)
-                 (compile nil (generate-discriminator generic-function))
-                 (bytecode-interpreted-discriminator generic-function))
+            (if (and #-cclasp nil compile cmp:*cleavir-compile-hook*
+                     (not (eq core:*clasp-build-mode* :bytecode)))
+                (compile nil (generate-discriminator generic-function))
+                (bytecode-interpreted-discriminator generic-function))
           (let ((delta-seconds (/ (float (- (get-internal-real-time) timer-start) 1d0)
                                   internal-time-units-per-second)))
             (gctools:accumulate-discriminating-function-compilation-seconds delta-seconds))))

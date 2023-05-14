@@ -99,22 +99,16 @@
    '(&REST CLAUSES))
   'COND)
 
-(cond
-  ((member :generate-faso *features*)
-   (setq core:*clasp-build-mode* :faso))
-  ((member :generate-fasoll *features*)
-   (setq core:*clasp-build-mode* :fasoll))
-  ((member :generate-fasobc *features*)
-   (setq core:*clasp-build-mode* :fasobc)))
+(cond ((member :generate-bytecode *features*)
+       (setq core:*clasp-build-mode* :bytecode))
+      ((member :generate-faso *features*)
+       (setq core:*clasp-build-mode* :faso))
+      ((member :generate-fasoll *features*)
+       (setq core:*clasp-build-mode* :fasoll))
+      ((member :generate-fasobc *features*)
+       (setq core:*clasp-build-mode* :fasobc)))
   
-(if (member :generate-faso *features*)
-    (setq core:*clasp-build-mode* :faso))
-
-
-(setq cmp:*default-object-type*
-      (if (member :generate-bytecode *features*)
-          :bytecode
-          core:*clasp-build-mode*))
+(setq cmp:*default-object-type* core:*clasp-build-mode*)
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -618,9 +612,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
         ((eq type :object)
          "o")
         ((eq type :bytecode)
-         "faslbc")
-        ((eq type :bytecodel)
-         "faslbcl")
+         "fasl")
         ((eq type :fasp)
          "fasp")
         ((eq type :faso)
@@ -658,6 +650,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
          :faspbc)
         ((eq type :faspbc)
          :faspbc)
+        ((eq type :bytecode)
+         :bytecode)
         (t
          (error "Unsupported build-extension type ~a" type))))
 

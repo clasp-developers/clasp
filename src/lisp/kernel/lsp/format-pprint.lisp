@@ -646,18 +646,6 @@
 	(quote
 	 (write-char #\' stream)
 	 (write-object (cadr list) stream))
-        #-staging
-        (eclector.reader:quasiquote
-         (write-char #\` stream)
-         (write-object (cadr list) stream))
-        #-staging
-        (eclector.reader:unquote
-         (write-char #\, stream)
-         (write-object (cadr list) stream))
-        #-staging
-        (eclector.reader:unquote-splicing
-         (write-string ",@" stream)
-         (write-object (cadr list) stream))
 	(t
 	 (pprint-fill stream list)))
       (pprint-fill stream list)))
@@ -807,12 +795,6 @@
     (progn pprint-progn)
     (progv pprint-progv)
     (quote pprint-quote)
-    #-staging
-    (eclector.reader:quasiquote pprint-quote)
-    #-staging
-    (eclector.reader:unquote pprint-quote)
-    #-staging
-    (eclector.reader:unquote-splicing pprint-quote)
     (return-from pprint-block)
     (setq pprint-setq)
     (symbol-macrolet pprint-let)

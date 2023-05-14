@@ -97,6 +97,9 @@ Successes: ~d~%"
 (defmacro test-true (name form &key description)
   `(test ,name (not (not ,form)) (t) :description ,description))
 
+(defmacro test-nil (name form &key description)
+  `(test ,name ,form (nil) :description ,description))
+
 (defmacro test-type (name form type &key description)
   `(test ,name (values ,form) (,type) :test 'typep :description ,description))
 

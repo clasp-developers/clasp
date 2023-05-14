@@ -486,7 +486,7 @@ CL_PKG_NAME(ClPkg, caaaar);
 CL_LAMBDA(list)
 CL_DOCSTRING("Return the car of the caaar of a list.")
 DOCGROUP(clasp)
-CL_DEFUN inline T_sp oCaaaar(T_sp o) { return oCar(oCar(oCar(o))); }
+CL_DEFUN inline T_sp oCaaaar(T_sp o) { return oCar(oCar(oCar(oCar(o)))); }
 
 CL_PKG_NAME(ClPkg, caadar);
 CL_LAMBDA(list)
@@ -534,7 +534,7 @@ CL_PKG_NAME(ClPkg, caaadr);
 CL_LAMBDA(list)
 CL_DOCSTRING("Return the car of the caadr of a list.")
 DOCGROUP(clasp)
-CL_DEFUN inline T_sp oCaaadr(T_sp o) { return oCar(oCar(oCar(oCar(o)))); }
+CL_DEFUN inline T_sp oCaaadr(T_sp o) { return oCar(oCar(oCar(oCdr(o)))); }
 
 CL_PKG_NAME(ClPkg, caaddr);
 CL_LAMBDA(list)

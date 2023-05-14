@@ -88,11 +88,11 @@ void BytecodeModule_O::register_for_debug() {
 static inline int16_t read_s16(unsigned char* pc) {
   uint8_t byte0 = *pc;
   uint8_t byte1 = *(pc + 1);
-  int32_t nibble = byte0 | (byte1 << 8);
-  if (byte1 & 0x80)
-    return nibble - 0x10000;
-  else
-    return nibble;
+  uint16_t nibble = byte0 | (byte1 << 8);
+  // Not sure how standard-conformant this is, but it seems to work.
+  union { uint16_t u; int16_t i; } convert;
+  convert.u = nibble;
+  return convert.i;
 }
 
 static inline int32_t read_label(unsigned char* pc, size_t nbytes) {
@@ -101,13 +101,10 @@ static inline int32_t read_label(unsigned char* pc, size_t nbytes) {
   for (size_t i = 0; i < nbytes - 1; ++i) result |= *(++pc) << i * 8;
   uint8_t msb = *(++pc);
   result |= (msb & 0x7f) << ((nbytes - 1) * 8);
-  // Signed conversion. TODO: Get something that optimizes well.
-  int32_t returnResult;
-  if (msb & 0x80)
-    returnResult = static_cast<int32_t>(result) - (1 << (8 * nbytes - 1));
-  else
-    returnResult = static_cast<int32_t>(result);
-  return returnResult;
+  // Signed conversion.
+  union { uint32_t u; int32_t i; } convert;
+  convert.u = result;
+  return convert.i;
 }
 
 #define DEBUG_VM_RECORD_PLAYBACK 0
@@ -1207,6 +1204,51 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
         vm.push(sp, multipleValues.valueGet(i, svalues).raw_());
     }
     pc += 3;
+    break;
+  }
+  case vm_save_sp: {
+    uint8_t low = *(pc + 1);
+    uint16_t n = low + (*(pc + 2) << 8);
+    DBG_VM("long save sp %" PRIu16 "\n", n);
+    vm.savesp(fp, sp, n);
+    pc += 3;
+    break;
+  }
+  case vm_restore_sp: {
+    uint8_t low = *(pc + 1);
+    uint16_t n = low + (*(pc + 2) << 8);
+    DBG_VM("long restore sp %" PRIu16 "\n", n);
+    vm.restoresp(fp, sp, n);
+    pc += 3;
+    break;
+  }
+  case vm_entry: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM("long entry %" PRIu16 "\n", n);
+    T_O** old_sp = sp;
+    pc++;
+    jmp_buf target;
+    void* frame = __builtin_frame_address(0);
+    vm._pc = pc;
+    TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
+    vm.setreg(fp, n, env.raw_());
+    gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
+    DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
+    setjmp(target);
+    again:
+    try {
+      bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
+      sp = vm._stackPointer;
+      pc = vm._pc;
+    }
+    catch (Unwind &uw) {
+      if (uw.getFrame() == frame) {
+        my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
+        goto again;
+      }
+      else throw;
+    }
     break;
   }
   case vm_special_bind: {

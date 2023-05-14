@@ -23,7 +23,7 @@
                  "CST" (cst configuration)
                  "USE_PARALLEL_BUILD" (parallel-build configuration)
                  "CLASP_BUILD_MODE" (position (build-mode configuration)
-                                              '(:fasl :object :bitcode :faso :fasoll :fasobc))
+                                              '(:fasl :object :bitcode :faso :fasoll :fasobc :bytecode))
                  "USE_COMPILE_FILE_PARALLEL" (if (compile-file-parallel configuration) 1 0)
                  "FORCE_STARTUP_EXTERNAL_LINKAGE" (if (force-startup-external-linkage configuration) 1 0)
                  "USE_PRECISE_GC" *variant-precise*
@@ -101,6 +101,7 @@
                  "DEBUG_SLOW" (debug-slow configuration)
                  "USE_HUMAN_READABLE_BITCODE" (human-readable-bitcode configuration)
                  "DEBUG_COMPILE_FILE_OUTPUT_INFO" (debug-compile-file-output-info configuration)
+                 "DEBUG_VIRTUAL_MACHINE" (debug-virtual-machine configuration)
                  "SNAPSHOT_START" :|_binary_snapshot_start|
                  "SNAPSHOT_END" :|_binary_snapshot_end|
                  "SNAPSHOT_SIZE" :|_binary_snapshot_size|

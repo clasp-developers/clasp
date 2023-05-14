@@ -48,7 +48,8 @@
 
 ;;; Abstract class.
 (define-condition compiler-condition (condition)
-  ((%origin :reader compiler-condition-origin :initarg :origin)))
+  ((%origin :reader compiler-condition-origin :initarg :origin
+            :initform nil)))
 
 ;;; Abstract
 (define-condition undefined-warning (compiler-condition)
@@ -116,6 +117,18 @@
   (:report (lambda (condition stream)
              (format stream "~a~%(Using original form instead.)"
                      (original-condition condition)))))
+
+;; Redefined from primitive in bytecode_compiler.cc
+;; to survive compiler macros signaling errors.
+;; This is kind of a KLUDGE, and doesn't do all the nice encapsulation
+;;  that we do in Cleavir. Plus we have no source location.
+(defun cmp:expand-compiler-macro-safely (expander form env)
+  (handler-case
+      (funcall *macroexpand-hook* expander form env)
+    (error (c)
+      (warn 'compiler-macro-expansion-error-warning
+            :condition c)
+      form)))
 
 ;; This condition is signaled when an attempt at constant folding fails
 ;; due to the function being called signaling an error.

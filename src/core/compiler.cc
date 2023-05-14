@@ -469,6 +469,8 @@ CL_DEFUN T_sp core__startup_image_pathname(bool extension) {
     ss << ".fasl";
   } else if (mode == kw::_sym_fasl) {
     ss << ".lfasl";
+  } else if (mode == kw::_sym_bytecode) {
+    ss << ".fasl";
   } else {
     SIMPLE_ERROR(("Add support for *clasp-build-mode* = %s"), _rep_(mode));
   }
@@ -487,7 +489,7 @@ struct ObjectFileInfo {
 };
 
 struct FasoHeader {
-  uint32_t _Magic;
+  uint8_t _Magic[4];
   uint32_t _Version;
   size_t _PageSize;
   size_t _HeaderPageCount;
@@ -511,12 +513,11 @@ struct FasoHeader {
   }
 };
 
-#define FASO_MAGIC_NUMBER 0xDEDEBEBE
-#define ELF_MAGIC_NUMBER 0x464c457f
-#define MACHO_MAGIC_NUMBER 0xfeedfacf
-
 void setup_FasoHeader(FasoHeader *header) {
-  header->_Magic = 0xDEDEBEBE;
+  header->_Magic[0] = FASO_MAGIC_NUMBER_0;
+  header->_Magic[1] = FASO_MAGIC_NUMBER_1;
+  header->_Magic[2] = FASO_MAGIC_NUMBER_2;
+  header->_Magic[3] = FASO_MAGIC_NUMBER_3;
   header->_Version = 0;
   header->_PageSize = getpagesize();
 }
@@ -628,7 +629,8 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
     }
     close(fd);
     FasoHeader *header = (FasoHeader *)memory;
-    if (header->_Magic == FASO_MAGIC_NUMBER) {
+    if (header->_Magic[0] == FASO_MAGIC_NUMBER_0 && header->_Magic[1] == FASO_MAGIC_NUMBER_1 &&
+        header->_Magic[2] == FASO_MAGIC_NUMBER_2 && header->_Magic[3] == FASO_MAGIC_NUMBER_3) {
       size_t object0_offset = (header->_HeaderPageCount * header->_PageSize);
       if (verbose)
         write_bf_stream(
@@ -645,7 +647,8 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
           write_bf_stream(fmt::sprintf("allObjectFiles.size() = %lu\n", allObjectFiles.size()));
       }
     } else {
-      SIMPLE_ERROR(("Illegal and unknown file type - magic number: %X\n"), (size_t)header->_Magic);
+      SIMPLE_ERROR(("Illegal and unknown file type - magic number: %X%X%X%X\n"),
+                   (uint8_t)header->_Magic[0], (uint8_t)header->_Magic[1], (uint8_t)header->_Magic[2], (uint8_t)header->_Magic[3]);
     }
   }
   FasoHeader *header = (FasoHeader *)malloc(FasoHeader::calculateSize(allObjectFiles.size()));

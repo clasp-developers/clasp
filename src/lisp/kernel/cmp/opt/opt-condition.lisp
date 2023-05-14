@@ -2,6 +2,7 @@
 
 ;;; This macro basically exists to reduce code size in several very heavily used
 ;;; functions, such as CAR, which in cclasp will be inlined just about everywhere.
+#-bytecode
 (define-compiler-macro error (&whole whole datum &rest arguments &environment env)
   (let ((datum (and (constantp datum env) (ext:constant-form-value datum env)))
         (default whole))
@@ -28,7 +29,7 @@
       (otherwise default))))
 
 ;; Ditto for ETYPECASE
-#+(or cclasp eclasp)
+#+(and (not bytecode) (or cclasp eclasp))
 (define-compiler-macro core::etypecase-error (&whole whole value types &environment env)
   (if (constantp types env)
       (let ((types (ext:constant-form-value types env)))

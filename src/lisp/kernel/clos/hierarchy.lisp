@@ -41,6 +41,7 @@
     ;; Also note that boot.lisp ignores these locations for effective slots, just
     ;; using the position in the list here; so that must match the :location.
     ;; It checks this.
+    ;; Any changes to the slots below need to be reflected in instance.h
     '((direct-methods :initform nil :reader specializer-direct-methods
                       :accessor %specializer-direct-methods)
       (call-history-generic-functions

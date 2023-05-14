@@ -88,7 +88,7 @@
 
 (defun make-%no-next-method-continuation (method)
   (with-early-make-funcallable-instance nil ; class has no slots.
-    (%nnmc (find-class '%no-next-method-continuation))
+      (%nnmc (find-class '%no-next-method-continuation))
     (set-funcallable-instance-function
      %nnmc
      (if (null method)
@@ -96,10 +96,9 @@
            (declare (core:lambda-name %no-next-method-continuation.slow.bad)
                     (ignore args))
            (error "No next method"))
-         (let ((gf (method-generic-function method)))
-           (lambda (core:&va-rest args)
-             (declare (core:lambda-name %no-next-method-continuation.lambda))
-             (apply #'no-next-method gf method args)))))
+         (lambda (core:&va-rest args)
+           (declare (core:lambda-name %no-next-method-continuation.lambda))
+           (apply #'no-next-method (method-generic-function method) method args))))
     %nnmc))
 
 (defun make-%method-function-contf (contf)

@@ -1247,6 +1247,10 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   use_lto = false;
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasobc);
+#elif CLASP_BUILD_MODE == 6
+  use_lto = false;
+  debugging = false;
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_bytecode);
 #endif
   if (buildReport) ss << (fmt::format("CLASP_BUILD_MODE = {}\n" , CLASP_BUILD_MODE));
   

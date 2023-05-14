@@ -21,6 +21,7 @@
            #~"backtrace.cc"
            #~"bytecode.cc"
            #~"bytecode_compiler.cc"
+           #~"loadltv.cc"
            #~"debug_unixes.cc"
            #~"debug_macosx.cc"
            #~"smallMap.cc"

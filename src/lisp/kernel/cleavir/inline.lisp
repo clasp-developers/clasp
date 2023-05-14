@@ -1,6 +1,9 @@
 (in-package :clasp-cleavir)
 
-   #+(or)
+#-bytecode
+(progn
+
+#+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to T~%")
   (setq core:*echo-repl-read* t))
@@ -11,21 +14,20 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*defun-inline-hook* 'defun-inline-hook))
 
-(progn
-  #+(or)
-  (eval-when (:execute)
-    (setq core:*echo-repl-read* t))
-  
-  #+(or)
-  (defmacro debug-inline (msg &rest msg-args)
-    `(progn
-       (core:fmt t "debug-inline>> ")
-       (core:fmt t ,msg ,@msg-args)
-       (core:fmt t "%N")
-       (finish-output)))
-  (defmacro debug-inline (msg &rest msg-args)
-    (declare (ignore msg msg-args))
-    nil))
+#+(or)
+(eval-when (:execute)
+  (setq core:*echo-repl-read* t))
+
+#+(or)
+(defmacro debug-inline (msg &rest msg-args)
+  `(progn
+     (core:fmt t "debug-inline>> ")
+     (core:fmt t ,msg ,@msg-args)
+     (core:fmt t "%N")
+     (finish-output)))
+(defmacro debug-inline (msg &rest msg-args)
+  (declare (ignore msg msg-args))
+  nil)
 
 ;;; This defines compiler macros that only come into effect when using cclasp.
 ;;; This is useful when their expansions involve cleavir-only special operators.
@@ -106,19 +108,6 @@
           `(multiple-value-bind (,@dummies ,keeper) ,expr
              (declare (ignore ,@dummies))
              ,keeper)))))
-
-;;; I'm not sure I understand the order of evaluation issues entirely,
-;;; so I'm antsy about using the m-v-setq primop directly... and this
-;;; equivalence is guaranteed.
-;;; SETF VALUES will expand into a multiple-value-bind, which will use
-;;; the m-v-setq primop as above, so it works out about the same.
-;;; Not a cleavir macro because all we need is setf.
-(define-compiler-macro multiple-value-setq ((&rest vars) form)
-  ;; SETF VALUES will return no values if it sets none, but m-v-setq
-  ;; always returns the primary value.
-  (if (null vars)
-      `(values ,form)
-      `(values (setf (values ,@vars) ,form))))
 
 ;;; This stupid little macro is to tighten up
 ;;; (if (and (fixnump x) (>= x c1) (< x c2)) ...)
@@ -403,7 +392,7 @@
   (etypecase fdesignator
     (function fdesignator)
     (symbol (fdefinition fdesignator))))
-(declaim (ftype (function (t) function) core:coerce-to-function))
+(declaim (ftype (function (t) function) core:coerce-to-function)))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -412,7 +401,8 @@
 ;;;
 (in-package "SI")
 
-(declaim (inline index-posn posn-index posn-column))
+#-bytecode
+(progn (declaim (inline index-posn posn-index posn-column))
 (defun index-posn (index stream)
   (declare (type index index) (type pretty-stream stream))
   (+ index (pretty-stream-buffer-offset stream)))
@@ -426,4 +416,4 @@
 #+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to NIL~%")
-  (setq core:*echo-repl-read* nil))
+  (setq core:*echo-repl-read* nil)))
