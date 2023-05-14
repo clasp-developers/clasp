@@ -289,7 +289,8 @@
         nil)))
 
 (defun add-instruction (instruction)
-  (push instruction *instructions*)
+  (when (listp *instructions*)
+    (push instruction *instructions*))
   instruction)
 
 (defun add-creator (value instruction)
@@ -307,7 +308,9 @@
 ;;; have the effect of evaluating the form in a null lexical environment.
 (defun add-form (form &optional env)
   ;; PROGN so that (declare ...) expressions for example correctly cause errors.
-  (add-constant (funcall *compiler* `(lambda () (progn ,form)) env)))
+  (add-constant (if *compiler*
+                    (funcall *compiler* `(lambda () (progn ,form)) env)
+                    form)))
 
 (defmethod add-constant ((value cons))
   ;; We special case proper lists so as to avoid deep stack-blowing
@@ -453,10 +456,11 @@
      :version (ensure-constant (pathname-version value)))))
 
 (define-condition circular-dependency (error)
-  ((%path :initarg :path :reader path))
+  ((%path :initarg :path :reader path)
+   (%value :initarg :value :reader value))
   (:report (lambda (condition stream)
-             (format stream "~s circular dependency detected:~%~t~{~s~^ ~}"
-                     'make-load-form (path condition)))))
+             (format stream "circular dependency detected: ~s~%~t~{~s~^ ~}"
+                     (value condition) (path condition)))))
 
 (defconstant +max-call-args+ (ash 1 16))
 
@@ -546,13 +550,30 @@
                     :arguments (mapcar cre (rest form)))))))
            (t (default)))))
 
+(defvar *circle* nil)
+
 (defmethod add-constant ((value t))
   (when (member value *creating*)
-    (error 'circular-dependency :path *creating*))
+    (error 'circular-dependency :value value :path *creating*))
   (multiple-value-bind (create initialize) (make-load-form value)
-    (prog1
-        (add-creator value (creation-form-creator value create))
-      (add-initializer-form initialize))))
+    (let ((*circle* (list* value nil *circle*)))
+      (prog1
+          (add-creator value (creation-form-creator value create))
+        (handler-case
+            (let ((*instructions* t)
+                  (*coalesce* (let ((ht (make-hash-table)))
+                                (maphash (lambda (key value)
+                                           (setf (gethash key ht) value))
+                                         *coalesce*)
+                                ht))
+                  (*compiler* nil))
+              (add-initializer-form initialize))
+          (circular-dependency (condition)
+            (push initialize (getf *circle* (value condition))))
+          (:no-error (result)
+            (declare (ignore result))
+            (add-initializer-form initialize)))
+        (map nil #'add-initializer-form (second *circle*))))))
 
 (defmethod add-constant ((value cmp:load-time-value-info))
   (add-instruction
