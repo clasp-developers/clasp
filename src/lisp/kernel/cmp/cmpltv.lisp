@@ -51,6 +51,10 @@
 (defclass vcreator (creator)
   ((%prototype :initarg :prototype :reader prototype)))
 
+(defclass vcreator-reference ()
+  ((%prototype :reader prototype
+               :initarg :prototype)))
+
 (defmethod print-object ((object creator) stream)
   (print-unreadable-object (object stream :type t)
     (format stream "~a ~d"
@@ -459,10 +463,11 @@
      :version (ensure-constant (pathname-version value)))))
 
 (define-condition circular-dependency (error)
-  ((%path :initarg :path :reader path))
+  ((%path :initarg :path :reader path)
+   (%value :initarg :value :reader value))
   (:report (lambda (condition stream)
-             (format stream "~s circular dependency detected:~%~t~{~s~^ ~}"
-                     'make-load-form (path condition)))))
+             (format stream "circular dependency detected: ~s~%~t~{~s~^ ~}"
+                     (value condition) (path condition)))))
 
 (defconstant +max-call-args+ (ash 1 16))
 
@@ -552,13 +557,42 @@
                     :arguments (mapcar cre (rest form)))))))
            (t (default)))))
 
+(defvar *initializer-destination* nil)
+
+(defvar *initializer-map* nil)
+
 (defmethod add-constant ((value t))
-  (when (member value *creating*)
-    (error 'circular-dependency :path *creating*))
-  (multiple-value-bind (create initialize) (make-load-form value)
-    (prog1
-        (add-creator value (creation-form-creator value create))
-      (add-initializer-form initialize))))
+  (cond ((not (member value *creating*))
+         (multiple-value-bind (create initialize)
+             (make-load-form value)
+           (let ((*initializer-map* (or *initializer-map* (make-hash-table))))
+             (prog1
+                 (add-creator value (creation-form-creator value create))
+               (setf *instructions* (nconc (remove-if (lambda (x)
+                                                        (not (typep x 'creator)))
+                                                      (gethash value *initializer-map*))
+                                           *instructions*))
+               (let* ((*initializer-destination* value)
+                      (instructions (let (*instructions*)
+                                      (add-initializer-form initialize)
+                                      *instructions*)))
+                 (if (eql *initializer-destination* value)
+                     (setf *instructions* (nconc instructions *instructions*))
+                     (setf (gethash *initializer-destination* *initializer-map*)
+                           (nconc (gethash *initializer-destination* *initializer-map*)
+                                  instructions))))
+               (setf *instructions* (nconc (remove-if (lambda (x)
+                                                        (typep x 'creator))
+                                                      (gethash value *initializer-map*))
+                                           *instructions*))))))
+        (*initializer-destination*
+         (let ((p (position *initializer-destination* *creating*)))
+           (when (or (null p)
+                     (> (position value *creating*) p))
+             (setf *initializer-destination* value)))
+         (make-instance 'vcreator-reference :prototype value))
+        (t
+         (error 'circular-dependency :value value :path *creating*))))
 
 (defmethod add-constant ((value cmp:load-time-value-info))
   (add-instruction
@@ -696,6 +730,11 @@
 (defun write-mnemonic (mnemonic stream) (write-byte (opcode mnemonic) stream))
 
 (defun write-index (creator stream)
+  (when (typep creator 'vcreator-reference)
+    (setf creator (find-if (lambda (instruction)
+                             (and (typep instruction 'vcreator)
+                                  (eql (prototype instruction) (prototype creator))))
+                           *instructions*)))
   (let ((position (index creator)))
     (ecase *index-bytes*
       ((1) (write-byte position stream))
