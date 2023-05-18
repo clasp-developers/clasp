@@ -259,6 +259,7 @@
         (*failure-p* nil))
     (values (funcall thunk) *warnings-p* *failure-p*)))
 
+(export 'with-atomic-file-rename)
 (defmacro with-atomic-file-rename ((temp-pathname final-pathname) &body body)
   `(let ((,temp-pathname (core:mkstemp (namestring ,final-pathname))))
      #+(or)(format t "Writing to ~s~%" ,temp-pathname)

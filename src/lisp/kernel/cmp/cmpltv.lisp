@@ -1303,24 +1303,25 @@
                                 &key (environment
                                       (cmp:make-null-lexical-environment))
                                 &allow-other-keys)
-  (with-open-file (output output-path
-                          :direction :output
-                          :if-does-not-exist :create
-                          :element-type '(unsigned-byte 8))
-    (with-constants (:compiler #'bytecode-cf-compile-lexpr)
-      ;; Read and compile the forms.
-      (loop with eof = (gensym "EOF")
-            with *compile-time-too* = nil
-            with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
-            with cfsdl = cmp::*compile-file-source-debug-lineno*
-            with cfsdo = cmp::*compile-file-source-debug-offset*
-            for core:*current-source-pos-info*
-              = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
-            for form = (read input nil eof)
-            until (eq form eof)
-            when *compile-print*
-              do (cmp::describe-form form)
-            do (bytecode-compile-toplevel form environment))
-      ;; Write out the FASO bytecode.
-      (%write-bytecode output)))
+  (cmp:with-atomic-file-rename (temp-output-path output-path)
+    (with-open-file (output temp-output-path
+                            :direction :output
+                            :if-does-not-exist :create
+                            :element-type '(unsigned-byte 8))
+      (with-constants (:compiler #'bytecode-cf-compile-lexpr)
+        ;; Read and compile the forms.
+        (loop with eof = (gensym "EOF")
+              with *compile-time-too* = nil
+              with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
+              with cfsdl = cmp::*compile-file-source-debug-lineno*
+              with cfsdo = cmp::*compile-file-source-debug-offset*
+              for core:*current-source-pos-info*
+                = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
+              for form = (read input nil eof)
+              until (eq form eof)
+              when *compile-print*
+                do (cmp::describe-form form)
+              do (bytecode-compile-toplevel form environment))
+        ;; Write out the FASO bytecode.
+        (%write-bytecode output))))
   (truename output-path))

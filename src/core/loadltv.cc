@@ -2,10 +2,12 @@
 #include <vector>
 #include <bit>
 #include <sys/stat.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
-#include <clasp/core/foundation.h>
+#include <clasp/core/core.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/ql.h>            // ql::list
 #include <clasp/core/primitives.h>    // cl__fdefinition
 #include <clasp/core/bytecode.h>      // modules, functions
@@ -833,10 +835,14 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
   }
 
   String_sp filename = gc::As<String_sp>(cl__namestring(output));
-
-  FILE *fout = fopen(filename->get_std_string().c_str(), "w");
-  if (!fout) {
-    SIMPLE_ERROR(("Could not open file %s"), _rep_(filename));
+  std::string sfilename = filename->get_std_string();
+  char bfilename[sfilename.size()+7];
+  strncpy( bfilename, sfilename.c_str(), sfilename.size() );
+  bfilename[sfilename.size()] = '\0';
+  strcat( bfilename, "XXXXXX" );
+  int fout = mkostemp(bfilename, O_CREAT);
+  if (fout<0) {
+    SIMPLE_ERROR(("Could not open temporary mkstemp file with %s as the template"), _rep_(filename));
   }
 
   if (verbose) {
@@ -846,10 +852,10 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
   // Write header
   uint8_t header[BC_HEADER_SIZE];
   ltv_header_encode(header, instruction_count);
-  fwrite(header, BC_HEADER_SIZE, 1, fout);
+  write( fout, header, BC_HEADER_SIZE );
 
   for (auto mmap : mmaps) {
-    fwrite(mmap._Memory + BC_HEADER_SIZE, mmap._Len - BC_HEADER_SIZE, 1, fout);
+    write( fout, mmap._Memory + BC_HEADER_SIZE, mmap._Len - BC_HEADER_SIZE );
     int res = munmap(mmap._Memory, mmap._Len);
     if (res != 0) {
       SIMPLE_ERROR(("Could not munmap memory"));
@@ -858,7 +864,12 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
 
   if (verbose)
     write_bf_stream(fmt::sprintf("Closing %s\n", _rep_(filename)));
-  fclose(fout);
+  close(fout);
+  int ren = rename( bfilename, sfilename.c_str() );
+  if (ren<0) {
+    std::string sbfilename(bfilename);
+    SIMPLE_ERROR("Could not rename %s to %s", sbfilename, sfilename.c_str() );
+  }
   if (verbose)
     write_bf_stream(fmt::sprintf("Returning %s\n", _rep_(filename)));
 }
