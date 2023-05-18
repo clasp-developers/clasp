@@ -776,6 +776,8 @@ public:
   bool recognizesPackage(const string &packageName) const;
   T_sp findPackage_no_lock(const string &packageName, bool errorp = false) const;
   T_sp findPackage(const string &packageName, bool errorp = false) const;
+  T_sp findPackage_no_lock(String_sp packageName, bool errorp = false) const;
+  T_sp findPackage(String_sp packageName, bool errorp = false) const;
   void inPackage(const string &packageName);
   void selectPackage(Package_sp pack);
   Package_sp getCurrentPackage() const;

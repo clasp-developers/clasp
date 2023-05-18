@@ -1055,6 +1055,34 @@ T_sp Lisp::findPackage(const string &name, bool errorp) const {
   return this->findPackage_no_lock(name,errorp);
 }
 
+T_sp Lisp::findPackage_no_lock(String_sp name, bool errorp) const {
+  // Check local nicknames first.
+  // FIXME: This conses!
+  if (_lisp->_Roots._TheSystemIsUp) {
+    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(name);
+    if (local.notnilp()) return local;
+  }
+  
+  //        printf("%s:%d Lisp::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
+  T_sp fi = this->_Roots._PackageNameIndexMap->gethash(name);
+  if (fi.nilp()) {
+    if (errorp) {
+      PACKAGE_ERROR(name);
+    }
+    return nil<Package_O>(); // return nil if no package found
+  }
+  //        printf("%s:%d Lisp::findPackage index: %d\n", __FILE__, __LINE__, fi->second );
+  ASSERT(fi.fixnump());
+  Package_sp getPackage = this->_Roots._Packages[fi.unsafe_fixnum()];
+  //        printf("%s:%d Lisp::findPackage pkg@%p\n", __FILE__, __LINE__, getPackage.raw_());
+  return getPackage;
+}
+
+T_sp Lisp::findPackage(String_sp name, bool errorp) const {
+  WITH_READ_LOCK(globals_->_PackagesMutex);
+  return this->findPackage_no_lock(name,errorp);
+}
+
 
 void Lisp::remove_package(const string& name ) {
   WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
@@ -1709,8 +1737,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS: find-package)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
-  if (Package_sp pkg = name_desig.asOrNull<Package_O>())
-    return pkg;
+  if (Package_sp pkg = name_desig.asOrNull<Package_O>()) return pkg;
   String_sp name = coerce::stringDesignator(name_desig);
   // TODO: Support wide string package names
   return _lisp->findPackage(name->get_std_string());
