@@ -602,7 +602,7 @@ Tried to define constant #~d, but it was already defined"
 
 (defmethod %load-instruction ((mnemonic (eql 'init-object-array)) stream)
   (check-initialization *initflags*)
-  (let ((nobjs (read-ub64)))
+  (let ((nobjs (read-ub64 stream)))
     (dbgprint " (init-object-array ~d)" nobjs)
     (setf *index-bytes* (max 1 (ash 1 (1- (ceiling (integer-length nobjs) 8))))
           *constants* (make-array nobjs)

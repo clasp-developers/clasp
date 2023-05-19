@@ -667,6 +667,9 @@ void Lisp::startupLispEnvironment() {
 #ifdef CLASP_EXTENSIONS
   features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"),features);
 #endif
+#if CLASP_BUILD_MODE == 6
+  features = Cons_O::create(_lisp->internKeyword("BYTECODE"), features);
+#endif
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 
   globals_->_InitFileName = "sys:src;lisp;" KERNEL_NAME ";init.lisp";

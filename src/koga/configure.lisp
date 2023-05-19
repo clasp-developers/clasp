@@ -649,6 +649,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"jupyter-kernel.lisp" :variant))
                                                          :ansi-test
                                                          (list (make-source #P"ansi-test.lisp" :build))
+                                                         :asdf-test
+                                                         (list (make-source #P"asdf-test.bash" :build))
                                                          :bench
                                                          (list (make-source #P"bench.lisp" :build))
                                                          :ninja

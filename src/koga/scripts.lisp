@@ -297,3 +297,17 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
         (t
          (load #P\"../dependencies/ansi-test/init.lsp\"))))
 (rt:do-tests :exit t :expected-failures \"../tools-for-build/ansi-test-expected-failures.sexp\")"))
+
+(defmethod print-prologue (configuration (name (eql :asdf-test)) output-stream)
+  (format output-stream "~
+CLASP=$(pwd)/$1
+WORK_DIR=`mktemp -d`
+
+if [[ ! \"$WORK_DIR\" || ! -d \"$WORK_DIR\" ]]; then
+  echo \"Could not create temp dir\"
+  exit 1
+fi
+
+cp -r ../src/lisp/modules/asdf \"$WORK_DIR\"
+cd \"$WORK_DIR\"/asdf
+make $2 l=clasp CLASP=$CLASP"))

@@ -409,7 +409,7 @@ Compile a lisp source file into an LLVM module."
     ;; Don't enforce .bc extension for additional-bitcode-pathnames
     ;; This is where I used to link the additional-bitcode-pathnames
     (loop for part-llvm-ir in parts
-          for module = (llvm-sys:parse-irstring part-llvm-ir (thread-local-llvm-context))
+          for module = (llvm-sys:parse-irstring part-llvm-ir (thread-local-llvm-context) "")
           do (multiple-value-bind (failure error-msg)
                  (llvm-sys:link-modules link-module module)
                (when failure
