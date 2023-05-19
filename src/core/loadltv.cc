@@ -840,9 +840,10 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
   strncpy( bfilename, sfilename.c_str(), sfilename.size() );
   bfilename[sfilename.size()] = '\0';
   strcat( bfilename, "XXXXXX" );
-  int fout = mkostemp(bfilename, O_CREAT);
+  int fout = mkstemp(bfilename);
   if (fout<0) {
-    SIMPLE_ERROR(("Could not open temporary mkstemp file with %s as the template"), _rep_(filename));
+    SIMPLE_ERROR(("Could not open temporary mkstemp file with %s as the template - error: %s"),
+                 _rep_(filename), strerror(errno));
   }
 
   if (verbose) {
