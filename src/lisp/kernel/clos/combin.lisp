@@ -366,7 +366,9 @@ argument list designator."
       (unless (symbolp name) (syntax-error))
       (let ((x (first body)))
 	(when (and (consp x) (eql (first x) :ARGUMENTS))
-	  (error "Option :ARGUMENTS is not supported in DEFINE-METHOD-COMBINATION.")))
+          (warn "Option :ARGUMENTS is not supported in DEFINE-METHOD-COMBINATION.")
+	  (return-from define-complex-method-combination
+            `(error "Option :ARGUMENTS is not supported in DEFINE-METHOD-COMBINATION."))))
       (let ((x (first body)))
 	(when (and (consp x) (eql (first x) :GENERIC-FUNCTION))
 	  (setf body (rest body))
