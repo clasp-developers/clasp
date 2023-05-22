@@ -221,7 +221,7 @@
 
 (defun emit-call (context count)
   (let ((receiving (context-receiving context)))
-    (cond ((or (eql receiving t) (eql receiving 0))
+    (cond ((eql receiving t)
            (assemble-maybe-long context +call+ count))
           ((eql receiving 1)
            (assemble-maybe-long context +call-receive-one+ count))

@@ -488,7 +488,6 @@ void Context::emit_call(size_t argcount) const {
     this->assemble1(vm_call_receive_one, argcount);
     break;
   case -1:
-  case 0: // should be receive_fixed 0?
     this->assemble1(vm_call, argcount);
     break;
   default:
