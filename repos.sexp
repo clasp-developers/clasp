@@ -5,9 +5,9 @@
 ;;;;   4. src/ - C/C++ dependencies for iclasp
 ;;;;   5. extensions/ - extensions and their dependencies
 ((:name :ansi-test
-  :repository "https://gitlab.common-lisp.net/yitzchak/ansi-test"
+  :repository "https://gitlab.common-lisp.net/ansi-test/ansi-test"
   :directory "dependencies/ansi-test/"
-  :branch "bytecode")
+  :branch "master")
  (:name :cl-bench
   :repository "https://gitlab.common-lisp.net/ansi-test/cl-bench.git"
   :directory "dependencies/cl-bench/"

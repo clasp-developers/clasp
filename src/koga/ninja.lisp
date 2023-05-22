@@ -149,11 +149,7 @@
                     :description "Running benchmarks"
                     :pool "console")
   (ninja:write-rule output-stream :ansi-test
-                    :command "$clasp --norc --base --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
-                    :description "Running ANSI tests"
-                    :pool "console")
-  (ninja:write-rule output-stream :ansi-test-subset
-                    :command "$clasp --norc -t c --feature ignore-extensions --load ansi-test-subset.lisp"
+                    :command "$clasp --norc --base --feature ignore-extensions --load ansi-test.lisp"
                     :description "Running ANSI tests"
                     :pool "console")
   (ninja:write-rule output-stream :test-random-integer
@@ -758,10 +754,6 @@
                      :clasp (make-source "iclasp" :variant)
                      :inputs (list (build-name "cclasp"))
                      :outputs (list (build-name "ansi-test")))
-  (ninja:write-build output-stream :ansi-test-subset
-                     :clasp (make-source "iclasp" :variant)
-                     :inputs (list (build-name "cclasp"))
-                     :outputs (list (build-name "ansi-test-subset")))
   (ninja:write-build output-stream :test-random-integer
                      :clasp (make-source "iclasp" :variant)
                      :inputs (list (build-name "cclasp"))
