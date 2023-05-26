@@ -265,16 +265,17 @@ printer and we should rather use MAKE-LOAD-FORM."
 	(write-string " ..." stream)
 	(return))
       (setq sv (si:instance-ref obj i))
-      ;; fix bug where symbols like :FOO::BAR are printed
-      (write-string " " stream)
-      (let ((kw (intern (symbol-name (slot-definition-name (car scan)))
-                        (load-time-value (find-package "KEYWORD")))))
-        (prin1 kw stream))
-      (write-string " " stream)
-      (if *print-level*
-          (let ((*print-level* (1- *print-level*)))
-            (prin1 sv stream))
-          (prin1 sv stream)))
+      (unless (eq sv (core:unbound))
+        ;; fix bug where symbols like :FOO::BAR are printed
+        (write-string " " stream)
+        (let ((kw (intern (symbol-name (slot-definition-name (car scan)))
+                          (load-time-value (find-package "KEYWORD")))))
+          (prin1 kw stream))
+        (write-string " " stream)
+        (if *print-level*
+            (let ((*print-level* (1- *print-level*)))
+              (prin1 sv stream))
+            (prin1 sv stream))))
     (write-string ")" stream)
     obj))
 
