@@ -647,8 +647,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"clasprc.lisp" :variant))
                                                          :jupyter-kernel
                                                          (list (make-source #P"jupyter-kernel.lisp" :variant))
-                                                         :ansi-test-subset
-                                                         (list (make-source #P"ansi-test-subset.lisp" :build))
+                                                         :ansi-test
+                                                         (list (make-source #P"ansi-test.lisp" :build))
                                                          :bench
                                                          (list (make-source #P"bench.lisp" :build))
                                                          :ninja

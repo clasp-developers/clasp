@@ -285,12 +285,15 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
   (cl-bench::bench-analysis-page))
 (ext:quit)"))
 
-(defmethod print-prologue (configuration (name (eql :ansi-test-subset)) output-stream)
-  (format output-stream "(setf *default-pathname-defaults*
-      (truename (make-pathname :directory '(:relative :up \"dependencies\" \"ansi-test\"))))
-(load #P\"doit1.lsp\")
-(load #P\"gclload2.lsp\")
-(dolist (name (core:split (string-upcase (ext:getenv \"ANSI_TEST_SUBSET\")) \",\"))
-  (write-line name)
-  (rt:do-test (find-symbol name :cl-test) :catch-errors nil))
-(ext:quit)"))
+(defmethod print-prologue (configuration (name (eql :ansi-test)) output-stream)
+  (format output-stream "~
+(let ((suite (ext:getenv \"ANSI_TEST_SUITE\")))
+  (cond (suite
+         (let ((*default-pathname-defaults* (truename #P\"../dependencies/ansi-test/\")))
+           (load #P\"gclload1.lsp\")
+           (load (make-pathname :directory (list :relative suite)
+                                :name \"load\"
+                                :type \"lsp\"))))
+        (t
+         (load #P\"../dependencies/ansi-test/init.lsp\"))))
+(rt:do-tests :exit t :expected-failures \"../tools-for-build/ansi-test-expected-failures.sexp\")"))
