@@ -1963,13 +1963,12 @@ void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, cons
     T_sp first = oCar(aforms);
     List_sp rest = gc::As<List_sp>(oCdr(aforms));
     compile_form(first, env, Context(ctxt, -1));
+    ctxt.assemble0(vm_push_values);
     if (rest.notnilp()) {
-      ctxt.assemble0(vm_push_values);
       for (auto cur : rest) {
         compile_form(oCar(cur), env, Context(ctxt, -1));
         ctxt.assemble0(vm_append_values);
       }
-      ctxt.assemble0(vm_pop_values);
     }
     ctxt.emit_mv_call();
   }
