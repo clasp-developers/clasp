@@ -198,7 +198,7 @@
  (:name :asdf
   :repository "https://gitlab.common-lisp.net/yitzchak/asdf.git"
   :directory "src/lisp/modules/asdf/"
-  :branch "clasp-bytecode")
+  :branch "clasp-bytecode-2")
  (:name :mps
   :repository "https://github.com/Ravenbrook/mps.git"
   :directory "src/mps/"

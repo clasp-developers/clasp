@@ -152,6 +152,10 @@
                     :command "$clasp --norc --base --feature ignore-extensions --load ansi-test.lisp"
                     :description "Running ANSI tests"
                     :pool "console")
+  (ninja:write-rule output-stream :asdf-test
+                    :command "bash asdf-test.bash $clasp $target"
+                    :description "Running ASDF tests"
+                    :pool "console")
   (ninja:write-rule output-stream :test-random-integer
                     :command "$clasp --norc --base --feature ignore-extensions --load \"../dependencies/ansi-test/run-random-type-tests.lisp\""
                     :description "Running pfdietz test-random-integer-forms"
@@ -754,6 +758,16 @@
                      :clasp (make-source "iclasp" :variant)
                      :inputs (list (build-name "cclasp"))
                      :outputs (list (build-name "ansi-test")))
+  (ninja:write-build output-stream :asdf-test
+                     :clasp (make-source "iclasp" :variant)
+                     :target "t"
+                     :inputs (list (build-name "cclasp"))
+                     :outputs (list (build-name "asdf-test")))
+  (ninja:write-build output-stream :asdf-test
+                     :clasp (make-source "iclasp" :variant)
+                     :target "u"
+                     :inputs (list (build-name "cclasp"))
+                     :outputs (list (build-name "asdf-test-upgrade")))
   (ninja:write-build output-stream :test-random-integer
                      :clasp (make-source "iclasp" :variant)
                      :inputs (list (build-name "cclasp"))
@@ -776,6 +790,12 @@
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "ansi-test-subset"))
                        :outputs (list "ansi-test-subset"))
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "asdf-test"))
+                       :outputs (list "asdf-test"))
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "asdf-test-upgrade"))
+                       :outputs (list "asdf-test-upgrade"))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test-random-integer"))
                        :outputs (list "test-random-integer"))
