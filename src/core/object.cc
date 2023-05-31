@@ -120,7 +120,7 @@ CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
         General_sp ginstance(instance.unsafe_general());
         ginstance->initialize(args);
       } else {
-        SIMPLE_ERROR(("Add support to decode object of class: %s"), _rep_(cl__class_of(instance)));
+        SIMPLE_ERROR("Add support to decode object of class: {}", _rep_(cl__class_of(instance)));
       }
     }
     return instance;
@@ -155,7 +155,7 @@ CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
         General_sp ginstance(instance.unsafe_general());
         ginstance->decode(args);
       } else {
-        SIMPLE_ERROR(("Add support to decode object of class: %s"), _rep_(cl__class_of(instance)));
+        SIMPLE_ERROR("Add support to decode object of class: {}", _rep_(cl__class_of(instance)));
       }
     }
     return instance;
@@ -173,7 +173,7 @@ CL_DEFUN bool core__fieldsp(T_sp obj) {
   if (obj.generalp()) {
     return obj.unsafe_general()->fieldsp();
   }
-  SIMPLE_ERROR(("Add support for fieldsp for %s"), _rep_(cl__class_of(obj)));
+  SIMPLE_ERROR("Add support for fieldsp for {}", _rep_(cl__class_of(obj)));
 }
 CL_LAMBDA(arg);
 CL_DECLARE();
@@ -224,7 +224,7 @@ CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
     clasp_write_char(')', stream);
     clasp_finish_output(stream);
   } else {
-    SIMPLE_ERROR(("Object does not provide fields"));
+    SIMPLE_ERROR("Object does not provide fields");
   }
   return obj;
 }
@@ -244,7 +244,7 @@ CL_DEFUN void core__low_level_describe(T_sp obj) {
   } else if (obj.consp()) {
     obj.unsafe_cons()->describe(_lisp->_true());
   } else {
-    SIMPLE_ERROR(("Add support to low-level-describe for object"));
+    SIMPLE_ERROR("Add support to low-level-describe for object");
   }
 };
 
@@ -520,27 +520,27 @@ string General_O::description() const {
 };
 
 T_sp General_O::instanceRef(size_t idx) const {
-  SIMPLE_ERROR(("T_O::instanceRef(%d) invoked on object class[%s] val-->%s"), idx, this->_instanceClass()->_classNameAsString(),
+  SIMPLE_ERROR("T_O::instanceRef({}) invoked on object class[{}] val-->{}", idx, this->_instanceClass()->_classNameAsString(),
                this->__repr__());
 }
 
 T_sp General_O::instanceClassSet(Instance_sp val) {
-  SIMPLE_ERROR(("T_O::instanceClassSet to class %s invoked on object class[%s] val-->%s - subclass must implement"), _rep_(val),
+  SIMPLE_ERROR("T_O::instanceClassSet to class {} invoked on object class[{}] val-->{} - subclass must implement", _rep_(val),
                this->_instanceClass()->_classNameAsString(), _rep_(this->asSmartPtr()));
 }
 
 T_sp General_O::instanceSet(size_t idx, T_sp val) {
-  SIMPLE_ERROR(("T_O::instanceSet(%d,%s) invoked on object class[%s] val-->%s"), idx, _rep_(val),
+  SIMPLE_ERROR("T_O::instanceSet({},{}) invoked on object class[{}] val-->{}", idx, _rep_(val),
                this->_instanceClass()->_classNameAsString(), _rep_(this->asSmartPtr()));
 }
 
 T_sp General_O::instanceSig() const {
-  SIMPLE_ERROR(("T_O::instanceSig() invoked on object class[%s] val-->%s"), this->_instanceClass()->_classNameAsString(),
+  SIMPLE_ERROR("T_O::instanceSig() invoked on object class[{}] val-->{}", this->_instanceClass()->_classNameAsString(),
                this->__repr__());
 }
 
 T_sp General_O::instanceSigSet() {
-  SIMPLE_ERROR(("T_O::instanceSigSet() invoked on object class[%s] val-->%s"), this->_instanceClass()->_classNameAsString(),
+  SIMPLE_ERROR("T_O::instanceSigSet() invoked on object class[{}] val-->{}", this->_instanceClass()->_classNameAsString(),
                _rep_(this->asSmartPtr()));
 }
 
@@ -661,6 +661,6 @@ CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
     General_O *genx = x.unsafe_general();
     return genx->equalp(y);
   }
-  SIMPLE_ERROR(("Bad equalp comparison"));
+  SIMPLE_ERROR("Bad equalp comparison");
 };
 }; // namespace core

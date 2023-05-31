@@ -858,7 +858,7 @@ struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, 
       this->_v = checksum;
 //      printf("%s:%d:%s ChecksumInfo kind = %d  str = %s \n", __FILE__, __LINE__, __FUNCTION__, kind, this->_Storage.c_str() );
     } else {
-      SIMPLE_ERROR_SPRINTF("You must pass a valid Checksum like :CSK_MD5");
+      SIMPLE_ERROR("You must pass a valid Checksum like :CSK_MD5");
     }
   }
   from_object(const from_object& orig) = delete;
@@ -888,7 +888,7 @@ struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {
       _Storage = gc::As<core::String_sp>(object)->get_std_string();
       _v = _Storage;
     } else {
-      SIMPLE_ERROR_SPRINTF("You must pass a String or NIL");
+      SIMPLE_ERROR("You must pass a String or NIL");
     }
   }
   from_object(const from_object& orig) = delete;

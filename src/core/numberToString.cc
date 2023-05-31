@@ -91,7 +91,7 @@ CL_DEFUN StrNs_sp core__next_to_string(StrNs_sp buffer, Bignum_sp bn,
     for (size_t idx(0); idx < actual_str_size; ++idx)
       bufferw->vectorPushExtend(num_to_text[cpbuffer[idx]]);
   } else {
-    SIMPLE_ERROR(("The buffer for the bignum must be a string with a fill-pointer"));
+    SIMPLE_ERROR("The buffer for the bignum must be a string with a fill-pointer");
   }
   return buffer;
 }

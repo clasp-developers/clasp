@@ -113,14 +113,14 @@ int handleFatalCondition() {
     // Do nothing
     printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
   } catch (core::CatchThrow &ee) {
-    core::write_bf_stream(fmt::sprintf("%s:%d Uncaught THROW tag[%s] - this should NEVER happen - the stack should never be "
+    core::clasp_write_string(fmt::format("{}:{} Uncaught THROW tag[{}] - this should NEVER happen - the stack should never be "
                                        "unwound unless there is a CATCH clause that matches the THROW",
                                        __FILE__, __LINE__, ee.getTag()));
   } catch (core::Unwind &ee) {
-    core::write_bf_stream(
-        fmt::sprintf("At %s:%d - Unwind caught frame: %p index: %d", __FILE__, __LINE__, (void *)ee.getFrame(), ee.index()));
+    core::clasp_write_string(
+        fmt::format("At {}:{} - Unwind caught frame: {} index: {}", __FILE__, __LINE__, (void *)ee.getFrame(), ee.index()));
   } catch (HardError &ee) {
-    core::write_bf_stream(fmt::sprintf("At %s:%d - HardError caught: %s", __FILE__, __LINE__, ee.message()));
+    core::clasp_write_string(fmt::format("At {}:{} - HardError caught: {}", __FILE__, __LINE__, ee.message()));
   }
   return exitCode;
 }

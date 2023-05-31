@@ -198,7 +198,7 @@ public:
   };
   
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    SIMPLE_ERROR_SPRINTF("What do I do here");
+    SIMPLE_ERROR("What do I do here");
   }
   static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
@@ -253,7 +253,7 @@ public:
   void setup_class(const string &makerName) {
     _G();
     if (IS_SYMBOL_UNDEFINED(OT::static_classSymbol())) {
-      SIMPLE_ERROR_SPRINTF("Attempting to add methods for class that isn't defined yet");
+      SIMPLE_ERROR("Attempting to add methods for class that isn't defined yet");
     }
     this->_ClassSymbol = OT::static_classSymbol();
     reg::lisp_registerClassSymbol<OT>(this->_ClassSymbol);

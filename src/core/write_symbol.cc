@@ -247,7 +247,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
           clasp_write_string(ss.str(), stream);
           clasp_write_string(">", stream);
           return;
-          SIMPLE_ERROR(("Can't print symbol"));
+          SIMPLE_ERROR("Can't print symbol");
         }
         if (intern_flag2 == kw::_sym_internal || forced_package) {
           clasp_write_string("::", stream);
@@ -260,7 +260,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
           clasp_write_string(ss.str(), stream);
           clasp_write_string(">", stream);
           return;
-          SIMPLE_ERROR(("Pathological symbol --- cannot print"));
+          SIMPLE_ERROR("Pathological symbol --- cannot print");
         }
       } else {
         clasp_write_char(':', stream);

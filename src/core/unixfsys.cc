@@ -211,7 +211,7 @@ static String_sp coerce_to_posix_filename(T_sp pathname) {
 	 * this is not supported on all POSIX platforms (most notably Windows)
 	 */
   ASSERT(pathname);
-  if (pathname.nilp()) SIMPLE_ERROR(("In %s the pathname is NIL") , __FUNCTION__);
+  if (pathname.nilp()) SIMPLE_ERROR("In {} the pathname is NIL", __FUNCTION__);
   String_sp sfilename = core__coerce_to_filename(pathname);
   return cl__string_right_trim(SimpleBaseString_O::make(DIR_SEPARATOR), sfilename);
 }
@@ -417,7 +417,7 @@ CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set)
   } else if (how == kw::_sym_sig_setmask) {
     ihow = SIG_SETMASK;
   } else {
-    SIMPLE_ERROR(("Illegal how argument %s - must be one of :sig-block, :sig-unblock, or :sig-setmask") , _rep_(how));
+    SIMPLE_ERROR("Illegal how argument {} - must be one of :sig-block, :sig-unblock, or :sig-setmask", _rep_(how));
   }
   int result = sigthreadmask(ihow,&set->_sigset._value,old_setp);
   if (result == 0) {
@@ -480,7 +480,7 @@ CL_DOCSTRING(R"dx(Change the posix current working directory to pathname.)dx");
 CL_DOCSTRING_LONG(R"dx(If change-default-pathname-defaults is T then also change *default-pathname-defaults*.)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
-  if (dir.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
+  if (dir.nilp()) SIMPLE_ERROR("{} is about to pass NIL to clasp_namestring", __FUNCTION__);
 //  printf("%s:%d ext__chdir dir -> %s\n", __FILE__, __LINE__, _rep_(dir).c_str());
   T_sp tdir = clasp_namestring(dir, true);
   LIKELY_if (cl__stringp(tdir)) {
@@ -493,14 +493,14 @@ CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
     Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), nil<T_O>()));
 //    printf("%s:%d:%s  After safe_chdir\n", __FILE__, __LINE__, __FUNCTION__ );
     if (change_default_pathname_defaults.notnilp()) {
-      write_bf_stream(fmt::sprintf("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n" , _rep_(change_default_pathname_defaults)));
+      clasp_write_string(fmt::format("Changing *default-pathname-defaults* because change-default-pathname-defaults -> {}\n" , _rep_(change_default_pathname_defaults)));
 //      printf("%s:%d:%s  Before getcwd\n", __FILE__, __LINE__, __FUNCTION__ );
       core::getcwd(true); // get the current working directory and change *default-pathname-defaults* to it
 //      printf("%s:%d:%s  After getcwd\n", __FILE__, __LINE__, __FUNCTION__ );
     }
     return result;
   }
-  SIMPLE_ERROR(("Could not convert %s to a namestring") , _rep_(dir));
+  SIMPLE_ERROR("Could not convert {} to a namestring", _rep_(dir));
 };
 
 static int
@@ -549,7 +549,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
   const char *ok = ::getcwd(NULL,0);
   if (!ok) {
-    SIMPLE_ERROR(("There was an error in ext__getcwd - error: %s") , strerror(errno));
+    SIMPLE_ERROR("There was an error in ext__getcwd - error: {}", strerror(errno));
   }
 #if 0
   printf("%s:%d:%s entered ok -> %s\n", __FILE__, __LINE__, __FUNCTION__, ok );
@@ -740,8 +740,8 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   } else if (subdir == kw::_sym_up) {
     aux = SimpleBaseString_O::make("..");
   } else if (!cl__stringp(subdir)) {
-    SIMPLE_ERROR(("Directory component %s found in pathname %s"
-                  "is not allowed in TRUENAME or DIRECTORY") ,
+    SIMPLE_ERROR("Directory component {} found in pathname {}"
+                 "is not allowed in TRUENAME or DIRECTORY",
                  _rep_(subdir) , _rep_(base_dir));
   } else {
     aux = gc::As<String_sp>(subdir);
@@ -753,7 +753,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   output = gc::As<Pathname_sp>(eval::funcall(cl::_sym_makePathname,
                                              kw::_sym_directory, ldir,
                                              kw::_sym_defaults, base_dir));
-  if (output.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
+  if (output.nilp()) SIMPLE_ERROR("{} is about to pass NIL to clasp_namestring", __FUNCTION__);
   aux = gc::As<String_sp>(clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING));
   aux = gc::As<String_sp>(aux->subseq(0, clasp_make_fixnum(aux->length() - 1)));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
@@ -776,7 +776,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   WRONG_DIR:
     if (ignore_if_failure)
       return nil<Pathname_O>();
-    SIMPLE_ERROR(("The directory %s in pathname %s actually points to a file or special device.") , _rep_(subdir) , _rep_(base_dir));
+    SIMPLE_ERROR("The directory {} in pathname {} actually points to a file or special device.", _rep_(subdir) , _rep_(base_dir));
   }
   if (subdir == kw::_sym_up) {
     T_sp newdir = output->_Directory;
@@ -784,9 +784,8 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
     if (newdir.nilp()) {
       if (ignore_if_failure)
         return nil<Pathname_O>();
-      SIMPLE_ERROR(("Pathname contained an :UP component  "
-                      "that goes above the base directory:"
-                    "%s") ,
+      SIMPLE_ERROR("Pathname contained an :UP component  "
+                   "that goes above the base directory: {}",
                    _rep_(output));
     }
     output->_Directory = newdir;
@@ -798,7 +797,7 @@ static Pathname_sp
 make_absolute_pathname(T_sp orig_pathname) {
   Pathname_sp base_dir = core::getcwd(false); // FIXME
   if (orig_pathname.nilp()) {
-    SIMPLE_ERROR(("In make_absolute_pathname NIL is about to be passed to core__coerce_to_file_pathname"));
+    SIMPLE_ERROR("In make_absolute_pathname NIL is about to be passed to core__coerce_to_file_pathname");
   }
   Pathname_sp pathname = core__coerce_to_file_pathname(orig_pathname);
   Pathname_sp result = clasp_mergePathnames(pathname, base_dir, kw::_sym_default);
@@ -828,13 +827,13 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
     if (filename.nilp()) {
       INTERNAL_ERROR("file_truename: both FILENAME and PATHNAME are null!");
     }
-    if (filename.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+    if (filename.nilp()) SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
     pathname = cl__pathname(filename);
   } else if (filename.nilp()) {
-    if (pathname.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
+    if (pathname.nilp()) SIMPLE_ERROR("{} is about to pass NIL to clasp_namestring", __FUNCTION__);
     filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
     if (filename.nilp()) {
-      SIMPLE_ERROR(("Unprintable pathname %s found in TRUENAME") , _rep_(pathname));
+      SIMPLE_ERROR("Unprintable pathname {} found in TRUENAME", _rep_(pathname));
     }
   }
   T_sp original_pathname = pathname;
@@ -864,7 +863,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
                                         nil<T_O>(),
                                         kw::_sym_local);
     pathname = clasp_mergePathnames(filename, pathname, kw::_sym_default);
-    if (pathname.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
+    if (pathname.nilp()) SIMPLE_ERROR("{} is about to pass NIL to clasp_namestring", __FUNCTION__);
     filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
     Pathname_sp truename = cl__truename(pathname);
     return Values(truename, kind);
@@ -954,7 +953,7 @@ int clasp_backup_open(const char *filename, int option, int mode) {
 #endif
   if (rename(filename, backupfilename.c_str())) {
     clasp_enable_interrupts();
-    SIMPLE_ERROR(("Cannot rename the file %s to %s.") , _rep_(SimpleBaseString_O::make(std::string(filename))) , backupfilename);
+    SIMPLE_ERROR("Cannot rename the file {} to {}.", _rep_(SimpleBaseString_O::make(std::string(filename))) , backupfilename);
   }
   clasp_enable_interrupts();
   return open(filename, option, mode);
@@ -989,12 +988,12 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
    *    is not the truename, because we might be renaming a symbolic link.
    */
   old_truename = cl__truename(oldn);
-  if (old_truename.nilp()) SIMPLE_ERROR(("In %s the original name %s wasn't found") , __FUNCTION__ , _rep_(oldn));
+  if (old_truename.nilp()) SIMPLE_ERROR("In {} the original name {} wasn't found", __FUNCTION__ , _rep_(oldn));
   String_sp old_filename = coerce_to_posix_filename(old_truename);
 
   /* 2) Create the new file name. */
   Pathname_sp pnewn = clasp_mergePathnames(newn, oldn, kw::_sym_newest);
-  if (pnewn.nilp()) SIMPLE_ERROR(("In %s the new name is NIL") , __FUNCTION__);
+  if (pnewn.nilp()) SIMPLE_ERROR("In {} the new name is NIL", __FUNCTION__);
   String_sp new_filename = core__coerce_to_filename(pnewn);
   while (if_exists == kw::_sym_error || if_exists.nilp()) {
     if (cl__probe_file(new_filename).nilp()) {
@@ -1021,7 +1020,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
   }
   if (UNLIKELY(if_exists != kw::_sym_supersede && if_exists != _lisp->_true())) {
     /* invalid key */
-    SIMPLE_ERROR(("%s is an illegal IF-EXISTS option for RENAME-FILE.") , _rep_(if_exists));
+    SIMPLE_ERROR("{} is an illegal IF-EXISTS option for RENAME-FILE.", _rep_(if_exists));
   }
   if (cl__equal(new_filename,old_filename)) goto SUCCESS;
   if (if_exists==_lisp->_true()) {
@@ -1068,7 +1067,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(deleteFile)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__delete_file(T_sp file) {
-  if (file.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+  if (file.nilp()) SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
   Pathname_sp path = cl__pathname(file);
   int isdir = directory_pathname_p(path);
   String_sp filename = coerce_to_posix_filename(path);
@@ -1098,7 +1097,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(probe_file)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__probe_file(T_sp filespec) {
-  if (filespec.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+  if (filespec.nilp()) SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
   Pathname_sp pfile = cl__pathname(filespec);
   /* INV: Both SI:FILE-KIND and TRUENAME complain if "file" has wildcards */
   return (core__file_kind(pfile, true).notnilp() ? cl__truename(pfile) : nil<Pathname_O>());
@@ -1110,7 +1109,7 @@ CL_DOCSTRING(R"dx(file_write_date)dx");
 DOCGROUP(clasp);
 CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   Number_sp time;
-  if (pathspec.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+  if (pathspec.nilp()) SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
   Pathname_sp pathname = cl__pathname(pathspec);
   String_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
@@ -1130,7 +1129,7 @@ CL_DOCSTRING(R"dx(file_author)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__file_author(T_sp file) {
   T_sp output;
-  if (file.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+  if (file.nilp()) SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
   Pathname_sp pn = cl__pathname(file);
   String_sp filename = coerce_to_posix_filename(pn);
   struct stat filestatus;
@@ -1188,11 +1187,11 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
 #ifdef HAVE_PWD_H
     pwent = getpwnam(p);
     if (pwent == NULL) {
-      SIMPLE_ERROR(("Unknown user %s.") , p);
+      SIMPLE_ERROR("Unknown user {}.", p);
     }
     namestring = SimpleBaseString_O::make(std::string(pwent->pw_dir));
 #endif
-    SIMPLE_ERROR(("Unknown user %s.") , p);
+    SIMPLE_ERROR("Unknown user {}.", p);
   } else if ((h = getenv("HOME"))) {
     namestring = SimpleBaseString_O::make(std::string(h));
 #if defined(CLASP_MS_WINDOWS_HOST)
@@ -1206,7 +1205,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
     namestring = SimpleBaseString_O::make("/");
   }
   if (namestring->get_std_string().c_str()[0] == '~') {
-    SIMPLE_ERROR(("Not a valid home pathname %s") , namestring->get_std_string());
+    SIMPLE_ERROR("Not a valid home pathname {}", namestring->get_std_string());
   }
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->get_std_string().c_str()[i - 1]))
@@ -1244,7 +1243,7 @@ string_match(const char *s, T_sp pattern) {
 static T_sp
 list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
   T_sp out = nil<T_O>();
-  if (base_dir.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
+  if (base_dir.nilp()) SIMPLE_ERROR("{} is about to pass NIL to clasp_namestring", __FUNCTION__);
   T_sp prefix = clasp_namestring(base_dir, CLASP_NAMESTRING_FORCE_BASE_STRING);
   T_sp component, component_path, kind;
   char *text;
@@ -1275,7 +1274,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     concat << str_component->get_std_string();
     // TODO Support proper strings
     component = SimpleBaseString_O::make(concat.str());
-    if (component.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+    if (component.nilp()) SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
     component_path = cl__pathname(component);
     if (!pathname_mask.nilp()) {
       if (!cl__pathname_match_p(component, pathname_mask)) // should this not be inverted?
@@ -1324,7 +1323,7 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   //  cl_index l;
   int fd;
   ASSERT(cl__stringp(thetemplate));
-  if (thetemplate.nilp()) SIMPLE_ERROR(("In %s the template is NIL") , __FUNCTION__);
+  if (thetemplate.nilp()) SIMPLE_ERROR("In {} the template is NIL", __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
   outss << thetemplate->get_std_string();
@@ -1354,7 +1353,7 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
   //  cl_index l;
   int fd;
   ASSERT(cl__stringp(thetemplate));
-  if (thetemplate.nilp()) SIMPLE_ERROR(("In %s the template is NIL") , __FUNCTION__);
+  if (thetemplate.nilp()) SIMPLE_ERROR("In {} the template is NIL", __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
   outss << thetemplate->get_std_string();
@@ -1394,7 +1393,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
   //  cl_index l;
   ASSERT(cl__stringp(thetemplate));
-  if (thetemplate.nilp()) SIMPLE_ERROR(("In %s the template is NIL") , __FUNCTION__);
+  if (thetemplate.nilp()) SIMPLE_ERROR("In {} the template is NIL", __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
   outss << thetemplate->get_std_string();
@@ -1405,7 +1404,7 @@ CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
   clasp_disable_interrupts();
   const char* dirname = mkdtemp(&dst_path[0]);
   if (dirname==NULL) {
-    SIMPLE_ERROR(("There was an error in mkdtemp - errno %d") , errno);
+    SIMPLE_ERROR("There was an error in mkdtemp - errno {}", errno);
   }
   outname.assign(dst_path.begin(), dst_path.end() - 1);
   clasp_enable_interrupts();
@@ -1524,7 +1523,7 @@ T_sp core__mkstemp(T_sp template)
 			   kw::_sym_name, nil<T_O>(),
 			   kw::_sym_version, nil<T_O>(),
 			   kw::_sym_defaults, phys);
-    if (dir.nilp()) SIMPLE_ERROR(("In %s the dir is NIL") , __FUNCTION__);
+    if (dir.nilp()) SIMPLE_ERROR("In {} the dir is NIL", __FUNCTION__);
     dir = core__coerce_to_filename(dir);
     file = cl_file_namestring(phys);
     l = dir->base_string.fillp;
@@ -1545,7 +1544,7 @@ T_sp core__mkstemp(T_sp template)
 	memcpy(output->c_str(), strTempFileName, l);
     }
 #else
-    if (template.nilp()) SIMPLE_ERROR(("In %s the template is NIL") , __FUNCTION__);
+    if (template.nilp()) SIMPLE_ERROR("In {} the template is NIL", __FUNCTION__);
     template = core__coerce_to_filename(template);
     l = template->base_string.fillp;
     output = ecl_alloc_simple_base_string(l + 6);
@@ -1612,9 +1611,9 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   FILE *in, *out;
   int ok = 0;
-  if (orig.nilp()) SIMPLE_ERROR(("In %s the source pathname is NIL") , __FUNCTION__);
+  if (orig.nilp()) SIMPLE_ERROR("In {} the source pathname is NIL", __FUNCTION__);
   String_sp sorig = core__coerce_to_filename(orig);
-  if (dest.nilp()) SIMPLE_ERROR(("In %s the destination pathname is NIL") , __FUNCTION__);
+  if (dest.nilp()) SIMPLE_ERROR("In {} the destination pathname is NIL", __FUNCTION__);
   String_sp sdest = core__coerce_to_filename(dest);
   clasp_disable_interrupts();
   in = fopen(sorig->get_std_string().c_str(), "r");
@@ -1715,7 +1714,7 @@ AGAIN:
       T_sp kind = oCdr(record);
       if (kind != kw::_sym_directory)
         continue;
-      if (component.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+      if (component.nilp()) SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
       item = dir_recursive(cl__pathname(component),
                            oCdr(directory),
                            filemask, flags);
@@ -1734,7 +1733,7 @@ AGAIN:
       T_sp kind = oCdr(record);
       if (kind != kw::_sym_directory)
         continue;
-      if (component.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+      if (component.nilp()) SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
       item = dir_recursive(cl__pathname(component),
                            directory, filemask, flags);
       output = clasp_nconc(item, output);
@@ -1767,7 +1766,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   T_sp base_dir;
   T_sp output;
-  if (mask.nilp()) SIMPLE_ERROR(("In cl__directory NIL is about to be passed to core__coerce_to_file_pathname"));
+  if (mask.nilp()) SIMPLE_ERROR("In cl__directory NIL is about to be passed to core__coerce_to_file_pathname");
   mask = core__coerce_to_file_pathname(mask);
   mask = make_absolute_pathname(mask); // in this file
   base_dir = make_base_pathname(gc::As<Pathname_sp>(mask));
@@ -1919,7 +1918,7 @@ CL_DEFUN T_mv core__pipe()
   if (ret==0) {
     return Values(make_fixnum(pipes[0]),make_fixnum(pipes[1]));
   }
-  SIMPLE_ERROR(("Could not create pipe - error: %s") , strerror(errno));
+  SIMPLE_ERROR("Could not create pipe - error: {}", strerror(errno));
 }
   
 CL_LAMBDA(call-and-arguments &optional return-stream);
@@ -2186,7 +2185,7 @@ SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
 
 #if defined(HAVE_SELECT)
 void error_bad_fd(int fd) {
-  SIMPLE_ERROR(("Invalid file-descriptor %d") , fd);
+  SIMPLE_ERROR("Invalid file-descriptor {}", fd);
 }
 
 

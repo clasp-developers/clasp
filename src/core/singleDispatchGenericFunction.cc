@@ -92,7 +92,7 @@ CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_f
     if (gfname.consp() && CONS_CAR(gfname) == cl::_sym_setf) {
       Symbol_sp setf_gfname = CONS_CAR(CONS_CDR(gfname));
       if (setf_gfname->fboundp_setf()) {
-        SIMPLE_ERROR(("The name %s has something bound to its setf function slot but no generic function with that name was found") , _rep_(gfname));
+        SIMPLE_ERROR("The name {} has something bound to its setf function slot but no generic function with that name was found", _rep_(gfname));
       }
       gfn = SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(gfname,singleDispatchArgumentIndex, lambdaList );
       setf_gfname->setSetfFdefinition(gfn);
@@ -102,7 +102,7 @@ CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_f
       Symbol_sp gfname_symbol = gc::As_unsafe<Symbol_sp>(gfname);
       if (gfname_symbol->fboundp()) {
         T_sp symFunc = gfname_symbol->symbolFunction();
-        SIMPLE_ERROR(("The symbol %s has something bound to its function slot but not a single dispatch generic function") , _rep_(gfname));
+        SIMPLE_ERROR("The symbol {} has something bound to its function slot but not a single dispatch generic function", _rep_(gfname));
       }
       gfn = SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(gfname,singleDispatchArgumentIndex, lambdaList);
       gfname_symbol->setf_symbolFunction(gfn);

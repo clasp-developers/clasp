@@ -41,7 +41,7 @@ set<string> globalMissingClSymbols;
 void throwIfNotValidClSymbol(const string &name) {
   map<string, int>::iterator it = globalAllClSymbols.find(name);
   if (it == globalAllClSymbols.end()) {
-    SIMPLE_ERROR(("They symbol %s is being exported from COMMON-LISP but it is not one of the canonical CL symbols") , name);
+    SIMPLE_ERROR("They symbol {} is being exported from COMMON-LISP but it is not one of the canonical CL symbols", name);
   }
   ++it->second;
 }

@@ -91,7 +91,7 @@ size_t next_hash_table_id() {
 void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* filename, size_t line, size_t index=0, T_sp key=nil<core::T_O>() )
 {
   if (print) {
-    write_bf_stream(fmt::format("verifyHashTable HashTable {} size {}\n", (void*)ht, ht->_Table.size() ));
+    clasp_write_string(fmt::format("verifyHashTable HashTable {} size {}\n", (void*)ht, ht->_Table.size() ));
   }
   size_t cnt = 0;
   Vector_sp keys = core__make_vector(_lisp->_true(),ht->_HashTableCount+16, true, make_fixnum(0));
@@ -99,7 +99,7 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
     KeyValuePair& entry = ht->_Table[it];
     if (!entry._Key.no_keyp()&&!entry._Key.deletedp()) {
       if (print) {
-        write_bf_stream(fmt::format("Entry[{}] at {}  key: {}  value: {}\n", it, (void*)&entry, _rep_(entry._Key), (entry._Value)));;
+        clasp_write_string(fmt::format("Entry[{}] at {}  key: {}  value: {}\n", it, (void*)&entry, _rep_(entry._Key), (entry._Value)));;
       }
       keys->vectorPushExtend(entry._Key);
     }
@@ -112,15 +112,15 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
       cl_index index = ht->sxhashKey(key, ht->_Table.size(), hg );
       KeyValuePair* keyValue = ht->searchTable_no_read_lock(key,index);
       if (!keyValue) {
-        write_bf_stream(fmt::format("{}:{} Could not find key {} badge = {} expected at or after Entry[{}] for ht->_Table.size() = {}\n",
+        clasp_write_string(fmt::format("{}:{} Could not find key {} badge = {} expected at or after Entry[{}] for ht->_Table.size() = {}\n",
                                     filename, line, _rep_(key), gctools::lisp_general_badge(gc::As_unsafe<General_sp>(key)), index, ht->_Table.size() ));
-        write_bf_stream(fmt::format("     hg.asList() -> \n{}\n", _rep_(hg.asList()) ));
+        clasp_write_string(fmt::format("     hg.asList() -> \n{}\n", _rep_(hg.asList()) ));
         bad = true;
       }
     }
     if (bad) {
 #ifdef DEBUG_HASH_TABLE_DEBUG      
-      write_bf_stream(fmt::format("     hash-table _History ->\n{}\n", _rep_(ht->_History.load())));
+      clasp_write_string(fmt::format("     hash-table _History ->\n{}\n", _rep_(ht->_History.load())));
 #endif
     }
   }
@@ -129,7 +129,7 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
       std::cerr << filename << ":" << line << " Working on index " << index << " - dumping hash-table\n";
       verifyHashTable(true,std::cerr,ht,filename,line);
       std::cerr << "    Added key: " << (void*)key.raw_();
-      SIMPLE_ERROR(("%s:%d There is a mismatch in _HashTableCount %lu vs calcd %lu\n") , filename , line , ht->_HashTableCount , cnt);
+      SIMPLE_ERROR("{}:{} There is a mismatch in _HashTableCount {} vs calcd {}\n", filename , line , ht->_HashTableCount , cnt);
     }
   }
 }
@@ -256,10 +256,10 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size,
       if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction()) {
         return core__make_weak_key_hash_table(size);
       } else {
-        SIMPLE_ERROR(("Weak hash tables non-EQ tests are not yet supported"));
+        SIMPLE_ERROR("Weak hash tables non-EQ tests are not yet supported");
       }
     }
-    SIMPLE_ERROR(("Only :weakness :key (weak-key hash tables) are currently supported"));
+    SIMPLE_ERROR("Only :weakness :key (weak-key hash tables) are currently supported");
   }
   double rehash_threshold = maybeFixRehashThreshold(clasp_to_double(orehash_threshold));
   HashTable_sp table = nil<HashTable_O>();
@@ -268,7 +268,7 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size,
 #ifdef DEBUG_REHASH_COUNT
   this->_InitialSize = isize;
 #endif
-  //	write_bf_stream(fmt::sprintf("%s:%d - make_hash_table - fix me so that I grow by powers of 2\n" , __FILE__ , __LINE__ ));
+  //	clasp_write_string(fmt::format("{}:{} - make_hash_table - fix me so that I grow by powers of 2\n" , __FILE__ , __LINE__ ));
   if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction()) {
     table = HashTableEq_O::create(isize, rehash_size, rehash_threshold);
   } else if (test == cl::_sym_eql || test == cl::_sym_eql->symbolFunction()) {
@@ -366,7 +366,7 @@ CL_DOCSTRING(R"dx(see CLHS)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__maphash(T_sp function_desig, HashTableBase_sp hash_table) {
   if (hash_table.nilp()) {
-    SIMPLE_ERROR(("maphash called with nil hash-table"));
+    SIMPLE_ERROR("maphash called with nil hash-table");
   }
   hash_table->maphash(function_desig);
   return nil<T_O>();
@@ -387,7 +387,7 @@ CL_DOCSTRING(R"dx(hashTableEntryDeletedP)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool core__hash_table_entry_deleted_p(T_sp cons) {
   if (!cons.consp())
-    SIMPLE_ERROR(("Arg must be a cons"));
+    SIMPLE_ERROR("Arg must be a cons");
   return oCdr(gc::As<Cons_sp>(cons)).no_keyp();
 };
 
@@ -527,7 +527,7 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj) {
   default:
       break;
   }
-  SIMPLE_ERROR(("Illegal object (object.raw_() = %p) for eql hash %s  tag = %lu") , (void*)obj.raw_() , _rep_(obj) , tag);
+  SIMPLE_ERROR("Illegal object (object.raw_() = {}) for eql hash {}  tag = {}", (void*)obj.raw_() , _rep_(obj) , tag);
 }
 
 void HashTable_O::sxhash_eql(Hash1Generator &hg, T_sp obj) {
@@ -554,7 +554,7 @@ void HashTable_O::sxhash_eql(Hash1Generator &hg, T_sp obj) {
     hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
     return;
   }
-  SIMPLE_ERROR(("Illegal object for eql hash %s") , _rep_(obj));
+  SIMPLE_ERROR("Illegal object for eql hash {}", _rep_(obj));
 }
 
 void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj) {
@@ -587,7 +587,7 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj) {
     gobj->sxhash_equal(hg);
     return;
   }
-  SIMPLE_ERROR(("You cannot EQUAL hash on %s") , _rep_(obj));
+  SIMPLE_ERROR("You cannot EQUAL hash on {}", _rep_(obj));
 }
 
 void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj) {
@@ -621,7 +621,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj) {
     gobj->sxhash_equalp(hg);
     return;
   }
-  SIMPLE_ERROR(("You cannot EQUALP hash on %s") , _rep_(obj));
+  SIMPLE_ERROR("You cannot EQUALP hash on {}", _rep_(obj));
 }
 
 bool HashTable_O::equalp(T_sp other) const {
@@ -728,7 +728,7 @@ T_sp HashTable_O::operator[](const std::string& key) {
   T_mv val = this->gethash(tkey);
   MultipleValues& mvn = core::lisp_multipleValues();
   if (mvn.second(val.number_of_values()).nilp()) {
-    SIMPLE_ERROR(("Could not find key: %s") , tkey);
+    SIMPLE_ERROR("Could not find key: {}", tkey);
   }
   return val;
 }
@@ -768,9 +768,9 @@ KeyValuePair* HashTable_O::searchTable_no_read_lock(T_sp key, cl_index index) {
     KeyValuePair& entry = table[cur];
     if (entry._Key.no_keyp()) goto NOT_FOUND;
     if (!entry._Key.deletedp()) {
-      DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d search-end !deletedp index = %ld\n" , __FILE__ , __LINE__ , cur ));});
+      DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{} search-end !deletedp index = {}\n" , __FILE__ , __LINE__ , cur ));});
       if (this->keyTest(entry._Key, key)) {
-        DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d search-end found key index = %ld entry._Key->%p\n .... %s\n  key->%p\n .... %s\n" , __FILE__ , __LINE__ , cur , (void*)entry._Key.raw_() , dbg_safe_repr((uintptr_t)(void*)entry._Key.raw_()).c_str() , (void*)key.raw_() , dbg_safe_repr((uintptr_t)(void*)key.raw_()).c_str() ));});
+        DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{} search-end found key index = {} entry._Key->{}\n .... {}\n  key->{}\n .... {}\n" , __FILE__ , __LINE__ , cur , (void*)entry._Key.raw_() , dbg_safe_repr((uintptr_t)(void*)entry._Key.raw_()).c_str() , (void*)key.raw_() , dbg_safe_repr((uintptr_t)(void*)key.raw_()).c_str() ));});
         return &entry;
       }
     }
@@ -779,20 +779,20 @@ KeyValuePair* HashTable_O::searchTable_no_read_lock(T_sp key, cl_index index) {
     KeyValuePair& entry = table[cur];
     if (entry._Key.no_keyp()) goto NOT_FOUND;
     if (!entry._Key.deletedp()) {
-      DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d search-begin !deletedp index = %ld\n" , __FILE__ , __LINE__ , cur ));});
+      DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{} search-begin !deletedp index = {}\n" , __FILE__ , __LINE__ , cur ));});
       if (this->keyTest(entry._Key, key)) {
-        DEBUG_HASH_TABLE({core::write_bf_stream(fmt::format("{}:{} search-begin found key index = {}\n" , __FILE__ , __LINE__ , cur ));});
+        DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{} search-begin found key index = {}\n" , __FILE__ , __LINE__ , cur ));});
         return &entry;
       }
     }
   }
  NOT_FOUND:
-  DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d key not found\n" , __FILE__ , __LINE__));});
+  DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{} key not found\n" , __FILE__ , __LINE__));});
   return nullptr;
 }
 
 KeyValuePair* HashTable_O::tableRef_no_read_lock(T_sp key, cl_index index) {
-  DEBUG_HASH_TABLE({core::write_bf_stream(fmt::format("{}:{}:{} key = {}  index = {}\n" , __FILE__ , __LINE__ , __FUNCTION__, _rep_(key) , index ));});
+  DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{}:{} key = {}  index = {}\n" , __FILE__ , __LINE__ , __FUNCTION__, _rep_(key) , index ));});
   VERIFY_HASH_TABLE(this);
   BOUNDS_ASSERT(index<this->_Table.size());
   KeyValuePair* result = this->searchTable_no_read_lock(key,index);
@@ -810,7 +810,7 @@ CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
 }
 
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
-  LOG("gethash looking for key[%s]" , _rep_(key));
+  LOG("gethash looking for key[{}]" , _rep_(key));
   HT_READ_LOCK(this);
   VERIFY_HASH_TABLE(this);
   HashGenerator hg;
@@ -876,9 +876,9 @@ bool HashTable_O::remhash(T_sp key) {
 
 T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
 {
-  DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d:%s   key->%s  value->%s\n"  , __FILE__ , __LINE__ , __FUNCTION__ , _rep_(key) , _rep_(value)));});
+  DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{}:{}   key->{}  value->{}\n"  , __FILE__ , __LINE__ , __FUNCTION__ , _rep_(key) , _rep_(value)));});
   if (key.no_keyp()) {
-    SIMPLE_ERROR(("Do not use %s as a key!!") , _rep_(key));
+    SIMPLE_ERROR("Do not use {} as a key!!", _rep_(key));
   }
 #ifdef DEBUG_HASH_TABLE_DEBUG
   HashGenerator hg(this->_Debug);
@@ -902,18 +902,18 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
     } while (!this->_History.compare_exchange_weak(expected,cell));
   }
 #endif
-  DEBUG_HASH_TABLE({core::write_bf_stream(fmt::format("{}:{}:{}   index = {}  this->_Table.size() = {}\n", __FILE__ , __LINE__ , __FUNCTION__ , index, this->_Table.size() ));});
+  DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{}:{}   index = {}  this->_Table.size() = {}\n", __FILE__ , __LINE__ , __FUNCTION__ , index, this->_Table.size() ));});
   KeyValuePair* keyValuePair = this->tableRef_no_read_lock( key, index );
   if (keyValuePair) {
     // rewrite value
     keyValuePair->_Value = value;
-    DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d Found key/value pair: %s,%s\n" , __FILE__ , __LINE__ , _rep_(keyValuePair->_Key) , _rep_(keyValuePair->_Value)));});
-    DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d  Did rplacd value: %s to cons at %p\n" , __FILE__ , __LINE__ , _rep_(value) , (void*)keyValuePair));});
-    DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d  After rplacd value: %s\n" , __FILE__ , __LINE__ , _rep_(keyValuePair->_Value)));});
+    DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{} Found key/value pair: {},{}\n" , __FILE__ , __LINE__ , _rep_(keyValuePair->_Key) , _rep_(keyValuePair->_Value)));});
+    DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{}  Did rplacd value: {} to cons at {}\n" , __FILE__ , __LINE__ , _rep_(value) , (void*)keyValuePair));});
+    DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{}  After rplacd value: {}\n" , __FILE__ , __LINE__ , _rep_(keyValuePair->_Value)));});
     VERIFY_HASH_TABLE(this);
     return value;
   }
-  DEBUG_HASH_TABLE({core::write_bf_stream(fmt::format("{}:{}:{} Looking for empty slot index = {}\n"  , __FILE__ , __LINE__ , __FUNCTION__, index));});
+  DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{}:{} Looking for empty slot index = {}\n"  , __FILE__ , __LINE__ , __FUNCTION__, index));});
   KeyValuePair* entryP = &this->_Table[index];
   size_t write;
   size_t curEnd = this->_Table.size();
@@ -938,7 +938,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
   entryP->_Key = key;
   entryP->_Value = value;
   this->_HashTableCount++;
-  DEBUG_HASH_TABLE({core::write_bf_stream(fmt::sprintf("%s:%d Found empty slot at index = %ld\n"  , __FILE__ , __LINE__ , write ));});
+  DEBUG_HASH_TABLE({core::clasp_write_string(fmt::format("{}:{} Found empty slot at index = {}\n"  , __FILE__ , __LINE__ , write ));});
   VERIFY_HASH_TABLE_VA(this,write,key);
   if (this->_HashTableCount > this->_RehashThreshold * this->_Table.size()) {
     LOG("Expanding hash table");
@@ -965,7 +965,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
 
 
 T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
-  LOG("About to hash_table_setf_gethash for %s@%p -> %s@%p\n" , _safe_rep_(key) , (void*)key.raw_() , _safe_rep_(value) , (void*)value.raw_());
+  LOG("About to hash_table_setf_gethash for {}@{} -> {}@{}\n" , _safe_rep_(key) , (void*)key.raw_() , _safe_rep_(value) , (void*)value.raw_());
   HashTableWriteLock _guard(this);
   return this->setf_gethash_no_write_lock(key, value);
 }
@@ -979,7 +979,7 @@ CL_DEFUN T_sp core__hash_table_setf_gethash(HashTableBase_sp hash_table, T_sp ke
 
 KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
-  DEBUG_HASH_TABLE1({core::write_bf_stream(fmt::sprintf("%s:%d rehash_no_lock\n" , __FILE__ , __LINE__ ));});
+  DEBUG_HASH_TABLE1({core::clasp_write_string(fmt::format("{}:{} rehash_no_lock\n" , __FILE__ , __LINE__ ));});
   ASSERTF(!clasp_zerop(this->_RehashSize), "RehashSize is zero - it shouldn't be");
 #ifdef DEBUG_HASH_TABLE_DEBUG
   if (this->_Debug) {
@@ -994,9 +994,9 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
 #endif
 
   gc::Fixnum curSize = this->_Table.size();
-  ASSERTF(this->_Table.size() != 0, ("HashTable is empty in expandHashTable curSize=%ld  this->_Table.size()= %lu this shouldn't be") , curSize , this->_Table.size());
+  ASSERTF(this->_Table.size() != 0, "HashTable is empty in expandHashTable curSize={}  this->_Table.size()= {} this shouldn't be", curSize, this->_Table.size());
   KeyValuePair* foundKeyValuePair = nullptr;
-  LOG("At start of expandHashTable current hash table size: %d" , this->_Table.size());
+  LOG("At start of expandHashTable current hash table size: {}" , this->_Table.size());
   gc::Fixnum newSize = 0;
   if (expandTable) {
     if (cl__integerp(this->_RehashSize)) {
@@ -1011,7 +1011,7 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   oldTable.swap(this->_Table);
   size_t oldHashTableCount = this->_HashTableCount;
   newSize = this->resizeEmptyTable_no_lock(newSize);
-  LOG("Resizing table to size: %d" , newSize);
+  LOG("Resizing table to size: {}" , newSize);
   size_t oldSize = oldTable.size();
   for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
     KeyValuePair& entry = oldTable[it];
@@ -1062,7 +1062,7 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
     foundKeyValuePair = this->tableRef_no_read_lock(foundKeyValuePair->_Key,index);
   }
   DEBUG_HASH_TABLE({if (foundKeyValuePair) {
-        core::write_bf_stream(fmt::format("{}:{}:{}  Returning foundKeyValuePair: {},{} at {} \n" , __FILE__ , __LINE__ , __FUNCTION__ , _rep_(foundKeyValuePair->_Key) , _rep_(foundKeyValuePair->_Value) , (void*)&*foundKeyValuePair));}
+        core::clasp_write_string(fmt::format("{}:{}:{}  Returning foundKeyValuePair: {},{} at {} \n" , __FILE__ , __LINE__ , __FUNCTION__ , _rep_(foundKeyValuePair->_Key) , _rep_(foundKeyValuePair->_Value) , (void*)&*foundKeyValuePair));}
     });
   return foundKeyValuePair;
 }

@@ -92,7 +92,7 @@ struct to_object<llvm::StringRef> {
        this->_v = f;
        return;
      }
-     SIMPLE_ERROR_SPRINTF("Only fixnums can be converted to llvm::DINode::DIFlags");
+     SIMPLE_ERROR("Only fixnums can be converted to llvm::DINode::DIFlags");
    }
  };
 
@@ -106,7 +106,7 @@ struct to_object<llvm::StringRef> {
        this->_v = f;
        return;
      }
-     SIMPLE_ERROR_SPRINTF("Only fixnums can be converted to llvm::DISubprogram::DISPFlags");
+     SIMPLE_ERROR("Only fixnums can be converted to llvm::DISubprogram::DISPFlags");
    }
  };
 
@@ -119,7 +119,7 @@ struct to_object<llvm::StringRef> {
        this->_v = nullptr;
        return;
      }
-     SIMPLE_ERROR_SPRINTF("Only NIL is supported for DITemplateParameterArray at this point");
+     SIMPLE_ERROR("Only NIL is supported for DITemplateParameterArray at this point");
    }
  };
 
@@ -132,7 +132,7 @@ struct to_object<llvm::StringRef> {
        this->_v = nullptr;
        return;
      }
-     SIMPLE_ERROR_SPRINTF("Only NIL is supported for DITypeArray at this point");
+     SIMPLE_ERROR("Only NIL is supported for DITypeArray at this point");
    }
  };
 
@@ -150,7 +150,7 @@ struct from_object<llvm::DICompileUnit::DebugEmissionKind> {
         return;
       }
     }
-    SIMPLE_ERROR_SPRINTF("You must pass :full-debug or :line-tables-only, only those are valid DebugEmissionKind");
+    SIMPLE_ERROR("You must pass :full-debug or :line-tables-only, only those are valid DebugEmissionKind");
   }
 };
 
@@ -175,7 +175,7 @@ struct from_object<llvm::ArrayRef<std::string>> {
       }
       return;
     }
-    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<std::string>", core::_rep_(o).c_str());
+    SIMPLE_ERROR("Could not convert {} to llvm::ArrayRef<std::string>", core::_rep_(o));
   }
 };
 
@@ -201,7 +201,7 @@ struct from_object<llvm::ArrayRef<int>> {
       }
       return;
     }
-    SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<int>", core::_rep_(o).c_str());
+    SIMPLE_ERROR("Could not convert {} to llvm::ArrayRef<int>", core::_rep_(o));
   }
 };
 
@@ -221,7 +221,7 @@ struct from_object<llvm::ArrayRef<int>> {
         );
       return;
     }
-    SIMPLE_ERROR_SPRINTF("Could not convert %s to std::function<bool (const llvm::Function&)", core::_rep_(o).c_str());
+    SIMPLE_ERROR("Could not convert {} to std::function<bool (const llvm::Function&)", core::_rep_(o));
   }
 };
 

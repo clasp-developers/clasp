@@ -58,11 +58,11 @@ T_sp load_stream(T_sp strm, bool print) {
     if (x == _sym_eof)
       break;
     if (echoReplRead) {
-      write_bf_stream(fmt::sprintf("Read: %s\n", _rep_(x)));
+      clasp_write_string(fmt::format("Read: {}\n", _rep_(x)));
     }
     if (x.number_of_values() > 0) {
       if (print)
-        write_bf_stream(fmt::sprintf(";; -read- %s\n", _rep_(x)));
+        clasp_write_string(fmt::format(";; -read- {}\n", _rep_(x)));
       eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, nil<T_O>());
     }
   }
@@ -77,7 +77,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_sp externalFormat, bool skipShebang) {
   T_sp strm;
   if (source.nilp()) {
-    SIMPLE_ERROR(("%s was called with NIL as the source filename"), __FUNCTION__);
+    SIMPLE_ERROR("{} was called with NIL as the source filename", __FUNCTION__);
   }
   T_sp final_format;
   if (externalFormat.nilp())
@@ -89,11 +89,11 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
     return nil<T_O>();
 
   if (source.nilp())
-    SIMPLE_ERROR(("%s was about to pass nil to pathname"), __FUNCTION__);
+    SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
   Pathname_sp pathname = cl__pathname(source);
-  ASSERTF(pathname.objectp(), ("Problem getting pathname of [%s] in loadSource"), _rep_(source));
+  ASSERTF(pathname.objectp(), "Problem getting pathname of [{}] in loadSource", _rep_(source));
   Pathname_sp truename = cl__truename(source);
-  ASSERTF(truename.objectp(), ("Problem getting truename of [%s] in loadSource"), _rep_(source));
+  ASSERTF(truename.objectp(), "Problem getting truename of [{}] in loadSource", _rep_(source));
   DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, pathname);
   DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
 
@@ -123,7 +123,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   T_sp msource = lsource;
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
   if (verbose.notnilp()) {
-    write_bf_stream(fmt::sprintf(";;; Loading %s\n", _rep_(lsource)));
+    clasp_write_string(fmt::format(";;; Loading {}\n", _rep_(lsource)));
   }
 
   /* If source is a stream, read source from it. Don't rebind load-truename or anything.
@@ -140,7 +140,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   }
   pathname = core__coerce_to_file_pathname(msource);
   if (pathname.nilp()) {
-    SIMPLE_ERROR(("core__coerce_to_file_pathname returned NIL for %s"), _rep_(lsource));
+    SIMPLE_ERROR("core__coerce_to_file_pathname returned NIL for {}", _rep_(lsource));
   }
 
   pntype = pathname->_Type;
@@ -162,7 +162,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   if (kind == kw::_sym_directory) {
     ok = core__load_binary_directory(filename, verbose, print, external_format);
     if (ok.nilp()) {
-      SIMPLE_ERROR(("LOAD: Could not load file %s"), _rep_(filename));
+      SIMPLE_ERROR("LOAD: Could not load file {}", _rep_(filename));
     }
     return _lisp->_true();
   }
@@ -171,7 +171,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
                that the file exists */
     // Test if pathname is nil is above
     if (pathname.nilp()) {
-      SIMPLE_ERROR(("In %s - about to pass NIL to core__coerce_to_file_pathname from %s"), __FUNCTION__, _rep_(lsource));
+      SIMPLE_ERROR("In {} - about to pass NIL to core__coerce_to_file_pathname from {}", __FUNCTION__, _rep_(lsource));
     }
     filename = core__coerce_to_file_pathname(pathname);
     if (kind != kw::_sym_file && kind != kw::_sym_special) {
@@ -228,7 +228,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
     ok = core__load_source(filename, verbose.isTrue(), print.isTrue(), external_format, false);
   }
   if (ok.nilp()) {
-    SIMPLE_ERROR(("LOAD: Could not load file %s"), _rep_(filename));
+    SIMPLE_ERROR("LOAD: Could not load file {}", _rep_(filename));
   }
   return _lisp->_true();
 }

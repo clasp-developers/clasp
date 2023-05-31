@@ -51,7 +51,7 @@ Function_sp functionDesignator(T_sp obj) {
     ERROR_UNDEFINED_FUNCTION(obj);
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     if (!sym->fboundp())
-      SIMPLE_ERROR(("Function value for %s is unbound") , _rep_(sym));
+      SIMPLE_ERROR("Function value for {} is unbound", _rep_(sym));
     return sym->symbolFunction();
   }
   TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
@@ -65,12 +65,12 @@ Function_sp closureDesignator(T_sp obj) {
     return fnobj;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     if (!sym->fboundp())
-      SIMPLE_ERROR(("Function value for %s is unbound") , _rep_(sym));
+      SIMPLE_ERROR("Function value for {} is unbound", _rep_(sym));
     Function_sp closure = sym->symbolFunction().asOrNull<Function_O>();
     ASSERT(closure);
     return closure;
   }
-  SIMPLE_ERROR(("Illegal closure designator %s") , _rep_(obj));
+  SIMPLE_ERROR("Illegal closure designator {}", _rep_(obj));
 }
 
 };
@@ -187,7 +187,7 @@ SimpleString_sp simple_string(T_sp obj) {
     size_t start, end;
     sw->asAbstractSimpleVectorRange(base,start,end);
     return gc::As_unsafe<SimpleString_sp>(base->unsafe_subseq(start,end));
-    SIMPLE_ERROR(("This should never happen - the string %s was not recognized as a concrete string type") , _rep_(obj));
+    SIMPLE_ERROR("This should never happen - the string {} was not recognized as a concrete string type", _rep_(obj));
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     return cl__symbol_name(sym);
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
@@ -229,7 +229,7 @@ List_sp listOfStringDesignators(T_sp obj) {
   } else {
     return Cons_O::create(stringDesignator(obj),nil<T_O>());
   }
-  SIMPLE_ERROR(("Illegal list of string designators[%s]") , _rep_(obj));
+  SIMPLE_ERROR("Illegal list of string designators[{}]", _rep_(obj));
 }
 
 T_sp inputStreamDesignator(T_sp obj) {
@@ -265,7 +265,7 @@ T_sp coerce_to_base_string(T_sp str) {
   } else if (gc::IsA<StrWNs_sp>(str)) {
     return core__copy_to_simple_base_string(str);
   }
-  SIMPLE_ERROR(("Cannot coerce %s to base-string") , _rep_(str));
+  SIMPLE_ERROR("Cannot coerce {} to base-string", _rep_(str));
 }
 
 

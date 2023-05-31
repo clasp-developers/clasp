@@ -64,11 +64,11 @@ void WeakKeyHashTable_O::describe(T_sp stream) {
   KeyBucketsType &keys = *this->_HashTable._Keys;
   ValueBucketsType &values = *this->_HashTable._Values;
   stringstream ss;
-  ss << fmt::sprintf("WeakKeyHashTable   size: %zu\n" , this->_HashTable.length());
-  ss << fmt::sprintf("   keys memory range:  %p  - %p \n" , (void*)&keys[0].rawRef_() , (void*)&keys[this->_HashTable.length()].rawRef_());
-  ss << fmt::sprintf("   _HashTable.length = %d\n" , keys.length());
-  ss << fmt::sprintf("   _HashTable.used = %d\n" , keys.used());
-  ss << fmt::sprintf("   _HashTable.deleted = %d\n" , keys.deleted());
+  ss << fmt::format("WeakKeyHashTable   size: {}u\n" , this->_HashTable.length());
+  ss << fmt::format("   keys memory range:  {}  - {} \n" , (void*)&keys[0].rawRef_() , (void*)&keys[this->_HashTable.length()].rawRef_());
+  ss << fmt::format("   _HashTable.length = {}\n" , keys.length());
+  ss << fmt::format("   _HashTable.used = {}\n" , keys.used());
+  ss << fmt::format("   _HashTable.deleted = {}\n" , keys.deleted());
   for (int i(0), iEnd(this->_HashTable.length()); i < iEnd; ++i) {
     value_type &key = keys[i];
     stringstream sentry;

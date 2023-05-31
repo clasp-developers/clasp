@@ -10,7 +10,7 @@ namespace core {
 
 #if 0
 #define DEBUG_RECORD 1
-#define RECORD_LOG(...) fmt::printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__); fmt::printf(__VA_ARGS__);
+#define RECORD_LOG(...) fmt::print("{}:{}:{}\n", __FILE__, __LINE__, __FUNCTION__); fmt::print(__VA_ARGS__);
 #else
 #define RECORD_LOG(...)
 #endif
@@ -96,7 +96,7 @@ public:
         value = translate::from_object<ST>(CONS_CDR(find))._v;
         if (this->stage() == initializing) this->flagSeen(gc::As_unsafe<Cons_sp>(find));
       } else {
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       }
     } break;
     case patching:
@@ -117,7 +117,7 @@ public:
     case initializing: {
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
       RECORD_LOG(("init/load find apair %s\n") , _rep_(apair));
       // Set the value and ignore its type!!!!!! This is to allow placeholders
@@ -134,7 +134,7 @@ public:
     case loading: {
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
       RECORD_LOG(("init/load find apair %s\n") , _rep_(apair));
       // Set the value and ignore its type!!!!!! This is to allow placeholders
@@ -174,7 +174,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
       RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
@@ -221,7 +221,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
       RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
@@ -268,7 +268,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}", _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
       RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
@@ -315,7 +315,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
       RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
@@ -362,7 +362,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
       RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
@@ -412,7 +412,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
       RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
@@ -461,7 +461,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
       RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
@@ -493,14 +493,14 @@ public:
 
   template <typename SK, typename SV, typename CMP>
   void field(Symbol_sp name, gctools::SmallMultimap_uncopyable<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>,CMP>& value ) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s") % _rep_(name));
+    RECORD_LOG("field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: {}", _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->rowMajorAset(idx++,Cons_O::create(it.first, it.second));
-      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      RECORD_LOG("saving entry: {}", _rep_(vec_value));
       Cons_sp apair = core::Cons_O::create(name, vec_value);
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
@@ -510,15 +510,15 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+        SIMPLE_ERROR("Could not find field {}",  _rep_(name));
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      RECORD_LOG("loading find: {}", _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
-      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      RECORD_LOG("vec_value: {}", _rep_(vec_value));
       value.clear();
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        RECORD_LOG("Loading vec0[{}] new@{}: {}\n", i, (void *)(val.raw_()), _rep_(val));
         value.push_back(std::make_pair<gctools::smart_ptr<SK>,
                         gctools::smart_ptr<SV>>(gc::As_unsafe<gctools::smart_ptr<SK>>(oCar(val)),
                                                 gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
@@ -527,7 +527,7 @@ public:
         this->flagSeen(apair);
     } break;
     case patching: {
-      RECORD_LOG(BF("Patching"));
+      RECORD_LOG("Patching");
       for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig_key = pairi.first;
         gc::smart_ptr<T_O> orig_value = pairi.second;

@@ -660,9 +660,6 @@ public:
 
   void defineMethod(const string &name, Symbol_sp classSymbol, Function_sp methoid, const string &arguments, const string &docString, bool autoExport);
 
-public:
-  Symbol_sp errorUndefinedSymbol(const char *symbolName);
-
   //	string getRenderFileName() { return this->_RenderFileName; };
 
 public: // Hierarchy stuff

@@ -102,8 +102,8 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
     T_sp tsuper = oCar(cur);
     Instance_sp aSuperClass = gc::As<Instance_sp>(tsuper);
     if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
-      SIMPLE_ERROR(("You cannot derive from the non-derivable C++ class %s\n"
-                    "any C++ class you want to derive from must inherit from the clbind derivable class") ,
+      SIMPLE_ERROR("You cannot derive from the non-derivable C++ class {}\n"
+                   "any C++ class you want to derive from must inherit from the clbind derivable class",
                    _rep_(aSuperClass->_className()));
     }
     gc::Nilable<Instance_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
@@ -111,8 +111,8 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
       if (!aCxxDerivableAncestorClass_unsafe) {
         aCxxDerivableAncestorClass_unsafe = aPossibleCxxDerivableAncestorClass;
       } else {
-        SIMPLE_ERROR(("Only one derivable C++ class is allowed to be"
-                      " derived from at a time instead we have two %s and %s ") ,
+        SIMPLE_ERROR("Only one derivable C++ class is allowed to be"
+                     " derived from at a time instead we have two {} and {}",
                      _rep_(aCxxDerivableAncestorClass_unsafe->_className()) , _rep_(aPossibleCxxDerivableAncestorClass->_className()));
       }
     }
@@ -167,7 +167,7 @@ CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
     List_sp lowClassPrecedenceList = lowmc->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST); // classPrecedenceList();
     return lowClassPrecedenceList.asCons()->memberEq(high).notnilp();
   }
-  SIMPLE_ERROR(("Illegal argument for subclassp: %s") , _rep_(low));
+  SIMPLE_ERROR("Illegal argument for subclassp: {}", _rep_(low));
 };
 
 SYMBOL_SC_(CorePkg, subclassp);

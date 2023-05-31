@@ -197,13 +197,13 @@ void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_poin
       obj->_setInstanceClassUsingSymbol(classSymbol);
       return obj;
     }
-    SIMPLE_ERROR("In make_wrapper for a class class_id %d\n"
+    SIMPLE_ERROR("In make_wrapper for a class class_id {}\n"
                  "  the classSymbol could not be identified\n"
                  "  this probably means that you are trying to wrap an unexposed class\n"
                  "  OR you don't have an appropriate to_object translator for the type\n"
                  "  that corresponds to this class_id.\n"
                  "  Connect a debugger and check if:\n"
-                 "  struct to_object<T &, translate::dont_adopt_pointer> is on the stack",  dynamic_id );
+                 "  struct to_object<T &, translate::dont_adopt_pointer> is on the stack",  dynamic_id);
   }
 
   static gctools::smart_ptr<WrapperType> make_wrapper(const OT &val, class_id dynamic_id ) {
@@ -229,7 +229,7 @@ public:
 bool validp() const { return RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL; };
   void throwIfInvalid() const {
     if (!this->validp()) {
-      SIMPLE_ERROR_SPRINTF("The wrapper is invalid");
+      SIMPLE_ERROR("The wrapper is invalid");
     }
   };
 
@@ -579,7 +579,7 @@ struct from_object<std::unique_ptr<T>> {
       core::General_O* gp = (core::General_O*)&(*o);
       T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
       if (!v_alien) {
-        SIMPLE_ERROR_SPRINTF("Wrong type of argument - clbind object@%p of type: %s", (void*)gp, typeid(T).name());
+        SIMPLE_ERROR("Wrong type of argument - clbind object@{} of type: {}", (void*)gp, typeid(T).name());
       }
 
       ASSERT(v_alien);
@@ -596,7 +596,7 @@ struct from_object<std::unique_ptr<T>> {
       printf("o.px_ref() = %p\n", go.raw_());
       printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T *), typeid(T *).name());
       printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *), typeid(clbind::Derivable<T> *).name());
-      SIMPLE_ERROR_SPRINTF("Could not convert %s of RTTI type %s to %s", _rep_(go).c_str(), typeid(o).name(), typeid(T*).name());
+      SIMPLE_ERROR("Could not convert {} of RTTI type {} to {}", _rep_(go), typeid(o).name(), typeid(T*).name());
     } else {
       printf("%s:%d Can't handle object\n", __FILE__, __LINE__ );
     }
@@ -629,9 +629,9 @@ struct from_object<T *> {
         std::string demangled;
         bool success = core::maybe_demangle(expectedType,demangled);
         if (success) {
-          SIMPLE_ERROR(("Incorrect object %s passed to function - expected type %s") , _rep_(o).c_str() , demangled);
+          SIMPLE_ERROR("Incorrect object {} passed to function - expected type {}", _rep_(o).c_str() , demangled);
         } else {
-          SIMPLE_ERROR(("Incorrect object %s passed to function - expected type %s") , _rep_(o).c_str() , typeid(T).name());
+          SIMPLE_ERROR("Incorrect object {} passed to function - expected type {}", _rep_(o).c_str() , typeid(T).name());
         }
       }
       ASSERT(v_alien);
@@ -663,7 +663,7 @@ struct from_object<const T *&> {
     } else if ( core::General_sp gp = o.asOrNull<core::General_O>() ) {
       // What do I do here?
     }
-    SIMPLE_ERROR_SPRINTF("Could not convert %s of RTTI type %s to %s",  _rep_(o).c_str(), typeid(o).name(), typeid(T *&).name());
+    SIMPLE_ERROR("Could not convert {} of RTTI type {} to {}",  _rep_(o).c_str(), typeid(o).name(), typeid(T *&).name());
   }
 };
 
@@ -687,7 +687,7 @@ T& safe_deref(T* ptr) {
   if (ptr) {
     return *ptr;
   }
-  SIMPLE_ERROR(("Passing NULL to a from_object that dereferences - this probably means that NIL was passed to a clbind wrapped function that expects a real object"));
+  SIMPLE_ERROR("Passing NULL to a from_object that dereferences - this probably means that NIL was passed to a clbind wrapped function that expects a real object");
 }
 
 template <typename T>

@@ -214,7 +214,7 @@ String_sp &StringOutputStreamOutputString(T_sp strm) {
 Fixnum StringFillp(String_sp s) {
   ASSERT(core__non_simple_stringp(s));
   if (!s->arrayHasFillPointerP()) {
-    SIMPLE_ERROR(("The vector does not have a fill pointer"));
+    SIMPLE_ERROR("The vector does not have a fill pointer");
   }
   return s->fillPointer();
 }
@@ -222,7 +222,7 @@ Fixnum StringFillp(String_sp s) {
 void SetStringFillp(String_sp s, Fixnum fp) {
   ASSERT(core__non_simple_stringp(s));
   if (!s->arrayHasFillPointerP()) {
-    SIMPLE_ERROR(("The vector does not have a fill pointer"));
+    SIMPLE_ERROR("The vector does not have a fill pointer");
   }
   s->fillPointerSet(fp);
 }
@@ -1429,7 +1429,7 @@ static cl_index clos_stream_read_vector(T_sp strm, T_sp data, cl_index start, cl
   if (fn.fixnump()) {
     return fn.unsafe_fixnum();
   }
-  SIMPLE_ERROR(("gray:stream-read-sequence returned a non-integer %s"), _rep_(fn));
+  SIMPLE_ERROR("gray:stream-read-sequence returned a non-integer {}", _rep_(fn));
 }
 
 static cl_index clos_stream_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
@@ -1870,7 +1870,7 @@ CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction) {
   } else if (direction == kw::_sym_output) {
     return IOFileStream_O::makeOutput("OutputIOFileStreamFromFD", fd);
   } else {
-    SIMPLE_ERROR(("Could not create IOFileStream with direction %s"), _rep_(direction));
+    SIMPLE_ERROR("Could not create IOFileStream with direction {}", _rep_(direction));
   }
 }
 
@@ -2973,7 +2973,7 @@ struct FileReadBuffer {
             this->__stream, contagion_sub(gc::As_unsafe<Number_sp>(fp),
                                           make_fixnum((this->__buffer_end - this->__buffer_pos) / this->__stream->_ByteSize / 8)));
       } else {
-        SIMPLE_ERROR(("clasp_file_position is not a number"));
+        SIMPLE_ERROR("clasp_file_position is not a number");
       }
     }
   }
@@ -4250,7 +4250,7 @@ T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools:
     struct stat info;
     int fstat_error = fstat(fd, &info);
     if (fstat_error != 0) {
-      SIMPLE_ERROR("Unable to create stream for file descriptor and while running fstat another error occurred -> fd: %ld name: %s "
+      SIMPLE_ERROR("Unable to create stream for file descriptor and while running fstat another error occurred -> fd: {} name: {} "
                    "mode: %s error: %s | fstat_error = %d  info.st_mode = %08x%s",
                    fd, gc::As<String_sp>(fname)->get_std_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode,
                    string_mode(info.st_mode));
@@ -4353,7 +4353,7 @@ CL_DEFUN T_sp ext__file_stream_file_descriptor(T_sp s) {
     ret = make_fixnum(IOFileStreamDescriptor(s));
     break;
   default:
-    SIMPLE_ERROR(("Internal error: %s:%d Wrong Stream Mode %d\n"), __FILE__, __LINE__, StreamMode(s));
+    SIMPLE_ERROR("Internal error: {}:{} Wrong Stream Mode {}\n", __FILE__, __LINE__, StreamMode(s));
   }
   return ret;
 }
@@ -4457,13 +4457,6 @@ claspCharacter clasp_peek_char(T_sp strm) { return stream_dispatch_table(strm).p
 void writestr_stream(const char *s, T_sp strm) {
   while (*s != '\0')
     clasp_write_char(*s++, strm);
-}
-
-void write_bf_stream(const std::string &fmt, T_sp strm) { clasp_write_string(fmt, strm); }
-
-void writeln_bf_stream(const std::string &fmt, T_sp strm) {
-  clasp_write_string(fmt, strm);
-  clasp_terpri(strm);
 }
 
 CL_LAMBDA(oject stream);
@@ -4867,7 +4860,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
   clasp_mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 #endif
   if (fn.nilp())
-    SIMPLE_ERROR(("In %s the filename is NIL"), __FUNCTION__);
+    SIMPLE_ERROR("In {} the filename is NIL", __FUNCTION__);
   String_sp filename = core__coerce_to_filename(fn);
   string fname = filename->get_std_string();
   bool appending = 0;
@@ -4945,7 +4938,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
       fp = safe_fopen(fname.c_str(), OPEN_RW);
       break;
     default:; /* never reached */
-      SIMPLE_ERROR(("Illegal smm mode: %d for CLASP_STREAM_C_STREAM"), smm);
+      SIMPLE_ERROR("Illegal smm mode: {} for CLASP_STREAM_C_STREAM", smm);
       UNREACHABLE();
     }
     output = clasp_make_stream_from_FILE(fn, fp, smm, byte_size, flags, external_format);
@@ -5393,7 +5386,7 @@ T_sp clasp_filename(T_sp strm, bool errorp) {
   }
   if (fn.nilp()) {
     if (errorp) {
-      SIMPLE_ERROR(("The stream %s does not have a filename"), _rep_(strm));
+      SIMPLE_ERROR("The stream {} does not have a filename", _rep_(strm));
     } else {
       return SimpleBaseString_O::make("-no-name-");
     }
@@ -5406,10 +5399,10 @@ size_t clasp_input_filePos(T_sp strm) {
   if (position == kw::_sym_start)
     return 0;
   else if (position == kw::_sym_end) {
-    SIMPLE_ERROR(("Handle clasp_input_filePos getting :end"));
+    SIMPLE_ERROR("Handle clasp_input_filePos getting :end");
   } else if (position.nilp()) {
     return 0;
-    //	    SIMPLE_ERROR(("Stream does not have file position"));
+    //	    SIMPLE_ERROR("Stream does not have file position");
   } else if (position.fixnump()) {
     return unbox_fixnum(gc::As<Fixnum_sp>(position));
   }
@@ -5597,7 +5590,7 @@ void StringOutputStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::F
 
 string StringInputStream_O::peerFrom(size_t start, size_t len) {
   if (start >= this->_InputLimit) {
-    SIMPLE_ERROR(("Cannot peer beyond the input limit at %lu"), this->_InputLimit);
+    SIMPLE_ERROR("Cannot peer beyond the input limit at {}", this->_InputLimit);
   }
   size_t remaining = this->_InputLimit - start;
   len = MIN(len, remaining);
@@ -5649,12 +5642,12 @@ CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
   if (c.nilp()) {
     LOG("Hit eof");
     if (!eof_error_p.isTrue()) {
-      LOG("Returning eof_value[%s]", _rep_(eof_value));
+      LOG("Returning eof_value[{}]", _rep_(eof_value));
       return eof_value;
     }
     ERROR_END_OF_FILE(strm);
   }
-  LOG("Read and returning char[%s]", c);
+  LOG("Read and returning char[{}]", c);
   return c;
 }
 
@@ -5665,7 +5658,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursive_p) {
   strm = coerce::inputStreamDesignator(strm);
   if (!clasp_input_stream_p(strm))
-    SIMPLE_ERROR(("Not input-stream"));
+    SIMPLE_ERROR("Not input-stream");
   if (peek_type.nilp()) {
     int c = clasp_peek_char(strm);
     if (c == EOF)
@@ -5685,7 +5678,7 @@ CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof
   }
   // Now peek_type is true - this means skip whitespace until the first non-whitespace character
   if (peek_type != _lisp->_true()) {
-    SIMPLE_ERROR(("Illegal first argument for PEEK-CHAR %s"), _rep_(peek_type));
+    SIMPLE_ERROR("Illegal first argument for PEEK-CHAR {}", _rep_(peek_type));
   } else {
     T_sp readtable = _lisp->getCurrentReadTable();
     while (1) {
@@ -5714,12 +5707,12 @@ CL_DEFUN T_sp cl__read_char(T_sp strm, T_sp eof_error_p, T_sp eof_value, T_sp re
   if (c == EOF) {
     LOG("Hit eof");
     if (!eof_error_p.isTrue()) {
-      LOG("Returning eof_value[%s]", _rep_(eof_value));
+      LOG("Returning eof_value[{}]", _rep_(eof_value));
       return eof_value;
     }
     ERROR_END_OF_FILE(strm);
   }
-  LOG("Read and returning char[%s]", c);
+  LOG("Read and returning char[{}]", c);
   return clasp_make_character(c);
 }
 
@@ -5775,8 +5768,8 @@ CL_DEFUN T_mv cl__read_from_string(String_sp content, T_sp eof_error_p, T_sp eof
       return (Values(eof_value, _lisp->_true()));
     }
   }
-  LOG("Seeking to position: %d", start);
-  LOG("Character at position[%d] is[%c/%d]", sin->tell(), (char)sin->peek_char(), (int)sin->peek_char());
+  LOG("Seeking to position: {}", start);
+  LOG("Character at position[{}] is[{}/{}]", sin->tell(), (char)sin->peek_char(), (int)sin->peek_char());
   T_sp res;
   if (preserve_whitespace.isTrue()) {
     res = cl__read_preserving_whitespace(sin, nil<T_O>(), unbound<T_O>(), nil<T_O>());
@@ -5877,7 +5870,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
     }
   } // while(1)
   // We've accumulated a line. Copy it into a simple string, release the buffer, and return.
-  LOG("Read line result -->[%s]", sbuf.str());
+  LOG("Read line result -->[{}]", sbuf.str());
   if (small) {
     T_sp result = cl__copy_seq(sbuf_small);
     _lisp->put_Str8Ns_buffer_string(sbuf_small);
@@ -6132,7 +6125,7 @@ T_sp clasp_openRead(T_sp sin) {
   int flags = CLASP_STREAM_DEFAULT_FORMAT;
   T_sp external_format = nil<T_O>();
   if (filename.nilp()) {
-    SIMPLE_ERROR(("%s was called with NIL as the argument"), __FUNCTION__);
+    SIMPLE_ERROR("{} was called with NIL as the argument", __FUNCTION__);
   }
   T_sp strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist, byte_size, flags, external_format);
   return strm;
@@ -6267,7 +6260,7 @@ CL_DEFUN int64_t core__lseek(int fd, int64_t offset, Symbol_sp whence) {
   } else if (whence == kw::_sym_seek_end) {
     iwhence = SEEK_END;
   } else {
-    SIMPLE_ERROR(("whence must be one of :seek-set, :seek-cur, :seek-end - it was %s"), _rep_(whence));
+    SIMPLE_ERROR("whence must be one of :seek-set, :seek-cur, :seek-end - it was {}", _rep_(whence));
   }
   size_t off = lseek(fd, offset, iwhence);
   return off;
@@ -6294,7 +6287,7 @@ CL_DEFUN T_sp core__copy_stream(T_sp in, T_sp out, T_sp wait) {
 
 
 void lisp_write(const std::string& s) {
-  write_bf_stream(s);
+  clasp_write_string(s);
 }
 
 

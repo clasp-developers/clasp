@@ -125,7 +125,7 @@ LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* far
 #ifdef _DEBUG_BUILD
 #define SETUP_CLOSURE(Type,var) \
   if (!gc::TaggedCast<Type*,core::T_O*>::isA(lcc_closure)) { \
-    SIMPLE_ERROR_SPRINTF("Bad cast of closure %p to type: %s", (void*)lcc_closure, #Type ); \
+    SIMPLE_ERROR("Bad cast of closure {} to type: {}", (void*)lcc_closure, #Type ); \
   } \
   SETUP_CLOSURE_(Type,var);
 #else

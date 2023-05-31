@@ -804,6 +804,43 @@ namespace core {
 
 }; // namespace core
 
+template <typename Char> struct fmt::formatter<core::NumberType, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
+  template <typename FormatContext>
+  auto format(const core::NumberType &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+    fmt::basic_string_view<Char> name = "unknown";
+    switch (o) {
+    case core::number_Fixnum:
+      name = "Fixnum";
+      break;
+    case core::number_Bignum:
+      name = "Bignum";
+      break;
+    case core::number_Ratio:
+      name = "Ratio";
+      break;
+    case core::number_ShortFloat:
+      name = "ShortFloat";
+      break;
+    case core::number_SingleFloat:
+      name = "SingleFloat";
+      break;
+    case core::number_DoubleFloat:
+      name = "DoubleFloat";
+      break;
+    case core::number_LongFloat:
+      name = "LongFloat";
+      break;
+    case core::number_Complex:
+      name = "Complex";
+      break;
+    case core::number_NUM:
+      name = "NUM";
+      break;
+    }
+    return fmt::formatter<fmt::basic_string_view<Char>>::format(name, ctx);
+  }
+};
+
 namespace core {
 
   CL_PKG_NAME(ClPkg,plusp);

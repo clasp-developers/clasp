@@ -69,7 +69,6 @@ void tokenize_format_specifiers(const string &str,
   while (lastPos != str.size() ) {
     string::size_type pos = find_first_format_specifier( str, lastPos, fmt );
     tokens.push_back(str.substr(lastPos, pos - lastPos));
-    //fmt::printf("%s:%d lastPos = %lu pos = %lu token = %s\n", __FILE__, __LINE__, lastPos, pos, tokens[tokens.size()-1] );
     lastPos = pos;
   }
 }
@@ -96,14 +95,6 @@ struct formatter {
   formatter( const std::string&  fmt_string ) {
     tokenize_format_specifiers( fmt_string, this->_controls, FMT );
     this->_pos = 0;
-  }
-
-  template <typename T>
-  void sprintf(const T& obj) {
-    static_assert(FMT==0);
-    const std::string& ctl = this->_controls[this->_pos];
-    this->_results.push_back(fmt::sprintf(ctl,obj));
-    this->_pos++;
   }
 
   template <typename T>
@@ -173,74 +164,6 @@ CL_DEFUN std::string core__tostring(T_sp fobj)
 }
 
 
-/*! Boost-format interface - works like CL:format but uses boost format strings
- */
-CL_LAMBDA(destination control &rest args);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Like CL format but uses C/boost format strings)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, List_sp args) {
-  T_sp output;
-  if (destination.nilp()) {
-    output = my_thread->_BFormatStringOutputStream;
-  } else if (destination == _sym_printf) {
-    output = destination;
-  } else if (destination == _lisp->_true()) {
-    output = cl::_sym_STARstandard_outputSTAR->symbolValue();
-  } else if (cl__streamp(destination)) {
-    output = destination;
-  } else {
-    TYPE_ERROR(destination,cl::_sym_streamError);
-  }
-  std::stringstream scontrol;
-  std::string control;
-  if (original_control.size()>1) {
-    for ( int i(0); i<original_control.size(); ++i ) {
-      if (original_control[i] == '%' && original_control[i+1] == 'N') {
-        scontrol << '\n';
-        ++i;
-      } else {
-        scontrol << original_control[i];
-      }
-    }
-    control = scontrol.str();
-  } else {
-    control = original_control;
-  }
-  try {
-    formatter<0> fmter(control);
-    for (auto farg : args) {
-      T_sp fobj = oCar(farg);
-      if (fobj.fixnump()) {
-        Fixnum_sp fint = gc::As<Fixnum_sp>(fobj);
-        fmter.sprintf(unbox_fixnum(fint));
-      } else if (fobj.characterp()) {
-        Character_sp fc = gc::As<Character_sp>(fobj);
-        fmter.sprintf((char)unbox_character(fc));
-      } else if (fobj.single_floatp()) {
-        SingleFloat_sp ff = gc::As<SingleFloat_sp>(fobj);
-        fmter.sprintf(unbox_single_float(ff));
-      } else if (core__bignump(fobj)) {
-        Bignum_sp flli = gc::As<Bignum_sp>(fobj);
-        stringstream ss;
-        ss << clasp_to_mpz(flli);
-        fmter.sprintf(ss.str());
-      } else if (cl__stringp(fobj)) {
-        String_sp ftext = gc::As_unsafe<String_sp>(fobj);
-        fmter.sprintf(ftext->get_std_string());
-      } else if (core__double_float_p(fobj)) {
-        DoubleFloat_sp freal = gc::As<DoubleFloat_sp>(fobj);
-        fmter.sprintf(freal->get());
-      } else {
-        fmter.sprintf(_rep_(fobj));
-      }
-    }
-    return fmter.write(destination,output);
-  }
-  catch (...) {
-    SIMPLE_ERROR(("Unknown bformat command error in format string: \"%s\""), original_control );
-  }
-}
 
 /*! Boost-format interface - works like CL:format but uses boost format strings
  */
@@ -342,95 +265,8 @@ CL_DEFUN T_sp core__fmt(T_sp destination, const string &original_control, List_s
     return fmter.write(destination,output);
   }
   catch (...) {
-    SIMPLE_ERROR(("Unknown fmt command error in format string: \"%s\""), original_control);
+    SIMPLE_ERROR("Unknown fmt command error in format string: \"{}\"", original_control);
   }
-}
-
-
-
-/*! Boost-format interface - works like CL:format but uses boost format strings
- */
-CL_LAMBDA(destination control arg);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Like CL format but uses C/boost format strings and takes one argument)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__bformat1(T_sp destination, const string &original_control, T_sp arg) {
-  T_sp output;
-  if (destination.nilp()) {
-    output = my_thread->_BFormatStringOutputStream;
-  } else if (destination == _sym_printf) {
-    output = destination;
-  } else if (destination == _lisp->_true()) {
-    output = cl::_sym_STARstandard_outputSTAR->symbolValue();
-  } else if (cl__streamp(destination)) {
-    output = destination;
-  } else {
-    TYPE_ERROR(destination,cl::_sym_streamError);
-  }
-  std::stringstream scontrol;
-  std::string control;
-  if (original_control.size()>1) {
-    for ( int i(0); i<original_control.size(); ++i ) {
-      if (original_control[i] == '%' && original_control[i+1] == 'N') {
-        scontrol << '\n';
-        ++i;
-      } else {
-        scontrol << original_control[i];
-      }
-    }
-    control = scontrol.str();
-  } else {
-    control = original_control;
-  }
-  std::string str;
-  const char* kind;
-  try {
-    if (arg.fixnump()) {
-      Fixnum_sp fint = gc::As<Fixnum_sp>(arg);
-      str = fmt::sprintf(control, unbox_fixnum(fint));
-      kind = "fixnum";
-    } else if (arg.characterp()) {
-      Character_sp fc = gc::As<Character_sp>(arg);
-      str = fmt::sprintf(control, (char)unbox_character(fc));
-      kind = "character";
-    } else if (arg.single_floatp()) {
-      SingleFloat_sp ff = gc::As<SingleFloat_sp>(arg);
-      str = fmt::sprintf( control, unbox_single_float(ff) );
-      kind = "float";
-    } else if (core__bignump(arg)) {
-      Bignum_sp flli = gc::As<Bignum_sp>(arg);
-      stringstream ss;
-      ss << clasp_to_mpz(flli);
-      str = fmt::sprintf( control, ss.str() );
-      kind = "bignum";
-    } else if (cl__stringp(arg)) {
-      String_sp ftext = gc::As_unsafe<String_sp>(arg);
-      str = fmt::sprintf( control, ftext->get_std_string() );
-      kind = "string";
-    } else if (core__double_float_p(arg)) {
-      DoubleFloat_sp freal = gc::As<DoubleFloat_sp>(arg);
-      str = fmt::sprintf( control, freal->get() );
-      kind = "double-float";
-    } else {
-      str = fmt::sprintf( control, _rep_(arg) );
-      kind = "other";
-    }
-  } catch (fmt::format_error& err) {
-    SIMPLE_ERROR(("fmt::format_error %s for format string: \"%s\" for value %s of type %s"), err.what(), original_control, _rep_(arg), kind );
-  } catch (...) {
-    SIMPLE_ERROR(("Unknown bformat1 command error in format string: \"%s\" for value %s of type %s"), original_control, _rep_(arg), kind );
-  }
-  if (output == _sym_printf) {
-    printf("%s", str.c_str());
-  } else {
-    clasp_write_string(str, output);
-  }
-  if (destination.nilp()) {
-    StringOutputStream_sp sout = gc::As_unsafe<StringOutputStream_sp>(output);
-    String_sp result = sout->getAndReset();
-    return result;
-  }
-  return nil<T_O>();
 }
 
 DOCGROUP(clasp);
@@ -445,10 +281,10 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
   stringstream tf;
   if (cl__functionp(control)) {
-    SIMPLE_ERROR(("Add support for functions as FORMAT controls"));
+    SIMPLE_ERROR("Add support for functions as FORMAT controls");
   }
   if (!cl__stringp(control)) {
-    SIMPLE_ERROR(("FORMAT control must be a string or a function - you gave: %s") , _rep_(control));
+    SIMPLE_ERROR("FORMAT control must be a string or a function - you gave: {}", _rep_(control));
   }
   string ts = gc::As<String_sp>(control)->get_std_string();
   const char *cur = ts.c_str();

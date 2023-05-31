@@ -82,10 +82,10 @@ safe_buffer_pointer(core::T_sp x, uint size) {
     address = svb8->rowMajorAddressOfElement_(0);
   }
   else {
-    SIMPLE_ERROR(("Add support for buffer %s") , _rep_(x));
+    SIMPLE_ERROR("Add support for buffer {}", _rep_(x));
   }
   if (!ok) {
-    SIMPLE_ERROR(("Lisp object does not have enough space to be a valid socket buffer: %s") , _rep_(x));
+    SIMPLE_ERROR("Lisp object does not have enough space to be a valid socket buffer: {}", _rep_(x));
   }
   return address;
 }
@@ -642,7 +642,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string &name,  /
       direction = core::clasp_smm_io;
     break;
   default: {
-    SIMPLE_ERROR(("Illegal stream mode %d") , streamMode);
+    SIMPLE_ERROR("Illegal stream mode {}", streamMode);
   }
   }
   core::Stream_sp stream = gc::As_unsafe<core::Stream_sp>(core::IOFileStream_O::make(name, fd, direction, elementType, externalFormat));

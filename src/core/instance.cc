@@ -112,7 +112,7 @@ DOCGROUP(clasp);
 CL_LAMBDA(order old nv rack index);
 CL_DEFUN T_sp core__cas_rack(T_sp order, T_sp old, T_sp newval, Rack_sp rack, size_t index) {
   if (order != kw::_sym_SequentiallyConsistent) {
-    SIMPLE_ERROR("Add support for order %s", _rep_(order).c_str());
+    SIMPLE_ERROR("Add support for order {}", _rep_(order).c_str());
   }
   bool result = rack->low_level_rack_compare_exchange_strong(index, old, newval);
 #if 0
@@ -132,7 +132,7 @@ CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
   }
-  SIMPLE_ERROR(("You can only instanceClassSet on Instance_O or Instance_O - you tried to set it on a: %s") , _rep_(mc));
+  SIMPLE_ERROR("You can only instanceClassSet on Instance_O or Instance_O - you tried to set it on a: {}", _rep_(mc));
 };
 
 void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, T_sp sig,
@@ -400,10 +400,10 @@ void Instance_O::sxhash_equalp(HashGenerator &hg) const {
   
 void Instance_O::describe(T_sp stream) {
   stringstream ss;
-  ss << fmt::sprintf("Instance\n");
-  ss << fmt::sprintf("_Class: %s\n", _rep_(this->_Class));
+  ss << fmt::format("Instance\n");
+  ss << fmt::format("_Class: {}\n", _rep_(this->_Class));
   for (int i(0); i < rack()->length(); ++i) {
-    ss << fmt::sprintf("_Rack[%d]: %s\n", i , _rep_(low_level_instanceRef(rack(), i)));
+    ss << fmt::format("_Rack[{}]: {}\n", i , _rep_(low_level_instanceRef(rack(), i)));
   }
   clasp_write_string(ss.str(), stream);
 }
@@ -510,7 +510,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
     printf("%s:%d About to do topological_sort\n", __FILE__, __LINE__);
     for (size_t zi(0), ziEnd(cl__length(arrayedSupers)); zi < ziEnd; ++zi) {
       stringstream ss;
-      ss << fmt::sprintf("graph[%d/name=%s] = ", zi , arrayedSupers->operator[](zi).as<Instance_O>()->instanceClassName());
+      ss << fmt::format("graph[{}/name={}] = ", zi , arrayedSupers->operator[](zi).as<Instance_O>()->instanceClassName());
       for (list<int>::const_iterator it = graph[zi].begin(); it != graph[zi].end(); it++) {
         ss << *it << "-> ";
       }
@@ -529,13 +529,13 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
       Instance_sp mc = arrayedSupers->operator[](*it).as<Instance_O>();
       ss << "-> " << mc->className() << "/" << mc->instanceClassName();
     }
-    LOG("%s" , ss.str());
+    LOG("{}" , ss.str());
   }
 #endif
   List_sp cpl = nil<T_O>();
   for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
     Instance_sp mc = gc::As<Instance_sp>(arrayedSupers->operator[](*it));
-    LOG("pushing superclass[%s] to front of ClassPrecedenceList" , mc->instanceClassName());
+    LOG("pushing superclass[{}] to front of ClassPrecedenceList" , mc->instanceClassName());
     cpl = Cons_O::create(mc, cpl);
   }
   this->instanceSet(REF_CLASS_CLASS_PRECEDENCE_LIST, cpl);
@@ -649,13 +649,13 @@ void Instance_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp clas
 
 string Instance_O::dumpInfo() {
   stringstream ss;
-  ss << fmt::sprintf("this.instanceClassName: %s @ %X", this->instanceClassName() , (void*)this) << std::endl;
+  ss << fmt::format("this.instanceClassName: {} @ {}", this->instanceClassName() , (void*)this) << std::endl;
   ss << "_FullName[" << this->_className()->fullName() << "]" << std::endl;
-  ss << fmt::sprintf("    _Class = %p  this._Class.instanceClassName()=%s\n" , (void*)&*(this->__class()) , this->__class()->instanceClassName() );
+  ss << fmt::format("    _Class = {}  this._Class.instanceClassName()={}\n" , (void*)&*(this->__class()) , this->__class()->instanceClassName() );
   for (auto cc : this->directSuperclasses()) {
     ss << "Base class: " << gc::As<Instance_sp>(oCar(cc))->instanceClassName() << std::endl;
   }
-  ss << fmt::sprintf("this.instanceCreator* = %p\n", (void *)(&*this->CLASS_get_creator()));
+  ss << fmt::format("this.instanceCreator* = {}\n", (void *)(&*this->CLASS_get_creator()));
   return ss.str();
 }
 
@@ -673,7 +673,7 @@ T_sp Instance_O::make_instance() {
   if (instance.generalp()) {
     instance.unsafe_general()->initialize();
   } else {
-    SIMPLE_ERROR(("Add support to make_instance of non general objects"));
+    SIMPLE_ERROR("Add support to make_instance of non general objects");
   }
   return instance;
 }
@@ -744,7 +744,7 @@ namespace core {
 CL_DEFUN T_sp core__rack_stamp(core::T_sp obj) {
   General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)obj.raw_());
   uintptr_t stamp = (uintptr_t)(llvmo::template_read_rack_stamp(client_ptr));
-  //core::write_bf_stream(fmt::sprintf("%s:%d:%s stamp = %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
+  //core::clasp_write_string(fmt::format("{}:{}:{} stamp = {}u\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
   T_sp result((gctools::Tagged)stamp);
   return result;
 }
@@ -824,9 +824,9 @@ CL_DEFUN bool ext__class_unboundp(ClassHolder_sp holder) {
 DOCGROUP(clasp);
 CL_DEFUN void core__verify_instance_layout(size_t instance_size, size_t instance_rack_offset)
 {
-  if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR(("The cmpintrinsics.lisp instance_size %lu does not match sizeof(Instance_O) %lu") , instance_size , sizeof(Instance_O));
+  if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR("The cmpintrinsics.lisp instance_size {} does not match sizeof(Instance_O) {}", instance_size , sizeof(Instance_O));
   if (instance_rack_offset!=offsetof(Instance_O,_Rack))
-    SIMPLE_ERROR(("instance_rack_offset %lu does not match offsetof(_Rack,Instance_O) %lu") , instance_rack_offset , offsetof(Instance_O,_Rack));
+    SIMPLE_ERROR("instance_rack_offset {} does not match offsetof(_Rack,Instance_O) {}", instance_rack_offset , offsetof(Instance_O,_Rack));
 }
 
 DOCGROUP(clasp);
@@ -835,9 +835,9 @@ CL_DEFUN void core__verify_rack_layout(size_t stamp_offset, size_t data_offset)
   size_t cxx_stamp_offset = offsetof(Rack_O,_ShiftedStamp);
   size_t cxx_data_offset = offsetof(Rack_O,_Slots._Data);
   if (stamp_offset!=cxx_stamp_offset)
-    SIMPLE_ERROR(("stamp_offset %lu does not match cxx_stamp_offset %lu") , stamp_offset , cxx_stamp_offset);
+    SIMPLE_ERROR("stamp_offset {} does not match cxx_stamp_offset {}", stamp_offset , cxx_stamp_offset);
   if (data_offset!=cxx_data_offset)
-    SIMPLE_ERROR(("data_offset %lu does not match cxx_data_offset %lu") , data_offset , cxx_data_offset);
+    SIMPLE_ERROR("data_offset {} does not match cxx_data_offset {}", data_offset , cxx_data_offset);
 }
 
 

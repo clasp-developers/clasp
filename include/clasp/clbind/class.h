@@ -139,7 +139,7 @@ public:
   virtual size_t templatedSizeof() const override { return sizeof(*this); };
   virtual bool allocates() const override { return false; };
   virtual core::T_sp creator_allocate() override {
-    SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", core::_rep_(this->_name).c_str());
+    SIMPLE_ERROR("This class named: {} cannot allocate instances", core::_rep_(this->_name));
   } // return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) override {
     core::GlobalSimpleFun_sp entryPoint =

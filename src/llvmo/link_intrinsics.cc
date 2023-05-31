@@ -96,11 +96,11 @@ namespace llvmo {
     }
     break;
   case couldNotCoerceToClosure:
-      SIMPLE_ERROR((" symbol %s") , _rep_(arg0));
+      SIMPLE_ERROR(" symbol {}", _rep_(arg0));
   case destinationMustBeActivationFrame:
-      SIMPLE_ERROR(("Destination must be ActivationFrame"));
+      SIMPLE_ERROR("Destination must be ActivationFrame");
   case invalidIndexForFunctionFrame:
-      SIMPLE_ERROR(("Invalid index[%d] for FunctionFrame(size=%d)") , _rep_(arg0) , _rep_(arg1));
+      SIMPLE_ERROR("Invalid index[{}] for FunctionFrame(size={})", _rep_(arg0) , _rep_(arg1));
   case unboundSymbolValue:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
@@ -114,14 +114,16 @@ namespace llvmo {
   case unboundSymbolSetfFunction:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR(("The symbol %s has no setf function bound to it") , sym->fullName() );
+      SIMPLE_ERROR("The symbol {} has no setf function bound to it", sym->fullName() );
     }
   case badCell:
     {
-      SIMPLE_ERROR(("The object with pointer %p is not a cell") , (void*)arg0.raw_());
+      SIMPLE_ERROR("The object with pointer {} is not a cell", (void*)arg0.raw_());
     }
   default:
-      SIMPLE_ERROR(("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") , err , _rep_(arg0) , _rep_(arg1) , _rep_(arg2));
+      SIMPLE_ERROR("An intrinsicError {} was signaled and there needs to be a more descriptive error message for it in "
+                   "gctools::intrinsic_error arg0: {} arg1: {} arg2: {}",
+                   (int)err, arg0, arg1, arg2);
   };
 };
 
@@ -386,7 +388,7 @@ LtvcReturnVoid ltvc_make_function_description(gctools::GCRootsInModule* holder, 
                                                                    filepos);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::FunctionDescription_sp>(val)) {
-    SIMPLE_ERROR(("The object is not a FunctionDescription %s") , core::_rep_(val));
+    SIMPLE_ERROR("The object is not a FunctionDescription {}", core::_rep_(val));
   }
 #if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s FunctionDescription_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_()));
@@ -405,7 +407,7 @@ LtvcReturnVoid ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, cha
   core::LocalSimpleFun_sp simpleFun = core::makeLocalSimpleFun(fdesc,llvm_func);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::LocalSimpleFun_sp>(simpleFun)) {
-    SIMPLE_ERROR(("The object is not a LocalEntryPoint %s") , core::_rep_(simpleFun));
+    SIMPLE_ERROR("The object is not a LocalEntryPoint {}", core::_rep_(simpleFun));
   }
 #if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalSimpleFun_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, simpleFun.raw_()));
@@ -427,7 +429,7 @@ LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, ch
   core::GlobalSimpleFun_sp simpleFun = core::makeGlobalSimpleFun(fdesc,xep,localEntryPoint);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::GlobalSimpleFun_sp>(simpleFun)) {
-    SIMPLE_ERROR(("The object is not a GlobalSimpleFun %s") , core::_rep_(simpleFun));
+    SIMPLE_ERROR("The object is not a GlobalSimpleFun {}", core::_rep_(simpleFun));
   }
 #if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalSimpleFun_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, simpleFun.raw_()));
@@ -608,7 +610,7 @@ NOINLINE void cc_breakstep(core::T_O* source, void* frame) {
             return;
         }
       }
-      SIMPLE_ERROR(("BUG: Unknown return value from %s: %s")
+      SIMPLE_ERROR("BUG: Unknown return value from {}: {}"
                    , _rep_(core::_sym_breakstep)
                    , _rep_(res));
     } else return;
@@ -702,9 +704,9 @@ void badKeywordArgumentError(core::T_sp keyword, core::T_sp functionName,
                              core::T_sp lambdaList)
 {
   if (functionName.nilp()) {
-    SIMPLE_ERROR(("When calling an unnamed function with the lambda list %s the bad keyword argument %s was passed") , _rep_(lambdaList) , _rep_(keyword));
+    SIMPLE_ERROR("When calling an unnamed function with the lambda list {} the bad keyword argument {} was passed", _rep_(lambdaList) , _rep_(keyword));
   }
-  SIMPLE_ERROR(("When calling %s with the lambda-list %s the bad keyword argument %s was passed") , _rep_(functionName) , _rep_(lambdaList) , _rep_(keyword));
+  SIMPLE_ERROR("When calling {} with the lambda-list {} the bad keyword argument {} was passed", _rep_(functionName) , _rep_(lambdaList) , _rep_(keyword));
 }
 
 void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
@@ -1017,7 +1019,7 @@ void cc_set_unwind_dest_index(size_t ind)
 }
 
 void cc_error_bugged_come_from(size_t id) {
-  SIMPLE_ERROR(("BUG: Nonlocal entry frame could not match go-index %d") , id);
+  SIMPLE_ERROR("BUG: Nonlocal entry frame could not match go-index {}", id);
 }
 
 void debugFileScopeHandle(int *sourceFileInfoHandleP)
@@ -1173,7 +1175,7 @@ void cc_initialize_closure(core::T_O* functoid,
 }
 
 LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gctools::return_type ret0 ) {
-  ASSERTF(gctools::tagged_generalp(tfunc), ("The argument %p does not have a general tag!") , (void*)tfunc);
+  ASSERTF(gctools::tagged_generalp(tfunc), "The argument {} does not have a general tag!", (void*)tfunc);
   MAKE_STACK_FRAME( callargs, ret0.nvals);
   size_t idx(0);
   gctools::fill_frame_multiple_value_return( callargs, idx, ret0 );

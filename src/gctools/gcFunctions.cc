@@ -86,7 +86,7 @@ int iBootstrapKind(const string &name) {
       return i;
     }
   }
-  SIMPLE_ERROR(("Illegal bootstrap-kind %s") , name);
+  SIMPLE_ERROR("Illegal bootstrap-kind {}", name);
 }
 
 std::atomic<size_t> global_lexical_depth_counter;
@@ -171,11 +171,11 @@ CL_DEFUN core::T_sp core__header_stamp(core::T_sp obj) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
     uintptr_t stamp = 0xFFFFFFFF&(header->_badge_stamp_wtag_mtag._value);
-//    core::write_bf_stream(fmt::sprintf("%s:%d:%s stamp = %zu\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
+//    core::clasp_write_string(fmt::format("{}:{}:{} stamp = {}u\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
     core::T_sp result((gctools::Tagged)stamp);
     return result;;
   }
-  SIMPLE_ERROR(("The object %s is not a general object and doesn't have a header-value") , _rep_(obj));
+  SIMPLE_ERROR("The object {} is not a general object and doesn't have a header-value", _rep_(obj));
 }
 
 CL_DOCSTRING(R"dx(Return the header value for the object)dx");
@@ -186,7 +186,7 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
     return core::clasp_make_integer(header->_badge_stamp_wtag_mtag._value);
   }
-  SIMPLE_ERROR(("The object %s is not a general object and doesn't have a header-value") , _rep_(obj));
+  SIMPLE_ERROR("The object {} is not a general object and doesn't have a header-value", _rep_(obj));
 }
 
 #if 0
@@ -237,7 +237,7 @@ CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
 {
   core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(),0));
   if (stamp.fixnump()) return stamp;
-  SIMPLE_ERROR(("core:instance-stamp was about to return a non-fixnum %p") , (void*)stamp.raw_());
+  SIMPLE_ERROR("core:instance-stamp was about to return a non-fixnum {}", (void*)stamp.raw_());
 }
 
 CL_DOCSTRING(R"dx(Return the tagged pointer for the object, the flags and the header stamp)dx");
@@ -266,7 +266,7 @@ CL_DEFUN void core__instance_stamp_set(core::T_sp obj, core::T_sp stamp)
     core::FuncallableInstance_sp iobj = gc::As_unsafe<core::FuncallableInstance_sp>(obj);
     return iobj->stamp_set(stamp.unsafe_fixnum());
   }
-  SIMPLE_ERROR(("Only Instance and FuncallableInstance objects can have their stamp set") , _rep_(obj));
+  SIMPLE_ERROR("Only Instance and FuncallableInstance objects can have their stamp set", _rep_(obj));
 }
 
 
@@ -291,7 +291,7 @@ CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceSta
   if (backtraceStart.unsafe_fixnum() < 0 ||
       backtraceCount.unsafe_fixnum() < 0 ||
       backtraceDepth.unsafe_fixnum() < 0) {
-    SIMPLE_ERROR(("Keyword arguments must all be >= 0"));
+    SIMPLE_ERROR("Keyword arguments must all be >= 0");
   }
   global_monitorAllocations.start = backtraceStart.unsafe_fixnum();
   global_monitorAllocations.end = backtraceStart.unsafe_fixnum() + backtraceCount.unsafe_fixnum();
@@ -525,7 +525,7 @@ CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename, core::T_sp executa
   throw(core::SaveLispAndDie(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
     globals_->_Bundle->_Directories->_LibDir));
 #else
-  SIMPLE_ERROR(("save-lisp-and-die only works for precise GC"));
+  SIMPLE_ERROR("save-lisp-and-die only works for precise GC");
 #endif
 }
 
@@ -535,14 +535,14 @@ CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx"
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
 #if defined(USE_MPS)
-  SIMPLE_ERROR(("Add support for MPS"));
+  SIMPLE_ERROR("Add support for MPS");
 #elif defined(USE_BOEHM)
   if (stamp.fixnump()) {
     gctools::FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
 # if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
     GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_stamps, (void*)&findStamp);
 # else
-    SIMPLE_ERROR(("The boehm function GC_enumerate_reachable_objects_inner is not available"));
+    SIMPLE_ERROR("The boehm function GC_enumerate_reachable_objects_inner is not available");
 # endif
     core::List_sp result = nil<core::T_O>();
     for ( size_t ii=0; ii<findStamp._addresses.size(); ii++ ) {
@@ -554,7 +554,7 @@ CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
 #else
   MISSING_GC_SUPPORT();
 #endif // USE_BOEHM
-  SIMPLE_ERROR(("You must pass a stamp value"));
+  SIMPLE_ERROR("You must pass a stamp value");
 }
 
 
@@ -564,7 +564,7 @@ CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx"
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 #if defined(USE_MPS)
-  SIMPLE_ERROR(("Add support for MPS"));
+  SIMPLE_ERROR("Add support for MPS");
 #elif defined(USE_BOEHM)
   if (obj.fixnump()) {
     void* base = GC_base((void*)obj.unsafe_fixnum());
@@ -572,7 +572,7 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 # if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
     GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_owners, (void*)&findOwner);
 # else
-    SIMPLE_ERROR(("The boehm function GC_enumerate_reachable_objects_inner is not available"));
+    SIMPLE_ERROR("The boehm function GC_enumerate_reachable_objects_inner is not available");
 # endif
     core::List_sp result = nil<core::T_O>();
     for ( size_t ii=0; ii<findOwner._addresses.size(); ii++ ) {
@@ -583,7 +583,7 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 #else
   MISSING_GC_SUPPORT();
 #endif // USE_BOEHM
-  SIMPLE_ERROR(("You must pass a pointer"));
+  SIMPLE_ERROR("You must pass a pointer");
 }
 
 };
@@ -671,7 +671,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
     core::T_sp count = oCar(one);
     core::T_sp func = oCdr(one);
     if ( count.unsafe_fixnum() > 0) {
-      core::write_bf_stream(fmt::format("{} : {}\n" , count.unsafe_fixnum() , _rep_(func)));
+      core::clasp_write_string(fmt::format("{} : {}\n" , count.unsafe_fixnum() , _rep_(func)));
     }
   }
 };
@@ -810,7 +810,7 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
   size_t finalizations;
   size_t messages = processMpsMessages(finalizations);
   if (verbose) {
-    core::write_bf_stream(fmt::format("Processed {} finalization messages and {} total messages\n" , messages , finalizations ));
+    core::clasp_write_string(fmt::format("Processed {} finalization messages and {} total messages\n" , messages , finalizations ));
   }
 #endif
 }

@@ -66,10 +66,9 @@ extern core::Symbol_sp& _sym_name;
     THROW_NEVER_REACH();                                                                  \
   }
 #define FUNCTION_DESCRIPTION_ERROR() SIMPLE_ERROR("Do something about function-description");
-#define SIMPLE_WARN(...) core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make(fmt::sprintf(__VA_ARGS__)))
+#define SIMPLE_WARN(...) core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make(fmt::format(__VA_ARGS__)))
 #define ERROR(_type_, _initializers_) lisp_error( _type_, _initializers_)
-#define SIMPLE_ERROR_SPRINTF(...) ::core::lisp_error_sprintf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
-#define SIMPLE_ERROR(...) ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf(__VA_ARGS__))
+#define SIMPLE_ERROR(...) ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::format(__VA_ARGS__))
 /*! Error for when an index is out of range - eg: beyond the end of a string */
 #define TYPE_ERROR_INDEX(_seq_, _idx_) \
   ERROR(cl::_sym_simpleTypeError, \
@@ -171,7 +170,7 @@ extern core::Symbol_sp& _sym_name;
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
 #define UNBOUND_VARIABLE_ERROR(name) ERROR(::cl::_sym_unboundVariable, core::lisp_createList(kw::_sym_name, name))
-#define KEY_NOT_FOUND_ERROR(_key_) SIMPLE_ERROR("Key %s not found", _key_)
+#define KEY_NOT_FOUND_ERROR(_key_) SIMPLE_ERROR("Key {} not found", _key_)
 #define CONTROL_ERROR() NO_INITIALIZERS_ERROR(cl::_sym_controlError);
 
 #define WRONG_TYPE_ARG(_datum_, _expectedType_) core__wrong_type_argument(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _datum_, _expectedType_)
@@ -290,24 +289,24 @@ struct CxxFunctionInvocationLogger {
 // Make it easier to find "try" statements
 #define TRY() try
 
-#define IMPLEMENT_ME() SIMPLE_ERROR("Implement function %s:%d %s", __FILE__ , __LINE__ , __FUNCTION__)
-#define IMPLEMENT_MEF(msg) SIMPLE_ERROR("Implement function %s:%d %s %s", __FILE__ , __LINE__ , __FUNCTION__ , msg)
+#define IMPLEMENT_ME() SIMPLE_ERROR("Implement function {}:{} {}", __FILE__ , __LINE__ , __FUNCTION__)
+#define IMPLEMENT_MEF(msg) SIMPLE_ERROR("Implement function {}:{} {} {}", __FILE__ , __LINE__ , __FUNCTION__ , msg)
 
-#define WARN_IMPLEMENT_ME() printf("%s:%d:%s Implement function\n", __FILE__, __LINE__, __FUNCTION__ );
-#define WARN_IMPLEMENT_MEF(msg) printf("%s\n", (BF("Implement function %s:%d %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % (msg).str().c_str()).str().c_str());
+#define WARN_IMPLEMENT_ME() fmt::print("{}:{}:{} Implement function\n", __FILE__, __LINE__, __FUNCTION__);
+#define WARN_IMPLEMENT_MEF(msg) fmt::print("Implement function {}:{} {} {}", __FILE__, __LINE__, __FUNCTION__, msg.str());
 
-#define NOT_SUPPORTED() SIMPLE_ERROR("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)", this->className() , __FUNCTION__ , __FILE__ , __LINE__);
+#define NOT_SUPPORTED() SIMPLE_ERROR("Subclass({}) does not support the function({}) file({}) lineNumber({})", this->className() , __FUNCTION__ , __FILE__ , __LINE__);
 
 
 #define NOT_APPLICABLE() throw_hard_error_not_applicable_method(__FUNCTION__);
 #define N_A_() NOT_APPLICABLE()
-#define INCOMPLETE(bf) SIMPLE_ERROR(("Finish implementing me!!!! function(%s) file(%s) lineNumber(%s): %s") , __FUNCTION__ , __FILE__ , __LINE__ , (bf).str())
-#define FIX_ME() SIMPLE_ERROR(("Fix me!!! function(%s) file(%s) lineNumber(%s)") , __FUNCTION__ , __FILE__ , __LINE__);
-#define DEPRECATED() SIMPLE_ERROR(("Depreciated!!! function(%s) file(%s) lineNumber(%d)") , __FUNCTION__ , __FILE__ , __LINE__);
-#define STUB() printf("%s:%d>%s  stub\n", __FILE__, __LINE__, __FUNCTION__ )
+#define INCOMPLETE(bf) SIMPLE_ERROR("Finish implementing me!!!! function({}) file({}) lineNumber({}): {}", __FUNCTION__ , __FILE__ , __LINE__ , (bf).str())
+#define FIX_ME() SIMPLE_ERROR("Fix me!!! function({}) file({}) lineNumber({})", __FUNCTION__ , __FILE__ , __LINE__);
+#define DEPRECATED() SIMPLE_ERROR("Depreciated!!! function({}) file({}) lineNumber(%d)", __FUNCTION__ , __FILE__ , __LINE__);
+#define STUB() fmt::print("{}:{}>{}  stub\n", __FILE__, __LINE__, __FUNCTION__)
 
-#define MAY_BE_DEPRECATED() printf("%s\n", (BF("May be depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__).str().c_str());
-#define DEPRECATEDP(s) SIMPLE_ERROR(("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") , __FUNCTION__ , __FILE__ , __LINE__ , (s));
+#define MAY_BE_DEPRECATED() fmt::print("May be depreciated!!! function({}) file({}) lineNumber({})", __FUNCTION__, __FILE__, __LINE__);
+#define DEPRECATEDP(s) SIMPLE_ERROR("Depreciated!!! function({}) file({}) lineNumber(%d) %s", __FUNCTION__, __FILE_ , __LINE__, (s));
 
 FORWARD(Cons);
 
@@ -319,7 +318,7 @@ FORWARD(Cons);
   };
 #define HARD_ASSERTF(t, ... ) \
   if (!(t)) { \
-    core::errorFormatted(fmt::sprintf(__VA_ARGS__)); \
+    core::errorFormatted(fmt::format(__VA_ARGS__)); \
     abort(); \
   };
 #else
@@ -435,8 +434,7 @@ extern bool stackmap_log;
       core::lisp_debugLogWrite(__FILE__, __FUNCTION__, __LINE__, 0, ___fmt); \
     }                                                                        \
   }
-#define LOG(...) lisp_LOG(fmt::sprintf(__VA_ARGS__))
-#define FLOG(...) lisp_LOG(fmt::format(__VA_ARGS__))
+#define LOG(...) lisp_LOG(fmt::format(__VA_ARGS__))
 
 #define lisp_SHOUT(___fmt)                                                   \
   {                                                                          \
@@ -444,16 +442,15 @@ extern bool stackmap_log;
       core::lisp_debugLogWrite(__FILE__, __FUNCTION__, __LINE__, 0, ___fmt); \
     }                                                                        \
   }
-#define SHOUT(___fmt) lisp_SHOUT(___fmt)
+#define SHOUT(...) lisp_SHOUT(fmt::format(__VA_ARGS__))
 
 #else //DEBUG_ON
 #define HARD_BREAK_POINT() \
   {}
 #define LOG(...) {}
-#define FLOG(...) {}
 #define lisp_LOG(___fmt) \
   {}
-#define SHOUT(___fmt) \
+#define SHOUT(...) \
   {}
 #define lisp_SHOUT(___fmt) \
   {}
@@ -482,30 +479,26 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #define lisp_ASSERTP( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e));
 #define ASSERTP(x, e) lisp_ASSERTP(x, e)
 #define lisp_ASSERTF( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e).c_str());
-#define ASSERTF(x, ...) lisp_ASSERTF(x, fmt::sprintf(__VA_ARGS__))
+#define ASSERTF(x, ...) lisp_ASSERTF(x, fmt::format(__VA_ARGS__))
 #define ASSERT_eq(x, y)                                                                           \
   if (!(x == y)) {                                                                                \
-    SIMPLE_ERROR(("Assertion [%s==%s] failed values are (%s) and (%s)") , #x , #y , (x) , (y)); \
+    SIMPLE_ERROR("Assertion [{}=={}] failed values are ({}) and ({})", #x , #y , (x) , (y)); \
   }
 #define ASSERT_lessThan(x, y)                                                                    \
   if (!(x < y)) {                                                                                \
-    SIMPLE_ERROR(("Assertion [%s<%s] failed values are (%s) and (%s)") , #x , #y , (x) , (y)); \
+    SIMPLE_ERROR("Assertion [{}<{}] failed values are ({}) and ({})", #x , #y , (x) , (y)); \
   }
 #define ASSERT_lt(x, y) ASSERT_lessThan(x, y)
 #define ASSERT_greaterThan(x, y)                                                                 \
   if (!(x > y)) {                                                                                \
-    SIMPLE_ERROR(("Assertion [%s>%s] failed values are (%s) and (%s)") , #x , #y , (x) , (y)); \
+    SIMPLE_ERROR("Assertion [{}>{}] failed values are ({}) and ({})", #x , #y , (x) , (y)); \
   }
 #define ASSERT_gt(x, y) ASSERT_greaterThan(x, y)
-#define FATAL_ASSERTP(x, e)                                                                             \
-  if (!(x)) {                                                                                           \
-    SIMPLE_ERROR(_lisp, core::LispError_O::create(BF("Assertion [%s] failed - %s") % #x % (e), _lisp)); \
-  };
 
 #if DEBUG_TRAP_NULLS == 1
 #define ASSERTNOTNULLP(x, e)                                                      \
   if (!(x)) {                                                                     \
-    SIMPLE_ERROR(("Assertion failed! (shared_ptr: %s is NULL) %s") , #x , (e)); \
+    SIMPLE_ERROR("Assertion failed! (shared_ptr: {} is NULL) {}", #x , (e)); \
   };
 #else
 #define ASSERTNOTNULLP(x, e)
@@ -536,8 +529,6 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #define ASSERT_greaterThan(x, y) \
   {}
 #define ASSERT_gt(x, y) \
-  {}
-#define FATAL_ASSERTP(x, e) \
   {}
 #define ASSERTNOTNULLP(x, e) \
   {}

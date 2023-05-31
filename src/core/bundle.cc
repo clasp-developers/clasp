@@ -54,7 +54,7 @@ bool safe_is_directory(const std::filesystem::path &path) {
   try {
     return std::filesystem::is_directory(path);
   } catch (...) {
-    SIMPLE_ERROR(("The std::filesystem::is_directory(%s) call threw a C++ exception"), path.string().c_str());
+    SIMPLE_ERROR("The std::filesystem::is_directory({}) call threw a C++ exception", path.string().c_str());
   }
 }
 
@@ -263,7 +263,7 @@ void Bundle::findExecutableDir(const string &argv0, bool verbose) {
       return;
     }
   }
-  THROW_HARD_ERROR("Could not determine absolute path to executable: %s", argv0);
+  THROW_HARD_ERROR("Could not determine absolute path to executable: {}", argv0);
 }
 
 string Bundle::describe() {

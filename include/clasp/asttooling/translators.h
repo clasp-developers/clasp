@@ -92,7 +92,7 @@ struct from_object<const vector<string> &> {
       }
       return;
     }
-    SIMPLE_ERROR_SPRINTF("Add support to convert %s to vector<string>", _rep_(o).c_str());
+    SIMPLE_ERROR("Add support to convert {} to vector<string>", _rep_(o));
   }
 };
 

@@ -410,7 +410,7 @@ CL_DEFUN void mp__process_start(Process_sp process)
   if (process->_Phase == Nascent) {
     _lisp->add_process(process);
     process->startProcess();
-  } else SIMPLE_ERROR(("The process %s has already started.") , core::_rep_(process));
+  } else SIMPLE_ERROR("The process {} has already started.", core::_rep_(process));
 };
 
 CL_DOCSTRING(R"dx(Convenience function that creates a process and then immediately starts it. Arguments are as in MAKE-PROCESS; the ARGUMENTS parameter is always NIL.)dx");
@@ -429,7 +429,7 @@ CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp functio
     process->startProcess();
     return process;
   }
-  SIMPLE_ERROR(("%s is not a function - you must provide a function to run in a separate process") , _rep_(function));
+  SIMPLE_ERROR("{} is not a function - you must provide a function to run in a separate process", _rep_(function));
 };
 
 CL_DOCSTRING(R"dx(Return a list of all processes that have been enabled and have not yet exited, i.e. all active and suspended processes.)dx");
@@ -467,7 +467,7 @@ CL_DEFUN void mp__suspend_loop() {
   this_process->_Phase = Suspended;
   while (this_process->_Phase == Suspended) {
     if (!(this_process->_SuspensionCV._value.wait(this_process->_SuspensionMutex._value)))
-      SIMPLE_ERROR(("BUG: pthread_cond_wait ran into an error"));
+      SIMPLE_ERROR("BUG: pthread_cond_wait ran into an error");
   }
 };
 
@@ -477,7 +477,7 @@ CL_DEFUN void mp__process_suspend(Process_sp process) {
   if (process->_Phase == Active)
     mp__interrupt_process(process,_sym_suspend_loop);
   else
-    SIMPLE_ERROR(("Cannot suspend inactive process %s") , core::_rep_(process));
+    SIMPLE_ERROR("Cannot suspend inactive process {}", core::_rep_(process));
 };
 
 CL_DOCSTRING(R"dx(Restart execution in a suspended process.)dx");
@@ -487,9 +487,9 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
     RAIILock<Mutex> lock(process->_SuspensionMutex._value);
     process->_Phase = Active;
     if (!(process->_SuspensionCV._value.signal()))
-      SIMPLE_ERROR(("BUG: pthread_cond_signal ran into an error"));
+      SIMPLE_ERROR("BUG: pthread_cond_signal ran into an error");
   } else
-    SIMPLE_ERROR(("Cannot resume a process (%s) that has not been suspended") , core::_rep_(process));
+    SIMPLE_ERROR("Cannot resume a process ({}) that has not been suspended", core::_rep_(process));
 };
 
 CL_DOCSTRING(R"dx(Inform the scheduler that the current process doesn't need control for the moment. It may or may not use this information. Returns no values.)dx");
@@ -499,7 +499,7 @@ CL_DEFUN void mp__process_yield() {
   // On error, -1 is returned, and errno is set appropriately.
   int res = sched_yield();
   if (res == -1) {
-    SIMPLE_ERROR(("sched_yield returned the error %d") , res);
+    SIMPLE_ERROR("sched_yield returned the error {}", res);
   }
 //  core::clasp_musleep(0.5,true);
 }

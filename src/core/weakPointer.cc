@@ -42,7 +42,7 @@ CL_DEFUN WeakPointer_sp WeakPointer_O::make(T_sp obj) {
     auto  me = gctools::GC<WeakPointer_O>::allocate( obj);
     return me;
   }
-  SIMPLE_ERROR(("You cannot make a weak pointer to an immediate"));
+  SIMPLE_ERROR("You cannot make a weak pointer to an immediate");
 };
 
 
@@ -51,7 +51,7 @@ CL_DEFMETHOD bool WeakPointer_O::valid() const {
 #if defined(USE_BOEHM)
   return this->_Link!=NULL;
 #else
-  SIMPLE_ERROR(("WeakPointer_O not supported in this GC"));
+  SIMPLE_ERROR("WeakPointer_O not supported in this GC");
 #endif
 }
 
@@ -65,7 +65,7 @@ CL_DEFMETHOD T_sp WeakPointer_O::value() const {
   }
   return nil<core::T_O>();
 #else
-  SIMPLE_ERROR(("WeakPointer_O not supported by this GC"));
+  SIMPLE_ERROR("WeakPointer_O not supported by this GC");
 #endif
 }
 

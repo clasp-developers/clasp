@@ -144,7 +144,7 @@ public:
         this->_v = converter->enumForSymbol<_ENUM_TYPE_>(sym);                                                   \
         return;                                                                                                  \
       }                                                                                                          \
-      SIMPLE_ERROR_SPRINTF("Cannot convert object %s to " #_ENUM_TYPE_, _rep_(object).c_str()); \
+      SIMPLE_ERROR("Cannot convert object {} to " #_ENUM_TYPE_, _rep_(object)); \
     }                                                                                                            \
   };                                                                                                             \
   template <> struct to_object<_ENUM_TYPE_> {                                                                    \

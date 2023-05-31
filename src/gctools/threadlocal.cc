@@ -424,7 +424,7 @@ void ThreadLocalState::popObjectFile() {
     this->_ObjectFiles = CONS_CDR(this->_ObjectFiles);
     return;
   }
-  SIMPLE_ERROR(("There were no more object files"));
+  SIMPLE_ERROR("There were no more object files");
 }
 
 ThreadLocalState::~ThreadLocalState() {

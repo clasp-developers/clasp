@@ -35,7 +35,7 @@ THE SOFTWARE.
 #ifndef OBJECT_H //[
 #define OBJECT_H
 
-#include <fmt/printf.h>
+#include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <clasp/core/newhash.h>
 #include <clasp/core/commonLispPackage.fwd.h>
@@ -565,7 +565,7 @@ namespace core {
       General_O* general = x.unsafe_general();
       return general->eql_(y);
     }
-    SIMPLE_ERROR_SPRINTF("Bad eql comparison");
+    SIMPLE_ERROR("Bad eql comparison");
   };
 
   CL_LAMBDA(x y);
@@ -601,7 +601,7 @@ namespace core {
       General_O* general = x.unsafe_general();
       return general->equal(y);
     }
-    SIMPLE_ERROR_SPRINTF("Bad equal comparison");
+    SIMPLE_ERROR("Bad equal comparison");
   };
 
   extern bool basic_equalp(Number_sp na, Number_sp nb);
@@ -630,7 +630,7 @@ namespace core {
       general->sxhash_(hg);
       return;
     }
-    SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");
+    SIMPLE_ERROR("Handle sxhash_ for object");
   };
   inline void clasp_sxhash(T_sp obj, Hash1Generator &hg) {
     if (obj.fixnump()) {
@@ -649,7 +649,7 @@ namespace core {
       hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
       return;
     }
-    SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");
+    SIMPLE_ERROR("Handle sxhash_ for object");
   };
 };
 

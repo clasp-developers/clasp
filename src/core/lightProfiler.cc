@@ -86,7 +86,7 @@ void LightTimer::stop() {
   clock_t end;
 #endif
   if (!this->_IsOn) {
-    THROW_HARD_ERROR("Timer %s is not on", this->_Description);
+    THROW_HARD_ERROR("Timer {} is not on", this->_Description);
   }
   this->_IsOn = false;
 #ifdef DARWIN_CLOCK
@@ -130,11 +130,11 @@ LightTimer*	LightProfiler::getTimer(uint id)
 {
 LightTimer	*timer;
     if ( id >= this->_Timers.size() ) {
-	SIMPLE_ERROR(("Illegal timer id" ));
+	SIMPLE_ERROR("Illegal timer id");
     }
     timer = this->_Timers[id];
     if ( timer == NULL ) {
-	SIMPLE_ERROR(("Undefined timer" ));
+	SIMPLE_ERROR("Undefined timer");
     }
     return timer;
 }

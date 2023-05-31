@@ -69,7 +69,7 @@ void CodeSimpleFun_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void*
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
     snapshotSaveLoad::decodeEntryPoint(fixup,ptrptr,this->_Code);
   } else {
-    SIMPLE_ERROR(("Illegal image save/load operation"));
+    SIMPLE_ERROR("Illegal image save/load operation");
   }
 #endif
 }
@@ -466,11 +466,11 @@ GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription
 
 LocalSimpleFun_sp makeLocalSimpleFunFromGenerator(LocalSimpleFunGenerator_sp original, void** entry_points) {
   if (!original->_entry_point_indices.consp()){
-    SIMPLE_ERROR(("The LocalSimpleFun %s does not have entry-points") , _rep_(original));
+    SIMPLE_ERROR("The LocalSimpleFun {} does not have entry-points", _rep_(original));
   }
   T_sp firstEntryPoint = CONS_CAR(original->_entry_point_indices);
   if (!firstEntryPoint.fixnump()) {
-    SIMPLE_ERROR(("The FunctionDescriptionGenerator %s does not have entry-points indices") , _rep_(original));
+    SIMPLE_ERROR("The FunctionDescriptionGenerator {} does not have entry-points indices", _rep_(original));
   }
   size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
   ClaspLocalFunction entry_point = (ClaspLocalFunction)(entry_points[entryPointIndex]);
@@ -485,7 +485,7 @@ LocalSimpleFun_sp makeLocalSimpleFunFromGenerator(LocalSimpleFunGenerator_sp ori
 
 GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp original, gctools::GCRootsInModule* roots, void** entry_points ) {
   if (!original->_entry_point_indices.consp()){
-    SIMPLE_ERROR(("The GlobalSimpleFun %s does not have entry-points") , _rep_(original));
+    SIMPLE_ERROR("The GlobalSimpleFun {} does not have entry-points", _rep_(original));
   }
   List_sp epIndices = gc::As<List_sp>(original->_entry_point_indices);
   size_t num = cl__length(epIndices);
@@ -499,7 +499,7 @@ GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp 
   for ( auto entry : epIndices ) {
     T_sp oneEntryPointIndex = CONS_CAR(entry);
     if (!oneEntryPointIndex.fixnump()) {
-      SIMPLE_ERROR(("The FunctionDescriptionGenerator %s does not have entry-points indices") , _rep_(original));
+      SIMPLE_ERROR("The FunctionDescriptionGenerator {} does not have entry-points indices", _rep_(original));
     }
     size_t entryPointIndex = oneEntryPointIndex.unsafe_fixnum();
     ClaspXepAnonymousFunction entry_point = (ClaspXepAnonymousFunction)(entry_points[entryPointIndex]);
@@ -666,18 +666,13 @@ void FunctionDescription_O::setf_docstring(T_sp x) {
 
 };
 
-extern "C" void dumpFunctionDescription(core::FunctionDescription_sp fdesc)
-{
-  core::write_bf_stream(fmt::sprintf("FunctionDescription@%p\n" , (void*)fdesc.raw_()));
-  core::write_bf_stream(fmt::sprintf("sourcePathname = %s\n" , _rep_(fdesc->sourcePathname()) ));
-  core::write_bf_stream(fmt::sprintf("functionName = %s\n" , _rep_(fdesc->functionName())));
-  core::write_bf_stream(fmt::sprintf("lambdaList = %s\n" , _rep_(fdesc->lambdaList())));
-  core::write_bf_stream(fmt::sprintf("docstring = %s\n" , _rep_(fdesc->docstring())));
-  core::write_bf_stream(fmt::sprintf("declares = %s\n" , _rep_(fdesc->declares())));
-  core::write_bf_stream(fmt::sprintf("lineno = %lu\n" , fdesc->lineno));
-  core::write_bf_stream(fmt::sprintf("column = %lu\n" , fdesc->column));
-  core::write_bf_stream(fmt::sprintf("filepos = %lu\n" , fdesc->filepos));
-} ;
+extern "C" void dumpFunctionDescription(core::FunctionDescription_sp fdesc) {
+  core::clasp_write_string(fmt::format("FunctionDescription@{}\nsourcePathname = {}\nfunctionName = {}\nlambdaList = {}\n"
+                                       "docstring = {}\ndeclares = {}\nlineno = {}\ncolumn = {}\nfilepos = {}\n",
+                                       (void *)fdesc.raw_(), _rep_(fdesc->sourcePathname()), _rep_(fdesc->functionName()),
+                                       _rep_(fdesc->lambdaList()), _rep_(fdesc->docstring()), _rep_(fdesc->declares()),
+                                       fdesc->lineno, fdesc->column, fdesc->filepos));
+};
 
 namespace core {
 
@@ -690,7 +685,7 @@ CL_DEFUN void core__dumpFunctionDescription(T_sp func)
   } else if (gc::IsA<FunctionDescription_sp>(func)) {
     dumpFunctionDescription(gc::As<FunctionDescription_sp>(func));
   } else {
-    SIMPLE_ERROR(("You can only dump function-descriptions from functions or function-descriptions"));
+    SIMPLE_ERROR("You can only dump function-descriptions from functions or function-descriptions");
   }
 }
 
@@ -932,12 +927,12 @@ CL_DEFUN T_sp core__closure_ref(Function_sp tclosure, size_t index)
         break;
     case Closure_O::cclaspClosure:
         if ( index >= closure->_Slots.length() ) {
-          SIMPLE_ERROR(("Out of bounds closure reference - there are only %d slots") , closure->_Slots.length() );
+          SIMPLE_ERROR("Out of bounds closure reference - there are only {} slots", closure->_Slots.length() );
         }
         return closure->_Slots[index];
     }
   }
-  SIMPLE_ERROR(("Out of bounds closure reference - there are no slots"));
+  SIMPLE_ERROR("Out of bounds closure reference - there are no slots");
 }
 
 DOCGROUP(clasp);
