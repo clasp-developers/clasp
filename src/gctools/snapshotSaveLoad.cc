@@ -367,9 +367,9 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #endif
 
 #if 0
-#define DBG_SAVECOPY(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#define DBG_SAVECOPY(...) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); }
 #else
-#define DBG_SAVECOPY(_fmt_)
+#define DBG_SAVECOPY(...)
 #endif
 
 #if 0
@@ -1535,17 +1535,38 @@ size_t PageAlignUp(size_t size) {
 }
 
 
+struct copy_progress {
+  uintptr_t _begin;
+  uintptr_t _size;
+  uintptr_t _inc;
+  uintptr_t _next_progress_tic;
+  copy_progress(uintptr_t begin, uintptr_t size) : _begin(begin), _size(size) {
+    this->_inc = this->_size / 100;
+    this->_next_progress_tic = this->_inc;
+  };
+
+  void update(uintptr_t cur) {
+    intptr_t delta = cur - this->_begin;
+    if (delta > this->_next_progress_tic) {
+      this->_next_progress_tic += this->_inc;
+      core::lisp_write(fmt::sprintf("\rCopy memory to snapshot buffer %6.2f%% done        ", (100.0*(float)delta/(float)this->_size)));
+    }
+  }
+};
+
 
 struct copy_objects_t : public walker_callback_t {
   copy_buffer_t* _objects;
   size_t _NumberOfObjects;
   copy_buffer_t* _objectFiles;
-
+  copy_progress _progress;
   copy_objects_t( copy_buffer_t* objects, copy_buffer_t* objectFiles, ISLInfo* info)
     : _objects(objects),
       _objectFiles(objectFiles),
       _NumberOfObjects(0),
-      walker_callback_t(info) {};
+      walker_callback_t(info),
+      _progress((uintptr_t)objects->_BufferStart,(uintptr_t)objects->_Size)
+  {};
   
   void callback(gctools::BaseHeader_s* header) {
     std::string str;
@@ -1583,7 +1604,8 @@ struct copy_objects_t : public walker_callback_t {
         newObjectFile->_ObjectFileSize = objectFile->objectFileSize();
         // We want the _MemoryBuffer zero'd out.
         new(&newObjectFile->_MemoryBuffer) std::unique_ptr<llvm::MemoryBuffer>();
-        DBG_SAVECOPY(BF("   copied general header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
+        DBG_SAVECOPY("   copied general header %p to %p\n" , header , (void*)islh );
+        this->_progress.update((uintptr_t)islh);
         set_forwarding_pointer(header, new_client, this->_info ); // This is a client pointer
         DBG_SL_FWD("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n",
                    (void*)header, (void*)new_client , (void*)get_forwarding_pointer(header,this->_info));
@@ -1600,8 +1622,8 @@ struct copy_objects_t : public walker_callback_t {
         char* literals_addr = this->_objects->write_buffer((char*)code->literalsStart(), code->literalsSize() );
         newObjectFile->_LiteralVectorStart = literals_addr - new_client;
         newObjectFile->_LiteralVectorSizeBytes = code->literalsSize();
-        DBG_SAVECOPY(BF("   copied general header ObjectFile_O object %p to %p - %p\n")
-                     % header % (void*)islh % (void*)this->_buffer );
+        this->_progress.update((uintptr_t)islh);
+        DBG_SAVECOPY("   copied general header ObjectFile_O object %p to %p\n" , header , (void*)islh );
         DBG_SL_FWD(("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n"),
                    (void*)header, (void*)new_client, (void*)get_forwarding_pointer(header,this->_info));
         DBG_OF(
@@ -1620,7 +1642,8 @@ struct copy_objects_t : public walker_callback_t {
         ISLGeneralHeader_s islheader( General, clientEnd-clientStart, (gctools::Header_s*)header );
         char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLGeneralHeader_s)); 
         char* new_client = this->_objects->write_buffer((char*)clientStart, clientEnd-clientStart);
-        DBG_SAVECOPY(BF("   copied general header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
+        this->_progress.update((uintptr_t)islh);
+        DBG_SAVECOPY("   copied general header %p to %p \n" , header , (void*)islh );
         set_forwarding_pointer(header, new_client, this->_info ); // This is a client pointer
         DBG_SL_FWD(("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n"),
                    (void*)header, (void*)new_client, (void*)get_forwarding_pointer(header,this->_info));
@@ -1635,9 +1658,8 @@ struct copy_objects_t : public walker_callback_t {
       char* new_addr = this->_objects->write_buffer((char*)client, consSize);
       core::Cons_O* cons = (core::Cons_O*)client;
       set_forwarding_pointer(header, new_addr, this->_info );
-      DBG_SAVECOPY(BF("   copied cons header %p to %p - %p | CAR: %p CDR: %p\n") %
-                   header % (void*)islh % (void*)this->_buffer
-                   % (void*)cons->_Car.load().raw_() % (void*)cons->_Cdr.load().raw_() );
+      this->_progress.update((uintptr_t)islh);
+      DBG_SAVECOPY("   copied cons header %p to %p  | CAR: %p CDR: %p\n" , header , (void*)islh , (void*)cons->_Car.load().raw_() , (void*)cons->_Cdr.load().raw_() );
       DBG_SL_FWD("setFwdPointer cons header %p new_addr -> %p\n", (void*)header, (void*)new_addr);
     } else if (header->_badge_stamp_wtag_mtag.weakObjectP()) {
 //      printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -1650,7 +1672,8 @@ struct copy_objects_t : public walker_callback_t {
       char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLWeakHeader_s)); 
       char* new_addr = this->_objects->write_buffer((char*)clientStart, clientEnd-clientStart);
       set_forwarding_pointer(header, new_addr, this->_info );
-      DBG_SAVECOPY(BF("   copied weak header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
+      this->_progress.update((uintptr_t)islh);
+      DBG_SAVECOPY("   copied weak header %p to %p\n" , header , (void*)islh );
       DBG_SL_FWD("setFwdPointer weak header %p new_addr -> %p\n", (void*)header, (void*)new_addr);
     }
     this->_NumberOfObjects++;
@@ -2352,16 +2375,20 @@ void* snapshot_save_impl(void* data) {
   //     (b) Set a forwarding pointer in the original object
   //
   DBG_SL_STEP(5,"Copy objects to snapshot._Memory   snapshot._Memory->_BufferStart = %p\n", (void*)snapshot._Memory->_BufferStart );
+  DBG_SL_STEP(5,".05        snapshot._Memory->_BufferStart+snapshot._Memory->_Size = %p\n", (void*)(snapshot._Memory->_BufferStart+snapshot._Memory->_Size) );
   copy_objects_t copy_objects( snapshot._Memory, snapshot._ObjectFiles, &islInfo );
   walk_gathered_objects( copy_objects, allObjects );
 
+  DBG_SL_STEP(5,".1  Done walk_gathered_objects\n");
   snapshot._HeaderBuffer = new copy_buffer_t(getpagesize()); // enough room for header page aligned
   snapshot._FileHeader = (ISLFileHeader*)snapshot._HeaderBuffer->_BufferStart;
   new (snapshot._FileHeader) ISLFileHeader(snapshot._Memory->_Size,copy_objects._NumberOfObjects,getpagesize());
+  DBG_SL_STEP(5,".2  Done new ISLFileHeader\n");
 
   ISLEndHeader_s end_header( End );
+  DBG_SL_STEP(5,".3  About to write_buffer\n");
   char* endend = snapshot._Memory->write_buffer( (char*)&end_header ,  sizeof(end_header));
-  DBG_SAVECOPY(BF("   copying END into buffer @ %p\n") % (void*)endend );
+  DBG_SAVECOPY("   copying END into buffer @ %p\n" , (void*)endend );
 
   //
   // 4. Copy roots into intermediate-buffer
