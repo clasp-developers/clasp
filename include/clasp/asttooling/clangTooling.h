@@ -127,7 +127,7 @@ public:
   }
 
   clang::FrontendAction *default_create() {
-    SIMPLE_ERROR_SPRINTF("Subclass must implement create");
+    SIMPLE_ERROR("Subclass must implement create");
   };
 };
 
@@ -158,7 +158,7 @@ public:
   }
 
   void default_run(const clang::ast_matchers::MatchFinderMatchResult &Result) {
-    SIMPLE_ERROR_SPRINTF("Subclass must implement");
+    SIMPLE_ERROR("Subclass must implement");
   };
 
   virtual void onStartOfTranslationUnit() {
@@ -229,7 +229,7 @@ namespace translate {
         printf("Invoking o.px_ref()->describe(); /* A virtual function */\n");
         o.px_ref()->describe();
 #endif
-        SIMPLE_ERROR_SPRINTF("Could not convert %s of RTTI type %s to %s",_rep_(o).c_str(),typeid(o).name(), typeid(asttooling::DerivableMatchCallback*).name() );
+        SIMPLE_ERROR("Could not convert {} of RTTI type {} to {}",_rep_(o), typeid(o).name(), typeid(asttooling::DerivableMatchCallback*).name());
     }
 };
 

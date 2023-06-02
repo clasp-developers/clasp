@@ -39,7 +39,7 @@ if (arg.fixnump()) {
 }
 DTILOG("DTREE_OP_TAG_TEST: unknown\n");
 // FIXME: We should be able to specialize on class valist and stuff.
-SIMPLE_ERROR(("unknown tag for arg %s"), arg);
+SIMPLE_ERROR("unknown tag for arg {}", arg);
 goto DISPATCH_MISS;
 case MAYBE_LONG_ADD + DTREE_OP_STAMP_READ: {
   General_O *client_ptr = gctools::untag_general<General_O *>((General_O *)arg.raw_());

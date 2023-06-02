@@ -754,7 +754,7 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
       f = frexpf(f, &e);
       x = clasp_make_single_float(f);
     } else {
-      SIMPLE_ERROR(("Can't decode NaN or infinity %s") , _rep_(x));
+      SIMPLE_ERROR("Can't decode NaN or infinity {}", _rep_(x));
     }
     break;
   }
@@ -770,7 +770,7 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
       d = frexp(d, &e);
       x = clasp_make_double_float(d);
     } else {
-      SIMPLE_ERROR(("Can't decode NaN or infinity %s") , _rep_(x));
+      SIMPLE_ERROR("Can't decode NaN or infinity {}", _rep_(x));
     }
     break;
   }
@@ -787,7 +787,7 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
       d = frexpl(d, &e);
       x = clasp_make_long_float(d);
     } else {
-      SIMPLE_ERROR(("Can't decode NaN or infinity %s") , _rep_(x));
+      SIMPLE_ERROR("Can't decode NaN or infinity {}", _rep_(x));
     }
     break;
   }
@@ -845,7 +845,7 @@ int clasp_signbit(Number_sp x) {
   default:
     QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_float);
   }
-  SIMPLE_ERROR(("Illegal argument for clasp_signbit: %s") , _rep_(x));
+  SIMPLE_ERROR("Illegal argument for clasp_signbit: {}", _rep_(x));
 }
 
 CL_LAMBDA(x &optional (y nil yp));
@@ -996,7 +996,7 @@ CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
         e -= LDBL_MANT_DIG;
       }
     } else {
-      SIMPLE_ERROR(("Can't decode NaN or infinity %s") , _rep_(x));
+      SIMPLE_ERROR("Can't decode NaN or infinity {}", _rep_(x));
     }
     break;
   }
@@ -1017,7 +1017,7 @@ CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
         e -= DBL_MANT_DIG;
       }
     } else {
-      SIMPLE_ERROR(("Can't decode NaN or infinity %s") , _rep_(x));
+      SIMPLE_ERROR("Can't decode NaN or infinity {}", _rep_(x));
     }
     break;
   }
@@ -1037,7 +1037,7 @@ CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
         e -= FLT_MANT_DIG;
       }
     } else {
-      SIMPLE_ERROR(("Can't decode NaN or infinity %s") , _rep_(x));
+      SIMPLE_ERROR("Can't decode NaN or infinity {}", _rep_(x));
     }
     break;
   }

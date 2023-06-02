@@ -369,7 +369,7 @@ CL_DEFMETHOD DINodeArray_sp DIBuilder_O::getOrCreateArray(core::T_sp telements) 
         llvm::MDNode *mdnode = di->operator llvm::MDNode *();
         vector_values.push_back(mdnode);
       } else {
-        SIMPLE_ERROR(("Handle conversion of %s to llvm::Value*") , _rep_(oCar(cur)));
+        SIMPLE_ERROR("Handle conversion of {} to llvm::Value*", _rep_(oCar(cur)));
       }
     }
   }
@@ -395,7 +395,7 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
       llvm::MDNode *mdnode = di->operator llvm::MDNode *();
       vector_values.push_back(mdnode);
     } else {
-      SIMPLE_ERROR(("Handle conversion of %s to llvm::Value*") , _rep_(oCar(cur)));
+      SIMPLE_ERROR("Handle conversion of {} to llvm::Value*", _rep_(oCar(cur)));
     }
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
@@ -418,17 +418,17 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
   lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
 
   if (verbose) {
-    core::write_bf_stream(fmt::sprintf("Entered %s %s %s\n" , __FILE__ , __LINE__ , __FUNCTION__ ));
-    core::write_bf_stream(fmt::sprintf("  DIContext* %p  SectionedAddress: %p %p\n" , (void*)dicontext , (void*)addr.SectionIndex , (void*)addr.Address ));
+    core::clasp_write_string(fmt::format("Entered {} {} {}\n" , __FILE__ , __LINE__ , __FUNCTION__ ));
+    core::clasp_write_string(fmt::format("  DIContext* {}  SectionedAddress: {} {}\n" , (void*)dicontext , (void*)addr.SectionIndex , (void*)addr.Address ));
   }
   llvm::DILineInfo info = dicontext->getLineInfoForAddress(addr, lispec);
   if (info.FileName == info.BadString) {
   if (verbose) {
-    core::write_bf_stream(fmt::sprintf("info.Filename is info.BadString:  %s\n" , info.FileName ));
-    core::write_bf_stream(fmt::sprintf("Source %s\n" , _rep_(source) ));
-    core::write_bf_stream(fmt::sprintf("info.Line %lu\n" , info.Line ));
-    core::write_bf_stream(fmt::sprintf("info.Column %lu\n" , info.Column ));
-    core::write_bf_stream(fmt::sprintf("info.StartLine %lu\n" , info.StartLine ));
+    core::clasp_write_string(fmt::format("info.Filename is info.BadString:  {}\n" , info.FileName ));
+    core::clasp_write_string(fmt::format("Source {}\n" , _rep_(source) ));
+    core::clasp_write_string(fmt::format("info.Line {}\n" , info.Line ));
+    core::clasp_write_string(fmt::format("info.Column {}\n" , info.Column ));
+    core::clasp_write_string(fmt::format("info.StartLine {}\n" , info.StartLine ));
   }
     return nil<core::T_O>();
   }
@@ -436,11 +436,11 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
     source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
   else source = nil<core::T_O>();
   if (verbose) {
-    core::write_bf_stream(fmt::sprintf("info.Filename %s\n" , info.FileName ));
-    core::write_bf_stream(fmt::sprintf("Source %s\n" , _rep_(source) ));
-    core::write_bf_stream(fmt::sprintf("info.Line %lu\n" , info.Line ));
-    core::write_bf_stream(fmt::sprintf("info.Column %lu\n" , info.Column ));
-    core::write_bf_stream(fmt::sprintf("info.StartLine %lu\n" , info.StartLine ));
+    core::clasp_write_string(fmt::format("info.Filename {}\n" , info.FileName ));
+    core::clasp_write_string(fmt::format("Source {}\n" , _rep_(source) ));
+    core::clasp_write_string(fmt::format("info.Line {}\n" , info.Line ));
+    core::clasp_write_string(fmt::format("info.Column {}\n" , info.Column ));
+    core::clasp_write_string(fmt::format("info.StartLine {}\n" , info.StartLine ));
   }
   
   return Values(core::SimpleBaseString_O::make((info.FileName.substr(0, 2) == "./") ? info.FileName.substr(2) : info.FileName),
@@ -545,7 +545,7 @@ CL_DEFUN DWARFContext_sp DWARFContext_O::createDWARFContext(ObjectFile_sp ofi) {
     std::unique_ptr<llvm::DWARFContext> uptr = llvm::DWARFContext::create(*obj.release());
     return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
   }
-  SIMPLE_ERROR(("Could not get ObjectFile:\n%s")
+  SIMPLE_ERROR("Could not get ObjectFile:\n{}"
                , llvm::toString(std::move(errOrObj.takeError())));
 }
 
@@ -570,16 +570,16 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
     ObjectFile_sp object_file = gc::As<ObjectFile_sp>(mvn.second(objectinfo.number_of_values()));
     DWARFContext_sp context = DWARFContext_O::createDWARFContext(object_file);
     if (verbose){
-      core::write_bf_stream(fmt::sprintf("Address: %p\n" , address ));
-      core::write_bf_stream(fmt::sprintf("ObjectFile: %s SectionedAddress: %s DWARFContext: %s\n"  , _rep_(object_file)  , _rep_(sectioned_address)  , _rep_(context)));
-      core::write_bf_stream(fmt::sprintf("Object_File object: %s\n"  , _rep_(object_file)));
-      core::write_bf_stream(fmt::sprintf("Object_File _text start: %p   end: %p\n"  , object_file->_TextSectionStart  , object_file->_TextSectionEnd ));
-      core::write_bf_stream(fmt::sprintf("address (%p) - _TextSectionStart(%p) -> %ld\n"  , (void*)address  , (void*)object_file->_TextSectionStart  , (intptr_t)((uintptr_t)address - (uintptr_t)object_file->_TextSectionStart )));
+      core::clasp_write_string(fmt::format("Address: {}\n" , address ));
+      core::clasp_write_string(fmt::format("ObjectFile: {} SectionedAddress: {} DWARFContext: {}\n"  , _rep_(object_file)  , _rep_(sectioned_address)  , _rep_(context)));
+      core::clasp_write_string(fmt::format("Object_File object: {}\n"  , _rep_(object_file)));
+      core::clasp_write_string(fmt::format("Object_File _text start: {}   end: {}\n"  , object_file->_TextSectionStart  , object_file->_TextSectionEnd ));
+      core::clasp_write_string(fmt::format("address ({}) - _TextSectionStart({}) -> {}\n"  , (void*)address  , (void*)object_file->_TextSectionStart  , (intptr_t)((uintptr_t)address - (uintptr_t)object_file->_TextSectionStart )));
     }
     return getLineInfoForAddress_(context,sectioned_address, verbose);
   }
   if (verbose){
-    core::write_bf_stream(fmt::sprintf("Could not find ObjectFile\n"));
+    core::clasp_write_string("Could not find ObjectFile\n");
   }
   return Values(nil<core::T_O>());
 }

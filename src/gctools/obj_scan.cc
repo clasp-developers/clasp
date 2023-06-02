@@ -50,7 +50,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
       const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(GENERAL_PTR_TO_HEADER_PTR(client));
       const gctools::Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
       stamp_index = header._badge_stamp_wtag_mtag.stamp_();
-      LOG("obj_scan client=%p stamp=%lu\n" , (void*)client , stamp_index );
+      LOG("obj_scan client={} stamp={}\n" , (void*)client , stamp_index );
       if (header._badge_stamp_wtag_mtag.stampP()) {
 #ifdef DEBUG_VALIDATE_GUARD
         header->validate();
@@ -241,7 +241,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
       }
     }
   } SCAN_END(ss);
-  LOG("obj_scan ENDING client=%p\n", (void*)client );
+  LOG("obj_scan ENDING client={}\n", (void*)client );
   return RESULT_OK;
 }
 #endif // OBJECT_SCAN
@@ -261,7 +261,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
     size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
 #ifdef DEBUG_ON
     if (dbg) {
-      LOG("stamp_wtag = %lu stamp_index=%lu\n" , (size_t)stamp_wtag , stamp_index);
+      LOG("stamp_wtag = {} stamp_index={}\n" , (size_t)stamp_wtag , stamp_index);
     }
 #endif
     if ( stamp_wtag == gctools::STAMPWTAG_core__DerivableCxxObject_O ) {
@@ -398,7 +398,7 @@ static void OBJECT_FWD(ADDR_T old_client, ADDR_T new_client) {
   ADDR_T limit = OBJECT_SKIP_IN_OBJECT_FWD(old_client,false,obj_size);
   size_t size = (char *)limit - (char *)old_client;
   if (size < gctools::global_sizeof_fwd) {
-    THROW_HARD_ERROR("obj_fwd needs size >= %u", gctools::global_sizeof_fwd);
+    THROW_HARD_ERROR("obj_fwd needs size >= {}", gctools::global_sizeof_fwd);
   }
   gctools::Header_s *header = (gctools::Header_s*)(GENERAL_PTR_TO_HEADER_PTR(old_client));
   header->_badge_stamp_wtag_mtag.setFwdSize(size);

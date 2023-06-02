@@ -71,7 +71,7 @@ core::Fixnum not_fixnum_error( core::T_sp o )
     else
       nbclass = nb->_instanceClass()->_classNameAsString();
     
-    SIMPLE_ERROR(("Numbers of class %s and %s are not commensurable, or operation is unimplemented")
+    SIMPLE_ERROR("Numbers of class {} and {} are not commensurable, or operation is unimplemented"
                  , naclass , nbclass);
 }
 
@@ -1094,7 +1094,7 @@ CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl___LT_(Vaslist_sp args) {
   if (args->nargs_zero()) {
-    SIMPLE_ERROR(("< needs at least one argument"));
+    SIMPLE_ERROR("< needs at least one argument");
   }
   return numbers_monotonic_vaslist(-1, 1, args);
 };
@@ -1104,7 +1104,7 @@ CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl___GT_(Vaslist_sp args) {
   if (args->nargs_zero()) {
-    SIMPLE_ERROR(("> needs at least one argument"));
+    SIMPLE_ERROR("> needs at least one argument");
   }
   return numbers_monotonic_vaslist(1, 1, args);
 };
@@ -1114,7 +1114,7 @@ CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl___LE_(Vaslist_sp args) {
   if (args->nargs_zero()) {
-    SIMPLE_ERROR(("> needs at least one argument"));
+    SIMPLE_ERROR("> needs at least one argument");
   }
   return numbers_monotonic_vaslist(-1, 0, args);
 };
@@ -1124,7 +1124,7 @@ CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl___GE_(Vaslist_sp args) {
   if (args->nargs_zero()) {
-    SIMPLE_ERROR((">= needs at least one argument"));
+    SIMPLE_ERROR(">= needs at least one argument");
   }
   return numbers_monotonic_vaslist(1, 0, args);
 };

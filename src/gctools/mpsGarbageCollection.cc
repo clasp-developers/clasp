@@ -316,7 +316,7 @@ void mps_register_roots(void* roots_begin, size_t num_roots) {
                                     gctools::ptag_mask,  // #b111
                                     0 ); // DLM says this will be ignored
   if ( res != MPS_RES_OK ) {
-    SIMPLE_ERROR(("Could not mps_root_create_area_tagged - error: %d") , res );
+    SIMPLE_ERROR("Could not mps_root_create_area_tagged - error: {}", res );
   }
   // Save the root list in a linked list
   root_list* rl = new root_list(mps_root, global_root_list);
@@ -389,7 +389,7 @@ void searchMemoryForAddress(mps_addr_t addr) {
 #define GC_RESULT_ERROR(res, msg)                                     \
   {                                                                   \
     string error = gcResultToString(res);                             \
-    THROW_HARD_ERROR("GC_RESULT error: %s   %s\n", error , msg); \
+    THROW_HARD_ERROR("GC_RESULT error: {}   {}\n", error , msg); \
   }
 
 #define ADDR_T mps_addr_t
@@ -589,7 +589,7 @@ void mpsAllocateStack(gctools::GCStack *stack) {
 
 void mpsDeallocateStack(gctools::GCStack *stack) {
   if (stack->_TotalSize != 0) {
-    THROW_HARD_ERROR("mpsDeallocateStack called on a stack that is not completely empty - it contains %u bytes", stack->_TotalSize);
+    THROW_HARD_ERROR("mpsDeallocateStack called on a stack that is not completely empty - it contains {} bytes", stack->_TotalSize);
   }
   stack->_IsActive = false;
   mps_arena_park(global_arena);
@@ -1323,7 +1323,7 @@ void ThreadLocalAllocationPoints::destroyAllocationPoints() {
 
 size_t ReachableMPSObject::print(const std::string &shortName,const vector<std::string> stampNames) {
   if (this->instances > 0) {
-    core::write_bf_stream(fmt::sprintf("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n"
+    core::clasp_write_string(fmt::format("{}: total_size: {}0d count: {}d avg.sz: {}d kind: {}/{}\n"
                                        , shortName , this->totalMemory , this->instances , (this->totalMemory/this->instances)
                                        , stampNames[this->stamp] , this->stamp)
                           , cl::_sym_STARstandard_outputSTAR->symbolValue());

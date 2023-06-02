@@ -171,7 +171,7 @@ llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> ObjectFile_O::getObjec
 CL_DEFMETHOD
 void* Code_O::absoluteAddress(SectionedAddress_sp sa) {
   if (sa->_value.SectionIndex != this->_TextSectionId) {
-    SIMPLE_ERROR(("The sectioned-address section-index %lu does not match the code section-index %lu") , sa->_value.SectionIndex , this->_TextSectionId);
+    SIMPLE_ERROR("The sectioned-address section-index {} does not match the code section-index {}", sa->_value.SectionIndex , this->_TextSectionId);
   }
   return (void*)((char*)this->_TextSectionStart + sa->_value.Address);
 }
@@ -308,7 +308,7 @@ Code_sp Code_O::make( BasicLayout& BL, const std::string& objectFileName ) {
 
 void Code_O::describe() const
 {
-  core::write_bf_stream(fmt::sprintf("Code start: %p  stop: %p  size: %lu\n" , (void*)this , (void*)&this->_DataCode[this->_DataCode.size()] , (uintptr_t)((char*)&this->_DataCode[this->_DataCode.size()]-(char*)this)));
+  core::clasp_write_string(fmt::format("Code start: {}  stop: {}  size: {}\n" , (void*)this , (void*)&this->_DataCode[this->_DataCode.size()] , (uintptr_t)((char*)&this->_DataCode[this->_DataCode.size()]-(char*)this)));
 };
 #endif
 
@@ -462,7 +462,7 @@ core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   
   //
   // 4. We have hit an unidentifiable entry_point - what is it
-  SIMPLE_ERROR(("We have hit an unidentifiable entry_point at %p - figure out what it is") , (void*)entry_point);
+  SIMPLE_ERROR("We have hit an unidentifiable entry_point at {} - figure out what it is", (void*)entry_point);
 }
 
 };
@@ -536,8 +536,8 @@ CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_poi
   SectionedAddress_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
       // now the object file
   if (verbose) {
-    core::write_bf_stream(fmt::sprintf("faso-file: %s  object-file-position: %lu  objectID: %lu\n" , _rep_(ofi->_FasoName) , ofi->_FasoIndex , ofi->_ObjectId));
-    core::write_bf_stream(fmt::sprintf("SectionID: %lu    memory offset: %lu\n" , ofi->_FasoIndex , offset ));
+    core::clasp_write_string(fmt::format("faso-file: {}  object-file-position: {}  objectID: {}\n" , _rep_(ofi->_FasoName) , ofi->_FasoIndex , ofi->_ObjectId));
+    core::clasp_write_string(fmt::format("SectionID: {}    memory offset: {}\n" , ofi->_FasoIndex , offset ));
   }
   return sectioned_address;
 }
@@ -555,7 +555,7 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
   size_t count;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, (char*)instruction_pointer, cur.raw_()));
   if ((cur.nilp()) && verbose){
-    core::write_bf_stream(fmt::sprintf("No object files registered - cannot find object file for address %p\n" , (void*)instruction_pointer));
+    core::clasp_write_string(fmt::format("No object files registered - cannot find object file for address {}\n" , (void*)instruction_pointer));
   }
   while (cur.consp()) {
     core::T_sp car = CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur));
@@ -588,7 +588,7 @@ CL_LISPIFY_NAME(release_object_files);
 DOCGROUP(clasp);
 CL_DEFUN void release_object_files() {
   _lisp->_Roots._AllObjectFiles.store(nil<core::T_O>());
-  core::write_bf_stream(fmt::sprintf("ObjectFiles have been released\n"));
+  core::clasp_write_string("ObjectFiles have been released\n");
 }
 
 CL_LISPIFY_NAME(number_of_object_files);
@@ -674,7 +674,7 @@ DOCGROUP(clasp);
 CL_DEFUN void ext__generate_perf_map() {
   stringstream ss;
   ss << "/tmp/perf-" << getpid() << ".map";
-  core::write_bf_stream(fmt::sprintf("Writing to %s\n" , ss.str()));
+  core::clasp_write_string(fmt::format("Writing to {}\n" , ss.str()));
   FILE* fout = fopen(ss.str().c_str(),"w");
   jit_code_entry* jce = __jit_debug_descriptor.first_entry;
   ql::list ll;
@@ -709,10 +709,10 @@ CL_DEFUN void describe_code() {
   size_t goodStackmaps = 0;
   while (cur.consp()) {
     ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(cur));
-    core::write_bf_stream(fmt::sprintf("ObjectFile start: %p  size: %lu\n" , (void*)ofi->_MemoryBuffer->getBufferStart() , ofi->_MemoryBuffer->getBufferSize()));
+    core::clasp_write_string(fmt::format("ObjectFile start: {}  size: {}\n" , (void*)ofi->_MemoryBuffer->getBufferStart() , ofi->_MemoryBuffer->getBufferSize()));
     uintptr_t codeStart = (uintptr_t)&ofi->_DataCode[0];
     uintptr_t codeEnd = (uintptr_t)&ofi->_DataCode[ofi->_DataCode.size()];
-    core::write_bf_stream(fmt::sprintf("   corresponding Code_O object: %p  code range: %p - %p\n" , (void*)ofi.raw_() , (void*)codeStart , (void*)codeEnd ));
+    core::clasp_write_string(fmt::format("   corresponding Code_O object: {}  code range: {} - {}\n" , (void*)ofi.raw_() , (void*)codeStart , (void*)codeEnd ));
     uintptr_t stackmapStart = (uintptr_t)ofi->_StackmapStart;
     uintptr_t stackmapEnd = (uintptr_t)ofi->_StackmapStart+ofi->_StackmapSize;
     if (stackmapStart<=stackmapEnd) {
@@ -721,20 +721,20 @@ CL_DEFUN void describe_code() {
         if (header->_version == 3 && header->_reserved0 == 0 && header->_reserved1 == 0 ) {
           goodStackmaps++;
         }
-        core::write_bf_stream(fmt::sprintf("      The stackmap %p %p is within the code region\n" , (void*)stackmapStart , (void*)stackmapEnd ));
+        core::clasp_write_string(fmt::format("      The stackmap {} {} is within the code region\n" , (void*)stackmapStart , (void*)stackmapEnd ));
       } else {
-        core::write_bf_stream(fmt::sprintf(" ERROR     The stackmap %p %p is NOT within the code region\n" , (void*)stackmapStart , (void*)stackmapEnd ));
+        core::clasp_write_string(fmt::format(" ERROR     The stackmap {} {} is NOT within the code region\n" , (void*)stackmapStart , (void*)stackmapEnd ));
       }
     } else {
-      core::write_bf_stream(fmt::sprintf(" ERROR     The stackmap %p %p is not a real memory region\n" , (void*)stackmapStart , (void*)stackmapEnd ));
+      core::clasp_write_string(fmt::format(" ERROR     The stackmap {} {} is not a real memory region\n" , (void*)stackmapStart , (void*)stackmapEnd ));
     }      
     sz += ofi->_MemoryBuffer->getBufferSize();
     count++;
     cur = CONS_CDR(cur);
   }
-core::write_bf_stream(fmt::sprintf("Total number of object files: %lu\n" , count));
-core::write_bf_stream(fmt::sprintf("  Total size of object files: %lu\n" , sz));
-core::write_bf_stream(fmt::sprintf("             Valid stackmaps: %lu\n" , goodStackmaps ));
+core::clasp_write_string(fmt::format("Total number of object files: {}\n" , count));
+core::clasp_write_string(fmt::format("  Total size of object files: {}\n" , sz));
+core::clasp_write_string(fmt::format("             Valid stackmaps: {}\n" , goodStackmaps ));
 }
 
 CL_LAMBDA(&optional (size 8388608));
@@ -870,7 +870,7 @@ bool verifyIRModuleObjectFileName(const std::string& name) {
   if (name.size()<std::string("ClaspModule-jitted-objectbuffer").size()) return false;
   if (name.substr(0,11) == "ClaspModule") {
     if (name.find("jitted-objectbuffer") == std::string::npos) {
-      SIMPLE_ERROR("The IRModule name %s must have the form ClaspModule#-jitted-objectbuffer...\n"
+      SIMPLE_ERROR("The IRModule name {} must have the form ClaspModule#-jitted-objectbuffer...\n"
                    "This is assembled in llvm CompileUtils.cpp SimpleCompiler::operator() where it appends -jitted-objectbuffer to the Module Identifier - if that changes then this test will fail and we need to update createIRModuleObjectFileName to mimic the new name construction" , name );
     }
     return true;
@@ -905,7 +905,7 @@ ObjectFile_sp lookupObjectFile(const std::string& name ) {
     cur = CONS_CDR(cur);
   }
   printf("%s:%d:%s Could not find object file %s - %lu available-object-file names: %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), num, ss.str().c_str() );
-  SIMPLE_ERROR("Could not find object file %s - %lu available object file names: %s" , name , num , ss.str() );
+  SIMPLE_ERROR("Could not find object file {} - {} available object file names: {}" , name , num , ss.str() );
 };
 
 
@@ -941,7 +941,7 @@ uintptr_t codeStart(core::T_sp codeOrLibrary) {
     ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(codeOrLibrary);
     return of->codeStart();
   }
-  SIMPLE_ERROR("%s must be a Library or ObjectFile" , _rep_(codeOrLibrary) );
+  SIMPLE_ERROR("{} must be a Library or ObjectFile" , _rep_(codeOrLibrary) );
 }
 
 CL_DEFUN core::T_sp llvm_sys__executable_and_libraries() {

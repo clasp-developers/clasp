@@ -109,7 +109,7 @@ void WeakKeyHashTable::setupThreadSafeHashTable() {
 }
 
 uint WeakKeyHashTable::sxhashKey(const value_type &key) {
-  GCWEAK_LOG(fmt::sprintf("Calling lisp_hash for key: %p" , (void *)lisp_badge(key)));
+  GCWEAK_LOG(fmt::format("Calling lisp_hash for key: {}" , (void *)lisp_badge(key)));
   return core::lisp_hash(static_cast<uintptr_t>(gctools::lisp_badge(key)));
 }
 
@@ -182,10 +182,10 @@ int WeakKeyHashTable::rehash_not_safe(const value_type &key, size_t &key_bucket)
     double size = core::clasp_to_double(this->_RehashSize);
     newLength = this->_Keys->length()*size;
   } else {
-    SIMPLE_ERROR(("Illegal rehash size %s") , _rep_(this->_RehashSize));
+    SIMPLE_ERROR("Illegal rehash size {}", _rep_(this->_RehashSize));
   }
   int result;
-  GCWEAK_LOG(fmt::sprintf("entered rehash newLength = %d" , newLength ));
+  GCWEAK_LOG(fmt::format("entered rehash newLength = {}" , newLength ));
   size_t i, length;
 		// buckets_t new_keys, new_values;
   result = 0;
@@ -241,7 +241,7 @@ int WeakKeyHashTable::rehash( const value_type &key, size_t &key_bucket) {
 /*! trySet returns 0 only if there is no room in the hash-table */
 int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
   HT_WRITE_LOCK(this);
-  GCWEAK_LOG(fmt::sprintf("Entered trySet with key %p" , tkey.raw_()));
+  GCWEAK_LOG(fmt::format("Entered trySet with key {}" , tkey.raw_()));
   size_t b;
   if (tkey == value) {
     value = gctools::make_tagged_same_as_key<core::T_O>();
@@ -263,7 +263,7 @@ int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
 #endif
   size_t result = WeakKeyHashTable::find_no_lock(this->_Keys, key, b);
   if ((!result || (*this->_Keys)[b] != key)) {
-    GCWEAK_LOG(fmt::sprintf("then case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p" , result , b , (*this->_Keys)[b].raw_()));
+    GCWEAK_LOG(fmt::format("then case - Returned from find with result = {}     (*this->_Keys)[b={}] = {}" , result , b , (*this->_Keys)[b].raw_()));
 #ifdef DEBUG_TRYSET
     if (alreadyThere) {
       report << "Could not find the key @" << key.raw_() << std::endl;
@@ -278,18 +278,18 @@ int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
 #endif
 
   } else {
-    GCWEAK_LOG(fmt::sprintf("else case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p" , result , b , (*this->_Keys)[b].raw_()));
-    GCWEAK_LOG(fmt::sprintf("Calling mps_ld_add for key: %p" , (void *)key.raw_()));
+    GCWEAK_LOG(fmt::format("else case - Returned from find with result = {}     (*this->_Keys)[b={}] = {}" , result , b , (*this->_Keys)[b].raw_()));
+    GCWEAK_LOG(fmt::format("Calling mps_ld_add for key: {}" , (void *)key.raw_()));
   }
   if ((*this->_Keys)[b].unboundp()) {
-    GCWEAK_LOG(fmt::sprintf("Writing key over unbound entry"));
+    GCWEAK_LOG(fmt::format("Writing key over unbound entry"));
     this->_Keys->set(b, key);
     (*this->_Keys).setUsed((*this->_Keys).used() + 1);
 #ifdef DEBUG_GCWEAK
     printf("%s:%d key was unboundp at %zu  used = %d\n", __FILE__, __LINE__, b, this->_Keys->used());
 #endif
   } else if ((*this->_Keys)[b].deletedp()) {
-    GCWEAK_LOG(fmt::sprintf("Writing key over deleted entry"));
+    GCWEAK_LOG(fmt::format("Writing key over deleted entry"));
     this->_Keys->set(b, key);
     GCTOOLS_ASSERT((*this->_Keys).deleted() > 0);
     (*this->_Keys).setDeleted((*this->_Keys).deleted() - 1);
@@ -297,7 +297,7 @@ int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     printf("%s:%d key was deletedp at %zu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted());
 #endif // DEBUG_GCWEAK
   }
-  GCWEAK_LOG(fmt::sprintf("Setting value at b = %d" , b));
+  GCWEAK_LOG(fmt::format("Setting value at b = {}" , b));
   (*this->_Values).set(b, value_type(value));
 #ifdef DEBUG_TRYSET
   // Count the number of times the key is in the table
@@ -318,7 +318,7 @@ int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     printf("%s\n", this->dump("Final trySet table").c_str());
   }
 #endif
-  GCWEAK_LOG(fmt::sprintf("Leaving trySet"));
+  GCWEAK_LOG(fmt::format("Leaving trySet"));
   return 1;
 }
 
@@ -356,9 +356,9 @@ core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
       size_t result = gctools::WeakKeyHashTable::find_no_lock(this->_Keys,key ,pos);
       if (result) { // WeakKeyHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
         value_type& k = (*this->_Keys)[pos];
-        GCWEAK_LOG(fmt::sprintf("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d" , pos , k.raw_() , k.unboundp() , k.deletedp() , (bool)k ));
+        GCWEAK_LOG(fmt::format("gethash find successful pos = {}  k= {} k.unboundp()={} k.base_ref().deletedp()={} k.NULLp()={}" , pos , k.raw_() , k.unboundp() , k.deletedp() , (bool)k ));
         if ( k.raw_() && !k.unboundp() && !k.deletedp() ) {
-          GCWEAK_LOG(fmt::sprintf("Returning success!"));
+          GCWEAK_LOG(fmt::format("Returning success!"));
           core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);
           if ( value.same_as_keyP() ) {
             value = smart_ptr<core::T_O>(k);
@@ -366,7 +366,7 @@ core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
           result_mv = Values(value,core::lisp_true());
           return;
         }
-        GCWEAK_LOG(fmt::sprintf("Falling through"));
+        GCWEAK_LOG(fmt::format("Falling through"));
       }
       result_mv = Values(defaultValue,nil<core::T_O>());
       return;
@@ -515,7 +515,7 @@ void StrongKeyHashTable::initialize() {
 
 uint StrongKeyHashTable::sxhashKey(const value_type &key) {
   uintptr_t hash = lisp_badge(key);
-  GCWEAK_LOG(fmt::sprintf("Calling lisp_hash for key: %p" , (void *)hash));
+  GCWEAK_LOG(fmt::format("Calling lisp_hash for key: {}" , (void *)hash));
   return core::lisp_hash(reinterpret_cast<uintptr_t>(hash));
 }
 
@@ -579,7 +579,7 @@ size_t StrongKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, co
 size_t StrongKeyHashTable::rehash_not_safe(size_t newLength, const value_type &key, size_t &key_bucket) {
   this->_Rehashes++;
   size_t result;
-  GCWEAK_LOG(fmt::sprintf("entered rehash newLength = %d" , newLength ));
+  GCWEAK_LOG(fmt::format("entered rehash newLength = {}" , newLength ));
   size_t i, length;
 		// buckets_t new_keys, new_values;
   result = 0;
@@ -632,7 +632,7 @@ size_t StrongKeyHashTable::rehash(size_t newLength, const value_type &key, size_
 
 /*! trySet returns 0 only if there is no room in the hash-table */
 int StrongKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
-  GCWEAK_LOG(fmt::sprintf("Entered trySet with key %p" , tkey.raw_()));
+  GCWEAK_LOG(fmt::format("Entered trySet with key {}" , tkey.raw_()));
   size_t b;
   if (tkey == value) {
     value = gctools::make_tagged_same_as_key<core::T_O>();
@@ -654,7 +654,7 @@ int StrongKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
 #endif
   size_t result = StrongKeyHashTable::find(this->_Keys, key, b);
   if ((!result || (*this->_Keys)[b] != key)) {
-    GCWEAK_LOG(fmt::sprintf("then case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p" , result , b , (*this->_Keys)[b].raw_()));
+    GCWEAK_LOG(fmt::format("then case - Returned from find with result = {}     (*this->_Keys)[b={}] = {}" , result , b , (*this->_Keys)[b].raw_()));
 #ifdef DEBUG_TRYSET
     if (alreadyThere) {
       report << "Could not find the key @" << key.raw_() << std::endl;
@@ -668,18 +668,18 @@ int StrongKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     }
 #endif
   } else {
-    GCWEAK_LOG(fmt::sprintf("else case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p" , result , b , (*this->_Keys)[b].raw_()));
-    GCWEAK_LOG(fmt::sprintf("Calling mps_ld_add for key: %p" , (void *)key.raw_()));
+    GCWEAK_LOG(fmt::format("else case - Returned from find with result = {}     (*this->_Keys)[b={}] = {}" , result , b , (*this->_Keys)[b].raw_()));
+    GCWEAK_LOG(fmt::format("Calling mps_ld_add for key: {}" , (void *)key.raw_()));
   }
   if ((*this->_Keys)[b].unboundp()) {
-    GCWEAK_LOG(fmt::sprintf("Writing key over unbound entry"));
+    GCWEAK_LOG(fmt::format("Writing key over unbound entry"));
     this->_Keys->set(b, key);
     (*this->_Keys).setUsed((*this->_Keys).used() + 1);
 #ifdef DEBUG_GCWEAK
     printf("%s:%d key was unboundp at %zu  used = %d\n", __FILE__, __LINE__, b, this->_Keys->used());
 #endif
   } else if ((*this->_Keys)[b].deletedp()) {
-    GCWEAK_LOG(fmt::sprintf("Writing key over deleted entry"));
+    GCWEAK_LOG(fmt::format("Writing key over deleted entry"));
     this->_Keys->set(b, key);
     GCTOOLS_ASSERT((*this->_Keys).deleted() > 0);
     (*this->_Keys).setDeleted((*this->_Keys).deleted() - 1);
@@ -687,7 +687,7 @@ int StrongKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     printf("%s:%d key was deletedp at %zu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted());
 #endif // DEBUG_GCWEAK
   }
-  GCWEAK_LOG(fmt::sprintf("Setting value at b = %d" , b));
+  GCWEAK_LOG(fmt::format("Setting value at b = {}" , b));
   (*this->_Values).set(b, value_type(value));
 #ifdef DEBUG_TRYSET
   // Count the number of times the key is in the table
@@ -708,7 +708,7 @@ int StrongKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     printf("%s\n", this->dump("Final trySet table").c_str());
   }
 #endif
-  GCWEAK_LOG(fmt::sprintf("Leaving trySet"));
+  GCWEAK_LOG(fmt::format("Leaving trySet"));
   return 1;
 }
 
@@ -741,9 +741,9 @@ core::T_mv StrongKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue)
   size_t result = gctools::StrongKeyHashTable::find(this->_Keys,key,pos);
   if (result) { // StrongKeyHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
     value_type& k = (*this->_Keys)[pos];
-    GCWEAK_LOG(fmt::sprintf("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d" , pos , k.raw_() , k.unboundp() , k.deletedp() , (bool)k ));
+    GCWEAK_LOG(fmt::format("gethash find successful pos = {}  k= {} k.unboundp()={} k.base_ref().deletedp()={} k.NULLp()={}" , pos , k.raw_() , k.unboundp() , k.deletedp() , (bool)k ));
     if ( !k.unboundp() && !k.deletedp() ) {
-      GCWEAK_LOG(fmt::sprintf("Returning success!"));
+      GCWEAK_LOG(fmt::format("Returning success!"));
       core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);
       if ( value.same_as_keyP() ) {
         value = smart_ptr<core::T_O>(k);
@@ -751,7 +751,7 @@ core::T_mv StrongKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue)
       result_mv = Values(value,core::lisp_true());
       return result_mv;
     }
-    GCWEAK_LOG(fmt::sprintf("Falling through"));
+    GCWEAK_LOG(fmt::format("Falling through"));
   }
   result_mv = Values(defaultValue,nil<core::T_O>());
   return result_mv;
@@ -961,7 +961,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         base = (char *)base + sizeof(WeakPointer);
       } break;
       default:
-          THROW_HARD_ERROR("Handle other weak kind %d", weakObj->kind());
+          THROW_HARD_ERROR("Handle other weak kind {}", weakObj->kind());
       }
     };
   }
@@ -972,53 +972,53 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
 
 mps_addr_t weak_obj_skip_debug(mps_addr_t base, bool dbg) {
 #if !defined(RUNNING_PRECISEPREP)
-  GCWEAK_LOG(fmt::sprintf("weak_obj_skip base=%p" , ((void *)base)));
+  GCWEAK_LOG(fmt::format("weak_obj_skip base={}" , ((void *)base)));
   WeakObject *weakObj = reinterpret_cast<WeakObject *>(base);
   switch (weakObj->kind()) {
   case WeakBucketKind: {
     WeakBucketsObjectType *obj = reinterpret_cast<WeakBucketsObjectType *>(weakObj);
-    GCWEAK_LOG(fmt::sprintf("WeakBucketKind sizeof(WeakBucketsObjectType)=%d + sizeof(typename WeakBucketsObjectType::value_type)=%d * obj->length()=%d" , sizeof(WeakBucketsObjectType) , sizeof(typename WeakBucketsObjectType::value_type) , obj->length()));
+    GCWEAK_LOG(fmt::format("WeakBucketKind sizeof(WeakBucketsObjectType)={} + sizeof(typename WeakBucketsObjectType::value_type)={} * obj->length()={}" , sizeof(WeakBucketsObjectType) , sizeof(typename WeakBucketsObjectType::value_type) , obj->length()));
     base = (char *)base + sizeof(WeakBucketsObjectType) + sizeof(typename WeakBucketsObjectType::value_type) * obj->length();
   } break;
   case StrongBucketKind: {
     StrongBucketsObjectType *obj = reinterpret_cast<StrongBucketsObjectType *>(base);
-    GCWEAK_LOG(fmt::sprintf("StrongBucketKind sizeof(StrongBucketsObjectType)=%d + sizeof(typename StrongBucketsObjectType::value_type)=%d * obj->length()=%d" , sizeof(StrongBucketsObjectType) , sizeof(typename StrongBucketsObjectType::value_type) , obj->length()));
+    GCWEAK_LOG(fmt::format("StrongBucketKind sizeof(StrongBucketsObjectType)={} + sizeof(typename StrongBucketsObjectType::value_type)={} * obj->length()={}" , sizeof(StrongBucketsObjectType) , sizeof(typename StrongBucketsObjectType::value_type) , obj->length()));
     base = (char *)base + sizeof(StrongBucketsObjectType) + sizeof(typename StrongBucketsObjectType::value_type) * obj->length();
   } break;
   case WeakMappingKind: {
-    GCWEAK_LOG(fmt::sprintf("WeakMappingKind"));
+    GCWEAK_LOG(fmt::format("WeakMappingKind"));
     base = (char *)base + sizeof(WeakMappingObjectType);
   } break;
   case StrongMappingKind: {
-    GCWEAK_LOG(fmt::sprintf("StrongMappingKind"));
+    GCWEAK_LOG(fmt::format("StrongMappingKind"));
     base = (char *)base + sizeof(StrongMappingObjectType);
   } break;
   case WeakPointerKind: {
-    GCWEAK_LOG(fmt::sprintf("WeakPointerKind"));
+    GCWEAK_LOG(fmt::format("WeakPointerKind"));
     base = (char *)base + sizeof(WeakPointer);
   } break;
   case WeakFwdKind: {
-    GCWEAK_LOG(fmt::sprintf("WeakFwdKind"));
+    GCWEAK_LOG(fmt::format("WeakFwdKind"));
     weak_fwd_s *obj = reinterpret_cast<weak_fwd_s *>(base);
     base = (char *)base + Align(obj->size.unsafe_fixnum());
   } break;
   case WeakFwd2Kind: {
-    GCWEAK_LOG(fmt::sprintf("WeakFwd2Kind"));
+    GCWEAK_LOG(fmt::format("WeakFwd2Kind"));
     base = (char *)base + Align(sizeof(weak_fwd2_s));
   } break;
   case WeakPadKind: {
-    GCWEAK_LOG(fmt::sprintf("WeakPadKind"));
+    GCWEAK_LOG(fmt::format("WeakPadKind"));
     weak_pad_s *obj = reinterpret_cast<weak_pad_s *>(base);
     base = (char *)base + Align(obj->size.unsafe_fixnum());
   } break;
   case WeakPad1Kind: {
-    GCWEAK_LOG(fmt::sprintf("WeakPad1Kind"));
+    GCWEAK_LOG(fmt::format("WeakPad1Kind"));
     base = (char *)base + Align(sizeof(weak_pad1_s));
   }
   default:
-      THROW_HARD_ERROR("Handle weak_obj_skip other weak kind %d",  weakObj->kind());
+      THROW_HARD_ERROR("Handle weak_obj_skip other weak kind {}",  weakObj->kind());
   }
-  GCWEAK_LOG(fmt::sprintf("weak_obj_skip returning base=%p" , ((void *)base)));
+  GCWEAK_LOG(fmt::format("weak_obj_skip returning base={}" , ((void *)base)));
 #endif
   return base;
 };

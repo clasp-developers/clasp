@@ -147,7 +147,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    SIMPLE_ERROR_SPRINTF("What do we do when this is called?");
+    SIMPLE_ERROR("What do we do when this is called?");
   }
     static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);

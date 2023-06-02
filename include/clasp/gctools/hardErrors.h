@@ -65,7 +65,7 @@ class HardError {
 #if 1 
 #define THROW_HARD_ERROR(...)                                        \
   {                                                                  \
-    std::string str = fmt::sprintf(__VA_ARGS__); \
+    std::string str = fmt::format(__VA_ARGS__); \
     dbg_hook(str.c_str());                                   \
     ::core::errorFormatted(str);                                     \
   }

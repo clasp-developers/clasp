@@ -239,7 +239,6 @@ void quickSortDebugDepth(_RandomAccessIterator m, _RandomAccessIterator en, Ocom
     _RandomAccessIterator i = m + 1;
     _RandomAccessIterator j = n;
     while (i <= j) {
-      _BLOCK_TRACEF(BF("Top of while i(%d) <= j(%d)") % (i - m) % (j - m));
       while ((i <= n) && (comparer(*i, *m))) {
         LOG(("skipping lower bin index: %d value: %s") , (i - m) , _rep_((*i)));
         i++;

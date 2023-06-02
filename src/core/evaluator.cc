@@ -69,11 +69,11 @@ int _evaluateVerbosity = 0;
 T_mv t1Evaluate(T_sp exp, T_sp environment);
 
 void errorApplyZeroArguments() {
-  SIMPLE_ERROR(("Illegal to have zero arguments for APPLY"));
+  SIMPLE_ERROR("Illegal to have zero arguments for APPLY");
 }
 
 void errorApplyLastArgumentNotList(T_sp lastArg ) {
-  SIMPLE_ERROR(("Last argument of APPLY is not a list/frame/activation-frame - passed %s") , _rep_(lastArg));
+  SIMPLE_ERROR("Last argument of APPLY is not a list/frame/activation-frame - passed {}", _rep_(lastArg));
 }
 
 
@@ -671,9 +671,9 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
     ERROR_UNDEFINED_FUNCTION(function_desig);
   }
   if (func.unboundp()) {
-    if (function_desig.nilp()) SIMPLE_ERROR(("The function designator was NIL"));
-    if (function_desig.unboundp()) SIMPLE_ERROR(("The function designator was UNBOUND"));
-    SIMPLE_ERROR(("The function %s was unbound") , _rep_(function_desig));
+    if (function_desig.nilp()) SIMPLE_ERROR("The function designator was NIL");
+    if (function_desig.unboundp()) SIMPLE_ERROR("The function designator was UNBOUND");
+    SIMPLE_ERROR("The function {} was unbound", _rep_(function_desig));
   }
   size_t nargs = cl__length(args);
   MAKE_STACK_FRAME( fargs, nargs );
@@ -693,14 +693,14 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
     return fnobj;
   } else if (Symbol_sp sym = arg.asOrNull<Symbol_O>()) {
     if (!sym->fboundp())
-      SIMPLE_ERROR(("Function value for %s is unbound") , _rep_(sym));
+      SIMPLE_ERROR("Function value for {} is unbound", _rep_(sym));
     return sym->symbolFunction();
   } else if (Cons_sp carg = arg.asOrNull<Cons_O>()) {
     T_sp head = oCar(carg);
     if (head == cl::_sym_setf) {
       Symbol_sp sym = oCadr(carg).as<Symbol_O>();
       if (!sym->fboundp_setf()) {
-        SIMPLE_ERROR(("SETF function value for %s is unbound") , _rep_(sym));
+        SIMPLE_ERROR("SETF function value for {} is unbound", _rep_(sym));
       }
       return sym->getSetfFdefinition();
     } else if (head == cl::_sym_lambda) {
@@ -711,7 +711,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       return gc::As<Function_sp>(cl__eval(arg));
     }
   }
-  SIMPLE_ERROR(("Illegal function designator %s") , _rep_(arg));
+  SIMPLE_ERROR("Illegal function designator {}", _rep_(arg));
 };
 
 CL_LAMBDA(body &optional expectDocString);
@@ -868,7 +868,7 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
   specials = nil<T_O>();
   for (; body.notnilp(); body = oCdr(body)) {
     if (!cl__listp(body)) {
-      SIMPLE_ERROR(("Bad input to processDeclares: %s") , _rep_(inputBody));
+      SIMPLE_ERROR("Bad input to processDeclares: {}", _rep_(inputBody));
     }
     T_sp form = oCar(body);
                 // If we are expecting docstring and we hit a string, then we hit a possible docstring
@@ -900,7 +900,7 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
           T_sp v = oCar(sentence);
           sentence = oCdr(sentence);
           if (!cl__symbolp(v)) {
-            SIMPLE_ERROR(("Illegal object[%s] in declare special") , _rep_(v));
+            SIMPLE_ERROR("Illegal object[{}] in declare special", _rep_(v));
           }
           specials = Cons_O::create(v, specials);
         }
@@ -919,7 +919,7 @@ void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
 }
 
 void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code) {
-  LOG("Parsing lambda body: %s" , body->__repr__());
+  LOG("Parsing lambda body: {}" , body->__repr__());
   List_sp specials;
   extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
 }

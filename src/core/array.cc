@@ -72,13 +72,13 @@ Check the following...
 
 namespace core {
 void missingValueListError(List_sp indices) {
-  SIMPLE_ERROR(("The value was missing after the indices %s") , _rep_(indices));
+  SIMPLE_ERROR("The value was missing after the indices {}", _rep_(indices));
 }
 void tooManyIndicesListError(List_sp indices) {
-  SIMPLE_ERROR(("Too many indices %s") , _rep_(indices));
+  SIMPLE_ERROR("Too many indices {}", _rep_(indices));
 }
 void badAxisNumberError(Symbol_sp fn_name, size_t rank, size_t axisNumber) {
-  SIMPLE_ERROR(("In %s illegal axis number %d must be less than rank %d") , _rep_(fn_name) , axisNumber , rank );
+  SIMPLE_ERROR("In {} illegal axis number {} must be less than rank {}", _rep_(fn_name) , axisNumber , rank );
 }
 void badIndexError(T_sp array, size_t axis, gc::Fixnum index, size_t dimension) {
   ERROR(core::_sym_array_out_of_bounds,
@@ -103,19 +103,19 @@ void indexNotFixnumError(T_sp index) {
   TYPE_ERROR(index,cl::_sym_fixnum);
 }
 void insufficientIndexListError(List_sp indices) {
-  SIMPLE_ERROR(("Insufficient indices %s") , _rep_(indices));
+  SIMPLE_ERROR("Insufficient indices {}", _rep_(indices));
 }
 void notStringError(T_sp obj) {
   TYPE_ERROR(obj,cl::_sym_string);
 }
 void cannotAdjustSizeOfSimpleArrays(T_sp obj) {
-  SIMPLE_ERROR(("Cannot adjust the size of a simple array %s") , _rep_(obj));
+  SIMPLE_ERROR("Cannot adjust the size of a simple array {}", _rep_(obj));
 }
 void notSequenceError(T_sp obj) {
   TYPE_ERROR(obj,cl::_sym_string);
 }
 void notAdjustableError(Symbol_sp fn_name, T_sp array) {
-  SIMPLE_ERROR(("In %s - array is not adjustable") , _rep_(fn_name));
+  SIMPLE_ERROR("In {} - array is not adjustable", _rep_(fn_name));
 }
 void notVectorError(T_sp array) {
   TYPE_ERROR(array,cl::_sym_vector);
@@ -165,7 +165,7 @@ void Array_O::fillInitialContents(T_sp ic) {
     }
   }
   if (cl__length(ic) != this->arrayTotalSize())
-    SIMPLE_ERROR(("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") , cl__length(ic) , this->arrayTotalSize());
+    SIMPLE_ERROR("The number of elements {} in :INITIAL-CONTENTS does not match the size of the vector {}", cl__length(ic) , this->arrayTotalSize());
   if (ic.nilp()) {
     // do nothing
   } else if (Cons_sp ccInitialContents = ic.asOrNull<Cons_O>()) {
@@ -182,7 +182,7 @@ void Array_O::fillInitialContents(T_sp ic) {
       this->rowMajorAset(i, obj);
     }
   } else {
-    SIMPLE_ERROR(("Illegal :INITIAL-CONTENTS"));
+    SIMPLE_ERROR("Illegal :INITIAL-CONTENTS");
   }
 }
 
@@ -299,7 +299,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv core__check_rank(Array_sp array, size_t vs_rank) {
   size_t rank = array->rank();
   if (rank != vs_rank)
-    SIMPLE_ERROR(("Wrong number of subscripts, %d, for an array of rank %d.")
+    SIMPLE_ERROR("Wrong number of subscripts, {}, for an array of rank {}."
                  , vs_rank , rank);
   return Values0<T_O>();
 }
@@ -308,7 +308,7 @@ CL_LISPIFY_NAME("core:check-index");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__check_index (size_t index, size_t max, size_t axis) {
   if (!((index >= 0) && (index < max)))
-    SIMPLE_ERROR(("Invalid index %d for axis %d of array: expected 0-%d")
+    SIMPLE_ERROR("Invalid index {} for axis {} of array: expected 0-{}"
                  , index , axis , (max-1));
   return Values0<T_O>();
 }
@@ -363,7 +363,7 @@ MDArray_O::MDArray_O(size_t rank,
     arrayTotalSize *= dim;
   }
   if (irank!=rank) {
-    SIMPLE_ERROR(("Mismatch in the number of arguments rank = %d indices = %s") , rank , _rep_(dimensions));
+    SIMPLE_ERROR("Mismatch in the number of arguments rank = {} indices = {}", rank , _rep_(dimensions));
   }
   this->_ArrayTotalSize = arrayTotalSize;
 }
@@ -535,21 +535,21 @@ CL_DEFUN size_t core__arrayFlags(Array_sp a)
     MDArray_sp mda = gc::As_unsafe<MDArray_sp>(a);
     return mda->_Flags._Flags;
   }
-  SIMPLE_ERROR(("Cannot get array-flags of %s") , _rep_(a));
+  SIMPLE_ERROR("Cannot get array-flags of {}", _rep_(a));
 }
 
 DOCGROUP(clasp);
 CL_DEFUN void core__mdarray_dump(Array_sp a)
 {
   MDArray_sp mda = gc::As<MDArray_sp>(a);
-  write_bf_stream(fmt::sprintf("MDArray address = %p\n" , (void*)&*mda));
-  write_bf_stream(fmt::sprintf("MDArray _ArrayTotalSize = %d\n" , mda->_ArrayTotalSize));
-  write_bf_stream(fmt::sprintf("MDArray _Data = %p\n" , (void*)&*(mda->_Data)));
-  write_bf_stream(fmt::sprintf("MDArray _DisplacedIndexOffset = %d\n" , mda->_DisplacedIndexOffset));
-  write_bf_stream(fmt::sprintf("MDArray _Flags = %d\n" , mda->_Flags._Flags));
-  write_bf_stream(fmt::sprintf("MDArray _Dimensions.length() = %d\n" , mda->_Dimensions.length()));
+  clasp_write_string(fmt::format("MDArray address = {}\n" , (void*)&*mda));
+  clasp_write_string(fmt::format("MDArray _ArrayTotalSize = {}\n" , mda->_ArrayTotalSize));
+  clasp_write_string(fmt::format("MDArray _Data = {}\n" , (void*)&*(mda->_Data)));
+  clasp_write_string(fmt::format("MDArray _DisplacedIndexOffset = {}\n" , mda->_DisplacedIndexOffset));
+  clasp_write_string(fmt::format("MDArray _Flags = {}\n" , mda->_Flags._Flags));
+  clasp_write_string(fmt::format("MDArray _Dimensions.length() = {}\n" , mda->_Dimensions.length()));
   for ( size_t i(0); i<mda->_Dimensions.length(); ++i ) {
-    write_bf_stream(fmt::sprintf("MDArray _Dimensions[%d = %d\n" , i , mda->_Dimensions[i]));
+    clasp_write_string(fmt::format("MDArray _Dimensions[{} = {}\n" , i , mda->_Dimensions[i]));
   }
 }
 
@@ -619,8 +619,8 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
   size_t iLen = unbox_fixnum(len);
   if (iLen == 0)
     return;
-  ASSERTF(dest->rank() == 1, ("dest array must be rank 1 - instead it is %d") , dest->rank());
-  ASSERTF(orig->rank() == 1, ("orig array must be rank 1 - instead it is %d") , orig->rank());
+  ASSERTF(dest->rank() == 1, "dest array must be rank 1 - instead it is {}", dest->rank());
+  ASSERTF(orig->rank() == 1, "orig array must be rank 1 - instead it is {}", orig->rank());
   size_t iDestStart = unbox_fixnum(destStart);
   size_t iOrigStart = unbox_fixnum(origStart);
   if ((iLen + iDestStart) >= dest->arrayTotalSize()) iLen = dest->arrayTotalSize()-iDestStart;
@@ -979,7 +979,7 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
   else if (element_type == _sym_size_t) { MAKE(SimpleVector_size_t_O, ComplexVector_size_t_O) }
   else if (element_type == cl::_sym_fixnum) { MAKE(SimpleVector_fixnum_O, ComplexVector_fixnum_O) }
 #undef MAKE
-  else SIMPLE_ERROR(("Handle make-vector :element-type %s") , _rep_(element_type));
+  else SIMPLE_ERROR("Handle make-vector :element-type {}", _rep_(element_type));
 };
 
 
@@ -1015,7 +1015,7 @@ CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type,
   else if (element_type == _sym_size_t) { MAKE(SimpleVector_size_t_O) }
   else if (element_type == cl::_sym_fixnum) { MAKE(SimpleVector_fixnum_O) }
 #undef MAKE
-  else SIMPLE_ERROR(("Handle make-static-vector :element-type %s") , _rep_(element_type));
+  else SIMPLE_ERROR("Handle make-static-vector :element-type {}", _rep_(element_type));
 };
 
 CL_LAMBDA(dimensions element_type adjustable displaced_to displaced_index_offset initial_element initial_element_supplied_p);
@@ -1056,7 +1056,7 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
   else if (element_type == _sym_size_t) { MAKE(MDArray_size_t_O, SimpleVector_size_t_O) }
   else if (element_type == cl::_sym_fixnum) { MAKE(MDArray_fixnum_O, SimpleVector_fixnum_O) }
 #undef MAKE
-  else SIMPLE_ERROR(("Handle creation of multi-dimensional array of type %s") , _rep_(element_type));
+  else SIMPLE_ERROR("Handle creation of multi-dimensional array of type {}", _rep_(element_type));
 };
 
 // ------------------------------------------------------------
@@ -1084,9 +1084,9 @@ CL_DEFUN void core__verify_simple_vector_layout(size_t length_offset, size_t dat
   size_t cxx_length_offset = offsetof(SimpleVector_O,_Data._MaybeSignedLength);
   size_t cxx_data_offset = offsetof(SimpleVector_O,_Data._Data);
   if (length_offset!=cxx_length_offset)
-    SIMPLE_ERROR(("length_offset %lu does not match cxx_length_offset %lu") , length_offset , cxx_length_offset );
+    SIMPLE_ERROR("length_offset {} does not match cxx_length_offset {}", length_offset , cxx_length_offset );
   if (data_offset!=cxx_data_offset)
-    SIMPLE_ERROR(("data_offset %lu does not match cxx_data_offset %lu") , data_offset , cxx_data_offset );
+    SIMPLE_ERROR("data_offset {} does not match cxx_data_offset {}", data_offset , cxx_data_offset );
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg,vtable);
@@ -1138,13 +1138,13 @@ CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object)
       SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((memory_end-memory_start),0,false,(memory_end-memory_start),memory_start);
       return result;
     }
-    SIMPLE_ERROR(("Add support for coercing %s to a byte8 vector") , _rep_(source));
+    SIMPLE_ERROR("Add support for coercing {} to a byte8 vector", _rep_(source));
   } else if (gc::IsA<clasp_ffi::ForeignData_sp>(object)) {
     clasp_ffi::ForeignData_sp source = gc::As_unsafe<clasp_ffi::ForeignData_sp>(object);
     SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(source->foreign_data_size(),0,false,source->foreign_data_size(),(const unsigned char*)source->orig_data_ptr());
     return result;
   }
-  SIMPLE_ERROR(("Add support for coercing %s to a byte8 vector") , _rep_(object));
+  SIMPLE_ERROR("Add support for coercing {} to a byte8 vector", _rep_(object));
 }
 
 // Create a base-char simple vector from any array
@@ -1163,7 +1163,7 @@ CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp 
     memcpy(const_cast<void*>(data->orig_data_ptr()),(void*)memory_start,memory_end-memory_start);
     return data;
   }
-  SIMPLE_ERROR(("Add support for coercing %s to a simple-base-string") , _rep_(source));
+  SIMPLE_ERROR("Add support for coercing {} to a simple-base-string", _rep_(source));
 }
 
 DOCGROUP(clasp);
@@ -1183,7 +1183,7 @@ DOCGROUP(clasp);
 CL_DEFUN Array_sp ext__array_storage_vector(Array_sp source )
 {
   if (source->displacedToP()) {
-    SIMPLE_ERROR(("array-storage-vector cannot be used with displaced arrays"));
+    SIMPLE_ERROR("array-storage-vector cannot be used with displaced arrays");
   }
   AbstractSimpleVector_sp bsv;
   size_t ostart, oend;

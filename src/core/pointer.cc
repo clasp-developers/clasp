@@ -38,12 +38,12 @@ CL_DEFUN Pointer_sp core__make_pointer(T_sp address)
   if (address.fixnump()) {
     return Pointer_O::create((void*)address.unsafe_fixnum());
   }
-  SIMPLE_ERROR(("Cannot convert %s to pointer") , _rep_(address));
+  SIMPLE_ERROR("Cannot convert {} to pointer", _rep_(address));
 }
 
 DOCGROUP(clasp);
 CL_DEFUN SimpleBaseString_sp core__pointer_as_string(Pointer_sp p) {
-  SimpleBaseString_sp s = SimpleBaseString_O::make(fmt::sprintf("%p", p->ptr()));
+  SimpleBaseString_sp s = SimpleBaseString_O::make(fmt::format("{}", p->ptr()));
   return s;
 }
   
@@ -68,7 +68,7 @@ bool Pointer_O::eql_(T_sp obj) const {
 
 string Pointer_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " :ptr " << fmt::sprintf("%p", (void*)this->m_raw_data) << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " :ptr " << fmt::format("{}", (void*)this->m_raw_data) << ">";
   return ss.str();
 }
 
@@ -79,7 +79,7 @@ CL_DEFUN bool core__pointer_in_pointer_range(Pointer_sp test, Pointer_sp low, T_
   } else if (high_or_size.fixnump()) {
     return test->in_pointer_range(low,(uintptr_t)high_or_size.unsafe_fixnum());
   }
-  SIMPLE_ERROR(("Illegal range for pointer comparison %s - %s") , _rep_(low) , _rep_(high_or_size));
+  SIMPLE_ERROR("Illegal range for pointer comparison {} - {}", _rep_(low) , _rep_(high_or_size));
 }
 
 DOCGROUP(clasp);

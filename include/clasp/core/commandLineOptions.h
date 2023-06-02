@@ -86,4 +86,13 @@ struct CommandLineOptions {
 void maybeHandleAddressesOption(CommandLineOptions *options);
 
 }; // namespace core
+
+template <typename Char> struct fmt::formatter<core::LoadEvalEnum, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
+  template <typename FormatContext>
+  auto format(const core::LoadEvalEnum &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+    return fmt::formatter<fmt::basic_string_view<Char>>::format(
+        o == core::cloLoad ? "load" : (o == core::cloEval ? "eval" : "script"), ctx);
+  }
+};
+
 #endif

@@ -84,7 +84,7 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
   vector<int>::reverse_iterator di;
   int digitIdx;
   curIndex = index;
-  LOG("*starting index=%20lld" , curIndex);
+  LOG("*starting index={}0lld" , curIndex);
   ASSERT(bases.size() >= 1);
   digits.resize(bases.size());
   digitIdx = digits.size() - 1;
@@ -92,21 +92,21 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
     Bignum bb = (curIndex % (*bi));
     *di = bb.get_si();
     curIndex /= *bi;
-    LOG("*di=%d  *bi=%d curIndex=%20lld" , *di , *bi , curIndex);
+    LOG("*di={}  *bi={} curIndex={}" , *di , *bi , curIndex);
   }
-  LOG("digits[0] = %d" , digits[0]);
+  LOG("digits[0] = {}" , digits[0]);
   return digits;
 }
 CL_DEFUN
 List_sp core__positive_integer_to_mixed_base_digits(core::Integer_sp number, List_sp bases) {
   if (!(clasp_zerop(number) || clasp_plusp(number))) {
-    SIMPLE_ERROR("The number %s must be zero or positive", _rep_(number));
+    SIMPLE_ERROR("The number {} must be zero or positive", _rep_(number));
   }
   vector<int> ibases;
   for ( auto cur : bases ) {
     T_sp val = CONS_CAR(cur);
     if (!val.fixnump()) {
-      SIMPLE_ERROR("Bases %s must all be fixnums", _rep_(bases));
+      SIMPLE_ERROR("Bases {} must all be fixnums", _rep_(bases));
     }
     ibases.push_back(val.unsafe_fixnum());
   }

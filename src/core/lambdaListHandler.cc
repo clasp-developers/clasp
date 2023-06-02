@@ -195,7 +195,7 @@ void throw_if_not_destructuring_context(T_sp context) {
   if (context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
       || context == cl::_sym_destructuring_bind)
     return;
-  SIMPLE_ERROR(("Lambda list is destructuring_bind but context does not support it context[%s]") , _rep_(context));
+  SIMPLE_ERROR("Lambda list is destructuring_bind but context does not support it context[{}]", _rep_(context));
 }
 
 /* Process llraw as a single-dispatch lambda-list.
@@ -235,7 +235,7 @@ string argument_mode_as_string(ArgumentMode mode) {
 }
 
 bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_sp &key_flag) {
-  LOG("In switch_add_argument_mode argument is a symbol: %s %X" , _rep_(symbol) , symbol.get());
+  LOG("In switch_add_argument_mode argument is a symbol: {} {}" , _rep_(symbol) , symbol.get());
   switch (mode) {
   case required:
       LOG("Was in required mode");
@@ -345,7 +345,7 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       }
       break;
   case allowOtherKeys:
-      LOG("Did not recognize symbol(%s)" , _rep_(symbol));
+      LOG("Did not recognize symbol({})" , _rep_(symbol));
       if (symbol == cl::_sym_AMPoptional) {
         goto BADMODE;
       } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
@@ -396,9 +396,9 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
   };
   return false;
 BADMODE:
-  SIMPLE_ERROR(("While in lambda-list mode %s encountered illegal symbol[%s]") , argument_mode_as_string(mode) , _rep_(symbol));
+  SIMPLE_ERROR("While in lambda-list mode {} encountered illegal symbol[{}]", argument_mode_as_string(mode) , _rep_(symbol));
 NEWMODE:
-  LOG("Switched to mode: %s" , argument_mode_as_string(mode));
+  LOG("Switched to mode: {}" , argument_mode_as_string(mode));
   {
     switch (mode) {
     case keyword:
@@ -422,7 +422,7 @@ NEWMODE:
   }
   return true;
 ILLEGAL_MODE:
-  SIMPLE_ERROR(("Illegal mode %s for context[%s]") , argument_mode_as_string(mode) , _rep_(context));
+  SIMPLE_ERROR("Illegal mode {} for context[{}]", argument_mode_as_string(mode) , _rep_(context));
 }
 
 void throw_if_invalid_context(T_sp context) {
@@ -433,7 +433,7 @@ void throw_if_invalid_context(T_sp context) {
     return;
   printf("%s:%d context.raw_= %p     cl::_sym_destructuring_bind.raw_=%p\n",
          __FILE__, __LINE__, context.raw_(), cl::_sym_destructuring_bind.raw_());
-  SIMPLE_ERROR(("Illegal parse_lambda_list context[%s]") , _rep_(context));
+  SIMPLE_ERROR("Illegal parse_lambda_list context[{}]", _rep_(context));
 }
 
 bool contextSupportsWhole(T_sp context) {
@@ -458,7 +458,7 @@ bool contextSupportsEnvironment(T_sp context) {
  */
 void checkTargetArgument(T_sp arg) {
   if (arg== cl::_sym_T) {
-    SIMPLE_ERROR(("The argument in a lambda list cannot be T"));
+    SIMPLE_ERROR("The argument in a lambda list cannot be T");
   }
 }
 
@@ -518,12 +518,12 @@ bool parse_lambda_list(List_sp original_lambda_list,
     defaultDefault = Cons_O::createList(cl::_sym_quote, cl::_sym__TIMES_);
   else defaultDefault = nil<T_O>();
   List_sp arguments = cl__copy_list(original_lambda_list);
-  LOG("Argument handling mode starts in (required) - interpreting: %s" , _rep_(arguments));
+  LOG("Argument handling mode starts in (required) - interpreting: {}" , _rep_(arguments));
   ArgumentMode add_argument_mode = required;
   restarg.clear();
   List_sp cur = arguments;
   while (cur.notnilp()) {
-    LOG("Handing argument: %s" , _rep_(oCar(cur)));
+    LOG("Handing argument: {}" , _rep_(oCar(cur)));
     T_sp oarg = oCar(cur);
     if (cl__symbolp(oarg)) {
       T_sp sym = oarg;
@@ -551,27 +551,27 @@ bool parse_lambda_list(List_sp original_lambda_list,
       T_sp supplied = nil<T_O>();
       if ((oarg).consp()) {
         List_sp carg = oarg;
-        LOG("Optional argument is a Cons: %s" , _rep_(carg));
+        LOG("Optional argument is a Cons: {}" , _rep_(carg));
         sarg = oCar(carg);
         if (oCdr(carg).notnilp()) {
           defaultValue = oCadr(carg);
           if (oCddr(carg).notnilp())
             supplied = oCaddr(carg);
         }
-        LOG("Optional argument was a Cons_O[%s] with parts - symbol[%s] default[%s] supplied[%s]" , _rep_(carg) , _rep_(sarg) , _rep_(defaultValue) , _rep_(supplied));
+        LOG("Optional argument was a Cons_O[{}] with parts - symbol[{}] default[{}] supplied[{}]" , _rep_(carg) , _rep_(sarg) , _rep_(defaultValue) , _rep_(supplied));
       } else {
         sarg = oarg;
-        LOG("Optional argument was a Symbol_O[%s]" , _rep_(sarg));
+        LOG("Optional argument was a Symbol_O[{}]" , _rep_(sarg));
       }
       checkTargetArgument(sarg);
-      LOG("Saving _OptionalArgument(%s) default(%s) supplied(%s)" , _rep_(sarg) , _rep_(defaultValue) , _rep_(supplied));
+      LOG("Saving _OptionalArgument({}) default({}) supplied({})" , _rep_(sarg) , _rep_(defaultValue) , _rep_(supplied));
       OptionalArgument optional(sarg, defaultValue, supplied);
       optionals.push_back(optional);
       break;
     }
     case rest: {
       if (restarg.isDefined()) {
-        SIMPLE_ERROR(("Only one name is allowed after &rest - you have already defined: %s") , restarg.asString());
+        SIMPLE_ERROR("Only one name is allowed after &rest - you have already defined: {}", restarg.asString());
       }
       checkTargetArgument(oarg);
       restarg.setTarget(oarg);
@@ -580,7 +580,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
     case va_rest: {
       if (restarg.isDefined()) {
-        SIMPLE_ERROR(("Only one name is allowed after &rest - you have already defined: %s") , restarg.asString());
+        SIMPLE_ERROR("Only one name is allowed after &rest - you have already defined: {}", restarg.asString());
       }
       checkTargetArgument(oarg);
       restarg.setTarget(oarg);
@@ -589,7 +589,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
     case dot_rest: {
       if (oCdr(cur).notnilp()) {
-        SIMPLE_ERROR(("Lambda list dot followed by more than one argument"));
+        SIMPLE_ERROR("Lambda list dot followed by more than one argument");
       }
       checkTargetArgument(oarg);
       restarg.setTarget(oarg);
@@ -624,16 +624,16 @@ bool parse_lambda_list(List_sp original_lambda_list,
           }
         }
       } else {
-        SIMPLE_ERROR(("key arguments must be symbol or cons"));
+        SIMPLE_ERROR("key arguments must be symbol or cons");
       }
-      LOG("Saving keyword(%s) local(%s) default(%s) sensor(%s)" , _rep_(keySymbol) , _rep_(localTarget) , _rep_(defaultValue) , _rep_(sensorSymbol));
+      LOG("Saving keyword({}) local({}) default({}) sensor({})" , _rep_(keySymbol) , _rep_(localTarget) , _rep_(defaultValue) , _rep_(sensorSymbol));
       checkTargetArgument(keySymbol);
       KeywordArgument keyed(keySymbol, localTarget, defaultValue, sensorSymbol);
       keys.push_back(keyed);
       break;
     }
     case allowOtherKeys:
-      SIMPLE_ERROR(("&allow-other-keys must be processed just after switch_add_argument_mode"));
+      SIMPLE_ERROR("&allow-other-keys must be processed just after switch_add_argument_mode");
       break;
     case aux: {
       T_sp localSymbol = nil<T_O>();

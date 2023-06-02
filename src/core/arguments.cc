@@ -48,7 +48,7 @@ List_sp Argument::classified() const {
   } else if (this->_ArgTargetFrameIndex == UNDEFINED_TARGET) {
     return ((nil<List_V>()));
   }
-  SIMPLE_ERROR(("Illegal target"));
+  SIMPLE_ERROR("Illegal target");
 }
 
 string Argument::asString() const {

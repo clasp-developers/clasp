@@ -416,14 +416,14 @@ inline string ForeignData_O::__repr__() const
 
   ss << "#<"
      << this->_instanceClass()->_classNameAsString()
-     << " @ " << fmt::sprintf("%p", (void*)this)
+     << " @ " << fmt::format("{}", (void*)this)
      << " :kind " << this->m_kind
      << " :size " << this->m_size
      << " :ownership-flags " << this->m_ownership_flags
      << " :data-ptr "
-     << fmt::sprintf("%p", (void*)this->m_raw_data)
+     << fmt::format("{}", (void*)this->m_raw_data)
      << " :orig-ptr "
-     << fmt::sprintf("%p", (void*)this->m_orig_data_ptr)
+     << fmt::format("{}", (void*)this->m_orig_data_ptr)
      << ">";
 
   return ss.str();
@@ -515,12 +515,12 @@ ForeignData_sp PERCENTallocate_foreign_object( core::T_sp kind )
 
     if ( ! (oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array ) )
     {
-      SIMPLE_ERROR(("The first element of a foreign-data type must be ARRAY or :ARRAY"));
+      SIMPLE_ERROR("The first element of a foreign-data type must be ARRAY or :ARRAY");
     }
 
     if (!(oCadr(ckind) == cl::_sym_UnsignedByte || oCadr(ckind) == kw::_sym_UnsignedByte))
     {
-      SIMPLE_ERROR(("The second element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));
+      SIMPLE_ERROR("The second element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE");
     }
 
     n_size = unbox_fixnum(gc::As<core::Fixnum_sp>(oCaddr(ckind)));
@@ -714,7 +714,7 @@ int64_t foreign_type_size( core::Symbol_sp atype )
     }
   }
 
-  SIMPLE_ERROR(("No foreign type size available for %s !") , _rep_(atype));
+  SIMPLE_ERROR("No foreign type size available for {} !", _rep_(atype));
 
   // This point should never be reached.
   return -1;
@@ -732,7 +732,7 @@ core::T_sp PERCENTdlopen( core::T_sp path_designator )
 {
   ForeignData_sp sp_handle;
   int n_mode = RTLD_NOW | RTLD_GLOBAL;
-  if (path_designator.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+  if (path_designator.nilp()) SIMPLE_ERROR("{} was about to pass nil to pathname", __FUNCTION__);
   core::Pathname_sp path = core::cl__pathname( path_designator );
   string str_path = gc::As< core::String_sp >( core::cl__namestring( path ))->get_std_string();
 
@@ -821,7 +821,7 @@ inline string ForeignTypeSpec_O::__repr__() const
 
   ss << "#<"
      << this->_instanceClass()->_classNameAsString()
-     << " @ " << fmt::sprintf("%p", (void*)this)
+     << " @ " << fmt::format("{}", (void*)this)
      << " :lisp-symbol " << this->m_lisp_symbol
      << " :lisp-name "   << this->m_lisp_name
      << " :size "        << this->m_size
@@ -906,7 +906,7 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
   // Check if 1st param is NIL -> not allowed!
   if( address_or_foreign_data_ptr.nilp() )
   {
-    SIMPLE_ERROR(("Invalid parameter type for address!"));
+    SIMPLE_ERROR("Invalid parameter type for address!");
   }
 
   // If offset is not NIL then get v
@@ -943,7 +943,7 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
     }
     else
     {
-      SIMPLE_ERROR(("Invalid parameter type for address!"));
+      SIMPLE_ERROR("Invalid parameter type for address!");
     }
   }
 

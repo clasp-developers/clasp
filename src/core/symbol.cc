@@ -326,7 +326,7 @@ Symbol_O::Symbol_O() : Base(),
 
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
-  ASSERTF(pkg, ("The package is UNDEFINED"));
+  ASSERTF(pkg, "The package is UNDEFINED");
   this->_HomePackage = pkg;
   if (pkg->actsLikeKeywordPackage())
     this->set_globalValue(this->asSmartPtr());
@@ -349,14 +349,14 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // The following are done in finish_setup
   //  n->fmakunbound();
   //  n->fmakunbound_setf();
-  ASSERTF(nm != "", ("You cannot create a symbol without a name"));
+  ASSERTF(nm != "", "You cannot create a symbol without a name");
   return n;
 };
    
 Symbol_sp Symbol_O::makunbound() {
   if (this->getReadOnly())
     // would be a nice extension to make this a continuable error
-    SIMPLE_ERROR(("Cannot make constant %s unbound") , this->__repr__());
+    SIMPLE_ERROR("Cannot make constant {} unbound", this->__repr__());
   setf_symbolValue(unbound<T_O>());
   return this->asSmartPtr();
 }
@@ -598,7 +598,7 @@ Symbol_sp Symbol_O::exportYourself(bool doit) {
   if (doit) {
     if (!this->isExported()) {
       if (this->getPackage().nilp())
-        SIMPLE_ERROR(("Cannot export - no package"));
+        SIMPLE_ERROR("Cannot export - no package");
       Package_sp pkg = gc::As<Package_sp>(this->getPackage());
       if (!pkg->isKeywordPackage()) {
         pkg->_export2(this->asSmartPtr());
@@ -636,7 +636,7 @@ T_sp Symbol_O::getPackage() const {
 }
 
 void Symbol_O::setPackage(T_sp p) {
-  ASSERTF(p, ("The package is UNDEFINED"));
+  ASSERTF(p, "The package is UNDEFINED");
   ASSERT(p.nilp() || gc::IsA<Package_sp>(p));
   this->_HomePackage.store(p, std::memory_order_relaxed);
 }

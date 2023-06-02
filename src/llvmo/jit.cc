@@ -702,9 +702,9 @@ void ClaspLinkerJIT_O::addObjectFile(llvm::orc::JITDylib& jitdylib, std::unique_
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
   //  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
-  if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)objectFile->getBufferStart() % objectFile->getBufferSize() );
+  if (print) core::clasp_write_string(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)objectFile->getBufferStart() % objectFile->getBufferSize() );
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
-  if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
+  if (print) core::clasp_write_string(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
   llvm::ExitOnError ExitOnErr;
 //  my_thread->pushObjectFile(of);
   ExitOnErr(this->_LLJIT->addObjectFile(jitdylib, std::move(objectFile)));

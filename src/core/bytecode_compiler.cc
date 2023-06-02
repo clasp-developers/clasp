@@ -77,7 +77,7 @@ Lexenv_sp Lexenv_O::bind_vars(List_sp vars, const Context ctxt) {
   for (auto cur : vars) {
     Symbol_sp var = oCar(cur);
     if (var->getReadOnly())
-      SIMPLE_ERROR("Cannot bind constant value %s!", _rep_(var));
+      SIMPLE_ERROR("Cannot bind constant value {}!", _rep_(var));
     auto info = LexicalVarInfo_O::make(idx++, cf);
     Cons_sp pair = Cons_O::create(var, info);
     new_vars = Cons_O::create(pair, new_vars);
@@ -1578,7 +1578,7 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.reference_lexical_info(lvinfo);
     } else
       // FIXME: e.g. #'with-open-file. needs better error.
-      SIMPLE_ERROR("%s does not name a function", _rep_(fnameoid));
+      SIMPLE_ERROR("{} does not name a function", _rep_(fnameoid));
   }
   // Coerce to values if necessary.
   if (mvp)
@@ -1839,7 +1839,7 @@ void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
       return;
     }
   }
-  SIMPLE_ERROR("The GO tag %s does not exist.", _rep_(tag));
+  SIMPLE_ERROR("The GO tag {} does not exist.", _rep_(tag));
 }
 
 void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ctxt) {
@@ -1885,7 +1885,7 @@ void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ct
       return;
     }
   }
-  SIMPLE_ERROR("The block %s does not exist.", _rep_(name));
+  SIMPLE_ERROR("The block {} does not exist.", _rep_(name));
 }
 
 // catch, throw, and progv are actually handled by macros right now,
@@ -1977,7 +1977,7 @@ void compile_load_time_value(T_sp form, T_sp tread_only_p, Lexenv_sp env, const 
     read_only_p = true;
   // FIXME: Better error
   else
-    SIMPLE_ERROR("load-time-value read-only-p is not T or NIL: %s", _rep_(tread_only_p));
+    SIMPLE_ERROR("load-time-value read-only-p is not T or NIL: {}", _rep_(tread_only_p));
 
   auto ltv = LoadTimeValueInfo_O::make(form, read_only_p);
   // Add the LTV to the cmodule.
@@ -2174,7 +2174,7 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
       compile_function(head, env, Context(context, 1));
       compile_call(rest, env, context);
     } else
-      SIMPLE_ERROR("Illegal combination head: %s rest: %s", _rep_(head), _rep_(rest));
+      SIMPLE_ERROR("Illegal combination head: {} rest: {}", _rep_(head), _rep_(rest));
   }
 }
 
@@ -2195,7 +2195,7 @@ CL_LAMBDA(module lambda-expression &optional (env (cmp::make-null-lexical-enviro
 CL_DOCSTRING(R"dx(Compile the given lambda-expression into an existing module. Return a handle to it.)dx");
 CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression, Lexenv_sp env) {
   if (!gc::IsA<Cons_sp>(lambda_expression) || (oCar(lambda_expression) != cl::_sym_lambda))
-    SIMPLE_ERROR("bytecompiler passed a non-lambda-expression: %s", _rep_(lambda_expression));
+    SIMPLE_ERROR("bytecompiler passed a non-lambda-expression: {}", _rep_(lambda_expression));
   T_sp lambda_list = oCadr(lambda_expression);
   T_sp body = oCddr(lambda_expression);
   return compile_lambda(lambda_list, body, env, module);

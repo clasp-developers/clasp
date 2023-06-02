@@ -41,7 +41,7 @@ THE SOFTWARE.
 
 // We are using the fmt formatting library as an intermediate to std::format when it becomes available
 
-#include <fmt/printf.h>
+#include <fmt/format.h>
 #include <fmt/ostream.h>
 
 
@@ -61,5 +61,23 @@ namespace core {
   void lisp_debugLogWrite(const char *fileName, const char *funcName, uint lineNumber, uint column, const std::string &message, uint debugFlags = DEBUG_CPP_FUNCTION);
 };
 
+template <typename Char> struct fmt::formatter<core::T_sp, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
+  template <typename FormatContext> auto format(const core::T_sp &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+    return fmt::formatter<fmt::basic_string_view<Char>>::format(_rep_(o), ctx);
+  }
+};
+
+template <typename Char> struct fmt::formatter<core::Symbol_sp, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
+  template <typename FormatContext> auto format(const core::Symbol_sp &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+    return fmt::formatter<fmt::basic_string_view<Char>>::format(_rep_(o), ctx);
+  }
+};
+
+template <> struct fmt::formatter<gctools::GCStampEnum> : fmt::formatter<int> {
+  template <typename FormatContext>
+  auto format(const gctools::GCStampEnum &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+    return fmt::formatter<int>::format((int)o, ctx);
+  }
+};
 
 #endif //]

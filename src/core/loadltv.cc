@@ -828,7 +828,7 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
     uint8_t *memory = (uint8_t *)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
     close(fd);
     if (memory == MAP_FAILED) {
-      SIMPLE_ERROR(("Could not mmap %s because of %s"), _rep_(filename), strerror(errno));
+      SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));
     }
     mmaps.emplace_back(ltv_MmapInfo(memory, fsize));
     instruction_count += ltv_header_decode(memory);
@@ -842,12 +842,12 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
   strcat( bfilename, "XXXXXX" );
   int fout = mkstemp(bfilename);
   if (fout<0) {
-    SIMPLE_ERROR(("Could not open temporary mkstemp file with %s as the template - error: %s"),
+    SIMPLE_ERROR("Could not open temporary mkstemp file with {} as the template - error: {}",
                  _rep_(filename), strerror(errno));
   }
 
   if (verbose) {
-    write_bf_stream(fmt::sprintf("Writing file: %s\n", _rep_(filename)));
+    clasp_write_string(fmt::format("Writing file: {}\n", _rep_(filename)));
   }
 
   // Write header
@@ -859,20 +859,20 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
     write( fout, mmap._Memory + BC_HEADER_SIZE, mmap._Len - BC_HEADER_SIZE );
     int res = munmap(mmap._Memory, mmap._Len);
     if (res != 0) {
-      SIMPLE_ERROR(("Could not munmap memory"));
+      SIMPLE_ERROR("Could not munmap memory");
     }
   }
 
   if (verbose)
-    write_bf_stream(fmt::sprintf("Closing %s\n", _rep_(filename)));
+    clasp_write_string(fmt::format("Closing {}\n", _rep_(filename)));
   close(fout);
   int ren = rename( bfilename, sfilename.c_str() );
   if (ren<0) {
     std::string sbfilename(bfilename);
-    SIMPLE_ERROR("Could not rename %s to %s", sbfilename, sfilename.c_str() );
+    SIMPLE_ERROR("Could not rename {} to {}", sbfilename, sfilename.c_str() );
   }
   if (verbose)
-    write_bf_stream(fmt::sprintf("Returning %s\n", _rep_(filename)));
+    clasp_write_string(fmt::format("Returning {}\n", _rep_(filename)));
 }
 
 }; // namespace core

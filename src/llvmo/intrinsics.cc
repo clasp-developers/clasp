@@ -73,7 +73,7 @@ using namespace core;
 extern "C" {
 void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis)
 {
-  SIMPLE_ERROR(("Invalid index %d for axis %d of array: expected 0-%d")
+  SIMPLE_ERROR("Invalid index {} for axis {} of array: expected 0-{}"
                , gctools::untag_fixnum((core::T_O*)fixnum_index) , gctools::untag_fixnum((core::T_O*)fixnum_axis) , gctools::untag_fixnum((core::T_O*)fixnum_max));
 }
 
@@ -770,7 +770,7 @@ ALWAYS_INLINE void * from_object_pointer( core::T_O* obj )
   if (gctools::IsA<core::Pointer_sp>(tobj)) {
     return gctools::As_unsafe<core::Pointer_sp>(tobj)->ptr();
   }
-  SIMPLE_ERROR(("Handle from_object_pointer for value: %s") , _rep_(tobj));
+  SIMPLE_ERROR("Handle from_object_pointer for value: {}", _rep_(tobj));
 }
 
 ALWAYS_INLINE core::T_O* to_object_pointer( void * x )

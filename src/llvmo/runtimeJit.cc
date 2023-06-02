@@ -793,7 +793,7 @@ bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& 
      void* ptr;
      bool found = this->do_lookup(dylibsp,Name,ptr);
      if (!found) {
-       SIMPLE_ERROR("Could not find pointer for name |%s|" , Name );
+       SIMPLE_ERROR("Could not find pointer for name |{}|" , Name );
      }
      return core::Pointer_O::create(ptr);
  }
@@ -840,9 +840,9 @@ ObjectFile_sp ClaspJIT_O::addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
   //  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
-  if (print) core::write_bf_stream(fmt::sprintf("%s:%d Adding object file at %p  %lu bytes\n" , __FILE__ , __LINE__ , (void*)objectFile->getBufferStart() , objectFile->getBufferSize() ));
+  if (print) core::clasp_write_string(fmt::format("{}:{} Adding object file at {}  {} bytes\n" , __FILE__ , __LINE__ , (void*)objectFile->getBufferStart() , objectFile->getBufferSize() ));
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
-  if (print) core::write_bf_stream(fmt::sprintf("%s:%d Materializing\n" , __FILE__ , __LINE__ ));
+  if (print) core::clasp_write_string(fmt::format("{}:{} Materializing\n" , __FILE__ , __LINE__ ));
   std::unique_ptr<llvm::MemoryBuffer> empty;
 //  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::createForObjectFile(objectFile->getBufferIdentifier().str(), dylib );
   llvm::ExitOnError ExitOnErr;
@@ -860,7 +860,7 @@ void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startup
   void* ptr;
   bool found = this->do_lookup(dylibsp,startupName,ptr);
   if (!found) {
-    SIMPLE_ERROR(("Could not find function %s - exit program and look at llvm::errs() stream") , startupName );
+    SIMPLE_ERROR("Could not find function {} - exit program and look at llvm::errs() stream", startupName );
   }
   T_OStartUp startup = reinterpret_cast<T_OStartUp>(ptr);
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
@@ -884,14 +884,14 @@ void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startup
     //printf("%s:%d:%s I need the name of the object file and then look it up\n", __FILE__, __LINE__, __FUNCTION__ );
     return result;
   }
-  SIMPLE_ERROR(("No startup functions are waiting after runInitializers\n"));
+  SIMPLE_ERROR("No startup functions are waiting after runInitializers\n");
 }
 
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::getMainJITDylib() {
   if (this->_MainJITDylib.raw_() && gctools::untag_general<core::T_O*>(this->_MainJITDylib.raw_()) ) {
     return this->_MainJITDylib;
   }
-  SIMPLE_ERROR(("The main-jit-dylib of the JIT is not setup properly: raw -> %p\n") , (void*)this->_MainJITDylib.raw_());
+  SIMPLE_ERROR("The main-jit-dylib of the JIT is not setup properly: raw -> {}\n", (void*)this->_MainJITDylib.raw_());
 }
 
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {

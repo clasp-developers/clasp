@@ -52,7 +52,7 @@ Container_info*  global_container_info;
 
 void dump_data_types(std::ostream& fout, const std::string& indent)
 {
-#define DTNAME(_type_,_name_,_sz_) fmt::print(fout,"{}Init_data_type( data_type={}, name=\"{}\",sizeof={})\n", indent.c_str(), _type_, _name_, _sz_)
+#define DTNAME(_type_,_name_,_sz_) fmt::print(fout,"{}Init_data_type( data_type={}, name=\"{}\",sizeof={})\n", indent.c_str(), (int)_type_, _name_, _sz_)
   DTNAME(SMART_PTR_OFFSET,"smart_ptr",sizeof(void*));
   DTNAME(ATOMIC_SMART_PTR_OFFSET,"atomic_smart_ptr",sizeof(void*));
   DTNAME(TAGGED_POINTER_OFFSET,"tagged_ptr",sizeof(void*));

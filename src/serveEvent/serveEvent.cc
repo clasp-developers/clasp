@@ -67,7 +67,7 @@ CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventNoTimeout(clasp_ffi
 DOCGROUP(clasp);
 CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventWithTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd, int maxfdp1, double seconds) {
   if (seconds < 0.0) {
-    SIMPLE_ERROR(("Illegal timeout %lf seconds") , seconds);
+    SIMPLE_ERROR("Illegal timeout {} seconds", seconds);
   }
   struct timeval tv;
   tv.tv_sec = seconds;

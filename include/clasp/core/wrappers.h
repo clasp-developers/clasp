@@ -345,7 +345,7 @@ public:
   void setup_class(const string &makerName = "") {
     _G();
     if (IS_SYMBOL_UNDEFINED(OT::static_classSymbol())) {
-      SIMPLE_ERROR_SPRINTF("Attempting to add methods for class that isn't defined yet");
+      SIMPLE_ERROR("Attempting to add methods for class that isn't defined yet");
     }
 
     this->_ClassSymbol = OT::static_classSymbol();

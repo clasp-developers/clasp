@@ -91,7 +91,7 @@ CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(T_sp obj) {
 
 Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index) {
   Fixnum_sp indexKey = make_fixnum(index);
-  ASSERTF(this->_EnumToSymbol->contains(indexKey), ("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") , index , this->_WhatTheEnumsRepresent->get_std_string().c_str());
+  ASSERTF(this->_EnumToSymbol->contains(indexKey), "Could not find symbol for EnumIndex({}) in SymbolToEnumConverter({})", index, this->_WhatTheEnumsRepresent->get_std_string());
   return gc::As<Symbol_sp>(this->_EnumToSymbol->gethash(indexKey));
 }
 
@@ -104,13 +104,8 @@ string SymbolToEnumConverter_O::symbolStringForEnumIndex(int index)
 #endif
 
 void SymbolToEnumConverter_O::throwIfUnrecognizedEnumIndex(int ei) {
-  
   if (!this->recognizesEnumIndex(ei)) {
-    stringstream ss;
-    ss << fmt::sprintf("I do not recognize the enum value(%d)\n", ei);
-    ss << "Legal enum values/symbols are: " << std::endl;
-    ss << this->legalEnumValuesAndSymbols() << std::endl;
-    SIMPLE_ERROR((ss.str()));
+    SIMPLE_ERROR("I do not recognize the enum value({})\nLegal enum values/symbols are: {}", ei, this->legalEnumValuesAndSymbols());
   }
 }
 

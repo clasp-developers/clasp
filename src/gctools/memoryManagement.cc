@@ -965,7 +965,7 @@ void gatherObjects( uintptr_t* fieldAddress, uintptr_t client, uintptr_t tag, vo
   // It hasn't been seen - mark it for scanning
   //
   MarkNode* node = new MarkNode( fieldAddress );
-  LOG("pushMarkStack: %p\n", *(void**)fieldAddress );
+  LOG("pushMarkStack: {}\n", *(void**)fieldAddress );
   gather->pushMarkStack(node);
 }
 
@@ -1050,7 +1050,7 @@ void gatherAllObjects(GatherObjects& gather) {
     if (rootType == LispRoot) forceGeneralRoot = true;
     else if (rootType == CoreSymbolRoot) forceGeneralRoot = true;
     MarkNode* node = new MarkNode( rootAddress, forceGeneralRoot );
-    LOG("Push root: %p\n", *(void**)rootAddress );
+    LOG("Push root: {}\n", *(void**)rootAddress );
     gather->pushMarkStack(node);
   } , (void*)&gather );
 
@@ -1078,7 +1078,7 @@ void gatherAllObjects(GatherObjects& gather) {
       if (!generalOrWeakHeader->_badge_stamp_wtag_mtag.weakObjectP()) {
         // It's a general object - walk it
         size_t objectSize;
-        LOG("Mark/scan client: %p\n", *(void**)client );
+        LOG("Mark/scan client: {}\n", *(void**)client );
         mw_obj_skip( client, false, objectSize );
         uintptr_t clientLimit = client + objectSize;
         mw_obj_scan( 0, client, clientLimit, &gather );
@@ -1086,7 +1086,7 @@ void gatherAllObjects(GatherObjects& gather) {
         // It's a weak object - walk it
         size_t objectSize;
         uintptr_t clientLimit = mw_weak_skip( client, false, objectSize );
-        LOG("Mark/scan weak client: %p\n", *(void**)client );
+        LOG("Mark/scan weak client: {}\n", *(void**)client );
         mw_weak_scan( 0, client, clientLimit, &gather );
       }
     } else if (tag == cons_tag) {
@@ -1094,7 +1094,7 @@ void gatherAllObjects(GatherObjects& gather) {
       Header_s* consHeader = (Header_s*)ConsPtrToHeaderPtr((void*)client);
       gather.mark(consHeader);
       size_t consSize;
-      LOG("Mark/scan cons client: %p\n", *(void**)client );
+      LOG("Mark/scan cons client: {}\n", *(void**)client );
       uintptr_t clientLimit = mw_cons_skip(client,consSize);
       mw_cons_scan( 0, client, clientLimit, &gather );
     }

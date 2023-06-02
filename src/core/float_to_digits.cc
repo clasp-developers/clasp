@@ -90,7 +90,7 @@ static float_approx *setup(Float_sp number, float_approx *approx) {
                ldexpl(FLT_RADIX, LDBL_MANT_DIG - 1));
 #endif
   default:
-    SIMPLE_ERROR(("Illegal type"));
+    SIMPLE_ERROR("Illegal type");
   }
   approx->low_ok = approx->high_ok = clasp_evenp(f);
   if (e > 0) {

@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -43,38 +43,38 @@ public:
   IT _Iterator;
   //        End     _end;
 public:
-Iterator(IT it /*, End end */) : _Iterator(it) /* , _end(end) */ {};
+  Iterator(IT it /*, End end */) : _Iterator(it) /* , _end(end) */ {};
 
-  core::T_sp unsafeElement() const {
-    return translate::to_object<IT>::convert(this->_Iterator);
-  }
+  core::T_sp unsafeElement() const { return translate::to_object<IT>::convert(this->_Iterator); }
   size_t templatedSizeof() const { return sizeof(*this); };
   void step() { ++this->_Iterator; };
-size_t distance(core::T_sp other) const {
+  size_t distance(core::T_sp other) const {
     if (gctools::smart_ptr<Iterator> io = other.asOrNull<Iterator<IT>>()) {
-        IT& otherIterator = io.get()->_Iterator;
-        return std::distance(this->_Iterator,otherIterator);
+      IT &otherIterator = io.get()->_Iterator;
+      return std::distance(this->_Iterator, otherIterator);
     }
-    SIMPLE_ERROR(("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") , _rep_(this->asSmartPtr()) , _rep_(other) , _rep_(core::instance_class(other)));
+    SIMPLE_ERROR("You tried to compare an iterator {} to an object {} of class %s and the isA relationship failed",
+                 _rep_(this->asSmartPtr()), _rep_(other), _rep_(core::instance_class(other)));
   }
-bool operator==(core::T_sp other) const {
+  bool operator==(core::T_sp other) const {
     if (gctools::smart_ptr<Iterator> io = other.asOrNull<Iterator<IT>>()) {
-        IT& otherIterator = io->_Iterator;
-        return this->_Iterator == otherIterator;
+      IT &otherIterator = io->_Iterator;
+      return this->_Iterator == otherIterator;
     }
-    SIMPLE_ERROR(("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") , _rep_(this->asSmartPtr()) , _rep_(other) , _rep_(core::instance_class(other)));
+    SIMPLE_ERROR("You tried to compare an iterator {} to an object {} of class {} and the isA relationship failed",
+                 _rep_(this->asSmartPtr()), _rep_(other), _rep_(core::instance_class(other)));
   }
   bool operator<(core::T_sp other) {
     if (Iterator<IT> *io = gc::As<gc::smart_ptr<Iterator<IT>>>(other)) {
-        return this->_Iterator < (*io)._Iterator;
+      return this->_Iterator < (*io)._Iterator;
     }
-    SIMPLE_ERROR(("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") , _rep_(this->asSmartPtr()) , _rep_(other) , _rep_(core::instance_class(other)));
+    SIMPLE_ERROR("You tried to compare an iterator {} to an object {} of class {} and the isA relationship failed",
+                 _rep_(this->asSmartPtr()), _rep_(other), _rep_(core::instance_class(other)));
   }
 };
-};
+}; // namespace clbind
 
-template <typename IT, typename Policy>
-class gctools::GCStamp<clbind::Iterator<IT, Policy>> {
+template <typename IT, typename Policy> class gctools::GCStamp<clbind::Iterator<IT, Policy>> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Iterator<IT, Policy>::TemplatedBase>::StampWtag;
 };

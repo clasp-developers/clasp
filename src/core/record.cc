@@ -41,17 +41,17 @@ THE SOFTWARE.
 namespace core {
 
 T_sp record_circle_subst(Record_sp record, T_sp tree) {
-  RECORD_LOG("Checking record_circle_subst orig@%p: %s\n" , (void *)(tree.raw_()) ,  _rep_(tree) );
+  RECORD_LOG("Checking record_circle_subst orig@{}: {}\n" , (void *)(tree.raw_()) ,  _rep_(tree));
   T_sp result;
   T_sp patching_callback = record->_patching_callback;
   if (patching_callback.notnilp()) {
     result = eval::funcall(patching_callback, tree);
   } else {
-    SIMPLE_ERROR(("The patching-callback is nil"));
+    SIMPLE_ERROR("The patching-callback is nil");
   }
 #ifdef DEBUG_RECORD
   if (result.raw_() != tree.raw_()) {
-    RECORD_LOG("  YES!!! record_circle_subst tree@%p subst@%p: %s\n" , (void*)(tree.raw_()) , (void *)(result.raw_()) ,  _rep_(result) );
+    RECORD_LOG("  YES!!! record_circle_subst tree@{} subst@{}: {}\n" , (void*)(tree.raw_()) , (void *)(result.raw_()) ,  _rep_(result));
   }
 #endif
   return result;
@@ -89,7 +89,7 @@ void Record_O::errorIfInvalidArguments() {
     }
   }
   if (badArgs.notnilp()) {
-    SIMPLE_ERROR(("Initialization of CXX-OBJECT had illegal arguments: %s") , _rep_(badArgs));
+    SIMPLE_ERROR("Initialization of CXX-OBJECT had illegal arguments: {}", _rep_(badArgs));
   }
 }
 
@@ -113,7 +113,7 @@ CL_DEFMETHOD T_sp Record_O::field_read(Symbol_sp name) {
     this->field(name,result);
     return result;
   }
-  SIMPLE_ERROR(("field-read called on a record that is not loading"));
+  SIMPLE_ERROR("field-read called on a record that is not loading");
 }
 
 CL_DEFMETHOD void Record_O::field_write(Symbol_sp name, T_sp object) {
@@ -121,7 +121,7 @@ CL_DEFMETHOD void Record_O::field_write(Symbol_sp name, T_sp object) {
     this->field(name,object);
     return;
   }
-  SIMPLE_ERROR(("field-write called on a record that is not saving or initializing"));
+  SIMPLE_ERROR("field-write called on a record that is not saving or initializing");
 }
 
 CL_DEFMETHOD T_sp Record_O::field_patch(Symbol_sp name, T_sp object) {
@@ -129,7 +129,7 @@ CL_DEFMETHOD T_sp Record_O::field_patch(Symbol_sp name, T_sp object) {
     this->field(name,object);
     return object;
   }
-  SIMPLE_ERROR(("field-patch called on a record that is not patching"));
+  SIMPLE_ERROR("field-patch called on a record that is not patching");
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg,initializing);

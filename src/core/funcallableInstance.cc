@@ -51,7 +51,7 @@ namespace core {
 #ifdef DEBUG_DTREE_INTERPRETER // for debugging
 #define DTILOG(...)                                                                                                                \
   {                                                                                                                                \
-    fprintf(DTILOG_fout, "%5lu: %s", my_thread->_DtreeInterpreterCallCount, (fmt::sprintf(__VA_ARGS__).c_str()));                  \
+    fprintf(DTILOG_fout, "%5lu: %s", my_thread->_DtreeInterpreterCallCount, (fmt::format(__VA_ARGS__).c_str()));                  \
     fflush(DTILOG_fout);                                                                                                           \
   }
 #define DTIDO(x)                                                                                                                   \
@@ -187,10 +187,10 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
 
 void FuncallableInstance_O::describe(T_sp stream) {
   stringstream ss;
-  ss << (fmt::sprintf("FuncallableInstance\n"));
-  ss << (fmt::sprintf("_Class: %s\n", _rep_(this->_Class)));
+  ss << (fmt::format("FuncallableInstance\n"));
+  ss << (fmt::format("_Class: {}\n", _rep_(this->_Class)));
   for (int i(1); i < rack()->length(); ++i) {
-    ss << fmt::sprintf("_Rack[%d]: %s\n", i, _rep_(low_level_instanceRef(rack(), i)));
+    ss << fmt::format("_Rack[{}]: {}\n", i, _rep_(low_level_instanceRef(rack(), i)));
   }
   clasp_write_string(ss.str(), stream);
 }
@@ -206,7 +206,7 @@ CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     return iobj->setFuncallableInstanceFunction(func);
   }
-  SIMPLE_ERROR(("You can only setFuncallableInstanceFunction on funcallable instances - you tried to set it on a: %s"), _rep_(obj));
+  SIMPLE_ERROR("You can only setFuncallableInstanceFunction on funcallable instances - you tried to set it on a: {}", _rep_(obj));
 };
 
 }; // namespace core
@@ -388,7 +388,7 @@ struct GFBytecodeEntryPoint {
       default:
         printf("%s:%d:%s Invalid dtree opcode ip0: %p  ip: %p  opcode %u %s\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op,
                dtree_op_name(op).c_str());
-        SIMPLE_ERROR("%zu/%s is not a valid dtree opcode", op, dtree_op_name(op).c_str());
+        SIMPLE_ERROR("%zu/{} is not a valid dtree opcode", op, dtree_op_name(op).c_str());
         break;
       } /*switch*/
     }   /* while(1) */
@@ -454,7 +454,7 @@ struct GFBytecodeEntryPoint {
       default:
         printf("%s:%d:%s Invalid dtree opcode ip0: %p  ip: %p  opcode %u %s\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op,
                dtree_op_name(op).c_str());
-        SIMPLE_ERROR("%zu/%s is not a valid dtree opcode", op, dtree_op_name(op).c_str());
+        SIMPLE_ERROR("%zu/{} is not a valid dtree opcode", op, dtree_op_name(op).c_str());
         break;
       } /*switch*/
     }   /* while(1) */
@@ -512,7 +512,7 @@ struct GFBytecodeEntryPoint {
       default:
         printf("%s:%d:%s Invalid dtree opcode ip0: %p  ip: %p  opcode %u %s\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op,
                dtree_op_name(op).c_str());
-        SIMPLE_ERROR("%zu/%s is not a valid dtree opcode", op, dtree_op_name(op).c_str());
+        SIMPLE_ERROR("%zu/{} is not a valid dtree opcode", op, dtree_op_name(op).c_str());
         break;
       } /*switch*/
     }   /* while(1) */
@@ -571,7 +571,7 @@ struct GFBytecodeEntryPoint {
       default:
         printf("%s:%d:%s Invalid dtree opcode ip0: %p  ip: %p  opcode %u %s\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op,
                dtree_op_name(op).c_str());
-        SIMPLE_ERROR("%zu/%s is not a valid dtree opcode", op, dtree_op_name(op).c_str());
+        SIMPLE_ERROR("%zu/{} is not a valid dtree opcode", op, dtree_op_name(op).c_str());
         break;
       } /*switch*/
     }   /* while(1) */
@@ -630,7 +630,7 @@ struct GFBytecodeEntryPoint {
       default:
         printf("%s:%d:%s Invalid dtree opcode ip0: %p  ip: %p  opcode %u %s\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op,
                dtree_op_name(op).c_str());
-        SIMPLE_ERROR("%zu/%s is not a valid dtree opcode", op, dtree_op_name(op).c_str());
+        SIMPLE_ERROR("%zu/{} is not a valid dtree opcode", op, dtree_op_name(op).c_str());
         break;
       } /*switch*/
     }   /* while(1) */
@@ -689,7 +689,7 @@ struct GFBytecodeEntryPoint {
       default:
         printf("%s:%d:%s Invalid dtree opcode ip0: %p  ip: %p  opcode %u %s\n", __FILE__, __LINE__, __FUNCTION__, ip0, ip, op,
                dtree_op_name(op).c_str());
-        SIMPLE_ERROR("%zu/%s is not a valid dtree opcode", op, dtree_op_name(op).c_str());
+        SIMPLE_ERROR("%zu/{} is not a valid dtree opcode", op, dtree_op_name(op).c_str());
         break;
       } /*switch*/
     }   /* while(1) */
@@ -765,10 +765,10 @@ SYMBOL_EXPORT_SC_(KeywordPkg, generic_function_name);
 DOCGROUP(clasp);
 CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset) {
   if (funcallableInstance_size != sizeof(FuncallableInstance_O))
-    SIMPLE_ERROR(("The cmpintrinsics.lisp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O) %lu"),
+    SIMPLE_ERROR("The cmpintrinsics.lisp funcallableInstance_size {} does not match sizeof(FuncallableInstance_O) {}",
                  funcallableInstance_size, sizeof(FuncallableInstance_O));
   if (funcallableInstance_rack_offset != offsetof(FuncallableInstance_O, _Rack))
-    SIMPLE_ERROR(("funcallableInstance_rack_offset %lu does not match offsetof(_Rack,FuncallableInstance_O) %lu"),
+    SIMPLE_ERROR("funcallableInstance_rack_offset {} does not match offsetof(_Rack,FuncallableInstance_O) {}",
                  funcallableInstance_rack_offset, offsetof(FuncallableInstance_O, _Rack));
 }
 

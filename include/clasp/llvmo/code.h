@@ -424,7 +424,7 @@ inline void allocateInCodeBlock( BasicLayout& BL, CodeBlock_sp& codeBlock ) {
     _lisp->_Roots._AllCodeBlocks.store(core::Cons_O::createAtStage<Stage>(codeBlock,_lisp->_Roots._AllCodeBlocks.load()));
     fits = codeBlock->calculate(BL);
     if (!fits) {
-      SIMPLE_ERROR("Could not allocate enough space for code %lu", size );
+      SIMPLE_ERROR("Could not allocate enough space for code {}", size );
     }
   }
   //

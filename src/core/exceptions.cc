@@ -65,12 +65,12 @@ bool stackmap_log = true;
 NEVER_OPTIMIZE void assert_failure(const char* file, size_t line, const char* func, const char* msg)
 {
   printf("%s:%lu:%s Assertion failure msg: %s\n", file, line, func, msg );
-  SIMPLE_ERROR(("%s:%lu:%s  Assertion failure: %s") , file , line , func , msg);
+  SIMPLE_ERROR("{}:{}:{}  Assertion failure: {}", file , line , func , msg);
 }
 
 NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y)
 {
-  SIMPLE_ERROR(("%s:%d:%s  Assertion failure: bounds error - %s must be less than %s") , file , line , func , x , y);
+  SIMPLE_ERROR("{}:{}:{}  Assertion failure: bounds error - {} must be less than {}", file , line , func , x , y);
 }
 
 /*! These are here just so that the clang compiler
@@ -329,9 +329,9 @@ string DebugStream::nextPosition() {
 
 DebugStream &DebugStream::beginNode(uint debugFlags) {
   if (this->DebugLogAsXml) {
-    this->writeRaw(fmt::sprintf("<%s>\n", debugFlagsAsNodeName(debugFlags)));
+    this->writeRaw(fmt::format("<{}>\n", debugFlagsAsNodeName(debugFlags)));
   } else {
-    this->writeRaw(fmt::sprintf("%s%s%s\n", DebugOpenLeft , debugFlagsAsNodeName(debugFlags) , DebugOpenRight));
+    this->writeRaw(fmt::format("{}{}{}\n", DebugOpenLeft , debugFlagsAsNodeName(debugFlags) , DebugOpenRight));
   }
   return *this;
 }
@@ -346,12 +346,12 @@ DebugStream &DebugStream::beginNode(uint debugFlags,
   if (shortSourceFile == NULL)
     shortSourceFile = "-begin-node-no-file-";
   if (this->DebugLogAsXml) {
-    string stuff = fmt::sprintf("<%s s=\"%s\" f=\"%s\" l=\"%d\">\n", debugFlagsAsNodeName(debugFlags) , shortSourceFile , cPfunctionName , lineNumber);
+    string stuff = fmt::format("<{} s=\"{}\" f=\"{}\" l=\"{}\">\n", debugFlagsAsNodeName(debugFlags) , shortSourceFile , cPfunctionName , lineNumber);
     this->writeRaw(stuff);
     if (message != "")
       this->writeTextCr(message);
   } else {
-    string stuff = fmt::sprintf("%s%s {%s:%s:%d}%s" , DebugOpenLeft , debugFlagsAsNodeName(debugFlags) , cPfunctionName , shortSourceFile , lineNumber , DebugOpenRight);
+    string stuff = fmt::format("{}{} {{{}:{}:{}}}{}" , DebugOpenLeft , debugFlagsAsNodeName(debugFlags) , cPfunctionName , shortSourceFile , lineNumber , DebugOpenRight);
     this->writeRaw(stuff);
     this->writeTextCr(message);
   }
@@ -360,10 +360,10 @@ DebugStream &DebugStream::beginNode(uint debugFlags,
 
 DebugStream &DebugStream::endNode(uint flags) {
   if (this->DebugLogAsXml) {
-    string stuff = fmt::sprintf("</%s>\n", debugFlagsAsNodeName(flags));
+    string stuff = fmt::format("</{}>\n", debugFlagsAsNodeName(flags));
     this->writeRaw(stuff);
   } else {
-    string stuff = fmt::sprintf("%s\n", DebugClose);
+    string stuff = fmt::format("{}\n", DebugClose);
     this->writeRaw(stuff);
   }
   return *this;
@@ -523,7 +523,7 @@ void DebugStream::setSuppressMessages(bool s) {
     stateName = "OFF";
   else
     stateName = "ON";
-  this->writeRaw(fmt::sprintf("<DebugMessages state=\"%s\"/>\n", stateName));
+  this->writeRaw(fmt::format("<DebugMessages state=\"{}\"/>\n", stateName));
   this->_SuppressMessages = s;
 }
 
@@ -532,7 +532,7 @@ char *internalPrintf(const LispPtr &lisp, const char *fmt, va_list arg_ptr) {
   int n;
   n = vasprintf(&outBuffer, fmt, arg_ptr);
   if (outBuffer == NULL) {
-    SIMPLE_ERROR(("Could not allocate a large enough internalPrintf buffer"));
+    SIMPLE_ERROR("Could not allocate a large enough internalPrintf buffer");
   }
   return outBuffer;
 }
@@ -873,7 +873,7 @@ void Warn(T_sp datum, List_sp arguments) {
 
 void clasp_internal_error(const char *msg) {
   printf("%s:%d %s\n", __FILE__, __LINE__, msg);
-  SIMPLE_ERROR(("Internal error: %s\n") , msg);
+  SIMPLE_ERROR("Internal error: {}\n", msg);
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, signalSimpleError);

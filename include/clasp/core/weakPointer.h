@@ -46,14 +46,14 @@ class WeakPointer_O : public General_O {
 #ifdef USE_BOEHM
     GC_general_register_disappearing_link((void**)&this->_Link, &*ptr);
 #else
-    SIMPLE_ERROR(("WeakPointer_O not supported"));
+    SIMPLE_ERROR("WeakPointer_O not supported");
 #endif
   };
   ~WeakPointer_O() {
 #ifdef USE_BOEHM
     GC_unregister_disappearing_link((void**)&this->_Link);
 #else
-    SIMPLE_ERROR(("WeakPointer_O not supported"));
+    SIMPLE_ERROR("WeakPointer_O not supported");
 #endif
   }
   

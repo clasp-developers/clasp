@@ -101,7 +101,7 @@ CL_DEFUN T_sp cl__subseq(T_sp seq, size_t start, T_sp end) {
     if (start == 0 && (end.nilp() || (end.fixnump() && unbox_fixnum(gc::As<Fixnum_sp>(end)) == 0))) {
       return nil<T_O>();
     }
-    SIMPLE_ERROR(("Illegal arguments for subseq on NIL - they must be (subseq NIL 0 NIL)"));
+    SIMPLE_ERROR("Illegal arguments for subseq on NIL - they must be (subseq NIL 0 NIL)");
   } else if (Vector_sp vseq = seq.asOrNull<Vector_O>()) {
     return vseq->subseq(start, end);
   } else {

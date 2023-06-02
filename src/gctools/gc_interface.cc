@@ -174,7 +174,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 #endif
 
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(GeneralPtrToHeaderPtr(client));
-  ASSERTF(header->_badge_stamp_wtag_mtag.stampP(), ("obj_deallocate_unmanaged_instance called without a valid object"));
+  ASSERTF(header->_badge_stamp_wtag_mtag.stampP(), "obj_deallocate_unmanaged_instance called without a valid object");
   gctools::GCStampEnum stamp = (GCStampEnum)(header->_badge_stamp_wtag_mtag.stamp_());
 #ifndef RUNNING_PRECISEPREP
 #if defined(USE_MPS) || defined(USE_PRECISE_GC)
@@ -460,7 +460,7 @@ void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const st
   }
   if (store._PackageName != package_part) {
     printf("%s:%d For symbol %s there is a mismatch in the package desired %s and the one retrieved %s\n", __FILE__, __LINE__, full_name.c_str(), package_part.c_str(), store._PackageName.c_str());
-    SIMPLE_ERROR(("Mismatch of package when setting a class symbol"));
+    SIMPLE_ERROR("Mismatch of package when setting a class symbol");
   }
   //  printf("%s:%d Setting static_class_symbol to %s\n", __FILE__, __LINE__, _safe_rep_(store._Symbol).c_str());
   TheClass::set_static_class_symbol(store._Symbol);
@@ -740,13 +740,13 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
 #define Init_templated_kind(_class_) \
   fmt::print(fout, "Init_templated_kind( stamp={}, name=\"{}\", size={});\n", LAYOUT_STAMP(_class_),#_class_,sizeof(*(_class_*)0x0));
 #define Init__fixed_field(_class_,_index_,_type_,_field_name_) \
-  fmt::print(fout, "Init__fixed_field( stamp={}, index={}, data_type={},field_name=\"{}\",field_offset={});\n", LAYOUT_STAMP(_class_),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
+  fmt::print(fout, "Init__fixed_field( stamp={}, index={}, data_type={},field_name=\"{}\",field_offset={});\n", LAYOUT_STAMP(_class_),_index_,(int)_type_,#_field_name_,offsetof(_class_,_field_name_));
 #define Init__variable_array0(_class_,_data_field_) \
   fmt::print(fout,"Init__variable_array0( stamp={}, name=\"{}\", offset={} );\n", LAYOUT_STAMP(_class_),#_data_field_,offsetof(_class_,_data_field_));
 #define Init__variable_capacity(_class_,_value_type_,_end_,_capacity_) \
   fmt::print(fout,"Init__variable_capacity( stamp={}, element_size={}, end_offset={}, capacity_offset={} );\n", LAYOUT_STAMP(_class_),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
 #define Init__variable_field(_class_,_data_type_,_index_,_field_name_,_field_offset_) \
-  fmt::print(fout,"Init__variable_field( stamp={}, index={}, data_type={}, field_name=\"{}\", field_offset={} );\n", LAYOUT_STAMP(_class_),_index_,_data_type_,_field_name_,_field_offset_);
+  fmt::print(fout,"Init__variable_field( stamp={}, index={}, data_type={}, field_name=\"{}\", field_offset={} );\n", LAYOUT_STAMP(_class_),_index_,(int)_data_type_,_field_name_,_field_offset_);
 #define Init_global_ints(_name_,_value_) fmt::print(fout,"Init_global_ints(name=\"{}\",value={});\n", _name_,_value_);
   printf("Dumping interface\n");
   gctools::dump_data_types(fout,"");
