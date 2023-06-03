@@ -2967,6 +2967,10 @@
              :offset-base-ctype "llvmo::CodeBlock_O" :layout-offset-field-names ("_TailOffset")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "llvmo::CodeBlock_O" :layout-offset-field-names ("_TotalSize")}
+{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "llvmo::CodeBlock_O" :layout-offset-field-names ("_mmapBlock")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "llvmo::CodeBlock_O" :layout-offset-field-names ("_mmapSize")}
 {variable-array0 :offset-base-ctype "llvmo::CodeBlock_O" :field-names ("_DataCode" "._Data")}
 {variable-capacity :ctype "unsigned char" :offset-base-ctype "llvmo::CodeBlock_O"
                    :length-field-names ("_DataCode" "._MaybeSignedLength")
@@ -12867,6 +12871,12 @@
 {variable-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
                 :fixup-ctype-offset-type-key "gctools::smart_ptr<core::Symbol_O>"
                 :fixup-ctype-key "chem::AtomInfo" :layout-offset-field-names ("_Type")}
+{variable-field :offset-type-cxx-identifier "ctype_unsigned_long"
+                :fixup-ctype-offset-type-key "unsigned long" :fixup-ctype-key "chem::AtomInfo"
+                :layout-offset-field-names ("_MoleculeIndex")}
+{variable-field :offset-type-cxx-identifier "ctype_unsigned_long"
+                :fixup-ctype-offset-type-key "unsigned long" :fixup-ctype-key "chem::AtomInfo"
+                :layout-offset-field-names ("_ResidueIndex")}
 {container-kind :stamp-name "STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__"
                 :stamp-key "gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>"
                 :parent-class "gctools::GCContainer" :lisp-class-base nil

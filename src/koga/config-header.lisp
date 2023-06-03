@@ -42,7 +42,8 @@
                  "INCLUDED_FROM_CLASP" t
                  "INHERITED_FROM_SRC" t
                  "NDEBUG" t
-                 "X86_64" t
+                 "X86_64" (and (member :x86-64 *features*) t)
+                 "ARM64" (and (member :arm64 *features*) t)
                  "BUILD_EXTENSION" (and (extensions configuration) t)
                  "DEFAULT_STARTUP_TYPE" (if (extensions configuration) :|cloExtensionImage| :|cloBaseImage|)
                  "CLASP_EXTENSIONS" (and (extensions configuration) t)

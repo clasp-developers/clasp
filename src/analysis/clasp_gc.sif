@@ -1111,6 +1111,10 @@
              :offset-base-ctype "llvmo::CodeBlock_O" :layout-offset-field-names ("_TailOffset")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "llvmo::CodeBlock_O" :layout-offset-field-names ("_TotalSize")}
+{fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
+             :offset-base-ctype "llvmo::CodeBlock_O" :layout-offset-field-names ("_mmapBlock")}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "llvmo::CodeBlock_O" :layout-offset-field-names ("_mmapSize")}
 {variable-array0 :offset-base-ctype "llvmo::CodeBlock_O" :field-names ("_DataCode" "._Data")}
 {variable-capacity :ctype "unsigned char" :offset-base-ctype "llvmo::CodeBlock_O"
                    :length-field-names ("_DataCode" "._MaybeSignedLength")

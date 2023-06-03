@@ -224,12 +224,9 @@ public:
   uintptr_t     _HeadOffset;
   uintptr_t     _TailOffset;
   uintptr_t     _TotalSize;
-#ifdef USE_MMAP_CODEBLOCK
   void*         _mmapBlock;
   uintptr_t     _mmapSize;
-#else
   gctools::GCArray_moveable<uint8_t> _DataCode;
-#endif
   static constexpr size_t DefaultSize = 8*1024*1024;
 public:
   template <typename Stage>

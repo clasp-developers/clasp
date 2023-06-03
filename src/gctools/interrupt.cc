@@ -3,6 +3,10 @@
 #if defined(__i386__) || defined(__x86_64__)
 # include <xmmintrin.h>
 #endif
+#ifdef __arm64__
+#include <cfenv>
+#include <fenv.h>
+#endif
 #include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbol.h>
@@ -329,6 +333,9 @@ DOCGROUP(clasp);
 CL_DEFUN void core__disable_all_fpe_masks() {
 #if defined(__i386__) || defined(__x86_64__)
   _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
+#elif defined(__arm64__)
+  std::fenv_t env;
+  std::feholdexcept(&env);
 #else
   printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
@@ -355,6 +362,14 @@ CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, 
     _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DIV_ZERO));
   if (denormalized_operand.notnilp())
     _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DENORM));
+#elif defined(__arm64__)
+  std::fenv_t env;
+  std::fegetenv(&env);
+  env.__fpcr = (underflow.notnilp() ? __fpcr_trap_underflow : 0) | (overflow.notnilp() ? __fpcr_trap_overflow : 0) |
+               (inexact.notnilp() ? __fpcr_trap_inexact : 0) | (invalid.notnilp() ? __fpcr_trap_invalid : 0) |
+               (divide_by_zero.notnilp() ? __fpcr_trap_divbyzero : 0) |
+               (denormalized_operand.notnilp() ? __fpcr_trap_denormal : 0);
+  std::fesetenv(&env);
 #else
   printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
@@ -365,6 +380,10 @@ CL_DEFUN core::Fixnum_sp core__get_current_fpe_mask() {
 #if defined(__i386__) || defined(__x86_64__)
   unsigned int before = _MM_GET_EXCEPTION_MASK ();
   return core::clasp_make_fixnum(before);
+#elif defined(__arm64__)
+  std::fenv_t env;
+  std::fegetenv(&env);
+  return core::clasp_make_fixnum(env.__fpcr);
 #else
   printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
   abort();
@@ -376,6 +395,11 @@ CL_DEFUN void core__set_current_fpe_mask(core::Fixnum_sp mask) {
   Fixnum value = core::unbox_fixnum(mask);
 #if defined(__i386__) || defined(__x86_64__)
   _MM_SET_EXCEPTION_MASK(value);
+#elif defined(__arm64__)
+  std::fenv_t env;
+  std::fegetenv(&env);
+  env.__fpcr = value;
+  std::fesetenv(&env);
 #else
   printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif

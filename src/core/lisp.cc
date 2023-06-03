@@ -609,20 +609,23 @@ void Lisp::startupLispEnvironment() {
   features = Cons_O::create(_lisp->internKeyword("BSD"), features);
   features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
 #endif
 #ifdef _TARGET_OS_LINUX
   features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
-  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
 #endif
 #ifdef _TARGET_OS_FREEBSD
   features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("FREEBSD"), features);
   features = Cons_O::create(_lisp->internKeyword("BSD"), features);
+#endif
+#ifdef X86_64
   features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
+#endif
+#ifdef ARM64
+  features = Cons_O::create(_lisp->internKeyword("ARM64"), features);
 #endif
 #ifdef CLASP_UNICODE
   features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
