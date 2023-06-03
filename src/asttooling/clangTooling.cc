@@ -526,10 +526,17 @@ CL_DEFUN core::T_sp ast_tooling__clangVersionString() {
 
 core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
   clang::ast_matchers::dynamic::VariantMatcher *vp = gc::As<core::WrappedPointer_sp>(variantMatcher)->cast<clang::ast_matchers::dynamic::VariantMatcher>();
+#if __clang_major__ < 16  
   llvm::Optional<clang::ast_matchers::internal::DynTypedMatcher> dtm = vp->getSingleMatcher();
   if (dtm.hasValue()) {
     return clbind::Wrapper<clang::ast_matchers::internal::DynTypedMatcher>::make_wrapper(*dtm, reg::registered_class<clang::ast_matchers::internal::DynTypedMatcher>::id);
   }
+#else
+  std::optional<clang::ast_matchers::internal::DynTypedMatcher> dtm = vp->getSingleMatcher();
+  if (dtm.has_value()) {
+    return clbind::Wrapper<clang::ast_matchers::internal::DynTypedMatcher>::make_wrapper(*dtm, reg::registered_class<clang::ast_matchers::internal::DynTypedMatcher>::id);
+  }
+#endif
   return nil<core::T_O>();
 };
 
@@ -998,8 +1005,13 @@ CL_DEFUN core::T_sp ast_tooling__parse_dynamic_matcher(const string& matcher)
 //  printf("%s:%d:%s got matcher %s\n", __FILE__, __LINE__, __FUNCTION__, matcher.c_str());
   llvm::StringRef matchersr(matcher);
   clang::ast_matchers::dynamic::Diagnostics error;
+#if __clang_major__ < 16  
   llvm::Optional<clang::ast_matchers::dynamic::DynTypedMatcher> Matcher =
     clang::ast_matchers::dynamic::Parser::parseMatcherExpression(matchersr, NULL, NULL, &error);
+#else
+  std::optional<clang::ast_matchers::dynamic::DynTypedMatcher> Matcher =
+    clang::ast_matchers::dynamic::Parser::parseMatcherExpression(matchersr, NULL, NULL, &error);
+#endif
   if (!Matcher) {
     SIMPLE_ERROR("Could not parse expression {}", matcher);
   }

@@ -963,22 +963,27 @@ the function to the overall configuration."
                           &key major-version (version-flag "--version") required match)
   "Configure a program by looking through a list of candidates and checking the version number
 if provided."
-  (loop for candidate in (if (listp candidates) candidates (list candidates))
-        for path = (if (stringp candidate)
-                       (format nil candidate major-version)
-                       (namestring candidate))
-        for version = (run-program-capture (list path version-flag))
-        when (and version
-                  (or (null major-version)
-                      (and match
-                           (search match version))
-                      (= major-version
-                         (first (uiop:parse-version version)))))
-          do (message :info "Found ~a program with path ~a ~:[~;and version ~a~]"
-                            name path major-version version)
-             (return (values path version))
-        finally (message (if required :err :warn)
-                         "Unable to find ~a program~@[ compatible with major version ~a~]."
-                         name major-version)
-                (values nil nil)))
+  (flet ((search-by-major (major-version)
+           (loop for candidate in (if (listp candidates) candidates (list candidates))
+                 for path = (if (stringp candidate)
+                                (format nil candidate major-version)
+                                (namestring candidate))
+                 for version = (run-program-capture (list path version-flag))
+                 when (and version
+                           (or (null major-version)
+                               (and match
+                                    (search match version))
+                               (= major-version
+                                  (first (uiop:parse-version version)))))
+                   do (message :info "Found ~a program with path ~a ~:[~;and version ~a~]"
+                               name path major-version version)
+                      (return-from configure-program (values path version)))))
+    (if (consp major-version)
+        (loop for major from (cdr major-version) downto (car major-version)
+              do (search-by-major major))
+        (search-by-major major-version))
+    (message (if required :err :warn)
+             "Unable to find ~a program~@[ compatible with major version ~a~]."
+             name major-version)
+    (values nil nil)))
 

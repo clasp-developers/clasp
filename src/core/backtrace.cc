@@ -135,6 +135,7 @@ static T_sp getSourcePosInfoForAddress(llvmo::DWARFContext_sp dcontext, llvmo::S
   }
 
   std::string source_path = info.FileName;
+#if __clang_major__ < 16
   if (info.Source.hasValue()) {
     std::smatch match;
     std::string source = info.Source.getValue().str();
@@ -142,7 +143,16 @@ static T_sp getSourcePosInfoForAddress(llvmo::DWARFContext_sp dcontext, llvmo::S
       source_path = match[1];
     }
   }
-
+#else
+  if (info.Source.has_value()) {
+    std::smatch match;
+    std::string source = info.Source.value().str();
+    if (std::regex_search(source, match, logical_pathname_regex)) {
+      source_path = match[1];
+    }
+  }
+#endif
+  
   return core__makeSourcePosInfo(source_path, true, 0, false, info.Line, true, info.Column, true);
 }
 

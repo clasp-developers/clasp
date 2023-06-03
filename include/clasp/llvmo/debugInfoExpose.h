@@ -834,6 +834,7 @@ namespace translate {
 
 
 
+#if __clang_major__ < 16
 namespace translate {
 template <>
 struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, std::true_type> {
@@ -873,7 +874,49 @@ struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, 
   }
 };
 };
+#else
+namespace translate {
+template <>
+struct from_object<std::optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, std::true_type> {
+  typedef std::optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>> DeclareType;
+  DeclareType _v;
+  std::string _Storage;
+  from_object(core::T_sp object) {
+//    printf("%s:%d:%s object = %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(object).c_str());
+    core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CSKEnum->symbolValue());
+    if (object.nilp()) {
+      DeclareType none;
+      this->_v = none;
+//      printf("%s:%d:%s ChecksumInfo RESET  this->_v -> %d\n", __FILE__, __LINE__, __FUNCTION__, this->_v.hasValue() );
+    } else if (gc::IsA<core::Symbol_sp>(object)) {
+      core::Symbol_sp sobject = gc::As<core::Symbol_sp>(object);
+      this->_Storage = sobject->symbolNameAsString();
+      llvm::DIFile::ChecksumKind kind = converter->enumForSymbol<llvm::DIFile::ChecksumKind>(sobject);
+      for ( int p=0; p<this->_Storage.size(); p++ ) {
+        if (this->_Storage[p] == '-') this->_Storage[p] = '_';
+      }
+      llvm::DIFile::ChecksumInfo<llvm::StringRef> checksum(kind,this->_Storage);
+      this->_v = checksum;
+//      printf("%s:%d:%s ChecksumInfo kind = %d  str = %s \n", __FILE__, __LINE__, __FUNCTION__, kind, this->_Storage.c_str() );
+    } else {
+      SIMPLE_ERROR("You must pass a valid Checksum like :CSK_MD5");
+    }
+  }
+  from_object(const from_object& orig) = delete;
+  from_object(from_object&& orig) : _Storage(std::move(orig._Storage)), _v(orig._v) {
+    if (this->_v.has_value()) {
+//      printf("%s:%d:%s from_object move ctor\n", __FILE__, __LINE__, __FUNCTION__ );
+      llvm::DIFile::ChecksumInfo<llvm::StringRef> checksum(this->_v->Kind,this->_Storage);
+      this->_v = checksum;
+    } else {
+//      printf("%s:%d:%s from_object move ctor NIL\n", __FILE__, __LINE__, __FUNCTION__ );
+    }
+  }
+};
+};
+#endif
 
+#if __clang_major__ < 16
 namespace translate {
 template <>
 struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {
@@ -897,6 +940,31 @@ struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {
   }
 };
 };
+#else
+namespace translate {
+template <>
+struct from_object<std::optional<llvm::StringRef>, std::true_type> {
+  typedef std::optional<llvm::StringRef> DeclareType;
+  std::string _Storage;
+  DeclareType _v;
+  from_object(core::T_sp object) {
+    if (object.nilp()) {
+      DeclareType none;
+      _v = none;
+    } else if (gc::IsA<core::String_sp>(object)) {
+      _Storage = gc::As<core::String_sp>(object)->get_std_string();
+      _v = _Storage;
+    } else {
+      SIMPLE_ERROR("You must pass a String or NIL");
+    }
+  }
+  from_object(const from_object& orig) = delete;
+  from_object(from_object&& orig) : _Storage(std::move(orig._Storage)), _v(orig._v) {
+    if (_v.has_value()) _v = _Storage;
+  }
+};
+};
+#endif
 
 // DIContext_O
 namespace llvmo {

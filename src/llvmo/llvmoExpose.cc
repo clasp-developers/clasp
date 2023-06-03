@@ -3403,7 +3403,11 @@ string Function_O::__repr__() const {
 
 CL_LISPIFY_NAME("appendBasicBlock");
 CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
+#if __clang_major__ < 16
   this->wrappedPtr()->getBasicBlockList().push_back(basicBlock->wrappedPtr());
+#else
+  this->wrappedPtr()->insert(this->wrappedPtr()->end(), basicBlock->wrappedPtr());
+#endif
 }
 
 CL_LISPIFY_NAME("getEntryBlock");
@@ -3413,7 +3417,6 @@ CL_DEFMETHOD BasicBlock_sp Function_O::getEntryBlock() const {
 
 CL_LISPIFY_NAME("basic-blocks");
 CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
-  llvm::Function::BasicBlockListType& Blocks = this->wrappedPtr()->getBasicBlockList();
   ql::list result;
   for (llvm::Function::iterator b = this->wrappedPtr()->begin(), be = this->wrappedPtr()->end(); b != be; ++b) {
     llvm::BasicBlock& BB = *b;

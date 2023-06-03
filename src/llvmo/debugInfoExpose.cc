@@ -432,9 +432,15 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
   }
     return nil<core::T_O>();
   }
+#if __clang_major__ < 16  
   if (info.Source.hasValue())
     source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
   else source = nil<core::T_O>();
+#else
+  if (info.Source.has_value())
+    source = core::SimpleBaseString_O::make(info.Source.value().str());
+  else source = nil<core::T_O>();
+#endif
   if (verbose) {
     core::clasp_write_string(fmt::format("info.Filename {}\n" , info.FileName ));
     core::clasp_write_string(fmt::format("Source {}\n" , _rep_(source) ));

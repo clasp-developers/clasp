@@ -430,6 +430,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     return Error::success();
   }
 
+ #if __clang_major__ < 16 
   llvm::Error notifyRemovingResources(ResourceKey K) {
     return Error::success();
   }
@@ -437,8 +438,16 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   void notifyTransferringResources(ResourceKey DstKey, ResourceKey SrcKey) {
     printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
   }
+#else
+  Error notifyRemovingResources(JITDylib &JD, ResourceKey K) {
+    return Error::success();
+  };
 
-
+  void notifyTransferringResources(JITDylib &JD, ResourceKey DstKey,
+                                   ResourceKey SrcKey) {
+    printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
+  }
+#endif
   
   void keepAliveStackmap(llvm::jitlink::LinkGraph &G) {
     for (auto &S : G.sections()) {

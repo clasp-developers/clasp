@@ -630,12 +630,7 @@ void Lisp::startupLispEnvironment() {
 #ifdef CLASP_UNICODE
   features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
 #endif
-#if (LLVM_VERSION_X100>=380)
-  features = Cons_O::create(_lisp->internKeyword("LLVM38"), features);
-#endif
-#if (LLVM_VERSION_X100>=390)
-  features = Cons_O::create(_lisp->internKeyword("LLVM39"), features);
-#endif
+  features = Cons_O::create(_lisp->internKeyword("LLVM" CXX_MACRO_STRING(__clang_major__)), features);
 #ifdef VARARGS
   features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
 #endif
