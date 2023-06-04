@@ -1549,7 +1549,7 @@ struct copy_progress {
     intptr_t delta = cur - this->_begin;
     if (delta > this->_next_progress_tic) {
       this->_next_progress_tic += this->_inc;
-      core::lisp_write(fmt::sprintf("\rCopy memory to snapshot buffer %6.2f%% done        ", (100.0*(float)delta/(float)this->_size)));
+      core::lisp_write(fmt::format("\rCopy memory to snapshot buffer {} done        ", (100.0*(float)delta/(float)this->_size)));
     }
   }
 };
