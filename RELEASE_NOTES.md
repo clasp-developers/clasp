@@ -1,9 +1,13 @@
-# Version 2.3.0 (LLVM15) Pending
+# Version 2.3.0 (LLVM15/LLVM16) Pending
 
 ## Added
 * Bytecode compiled images via build mode `:bytecode`.
 * FASL magic number sniffing for CL:LOAD. This enables FASL files to be
   loaded even if the filename extension is incorrect.
+* Preliminary Apple Silicon support. Must be compiled with bytecode
+  either by specifying `--build-mode=bytecode` when invoking koga or
+  by adding `:build-mode :bytecode` to the config.sexp file.
+* LLVM16 support. LLVM15 is still supported.
 
 ## Changed
 * Updated to Eclector v0.9.0

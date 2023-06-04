@@ -508,8 +508,10 @@ void initialize_astExpose() {
   scope_Type_TemplateTypeParm.def("desugar", &clang::TemplateTypeParmType::desugar);
   scope_Type_SubstTemplateTypeParm.def("desugar", &clang::SubstTemplateTypeParmType::desugar);
   scope_Type_TemplateSpecialization.def("getTemplateName", &clang::TemplateSpecializationType::getTemplateName);
+#if __clang_major__ < 16
   scope_Type_TemplateSpecialization.def("getNumArgs", &clang::TemplateSpecializationType::getNumArgs);
   scope_Type_TemplateSpecialization.def("getArg", &clang::TemplateSpecializationType::getArg);
+#endif
   scope_Type_TemplateSpecialization.def("desugar", &clang::TemplateSpecializationType::desugar);
   scope_Type_TemplateSpecialization.def("getAliasedType", &clang::TemplateSpecializationType::getAliasedType);
   scope_Type_TemplateSpecialization.def("isTypeAlias", &clang::TemplateSpecializationType::isTypeAlias);

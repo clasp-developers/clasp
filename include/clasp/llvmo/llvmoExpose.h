@@ -852,6 +852,7 @@ struct from_object<llvm::CodeGenOpt::Level, std::true_type> {
   }
 };
 
+#if __clang_major__ < 16
 template <>
   struct from_object<llvm::Optional<llvm::Reloc::Model>, std::true_type> {
   typedef llvm::Optional<llvm::Reloc::Model> DeclareType;
@@ -872,6 +873,28 @@ template <>
     }
   }
 };
+#else
+template <>
+  struct from_object<std::optional<llvm::Reloc::Model>, std::true_type> {
+  typedef std::optional<llvm::Reloc::Model> DeclareType;
+  DeclareType _v;
+  from_object(T_P object) {
+    if (object.nilp()) {
+//      SIMPLE_ERROR(("You must pass a valid RelocModel"));
+    }
+    if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+      if ( so == llvmo::_sym_RelocModel_undefined ) {
+        //printf("%s:%d Leaving llvm::Reloc::Model Undefined\n", __FILE__, __LINE__ );
+      } else {
+        core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_RelocModel->symbolValue());
+        this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
+      }
+    } else {
+      SIMPLE_ERROR("You must pass a valid RelocModel or {}", _rep_(llvmo::_sym_RelocModel_undefined));
+    }
+  }
+};
+#endif
 
 template <>
 struct from_object<llvm::CodeModel::Model, std::true_type> {
@@ -4685,7 +4708,7 @@ ENUM_TRANSLATOR(llvm::GlobalValue::UnnamedAddr,llvmo::_sym_STARGlobalValueUnname
 
 
 
-
+#if __clang_major__ < 16
 namespace translate {
  template <typename T>
 struct from_object<llvm::Optional<T>> {
@@ -4703,6 +4726,25 @@ struct from_object<llvm::Optional<T>> {
    from_object(from_object&& orig) : _v(std::move(orig._v)) {};
  };
 }
+#else
+namespace translate {
+ template <typename T>
+struct from_object<std::optional<T>> {
+   typedef std::optional<T> DeclareType;
+   DeclareType _v;
+   from_object(core::T_sp o) {
+     if (o.unboundp()) {
+       return;
+     }
+     std::optional<T> val(from_object<T>(o)._v);
+     this->_v = val;
+     return;
+   }
+   from_object(const from_object& orig) = delete;
+   from_object(from_object&& orig) : _v(std::move(orig._v)) {};
+ };
+}
+#endif
 
 namespace llvmo {
 

@@ -609,30 +609,28 @@ void Lisp::startupLispEnvironment() {
   features = Cons_O::create(_lisp->internKeyword("BSD"), features);
   features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
 #endif
 #ifdef _TARGET_OS_LINUX
   features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
-  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
 #endif
 #ifdef _TARGET_OS_FREEBSD
   features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
   features = Cons_O::create(_lisp->internKeyword("FREEBSD"), features);
   features = Cons_O::create(_lisp->internKeyword("BSD"), features);
+#endif
+#ifdef X86_64
   features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
+#endif
+#ifdef ARM64
+  features = Cons_O::create(_lisp->internKeyword("ARM64"), features);
 #endif
 #ifdef CLASP_UNICODE
   features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
 #endif
-#if (LLVM_VERSION_X100>=380)
-  features = Cons_O::create(_lisp->internKeyword("LLVM38"), features);
-#endif
-#if (LLVM_VERSION_X100>=390)
-  features = Cons_O::create(_lisp->internKeyword("LLVM39"), features);
-#endif
+  features = Cons_O::create(_lisp->internKeyword("LLVM" CXX_MACRO_STRING(__clang_major__)), features);
 #ifdef VARARGS
   features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
 #endif
