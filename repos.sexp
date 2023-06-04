@@ -214,15 +214,15 @@
  (:name :cando
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
-  :branch "main"
+  :branch "e8d1372f0b73f78eae29e4f09ac5e8ca465f206a"
   :extension :cando)
  (:name :seqan-clasp
   :repository "https://github.com/clasp-developers/seqan-clasp.git"
   :directory "extensions/seqan-clasp/"
-  :branch "main"
+  :commit "3970cef84b2045633d8d3fe9757a0c6d449fc345"
   :extension :seqan-clasp)
  (:name :seqan
   :repository "https://github.com/seqan/seqan.git"
   :directory "extensions/seqan-clasp/seqan/"
-  :branch "main"
+  :commit "d1a9001fc1ac69703d958fdbbccb6599206f1d53"
   :extension :seqan-clasp))

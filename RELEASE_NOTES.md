@@ -1,4 +1,4 @@
-# Version 2.3.0 (LLVM15/LLVM16) Pending
+# Version 2.3.0 (LLVM15/LLVM16) 2023-06-04
 
 ## Added
 * Bytecode compiled images via build mode `:bytecode`.
