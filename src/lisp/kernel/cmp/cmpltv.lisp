@@ -271,11 +271,6 @@
 ;;; In reverse.
 (defvar *instructions*)
 
-;;; Bound by the client to a function that compiles a lambda expression
-;;; relative to an environment, and then returns some object that
-;;; cmpltv can treat as a constant.
-(defvar *compiler*)
-
 ;;; Stack of objects we are in the middle of computing creation forms for.
 ;;; This is used to detect circular dependencies.
 ;;; We only do this for MAKE-LOAD-FORM because we assume our own
@@ -283,10 +278,9 @@
 ;;; rather than the user's problem.
 (defvar *creating*)
 
-(defmacro with-constants ((&key (compiler '*compiler*)) &body body)
+(defmacro with-constants ((&key) &body body)
   `(let ((*instructions* nil) (*creating* nil)
-         (*coalesce* (make-hash-table))
-         (*compiler* ,compiler))
+         (*coalesce* (make-hash-table)))
      ,@body))
 
 (defun find-constant (value)
@@ -317,7 +311,8 @@
 ;;; have the effect of evaluating the form in a null lexical environment.
 (defun add-form (form &optional env)
   ;; PROGN so that (declare ...) expressions for example correctly cause errors.
-  (add-constant (funcall *compiler* `(lambda () (progn ,form)) env)))
+  (add-constant
+   (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) env)))
 
 (defmethod add-constant ((value cons))
   ;; We special case proper lists so as to avoid deep stack-blowing
@@ -1410,7 +1405,7 @@
                             :direction :output
                             :if-does-not-exist :create
                             :element-type '(unsigned-byte 8))
-      (with-constants (:compiler #'bytecode-cf-compile-lexpr)
+      (with-constants ()
         ;; Read and compile the forms.
         (loop with eof = (gensym "EOF")
               with *compile-time-too* = nil
