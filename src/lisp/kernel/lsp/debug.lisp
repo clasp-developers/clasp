@@ -442,7 +442,7 @@ Note that as such, the frame returned may not be visible."
           *hidden-packages*))
 
 (defparameter *hidden-fnames*
-  '(error cerror apply funcall invoke-debugger
+  '(apply funcall invoke-debugger
     core:universal-error-handler
     core:apply0 core:apply1 core:apply2 core:apply3 core:apply4
     core::catch-lambda core::throw-lambda
