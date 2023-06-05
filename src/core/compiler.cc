@@ -1670,6 +1670,7 @@ void initialize_compiler_primitives(LispPtr lisp) {
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_bytecode_implicit_compile_form);
   cleavirPrimop::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
   comp::_sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
+  comp::_sym_STARsourceLocationsSTAR->makeSpecial();
 
   return;
 }

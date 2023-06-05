@@ -93,6 +93,32 @@ public:
   CL_DEFMETHOD List_sp bindings() const { return this->_bindings; }
 };
 
+// Debug information for source form locations.
+FORWARD(BytecodeDebugLocation);
+class BytecodeDebugLocation_O : public General_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugLocation_O, "BytecodeDebugLocation", core::General_O);
+public:
+  BytecodeDebugLocation_O(T_sp start, T_sp end, T_sp location)
+    : _start(start), _end(end), _location(location) {}
+  CL_LISPIFY_NAME(BytecodeDebugLocation/make)
+  CL_DEF_CLASS_METHOD
+  static BytecodeDebugLocation_sp make(T_sp start, T_sp end, T_sp location) {
+    return gctools::GC<BytecodeDebugLocation_O>::allocate<gctools::RuntimeStage>(start, end, location);
+  }
+public:
+  T_sp _start;
+  T_sp _end;
+  T_sp _location;
+  CL_LISPIFY_NAME(BytecodeDebugLocation/start)
+  CL_DEFMETHOD T_sp start() const { return this->_start; }
+  void setStart(T_sp start) { this->_start = start; }
+  CL_LISPIFY_NAME(BytecodeDebugLocation/end)
+  CL_DEFMETHOD T_sp end() const { return this->_end; }
+  void setEnd(T_sp end) { this->_end = end; }
+  CL_LISPIFY_NAME(BytecodeDebugLocation/location)
+  CL_DEFMETHOD T_sp location() const { return this->_location; }
+};
+
 // Dynenv used for VM call frames to ensure the unwinder properly
 // cleans up stack frames.
 class VMFrameDynEnv_O : public DynEnv_O {

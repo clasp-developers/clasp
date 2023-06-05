@@ -860,11 +860,26 @@ static void resolve_debug_vars(BytecodeDebugVars_sp info) {
   }
 }
 
+static void resolve_debug_location(BytecodeDebugLocation_sp info) {
+  T_sp open_label = info->start();
+  if (gc::IsA<Label_sp>(open_label))
+    info->setStart(clasp_make_fixnum(gc::As_unsafe<Label_sp>(open_label)->module_position()));
+  else // compiler screwed up, but this is just debug info, don't raise stink
+    info->setStart(clasp_make_fixnum(0));
+  T_sp close_label = info->end();
+  if (gc::IsA<Label_sp>(close_label))
+    info->setEnd(clasp_make_fixnum(gc::As_unsafe<Label_sp>(close_label)->module_position()));
+  else
+    info->setEnd(clasp_make_fixnum(0));
+}
+
 void Module_O::resolve_debug_info() {
   // Replace all labels.
   for (T_sp info : *(this->debugInfo())) {
     if (gc::IsA<BytecodeDebugVars_sp>(info))
       resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
+    else if (gc::IsA<BytecodeDebugLocation_sp>(info))
+      resolve_debug_location(gc::As_unsafe<BytecodeDebugLocation_sp>(info));
   }
 }
 
@@ -2182,6 +2197,15 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   // Code walk if we're doing that
   if (_sym_STARcodeWalkerSTAR->boundP() && _sym_STARcodeWalkerSTAR->symbolValue().notnilp())
     form = eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), form, env);
+  // Record source location if we have it.
+  T_sp source_location = nil<T_O>();
+  Label_sp begin_label = Label_O::make();
+  Label_sp end_label = Label_O::make();
+  if (_sym_STARsourceLocationsSTAR->boundP()
+      && gc::IsA<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())) {
+    source_location = gc::As<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())->gethash(form, nil<T_O>());
+  }
+  if (source_location.notnilp()) begin_label->contextualize(context);
   // Compile
   if (gc::IsA<Symbol_sp>(form))
     compile_symbol(gc::As_unsafe<Symbol_sp>(form), env, context);
@@ -2189,6 +2213,11 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
     compile_combination(oCar(form), oCdr(form), env, context);
   else
     compile_literal(form, env, context);
+  // And finish off the source info.
+  if (source_location.notnilp()) {
+    end_label->contextualize(context);
+    context.push_debug_info(BytecodeDebugLocation_O::make(begin_label, end_label, source_location));
+  }
 }
 
 CL_LAMBDA(module lambda-expression &optional (env (cmp::make-null-lexical-environment)));
