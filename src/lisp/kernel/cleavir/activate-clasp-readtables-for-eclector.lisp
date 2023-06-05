@@ -52,8 +52,17 @@
 (defvar *clasp-normal-eclector-client* (make-instance 'clasp-non-cst-elector-client))
 
 (defmethod eclector.reader:state-value
+    ((client clasp-cleavir::clasp-cst-client) (aspect (eql 'cl:*readtable*)))
+  cl:*readtable*)
+
+(defmethod eclector.reader:state-value
     ((client clasp-non-cst-elector-client) (aspect (eql 'cl:*readtable*)))
   cl:*readtable*)
+
+(defmethod eclector.reader:call-with-state-value
+    ((client clasp-cleavir::clasp-cst-client) thunk (aspect (eql 'cl:*readtable*)) value)
+  (let ((cl:*readtable* value))
+    (funcall thunk)))
 
 (defmethod eclector.reader:call-with-state-value
     ((client clasp-non-cst-elector-client) thunk (aspect (eql 'cl:*readtable*)) value)
