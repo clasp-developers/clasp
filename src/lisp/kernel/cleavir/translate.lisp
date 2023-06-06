@@ -2229,7 +2229,7 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
-        (eclector.reader:*client* *cst-client*)
+        (eclector.reader:*client* cmp:*cst-client*)
         (cst-to-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (loop

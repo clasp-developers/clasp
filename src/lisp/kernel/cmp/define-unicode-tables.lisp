@@ -1,4 +1,4 @@
-(cl:in-package #:clasp-cleavir)
+(cl:in-package #:cmp)
 
 (defparameter *additional-clasp-character-mappings-alist*
   `(("NULL"   . #.(code-char 0))
@@ -217,8 +217,3 @@
 (setq *unicode-file-read* #.*unicode-file-read*)
 (setq *additional-clasp-character-names* #.*additional-clasp-character-names*)
 (setq *mapping-char-code-to-char-names* #.*mapping-char-code-to-char-names*)
-
-#|
-(time
- (load (compile-file "sys:src;lisp;kernel;cleavir;define-unicode-tables.lisp")))
-|#

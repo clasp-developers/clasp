@@ -56,8 +56,15 @@
 (test test-char-16
       (let ((names
               (append
-               (mapcar #'car clasp-cleavir::*additional-clasp-character-mappings-alist*)
+               ;; Standard and semi-standard characters
                '("NEWLINE"  "SPACE" "RUBOUT" "PAGE" "TAB" "BACKSPACE" "RETURN" "LINEFEED")
+               ;; A selection of additional characters from Unicode
+               ;; (see cmp::*additional-clasp-character-mappings-alist*)
+               '("NULL" "NUL" "BELL" "EXCLAMATION_MARK" "QUOTATION_MARK"
+                 "AMPERSAND" "COMMA" "DIGIT_ZERO" "COLON"
+                 "COMMERCIAL_AT" "LATIN_CAPITAL_LETTER_A"
+                 "LATIN_SMALL_LETTER_X" "LEFT_CURLY_BRACKET" "TILDE" "DEL")
+               ;; Characters by Unicode codepoint
                '("U80"  "U81"  "U82"  "U83"  "U84"  "U85"  "U86"  "U87"  "U88"  "U89"  "U8A"  "U8B"  "U8C"  "U8D"  "U8E"  "U8F" 
                  "U90"  "U91"  "U92"  "U93"  "U94"  "U95"  "U96"  "U97"  "U98"  "U99"  "U9A"  "U9B"  "U9C"  "U9D"  "U9E"  "U9F")))
             (result nil))

@@ -1,4 +1,4 @@
-(cl:in-package #:clasp-cleavir)
+(cl:in-package #:cmp)
 
 ;;; So that non-cst-client can inherit behaviour
 (defclass clasp-eclector-client-mixin ()())

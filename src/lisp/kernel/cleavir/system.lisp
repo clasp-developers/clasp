@@ -38,9 +38,6 @@
 (defvar *debug-log-index* 0)
 (defvar *debug-ownerships*)
 
-(defvar *cst-client*)
-(defvar *additional-clasp-character-names*)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Stealth mixins

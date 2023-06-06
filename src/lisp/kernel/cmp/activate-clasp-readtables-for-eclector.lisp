@@ -48,11 +48,11 @@
 ;;; to avoid eclector.parse-result::*stack* being unbound, when *client* is bound to a parse-result-client
 ;;; Not sure whether this a a fortunate design in eclector
 
-(defclass clasp-non-cst-elector-client (clasp-cleavir::clasp-eclector-client-mixin) ())
+(defclass clasp-non-cst-elector-client (cmp:clasp-eclector-client-mixin) ())
 (defvar *clasp-normal-eclector-client* (make-instance 'clasp-non-cst-elector-client))
 
 (defmethod eclector.reader:state-value
-    ((client clasp-cleavir::clasp-cst-client) (aspect (eql 'cl:*readtable*)))
+    ((client cmp:clasp-cst-client) (aspect (eql 'cl:*readtable*)))
   cl:*readtable*)
 
 (defmethod eclector.reader:state-value
@@ -60,7 +60,7 @@
   cl:*readtable*)
 
 (defmethod eclector.reader:call-with-state-value
-    ((client clasp-cleavir::clasp-cst-client) thunk (aspect (eql 'cl:*readtable*)) value)
+    ((client cmp:clasp-cst-client) thunk (aspect (eql 'cl:*readtable*)) value)
   (let ((cl:*readtable* value))
     (funcall thunk)))
 
