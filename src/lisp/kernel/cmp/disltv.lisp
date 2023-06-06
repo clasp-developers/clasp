@@ -488,11 +488,29 @@
         :name ncreator :module mod :cfunctions cfunctions
         :vars vars))))
 
+#+clasp
+(defmethod %load-attribute ((mnemonic (eql 'module-debug-locations))
+                            ncreator stream)
+  (let ((nbytes (read-ub32 stream))
+        (mod (read-creator stream))
+        (nlocs (read-ub32 stream)))
+    (dbgprint " (module-debug-locations ~s ~d ~s ~d)"
+              ncreator nbytes mod nclocs)
+    (make-instance 'module-debug-locations-attr
+      :name ncreator :module mod
+      :locations (loop repeat nlocs
+                       collect (list (read-ub32 stream)
+                                     (read-ub32 stream)
+                                     (read-creator stream)
+                                     (read-ub64 stream)
+                                     (read-ub64 stream)
+                                     (read-ub64 stream))))))
 
 (defparameter *attr-map*
   (let ((ht (make-hash-table :test #'equal)))
     #+clasp (setf (gethash "clasp:source-pos-info" ht) 'source-pos-info)
     #+clasp (setf (gethash "clasp:module-debug-info" ht) 'module-debug-info)
+    #+clasp (setf (gethash "clasp:module-debug-locations" ht) 'module-debug-locations)
     ht))
 
 (defun load-attribute (stream)
