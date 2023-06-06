@@ -23,12 +23,13 @@
                           "llvmo::UndefValue_O" "llvmo::CallBase_O" "core::Path_O"
                           "mp::SharedMutex_O" "asttooling::DerivableASTFrontendAction"
                           "core::InstanceCreator_O" "core::IOStreamStream_O" "core::Scope_O"
-                          "llvmo::InsertPoint_O" "core::FunctionDescription_O"
-                          "core::ComplexVector_double_O" "core::StrWNs_O" "core::UnknownDynEnv_O"
-                          "core::EchoStream_O" "core::HashTableBase_O" "core::SimpleMDArrayBit_O"
-                          "core::MDArrayBit_O" "core::ComplexVector_byte16_t_O"
-                          "llvmo::DILocalScope_O" "asttooling::DerivableFrontendActionFactory"
-                          "comp::Label_O" "core::ComplexVector_int2_t_O" "llvmo::DILexicalBlock_O"
+                          "core::BytecodeDebugLocation_O" "llvmo::InsertPoint_O"
+                          "core::FunctionDescription_O" "core::ComplexVector_double_O"
+                          "core::StrWNs_O" "core::UnknownDynEnv_O" "core::EchoStream_O"
+                          "core::HashTableBase_O" "core::SimpleMDArrayBit_O" "core::MDArrayBit_O"
+                          "core::ComplexVector_byte16_t_O" "llvmo::DILocalScope_O"
+                          "asttooling::DerivableFrontendActionFactory" "comp::Label_O"
+                          "core::ComplexVector_int2_t_O" "llvmo::DILexicalBlock_O"
                           "llvmo::DITypeRefArray_O" "mp::Mutex_O"
                           "core::RecursiveDirectoryIterator_O" "core::StringInputStream_O"
                           "comp::Lexenv_O" "core::DebuggerLocal_O" "llvmo::ModulePass_O"
@@ -4801,6 +4802,21 @@
 {class-kind :stamp-name "STAMPWTAG_llvmo__InsertPoint_O" :stamp-key "llvmo::InsertPoint_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugLocation_O"
+            :stamp-key "core::BytecodeDebugLocation_O" :parent-class "core::General_O"
+            :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugLocation_O"
+             :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugLocation_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugLocation_O"
+             :layout-offset-field-names ("_location")}
 {class-kind :stamp-name "STAMPWTAG_core__Scope_O" :stamp-key "core::Scope_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
