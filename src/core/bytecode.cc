@@ -1398,6 +1398,30 @@ T_sp bytecode_function_for_pc(BytecodeModule_sp module, void* pc) {
   return nil<T_O>();
 }
 
+T_sp bytecode_spi_for_pc(BytecodeModule_sp module, void* pc) {
+  Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
+  void* start = bytecode->rowMajorAddressOfElement_(0);
+  ptrdiff_t bpc = (byte8_t*)pc - (byte8_t*)start;
+  // Find the location info with the tightest enclosing bounds.
+  size_t best_start = 0;
+  size_t best_end = SIZE_MAX;
+  T_sp best_spi = nil<T_O>();
+  for (T_sp info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
+    if (gc::IsA<BytecodeDebugLocation_sp>(info)) {
+      BytecodeDebugLocation_sp entry = gc::As_unsafe<BytecodeDebugLocation_sp>(info);
+      size_t start = entry->start().unsafe_fixnum();
+      size_t end = entry->end().unsafe_fixnum();
+      if ((start <= bpc) && (bpc < end)
+          && (start >= best_start) && (end <= best_end)) {
+        best_start = start;
+        best_end = end;
+        best_spi = entry->location();
+      }
+    }
+  }
+  return best_spi;
+}
+
 List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void* pc, T_O** fp) {
   Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
   void* start = bytecode->rowMajorAddressOfElement_(0);

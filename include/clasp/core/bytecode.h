@@ -148,6 +148,7 @@ namespace core {
 bool bytecode_module_contains_address_p(BytecodeModule_sp, void*);
 bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp, void*);
 T_sp bytecode_function_for_pc(BytecodeModule_sp, void*);
+T_sp bytecode_spi_for_pc(BytecodeModule_sp, void*);
 List_sp bytecode_bindings_for_pc(BytecodeModule_sp, void*, T_O**);
 void* bytecode_pc();
 

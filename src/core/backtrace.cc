@@ -459,8 +459,9 @@ static DebuggerFrame_sp make_bytecode_frame_from_function(GlobalBytecodeSimpleFu
   // the vm stack?
   T_sp closure = (fun->environmentSize() == 0) ? (T_sp)fun : nil<T_O>();
   List_sp bindings = bytecode_bindings_for_pc(fun->code(), bpc, bfp);
+  T_sp spi = bytecode_spi_for_pc(fun->code(), bpc);
   return DebuggerFrame_O::make(fun->functionName(), Pointer_O::create(bpc),
-                               nil<T_O>(), fun->fdesc(), closure, nil<T_O>(),
+                               spi, fun->fdesc(), closure, nil<T_O>(),
                                false, bindings, INTERN_(kw, bytecode), false);
                                
 }
