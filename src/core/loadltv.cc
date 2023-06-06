@@ -658,6 +658,34 @@ struct loadltv {
     mod->setf_debugInfo(SimpleVector_O::make(vargs));
   }
 
+  void attr_clasp_module_debug_locations(uint32_t bytes) {
+    BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
+    gctools::Vec0<T_sp> vargs;
+
+    for (uint32_t lcount = read_u32(); lcount > 0; --lcount) {
+      Integer_sp start = Integer_O::create(read_u32());
+      Integer_sp end = Integer_O::create(read_u32());
+      T_sp path = get_ltv(read_index());
+      uint64_t line = read_u64(), column = read_u64(), filepos = read_u64();
+      T_mv sfi_mv = core__file_scope(path);
+      FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
+      SourcePosInfo_sp spi
+        = SourcePosInfo_O::create(sfi->fileHandle(),
+                                  filepos, line, column);
+      vargs.push_back(BytecodeDebugLocation_O::make(start, end, spi));
+    }
+    // KLUDGE: This is cl:concatenate
+    SimpleVector_sp nvec = SimpleVector_O::make(vargs);
+    SimpleVector_sp ovec = mod->debugInfo();
+    size_t no = ovec->length();
+    SimpleVector_sp ndbg = SimpleVector_O::make(nvec->length() + no);
+    for (size_t i = 0; i < ovec->length(); ++i)
+      (*ndbg)[i] = (*ovec)[i];
+    for (size_t j = 0; j < nvec->length(); ++j)
+      (*ndbg)[j + no] = (*nvec)[j];
+    mod->setf_debugInfo(ndbg);
+  }
+
   void op_attribute() {
     std::string name = (gc::As<String_sp>(get_ltv(read_index())))->get_std_string();
     uint32_t attrbytes = read_u32();
@@ -665,6 +693,8 @@ struct loadltv {
       attr_clasp_source_pos_info(attrbytes);
     } else if (name == "clasp:module-debug-info") {
       attr_clasp_module_debug_info(attrbytes);
+    } else if (name == "clasp:module-debug-locations") {
+      attr_clasp_module_debug_locations(attrbytes);
     } else {
       for (size_t i = 0; i < attrbytes; ++i)
         read_u8();
