@@ -170,9 +170,9 @@
   :commit "87a447a8eaef9cf4fd1c16d407a49f9adaf8adad"
   :extension :cando)
  (:name :trivial-features ; Needed both by the host and eclasp
-  :repository "https://github.com/yitzchak/trivial-features.git"
+  :repository "https://github.com/trivial-features/trivial-features.git"
   :directory "src/lisp/kernel/contrib/trivial-features/"
-  :branch "asdf-feature")
+  :branch "master")
  (:name :trivial-garbage
   :repository "https://github.com/trivial-garbage/trivial-garbage.git"
   :directory "src/lisp/kernel/contrib/trivial-garbage/"
