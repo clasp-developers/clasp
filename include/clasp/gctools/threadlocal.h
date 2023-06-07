@@ -86,7 +86,10 @@ extern int global_debug_virtual_machine;
 #endif
 
 struct VirtualMachine {
-  static constexpr size_t MaxStackWords = 32768; // 32K words for now.
+  // Stack size is kind of arbitrary, and really we should make it
+  // grow and etc. 2^15 turns out to be insufficient to use the CST
+  // reader on extremely long (~4000 element) lists.
+  static constexpr size_t MaxStackWords = 65536;
   bool           _Running;
   core::T_O*     _stackBottom[MaxStackWords];
   size_t         _stackBytes;
