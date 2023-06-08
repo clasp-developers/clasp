@@ -1374,21 +1374,19 @@
       (with-constants (:compiler #'bytecode-cf-compile-lexpr)
         ;; Read and compile the forms.
         (loop with eof = (gensym "EOF")
-              with eclector.reader:*client* = cmp:*cst-client*
               with *compile-time-too* = nil
+              with eclector.reader:*client* = (make-instance 'eclector.readtable::clasp-tracking-elector-client)
               with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
               with cfsdl = cmp::*compile-file-source-debug-lineno*
               with cfsdo = cmp::*compile-file-source-debug-offset*
               for core:*current-source-pos-info*
                 = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
-              for cst = (eclector.concrete-syntax-tree:read input nil eof)
-              until (eq cst eof)
-              do (let ((form (cst:raw cst))
-                       (cmp:*source-locations*
-                         (compute-source-locations cst)))
-                   (when *compile-print*
-                     (cmp::describe-form form))
-                   (bytecode-compile-toplevel form environment)))
-        ;; Write out the FASO bytecode.
+              for cmp:*source-locations* = (make-hash-table :test #'eq)
+              for form = (eclector.parse-result:read eclector.reader:*client* input nil eof)
+              until (eq form eof)
+              do (when *compile-print*
+                   (cmp::describe-form form))
+                 (bytecode-compile-toplevel form environment))
+        ;; Write out the FASL bytecode.
         (%write-bytecode output))))
   (truename output-path))
