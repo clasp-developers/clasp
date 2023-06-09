@@ -197,10 +197,12 @@ If the arguments are not available, returns NIL NIL."
   "Return a CODE-SOURCE-LINE object representing the source file position for this frame's function."
   (let ((fd (frame-function-description frame)))
     (when fd
-      (core:make-source-pos-info
-       :filename (namestring (core:function-description-source-pathname fd))
-       :lineno (core:function-description-lineno fd)
-       :column (core:function-description-column fd)))))
+      (let ((path (core:function-description-source-pathname fd)))
+        (when path
+          (core:make-source-pos-info
+           :filename (namestring path)
+           :lineno (core:function-description-lineno fd)
+           :column (core:function-description-column fd)))))))
 (defun frame-function-form (frame)
   "Return a lambda expression for this frame's function if it's available, or else NIL."
   ;; TODO

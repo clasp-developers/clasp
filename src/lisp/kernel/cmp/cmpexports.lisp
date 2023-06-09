@@ -398,6 +398,11 @@
           compiler-macro-expansion-error-warning
           fold-failure))
 
+;;; Eclector
+(export '(*cst-client*
+          clasp-eclector-client-mixin
+          clasp-cst-client))
+
 (in-package :literal)
 
 (export '(

@@ -925,6 +925,7 @@ __attribute((optnone)) void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpo
     {
       Readtable_sp readtable = Readtable_O::create_standard_readtable();
       cl::_sym_STARreadtableSTAR->defparameter(readtable);
+      _sym__PLUS_standardReadtable_PLUS_->defconstant(Readtable_O::create_standard_readtable());
     }
     break;
   case candoGlobals: {
@@ -1075,7 +1076,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   cl::_sym_lambdaParametersLimit->defconstant(make_fixnum(CALL_ARGUMENTS_LIMIT));
   cl::_sym_arrayDimensionLimit->defconstant(make_fixnum(MOST_POSITIVE_FIXNUM));
   cl::_sym_arrayTotalSizeLimit->defconstant(make_fixnum(MOST_POSITIVE_FIXNUM));
-  core::_sym__PLUS_standardReadtable_PLUS_->defparameter(nil<T_O>());
   core::_sym_STARpollTicksPerGcSTAR->defparameter(make_fixnum(POLL_TICKS_PER_GC));
   comp::_sym_STARlowLevelTraceSTAR->defparameter(nil<T_O>());
   comp::_sym_STARlowLevelTracePrintSTAR->defparameter(nil<T_O>());

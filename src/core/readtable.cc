@@ -62,9 +62,6 @@ CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromCha
   if (gc::IsA<Readtable_sp>(ttoReadTable)) {
     Readtable_sp toReadTable = gc::As_unsafe<Readtable_sp>(ttoReadTable);
     if (fromReadTableP.nilp()) {
-      if (core::_sym__PLUS_standardReadtable_PLUS_->symbolValue().nilp()) {
-        core::_sym__PLUS_standardReadtable_PLUS_->defconstant(Readtable_O::create_standard_readtable());
-      }
       tfromReadTable = core::_sym__PLUS_standardReadtable_PLUS_->symbolValue();
     } else {
       if (!gc::IsA<Readtable_sp>(tfromReadTable)) {

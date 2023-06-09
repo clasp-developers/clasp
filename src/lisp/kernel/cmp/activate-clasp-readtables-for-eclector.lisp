@@ -48,24 +48,27 @@
 ;;; to avoid eclector.parse-result::*stack* being unbound, when *client* is bound to a parse-result-client
 ;;; Not sure whether this a a fortunate design in eclector
 
-(defclass clasp-non-cst-elector-client (clasp-cleavir::clasp-eclector-client-mixin) ())
+(defclass clasp-non-cst-elector-client (cmp:clasp-eclector-client-mixin) ())
 (defvar *clasp-normal-eclector-client* (make-instance 'clasp-non-cst-elector-client))
 
-(defmethod eclector.reader:state-value
-    ((client clasp-cleavir::clasp-cst-client) (aspect (eql 'cl:*readtable*)))
-  cl:*readtable*)
+(defclass clasp-tracking-elector-client (cmp:clasp-eclector-client-mixin eclector.parse-result:parse-result-client) ())
+
+(defmethod eclector.parse-result:source-position
+    ((client clasp-tracking-elector-client) stream)
+  (cmp:compile-file-source-pos-info stream))
+
+(defmethod eclector.parse-result:make-expression-result
+    ((client clasp-tracking-elector-client) result children source)
+  (when cmp:*source-locations*
+    (setf (gethash result cmp:*source-locations*) (car source)))
+  result)
 
 (defmethod eclector.reader:state-value
-    ((client clasp-non-cst-elector-client) (aspect (eql 'cl:*readtable*)))
+    ((client cmp:clasp-eclector-client-mixin) (aspect (eql 'cl:*readtable*)))
   cl:*readtable*)
 
 (defmethod eclector.reader:call-with-state-value
-    ((client clasp-cleavir::clasp-cst-client) thunk (aspect (eql 'cl:*readtable*)) value)
-  (let ((cl:*readtable* value))
-    (funcall thunk)))
-
-(defmethod eclector.reader:call-with-state-value
-    ((client clasp-non-cst-elector-client) thunk (aspect (eql 'cl:*readtable*)) value)
+    ((client cmp:clasp-eclector-client-mixin) thunk (aspect (eql 'cl:*readtable*)) value)
   (let ((cl:*readtable* value))
     (funcall thunk)))
 

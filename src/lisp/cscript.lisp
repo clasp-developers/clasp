@@ -133,6 +133,11 @@
              #~"kernel/clos/inspect.lisp"
              #~"kernel/clos/telemetry.lisp"
              #~"kernel/lsp/loadltv.lisp"
+             :eclector-concrete-syntax-tree
+             #~"kernel/cmp/eclector-client.lisp"
+             #~"kernel/cmp/fixup-eclector-readtables.lisp"
+             #~"kernel/cmp/activate-clasp-readtables-for-eclector.lisp"
+             #~"kernel/cmp/define-unicode-tables.lisp"
              #~"kernel/cmp/cmpltv.lisp"
              #~"kernel/cmp/disltv.lisp"
              #~"kernel/cmp/compile-file.lisp"

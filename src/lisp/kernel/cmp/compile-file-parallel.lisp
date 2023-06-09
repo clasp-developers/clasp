@@ -307,7 +307,7 @@ multithreaded performance that we should explore."
          #+(or cclasp eclasp) (cleavir-cst-to-ast:*compiler*
                                 'cl:compile-file)
          #+(or cclasp eclasp)(core:*use-cleavir-compiler* t)
-         #+(or cclasp eclasp)(eclector.reader:*client* clasp-cleavir::*cst-client*)
+         #+(or cclasp eclasp)(eclector.reader:*client* cmp:*cst-client*)
          ast-jobs
          (_ (cfp-log "Starting the pool of threads~%"))
          (job-args `(:optimize ,optimize :optimize-level ,optimize-level

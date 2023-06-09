@@ -232,6 +232,12 @@
    (%cfunctions :initarg :cfunctions :reader cfunctions :type sequence)
    (%vars :initarg :vars :reader vars :type sequence)))
 
+#+clasp
+(defclass module-debug-locations-attr (attribute)
+  ((%name :initform (ensure-constant "clasp:module-debug-locations"))
+   (%module :initarg :module :reader module :type creator)
+   (%locations :initarg :locations :reader locations :type sequence)))
+
 ;;;
 
 ;;; Return true iff the value is similar to the existing creator.
@@ -1104,6 +1110,18 @@
               else
                 collect (list cvar nil index))))
 
+(defun process-debug-location (item)
+  (let ((spi (core:bytecode-debug-location/location item)))
+    (list (core:bytecode-debug-location/start item)
+          (core:bytecode-debug-location/end item)
+          (ensure-constant
+           (core:file-scope-pathname
+            (core:file-scope
+             (core:source-pos-info-file-handle spi))))
+          (core:source-pos-info-lineno spi)
+          (core:source-pos-info-column spi)
+          (core:source-pos-info-filepos spi))))
+
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
   (let ((mod
@@ -1120,15 +1138,23 @@
     #+clasp ; debug info
     (let ((info (cmp:module/debug-info value)))
       (when info
-        (add-instruction
-         (make-instance 'module-debug-attr
-           :module mod
-           :cfunctions (loop for item across info
-                             when (typep item 'cmp:cfunction)
-                               collect (ensure-constant item))
-           :vars (loop for item across info
-                       when (typep item 'core:bytecode-debug-vars)
-                         collect (process-debug-vars item))))))
+        (multiple-value-bind (cfs vars locations)
+            (loop for item across info
+                  if (typep item 'cmp:cfunction)
+                    collect (ensure-constant item) into cfs
+                  else if (typep item 'core:bytecode-debug-vars)
+                         collect (process-debug-vars item) into vars
+                  else if (typep item 'core:bytecode-debug-location)
+                         collect (process-debug-location item)
+                           into locations
+                  finally (return (values cfs vars locations)))
+          (add-instruction
+           (make-instance 'module-debug-attr
+             :module mod :cfunctions cfs :vars vars))
+          (when locations
+            (add-instruction
+             (make-instance 'module-debug-locations-attr
+               :module mod :locations locations))))))
     mod))
 
 (defmethod encode ((inst bytemodule-creator) stream)
@@ -1195,6 +1221,27 @@
                     (write-byte (if cellp 1 0) stream)
                     (write-b16 index stream)))
          vars)))
+
+#+clasp
+(defmethod encode ((attr module-debug-locations-attr) stream)
+  (let* ((locations (locations attr))
+         (nlocations (length locations)))
+    ;; Write the length.
+    (write-b32 (+ *index-bytes* 4
+                  (* nlocations (+ 4 4 *index-bytes* 8 8 8)))
+               stream)
+    ;; Module index
+    (write-index (module attr) stream)
+    ;; Number of locations
+    (write-b32 nlocations stream)
+    ;; Individual locations
+    (loop for (start end path line column fpos) in locations
+          do (write-b32 start stream)
+             (write-b32 end stream)
+             (write-index path stream)
+             (write-b64 line stream)
+             (write-b64 column stream)
+             (write-b64 fpos stream))))
 
 (defmethod encode ((init init-object-array) stream)
   (write-mnemonic 'init-object-array stream)
@@ -1298,6 +1345,22 @@
             (funcall (cmp:bytecompile `(lambda () (progn ,form)) env)))
           (bytecode-compile-file-form form env)))))
 
+(defun compute-source-locations (cst)
+  (let ((table (make-hash-table :test #'eq)))
+    (labels ((aux (cst)
+               (etypecase cst
+                 (cst:atom-cst)
+                 (cst:cons-cst
+                  (let ((raw (cst:raw cst)))
+                    (unless (nth-value 1 (gethash raw table))
+                      ;; the SOURCE is a cons (start . end), but we
+                      ;; only care about the start.
+                      (setf (gethash raw table) (car (cst:source cst)))
+                      (aux (cst:first cst))
+                      (aux (cst:rest cst))))))))
+      (aux cst))
+    table))
+
 ;; input is a character stream.
 (defun bytecode-compile-stream (input output-path
                                 &key (environment
@@ -1312,16 +1375,18 @@
         ;; Read and compile the forms.
         (loop with eof = (gensym "EOF")
               with *compile-time-too* = nil
+              with eclector.reader:*client* = (make-instance 'eclector.readtable::clasp-tracking-elector-client)
               with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
               with cfsdl = cmp::*compile-file-source-debug-lineno*
               with cfsdo = cmp::*compile-file-source-debug-offset*
               for core:*current-source-pos-info*
                 = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
-              for form = (read input nil eof)
+              for cmp:*source-locations* = (make-hash-table :test #'eq)
+              for form = (eclector.parse-result:read eclector.reader:*client* input nil eof)
               until (eq form eof)
-              when *compile-print*
-                do (cmp::describe-form form)
-              do (bytecode-compile-toplevel form environment))
-        ;; Write out the FASO bytecode.
+              do (when *compile-print*
+                   (cmp::describe-form form))
+                 (bytecode-compile-toplevel form environment))
+        ;; Write out the FASL bytecode.
         (%write-bytecode output))))
   (truename output-path))
