@@ -771,14 +771,18 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 #+threads
 (define-condition mp:process-join-error (mp:process-error)
   ((original-condition :initarg :original-condition :initform nil
-                       :reader mp:process-join-error-original-condition))
+                       :reader mp:process-join-error-original-condition)
+   (aborted :initarg :aborted :initform nil
+            :reader mp:process-join-error-aborted))
   (:report
    (lambda (condition stream)
-     (format stream "Failed to join process: Process ~s aborted~:[.~; ~
+     (format stream "Failed to join process: Process ~s ~:[not started~;aborted~]~:[.~; ~
 due to error:~%  ~:*~a~]"
              (mp:process-error-process condition)
+             (mp:process-join-error-aborted condition)
              (mp:process-join-error-original-condition condition))))
-  (:documentation "PROCESS-JOIN signals a condition of this type when the thread being joined ended abnormally."))
+  (:documentation "PROCESS-JOIN signals a condition of this type when the thread
+being joined ended abnormally or was not started."))
 
 #+threads
 (progn

@@ -134,6 +134,7 @@ clasp_make_pipe()
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg,abort);
+SYMBOL_EXPORT_SC_(KeywordPkg,aborted);
 SYMBOL_EXPORT_SC_(KeywordPkg,exited);
 SYMBOL_EXPORT_SC_(KeywordPkg,signaled);
 SYMBOL_EXPORT_SC_(KeywordPkg,stopped);

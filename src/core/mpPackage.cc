@@ -508,32 +508,30 @@ SYMBOL_EXPORT_SC_(MpPkg,process_error);
 SYMBOL_EXPORT_SC_(MpPkg,process_error_process);
 SYMBOL_EXPORT_SC_(MpPkg,process_join_error);
 SYMBOL_EXPORT_SC_(MpPkg,process_join_error_original_condition);
+SYMBOL_EXPORT_SC_(MpPkg,process_join_error_aborted);
 SYMBOL_EXPORT_SC_(KeywordPkg,original_condition);
 
-CL_DOCSTRING(R"dx(Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. If the process was aborted by ABORT-PROCESS or a control transfer, an error of type PROCESS-JOIN-ERROR is signaled.)dx");
+CL_DOCSTRING(R"dx(Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. If the process was not started or aborted by ABORT-PROCESS or a control transfer, an error of type PROCESS-JOIN-ERROR is signaled.)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
-  // ECL has a much more complicated process_join function
-  if (process->_Phase != Exited ) {
-    pthread_join(process->_TheThread._value,NULL);
+  if (process->_Phase == Nascent)
+    ERROR(_sym_process_join_error, core::lisp_createList(kw::_sym_process, process));
+  if (process->_Phase != Exited) {
+    pthread_join(process->_TheThread._value, NULL);
   }
   if (process->_Aborted)
-    ERROR(_sym_process_join_error,
-          core::lisp_createList(kw::_sym_process, process,
-                                kw::_sym_original_condition,
-                                process->_AbortCondition));
-  else return cl__values_list(process->_ReturnValuesList);
+    ERROR(_sym_process_join_error, core::lisp_createList(kw::_sym_process, process, kw::_sym_original_condition,
+                                                         process->_AbortCondition, kw::_sym_aborted, _lisp->_true()));
+
+  return cl__values_list(process->_ReturnValuesList);
 }
 
-
 CL_LAMBDA(process function &rest args);
-CL_DEFUN core::T_sp mp__process_preset(Process_sp process, core::T_sp function, core::T_sp args )
-{
+CL_DEFUN core::T_sp mp__process_preset(Process_sp process, core::T_sp function, core::T_sp args) {
   process->_Function = function;
   process->_Arguments = args;
   return process;
 }
-
 
 CL_DEFUN core::T_sp mp__process_enable(Process_sp process)
 {
