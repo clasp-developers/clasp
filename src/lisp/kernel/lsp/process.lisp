@@ -41,7 +41,7 @@
   (%status :running)
   (%code nil)
   #+threads (%lock (mp:make-lock :name "external-process-lock"))
-  #+threads (%pipe (mp:make-process "external-process" 'missing-function)))
+  #+threads (%pipe nil))
 
 ;;; ---------------------------------------------------------------------
 ;;; si:waitpid -> (values                              status  code  pid)
@@ -63,9 +63,10 @@
                    (external-process-%status process) status
                    (external-process-%code process) code)
              #+threads
-             (handler-case (mp:process-join (external-process-%pipe process))
-               ;; If the %pipe already quit, that's ok.
-               (mp:process-join-error ())))
+             (when (external-process-%pipe process)
+               (handler-case (mp:process-join (external-process-%pipe process))
+                 ;; If the %pipe already quit, that's ok.
+                 (mp:process-join-error ()))))
             ((:stopped :resumed :running)
              (setf (external-process-%status process) status
                    (external-process-%code process) code))
@@ -305,9 +306,9 @@
               (external-process-error-stream process) stream-error)
         (when pipes
           #+threads
-          (let ((thread (external-process-%pipe process)))
-            (mp:process-preset thread #'pipe-streams process pipes)
-            (mp:process-start thread))
+          (mp:process-start (setf (external-process-%pipe process)
+                                  (mp:make-process "external-process" #'pipe-streams
+                                                   (list process pipes))))
           #-threads
           (if wait
               (pipe-streams process pipes)
