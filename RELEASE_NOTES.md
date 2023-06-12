@@ -1,3 +1,12 @@
+# Version 2.4.0 (LLVM15/LLVM16) Pending
+
+## Added
+* Debug source position info for bytecode.
+
+## Fixed
+* Avoid segmentation faults from incorrectly calling MP:PROCESS-JOIN in
+  EXT:RUN-PROGRAM.
+
 # Version 2.3.0 (LLVM15/LLVM16) 2023-06-04
 
 ## Added
