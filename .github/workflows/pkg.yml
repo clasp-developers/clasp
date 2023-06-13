@@ -205,7 +205,7 @@ jobs:
     name: Build Arch Clasp
     runs-on: ubuntu-latest
     container:
-      image: yitzchak/archlinux-makepkg:latest
+      image: ghcr.io/yitzchak/archlinux-makepkg:latest
     steps:
       - name: Set permissions and update packages
         run: |
@@ -234,7 +234,7 @@ jobs:
     name: Build Arch Cando
     runs-on: ubuntu-latest
     container:
-      image: yitzchak/archlinux-makepkg:latest
+      image: ghcr.io/yitzchak/archlinux-makepkg:latest
     steps:
       - name: Set permissions and update packages
         run: |
