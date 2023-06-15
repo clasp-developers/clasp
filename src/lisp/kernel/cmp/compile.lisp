@@ -18,12 +18,12 @@
        (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
 
 ;;; See NOTE on compile-in-env below.
-(defun compile-with-hook (compile-hook definition env pathname)
+(defun compile-with-hook (compile-hook definition env)
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
   (with-compilation-results ()
     (if compile-hook
-        (funcall compile-hook definition env pathname)
+        (funcall compile-hook definition env)
         (error "no compile hook available"))))
 
 ;;; NOTE: cclasp may pass a definition that is a CST or AST.
@@ -32,15 +32,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
                        &optional (compile-hook *cleavir-compile-hook*))
   "Compile in the given environment"
   (with-compilation-unit ()
-    (with-compiler-env ()
-      (let* ((module (create-run-time-module-for-compile)))
-        ;; Link the C++ intrinsics into the module
-        (with-module (:module module
-                      :optimize nil)
-          (cmp-log "Dumping module%N")
-          (cmp-log-dump-module module)
-          (let ((pathname (if *load-pathname* (namestring *load-pathname*) "repl-code")))
-            (compile-with-hook compile-hook definition env pathname)))))))
+    (compile-with-hook compile-hook definition env)))
 
 (defun builtin-wrapper-form (name)
   (when (and (fboundp name)
