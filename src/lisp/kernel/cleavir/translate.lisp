@@ -2183,19 +2183,15 @@ COMPILE-FILE will use the default *clasp-env*."
     (bir:verify module)
     (translate bir :abi abi :linkage linkage)))
 
-(defun bir-compile (form env pathname
-                    &key (linkage 'llvm-sys:internal-linkage) name)
-  (bir-compile-cst (cst:cst-from-expression form) env pathname
-                   :linkage linkage :name name))
+(defun bir-compile (form env pathname)
+  (bir-compile-cst (cst:cst-from-expression form) env pathname))
 
 (defun cleavir-compile (name &optional definition)
   (let ((cmp:*cleavir-compile-hook* #'bir-compile)
         (core:*use-cleavir-compiler* t))
     (compile name definition)))
 
-(defun bir-compile-cst (cst env pathname
-                        &key (linkage 'llvm-sys:internal-linkage) name)
-  (declare (ignore linkage name))
+(defun bir-compile-cst (cst env pathname)
   (let* ((cst-to-ast:*compiler* 'cl:compile)
          (ast (cst->ast cst env)))
     (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
@@ -2212,7 +2208,7 @@ COMPILE-FILE will use the default *clasp-env*."
 (defun bir-compile-cst-in-env (cst &optional env)
   (let ((cst-to-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
-    (cmp:compile-in-env cst env #'bir-compile-cst cmp:*default-compile-linkage*)))
+    (cmp:compile-in-env cst env #'bir-compile-cst)))
 
 (defun compile-form (form &optional (env *clasp-env*))
   (let* ((cst (cst:cst-from-expression form))

@@ -18,21 +18,18 @@
        (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
 
 ;;; See NOTE on compile-in-env below.
-(defun compile-with-hook (compile-hook definition env pathname
-                          &key (linkage 'llvm-sys:internal-linkage) name)
+(defun compile-with-hook (compile-hook definition env pathname)
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
   (with-compilation-results ()
     (if compile-hook
-        (funcall compile-hook definition env pathname
-                 :linkage linkage :name name)
+        (funcall compile-hook definition env pathname)
         (error "no compile hook available"))))
 
 ;;; NOTE: cclasp may pass a definition that is a CST or AST.
 ;;; As such, this function should probably not examine the definition at all.
 (defun compile-in-env (definition env
-                       &optional (compile-hook *cleavir-compile-hook*)
-                         (linkage 'llvm-sys:internal-linkage) name)
+                       &optional (compile-hook *cleavir-compile-hook*))
   "Compile in the given environment"
   (with-compilation-unit ()
     (with-compiler-env ()
@@ -43,7 +40,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
           (cmp-log "Dumping module%N")
           (cmp-log-dump-module module)
           (let ((pathname (if *load-pathname* (namestring *load-pathname*) "repl-code")))
-            (compile-with-hook compile-hook definition env pathname :linkage linkage :name name)))))))
+            (compile-with-hook compile-hook definition env pathname)))))))
 
 (defun builtin-wrapper-form (name)
   (when (and (fboundp name)
@@ -76,7 +73,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
          (error "COMPILE doesn't know how to handle this type of function"))
         ((and (consp definition) (eq (car definition) 'lambda))
          (cmp-log "compile form: {}%N" definition)
-         (compile-in-env definition nil *cleavir-compile-hook* 'llvm-sys:internal-linkage name))
+         (compile-in-env definition nil *cleavir-compile-hook*))
         ((null definition)
          (let ((func (cond ((fboundp name) (fdefinition name))
                            ((and (symbolp name) (macro-function name)))
