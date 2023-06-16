@@ -1547,7 +1547,8 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   if (name.nilp())
     name = Cons_O::createList(cl::_sym_lambda, comp::lambda_list_for_name(oll));
   Cfunction_sp function = Cfunction_O::make(module, name, docstring, oll, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
-  Context context(-1, nil<T_O>(), function);
+  Context context(-1, nil<T_O>(), function,
+                  core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->notinlines(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
@@ -1559,6 +1560,8 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   context.assemble0(vm_return);
   return function;
 }
+
+SYMBOL_EXPORT_SC_(CompPkg, register_global_function_ref);
 
 void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
   bool mvp;
@@ -1585,7 +1588,10 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
   } else { // ought to be a function name
     FunInfoV info = fun_info_v(fnameoid, env);
     if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
-      // TODO: Warn on unknown (nil)
+      if (std::holds_alternative<NoFunInfoV>(info) // Warn
+          && _sym_register_global_function_ref->fboundp())
+        eval::funcall(_sym_register_global_function_ref, fnameoid,
+                      ctxt.source_info());
       ctxt.assemble1(vm_fdefinition, ctxt.literal_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
@@ -2201,21 +2207,24 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   T_sp source_location = nil<T_O>();
   Label_sp begin_label = Label_O::make();
   Label_sp end_label = Label_O::make();
+  Context ncontext = context;
   if (_sym_STARsourceLocationsSTAR->boundP()
       && gc::IsA<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())) {
     source_location = gc::As<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())->gethash(form, nil<T_O>());
+    ncontext = Context(context.receiving(), context.dynenv(),
+                       context.cfunction(), source_location);
   }
-  if (source_location.notnilp()) begin_label->contextualize(context);
+  if (source_location.notnilp()) begin_label->contextualize(ncontext);
   // Compile
   if (gc::IsA<Symbol_sp>(form))
-    compile_symbol(gc::As_unsafe<Symbol_sp>(form), env, context);
+    compile_symbol(gc::As_unsafe<Symbol_sp>(form), env, ncontext);
   else if (form.consp())
-    compile_combination(oCar(form), oCdr(form), env, context);
+    compile_combination(oCar(form), oCdr(form), env, ncontext);
   else
-    compile_literal(form, env, context);
+    compile_literal(form, env, ncontext);
   // And finish off the source info.
   if (source_location.notnilp()) {
-    end_label->contextualize(context);
+    end_label->contextualize(ncontext);
     context.push_debug_info(BytecodeDebugLocation_O::make(begin_label, end_label, source_location));
   }
 }

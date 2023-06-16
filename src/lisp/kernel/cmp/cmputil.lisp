@@ -106,11 +106,14 @@
                                           :source-pos-info cspi))))))
 
 (defun register-global-function-ref (name &optional (origin (ext:current-source-location)))
-  ;; Can't do (push ... (gethash ...)) because we're too early.
-  (let ((existing-refs (gethash name *global-function-refs*))
-        (new-ref
-          (make-global-function-ref :name name :source-pos-info origin)))
-    (setf (gethash name *global-function-refs*) (cons new-ref existing-refs))))
+  (when (boundp '*global-function-refs*)
+    ;; Can't do (push ... (gethash ...)) because we're too early.
+    (let ((existing-refs (gethash name *global-function-refs*))
+          (new-ref
+            (make-global-function-ref :name name
+                                      :source-pos-info origin)))
+      (setf (gethash name *global-function-refs*)
+            (cons new-ref existing-refs)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

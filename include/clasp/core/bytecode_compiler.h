@@ -327,23 +327,28 @@ public:
   int _receiving;
   List_sp _dynenv;
   T_sp _cfunction;
+  T_sp _source_info;
 public:
-  Context(int receiving, T_sp dynenv, T_sp cfunction)
-    : _receiving(receiving), _dynenv(dynenv), _cfunction(cfunction) {}
+  Context(int receiving, T_sp dynenv, T_sp cfunction, T_sp source_info)
+    : _receiving(receiving), _dynenv(dynenv), _cfunction(cfunction),
+      _source_info(source_info){}
   // Sub constructors
   Context(const Context& parent, int receiving)
     : _receiving(receiving), _dynenv(parent.dynenv()),
-      _cfunction(parent.cfunction()) {}
+      _cfunction(parent.cfunction()), _source_info(parent.source_info())
+  {}
   // Plop the de on the front.
   Context(const Context& parent, T_sp de)
     : _receiving(parent.receiving()),
       _dynenv(Cons_O::create(de, parent.dynenv())),
-      _cfunction(parent.cfunction()) {}
+      _cfunction(parent.cfunction()),
+      _source_info(parent.source_info()) {}
   int receiving() const { return this->_receiving; }
   List_sp dynenv() const { return this->_dynenv; }
   Cfunction_sp cfunction() const {
     return gc::As<Cfunction_sp>(this->_cfunction);
   }
+  T_sp source_info() const { return this->_source_info; }
   Module_sp module() const;
 public:
   size_t literal_index(T_sp literal) const;
