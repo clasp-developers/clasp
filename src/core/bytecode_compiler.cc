@@ -1060,6 +1060,11 @@ static T_sp expand_compiler_macro(Function_sp expander, T_sp form,
 
 SYMBOL_EXPORT_SC_(CompPkg, warn_undefined_global_variable);
 
+inline static bool code_walking_p() {
+  return _sym_STARcodeWalkerSTAR->boundP()
+    && _sym_STARcodeWalkerSTAR->symbolValue().notnilp();
+}
+
 void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
   VarInfoV info = var_info_v(sym, env);
   if (std::holds_alternative<SymbolMacroVarInfoV>(info)) {
@@ -1090,7 +1095,7 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
       // Avoid the pop code below - compile-literal handles it.
       return;
     } else if (std::holds_alternative<NoVarInfoV>(info)) {
-      if (_sym_warn_undefined_global_variable->fboundp())
+      if (_sym_warn_undefined_global_variable->fboundp() && !code_walking_p())
         eval::funcall(_sym_warn_undefined_global_variable,
                       context.source_info(), sym);
       context.assemble1(vm_symbol_value, context.literal_index(sym));
@@ -1595,7 +1600,8 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
     FunInfoV info = fun_info_v(fnameoid, env);
     if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
       if (std::holds_alternative<NoFunInfoV>(info) // Warn
-          && _sym_register_global_function_ref->fboundp())
+          && _sym_register_global_function_ref->fboundp()
+          && !code_walking_p())
         eval::funcall(_sym_register_global_function_ref, fnameoid,
                       ctxt.source_info());
       ctxt.assemble1(vm_fdefinition, ctxt.literal_index(fnameoid));
@@ -1703,7 +1709,8 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     compile_form(setform, env, ctxt);
   } else if (std::holds_alternative<NoVarInfoV>(info) || std::holds_alternative<SpecialVarInfoV>(info)) {
     if (std::holds_alternative<NoVarInfoV>(info)
-        && _sym_warn_undefined_global_variable->fboundp())
+        && _sym_warn_undefined_global_variable->fboundp()
+        && !code_walking_p())
       eval::funcall(_sym_warn_undefined_global_variable,
                     ctxt.source_info(), var);
     compile_form(valf, env, Context(ctxt, 1));
@@ -2210,7 +2217,7 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
 
 void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   // Code walk if we're doing that
-  if (_sym_STARcodeWalkerSTAR->boundP() && _sym_STARcodeWalkerSTAR->symbolValue().notnilp())
+  if (code_walking_p())
     form = eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), form, env);
   // Record source location if we have it.
   T_sp source_location = nil<T_O>();
