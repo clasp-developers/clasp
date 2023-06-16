@@ -115,6 +115,10 @@
      (,cmp:+wrapped-where-tag+ ,wrapped)
      (,cmp:+header-where-tag+ ,header)))
 
+;;; Sham function for bytecode; cleavir special cases away calls
+(defun cleavir-primop:unreachable ()
+  (error "BUG: Reached code marked unreachable"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; core:debug-message is a macro to mimic the core:debug-message special operator
