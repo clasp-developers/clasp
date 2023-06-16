@@ -122,12 +122,13 @@
 ;; to survive compiler macros signaling errors.
 ;; This is kind of a KLUDGE, and doesn't do all the nice encapsulation
 ;;  that we do in Cleavir. Plus we have no source location.
-(defun cmp:expand-compiler-macro-safely (expander form env)
+(defun cmp:expand-compiler-macro-safely (expander form env
+                                         &optional (origin (ext:current-source-location)))
   (handler-case
       (funcall *macroexpand-hook* expander form env)
     (error (c)
       (warn 'compiler-macro-expansion-error-warning
-            :condition c)
+            :condition c :origin origin)
       form)))
 
 ;; This condition is signaled when an attempt at constant folding fails
