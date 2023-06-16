@@ -1056,6 +1056,8 @@ static T_sp expand_compiler_macro(Function_sp expander, T_sp form,
                        expander, form, env);
 }
 
+SYMBOL_EXPORT_SC_(CompPkg, warn_undefined_global_variable);
+
 void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
   VarInfoV info = var_info_v(sym, env);
   if (std::holds_alternative<SymbolMacroVarInfoV>(info)) {
@@ -1085,10 +1087,12 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
       compile_literal(std::get<ConstantVarInfoV>(info).value(), env, context);
       // Avoid the pop code below - compile-literal handles it.
       return;
-    } else if (std::holds_alternative<NoVarInfoV>(info))
-      // FIXME: Warn that the variable is unknown and we're assuming special.
+    } else if (std::holds_alternative<NoVarInfoV>(info)) {
+      if (_sym_warn_undefined_global_variable->fboundp())
+        eval::funcall(_sym_warn_undefined_global_variable,
+                      context.source_info(), sym);
       context.assemble1(vm_symbol_value, context.literal_index(sym));
-    if (context.receiving() == -1)
+    } if (context.receiving() == -1)
       // Values return - put value in mv vector.
       context.assemble0(vm_pop);
   }
@@ -1696,7 +1700,10 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     T_sp setform = Cons_O::createList(cl::_sym_setf, expansion, valf);
     compile_form(setform, env, ctxt);
   } else if (std::holds_alternative<NoVarInfoV>(info) || std::holds_alternative<SpecialVarInfoV>(info)) {
-    // TODO: Warn on unknown variable
+    if (std::holds_alternative<NoVarInfoV>(info)
+        && _sym_warn_undefined_global_variable->fboundp())
+      eval::funcall(_sym_warn_undefined_global_variable,
+                    ctxt.source_info(), var);
     compile_form(valf, env, Context(ctxt, 1));
     // If we need to return the new value, stick it into a new local
     // variable, do the set, then return the lexical variable.
