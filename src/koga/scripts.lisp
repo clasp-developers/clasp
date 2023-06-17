@@ -296,7 +296,8 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
                                 :type \"lsp\"))))
         (t
          (load #P\"../dependencies/ansi-test/init.lsp\"))))
-(rt:do-tests :exit t :expected-failures \"../tools-for-build/ansi-test-expected-failures.sexp\")"))
+(rt:do-tests :exit t :expected-failures \"../tools-for-build/ansi-test-expected-failures~:[~;-bytecode~].sexp\")"
+          (eq (build-mode configuration) :bytecode)))
 
 (defmethod print-prologue (configuration (name (eql :asdf-test)) output-stream)
   (format output-stream "~

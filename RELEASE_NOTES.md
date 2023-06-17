@@ -2,6 +2,7 @@
 
 ## Added
 * Debug source position info for bytecode.
+* Circle detection for load forms in bytecode FASL.
 
 ## Fixed
 * Avoid segmentation faults from incorrectly calling MP:PROCESS-JOIN in

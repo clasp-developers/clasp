@@ -41,7 +41,6 @@ projects/
 local.config
 /.lock-waf_linux*_build
 local.config
-tools-for-build/waf
 f0
 /dependencies/
 config.sexp
