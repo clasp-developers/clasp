@@ -65,13 +65,13 @@ const BCVersion max_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
 
 static uint64_t ltv_header_decode(uint8_t *header) {
   if (header[0] != FASL_MAGIC_NUMBER_0 || header[1] != FASL_MAGIC_NUMBER_1 || header[2] != FASL_MAGIC_NUMBER_2 || header[3] != FASL_MAGIC_NUMBER_3)
-    SIMPLE_ERROR("Invalid FASL: incorrect magic number 0x%" PRIx8 "%" PRIx8 "%" PRIx8 "%" PRIx8, header[0], header[1], header[2],
+    SIMPLE_ERROR("Invalid FASL: incorrect magic number {:02x}{:02x}{:02x}{:02x}", header[0], header[1], header[2],
                  header[3]);
   // C++ guarantees sequencing in the aggregate initialization.
   BCVersion version = {header[4] << 8 | header[5], header[6] << 8 | header[7]};
   if ((version < min_version) || (version > max_version))
     // FIXME: Condition classes
-    SIMPLE_ERROR("FASL version %" PRIu16 ".%" PRIu16 " is out of range of this loader", version[0], version[1]);
+    SIMPLE_ERROR("FASL version {:04x}{:04x} is out of range of this loader", version[0], version[1]);
   return ((uint64_t)header[8] << 56) | ((uint64_t)header[9] << 48) | ((uint64_t)header[10] << 40) | ((uint64_t)header[11] << 32) |
          ((uint64_t)header[12] << 24) | ((uint64_t)header[13] << 16) | ((uint64_t)header[14] << 8) | ((uint64_t)header[15] << 0);
 }
@@ -315,7 +315,7 @@ struct loadltv {
     case UAETCode::t:
       return cl::_sym_T_O;
     default:
-      SIMPLE_ERROR("Invalid FASL: Unknown UAET code %" PRIx8, code);
+      SIMPLE_ERROR("Invalid FASL: Unknown UAET code {:02x}", code);
     }
   }
 
@@ -412,7 +412,7 @@ struct loadltv {
     case UAETCode::t:
       break; // handled by setf row-major-aref
     default:
-      SIMPLE_ERROR("Not implemented: packing code %" PRIx8, packing);
+      SIMPLE_ERROR("Not implemented: packing code {:02x}", packing);
     }
 #undef READ_ARRAY
   }
@@ -471,7 +471,7 @@ struct loadltv {
       test = cl::_sym_equalp;
       break;
     default:
-      SIMPLE_ERROR("Unknown hash table test code %" PRIx8, testcode);
+        SIMPLE_ERROR("Unknown hash table test code {:02x}", testcode);
     }
     set_ltv(cl__make_hash_table(test, clasp_make_fixnum(count), clasp_make_single_float(2.0), clasp_make_single_float(0.7),
                                 nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>()),
@@ -808,7 +808,7 @@ struct loadltv {
       op_attribute();
       break;
     default:
-      SIMPLE_ERROR("Unknown opcode %" PRIx8, opcode);
+        SIMPLE_ERROR("Unknown opcode {:02x}", opcode);
     }
   }
 
