@@ -1044,16 +1044,25 @@ static T_sp expand_macro(Function_sp expander, T_sp form, Lexenv_sp env) {
 // Redefined in compiler-conditions.lisp.
 SYMBOL_EXPORT_SC_(CompPkg, expand_compiler_macro_safely);
 CL_DEFUN T_sp cmp__expand_compiler_macro_safely(Function_sp expander, T_sp form,
-                                                Lexenv_sp env) {
+                                                Lexenv_sp env,
+                                                T_sp source_info) {
+  (void)source_info;
   return expand_macro(expander, form, env);
 }
 
 static T_sp expand_compiler_macro(Function_sp expander, T_sp form,
-                                  Lexenv_sp env) {
+                                  Lexenv_sp env, T_sp source_info) {
   // Go through symbolFunction to make it sensitive to redefinition.
   // Also, slower! Too bad.
   return eval::funcall(_sym_expand_compiler_macro_safely->symbolFunction(),
-                       expander, form, env);
+                       expander, form, env, source_info);
+}
+
+SYMBOL_EXPORT_SC_(CompPkg, warn_undefined_global_variable);
+
+inline static bool code_walking_p() {
+  return _sym_STARcodeWalkerSTAR->boundP()
+    && _sym_STARcodeWalkerSTAR->symbolValue().notnilp();
 }
 
 void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
@@ -1085,10 +1094,12 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
       compile_literal(std::get<ConstantVarInfoV>(info).value(), env, context);
       // Avoid the pop code below - compile-literal handles it.
       return;
-    } else if (std::holds_alternative<NoVarInfoV>(info))
-      // FIXME: Warn that the variable is unknown and we're assuming special.
+    } else if (std::holds_alternative<NoVarInfoV>(info)) {
+      if (_sym_warn_undefined_global_variable->fboundp() && !code_walking_p())
+        eval::funcall(_sym_warn_undefined_global_variable,
+                      context.source_info(), sym);
       context.assemble1(vm_symbol_value, context.literal_index(sym));
-    if (context.receiving() == -1)
+    } if (context.receiving() == -1)
       // Values return - put value in mv vector.
       context.assemble0(vm_pop);
   }
@@ -1547,7 +1558,8 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   if (name.nilp())
     name = Cons_O::createList(cl::_sym_lambda, comp::lambda_list_for_name(oll));
   Cfunction_sp function = Cfunction_O::make(module, name, docstring, oll, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
-  Context context(-1, nil<T_O>(), function);
+  Context context(-1, nil<T_O>(), function,
+                  core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->notinlines(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
@@ -1559,6 +1571,8 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   context.assemble0(vm_return);
   return function;
 }
+
+SYMBOL_EXPORT_SC_(CompPkg, register_global_function_ref);
 
 void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
   bool mvp;
@@ -1585,7 +1599,11 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
   } else { // ought to be a function name
     FunInfoV info = fun_info_v(fnameoid, env);
     if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
-      // TODO: Warn on unknown (nil)
+      if (std::holds_alternative<NoFunInfoV>(info) // Warn
+          && _sym_register_global_function_ref->fboundp()
+          && !code_walking_p())
+        eval::funcall(_sym_register_global_function_ref, fnameoid,
+                      ctxt.source_info());
       ctxt.assemble1(vm_fdefinition, ctxt.literal_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
@@ -1690,7 +1708,11 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     T_sp setform = Cons_O::createList(cl::_sym_setf, expansion, valf);
     compile_form(setform, env, ctxt);
   } else if (std::holds_alternative<NoVarInfoV>(info) || std::holds_alternative<SpecialVarInfoV>(info)) {
-    // TODO: Warn on unknown variable
+    if (std::holds_alternative<NoVarInfoV>(info)
+        && _sym_warn_undefined_global_variable->fboundp()
+        && !code_walking_p())
+      eval::funcall(_sym_warn_undefined_global_variable,
+                    ctxt.source_info(), var);
     compile_form(valf, env, Context(ctxt, 1));
     // If we need to return the new value, stick it into a new local
     // variable, do the set, then return the lexical variable.
@@ -2168,7 +2190,7 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
             && (head != cl::_sym_typep) && (head != cl::_sym_case)) {
           // Compiler macroexpand
           T_sp form = Cons_O::create(head, rest);
-          T_sp expansion = expand_compiler_macro(gc::As<Function_sp>(cmexpander), form, env);
+          T_sp expansion = expand_compiler_macro(gc::As<Function_sp>(cmexpander), form, env, context.source_info());
           if (expansion != form) {
             compile_form(expansion, env, context);
             return;
@@ -2195,27 +2217,30 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
 
 void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   // Code walk if we're doing that
-  if (_sym_STARcodeWalkerSTAR->boundP() && _sym_STARcodeWalkerSTAR->symbolValue().notnilp())
+  if (code_walking_p())
     form = eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), form, env);
   // Record source location if we have it.
   T_sp source_location = nil<T_O>();
   Label_sp begin_label = Label_O::make();
   Label_sp end_label = Label_O::make();
+  Context ncontext = context;
   if (_sym_STARsourceLocationsSTAR->boundP()
       && gc::IsA<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())) {
     source_location = gc::As<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())->gethash(form, nil<T_O>());
+    ncontext = Context(context.receiving(), context.dynenv(),
+                       context.cfunction(), source_location);
   }
-  if (source_location.notnilp()) begin_label->contextualize(context);
+  if (source_location.notnilp()) begin_label->contextualize(ncontext);
   // Compile
   if (gc::IsA<Symbol_sp>(form))
-    compile_symbol(gc::As_unsafe<Symbol_sp>(form), env, context);
+    compile_symbol(gc::As_unsafe<Symbol_sp>(form), env, ncontext);
   else if (form.consp())
-    compile_combination(oCar(form), oCdr(form), env, context);
+    compile_combination(oCar(form), oCdr(form), env, ncontext);
   else
-    compile_literal(form, env, context);
+    compile_literal(form, env, ncontext);
   // And finish off the source info.
   if (source_location.notnilp()) {
-    end_label->contextualize(context);
+    end_label->contextualize(ncontext);
     context.push_debug_info(BytecodeDebugLocation_O::make(begin_label, end_label, source_location));
   }
 }
