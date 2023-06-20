@@ -66,55 +66,61 @@ public:
   void register_for_debug();
 };
 
+// Abstract debug information structure.
+// START and END are labels during compilation, and resolved to
+// fixnums (instruction pointers) during linking.
+FORWARD(BytecodeDebugInfo);
+class BytecodeDebugInfo_O : public General_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugInfo_O, "BytecodeDebugInfo", core::General_O);
+public:
+  BytecodeDebugInfo_O() {} // dummy required due to being inherited?
+  BytecodeDebugInfo_O(T_sp start, T_sp end) : _start(start), _end(end) {}
+public:
+  T_sp _start;
+  T_sp _end;
+public:
+  CL_LISPIFY_NAME(BytecodeDebugInfo/start)
+  CL_DEFMETHOD T_sp start() const { return this->_start; }
+  void setStart(T_sp start) { this->_start = start; }
+  CL_LISPIFY_NAME(BytecodeDebugInfo/end)
+  CL_DEFMETHOD T_sp end() const { return this->_end; }
+  void setEnd(T_sp end) { this->_end = end; }
+};
+
 // Debug information structure for bindings.
 FORWARD(BytecodeDebugVars);
-class BytecodeDebugVars_O : public General_O {
-  LISP_CLASS(core, CorePkg, BytecodeDebugVars_O, "BytecodeDebugVars", core::General_O);
+class BytecodeDebugVars_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugVars_O, "BytecodeDebugVars", BytecodeDebugInfo_O);
 public:
   BytecodeDebugVars_O(T_sp start, T_sp end, List_sp bindings)
-    : _start(start), _end(end), _bindings(bindings) {}
+    : BytecodeDebugInfo_O(start, end), _bindings(bindings) {}
   CL_LISPIFY_NAME(BytecodeDebugVars/make)
   CL_DEF_CLASS_METHOD
   static BytecodeDebugVars_sp make(T_sp start, T_sp end, List_sp bindings) {
     return gctools::GC<BytecodeDebugVars_O>::allocate<gctools::RuntimeStage>(start, end, bindings);
   }
 public:
-  T_sp _start;
-  T_sp _end;
   List_sp _bindings;
 public:
-  CL_LISPIFY_NAME(BytecodeDebugVars/start)
-  CL_DEFMETHOD T_sp start() const { return this->_start; }
-  void setStart(T_sp start) { this->_start = start; }
-  CL_LISPIFY_NAME(BytecodeDebugVars/end)
-  CL_DEFMETHOD T_sp end() const { return this->_end; }
-  void setEnd(T_sp end) { this->_end = end; }
   CL_LISPIFY_NAME(BytecodeDebugVars/bindings)
   CL_DEFMETHOD List_sp bindings() const { return this->_bindings; }
 };
 
 // Debug information for source form locations.
 FORWARD(BytecodeDebugLocation);
-class BytecodeDebugLocation_O : public General_O {
-  LISP_CLASS(core, CorePkg, BytecodeDebugLocation_O, "BytecodeDebugLocation", core::General_O);
+class BytecodeDebugLocation_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugLocation_O, "BytecodeDebugLocation", BytecodeDebugInfo_O);
 public:
   BytecodeDebugLocation_O(T_sp start, T_sp end, T_sp location)
-    : _start(start), _end(end), _location(location) {}
+    : BytecodeDebugInfo_O(start, end), _location(location) {}
   CL_LISPIFY_NAME(BytecodeDebugLocation/make)
   CL_DEF_CLASS_METHOD
   static BytecodeDebugLocation_sp make(T_sp start, T_sp end, T_sp location) {
     return gctools::GC<BytecodeDebugLocation_O>::allocate<gctools::RuntimeStage>(start, end, location);
   }
 public:
-  T_sp _start;
-  T_sp _end;
   T_sp _location;
-  CL_LISPIFY_NAME(BytecodeDebugLocation/start)
-  CL_DEFMETHOD T_sp start() const { return this->_start; }
-  void setStart(T_sp start) { this->_start = start; }
-  CL_LISPIFY_NAME(BytecodeDebugLocation/end)
-  CL_DEFMETHOD T_sp end() const { return this->_end; }
-  void setEnd(T_sp end) { this->_end = end; }
+public:
   CL_LISPIFY_NAME(BytecodeDebugLocation/location)
   CL_DEFMETHOD T_sp location() const { return this->_location; }
 };

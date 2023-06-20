@@ -1135,8 +1135,8 @@
               :type simple-vector)))
 
 (defun process-debug-vars (item)
-  (list (core:bytecode-debug-vars/start item)
-        (core:bytecode-debug-vars/end item)
+  (list (core:bytecode-debug-info/start item)
+        (core:bytecode-debug-info/end item)
         (loop for (var . index) in (core:bytecode-debug-vars/bindings item)
               for cvar = (ensure-constant var)
               if (consp index)
@@ -1146,8 +1146,8 @@
 
 (defun process-debug-location (item)
   (let ((spi (core:bytecode-debug-location/location item)))
-    (list (core:bytecode-debug-location/start item)
-          (core:bytecode-debug-location/end item)
+    (list (core:bytecode-debug-info/start item)
+          (core:bytecode-debug-info/end item)
           (ensure-constant
            (core:file-scope-pathname
             (core:file-scope
