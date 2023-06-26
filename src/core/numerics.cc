@@ -108,6 +108,9 @@ List_sp core__positive_integer_to_mixed_base_digits(core::Integer_sp number, Lis
     if (!val.fixnump()) {
       SIMPLE_ERROR("Bases {} must all be fixnums", _rep_(bases));
     }
+    if (val.unsafe_fixnum()<1) {
+      SIMPLE_ERROR("Bases {} must all be values > 1", _rep_(bases));
+    }
     ibases.push_back(val.unsafe_fixnum());
   }
   Bignum bn = core::clasp_to_mpz(number);

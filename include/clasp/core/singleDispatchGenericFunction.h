@@ -112,7 +112,7 @@ public:
         }
       }
     }
-    SIMPLE_ERROR("This single dispatch generic function %s does not recognize argument class %s  arg {}",
+    SIMPLE_ERROR("This single dispatch generic function {} does not recognize argument class {}  arg {}",
                  _rep_(closure->asSmartPtr()),
                  _rep_(dispatchArgClass),
                  _rep_(dispatchArg).c_str());

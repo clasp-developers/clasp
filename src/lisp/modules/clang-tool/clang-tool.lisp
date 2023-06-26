@@ -431,7 +431,7 @@ Select a subset (or all) source file names from the compilation database and ret
   (setf *on-start-translation-unit-depth* 0)
   (incf *on-end-translation-unit-depth*)
   (when (= *on-end-translation-unit-depth* 1)
-    (format t "on-end-of-translation-unit for code-match-callback of: ~a~%" self)
+    #+(or)(format t "on-end-of-translation-unit for code-match-callback of: ~a~%" self)
     (when (slot-boundp self 'end-of-translation-unit-code)
       (assert (end-of-translation-unit-code self))
       (funcall (end-of-translation-unit-code self)))))
