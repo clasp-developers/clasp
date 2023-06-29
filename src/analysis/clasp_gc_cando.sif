@@ -675,8 +675,6 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyComponent_O" :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyComponent_O" :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyComponent_O" :layout-offset-field-names ("_Scale")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -699,8 +697,6 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyStretch_O" :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyStretch_O" :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyStretch_O" :layout-offset-field-names ("_Scale")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -731,9 +727,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyRigidBodyComponent_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyRigidBodyComponent_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRigidBodyComponent_O"
              :layout-offset-field-names ("_Scale")}
@@ -761,9 +754,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyRigidBodyStaple_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyRigidBodyStaple_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRigidBodyStaple_O"
              :layout-offset-field-names ("_Scale")}
@@ -795,9 +785,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyRigidBodyNonbond_O"
              :layout-offset-field-names ("_Scale")}
@@ -853,8 +840,6 @@
             :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyOutOfZPlane_O" :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyOutOfZPlane_O" :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyOutOfZPlane_O" :layout-offset-field-names ("_Scale")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -888,9 +873,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergySketchNonbond_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergySketchNonbond_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergySketchNonbond_O" :layout-offset-field-names ("_Scale")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -932,9 +914,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyDihedralRestraint_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyDihedralRestraint_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyDihedralRestraint_O"
              :layout-offset-field-names ("_Scale")}
@@ -969,9 +948,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyChiralRestraint_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyChiralRestraint_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyChiralRestraint_O"
              :layout-offset-field-names ("_Scale")}
@@ -1006,9 +982,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyPointToLineRestraint_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyPointToLineRestraint_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyPointToLineRestraint_O"
              :layout-offset-field-names ("_Scale")}
@@ -1043,8 +1016,6 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyDihedral_O" :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyDihedral_O" :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyDihedral_O" :layout-offset-field-names ("_Scale")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -1075,8 +1046,6 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_Scale")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -1141,11 +1110,11 @@
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_atom_name_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_charge_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_mass_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
@@ -1166,10 +1135,10 @@
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_local_typej_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_cn1_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_cn2_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
@@ -1186,9 +1155,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_Scale")}
@@ -1262,11 +1228,11 @@
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_atom_name_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_charge_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_mass_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -1290,11 +1256,11 @@
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_local_typej_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_cn1_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_cn2_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -1312,9 +1278,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyAnchorRestraint_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyAnchorRestraint_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyAnchorRestraint_O"
              :layout-offset-field-names ("_Scale")}
@@ -1349,9 +1312,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyFixedNonbondRestraint_O"
              :layout-offset-field-names ("_Scale")}
@@ -1409,9 +1369,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergySketchStretch_O"
              :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergySketchStretch_O"
-             :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergySketchStretch_O" :layout-offset-field-names ("_Scale")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -1443,8 +1400,6 @@
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "chem::EnergyAngle_O" :layout-offset-field-names ("_Enabled")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "chem::EnergyAngle_O" :layout-offset-field-names ("_UseSimd")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::EnergyAngle_O" :layout-offset-field-names ("_Scale")}
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
@@ -2489,7 +2444,7 @@
              :offset-base-ctype "chem::SparseLargeSquareMatrix_O"
              :layout-offset-field-names ("_ColumnForValue" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<float>>"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<double>>"
              :offset-base-ctype "chem::SparseLargeSquareMatrix_O"
              :layout-offset-field-names ("_Values" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
@@ -2513,7 +2468,7 @@
              :offset-base-ctype "chem::SparseLargeSquareMatrix_O"
              :layout-offset-field-names ("_col_RowForValue" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<float>>"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<double>>"
              :offset-base-ctype "chem::SparseLargeSquareMatrix_O"
              :layout-offset-field-names ("_col_Values" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__FullLargeSquareMatrix_O"
@@ -2531,7 +2486,7 @@
              :offset-base-ctype "chem::FullLargeSquareMatrix_O"
              :layout-offset-field-names ("_ActiveElements")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<float>>"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<double>>"
              :offset-base-ctype "chem::FullLargeSquareMatrix_O"
              :layout-offset-field-names ("_Values" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFBaseDb_O" :stamp-key "chem::FFBaseDb_O"
@@ -2966,7 +2921,7 @@
              :offset-base-ctype "chem::RigidBodyEnergyFunction_O"
              :layout-offset-field-names ("_RigidBodies")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::RigidBodyEnergyFunction_O"
              :layout-offset-field-names ("_SavedCoordinates")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -3236,15 +3191,15 @@
              :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "chem::StepReport_O" :layout-offset-field-names ("_Direction")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::StepReport_O"
              :layout-offset-field-names ("_LineSearchPosition")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::StepReport_O"
              :layout-offset-field-names ("_LineSearchDirection")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::StepReport_O"
              :layout-offset-field-names ("_LineSearchForce")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -3338,11 +3293,11 @@
              :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "chem::ForceMatchReport_O" :layout-offset-field-names ("_Message")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::ForceMatchReport_O"
              :layout-offset-field-names ("_AnalyticalForce")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::ForceMatchReport_O"
              :layout-offset-field-names ("_NumericalForce")}
 {class-kind :stamp-name "STAMPWTAG_chem__ChemDraw_O" :stamp-key "chem::ChemDraw_O"
@@ -3526,19 +3481,35 @@
             :stamp-key "chem::ScoringFunctionEnergy_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::ScoringFunctionEnergy_O"
+             :layout-offset-field-names ("_Terms")}
 {class-kind :stamp-name "STAMPWTAG_chem__SketchFunctionEnergy_O"
             :stamp-key "chem::SketchFunctionEnergy_O" :parent-class "chem::ScoringFunctionEnergy_O"
             :lisp-class-base "chem::ScoringFunctionEnergy_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::SketchFunctionEnergy_O"
+             :layout-offset-field-names ("_Terms")}
 {class-kind :stamp-name "STAMPWTAG_chem__RigidBodyEnergyFunctionEnergy_O"
             :stamp-key "chem::RigidBodyEnergyFunctionEnergy_O"
             :parent-class "chem::ScoringFunctionEnergy_O"
             :lisp-class-base "chem::ScoringFunctionEnergy_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::RigidBodyEnergyFunctionEnergy_O"
+             :layout-offset-field-names ("_Terms")}
 {class-kind :stamp-name "STAMPWTAG_chem__EnergyFunctionEnergy_O"
             :stamp-key "chem::EnergyFunctionEnergy_O" :parent-class "chem::ScoringFunctionEnergy_O"
             :lisp-class-base "chem::ScoringFunctionEnergy_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "chem::EnergyFunctionEnergy_O"
+             :layout-offset-field-names ("_Terms")}
 {class-kind :stamp-name "STAMPWTAG_chem__ConformationCollection_O"
             :stamp-key "chem::ConformationCollection_O" :parent-class "core::CxxObject_O"
             :lisp-class-base "core::CxxObject_O" :root-class "core::T_O" :stamp-wtag 3
@@ -4781,17 +4752,17 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::Minimizer_O" :layout-offset-field-names ("_RMSForce")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::Minimizer_O" :layout-offset-field-names ("nvP1DSearchTemp1")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::Minimizer_O" :layout-offset-field-names ("nvP1DSearchTemp2")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::Minimizer_O"
              :layout-offset-field-names ("nvP1DSearchOrigin")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
              :offset-base-ctype "chem::Minimizer_O"
              :layout-offset-field-names ("nvP1DSearchDirection")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
