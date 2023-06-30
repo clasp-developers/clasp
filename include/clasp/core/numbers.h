@@ -444,6 +444,7 @@ namespace core {
     double _Value;
   public:
     static DoubleFloat_sp create(double nm) {
+      ASSERT_NOT_NAN(nm);
       auto  v = gctools::GC<DoubleFloat_O>::allocate_with_default_constructor();
       v->set(nm);
       return v;
@@ -457,7 +458,7 @@ namespace core {
     void set(double val) { this->_Value = val; };
     double get() const { return this->_Value; };
     Number_sp signum_() const override;
-    Number_sp abs_() const override { return DoubleFloat_O::create(fabs(this->_Value)); };
+    Number_sp abs_() const override { ASSERT_NOT_NAN(this->_Value); return DoubleFloat_O::create(fabs(this->_Value)); };
     bool isnan_() const override { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
     bool isinf_() const override { return std::isinf(this->_Value); };
 
