@@ -27,7 +27,16 @@ namespace core {
     typedef specialized_SimpleVector_byte32_t TemplatedBase;
   public:
     static value_type default_initial_element(void) {return 0;}
-    static value_type from_object(T_sp obj) { return clasp_to_uint32_t(obj); };
+    static value_type from_object(T_sp obj) {
+      if (obj.fixnump()) {
+        Fixnum val = obj.unsafe_fixnum();
+        if (val >= std::numeric_limits<uint32_t>::min()
+            && val <= std::numeric_limits<uint32_t>::max() ) {
+          return static_cast<uint32_t>(val);
+        }
+      }
+      return clasp_to_uint32_t(obj);
+    };
     static T_sp to_object(const value_type& v) { return Integer_O::create(v); };
   public:
   SimpleVector_byte32_t_O(size_t length, value_type initialElement=value_type(),
@@ -139,7 +148,16 @@ namespace core {
     typedef specialized_SimpleVector_int32_t TemplatedBase;
   public:
     static value_type default_initial_element(void) {return 0;}
-    static value_type from_object(T_sp obj) { return clasp_to_int32_t(obj); };
+    static value_type from_object(T_sp obj) {
+      if (obj.fixnump()) {
+        Fixnum val = obj.unsafe_fixnum();
+        if (val >= std::numeric_limits<int32_t>::min()
+            && val <= std::numeric_limits<int32_t>::max() ) {
+          return static_cast<int32_t>(val);
+        }
+      }
+      return clasp_to_int32_t(obj);
+    };
     static T_sp to_object(const value_type& v) { return Integer_O::create(v); };
   public:
   SimpleVector_int32_t_O(size_t length, value_type initialElement=value_type(),
