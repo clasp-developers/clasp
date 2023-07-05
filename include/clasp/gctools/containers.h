@@ -92,6 +92,12 @@ public:
     for (size_t zz = 0; zz < count; zz++)
       this->_Vector[zz] = value;
   }
+  void assign(const_iterator begin, const_iterator end) {
+    size_t count = std::distance(begin,end);
+    this->resize(count);
+    for (size_t zz = 0; zz < count; zz++)
+      this->_Vector[zz] = begin[zz];
+  }
   void clear() { this->_Vector.clear(); };
   void push_back(const_reference val) { this->_Vector.push_back(val); };
   void pop_back() { this->_Vector.pop_back(); };
