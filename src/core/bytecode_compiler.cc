@@ -1193,11 +1193,11 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   ctxt.emit_bind(lexical_binding_count, env->frameEnd());
   post_binding_env = post_binding_env->add_notinlines(decl_notinlines(declares));
   begin_label->contextualize(ctxt);
+  // Done before the progn to ensure sorting.
+  ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, debug_bindings.cons()));
   compile_progn(code, post_binding_env, Context(ctxt, Integer_O::create(special_binding_count)));
   ctxt.emit_unbind(special_binding_count);
   end_label->contextualize(ctxt);
-  // Add the debug info
-  ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, debug_bindings.cons()));
 }
 
 void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Context ectxt) {
@@ -2228,7 +2228,12 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
     ncontext = Context(context.receiving(), context.dynenv(),
                        context.cfunction(), source_location);
   }
-  if (source_location.notnilp()) begin_label->contextualize(ncontext);
+  if (source_location.notnilp()) {
+    begin_label->contextualize(ncontext);
+    // We push the info BEFORE compiling the form so that the infos
+    // are naturally sorted by their start position.
+    context.push_debug_info(BytecodeDebugLocation_O::make(begin_label, end_label, source_location));
+  }
   // Compile
   if (gc::IsA<Symbol_sp>(form))
     compile_symbol(gc::As_unsafe<Symbol_sp>(form), env, ncontext);
@@ -2239,7 +2244,6 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   // And finish off the source info.
   if (source_location.notnilp()) {
     end_label->contextualize(ncontext);
-    context.push_debug_info(BytecodeDebugLocation_O::make(begin_label, end_label, source_location));
   }
 }
 
