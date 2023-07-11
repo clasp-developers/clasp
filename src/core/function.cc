@@ -132,6 +132,17 @@ CL_DEFMETHOD size_t GlobalBytecodeSimpleFun_O::entryPcN() const {
   return this->_EntryPcN;
 }
 
+// These two methods allow functions to be used uniformly as
+// debug info in bytecode modules. The duck typing is a bit
+// unfortunate but ought to be harmless.
+CL_LISPIFY_NAME(BytecodeDebugInfo/start)
+CL_DEFMETHOD T_sp GlobalBytecodeSimpleFun_O::start() const {
+  return Integer_O::create(this->_EntryPcN);
+}
+CL_LISPIFY_NAME(BytecodeDebugInfo/end)
+CL_DEFMETHOD T_sp GlobalBytecodeSimpleFun_O::end() const {
+  return Integer_O::create(this->_EntryPcN + this->_BytecodeSize);
+}
 
 LocalSimpleFun_O::LocalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code ) : CodeSimpleFun_O(fdesc,code), _Entry(entry_point) {
   llvmo::validateEntryPoint( code, entry_point );

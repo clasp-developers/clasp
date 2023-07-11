@@ -364,6 +364,9 @@ FORWARD(GlobalBytecodeSimpleFun);
    size_t entryPcN() const;
    CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/bytecode-size)
    CL_DEFMETHOD Fixnum bytecodeSize() const { return this->_BytecodeSize; }
+   // Used for bytecode debug info; see function.cc
+   T_sp start() const;
+   T_sp end() const;
  };
 
 
