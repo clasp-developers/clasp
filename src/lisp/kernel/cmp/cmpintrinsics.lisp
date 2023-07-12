@@ -763,7 +763,6 @@ Boehm and MPS use a single pointer"
 (define-c++-struct %closure% +general-tag+
   ((%i8*% vtable)
    (%t*% entry-point)
-   (%i32% closure-type)
    (%size_t% data-length)
    (%tsp[0]% data0))
   )

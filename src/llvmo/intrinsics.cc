@@ -151,8 +151,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   core::GlobalSimpleFun_sp entryPoint = gc::As<GlobalSimpleFun_sp>(tentryPoint);
   auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::Closure_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::Closure_O>::Type)( numCells,
-                                                                           entryPoint,
-                                                                           core::Closure_O::cclaspClosure);
+                                                                           entryPoint);
   gctools::smart_ptr<core::Closure_O> functoid = gctools::smart_ptr<core::Closure_O>(obj);
 //  printf("%s:%d  Allocating closure on stack at %p  stack_closure_p()->%d\n", __FILE__, __LINE__, functoid.raw_(), functoid->stack_closure_p());
   return functoid.raw_();

@@ -743,7 +743,6 @@ DOCGROUP(clasp);
 CL_DEFUN void core__verify_closure(T_sp alist)
 {
   expect_offset(core::_sym_entry_point,alist,offsetof(Closure_O,_TheSimpleFun)-gctools::general_tag);
-  expect_offset(comp::_sym_closure_type,alist,offsetof(Closure_O,closureType)-gctools::general_tag);
   expect_offset(comp::_sym_data_length,alist,offsetof(Closure_O,_Slots._MaybeSignedLength)-gctools::general_tag);
   expect_offset(comp::_sym_data0,alist,offsetof(Closure_O,_Slots._Data)-gctools::general_tag);
 }
@@ -768,8 +767,7 @@ Closure_sp Closure_O::make_bytecode_closure(GlobalBytecodeSimpleFun_sp entryPoin
   Closure_sp closure =
       gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,
                                                                               closedOverSlots,
-                                                                              entryPoint,
-                                                                              Closure_O::bytecodeClosure);
+                                                                              entryPoint);
   return closure;
 }
 
@@ -780,8 +778,7 @@ Closure_sp Closure_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn,
   Closure_sp closure = 
       gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,
                                                                                        0,
-                                                                                       entryPoint,
-                                                                                       Closure_O::cclaspClosure);
+                                                                                       entryPoint);
   closure->setf_lambdaList(lambda_list);
   closure->setf_docstring(nil<T_O>());
   return closure;
@@ -791,10 +788,7 @@ Closure_sp Closure_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn,
  * It returns true if the function doesn't refer to any closure slots,
  * i.e., if the entry point ignores its first argument. */
 bool Closure_O::openP() {
-  switch (this->closureType) {
-  case cclaspClosure: return (this->_Slots.length() == 0);
-  default: return false;
-  }
+  return (this->_Slots.length() == 0);
 }
 
 #ifdef DEBUG_FUNCTION_CALL_COUNTER
@@ -907,15 +901,6 @@ string Closure_O::__repr__() const {
   ss << "@" << (void*)this << " ";
 #endif
   ss << " " << _rep_(name);
-  ss << " :type ";
-  switch (this->closureType) {
-  case bytecodeClosure:
-      ss << "bytecode ";
-      break;
-  case cclaspClosure:
-      ss << "cclasp ";
-      break;
-  }
   ss << " lambda-list: " << _rep_(this->lambdaList());
   if ( !this->entryPoint().unboundp() ) {
     ss << " :fptr " << reinterpret_cast<void*>(this->entry());
@@ -931,17 +916,10 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__closure_ref(Function_sp tclosure, size_t index)
 {
   if ( Closure_sp closure = tclosure.asOrNull<Closure_O>() ) {
-    switch (closure->closureType) {
-    case Closure_O::bytecodeClosure:
-        printf("%s:%d:%s Add support for looking up slot %lu in bytecodeClosure\n", __FILE__, __LINE__, __FUNCTION__, index );
-        return nil<core::T_O>();
-        break;
-    case Closure_O::cclaspClosure:
-        if ( index >= closure->_Slots.length() ) {
-          SIMPLE_ERROR("Out of bounds closure reference - there are only {} slots", closure->_Slots.length() );
-        }
-        return closure->_Slots[index];
+    if ( index >= closure->_Slots.length() ) {
+      SIMPLE_ERROR("Out of bounds closure reference - there are only {} slots", closure->_Slots.length() );
     }
+    return closure->_Slots[index];
   }
   SIMPLE_ERROR("Out of bounds closure reference - there are no slots");
 }

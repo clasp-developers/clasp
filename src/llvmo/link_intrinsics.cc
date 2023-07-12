@@ -171,9 +171,7 @@ LtvcReturnVoid ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, 
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
   core::GlobalSimpleFun_sp simpleFun(tentrypoint);
   gctools::smart_ptr<core::Closure_O> functoid =
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,0,
-                                                                                       simpleFun,
-                                                                                       core::Closure_O::cclaspClosure);
+      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,0,simpleFun);
   LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
   NO_UNWIND_END();
 }
@@ -1153,9 +1151,7 @@ core::T_O *cc_enclose(core::T_O* simpleFunInfo,
   core::T_sp tsimpleFun((gctools::Tagged)simpleFunInfo);
   core::GlobalSimpleFun_sp simpleFun = gc::As<GlobalSimpleFun_sp>(tsimpleFun);
   gctools::smart_ptr<core::Closure_O> functoid =
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>( false, numCells
-                                                                                        , simpleFun
-                                                                                        , core::Closure_O::cclaspClosure);
+    gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, numCells, simpleFun);
   return functoid.raw_();
 }
 
