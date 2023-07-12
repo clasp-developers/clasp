@@ -784,6 +784,16 @@ Closure_sp Closure_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn,
   return closure;
 }
 
+CL_LAMBDA(sfun core:&va-rest closed);
+CL_DEFUN Closure_sp core__make_closure(SimpleFun_sp sfun,
+                                       Vaslist_sp closed) {
+  size_t nclosed = closed->nargs();
+  Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, nclosed, sfun);
+  for (size_t idx = 0; idx < nclosed; ++idx)
+    (*closure)[idx] = closed->next_arg();
+  return closure;
+}
+
 /* This function is used (currently exclusively) in funcallableInstance.cc.
  * It returns true if the function doesn't refer to any closure slots,
  * i.e., if the entry point ignores its first argument. */
