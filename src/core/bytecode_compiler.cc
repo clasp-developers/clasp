@@ -1713,38 +1713,26 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
       eval::funcall(_sym_warn_undefined_global_variable,
                     ctxt.source_info(), var);
     compile_form(valf, env, Context(ctxt, 1));
-    // If we need to return the new value, stick it into a new local
-    // variable, do the set, then return the lexical variable.
+    // If we need to return the new value, duplicate it on the stack.
     // We can't just read from the special, since some other thread may
     // alter it.
-    size_t index = env->frameEnd();
     // but if we're not returning a value we don't actually have to do that crap.
     if (ctxt.receiving() != 0) {
-      ctxt.assemble1(vm_set, index);
-      ctxt.assemble1(vm_ref, index);
-      // called for effect, i.e. to keep frame size correct
-      // FIXME: This is super kludgey.
-      env->bind1var(var, ctxt);
+      ctxt.assemble0(vm_dup);
     }
     ctxt.assemble1(vm_symbol_value_set, ctxt.literal_index(var));
-    if (ctxt.receiving() != 0) {
-      ctxt.assemble1(vm_ref, index);
-      if (ctxt.receiving() == -1) // need values
-        ctxt.assemble0(vm_pop);
-    }
+    if (ctxt.receiving() == -1) // need values
+      ctxt.assemble0(vm_pop);
   } else if (std::holds_alternative<LexicalVarInfoV>(info)) {
     LexicalVarInfo_sp lvinfo = std::get<LexicalVarInfoV>(info).info();
     bool localp = (lvinfo->funct() == ctxt.cfunction());
-    size_t index = env->frameEnd();
     if (!localp)
       lvinfo->setClosedOverP(true);
     lvinfo->setSetP(true);
     compile_form(valf, env, Context(ctxt, 1));
     // Similar concerns to specials above (for closure variables)
     if (ctxt.receiving() != 0) {
-      ctxt.assemble1(vm_set, index);
-      ctxt.assemble1(vm_ref, index);
-      env->bind1var(var, ctxt);
+      ctxt.assemble0(vm_dup);
     }
     if (localp)
       ctxt.emit_lexical_set(lvinfo);
@@ -1752,11 +1740,8 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
       ctxt.assemble1(vm_closure, ctxt.closure_index(lvinfo));
       ctxt.assemble0(vm_cell_set);
     }
-    if (ctxt.receiving() != 0) {
-      ctxt.assemble1(vm_ref, index);
-      if (ctxt.receiving() == -1)
-        ctxt.assemble0(vm_pop);
-    }
+    if (ctxt.receiving() == -1)
+      ctxt.assemble0(vm_pop);
   } else
     UNREACHABLE();
 }

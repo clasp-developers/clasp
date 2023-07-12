@@ -91,7 +91,8 @@
     ("eq" 55)
     ("push" 56)
     ("pop" 57)
-    ("long" 58)))
+    ("dup" 58)
+    ("long" 255)))
 
 (defun pythonify-arguments (args)
   (declare (optimize (debug 3)))

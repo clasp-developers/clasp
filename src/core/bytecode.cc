@@ -864,6 +864,14 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       pc++;
       break;
     }
+    case vm_dup: {
+      DBG_VM1("dup\n");
+      T_O* obj = vm.pop(sp);
+      vm.push(sp, obj);
+      vm.push(sp, obj);
+      pc++;
+      break;
+    }
     case vm_long: {
       // In a separate function to facilitate better icache utilization
       // by bytecode_vm (hopefully)

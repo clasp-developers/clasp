@@ -544,6 +544,7 @@
              (and annot (core:bytecode-debug-vars/bindings annot)))
            (locals (context-locals context))
            (varcons (aref locals base)))
+      (print bindings)
       (cond
         ((or (and bindings
                   (= (length bindings) 1) (= base (cdar bindings)))
@@ -1037,6 +1038,13 @@
   (let ((mv (stack-pop context)))
     (check-type mv bir:linear-datum)
     (setf (context-mv context) mv)))
+
+(defmethod compile-instruction ((mnemonic (eql :dup))
+                                inserter annot context &rest args)
+  (let ((var (make-instance 'bir:variable :ignore nil)))
+    (bind-variable var (stack-pop context) inserter)
+    (stack-push (read-variable var inserter) context)
+    (stack-push (read-variable var inserter) context)))
 
 ;;; Return values: mnemonic, parsed/resolved arguments, IP of next instruction
 (defun parse-instruction (bytecode literals block-alist longp ip)
