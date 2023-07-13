@@ -31,6 +31,7 @@ THE SOFTWARE.
 //
 
 #include <csignal>
+#include <cstdarg>
 #include <dlfcn.h>
 
 #include <clasp/core/foundation.h>
