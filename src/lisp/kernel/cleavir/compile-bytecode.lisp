@@ -225,7 +225,7 @@
 (defun install-ll-vars (locals lambda-list)
   (multiple-value-bind (required optional rest keyp keys)
       (core:process-lambda-list lambda-list 'cl:function)
-    (declare (ignore rest))
+    (declare (ignore keyp))
     (let ((index 0))
       ;; The bytecode compiler sets out the indices as follows:
       ;; 1) required variables
@@ -529,6 +529,7 @@
          ;; in reverse order. This is a bit inefficient, though.
          (bindings (sort (copy-list prim) #'> :key #'cdr)))
     (destructuring-bind (nvars base) args
+      (declare (ignore base))
       (assert (= nvars (length bindings)))
       (loop with locals = (context-locals context)
             for (varname . index) in bindings
@@ -1041,6 +1042,7 @@
 
 (defmethod compile-instruction ((mnemonic (eql :dup))
                                 inserter annot context &rest args)
+  (declare (ignore annot args))
   (let ((var (make-instance 'bir:variable :ignore nil)))
     (bind-variable var (stack-pop context) inserter)
     (stack-push (read-variable var inserter) context)
