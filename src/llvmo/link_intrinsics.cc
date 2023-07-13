@@ -32,6 +32,7 @@ extern "C" {
 };
 #endif
 #include <dlfcn.h>
+#include <cstdarg>
 #include <typeinfo>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>

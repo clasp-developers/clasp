@@ -1,3 +1,4 @@
+#include <cstdarg>
 #include <clasp/core/foundation.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/wrappers.h>
