@@ -40,9 +40,9 @@
                           "core::Path_O" "mp::SharedMutex_O" "chem::BoundingBox_O"
                           "adapt::QDomNode_O" "chem::StructureComparer_O"
                           "asttooling::DerivableASTFrontendAction" "core::InstanceCreator_O"
-                          "core::IOStreamStream_O" "core::Scope_O" "chem::BondLogical_O"
-                          "chem::MoleculeGraph_O" "chem::BondToAtomTest_O" "chem::FFAngleDb_O"
-                          "core::BytecodeDebugLocation_O" "chem::FFTypeRule_O"
+                          "core::IOStreamStream_O" "core::Scope_O" "core::BytecodeDebugDecls_O"
+                          "chem::BondLogical_O" "chem::MoleculeGraph_O" "chem::BondToAtomTest_O"
+                          "chem::FFAngleDb_O" "core::BytecodeDebugLocation_O" "chem::FFTypeRule_O"
                           "llvmo::InsertPoint_O" "core::FunctionDescription_O"
                           "core::ComplexVector_double_O" "core::StrWNs_O"
                           "chem::Structure_Old_ListEntry_O" "core::UnknownDynEnv_O"
@@ -5604,6 +5604,19 @@
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::BytecodeDebugVars_O"
              :layout-offset-field-names ("_bindings")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugDecls_O"
+            :stamp-key "core::BytecodeDebugDecls_O" :parent-class "core::BytecodeDebugInfo_O"
+            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_decls")}
 {class-kind :stamp-name "STAMPWTAG_clasp_ffi__ForeignTypeSpec_O"
             :stamp-key "clasp_ffi::ForeignTypeSpec_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3

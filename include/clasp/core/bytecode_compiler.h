@@ -748,8 +748,8 @@ public:
   CL_DEFMETHOD void resolve_fixup_sizes();
   // The size of the module bytecode vector.
   CL_DEFMETHOD size_t bytecode_size();
-  // Fix up the debug info with resolved labels.
-  void resolve_debug_info();
+  // Fix up the debug infos with resolved labels.
+  void resolve_debug_infos();
   // Create the bytecode module vector. We scan over the fixups in the
   // module and copy segments of bytecode between fixup positions.
   CL_DEFMETHOD SimpleVector_byte8_t_sp create_bytecode();

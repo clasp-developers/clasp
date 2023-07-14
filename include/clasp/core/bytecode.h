@@ -125,6 +125,29 @@ public:
   CL_DEFMETHOD T_sp location() const { return this->_location; }
 };
 
+// Debug information for declarations.
+// This records declarations from the source code.
+// Some declarations are ignored by the simplistic bytecode compiler,
+// but may be relevant for further compilation.
+// (The debugger doesn't really need them.)
+FORWARD(BytecodeDebugDecls);
+class BytecodeDebugDecls_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugDecls_O, "BytecodeDebugDecls", BytecodeDebugInfo_O);
+public:
+  BytecodeDebugDecls_O(T_sp start, T_sp end, List_sp decls)
+    : BytecodeDebugInfo_O(start, end), _decls(decls) {}
+  CL_LISPIFY_NAME(BytecodeDebugDecls/make)
+  CL_DEF_CLASS_METHOD
+  static BytecodeDebugDecls_sp make(T_sp start, T_sp end, List_sp decls) {
+    return gctools::GC<BytecodeDebugDecls_O>::allocate<gctools::RuntimeStage>(start, end, decls);
+  }
+public:
+  List_sp _decls;
+public:
+  CL_LISPIFY_NAME(BytecodeDebugDecls/decls)
+  CL_DEFMETHOD List_sp decls() const { return this->_decls; }
+};
+
 // Dynenv used for VM call frames to ensure the unwinder properly
 // cleans up stack frames.
 class VMFrameDynEnv_O : public DynEnv_O {

@@ -22,7 +22,8 @@
                           "llvmo::FunctionPass_O" "core::SimpleVector_byte4_t_O"
                           "llvmo::UndefValue_O" "llvmo::CallBase_O" "core::Path_O"
                           "mp::SharedMutex_O" "asttooling::DerivableASTFrontendAction"
-                          "core::InstanceCreator_O" "core::IOStreamStream_O" "core::Scope_O"
+                          "core::InstanceCreator_O" "core::IOStreamStream_O"
+                          "core::BytecodeDebugDecls_O" "core::Scope_O"
                           "core::BytecodeDebugLocation_O" "llvmo::InsertPoint_O"
                           "core::FunctionDescription_O" "core::ComplexVector_double_O"
                           "core::StrWNs_O" "core::UnknownDynEnv_O" "core::EchoStream_O"
@@ -3536,6 +3537,19 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeDebugLocation_O"
              :layout-offset-field-names ("_location")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugDecls_O"
+            :stamp-key "core::BytecodeDebugDecls_O" :parent-class "core::BytecodeDebugInfo_O"
+            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_decls")}
 {class-kind :stamp-name "STAMPWTAG_clasp_ffi__ForeignTypeSpec_O"
             :stamp-key "clasp_ffi::ForeignTypeSpec_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3

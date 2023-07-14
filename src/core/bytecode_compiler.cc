@@ -859,7 +859,8 @@ static void resolve_debug_vars(BytecodeDebugVars_sp info) {
   }
 }
 
-static void resolve_debug_location(BytecodeDebugLocation_sp info) {
+// Resolve start and end but leave the rest alone.
+static void resolve_debug_info(BytecodeDebugInfo_sp info) {
   T_sp open_label = info->start();
   if (gc::IsA<Label_sp>(open_label))
     info->setStart(clasp_make_fixnum(gc::As_unsafe<Label_sp>(open_label)->module_position()));
@@ -872,13 +873,14 @@ static void resolve_debug_location(BytecodeDebugLocation_sp info) {
     info->setEnd(clasp_make_fixnum(0));
 }
 
-void Module_O::resolve_debug_info() {
+void Module_O::resolve_debug_infos() {
   // Replace all labels.
   for (T_sp info : *(this->debugInfo())) {
     if (gc::IsA<BytecodeDebugVars_sp>(info))
       resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
-    else if (gc::IsA<BytecodeDebugLocation_sp>(info))
-      resolve_debug_location(gc::As_unsafe<BytecodeDebugLocation_sp>(info));
+    else if (gc::IsA<BytecodeDebugLocation_sp>(info)
+             || gc::IsA<BytecodeDebugDecls_sp>(info))
+      resolve_debug_info(gc::As_unsafe<BytecodeDebugInfo_sp>(info));
   }
 }
 
@@ -938,7 +940,7 @@ SimpleVector_byte8_t_sp Module_O::link() {
   Module_sp cmodule = this->asSmartPtr();
   cmodule->initialize_cfunction_positions();
   cmodule->resolve_fixup_sizes();
-  cmodule->resolve_debug_info();
+  cmodule->resolve_debug_infos();
   return cmodule->create_bytecode();
 }
 
@@ -1137,7 +1139,13 @@ void compile_locally(List_sp body, Lexenv_sp env, const Context ctxt) {
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
   env = env->add_specials(specials)->add_notinlines(decl_notinlines(declares));
+  Label_sp begin_label = Label_O::make(), end_label = Label_O::make();
+  if (declares.notnilp()) {
+    begin_label->contextualize(ctxt);
+    ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, declares));
+  }
   compile_progn(code, env, ctxt);
+  if (declares.notnilp()) end_label->contextualize(ctxt);
 }
 
 bool special_binding_p(Symbol_sp sym, List_sp specials, Lexenv_sp env) {
