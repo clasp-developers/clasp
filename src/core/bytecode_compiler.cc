@@ -1203,9 +1203,88 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   begin_label->contextualize(ctxt);
   // Done before the progn to ensure sorting.
   ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, debug_bindings.cons()));
+  if (declares.notnilp())
+    ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, declares));
   compile_progn(code, post_binding_env, Context(ctxt, Integer_O::create(special_binding_count)));
   ctxt.emit_unbind(special_binding_count);
   end_label->contextualize(ctxt);
+}
+
+static List_sp decls_for_var(T_sp varname, List_sp decls) {
+  // FIXME: Should be extensible.
+  // Also ideally in Lisp. This is pretty grody as-is.
+  ql::list result;
+  for (auto cur : decls) {
+    T_sp decl = oCar(cur);
+    if (gc::IsA<Cons_sp>(decl) && gc::IsA<Cons_sp>(oCdr(decl))) {
+      T_sp spec = oCar(decl);
+      Cons_sp rest = gc::As_unsafe<Cons_sp>(oCdr(decl));
+      // SPECIAL declarations are ignored, since we handle that
+      // directly rather than needing to put it in annotations.
+      if (spec == cl::_sym_dynamic_extent
+          || spec == cl::_sym_ignore || spec == cl::_sym_ignorable) {
+        if (rest->memberEq(varname))
+          result << Cons_O::createList(spec, varname);
+      } else if (spec == cl::_sym_type
+                 && gc::IsA<Cons_sp>(oCdr(rest))) {
+        Cons_sp names = gc::As_unsafe<Cons_sp>(oCdr(rest));
+        if (names->memberEq(varname))
+          result << Cons_O::createList(spec, oCar(rest), varname);
+      } else if (!(spec == cl::_sym_ftype || spec == cl::_sym_inline
+                   || spec == cl::_sym_notinline
+                   || spec == cl::_sym_optimize
+                   || spec == cl::_sym_special
+                   || spec == core::_sym_lambdaName
+                   || spec == core::_sym_lambdaList)) {
+        // Presumed type decl
+        if (rest->memberEq(varname))
+          result << Cons_O::createList(cl::_sym_type, spec, varname);
+      }
+    }
+  }
+  return result.cons();
+}
+
+static List_sp decls_for_vars(List_sp vars, List_sp decls) {
+  ql::list result;
+  for (auto cur : decls) {
+    T_sp decl = oCar(cur);
+    if (gc::IsA<Cons_sp>(decl) && gc::IsA<Cons_sp>(oCdr(decl))) {
+      T_sp spec = oCar(decl);
+      Cons_sp rest = gc::As_unsafe<Cons_sp>(oCdr(decl));
+      // SPECIAL declarations are ignored, since we handle that
+      // directly rather than needing to put it in annotations.
+      if (spec == cl::_sym_dynamic_extent
+          || spec == cl::_sym_ignore || spec == cl::_sym_ignorable) {
+        for (auto svars : vars) {
+          T_sp thisvar = oCar(svars);
+          if (rest->memberEq(thisvar))
+            result << Cons_O::createList(spec, thisvar);
+        }
+      } else if (spec == cl::_sym_type
+                 && gc::IsA<Cons_sp>(oCdr(rest))) {
+        Cons_sp names = gc::As_unsafe<Cons_sp>(oCdr(rest));
+        for (auto svars : vars) {
+          T_sp thisvar = oCar(svars);
+          if (names->memberEq(thisvar))
+            result << Cons_O::createList(spec, oCar(rest), thisvar);
+        }
+      } else if (!(spec == cl::_sym_ftype || spec == cl::_sym_inline
+                   || spec == cl::_sym_notinline
+                   || spec == cl::_sym_optimize
+                   || spec == cl::_sym_special
+                   || spec == core::_sym_lambdaName
+                   || spec == core::_sym_lambdaList)) {
+        // Presumed type decl
+        for (auto svars : vars) {
+          T_sp thisvar = oCar(svars);
+          if (rest->memberEq(thisvar))
+            result << Cons_O::createList(spec, thisvar);
+        }
+      }
+    }
+  }
+  return result.cons();
 }
 
 void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Context ectxt) {
@@ -1245,6 +1324,9 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
       // Set up debug info
       begin_label->contextualize(ctxt);
       ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(var, lvinfo))));
+      List_sp decls = decls_for_var(var, declares);
+      if (decls.notnilp())
+        ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, decls));
     }
   }
   new_env = new_env->add_notinlines(decl_notinlines(declares));
@@ -1384,6 +1466,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     // Bind the required arguments.
     context.assemble1(vm_bind_required_args, min_count);
     ql::list debugbindings;
+    ql::list debugdecls;
     ql::list sreqs; // required parameters that are special
     for (auto &it : reqs) {
       // We account for special declarations in outer environments/globally
@@ -1403,6 +1486,9 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     new_env = new_env->add_specials(sreqs.cons());
     begin_label->contextualize(context); // after encages
     context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, debugbindings.cons()));
+    List_sp vdecls = decls_for_vars(lreqs.cons(), declares);
+    if (vdecls.notnilp())
+      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, vdecls));
   }
   Lexenv_sp optkey_env = new_env;
   if (optional_count > 0) {
