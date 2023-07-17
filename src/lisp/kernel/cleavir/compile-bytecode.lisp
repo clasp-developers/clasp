@@ -521,13 +521,16 @@
                          :outputs (list out)))))
 
 (defmethod compile-instruction ((mnemonic (eql :bind))
-                                inserter annot context &rest args)
-  (unless annot (error "missing variable annotations"))
-  (let* ((prim (core:bytecode-debug-vars/bindings annot))
+                                inserter annots context &rest args)
+  (let* ((varannot (find-if (lambda (a) (typep a 'core:bytecode-debug-vars))
+                            annots))
+         (_ (assert varannot))
+         (prim (core:bytecode-debug-vars/bindings varannot))
          ;; For BIND, the value for the last binding is the
          ;; most recently pushed, so we map to the bindings
          ;; in reverse order. This is a bit inefficient, though.
          (bindings (sort (copy-list prim) #'> :key #'cdr)))
+    (declare (ignore _))
     (destructuring-bind (nvars base) args
       (declare (ignore base))
       (assert (= nvars (length bindings)))
@@ -539,10 +542,12 @@
                (bind-variable var (stack-pop context) inserter)))))
 
 (defmethod compile-instruction ((mnemonic (eql :set))
-                                inserter annot context &rest args)
+                                inserter annots context &rest args)
   (destructuring-bind (base) args
-    (let* ((bindings
-             (and annot (core:bytecode-debug-vars/bindings annot)))
+    (let* ((varannot (find-if (lambda (a) (typep a 'core:bytecode-debug-vars))
+                              annots))
+           (bindings
+             (and varannot (core:bytecode-debug-vars/bindings varannot)))
            (locals (context-locals context))
            (varcons (aref locals base)))
       (cond
@@ -1093,17 +1098,13 @@
            (bir:dynamic-environment
             (bt:block-entry-extra (first predecessors)))))))
 
-(defun find-debug-vars (ip annotations astart)
+;;; Find all annotations with a scope starting at the next instruction.
+(defun find-next-annotations (ip annotations astart)
   (loop for index from astart below (length annotations)
         for annot = (aref annotations index)
         for start = (core:bytecode-debug-info/start annot)
-        when (and (typep annot 'core:bytecode-debug-vars)
-                  (eql start ip))
-          return annot
-        ;; Annotations are sorted and we pop as we compile-bytecode,
-        ;; so we can quit early here.
-        else if (> start ip)
-               return nil))
+        until (> start ip) ; annotations are sorted
+        collect annot))
 
 (defun find-origin (active-annotations)
   ;; Since the tightest annotations are first, just return the origin
@@ -1161,8 +1162,8 @@
             (update-annotations active-annotations opip annotations
                                 next-annotation-index))
       ;; Compile the instruction.
-      (let ((annot (find-debug-vars ip annotations
-                                    next-annotation-index))
+      (let ((annots (find-next-annotations ip annotations
+                                           next-annotation-index))
             (args (loop for (type . value) in args
                         collect (ecase type
                                   ((:constant) (aref literals value))
@@ -1173,7 +1174,7 @@
                                    value)
                                   ((:operand) value))))
             (bir:*origin* (find-origin active-annotations)))
-        (apply #'compile-instruction mnemonic inserter annot
+        (apply #'compile-instruction mnemonic inserter annots
                context args))
       ;; Update current block and function if required.
       (when (and block-entries
