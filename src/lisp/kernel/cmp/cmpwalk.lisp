@@ -42,7 +42,7 @@
                  (funcall (find-symbol "CLEAVIR-ENV->BYTECODE" "CLASP-CLEAVIR")
                           env))))
          (module (cmp:module/make)))
-    (compile-lambda nil `(progn ,form) env module)))
+    (compile-lambda nil `(progn ,form) env module nil)))
 
 (defun code-walk (code-walker-function form env)
   "Walk the form using whichever compiler we are currently using

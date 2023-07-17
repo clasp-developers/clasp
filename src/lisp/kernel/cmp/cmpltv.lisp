@@ -1395,7 +1395,10 @@
            (cmp:lexenv/frame-end env)))))
 
 (defun bytecode-compile-toplevel (form &optional (env (cmp:make-null-lexical-environment)))
-  (let ((form (macroexpand form env)))
+  (let ((core:*current-source-pos-info*
+          (or (gethash form cmp:*source-locations*)
+              core:*current-source-pos-info*))
+        (form (macroexpand form env)))
     (if (consp form)
         (case (car form)
           ((progn) (bytecode-compile-toplevel-progn (cdr form) env))

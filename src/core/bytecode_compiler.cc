@@ -1635,7 +1635,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
 }
 
 // Compile the lambda expression in MODULE, returning the resulting CFUNCTION.
-CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp env, Module_sp module) {
+CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp env, Module_sp module, T_sp source_info) {
   List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
   List_sp code;
@@ -1665,6 +1665,15 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   return function;
 }
 
+static T_sp source_location_for(T_sp form, T_sp fallback) {
+  if (_sym_STARsourceLocationsSTAR->boundP()) {
+    T_sp table = _sym_STARsourceLocationsSTAR->symbolValue();
+    if (gc::IsA<HashTableBase_sp>(table))
+      return gc::As_unsafe<HashTableBase_sp>(table)->gethash(form, fallback);
+  }
+  return fallback;
+}
+
 SYMBOL_EXPORT_SC_(CompPkg, register_global_function_ref);
 
 void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
@@ -1680,7 +1689,8 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
     break;
   }
   if (gc::IsA<Cons_sp>(fnameoid) && oCar(fnameoid) == cl::_sym_lambda) {
-    Cfunction_sp fun = compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt.module());
+    Cfunction_sp fun = compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt.module(),
+                                      source_location_for(fnameoid, ctxt.source_info()));
     ComplexVector_T_sp closed = fun->closed();
     for (size_t i = 0; i < closed->length(); ++i) {
       ctxt.reference_lexical_info(gc::As_assert<LexicalVarInfo_sp>((*closed)[i]));
@@ -1769,7 +1779,8 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
     eval::extract_declares_docstring_code_specials(oCddr(definition), declares, false, docstring, code, specials);
     T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
     T_sp fun_body = Cons_O::createList(Cons_O::create(cl::_sym_declare, declares), block);
-    Cfunction_sp fun = compile_lambda(oCadr(definition), fun_body, new_env2, ctxt.module());
+    Cfunction_sp fun = compile_lambda(oCadr(definition), fun_body, new_env2, ctxt.module(),
+                                      source_location_for(definition, ctxt.source_info()));
     size_t literal_index = ctxt.literal_index(fun);
     if (fun->closed()->length() == 0) // not a closure- easy
       ctxt.assemble1(vm_const, literal_index);
@@ -2333,7 +2344,9 @@ CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
     SIMPLE_ERROR("bytecompiler passed a non-lambda-expression: {}", _rep_(lambda_expression));
   T_sp lambda_list = oCadr(lambda_expression);
   T_sp body = oCddr(lambda_expression);
-  return compile_lambda(lambda_list, body, env, module);
+  return compile_lambda(lambda_list, body, env, module,
+                        source_location_for(lambda_expression,
+                                            core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
 }
 
 CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment)));
