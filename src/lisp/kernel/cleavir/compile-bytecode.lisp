@@ -545,7 +545,6 @@
              (and annot (core:bytecode-debug-vars/bindings annot)))
            (locals (context-locals context))
            (varcons (aref locals base)))
-      (print bindings)
       (cond
         ((or (and bindings
                   (= (length bindings) 1) (= base (cdar bindings)))
