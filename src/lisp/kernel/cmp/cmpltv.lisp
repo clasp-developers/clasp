@@ -1415,22 +1415,6 @@
             (funcall (cmp:bytecompile `(lambda () (progn ,form)) env)))
           (bytecode-compile-file-form form env)))))
 
-(defun compute-source-locations (cst)
-  (let ((table (make-hash-table :test #'eq)))
-    (labels ((aux (cst)
-               (etypecase cst
-                 (cst:atom-cst)
-                 (cst:cons-cst
-                  (let ((raw (cst:raw cst)))
-                    (unless (nth-value 1 (gethash raw table))
-                      ;; the SOURCE is a cons (start . end), but we
-                      ;; only care about the start.
-                      (setf (gethash raw table) (car (cst:source cst)))
-                      (aux (cst:first cst))
-                      (aux (cst:rest cst))))))))
-      (aux cst))
-    table))
-
 ;; input is a character stream.
 (defun bytecode-compile-stream (input output-path
                                 &key (environment
