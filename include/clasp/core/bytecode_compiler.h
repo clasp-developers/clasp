@@ -259,18 +259,18 @@ public:
   T_sp _tags;
   T_sp _blocks;
   T_sp _funs;
-  T_sp _notinlines;
+  T_sp _decls;
   size_t frame_end;
 public:
-  Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns, T_sp nnotinlines,
+  Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns, T_sp ndecls,
            size_t nframe_end)
     : _vars(nvars), _tags(ntags), _blocks(nblocks), _funs(nfuns),
-      _notinlines(nnotinlines), frame_end(nframe_end) {};
+      _decls(ndecls), frame_end(nframe_end) {};
   CL_LISPIFY_NAME(lexenv/make)
   CL_DEF_CLASS_METHOD
   static Lexenv_sp make(T_sp vars, T_sp tags, T_sp blocks, T_sp funs,
-                        T_sp notinlines, size_t frame_end) {
-    return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, notinlines, frame_end);
+                        T_sp decls, size_t frame_end) {
+    return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, decls, frame_end);
   }
   static Lexenv_sp make_top_level() {
     return make(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),0);
@@ -279,7 +279,7 @@ public:
   CL_DEFMETHOD List_sp tags() const { return this->_tags; }
   CL_DEFMETHOD List_sp blocks() const { return this->_blocks; }
   CL_DEFMETHOD List_sp funs() const { return this->_funs; }
-  CL_DEFMETHOD List_sp notinlines() const { return this->_notinlines; }
+  CL_DEFMETHOD List_sp decls() const { return this->_decls; }
   CL_DEFMETHOD size_t frameEnd() const { return this->frame_end; }
 public:
   /* Bind each variable to a stack location, returning a new lexical
@@ -291,8 +291,8 @@ public:
   Lexenv_sp bind1var(Symbol_sp var, const Context context);
   // Add VARS as special in ENV.
   CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
-  // Add FUNCTION NAMES as notinline in ENV.
-  CL_DEFMETHOD Lexenv_sp add_notinlines(List_sp fnames);
+  // Add new declarations.
+  CL_DEFMETHOD Lexenv_sp add_decls(T_sp decls);
   /* Macrolet expanders need to be compiled in the local compilation environment,
    * so that e.g. their bodies can use macros defined in outer macrolets.
    * At the same time, they obviously do not have access to any runtime

@@ -4672,7 +4672,7 @@
              :layout-offset-field-names ("_funs")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Lexenv_O"
-             :layout-offset-field-names ("_notinlines")}
+             :layout-offset-field-names ("_decls")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::Lexenv_O" :layout-offset-field-names ("frame_end")}
 {class-kind :stamp-name "STAMPWTAG_core__HashTableBase_O" :stamp-key "core::HashTableBase_O"

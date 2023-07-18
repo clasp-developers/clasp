@@ -1400,7 +1400,7 @@
            (cmp:lexenv/vars env)
            (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
            (append macros (cmp:lexenv/funs env))
-           (cmp:lexenv/notinlines env) (cmp:lexenv/frame-end env)))))
+           (cmp:lexenv/decls env) (cmp:lexenv/frame-end env)))))
 
 (defun bytecode-compile-toplevel-symbol-macrolet (bindings body env)
   (let ((smacros nil) (env (or env (cmp:make-null-lexical-environment))))
@@ -1415,7 +1415,7 @@
      body (cmp:lexenv/make
            (append (nreverse smacros) (cmp:lexenv/vars env))
            (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
-           (cmp:lexenv/funs env) (cmp:lexenv/notinlines env)
+           (cmp:lexenv/funs env) (cmp:lexenv/decls env)
            (cmp:lexenv/frame-end env)))))
 
 (defun bytecode-compile-toplevel (form &optional (env (cmp:make-null-lexical-environment)))

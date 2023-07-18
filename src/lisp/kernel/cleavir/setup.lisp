@@ -417,20 +417,20 @@
                (cmp:symbol-macro-var-info/make (constantly (env:expansion env)))
                (cmp:lexenv/vars next))
         (cmp:lexenv/tags next) (cmp:lexenv/blocks next) (cmp:lexenv/funs next)
-        (cmp:lexenv/notinlines next) (cmp:lexenv/frame-end next))))
+        (cmp:lexenv/decls next) (cmp:lexenv/frame-end next))))
     (env:macro
      (let ((next (cleavir-env->bytecode (env::next env))))
        (cmp:lexenv/make
         (cmp:lexenv/vars next) (cmp:lexenv/tags next) (cmp:lexenv/blocks next)
         (acons (env:name env) (cmp:local-macro-info/make (env:expander env))
                (cmp:lexenv/funs next))
-        (cmp:lexenv/notinlines next) (cmp:lexenv/frame-end next))))
+        (cmp:lexenv/decls next) (cmp:lexenv/frame-end next))))
     (env:inline
      (let ((next (cleavir-env->bytecode (env::next env))))
        (if (eq (env:inline env) 'cl:notinline)
            (cmp:lexenv/make
             (cmp:lexenv/vars next) (cmp:lexenv/tags next) (cmp:lexenv/blocks next)
-            (cmp:lexenv/funs next) (cons (env:name env) (cmp:lexenv/notinlines next))
+            (cmp:lexenv/funs next) (cons `(notinline ,(env:name env)) (cmp:lexenv/decls next))
             (cmp:lexenv/frame-end next))
            next)))
     (env::entry (cleavir-env->bytecode (env::next env)))))
