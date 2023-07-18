@@ -1642,9 +1642,8 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   T_sp name = extract_lambda_name_from_declares(declares);
   if (name.nilp())
     name = Cons_O::createList(cl::_sym_lambda, comp::lambda_list_for_name(oll));
-  Cfunction_sp function = Cfunction_O::make(module, name, docstring, oll, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
-  Context context(-1, nil<T_O>(), function,
-                  core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
+  Cfunction_sp function = Cfunction_O::make(module, name, docstring, oll, source_info);
+  Context context(-1, nil<T_O>(), function, source_info);
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->decls(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
@@ -2322,10 +2321,10 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   if (_sym_STARsourceLocationsSTAR->boundP()
       && gc::IsA<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())) {
     source_location = gc::As<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())->gethash(form, nil<T_O>());
-    ncontext = Context(context.receiving(), context.dynenv(),
-                       context.cfunction(), source_location);
   }
   if (source_location.notnilp()) {
+    ncontext = Context(context.receiving(), context.dynenv(),
+                       context.cfunction(), source_location);
     begin_label->contextualize(ncontext);
     // We push the info BEFORE compiling the form so that the infos
     // are naturally sorted by their start position.
