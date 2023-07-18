@@ -1662,15 +1662,19 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   function->setIndex(ind.unsafe_fixnum());
   // Stick the new function into the debug info.
   module->push_debug_info(function);
-  if (outer_declares.notnilp()) {
+  if (outer_declares.notnilp() || source_info.notnilp()) {
     begin->contextualize(context);
-    context.push_debug_info(BytecodeDebugDecls_O::make(begin, end, outer_declares));
+    if (outer_declares.notnilp())
+      context.push_debug_info(BytecodeDebugDecls_O::make(begin, end, outer_declares));
+    if (source_info.notnilp())
+      context.push_debug_info(BytecodeDebugLocation_O::make(begin, end, source_info));
   }
   // We pass the original body w/declarations to compile-with-lambda-list
   // so that it can do its own handling of specials, etc.
   compile_with_lambda_list(lambda_list, body, lenv, context);
   context.assemble0(vm_return);
-  if (outer_declares.notnilp()) end->contextualize(context);
+  if (outer_declares.notnilp() || source_info.notnilp())
+    end->contextualize(context);
   return function;
 }
 
