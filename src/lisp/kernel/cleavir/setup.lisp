@@ -213,6 +213,21 @@
 (defmethod make-load-form ((cst cst:cst) &optional environment)
   (make-load-form-saving-slots cst :environment environment))
 
+(defun function-attributes (function-name)
+  (let* ((flags (gethash function-name *fn-flags*))
+         (transforms (gethash function-name *fn-transforms*))
+         (derivers (gethash function-name *derivers*))
+         (folds (gethash function-name *folds*))
+         (vaslistablep (cc-vaslist:vaslistablep function-name)))
+    (if (or flags transforms folds derivers)
+        (make-instance 'cleavir-attributes:attributes
+          :flags (or flags (cleavir-attributes:make-flags))
+          :identities (if (or transforms folds
+                              derivers vaslistablep)
+                          (list function-name)
+                          nil))
+        (cleavir-attributes:default-attributes))))
+
 (defmethod env:function-info ((sys clasp)
                               (environment clasp-global-environment)
                               function-name)
@@ -231,19 +246,7 @@
     ((fboundp function-name)
      (let* ((cleavir-ast (inline-ast function-name))
             (inline-status (core:global-inline-status function-name))
-            (flags (gethash function-name *fn-flags*))
-            (transforms (gethash function-name *fn-transforms*))
-            (derivers (gethash function-name *derivers*))
-            (folds (gethash function-name *folds*))
-            (vaslistablep (cc-vaslist:vaslistablep function-name))
-            (attributes (if (or flags transforms folds derivers)
-                            (make-instance 'cleavir-attributes:attributes
-                              :flags (or flags (cleavir-attributes:make-flags))
-                              :identities (if (or transforms folds
-                                                  derivers vaslistablep)
-                                              (list function-name)
-                                              nil))
-                            (cleavir-attributes:default-attributes))))
+            (attributes (function-attributes function-name)))
        (make-instance 'env:global-function-info
          :name function-name
          :type (global-ftype function-name)

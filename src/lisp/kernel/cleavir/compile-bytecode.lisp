@@ -1025,8 +1025,9 @@
            (ifun (bir:function iblock))
            (module (bir:module ifun))
            (const (bir:constant-in-module fname module))
+           (attributes (clasp-cleavir::function-attributes fname))
            (fdef-out (make-instance 'bir:output
-                       :name fname)))
+                       :name fname :attributes attributes)))
       (ast-to-bir:insert inserter 'bir:constant-fdefinition
                          :inputs (list const) :outputs (list fdef-out))
       (stack-push fdef-out context))))
