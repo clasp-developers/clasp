@@ -108,8 +108,9 @@
                           "core::Symbol_O" "core::Array_O" "core::MDArray_byte4_t_O"
                           "llvmo::Argument_O" "core::Iterator_O" "llvmo::IRBuilderBase_O"
                           "core::Null_O" "llvmo::TargetPassConfig_O" "core::RequiredArgument"
-                          "core::SingleDispatchMethod_O" "comp::VarInfo_O" "core::CxxObject_O"
-                          "llvmo::ReturnInst_O" "llvmo::FunctionType_O" "clbind::DummyCreator_O"
+                          "core::BytecodeDebugThe_O" "core::SingleDispatchMethod_O"
+                          "comp::VarInfo_O" "core::CxxObject_O" "llvmo::ReturnInst_O"
+                          "llvmo::FunctionType_O" "clbind::DummyCreator_O"
                           "core::MDArray_byte16_t_O" "llvmo::DIContext_O" "llvmo::JITDylib_O"
                           "llvmo::Type_O" "core::Pointer_O" "llvmo::UnreachableInst_O"
                           "core::ComplexVector_int64_t_O" "core::FileScope_O" "core::Float_O"
@@ -3508,6 +3509,21 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeDebugInfo_O" :layout-offset-field-names ("_end")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugThe_O" :stamp-key "core::BytecodeDebugThe_O"
+            :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_type")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::BytecodeDebugThe_O"
+             :layout-offset-field-names ("_receiving")}
 {class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugVars_O"
             :stamp-key "core::BytecodeDebugVars_O" :parent-class "core::BytecodeDebugInfo_O"
             :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3

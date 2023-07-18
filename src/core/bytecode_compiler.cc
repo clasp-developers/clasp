@@ -879,7 +879,8 @@ void Module_O::resolve_debug_infos() {
     if (gc::IsA<BytecodeDebugVars_sp>(info))
       resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
     else if (gc::IsA<BytecodeDebugLocation_sp>(info)
-             || gc::IsA<BytecodeDebugDecls_sp>(info))
+             || gc::IsA<BytecodeDebugDecls_sp>(info)
+             || gc::IsA<BytecodeDebugThe_sp>(info))
       resolve_debug_info(gc::As_unsafe<BytecodeDebugInfo_sp>(info));
   }
 }
@@ -1885,6 +1886,16 @@ void compile_eval_when(List_sp situations, List_sp body, Lexenv_sp env, const Co
     compile_literal(nil<T_O>(), env, ctxt);
 }
 
+void compile_the(T_sp type, T_sp form, Lexenv_sp env, const Context ctxt) {
+  // Bytecode ignores type declarations, but we save as an annotation for later.
+  // The annotation goes AFTER the computation that produces it, so that for example
+  // receiving=1 means "the most recently pushed datum at this IP is of this type".
+  Label_sp lab = Label_O::make();
+  compile_form(form, env, ctxt);
+  lab->contextualize(ctxt);
+  ctxt.push_debug_info(BytecodeDebugThe_O::make(lab, lab, type, ctxt.receiving()));
+}
+
 void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, const Context ctxt) {
   compile_form(cond, env, Context(ctxt, 1));
   Label_sp then_label = Label_O::make();
@@ -2223,8 +2234,8 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     compile_locally(rest, env, context);
   else if (head == cl::_sym_eval_when)
     compile_eval_when(oCar(rest), oCdr(rest), env, context);
-  else if (head == cl::_sym_the) // skip
-    compile_form(oCadr(rest), env, context);
+  else if (head == cl::_sym_the)
+    compile_the(oCar(rest), oCadr(rest), env, context);
   // extension
   else if (head == cleavirPrimop::_sym_funcall)
     compile_funcall(oCar(rest), oCdr(rest), env, context);

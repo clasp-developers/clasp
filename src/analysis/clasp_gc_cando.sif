@@ -182,14 +182,14 @@
                           "units::Unit_O" "core::Null_O" "chem::RingFinder_O"
                           "llvmo::TargetPassConfig_O" "chem::IterateBonds_O"
                           "core::RequiredArgument" "core::SingleDispatchMethod_O"
-                          "chem::CDFragment_O" "comp::VarInfo_O" "core::CxxObject_O"
-                          "llvmo::ReturnInst_O" "llvmo::FunctionType_O" "clbind::DummyCreator_O"
-                          "chem::EnergyDihedralRestraint" "core::MDArray_byte16_t_O"
-                          "llvmo::DIContext_O" "chem::FFNonbondCrossTermTable_O"
-                          "llvmo::JITDylib_O" "llvmo::Type_O" "chem::Command_O" "core::Pointer_O"
-                          "llvmo::UnreachableInst_O" "core::ComplexVector_int64_t_O"
-                          "chem::FFParameterBaseDb_O" "core::FileScope_O"
-                          "core::SimpleMDArray_byte4_t_O" "core::Float_O"
+                          "core::BytecodeDebugThe_O" "chem::CDFragment_O" "comp::VarInfo_O"
+                          "core::CxxObject_O" "llvmo::ReturnInst_O" "llvmo::FunctionType_O"
+                          "clbind::DummyCreator_O" "chem::EnergyDihedralRestraint"
+                          "core::MDArray_byte16_t_O" "llvmo::DIContext_O"
+                          "chem::FFNonbondCrossTermTable_O" "llvmo::JITDylib_O" "llvmo::Type_O"
+                          "chem::Command_O" "core::Pointer_O" "llvmo::UnreachableInst_O"
+                          "core::ComplexVector_int64_t_O" "chem::FFParameterBaseDb_O"
+                          "core::FileScope_O" "core::SimpleMDArray_byte4_t_O" "core::Float_O"
                           "chem::EnergySketchStretch" "chem::ResidueTest_O"
                           "chem::RestraintDistance_O" "llvmo::DIDerivedType_O" "chem::SmartsRoot_O"
                           "chem::TwisterDriver_O" "comp::EntryCloseFixup_O"
@@ -1111,11 +1111,11 @@
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_atom_name_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_charge_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_mass_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
@@ -1136,10 +1136,10 @@
              :offset-base-ctype "chem::EnergyNonbond_O"
              :layout-offset-field-names ("_local_typej_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_cn1_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::EnergyNonbond_O" :layout-offset-field-names ("_cn2_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::SimpleVector_int32_t_O>"
@@ -1229,11 +1229,11 @@
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_atom_name_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_charge_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_mass_vector")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -1257,11 +1257,11 @@
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_local_typej_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_cn1_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::EnergyPeriodicBoundaryConditionsNonbond_O"
              :layout-offset-field-names ("_cn2_vec")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -2445,7 +2445,7 @@
              :offset-base-ctype "chem::SparseLargeSquareMatrix_O"
              :layout-offset-field-names ("_ColumnForValue" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<double>>"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<float>>"
              :offset-base-ctype "chem::SparseLargeSquareMatrix_O"
              :layout-offset-field-names ("_Values" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
@@ -2469,7 +2469,7 @@
              :offset-base-ctype "chem::SparseLargeSquareMatrix_O"
              :layout-offset-field-names ("_col_RowForValue" "._Vector" "._Contents")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<double>>"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<float>>"
              :offset-base-ctype "chem::SparseLargeSquareMatrix_O"
              :layout-offset-field-names ("_col_Values" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__FullLargeSquareMatrix_O"
@@ -2487,7 +2487,7 @@
              :offset-base-ctype "chem::FullLargeSquareMatrix_O"
              :layout-offset-field-names ("_ActiveElements")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
-             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<double>>"
+             :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<float>>"
              :offset-base-ctype "chem::FullLargeSquareMatrix_O"
              :layout-offset-field-names ("_Values" "._Vector" "._Contents")}
 {class-kind :stamp-name "STAMPWTAG_chem__FFBaseDb_O" :stamp-key "chem::FFBaseDb_O"
@@ -2922,7 +2922,7 @@
              :offset-base-ctype "chem::RigidBodyEnergyFunction_O"
              :layout-offset-field-names ("_RigidBodies")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::RigidBodyEnergyFunction_O"
              :layout-offset-field-names ("_SavedCoordinates")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -3192,15 +3192,15 @@
              :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "chem::StepReport_O" :layout-offset-field-names ("_Direction")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::StepReport_O"
              :layout-offset-field-names ("_LineSearchPosition")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::StepReport_O"
              :layout-offset-field-names ("_LineSearchDirection")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::StepReport_O"
              :layout-offset-field-names ("_LineSearchForce")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -3294,11 +3294,11 @@
              :offset-ctype "std::basic_string<char,std::char_traits<char>,std::allocator<char>>"
              :offset-base-ctype "chem::ForceMatchReport_O" :layout-offset-field-names ("_Message")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::ForceMatchReport_O"
              :layout-offset-field-names ("_AnalyticalForce")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::ForceMatchReport_O"
              :layout-offset-field-names ("_NumericalForce")}
 {class-kind :stamp-name "STAMPWTAG_chem__ChemDraw_O" :stamp-key "chem::ChemDraw_O"
@@ -4753,17 +4753,17 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "chem::Minimizer_O" :layout-offset-field-names ("_RMSForce")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::Minimizer_O" :layout-offset-field-names ("nvP1DSearchTemp1")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::Minimizer_O" :layout-offset-field-names ("nvP1DSearchTemp2")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::Minimizer_O"
              :layout-offset-field-names ("nvP1DSearchOrigin")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::SimpleVector_double_O>"
+             :offset-ctype "gctools::smart_ptr<core::SimpleVector_float_O>"
              :offset-base-ctype "chem::Minimizer_O"
              :layout-offset-field-names ("nvP1DSearchDirection")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -5575,6 +5575,21 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BytecodeDebugInfo_O" :layout-offset-field-names ("_end")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugThe_O" :stamp-key "core::BytecodeDebugThe_O"
+            :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_type")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::BytecodeDebugThe_O"
+             :layout-offset-field-names ("_receiving")}
 {class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugLocation_O"
             :stamp-key "core::BytecodeDebugLocation_O" :parent-class "core::BytecodeDebugInfo_O"
             :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3

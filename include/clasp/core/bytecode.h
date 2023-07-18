@@ -148,6 +148,29 @@ public:
   CL_DEFMETHOD List_sp decls() const { return this->_decls; }
 };
 
+// Information about a THE form, also for the compiler.
+FORWARD(BytecodeDebugThe);
+class BytecodeDebugThe_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugThe_O, "BytecodeDebugThe", BytecodeDebugInfo_O);
+public:
+  BytecodeDebugThe_O(T_sp start, T_sp end, T_sp type, int receiving)
+    : BytecodeDebugInfo_O(start, end), _type(type), _receiving(receiving) {}
+  CL_LISPIFY_NAME(BytecodeDebugThe/make)
+  CL_DEF_CLASS_METHOD
+  static BytecodeDebugThe_sp make(T_sp start, T_sp end, T_sp type, int receiving) {
+    return gctools::GC<BytecodeDebugThe_O>::allocate<gctools::RuntimeStage>(start, end, type, receiving);
+  }
+public:
+  T_sp _type;
+  int _receiving; // as in compiler contexts - which values this decl applies to
+public:
+  CL_LISPIFY_NAME(BytecodeDebugThe/receiving)
+  CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
+  CL_LISPIFY_NAME(BytecodeDebugThe/type)
+  CL_DEFMETHOD T_sp type() const { return this->_type; }
+};
+
+
 // Dynenv used for VM call frames to ensure the unwinder properly
 // cleans up stack frames.
 class VMFrameDynEnv_O : public DynEnv_O {
