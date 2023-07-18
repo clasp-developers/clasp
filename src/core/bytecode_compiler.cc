@@ -112,7 +112,19 @@ Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
   return Lexenv_O::make(new_vars, this->tags(), this->blocks(), this->funs(), this->decls(), this->frameEnd());
 }
 
-Lexenv_sp Lexenv_O::add_decls(T_sp decls) {
+static List_sp scrub_decls(List_sp decls) {
+  // Remove SPECIAL declarations since those are already handled.
+  ql::list r;
+  for (auto cur : decls) {
+    T_sp decl = oCar(cur);
+    if (!gc::IsA<Cons_sp>(decl) || oCar(decl) != cl::_sym_special)
+      r << decl;
+  }
+  return r.cons();
+}
+
+Lexenv_sp Lexenv_O::add_decls(List_sp decls) {
+  decls = scrub_decls(decls);
   if (decls.nilp())
     return this->asSmartPtr();
   else
@@ -1130,6 +1142,7 @@ void compile_locally(List_sp body, Lexenv_sp env, const Context ctxt) {
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
+  declares = scrub_decls(declares);
   env = env->add_specials(specials)->add_decls(declares);
   Label_sp begin_label = Label_O::make(), end_label = Label_O::make();
   if (declares.notnilp()) {

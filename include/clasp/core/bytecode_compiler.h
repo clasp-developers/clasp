@@ -259,17 +259,17 @@ public:
   T_sp _tags;
   T_sp _blocks;
   T_sp _funs;
-  T_sp _decls;
+  List_sp _decls;
   size_t frame_end;
 public:
-  Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns, T_sp ndecls,
+  Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns, List_sp ndecls,
            size_t nframe_end)
     : _vars(nvars), _tags(ntags), _blocks(nblocks), _funs(nfuns),
       _decls(ndecls), frame_end(nframe_end) {};
   CL_LISPIFY_NAME(lexenv/make)
   CL_DEF_CLASS_METHOD
   static Lexenv_sp make(T_sp vars, T_sp tags, T_sp blocks, T_sp funs,
-                        T_sp decls, size_t frame_end) {
+                        List_sp decls, size_t frame_end) {
     return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, decls, frame_end);
   }
   static Lexenv_sp make_top_level() {
@@ -292,7 +292,7 @@ public:
   // Add VARS as special in ENV.
   CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
   // Add new declarations.
-  CL_DEFMETHOD Lexenv_sp add_decls(T_sp decls);
+  CL_DEFMETHOD Lexenv_sp add_decls(List_sp decls);
   /* Macrolet expanders need to be compiled in the local compilation environment,
    * so that e.g. their bodies can use macros defined in outer macrolets.
    * At the same time, they obviously do not have access to any runtime
