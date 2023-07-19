@@ -1145,25 +1145,54 @@
                    (make-instance 'cst:atom-cst
                      :raw nil :source (cons spi spi)))))
 
-(defun update-annotations (active-annotations ip annots index)
-  ;; First, remove expired annotations.
-  (setf active-annotations
-        (delete-if (lambda (annot)
-                     (<= (core:bytecode-debug-info/end annot) ip))
-                   active-annotations))
-  ;; Add new ones and update the index.
-  (loop with len = (length annots)
-        while (< index len)
-        while (eql ip (core:bytecode-debug-info/start
-                       (aref annots index)))
-        do (let ((annot (aref annots index)))
-             (incf index)
-             ;; degenerate annotations happen sometimes
-             ;; this could be tightened up in the bc compiler,
-             ;; but checking for it is easy.
-             (unless (eql ip (core:bytecode-debug-info/end annot))
-               (push annot active-annotations))))
-  (values active-annotations index))
+(defun compute-optimize (active-annotations)
+  (loop with optimize = nil
+        for annot in active-annotations
+        when (typep annot 'core:bytecode-debug-decls)
+          do (loop for (spec . rest)
+                     in (core:bytecode-debug-decls/decls annot)
+                   when (eq spec 'cl:optimize)
+                     do (loop for optim in rest
+                              unless (assoc (car optim) optimize)
+                                do (push optim optimize)))
+        finally (return
+                  (loop for optim in cmp:*optimize*
+                        unless (assoc (car optim) optimize)
+                          do (push optim optimize)
+                        finally (return optimize)))))
+
+(defun update-annotations (active-annotations ip annots index
+                           optimize policy)
+  (let ((recompute-optimize nil))
+    ;; Remove obsolete annotations.
+    (setf active-annotations
+          (delete-if (lambda (annot)
+                       (let ((result
+                               (<= (core:bytecode-debug-info/end annot) ip)))
+                         (when (and result (typep annot 'core:bytecode-debug-decls))
+                           (setf recompute-optimize t))
+                         result))
+                     active-annotations))
+    ;; Add new ones and update the index.
+    (loop with len = (length annots)
+          while (< index len)
+          while (eql ip (core:bytecode-debug-info/start
+                         (aref annots index)))
+          do (let ((annot (aref annots index)))
+               (incf index)
+               ;; degenerate annotations happen sometimes
+               ;; this could be tightened up in the bc compiler,
+               ;; but checking for it is easy.
+               ;; Also, THE are intentionally degenerate.
+               (unless (eql ip (core:bytecode-debug-info/end annot))
+                 (push annot active-annotations)
+                 (when (typep annot 'core:bytecode-debug-decls)
+                   (setf recompute-optimize t)))))
+    ;; Recompute optimize and policy if necessary.
+    (when recompute-optimize
+      (setf optimize (compute-optimize active-annotations)
+            policy (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*)))
+    (values active-annotations index optimize policy)))
 
 (defun compile-bytecode (bytecode literals function-entries
                          block-entries annotations)
@@ -1176,7 +1205,10 @@
          (inserter (make-inserter (bt:block-entry-extra block)))
          (context (make-context function block))
          (next-annotation-index 0)
-         (active-annotations nil))
+         (active-annotations nil)
+         (optimize cmp:*optimize*)
+         (bir:*policy*
+           (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*)))
     (declare (ignore all-function-entries))
     (assert (zerop (bt:function-entry-start function)))
     (setf (bir:start (bt:function-entry-extra function))
@@ -1184,9 +1216,10 @@
     (do-instructions (mnemonic args opip ip) (bytecode)
       ;; Update annotations.
       ;; Note that we keep tighter annotations at the front.
-      (setf (values active-annotations next-annotation-index)
+      (setf (values active-annotations next-annotation-index
+                    optimize bir:*policy*)
             (update-annotations active-annotations opip annotations
-                                next-annotation-index))
+                                next-annotation-index optimize bir:*policy*))
       ;; Compile the instruction.
       (let ((annots (find-next-annotations ip annotations
                                            next-annotation-index))
@@ -1199,7 +1232,11 @@
                                    ;; not actually used, so whatever
                                    value)
                                   ((:operand) value))))
-            (bir:*origin* (find-origin active-annotations)))
+            (bir:*origin* (find-origin active-annotations))
+            (bir:*policy*
+              (cleavir-policy:compute-policy
+               (compute-optimize active-annotations)
+               clasp-cleavir:*clasp-env*)))
         (apply #'compile-instruction mnemonic inserter annots
                context args)
         (maybe-compile-the annots inserter context))
