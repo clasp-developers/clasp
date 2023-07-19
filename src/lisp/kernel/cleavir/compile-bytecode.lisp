@@ -1219,6 +1219,16 @@
   (bt:function-entry-bcfun
    (find irfun *function-entries* :key #'bt:function-entry-extra)))
 
+(defun sortedp (sequence predicate &key key)
+  (if (zerop (length sequence))
+      t
+      (let ((previous (funcall key (elt sequence 0))))
+        (every (lambda (e)
+                 (let ((n (funcall key e)))
+                   (prog1 (not (funcall predicate n previous))
+                     (setf previous n))))
+               sequence))))
+
 (defun function->bir (function system &key disassemble)
   (declare (ignore system))
   (check-type function core:global-bytecode-simple-fun)
@@ -1233,12 +1243,10 @@
                          :key #'bcfun/entry))
          (irmodule (make-instance 'bir:module))
          (annotations
-           ;; FIXME: We ought to generate these sorted.
-           ;; The sticking point is in FASL loading.
-           ;; NOTE: This is destructive. That SHOULD be okay.
-           (sort (core:bytecode-module/debug-info bytecode-module)
-                 #'< :key #'core:bytecode-debug-info/start))
+           (core:bytecode-module/debug-info bytecode-module))
          (*closures* nil))
+    (assert (sortedp annotations #'<
+                     :key #'core:bytecode-debug-info/start))
     (multiple-value-bind (*function-entries* block-entries)
         (apply #'bt:compute-control-flow-table bytecode functions)
       (loop for fun in functions
