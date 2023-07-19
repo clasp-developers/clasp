@@ -1048,16 +1048,26 @@
     (stack-push (read-variable var inserter) context)))
 
 (defun compile-the (inserter type datum)
-  (let* ((ctype (cleavir-env:parse-values-type-specifier
-                 type clasp-cleavir:*clasp-env*
-                 clasp-cleavir:*clasp-system*))
+  (let* ((sys clasp-cleavir:*clasp-system*)
+         (ctype (cleavir-env:parse-values-type-specifier
+                 type clasp-cleavir:*clasp-env* sys))
          (out (make-instance 'bir:output
-                :name (bir:name datum))))
+                :name (bir:name datum)))
+         (policy bir:*policy*)
+         (type-check-function
+           (ecase (clasp-cleavir::insert-type-checks-level policy :the)
+             ((0) :trusted)
+             ((1) nil)
+             ((2 3)
+              (compile-bcfun-into-module
+               (cmp:bytecompile
+                (clasp-cleavir::make-type-check-fun :the ctype sys))
+               (bir:module (bir:function (ast-to-bir::iblock inserter))))))))
     (ast-to-bir:insert inserter 'bir:thei
                        :inputs (list datum)
                        :outputs (list out)
                        :asserted-type ctype
-                       :type-check-function :trusted)
+                       :type-check-function type-check-function)
     out))
 
 ;;; Return values: mnemonic, parsed/resolved arguments, IP of next instruction
