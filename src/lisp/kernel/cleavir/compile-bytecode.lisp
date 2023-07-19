@@ -20,12 +20,6 @@
         (replace name string :start1 index)
         (incf index (length string))))))
 
-#+(or)
-(defun compile-into-module (bytecode-function module system)
-  (let ((*variables*
-          (make-array (core:global-bytecode-simple-fun/locals-frame-size)))
-        (*come-from-info*))))
-
 (defun bind-lambda-list-arguments (lambda-list function)
   (flet ((argument (symbol)
            (make-instance 'bir:argument
@@ -1053,6 +1047,19 @@
     (stack-push (read-variable var inserter) context)
     (stack-push (read-variable var inserter) context)))
 
+(defun compile-the (inserter type datum)
+  (let* ((ctype (cleavir-env:parse-values-type-specifier
+                 type clasp-cleavir:*clasp-env*
+                 clasp-cleavir:*clasp-system*))
+         (out (make-instance 'bir:output
+                :name (bir:name datum))))
+    (ast-to-bir:insert inserter 'bir:thei
+                       :inputs (list datum)
+                       :outputs (list out)
+                       :asserted-type ctype
+                       :type-check-function :trusted)
+    out))
+
 ;;; Return values: mnemonic, parsed/resolved arguments, IP of next instruction
 (defun parse-instruction (bytecode literals block-alist longp ip)
   (let* ((opip ip)
@@ -1098,6 +1105,24 @@
                                    (bt:block-entry-extra entry)))))
            (bir:dynamic-environment
             (bt:block-entry-extra (first predecessors)))))))
+
+(defun maybe-compile-the (annots inserter context)
+  ;; TODO: Handle multiple THE annotations at same position
+  (let ((the
+          (find-if (lambda (a) (typep a 'core:bytecode-debug-the))
+                   annots)))
+    (when the
+      (let ((type (core:bytecode-debug-the/type the))
+            (receiving (core:bytecode-debug-the/receiving the)))
+        (case receiving
+          ((1) (stack-push
+                (compile-the inserter type (stack-pop context))
+                context))
+          ((-1)
+           (setf (context-mv context)
+                 (compile-the inserter type (context-mv context))))
+          ;; TODO: Something for 0/single values?
+          (otherwise))))))
 
 ;;; Find all annotations with a scope starting at the next instruction.
 (defun find-next-annotations (ip annotations astart)
@@ -1176,7 +1201,8 @@
                                   ((:operand) value))))
             (bir:*origin* (find-origin active-annotations)))
         (apply #'compile-instruction mnemonic inserter annots
-               context args))
+               context args)
+        (maybe-compile-the annots inserter context))
       ;; Update current block and function if required.
       (when (and block-entries
                  (eql ip (bt:block-entry-start (first block-entries))))
@@ -1229,10 +1255,10 @@
                      (setf previous n))))
                sequence))))
 
-(defun function->bir (function system &key disassemble)
-  (declare (ignore system))
+(defun compile-bcfun-into-module (function irmodule)
   (check-type function core:global-bytecode-simple-fun)
-  (let* ((bytecode-module (core:global-bytecode-simple-fun/code function))
+  (let* ((bytecode-module
+           (core:global-bytecode-simple-fun/code function))
          (bytecode (core:bytecode-module/bytecode bytecode-module))
          (literals (core:bytecode-module/literals bytecode-module))
          (functions (bytecode-module/functions bytecode-module))
@@ -1241,7 +1267,6 @@
          ;; debug info. FIXME
          (fpos (position (bcfun/entry function) functions
                          :key #'bcfun/entry))
-         (irmodule (make-instance 'bir:module))
          (annotations
            (core:bytecode-module/debug-info bytecode-module))
          (*closures* nil))
@@ -1261,20 +1286,20 @@
       (loop for entry in *function-entries*
             for irfun = (bt:function-entry-extra entry)
             do (bir:compute-iblock-flow-order irfun))
-      (when disassemble
-        (cleavir-bir-disassembler:display irmodule))
-      (bir:verify irmodule)
       (bt:function-entry-extra (elt *function-entries* fpos)))))
 
 (defun compile-function (function &key (abi clasp-cleavir:*abi-x86-64*)
                                     (linkage 'llvm-sys:internal-linkage)
                                     (system clasp-cleavir:*clasp-system*)
                                     (disassemble nil))
-  (let* ((bir (function->bir function system :disassemble disassemble))
-         (module (bir:module bir))
+  (let* ((module (make-instance 'bir:module))
+         (bir (compile-bcfun-into-module function module))
          (cleavir-cst-to-ast:*compiler* 'cl:compile)
          ;; necessary for bir->function debug info to work. KLUDGE
          (*load-pathname* (core:function-source-pos function)))
+    (bir:verify module)
+    (when disassemble
+      (cleavir-bir-disassembler:display module))
     (clasp-cleavir::bir-transformations module system)
     (bir:verify module)
     (clasp-cleavir::bir->function bir :abi abi :linkage linkage)))
