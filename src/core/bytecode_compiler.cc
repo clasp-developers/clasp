@@ -1640,12 +1640,12 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
 // Compile the lambda expression in MODULE, returning the resulting CFUNCTION.
 CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp env, Module_sp module, T_sp source_info) {
   List_sp declares = nil<T_O>();
-  T_sp outer_declares = env->decls();
   Label_sp begin = Label_O::make(), end = Label_O::make();
   gc::Nilable<String_sp> docstring;
   List_sp code;
   List_sp specials;
   eval::extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
+  List_sp all_declares = Cons_O::append(declares, env->decls());
   // Get a declared debug display lambda list if it exists.
   // If not declared, use the actual lambda list.
   // (This is useful for e.g. macros.)
@@ -1662,10 +1662,10 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   function->setIndex(ind.unsafe_fixnum());
   // Stick the new function into the debug info.
   module->push_debug_info(function);
-  if (outer_declares.notnilp() || source_info.notnilp()) {
+  if (all_declares.notnilp() || source_info.notnilp()) {
     begin->contextualize(context);
-    if (outer_declares.notnilp())
-      context.push_debug_info(BytecodeDebugDecls_O::make(begin, end, outer_declares));
+    if (all_declares.notnilp())
+      context.push_debug_info(BytecodeDebugDecls_O::make(begin, end, all_declares));
     if (source_info.notnilp())
       context.push_debug_info(BytecodeDebugLocation_O::make(begin, end, source_info));
   }
@@ -1673,7 +1673,7 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   // so that it can do its own handling of specials, etc.
   compile_with_lambda_list(lambda_list, body, lenv, context);
   context.assemble0(vm_return);
-  if (outer_declares.notnilp() || source_info.notnilp())
+  if (all_declares.notnilp() || source_info.notnilp())
     end->contextualize(context);
   return function;
 }
