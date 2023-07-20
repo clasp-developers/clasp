@@ -412,16 +412,9 @@
 
 (defun write-variable (variable value inserter)
   (bir:record-variable-set variable)
-  ;; KLUDGE
-  (let ((boundp (slot-boundp variable 'bir::%binder)))
-    (if boundp
-        (ast-to-bir:insert inserter 'bir:writevar
-                           :inputs (list value) :outputs (list variable))
-        (let ((binder (ast-to-bir:insert inserter 'bir:leti
-                                         :inputs (list value)
-                                         :outputs (list variable))))
-          (set:nadjoinf (bir:variables (bir:function binder)) variable)
-          (setf (bir:binder variable) binder)))))
+  (assert (slot-boundp variable 'bir::%binder))
+  (ast-to-bir:insert inserter 'bir:writevar
+                     :inputs (list value) :outputs (list variable)))
 
 (defmethod compile-instruction ((mnemonic (eql :ref)) inserter
                                 annot context &rest args)
@@ -561,13 +554,7 @@
            (varcons (aref locals base)))
       (cond
         ((or (and bindings
-                  (= (length bindings) 1) (= base (cdar bindings)))
-             ;; This can happen from, for example, the variable used
-             ;; when doing symbol-value-set.
-             ;; NOTE: Maybe we should have symbol-value-set just
-             ;; push the value? Would be easier. Can't duplicate that
-             ;; for setq of a lexical cell though.
-             (null varcons))
+                  (= (length bindings) 1) (= base (cdar bindings))))
          (let* ((name (caar bindings))
                 (ignore (variable-ignore name annots))
                 (var (make-instance 'bir:variable
