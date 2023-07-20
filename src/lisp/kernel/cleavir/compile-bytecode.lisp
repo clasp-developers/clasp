@@ -216,7 +216,7 @@
     :successors (bt:block-entry-successors block)
     :dynamic-environment (context-dynamic-environment context)))
 
-(defun install-ll-vars (locals lambda-list)
+(defun install-ll-vars (locals lambda-list annots)
   (multiple-value-bind (required optional rest keyp keys)
       (core:process-lambda-list lambda-list 'cl:function)
     (declare (ignore keyp))
@@ -231,7 +231,8 @@
       (flet ((newvar (name)
                (setf (aref locals index)
                      (cons (make-instance 'bir:variable
-                             :name name :ignore nil)
+                             :name name
+                             :ignore (variable-ignore name annots))
                            nil))
                (incf index)))
         (mapc #'newvar (rest required))
@@ -247,13 +248,13 @@
               when -p
                 do (newvar -p))))))
 
-(defun make-context (function block)
+(defun make-context (function block annots)
   (let* ((bcfun (bt:function-entry-bcfun function))
          (irfun (bt:function-entry-extra function))
          (nlocals (bcfun/locals-size bcfun))
          (locals (make-array nlocals))
          (successors (bt:block-entry-successors block)))
-    (install-ll-vars locals (core:function-lambda-list bcfun))
+    (install-ll-vars locals (core:function-lambda-list bcfun) annots)
     (%make-context locals successors irfun)))
 
 ;;; Alist of IR functions to sequences of variables they close over,
@@ -514,6 +515,19 @@
                          :inputs (list* callee args)
                          :outputs (list out)))))
 
+(defun variable-ignore (varname annots)
+  (loop for annot in annots
+        when (typep annot 'core:bytecode-debug-decls)
+          do (loop for (spec . rest) in (core:bytecode-debug-decls/decls annot)
+                   do (case spec
+                        ((ignore)
+                         (when (member varname rest)
+                           (return-from variable-ignore 'ignore)))
+                        ((ignorable)
+                         (when (member varname rest)
+                           (return-from variable-ignore 'ignorable))))))
+  nil)
+
 (defmethod compile-instruction ((mnemonic (eql :bind))
                                 inserter annots context &rest args)
   (let* ((varannot (find-if (lambda (a) (typep a 'core:bytecode-debug-vars))
@@ -530,8 +544,9 @@
       (assert (= nvars (length bindings)))
       (loop with locals = (context-locals context)
             for (varname . index) in bindings
+            for ignore = (variable-ignore varname annots)
             for var = (make-instance 'bir:variable
-                        :ignore nil :name varname)
+                        :ignore ignore :name varname)
             do (setf (aref locals index) (cons var nil))
                (bind-variable var (stack-pop context) inserter)))))
 
@@ -553,8 +568,10 @@
              ;; push the value? Would be easier. Can't duplicate that
              ;; for setq of a lexical cell though.
              (null varcons))
-         (let ((var (make-instance 'bir:variable
-                      :ignore nil :name (caar bindings))))
+         (let* ((name (caar bindings))
+                (ignore (variable-ignore name annots))
+                (var (make-instance 'bir:variable
+                       :ignore ignore :name name)))
            (setf (aref locals base) (cons var nil))
            (bind-variable var (stack-pop context) inserter)))
         (t
@@ -1204,6 +1221,17 @@
             policy (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*)))
     (values active-annotations index optimize policy)))
 
+(defun compute-args (args literals all-block-entries)
+  (loop for (type . value) in args
+        collect (ecase type
+                  ((:constant) (aref literals value))
+                  ((:label)
+                   (find-block value all-block-entries))
+                  ((:keys)
+                   ;; not actually used, so whatever
+                   value)
+                  ((:operand) value))))
+
 (defun compile-bytecode (bytecode literals function-entries
                          block-entries annotations)
   (let* ((all-function-entries function-entries)
@@ -1213,9 +1241,10 @@
          (block-contexts
            (mapcar (lambda (block) (list block nil nil)) block-entries))
          (inserter (make-inserter (bt:block-entry-extra block)))
-         (context (make-context function block))
          (next-annotation-index 0)
          (active-annotations nil)
+         (annots (find-next-annotations 0 annotations next-annotation-index))
+         (context (make-context function block annots))
          (optimize cmp:*optimize*)
          (bir:*policy*
            (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*)))
@@ -1233,52 +1262,43 @@
       ;; Compile the instruction.
       (let ((annots (find-next-annotations ip annotations
                                            next-annotation-index))
-            (args (loop for (type . value) in args
-                        collect (ecase type
-                                  ((:constant) (aref literals value))
-                                  ((:label)
-                                   (find-block value all-block-entries))
-                                  ((:keys)
-                                   ;; not actually used, so whatever
-                                   value)
-                                  ((:operand) value))))
             (bir:*origin* (find-origin active-annotations))
             (bir:*policy*
               (cleavir-policy:compute-policy
                (compute-optimize active-annotations)
                clasp-cleavir:*clasp-env*)))
-        (apply #'compile-instruction mnemonic inserter annots
-               context args)
-        (maybe-compile-the annots inserter context))
-      ;; Update current block and function if required.
-      (when (and block-entries
-                 (eql ip (bt:block-entry-start (first block-entries))))
-        (let ((successors (bt:block-entry-successors block)))
-          (when (and (= (length successors) 1)
-                     ;; KLUDGE
-                     (not (slot-boundp (bt:block-entry-extra block)
-                                       'bir::%end)))
-            (ast-to-bir:terminate inserter 'bir:jump
-                                  :next (mapcar #'bt:block-entry-extra
-                                                successors)))
-          (loop for successor in successors
-                for bcontext = (assoc successor block-contexts)
-                do (assign-block-context bcontext block context)))
-        (setf block (pop block-entries))
-        (if (and function-entries
-                 (eql ip (bt:function-entry-start
-                          (first function-entries))))
-            (setf function (pop function-entries)
-                  (bir:start (bt:function-entry-extra function))
-                  (bt:block-entry-extra block)
-                  context (make-context function block))
-            (let ((bcontext (third (assoc block block-contexts))))
-              (if bcontext
-                  (setf context (copy-context bcontext))
-                  (setf context (make-nondom-context context block)))))
-        (setf (bir:dynamic-environment (bt:block-entry-extra block))
-              (context-dynamic-environment context))
-        (ast-to-bir:begin inserter (bt:block-entry-extra block))))))
+        (apply #'compile-instruction mnemonic inserter annots context
+               (compute-args args literals all-block-entries))
+        (maybe-compile-the annots inserter context)
+        ;; Update current block and function if required.
+        (when (and block-entries
+                   (eql ip (bt:block-entry-start (first block-entries))))
+          (let ((successors (bt:block-entry-successors block)))
+            (when (and (= (length successors) 1)
+                       ;; KLUDGE
+                       (not (slot-boundp (bt:block-entry-extra block)
+                                         'bir::%end)))
+              (ast-to-bir:terminate inserter 'bir:jump
+                                    :next (mapcar #'bt:block-entry-extra
+                                                  successors)))
+            (loop for successor in successors
+                  for bcontext = (assoc successor block-contexts)
+                  do (assign-block-context bcontext block context)))
+          (setf block (pop block-entries))
+          (if (and function-entries
+                   (eql ip (bt:function-entry-start
+                            (first function-entries))))
+              (setf function (pop function-entries)
+                    (bir:start (bt:function-entry-extra function))
+                    (bt:block-entry-extra block)
+                    context (make-context function block annots))
+              (let ((bcontext (third (assoc block block-contexts))))
+                (if bcontext
+                    (setf context (copy-context bcontext))
+                    (setf context (make-nondom-context context block)))))
+          (setf (bir:dynamic-environment (bt:block-entry-extra block))
+                (context-dynamic-environment context))
+          (ast-to-bir:begin inserter (bt:block-entry-extra block)))))))
 
 (defvar *function-entries*)
 
