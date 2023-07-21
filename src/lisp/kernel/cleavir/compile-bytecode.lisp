@@ -6,8 +6,7 @@
                     (#:ctype #:cleavir-ctype)
                     ;; FIXME: Move inserter stuff to its own small system
                     (#:ast-to-bir #:cleavir-ast-to-bir))
-  (:shadow #:compile)
-  (:export #:compile-function #:compile))
+  (:export #:compile-function #:compile-hook))
 
 (in-package #:clasp-bytecode-to-bir)
 
@@ -1426,32 +1425,7 @@
     (bir:verify module)
     (clasp-cleavir::bir->function bir :abi abi :linkage linkage)))
 
-(defun compile (name &optional definition)
-  (let* ((definition
-           (cond ((typep definition '(cons (eql lambda)))
-                  (cmp:bytecompile definition))
-                 ((functionp definition) definition)
-                 (name (fdefinition name))
-                 (t
-                  (error "No definition provided to ~s" 'compile))))
-         (compiled
-           (etypecase definition
-             (core:global-bytecode-simple-fun
-              (compile-function definition))
-             (core:closure
-              (let ((sfun (core:function/entry-point definition)))
-                (if (typep sfun 'core:global-bytecode-simple-fun)
-                    (let ((csfun (compile-function sfun))
-                          (nclosed (core:closure-length definition)))
-                      (apply #'core:make-closure
-                             csfun
-                             (loop for i below nclosed
-                                   collect (core:closure-ref definition i))))
-                    definition)))
-             (function definition))))
-    (cond (name
-           (if (macro-function name)
-               (setf (macro-function name) compiled)
-               (setf (fdefinition name) compiled))
-           name)
-          (t compiled))))
+;;; To be bound to cmp:*btb-compile-hook*.
+(defun compile-hook (definition environment)
+  (declare (ignore environment))
+  (compile-function definition))

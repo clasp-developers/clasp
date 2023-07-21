@@ -44,6 +44,7 @@
             fn-prototype
             *cleavir-compile-file-hook*
             *cleavir-compile-hook*
+            *btb-compile-hook*
             *compile-print*
             *current-function*
             *current-function-name*
