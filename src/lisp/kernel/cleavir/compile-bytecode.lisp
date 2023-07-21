@@ -1083,6 +1083,17 @@
   (assert (null args))
   (stack-push (compile-constant 'nil inserter) context))
 
+(defmethod compile-instruction ((mnemonic (eql :push))
+                                inserter annots context &rest args)
+  (declare (ignore inserter annots))
+  (assert (null args))
+  (let ((mv (context-mv context)))
+    (etypecase mv
+      (null) ; happens in unreachable code
+      (bir:linear-datum
+       (setf (context-mv context) nil)
+       (stack-push mv context)))))
+
 (defmethod compile-instruction ((mnemonic (eql :pop))
                                 inserter annot context &rest args)
   (declare (ignore inserter annot args))
@@ -1097,6 +1108,13 @@
     (%bind-variable var (stack-pop context) inserter)
     (stack-push (%read-variable var inserter) context)
     (stack-push (%read-variable var inserter) context)))
+
+(defmethod compile-instruction ((mnemonic (eql :drop-mv))
+                                inserter annots context &rest args)
+  (declare (ignore inserter annots))
+  (assert (null args))
+  (check-type (context-mv context) bir:linear-datum)
+  (setf (context-mv context) nil))
 
 (defun compile-type-decl (inserter which ctype datum)
   (let ((sys clasp-cleavir:*clasp-system*)
@@ -1339,6 +1357,12 @@
                   for bcontext = (assoc successor block-contexts)
                   do (assign-block-context bcontext block context)))
           (setf block (pop block-entries))
+          ;; When this block is unreachable,
+          ;; give a sham assignment of the current context.
+          ;; This ensures that in e.g. (foo (return x) y), the call to FOO can be
+          ;; generated correctly before being deleted later.
+          (when (null (bt:block-entry-predecessors block))
+            (assign-block-context (assoc block block-contexts) nil context))
           (if (and function-entries
                    (eql ip (bt:function-entry-start
                             (first function-entries))))

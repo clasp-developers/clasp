@@ -1999,6 +1999,11 @@ void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
     if (pair.consp()) {
       Cons_sp rpair = gc::As_assert<Cons_sp>(CONS_CDR(pair));
       compile_exit(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)), gc::As_assert<Label_sp>(CONS_CDR(rpair)), ctxt);
+      if (ctxt.receiving() != 0) {
+        // see note in compile_return_from
+        ctxt.assemble0(vm_nil);
+        if (ctxt.receiving() == -1) ctxt.assemble0(vm_pop);
+      }
       return;
     }
   }
@@ -2013,14 +2018,14 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
   Label_sp normal_label = Label_O::make();
   // Bind the dynamic environment or save SP.
   ctxt.emit_entry_or_save_sp(dynenv_info);
-  Cons_sp new_pair = Cons_O::create(name, Cons_O::create(dynenv_info, label));
+  Cons_sp new_pair = Cons_O::create(name, Cons_O::create(dynenv_info, Cons_O::create(label, clasp_make_fixnum(ctxt.receiving()))));
   Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), nenv->tags(), Cons_O::create(new_pair, nenv->blocks()), nenv->funs(),
                                    nenv->decls(), nenv->frameEnd());
   // We force single values into multiple so that we can uniformly PUSH afterward.
   // Specifically: if we're returning 0 values, there's no problem anyway.
   // If we're returning multiple values, the local and nonlocal returns just
   // store into the multiple values, so no problem there.
-  // If we're returning exactly one value, the nonlocal just pushes one, and
+  // If we're returning exactly one value, the local just pushes one, and
   // the nonlocal stores into the MV which is then vm_push'd to the stack.
   compile_progn(body, nnenv, Context(ctxt, dynenv_info));
   bool r1p = ctxt.receiving() == 1;
@@ -2037,14 +2042,23 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
 }
 
 void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ctxt) {
-  compile_form(valuef, env, Context(ctxt, -1));
   T_sp blocks = env->blocks();
   if (blocks.consp()) {
     // blocks must be a cons now
     T_sp pair = core__alist_assoc_eq(gc::As_unsafe<Cons_sp>(blocks), name);
     if (pair.consp()) {
       Cons_sp rpair = gc::As_assert<Cons_sp>(CONS_CDR(pair));
-      compile_exit(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)), gc::As_assert<Label_sp>(CONS_CDR(rpair)), ctxt);
+      Cons_sp r2pair = gc::As_assert<Cons_sp>(CONS_CDR(rpair));
+      int breceiving = CONS_CDR(r2pair).unsafe_fixnum();
+      compile_form(valuef, env, Context(ctxt, breceiving == 0 ? 0 : -1));
+      compile_exit(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)), gc::As_assert<Label_sp>(CONS_CAR(r2pair)), ctxt);
+      // If we're in a single value context, generate a never-executed PUSH instruction
+      // so that statically both "branches" rejoining at the BLOCK have the same number
+      // of values on the stack. KLUDGE? Sorta? Not sure how legitimate this is.
+      switch (ctxt.receiving()) {
+      case 1: ctxt.assemble0(vm_push); break;
+      case 0: if (breceiving != 0) ctxt.assemble0(vm_drop_mv); break;
+      }
       return;
     }
   }

@@ -92,6 +92,7 @@
     ("push" 56)
     ("pop" 57)
     ("dup" 58)
+    ("drop-mv" 59)
     ("long" 255)))
 
 (defun pythonify-arguments (args)
