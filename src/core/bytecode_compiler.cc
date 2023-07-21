@@ -1231,7 +1231,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   end_label->contextualize(ctxt);
 }
 
-CL_DEFUN List_sp decls_for_var(T_sp varname, List_sp decls) {
+static List_sp decls_for_var(T_sp varname, List_sp decls) {
   // FIXME: Should be extensible.
   // Also ideally in Lisp. This is pretty grody as-is.
   ql::list result;
@@ -1266,7 +1266,7 @@ CL_DEFUN List_sp decls_for_var(T_sp varname, List_sp decls) {
   return result.cons();
 }
 
-CL_DEFUN List_sp decls_for_vars(List_sp vars, List_sp decls) {
+static List_sp decls_for_vars(List_sp vars, List_sp decls) {
   ql::list result;
   for (auto cur : decls) {
     T_sp decl = oCar(cur);
@@ -1605,6 +1605,9 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       Label_sp begin_label = Label_O::make();
       begin_label->contextualize(context);
       context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(rest, lvinfo))));
+      List_sp rdecls = decls_for_var(rest, declares);
+      if (rdecls.notnilp())
+        context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, rdecls));
     }
   }
   // Generate defaulting code for key args, and special-bind them if necessary
