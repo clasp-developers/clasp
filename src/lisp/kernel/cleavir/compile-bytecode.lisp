@@ -3,12 +3,15 @@
   (:local-nicknames (#:bt #:clasp-bytecode-tablegen)
                     (#:bir #:cleavir-bir)
                     (#:set #:cleavir-set)
+                    (#:ctype #:cleavir-ctype)
                     ;; FIXME: Move inserter stuff to its own small system
                     (#:ast-to-bir #:cleavir-ast-to-bir))
   (:shadow #:compile)
   (:export #:compile-function #:compile))
 
 (in-package #:clasp-bytecode-to-bir)
+
+(defvar *active-annotations*)
 
 (defun symbolicate (&rest components)
   ;; FIXME: Probably just use concatenate
@@ -395,26 +398,74 @@
 (defgeneric compile-instruction (mnemonic inserter
                                  annotation context &rest args))
 
-(defun read-variable (variable inserter)
+;;; Need to refactor this stuff. We should _actually_ parse annotations
+;;; as we go, in compile-bytecode or something, so we don't need
+;;; to constantly reparse them like this.
+(defun declared-var-ctype (varname &optional (annotations *active-annotations*))
+  (loop with env = clasp-cleavir:*clasp-env*
+        with sys = clasp-cleavir:*clasp-system*
+        with ctype = (ctype:top sys)
+        for annot in annotations
+        when (typep annot 'core:bytecode-debug-decls)
+          do (loop for (spec . rest)
+                     in (core:bytecode-debug-decls/decls annot)
+                   do (case spec
+                        ((type)
+                         (let ((nt (first rest)) (vars (rest rest)))
+                           (when (member varname vars)
+                             (let ((ct (cleavir-env:parse-type-specifier
+                                        nt env sys)))
+                               (setf ctype (ctype:conjoin sys ctype ct))))))
+                        ;; FIXME: Hardcoded. Bad
+                        ((dynamic-extent ftype ignorable ignore inline
+                                         notinline optimize special))
+                        (otherwise ; assume a type
+                         (when (member varname rest)
+                           (let ((ct (cleavir-env:parse-type-specifier
+                                      spec env sys)))
+                             (setf ctype (ctype:conjoin sys ctype ct)))))))
+        finally (return ctype)))
+
+(defun %read-variable (variable inserter)
   (bir:record-variable-ref variable)
-  (let ((readvar-out (make-instance 'bir:output
-                       :name (bir:name variable))))
+  (let ((readvar-out (make-instance 'bir:output :name (bir:name variable))))
     (ast-to-bir:insert inserter 'bir:readvar
                        :inputs (list variable) :outputs (list readvar-out))
     readvar-out))
 
-(defun bind-variable (variable value inserter)
+(defun read-variable (variable inserter)
+  (let ((declared-ctype (declared-var-ctype (bir:name variable))))
+    (compile-type-decl inserter :variable declared-ctype
+                       (%read-variable variable inserter))))
+
+(defun %bind-variable (variable value inserter)
   (let ((binder (ast-to-bir:insert inserter 'bir:leti
                                    :inputs (list value)
                                    :outputs (list variable))))
     (set:nadjoinf (bir:variables (bir:function binder)) variable)
     (setf (bir:binder variable) binder)))
 
-(defun write-variable (variable value inserter)
+(defun bind-variable (variable value inserter annots)
+  (let* ((name (bir:name variable))
+         (outer-ctype (declared-var-ctype name))
+         (inner-ctype (declared-var-ctype name annots))
+         (declared-ctype (ctype:conjoin clasp-cleavir:*clasp-system*
+                                        outer-ctype inner-ctype)))
+    (%bind-variable variable
+                    (compile-type-decl inserter :setq declared-ctype value)
+                    inserter)))
+
+(defun %write-variable (variable value inserter)
   (bir:record-variable-set variable)
   (assert (slot-boundp variable 'bir::%binder))
   (ast-to-bir:insert inserter 'bir:writevar
                      :inputs (list value) :outputs (list variable)))
+
+(defun write-variable (variable value inserter)
+  (let ((declared-ctype (declared-var-ctype (bir:name variable))))
+    (%write-variable variable
+                     (compile-type-decl inserter :setq declared-ctype value)
+                     inserter)))
 
 (defmethod compile-instruction ((mnemonic (eql :ref)) inserter
                                 annot context &rest args)
@@ -541,7 +592,7 @@
             for var = (make-instance 'bir:variable
                         :ignore ignore :name varname)
             do (setf (aref locals index) (cons var nil))
-               (bind-variable var (stack-pop context) inserter)))))
+               (bind-variable var (stack-pop context) inserter annots)))))
 
 (defmethod compile-instruction ((mnemonic (eql :set))
                                 inserter annots context &rest args)
@@ -560,7 +611,7 @@
                 (var (make-instance 'bir:variable
                        :ignore ignore :name name)))
            (setf (aref locals base) (cons var nil))
-           (bind-variable var (stack-pop context) inserter)))
+           (bind-variable var (stack-pop context) inserter annots)))
         (t
          (let ((var (car varcons)))
            (check-type var bir:variable)
@@ -677,8 +728,7 @@
         (ast-to-bir:terminate inserter returni)))))
 
 (defmethod compile-instruction ((mnemonic (eql :bind-required-args))
-                                inserter annot context &rest args)
-  (declare (ignore annot))
+                                inserter annots context &rest args)
   (destructuring-bind (nreq) args
     (let* ((iblock (ast-to-bir::iblock inserter))
            (ifun (bir:function iblock))
@@ -688,11 +738,10 @@
             for i from 0
             for arg in args
             for (var . cellp) = (aref locals i)
-            do (bind-variable var arg inserter)))))
+            do (bind-variable var arg inserter annots)))))
 
 (defmethod compile-instruction ((mnemonic (eql :bind-optional-args))
-                                inserter annot context &rest args)
-  (declare (ignore annot))
+                                inserter annots context &rest args)
   (destructuring-bind (start nopt) args
     (let* ((iblock (ast-to-bir::iblock inserter))
            (ifun (bir:function iblock))
@@ -702,7 +751,7 @@
             for i from start
             for (arg -p) in args
             for (var . cellp) = (aref locals i)
-            do (write-variable var arg inserter)))))
+            do (bind-variable var arg inserter annots)))))
 
 ;;; FIXME: Why does this instruction not put it immediately into a var
 (defmethod compile-instruction ((mnemonic (eql :listify-rest-args))
@@ -718,8 +767,7 @@
       (stack-push rarg context))))
 
 (defmethod compile-instruction ((mnemonic (eql :parse-key-args))
-                                inserter annot context &rest args)
-  (declare (ignore annot))
+                                inserter annots context &rest args)
   (destructuring-bind (start key-count-info key-start frame-start) args
     (declare (ignore start key-count-info key-start))
     (let* ((iblock (ast-to-bir::iblock inserter))
@@ -733,7 +781,7 @@
             while (consp spec)
             do (destructuring-bind (key arg -p) spec
                  (declare (ignore key -p))
-                 (write-variable var arg inserter))))))
+                 (bind-variable var arg inserter annots))))))
 
 (defun compile-jump (inserter context destination)
   (declare (ignore context))
@@ -1047,32 +1095,41 @@
                                 inserter annot context &rest args)
   (declare (ignore annot args))
   (let ((var (make-instance 'bir:variable :ignore nil)))
-    (bind-variable var (stack-pop context) inserter)
-    (stack-push (read-variable var inserter) context)
-    (stack-push (read-variable var inserter) context)))
+    (%bind-variable var (stack-pop context) inserter)
+    (stack-push (%read-variable var inserter) context)
+    (stack-push (%read-variable var inserter) context)))
 
-(defun compile-the (inserter type datum)
-  (let* ((sys clasp-cleavir:*clasp-system*)
-         (ctype (cleavir-env:parse-values-type-specifier
-                 type clasp-cleavir:*clasp-env* sys))
-         (out (make-instance 'bir:output
-                :name (bir:name datum)))
-         (policy bir:*policy*)
-         (type-check-function
-           (ecase (clasp-cleavir::insert-type-checks-level policy :the)
-             ((0) :trusted)
-             ((1) nil)
-             ((2 3)
-              (compile-bcfun-into-module
-               (cmp:bytecompile
-                (clasp-cleavir::make-type-check-fun :the ctype sys))
-               (bir:module (bir:function (ast-to-bir::iblock inserter))))))))
-    (ast-to-bir:insert inserter 'bir:thei
-                       :inputs (list datum)
-                       :outputs (list out)
-                       :asserted-type ctype
-                       :type-check-function type-check-function)
-    out))
+(defun compile-type-decl (inserter which ctype datum)
+  (let ((sys clasp-cleavir:*clasp-system*)
+        (sv-ctype-p (member which '(:variable :argument :setq))))
+    (if (if sv-ctype-p
+            (ctype:top-p ctype sys)
+            (clasp-cleavir::values-top-p ctype sys))
+        datum ; too boring
+        (let* ((vctype (ecase which
+                         ((:the :return) ctype)
+                         ((:variable) (ctype:single-value ctype sys))
+                         ((:argument :setq)
+                          (ctype:coerce-to-values ctype sys))))
+               (out (make-instance 'bir:output
+                      :name (bir:name datum)))
+               (policy bir:*policy*)
+               (type-check-function
+                 (ecase (clasp-cleavir::insert-type-checks-level policy which)
+                   ((0) :trusted)
+                   ((1) nil)
+                   ((2 3)
+                    (compile-bcfun-into-module
+                     (cmp:bytecompile
+                      (clasp-cleavir::make-type-check-fun which ctype sys))
+                     (bir:module (bir:function
+                                  (ast-to-bir::iblock inserter))))))))
+          (ast-to-bir:insert inserter 'bir:thei
+                             :inputs (list datum)
+                             :outputs (list out)
+                             :asserted-type vctype
+                             :type-check-function type-check-function)
+          out))))
 
 ;;; Return values: mnemonic, parsed/resolved arguments, IP of next instruction
 (defun parse-instruction (bytecode literals block-alist longp ip)
@@ -1130,11 +1187,19 @@
             (receiving (core:bytecode-debug-the/receiving the)))
         (case receiving
           ((1) (stack-push
-                (compile-the inserter type (stack-pop context))
+                (compile-type-decl inserter :the
+                                   (cleavir-env:parse-values-type-specifier
+                                    type clasp-cleavir:*clasp-env*
+                                    clasp-cleavir:*clasp-system*)
+                                   (stack-pop context))
                 context))
           ((-1)
            (setf (context-mv context)
-                 (compile-the inserter type (context-mv context))))
+                 (compile-type-decl inserter :the
+                                   (cleavir-env:parse-values-type-specifier
+                                    type clasp-cleavir:*clasp-env*
+                                    clasp-cleavir:*clasp-system*)
+                                   (context-mv context))))
           ;; TODO: Something for 0/single values?
           (otherwise))))))
 
@@ -1170,6 +1235,9 @@
                               unless (assoc (car optim) optimize)
                                 do (push optim optimize)))
         finally (return
+                  ;; If the declarations don't have enough OPTIMIZE qualities
+                  ;; to cover the gamut (arguably they always should), fill
+                  ;; in the rest from the global values.
                   (loop for optim in cmp:*optimize*
                         unless (assoc (car optim) optimize)
                           do (push optim optimize)
@@ -1229,12 +1297,12 @@
            (mapcar (lambda (block) (list block nil nil)) block-entries))
          (inserter (make-inserter (bt:block-entry-extra block)))
          (next-annotation-index 0)
-         (active-annotations nil)
+         (*active-annotations* nil)
          (annots (find-next-annotations 0 annotations next-annotation-index))
-         (context (make-context function block annots))
-         (optimize cmp:*optimize*)
+         (optimize (compute-optimize annots))
          (bir:*policy*
-           (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*)))
+           (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*))
+         (context (make-context function block annots)))
     (declare (ignore all-function-entries))
     (assert (zerop (bt:function-entry-start function)))
     (setf (bir:start (bt:function-entry-extra function))
@@ -1242,17 +1310,17 @@
     (do-instructions (mnemonic args opip ip) (bytecode)
       ;; Update annotations.
       ;; Note that we keep tighter annotations at the front.
-      (setf (values active-annotations next-annotation-index
+      (setf (values *active-annotations* next-annotation-index
                     optimize bir:*policy*)
-            (update-annotations active-annotations opip annotations
+            (update-annotations *active-annotations* opip annotations
                                 next-annotation-index optimize bir:*policy*))
       ;; Compile the instruction.
       (let ((annots (find-next-annotations ip annotations
                                            next-annotation-index))
-            (bir:*origin* (find-origin active-annotations))
+            (bir:*origin* (find-origin *active-annotations*))
             (bir:*policy*
               (cleavir-policy:compute-policy
-               (compute-optimize active-annotations)
+               (compute-optimize *active-annotations*)
                clasp-cleavir:*clasp-env*)))
         (apply #'compile-instruction mnemonic inserter annots context
                (compute-args args literals all-block-entries))
