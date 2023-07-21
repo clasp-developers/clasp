@@ -1132,7 +1132,7 @@
 
 (defmethod encode ((inst bytefunction-creator) stream)
   ;; four bytes for the entry point, two for the nlocals and nclosed,
-  ;; then indices. TODO: Source info.
+  ;; then indices.
   (write-mnemonic 'make-bytecode-function stream)
   (write-index inst stream)
   (write-b32 (entry-point inst) stream)
@@ -1205,11 +1205,12 @@
 
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
+  (cmp:module/link value)
   (let ((mod
           (add-creator
            value
            (make-instance 'bytemodule-creator
-             :prototype value :lispcode (cmp:module/link value)))))
+             :prototype value :lispcode (cmp:module/create-bytecode value)))))
     ;; Modules can indirectly refer to themselves recursively through
     ;; cfunctions, so we need to 2stage it here.
     (add-instruction
@@ -1217,7 +1218,7 @@
        :module mod :literals (map 'simple-vector #'ensure-constant
                                   (cmp:module/literals value))))
     #+clasp ; debug info
-    (let ((info (cmp:module/debug-info value)))
+    (let ((info (cmp:module/create-debug-info value)))
       (when info
         (add-instruction
          (make-instance 'module-debug-attr

@@ -215,9 +215,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
              :offset-base-ctype "comp::Module_O" :layout-offset-field-names ("_literals")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
-             :offset-base-ctype "comp::Module_O" :layout-offset-field-names ("_debugInfo")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__AttributeSet_O" :stamp-key "llvmo::AttributeSet_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3444,6 +3441,9 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
              :offset-base-ctype "comp::Cfunction_O" :layout-offset-field-names ("_annotations")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
+             :offset-base-ctype "comp::Cfunction_O" :layout-offset-field-names ("_debug_info")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::Cfunction_O" :layout-offset-field-names ("_nlocals")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -4671,7 +4671,7 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Lexenv_O"
              :layout-offset-field-names ("_funs")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Lexenv_O"
+             :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "comp::Lexenv_O"
              :layout-offset-field-names ("_decls")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::Lexenv_O" :layout-offset-field-names ("frame_end")}

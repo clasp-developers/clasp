@@ -710,17 +710,14 @@ class Module_O : public General_O {
 public:
   ComplexVector_T_sp _cfunctions;
   ComplexVector_T_sp _literals;
-  ComplexVector_T_sp _debugInfo;
 public:
   Module_O()
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
-      _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
-      _debugInfo(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0)))
+      _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0)))
   {}
   Module_O(ComplexVector_T_sp literals)
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
-      _literals(literals),
-      _debugInfo(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0)))
+      _literals(literals)
   {}
   CL_LISPIFY_NAME(Module/make)
   CL_DEF_CLASS_METHOD
@@ -736,9 +733,6 @@ public:
   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
   CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
   CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
-  CL_LISPIFY_NAME(module/debugInfo)
-  CL_DEFMETHOD ComplexVector_T_sp debugInfo() { return this->_debugInfo; }
-  void push_debug_info(T_sp info);
 public:
   // Use the optimistic bytecode vector sizes to initialize the optimistic
   // cfunction position.
@@ -750,11 +744,14 @@ public:
   CL_DEFMETHOD size_t bytecode_size();
   // Fix up the debug infos with resolved labels.
   void resolve_debug_infos();
+  // Finalize cfunction positions and fixup sizes.
+  CL_DEFMETHOD void link();
   // Create the bytecode module vector. We scan over the fixups in the
   // module and copy segments of bytecode between fixup positions.
+  // Can only be run after link.
   CL_DEFMETHOD SimpleVector_byte8_t_sp create_bytecode();
-  // Compute and return the final fixed-up bytecode.
-  CL_DEFMETHOD SimpleVector_byte8_t_sp link();
+  // Create the debug info vector. Can only be run after link.
+  CL_DEFMETHOD SimpleVector_sp create_debug_info();
   // Link, then create actual run-time function objects and a bytecode module.
   // Suitable for cl:compile.
   CL_DEFMETHOD void link_load(T_sp compile_info);
@@ -768,6 +765,8 @@ public:
   ComplexVector_byte8_t_sp _bytecode;
    // An ordered vector of annotations emitted in this cfunction.
   ComplexVector_T_sp _annotations;
+  // An ordered vector of debug infos emitted for this cfunction.
+  ComplexVector_T_sp _debug_info;
   size_t _nlocals;
   ComplexVector_T_sp _closed;
   Label_sp _entry_point;
@@ -795,6 +794,7 @@ public:
                                                      nil<T_O>(), false,
                                                      clasp_make_fixnum(0))),
       _annotations(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
+      _debug_info(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
       _closed(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
       _entry_point(Label_O::make()),
      // not sure this has to be initialized, but just in case
@@ -813,6 +813,8 @@ public:
   CL_LISPIFY_NAME(cfunction/bytecode)
   CL_DEFMETHOD ComplexVector_byte8_t_sp bytecode() { return _bytecode; }
   CL_DEFMETHOD ComplexVector_T_sp annotations() { return _annotations; }
+  CL_LISPIFY_NAME(cfunction/debug-info)
+  CL_DEFMETHOD ComplexVector_T_sp debug_info() { return _debug_info; }
   CL_DEFMETHOD size_t nlocals() { return _nlocals; }
   CL_LISPIFY_NAME(Cfunction/setf-nlocals)
   CL_DEFMETHOD size_t setNlocals(size_t new_nlocals) {

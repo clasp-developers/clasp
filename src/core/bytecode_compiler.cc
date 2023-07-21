@@ -379,7 +379,9 @@ size_t Context::closure_index(T_sp info) const {
   return nind.unsafe_fixnum();
 }
 
-void Context::push_debug_info(T_sp info) const { this->cfunction()->module()->push_debug_info(info); }
+void Context::push_debug_info(T_sp info) const {
+  this->cfunction()->debug_info()->vectorPushExtend(info);
+}
 
 void Context::emit_jump(Label_sp label) const {
   ControlLabelFixup_O::make(label, vm_jump_8, vm_jump_16, vm_jump_24)->contextualize(*this);
@@ -787,8 +789,6 @@ void EntryCloseFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
 
 size_t EntryCloseFixup_O::resize() { return (this->lex()->closedOverP()) ? 1 : 0; }
 
-void Module_O::push_debug_info(T_sp info) { this->_debugInfo->vectorPushExtend(info); }
-
 void Module_O::initialize_cfunction_positions() {
   size_t position = 0;
   ComplexVector_T_sp cfunctions = this->cfunctions();
@@ -890,16 +890,35 @@ static void resolve_debug_info(BytecodeDebugInfo_sp info) {
     info->setEnd(clasp_make_fixnum(0));
 }
 
-void Module_O::resolve_debug_infos() {
+SimpleVector_sp Module_O::create_debug_info() {
+  ComplexVector_T_sp cfunctions = this->cfunctions();
+  // Add up the sizes of the cfunction debug infos to get the total size.
+  // We add one to each since we put in the functions as well.
   // Replace all labels.
-  for (T_sp info : *(this->debugInfo())) {
-    if (gc::IsA<BytecodeDebugVars_sp>(info))
-      resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
-    else if (gc::IsA<BytecodeDebugLocation_sp>(info)
-             || gc::IsA<BytecodeDebugDecls_sp>(info)
-             || gc::IsA<BytecodeDebugThe_sp>(info))
-      resolve_debug_info(gc::As_unsafe<BytecodeDebugInfo_sp>(info));
+  size_t ndebugs = 0;
+  for (T_sp tfunction : *cfunctions) {
+    Cfunction_sp function = gc::As_assert<Cfunction_sp>(tfunction);
+    ndebugs += 1 + function->debug_info()->length();
   }
+  SimpleVector_sp debuginfos = SimpleVector_O::make(ndebugs);
+  // For each cfunction, put the cfunction in the debug infos,
+  // and then the cfunction's infos.
+  size_t ind = 0;
+  for (T_sp tfunction : *cfunctions) {
+    Cfunction_sp function = gc::As_assert<Cfunction_sp>(tfunction);
+    (*debuginfos)[ind++] = function;
+    for (T_sp info : *(function->debug_info())) {
+      (*debuginfos)[ind++] = info;
+      // Resolve labels, etc.
+      if (gc::IsA<BytecodeDebugVars_sp>(info))
+        resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
+      else if (gc::IsA<BytecodeDebugLocation_sp>(info)
+               || gc::IsA<BytecodeDebugDecls_sp>(info)
+               || gc::IsA<BytecodeDebugThe_sp>(info))
+        resolve_debug_info(gc::As_unsafe<BytecodeDebugInfo_sp>(info));
+    }
+  }
+  return debuginfos;
 }
 
 // Replacement for CL:REPLACE, which isn't available here.
@@ -954,23 +973,20 @@ GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
   return this->info();
 }
 
-SimpleVector_byte8_t_sp Module_O::link() {
+void Module_O::link() {
   Module_sp cmodule = this->asSmartPtr();
   cmodule->initialize_cfunction_positions();
   cmodule->resolve_fixup_sizes();
-  cmodule->resolve_debug_infos();
-  return cmodule->create_bytecode();
 }
 
 void Module_O::link_load(T_sp compile_info) {
   Module_sp cmodule = this->asSmartPtr();
-  SimpleVector_byte8_t_sp bytecode = cmodule->link();
+  cmodule->link();
+  SimpleVector_byte8_t_sp bytecode = cmodule->create_bytecode();
   ComplexVector_T_sp cmodule_literals = cmodule->literals();
   size_t literal_length = cmodule_literals->length();
   SimpleVector_sp literals = SimpleVector_O::make(literal_length);
-  ComplexVector_T_sp cmodule_debug_info = cmodule->debugInfo();
-  size_t debug_info_length = cmodule_debug_info->length();
-  SimpleVector_sp debug_info = SimpleVector_O::make(debug_info_length);
+  SimpleVector_sp debug_info = cmodule->create_debug_info();
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make();
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   size_t function_index = 0;
@@ -1011,13 +1027,13 @@ void Module_O::link_load(T_sp compile_info) {
     else
       (*literals)[i] = lit;
   }
-  // Copy the debug info.
-  for (size_t i = 0; i < debug_info_length; ++i) {
-    T_sp info = (*cmodule_debug_info)[i];
+  // Also replace the cfunctions in the debug info.
+  // We just modify the vector rather than cons a new one since create_debug_info
+  // already created a fresh vector for us.
+  for (size_t i = 0; i < debug_info->length(); ++i) {
+    T_sp info = (*debug_info)[i];
     if (gc::IsA<Cfunction_sp>(info))
       (*debug_info)[i] = gc::As_unsafe<Cfunction_sp>(info)->info();
-    else
-      (*debug_info)[i] = info;
   }
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
@@ -1660,8 +1676,6 @@ CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp e
   Lexenv_sp lenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), env->funs(), env->decls(), 0);
   Fixnum_sp ind = module->cfunctions()->vectorPushExtend(function);
   function->setIndex(ind.unsafe_fixnum());
-  // Stick the new function into the debug info.
-  module->push_debug_info(function);
   if (all_declares.notnilp() || source_info.notnilp()) {
     begin->contextualize(context);
     if (all_declares.notnilp())
