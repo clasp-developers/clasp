@@ -342,7 +342,7 @@ bool Lexenv_O::notinlinep(T_sp fname) {
     if (gc::IsA<Cons_sp>(decl)
         && oCar(decl) == cl::_sym_notinline
         && gc::IsA<Cons_sp>(oCdr(decl))
-        && gc::As_unsafe<Cons_sp>(oCdr(decl))->memberEq(fname))
+        && gc::As_unsafe<Cons_sp>(oCdr(decl))->memberEq(fname).notnilp())
       return true;
   }
   return false;
@@ -1231,7 +1231,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   end_label->contextualize(ctxt);
 }
 
-static List_sp decls_for_var(T_sp varname, List_sp decls) {
+CL_DEFUN List_sp decls_for_var(T_sp varname, List_sp decls) {
   // FIXME: Should be extensible.
   // Also ideally in Lisp. This is pretty grody as-is.
   ql::list result;
@@ -1244,12 +1244,12 @@ static List_sp decls_for_var(T_sp varname, List_sp decls) {
       // directly rather than needing to put it in annotations.
       if (spec == cl::_sym_dynamic_extent
           || spec == cl::_sym_ignore || spec == cl::_sym_ignorable) {
-        if (rest->memberEq(varname))
+        if (rest->memberEq(varname).notnilp())
           result << Cons_O::createList(spec, varname);
       } else if (spec == cl::_sym_type
                  && gc::IsA<Cons_sp>(oCdr(rest))) {
         Cons_sp names = gc::As_unsafe<Cons_sp>(oCdr(rest));
-        if (names->memberEq(varname))
+        if (names->memberEq(varname).notnilp())
           result << Cons_O::createList(spec, oCar(rest), varname);
       } else if (!(spec == cl::_sym_ftype || spec == cl::_sym_inline
                    || spec == cl::_sym_notinline
@@ -1258,7 +1258,7 @@ static List_sp decls_for_var(T_sp varname, List_sp decls) {
                    || spec == core::_sym_lambdaName
                    || spec == core::_sym_lambdaList)) {
         // Presumed type decl
-        if (rest->memberEq(varname))
+        if (rest->memberEq(varname).notnilp())
           result << Cons_O::createList(cl::_sym_type, spec, varname);
       }
     }
@@ -1266,7 +1266,7 @@ static List_sp decls_for_var(T_sp varname, List_sp decls) {
   return result.cons();
 }
 
-static List_sp decls_for_vars(List_sp vars, List_sp decls) {
+CL_DEFUN List_sp decls_for_vars(List_sp vars, List_sp decls) {
   ql::list result;
   for (auto cur : decls) {
     T_sp decl = oCar(cur);
@@ -1279,7 +1279,7 @@ static List_sp decls_for_vars(List_sp vars, List_sp decls) {
           || spec == cl::_sym_ignore || spec == cl::_sym_ignorable) {
         for (auto svars : vars) {
           T_sp thisvar = oCar(svars);
-          if (rest->memberEq(thisvar))
+          if (rest->memberEq(thisvar).notnilp())
             result << Cons_O::createList(spec, thisvar);
         }
       } else if (spec == cl::_sym_type
@@ -1287,7 +1287,7 @@ static List_sp decls_for_vars(List_sp vars, List_sp decls) {
         Cons_sp names = gc::As_unsafe<Cons_sp>(oCdr(rest));
         for (auto svars : vars) {
           T_sp thisvar = oCar(svars);
-          if (names->memberEq(thisvar))
+          if (names->memberEq(thisvar).notnilp())
             result << Cons_O::createList(spec, oCar(rest), thisvar);
         }
       } else if (!(spec == cl::_sym_ftype || spec == cl::_sym_inline
@@ -1299,7 +1299,7 @@ static List_sp decls_for_vars(List_sp vars, List_sp decls) {
         // Presumed type decl
         for (auto svars : vars) {
           T_sp thisvar = oCar(svars);
-          if (rest->memberEq(thisvar))
+          if (rest->memberEq(thisvar).notnilp())
             result << Cons_O::createList(spec, thisvar);
         }
       }
