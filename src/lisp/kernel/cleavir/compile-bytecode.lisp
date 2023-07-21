@@ -245,7 +245,7 @@
         (loop for (_ _1 -p) on (rest optional) by #'cdddr
               when -p
                 do (newvar -p))
-        (when rest (newvar rest))
+        (when rest (incf index)) ; since we bind &rest vars with SET, no var needed here.
         (loop for (_ _1 _2 -p) on (rest keys) by #'cddddr
               when -p
                 do (newvar -p))))))
