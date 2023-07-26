@@ -5,7 +5,7 @@
            #:function-entry-bcfun #:function-entry-extra)
   (:export #:block-entry-start #:block-entry-end #:block-entry-function
            #:block-entry-successors #:block-entry-predecessors
-           #:block-entry-extra))
+           #:block-entry-name #:block-entry-receiving #:block-entry-extra))
 
 (in-package #:clasp-bytecode-tablegen)
 
@@ -18,7 +18,8 @@
   start end bcfun extra)
 
 (defstruct (block-entry (:constructor make-block-entry (start)))
-  start end (successors nil) (predecessors nil) function extra)
+  start end (successors nil) (predecessors nil) function
+  name (receiving 0) extra)
 
 (defun next-arg (argspec bytecode opip ip nbytes)
   (cond
@@ -30,33 +31,56 @@
      (cons :keys (cmpref::bc-unsigned bytecode ip nbytes)))
     (t (cons :operand (cmpref::bc-unsigned bytecode ip nbytes)))))
 
-(defmacro do-instructions ((mnemonic args opip ip)
-                           (bytecode &key (start 0) end)
+(defun new-annotations (annotations index ip)
+  ;; Compute a list of annotations that start at the given IP.
+  ;; Return the list, and the index of the next annotation.
+  (values
+   (loop with len = (length annotations)
+         while (< index len)
+         while (<= (core:bytecode-debug-info/start (aref annotations index)) ip)
+         when (= (core:bytecode-debug-info/start (aref annotations index)) ip)
+           collect (aref annotations index)
+         do (incf index))
+   index))
+
+(defmacro do-instructions ((mnemonic args opip ip
+                            &optional (annots (gensym "ANNOTATIONS") annotsp))
+                           (bytecode &key (start 0) end annotations)
                            &body body)
   (let ((bsym (gensym "BYTECODE"))
         (gend (gensym "END"))
         (longp (gensym "LONGP"))
+        (gannotations (gensym "ANNOTATIONS"))
+        (next-annotation-index (gensym "NEXT-ANNOTATION-INDEX"))
         (op (gensym "OP")))
     `(loop with ,bsym = ,bytecode
            with ,ip = ,start
            with ,longp = nil
            with ,gend = ,(or end `(+ ,ip (length ,bsym)))
+           with ,gannotations = ,annotations
+           with ,next-annotation-index = 0
+           with ,annots = nil
            for ,op = (cmpref::decode-instr (aref ,bsym ,ip))
-           do (let ((,opip ,ip))
-                (incf ,ip)
-                (let ((,args
-                        (loop for argspec
-                                in (if ,longp (fourth ,op) (third ,op))
-                              for nbytes = (logandc2 argspec
-                                                     cmpref::+mask-arg+)
-                              collect (next-arg argspec ,bsym ,opip ,ip
-                                                nbytes)
-                              do (incf ,ip nbytes)))
-                      (,mnemonic
-                        (intern (string-upcase (first ,op)) "KEYWORD")))
-                  (declare (ignorable ,args ,ip ,mnemonic))
-                  ,@body
-                  (setf ,longp (eq ,mnemonic :long))))
+           for ,mnemonic = (intern (string-upcase (first ,op)) "KEYWORD")
+           if (eql ,mnemonic :long)
+             do (setf ,longp t)
+           else
+             do (let ((,opip ,ip))
+                  (incf ,ip)
+                  (let ((,args
+                          (loop for argspec
+                                  in (if ,longp (fourth ,op) (third ,op))
+                                for nbytes = (logandc2 argspec
+                                                       cmpref::+mask-arg+)
+                                collect (next-arg argspec ,bsym ,opip ,ip
+                                                  nbytes)
+                                do (incf ,ip nbytes))))
+                    (declare (ignorable ,args ,ip))
+                    (setf (values ,annots ,next-annotation-index)
+                          (new-annotations ,gannotations
+                                           ,next-annotation-index ,ip))
+                    ,@body
+                    (setf ,longp nil)))
            until (>= ,ip ,gend))))
 
 (defun compute-block-starts (bytecode &rest entry-points)
@@ -82,7 +106,7 @@
         (pushnew ip block-starts)))
     (sort block-starts #'<)))
 
-(defun compute-control-flow-table (bytecode &rest bcfuns)
+(defun compute-control-flow-table (bytecode annotations &rest bcfuns)
   (let* ((entry-points (mapcar #'bcfun/entry bcfuns))
          (block-starts (apply #'compute-block-starts bytecode entry-points))
          (all-blocks (mapcar #'make-block-entry block-starts))
@@ -93,7 +117,8 @@
          (function (pop functions)))
     (assert (eql (function-entry-start function) 0))
     (setf (block-entry-function block) function)
-    (do-instructions (mnemonic args opip ip) (bytecode)
+    (do-instructions (mnemonic args opip ip annots)
+        (bytecode :annotations annotations)
       (when (and functions (eql ip (function-entry-start (first functions))))
         ;; Starting a new function.
         (setf (function-entry-end function) ip
@@ -132,71 +157,15 @@
            (let ((next (first blocks)))
              (setf (block-entry-successors block) (list next))
              (push block (block-entry-predecessors next)))))
+        ;; Move along
         (setf (block-entry-end block) ip
               block (pop blocks)
-              (block-entry-function block) function)))
+              (block-entry-function block) function)
+        ;; If there's an annotation for the new block, note it.
+        (let ((annot (find-if (lambda (a) (typep a 'core:bytecode-debug-block))
+                              annots)))
+          (when annot
+            (setf (block-entry-name block) (core:bytecode-debug-block/name annot)
+                  (block-entry-receiving block) (core:bytecode-debug-block/receiving annot))))))
     (setf (block-entry-end block) (length bytecode))
     (values all-functions all-blocks)))
-
-#|
-(defgeneric compute-new-stack (mnemonic args stack))
-
-(defun drop (n stack)
-  (assert (loop repeat n
-                for pair on stack
-                always (and pair (eql (car pair) :value))))
-  (nthcdr n stack))
-
-(defmethod compute-new-stack ((mnemonic (eql :ref)) args stack)
-  (declare (ignore args))
-  (cons :value stack))
-(defmethod compute-new-stack ((mnemonic (eql :const)) args stack)
-  (declare (ignore args))
-  (cons :value stack))
-(defmethod compute-new-stack ((mnemonic (eql :closure)) args stack)
-  (declare (ignore args))
-  (cons :value stack))
-(defmethod compute-new-stack ((mnemonic (eql :call)) args stack)
-  (destructuring-bind (nargs) args
-    (drop (1+ nargs) stack)))
-(defmethod compute-new-stack ((mnemonic (eql :call-receive-one)) args stack)
-  (destructuring-bind (nargs) args
-    (cons :value (drop (1+ nargs) stack))))
-(defmethod compute-new-stack ((mnemonic (eql :call-receive-fixed)) args stack)
-  (destructuring-bind (nargs receiving) args
-    (append (make-list receiving :initial-element :value)
-            (drop (1+ nargs) stack))))
-(defmethod compute-new-stack ((mnemonic (eql :bind)) args stack)
-  (destructuring-bind (count offset) args
-    (declare (ignore offset))
-    (drop count stack)))
-(defmethod compute-new-stack ((mnemonic (eql :set)) args stack)
-  (declare (ignore args))
-  (drop 1 stack))
-(defmethod compute-new-stack ((mnemonic (eql :make-cell)) args stack)
-  (declare (ignore args))
-  (cons :cell (drop 1 stack)))
-(defmethod compute-new-stack ((mnemonic (eql :cell-ref)) args stack)
-  (declare (ignore args))
-  (assert (and stack (eql (car stack) :cell)))
-  (cons :value (cdr stack)))
-(defmethod compute-new-stack ((mnemonic (eql :cell-set)) args stack)
-  (declare (ignore args))
-  (assert (and stack (eql (car stack) :cell)))
-  (cons :value (drop 1 (cdr stack))))
-(defmethod compute-new-stack ((mnemonic (eql :make-closure)) args stack)
-  ...)
-;; make-uninitialized-closure
-;; initialize-closure
-(defmethod compute-new-stack ((mnemonic (eql :return)) args stack)
-  (declare (ignore args stack))
-  ())
-(defmethod compute-new-stack ((mnemonic (eql :bind-required-args)) args stack))
-
-(defun compute-stackmap-table (bytecode)
-  (let ((stack nil)
-        (stackmaps nil))
-    (do-instructions (mnemonic args opip ip) (bytecode)
-      (push stack stackmaps)
-      
-      |#

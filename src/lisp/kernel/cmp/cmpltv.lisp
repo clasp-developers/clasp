@@ -240,33 +240,40 @@
   ((%function :initarg :function :reader di-function :type creator)))
 
 #+clasp
-(defclass debug-info-vars ()
+(defclass debug-info ()
   ((%start :initarg :start :reader di-start :type (unsigned-byte 32))
-   (%end :initarg :end :reader di-end :type (unsigned-byte 32))
-   (%vars :initarg :vars :reader vars :type list)))
+   (%end :initarg :end :reader di-end :type (unsigned-byte 32))))
 
 #+clasp
-(defclass debug-info-location ()
-  ((%start :initarg :start :reader di-start :type (unsigned-byte 32))
-   (%end :initarg :end :reader di-end :type (unsigned-byte 32))
-   (%pathname :initarg :pathname :reader di-pathname :type creator)
+(defclass debug-info-vars (debug-info)
+  ((%vars :initarg :vars :reader vars :type list)))
+
+#+clasp
+(defclass debug-info-location (debug-info)
+  ((%pathname :initarg :pathname :reader di-pathname :type creator)
    (%lineno :initarg :lineno :reader lineno :type (unsigned-byte 64))
    (%column :initarg :column :reader column :type (unsigned-byte 64))
    (%filepos :initarg :filepos :reader filepos :type (unsigned-byte 64))))
 
 #+clasp
-(defclass debug-info-decls ()
-  ((%start :initarg :start :reader di-start :type (unsigned-byte 32))
-   (%end :initarg :end :reader di-end :type (unsigned-byte 32))
-   (%decls :initarg :decls :reader decls :type creator)))
+(defclass debug-info-decls (debug-info)
+  ((%decls :initarg :decls :reader decls :type creator)))
 
 #+clasp
-(defclass debug-info-the ()
-  ((%start :initarg :start :reader di-start :type (unsigned-byte 32))
-   (%end :initarg :end :reader di-end :type (unsigned-byte 32))
-   (%type :initarg :type :reader di-type :type creator)
+(defclass debug-info-the (debug-info)
+  ((%type :initarg :type :reader di-type :type creator)
    (%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
 
+#+clasp
+(defclass debug-info-block (debug-info)
+  ((%name :initarg :name :reader name :type creator)
+   (%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
+
+;;;
+
+;;; Return true iff the value is similar to the existing creator.
+(defgeneric similarp (creator value)
+  (:method (creator value) (declare (ignore creator value)) nil))
 ;;;
 
 ;;; Return true iff the value is similar to the existing creator.
@@ -1203,6 +1210,13 @@
     :type (ensure-constant (core:bytecode-debug-the/type item))
     :receiving (core:bytecode-debug-the/receiving item)))
 
+(defmethod process-debug-info ((item core:bytecode-debug-block))
+  (make-instance 'debug-info-block
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :name (ensure-constant (core:bytecode-debug-block/name item))
+    :receiving (core:bytecode-debug-block/receiving item)))
+
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
   (cmp:module/link value)
@@ -1267,7 +1281,8 @@
     (vars 1)
     (location 2)
     (decls 3)
-    (the 4)))
+    (the 4)
+    (block 5)))
 
 (defun debug-info-opcode (mnemonic)
   (let ((inst (assoc mnemonic +debug-info-ops+)))
@@ -1325,6 +1340,15 @@
   (write-index (di-type info) stream)
   (write-b32 (di-receiving info) stream))
 (defmethod info-length ((info debug-info-the))
+  (+ 1 4 4 *index-bytes* 4))
+
+(defmethod encode ((info debug-info-block) stream)
+  (write-debug-info-mnemonic 'block stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-index (name info) stream)
+  (write-b32 (di-receiving info) stream))
+(defmethod info-length ((info debug-info-block))
   (+ 1 4 4 *index-bytes* 4))
 
 (defmethod encode ((attr module-debug-attr) stream)

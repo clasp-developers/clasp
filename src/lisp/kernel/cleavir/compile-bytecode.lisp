@@ -1418,14 +1418,16 @@
     (assert (sortedp annotations #'<
                      :key #'core:bytecode-debug-info/start))
     (multiple-value-bind (*function-entries* block-entries)
-        (apply #'bt:compute-control-flow-table bytecode functions)
+        (apply #'bt:compute-control-flow-table bytecode annotations
+               functions)
       (loop for fun in functions
             for entry in *function-entries*
             for birfun = (make-bir-function fun irmodule)
             do (setf (bt:function-entry-extra entry) birfun))
       (loop for entry in block-entries
             for block = (make-irblock (bt:function-entry-extra
-                                       (bt:block-entry-function entry)))
+                                       (bt:block-entry-function entry))
+                                      (bt:block-entry-name entry))
             do (setf (bt:block-entry-extra entry) block))
       (compile-bytecode bytecode literals *function-entries* block-entries annotations)
       (loop for entry in *function-entries*

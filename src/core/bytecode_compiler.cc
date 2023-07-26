@@ -912,9 +912,7 @@ SimpleVector_sp Module_O::create_debug_info() {
       // Resolve labels, etc.
       if (gc::IsA<BytecodeDebugVars_sp>(info))
         resolve_debug_vars(gc::As_unsafe<BytecodeDebugVars_sp>(info));
-      else if (gc::IsA<BytecodeDebugLocation_sp>(info)
-               || gc::IsA<BytecodeDebugDecls_sp>(info)
-               || gc::IsA<BytecodeDebugThe_sp>(info))
+      else if (gc::IsA<BytecodeDebugInfo_sp>(info))
         resolve_debug_info(gc::As_unsafe<BytecodeDebugInfo_sp>(info));
     }
   }
@@ -1935,6 +1933,8 @@ void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, const Context ctxt
   then_label->contextualize(ctxt);
   compile_form(thn, env, ctxt);
   done_label->contextualize(ctxt);
+  ctxt.push_debug_info(BytecodeDebugBlock_O::make(done_label, done_label,
+                                                  nil<T_O>(), ctxt.receiving()));
 }
 
 static bool go_tag_p(T_sp object) { return object.fixnump() || gc::IsA<Integer_sp>(object) || gc::IsA<Symbol_sp>(object); }
@@ -1960,6 +1960,7 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
       T_sp info = core__alist_assoc_eql(gc::As<Cons_sp>(nnenv->tags()), statement);
       Label_sp lab = gc::As_assert<Label_sp>(oCddr(info));
       lab->contextualize(ctxt);
+      ctxt.push_debug_info(BytecodeDebugBlock_O::make(lab, lab, statement, 0));
     } else
       compile_form(statement, nnenv, Context(stmt_ctxt, 0));
   }
@@ -2035,11 +2036,15 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
   if (r1p)
     ctxt.emit_jump(normal_label);
   label->contextualize(ctxt);
+  ctxt.push_debug_info(BytecodeDebugBlock_O::make(label, label,
+                                                  nil<T_O>(),
+                                                  ctxt.receiving() == 0 ? 0 : -1));
   // When we need 1 value, we have to make sure that the
   // "exceptional" case pushes a single value onto the stack.
   if (r1p) {
     ctxt.assemble0(vm_push);
     normal_label->contextualize(ctxt);
+    ctxt.push_debug_info(BytecodeDebugBlock_O::make(label, label, nil<T_O>(), 1));
   }
   ctxt.maybe_emit_entry_close(dynenv_info);
 }

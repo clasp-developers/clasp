@@ -170,6 +170,30 @@ public:
   CL_DEFMETHOD T_sp type() const { return this->_type; }
 };
 
+// Information about the beginning of a semi-basic block.
+// RECEIVING indicates what values the block will pull from the stack or
+// MV register; this information can be used by the compiler to determine
+// how many PHI nodes are needed.
+FORWARD(BytecodeDebugBlock);
+class BytecodeDebugBlock_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugBlock_O, "BytecodeDebugBlock", BytecodeDebugInfo_O);
+public:
+  BytecodeDebugBlock_O(T_sp start, T_sp end, T_sp name, int receiving)
+    : BytecodeDebugInfo_O(start, end), _name(name), _receiving(receiving) {}
+  CL_LISPIFY_NAME(BytecodeDebugBlock/make)
+    CL_DEF_CLASS_METHOD
+    static BytecodeDebugBlock_sp make(T_sp start, T_sp end, T_sp name, int receiving) {
+    return gctools::GC<BytecodeDebugBlock_O>::allocate<gctools::RuntimeStage>(start, end, name, receiving);
+  }
+public:
+  T_sp _name;
+  int _receiving; // meaning is as for compiler contexts
+public:
+  CL_LISPIFY_NAME(BytecodeDebugBlock/receiving)
+    CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
+  CL_LISPIFY_NAME(BytecodeDebugBlock/name)
+    CL_DEFMETHOD T_sp name() const { return this->_name; }
+};
 
 // Dynenv used for VM call frames to ensure the unwinder properly
 // cleans up stack frames.
