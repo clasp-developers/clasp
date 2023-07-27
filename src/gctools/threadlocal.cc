@@ -25,9 +25,6 @@
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
-namespace gctools {
-thread_pool<ThreadManager>* global_thread_pool;
-};
 namespace core {
 
 #ifdef DEBUG_VIRTUAL_MACHINE
@@ -244,11 +241,7 @@ pid_t ThreadLocalState::safe_fork()
 {
   // Wrap fork in code that turns guards off and on
   this->_VM.disable_guards();
-  // shut down llvm thread pool
-  gctools::global_thread_pool->~thread_pool();
   pid_t result = fork();
-  // start up llvm thread pool
-  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
   if (result==-1) {
     // error
     printf("%s:%d:%s fork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno );
