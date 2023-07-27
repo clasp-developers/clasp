@@ -90,7 +90,7 @@ struct VirtualMachine {
   // grow and etc.
   static constexpr size_t MaxStackWords = 65536;
   bool           _Running;
-  core::T_O*     _stackBottom[MaxStackWords];
+  core::T_O**    _stackBottom;
   size_t         _stackBytes;
   core::T_O**    _stackTop;
   core::T_O**    _stackGuard;
@@ -112,7 +112,8 @@ struct VirtualMachine {
 
   void enable_guards();
   void disable_guards();
-  
+
+  void startup();
   inline void shutdown() {
     this->_Running = false;
   }
@@ -375,6 +376,8 @@ struct VirtualMachine {
     void pushObjectFile(llvmo::ObjectFile_sp of);
     void popObjectFile();
     inline DynamicBindingStack& bindings() { return this->_Bindings; };
+
+    void startUpVM();
     
     ~ThreadLocalState();
   };

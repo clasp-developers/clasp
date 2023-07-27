@@ -242,6 +242,7 @@ void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
 #endif
   gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
   core::ThreadLocalState thread_local_state;
+  thread_local_state.startUpVM();
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
 //  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
