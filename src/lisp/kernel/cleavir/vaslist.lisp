@@ -154,6 +154,15 @@
     ((cleavir-primop:cdr) (datum-ok-p (first (bir:outputs inst))))
     (otherwise nil)))
 
+(defun values-list-datum-ok-p (datum)
+  ;; Is the use of a values-list okay? We say all uses are okay EXCEPT returning
+  ;; from the function, since we treat the values as having an extent limited to
+  ;; the function. Using the values list as the input to a call should be okay
+  ;; since by recursive assumption it won't return the values (or store them elsewhere).
+  (and (typep datum 'bir:output)
+       (let ((use (bir:use datum)))
+         (typep use '(not bir:returni)))))
+
 ;;; FIXME: This function only looks for existing derivations, rather than
 ;;; prompting any new ones. More reason this whole file should be part of
 ;;; the data flow analysis proper.
@@ -212,7 +221,8 @@
               (and (= (cl:length args) 1)
                    (eq datum (first args))))
              ((cl:values-list) (and (= (cl:length args) 1)
-                                    (eq datum (first args))))
+                                    (eq datum (first args))
+                                    (values-list-datum-ok-p out)))
              (otherwise nil))))
     (when (and *record-failures* (not result))
       (push inst *failure-reasons*))

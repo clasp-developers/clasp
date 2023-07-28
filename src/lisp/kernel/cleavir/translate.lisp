@@ -2155,9 +2155,6 @@ COMPILE-FILE will use the default *clasp-env*."
   (maybe-debug-transformation module :optimize-vars)
   (bir-transformations:meta-evaluate-module module system)
   (maybe-debug-transformation module :meta-evaluate)
-  ;; Broken at the moment - vaslist goes out of extent with e.g.
-  ;; (multiple-value-call (lambda (&rest args) (values-list args)) (values-list '(1 2 3)))
-  #+(or)
   (cc-vaslist:maybe-transform-module module)
   (bir-transformations:module-generate-type-checks module system)
   (cc-bir-to-bmir:reduce-module-instructions module)

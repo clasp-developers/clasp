@@ -293,3 +293,14 @@
       (third (second (macroexpand-1 '(formatter "~
 "))))
       ((block nil)))
+
+;;; Problem caused by incorrect vaslist optimization: These can result in
+;;; junk data or segfaults.
+
+(test vaslist-opt-1
+      (restart-case (invoke-restart 'bar 1 2 3) (bar (&rest args) (values-list args)))
+      (1 2 3))
+
+(test vaslist-opt-2
+      (multiple-value-call (lambda (&rest args) (values-list args)) (values-list '(1 2 3)))
+      (1 2 3))
