@@ -566,9 +566,15 @@ public:
 
     BadgeStampWtagMtag() : StampWtagMtag(), _header_badge(NoBadge) {};
     BadgeStampWtagMtag(core::Cons_O *cons) : StampWtagMtag(cons_mtag), _header_badge((badge_t)((uintptr_t)cons & 0xFFFFFFFF)){};
-//    BadgeStampWtagMtag(StampWtagMtag all, badge_t badge) : StampWtagMtag(all), _header_badge(badge){};
+    BadgeStampWtagMtag(const BadgeStampWtagMtag& other);
     BadgeStampWtagMtag(StampWtagMtag all) : StampWtagMtag(all), _header_badge(NoBadge){};
-    BadgeStampWtagMtag(StampWtagMtag all, badge_t badge) : StampWtagMtag(all), _header_badge(badge){};
+    BadgeStampWtagMtag(StampWtagMtag all, badge_t badge) : StampWtagMtag(all), _header_badge(badge){
+#ifdef DEBUG_BADGE_SSL
+      if (badge>1) {
+        printf("%s:%d:%s this = %p badge = %u   _header_badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, badge, this->_header_badge.load() );
+      }
+#endif
+    };
     BadgeStampWtagMtag(WeakKinds kind) : StampWtagMtag(kind), _header_badge((uintptr_t)this & 0xFFFFFFFF){};
   };
 
@@ -602,7 +608,20 @@ public:
   // The header contains the stamp_wtag_mtag value.
   BadgeStampWtagMtag _badge_stamp_wtag_mtag; // This MUST be the first word of the guard.
 public:
+  BaseHeader_s(const StampWtagMtag &k,bool dummy) : _badge_stamp_wtag_mtag(k) {
+#ifdef DEBUG_BADGE_SSL
+    if (dummy)
+      printf("%s:%d:%s    this = %p   badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, this->_badge_stamp_wtag_mtag._header_badge.load());
+#endif
+  }
+  BaseHeader_s(const BadgeStampWtagMtag &k,bool dummy) : _badge_stamp_wtag_mtag(k) {
+#ifdef DEBUG_BADGE_SSL
+    if (dummy)
+      printf("%s:%d:%s    this = %p   badge = %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, this->_badge_stamp_wtag_mtag._header_badge.load());
+#endif
+  }
   BaseHeader_s(const StampWtagMtag &k) : _badge_stamp_wtag_mtag(k) {}
+  BaseHeader_s(const BaseHeader_s& baseHeader);
 public:
   size_t mtag() const { return (size_t)(this->_badge_stamp_wtag_mtag._value & mtag_mask); };
   constexpr size_t tail_size() const { return 0; };
@@ -728,6 +747,16 @@ public:
 #if !defined(DEBUG_GUARD)
   Header_s(const BadgeStampWtagMtag &k) : BaseHeader_s(k){};
   Header_s(Header_s *headerptr) : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag){};
+  Header_s(Header_s *headerptr,bool dummy) : BaseHeader_s(headerptr->_badge_stamp_wtag_mtag,dummy){
+#ifdef DEBUG_BADGE_SSL
+    if(dummy)
+      printf("%s:%d:%s    this = %p   headerptr badge = %u   badge = %u\n",
+             __FILE__, __LINE__, __FUNCTION__,
+             (void*)this,
+             headerptr->_badge_stamp_wtag_mtag._header_badge.load(),
+             this->_badge_stamp_wtag_mtag._header_badge.load());
+#endif
+  };
 #else
 #define GUARD1 0xFEEAFEEBDEADBEE0
 #define GUARD2 0xC0FFEEE0

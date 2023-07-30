@@ -552,6 +552,16 @@ size_t random_tail_size() {
   return ts;
 }
 
+
+BaseHeader_s::BadgeStampWtagMtag::BadgeStampWtagMtag(const BadgeStampWtagMtag& other) : StampWtagMtag((StampWtagMtag&)other) {
+  this->_header_badge.store(other._header_badge.load());
+//  printf("%s:%d:%s my copy ctor\n", __FILE__, __LINE__, __FUNCTION__ );
+}
+
+BaseHeader_s::BaseHeader_s(const BaseHeader_s& other) : _badge_stamp_wtag_mtag(other._badge_stamp_wtag_mtag) {
+  printf("%s:%d:%s my copy ctor\n", __FILE__, __LINE__, __FUNCTION__ );
+}
+
 void BaseHeader_s::signal_invalid_object(const BaseHeader_s* header, const char* msg)
 {
   printf("%s:%d  Invalid object with header @ %p message: %s\n", __FILE__, __LINE__, (void*)header, msg);

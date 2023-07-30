@@ -1289,7 +1289,17 @@ struct ISLWeakHeader_s : public ISLHeader_s {
 
 struct ISLGeneralHeader_s : public ISLHeader_s {
   gctools::Header_s _Header;
-  ISLGeneralHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s* head) : ISLHeader_s(k,sz), _Header(head) {};
+  ISLGeneralHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s* head, bool verbose) : ISLHeader_s(k,sz), _Header(head,verbose) {
+#ifdef DEBUG_BADGE_SSL
+    if (verbose) {
+      printf("%s:%d:%s            &islheader = %p  head badge = %u    with badge: %u\n",
+             __FILE__, __LINE__, __FUNCTION__,
+             (void*)this,
+             head->_badge_stamp_wtag_mtag._header_badge.load(),
+             this->header()->_badge_stamp_wtag_mtag._header_badge.load() );
+    }
+#endif
+  };
   gctools::Header_s* header() const { return (gctools::Header_s*)((char*)this + offsetof(ISLGeneralHeader_s,_Header));}
 };
 
@@ -1588,7 +1598,7 @@ struct copy_objects_t : public walker_callback_t {
         gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart,false,generalSize);
         if (generalSize==0) ISL_ERROR(fmt::format("A zero size general at {} was encountered", (void*)clientStart ));
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)clientStart;
-        ISLGeneralHeader_s islheader( General, code->frontSize()+code->literalsSize(), (gctools::Header_s*)header );
+        ISLGeneralHeader_s islheader( General, code->frontSize()+code->literalsSize(), (gctools::Header_s*)header, false );
         char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLGeneralHeader_s)); 
         char* new_client = this->_objects->write_buffer((char*)clientStart, code->frontSize() );
         llvmo::ObjectFile_O* newObjectFile = (llvmo::ObjectFile_O*)new_client;
@@ -1639,9 +1649,21 @@ struct copy_objects_t : public walker_callback_t {
         gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart,false,generalSize);
         if (generalSize==0) ISL_ERROR(fmt::format("A zero size general at {} was encountered", (void*)clientStart ));
         gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
-        ISLGeneralHeader_s islheader( General, clientEnd-clientStart, (gctools::Header_s*)header );
+#ifdef DEBUG_BADGE_SSL
+        if (header->_badge_stamp_wtag_mtag._header_badge.load()>1) {
+          printf("%s:%d:%s =====  create snapshot object %p  with badge: %u\n", __FILE__, __LINE__, __FUNCTION__, header, header->_badge_stamp_wtag_mtag._header_badge.load() );
+        }
+#endif
+        ISLGeneralHeader_s islheader( General, clientEnd-clientStart, (gctools::Header_s*)header,
+                                      header->_badge_stamp_wtag_mtag._header_badge.load()>1 );
         char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLGeneralHeader_s)); 
         char* new_client = this->_objects->write_buffer((char*)clientStart, clientEnd-clientStart);
+#ifdef DEBUG_BADGE_SSL
+        if (header->_badge_stamp_wtag_mtag._header_badge.load()>1) {
+          printf("%s:%d:%s            &islheader = %p  with badge: %u\n", __FILE__, __LINE__, __FUNCTION__, &islheader, islheader.header()->_badge_stamp_wtag_mtag._header_badge.load() );
+          printf("%s:%d:%s        written islh = %p  with badge: %u\n", __FILE__, __LINE__, __FUNCTION__, islh, ((ISLGeneralHeader_s*)islh)->_Header._badge_stamp_wtag_mtag._header_badge.load() );
+        }
+#endif
         this->_progress.update((uintptr_t)islh);
         DBG_SAVECOPY("   copied general header %p to %p \n" , header , (void*)islh );
         set_forwarding_pointer(header, new_client, this->_info ); // This is a client pointer
@@ -3467,7 +3489,11 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
                      );
               countNullObjects++;
             } else {
-//              printf("%s:%d:%s Copy/allocate snapshot object %p\n", __FILE__, __LINE__, __FUNCTION__, init._headStart );
+#if 0
+              if (init._headStart->_badge_stamp_wtag_mtag._header_badge.load()>1) {
+                printf("%s:%d:%s Copy/allocate snapshot object %p  with badge: %u\n", __FILE__, __LINE__, __FUNCTION__, init._headStart, init._headStart->_badge_stamp_wtag_mtag._header_badge.load() );
+              }
+#endif
               core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
               set_forwarding_pointer(source_header,((char*)fwd), &islInfo);
