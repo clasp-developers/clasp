@@ -349,6 +349,8 @@ namespace gctools {
       DO_DRAG_GENERAL_ALLOCATION();
 #if defined(USE_BOEHM)
         Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,sizeWithHeader);
+        // transfer the badge
+        base->_badge_stamp_wtag_mtag._header_badge.store(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag._header_badge.load());
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
@@ -373,6 +375,7 @@ namespace gctools {
         return sp;
 #elif defined(USE_MMTK)
         Header_s* base = do_mmtk_general_allocation(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag,sizeWithHeader);
+        base->_badge_stamp_wtag_mtag._header_badge.store(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag._header_badge.load());
 # ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
