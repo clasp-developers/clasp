@@ -35,6 +35,7 @@ THE SOFTWARE.
 
 
 #if 0
+#define DEBUG_BADGE_SSL 1
 //// DEBUG_RUNTIME defined and type errors print more info
 //#define DEBUG_RUNTIME 1
 //#define DEBUG_OBJECT_FILES 1
@@ -43,7 +44,7 @@ THE SOFTWARE.
 //#define DEBUG_EVALUATE 1
 //#define DEBUG_DTORS 1
 //#define DEBUG_DYN_ENV_STACK 1
-#define DEBUG_DTREE_INTERPRETER
+//#define DEBUG_DTREE_INTERPRETER
 //#define DEBUG_VIRTUAL_MACHINE 1
 //#define DEBUG_DRAG_CXX_CALLS 1 // Slows down all calls in CXX wrappers - study impact
 //#define DEBUG_DRAG_NATIVE_CALLS 1

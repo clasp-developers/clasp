@@ -56,6 +56,7 @@ bool global_debugSnapshot = false;
 namespace snapshotSaveLoad {
 
 bool global_InSnapshotLoad = false;
+size_t global_badge_count = 0;
 
 struct MaybeTimeStartup {
   std::chrono::time_point<std::chrono::steady_clock> start;
@@ -1651,6 +1652,7 @@ struct copy_objects_t : public walker_callback_t {
         gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
 #ifdef DEBUG_BADGE_SSL
         if (header->_badge_stamp_wtag_mtag._header_badge.load()>1) {
+          global_badge_count++;
           printf("%s:%d:%s =====  create snapshot object %p  with badge: %u\n", __FILE__, __LINE__, __FUNCTION__, header, header->_badge_stamp_wtag_mtag._header_badge.load() );
         }
 #endif
@@ -2255,6 +2257,7 @@ CL_DEFUN size_t gctools__memory_test(core::T_sp filename)
 
 /* This is not allowed to do any allocations. */
 void* snapshot_save_impl(void* data) {
+  global_badge_count = 0;
   core::SaveLispAndDie* snapshot_data = (core::SaveLispAndDie*)data;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
 
@@ -2631,23 +2634,26 @@ void* snapshot_save_impl(void* data) {
     while ( (c = getchar()) != '\n' && c != EOF ) { };
   }
 #endif
-  exit(0);
 
+#ifdef DEBUG_BADGE_SSL
+  printf("%s:%d:%s global_badge_count = %lu\n", __FILE__, __LINE__, __FUNCTION__, global_badge_count );
+#endif
 #ifdef USE_BOEHM
   printf("%s:%d:%s Not using GC_start_world_external();\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
-  return NULL;
+  exit(0);
 }
 
   
 void snapshot_save(core::SaveLispAndDie& data) {
 
-
+#ifdef DEBUG_BADGE_SSL
   printf("%s:%d:%s snapshot_save dumping class hash-table\n", __FILE__, __LINE__, __FUNCTION__ );
   core::HashTable_sp classNames = _lisp->_Roots._ClassTable;
   printf("%s\n", classNames->hash_table_dump().c_str());
   printf("%s:%d:%s done dumping class hash-table\n", __FILE__, __LINE__, __FUNCTION__ );
-
+#endif
+  
   //
   // For real save-lisp-and-die do the following (a simple 19 step plan)
   //
@@ -3494,9 +3500,12 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
                      );
               countNullObjects++;
             } else {
-#if 0
+#ifdef DEBUG_BADGE_SSL
               if (init._headStart->_badge_stamp_wtag_mtag._header_badge.load()>1) {
-                printf("%s:%d:%s Copy/allocate snapshot object %p  with badge: %u\n", __FILE__, __LINE__, __FUNCTION__, init._headStart, init._headStart->_badge_stamp_wtag_mtag._header_badge.load() );
+                global_badge_count++;
+                printf("%s:%d:%s global_badge_count = %lu --- copy/allocate snapshot object _headStart %p with badge: %u\n",
+                       __FILE__, __LINE__, __FUNCTION__, global_badge_count,
+                       init._headStart, init._headStart->_badge_stamp_wtag_mtag._header_badge.load() );
               }
 #endif
               core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
@@ -3824,6 +3833,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
       }
     }
   }
+#ifdef DEBUG_BADGE_SSL
   printf("%s:%d:%s Finished snapshot_load checking room\n", __FILE__, __LINE__, __FUNCTION__ );
   gctools::cl__room(kw::_sym_test);
   printf("%s:%d:%s Finished snapshot_load dumping _lisp->_Roots._ClassTable\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -3832,7 +3842,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
   printf("%s:%d:%s Finished snapshot_load checking find_class('cl:restart)\n", __FILE__, __LINE__, __FUNCTION__ );
   core::T_sp theClass = cl__find_class(cl::_sym_restart, true, nil<core::T_O>());
   printf("%s:%d:%s theClass = %p\n", __FILE__, __LINE__, __FUNCTION__, theClass.raw_());
-
+#endif
 }
 
 
