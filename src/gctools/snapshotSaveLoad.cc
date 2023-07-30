@@ -2258,8 +2258,6 @@ void* snapshot_save_impl(void* data) {
   core::SaveLispAndDie* snapshot_data = (core::SaveLispAndDie*)data;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
 
-  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
-
   //
   // Gather all objects in memory
   //
@@ -2643,6 +2641,13 @@ void* snapshot_save_impl(void* data) {
 
   
 void snapshot_save(core::SaveLispAndDie& data) {
+
+
+  printf("%s:%d:%s snapshot_save dumping class hash-table\n", __FILE__, __LINE__, __FUNCTION__ );
+  core::HashTable_sp classNames = _lisp->_Roots._ClassTable;
+  printf("%s\n", classNames->hash_table_dump().c_str());
+  printf("%s:%d:%s done dumping class hash-table\n", __FILE__, __LINE__, __FUNCTION__ );
+
   //
   // For real save-lisp-and-die do the following (a simple 19 step plan)
   //
@@ -3819,6 +3824,15 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
       }
     }
   }
+  printf("%s:%d:%s Finished snapshot_load checking room\n", __FILE__, __LINE__, __FUNCTION__ );
+  gctools::cl__room(kw::_sym_test);
+  printf("%s:%d:%s Finished snapshot_load dumping _lisp->_Roots._ClassTable\n", __FILE__, __LINE__, __FUNCTION__ );
+  core::HashTable_sp classNames = _lisp->_Roots._ClassTable;
+  printf("%s\n", classNames->hash_table_dump().c_str());
+  printf("%s:%d:%s Finished snapshot_load checking find_class('cl:restart)\n", __FILE__, __LINE__, __FUNCTION__ );
+  core::T_sp theClass = cl__find_class(cl::_sym_restart, true, nil<core::T_O>());
+  printf("%s:%d:%s theClass = %p\n", __FILE__, __LINE__, __FUNCTION__, theClass.raw_());
+
 }
 
 

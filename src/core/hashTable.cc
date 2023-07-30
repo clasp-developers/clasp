@@ -99,7 +99,8 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
     KeyValuePair& entry = ht->_Table[it];
     if (!entry._Key.no_keyp()&&!entry._Key.deletedp()) {
       if (print) {
-        clasp_write_string(fmt::format("Entry[{}] at {}  key: {}  value: {}\n", it, (void*)&entry, _rep_(entry._Key), (entry._Value)));;
+        clasp_write_string(fmt::format("Entry[{}] at {}  key: {} badge: {}  value: {}\n", it, (void*)&entry, _rep_(entry._Key),
+                                       gctools::lisp_general_badge(gc::As_unsafe<General_sp>(entry._Key)), (entry._Value)));
       }
       keys->vectorPushExtend(entry._Key);
     }
