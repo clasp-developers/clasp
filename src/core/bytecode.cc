@@ -667,30 +667,32 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
     }
     case vm_mv_call: {
       DBG_VM("mv-call\n");
-      T_O* func = vm.pop(sp);
-      size_t nargs = multipleValues.getSize();
-      T_O* args[nargs];
-      multipleValues.saveToTemp(nargs, args);
+      T_sp tnargs((gctools::Tagged)vm.pop(sp));
+      size_t nargs = tnargs.unsafe_fixnum();
+      DBG_VM("  nargs = %zu\n", nargs);
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.drop(sp, 1); // pc
+      vm.drop(sp, nargs + 1 + 1); // 1 each for func, pc
       multipleValues.setN(res.raw_(),res.number_of_values());
       pc++;
       break;
     }
     case vm_mv_call_receive_one: {
       DBG_VM("mv-call-receive-one\n");
-      T_O* func = vm.pop(sp);
-      size_t nargs = multipleValues.getSize();
-      T_O* args[nargs];
-      multipleValues.saveToTemp(nargs, args);
+      T_sp tnargs((gctools::Tagged)vm.pop(sp));
+      size_t nargs = tnargs.unsafe_fixnum();
+      DBG_VM("  nargs = %zu\n", nargs);
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.drop(sp, 1); // pc
+      vm.drop(sp, nargs + 2);
       multipleValues.set1(res);
       vm.push(sp, res.raw_());
       pc++;
@@ -699,15 +701,15 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_mv_call_receive_fixed: {
       uint8_t nvals = *(++pc);
       DBG_VM("mv-call-receive-fixed %" PRIu8 "\n", nvals);
-      T_O* func = vm.pop(sp);
-      size_t nargs = multipleValues.getSize();
-      T_O* args[nargs];
-      multipleValues.saveToTemp(nargs, args);
+      T_sp tnargs((gctools::Tagged)vm.pop(sp));
+      size_t nargs = tnargs.unsafe_fixnum();
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs - 1);
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-      vm.drop(sp, 1); // pc
+      vm.drop(sp, nargs + 2);
       if (nvals != 0) {
         vm.push(sp, res.raw_()); // primary
         size_t svalues = multipleValues.getSize();
@@ -859,6 +861,14 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM1("pop\n");
       T_sp obj((gctools::Tagged)vm.pop(sp));
       multipleValues.set1(obj);
+      pc++;
+      break;
+    }
+    case vm_dup: {
+      DBG_VM1("dup\n");
+      T_O* obj = vm.pop(sp);
+      vm.push(sp, obj);
+      vm.push(sp, obj);
       pc++;
       break;
     }
@@ -1188,15 +1198,15 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(pc + 1);
     uint16_t nvals = low + (*(pc + 2) << 8);
     DBG_VM("long mv-call-receive-fixed %" PRIu16 "\n", nvals);
-    T_O* func = vm.pop(sp);
-    size_t nargs = multipleValues.getSize();
-    T_O* args[nargs];
-    multipleValues.saveToTemp(nargs, args);
+    T_sp tnargs((gctools::Tagged)vm.pop(sp));
+    size_t nargs = tnargs.unsafe_fixnum();
+    T_O* func = *(vm.stackref(sp, nargs));
+    T_O** args = vm.stackref(sp, nargs - 1);
     vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
-    vm.drop(sp, 1); // pc
+    vm.drop(sp, nargs + 2); // 2 = func + nargs
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();

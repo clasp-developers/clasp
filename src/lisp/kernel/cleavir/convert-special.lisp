@@ -176,34 +176,43 @@
          (ast:make-unreachable-ast :origin origin :policy policy))
    :origin origin :policy policy))
 
+(defun values-top-p (ctype system)
+  (and (null (ctype:values-required ctype system))
+       (loop for ct in (ctype:values-optional ctype system)
+             always (ctype:top-p ct system))
+       (ctype:top-p (ctype:values-rest ctype system) system)))
+
+(defun values-bottom-p (ctype system)
+  (some (lambda (ct) (ctype:bottom-p ct system))
+        (ctype:values-required ctype system)))
+
+(defun insert-type-checks-level (policy context)
+  (policy:policy-value
+   policy
+   (ecase context
+     ((:the :variable :setq) 'type-check-the)
+     ((:argument) 'type-check-ftype-arguments)
+     ((:return) 'type-check-ftype-return-values))))
+
 (defmethod cst-to-ast:type-wrap
     (ast ctype context origin env (system clasp-cleavir:clasp))
   (let ((sv-ctype-p (member context '(:variable :argument :setq))))
     (if (if sv-ctype-p
             (ctype:top-p ctype system)
-            (and (null (ctype:values-required ctype system))
-                 (loop for ct in (ctype:values-optional ctype system)
-                       always (ctype:top-p ct system))
-                 (ctype:top-p (ctype:values-rest ctype system) system)))
+            (values-top-p ctype system))
         ;; The type is too boring to note under any policy.
         ast
         ;; Do something.
         (let* ((policy (env:policy (env:optimize-info env)))
                (insert-type-checks
-                 (policy:policy-value
-                  policy
-                  (ecase context
-                    ((:the :variable :setq) 'type-check-the)
-                    ((:argument) 'type-check-ftype-arguments)
-                    ((:return) 'type-check-ftype-return-values))))
+                 (insert-type-checks-level policy context))
                (vctype (ecase context
                          ((:the :return) ctype)
                          ((:variable) (ctype:single-value ctype system))
                          ((:argument :setq) (ctype:coerce-to-values ctype system))))
                (botp (if sv-ctype-p
                          (ctype:bottom-p ctype system)
-                         (some (lambda (ct) (ctype:bottom-p ct system))
-                               (ctype:values-required ctype system)))))
+                         (values-bottom-p ctype system))))
           (ecase insert-type-checks
             ((0) ; trust without checking. Unsafe! 
              (if botp

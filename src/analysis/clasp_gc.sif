@@ -22,7 +22,8 @@
                           "llvmo::FunctionPass_O" "core::SimpleVector_byte4_t_O"
                           "llvmo::UndefValue_O" "llvmo::CallBase_O" "core::Path_O"
                           "mp::SharedMutex_O" "asttooling::DerivableASTFrontendAction"
-                          "core::InstanceCreator_O" "core::IOStreamStream_O" "core::Scope_O"
+                          "core::InstanceCreator_O" "core::IOStreamStream_O"
+                          "core::BytecodeDebugDecls_O" "core::Scope_O"
                           "core::BytecodeDebugLocation_O" "llvmo::InsertPoint_O"
                           "core::FunctionDescription_O" "core::ComplexVector_double_O"
                           "core::StrWNs_O" "core::UnknownDynEnv_O" "core::EchoStream_O"
@@ -79,8 +80,8 @@
                           "core::SimpleVector_byte16_t_O" "llvmo::ThreadSafeContext_O"
                           "llvmo::TargetMachine_O" "core::SimpleVector_byte64_t_O" "llvmo::Value_O"
                           "core::SimpleBaseString_O" "core::Test_O" "llvmo::Metadata_O"
-                          "core::MDArray_O" "core::LocalSimpleFun_O" "clbind::ClassRep_O"
-                          "llvmo::ConstantInt_O" "comp::SpecialVarInfo_O"
+                          "core::BytecodeDebugInfo_O" "core::MDArray_O" "core::LocalSimpleFun_O"
+                          "clbind::ClassRep_O" "llvmo::ConstantInt_O" "comp::SpecialVarInfo_O"
                           "core::SimpleMDArray_int16_t_O" "comp::ControlLabelFixup_O"
                           "llvmo::StructLayout_O" "core::SimpleMDArrayT_O"
                           "llvmo::PassManagerBase_O" "llvmo::LoadInst_O" "llvmo::ConstantStruct_O"
@@ -99,14 +100,15 @@
                           "llvmo::DIFile_O" "llvmo::LineTable_O" "llvmo::DataLayout_O"
                           "llvmo::BasicBlock_O" "llvmo::CodeBase_O" "core::SimpleMDArray_int8_t_O"
                           "llvmo::EngineBuilder_O" "core::ComplexVector_byte64_t_O"
-                          "llvmo::SectionedAddress_O" "core::MDArray_byte32_t_O"
-                          "core::Character_dummy_O" "comp::LexRefFixup_O" "llvmo::Constant_O"
-                          "llvmo::FunctionCallee_O" "llvmo::DIBasicType_O" "llvmo::DIBuilder_O"
-                          "core::NativeVector_int_O" "llvmo::APInt_O" "llvmo::APFloat_O"
-                          "core::SimpleMDArrayCharacter_O" "core::SimpleCharacterString_O"
-                          "core::Symbol_O" "core::Array_O" "core::MDArray_byte4_t_O"
-                          "llvmo::Argument_O" "core::Iterator_O" "llvmo::IRBuilderBase_O"
-                          "core::Null_O" "llvmo::TargetPassConfig_O" "core::RequiredArgument"
+                          "core::BytecodeDebugBlock_O" "llvmo::SectionedAddress_O"
+                          "core::MDArray_byte32_t_O" "core::Character_dummy_O"
+                          "comp::LexRefFixup_O" "llvmo::Constant_O" "llvmo::FunctionCallee_O"
+                          "llvmo::DIBasicType_O" "llvmo::DIBuilder_O" "core::NativeVector_int_O"
+                          "llvmo::APInt_O" "llvmo::APFloat_O" "core::SimpleMDArrayCharacter_O"
+                          "core::SimpleCharacterString_O" "core::Symbol_O" "core::Array_O"
+                          "core::MDArray_byte4_t_O" "llvmo::Argument_O" "core::Iterator_O"
+                          "llvmo::IRBuilderBase_O" "core::Null_O" "llvmo::TargetPassConfig_O"
+                          "core::RequiredArgument" "core::BytecodeDebugThe_O"
                           "core::SingleDispatchMethod_O" "comp::VarInfo_O" "core::CxxObject_O"
                           "llvmo::ReturnInst_O" "llvmo::FunctionType_O" "clbind::DummyCreator_O"
                           "core::MDArray_byte16_t_O" "llvmo::DIContext_O" "llvmo::JITDylib_O"
@@ -213,9 +215,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
              :offset-base-ctype "comp::Module_O" :layout-offset-field-names ("_literals")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
-             :offset-base-ctype "comp::Module_O" :layout-offset-field-names ("_debugInfo")}
 {class-kind :stamp-name "STAMPWTAG_llvmo__AttributeSet_O" :stamp-key "llvmo::AttributeSet_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -3442,6 +3441,9 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
              :offset-base-ctype "comp::Cfunction_O" :layout-offset-field-names ("_annotations")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::ComplexVector_T_O>"
+             :offset-base-ctype "comp::Cfunction_O" :layout-offset-field-names ("_debug_info")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::Cfunction_O" :layout-offset-field-names ("_nlocals")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
@@ -3497,9 +3499,50 @@
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "llvmo::StructLayout_O"
              :layout-offset-field-names ("_StructLayout")}
-{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugVars_O"
-            :stamp-key "core::BytecodeDebugVars_O" :parent-class "core::General_O"
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugInfo_O"
+            :stamp-key "core::BytecodeDebugInfo_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugInfo_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugInfo_O" :layout-offset-field-names ("_end")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugThe_O" :stamp-key "core::BytecodeDebugThe_O"
+            :parent-class "core::BytecodeDebugInfo_O" :lisp-class-base "core::BytecodeDebugInfo_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugThe_O" :layout-offset-field-names ("_type")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::BytecodeDebugThe_O"
+             :layout-offset-field-names ("_receiving")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugBlock_O"
+            :stamp-key "core::BytecodeDebugBlock_O" :parent-class "core::BytecodeDebugInfo_O"
+            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugBlock_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugBlock_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugBlock_O" :layout-offset-field-names ("_name")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "core::BytecodeDebugBlock_O"
+             :layout-offset-field-names ("_receiving")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugVars_O"
+            :stamp-key "core::BytecodeDebugVars_O" :parent-class "core::BytecodeDebugInfo_O"
+            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
             :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
@@ -3511,6 +3554,34 @@
              :offset-ctype "gctools::smart_ptr<core::List_V>"
              :offset-base-ctype "core::BytecodeDebugVars_O"
              :layout-offset-field-names ("_bindings")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugLocation_O"
+            :stamp-key "core::BytecodeDebugLocation_O" :parent-class "core::BytecodeDebugInfo_O"
+            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugLocation_O"
+             :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugLocation_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugLocation_O"
+             :layout-offset-field-names ("_location")}
+{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugDecls_O"
+            :stamp-key "core::BytecodeDebugDecls_O" :parent-class "core::BytecodeDebugInfo_O"
+            :lisp-class-base "core::BytecodeDebugInfo_O" :root-class "core::T_O" :stamp-wtag 3
+            :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_start")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_end")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::List_V>"
+             :offset-base-ctype "core::BytecodeDebugDecls_O" :layout-offset-field-names ("_decls")}
 {class-kind :stamp-name "STAMPWTAG_clasp_ffi__ForeignTypeSpec_O"
             :stamp-key "clasp_ffi::ForeignTypeSpec_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
@@ -4616,8 +4687,8 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Lexenv_O"
              :layout-offset-field-names ("_funs")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::Lexenv_O"
-             :layout-offset-field-names ("_notinlines")}
+             :offset-ctype "gctools::smart_ptr<core::List_V>" :offset-base-ctype "comp::Lexenv_O"
+             :layout-offset-field-names ("_decls")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::Lexenv_O" :layout-offset-field-names ("frame_end")}
 {class-kind :stamp-name "STAMPWTAG_core__HashTableBase_O" :stamp-key "core::HashTableBase_O"
@@ -4802,21 +4873,6 @@
 {class-kind :stamp-name "STAMPWTAG_llvmo__InsertPoint_O" :stamp-key "llvmo::InsertPoint_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
-{class-kind :stamp-name "STAMPWTAG_core__BytecodeDebugLocation_O"
-            :stamp-key "core::BytecodeDebugLocation_O" :parent-class "core::General_O"
-            :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3
-            :definition-data "IS_POLYMORPHIC"}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugLocation_O"
-             :layout-offset-field-names ("_start")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugLocation_O" :layout-offset-field-names ("_end")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>"
-             :offset-base-ctype "core::BytecodeDebugLocation_O"
-             :layout-offset-field-names ("_location")}
 {class-kind :stamp-name "STAMPWTAG_core__Scope_O" :stamp-key "core::Scope_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

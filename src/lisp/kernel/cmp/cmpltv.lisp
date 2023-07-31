@@ -232,16 +232,48 @@
 #+clasp
 (defclass module-debug-attr (attribute)
   ((%name :initform (ensure-constant "clasp:module-debug-info"))
-   (%module :initarg :module :reader module :type creator)
-   (%cfunctions :initarg :cfunctions :reader cfunctions :type sequence)
-   (%vars :initarg :vars :reader vars :type sequence)))
+   (%module :initarg :module :reader module)
+   (%infos :initarg :infos :reader infos :type sequence)))
 
 #+clasp
-(defclass module-debug-locations-attr (attribute)
-  ((%name :initform (ensure-constant "clasp:module-debug-locations"))
-   (%module :initarg :module :reader module :type creator)
-   (%locations :initarg :locations :reader locations :type sequence)))
+(defclass debug-info-function ()
+  ((%function :initarg :function :reader di-function :type creator)))
 
+#+clasp
+(defclass debug-info ()
+  ((%start :initarg :start :reader di-start :type (unsigned-byte 32))
+   (%end :initarg :end :reader di-end :type (unsigned-byte 32))))
+
+#+clasp
+(defclass debug-info-vars (debug-info)
+  ((%vars :initarg :vars :reader vars :type list)))
+
+#+clasp
+(defclass debug-info-location (debug-info)
+  ((%pathname :initarg :pathname :reader di-pathname :type creator)
+   (%lineno :initarg :lineno :reader lineno :type (unsigned-byte 64))
+   (%column :initarg :column :reader column :type (unsigned-byte 64))
+   (%filepos :initarg :filepos :reader filepos :type (unsigned-byte 64))))
+
+#+clasp
+(defclass debug-info-decls (debug-info)
+  ((%decls :initarg :decls :reader decls :type creator)))
+
+#+clasp
+(defclass debug-info-the (debug-info)
+  ((%type :initarg :type :reader di-type :type creator)
+   (%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
+
+#+clasp
+(defclass debug-info-block (debug-info)
+  ((%name :initarg :name :reader name :type creator)
+   (%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
+
+;;;
+
+;;; Return true iff the value is similar to the existing creator.
+(defgeneric similarp (creator value)
+  (:method (creator value) (declare (ignore creator value)) nil))
 ;;;
 
 ;;; Return true iff the value is similar to the existing creator.
@@ -271,11 +303,6 @@
 ;;; In reverse.
 (defvar *instructions*)
 
-;;; Bound by the client to a function that compiles a lambda expression
-;;; relative to an environment, and then returns some object that
-;;; cmpltv can treat as a constant.
-(defvar *compiler*)
-
 ;;; Stack of objects we are in the middle of computing creation forms for.
 ;;; This is used to detect circular dependencies.
 ;;; We only do this for MAKE-LOAD-FORM because we assume our own
@@ -283,10 +310,9 @@
 ;;; rather than the user's problem.
 (defvar *creating*)
 
-(defmacro with-constants ((&key (compiler '*compiler*)) &body body)
+(defmacro with-constants ((&key) &body body)
   `(let ((*instructions* nil) (*creating* nil)
-         (*coalesce* (make-hash-table))
-         (*compiler* ,compiler))
+         (*coalesce* (make-hash-table)))
      ,@body))
 
 (defun find-constant (value)
@@ -317,7 +343,8 @@
 ;;; have the effect of evaluating the form in a null lexical environment.
 (defun add-form (form &optional env)
   ;; PROGN so that (declare ...) expressions for example correctly cause errors.
-  (add-constant (funcall *compiler* `(lambda () (progn ,form)) env)))
+  (add-constant
+   (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) env)))
 
 (defmethod add-constant ((value cons))
   ;; We special case proper lists so as to avoid deep stack-blowing
@@ -697,7 +724,7 @@
 (defun write-magic (stream) (write-b32 +magic+ stream))
 
 (defparameter *major-version* 0)
-(defparameter *minor-version* 9)
+(defparameter *minor-version* 10)
 
 (defun write-version (stream)
   (write-b16 *major-version* stream)
@@ -1112,7 +1139,7 @@
 
 (defmethod encode ((inst bytefunction-creator) stream)
   ;; four bytes for the entry point, two for the nlocals and nclosed,
-  ;; then indices. TODO: Source info.
+  ;; then indices.
   (write-mnemonic 'make-bytecode-function stream)
   (write-index inst stream)
   (write-b32 (entry-point inst) stream)
@@ -1139,35 +1166,65 @@
    (%literals :initarg :literals :reader setf-literals-literals
               :type simple-vector)))
 
-(defun process-debug-vars (item)
-  (list (core:bytecode-debug-vars/start item)
-        (core:bytecode-debug-vars/end item)
-        (loop for (var . index) in (core:bytecode-debug-vars/bindings item)
-              for cvar = (ensure-constant var)
-              if (consp index)
-                collect (list cvar t (car index))
-              else
-                collect (list cvar nil index))))
+(defgeneric process-debug-info (debug-info))
 
-(defun process-debug-location (item)
+(defmethod process-debug-info ((info cmp:cfunction))
+  (make-instance 'debug-info-function
+    :function (ensure-constant info)))
+
+(defmethod process-debug-info ((item core:bytecode-debug-vars))
+  (make-instance 'debug-info-vars
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :vars (loop for (var . index)
+                  in (core:bytecode-debug-vars/bindings item)
+                for cvar = (ensure-constant var)
+                if (consp index)
+                  collect (list cvar t (car index))
+                else
+                  collect (list cvar nil index))))
+
+(defmethod process-debug-info ((item core:bytecode-debug-location))
   (let ((spi (core:bytecode-debug-location/location item)))
-    (list (core:bytecode-debug-location/start item)
-          (core:bytecode-debug-location/end item)
-          (ensure-constant
-           (core:file-scope-pathname
-            (core:file-scope
-             (core:source-pos-info-file-handle spi))))
-          (core:source-pos-info-lineno spi)
-          (core:source-pos-info-column spi)
-          (core:source-pos-info-filepos spi))))
+    (make-instance 'debug-info-location
+      :start (core:bytecode-debug-info/start item)
+      :end (core:bytecode-debug-info/end item)
+      :pathname (ensure-constant
+                 (core:file-scope-pathname
+                  (core:file-scope
+                   (core:source-pos-info-file-handle spi))))
+      :lineno (core:source-pos-info-lineno spi)
+      :column (core:source-pos-info-column spi)
+      :filepos (core:source-pos-info-filepos spi))))
+
+(defmethod process-debug-info ((item core:bytecode-debug-decls))
+  (make-instance 'debug-info-decls
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :decls (ensure-constant (core:bytecode-debug-decls/decls item))))
+
+(defmethod process-debug-info ((item core:bytecode-debug-the))
+  (make-instance 'debug-info-the
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :type (ensure-constant (core:bytecode-debug-the/type item))
+    :receiving (core:bytecode-debug-the/receiving item)))
+
+(defmethod process-debug-info ((item core:bytecode-debug-block))
+  (make-instance 'debug-info-block
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :name (ensure-constant (core:bytecode-debug-block/name item))
+    :receiving (core:bytecode-debug-block/receiving item)))
 
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
+  (cmp:module/link value)
   (let ((mod
           (add-creator
            value
            (make-instance 'bytemodule-creator
-             :prototype value :lispcode (cmp:module/link value)))))
+             :prototype value :lispcode (cmp:module/create-bytecode value)))))
     ;; Modules can indirectly refer to themselves recursively through
     ;; cfunctions, so we need to 2stage it here.
     (add-instruction
@@ -1175,25 +1232,12 @@
        :module mod :literals (map 'simple-vector #'ensure-constant
                                   (cmp:module/literals value))))
     #+clasp ; debug info
-    (let ((info (cmp:module/debug-info value)))
+    (let ((info (cmp:module/create-debug-info value)))
       (when info
-        (multiple-value-bind (cfs vars locations)
-            (loop for item across info
-                  if (typep item 'cmp:cfunction)
-                    collect (ensure-constant item) into cfs
-                  else if (typep item 'core:bytecode-debug-vars)
-                         collect (process-debug-vars item) into vars
-                  else if (typep item 'core:bytecode-debug-location)
-                         collect (process-debug-location item)
-                           into locations
-                  finally (return (values cfs vars locations)))
-          (add-instruction
-           (make-instance 'module-debug-attr
-             :module mod :cfunctions cfs :vars vars))
-          (when locations
-            (add-instruction
-             (make-instance 'module-debug-locations-attr
-               :module mod :locations locations))))))
+        (add-instruction
+         (make-instance 'module-debug-attr
+           :module mod
+           :infos (map 'vector #'process-debug-info info)))))
     mod))
 
 (defmethod encode ((inst bytemodule-creator) stream)
@@ -1232,55 +1276,91 @@
   (write-b64 (column attr) stream)
   (write-b64 (filepos attr) stream))
 
-#+clasp
-(defmethod encode ((attr module-debug-attr) stream)
-  (let* ((cfunctions (cfunctions attr))
-         (ncfunctions (length cfunctions))
-         (vars (vars attr)))
-    ;; Write the length.
-    (write-b32 (+ *index-bytes* 2 (* *index-bytes* ncfunctions)
-                  4 (loop for bv in vars
-                          sum (+ 4 4 2 (* (+ *index-bytes* 1 2)
-                                          (length (third bv))))))
-               stream)
-    ;; Module index
-    (write-index (module attr) stream)
-    ;; Number of cfunctions, followed by indices for those
-    (write-b16 (length cfunctions) stream)
-    (map nil (lambda (cf) (write-index cf stream)) cfunctions)
-    ;; Number of debug vars followed by debug vars.
-    (write-b32 (length vars) stream)
-    (map nil
-         (lambda (bv)
-           (write-b32 (first bv) stream) ; start
-           (write-b32 (second bv) stream) ; end
-           (write-b16 (length (third bv)) stream)
-           (loop for (var cellp index) in (third bv)
-                 do (write-index var stream)
-                    (write-byte (if cellp 1 0) stream)
-                    (write-b16 index stream)))
-         vars)))
+(defvar +debug-info-ops+
+  '((function 0)
+    (vars 1)
+    (location 2)
+    (decls 3)
+    (the 4)
+    (block 5)))
 
-#+clasp
-(defmethod encode ((attr module-debug-locations-attr) stream)
-  (let* ((locations (locations attr))
-         (nlocations (length locations)))
-    ;; Write the length.
-    (write-b32 (+ *index-bytes* 4
-                  (* nlocations (+ 4 4 *index-bytes* 8 8 8)))
-               stream)
-    ;; Module index
-    (write-index (module attr) stream)
-    ;; Number of locations
-    (write-b32 nlocations stream)
-    ;; Individual locations
-    (loop for (start end path line column fpos) in locations
-          do (write-b32 start stream)
-             (write-b32 end stream)
-             (write-index path stream)
-             (write-b64 line stream)
-             (write-b64 column stream)
-             (write-b64 fpos stream))))
+(defun debug-info-opcode (mnemonic)
+  (let ((inst (assoc mnemonic +debug-info-ops+)))
+    (if inst
+        (second inst)
+        (error "unknown debug info mnemonic ~a" mnemonic))))
+
+(defun write-debug-info-mnemonic (mnemonic stream)
+  (write-byte (debug-info-opcode mnemonic) stream))
+
+(defgeneric info-length (info))
+
+(defmethod encode ((info debug-info-function) stream)
+  (write-debug-info-mnemonic 'function stream)
+  (write-index (di-function info) stream))
+(defmethod info-length ((info debug-info-function))
+  (+ 1 *index-bytes*))
+
+(defmethod encode ((info debug-info-vars) stream)
+  (write-debug-info-mnemonic 'vars stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (let ((vars (vars info)))
+    (write-b16 (length vars) stream)
+    (loop for (name cellp index) in vars
+          do (write-index name stream)
+             (write-byte (if cellp 1 0) stream)
+             (write-b16 index stream))))
+(defmethod info-length ((info debug-info-vars))
+  (+ 1 4 4 2 (* (length (vars info)) (+ *index-bytes* 1 2))))
+
+(defmethod encode ((info debug-info-location) stream)
+  (write-debug-info-mnemonic 'location stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-index (di-pathname info) stream)
+  (write-b64 (lineno info) stream)
+  (write-b64 (column info) stream)
+  (write-b64 (filepos info) stream))
+(defmethod info-length ((info debug-info-location))
+  (+ 1 4 4 *index-bytes* 8 8 8))
+
+(defmethod encode ((info debug-info-decls) stream)
+  (write-debug-info-mnemonic 'decls stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-index (decls info) stream))
+(defmethod info-length ((info debug-info-decls))
+  (+ 1 4 4 *index-bytes*))
+
+(defmethod encode ((info debug-info-the) stream)
+  (write-debug-info-mnemonic 'the stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-index (di-type info) stream)
+  (write-b32 (di-receiving info) stream))
+(defmethod info-length ((info debug-info-the))
+  (+ 1 4 4 *index-bytes* 4))
+
+(defmethod encode ((info debug-info-block) stream)
+  (write-debug-info-mnemonic 'block stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-index (name info) stream)
+  (write-b32 (di-receiving info) stream))
+(defmethod info-length ((info debug-info-block))
+  (+ 1 4 4 *index-bytes* 4))
+
+(defmethod encode ((attr module-debug-attr) stream)
+  ;; Write the length in bytes.
+  (write-b32 (reduce #'+ (infos attr) :key #'info-length) stream)
+  ;; Module index
+  (write-index (module attr) stream)
+  (let ((infos (infos attr)))
+    ;; Number of infos.
+    (write-b32 (length infos) stream)
+    ;; The infos
+    (map nil (lambda (info) (encode info stream)) infos)))
 
 (defmethod encode ((init init-object-array) stream)
   (write-mnemonic 'init-object-array stream)
@@ -1345,7 +1425,7 @@
            (cmp:lexenv/vars env)
            (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
            (append macros (cmp:lexenv/funs env))
-           (cmp:lexenv/notinlines env) (cmp:lexenv/frame-end env)))))
+           (cmp:lexenv/decls env) (cmp:lexenv/frame-end env)))))
 
 (defun bytecode-compile-toplevel-symbol-macrolet (bindings body env)
   (let ((smacros nil) (env (or env (cmp:make-null-lexical-environment))))
@@ -1360,11 +1440,14 @@
      body (cmp:lexenv/make
            (append (nreverse smacros) (cmp:lexenv/vars env))
            (cmp:lexenv/tags env) (cmp:lexenv/blocks env)
-           (cmp:lexenv/funs env) (cmp:lexenv/notinlines env)
+           (cmp:lexenv/funs env) (cmp:lexenv/decls env)
            (cmp:lexenv/frame-end env)))))
 
 (defun bytecode-compile-toplevel (form &optional (env (cmp:make-null-lexical-environment)))
-  (let ((form (macroexpand form env)))
+  (let ((core:*current-source-pos-info*
+          (or (gethash form cmp:*source-locations*)
+              core:*current-source-pos-info*))
+        (form (macroexpand form env)))
     (if (consp form)
         (case (car form)
           ((progn) (bytecode-compile-toplevel-progn (cdr form) env))
@@ -1384,22 +1467,6 @@
             (funcall (cmp:bytecompile `(lambda () (progn ,form)) env)))
           (bytecode-compile-file-form form env)))))
 
-(defun compute-source-locations (cst)
-  (let ((table (make-hash-table :test #'eq)))
-    (labels ((aux (cst)
-               (etypecase cst
-                 (cst:atom-cst)
-                 (cst:cons-cst
-                  (let ((raw (cst:raw cst)))
-                    (unless (nth-value 1 (gethash raw table))
-                      ;; the SOURCE is a cons (start . end), but we
-                      ;; only care about the start.
-                      (setf (gethash raw table) (car (cst:source cst)))
-                      (aux (cst:first cst))
-                      (aux (cst:rest cst))))))))
-      (aux cst))
-    table))
-
 ;; input is a character stream.
 (defun bytecode-compile-stream (input output-path
                                 &key (environment
@@ -1410,7 +1477,7 @@
                             :direction :output
                             :if-does-not-exist :create
                             :element-type '(unsigned-byte 8))
-      (with-constants (:compiler #'bytecode-cf-compile-lexpr)
+      (with-constants ()
         ;; Read and compile the forms.
         (loop with eof = (gensym "EOF")
               with *compile-time-too* = nil

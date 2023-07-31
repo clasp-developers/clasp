@@ -45,8 +45,8 @@
     (dbgprint "Magic number matches: ~x" magic)))
 
 ;; Bounds for major and minor version understood by this loader.
-(defparameter *min-version* '(0 9))
-(defparameter *max-version* '(0 9))
+(defparameter *min-version* '(0 10))
+(defparameter *max-version* '(0 10))
 
 (defun loadable-version-p (major minor)
   (and
@@ -468,49 +468,55 @@
 
 #+clasp
 (defmethod %load-attribute ((mnemonic (eql 'module-debug-info)) ncreator stream)
-  (let ((nbytes (read-ub32 stream))
-        (mod (read-creator stream))
-        (ncfunctions (read-ub16 stream)))
-    (dbgprint " (module-debug-info ~s ~d ~s ~d)"
-              ncreator nbytes mod ncfunctions)
-    (let ((cfunctions (loop repeat ncfunctions
-                            collect (read-creator stream)))
-          (vars (loop repeat (read-ub32 stream)
-                      collect (list (read-ub32 stream)
-                                    (read-ub32 stream)
-                                    (loop repeat (read-ub16 stream)
-                                          collect (list (read-creator stream)
-                                                        (ecase (read-byte stream)
-                                                          (0 nil)
-                                                          (1 t))
-                                                        (read-ub16 stream)))))))
-      (make-instance 'module-debug-attr
-        :name ncreator :module mod :cfunctions cfunctions
-        :vars vars))))
+  (let* ((nbytes (read-ub32 stream))
+         (mod (read-creator stream))
+         (ninfos (read-ub32 stream))
+         (infos (make-array ninfos)))
+    (loop for i below ninfos
+          do (setf (aref infos i) (load-debug-info stream)))))
 
-#+clasp
-(defmethod %load-attribute ((mnemonic (eql 'module-debug-locations))
-                            ncreator stream)
-  (let ((nbytes (read-ub32 stream))
-        (mod (read-creator stream))
-        (nlocs (read-ub32 stream)))
-    (dbgprint " (module-debug-locations ~s ~d ~s ~d)"
-              ncreator nbytes mod nclocs)
-    (make-instance 'module-debug-locations-attr
-      :name ncreator :module mod
-      :locations (loop repeat nlocs
-                       collect (list (read-ub32 stream)
-                                     (read-ub32 stream)
-                                     (read-creator stream)
-                                     (read-ub64 stream)
-                                     (read-ub64 stream)
-                                     (read-ub64 stream))))))
+(defun read-di-mnemonic (stream)
+  (let* ((opcode (read-byte stream))
+         (info (find opcode +debug-info-ops+ :key #'second)))
+    (if info
+        (first info)
+        (error "BUG: Unknown debug info opcode ~x" opcode))))
+
+(defgeneric %load-debug-info (mnemonic stream))
+
+(defun load-debug-info (stream)
+  (%load-debug-info (read-di-mnemonic stream) stream))
+
+(defmethod %load-debug-info ((mnemonic (eql 'function)) stream)
+  (make-instance 'debug-info-function
+    :function (read-creator stream)))
+
+(defmethod %load-debug-info ((mnemonic (eql 'vars)) stream)
+  (make-instance 'debug-info-vars
+    :start (read-ub32 stream) :end (read-ub32 stream)
+    :vars (loop repeat (read-ub16 stream)
+                collect (list (read-ub32 stream)
+                              (read-ub32 stream)
+                              (loop repeat (read-ub16 stream)
+                                    collect (list (read-creator stream)
+                                                  (ecase (read-byte stream)
+                                                    (0 nil)
+                                                    (1 t))
+                                                  (read-ub16 stream)))))))
+
+(defmethod %load-debug-info ((mnemonic (eql 'location)) stream)
+  (make-instance 'debug-info-location
+    :start (read-ub32 stream)
+    :end (read-ub32 stream)
+    :pathname (read-creator stream)
+    :lineno (read-ub64 stream)
+    :column (read-ub64 stream)
+    :filepos (read-ub64 stream)))
 
 (defparameter *attr-map*
   (let ((ht (make-hash-table :test #'equal)))
     #+clasp (setf (gethash "clasp:source-pos-info" ht) 'source-pos-info)
     #+clasp (setf (gethash "clasp:module-debug-info" ht) 'module-debug-info)
-    #+clasp (setf (gethash "clasp:module-debug-locations" ht) 'module-debug-locations)
     ht))
 
 (defun load-attribute (stream)

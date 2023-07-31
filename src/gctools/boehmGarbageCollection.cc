@@ -458,6 +458,7 @@ void startupBoehm(gctools::ClaspInfo* claspInfo ) {
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
 #endif
+  thread_local_stateP->startUpVM();
   core::global_options = new core::CommandLineOptions(claspInfo->_argc, claspInfo->_argv);
  
 #ifndef SCRAPING

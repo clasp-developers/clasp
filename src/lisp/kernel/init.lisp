@@ -383,8 +383,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                  (multiple-value-call
                      (function (lambda (&optional (decl) (body) (doc) &rest rest)
                        (declare (ignore rest))
-                       (if decl (setq decl (list (cons 'declare decl))))
-                       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,(si::function-block-name name) ,@body))))
+                       (let ((func `#'(lambda ,lambda-list (declare (core:lambda-name ,name) ,@decl) ,@doc (block ,(si::function-block-name name) ,@body))))
                          ;;(core:fmt t "PRIMITIVE DEFUN defun --> {}%N" func )
                           `(progn (eval-when (:compile-toplevel)
                                     (cmp::register-global-function-def 'defun ',name))

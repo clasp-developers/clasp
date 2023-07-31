@@ -2120,7 +2120,11 @@ COMPILE-FILE will use the default *clasp-env*."
    :policy (ast:policy ast)))
 
 (defun ast->bir (ast system)
-  (cleavir-ast-to-bir:compile-toplevel ast system))
+  (let* ((bir (cleavir-ast-to-bir:compile-toplevel ast system))
+         (module (bir:module bir)))
+    (bir-transformations module system)
+    (bir:verify module)
+    bir))
 
 ;;; These variables can be bound to debug the bir transformations.
 ;;; T means they apply after every transformation. Or, you can bind
@@ -2176,35 +2180,41 @@ COMPILE-FILE will use the default *clasp-env*."
 (defun translate-ast (ast &key (abi *abi-x86-64*)
                                (linkage 'llvm-sys:internal-linkage)
                                (system *clasp-system*))
-  (let* ((bir (ast->bir ast system))
-         (module (bir:module bir)))
-    ;;(bir:verify module)
-    (bir-transformations module system)
-    (bir:verify module)
+  (let ((bir (ast->bir ast system)))
     (translate bir :abi abi :linkage linkage)))
 
-(defun bir-compile (form env pathname
-                    &key (linkage 'llvm-sys:internal-linkage) name)
-  (bir-compile-cst (cst:cst-from-expression form) env pathname
-                   :linkage linkage :name name))
+(defun bir-compile (form env)
+  (bir-compile-cst (cst:cst-from-expression form) env))
 
 (defun cleavir-compile (name &optional definition)
   (let ((cmp:*cleavir-compile-hook* #'bir-compile)
         (core:*use-cleavir-compiler* t))
     (compile name definition)))
 
-(defun bir-compile-cst (cst env pathname
-                        &key (linkage 'llvm-sys:internal-linkage) name)
-  (declare (ignore linkage name))
+(defun bir->function (bir &key (abi *abi-x86-64*)
+                            (linkage 'llvm-sys:internal-linkage))
+  (cmp::with-compiler-env ()
+    (let* ((module (cmp::create-run-time-module-for-compile)))
+      ;; Link the C++ intrinsics into the module
+      (cmp::with-module (:module module)
+        (cmp::cmp-log "Dumping module%N")
+        (cmp::cmp-log-dump-module module)
+        (let ((pathname (if *load-pathname*
+                            (namestring *load-pathname*)
+                            "repl-code")))
+          (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
+              (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+                (literal:with-rtv
+                    (translate bir :linkage linkage :abi abi)))
+            (declare (ignore constants-table))
+            (cmp:jit-add-module-return-function
+             cmp:*the-module* startup-shutdown-id ordered-raw-constants-list)))))))
+
+(defun bir-compile-cst (cst env)
   (let* ((cst-to-ast:*compiler* 'cl:compile)
-         (ast (cst->ast cst env)))
-    (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
-        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-          (literal:with-rtv (translate-ast ast)))
-      (declare (ignore constants-table))
-      ;;(llvm-sys:dump-module cmp:*the-module* *standard-output*)
-      (cmp:jit-add-module-return-function
-       cmp:*the-module* startup-shutdown-id ordered-raw-constants-list))))
+         (ast (cst->ast cst env))
+         (bir (ast->bir ast *clasp-system*)))
+    (bir->function bir)))
 
 (defun bir-compile-in-env (form &optional env)
   (bir-compile-cst-in-env (cst:cst-from-expression form) env))
@@ -2212,7 +2222,7 @@ COMPILE-FILE will use the default *clasp-env*."
 (defun bir-compile-cst-in-env (cst &optional env)
   (let ((cst-to-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
-    (cmp:compile-in-env cst env #'bir-compile-cst cmp:*default-compile-linkage*)))
+    (cmp:compile-in-env cst env #'bir-compile-cst)))
 
 (defun compile-form (form &optional (env *clasp-env*))
   (let* ((cst (cst:cst-from-expression form))

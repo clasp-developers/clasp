@@ -25,9 +25,6 @@
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
 THREAD_LOCAL core::ThreadLocalState* my_thread;
 
-namespace gctools {
-thread_pool<ThreadManager>* global_thread_pool;
-};
 namespace core {
 
 #ifdef DEBUG_VIRTUAL_MACHINE
@@ -159,8 +156,11 @@ VirtualMachine::VirtualMachine() :
     ,_unwind_counter(0)
     ,_throw_counter(0)
 #endif
-{
+{}
+
+void VirtualMachine::startup() {
   size_t stackSpace = VirtualMachine::MaxStackWords*sizeof(T_O*);
+  this->_stackBottom = (T_O**)GC_MALLOC_UNCOLLECTABLE(stackSpace);
   this->_stackTop = this->_stackBottom+VirtualMachine::MaxStackWords-1;
 //  printf("%s:%d:%s vm._stackTop = %p\n", __FILE__, __LINE__, __FUNCTION__, this->_stackTop );
   size_t pageSize = getpagesize();
@@ -203,6 +203,7 @@ VirtualMachine::~VirtualMachine() {
 #if 1
   this->disable_guards();
 #endif
+  GC_FREE(this->_stackBottom);
 }
 
 
@@ -240,11 +241,7 @@ pid_t ThreadLocalState::safe_fork()
 {
   // Wrap fork in code that turns guards off and on
   this->_VM.disable_guards();
-  // shut down llvm thread pool
-  gctools::global_thread_pool->~thread_pool();
   pid_t result = fork();
-  // start up llvm thread pool
-  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
   if (result==-1) {
     // error
     printf("%s:%d:%s fork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno );
@@ -425,6 +422,10 @@ void ThreadLocalState::popObjectFile() {
     return;
   }
   SIMPLE_ERROR("There were no more object files");
+}
+
+void ThreadLocalState::startUpVM() {
+  this->_VM.startup();
 }
 
 ThreadLocalState::~ThreadLocalState() {

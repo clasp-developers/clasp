@@ -259,18 +259,18 @@ public:
   T_sp _tags;
   T_sp _blocks;
   T_sp _funs;
-  T_sp _notinlines;
+  List_sp _decls;
   size_t frame_end;
 public:
-  Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns, T_sp nnotinlines,
+  Lexenv_O(T_sp nvars, T_sp ntags, T_sp nblocks, T_sp nfuns, List_sp ndecls,
            size_t nframe_end)
     : _vars(nvars), _tags(ntags), _blocks(nblocks), _funs(nfuns),
-      _notinlines(nnotinlines), frame_end(nframe_end) {};
+      _decls(ndecls), frame_end(nframe_end) {};
   CL_LISPIFY_NAME(lexenv/make)
   CL_DEF_CLASS_METHOD
   static Lexenv_sp make(T_sp vars, T_sp tags, T_sp blocks, T_sp funs,
-                        T_sp notinlines, size_t frame_end) {
-    return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, notinlines, frame_end);
+                        List_sp decls, size_t frame_end) {
+    return gctools::GC<Lexenv_O>::allocate<gctools::RuntimeStage>(vars, tags, blocks, funs, decls, frame_end);
   }
   static Lexenv_sp make_top_level() {
     return make(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),0);
@@ -279,7 +279,7 @@ public:
   CL_DEFMETHOD List_sp tags() const { return this->_tags; }
   CL_DEFMETHOD List_sp blocks() const { return this->_blocks; }
   CL_DEFMETHOD List_sp funs() const { return this->_funs; }
-  CL_DEFMETHOD List_sp notinlines() const { return this->_notinlines; }
+  CL_DEFMETHOD List_sp decls() const { return this->_decls; }
   CL_DEFMETHOD size_t frameEnd() const { return this->frame_end; }
 public:
   /* Bind each variable to a stack location, returning a new lexical
@@ -291,8 +291,8 @@ public:
   Lexenv_sp bind1var(Symbol_sp var, const Context context);
   // Add VARS as special in ENV.
   CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
-  // Add FUNCTION NAMES as notinline in ENV.
-  CL_DEFMETHOD Lexenv_sp add_notinlines(List_sp fnames);
+  // Add new declarations.
+  CL_DEFMETHOD Lexenv_sp add_decls(List_sp decls);
   /* Macrolet expanders need to be compiled in the local compilation environment,
    * so that e.g. their bodies can use macros defined in outer macrolets.
    * At the same time, they obviously do not have access to any runtime
@@ -710,17 +710,14 @@ class Module_O : public General_O {
 public:
   ComplexVector_T_sp _cfunctions;
   ComplexVector_T_sp _literals;
-  ComplexVector_T_sp _debugInfo;
 public:
   Module_O()
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
-      _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
-      _debugInfo(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0)))
+      _literals(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0)))
   {}
   Module_O(ComplexVector_T_sp literals)
     : _cfunctions(ComplexVector_T_O::make(1, nil<T_O>(), clasp_make_fixnum(0))),
-      _literals(literals),
-      _debugInfo(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0)))
+      _literals(literals)
   {}
   CL_LISPIFY_NAME(Module/make)
   CL_DEF_CLASS_METHOD
@@ -736,9 +733,6 @@ public:
   CL_DEFMETHOD ComplexVector_T_sp cfunctions() { return this->_cfunctions; }
   CL_LISPIFY_NAME(module/literals) // avoid defining cmp::literals
   CL_DEFMETHOD ComplexVector_T_sp literals() { return this->_literals; }
-  CL_LISPIFY_NAME(module/debugInfo)
-  CL_DEFMETHOD ComplexVector_T_sp debugInfo() { return this->_debugInfo; }
-  void push_debug_info(T_sp info);
 public:
   // Use the optimistic bytecode vector sizes to initialize the optimistic
   // cfunction position.
@@ -748,13 +742,16 @@ public:
   CL_DEFMETHOD void resolve_fixup_sizes();
   // The size of the module bytecode vector.
   CL_DEFMETHOD size_t bytecode_size();
-  // Fix up the debug info with resolved labels.
-  void resolve_debug_info();
+  // Fix up the debug infos with resolved labels.
+  void resolve_debug_infos();
+  // Finalize cfunction positions and fixup sizes.
+  CL_DEFMETHOD void link();
   // Create the bytecode module vector. We scan over the fixups in the
   // module and copy segments of bytecode between fixup positions.
+  // Can only be run after link.
   CL_DEFMETHOD SimpleVector_byte8_t_sp create_bytecode();
-  // Compute and return the final fixed-up bytecode.
-  CL_DEFMETHOD SimpleVector_byte8_t_sp link();
+  // Create the debug info vector. Can only be run after link.
+  CL_DEFMETHOD SimpleVector_sp create_debug_info();
   // Link, then create actual run-time function objects and a bytecode module.
   // Suitable for cl:compile.
   CL_DEFMETHOD void link_load(T_sp compile_info);
@@ -768,6 +765,8 @@ public:
   ComplexVector_byte8_t_sp _bytecode;
    // An ordered vector of annotations emitted in this cfunction.
   ComplexVector_T_sp _annotations;
+  // An ordered vector of debug infos emitted for this cfunction.
+  ComplexVector_T_sp _debug_info;
   size_t _nlocals;
   ComplexVector_T_sp _closed;
   Label_sp _entry_point;
@@ -795,6 +794,7 @@ public:
                                                      nil<T_O>(), false,
                                                      clasp_make_fixnum(0))),
       _annotations(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
+      _debug_info(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
       _closed(ComplexVector_T_O::make(0, nil<T_O>(), clasp_make_fixnum(0))),
       _entry_point(Label_O::make()),
      // not sure this has to be initialized, but just in case
@@ -813,6 +813,8 @@ public:
   CL_LISPIFY_NAME(cfunction/bytecode)
   CL_DEFMETHOD ComplexVector_byte8_t_sp bytecode() { return _bytecode; }
   CL_DEFMETHOD ComplexVector_T_sp annotations() { return _annotations; }
+  CL_LISPIFY_NAME(cfunction/debug-info)
+  CL_DEFMETHOD ComplexVector_T_sp debug_info() { return _debug_info; }
   CL_DEFMETHOD size_t nlocals() { return _nlocals; }
   CL_LISPIFY_NAME(Cfunction/setf-nlocals)
   CL_DEFMETHOD size_t setNlocals(size_t new_nlocals) {

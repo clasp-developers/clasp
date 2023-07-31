@@ -88,9 +88,9 @@ extern int global_debug_virtual_machine;
 struct VirtualMachine {
   // Stack size is kind of arbitrary, and really we should make it
   // grow and etc.
-  static constexpr size_t MaxStackWords = 32768;
+  static constexpr size_t MaxStackWords = 65536;
   bool           _Running;
-  core::T_O*     _stackBottom[MaxStackWords];
+  core::T_O**    _stackBottom;
   size_t         _stackBytes;
   core::T_O**    _stackTop;
   core::T_O**    _stackGuard;
@@ -112,7 +112,8 @@ struct VirtualMachine {
 
   void enable_guards();
   void disable_guards();
-  
+
+  void startup();
   inline void shutdown() {
     this->_Running = false;
   }
@@ -375,6 +376,8 @@ struct VirtualMachine {
     void pushObjectFile(llvmo::ObjectFile_sp of);
     void popObjectFile();
     inline DynamicBindingStack& bindings() { return this->_Bindings; };
+
+    void startUpVM();
     
     ~ThreadLocalState();
   };
@@ -396,16 +399,13 @@ struct ThreadManager {
 #ifdef USE_BOEHM
     GC_stack_base _StackBase;
 #endif
-    gctools::ThreadLocalStateLowLevel _StateLowLevel;
-    core::ThreadLocalState _State;
     // Worker must be allocated at the top of the worker thread function
     // It uses RAII to register/deregister our thread
-    Worker() : _StateLowLevel((void*)this), _State(false) {
+    Worker() {
 //      printf("%s:%d:%s Starting pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid() );
 #ifdef USE_BOEHM
       GC_get_stack_base(&this->_StackBase);
       GC_register_my_thread(&this->_StackBase);
-      my_thread_low_level = &this->_StateLowLevel;
 #endif
     };
     ~Worker() {

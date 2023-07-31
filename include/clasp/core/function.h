@@ -364,6 +364,9 @@ FORWARD(GlobalBytecodeSimpleFun);
    size_t entryPcN() const;
    CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/bytecode-size)
    CL_DEFMETHOD Fixnum bytecodeSize() const { return this->_BytecodeSize; }
+   // Used for bytecode debug info; see function.cc
+   T_sp start() const;
+   T_sp end() const;
  };
 
 
@@ -469,12 +472,10 @@ namespace core {
 
   class Closure_O final : public core::Function_O {
     LISP_CLASS(core,CorePkg,Closure_O,"Closure",core::Function_O);
-    typedef enum { bytecodeClosure, cclaspClosure } ClosureType;
   public:
     //! Slots must be the last field
     typedef core::T_sp value_type;
   public:
-    ClosureType   closureType;
     gctools::GCArray_moveable<value_type> _Slots;
   public:
     virtual const char *describe() const override { return "CompiledClosure"; };
@@ -486,20 +487,13 @@ namespace core {
 
     static Closure_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localSimpleFun, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column );
   public:
-    Closure_O(size_t capacity,
-                       SimpleFun_sp ep,
-                       ClosureType nclosureType)
+    Closure_O(size_t capacity, SimpleFun_sp ep)
         : Base(ep),
-          closureType(nclosureType),
           _Slots(capacity,unbound<T_O>(),true) {};
     virtual string __repr__() const override;
+    // FIXME: DELETE ME
     core::T_sp lambdaListHandler() const override {
-      switch (this->closureType) {
-      case bytecodeClosure:
-          return nil<T_O>();
-      case cclaspClosure:
-          return nil<T_O>();
-      };
+      return nil<T_O>();
     }
     bool compiledP() const override {
       return true;

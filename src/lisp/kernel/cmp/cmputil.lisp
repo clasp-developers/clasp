@@ -37,12 +37,7 @@
 (defvar *warnings-p*)
 (defvar *failure-p*)
 
-;;; Global OPTIMIZE declaration and derived policy.
-;;; This can be changed later by OPTIMIZE proclamations.
 ;;; The policy is computed later in cleavir/setup.lisp.
-(defvar *optimize*
-  '((compilation-speed 1)
-    (debug 1) (space 1) (speed 1) (safety 1)))
 (defvar *policy* ())
 
 ;;; (setq core::*echo-repl-read* t)

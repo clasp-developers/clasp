@@ -40,6 +40,8 @@
                (:file "type")
                (:file "transform")
                (:file "translate")
+               (:file "bytecode-tablegen")
+               (:file "compile-bytecode")
                (:file "inline-prep")
                (:file "proclamations")
                (:file "auto-compile")

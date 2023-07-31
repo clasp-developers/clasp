@@ -67,3 +67,10 @@
   (setq core:*eval-with-env-hook* 
         #+bytecode 'core:interpret-eval-with-env
         #-bytecode 'cclasp-eval))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Hook the bytecode-to-bir compiler into cl:compile.
+;;;
+
+(setq cmp:*btb-compile-hook* 'clasp-bytecode-to-bir:compile-hook)

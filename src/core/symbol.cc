@@ -284,8 +284,7 @@ Closure_sp make_unbound_symbol_function(Symbol_sp name)
   }
   Closure_sp closure = 
       gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,1,
-                                                                                       _lisp->_Roots._UnboundSymbolFunctionEntryPoint,
-                                                                                       Closure_O::cclaspClosure);
+                                                                                       _lisp->_Roots._UnboundSymbolFunctionEntryPoint);
   (*closure)[0] = name;
   return closure;
 }
@@ -300,8 +299,7 @@ Closure_sp make_unbound_setf_symbol_function(Symbol_sp name)
   }
   Closure_sp closure = 
       gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1,
-                                                                                       _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint,
-                                                                                       Closure_O::cclaspClosure);
+                                                                                       _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint);
   (*closure)[0] = name;
   return closure;
 }

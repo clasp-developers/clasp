@@ -679,8 +679,8 @@ namespace llvmo {
 /*! Call this after fork() to create a thread-pool for lljit
  */
 CL_DEFUN void llvm_sys__create_lljit_thread_pool() {
-  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
 #if 0
+  gctools::global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
   ClaspJIT_O* jit = &*gctools::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
   jit->_LLJIT->getExecutionSession().setDispatchTask([jit](std::unique_ptr<Task> T) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s pushing an LLJIT task\n", __FILE__, __LINE__, __FUNCTION__ ));

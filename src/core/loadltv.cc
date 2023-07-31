@@ -50,12 +50,19 @@
 #define LTV_OP_INIT_OBJECT_ARRAY 99
 #define LTV_OP_ATTR 255
 
+#define LTV_DI_OP_FUNCTION 0
+#define LTV_DI_OP_VARS 1
+#define LTV_DI_OP_LOCATION 2
+#define LTV_DI_OP_DECLS 3
+#define LTV_DI_OP_THE 4
+#define LTV_DI_OP_BLOCK 5
+
 namespace core {
 
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 9
+#define BC_VERSION_MINOR 10
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
@@ -636,54 +643,90 @@ struct loadltv {
     func->setSourcePosInfo(path, filepos, line, column);
   }
 
+  T_sp di_op_function() {
+    return get_ltv(read_index());
+  }
+
+  T_sp di_op_vars() {
+    Integer_sp start = Integer_O::create(read_u32()),
+      end = Integer_O::create(read_u32());
+    gctools::Vec0<T_sp> bindings;
+    for (uint16_t bcount = read_u16(); bcount > 0; --bcount) {
+      T_sp name = get_ltv(read_index());
+      uint8_t flag = read_u8();
+      Integer_sp framei = Integer_O::create(read_u16());
+      bindings.push_back((flag == 0) ? Cons_O::create(name, framei) : Cons_O::createList(name, framei));
+    }
+    return BytecodeDebugVars_O::make(start, end, Cons_O::createFromVec0(bindings));
+  }
+
+  T_sp di_op_location() {
+    Integer_sp start = Integer_O::create(read_u32());
+    Integer_sp end = Integer_O::create(read_u32());
+    T_sp path = get_ltv(read_index());
+    uint64_t line = read_u64(), column = read_u64(), filepos = read_u64();
+    T_mv sfi_mv = core__file_scope(path);
+    FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
+    SourcePosInfo_sp spi
+      = SourcePosInfo_O::create(sfi->fileHandle(),
+                                filepos, line, column);
+    return BytecodeDebugLocation_O::make(start, end, spi);
+  }
+
+  T_sp di_op_decls() {
+    Integer_sp start = Integer_O::create(read_u32()),
+      end = Integer_O::create(read_u32());
+    T_sp decls = get_ltv(read_index());
+    return BytecodeDebugDecls_O::make(start, end, decls);
+  }
+
+  T_sp di_op_the() {
+    Integer_sp start = Integer_O::create(read_u32()),
+      end = Integer_O::create(read_u32());
+    T_sp type = get_ltv(read_index());
+    int32_t receiving = read_s32();
+    return BytecodeDebugThe_O::make(start, end, type, receiving);
+  }
+  
+  T_sp di_op_block() {
+    Integer_sp start = Integer_O::create(read_u32()),
+      end = Integer_O::create(read_u32());
+    T_sp name = get_ltv(read_index());
+    int32_t receiving = read_s32();
+    return BytecodeDebugBlock_O::make(start, end, name, receiving);
+  }
+
   void attr_clasp_module_debug_info(uint32_t bytes) {
     BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
     gctools::Vec0<T_sp> vargs;
 
-    for (uint16_t fcount = read_u16(); fcount > 0; --fcount) {
-      vargs.push_back(get_ltv(read_index()));
-    }
-
-    for (uint32_t vcount = read_u32(); vcount > 0; --vcount) {
-      Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
-      gctools::Vec0<T_sp> bindings;
-      for (uint16_t bcount = read_u16(); bcount > 0; --bcount) {
-        T_sp name = get_ltv(read_index());
-        uint8_t flag = read_u8();
-        Integer_sp framei = Integer_O::create(read_u16());
-        bindings.push_back((flag == 0) ? Cons_O::create(name, framei) : Cons_O::createList(name, framei));
+    for (uint32_t icount = read_u32(); icount > 0; --icount) {
+      uint8_t op = read_u8();
+      switch (op) {
+      case LTV_DI_OP_FUNCTION:
+          vargs.push_back(di_op_function());
+          break;
+      case LTV_DI_OP_VARS:
+          vargs.push_back(di_op_vars());
+          break;
+      case LTV_DI_OP_LOCATION:
+          vargs.push_back(di_op_location());
+          break;
+      case LTV_DI_OP_DECLS:
+          vargs.push_back(di_op_decls());
+          break;
+      case LTV_DI_OP_THE:
+          vargs.push_back(di_op_the());
+          break;
+      case LTV_DI_OP_BLOCK:
+          vargs.push_back(di_op_block());
+          break;
+      default:
+          SIMPLE_ERROR("Unknown debug info opcode {:02x}", op);
       }
-      vargs.push_back(BytecodeDebugVars_O::make(start, end, Cons_O::createFromVec0(bindings)));
     }
+
     mod->setf_debugInfo(SimpleVector_O::make(vargs));
-  }
-
-  void attr_clasp_module_debug_locations(uint32_t bytes) {
-    BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
-    gctools::Vec0<T_sp> vargs;
-
-    for (uint32_t lcount = read_u32(); lcount > 0; --lcount) {
-      Integer_sp start = Integer_O::create(read_u32());
-      Integer_sp end = Integer_O::create(read_u32());
-      T_sp path = get_ltv(read_index());
-      uint64_t line = read_u64(), column = read_u64(), filepos = read_u64();
-      T_mv sfi_mv = core__file_scope(path);
-      FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
-      SourcePosInfo_sp spi
-        = SourcePosInfo_O::create(sfi->fileHandle(),
-                                  filepos, line, column);
-      vargs.push_back(BytecodeDebugLocation_O::make(start, end, spi));
-    }
-    // KLUDGE: This is cl:concatenate
-    SimpleVector_sp nvec = SimpleVector_O::make(vargs);
-    SimpleVector_sp ovec = mod->debugInfo();
-    size_t no = ovec->length();
-    SimpleVector_sp ndbg = SimpleVector_O::make(nvec->length() + no);
-    for (size_t i = 0; i < ovec->length(); ++i)
-      (*ndbg)[i] = (*ovec)[i];
-    for (size_t j = 0; j < nvec->length(); ++j)
-      (*ndbg)[j + no] = (*nvec)[j];
-    mod->setf_debugInfo(ndbg);
   }
 
   void op_attribute() {
@@ -693,8 +736,6 @@ struct loadltv {
       attr_clasp_source_pos_info(attrbytes);
     } else if (name == "clasp:module-debug-info") {
       attr_clasp_module_debug_info(attrbytes);
-    } else if (name == "clasp:module-debug-locations") {
-      attr_clasp_module_debug_locations(attrbytes);
     } else {
       for (size_t i = 0; i < attrbytes; ++i)
         read_u8();
