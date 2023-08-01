@@ -66,4 +66,5 @@
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;system-construction.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;extensions.lisp")
 (load-if-compiled-correctly "sys:src;lisp;regression-tests;run-program.lisp")
+(load-if-compiled-correctly "sys:src;lisp;regression-tests;snapshot.lisp")
 (sys:quit (if (show-test-summary) 0 1))
