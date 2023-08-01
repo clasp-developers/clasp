@@ -150,6 +150,11 @@
   :directory "src/lisp/kernel/contrib/lparallel/"
   :branch "fix-asdf-feature"
   :extension :cando)
+ (:name :named-readtables
+  :repository "https://github.com/melisgl/named-readtables.git"
+  :directory "src/lisp/kernel/contrib/named-readtables/"
+  :commit "2c05652f8b6f5b2de8feefda069274c0478ab0f3"
+  :extension :cando)
  (:name :parser.common-rules
   :repository "https://github.com/scymtym/parser.common-rules.git"
   :directory "src/lisp/kernel/contrib/parser.common-rules/"
