@@ -19,7 +19,7 @@
 
 (defstruct (block-entry (:constructor make-block-entry (start)))
   start end (successors nil) (predecessors nil) function
-  name (receiving 0) extra)
+  (name nil) (receiving 0) extra)
 
 (defun next-arg (argspec bytecode opip ip nbytes)
   (cond
