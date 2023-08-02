@@ -26,15 +26,16 @@
   (flet ((argument (symbol)
            (make-instance 'bir:argument
              :name symbol :function function)))
-    (multiple-value-bind (required optional rest keyp keys aokp)
+    (multiple-value-bind (required optional rest keyp keys aokp aux varestp)
         (core:process-lambda-list lambda-list 'cl:function)
+      (declare (ignore aux))
       (nconc (mapcar #'argument (cdr required))
              (unless (zerop (car optional)) (list '&optional))
              (loop for (var default -p) on (cdr optional)
                    by #'cdddr
                    collect (list (argument var) (argument -p)))
              (when rest
-               (list '&rest (argument rest)))
+               (list (if varestp 'core:&va-rest '&rest) (argument rest)))
              (when keyp (list '&key))
              (loop for (key var default -p) on (cdr keys)
                    by #'cddddr
@@ -764,6 +765,17 @@
            (ifun (bir:function iblock))
            (ll (bir:lambda-list ifun))
            (rarg (second (member '&rest ll))))
+      (check-type rarg bir:argument)
+      (stack-push rarg context))))
+(defmethod compile-instruction ((mnemonic (eql :vaslistify-rest-args))
+                                inserter annot context &rest args)
+  (declare (ignore annot))
+  (destructuring-bind (start) args
+    (declare (ignore start))
+    (let* ((iblock (ast-to-bir::iblock inserter))
+           (ifun (bir:function iblock))
+           (ll (bir:lambda-list ifun))
+           (rarg (second (member 'core:&va-rest ll))))
       (check-type rarg bir:argument)
       (stack-push rarg context))))
 
