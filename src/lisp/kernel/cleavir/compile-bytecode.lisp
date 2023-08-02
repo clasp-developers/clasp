@@ -455,10 +455,12 @@
                     inserter)))
 
 (defun %write-variable (variable value inserter)
-  (bir:record-variable-set variable)
-  (assert (slot-boundp variable 'bir::%binder))
-  (ast-to-bir:insert inserter 'bir:writevar
-                     :inputs (list value) :outputs (list variable)))
+  (cond ((slot-boundp variable 'bir::%binder)
+         (bir:record-variable-set variable)
+         (ast-to-bir:insert inserter 'bir:writevar
+                            :inputs (list value) :outputs (list variable)))
+        (t ; KLUDGE: arises from &optional/&key -p variables.
+         (%bind-variable variable value inserter))))
 
 (defun write-variable (variable value inserter)
   (let ((declared-ctype (declared-var-ctype (bir:name variable))))
