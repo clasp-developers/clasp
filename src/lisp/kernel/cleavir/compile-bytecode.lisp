@@ -244,12 +244,10 @@
         (loop for (key kvar) on (rest keys) by #'cddddr
               do (newvar kvar))
         (loop for (_ _1 -p) on (rest optional) by #'cdddr
-              when -p
-                do (newvar -p))
+              when -p do (incf index)) ; -p variables are bound by SET.
         (when rest (incf index)) ; since we bind &rest vars with SET, no var needed here.
         (loop for (_ _1 _2 -p) on (rest keys) by #'cddddr
-              when -p
-                do (newvar -p))))))
+              when -p do (incf index))))))
 
 (defun make-context (function block annots)
   (let* ((bcfun (bt:function-entry-bcfun function))
@@ -456,12 +454,10 @@
                     inserter)))
 
 (defun %write-variable (variable value inserter)
-  (cond ((slot-boundp variable 'bir::%binder)
-         (bir:record-variable-set variable)
-         (ast-to-bir:insert inserter 'bir:writevar
-                            :inputs (list value) :outputs (list variable)))
-        (t ; KLUDGE: arises from &optional/&key -p variables.
-         (%bind-variable variable value inserter))))
+  (assert (slot-boundp variable 'bir::%binder))
+  (bir:record-variable-set variable)
+  (ast-to-bir:insert inserter 'bir:writevar
+                     :inputs (list value) :outputs (list variable)))
 
 (defun write-variable (variable value inserter)
   (let ((declared-ctype (declared-var-ctype (bir:name variable))))
@@ -606,9 +602,9 @@
            (locals (context-locals context))
            (varcons (aref locals base)))
       (cond
-        ((or (and bindings
-                  (= (length bindings) 1) (= base (cdar bindings))))
-         (let* ((name (caar bindings))
+        ((find base bindings :key #'cdr)
+         (let* ((binding (rassoc base bindings))
+                (name (car binding))
                 (ignore (variable-ignore name annots))
                 (var (make-instance 'bir:variable
                        :ignore ignore :name name)))

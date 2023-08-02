@@ -1444,15 +1444,25 @@ static T_sp extract_lambda_list_from_declares(List_sp declares, T_sp defaultll) 
 }
 
 Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, LexicalVarInfo_sp varinfo, Symbol_sp supplied_var,
-                                       Label_sp next_label, bool var_specialp, bool supplied_specialp, const Context context,
-                                       Lexenv_sp env) {
+                                       Label_sp end_label, bool var_specialp, bool supplied_specialp, const Context context,
+                                       Lexenv_sp env, List_sp spdecls) {
   Label_sp supplied_label = Label_O::make();
+  Label_sp next_label = Label_O::make();
   T_sp supinfo = nil<T_O>();
   context.emit_jump_if_supplied(supplied_label, varinfo->frameIndex());
   // Emit code for the case of the variable not being supplied:
   // Bind the var to the default, and the suppliedvar to NIL if applicable.
+  // We push the suppliedp value first because it's bound second.
+  if (supplied_var.notnilp()) context.assemble0(vm_nil);
   compile_form(defaulting_form, env, context.sub_receiving(1));
-  // Now that the default form is compiled, bind variables (for later vars)
+  // And actually set the variable, if we're lexical.
+  if (!var_specialp) {
+    context.maybe_emit_make_cell(varinfo);
+    context.assemble1(vm_set, varinfo->frameIndex());
+  }
+  context.emit_jump(next_label);
+  // Set up the new environment. Make sure this is AFTER compiling the default form,
+  // as the default form does not have the variable or suppliedp bound.
   if (var_specialp)
     env = env->add_specials(Cons_O::createList(var));
   else
@@ -1463,43 +1473,42 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
       env = env->add_specials(Cons_O::createList(supplied_var));
     else
       env = env->bind1var(supplied_var, context);
-    supinfo = env->variableInfo(supplied_var);
   }
-  // Actually generate the unsupplied case.
-  if (var_specialp)
-    context.emit_special_bind(var);
-  else {
-    context.maybe_emit_make_cell(varinfo);
-    context.assemble1(vm_set, varinfo->frameIndex());
-  }
-  if (supplied_var.notnilp()) { // bind supplied_var to NIL
-    context.assemble0(vm_nil);
-    if (supplied_specialp)
-      context.emit_special_bind(supplied_var);
-    else {
-      LexicalVarInfo_sp lsinfo = gc::As_assert<LexicalVarInfo_sp>(supinfo);
-      context.maybe_emit_make_cell(lsinfo);
-      context.assemble1(vm_set, lsinfo->frameIndex());
-    }
-  }
-  context.emit_jump(next_label);
   // Now for when the variable is supplied.
   supplied_label->contextualize(context);
-  if (var_specialp) { // we have it in a reg, so rebind
-    context.assemble1(vm_ref, varinfo->frameIndex());
-    context.emit_special_bind(var);
-  } else { // in the reg already, but maybe needs a cell
-    context.maybe_emit_encage(varinfo);
-  }
+  if (supplied_var.notnilp()) compile_literal(cl::_sym_T_O, env, context.sub_receiving(1));
+  if (var_specialp) context.assemble1(vm_ref, varinfo->frameIndex());
+  else context.maybe_emit_encage(varinfo);
+  next_label->contextualize(context);
+  ql::list debugbindings;
+  // Bind the main variable if it's special.
+  // We emit this one special bind after the branch for the same reason as with the
+  // suppliedp var below. (In the lexical case it's considered bound by the bind-optional.)
+  if (var_specialp) context.emit_special_bind(var);
+  else debugbindings << Cons_O::create(var, varinfo->lex());
+  // The suppliedp value was pushed most recently, so bind that first.
+  // We do it this way after the branch so that the suppliedp var has a dominating bind
+  // instruction, which is nice for verification and further compilation.
   if (supplied_var.notnilp()) {
-    compile_literal(cl::_sym_T_O, env, context.sub_receiving(1));
     if (supplied_specialp)
       context.emit_special_bind(supplied_var);
     else {
-      LexicalVarInfo_sp lsinfo = gc::As_assert<LexicalVarInfo_sp>(supinfo);
+      LexicalVarInfo_sp lsinfo = gc::As_assert<LexicalVarInfo_sp>(env->variableInfo(supplied_var));
       context.maybe_emit_make_cell(lsinfo);
       context.assemble1(vm_set, lsinfo->frameIndex());
+      debugbindings << Cons_O::create(supplied_var, lsinfo->lex());
     }
+  }
+  // Output the debug bindings. Note that we do this immediately after the suppliedp set,
+  // so that the BTB compiler etc. understand it's a binding operation.
+  if (!var_specialp || !supplied_specialp) {
+    Label_sp debuglab = Label_O::make();
+    debuglab->contextualize(context);
+    context.push_debug_info(BytecodeDebugVars_O::make(debuglab, end_label, debugbindings.cons()));
+    // Also output debug decls for the suppliedp if they exist.
+    // They similarly go right after the SET so that they are understood as bound.
+    if (spdecls.notnilp())
+      context.push_debug_info(BytecodeDebugDecls_O::make(debuglab, end_label, spdecls));
   }
   // That's it for code generation. Now return the new environment.
   return env;
@@ -1618,36 +1627,22 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   }
   // Generate defaulting code for optional args, and bind them properly.
   if (optional_count > 0) {
-    Label_sp optional_label = Label_O::make();
-    Label_sp next_optional_label = Label_O::make();
     for (auto &it : optionals) {
-      optional_label->contextualize(context);
       T_sp optional_var = it._ArgTarget;
       T_sp defaulting_form = it._Default;
       T_sp supplied_var = it._Sensor._ArgTarget;
       bool optional_special_p = special_binding_p(optional_var, specials, env);
       auto varinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(optional_var, optkey_env));
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
-      new_env = compile_optional_or_key_item(optional_var, defaulting_form, varinfo, supplied_var, next_optional_label,
-                                             optional_special_p, supplied_special_p, context, new_env);
-      ql::list debugbindings;
+      List_sp spdecls = nil<T_O>();
+      if (supplied_var.notnilp()) spdecls = decls_for_var(supplied_var, declares);
+      new_env = compile_optional_or_key_item(optional_var, defaulting_form, varinfo, supplied_var, end_label,
+                                             optional_special_p, supplied_special_p, context, new_env, spdecls);
       if (optional_special_p)
         ++special_binding_count;
-      else
-        debugbindings << Cons_O::create(optional_var, varinfo->lex());
       if (supplied_special_p)
         ++special_binding_count;
-      else if (supplied_var.notnilp()) {
-        auto svarinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(supplied_var, new_env));
-        debugbindings << Cons_O::create(supplied_var, svarinfo->lex());
-      }
-      T_sp dbindings = debugbindings.cons();
-      if (dbindings.notnilp())
-        context.push_debug_info(BytecodeDebugVars_O::make(next_optional_label, end_label, dbindings));
-      optional_label = next_optional_label;
-      next_optional_label = Label_O::make();
     }
-    optional_label->contextualize(context);
   }
   // &rest
   if (restarg._ArgTarget.notnilp()) {
@@ -1678,36 +1673,22 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   }
   // Generate defaulting code for key args, and special-bind them if necessary
   if (key_flag.notnilp()) {
-    Label_sp key_label = Label_O::make();
-    Label_sp next_key_label = Label_O::make();
     for (auto &it : keys) {
-      key_label->contextualize(context);
       T_sp key_var = it._ArgTarget;
       T_sp defaulting_form = it._Default;
       T_sp supplied_var = it._Sensor._ArgTarget;
       bool key_special_p = special_binding_p(key_var, specials, env);
       auto varinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(key_var, optkey_env));
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
-      new_env = compile_optional_or_key_item(key_var, defaulting_form, varinfo, supplied_var, next_key_label, key_special_p,
-                                             supplied_special_p, context, new_env);
-      ql::list debugbindings;
+      List_sp spdecls = nil<T_O>();
+      if (supplied_var.notnilp()) spdecls = decls_for_var(supplied_var, declares);
+      new_env = compile_optional_or_key_item(key_var, defaulting_form, varinfo, supplied_var, end_label, key_special_p,
+                                             supplied_special_p, context, new_env, spdecls);
       if (key_special_p)
         ++special_binding_count;
-      else
-        debugbindings << Cons_O::create(key_var, varinfo->lex());
       if (supplied_special_p)
         ++special_binding_count;
-      else if (supplied_var.notnilp()) {
-        auto svarinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(supplied_var, new_env));
-        debugbindings << Cons_O::create(supplied_var, svarinfo->lex());
-      }
-      T_sp dbindings = debugbindings.cons();
-      if (dbindings.notnilp())
-        context.push_debug_info(BytecodeDebugVars_O::make(next_key_label, end_label, dbindings));
-      key_label = next_key_label;
-      next_key_label = Label_O::make();
     }
-    key_label->contextualize(context);
   }
   // Generate aux and the body as a let*.
   // We repeat the declarations so that let* will know the auxs are
