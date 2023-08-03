@@ -82,7 +82,7 @@ Lexenv_sp Lexenv_O::bind_vars(List_sp vars, const Context ctxt) {
     Cons_sp pair = Cons_O::create(var, info);
     new_vars = Cons_O::create(pair, new_vars);
   }
-  return Lexenv_O::make(new_vars, this->tags(), this->blocks(), this->funs(), this->decls(), frame_end);
+  return this->sub_vars(new_vars, frame_end);
 }
 
 // Save a cons and append call in a common case.
@@ -94,7 +94,7 @@ Lexenv_sp Lexenv_O::bind1var(Symbol_sp var, const Context ctxt) {
   auto info = LexicalVarInfo_O::make(frame_start, cf);
   Cons_sp pair = Cons_O::create(var, info);
   Cons_sp new_vars = Cons_O::create(pair, this->vars());
-  return Lexenv_O::make(new_vars, this->tags(), this->blocks(), this->funs(), this->decls(), frame_end);
+  return this->sub_vars(new_vars, frame_end);
 }
 
 Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
@@ -109,7 +109,7 @@ Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
     Cons_sp pair = Cons_O::create(var, info);
     new_vars = Cons_O::create(pair, new_vars);
   }
-  return Lexenv_O::make(new_vars, this->tags(), this->blocks(), this->funs(), this->decls(), this->frameEnd());
+  return this->sub_vars(new_vars, this->frameEnd());
 }
 
 static List_sp scrub_decls(List_sp decls) {
@@ -128,8 +128,7 @@ Lexenv_sp Lexenv_O::add_decls(List_sp decls) {
   if (decls.nilp())
     return this->asSmartPtr();
   else
-    return Lexenv_O::make(this->vars(), this->tags(), this->blocks(), this->funs(), Cons_O::append(decls, this->decls()),
-                          this->frameEnd());
+    return this->sub_decls(Cons_O::append(decls, this->decls()));
 }
 
 Lexenv_sp Lexenv_O::macroexpansion_environment() {
@@ -1144,7 +1143,7 @@ void compile_progn(List_sp forms, Lexenv_sp env, const Context ctxt) {
   else
     for (auto cur : forms) {
       if (oCdr(cur).notnilp()) // compile for effect
-        compile_form(oCar(cur), env, Context(ctxt, 0));
+        compile_form(oCar(cur), env, ctxt.sub_receiving(0));
       else // compile for value
         compile_form(oCar(cur), env, ctxt);
     }
@@ -1204,7 +1203,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
       var = gc::As<Symbol_sp>(binding);
       valf = nil<T_O>();
     }
-    compile_form(valf, env, Context(ctxt, 1));
+    compile_form(valf, env, ctxt.sub_receiving(1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
       ctxt.emit_special_bind(var);
@@ -1224,7 +1223,7 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, debug_bindings.cons()));
   if (declares.notnilp())
     ctxt.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, declares));
-  compile_progn(code, post_binding_env, Context(ctxt, Integer_O::create(special_binding_count)));
+  compile_progn(code, post_binding_env, ctxt.sub_de(Integer_O::create(special_binding_count)));
   ctxt.emit_unbind(special_binding_count);
   end_label->contextualize(ctxt);
 }
@@ -1327,12 +1326,12 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
       var = gc::As<Symbol_sp>(binding);
       valf = nil<T_O>();
     }
-    compile_form(valf, new_env, Context(ctxt, 1));
+    compile_form(valf, new_env, ctxt.sub_receiving(1));
     if (special_binding_p(var, specials, env)) {
       ++special_binding_count;
       new_env = new_env->add_specials(Cons_O::createList(var));
       ctxt.emit_special_bind(var);
-      ctxt = Context(ctxt, Integer_O::create(1));
+      ctxt = ctxt.sub_de(Integer_O::create(1));
     } else {
       Label_sp begin_label = Label_O::make();
       size_t frame_start = new_env->frameEnd();
@@ -1386,14 +1385,13 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
   context.emit_jump_if_supplied(supplied_label, varinfo->frameIndex());
   // Emit code for the case of the variable not being supplied:
   // Bind the var to the default, and the suppliedvar to NIL if applicable.
-  compile_form(defaulting_form, env, Context(context, 1));
+  compile_form(defaulting_form, env, context.sub_receiving(1));
   // Now that the default form is compiled, bind variables (for later vars)
   if (var_specialp)
     env = env->add_specials(Cons_O::createList(var));
   else
     // import the existing info.
-    env = Lexenv_O::make(Cons_O::create(Cons_O::create(var, varinfo), env->vars()), env->tags(), env->blocks(), env->funs(),
-                         env->decls(), env->frameEnd());
+    env = env->sub_vars(Cons_O::create(Cons_O::create(var, varinfo), env->vars()), env->frameEnd());
   if (supplied_var.notnilp()) {
     if (supplied_specialp)
       env = env->add_specials(Cons_O::createList(supplied_var));
@@ -1428,7 +1426,7 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
     context.maybe_emit_encage(varinfo);
   }
   if (supplied_var.notnilp()) {
-    compile_literal(cl::_sym_T_O, env, Context(context, 1));
+    compile_literal(cl::_sym_T_O, env, context.sub_receiving(1));
     if (supplied_specialp)
       context.emit_special_bind(supplied_var);
     else {
@@ -1765,7 +1763,7 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
     eval::extract_declares_docstring_code_specials(oCddr(definition), declares, false, docstring, code, specials);
     T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
     T_sp lambda = Cons_O::createList(cl::_sym_lambda, oCadr(definition), Cons_O::create(cl::_sym_declare, declares), block);
-    compile_function(lambda, env, Context(ctxt, 1));
+    compile_function(lambda, env, ctxt.sub_receiving(1));
     fun_vars << fun_var;
     funs << Cons_O::create(name, LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++, ctxt.cfunction())));
     ++fun_count;
@@ -1773,8 +1771,7 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
   ctxt.emit_bind(fun_count, env->frameEnd());
   // KLUDGEy - we could do this in one new environment
   Lexenv_sp new_env1 = env->bind_vars(fun_vars.cons(), ctxt);
-  Lexenv_sp new_env2 = Lexenv_O::make(new_env1->vars(), new_env1->tags(), new_env1->blocks(), funs.dot(new_env1->funs()).cons(),
-                                      new_env1->decls(), new_env1->frameEnd());
+  Lexenv_sp new_env2 = new_env1->sub_funs(funs.dot(new_env1->funs()).cons());
   compile_locally(body, new_env2, ctxt);
 }
 
@@ -1795,8 +1792,7 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
   }
   frame_slot = frame_start;
   Lexenv_sp new_env1 = env->bind_vars(fun_vars.cons(), ctxt);
-  Lexenv_sp new_env2 = Lexenv_O::make(new_env1->vars(), new_env1->tags(), new_env1->blocks(), funs.dot(new_env1->funs()).cons(),
-                                      new_env1->decls(), new_env1->frameEnd());
+  Lexenv_sp new_env2 = new_env1->sub_funs(funs.dot(new_env1->funs()).cons());
   for (auto cur : definitions) {
     Cons_sp definition = gc::As_unsafe<Cons_sp>(oCar(cur));
     T_sp name = oCar(definition);
@@ -1845,7 +1841,7 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
         && !code_walking_p())
       eval::funcall(_sym_warn_undefined_global_variable,
                     ctxt.source_info(), var);
-    compile_form(valf, env, Context(ctxt, 1));
+    compile_form(valf, env, ctxt.sub_receiving(1));
     // If we need to return the new value, duplicate it on the stack.
     // We can't just read from the special, since some other thread may
     // alter it.
@@ -1862,7 +1858,7 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     if (!localp)
       lvinfo->setClosedOverP(true);
     lvinfo->setSetP(true);
-    compile_form(valf, env, Context(ctxt, 1));
+    compile_form(valf, env, ctxt.sub_receiving(1));
     // Similar concerns to specials above (for closure variables)
     if (ctxt.receiving() != 0) {
       ctxt.assemble0(vm_dup);
@@ -1892,7 +1888,7 @@ void compile_setq(List_sp pairs, Lexenv_sp env, const Context ctxt) {
       Symbol_sp var = gc::As<Symbol_sp>(oCar(pairs));
       T_sp valf = oCadr(pairs);
       pairs = gc::As<List_sp>(oCddr(pairs));
-      compile_setq_1(var, valf, env, pairs.notnilp() ? Context(ctxt, 0) : ctxt);
+      compile_setq_1(var, valf, env, pairs.notnilp() ? ctxt.sub_receiving(0) : ctxt);
     } while (pairs.notnilp());
   }
 }
@@ -1924,7 +1920,7 @@ void compile_the(T_sp type, T_sp form, Lexenv_sp env, const Context ctxt) {
 }
 
 void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, const Context ctxt) {
-  compile_form(cond, env, Context(ctxt, 1));
+  compile_form(cond, env, ctxt.sub_receiving(1));
   Label_sp then_label = Label_O::make();
   Label_sp done_label = Label_O::make();
   ctxt.emit_jump_if(then_label);
@@ -1944,13 +1940,13 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
   Symbol_sp tagbody_dynenv = cl__gensym(SimpleBaseString_O::make("TAG-DYNENV"));
   Lexenv_sp nenv = env->bind1var(tagbody_dynenv, ctxt);
   auto dynenv_info = gc::As_assert<LexicalVarInfo_sp>(nenv->variableInfo(tagbody_dynenv));
-  Context stmt_ctxt(ctxt, dynenv_info);
+  Context stmt_ctxt = ctxt.sub_de(dynenv_info);
   for (auto cur : statements) {
     T_sp statement = oCar(cur);
     if (go_tag_p(statement))
       new_tags = Cons_O::create(Cons_O::create(statement, Cons_O::create(dynenv_info, Label_O::make())), new_tags);
   }
-  Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), new_tags, nenv->blocks(), nenv->funs(), nenv->decls(), nenv->frameEnd());
+  Lexenv_sp nnenv = nenv->sub_tags(new_tags);
   // Bind the dynamic environment (or just save the stack pointer).
   ctxt.emit_entry_or_save_sp(dynenv_info);
   // Compile the body, emitting the tag destination labels.
@@ -1962,7 +1958,7 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
       lab->contextualize(ctxt);
       ctxt.push_debug_info(BytecodeDebugBlock_O::make(lab, lab, statement, 0));
     } else
-      compile_form(statement, nnenv, Context(stmt_ctxt, 0));
+      compile_form(statement, nnenv, stmt_ctxt.sub_receiving(0));
   }
   ctxt.maybe_emit_entry_close(dynenv_info);
   // return nil if we really have to
@@ -2023,15 +2019,14 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
   // Bind the dynamic environment or save SP.
   ctxt.emit_entry_or_save_sp(dynenv_info);
   Cons_sp new_pair = Cons_O::create(name, Cons_O::create(dynenv_info, Cons_O::create(label, clasp_make_fixnum(ctxt.receiving()))));
-  Lexenv_sp nnenv = Lexenv_O::make(nenv->vars(), nenv->tags(), Cons_O::create(new_pair, nenv->blocks()), nenv->funs(),
-                                   nenv->decls(), nenv->frameEnd());
+  Lexenv_sp nnenv = nenv->sub_blocks(Cons_O::create(new_pair, nenv->blocks()));
   // We force single values into multiple so that we can uniformly PUSH afterward.
   // Specifically: if we're returning 0 values, there's no problem anyway.
   // If we're returning multiple values, the local and nonlocal returns just
   // store into the multiple values, so no problem there.
   // If we're returning exactly one value, the local just pushes one, and
   // the nonlocal stores into the MV which is then vm_push'd to the stack.
-  compile_progn(body, nnenv, Context(ctxt, dynenv_info));
+  compile_progn(body, nnenv, ctxt.sub_de(dynenv_info));
   bool r1p = ctxt.receiving() == 1;
   if (r1p)
     ctxt.emit_jump(normal_label);
@@ -2058,7 +2053,7 @@ void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ct
       Cons_sp rpair = gc::As_assert<Cons_sp>(CONS_CDR(pair));
       Cons_sp r2pair = gc::As_assert<Cons_sp>(CONS_CDR(rpair));
       int breceiving = CONS_CDR(r2pair).unsafe_fixnum();
-      compile_form(valuef, env, Context(ctxt, breceiving == 0 ? 0 : -1));
+      compile_form(valuef, env, ctxt.sub_receiving(breceiving == 0 ? 0 : -1));
       compile_exit(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)), gc::As_assert<Label_sp>(CONS_CAR(r2pair)), ctxt);
       // If we're in a single value context, generate a never-executed PUSH instruction
       // so that statically both "branches" rejoining at the BLOCK have the same number
@@ -2076,7 +2071,7 @@ void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ct
 // catch, throw, and progv are actually handled by macros right now,
 // so these aren't used, but maybe will be in the fture.
 void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, const Context ctxt) {
-  compile_form(tag, env, Context(ctxt, 1));
+  compile_form(tag, env, ctxt.sub_receiving(1));
   Label_sp target = Label_O::make();
   ctxt.emit_catch(target);
   // FIXME: maybe should be a T context to match throw
@@ -2086,14 +2081,14 @@ void compile_catch(T_sp tag, List_sp body, Lexenv_sp env, const Context ctxt) {
 }
 
 void compile_throw(T_sp tag, T_sp rform, Lexenv_sp env, const Context ctxt) {
-  compile_form(tag, env, Context(ctxt, 1));
-  compile_form(rform, env, Context(ctxt, -1));
+  compile_form(tag, env, ctxt.sub_receiving(1));
+  compile_form(rform, env, ctxt.sub_receiving(-1));
   ctxt.assemble0(vm_throw);
 }
 
 void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Context ctxt) {
-  compile_form(syms, env, Context(ctxt, 1));
-  compile_form(vals, env, Context(ctxt, 1));
+  compile_form(syms, env, ctxt.sub_receiving(1));
+  compile_form(vals, env, ctxt.sub_receiving(1));
   ctxt.assemble0(vm_progv);
   compile_progn(body, env, ctxt);
   ctxt.emit_unbind(1);
@@ -2102,20 +2097,20 @@ void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Cont
 void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, const Context ctxt) {
   // Compile the function. Coerce it as a designator.
   // TODO: When the fform is a #'foo form we could skip coercion.
-  compile_function(core::_sym_coerce_fdesignator, env, Context(ctxt, 1));
-  compile_form(fform, env, Context(ctxt, 1));
-  Context(ctxt, 1).emit_call(1);
+  compile_function(core::_sym_coerce_fdesignator, env, ctxt.sub_receiving(1));
+  compile_form(fform, env, ctxt.sub_receiving(1));
+  ctxt.sub_receiving(1).emit_call(1);
   if (aforms.nilp()) {
     ctxt.emit_call(0);
   } else {
     // Compile the arguments
     T_sp first = oCar(aforms);
     List_sp rest = gc::As<List_sp>(oCdr(aforms));
-    compile_form(first, env, Context(ctxt, -1));
+    compile_form(first, env, ctxt.sub_receiving(-1));
     ctxt.assemble0(vm_push_values);
     if (rest.notnilp()) {
       for (auto cur : rest) {
-        compile_form(oCar(cur), env, Context(ctxt, -1));
+        compile_form(oCar(cur), env, ctxt.sub_receiving(-1));
         ctxt.assemble0(vm_append_values);
       }
     }
@@ -2129,7 +2124,7 @@ void compile_multiple_value_prog1(T_sp fform, List_sp forms, Lexenv_sp env, cons
   if (ctxt.receiving() == -1)
     ctxt.assemble0(vm_push_values);
   for (auto cur : forms)
-    compile_form(oCar(cur), env, Context(ctxt, 0));
+    compile_form(oCar(cur), env, ctxt.sub_receiving(0));
   if (ctxt.receiving() == -1)
     ctxt.assemble0(vm_pop_values);
 }
@@ -2140,7 +2135,7 @@ static void compile_call(T_sp args, Lexenv_sp env, const Context context) {
   size_t argcount = 0;
   for (auto cur : gc::As<List_sp>(args)) {
     ++argcount;
-    compile_form(oCar(cur), env, Context(context, 1));
+    compile_form(oCar(cur), env, context.sub_receiving(1));
   }
   // generate the call
   context.emit_call(argcount);
@@ -2210,13 +2205,12 @@ static T_sp symbol_macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp vars
 
 void compile_symbol_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, const Context context) {
   T_sp vars = symbol_macrolet_bindings(env->macroexpansion_environment(), bindings, env->vars());
-  Lexenv_sp nenv = Lexenv_O::make(vars, env->tags(), env->blocks(), env->funs(), env->decls(), env->frameEnd());
-  compile_locally(body, nenv, context);
+  compile_locally(body, env->sub_vars(vars, env->frameEnd()), context);
 }
 
 // Given a macroexpansion environment, a alist of macrolet bindings, and the
 // funs() of a lexenv, return new funs() with macro infos prepended.
-static T_sp macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp funs) {
+static List_sp macrolet_bindings(Lexenv_sp menv, List_sp bindings, List_sp funs) {
   for (auto cur : bindings) {
     T_sp binding = oCar(cur);
     T_sp name = oCar(binding);
@@ -2231,13 +2225,13 @@ static T_sp macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp funs) {
 }
 
 void compile_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, const Context context) {
-  T_sp funs = macrolet_bindings(env->macroexpansion_environment(), bindings, env->funs());
-  Lexenv_sp nenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), funs, env->decls(), env->frameEnd());
+  List_sp funs = macrolet_bindings(env->macroexpansion_environment(), bindings, env->funs());
+  Lexenv_sp nenv = env->sub_funs(funs);
   compile_locally(body, nenv, context);
 }
 
 void compile_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Context context) {
-  compile_form(callee, env, Context(context, 1));
+  compile_form(callee, env, context.sub_receiving(1));
   compile_call(args, env, context);
 }
 
@@ -2292,23 +2286,23 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     // Better would be to use the EQ opcode. Better than that would be
     // eliminating the special operator entirely and working with the
     // function instead.
-    compile_function(cl::_sym_eq, env, Context(context, 1));
+    compile_function(cl::_sym_eq, env, context.sub_receiving(1));
     compile_call(rest, env, context);
   } else if (head == cleavirPrimop::_sym_typeq) {
     // KLUDGE: call to typep.
     T_sp type = oCadr(rest);
     if (type == cl::_sym_cons) {
-      compile_function(cl::_sym_consp, env, Context(context, 1));
-      compile_form(oCar(rest), env, Context(context, 1));
+      compile_function(cl::_sym_consp, env, context.sub_receiving(1));
+      compile_form(oCar(rest), env, context.sub_receiving(1));
       context.emit_call(1);
     } else if (type == cl::_sym_symbol) {
-      compile_function(cl::_sym_symbolp, env, Context(context, 1));
-      compile_form(oCar(rest), env, Context(context, 1));
+      compile_function(cl::_sym_symbolp, env, context.sub_receiving(1));
+      compile_form(oCar(rest), env, context.sub_receiving(1));
       context.emit_call(1);
     } else {
-      compile_function(cl::_sym_typep, env, Context(context, 1));
-      compile_form(oCar(rest), env, Context(context, 1));
-      compile_literal(oCadr(rest), env, Context(context, 1));
+      compile_function(cl::_sym_typep, env, context.sub_receiving(1));
+      compile_form(oCar(rest), env, context.sub_receiving(1));
+      compile_literal(oCadr(rest), env, context.sub_receiving(1));
       context.emit_call(2);
     }
   }
@@ -2343,19 +2337,19 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
             return;
           }
         } // no compiler macro, or expansion declined: call
-        compile_function(head, env, Context(context, 1));
+        compile_function(head, env, context.sub_receiving(1));
         compile_call(rest, env, context);
       } else if (std::holds_alternative<LocalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
         // unknown function warning handled by compile-function (eventually)
         // note we do a double lookup of the fun info,
         // which is inefficient in the compiler (doesn't affect generated code)
-        compile_function(head, env, Context(context, 1));
+        compile_function(head, env, context.sub_receiving(1));
         compile_call(rest, env, context);
       } else
         UNREACHABLE();
     } else if (gc::IsA<Cons_sp>(head) && (oCar(head) == cl::_sym_lambda)) {
       // Lambda form
-      compile_function(head, env, Context(context, 1));
+      compile_function(head, env, context.sub_receiving(1));
       compile_call(rest, env, context);
     } else
       SIMPLE_ERROR("Illegal combination head: {} rest: {}", _rep_(head), _rep_(rest));
@@ -2376,8 +2370,7 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
     source_location = gc::As<HashTableBase_sp>(_sym_STARsourceLocationsSTAR->symbolValue())->gethash(form, nil<T_O>());
   }
   if (source_location.notnilp()) {
-    ncontext = Context(context.receiving(), context.dynenv(),
-                       context.cfunction(), source_location);
+    ncontext = context.sub_source(source_location);
     begin_label->contextualize(ncontext);
     // We push the info BEFORE compiling the form so that the infos
     // are naturally sorted by their start position.
@@ -2417,7 +2410,7 @@ CL_DEFUN GlobalBytecodeSimpleFun_sp bytecompile(T_sp lambda_expression, Lexenv_s
 
 static Lexenv_sp coerce_lexenv_desig(T_sp env) {
   if (env.nilp())
-    return Lexenv_O::make(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), 0);
+    return make_null_lexical_environment();
   else
     return gc::As<Lexenv_sp>(env);
 }
@@ -2468,15 +2461,13 @@ CL_DEFUN T_mv bytecode_toplevel_macrolet(List_sp bindings, List_sp body, Lexenv_
   // FIXME: We can maybe skip macroexpansion_environment,
   // assuming bytecode_toplevel_eval was originally actually called
   // with an empty lexenv as it ought to be.
-  T_sp funs = macrolet_bindings(env->macroexpansion_environment(), bindings, env->funs());
-  Lexenv_sp nenv = Lexenv_O::make(env->vars(), env->tags(), env->blocks(), funs, env->decls(), env->frameEnd());
-  return bytecode_toplevel_locally(body, nenv);
+  List_sp funs = macrolet_bindings(env->macroexpansion_environment(), bindings, env->funs());
+  return bytecode_toplevel_locally(body, env->sub_funs(funs));
 }
 
 CL_DEFUN T_mv bytecode_toplevel_symbol_macrolet(List_sp bindings, List_sp body, Lexenv_sp env) {
   T_sp vars = symbol_macrolet_bindings(env->macroexpansion_environment(), bindings, env->vars());
-  Lexenv_sp nenv = Lexenv_O::make(vars, env->tags(), env->blocks(), env->funs(), env->decls(), env->frameEnd());
-  return bytecode_toplevel_locally(body, nenv);
+  return bytecode_toplevel_locally(body, env->sub_vars(vars, env->frameEnd()));
 }
 
 SYMBOL_EXPORT_SC_(CompPkg, bytecode_toplevel_eval);

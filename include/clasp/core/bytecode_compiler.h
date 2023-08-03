@@ -282,6 +282,22 @@ public:
   CL_DEFMETHOD List_sp decls() const { return this->_decls; }
   CL_DEFMETHOD size_t frameEnd() const { return this->frame_end; }
 public:
+  inline Lexenv_sp sub_vars(List_sp vars, size_t frame_end) const {
+    return make(vars, tags(), blocks(), funs(), decls(), frame_end);
+  }
+  inline Lexenv_sp sub_funs(List_sp funs) const {
+    return make(vars(), tags(), blocks(), funs, decls(), frameEnd());
+  }
+  inline Lexenv_sp sub_tags(List_sp tags) const {
+    return make(vars(), tags, blocks(), funs(), decls(), frameEnd());
+  }
+  inline Lexenv_sp sub_blocks(List_sp blocks) const {
+    return make(vars(), tags(), blocks, funs(), decls(), frameEnd());
+  }
+  inline Lexenv_sp sub_decls(List_sp decls) const {
+    return make(vars(), tags(), blocks(), funs(), decls, frameEnd());
+  }
+public:
   /* Bind each variable to a stack location, returning a new lexical
    * environment. The max local count in the current function is also
    * updated.
@@ -333,16 +349,18 @@ public:
     : _receiving(receiving), _dynenv(dynenv), _cfunction(cfunction),
       _source_info(source_info){}
   // Sub constructors
-  Context(const Context& parent, int receiving)
-    : _receiving(receiving), _dynenv(parent.dynenv()),
-      _cfunction(parent.cfunction()), _source_info(parent.source_info())
-  {}
-  // Plop the de on the front.
-  Context(const Context& parent, T_sp de)
-    : _receiving(parent.receiving()),
-      _dynenv(Cons_O::create(de, parent.dynenv())),
-      _cfunction(parent.cfunction()),
-      _source_info(parent.source_info()) {}
+  inline Context sub_receiving(int receiving) const {
+    return Context(receiving, dynenv(), cfunction(), source_info());
+  }
+  inline Context sub_de(T_sp de) const {
+    // Plop on the front.
+    return Context(receiving(), Cons_O::create(de, dynenv()),
+                   cfunction(), source_info());
+  }
+  inline Context sub_source(T_sp source_info) const {
+    return Context(receiving(), dynenv(), cfunction(), source_info);
+  }
+  // Access
   int receiving() const { return this->_receiving; }
   List_sp dynenv() const { return this->_dynenv; }
   Cfunction_sp cfunction() const {
