@@ -271,7 +271,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
                                       :serial))
                        environment ; compilation environment
                        ;; output-type can be (or :fasl :bitcode :object)
-                       (output-type (default-library-type) output-type-p)
+                       (output-type (default-library-type))
                        ;; type can be either :kernel or :user
                        ;; FIXME: What does this do.
                        (type :user)
