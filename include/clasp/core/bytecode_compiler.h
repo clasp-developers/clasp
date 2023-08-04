@@ -17,26 +17,27 @@ public:
 };
 
 FORWARD(LexicalVarInfo);
+FORWARD(Cfunction);
 class LexicalVarInfo_O : public VarInfo_O {
   LISP_CLASS(comp, CompPkg, LexicalVarInfo_O, "LexicalVarInfo", VarInfo_O);
 public:
   size_t frame_index;
-  T_sp _funct;
+  Cfunction_sp _funct;
   // This field is a little abused for block/tagbody dynenvs at the moment.
   // They will be marked as "closed over" if they are used at all.
   bool closed_over_p = false;
   bool set_p = false;
 public:
-  LexicalVarInfo_O(size_t ind, T_sp nfunct)
+  LexicalVarInfo_O(size_t ind, Cfunction_sp nfunct)
     : VarInfo_O(), frame_index(ind), _funct(nfunct) {};
   CL_LISPIFY_NAME(LexicalVarInfo/make)
   CL_DEF_CLASS_METHOD
-  static LexicalVarInfo_sp make(size_t frame_index, T_sp funct) {
+  static LexicalVarInfo_sp make(size_t frame_index, Cfunction_sp funct) {
     return gctools::GC<LexicalVarInfo_O>::allocate<gctools::RuntimeStage>(frame_index, funct);
   }
   CL_DEFMETHOD size_t frameIndex() const { return this->frame_index; }
   CL_LISPIFY_NAME(LexicalVarInfo/cfunction)
-  CL_DEFMETHOD T_sp funct() const { return this->_funct; }
+  CL_DEFMETHOD Cfunction_sp funct() const { return this->_funct; }
   CL_DEFMETHOD bool closedOverP() const { return this->closed_over_p; }
   CL_LISPIFY_NAME(LexicalVarInfo/setf-closed-over-p)
   CL_DEFMETHOD bool setClosedOverP(bool n) {
@@ -336,16 +337,15 @@ public:
 // on consing and GC.
 // (Profiling has shown that the compiler spends a lot of time consing.)
 FORWARD(Label);
-FORWARD(Cfunction);
 FORWARD(Module);
 class Context {
 public:
   int _receiving;
   List_sp _dynenv;
-  T_sp _cfunction;
+  Cfunction_sp _cfunction;
   T_sp _source_info;
 public:
-  Context(int receiving, T_sp dynenv, T_sp cfunction, T_sp source_info)
+  Context(int receiving, T_sp dynenv, Cfunction_sp cfunction, T_sp source_info)
     : _receiving(receiving), _dynenv(dynenv), _cfunction(cfunction),
       _source_info(source_info){}
   // Sub constructors
@@ -363,9 +363,7 @@ public:
   // Access
   int receiving() const { return this->_receiving; }
   List_sp dynenv() const { return this->_dynenv; }
-  Cfunction_sp cfunction() const {
-    return gc::As<Cfunction_sp>(this->_cfunction);
-  }
+  Cfunction_sp cfunction() const { return this->_cfunction; }
   T_sp source_info() const { return this->_source_info; }
   Module_sp module() const;
 public:
