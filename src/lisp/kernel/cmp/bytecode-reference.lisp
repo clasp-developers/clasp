@@ -285,7 +285,7 @@
   (cond ((null info) nil)
         ((typep info 'cmp:global-fun-info) nil)
         ((typep info 'cmp:local-fun-info)
-         (cmp:local-fun-info/fun-var info))
+         (cmp:local-fun-info/lex info))
         ((typep info 'cmp:global-macro-info)
          (cmp:global-macro-info/expander info))
         ((typep info 'cmp:local-macro-info)

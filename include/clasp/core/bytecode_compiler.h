@@ -10,6 +10,29 @@ namespace comp {
   using namespace core;
 
 // Structures for the bytecode compiler.
+
+// Information for something lexical, like a variable, function, tag, whatever.
+FORWARD(Cfunction);
+FORWARD(LexicalInfo);
+class LexicalInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, LexicalInfo_O, "LexicalInfo", General_O);
+public:
+  size_t _frame_index;
+  Cfunction_sp _cfunction;
+  bool _closed_over_p = false;
+public:
+  LexicalInfo_O(size_t ind, Cfunction_sp funct) : _frame_index(ind), _cfunction(funct) {};
+  CL_LISPIFY_NAME(LexicalInfo/make)
+  CL_DEF_CLASS_METHOD
+  static LexicalInfo_sp make(size_t frame_index, Cfunction_sp cfunction) {
+    return gctools::GC<LexicalInfo_O>::allocate<gctools::RuntimeStage>(frame_index, cfunction);
+  }
+  CL_DEFMETHOD size_t frameIndex() const { return this->_frame_index; }
+  CL_DEFMETHOD Cfunction_sp cfunction() const { return this->_cfunction; }
+  CL_DEFMETHOD bool closedOverP() const { return this->_closed_over_p; }
+  void setClosedOverP(bool n) { this->_closed_over_p = n; }
+};
+
 class VarInfo_O : public General_O {
   LISP_ABSTRACT_CLASS(comp, CompPkg, VarInfo_O, "VarInfo", General_O);
 public:
@@ -17,31 +40,28 @@ public:
 };
 
 FORWARD(LexicalVarInfo);
-FORWARD(Cfunction);
 class LexicalVarInfo_O : public VarInfo_O {
   LISP_CLASS(comp, CompPkg, LexicalVarInfo_O, "LexicalVarInfo", VarInfo_O);
 public:
-  size_t frame_index;
-  Cfunction_sp _funct;
-  // This field is a little abused for block/tagbody dynenvs at the moment.
-  // They will be marked as "closed over" if they are used at all.
-  bool closed_over_p = false;
+  LexicalInfo_sp _lex;
   bool set_p = false;
 public:
-  LexicalVarInfo_O(size_t ind, Cfunction_sp nfunct)
-    : VarInfo_O(), frame_index(ind), _funct(nfunct) {};
+  LexicalVarInfo_O(LexicalInfo_sp nlex)
+    : VarInfo_O(), _lex(nlex) {};
   CL_LISPIFY_NAME(LexicalVarInfo/make)
   CL_DEF_CLASS_METHOD
   static LexicalVarInfo_sp make(size_t frame_index, Cfunction_sp funct) {
-    return gctools::GC<LexicalVarInfo_O>::allocate<gctools::RuntimeStage>(frame_index, funct);
+    LexicalInfo_sp nlex = LexicalInfo_O::make(frame_index, funct);
+    return gctools::GC<LexicalVarInfo_O>::allocate<gctools::RuntimeStage>(nlex);
   }
-  CL_DEFMETHOD size_t frameIndex() const { return this->frame_index; }
+  LexicalInfo_sp lex() const { return this->_lex; }
+  CL_DEFMETHOD size_t frameIndex() const { return this->lex()->frameIndex(); }
   CL_LISPIFY_NAME(LexicalVarInfo/cfunction)
-  CL_DEFMETHOD Cfunction_sp funct() const { return this->_funct; }
-  CL_DEFMETHOD bool closedOverP() const { return this->closed_over_p; }
+  CL_DEFMETHOD Cfunction_sp funct() const { return this->lex()->cfunction(); }
+  CL_DEFMETHOD bool closedOverP() const { return this->lex()->closedOverP(); }
   CL_LISPIFY_NAME(LexicalVarInfo/setf-closed-over-p)
   CL_DEFMETHOD bool setClosedOverP(bool n) {
-    this->closed_over_p = n;
+    this->lex()->setClosedOverP(n);
     return n;
   }
   CL_DEFMETHOD bool setP() const { return this->set_p; }
@@ -179,16 +199,20 @@ FORWARD(LocalFunInfo);
 class LocalFunInfo_O : public FunInfo_O {
   LISP_CLASS(comp, CompPkg, LocalFunInfo_O, "LocalFunInfo", FunInfo_O);
 public:
-  T_sp fun_var;
+  LexicalInfo_sp _lex;
 public:
-  LocalFunInfo_O(T_sp nfun_var)
-    : FunInfo_O(), fun_var(nfun_var) {};
+  LocalFunInfo_O(LexicalInfo_sp nlex)
+    : FunInfo_O(), _lex(nlex) {};
   CL_LISPIFY_NAME(LocalFunInfo/make)
   CL_DEF_CLASS_METHOD
-  static LocalFunInfo_sp make(T_sp value) {
-    return gctools::GC<LocalFunInfo_O>::allocate<gctools::RuntimeStage>(value);
+  static LocalFunInfo_sp make(size_t frame_index, Cfunction_sp funct) {
+    LexicalInfo_sp nlex = LexicalInfo_O::make(frame_index, funct);
+    return gctools::GC<LocalFunInfo_O>::allocate<gctools::RuntimeStage>(nlex);
   }
-  CL_DEFMETHOD T_sp funVar() const { return this->fun_var; }
+  CL_LISPIFY_NAME(LocalFunInfo/lex)
+  CL_DEFMETHOD LexicalInfo_sp lex() const { return this->_lex; }
+  size_t frameIndex() const { return this->lex()->frameIndex(); }
+  Cfunction_sp funct() const { return this->lex()->cfunction(); }
 };
 
 struct LocalFunInfoV {
@@ -289,6 +313,9 @@ public:
   inline Lexenv_sp sub_funs(List_sp funs) const {
     return make(vars(), tags(), blocks(), funs, decls(), frameEnd());
   }
+  inline Lexenv_sp sub_funs(List_sp funs, size_t frame_end) const {
+    return make(vars(), tags(), blocks(), funs, decls(), frame_end);
+  }
   inline Lexenv_sp sub_tags(List_sp tags) const {
     return make(vars(), tags, blocks(), funs(), decls(), frameEnd());
   }
@@ -306,6 +333,8 @@ public:
   Lexenv_sp bind_vars(List_sp vars, const Context context);
   // Ditto but with just one.
   Lexenv_sp bind1var(Symbol_sp var, const Context context);
+  // Like bind_vars but for function bindings.
+  Lexenv_sp bind_funs(List_sp funs, const Context context);
   // Add VARS as special in ENV.
   CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
   // Add new declarations.
@@ -385,7 +414,7 @@ public:
   void maybe_emit_entry_close(LexicalVarInfo_sp info) const;
   void emit_catch(Label_sp label) const;
   void emit_jump_if_supplied(Label_sp label, size_t indx) const;
-  void reference_lexical_info(LexicalVarInfo_sp info) const;
+  void reference_lexical_info(LexicalInfo_sp info) const;
   void maybe_emit_make_cell(LexicalVarInfo_sp info) const;
   void maybe_emit_cell_ref(LexicalVarInfo_sp info) const;
   void maybe_emit_encage(LexicalVarInfo_sp info) const;

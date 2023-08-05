@@ -97,6 +97,26 @@ Lexenv_sp Lexenv_O::bind1var(Symbol_sp var, const Context ctxt) {
   return this->sub_vars(new_vars, frame_end);
 }
 
+Lexenv_sp Lexenv_O::bind_funs(List_sp funs, const Context ctxt) {
+  if (funs.nilp())
+    return this->asSmartPtr();
+  size_t frame_start = this->frameEnd();
+  size_t frame_end = frame_start + funs.unsafe_cons()->length();
+  Cfunction_sp cf = ctxt.cfunction();
+
+  cf->setNlocals(std::max(frame_end, cf->nlocals()));
+  size_t idx = frame_start;
+  List_sp new_funs = this->funs();
+  for (auto cur : funs) {
+    T_sp name = oCar(cur);
+    auto info = LocalFunInfo_O::make(idx++, cf);
+    Cons_sp pair = Cons_O::create(name, info);
+    new_funs = Cons_O::create(pair, new_funs);
+  }
+  return this->sub_funs(new_funs, frame_end);
+}
+
+
 Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
   if (vars.nilp())
     return this->asSmartPtr();
@@ -413,8 +433,8 @@ void Context::emit_jump_if_supplied(Label_sp label, size_t ind) const {
 }
 
 // Push the immutable value or cell of lexical in CONTEXT.
-void Context::reference_lexical_info(LexicalVarInfo_sp info) const {
-  if (info->funct() == this->cfunction())
+void Context::reference_lexical_info(LexicalInfo_sp info) const {
+  if (info->cfunction() == this->cfunction())
     this->assemble1(vm_ref, info->frameIndex());
   else
     this->assemble1(vm_closure, this->closure_index(info));
@@ -1117,7 +1137,7 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
         context.assemble1(vm_ref, lvinfo->frameIndex());
       else { // closed over
         lvinfo->setClosedOverP(true);
-        context.assemble1(vm_closure, context.closure_index(lvinfo));
+        context.assemble1(vm_closure, context.closure_index(lvinfo->lex()));
       }
       context.maybe_emit_cell_ref(lvinfo);
     } else if (std::holds_alternative<SpecialVarInfoV>(info))
@@ -1719,7 +1739,7 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
                                       source_location_for(fnameoid, ctxt.source_info()));
     ComplexVector_T_sp closed = fun->closed();
     for (size_t i = 0; i < closed->length(); ++i) {
-      ctxt.reference_lexical_info(gc::As_assert<LexicalVarInfo_sp>((*closed)[i]));
+      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>((*closed)[i]));
     }
     if (closed->length() == 0) // don't need to actually close
       ctxt.assemble1(vm_const, ctxt.literal_index(fun));
@@ -1736,8 +1756,7 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.assemble1(vm_fdefinition, ctxt.literal_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
-      LexicalVarInfo_sp lvinfo = gc::As_assert<LexicalVarInfo_sp>(lfinfo->funVar());
-      ctxt.reference_lexical_info(lvinfo);
+      ctxt.reference_lexical_info(lfinfo->lex());
     } else
       // FIXME: e.g. #'with-open-file. needs better error.
       SIMPLE_ERROR("{} does not name a function", _rep_(fnameoid));
@@ -1749,13 +1768,10 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
 
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
   ql::list fun_vars;
-  ql::list funs;
   size_t fun_count = 0;
-  size_t frame_slot = env->frameEnd(); // HACK FIXME
   for (auto cur : definitions) {
     Cons_sp definition = gc::As<Cons_sp>(oCar(cur));
     T_sp name = oCar(definition);
-    Symbol_sp fun_var = cl__gensym(SimpleBaseString_O::make("FLET-FUN"));
     List_sp declares = nil<T_O>();
     gc::Nilable<String_sp> docstring;
     List_sp code;
@@ -1764,35 +1780,26 @@ void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Contex
     T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
     T_sp lambda = Cons_O::createList(cl::_sym_lambda, oCadr(definition), Cons_O::create(cl::_sym_declare, declares), block);
     compile_function(lambda, env, ctxt.sub_receiving(1));
-    fun_vars << fun_var;
-    funs << Cons_O::create(name, LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++, ctxt.cfunction())));
+    fun_vars << name;
     ++fun_count;
   }
   ctxt.emit_bind(fun_count, env->frameEnd());
   // KLUDGEy - we could do this in one new environment
-  Lexenv_sp new_env1 = env->bind_vars(fun_vars.cons(), ctxt);
-  Lexenv_sp new_env2 = new_env1->sub_funs(funs.dot(new_env1->funs()).cons());
-  compile_locally(body, new_env2, ctxt);
+  Lexenv_sp new_env = env->bind_funs(fun_vars.cons(), ctxt);
+  compile_locally(body, new_env, ctxt);
 }
 
 void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
   size_t fun_count = 0;
-  ql::list funs;
   ql::list fun_vars;
   ql::list closures;
-  size_t frame_start = env->frameEnd();
-  size_t frame_slot = env->frameEnd();
   for (auto cur : definitions) {
     Cons_sp definition = gc::As<Cons_sp>(oCar(cur));
     T_sp name = oCar(definition);
-    T_sp fun_var = cl__gensym(SimpleBaseString_O::make("LABELS-FUN"));
-    fun_vars << fun_var;
-    funs << Cons_O::create(name, LocalFunInfo_O::make(LexicalVarInfo_O::make(frame_slot++, ctxt.cfunction())));
+    fun_vars << name;
     ++fun_count;
   }
-  frame_slot = frame_start;
-  Lexenv_sp new_env1 = env->bind_vars(fun_vars.cons(), ctxt);
-  Lexenv_sp new_env2 = new_env1->sub_funs(funs.dot(new_env1->funs()).cons());
+  Lexenv_sp new_env = env->bind_funs(fun_vars.cons(), ctxt);
   for (auto cur : definitions) {
     Cons_sp definition = gc::As_unsafe<Cons_sp>(oCar(cur));
     T_sp name = oCar(definition);
@@ -1803,29 +1810,29 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
     eval::extract_declares_docstring_code_specials(oCddr(definition), declares, false, docstring, code, specials);
     T_sp block = Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code));
     T_sp fun_body = Cons_O::createList(Cons_O::create(cl::_sym_declare, declares), block);
-    Cfunction_sp fun = compile_lambda(oCadr(definition), fun_body, new_env2, ctxt.module(),
+    Cfunction_sp fun = compile_lambda(oCadr(definition), fun_body, new_env, ctxt.module(),
                                       source_location_for(definition, ctxt.source_info()));
     size_t literal_index = ctxt.literal_index(fun);
     if (fun->closed()->length() == 0) // not a closure- easy
       ctxt.assemble1(vm_const, literal_index);
     else {
-      closures << Cons_O::create(fun, clasp_make_fixnum(frame_slot));
+      LocalFunInfo_sp lfi = gc::As_assert<LocalFunInfo_sp>(fun_info(name, new_env));
+      closures << Cons_O::create(fun, clasp_make_fixnum(lfi->frameIndex()));
       ctxt.assemble1(vm_make_uninitialized_closure, literal_index);
     }
-    ++frame_slot;
   }
-  ctxt.emit_bind(fun_count, frame_start);
+  ctxt.emit_bind(fun_count, env->frameEnd());
   // Make the closures
   for (auto cur : gc::As_assert<List_sp>(closures.cons())) {
     Cfunction_sp cf = gc::As_unsafe<Cfunction_sp>(oCaar(cur));
     ComplexVector_T_sp closed = cf->closed();
     for (size_t i = 0; i < closed->length(); ++i) {
-      LexicalVarInfo_sp info = gc::As_assert<LexicalVarInfo_sp>((*closed)[i]);
+      LexicalInfo_sp info = gc::As_assert<LexicalInfo_sp>((*closed)[i]);
       ctxt.reference_lexical_info(info);
     }
     ctxt.assemble1(vm_initialize_closure, oCdar(cur).unsafe_fixnum());
   }
-  compile_locally(body, new_env2, ctxt);
+  compile_locally(body, new_env, ctxt);
 }
 
 static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Context ctxt) {
@@ -1866,7 +1873,7 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     if (localp)
       ctxt.emit_lexical_set(lvinfo);
     else { // we already know we need a cell, so don't bother w/ a fixup.
-      ctxt.assemble1(vm_closure, ctxt.closure_index(lvinfo));
+      ctxt.assemble1(vm_closure, ctxt.closure_index(lvinfo->lex()));
       ctxt.assemble0(vm_cell_set);
     }
     if (ctxt.receiving() == -1)
@@ -1986,7 +1993,7 @@ static void compile_exit(LexicalVarInfo_sp exit_de, Label_sp exit, const Context
     context.emit_exit_or_jump(exit_de, exit);
   } else { // nonlocal
     exit_de->setClosedOverP(true);
-    context.reference_lexical_info(exit_de);
+    context.reference_lexical_info(exit_de->lex());
     context.emit_exit(exit);
   }
 }
