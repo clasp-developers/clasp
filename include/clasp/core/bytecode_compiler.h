@@ -20,6 +20,9 @@ public:
   size_t _frame_index;
   Cfunction_sp _cfunction;
   bool _closed_over_p = false;
+  // only used for lexical variables, but it's convenient for fixups and debug
+  // infos to have it generally present.
+  bool _set_p = false;
 public:
   LexicalInfo_O(size_t ind, Cfunction_sp funct) : _frame_index(ind), _cfunction(funct) {};
   CL_LISPIFY_NAME(LexicalInfo/make)
@@ -31,6 +34,10 @@ public:
   CL_DEFMETHOD Cfunction_sp cfunction() const { return this->_cfunction; }
   CL_DEFMETHOD bool closedOverP() const { return this->_closed_over_p; }
   void setClosedOverP(bool n) { this->_closed_over_p = n; }
+  CL_DEFMETHOD bool setP() const { return this->_set_p; }
+  void setSetP(bool n) { this->_set_p = n; }
+  // Is a cell required?
+  bool indirectLexicalP() const { return closedOverP() && setP(); }
 };
 
 class VarInfo_O : public General_O {
@@ -44,7 +51,6 @@ class LexicalVarInfo_O : public VarInfo_O {
   LISP_CLASS(comp, CompPkg, LexicalVarInfo_O, "LexicalVarInfo", VarInfo_O);
 public:
   LexicalInfo_sp _lex;
-  bool set_p = false;
 public:
   LexicalVarInfo_O(LexicalInfo_sp nlex)
     : VarInfo_O(), _lex(nlex) {};
@@ -64,16 +70,14 @@ public:
     this->lex()->setClosedOverP(n);
     return n;
   }
-  CL_DEFMETHOD bool setP() const { return this->set_p; }
+  CL_DEFMETHOD bool setP() const { return this->lex()->setP(); }
   CL_LISPIFY_NAME(LexicalVarInfo/setf-set-p)
   CL_DEFMETHOD bool setSetP(bool n) {
-    this->set_p = n;
+    this->lex()->setSetP(n);
     return n;
   }
   // Does the variable need a cell?
-  bool indirectLexicalP() const {
-    return this->closedOverP() && this->setP();
-  }
+  bool indirectLexicalP() const { return this->lex()->indirectLexicalP(); }
 };
 
 struct LexicalVarInfoV {
@@ -407,11 +411,11 @@ public:
                           uint8_t opcode8, uint8_t opcode16, uint8_t opcode24) const;
   void emit_jump(Label_sp label) const;
   void emit_jump_if(Label_sp label) const;
-  void emit_entry_or_save_sp(LexicalVarInfo_sp info) const;
-  void emit_ref_or_restore_sp(LexicalVarInfo_sp info) const;
+  void emit_entry_or_save_sp(LexicalInfo_sp info) const;
+  void emit_ref_or_restore_sp(LexicalInfo_sp info) const;
   void emit_exit(Label_sp label) const;
-  void emit_exit_or_jump(LexicalVarInfo_sp info, Label_sp label) const;
-  void maybe_emit_entry_close(LexicalVarInfo_sp info) const;
+  void emit_exit_or_jump(LexicalInfo_sp info, Label_sp label) const;
+  void maybe_emit_entry_close(LexicalInfo_sp info) const;
   void emit_catch(Label_sp label) const;
   void emit_jump_if_supplied(Label_sp label, size_t indx) const;
   void reference_lexical_info(LexicalInfo_sp info) const;
@@ -586,13 +590,13 @@ FORWARD(LexFixup);
 class LexFixup_O : public Fixup_O {
   LISP_ABSTRACT_CLASS(comp, CompPkg, LexFixup_O, "LexFixup", Fixup_O);
 public:
-  LexicalVarInfo_sp _lex;
+  LexicalInfo_sp _lex;
 public:
   LexFixup_O() : Fixup_O() {}
-  LexFixup_O(LexicalVarInfo_sp lex, size_t initial_size)
+  LexFixup_O(LexicalInfo_sp lex, size_t initial_size)
     : Fixup_O(initial_size), _lex(lex) {}
 public:
-  LexicalVarInfo_sp lex() { return _lex; }
+  LexicalInfo_sp lex() { return _lex; }
 };
 
 // Used to add make-cell or cell-ref where needed.
@@ -603,11 +607,11 @@ public:
   uint8_t _opcode;
 public:
   LexRefFixup_O() : LexFixup_O() {}
-  LexRefFixup_O(LexicalVarInfo_sp lex, uint8_t opcode)
+  LexRefFixup_O(LexicalInfo_sp lex, uint8_t opcode)
     : LexFixup_O(lex, 0), _opcode(opcode) {}
   CL_LISPIFY_NAME(LexRefFixup/make)
   CL_DEF_CLASS_METHOD
-  static LexRefFixup_sp make(LexicalVarInfo_sp lex, uint8_t opcode) {
+  static LexRefFixup_sp make(LexicalInfo_sp lex, uint8_t opcode) {
     return gctools::GC<LexRefFixup_O>::allocate<gctools::RuntimeStage>(lex, opcode);
   }
 public:
@@ -621,11 +625,11 @@ class EncageFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, EncageFixup_O, "EncageFixup", LexFixup_O);
 public:
   EncageFixup_O() : LexFixup_O() {}
-  EncageFixup_O(LexicalVarInfo_sp lex)
+  EncageFixup_O(LexicalInfo_sp lex)
     : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(EncageFixup/make)
   CL_DEF_CLASS_METHOD
-  static EncageFixup_sp make(LexicalVarInfo_sp lex) {
+  static EncageFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<EncageFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:
@@ -638,11 +642,11 @@ class LexSetFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, LexSetFixup_O, "LexSetFixup", LexFixup_O);
 public:
   LexSetFixup_O() : LexFixup_O() {}
-  LexSetFixup_O(LexicalVarInfo_sp lex)
+  LexSetFixup_O(LexicalInfo_sp lex)
     : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(LexSetFixup/make)
   CL_DEF_CLASS_METHOD
-  static LexSetFixup_sp make(LexicalVarInfo_sp lex) {
+  static LexSetFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<LexSetFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:
@@ -657,10 +661,10 @@ class EntryFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, EntryFixup_O, "EntryFixup", LexFixup_O);
 public:
   EntryFixup_O() : LexFixup_O() {}
-  EntryFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  EntryFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(EntryFixup/make)
   CL_DEF_CLASS_METHOD
-  static EntryFixup_sp make(LexicalVarInfo_sp lex) {
+  static EntryFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<EntryFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:
@@ -674,10 +678,10 @@ class RestoreSPFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, RestoreSPFixup_O, "RestoreSPFixup", LexFixup_O);
 public:
   RestoreSPFixup_O() : LexFixup_O() {}
-  RestoreSPFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  RestoreSPFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(RestoreSPFixup/make)
   CL_DEF_CLASS_METHOD
-  static RestoreSPFixup_sp make(LexicalVarInfo_sp lex) {
+  static RestoreSPFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<RestoreSPFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:
@@ -688,23 +692,23 @@ public:
 // Generate an exit or jump.
 FORWARD(ExitFixup);
 class ExitFixup_O : public LabelFixup_O {
-  LISP_CLASS(comp, CompPkg, ExitFixup_O, "ExitFixup", LexFixup_O);
+  LISP_CLASS(comp, CompPkg, ExitFixup_O, "ExitFixup", LabelFixup_O);
 public:
   // Clasp doesn't like C++ multiple inheritance.
-  LexicalVarInfo_sp _lex;
+  LexicalInfo_sp _lex;
 public:
   ExitFixup_O() : LabelFixup_O() {}
-  ExitFixup_O(LexicalVarInfo_sp lex, Label_sp label)
+  ExitFixup_O(LexicalInfo_sp lex, Label_sp label)
     : LabelFixup_O(label, 2), _lex(lex) {}
   CL_LISPIFY_NAME(ExitFixup/make)
   CL_DEF_CLASS_METHOD
-  static ExitFixup_sp make(LexicalVarInfo_sp lex, Label_sp label) {
+  static ExitFixup_sp make(LexicalInfo_sp lex, Label_sp label) {
     return gctools::GC<ExitFixup_O>::allocate<gctools::RuntimeStage>(lex, label);
   }
 public:
   virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
   virtual size_t resize();
-  LexicalVarInfo_sp lex() { return this->_lex; }
+  LexicalInfo_sp lex() { return this->_lex; }
 };
 
 // Similar to EntryFixup, adds a vm_entry_close.
@@ -713,10 +717,10 @@ class EntryCloseFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, EntryCloseFixup_O, "EntryCloseFixup", LexFixup_O);
 public:
   EntryCloseFixup_O() : LexFixup_O() {}
-  EntryCloseFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  EntryCloseFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(EntryCloseFixup/make)
   CL_DEF_CLASS_METHOD
-  static EntryCloseFixup_sp make(LexicalVarInfo_sp lex) {
+  static EntryCloseFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<EntryCloseFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:

@@ -593,6 +593,8 @@
              :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_cfunction")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_closed_over_p")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "comp::LexicalInfo_O" :layout-offset-field-names ("_set_p")}
 {class-kind :stamp-name "STAMPWTAG_core__DynEnv_O" :stamp-key "core::DynEnv_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -705,7 +707,7 @@
              :offset-ctype "gctools::smart_ptr<comp::Label_O>"
              :offset-base-ctype "comp::LabelFixup_O" :layout-offset-field-names ("_label")}
 {class-kind :stamp-name "STAMPWTAG_comp__ExitFixup_O" :stamp-key "comp::ExitFixup_O"
-            :parent-class "comp::LabelFixup_O" :lisp-class-base "comp::LexFixup_O"
+            :parent-class "comp::LabelFixup_O" :lisp-class-base "comp::LabelFixup_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "comp::ExitFixup_O"
@@ -725,7 +727,7 @@
              :offset-ctype "gctools::smart_ptr<comp::Label_O>"
              :offset-base-ctype "comp::ExitFixup_O" :layout-offset-field-names ("_label")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::ExitFixup_O" :layout-offset-field-names ("_lex")}
 {class-kind :stamp-name "STAMPWTAG_comp__ControlLabelFixup_O"
             :stamp-key "comp::ControlLabelFixup_O" :parent-class "comp::LabelFixup_O"
@@ -802,7 +804,7 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::LexFixup_O" :layout-offset-field-names ("_initial_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::LexFixup_O" :layout-offset-field-names ("_lex")}
 {class-kind :stamp-name "STAMPWTAG_comp__LexSetFixup_O" :stamp-key "comp::LexSetFixup_O"
             :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
@@ -822,7 +824,7 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::LexSetFixup_O" :layout-offset-field-names ("_initial_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::LexSetFixup_O" :layout-offset-field-names ("_lex")}
 {class-kind :stamp-name "STAMPWTAG_comp__EntryFixup_O" :stamp-key "comp::EntryFixup_O"
             :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
@@ -842,7 +844,7 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::EntryFixup_O" :layout-offset-field-names ("_initial_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::EntryFixup_O" :layout-offset-field-names ("_lex")}
 {class-kind :stamp-name "STAMPWTAG_comp__EntryCloseFixup_O" :stamp-key "comp::EntryCloseFixup_O"
             :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
@@ -863,7 +865,7 @@
              :offset-base-ctype "comp::EntryCloseFixup_O"
              :layout-offset-field-names ("_initial_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::EntryCloseFixup_O" :layout-offset-field-names ("_lex")}
 {class-kind :stamp-name "STAMPWTAG_comp__LexRefFixup_O" :stamp-key "comp::LexRefFixup_O"
             :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
@@ -883,7 +885,7 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::LexRefFixup_O" :layout-offset-field-names ("_initial_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::LexRefFixup_O" :layout-offset-field-names ("_lex")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_char" :offset-ctype "unsigned char"
              :offset-base-ctype "comp::LexRefFixup_O" :layout-offset-field-names ("_opcode")}
@@ -906,7 +908,7 @@
              :offset-base-ctype "comp::RestoreSPFixup_O"
              :layout-offset-field-names ("_initial_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::RestoreSPFixup_O" :layout-offset-field-names ("_lex")}
 {class-kind :stamp-name "STAMPWTAG_comp__EncageFixup_O" :stamp-key "comp::EncageFixup_O"
             :parent-class "comp::LexFixup_O" :lisp-class-base "comp::LexFixup_O"
@@ -926,7 +928,7 @@
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::EncageFixup_O" :layout-offset-field-names ("_initial_size")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<comp::LexicalVarInfo_O>"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::EncageFixup_O" :layout-offset-field-names ("_lex")}
 {class-kind :stamp-name "STAMPWTAG_comp__Label_O" :stamp-key "comp::Label_O"
             :parent-class "comp::Annotation_O" :lisp-class-base "comp::Annotation_O"
@@ -1235,8 +1237,6 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
              :offset-base-ctype "comp::LexicalVarInfo_O" :layout-offset-field-names ("_lex")}
-{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
-             :offset-base-ctype "comp::LexicalVarInfo_O" :layout-offset-field-names ("set_p")}
 {class-kind :stamp-name "STAMPWTAG_core__SingleDispatchMethod_O"
             :stamp-key "core::SingleDispatchMethod_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3

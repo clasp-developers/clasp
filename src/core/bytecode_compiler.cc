@@ -410,19 +410,19 @@ void Context::emit_jump_if(Label_sp label) const {
   ControlLabelFixup_O::make(label, vm_jump_if_8, vm_jump_if_16, vm_jump_if_24)->contextualize(*this);
 }
 
-void Context::emit_entry_or_save_sp(LexicalVarInfo_sp dynenv) const { EntryFixup_O::make(dynenv)->contextualize(*this); }
+void Context::emit_entry_or_save_sp(LexicalInfo_sp dynenv) const { EntryFixup_O::make(dynenv)->contextualize(*this); }
 
-void Context::emit_ref_or_restore_sp(LexicalVarInfo_sp dynenv) const { RestoreSPFixup_O::make(dynenv)->contextualize(*this); }
+void Context::emit_ref_or_restore_sp(LexicalInfo_sp dynenv) const { RestoreSPFixup_O::make(dynenv)->contextualize(*this); }
 
 void Context::emit_exit(Label_sp label) const {
   ControlLabelFixup_O::make(label, vm_exit_8, vm_exit_16, vm_exit_24)->contextualize(*this);
 }
 
-void Context::emit_exit_or_jump(LexicalVarInfo_sp dynenv, Label_sp label) const {
+void Context::emit_exit_or_jump(LexicalInfo_sp dynenv, Label_sp label) const {
   ExitFixup_O::make(dynenv, label)->contextualize(*this);
 }
 
-void Context::maybe_emit_entry_close(LexicalVarInfo_sp dynenv) const { EntryCloseFixup_O::make(dynenv)->contextualize(*this); }
+void Context::maybe_emit_entry_close(LexicalInfo_sp dynenv) const { EntryCloseFixup_O::make(dynenv)->contextualize(*this); }
 
 void Context::emit_catch(Label_sp label) const {
   ControlLabelFixup_O::make(label, vm_catch_8, vm_catch_16, 0)->contextualize(*this);
@@ -440,15 +440,15 @@ void Context::reference_lexical_info(LexicalInfo_sp info) const {
     this->assemble1(vm_closure, this->closure_index(info));
 }
 
-void Context::maybe_emit_make_cell(LexicalVarInfo_sp info) const { LexRefFixup_O::make(info, vm_make_cell)->contextualize(*this); }
+void Context::maybe_emit_make_cell(LexicalVarInfo_sp info) const { LexRefFixup_O::make(info->lex(), vm_make_cell)->contextualize(*this); }
 
-void Context::maybe_emit_cell_ref(LexicalVarInfo_sp info) const { LexRefFixup_O::make(info, vm_cell_ref)->contextualize(*this); }
+void Context::maybe_emit_cell_ref(LexicalVarInfo_sp info) const { LexRefFixup_O::make(info->lex(), vm_cell_ref)->contextualize(*this); }
 
 // FIXME: This is probably a good candidate for a specialized
 // instruction.
-void Context::maybe_emit_encage(LexicalVarInfo_sp info) const { EncageFixup_O::make(info)->contextualize(*this); }
+void Context::maybe_emit_encage(LexicalVarInfo_sp info) const { EncageFixup_O::make(info->lex())->contextualize(*this); }
 
-void Context::emit_lexical_set(LexicalVarInfo_sp info) const { LexSetFixup_O::make(info)->contextualize(*this); }
+void Context::emit_lexical_set(LexicalVarInfo_sp info) const { LexSetFixup_O::make(info->lex())->contextualize(*this); }
 
 void Context::emit_parse_key_args(size_t max_count, size_t key_count, size_t keystart, size_t indx, bool aokp) const {
   ComplexVector_byte8_t_sp bytecode = this->cfunction()->bytecode();
@@ -1955,7 +1955,7 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
   }
   Lexenv_sp nnenv = nenv->sub_tags(new_tags);
   // Bind the dynamic environment (or just save the stack pointer).
-  ctxt.emit_entry_or_save_sp(dynenv_info);
+  ctxt.emit_entry_or_save_sp(dynenv_info->lex());
   // Compile the body, emitting the tag destination labels.
   for (auto cur : statements) {
     T_sp statement = oCar(cur);
@@ -1967,7 +1967,7 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
     } else
       compile_form(statement, nnenv, stmt_ctxt.sub_receiving(0));
   }
-  ctxt.maybe_emit_entry_close(dynenv_info);
+  ctxt.maybe_emit_entry_close(dynenv_info->lex());
   // return nil if we really have to
   if (ctxt.receiving() != 0) {
     ctxt.assemble0(vm_nil);
@@ -1984,13 +1984,13 @@ static void compile_exit(LexicalVarInfo_sp exit_de, Label_sp exit, const Context
       if (interde == exit_de)
         break;
       if (gc::IsA<LexicalVarInfo_sp>(interde))
-        context.maybe_emit_entry_close(gc::As_unsafe<LexicalVarInfo_sp>(interde));
+        context.maybe_emit_entry_close(gc::As_unsafe<LexicalVarInfo_sp>(interde)->lex());
       else // must be a count of specials
         context.emit_unbind(interde.unsafe_fixnum());
     }
     // Actually exit.
-    context.emit_ref_or_restore_sp(exit_de);
-    context.emit_exit_or_jump(exit_de, exit);
+    context.emit_ref_or_restore_sp(exit_de->lex());
+    context.emit_exit_or_jump(exit_de->lex(), exit);
   } else { // nonlocal
     exit_de->setClosedOverP(true);
     context.reference_lexical_info(exit_de->lex());
@@ -2024,7 +2024,7 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
   Label_sp label = Label_O::make();
   Label_sp normal_label = Label_O::make();
   // Bind the dynamic environment or save SP.
-  ctxt.emit_entry_or_save_sp(dynenv_info);
+  ctxt.emit_entry_or_save_sp(dynenv_info->lex());
   Cons_sp new_pair = Cons_O::create(name, Cons_O::create(dynenv_info, Cons_O::create(label, clasp_make_fixnum(ctxt.receiving()))));
   Lexenv_sp nnenv = nenv->sub_blocks(Cons_O::create(new_pair, nenv->blocks()));
   // We force single values into multiple so that we can uniformly PUSH afterward.
@@ -2048,7 +2048,7 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
     normal_label->contextualize(ctxt);
     ctxt.push_debug_info(BytecodeDebugBlock_O::make(label, label, nil<T_O>(), 1));
   }
-  ctxt.maybe_emit_entry_close(dynenv_info);
+  ctxt.maybe_emit_entry_close(dynenv_info->lex());
 }
 
 void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ctxt) {
