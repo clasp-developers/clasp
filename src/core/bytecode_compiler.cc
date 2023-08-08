@@ -64,6 +64,27 @@ T_sp Lexenv_O::lookupMacro(T_sp macroname) {
     return info;
 }
 
+T_sp Lexenv_O::blockInfo(T_sp blockname) {
+  T_sp blocks = this->blocks();
+  if (blocks.nilp()) return blocks;
+  else {
+    T_sp pair = core__alist_assoc_equal(gc::As_assert<Cons_sp>(blocks), blockname);
+    if (pair.nilp()) return pair;
+    else return oCdr(pair);
+  }
+}
+
+T_sp Lexenv_O::tagInfo(T_sp tagname) {
+  T_sp tags = this->tags();
+  if (tags.nilp()) return tags;
+  else {
+    T_sp pair = core__alist_assoc_equal(gc::As_assert<Cons_sp>(tags), tagname);
+    if (pair.nilp()) return pair;
+    else return oCdr(pair);
+  }
+}
+
+
 Lexenv_sp Lexenv_O::bind_vars(List_sp vars, const Context ctxt) {
   if (vars.nilp())
     return this->asSmartPtr();
@@ -116,6 +137,29 @@ Lexenv_sp Lexenv_O::bind_funs(List_sp funs, const Context ctxt) {
   return this->sub_funs(new_funs, frame_end);
 }
 
+Lexenv_sp Lexenv_O::bind_block(T_sp name, Label_sp exit, const Context ctxt) {
+  size_t frame_start = this->frameEnd();
+  Cfunction_sp cf = ctxt.cfunction();
+
+  cf->setNlocals(std::max(frame_start + 1, cf->nlocals()));
+  BlockInfo_sp binfo = BlockInfo_O::make(frame_start, ctxt.cfunction(),
+                                         exit, ctxt.receiving());
+  return this->sub_block(Cons_O::create(Cons_O::create(name, binfo), this->blocks()));
+}
+
+Lexenv_sp Lexenv_O::bind_tags(List_sp tags, LexicalInfo_sp dynenv, const Context ctxt) {
+  Cfunction_sp cf = ctxt.cfunction();
+  cf->setNlocals(std::max(this->frameEnd() + 1, cf->nlocals()));
+  if (tags.nilp()) return this->asSmartPtr();
+  List_sp new_tags = this->tags();
+  for (auto cur : tags) {
+    T_sp tag = oCar(cur);
+    TagInfo_sp info = TagInfo_O::make(dynenv, Label_O::make());
+    Cons_sp pair = Cons_O::create(tag, info);
+    new_tags = Cons_O::create(pair, new_tags);
+  }
+  return this->sub_tags(new_tags);
+}
 
 Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
   if (vars.nilp())
@@ -1943,31 +1987,37 @@ void compile_if(T_sp cond, T_sp thn, T_sp els, Lexenv_sp env, const Context ctxt
 static bool go_tag_p(T_sp object) { return object.fixnump() || gc::IsA<Integer_sp>(object) || gc::IsA<Symbol_sp>(object); }
 
 void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
-  List_sp new_tags = gc::As_assert<List_sp>(env->tags());
-  Symbol_sp tagbody_dynenv = cl__gensym(SimpleBaseString_O::make("TAG-DYNENV"));
-  Lexenv_sp nenv = env->bind1var(tagbody_dynenv, ctxt);
-  auto dynenv_info = gc::As_assert<LexicalVarInfo_sp>(nenv->variableInfo(tagbody_dynenv));
-  Context stmt_ctxt = ctxt.sub_de(dynenv_info);
+  ql::list tags;
   for (auto cur : statements) {
     T_sp statement = oCar(cur);
-    if (go_tag_p(statement))
-      new_tags = Cons_O::create(Cons_O::create(statement, Cons_O::create(dynenv_info, Label_O::make())), new_tags);
+    if (go_tag_p(statement)) tags << statement;
   }
-  Lexenv_sp nnenv = nenv->sub_tags(new_tags);
-  // Bind the dynamic environment (or just save the stack pointer).
-  ctxt.emit_entry_or_save_sp(dynenv_info->lex());
-  // Compile the body, emitting the tag destination labels.
-  for (auto cur : statements) {
-    T_sp statement = oCar(cur);
-    if (go_tag_p(statement)) {
-      T_sp info = core__alist_assoc_eql(gc::As<Cons_sp>(nnenv->tags()), statement);
-      Label_sp lab = gc::As_assert<Label_sp>(oCddr(info));
-      lab->contextualize(ctxt);
-      ctxt.push_debug_info(BytecodeDebugBlock_O::make(lab, lab, statement, 0));
-    } else
-      compile_form(statement, nnenv, stmt_ctxt.sub_receiving(0));
+  List_sp ltags = tags.cons();
+  if (ltags.nilp()) { // degenerate case
+    Context stmt_ctxt = ctxt.sub_receiving(0);
+    for (auto cur : statements) {
+      T_sp statement = oCar(cur);
+      compile_form(statement, env, stmt_ctxt);
+    }
+  } else { // actual dynenv+tags case
+    LexicalInfo_sp dynenv = LexicalInfo_O::make(env->frameEnd(), ctxt.cfunction());
+    Lexenv_sp nenv = env->bind_tags(tags.cons(), dynenv, ctxt);
+    // Bind the dynamic environment (or just save the stack pointer).
+    ctxt.emit_entry_or_save_sp(dynenv);
+    // Compile the body, emitting the tag destination labels.
+    Context stmt_ctxt = ctxt.sub_de(dynenv).sub_receiving(0);
+    for (auto cur : statements) {
+      T_sp statement = oCar(cur);
+      if (go_tag_p(statement)) {
+        TagInfo_sp tinfo = gc::As<TagInfo_sp>(nenv->tagInfo(statement));
+        Label_sp lab = tinfo->exit();
+        lab->contextualize(stmt_ctxt);
+        ctxt.push_debug_info(BytecodeDebugBlock_O::make(lab, lab, statement, 0));
+      } else
+        compile_form(statement, nenv, stmt_ctxt);
+    }
+    stmt_ctxt.maybe_emit_entry_close(dynenv);
   }
-  ctxt.maybe_emit_entry_close(dynenv_info->lex());
   // return nil if we really have to
   if (ctxt.receiving() != 0) {
     ctxt.assemble0(vm_nil);
@@ -1976,64 +2026,57 @@ void compile_tagbody(List_sp statements, Lexenv_sp env, const Context ctxt) {
   }
 }
 
-static void compile_exit(LexicalVarInfo_sp exit_de, Label_sp exit, const Context context) {
-  if (exit_de->funct() == context.cfunction()) { // local return
+static void compile_exit(LexicalInfo_sp exit_de, Label_sp exit, const Context context) {
+  if (exit_de->cfunction() == context.cfunction()) { // local return
     // Unwind interposed dynenvs.
     for (auto cur : context.dynenv()) {
       T_sp interde = oCar(cur);
       if (interde == exit_de)
         break;
-      if (gc::IsA<LexicalVarInfo_sp>(interde))
-        context.maybe_emit_entry_close(gc::As_unsafe<LexicalVarInfo_sp>(interde)->lex());
+      if (gc::IsA<LexicalInfo_sp>(interde))
+        context.maybe_emit_entry_close(gc::As_unsafe<LexicalInfo_sp>(interde));
       else // must be a count of specials
         context.emit_unbind(interde.unsafe_fixnum());
     }
     // Actually exit.
-    context.emit_ref_or_restore_sp(exit_de->lex());
-    context.emit_exit_or_jump(exit_de->lex(), exit);
+    context.emit_ref_or_restore_sp(exit_de);
+    context.emit_exit_or_jump(exit_de, exit);
   } else { // nonlocal
     exit_de->setClosedOverP(true);
-    context.reference_lexical_info(exit_de->lex());
+    context.reference_lexical_info(exit_de);
     context.emit_exit(exit);
   }
 }
 
 void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
-  T_sp tags = env->tags();
-  if (tags.consp()) {
-    // tags must be a cons now
-    T_sp pair = core__alist_assoc_eql(gc::As<Cons_sp>(tags), tag);
-    if (pair.consp()) {
-      Cons_sp rpair = gc::As_assert<Cons_sp>(CONS_CDR(pair));
-      compile_exit(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)), gc::As_assert<Label_sp>(CONS_CDR(rpair)), ctxt);
-      if (ctxt.receiving() != 0) {
+  T_sp tinfo = env->tagInfo(tag);
+  if (gc::IsA<TagInfo_sp>(tinfo)) {
+    TagInfo_sp info = gc::As_unsafe<TagInfo_sp>(tinfo);
+    compile_exit(info->lex(), info->exit(), ctxt);
+    if (ctxt.receiving() != 0) {
         // see note in compile_return_from
-        ctxt.assemble0(vm_nil);
-        if (ctxt.receiving() == -1) ctxt.assemble0(vm_pop);
-      }
-      return;
+      ctxt.assemble0(vm_nil);
+      if (ctxt.receiving() == -1) ctxt.assemble0(vm_pop);
     }
-  }
-  SIMPLE_ERROR("The GO tag {} does not exist.", _rep_(tag));
+  } else
+    SIMPLE_ERROR("The GO tag {} does not exist.", _rep_(tag));
 }
 
 void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ctxt) {
-  Symbol_sp block_dynenv = cl__gensym(SimpleBaseString_O::make("BLOCK-DYNENV"));
-  Lexenv_sp nenv = env->bind1var(block_dynenv, ctxt);
-  auto dynenv_info = gc::As_assert<LexicalVarInfo_sp>(nenv->variableInfo(block_dynenv));
   Label_sp label = Label_O::make();
   Label_sp normal_label = Label_O::make();
+  Lexenv_sp nenv = env->bind_block(name, label, ctxt);
+  BlockInfo_sp binfo = gc::As<BlockInfo_sp>(nenv->blockInfo(name));
+  LexicalInfo_sp blex = binfo->lex();
   // Bind the dynamic environment or save SP.
-  ctxt.emit_entry_or_save_sp(dynenv_info->lex());
-  Cons_sp new_pair = Cons_O::create(name, Cons_O::create(dynenv_info, Cons_O::create(label, clasp_make_fixnum(ctxt.receiving()))));
-  Lexenv_sp nnenv = nenv->sub_blocks(Cons_O::create(new_pair, nenv->blocks()));
+  ctxt.emit_entry_or_save_sp(blex);
   // We force single values into multiple so that we can uniformly PUSH afterward.
   // Specifically: if we're returning 0 values, there's no problem anyway.
   // If we're returning multiple values, the local and nonlocal returns just
   // store into the multiple values, so no problem there.
   // If we're returning exactly one value, the local just pushes one, and
   // the nonlocal stores into the MV which is then vm_push'd to the stack.
-  compile_progn(body, nnenv, ctxt.sub_de(dynenv_info));
+  compile_progn(body, nenv, ctxt.sub_de(blex));
   bool r1p = ctxt.receiving() == 1;
   if (r1p)
     ctxt.emit_jump(normal_label);
@@ -2048,31 +2091,26 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
     normal_label->contextualize(ctxt);
     ctxt.push_debug_info(BytecodeDebugBlock_O::make(label, label, nil<T_O>(), 1));
   }
-  ctxt.maybe_emit_entry_close(dynenv_info->lex());
+  ctxt.maybe_emit_entry_close(blex);
 }
 
 void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ctxt) {
-  T_sp blocks = env->blocks();
-  if (blocks.consp()) {
-    // blocks must be a cons now
-    T_sp pair = core__alist_assoc_eq(gc::As_unsafe<Cons_sp>(blocks), name);
-    if (pair.consp()) {
-      Cons_sp rpair = gc::As_assert<Cons_sp>(CONS_CDR(pair));
-      Cons_sp r2pair = gc::As_assert<Cons_sp>(CONS_CDR(rpair));
-      int breceiving = CONS_CDR(r2pair).unsafe_fixnum();
-      compile_form(valuef, env, ctxt.sub_receiving(breceiving == 0 ? 0 : -1));
-      compile_exit(gc::As_assert<LexicalVarInfo_sp>(CONS_CAR(rpair)), gc::As_assert<Label_sp>(CONS_CAR(r2pair)), ctxt);
-      // If we're in a single value context, generate a never-executed PUSH instruction
-      // so that statically both "branches" rejoining at the BLOCK have the same number
-      // of values on the stack. KLUDGE? Sorta? Not sure how legitimate this is.
-      switch (ctxt.receiving()) {
-      case 1: ctxt.assemble0(vm_push); break;
-      case 0: if (breceiving != 0) ctxt.assemble0(vm_drop_mv); break;
-      }
-      return;
+  T_sp tbinfo = env->blockInfo(name);
+  if (gc::IsA<BlockInfo_sp>(tbinfo)) {
+    BlockInfo_sp binfo = gc::As<BlockInfo_sp>(tbinfo);
+    int breceiving = binfo->receiving();
+    compile_form(valuef, env, ctxt.sub_receiving(breceiving == 0 ? 0 : -1));
+    compile_exit(binfo->lex(), binfo->exit(), ctxt);
+    // If we're in a single value context, generate a never-executed PUSH instruction
+    // so that statically both "branches" rejoining at the BLOCK have the same number
+    // of values on the stack. KLUDGE? Sorta? Not sure how legitimate this is.
+    switch (ctxt.receiving()) {
+    case 1: ctxt.assemble0(vm_push); break;
+    case 0: if (breceiving != 0) ctxt.assemble0(vm_drop_mv); break;
     }
   }
-  SIMPLE_ERROR("The block {} does not exist.", _rep_(name));
+  else
+    SIMPLE_ERROR("The block {} does not exist.", _rep_(name));
 }
 
 // catch, throw, and progv are actually handled by macros right now,

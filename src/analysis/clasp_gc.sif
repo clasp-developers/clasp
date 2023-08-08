@@ -28,9 +28,9 @@
                           "core::FunctionDescription_O" "core::ComplexVector_double_O"
                           "core::StrWNs_O" "core::UnknownDynEnv_O" "core::EchoStream_O"
                           "core::HashTableBase_O" "core::SimpleMDArrayBit_O" "core::MDArrayBit_O"
-                          "core::ComplexVector_byte16_t_O" "llvmo::DILocalScope_O"
-                          "asttooling::DerivableFrontendActionFactory" "comp::Label_O"
-                          "core::ComplexVector_int2_t_O" "llvmo::DILexicalBlock_O"
+                          "core::ComplexVector_byte16_t_O" "comp::BlockInfo_O"
+                          "llvmo::DILocalScope_O" "asttooling::DerivableFrontendActionFactory"
+                          "comp::Label_O" "core::ComplexVector_int2_t_O" "llvmo::DILexicalBlock_O"
                           "llvmo::DITypeRefArray_O" "mp::Mutex_O"
                           "core::RecursiveDirectoryIterator_O" "core::StringInputStream_O"
                           "comp::Lexenv_O" "core::DebuggerLocal_O" "llvmo::ModulePass_O"
@@ -89,10 +89,10 @@
                           "llvmo::DISubroutineType_O" "comp::LabelFixup_O" "comp::Cfunction_O"
                           "llvmo::MetadataAsValue_O" "core::SimpleBitVector_O"
                           "core::SimpleVector_int8_t_O" "llvmo::ResumeInst_O" "llvmo::Function_O"
-                          "llvmo::DIType_O" "core::LocalSimpleFunGenerator_O" "core::Readtable_O"
-                          "llvmo::IRBuilder_O" "llvmo::ClaspJIT_O" "core::SimpleVector_byte8_t_O"
-                          "llvmo::DILexicalBlockBase_O" "llvmo::MDNode_O"
-                          "core::ComplexVector_fixnum_O" "mp::RecursiveMutex_O"
+                          "llvmo::DIType_O" "core::LocalSimpleFunGenerator_O" "comp::TagInfo_O"
+                          "core::Readtable_O" "llvmo::IRBuilder_O" "llvmo::ClaspJIT_O"
+                          "core::SimpleVector_byte8_t_O" "llvmo::DILexicalBlockBase_O"
+                          "llvmo::MDNode_O" "core::ComplexVector_fixnum_O" "mp::RecursiveMutex_O"
                           "core::Vaslist_dummy_O" "core::SimpleVector_float_O" "llvmo::VAArgInst_O"
                           "core::SimpleVector_int4_t_O" "core::MDArray_fixnum_O"
                           "core::SharpEqualWrapper_O" "comp::ConstantVarInfo_O"
@@ -3434,6 +3434,15 @@
              :offset-ctype "gctools::smart_ptr<core::HashTable_O>"
              :offset-base-ctype "core::Readtable_O"
              :layout-offset-field-names ("DispatchMacroCharacters_")}
+{class-kind :stamp-name "STAMPWTAG_comp__TagInfo_O" :stamp-key "comp::TagInfo_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
+             :offset-base-ctype "comp::TagInfo_O" :layout-offset-field-names ("_lex")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<comp::Label_O>" :offset-base-ctype "comp::TagInfo_O"
+             :layout-offset-field-names ("_exit")}
 {class-kind :stamp-name "STAMPWTAG_comp__Cfunction_O" :stamp-key "comp::Cfunction_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -4696,6 +4705,17 @@
              :layout-offset-field-names ("_decls")}
 {fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
              :offset-base-ctype "comp::Lexenv_O" :layout-offset-field-names ("frame_end")}
+{class-kind :stamp-name "STAMPWTAG_comp__BlockInfo_O" :stamp-key "comp::BlockInfo_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<comp::LexicalInfo_O>"
+             :offset-base-ctype "comp::BlockInfo_O" :layout-offset-field-names ("_lex")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<comp::Label_O>"
+             :offset-base-ctype "comp::BlockInfo_O" :layout-offset-field-names ("_exit")}
+{fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
+             :offset-base-ctype "comp::BlockInfo_O" :layout-offset-field-names ("_receiving")}
 {class-kind :stamp-name "STAMPWTAG_core__HashTableBase_O" :stamp-key "core::HashTableBase_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

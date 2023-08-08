@@ -279,6 +279,44 @@ struct NoFunInfoV {};
 
 typedef std::variant<NoFunInfoV, GlobalFunInfoV, LocalFunInfoV, GlobalMacroInfoV, LocalMacroInfoV> FunInfoV;
 
+FORWARD(BlockInfo);
+FORWARD(Label);
+class BlockInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, BlockInfo_O, "BlockInfo", General_O);
+public:
+  LexicalInfo_sp _lex;
+  Label_sp _exit;
+  int _receiving;
+public:
+  BlockInfo_O(LexicalInfo_sp lex, Label_sp exit, int receiving)
+    : _lex(lex), _exit(exit), _receiving(receiving) {}
+  static BlockInfo_sp make(size_t frame_index, Cfunction_sp funct,
+                           Label_sp exit, int receiving) {
+    LexicalInfo_sp lex = LexicalInfo_O::make(frame_index, funct);
+    return gctools::GC<BlockInfo_O>::allocate<gctools::RuntimeStage>(lex, exit, receiving);
+  }
+  LexicalInfo_sp lex() const { return this->_lex; }
+  Label_sp exit() const { return this->_exit; }
+  int receiving() const { return this->_receiving; }
+};
+
+
+FORWARD(TagInfo);
+class TagInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, TagInfo_O, "TagInfo", General_O);
+public:
+  LexicalInfo_sp _lex;
+  Label_sp _exit;
+public:
+  TagInfo_O(LexicalInfo_sp lex, Label_sp exit)
+    : _lex(lex), _exit(exit) {}
+  static TagInfo_sp make(LexicalInfo_sp lex, Label_sp exit) {
+    return gctools::GC<TagInfo_O>::allocate<gctools::RuntimeStage>(lex, exit);
+  }
+  LexicalInfo_sp lex() const { return this->_lex; }
+  Label_sp exit() const { return this->_exit; }
+};
+
 FORWARD(Lexenv);
 class Context; // forward decl
 class Lexenv_O : public General_O {
@@ -321,10 +359,10 @@ public:
     return make(vars(), tags(), blocks(), funs, decls(), frame_end);
   }
   inline Lexenv_sp sub_tags(List_sp tags) const {
-    return make(vars(), tags, blocks(), funs(), decls(), frameEnd());
+    return make(vars(), tags, blocks(), funs(), decls(), frameEnd() + 1);
   }
-  inline Lexenv_sp sub_blocks(List_sp blocks) const {
-    return make(vars(), tags(), blocks, funs(), decls(), frameEnd());
+  inline Lexenv_sp sub_block(List_sp blocks) const {
+    return make(vars(), tags(), blocks, funs(), decls(), frameEnd() + 1);
   }
   inline Lexenv_sp sub_decls(List_sp decls) const {
     return make(vars(), tags(), blocks(), funs(), decls, frameEnd());
@@ -339,6 +377,9 @@ public:
   Lexenv_sp bind1var(Symbol_sp var, const Context context);
   // Like bind_vars but for function bindings.
   Lexenv_sp bind_funs(List_sp funs, const Context context);
+  // And blocks and tags.
+  Lexenv_sp bind_block(T_sp name, Label_sp exit, const Context context);
+  Lexenv_sp bind_tags(List_sp tags, LexicalInfo_sp dynenv, const Context context);
   // Add VARS as special in ENV.
   CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
   // Add new declarations.
@@ -357,10 +398,8 @@ public:
   T_sp functionInfo(T_sp fname);
   T_sp lookupMacro(T_sp mname);
   bool notinlinep(T_sp fname);
-  /*
   T_sp blockInfo(T_sp bname);
   T_sp tagInfo(T_sp tname);
-*/
 };
 
 // Context contains information about what the current form needs
