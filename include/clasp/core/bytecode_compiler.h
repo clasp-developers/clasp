@@ -10,6 +10,36 @@ namespace comp {
   using namespace core;
 
 // Structures for the bytecode compiler.
+
+// Information for something lexical, like a variable, function, tag, whatever.
+FORWARD(Cfunction);
+FORWARD(LexicalInfo);
+class LexicalInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, LexicalInfo_O, "LexicalInfo", General_O);
+public:
+  size_t _frame_index;
+  Cfunction_sp _cfunction;
+  bool _closed_over_p = false;
+  // only used for lexical variables, but it's convenient for fixups and debug
+  // infos to have it generally present.
+  bool _set_p = false;
+public:
+  LexicalInfo_O(size_t ind, Cfunction_sp funct) : _frame_index(ind), _cfunction(funct) {};
+  CL_LISPIFY_NAME(LexicalInfo/make)
+  CL_DEF_CLASS_METHOD
+  static LexicalInfo_sp make(size_t frame_index, Cfunction_sp cfunction) {
+    return gctools::GC<LexicalInfo_O>::allocate<gctools::RuntimeStage>(frame_index, cfunction);
+  }
+  CL_DEFMETHOD size_t frameIndex() const { return this->_frame_index; }
+  CL_DEFMETHOD Cfunction_sp cfunction() const { return this->_cfunction; }
+  CL_DEFMETHOD bool closedOverP() const { return this->_closed_over_p; }
+  void setClosedOverP(bool n) { this->_closed_over_p = n; }
+  CL_DEFMETHOD bool setP() const { return this->_set_p; }
+  void setSetP(bool n) { this->_set_p = n; }
+  // Is a cell required?
+  bool indirectLexicalP() const { return closedOverP() && setP(); }
+};
+
 class VarInfo_O : public General_O {
   LISP_ABSTRACT_CLASS(comp, CompPkg, VarInfo_O, "VarInfo", General_O);
 public:
@@ -20,39 +50,34 @@ FORWARD(LexicalVarInfo);
 class LexicalVarInfo_O : public VarInfo_O {
   LISP_CLASS(comp, CompPkg, LexicalVarInfo_O, "LexicalVarInfo", VarInfo_O);
 public:
-  size_t frame_index;
-  T_sp _funct;
-  // This field is a little abused for block/tagbody dynenvs at the moment.
-  // They will be marked as "closed over" if they are used at all.
-  bool closed_over_p = false;
-  bool set_p = false;
+  LexicalInfo_sp _lex;
 public:
-  LexicalVarInfo_O(size_t ind, T_sp nfunct)
-    : VarInfo_O(), frame_index(ind), _funct(nfunct) {};
+  LexicalVarInfo_O(LexicalInfo_sp nlex)
+    : VarInfo_O(), _lex(nlex) {};
   CL_LISPIFY_NAME(LexicalVarInfo/make)
   CL_DEF_CLASS_METHOD
-  static LexicalVarInfo_sp make(size_t frame_index, T_sp funct) {
-    return gctools::GC<LexicalVarInfo_O>::allocate<gctools::RuntimeStage>(frame_index, funct);
+  static LexicalVarInfo_sp make(size_t frame_index, Cfunction_sp funct) {
+    LexicalInfo_sp nlex = LexicalInfo_O::make(frame_index, funct);
+    return gctools::GC<LexicalVarInfo_O>::allocate<gctools::RuntimeStage>(nlex);
   }
-  CL_DEFMETHOD size_t frameIndex() const { return this->frame_index; }
+  LexicalInfo_sp lex() const { return this->_lex; }
+  CL_DEFMETHOD size_t frameIndex() const { return this->lex()->frameIndex(); }
   CL_LISPIFY_NAME(LexicalVarInfo/cfunction)
-  CL_DEFMETHOD T_sp funct() const { return this->_funct; }
-  CL_DEFMETHOD bool closedOverP() const { return this->closed_over_p; }
+  CL_DEFMETHOD Cfunction_sp funct() const { return this->lex()->cfunction(); }
+  CL_DEFMETHOD bool closedOverP() const { return this->lex()->closedOverP(); }
   CL_LISPIFY_NAME(LexicalVarInfo/setf-closed-over-p)
   CL_DEFMETHOD bool setClosedOverP(bool n) {
-    this->closed_over_p = n;
+    this->lex()->setClosedOverP(n);
     return n;
   }
-  CL_DEFMETHOD bool setP() const { return this->set_p; }
+  CL_DEFMETHOD bool setP() const { return this->lex()->setP(); }
   CL_LISPIFY_NAME(LexicalVarInfo/setf-set-p)
   CL_DEFMETHOD bool setSetP(bool n) {
-    this->set_p = n;
+    this->lex()->setSetP(n);
     return n;
   }
   // Does the variable need a cell?
-  bool indirectLexicalP() const {
-    return this->closedOverP() && this->setP();
-  }
+  bool indirectLexicalP() const { return this->lex()->indirectLexicalP(); }
 };
 
 struct LexicalVarInfoV {
@@ -178,16 +203,20 @@ FORWARD(LocalFunInfo);
 class LocalFunInfo_O : public FunInfo_O {
   LISP_CLASS(comp, CompPkg, LocalFunInfo_O, "LocalFunInfo", FunInfo_O);
 public:
-  T_sp fun_var;
+  LexicalInfo_sp _lex;
 public:
-  LocalFunInfo_O(T_sp nfun_var)
-    : FunInfo_O(), fun_var(nfun_var) {};
+  LocalFunInfo_O(LexicalInfo_sp nlex)
+    : FunInfo_O(), _lex(nlex) {};
   CL_LISPIFY_NAME(LocalFunInfo/make)
   CL_DEF_CLASS_METHOD
-  static LocalFunInfo_sp make(T_sp value) {
-    return gctools::GC<LocalFunInfo_O>::allocate<gctools::RuntimeStage>(value);
+  static LocalFunInfo_sp make(size_t frame_index, Cfunction_sp funct) {
+    LexicalInfo_sp nlex = LexicalInfo_O::make(frame_index, funct);
+    return gctools::GC<LocalFunInfo_O>::allocate<gctools::RuntimeStage>(nlex);
   }
-  CL_DEFMETHOD T_sp funVar() const { return this->fun_var; }
+  CL_LISPIFY_NAME(LocalFunInfo/lex)
+  CL_DEFMETHOD LexicalInfo_sp lex() const { return this->_lex; }
+  size_t frameIndex() const { return this->lex()->frameIndex(); }
+  Cfunction_sp funct() const { return this->lex()->cfunction(); }
 };
 
 struct LocalFunInfoV {
@@ -250,6 +279,44 @@ struct NoFunInfoV {};
 
 typedef std::variant<NoFunInfoV, GlobalFunInfoV, LocalFunInfoV, GlobalMacroInfoV, LocalMacroInfoV> FunInfoV;
 
+FORWARD(BlockInfo);
+FORWARD(Label);
+class BlockInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, BlockInfo_O, "BlockInfo", General_O);
+public:
+  LexicalInfo_sp _lex;
+  Label_sp _exit;
+  int _receiving;
+public:
+  BlockInfo_O(LexicalInfo_sp lex, Label_sp exit, int receiving)
+    : _lex(lex), _exit(exit), _receiving(receiving) {}
+  static BlockInfo_sp make(size_t frame_index, Cfunction_sp funct,
+                           Label_sp exit, int receiving) {
+    LexicalInfo_sp lex = LexicalInfo_O::make(frame_index, funct);
+    return gctools::GC<BlockInfo_O>::allocate<gctools::RuntimeStage>(lex, exit, receiving);
+  }
+  LexicalInfo_sp lex() const { return this->_lex; }
+  Label_sp exit() const { return this->_exit; }
+  int receiving() const { return this->_receiving; }
+};
+
+
+FORWARD(TagInfo);
+class TagInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, TagInfo_O, "TagInfo", General_O);
+public:
+  LexicalInfo_sp _lex;
+  Label_sp _exit;
+public:
+  TagInfo_O(LexicalInfo_sp lex, Label_sp exit)
+    : _lex(lex), _exit(exit) {}
+  static TagInfo_sp make(LexicalInfo_sp lex, Label_sp exit) {
+    return gctools::GC<TagInfo_O>::allocate<gctools::RuntimeStage>(lex, exit);
+  }
+  LexicalInfo_sp lex() const { return this->_lex; }
+  Label_sp exit() const { return this->_exit; }
+};
+
 FORWARD(Lexenv);
 class Context; // forward decl
 class Lexenv_O : public General_O {
@@ -282,6 +349,25 @@ public:
   CL_DEFMETHOD List_sp decls() const { return this->_decls; }
   CL_DEFMETHOD size_t frameEnd() const { return this->frame_end; }
 public:
+  inline Lexenv_sp sub_vars(List_sp vars, size_t frame_end) const {
+    return make(vars, tags(), blocks(), funs(), decls(), frame_end);
+  }
+  inline Lexenv_sp sub_funs(List_sp funs) const {
+    return make(vars(), tags(), blocks(), funs, decls(), frameEnd());
+  }
+  inline Lexenv_sp sub_funs(List_sp funs, size_t frame_end) const {
+    return make(vars(), tags(), blocks(), funs, decls(), frame_end);
+  }
+  inline Lexenv_sp sub_tags(List_sp tags) const {
+    return make(vars(), tags, blocks(), funs(), decls(), frameEnd() + 1);
+  }
+  inline Lexenv_sp sub_block(List_sp blocks) const {
+    return make(vars(), tags(), blocks, funs(), decls(), frameEnd() + 1);
+  }
+  inline Lexenv_sp sub_decls(List_sp decls) const {
+    return make(vars(), tags(), blocks(), funs(), decls, frameEnd());
+  }
+public:
   /* Bind each variable to a stack location, returning a new lexical
    * environment. The max local count in the current function is also
    * updated.
@@ -289,6 +375,11 @@ public:
   Lexenv_sp bind_vars(List_sp vars, const Context context);
   // Ditto but with just one.
   Lexenv_sp bind1var(Symbol_sp var, const Context context);
+  // Like bind_vars but for function bindings.
+  Lexenv_sp bind_funs(List_sp funs, const Context context);
+  // And blocks and tags.
+  Lexenv_sp bind_block(T_sp name, Label_sp exit, const Context context);
+  Lexenv_sp bind_tags(List_sp tags, LexicalInfo_sp dynenv, const Context context);
   // Add VARS as special in ENV.
   CL_DEFMETHOD Lexenv_sp add_specials(List_sp vars);
   // Add new declarations.
@@ -307,10 +398,8 @@ public:
   T_sp functionInfo(T_sp fname);
   T_sp lookupMacro(T_sp mname);
   bool notinlinep(T_sp fname);
-  /*
   T_sp blockInfo(T_sp bname);
   T_sp tagInfo(T_sp tname);
-*/
 };
 
 // Context contains information about what the current form needs
@@ -320,34 +409,33 @@ public:
 // on consing and GC.
 // (Profiling has shown that the compiler spends a lot of time consing.)
 FORWARD(Label);
-FORWARD(Cfunction);
 FORWARD(Module);
 class Context {
 public:
   int _receiving;
   List_sp _dynenv;
-  T_sp _cfunction;
+  Cfunction_sp _cfunction;
   T_sp _source_info;
 public:
-  Context(int receiving, T_sp dynenv, T_sp cfunction, T_sp source_info)
+  Context(int receiving, T_sp dynenv, Cfunction_sp cfunction, T_sp source_info)
     : _receiving(receiving), _dynenv(dynenv), _cfunction(cfunction),
       _source_info(source_info){}
   // Sub constructors
-  Context(const Context& parent, int receiving)
-    : _receiving(receiving), _dynenv(parent.dynenv()),
-      _cfunction(parent.cfunction()), _source_info(parent.source_info())
-  {}
-  // Plop the de on the front.
-  Context(const Context& parent, T_sp de)
-    : _receiving(parent.receiving()),
-      _dynenv(Cons_O::create(de, parent.dynenv())),
-      _cfunction(parent.cfunction()),
-      _source_info(parent.source_info()) {}
+  inline Context sub_receiving(int receiving) const {
+    return Context(receiving, dynenv(), cfunction(), source_info());
+  }
+  inline Context sub_de(T_sp de) const {
+    // Plop on the front.
+    return Context(receiving(), Cons_O::create(de, dynenv()),
+                   cfunction(), source_info());
+  }
+  inline Context sub_source(T_sp source_info) const {
+    return Context(receiving(), dynenv(), cfunction(), source_info);
+  }
+  // Access
   int receiving() const { return this->_receiving; }
   List_sp dynenv() const { return this->_dynenv; }
-  Cfunction_sp cfunction() const {
-    return gc::As<Cfunction_sp>(this->_cfunction);
-  }
+  Cfunction_sp cfunction() const { return this->_cfunction; }
   T_sp source_info() const { return this->_source_info; }
   Module_sp module() const;
 public:
@@ -362,14 +450,14 @@ public:
                           uint8_t opcode8, uint8_t opcode16, uint8_t opcode24) const;
   void emit_jump(Label_sp label) const;
   void emit_jump_if(Label_sp label) const;
-  void emit_entry_or_save_sp(LexicalVarInfo_sp info) const;
-  void emit_ref_or_restore_sp(LexicalVarInfo_sp info) const;
+  void emit_entry_or_save_sp(LexicalInfo_sp info) const;
+  void emit_ref_or_restore_sp(LexicalInfo_sp info) const;
   void emit_exit(Label_sp label) const;
-  void emit_exit_or_jump(LexicalVarInfo_sp info, Label_sp label) const;
-  void maybe_emit_entry_close(LexicalVarInfo_sp info) const;
+  void emit_exit_or_jump(LexicalInfo_sp info, Label_sp label) const;
+  void maybe_emit_entry_close(LexicalInfo_sp info) const;
   void emit_catch(Label_sp label) const;
   void emit_jump_if_supplied(Label_sp label, size_t indx) const;
-  void reference_lexical_info(LexicalVarInfo_sp info) const;
+  void reference_lexical_info(LexicalInfo_sp info) const;
   void maybe_emit_make_cell(LexicalVarInfo_sp info) const;
   void maybe_emit_cell_ref(LexicalVarInfo_sp info) const;
   void maybe_emit_encage(LexicalVarInfo_sp info) const;
@@ -541,13 +629,13 @@ FORWARD(LexFixup);
 class LexFixup_O : public Fixup_O {
   LISP_ABSTRACT_CLASS(comp, CompPkg, LexFixup_O, "LexFixup", Fixup_O);
 public:
-  LexicalVarInfo_sp _lex;
+  LexicalInfo_sp _lex;
 public:
   LexFixup_O() : Fixup_O() {}
-  LexFixup_O(LexicalVarInfo_sp lex, size_t initial_size)
+  LexFixup_O(LexicalInfo_sp lex, size_t initial_size)
     : Fixup_O(initial_size), _lex(lex) {}
 public:
-  LexicalVarInfo_sp lex() { return _lex; }
+  LexicalInfo_sp lex() { return _lex; }
 };
 
 // Used to add make-cell or cell-ref where needed.
@@ -558,11 +646,11 @@ public:
   uint8_t _opcode;
 public:
   LexRefFixup_O() : LexFixup_O() {}
-  LexRefFixup_O(LexicalVarInfo_sp lex, uint8_t opcode)
+  LexRefFixup_O(LexicalInfo_sp lex, uint8_t opcode)
     : LexFixup_O(lex, 0), _opcode(opcode) {}
   CL_LISPIFY_NAME(LexRefFixup/make)
   CL_DEF_CLASS_METHOD
-  static LexRefFixup_sp make(LexicalVarInfo_sp lex, uint8_t opcode) {
+  static LexRefFixup_sp make(LexicalInfo_sp lex, uint8_t opcode) {
     return gctools::GC<LexRefFixup_O>::allocate<gctools::RuntimeStage>(lex, opcode);
   }
 public:
@@ -576,11 +664,11 @@ class EncageFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, EncageFixup_O, "EncageFixup", LexFixup_O);
 public:
   EncageFixup_O() : LexFixup_O() {}
-  EncageFixup_O(LexicalVarInfo_sp lex)
+  EncageFixup_O(LexicalInfo_sp lex)
     : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(EncageFixup/make)
   CL_DEF_CLASS_METHOD
-  static EncageFixup_sp make(LexicalVarInfo_sp lex) {
+  static EncageFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<EncageFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:
@@ -593,11 +681,11 @@ class LexSetFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, LexSetFixup_O, "LexSetFixup", LexFixup_O);
 public:
   LexSetFixup_O() : LexFixup_O() {}
-  LexSetFixup_O(LexicalVarInfo_sp lex)
+  LexSetFixup_O(LexicalInfo_sp lex)
     : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(LexSetFixup/make)
   CL_DEF_CLASS_METHOD
-  static LexSetFixup_sp make(LexicalVarInfo_sp lex) {
+  static LexSetFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<LexSetFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:
@@ -612,10 +700,10 @@ class EntryFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, EntryFixup_O, "EntryFixup", LexFixup_O);
 public:
   EntryFixup_O() : LexFixup_O() {}
-  EntryFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  EntryFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(EntryFixup/make)
   CL_DEF_CLASS_METHOD
-  static EntryFixup_sp make(LexicalVarInfo_sp lex) {
+  static EntryFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<EntryFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:
@@ -629,10 +717,10 @@ class RestoreSPFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, RestoreSPFixup_O, "RestoreSPFixup", LexFixup_O);
 public:
   RestoreSPFixup_O() : LexFixup_O() {}
-  RestoreSPFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  RestoreSPFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(RestoreSPFixup/make)
   CL_DEF_CLASS_METHOD
-  static RestoreSPFixup_sp make(LexicalVarInfo_sp lex) {
+  static RestoreSPFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<RestoreSPFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:
@@ -643,23 +731,23 @@ public:
 // Generate an exit or jump.
 FORWARD(ExitFixup);
 class ExitFixup_O : public LabelFixup_O {
-  LISP_CLASS(comp, CompPkg, ExitFixup_O, "ExitFixup", LexFixup_O);
+  LISP_CLASS(comp, CompPkg, ExitFixup_O, "ExitFixup", LabelFixup_O);
 public:
   // Clasp doesn't like C++ multiple inheritance.
-  LexicalVarInfo_sp _lex;
+  LexicalInfo_sp _lex;
 public:
   ExitFixup_O() : LabelFixup_O() {}
-  ExitFixup_O(LexicalVarInfo_sp lex, Label_sp label)
+  ExitFixup_O(LexicalInfo_sp lex, Label_sp label)
     : LabelFixup_O(label, 2), _lex(lex) {}
   CL_LISPIFY_NAME(ExitFixup/make)
   CL_DEF_CLASS_METHOD
-  static ExitFixup_sp make(LexicalVarInfo_sp lex, Label_sp label) {
+  static ExitFixup_sp make(LexicalInfo_sp lex, Label_sp label) {
     return gctools::GC<ExitFixup_O>::allocate<gctools::RuntimeStage>(lex, label);
   }
 public:
   virtual void emit(size_t position, SimpleVector_byte8_t_sp code);
   virtual size_t resize();
-  LexicalVarInfo_sp lex() { return this->_lex; }
+  LexicalInfo_sp lex() { return this->_lex; }
 };
 
 // Similar to EntryFixup, adds a vm_entry_close.
@@ -668,10 +756,10 @@ class EntryCloseFixup_O : public LexFixup_O {
   LISP_CLASS(comp, CompPkg, EntryCloseFixup_O, "EntryCloseFixup", LexFixup_O);
 public:
   EntryCloseFixup_O() : LexFixup_O() {}
-  EntryCloseFixup_O(LexicalVarInfo_sp lex) : LexFixup_O(lex, 0) {}
+  EntryCloseFixup_O(LexicalInfo_sp lex) : LexFixup_O(lex, 0) {}
   CL_LISPIFY_NAME(EntryCloseFixup/make)
   CL_DEF_CLASS_METHOD
-  static EntryCloseFixup_sp make(LexicalVarInfo_sp lex) {
+  static EntryCloseFixup_sp make(LexicalInfo_sp lex) {
     return gctools::GC<EntryCloseFixup_O>::allocate<gctools::RuntimeStage>(lex);
   }
 public:
