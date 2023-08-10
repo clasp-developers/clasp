@@ -943,10 +943,7 @@
       (setf (context-mv context) read-out
             (context-dynamic-environment context) old-de))))
 
-(defmethod compile-instruction ((mnemonic (eql :mv-call))
-                                inserter annot context &rest args)
-  (declare (ignore annot))
-  (assert (null args))
+(defun compile-mv-call (inserter context)
   (let ((previous (stack-pop context))
         (callee (stack-pop context))
         (out (make-instance 'bir:output)))
@@ -967,8 +964,27 @@
       (ast-to-bir:insert inserter 'bir:mv-call
                          :inputs (list callee mv)
                          :outputs (list out))
-      (setf (context-mv context) out
-            (context-dynamic-environment context) old-de))))
+      (setf (context-dynamic-environment context) old-de))
+    out))
+
+(defmethod compile-instruction ((mnemonic (eql :mv-call))
+                                inserter annot context &rest args)
+  (declare (ignore annot))
+  (assert (null args))
+  (setf (context-mv context) (compile-mv-call inserter context)))
+(defmethod compile-instruction ((mnemonic (eql :mv-call-receive-one))
+                                inserter annot context &rest args)
+  (declare (ignore annot))
+  (assert (null args))
+  (stack-push (compile-mv-call inserter context) context)
+  (setf (context-mv context) nil))
+(defmethod compile-instruction ((mnemonic (eql :mv-call-receive-fixed))
+                                inserter annot context &rest args)
+  (declare (ignore annot))
+  (destructuring-bind (nvals) args
+    (assert (zerop nvals)) ; FIXME
+    (compile-mv-call inserter context)
+    (setf (context-mv context) nil)))
 
 (defmethod compile-instruction ((mnemonic (eql :save-sp))
                                 inserter annot context &rest args)
