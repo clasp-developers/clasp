@@ -261,6 +261,8 @@
 ;;; Alist of IR functions to sequences of variables they close over,
 ;;; used for CLOSURE instructions. Set by MAKE-CLOSURE and INITIALIZE-CLOSURE
 ;;; instructions.
+;;; Each element of the sequence is either a BIR:LEXICAL or a cons
+;;; (<a lexical> . t). The latter indicates it's stored in a cell.
 (defvar *closures*)
 
 (defun closure-variables (irfun)
@@ -509,6 +511,7 @@
            (vars (closure-variables ifun))
            (var (elt vars index)))
       (stack-push (etypecase var
+                    ((cons bir:variable (eql t)) var) ; cell
                     (bir:variable (read-variable var inserter))
                     (bir:come-from var))
                   context))))
@@ -602,14 +605,19 @@
            (locals (context-locals context))
            (varcons (aref locals base)))
       (cond
-        ((find base bindings :key #'cdr)
+        ((find base bindings
+               :key (lambda (x)
+                      (if (consp (cdr x)) (cadr x) (cdr x))))
          (let* ((binding (rassoc base bindings))
                 (name (car binding))
                 (ignore (variable-ignore name annots))
                 (var (make-instance 'bir:variable
-                       :ignore ignore :name name)))
-           (setf (aref locals base) (cons var nil))
-           (bind-variable var (stack-pop context) inserter annots)))
+                       :ignore ignore :name name))
+                (value (stack-pop context))
+                (cellp (consp value))
+                (rvalue (if cellp (car value) value)))
+           (setf (aref locals base) (cons var cellp))
+           (bind-variable var rvalue inserter annots)))
         (t
          (let ((var (car varcons)))
            (check-type var bir:variable)
@@ -652,12 +660,13 @@
     (bir:input readvar)))
 
 (defun resolve-closed (v)
-  ;; Each thing on the stack is either a variable, if there's a cell,
-  ;; or the output of a readvar if there's no cell, or a come-from.
+  ;; Each thing on the stack is either a come-from, a list
+  ;; (variable . t) if there's a cell, or the output of a readvar for
+  ;; variables with no cell.
   (etypecase v
-    ;; FIXME: Might be better to export LEXICAL from BIR
-    ((or bir:variable bir:come-from) v)
-    (bir:output (variable-from-output v))))
+    (bir:come-from v)
+    (bir:output (variable-from-output v))
+    ((cons bir:variable (eql t)) v)))
 
 (defmethod compile-instruction ((mnemonic (eql :make-closure))
                                 inserter annot context &rest args)
@@ -670,7 +679,9 @@
            (nclosed (bcfun/nvars template))
            (closed (nreverse (subseq (context-stack context) 0 nclosed)))
            (real-closed (mapcar #'resolve-closed closed)))
-      (assert (every (lambda (v) (typep v 'bir::lexical)) real-closed))
+      (assert (every (lambda (v) (typep v '(or bir::lexical
+                                            (cons bir::lexical (eql t)))))
+                     real-closed))
       (setf (context-stack context)
             (nthcdr nclosed (context-stack context)))
       (new-closure-variables irfun real-closed)
