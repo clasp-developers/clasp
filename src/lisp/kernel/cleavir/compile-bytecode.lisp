@@ -749,7 +749,9 @@
             for i from start
             for (arg -p) in args
             for (var . cellp) = (aref locals i)
-            do (bind-variable var arg inserter annots)))))
+            ;; We use %bind rather than bind because we don't want
+            ;; to assert the type of a possibly unprovided argument.
+            do (%bind-variable var arg inserter)))))
 
 ;;; FIXME: Why does this instruction not put it immediately into a var
 (defmethod compile-instruction ((mnemonic (eql :listify-rest-args))
@@ -790,7 +792,8 @@
             while (consp spec)
             do (destructuring-bind (key arg -p) spec
                  (declare (ignore key -p))
-                 (bind-variable var arg inserter annots))))))
+                 ;; %bind to avoid asserting type of unprovided arg
+                 (%bind-variable var arg inserter))))))
 
 (defun compile-jump (inserter context destination)
   (declare (ignore context))
