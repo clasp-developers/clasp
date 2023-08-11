@@ -655,9 +655,13 @@
     (write-variable (car cell) val inserter)))
 
 (defun variable-from-output (output)
-  (let ((readvar (bir:definition output)))
-    (check-type readvar bir:readvar)
-    (bir:input readvar)))
+  (let ((def (bir:definition output)))
+    (etypecase def
+      (bir:readvar (bir:input def))
+      (bir:thei
+       (let ((tdef (bir:definition (bir:input def))))
+         (check-type tdef bir:readvar)
+         (bir:input tdef))))))
 
 (defun resolve-closed (v)
   ;; Each thing on the stack is either a come-from, a list
