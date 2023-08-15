@@ -34,11 +34,11 @@ THE SOFTWARE.
 // ----------------------------------------------------------------------------
 
 
-#if 0
-#define DEBUG_BADGE_SSL 1
+#if 1
 //// DEBUG_RUNTIME defined and type errors print more info
 //#define DEBUG_RUNTIME 1
-//#define DEBUG_OBJECT_FILES 1
+//#define DEBUG_BADGE_SSL 1
+#define DEBUG_OBJECT_FILES 1
 //#define DEBUG_VALUES 1
 //#define DEBUG_VASLIST 1
 //#define DEBUG_EVALUATE 1

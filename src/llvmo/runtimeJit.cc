@@ -589,6 +589,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         if (pos != std::string::npos) {
           found_literals = true;
           currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress().getValue();
+          printf("%s:%d:%s  currentCode->_LiteralVectorStart = %p\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 (void*)currentCode->_LiteralVectorStart);
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode = %p  _LiteralVectorStart -> %p\n",
                                     __FILE__, __LINE__, __FUNCTION__,
                                     &*currentCode, (void*)currentCode->_LiteralVectorStart ));
