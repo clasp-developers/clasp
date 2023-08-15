@@ -3639,6 +3639,20 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
                    __FILE__, __LINE__, __FUNCTION__, oldCodeClient, (void*)oldCodeLiteralsStart,
                    (void*)&*newCodeClient, (void*)newCodeLiteralsStart,
                    (void*)newCodeClient->_LiteralVectorStart );
+            if ((uintptr_t)newCodeClient->_LiteralVectorStart<65536) {
+              printf("newCodeClient->_LiteralVectorStart %p is weird but it's not being caught as a problem on linux\n"
+                     "oldCodeClient->literalsSize() = %llu\n"
+                     "newCodeDataStart = %llu\n"
+                     "newCodeLiteralsStart = %llu\n"
+                     "newCodeLiteralsEnd = %llu\n"
+                     "newCodeDataEnd = %llu\n",
+                     (void*)newCodeClient->_LiteralVectorStart,
+                     oldCodeClient->literalsSize(),
+                     newCodeDataStart,
+                     newCodeLiteralsStart,
+                     newCodeLiteralsEnd,
+                     newCodeDataEnd );
+            }
                );
         if (oldCodeClient->literalsSize() != 0 &&
             !( newCodeDataStart <= newCodeLiteralsStart
