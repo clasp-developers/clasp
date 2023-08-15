@@ -589,10 +589,13 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         if (pos != std::string::npos) {
           found_literals = true;
           currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress().getValue();
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode = %p  _LiteralVectorStart -> %p\n",
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode = %p  _LiteralVectorStart -> %p\n"
+                                    "   ssym->getSize() = %llu\n",
                                     __FILE__, __LINE__, __FUNCTION__,
-                                    &*currentCode, (void*)currentCode->_LiteralVectorStart ));
-          size_t symbolSize = (size_t)ssym->getSize();
+                                    &*currentCode, (void*)currentCode->_LiteralVectorStart,
+                                    (size_t)ssym->getSize() ));
+          size_t origSymbolSize = (size_t)ssym->getSize();
+          size_t symbolSize = origSymbolSize;
           if (symbolSize==1) {
             // A symbol of size 1 is really zero
             symbolSize = 0;
@@ -602,6 +605,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             abort();
           }
           currentCode->_LiteralVectorSizeBytes = symbolSize;
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Assignment currentCode->_LiteralVectorSizeBytes = %llu\n"
+                                    "   origSymbolSize = %llu\n",
+                                    __FILE__, __LINE__, __FUNCTION__,
+                                    currentCode->_LiteralVectorSizeBytes,
+                                    origSymbolSize ));
         }
       }
     }
