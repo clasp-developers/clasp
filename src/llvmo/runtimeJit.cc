@@ -564,7 +564,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     for (auto ssym : G.defined_symbols()) {
 #ifdef DEBUG_OBJECT_FILES
       if (ssym->hasName()) {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n",
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %llu\n",
                                   __FILE__, __LINE__, __FUNCTION__,
                                   ssym->hasName(),
                                   ssym->getName().str().c_str(),
@@ -608,8 +608,8 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Assignment currentCode->_LiteralVectorSizeBytes = %llu\n"
                                     "   origSymbolSize = %llu\n",
                                     __FILE__, __LINE__, __FUNCTION__,
-                                    currentCode->_LiteralVectorSizeBytes,
-                                    origSymbolSize ));
+                                    (size_t)currentCode->_LiteralVectorSizeBytes,
+                                    (size_t)origSymbolSize ));
         }
       }
     }

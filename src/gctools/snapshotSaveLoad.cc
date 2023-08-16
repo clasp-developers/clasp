@@ -3639,34 +3639,26 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
                    __FILE__, __LINE__, __FUNCTION__, oldCodeClient, (void*)oldCodeLiteralsStart,
                    (void*)&*newCodeClient, (void*)newCodeLiteralsStart,
                    (void*)newCodeClient->_LiteralVectorStart );
-            if ((uintptr_t)newCodeClient->_LiteralVectorStart<65536) {
-              printf("newCodeClient->_LiteralVectorStart %p is weird but it's not being caught as a problem on linux\n"
-                     "oldCodeClient->literalsSize() = %llu\n"
-                     "newCodeDataStart = %llu\n"
-                     "newCodeLiteralsStart = %llu\n"
-                     "newCodeLiteralsEnd = %llu\n"
-                     "newCodeDataEnd = %llu\n",
-                     (void*)newCodeClient->_LiteralVectorStart,
-                     oldCodeClient->literalsSize(),
-                     newCodeDataStart,
-                     newCodeLiteralsStart,
-                     newCodeLiteralsEnd,
-                     newCodeDataEnd );
-            }
                );
-        if (oldCodeClient->literalsSize() != 0 &&
+        if ( oldCodeClient->literalsSize() != 0 &&
             !( newCodeDataStart <= newCodeLiteralsStart
                && newCodeLiteralsEnd <= newCodeDataEnd ) ) {
-          printf("%s:%d:%s BAD code fixup #%lu/%lu - the newCodeLiterals range %p - %p must be within the bounds of the newCodeData range %p - %p and it is not; the oldCodeClient->literalsSize()[%lu] != 0\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 idx,
-                 codeFixups.size(),
-                 (void*)newCodeLiteralsStart,
-                 (void*)newCodeLiteralsEnd,
-                 (void*)newCodeDataStart,
-                 (void*)newCodeDataEnd,
-                 oldCodeClient->literalsSize() );
-          abort();
+               // On MacOS this test may fail because symbols are always at least 8 bytes
+               // so we will rely on newCodeLiteralsStart and newCodeLiteralsEnd being bounded
+               // by newCodeDataStart/newCodeDataEnd
+#if 0
+          DBG_OF(
+              printf("%s:%d:%s BAD code fixup #%lu/%lu - the newCodeLiterals range %p - %p must be within the bounds of the newCodeData range %p - %p and it is not; the oldCodeClient->literalsSize()[%lu] != 0\n",
+                     __FILE__, __LINE__, __FUNCTION__,
+                     idx,
+                     codeFixups.size(),
+                     (void*)newCodeLiteralsStart,
+                     (void*)newCodeLiteralsEnd,
+                     (void*)newCodeDataStart,
+                     (void*)newCodeDataEnd,
+                     oldCodeClient->literalsSize() ));
+//          abort();
+#endif
         } else {
           if (oldCodeClient->literalsSize() != 0 ) {
             if (getenv("CLASP_SNAPSHOT_OBJECT_FILE")) {
@@ -3685,8 +3677,11 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
 
       //
       // Finally, finally, finally - we copy the oldCodeClient literal vector into the newCodeClient literal vector.
+      // but only if the newCodeLiteralsStart and newCodeLiteralsEnd are in valid memory
       //
-        if (oldCodeClient->literalsSize()!=0) {
+        if (oldCodeClient->literalsSize()!=0
+            && ( newCodeDataStart <= newCodeLiteralsStart
+                 && newCodeLiteralsEnd <= newCodeDataEnd )) {
           DBG_OF(
               printf("%s:%d:%s  Fixup code oldCodeClient->literalsStart() -> %p  newCodeClient->literalsStart() -> %p  newCodeClient->literalsSize() = %lu\n",
                      __FILE__, __LINE__, __FUNCTION__,
