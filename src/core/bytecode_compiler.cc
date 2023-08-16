@@ -1445,7 +1445,7 @@ static T_sp extract_lambda_list_from_declares(List_sp declares, T_sp defaultll) 
 
 Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, LexicalVarInfo_sp varinfo, Symbol_sp supplied_var,
                                        Label_sp end_label, bool var_specialp, bool supplied_specialp, const Context context,
-                                       Lexenv_sp env, List_sp spdecls) {
+                                       Lexenv_sp env, List_sp vardecls, List_sp spdecls) {
   Label_sp supplied_label = Label_O::make();
   Label_sp next_label = Label_O::make();
   T_sp supinfo = nil<T_O>();
@@ -1456,10 +1456,6 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
   if (supplied_var.notnilp()) context.assemble0(vm_nil);
   compile_form(defaulting_form, env, context.sub_receiving(1));
   // And actually set the variable, if we're lexical.
-  if (!var_specialp) {
-    context.maybe_emit_make_cell(varinfo);
-    context.assemble1(vm_set, varinfo->frameIndex());
-  }
   context.emit_jump(next_label);
   // Set up the new environment. Make sure this is AFTER compiling the default form,
   // as the default form does not have the variable or suppliedp bound.
@@ -1477,15 +1473,21 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
   // Now for when the variable is supplied.
   supplied_label->contextualize(context);
   if (supplied_var.notnilp()) compile_literal(cl::_sym_T_O, env, context.sub_receiving(1));
-  if (var_specialp) context.assemble1(vm_ref, varinfo->frameIndex());
-  else context.maybe_emit_encage(varinfo);
+  context.assemble1(vm_ref, varinfo->frameIndex());
   next_label->contextualize(context);
-  ql::list debugbindings;
   // Bind the main variable if it's special.
   // We emit this one special bind after the branch for the same reason as with the
   // suppliedp var below. (In the lexical case it's considered bound by the bind-optional.)
   if (var_specialp) context.emit_special_bind(var);
-  else debugbindings << Cons_O::create(var, varinfo->lex());
+  else {
+    Label_sp varlabel = Label_O::make();
+    context.maybe_emit_make_cell(varinfo);
+    context.assemble1(vm_set, varinfo->frameIndex());
+    varlabel->contextualize(context);
+    context.push_debug_info(BytecodeDebugVars_O::make(varlabel, end_label, Cons_O::createList(Cons_O::create(var, varinfo->lex()))));
+    if (vardecls.notnilp())
+      context.push_debug_info(BytecodeDebugDecls_O::make(varlabel, end_label, vardecls));
+  }
   // The suppliedp value was pushed most recently, so bind that first.
   // We do it this way after the branch so that the suppliedp var has a dominating bind
   // instruction, which is nice for verification and further compilation.
@@ -1493,22 +1495,17 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
     if (supplied_specialp)
       context.emit_special_bind(supplied_var);
     else {
+      Label_sp suplabel = Label_O::make();
       LexicalVarInfo_sp lsinfo = gc::As_assert<LexicalVarInfo_sp>(env->variableInfo(supplied_var));
       context.maybe_emit_make_cell(lsinfo);
+      // This is a separate set because the variable and its optionalp usually
+      // don't have contiguous indices.
       context.assemble1(vm_set, lsinfo->frameIndex());
-      debugbindings << Cons_O::create(supplied_var, lsinfo->lex());
+      suplabel->contextualize(context);
+      context.push_debug_info(BytecodeDebugVars_O::make(suplabel, end_label, Cons_O::createList(Cons_O::create(supplied_var, lsinfo->lex()))));
+      if (spdecls.notnilp())
+        context.push_debug_info(BytecodeDebugDecls_O::make(suplabel, end_label, spdecls));
     }
-  }
-  // Output the debug bindings. Note that we do this immediately after the suppliedp set,
-  // so that the BTB compiler etc. understand it's a binding operation.
-  if (!var_specialp || !supplied_specialp) {
-    Label_sp debuglab = Label_O::make();
-    debuglab->contextualize(context);
-    context.push_debug_info(BytecodeDebugVars_O::make(debuglab, end_label, debugbindings.cons()));
-    // Also output debug decls for the suppliedp if they exist.
-    // They similarly go right after the SET so that they are understood as bound.
-    if (spdecls.notnilp())
-      context.push_debug_info(BytecodeDebugDecls_O::make(debuglab, end_label, spdecls));
   }
   // That's it for code generation. Now return the new environment.
   return env;
@@ -1634,10 +1631,11 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       bool optional_special_p = special_binding_p(optional_var, specials, env);
       auto varinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(optional_var, optkey_env));
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
+      List_sp vardecls = decls_for_var(optional_var, declares);
       List_sp spdecls = nil<T_O>();
       if (supplied_var.notnilp()) spdecls = decls_for_var(supplied_var, declares);
       new_env = compile_optional_or_key_item(optional_var, defaulting_form, varinfo, supplied_var, end_label,
-                                             optional_special_p, supplied_special_p, context, new_env, spdecls);
+                                             optional_special_p, supplied_special_p, context, new_env, vardecls, spdecls);
       if (optional_special_p)
         ++special_binding_count;
       if (supplied_special_p)
@@ -1680,10 +1678,11 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       bool key_special_p = special_binding_p(key_var, specials, env);
       auto varinfo = gc::As_assert<LexicalVarInfo_sp>(var_info(key_var, optkey_env));
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
+      List_sp vardecls = decls_for_var(key_var, declares);
       List_sp spdecls = nil<T_O>();
       if (supplied_var.notnilp()) spdecls = decls_for_var(supplied_var, declares);
       new_env = compile_optional_or_key_item(key_var, defaulting_form, varinfo, supplied_var, end_label, key_special_p,
-                                             supplied_special_p, context, new_env, spdecls);
+                                             supplied_special_p, context, new_env, vardecls, spdecls);
       if (key_special_p)
         ++special_binding_count;
       if (supplied_special_p)
