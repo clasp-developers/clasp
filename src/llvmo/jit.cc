@@ -510,6 +510,9 @@ class ClaspSnapshotPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         if (pos != std::string::npos) {
           found_literals = true;
           currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress();
+          printf("%s:%d:%s  currentCode->_LiteralVectorStart = %p\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 (void*)currentCode->_LiteralVectorStart);
           size_t symbolSize = (size_t)ssym->getSize();
           if (symbolSize==1) {
             // A symbol of size 1 is really zero

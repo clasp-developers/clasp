@@ -564,7 +564,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     for (auto ssym : G.defined_symbols()) {
 #ifdef DEBUG_OBJECT_FILES
       if (ssym->hasName()) {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n",
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %llu\n",
                                   __FILE__, __LINE__, __FUNCTION__,
                                   ssym->hasName(),
                                   ssym->getName().str().c_str(),
@@ -589,19 +589,37 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         if (pos != std::string::npos) {
           found_literals = true;
           currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress().getValue();
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode = %p  _LiteralVectorStart -> %p\n",
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode = %p  _LiteralVectorStart -> %p\n"
+                                    "   ssym->getSize() = %llu\n",
                                     __FILE__, __LINE__, __FUNCTION__,
-                                    &*currentCode, (void*)currentCode->_LiteralVectorStart ));
-          size_t symbolSize = (size_t)ssym->getSize();
+                                    &*currentCode, (void*)currentCode->_LiteralVectorStart,
+                                    (size_t)ssym->getSize() ));
+          size_t origSymbolSize = (size_t)ssym->getSize();
+          size_t symbolSize = origSymbolSize;
           if (symbolSize==1) {
             // A symbol of size 1 is really zero
             symbolSize = 0;
+#ifdef _TARGET_OS_DARWIN
+          } else if (symbolSize==8) {
+            // On DARWIN assume symbolSize of 8 is really 0
+            // because DARWIN doesn't save symbol size
+            // This may be a cludge - I'm not sure (Chris Schafmeister, 2023)
+            printf("%s:%d:%s Assuming symbolSize is 0 on DARWIN for currentCode->_LiteralVectorStart = %p\n",
+                   __FILE__, __LINE__, __FUNCTION__, (void*)currentCode->_LiteralVectorStart );
+            symbolSize = 0;
+#endif
+
           } else if ((symbolSize&7) != 0) {
             printf("%s:%d:%s The symbol %s is %lu bytes in size but it must be a multiple of 8 bytes!!!\n",
                    __FILE__, __LINE__, __FUNCTION__, sname.c_str(), symbolSize );
             abort();
           }
           currentCode->_LiteralVectorSizeBytes = symbolSize;
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Assignment currentCode->_LiteralVectorSizeBytes = %llu\n"
+                                    "   origSymbolSize = %llu\n",
+                                    __FILE__, __LINE__, __FUNCTION__,
+                                    (size_t)currentCode->_LiteralVectorSizeBytes,
+                                    (size_t)origSymbolSize ));
         }
       }
     }

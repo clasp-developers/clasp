@@ -50,6 +50,7 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message = NULL );
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
 
 bool global_debugSnapshot = false;
+bool global_debugSnapshotObjectFile = false;
 
 };
 
@@ -346,7 +347,7 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #define DBG_SL_STEP(...)
 #endif
 #if 0
-#define DBG_SL(...)  { printf("%s:%d:%s DBG_SL:  ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__ ); }
+#define DBG_SL(...)  if (global_debugSnapshot) { printf("%s:%d:%s DBG_SL:  ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__ ); }
 #else
 #define DBG_SL(...)
 #endif
@@ -380,13 +381,19 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #endif
 
 #if 0
-#define DBG_SL_FWD(...) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__);}
+#define DBG_SL_FIXUP(...) if (global_debugSnapshot) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); }
+#else
+#define DBG_SL_FIXUP(...)
+#endif
+
+#if 0
+#define DBG_SL_FWD(...)  { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__);}
 #else
 #define DBG_SL_FWD(...)
 #endif
 
 #if 0
-#define DBG_SL_FFWD(...) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); }
+#define DBG_SL_FFWD(...) if (global_debugSnapshot) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); }
 #else
 #define DBG_SL_FFWD(...)
 #endif
@@ -443,6 +450,23 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 ;
 
 namespace snapshotSaveLoad {
+
+struct DebugSnapshotObjectFile {
+  gctools::BaseHeader_s* _header;
+  bool _ObjectFile;
+  DebugSnapshotObjectFile(gctools::BaseHeader_s* header, bool of) : _header(header), _ObjectFile(of) {
+    global_debugSnapshotObjectFile = of;
+    if (of) {
+      DBG_SL_FIXUP("{ fixup header @%p -> %p\n", (void*)header, *(void**)header );
+    }
+  };
+  ~DebugSnapshotObjectFile() {
+    global_debugSnapshotObjectFile = false;
+    if (this->_ObjectFile) {
+      DBG_SL_FIXUP("} fixup header\n");
+    }
+  }
+};
 bool globalFwdMustBeInGCMemory = false;
 #define DEBUG_SL_FFWD 1
 
@@ -1591,7 +1615,8 @@ struct copy_objects_t : public walker_callback_t {
         llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)clientStart;
         size_t objectFileSize = objectFile->objectFileSizeAlignedUp();
         DBG_OF(
-            printf("%s:%d:%s Saving object file %p with badge 0x%0x name: %s\n", __FILE__, __LINE__, __FUNCTION__, objectFile, header->_badge_stamp_wtag_mtag._header_badge, _rep_(objectFile->_CodeName).c_str() );
+            printf("%s:%d:%s Saving object file %p with badge 0x%0x name: %s\n", __FILE__, __LINE__, __FUNCTION__, objectFile,
+                   header->_badge_stamp_wtag_mtag._header_badge.load(), _rep_(objectFile->_CodeName).c_str() );
             printf("%s:%d:%s _ObjectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_ObjectId );
             printf("%s:%d:%s TheJITDylib = %p\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_TheJITDylib.raw_() );
                );
@@ -1632,16 +1657,19 @@ struct copy_objects_t : public walker_callback_t {
         // Write the bytes for the literals
         char* literals_addr = this->_objects->write_buffer((char*)code->literalsStart(), code->literalsSize() );
         newObjectFile->_LiteralVectorStart = literals_addr - new_client;
+        DBG_OF(
+            printf("%s:%d:%s newObjectFile->_LiteralVectorStart     = 0x%lx literals_addr=%p  new_client= %p\n", __FILE__, __LINE__, __FUNCTION__, newObjectFile->_LiteralVectorStart,
+                   literals_addr, new_client );
+               );
         newObjectFile->_LiteralVectorSizeBytes = code->literalsSize();
+        DBG_OF(
+            printf("%s:%d:%s newObjectFile->_LiteralVectorStart     = 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, newObjectFile->_LiteralVectorStart );
+            printf("%s:%d:%s newObjectFile->_LiteralVectorSizeBytes = %lu\n", __FILE__, __LINE__, __FUNCTION__, newObjectFile->_LiteralVectorSizeBytes );
+               );
         this->_progress.update((uintptr_t)islh);
         DBG_SAVECOPY("   copied general header ObjectFile_O object %p to %p\n" , header , (void*)islh );
         DBG_SL_FWD(("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n"),
                    (void*)header, (void*)new_client, (void*)get_forwarding_pointer(header,this->_info));
-        DBG_OF(
-            printf("%s:%d:%s Wrote literals %lu bytes to _LiteralVectorStart %p\n", __FILE__, __LINE__, __FUNCTION__,
-                   newObjectFile->_LiteralVectorSizeBytes,
-                   (void*)newObjectFile->_LiteralVectorStart );
-               );
       } else {
       //
       // Now write it into the buffer
@@ -1748,9 +1776,13 @@ struct fixup_objects_t : public walker_callback_t {
 
   void callback(gctools::BaseHeader_s* header) {
     if (header->_badge_stamp_wtag_mtag.stampP()) {
+      DebugSnapshotObjectFile foo(header, header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) );
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
       isl_obj_skip(client,false,objectSize);
+      if (global_debugSnapshotObjectFile) {
+        DBG_SL_FIXUP("fixup header ObjectFile\n");
+      }
       gctools::clasp_ptr_t client_limit = client + objectSize;
       //
       // This is where we would fixup pointers and entry-points
@@ -3267,14 +3299,25 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
               char* loadedObjectFileStart = objectFilesStartAddress + loadedObjectFile->_ObjectFileOffset;
               size_t objectFileSize = loadedObjectFile->_ObjectFileSize;
               DBG_OF(
-                  printf("%s:%d:%s ----------Loading ObjectFile_O file with badge 0x%x\n", __FILE__, __LINE__, __FUNCTION__, generalHeader->_Header._badge_stamp_wtag_mtag._header_badge );
+                  printf("%s:%d:%s ----------Loading ObjectFile_O file with badge 0x%x\n", __FILE__, __LINE__, __FUNCTION__,
+                         generalHeader->_Header._badge_stamp_wtag_mtag._header_badge.load() );
                   printf("%s:%d:%s  TheJITDylib = %p objectFileSize: %lu\n", __FILE__, __LINE__, __FUNCTION__, loadedObjectFile->_TheJITDylib.raw_(), objectFileSize  );
                      );
 
               char* of_start = (char*)malloc(loadedObjectFile->_ObjectFileSize);
               memcpy((void*)of_start, loadedObjectFileStart, objectFileSize );
               llvm::StringRef sbuffer((const char*)of_start, objectFileSize);
+              DBG_OF(
+                  printf("%s:%d:%s ------------- loadedObjectFile->_CodeName = %s\n",
+                         __FILE__, __LINE__, __FUNCTION__,
+                         loadedObjectFile->_CodeName->get_std_string().c_str() );
+                     );
               std::string uniqueName = llvmo::ensureUniqueMemoryBufferName(loadedObjectFile->_CodeName->get_std_string());
+              DBG_OF(
+                  printf("%s:%d:%s ------------- uniqueName = %s\n",
+                         __FILE__, __LINE__, __FUNCTION__,
+                         uniqueName.c_str() );
+                     );
               llvm::StringRef name(uniqueName);
               std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
               loadedObjectFile->_MemoryBuffer.reset();
@@ -3385,71 +3428,6 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
 #endif
         DBG_SL("8 Done working ObjectFiles\n");
 
-#if 0
-        {
-          {
-            {
-              if (!found) {
-                printf("%s:%d:%s Could not find startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str() );
-                abort();
-              }
-              DBG_OF(
-                  printf("%s:%d:%s ClaspReturnObjectBuffer modified our current ObjectFile_O object\n"
-                         "     We want to get the ObjectFile_O->_Code object and use that as the forward pointer for the\n"
-                         "     ObjectFile_O object @ %p that was in the ObjectFile_O object BEFORE we called jit->addObjectFile\n"
-                         "     After jit->addObjectFile the ObjectFile_O->_Code is %p\n"
-                         ,
-                         __FILE__, __LINE__, __FUNCTION__,
-                         oldCode.raw_(),
-                         allocatedObjectFile->_Code.raw_());
-                     );
-              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
-              DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p  for source_header: %p\n")
-                              % (void*) obj.raw_()
-                              % (void*)fwd
-                              % (void*)source_header );
-              if (fwd==NULL) {
-                printf("%s:%d:%s Bad fwd = NULL for allocatedObjectFile.raw_() %p  source_header %p\n",
-                       __FILE__, __LINE__, __FUNCTION__, allocatedObjectFile.raw_(), source_header);
-                abort();
-              }
-              objectFileForwards[source_header] = (char*)fwd;
-              root_holder.add((void*)allocatedObjectFile.raw_());
-          //
-          // Now set the new code pointer as the forward for the oldCode object
-          //
-              core::T_sp code = allocatedObjectFile->_Code;
-              if (code == oldCode) {
-                printf("%s:%d:%s Something is wrong - the new code %p is the same as the old code %p\n",
-                       __FILE__, __LINE__, __FUNCTION__,
-                       (void*)code.raw_(), (void*)oldCode.raw_() );
-              }
-              root_holder.add((void*)code.raw_());
-              codeFixups.emplace_back(CodeFixup_t((llvmo::ObjectFile_O*)oldCode.unsafe_general(),((llvmo::ObjectFile_O*)code.unsafe_general())));
-              if (global_debugSnapshot) {
-                printf("%s:%d:%s Passed     ObjectFile_sp %p ObjectFile_sp %p  %lu/%lu to LLJIT\n",
-                       __FILE__, __LINE__, __FUNCTION__,
-                       allocatedObjectFile.raw_(),
-                       code.raw_(),
-                       objectFileCount,
-                       fileHeader->_ObjectFileCount );
-              }
-              llvmo::ObjectFile_sp ccode = gc::As<llvmo::ObjectFile_sp>(code);
-              if (ccode->_TextSectionStart == NULL) {
-                printf("%s:%d:%s The ObjectFile_sp %p object has NULL for the _TextSectionStart\n",
-                       __FILE__, __LINE__, __FUNCTION__,
-                       ccode.raw_());
-              }
-              objectFileCount++;
-            }
-          }
-          
-          next_header = cur_header->next(cur_header->_Kind);
-          size_t size = cur_header->_Size;
-          DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
-          cur_header = next_header;
-        }
-#endif // objects added        
       }
       char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
       if (pause_startup) {
@@ -3623,7 +3601,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
           if (!cur_header->stamp_wtag_mtag_P(cur_header->_Kind)->fwdP()) {
             printf("%s:%d:%s cur_header @%p is not forwarded\n", __FILE__, __LINE__, __FUNCTION__, cur_header );
           }
-          
+
           next_header = cur_header->next(cur_header->_Kind);
           size_t size = cur_header->_Size;
           DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
@@ -3632,7 +3610,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
       }
 
       DBG_SL("10 Fixup objects codeFixups.size() -> %lu\n", codeFixups.size() );
-      
+
       //
       // Fixup all the code objects now
       //
@@ -3683,25 +3661,55 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
         DBG_OF(
             printf("%s:%d:%s\n"
                    "        oldCodeClient = %p     oldCodeLiteralsStart = %p\n"
-                   "        newCodeClient = %p     newCodeLiteralsStart = %p\n",
+                   "        newCodeClient = %p     newCodeLiteralsStart = %p\n"
+                   "        newCodeClient->_LiteralsStart = %p\n"
+                   ,
                    __FILE__, __LINE__, __FUNCTION__, oldCodeClient, (void*)oldCodeLiteralsStart,
-                   (void*)&*newCodeClient, (void*)newCodeLiteralsStart );
+                   (void*)&*newCodeClient, (void*)newCodeLiteralsStart,
+                   (void*)newCodeClient->_LiteralVectorStart );
                );
-        if (oldCodeClient->literalsSize() != 0 &&
+        if ( oldCodeClient->literalsSize() != 0 &&
             !( newCodeDataStart <= newCodeLiteralsStart
                && newCodeLiteralsEnd <= newCodeDataEnd ) ) {
-          printf("%s:%d:%s The newCodeClient literals range %p - %p must be within the bounds of the newCodeClient data range %p - %p and it is not\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 (void*)newCodeLiteralsStart,
-                 (void*)newCodeLiteralsEnd,
-                 (void*)newCodeDataStart,
-                 (void*)newCodeDataEnd );
-          abort();
+               // On MacOS this test may fail because symbols are always at least 8 bytes
+               // so we will rely on newCodeLiteralsStart and newCodeLiteralsEnd being bounded
+               // by newCodeDataStart/newCodeDataEnd
+#if 0
+          DBG_OF(
+              printf("%s:%d:%s BAD code fixup #%lu/%lu - the newCodeLiterals range %p - %p must be within the bounds of the newCodeData range %p - %p and it is not; the oldCodeClient->literalsSize()[%lu] != 0\n",
+                     __FILE__, __LINE__, __FUNCTION__,
+                     idx,
+                     codeFixups.size(),
+                     (void*)newCodeLiteralsStart,
+                     (void*)newCodeLiteralsEnd,
+                     (void*)newCodeDataStart,
+                     (void*)newCodeDataEnd,
+                     oldCodeClient->literalsSize() ));
+//          abort();
+#endif
+        } else {
+          if (oldCodeClient->literalsSize() != 0 ) {
+            if (getenv("CLASP_SNAPSHOT_OBJECT_FILE")) {
+              printf("%s:%d:%s Good code fixup #%lu/%lu\n   - the newCodeLiterals range %p - %p is within the bounds of the newCodeData range %p - %p; the oldCodeClient->literalsSize()[%lu] != 0\n",
+                     __FILE__, __LINE__, __FUNCTION__,
+                     idx,
+                     codeFixups.size(),
+                     (void*)newCodeLiteralsStart,
+                     (void*)newCodeLiteralsEnd,
+                     (void*)newCodeDataStart,
+                     (void*)newCodeDataEnd,
+                     oldCodeClient->literalsSize() );
+            }
+          }
         }
+
       //
       // Finally, finally, finally - we copy the oldCodeClient literal vector into the newCodeClient literal vector.
+      // but only if the newCodeLiteralsStart and newCodeLiteralsEnd are in valid memory
       //
-        if (oldCodeClient->literalsSize()!=0) {
+        if (oldCodeClient->literalsSize()!=0
+            && ( newCodeDataStart <= newCodeLiteralsStart
+                 && newCodeLiteralsEnd <= newCodeDataEnd )) {
           DBG_OF(
               printf("%s:%d:%s  Fixup code oldCodeClient->literalsStart() -> %p  newCodeClient->literalsStart() -> %p  newCodeClient->literalsSize() = %lu\n",
                      __FILE__, __LINE__, __FUNCTION__,
@@ -3763,6 +3771,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
   //
   // Fixup the roots
   //
+    DBG_SL("13 ======================= fixup roots\n");
     {
       gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
 //    followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount, (void*)&islInfo );
@@ -3773,12 +3782,14 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
     }
 
 //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
+    DBG_SL("14 ======================= fixup internals\n");
     fixup_internals_t  internals( &fixup, &islInfo );
     walk_temporary_root_objects( root_holder, internals );
 
   //
   // Release the temporary roots
   //
+    DBG_SL("15 ======================= release temporary roots\n");
 #if 0
     printf("%s:%d:%s Not releasing temporary roots\n", __FILE__, __LINE__, __FUNCTION__ );
 #else
@@ -3788,6 +3799,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
   //
   // munmap the memory
   //
+    DBG_SL("16 ======================= munmap snapshot memory\n");
 #if 0
     printf("%s:%d:%s Not munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
   // Fill it with 0xc0
@@ -3809,6 +3821,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
   //
     SYMBOL_EXPORT_SC_(CompPkg,STARthread_local_builtins_moduleSTAR);
   
+    DBG_SL("17 ======================= initialize the main thread\n");
     _lisp->initializeMainThread();
     comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
     comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(nil<core::T_O>());
@@ -3843,6 +3856,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
   core::T_sp theClass = cl__find_class(cl::_sym_restart, true, nil<core::T_O>());
   printf("%s:%d:%s theClass = %p\n", __FILE__, __LINE__, __FUNCTION__, theClass.raw_());
 #endif
+  DBG_SL("18 ======================= Done snapshot_load\n");
 }
 
 
