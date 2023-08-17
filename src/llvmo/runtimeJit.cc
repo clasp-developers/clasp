@@ -599,6 +599,16 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           if (symbolSize==1) {
             // A symbol of size 1 is really zero
             symbolSize = 0;
+#ifdef _TARGET_OS_DARWIN
+          } else if (symbolSize==8) {
+            // On DARWIN assume symbolSize of 8 is really 0
+            // because DARWIN doesn't save symbol size
+            // This may be a cludge - I'm not sure (Chris Schafmeister, 2023)
+            printf("%s:%d:%s Assuming symbolSize is 0 on DARWIN for currentCode->_LiteralVectorStart = %p\n",
+                   __FILE__, __LINE__, __FUNCTION__, (void*)currentCode->_LiteralVectorStart );
+            symbolSize = 0;
+#endif
+
           } else if ((symbolSize&7) != 0) {
             printf("%s:%d:%s The symbol %s is %lu bytes in size but it must be a multiple of 8 bytes!!!\n",
                    __FILE__, __LINE__, __FUNCTION__, sname.c_str(), symbolSize );

@@ -50,6 +50,7 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message = NULL );
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
 
 bool global_debugSnapshot = false;
+bool global_debugSnapshotObjectFile = false;
 
 };
 
@@ -346,7 +347,7 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #define DBG_SL_STEP(...)
 #endif
 #if 0
-#define DBG_SL(...)  { printf("%s:%d:%s DBG_SL:  ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__ ); }
+#define DBG_SL(...)  if (global_debugSnapshot) { printf("%s:%d:%s DBG_SL:  ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__ ); }
 #else
 #define DBG_SL(...)
 #endif
@@ -380,13 +381,19 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #endif
 
 #if 0
-#define DBG_SL_FWD(...) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__);}
+#define DBG_SL_FIXUP(...) if (global_debugSnapshot) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); }
+#else
+#define DBG_SL_FIXUP(...)
+#endif
+
+#if 0
+#define DBG_SL_FWD(...)  { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__);}
 #else
 #define DBG_SL_FWD(...)
 #endif
 
 #if 0
-#define DBG_SL_FFWD(...) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); }
+#define DBG_SL_FFWD(...) if (global_debugSnapshot) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf(__VA_ARGS__); }
 #else
 #define DBG_SL_FFWD(...)
 #endif
@@ -433,7 +440,7 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #define DBG_SL_ENTRY_POINT(_fmt_)
 #endif
 
-#if 1
+#if 0
 #define DBG_OF(thing) do { thing } while(0)
 #else
 #define DBG_OF(thing) do {} while(0)
@@ -443,6 +450,23 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 ;
 
 namespace snapshotSaveLoad {
+
+struct DebugSnapshotObjectFile {
+  gctools::BaseHeader_s* _header;
+  bool _ObjectFile;
+  DebugSnapshotObjectFile(gctools::BaseHeader_s* header, bool of) : _header(header), _ObjectFile(of) {
+    global_debugSnapshotObjectFile = of;
+    if (of) {
+      DBG_SL_FIXUP("{ fixup header @%p -> %p\n", (void*)header, *(void**)header );
+    }
+  };
+  ~DebugSnapshotObjectFile() {
+    global_debugSnapshotObjectFile = false;
+    if (this->_ObjectFile) {
+      DBG_SL_FIXUP("} fixup header\n");
+    }
+  }
+};
 bool globalFwdMustBeInGCMemory = false;
 #define DEBUG_SL_FFWD 1
 
@@ -1752,9 +1776,13 @@ struct fixup_objects_t : public walker_callback_t {
 
   void callback(gctools::BaseHeader_s* header) {
     if (header->_badge_stamp_wtag_mtag.stampP()) {
+      DebugSnapshotObjectFile foo(header, header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) );
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
       isl_obj_skip(client,false,objectSize);
+      if (global_debugSnapshotObjectFile) {
+        DBG_SL_FIXUP("fixup header ObjectFile\n");
+      }
       gctools::clasp_ptr_t client_limit = client + objectSize;
       //
       // This is where we would fixup pointers and entry-points
@@ -3743,6 +3771,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
   //
   // Fixup the roots
   //
+    DBG_SL("13 ======================= fixup roots\n");
     {
       gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
 //    followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount, (void*)&islInfo );
@@ -3753,12 +3782,14 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
     }
 
 //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
+    DBG_SL("14 ======================= fixup internals\n");
     fixup_internals_t  internals( &fixup, &islInfo );
     walk_temporary_root_objects( root_holder, internals );
 
   //
   // Release the temporary roots
   //
+    DBG_SL("15 ======================= release temporary roots\n");
 #if 0
     printf("%s:%d:%s Not releasing temporary roots\n", __FILE__, __LINE__, __FUNCTION__ );
 #else
@@ -3768,6 +3799,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
   //
   // munmap the memory
   //
+    DBG_SL("16 ======================= munmap snapshot memory\n");
 #if 0
     printf("%s:%d:%s Not munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
   // Fill it with 0xc0
@@ -3789,6 +3821,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
   //
     SYMBOL_EXPORT_SC_(CompPkg,STARthread_local_builtins_moduleSTAR);
   
+    DBG_SL("17 ======================= initialize the main thread\n");
     _lisp->initializeMainThread();
     comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
     comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(nil<core::T_O>());
@@ -3823,6 +3856,7 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
   core::T_sp theClass = cl__find_class(cl::_sym_restart, true, nil<core::T_O>());
   printf("%s:%d:%s theClass = %p\n", __FILE__, __LINE__, __FUNCTION__, theClass.raw_());
 #endif
+  DBG_SL("18 ======================= Done snapshot_load\n");
 }
 
 
