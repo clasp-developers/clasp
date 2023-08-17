@@ -212,17 +212,15 @@ jobs:
           sudo chown -R build: .
           sudo chown -R build: /github/home
           sudo pacman -Syu --noconfirm
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v5
-        with:
-          gpg_private_key: ${{ secrets.PKG_GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PKG_GPG_PASSPHRASE }}
       - name: Build Arch packages
         run: |
+          echo -e "${{ secrets.PKG_GPG_PRIVATE_KEY }}" | gpg --import --yes --batch
+          echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
+          gpg-connect-agent reloadagent /bye
+          echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
           wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=clasp-cl-git
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
-          makepkg --noconfirm --syncdeps --sign --key ${{ steps.import_gpg.outputs.keyid }}
+          makepkg --noconfirm --syncdeps --sign
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -241,17 +239,15 @@ jobs:
           sudo chown -R build: .
           sudo chown -R build: /github/home
           sudo pacman -Syu --noconfirm
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v5
-        with:
-          gpg_private_key: ${{ secrets.PKG_GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PKG_GPG_PASSPHRASE }}
       - name: Build Arch packages
         run: |
+          echo -e "${{ secrets.PKG_GPG_PRIVATE_KEY }}" | gpg --import --yes --batch
+          echo "allow-preset-passphrase" >~/.gnupg/gpg-agent.conf
+          gpg-connect-agent reloadagent /bye
+          echo -e "${{ secrets.PKG_GPG_PASSPHRASE }}" | /usr/lib/gnupg/gpg-preset-passphrase --preset "${{ secrets.PKG_GPG_KEYGRIP }}"
           wget -O PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=cando-git
           sed -i "s/clasp\.git/clasp\.git#commit=${{ github.sha }}/g" PKGBUILD
-          makepkg --noconfirm --syncdeps --sign --key ${{ steps.import_gpg.outputs.keyid }}
+          makepkg --noconfirm --syncdeps --sign
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
