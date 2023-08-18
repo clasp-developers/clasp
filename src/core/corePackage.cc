@@ -380,7 +380,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, allocaVar);
 SYMBOL_EXPORT_SC_(ExtPkg, llvmRegisterVar);
 SYMBOL_EXPORT_SC_(ExtPkg, lexicalVar);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_numberOfFixedArguments_PLUS_);
-SYMBOL_EXPORT_SC_(CorePkg, STARinterpreterTraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugLoadTimeValuesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugEvalSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedFunctionsSTAR);
@@ -1098,7 +1097,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(nil<T_O>());
   _sym_STARuseInterpreterForEvalSTAR->defparameter(nil<T_O>()); // _lisp->_true());
   _sym_STARcxxDocumentationSTAR->defparameter(nil<T_O>());
-  _sym_STARinterpreterTraceSTAR->defparameter(nil<T_O>());
   _sym__PLUS_class_name_to_lisp_name_PLUS_->defparameter(nil<T_O>());
   _sym__PLUS_type_header_value_map_PLUS_->defparameter(nil<T_O>());
   initialize_typeq_map();
