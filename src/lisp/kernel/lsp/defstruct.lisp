@@ -950,5 +950,5 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
          ,@(when print-object `((:print-object ,print-object)))
          ,@(when predicate `((:predicate ,predicate ,name-offset)))
          ,@(when copier `((:copier ,copier)))
-         ,@(when (and documentation *keep-documentation*)
+         ,@(when documentation
              `((:documentation ,documentation)))))))
