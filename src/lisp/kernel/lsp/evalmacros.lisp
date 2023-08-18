@@ -139,7 +139,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
   (declare (ignore environment))
   ;; Basically ETYPECASE.
   (if (functionp cmf)
-      (core:hash-table-setf-gethash *compiler-macros* name cmf)
+      (funcall #'(setf gethash) cmf name *compiler-macros*)
       (if (null cmf)
           (progn (remhash name *compiler-macros*) nil)
           (error 'type-error :datum cmf :expected-type '(or function null)))))
@@ -440,4 +440,4 @@ Right now the only such information is that it exists. In the future I'd like to
   (declare (ignore env))
   (if (null value)
       (progn (remhash name *class-infos*) value)
-      (core:hash-table-setf-gethash *class-infos* name value)))
+      (funcall #'(setf gethash) value name *class-infos*)))

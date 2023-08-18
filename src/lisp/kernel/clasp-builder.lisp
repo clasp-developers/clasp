@@ -211,12 +211,13 @@
                                   (- (gctools:bytes-allocated) start-bytes))
                          (sys:c_exit))))
                     (t
-                     (started-one (core:hash-table-setf-gethash jobs pid
-                                                                (list* :pid pid
-                                                                       :child-stdout child-stdout
-                                                                       :child-stderr child-stderr
-                                                                       :start-time (get-internal-run-time)
-                                                                       entry)))
+                     (started-one (funcall #'(setf gethash)
+                                           (list* :pid pid
+                                                  :child-stdout child-stdout
+                                                  :child-stderr child-stderr
+                                                  :start-time (get-internal-run-time)
+                                                  entry)
+                                           pid jobs))
                      (incf child-count))))))
          (when (or system (> child-count 0))
            (go top))))))

@@ -1020,7 +1020,7 @@ and initialize it with an array consisting of one function pointer."
   "Map exception names to exception class extern 'C' names")
 
 (mapcar #'(lambda (x &aux (name (car x)) (cname (cadr x)))
-	    (core::hash-table-setf-gethash *exception-types-hash-table* name cname))
+            (funcall #'(setf gethash) cname name *exception-types-hash-table*))
 	*exceptions*)
 
 (defun exception-typeid*-from-name (name)

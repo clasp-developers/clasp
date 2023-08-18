@@ -67,7 +67,7 @@
       (let ((record (rem-record-field (gethash object dict)
                                       key sub-key)))
 	(if record
-            (core::hash-table-setf-gethash dict object record)
+            (funcall #'(setf gethash) record object dict)
             (remhash object dict))))))
 
 (defun get-annotation (object key &optional (sub-key :all))

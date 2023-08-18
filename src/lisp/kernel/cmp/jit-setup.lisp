@@ -757,7 +757,7 @@ No DIBuilder is defined for the default module")
 
 (defun jit-register-symbol (symbol-name-string symbol-info &key verbose)
   "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
-  (core:hash-table-setf-gethash *jit-saved-symbol-info* symbol-name-string symbol-info)
+  (funcall #'(setf gethash) symbol-info symbol-name-string *jit-saved-symbol-info*)
   (if (member :jit-log-symbols *features*)
       (unwind-protect
            (progn
