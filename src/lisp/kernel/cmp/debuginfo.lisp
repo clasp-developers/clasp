@@ -131,9 +131,9 @@
     (if (typep pathname 'logical-pathname)
         (let ((translated-path (translate-logical-pathname pathname)))
           (setq args (do-make-create-file-args (or install-pathname translated-path) namestring))
-          (core:hash-table-setf-gethash *dbg-file-metadata-cache* translated-path args))
+          (funcall #'(setf gethash) args translated-path *dbg-file-metadata-cache*))
         (setq args (do-make-create-file-args (or install-pathname pathname) nil)))
-    (core:hash-table-setf-gethash *dbg-file-metadata-cache* pathname args)))
+    (funcall #'(setf gethash) args pathname *dbg-file-metadata-cache*)))
 
 (defun make-file-metadata (path)
   (let ((namestring (if (typep path 'pathname)

@@ -417,11 +417,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
      (mapc #'sys::*make-special (cdr decl)))
     ((eq (car decl) 'cl:inline)
      (dolist (name (cdr decl))
-       (core:hash-table-setf-gethash *functions-to-inline* name t)
+       (funcall #'(setf gethash) t name *functions-to-inline*)
        (remhash name *functions-to-notinline*)))
     ((eq (car decl) 'cl:notinline)
      (dolist (name (cdr decl))
-       (core:hash-table-setf-gethash *functions-to-notinline* name t)
+       (funcall #'(setf gethash) t name *functions-to-notinline*)
        (remhash name *functions-to-inline*)))
     (*proclaim-hook*
      (funcall *proclaim-hook* decl))))

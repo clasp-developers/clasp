@@ -55,7 +55,7 @@ Builds a new function which accepts any number of arguments but always outputs N
   (unless (symbolp name)
     (error "~s is not a valid type specifier" name))
   (create-type-name name)
-  (core:hash-table-setf-gethash *type-expanders* name function)
+  (funcall #'(setf gethash) function name *type-expanders*)
   (subtypep-clear-cache)
   function)
 
@@ -1253,7 +1253,7 @@ if not possible."
   (dolist (pair values)
     (let ((key (car pair))
 	  (value (cdr pair)))
-      (core::hash-table-setf-gethash ht key value)))
+      (funcall #'(setf gethash) value key ht)))
   ht)
 
 (defconstant-eqx +built-in-types+

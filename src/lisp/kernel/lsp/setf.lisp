@@ -39,7 +39,7 @@
 (defun (setf setf-expander) (expander symbol &optional environment)
   (unless (null environment)
     (error "(setf setf-expander) was passed a non-null environment"))
-  (core:hash-table-setf-gethash *setf-expanders* symbol expander))
+  (funcall #'(setf gethash) expander symbol *setf-expanders*))
 (export 'setf-expander)
 
 (in-package "SYSTEM")
@@ -377,7 +377,6 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 (defsetf get-sysprop put-sysprop)
 (defsetf nth (n l) (v) `(progn (rplaca (nthcdr ,n ,l) ,v) ,v))
 (defsetf fill-pointer sys:fill-pointer-set)
-(defsetf gethash (k h &optional d) (v) (declare (ignore d)) `(core::hash-table-setf-gethash ,h ,k ,v))
 #+clos
 (progn
   (defsetf instance-ref instance-set)

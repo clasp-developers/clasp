@@ -13,98 +13,10 @@
 (in-package "SYS")
 
 ;;;;----------------------------------------------------------------------
-;;;;  Help files
-;;;;
-
-#+(or)
-(defun read-help-file (path)
-  (let* ((*package* (find-package "CL"))
-         (file (open path :direction :input)))
-    (do ((end nil)
-         (h (make-hash-table :size 1024 :test #'eql)))
-        (end h)
-      (do ((c (read-char file nil)))
-          ((or (not c) (eq c #\^))
-           (when (not c) (setq end t)))
-        )
-      (when (not end)
-        (let* ((key (read file))
-               (value (read file)))
-          (declare (ignorable key))
-          #+ecl(si::hash-set core::hash-table-setf-gethash key h value)
-          #+clasp(core::hash-table-setf-gethash h key value)
-	  )))))
-
-#+(or)(defun dump-help-file (hash-table path &optional (merge nil))
-         (let ((entries nil))
-           (when merge
-             (let ((old-hash (read-help-file path)))
-               (push old-hash *documentation-pool*)
-               (maphash #'(lambda (key doc)
-                            (when doc
-                              (do* ((list doc)
-                                    (doc-type (first list))
-                                    (string (second list)))
-                                   (list)
-                                (set-documentation key doc-type string))))
-                        hash-table)
-               (setq hash-table (pop *documentation-pool*))))
-           (maphash #'(lambda (key doc)
-                        (when (and (symbolp key) doc)
-                          (push (cons key doc) entries)))
-                    hash-table)
-           (setq entries (sort entries #'string-lessp :key #'car))
-           (let* ((*package* (find-package "CL"))
-                  (file (open path :direction :output)))
-             (dolist (l entries)
-               (format file "~A~S~%~S~%" #\^ (car l) (rest l)))
-             (close file)
-             path)))
-
-#+clasp
-(defun search-help-file (key path)
-  (declare (ignore key path))
-  nil) ;; we don't have help-files in clasp yet
-#+(or)
-(defun search-help-file (key path &aux (pos 0))
-  (labels ((bin-search (file start end &aux (delta 0) (middle 0) sym)
-             (declare (fixnum start end delta middle))
-             (when (< start end)
-               (setq middle (round (+ start end) 2))
-               (file-position file middle)
-               (if (and (plusp (setq delta (scan-for #\^ file)))
-                        (<= delta (- end middle)))
-                   (if (equal key (setq sym (read file)))
-                       t
-                       (if (string< key sym)
-                           (bin-search file start (1- middle))
-                           (bin-search file (+ middle delta) end)))
-                   (bin-search file start (1- middle)))))
-           (scan-for (char file)
-             (do ((v #\space (read-char file nil nil))
-                  (n 0 (1+ n)))
-                 ((or (eql v #\^) (not v)) (if v n -1))
-               (declare (fixnum n)))))
-    (when (not (probe-file path))
-      (return-from search-help-file nil))
-    (let* ((*package* (find-package "CL"))
-           (file (open path :direction :input))
-           output)
-      (when (bin-search file 0 (file-length file))
-        (setq output (read file)))
-      (close file)
-      output)))
-
-
-
-
-;;;;----------------------------------------------------------------------
 ;;;; Documentation system
 ;;;;
 
 ;; *documentation-pool* was defined in documentation.cc
-
-(defvar *keep-documentation* t)
 
 #|
 ;; In Clasp I implemented the following functions in documentation.cc
@@ -155,7 +67,7 @@
       (let ((record (rem-record-field (gethash object dict)
                                       key sub-key)))
 	(if record
-            (core::hash-table-setf-gethash dict object record)
+            (funcall #'(setf gethash) record object dict)
             (remhash object dict))))))
 
 (defun get-annotation (object key &optional (sub-key :all))
@@ -163,9 +75,7 @@
     (dolist (dict *documentation-pool* output)
       (let ((record (if (hash-table-p dict)
                         (gethash object dict)
-                        (if (stringp dict)
-                            (search-help-file object dict)
-                            nil))))
+                        nil)))
         (when record
           (if (eq sub-key :all)
               (dolist (i record)
@@ -208,7 +118,7 @@
   string)
 
 (defun expand-set-documentation (symbol doc-type string)
-  (when (and *keep-documentation* string)
+  (when string
     (when (not (stringp string))
       (error "~S is not a valid documentation string" string))
     `((set-documentation ',symbol ',doc-type ,string))))

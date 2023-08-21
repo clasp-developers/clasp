@@ -971,12 +971,14 @@ T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   return this->setf_gethash_no_write_lock(key, value);
 }
 
-CL_LISPIFY_NAME("core:hash-table-setf-gethash");
+CL_LISPIFY_NAME("gethash")
+CL_LAMBDA(new-value key hash-table &optional default);
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__hash_table_setf_gethash(HashTableBase_sp hash_table, T_sp key, T_sp value) {
-  return hash_table->hash_table_setf_gethash(key,value);
+CL_DEFUN_SETF T_sp setf_gethash(T_sp value, T_sp key, HashTableBase_sp hash_table,
+                                T_sp default_value) {
+  (void)default_value;
+  return hash_table->hash_table_setf_gethash(key, value);
 }
-
 
 KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
