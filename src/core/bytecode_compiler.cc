@@ -2061,13 +2061,12 @@ static void compile_exit(LexicalInfo_sp exit_de, Label_sp exit, const Context co
 void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
   T_sp tinfo = env->tagInfo(tag);
   if (gc::IsA<TagInfo_sp>(tinfo)) {
+    Label_sp start = Label_O::make(), end = Label_O::make();
+    start->contextualize(ctxt);
+    ctxt.push_debug_info(BytecodeDebugExit_O::make(start, end, ctxt.receiving()));
     TagInfo_sp info = gc::As_unsafe<TagInfo_sp>(tinfo);
     compile_exit(info->lex(), info->exit(), ctxt);
-    if (ctxt.receiving() != 0) {
-        // see note in compile_return_from
-      ctxt.assemble0(vm_nil);
-      if (ctxt.receiving() == -1) ctxt.assemble0(vm_pop);
-    }
+    end->contextualize(ctxt);
   } else
     SIMPLE_ERROR("The GO tag {} does not exist.", _rep_(tag));
 }
@@ -2107,17 +2106,14 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
 void compile_return_from(T_sp name, T_sp valuef, Lexenv_sp env, const Context ctxt) {
   T_sp tbinfo = env->blockInfo(name);
   if (gc::IsA<BlockInfo_sp>(tbinfo)) {
+    Label_sp start = Label_O::make(), end = Label_O::make();
+    start->contextualize(ctxt);
+    ctxt.push_debug_info(BytecodeDebugExit_O::make(start, end, ctxt.receiving()));
     BlockInfo_sp binfo = gc::As<BlockInfo_sp>(tbinfo);
     int breceiving = binfo->receiving();
     compile_form(valuef, env, ctxt.sub_receiving(breceiving == 0 ? 0 : -1));
     compile_exit(binfo->lex(), binfo->exit(), ctxt);
-    // If we're in a single value context, generate a never-executed PUSH instruction
-    // so that statically both "branches" rejoining at the BLOCK have the same number
-    // of values on the stack. KLUDGE? Sorta? Not sure how legitimate this is.
-    switch (ctxt.receiving()) {
-    case 1: ctxt.assemble0(vm_push); break;
-    case 0: if (breceiving != 0) ctxt.assemble0(vm_drop_mv); break;
-    }
+    end->contextualize(ctxt);
   }
   else
     SIMPLE_ERROR("The block {} does not exist.", _rep_(name));

@@ -269,6 +269,10 @@
   ((%name :initarg :name :reader name :type creator)
    (%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
 
+#+clasp
+(defclass debug-info-exit (debug-info)
+  ((%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
+
 ;;;
 
 ;;; Return true iff the value is similar to the existing creator.
@@ -1217,6 +1221,12 @@
     :name (ensure-constant (core:bytecode-debug-block/name item))
     :receiving (core:bytecode-debug-block/receiving item)))
 
+(defmethod process-debug-info ((item core:bytecode-debug-exit))
+  (make-instance 'debug-info-exit
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :receiving (core:bytecode-debug-exit/receiving item)))
+
 (defmethod add-constant ((value cmp:module))
   ;; Add the module first to prevent recursion.
   (cmp:module/link value)
@@ -1282,7 +1292,8 @@
     (location 2)
     (decls 3)
     (the 4)
-    (block 5)))
+    (block 5)
+    (exit 6)))
 
 (defun debug-info-opcode (mnemonic)
   (let ((inst (assoc mnemonic +debug-info-ops+)))
@@ -1350,6 +1361,14 @@
   (write-b32 (di-receiving info) stream))
 (defmethod info-length ((info debug-info-block))
   (+ 1 4 4 *index-bytes* 4))
+
+(defmethod encode ((info debug-info-exit) stream)
+  (write-debug-info-mnemonic 'exit stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-b32 (di-receiving info) stream))
+(defmethod info-length ((info debug-info-exit))
+  (+ 1 4 4 4))
 
 (defmethod encode ((attr module-debug-attr) stream)
   ;; Write the length in bytes.
