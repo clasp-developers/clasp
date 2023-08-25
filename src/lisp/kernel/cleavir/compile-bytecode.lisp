@@ -1305,15 +1305,17 @@
                         finally (return optimize)))))
 
 (defun update-annotations (active-annotations ip annots index
-                           optimize policy)
+                           optimize policy exit-contexts context)
   (let ((recompute-optimize nil))
     ;; Remove obsolete annotations.
     (setf active-annotations
           (delete-if (lambda (annot)
                        (let ((result
                                (<= (core:bytecode-debug-info/end annot) ip)))
-                         (when (and result (typep annot 'core:bytecode-debug-decls))
-                           (setf recompute-optimize t))
+                         (when result
+                           (typecase annot
+                             (core:bytecode-debug-decls
+                              (setf recompute-optimize t))))
                          result))
                      active-annotations))
     ;; Add new ones and update the index.
@@ -1321,21 +1323,39 @@
           while (< index len)
           while (eql ip (core:bytecode-debug-info/start
                          (aref annots index)))
-          do (let ((annot (aref annots index)))
+          do (let* ((annot (aref annots index))
+                    (aend (core:bytecode-debug-info/end annot)))
                (incf index)
                ;; degenerate annotations happen sometimes
                ;; this could be tightened up in the bc compiler,
                ;; but checking for it is easy.
                ;; Also, THE are intentionally degenerate.
-               (unless (eql ip (core:bytecode-debug-info/end annot))
+               (unless (eql ip aend)
                  (push annot active-annotations)
-                 (when (typep annot 'core:bytecode-debug-decls)
-                   (setf recompute-optimize t)))))
+                 (typecase annot
+                   (core:bytecode-debug-decls
+                    (setf recompute-optimize t))
+                   (core:bytecode-debug-exit
+                    ;; if we're already in an exit that ends at the same spot,
+                    ;; ignore this nested one.
+                    (unless (assoc aend exit-contexts)
+                      ;; Make a new context with whatever values appended.
+                      (let ((r (core:bytecode-debug-exit/receiving annot))
+                            (c (copy-context context)))
+                        (if (minusp r)
+                            (setf (context-mv c)
+                                  (make-instance 'bir:output
+                                    :name '#:unreachable))
+                            (loop repeat r
+                                  for o = (make-instance 'bir:output
+                                            :name '#:unreachable)
+                                  do (stack-push r c)))
+                        (push (cons aend c) exit-contexts))))))))
     ;; Recompute optimize and policy if necessary.
     (when recompute-optimize
       (setf optimize (compute-optimize active-annotations)
             policy (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*)))
-    (values active-annotations index optimize policy)))
+    (values active-annotations index optimize policy exit-contexts)))
 
 (defun compute-args (args literals all-block-entries)
   (loop for (type . value) in args
@@ -1363,7 +1383,11 @@
          (optimize (compute-optimize annots))
          (bir:*policy*
            (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*))
-         (context (make-context function block annots)))
+         (context (make-context function block annots))
+         ;; list of (end-ip . context) for exit annotations.
+         (exit-contexts nil)
+         ;; context for the exit that just ended
+         (exit-context nil))
     (declare (ignore all-function-entries))
     (assert (zerop (bt:function-entry-start function)))
     (setf (bir:start (bt:function-entry-extra function))
@@ -1372,9 +1396,10 @@
       ;; Update annotations.
       ;; Note that we keep tighter annotations at the front.
       (setf (values *active-annotations* next-annotation-index
-                    optimize bir:*policy*)
+                    optimize bir:*policy* exit-contexts)
             (update-annotations *active-annotations* opip annotations
-                                next-annotation-index optimize bir:*policy*))
+                                next-annotation-index optimize bir:*policy*
+                                exit-contexts context))
       ;; Compile the instruction.
       (let ((annots (find-next-annotations ip annotations
                                            next-annotation-index))
@@ -1386,6 +1411,9 @@
         (apply #'compile-instruction mnemonic inserter annots context
                (compute-args args literals all-block-entries))
         (maybe-compile-the annots inserter context)
+        ;; get exit context.
+        (when (and exit-contexts (>= opip (caar exit-contexts)))
+          (setf exit-context (cdr (pop exit-contexts))))
         ;; Update current block and function if required.
         (when (and block-entries
                    (eql ip (bt:block-entry-start (first block-entries))))
@@ -1414,11 +1442,18 @@
                     (bir:start (bt:function-entry-extra function))
                     (bt:block-entry-extra block)
                     context (make-context function block annots))
-              (let ((bcontext (third (assoc block block-contexts))))
-                (if bcontext
-                    (setf context (copy-context bcontext))
-                    (setf context (make-nondom-context context block)))))
-          (setf (bir:dynamic-environment (bt:block-entry-extra block))
+              (setf context
+                    (let ((bcontext (third (assoc block block-contexts))))
+                      (cond (bcontext (copy-context bcontext))
+                            ;; We're entering an unreachable block.
+                            (exit-context
+                             (setf (context-successors exit-context)
+                                   (bt:block-entry-successors block))
+                             exit-context)
+                            ;; Just a nondominated block, from tagbody.
+                            (t (make-nondom-context context block))))))
+          (setf exit-context nil
+                (bir:dynamic-environment (bt:block-entry-extra block))
                 (context-dynamic-environment context))
           (ast-to-bir:begin inserter (bt:block-entry-extra block)))))))
 
