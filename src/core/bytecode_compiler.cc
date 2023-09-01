@@ -584,7 +584,6 @@ void Context::emit_mv_call() const {
     this->assemble0(vm_mv_call_receive_one);
     break;
   case -1:
-  case 0: // should be receive_fixed 0?
     this->assemble0(vm_mv_call);
     break;
   default:
