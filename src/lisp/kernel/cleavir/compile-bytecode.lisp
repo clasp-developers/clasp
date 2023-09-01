@@ -1386,8 +1386,8 @@
          (context (make-context function block annots))
          ;; list of (end-ip . context) for exit annotations.
          (exit-contexts nil)
-         ;; context for the exit that just ended
-         (exit-context nil))
+         ;; iblocks that are obviously unreachable
+         (unreachable nil))
     (declare (ignore all-function-entries))
     (assert (zerop (bt:function-entry-start function)))
     (setf (bir:start (bt:function-entry-extra function))
@@ -1411,9 +1411,6 @@
         (apply #'compile-instruction mnemonic inserter annots context
                (compute-args args literals all-block-entries))
         (maybe-compile-the annots inserter context)
-        ;; get exit context.
-        (when (and exit-contexts (>= opip (caar exit-contexts)))
-          (setf exit-context (cdr (pop exit-contexts))))
         ;; Update current block and function if required.
         (when (and block-entries
                    (eql ip (bt:block-entry-start (first block-entries))))
@@ -1429,12 +1426,6 @@
                   for bcontext = (assoc successor block-contexts)
                   do (assign-block-context bcontext block context)))
           (setf block (pop block-entries))
-          ;; When this block is unreachable,
-          ;; give a sham assignment of the current context.
-          ;; This ensures that in e.g. (foo (return x) y), the call to FOO can be
-          ;; generated correctly before being deleted later.
-          (when (null (bt:block-entry-predecessors block))
-            (assign-block-context (assoc block block-contexts) nil context))
           (if (and function-entries
                    (eql ip (bt:function-entry-start
                             (first function-entries))))
@@ -1445,17 +1436,22 @@
               (setf context
                     (let ((bcontext (third (assoc block block-contexts))))
                       (cond (bcontext (copy-context bcontext))
-                            ;; We're entering an unreachable block.
-                            (exit-context
-                             (setf (context-successors exit-context)
-                                   (bt:block-entry-successors block))
-                             exit-context)
+                            ;; after an exit
+                            ((assoc ip exit-contexts)
+                             (let ((ec (assoc ip exit-contexts)))
+                               (when (null (bt:block-entry-predecessors block))
+                                 (push (bt:block-entry-extra block)
+                                       unreachable))
+                               (setf exit-contexts (delete ec exit-contexts))
+                               (setf (context-successors (cdr ec))
+                                     (bt:block-entry-successors block))
+                               (cdr ec)))
                             ;; Just a nondominated block, from tagbody.
                             (t (make-nondom-context context block))))))
-          (setf exit-context nil
-                (bir:dynamic-environment (bt:block-entry-extra block))
+          (setf (bir:dynamic-environment (bt:block-entry-extra block))
                 (context-dynamic-environment context))
-          (ast-to-bir:begin inserter (bt:block-entry-extra block)))))))
+          (ast-to-bir:begin inserter (bt:block-entry-extra block)))))
+    (mapc #'bir:delete-iblock unreachable)))
 
 (defvar *function-entries*)
 
