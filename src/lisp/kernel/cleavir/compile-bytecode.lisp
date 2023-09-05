@@ -616,6 +616,7 @@
                 (value (stack-pop context))
                 (cellp (consp value))
                 (rvalue (if cellp (car value) value)))
+           (check-type rvalue bir:linear-datum)
            (setf (aref locals base) (cons var cellp))
            (bind-variable var rvalue inserter annots)))
         (t
@@ -1352,7 +1353,7 @@
                             (loop repeat r
                                   for o = (make-instance 'bir:output
                                             :name '#:unreachable)
-                                  do (stack-push r c)))
+                                  do (stack-push o c)))
                         (push (cons aend c) exit-contexts))))))))
     ;; Recompute optimize and policy if necessary.
     (when recompute-optimize
