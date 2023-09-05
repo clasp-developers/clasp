@@ -799,7 +799,7 @@
     (let* ((iblock (ast-to-bir::iblock inserter))
            (ifun (bir:function iblock))
            (ll (bir:lambda-list ifun))
-           (args (cdr (member '&key ll))))
+           (args (ldiff (cdr (member '&key ll)) (member '&allow-other-keys ll))))
       (loop with locals = (context-locals context)
             for i from frame-start
             for spec in args
