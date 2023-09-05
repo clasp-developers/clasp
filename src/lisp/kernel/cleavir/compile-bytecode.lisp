@@ -1027,7 +1027,10 @@
                                     :inputs () :outputs ()
                                     :come-from cf
                                     :destination dest)))
-      (push dest (rest (bir:next cf)))
+      ;; Don't add duplicate NEXT entries
+      ;; (obscure NLX uses can hit this, like CORE::PACKAGES-ITERATOR)
+      (unless (eql dest (first (bir:next cf)))
+        (pushnew dest (rest (bir:next cf))))
       (set:nadjoinf (bir:predecessors dest) (bir:iblock cf))
       (set:nadjoinf (bir:unwinds cf) uw)
       (set:nadjoinf (bir:entrances dest)
