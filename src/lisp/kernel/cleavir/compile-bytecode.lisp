@@ -573,6 +573,14 @@
                            (return-from variable-ignore 'ignorable))))))
   nil)
 
+;; A binding index annotation is (name . location)
+;; and location is either an integer index or a list of an integer index,
+;; the latter meaning it's closed over.
+;; This function just grabs the actual index.
+(defun annot-binding-index (info)
+  (let ((location (cdr info)))
+    (if (consp location) (car location) location)))
+
 (defmethod compile-instruction ((mnemonic (eql :bind))
                                 inserter annots context &rest args)
   (let* ((varannot (find-if (lambda (a) (typep a 'core:bytecode-debug-vars))
@@ -582,18 +590,22 @@
          ;; For BIND, the value for the last binding is the
          ;; most recently pushed, so we map to the bindings
          ;; in reverse order. This is a bit inefficient, though.
-         (bindings (sort (copy-list prim) #'> :key #'cdr)))
+         (bindings (sort (copy-list prim) #'> :key #'annot-binding-index)))
     (declare (ignore _))
     (destructuring-bind (nvars base) args
       (declare (ignore base))
       (assert (= nvars (length bindings)))
       (loop with locals = (context-locals context)
-            for (varname . index) in bindings
+            for (varname . location) in bindings
+            for cellp = (consp location)
+            for index = (if cellp (car location) location)
             for ignore = (variable-ignore varname annots)
             for var = (make-instance 'bir:variable
                         :ignore ignore :name varname)
-            do (setf (aref locals index) (cons var nil))
-               (bind-variable var (stack-pop context) inserter annots)))))
+            for value = (stack-pop context)
+            for rvalue = (if cellp (car value) value)
+            do (setf (aref locals index) (cons var cellp))
+               (bind-variable var rvalue inserter annots)))))
 
 (defmethod compile-instruction ((mnemonic (eql :set))
                                 inserter annots context &rest args)
@@ -605,9 +617,7 @@
            (locals (context-locals context))
            (varcons (aref locals base)))
       (cond
-        ((find base bindings
-               :key (lambda (x)
-                      (if (consp (cdr x)) (cadr x) (cdr x))))
+        ((find base bindings :key #'annot-binding-index)
          (let* ((binding (rassoc base bindings))
                 (name (car binding))
                 (ignore (variable-ignore name annots))
