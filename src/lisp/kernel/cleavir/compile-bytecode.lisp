@@ -630,9 +630,15 @@
            (setf (aref locals base) (cons var cellp))
            (bind-variable var rvalue inserter annots)))
         (t
-         (let ((var (car varcons)))
+         (let* ((var (car varcons))
+                (value (stack-pop context))
+                (cellp (consp value))
+                (rvalue (if cellp (car value) value)))
            (check-type var bir:variable)
-           (write-variable var (stack-pop context) inserter)))))))
+           ;; This is necessary because the attributes are sometimes attached
+           ;; after a later SET. E.g. if a LET binds two cells.
+           (setf (cdr varcons) cellp)
+           (write-variable var rvalue inserter)))))))
 
 (defmethod compile-instruction ((mnemonic (eql :make-cell))
                                 inserter annot context &rest args)
