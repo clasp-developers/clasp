@@ -96,7 +96,7 @@ Lexenv_sp Lexenv_O::bind_vars(List_sp vars, const Context ctxt) {
   size_t idx = frame_start;
   List_sp new_vars = this->vars();
   for (auto cur : vars) {
-    Symbol_sp var = oCar(cur);
+    Symbol_sp var = gc::As<Symbol_sp>(oCar(cur));
     if (var->getReadOnly())
       SIMPLE_ERROR("Cannot bind constant value {}!", _rep_(var));
     auto info = LexicalVarInfo_O::make(idx++, cf);
@@ -166,7 +166,7 @@ Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
     return this->asSmartPtr();
   List_sp new_vars = this->vars();
   for (auto cur : vars) {
-    Symbol_sp var = oCar(cur);
+    Symbol_sp var = gc::As<Symbol_sp>(oCar(cur));
     if (this->lookupSymbolMacro(var).notnilp())
       SIMPLE_PROGRAM_ERROR("A symbol macro was declared SPECIAL:~%~s", var);
     auto info = SpecialVarInfo_O::make(var->specialP());
@@ -1427,7 +1427,7 @@ void compile_letSTAR(List_sp bindings, List_sp body, Lexenv_sp env, const Contex
 // heavily rewritten once the bytecode compiler is ported)
 static T_sp extract_lambda_name_from_declares(List_sp declares) {
   for (auto cur : declares) {
-    List_sp decl = oCar(cur);
+    List_sp decl = gc::As<List_sp>(oCar(cur));
     if (oCar(decl) == core::_sym_lambdaName)
       return oCadr(decl);
   }
@@ -1436,7 +1436,7 @@ static T_sp extract_lambda_name_from_declares(List_sp declares) {
 
 static T_sp extract_lambda_list_from_declares(List_sp declares, T_sp defaultll) {
   for (auto cur : declares) {
-    List_sp decl = oCar(cur);
+    List_sp decl = gc::As<List_sp>(oCar(cur));
     if (oCar(decl) == core::_sym_lambdaList)
       return oCdr(decl);
   }
