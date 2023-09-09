@@ -81,7 +81,7 @@ CL_DEFUN bool core__is_a_type(T_sp form)
 Prepend the canonicalized_declarations from decl to canon - return the result. */
 List_sp maybe_canonicalize_declaration(List_sp decl, List_sp canon)
 {
-  Symbol_sp sym = oCar(decl);
+  Symbol_sp sym = gc::As<Symbol_sp>(oCar(decl));
   T_sp too_many = oCddr(decl);
   if (too_many.notnilp()) {
     for ( auto sp : static_cast<List_sp>(oCdr(decl)) ) {
