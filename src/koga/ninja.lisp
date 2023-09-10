@@ -967,7 +967,9 @@
                              :outputs (list (build-name "jupyter")))))
       (when *variant-default*
         (ninja:write-build output-stream :phony
-                           :inputs (list* "install_cclasp"
+                           :inputs (list* (if (extensions configuration)
+                                              "install_eclasp"
+                                              "install_cclasp")
                                           (mapcan #'second outputs))
                            :outputs (list "install_sclasp"))))))
 
