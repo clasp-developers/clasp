@@ -2054,6 +2054,14 @@ struct LoadSymbolCallback : public core::SymbolCallback {
         mysymStart = dlsymStart;
       } else {
         printf("%s:%d:%s Could not resolve address with loopup.lookupSymbol or dlsym for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
+        printf("%s:%d:%s Entire dump of symbol table follows...\n", __FILE__, __LINE__, __FUNCTION__ );
+        for (size_t jj = 0; jj<num; jj++ ) {
+          size_t symbolOffset = this->_Library._SymbolInfo[jj]._SymbolOffset;
+          const char* tmyName = (const char*)&this->_Library._SymbolBuffer[symbolOffset];
+          uintptr_t tmysymStart = (uintptr_t)lookup.lookupSymbol(myName);
+          uintptr_t tdlsymStart = (uintptr_t) dlsym(RTLD_DEFAULT,myName);
+          printf("    %s mysymStart: %p  dlsymStart: %p\n", tmyName, (void*)tmysymStart, (void*)tdlsymStart);
+        }
         abort();
       }
 #else
