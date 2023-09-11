@@ -2073,6 +2073,7 @@ void compile_go(T_sp tag, Lexenv_sp env, const Context ctxt) {
 void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ctxt) {
   Label_sp label = Label_O::make();
   Label_sp normal_label = Label_O::make();
+  Label_sp r1p_hack_label = Label_O::make();
   Lexenv_sp nenv = env->bind_block(name, label, ctxt);
   BlockInfo_sp binfo = gc::As<BlockInfo_sp>(nenv->blockInfo(name));
   LexicalInfo_sp blex = binfo->lex();
@@ -2084,8 +2085,16 @@ void compile_block(Symbol_sp name, List_sp body, Lexenv_sp env, const Context ct
   // store into the multiple values, so no problem there.
   // If we're returning exactly one value, the local just pushes one, and
   // the nonlocal stores into the MV which is then vm_push'd to the stack.
-  compile_progn(body, nenv, ctxt.sub_de(blex));
   bool r1p = ctxt.receiving() == 1;
+  if (r1p) {
+    // This silliness is to let the BTB compiler work. We treat the normal
+    // code as an exit so that the stack states match up correctly.
+    // Without this BDExit, code as simple as (lambda () (values (block nil)))
+    // breaks the BTB compiler.
+    r1p_hack_label->contextualize(ctxt);
+    ctxt.push_debug_info(BytecodeDebugExit_O::make(r1p_hack_label, label, -1));
+  }
+  compile_progn(body, nenv, ctxt.sub_de(blex));
   if (r1p)
     ctxt.emit_jump(normal_label);
   label->contextualize(ctxt);
