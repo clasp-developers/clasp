@@ -1173,13 +1173,6 @@
     (stack-push (%read-variable var inserter) context)
     (stack-push (%read-variable var inserter) context)))
 
-(defmethod compile-instruction ((mnemonic (eql :drop-mv))
-                                inserter annots context &rest args)
-  (declare (ignore inserter annots))
-  (assert (null args))
-  (check-type (context-mv context) bir:linear-datum)
-  (setf (context-mv context) nil))
-
 (defun compile-type-decl (inserter which ctype datum)
   (let ((sys clasp-cleavir:*clasp-system*)
         (sv-ctype-p (member which '(:variable :argument :setq))))
