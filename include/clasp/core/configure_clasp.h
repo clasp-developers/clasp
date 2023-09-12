@@ -96,8 +96,12 @@ THE SOFTWARE.
 
 #if defined( _ADDRESS_MODEL_64 )
 
-#define GCROOTS_IN_MODULE_NAME "__clasp_gcroots_in_module_"
-#define LITERALS_NAME "__clasp_literals_"
+#define __EX(var) #var
+#define CXX_MACRO_STRING(var) __EX(var)
+#define CLASP_GCROOTS_IN_MODULE(NAME) __clasp_gcroots_in_module_ ## NAME
+#define GCROOTS_IN_MODULE_NAME CXX_MACRO_STRING(CLASP_GCROOTS_IN_MODULE())
+#define CLASP_LITERALS(NAME) __clasp_literals_ ## NAME
+#define LITERALS_NAME CXX_MACRO_STRING(CLASP_LITERALS())
 #define INTPTR_BITS 64
 
 typedef uint64_t   bit_array_word; // "word" for bit array purposes (see gcbitarray.h)
