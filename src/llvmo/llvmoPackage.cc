@@ -638,7 +638,7 @@ gctools::return_type lambda_nil(unsigned char* pc, core::T_O* closure, uint64_t 
 };
 
 namespace llvmo {
-#include "trampoline.h"
+#include <trampoline.h>
 
 std::atomic<size_t> global_trampoline_counter;
 #ifdef CLASP_THREADS
@@ -653,24 +653,18 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
   if (!global_options->_GenerateTrampolines) {
     if (!getenv("CLASP_ENABLE_TRAMPOLINES")) {
-    // If the JIT isn't ready then use the default trampoline
-      return Values(Pointer_O::create((void*)bytecode_call),
-                    SimpleBaseString_O::make("bytecode_call"));
+      // If the JIT isn't ready then use the default trampoline
+      return Values(Pointer_O::create((void *)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
     }
   }
   if (jit.nilp()) {
     // If the JIT isn't ready then use the default trampoline
-    return Values(Pointer_O::create((void*)default_bytecode_trampoline),
-                  SimpleBaseString_O::make("default_bytecode_trampoline"));
+    return Values(Pointer_O::create((void *)default_bytecode_trampoline), SimpleBaseString_O::make("default_bytecode_trampoline"));
   }
-  if (tname.consp()
-      && CONS_CAR(tname)==::cl::_sym_lambda
-      && CONS_CDR(tname).consp()
-      && CONS_CAR(CONS_CDR(tname)).nilp()) {
-    return Values(Pointer_O::create((void*)lambda_nil),
-                  SimpleBaseString_O::make("lambda_nil"));
+  if (tname.consp() && CONS_CAR(tname) == ::cl::_sym_lambda && CONS_CDR(tname).consp() && CONS_CAR(CONS_CDR(tname)).nilp()) {
+    return Values(Pointer_O::create((void *)lambda_nil), SimpleBaseString_O::make("lambda_nil"));
   }
-  
+
   std::string name;
   if (gc::IsA<core::Symbol_sp>(tname)) {
     name = gc::As_unsafe<core::Symbol_sp>(tname)->fullName();
@@ -678,36 +672,22 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
     name = _rep_(tname);
     // printf("%s:%d:%s trampoline name = |%s|\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
     // fflush();
-    if (name[0]=='"' && name[name.size()-1] == '"') {
+    if (name[0] == '"' && name[name.size() - 1] == '"') {
       if (name.size() < 3) { // matches ""
-        return Values(Pointer_O::create((void*)unknown_bytecode_trampoline),
+        return Values(Pointer_O::create((void *)unknown_bytecode_trampoline),
                       SimpleBaseString_O::make("unknown_bytecode_trampoline"));
       }
     }
-    name = name.substr(1,name.size()-2);   // Strip double quotes
+    name = name.substr(1, name.size() - 2); // Strip double quotes
   }
   name = name + "_bct" + std::to_string(global_trampoline_counter++);
   LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
-  std::string trampoline = global_trampoline;
-  trampoline = core::searchAndReplaceString( trampoline, "@WRAPPER_NAME", "@\""+name+"\"");
-  trampoline = core::searchAndReplaceString( trampoline, "WRAPPER_NAME", name);
-  stringstream ss_trampoline;
-  ss_trampoline << global_trampoline_datalayout_triple;
-  ss_trampoline << trampoline;
-  trampoline = ss_trampoline.str();
-  //printf("%s:%d:%s About to parseIRString %s\n", __FILE__, __LINE__, __FUNCTION__, trampoline.c_str());
-  Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline" );
-  //printf("%s:%d:%s About to call loadModule with module = %p name = %s\n", __FILE__, __LINE__, __FUNCTION__, module.raw_(), name.c_str() );
-  JITDylib_sp jitDylib = loadModule( module, 0, "trampoline" );
-  core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib,name);
-  //  printf("%s:%d:%s before interpreter_trampoline = %p\n", __FILE__, __LINE__, __FUNCTION__, core::interpreter_trampoline );
-  //  printf("%s:%d:%s after interpreter_t
-  return Values(bytecode_ptr,SimpleBaseString_O::make(name));
+  std::string trampoline = core::searchAndReplaceString(global_trampoline, "wrapper:name", name);
+  Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline");
+  JITDylib_sp jitDylib = loadModule(module, 0, "trampoline");
+  core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib, name);
+  return Values(bytecode_ptr, SimpleBaseString_O::make(name));
 }
-
-
-
-
 };
 
 namespace llvmo {
