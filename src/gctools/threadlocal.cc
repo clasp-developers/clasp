@@ -160,7 +160,7 @@ VirtualMachine::VirtualMachine() :
 
 void VirtualMachine::startup() {
   size_t stackSpace = VirtualMachine::MaxStackWords*sizeof(T_O*);
-  this->_stackBottom = (T_O**)GC_MALLOC_UNCOLLECTABLE(stackSpace);
+  this->_stackBottom = (T_O**)gctools::RootClassAllocator<T_O>::allocateRootsAndZero(VirtualMachine::MaxStackWords);
   this->_stackTop = this->_stackBottom+VirtualMachine::MaxStackWords-1;
 //  printf("%s:%d:%s vm._stackTop = %p\n", __FILE__, __LINE__, __FUNCTION__, this->_stackTop );
   size_t pageSize = getpagesize();
@@ -203,7 +203,7 @@ VirtualMachine::~VirtualMachine() {
 #if 1
   this->disable_guards();
 #endif
-  GC_FREE(this->_stackBottom);
+  gctools::RootClassAllocator<T_O>::freeRoots(this->_stackBottom);
 }
 
 
