@@ -26,15 +26,16 @@
   (flet ((argument (symbol)
            (make-instance 'bir:argument
              :name symbol :function function)))
-    (multiple-value-bind (required optional rest keyp keys aokp)
+    (multiple-value-bind (required optional rest keyp keys aokp aux varestp)
         (core:process-lambda-list lambda-list 'cl:function)
+      (declare (ignore aux))
       (nconc (mapcar #'argument (cdr required))
              (unless (zerop (car optional)) (list '&optional))
              (loop for (var default -p) on (cdr optional)
                    by #'cdddr
                    collect (list (argument var) (argument -p)))
              (when rest
-               (list '&rest (argument rest)))
+               (list (if varestp 'core:&va-rest '&rest) (argument rest)))
              (when keyp (list '&key))
              (loop for (key var default -p) on (cdr keys)
                    by #'cddddr
@@ -243,12 +244,10 @@
         (loop for (key kvar) on (rest keys) by #'cddddr
               do (newvar kvar))
         (loop for (_ _1 -p) on (rest optional) by #'cdddr
-              when -p
-                do (newvar -p))
+              when -p do (incf index)) ; -p variables are bound by SET.
         (when rest (incf index)) ; since we bind &rest vars with SET, no var needed here.
         (loop for (_ _1 _2 -p) on (rest keys) by #'cddddr
-              when -p
-                do (newvar -p))))))
+              when -p do (incf index))))))
 
 (defun make-context (function block annots)
   (let* ((bcfun (bt:function-entry-bcfun function))
@@ -262,6 +261,8 @@
 ;;; Alist of IR functions to sequences of variables they close over,
 ;;; used for CLOSURE instructions. Set by MAKE-CLOSURE and INITIALIZE-CLOSURE
 ;;; instructions.
+;;; Each element of the sequence is either a BIR:LEXICAL or a cons
+;;; (<a lexical> . t). The latter indicates it's stored in a cell.
 (defvar *closures*)
 
 (defun closure-variables (irfun)
@@ -455,8 +456,8 @@
                     inserter)))
 
 (defun %write-variable (variable value inserter)
-  (bir:record-variable-set variable)
   (assert (slot-boundp variable 'bir::%binder))
+  (bir:record-variable-set variable)
   (ast-to-bir:insert inserter 'bir:writevar
                      :inputs (list value) :outputs (list variable)))
 
@@ -510,6 +511,7 @@
            (vars (closure-variables ifun))
            (var (elt vars index)))
       (stack-push (etypecase var
+                    ((cons bir:variable (eql t)) var) ; cell
                     (bir:variable (read-variable var inserter))
                     (bir:come-from var))
                   context))))
@@ -571,6 +573,14 @@
                            (return-from variable-ignore 'ignorable))))))
   nil)
 
+;; A binding index annotation is (name . location)
+;; and location is either an integer index or a list of an integer index,
+;; the latter meaning it's closed over.
+;; This function just grabs the actual index.
+(defun annot-binding-index (info)
+  (let ((location (cdr info)))
+    (if (consp location) (car location) location)))
+
 (defmethod compile-instruction ((mnemonic (eql :bind))
                                 inserter annots context &rest args)
   (let* ((varannot (find-if (lambda (a) (typep a 'core:bytecode-debug-vars))
@@ -580,18 +590,22 @@
          ;; For BIND, the value for the last binding is the
          ;; most recently pushed, so we map to the bindings
          ;; in reverse order. This is a bit inefficient, though.
-         (bindings (sort (copy-list prim) #'> :key #'cdr)))
+         (bindings (sort (copy-list prim) #'> :key #'annot-binding-index)))
     (declare (ignore _))
     (destructuring-bind (nvars base) args
       (declare (ignore base))
       (assert (= nvars (length bindings)))
       (loop with locals = (context-locals context)
-            for (varname . index) in bindings
+            for (varname . location) in bindings
+            for cellp = (consp location)
+            for index = (if cellp (car location) location)
             for ignore = (variable-ignore varname annots)
             for var = (make-instance 'bir:variable
                         :ignore ignore :name varname)
-            do (setf (aref locals index) (cons var nil))
-               (bind-variable var (stack-pop context) inserter annots)))))
+            for value = (stack-pop context)
+            for rvalue = (if cellp (car value) value)
+            do (setf (aref locals index) (cons var cellp))
+               (bind-variable var rvalue inserter annots)))))
 
 (defmethod compile-instruction ((mnemonic (eql :set))
                                 inserter annots context &rest args)
@@ -603,18 +617,28 @@
            (locals (context-locals context))
            (varcons (aref locals base)))
       (cond
-        ((or (and bindings
-                  (= (length bindings) 1) (= base (cdar bindings))))
-         (let* ((name (caar bindings))
+        ((find base bindings :key #'annot-binding-index)
+         (let* ((binding (rassoc base bindings))
+                (name (car binding))
                 (ignore (variable-ignore name annots))
                 (var (make-instance 'bir:variable
-                       :ignore ignore :name name)))
-           (setf (aref locals base) (cons var nil))
-           (bind-variable var (stack-pop context) inserter annots)))
+                       :ignore ignore :name name))
+                (value (stack-pop context))
+                (cellp (consp value))
+                (rvalue (if cellp (car value) value)))
+           (check-type rvalue bir:linear-datum)
+           (setf (aref locals base) (cons var cellp))
+           (bind-variable var rvalue inserter annots)))
         (t
-         (let ((var (car varcons)))
+         (let* ((var (car varcons))
+                (value (stack-pop context))
+                (cellp (consp value))
+                (rvalue (if cellp (car value) value)))
            (check-type var bir:variable)
-           (write-variable var (stack-pop context) inserter)))))))
+           ;; This is necessary because the attributes are sometimes attached
+           ;; after a later SET. E.g. if a LET binds two cells.
+           (setf (cdr varcons) cellp)
+           (write-variable var rvalue inserter)))))))
 
 (defmethod compile-instruction ((mnemonic (eql :make-cell))
                                 inserter annot context &rest args)
@@ -648,17 +672,22 @@
     (write-variable (car cell) val inserter)))
 
 (defun variable-from-output (output)
-  (let ((readvar (bir:definition output)))
-    (check-type readvar bir:readvar)
-    (bir:input readvar)))
+  (let ((def (bir:definition output)))
+    (etypecase def
+      (bir:readvar (bir:input def))
+      (bir:thei
+       (let ((tdef (bir:definition (bir:input def))))
+         (check-type tdef bir:readvar)
+         (bir:input tdef))))))
 
 (defun resolve-closed (v)
-  ;; Each thing on the stack is either a variable, if there's a cell,
-  ;; or the output of a readvar if there's no cell, or a come-from.
+  ;; Each thing on the stack is either a come-from, a list
+  ;; (variable . t) if there's a cell, or the output of a readvar for
+  ;; variables with no cell.
   (etypecase v
-    ;; FIXME: Might be better to export LEXICAL from BIR
-    ((or bir:variable bir:come-from) v)
-    (bir:output (variable-from-output v))))
+    (bir:come-from v)
+    (bir:output (variable-from-output v))
+    ((cons bir:variable (eql t)) v)))
 
 (defmethod compile-instruction ((mnemonic (eql :make-closure))
                                 inserter annot context &rest args)
@@ -671,7 +700,9 @@
            (nclosed (bcfun/nvars template))
            (closed (nreverse (subseq (context-stack context) 0 nclosed)))
            (real-closed (mapcar #'resolve-closed closed)))
-      (assert (every (lambda (v) (typep v 'bir::lexical)) real-closed))
+      (assert (every (lambda (v) (typep v '(or bir::lexical
+                                            (cons bir::lexical (eql t)))))
+                     real-closed))
       (setf (context-stack context)
             (nthcdr nclosed (context-stack context)))
       (new-closure-variables irfun real-closed)
@@ -750,7 +781,9 @@
             for i from start
             for (arg -p) in args
             for (var . cellp) = (aref locals i)
-            do (bind-variable var arg inserter annots)))))
+            ;; We use %bind rather than bind because we don't want
+            ;; to assert the type of a possibly unprovided argument.
+            do (%bind-variable var arg inserter)))))
 
 ;;; FIXME: Why does this instruction not put it immediately into a var
 (defmethod compile-instruction ((mnemonic (eql :listify-rest-args))
@@ -764,6 +797,17 @@
            (rarg (second (member '&rest ll))))
       (check-type rarg bir:argument)
       (stack-push rarg context))))
+(defmethod compile-instruction ((mnemonic (eql :vaslistify-rest-args))
+                                inserter annot context &rest args)
+  (declare (ignore annot))
+  (destructuring-bind (start) args
+    (declare (ignore start))
+    (let* ((iblock (ast-to-bir::iblock inserter))
+           (ifun (bir:function iblock))
+           (ll (bir:lambda-list ifun))
+           (rarg (second (member 'core:&va-rest ll))))
+      (check-type rarg bir:argument)
+      (stack-push rarg context))))
 
 (defmethod compile-instruction ((mnemonic (eql :parse-key-args))
                                 inserter annots context &rest args)
@@ -772,7 +816,7 @@
     (let* ((iblock (ast-to-bir::iblock inserter))
            (ifun (bir:function iblock))
            (ll (bir:lambda-list ifun))
-           (args (cdr (member '&key ll))))
+           (args (ldiff (cdr (member '&key ll)) (member '&allow-other-keys ll))))
       (loop with locals = (context-locals context)
             for i from frame-start
             for spec in args
@@ -780,7 +824,8 @@
             while (consp spec)
             do (destructuring-bind (key arg -p) spec
                  (declare (ignore key -p))
-                 (bind-variable var arg inserter annots))))))
+                 ;; %bind to avoid asserting type of unprovided arg
+                 (%bind-variable var arg inserter))))))
 
 (defun compile-jump (inserter context destination)
   (declare (ignore context))
@@ -919,10 +964,7 @@
       (setf (context-mv context) read-out
             (context-dynamic-environment context) old-de))))
 
-(defmethod compile-instruction ((mnemonic (eql :mv-call))
-                                inserter annot context &rest args)
-  (declare (ignore annot))
-  (assert (null args))
+(defun compile-mv-call (inserter context)
   (let ((previous (stack-pop context))
         (callee (stack-pop context))
         (out (make-instance 'bir:output)))
@@ -943,8 +985,27 @@
       (ast-to-bir:insert inserter 'bir:mv-call
                          :inputs (list callee mv)
                          :outputs (list out))
-      (setf (context-mv context) out
-            (context-dynamic-environment context) old-de))))
+      (setf (context-dynamic-environment context) old-de))
+    out))
+
+(defmethod compile-instruction ((mnemonic (eql :mv-call))
+                                inserter annot context &rest args)
+  (declare (ignore annot))
+  (assert (null args))
+  (setf (context-mv context) (compile-mv-call inserter context)))
+(defmethod compile-instruction ((mnemonic (eql :mv-call-receive-one))
+                                inserter annot context &rest args)
+  (declare (ignore annot))
+  (assert (null args))
+  (stack-push (compile-mv-call inserter context) context)
+  (setf (context-mv context) nil))
+(defmethod compile-instruction ((mnemonic (eql :mv-call-receive-fixed))
+                                inserter annot context &rest args)
+  (declare (ignore annot))
+  (destructuring-bind (nvals) args
+    (assert (zerop nvals)) ; FIXME
+    (compile-mv-call inserter context)
+    (setf (context-mv context) nil)))
 
 (defmethod compile-instruction ((mnemonic (eql :save-sp))
                                 inserter annot context &rest args)
@@ -983,7 +1044,10 @@
                                     :inputs () :outputs ()
                                     :come-from cf
                                     :destination dest)))
-      (push dest (rest (bir:next cf)))
+      ;; Don't add duplicate NEXT entries
+      ;; (obscure NLX uses can hit this, like CORE::PACKAGES-ITERATOR)
+      (unless (eql dest (first (bir:next cf)))
+        (pushnew dest (rest (bir:next cf))))
       (set:nadjoinf (bir:predecessors dest) (bir:iblock cf))
       (set:nadjoinf (bir:unwinds cf) uw)
       (set:nadjoinf (bir:entrances dest)
@@ -1108,13 +1172,6 @@
     (%bind-variable var (stack-pop context) inserter)
     (stack-push (%read-variable var inserter) context)
     (stack-push (%read-variable var inserter) context)))
-
-(defmethod compile-instruction ((mnemonic (eql :drop-mv))
-                                inserter annots context &rest args)
-  (declare (ignore inserter annots))
-  (assert (null args))
-  (check-type (context-mv context) bir:linear-datum)
-  (setf (context-mv context) nil))
 
 (defun compile-type-decl (inserter which ctype datum)
   (let ((sys clasp-cleavir:*clasp-system*)
@@ -1261,15 +1318,17 @@
                         finally (return optimize)))))
 
 (defun update-annotations (active-annotations ip annots index
-                           optimize policy)
+                           optimize policy exit-contexts context)
   (let ((recompute-optimize nil))
     ;; Remove obsolete annotations.
     (setf active-annotations
           (delete-if (lambda (annot)
                        (let ((result
                                (<= (core:bytecode-debug-info/end annot) ip)))
-                         (when (and result (typep annot 'core:bytecode-debug-decls))
-                           (setf recompute-optimize t))
+                         (when result
+                           (typecase annot
+                             (core:bytecode-debug-decls
+                              (setf recompute-optimize t))))
                          result))
                      active-annotations))
     ;; Add new ones and update the index.
@@ -1277,21 +1336,39 @@
           while (< index len)
           while (eql ip (core:bytecode-debug-info/start
                          (aref annots index)))
-          do (let ((annot (aref annots index)))
+          do (let* ((annot (aref annots index))
+                    (aend (core:bytecode-debug-info/end annot)))
                (incf index)
                ;; degenerate annotations happen sometimes
                ;; this could be tightened up in the bc compiler,
                ;; but checking for it is easy.
                ;; Also, THE are intentionally degenerate.
-               (unless (eql ip (core:bytecode-debug-info/end annot))
+               (unless (eql ip aend)
                  (push annot active-annotations)
-                 (when (typep annot 'core:bytecode-debug-decls)
-                   (setf recompute-optimize t)))))
+                 (typecase annot
+                   (core:bytecode-debug-decls
+                    (setf recompute-optimize t))
+                   (core:bytecode-debug-exit
+                    ;; if we're already in an exit that ends at the same spot,
+                    ;; ignore this nested one.
+                    (unless (assoc aend exit-contexts)
+                      ;; Make a new context with whatever values appended.
+                      (let ((r (core:bytecode-debug-exit/receiving annot))
+                            (c (copy-context context)))
+                        (if (minusp r)
+                            (setf (context-mv c)
+                                  (make-instance 'bir:output
+                                    :name '#:unreachable))
+                            (loop repeat r
+                                  for o = (make-instance 'bir:output
+                                            :name '#:unreachable)
+                                  do (stack-push o c)))
+                        (push (cons aend c) exit-contexts))))))))
     ;; Recompute optimize and policy if necessary.
     (when recompute-optimize
       (setf optimize (compute-optimize active-annotations)
             policy (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*)))
-    (values active-annotations index optimize policy)))
+    (values active-annotations index optimize policy exit-contexts)))
 
 (defun compute-args (args literals all-block-entries)
   (loop for (type . value) in args
@@ -1319,7 +1396,11 @@
          (optimize (compute-optimize annots))
          (bir:*policy*
            (cleavir-policy:compute-policy optimize clasp-cleavir:*clasp-env*))
-         (context (make-context function block annots)))
+         (context (make-context function block annots))
+         ;; list of (end-ip . context) for exit annotations.
+         (exit-contexts nil)
+         ;; iblocks that are obviously unreachable
+         (unreachable nil))
     (declare (ignore all-function-entries))
     (assert (zerop (bt:function-entry-start function)))
     (setf (bir:start (bt:function-entry-extra function))
@@ -1328,9 +1409,10 @@
       ;; Update annotations.
       ;; Note that we keep tighter annotations at the front.
       (setf (values *active-annotations* next-annotation-index
-                    optimize bir:*policy*)
+                    optimize bir:*policy* exit-contexts)
             (update-annotations *active-annotations* opip annotations
-                                next-annotation-index optimize bir:*policy*))
+                                next-annotation-index optimize bir:*policy*
+                                exit-contexts context))
       ;; Compile the instruction.
       (let ((annots (find-next-annotations ip annotations
                                            next-annotation-index))
@@ -1357,12 +1439,6 @@
                   for bcontext = (assoc successor block-contexts)
                   do (assign-block-context bcontext block context)))
           (setf block (pop block-entries))
-          ;; When this block is unreachable,
-          ;; give a sham assignment of the current context.
-          ;; This ensures that in e.g. (foo (return x) y), the call to FOO can be
-          ;; generated correctly before being deleted later.
-          (when (null (bt:block-entry-predecessors block))
-            (assign-block-context (assoc block block-contexts) nil context))
           (if (and function-entries
                    (eql ip (bt:function-entry-start
                             (first function-entries))))
@@ -1370,13 +1446,25 @@
                     (bir:start (bt:function-entry-extra function))
                     (bt:block-entry-extra block)
                     context (make-context function block annots))
-              (let ((bcontext (third (assoc block block-contexts))))
-                (if bcontext
-                    (setf context (copy-context bcontext))
-                    (setf context (make-nondom-context context block)))))
+              (setf context
+                    (let ((bcontext (third (assoc block block-contexts))))
+                      (cond (bcontext (copy-context bcontext))
+                            ;; after an exit
+                            ((assoc ip exit-contexts)
+                             (let ((ec (assoc ip exit-contexts)))
+                               (when (null (bt:block-entry-predecessors block))
+                                 (push (bt:block-entry-extra block)
+                                       unreachable))
+                               (setf exit-contexts (delete ec exit-contexts))
+                               (setf (context-successors (cdr ec))
+                                     (bt:block-entry-successors block))
+                               (cdr ec)))
+                            ;; Just a nondominated block, from tagbody.
+                            (t (make-nondom-context context block))))))
           (setf (bir:dynamic-environment (bt:block-entry-extra block))
                 (context-dynamic-environment context))
-          (ast-to-bir:begin inserter (bt:block-entry-extra block)))))))
+          (ast-to-bir:begin inserter (bt:block-entry-extra block)))))
+    (mapc #'bir:delete-iblock unreachable)))
 
 (defvar *function-entries*)
 

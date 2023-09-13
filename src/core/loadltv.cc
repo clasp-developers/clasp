@@ -56,6 +56,7 @@
 #define LTV_DI_OP_DECLS 3
 #define LTV_DI_OP_THE 4
 #define LTV_DI_OP_BLOCK 5
+#define LTV_DI_OP_EXIT 6
 
 namespace core {
 
@@ -696,6 +697,13 @@ struct loadltv {
     return BytecodeDebugBlock_O::make(start, end, name, receiving);
   }
 
+  T_sp di_op_exit() {
+    Integer_sp start = Integer_O::create(read_u32()),
+      end = Integer_O::create(read_u32());
+    int32_t receiving = read_s32();
+    return BytecodeDebugExit_O::make(start, end, receiving);
+  }
+
   void attr_clasp_module_debug_info(uint32_t bytes) {
     BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
     gctools::Vec0<T_sp> vargs;
@@ -720,6 +728,9 @@ struct loadltv {
           break;
       case LTV_DI_OP_BLOCK:
           vargs.push_back(di_op_block());
+          break;
+      case LTV_DI_OP_EXIT:
+          vargs.push_back(di_op_exit());
           break;
       default:
           SIMPLE_ERROR("Unknown debug info opcode {:02x}", op);

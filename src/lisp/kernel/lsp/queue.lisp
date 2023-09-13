@@ -98,7 +98,7 @@ RETURN:     MESSAGE
     (mp:condition-variable-signal (queue-not-empty queue)))
   message)
 
-(defun dequeue (queue &key (timeout nil timeoutp) (timeout-val nil timeout-val-p))
+(defun dequeue (queue &key (timeout nil) (timeout-val nil))
   "
 DO:         Atomically, dequeue the first message from the QUEUE.  If
             the queue is empty,  then wait on the not-empty condition

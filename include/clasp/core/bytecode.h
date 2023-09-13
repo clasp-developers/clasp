@@ -195,6 +195,33 @@ public:
     CL_DEFMETHOD T_sp name() const { return this->_name; }
 };
 
+// Indicates a nonlocal exit. This is used by the compiler to ensure consistency
+// when compiling the unreachable code following an exit.
+// The idea is that this unreachable code can be compiled as if the exit only
+// acted as a nonexiting form.
+// For example take (foo (return (bar)) ...); computation of the remaining
+// arguments and the call to FOO are unreachable, but if the argument was just
+// (bar), this unreachable code would just need to have one value added to the
+// stack and to be in whatever dynamic environment is in place before.
+FORWARD(BytecodeDebugExit);
+class BytecodeDebugExit_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugExit_O, "BytecodeDebugExit", BytecodeDebugInfo_O);
+public:
+  BytecodeDebugExit_O(T_sp start, T_sp end, int receiving)
+    : BytecodeDebugInfo_O(start, end), _receiving(receiving) {}
+  CL_LISPIFY_NAME(BytecodeDebugExit/make)
+    CL_DEF_CLASS_METHOD
+    static BytecodeDebugExit_sp make(T_sp start, T_sp end, int receiving) {
+    return gctools::GC<BytecodeDebugExit_O>::allocate<gctools::RuntimeStage>(start, end, receiving);
+  }
+public:
+  int _receiving; // meaning is as for compiler contexts
+public:
+  CL_LISPIFY_NAME(BytecodeDebugExit/receiving)
+    CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
+};
+
+
 // Dynenv used for VM call frames to ensure the unwinder properly
 // cleans up stack frames.
 class VMFrameDynEnv_O : public DynEnv_O {
