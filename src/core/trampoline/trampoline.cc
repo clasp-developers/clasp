@@ -28,10 +28,13 @@ extern "C" {
 Gcroots CLASP_GCROOTS_IN_MODULE(trampoline)[0];
 void *CLASP_LITERALS(trampoline)[0];
 
+// Use asm and nodebug to add declaration for the LLVM intrinsic.
 __attribute__((nodebug)) void LLVM_EXPERIMENTAL_STACKMAP(uint64_t type, uint32_t dummy, ...) asm("llvm.experimental.stackmap");
 
 return_type bytecode_call(uint64_t pc, void *closure, uint64_t nargs, void **args);
 
+// The wrapper name may have a scope resolution operator which would require quotes so we use asm with colon to ensure the name is
+// quoted in the bitcode.
 return_type WRAPPER_NAME(uint64_t pc, void *closure, uint64_t nargs, void **args) asm("wrapper:name");
 
 return_type WRAPPER_NAME(uint64_t pc, void *closure, uint64_t nargs, void **args) {
