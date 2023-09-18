@@ -3,7 +3,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 # include <xmmintrin.h>
 #endif
-#ifdef __arm64__
+#ifdef __aarch64__
 #include <cfenv>
 #include <fenv.h>
 #endif
@@ -333,7 +333,7 @@ DOCGROUP(clasp);
 CL_DEFUN void core__disable_all_fpe_masks() {
 #if defined(__i386__) || defined(__x86_64__)
   _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
-#elif defined(__arm64__)
+#elif defined(__aarch64__)
   std::fenv_t env;
   std::feholdexcept(&env);
 #else
@@ -362,7 +362,7 @@ CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, 
     _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DIV_ZERO));
   if (denormalized_operand.notnilp())
     _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DENORM));
-#elif defined(__arm64__)
+#elif defined(CLASP_APPLE_SILICON)
   std::fenv_t env;
   std::fegetenv(&env);
   env.__fpcr = (underflow.notnilp() ? __fpcr_trap_underflow : 0) | (overflow.notnilp() ? __fpcr_trap_overflow : 0) |
@@ -380,7 +380,7 @@ CL_DEFUN core::Fixnum_sp core__get_current_fpe_mask() {
 #if defined(__i386__) || defined(__x86_64__)
   unsigned int before = _MM_GET_EXCEPTION_MASK ();
   return core::clasp_make_fixnum(before);
-#elif defined(__arm64__)
+#elif defined(__aarch64__)
   std::fenv_t env;
   std::fegetenv(&env);
   return core::clasp_make_fixnum(env.__fpcr);
@@ -395,7 +395,7 @@ CL_DEFUN void core__set_current_fpe_mask(core::Fixnum_sp mask) {
   Fixnum value = core::unbox_fixnum(mask);
 #if defined(__i386__) || defined(__x86_64__)
   _MM_SET_EXCEPTION_MASK(value);
-#elif defined(__arm64__)
+#elif defined(__aarch64__)
   std::fenv_t env;
   std::fegetenv(&env);
   env.__fpcr = value;

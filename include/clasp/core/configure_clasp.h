@@ -79,7 +79,7 @@ THE SOFTWARE.
 #error "We are sorry but this address model is not supported yet."
 #endif
 
-#if defined( _TARGET_OS_DARWIN ) && defined( __arm64__ )
+#if defined( _TARGET_OS_DARWIN ) && defined( __aarch64__ )
 # define CLASP_APPLE_SILICON 1
 #endif
 

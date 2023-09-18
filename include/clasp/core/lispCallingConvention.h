@@ -92,7 +92,7 @@ LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* far
 
 
 /*! This is X86_64 dependent code */
-#if (defined(X86_64) || defined(ARM64)) && defined(_ADDRESS_MODEL_64)
+#if defined(__x86_64__) || defined(__aarch64__)
 
 // This is VERY HACKISH
 // it's based on the System V Application Binary Interface for X86_64
