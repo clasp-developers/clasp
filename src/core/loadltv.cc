@@ -43,9 +43,11 @@
 #define LTV_OP_BCFUNC 87
 #define LTV_OP_BCMOD 88
 #define LTV_OP_SLITS 89
-#define LTV_OP_FDEF 95
 #define LTV_OP_CREATE 93
 #define LTV_OP_INIT 94
+#define LTV_OP_FDEF 95
+#define LTV_OP_FCELL 96
+#define LTV_OP_VCELL 97
 #define LTV_OP_CLASS 98
 #define LTV_OP_INIT_OBJECT_ARRAY 99
 #define LTV_OP_ATTR 255
@@ -69,7 +71,7 @@ namespace core {
 typedef std::array<uint16_t, 2> BCVersion;
 
 const BCVersion min_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
-const BCVersion max_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
+const BCVersion max_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR + 1};
 
 static uint64_t ltv_header_decode(uint8_t *header) {
   if (header[0] != FASL_MAGIC_NUMBER_0 || header[1] != FASL_MAGIC_NUMBER_1 || header[2] != FASL_MAGIC_NUMBER_2 || header[3] != FASL_MAGIC_NUMBER_3)
@@ -79,7 +81,7 @@ static uint64_t ltv_header_decode(uint8_t *header) {
   BCVersion version = {header[4] << 8 | header[5], header[6] << 8 | header[7]};
   if ((version < min_version) || (version > max_version))
     // FIXME: Condition classes
-    SIMPLE_ERROR("FASL version {:04x}{:04x} is out of range of this loader", version[0], version[1]);
+    SIMPLE_ERROR("FASL version {:04x}.{:04x} is out of range of this loader", version[0], version[1]);
   return ((uint64_t)header[8] << 56) | ((uint64_t)header[9] << 48) | ((uint64_t)header[10] << 40) | ((uint64_t)header[11] << 32) |
          ((uint64_t)header[12] << 24) | ((uint64_t)header[13] << 16) | ((uint64_t)header[14] << 8) | ((uint64_t)header[15] << 0);
 }
@@ -608,6 +610,20 @@ struct loadltv {
     set_ltv(cl__fdefinition(name), index);
   }
 
+  void op_fcell() {
+    // Currently Clasp does not have FDEFNs, so this is just an identity.
+    size_t index = read_index();
+    T_sp name = get_ltv(read_index());
+    set_ltv(name, index);
+  }
+
+  void op_vcell() {
+    // We also don't really have variable cells.
+    size_t index = read_index();
+    T_sp name = get_ltv(read_index());
+    set_ltv(name, index);
+  }
+
   void op_create() {
     size_t index = read_index();
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
@@ -843,6 +859,12 @@ struct loadltv {
       break; // setf literals
     case LTV_OP_FDEF:
       op_fdef();
+      break;
+    case LTV_OP_FCELL:
+      op_fcell();
+      break;
+    case LTV_OP_VCELL:
+      op_vcell();
       break;
     case LTV_OP_CREATE:
       op_create();
