@@ -658,28 +658,19 @@ CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
 }
 
 
-// fast funcall. FIXME: use va-rest
-CL_LAMBDA(function-desig &rest args);
-CL_DECLARE((declare (dynamic-extent args)));
+// fast funcall
+CL_LAMBDA(function-desig core:&va-rest args);
+CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS: funcall)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
-  //    printf("%s:%d cl__funcall should be inlined after the compiler starts up\n", __FILE__, __LINE__ );
+CL_DEFUN T_mv cl__funcall(T_sp function_desig, Vaslist_sp args) {
   Function_sp func = coerce::calledFunctionDesignator(function_desig);
-  if (func.nilp()) {
-    ERROR_UNDEFINED_FUNCTION(function_desig);
-  }
-  if (func.unboundp()) {
-    if (function_desig.nilp()) SIMPLE_ERROR("The function designator was NIL");
-    if (function_desig.unboundp()) SIMPLE_ERROR("The function designator was UNBOUND");
-    SIMPLE_ERROR("The function {} was unbound", _rep_(function_desig));
-  }
-  size_t nargs = cl__length(args);
+  size_t nargs = args->nargs();
   MAKE_STACK_FRAME( fargs, nargs );
   size_t ia(0);
-  gctools::fill_frame_list( fargs, ia, args );
-  T_mv res = funcall_general<core::Function_O>(func.tagged_(), nargs, fargs->arguments(0));
+  gctools::fill_frame_vaslist( fargs, ia, args );
+  T_mv res = funcall_general<core::Function_O>(func.tagged_(), nargs, fargs->arguments());
   return res;
 }
 
