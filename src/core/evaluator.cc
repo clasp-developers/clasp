@@ -692,16 +692,11 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
   if (Function_sp fnobj = arg.asOrNull<Function_O>()) {
     return fnobj;
   } else if (Symbol_sp sym = arg.asOrNull<Symbol_O>()) {
-    if (!sym->fboundp())
-      SIMPLE_ERROR("Function value for {} is unbound", _rep_(sym));
     return sym->symbolFunction();
   } else if (Cons_sp carg = arg.asOrNull<Cons_O>()) {
     T_sp head = oCar(carg);
     if (head == cl::_sym_setf) {
       Symbol_sp sym = oCadr(carg).as<Symbol_O>();
-      if (!sym->fboundp_setf()) {
-        SIMPLE_ERROR("SETF function value for {} is unbound", _rep_(sym));
-      }
       return sym->getSetfFdefinition();
     } else if (head == cl::_sym_lambda) {
       // Really, this will always return a function, but we'll sanity check.

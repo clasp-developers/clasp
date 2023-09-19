@@ -254,7 +254,10 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size,
   SYMBOL_EXPORT_SC_(KeywordPkg, key);
   if (weakness.notnilp()) {
     if (weakness == INTERN_(kw, key)) {
-      if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction()) {
+      // We use symbolFunctionCalled because we actually make hash
+      // tables before eq etc. are bound, so symbolFunction would
+      // signal an error.
+      if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunctionCalled()) {
         return core__make_weak_key_hash_table(size);
       } else {
         SIMPLE_ERROR("Weak hash tables non-EQ tests are not yet supported");
@@ -270,13 +273,13 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size,
   this->_InitialSize = isize;
 #endif
   //	clasp_write_string(fmt::format("{}:{} - make_hash_table - fix me so that I grow by powers of 2\n" , __FILE__ , __LINE__ ));
-  if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction()) {
+  if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunctionCalled()) {
     table = HashTableEq_O::create(isize, rehash_size, rehash_threshold);
-  } else if (test == cl::_sym_eql || test == cl::_sym_eql->symbolFunction()) {
+  } else if (test == cl::_sym_eql || test == cl::_sym_eql->symbolFunctionCalled()) {
     table = HashTableEql_O::create(isize, rehash_size, rehash_threshold);
-  } else if (test == cl::_sym_equal || test == cl::_sym_equal->symbolFunction()) {
+  } else if (test == cl::_sym_equal || test == cl::_sym_equal->symbolFunctionCalled()) {
     table = HashTableEqual_O::create(isize, rehash_size, rehash_threshold);
-  } else if (test == cl::_sym_equalp || test == cl::_sym_equalp->symbolFunction()) {
+  } else if (test == cl::_sym_equalp || test == cl::_sym_equalp->symbolFunctionCalled()) {
     table = HashTableEqualp_O::create(isize, rehash_size, rehash_threshold);
   } else {
     Function_sp comparator = coerce::functionDesignator(test);

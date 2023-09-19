@@ -50,8 +50,6 @@ Function_sp functionDesignator(T_sp obj) {
   } else if (obj.unboundp()) {
     ERROR_UNDEFINED_FUNCTION(obj);
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
-    if (!sym->fboundp())
-      SIMPLE_ERROR("Function value for {} is unbound", _rep_(sym));
     return sym->symbolFunction();
   }
   TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));

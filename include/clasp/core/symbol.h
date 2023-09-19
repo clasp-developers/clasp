@@ -308,21 +308,36 @@ public:
 
  public: // function value slots access
 
+  inline Function_sp functionCell() const { return _Function.load(std::memory_order_relaxed); }
+  inline Function_sp setfFunctionCell() const { return _SetfFunction.load(std::memory_order_relaxed); }
+  inline void functionCellSet(Function_sp f) {
+    _Function.store(f, std::memory_order_relaxed);
+  }
+  inline void setfFunctionCellSet(Function_sp f) {
+    _SetfFunction.store(f, std::memory_order_relaxed);
+  }
+
   void fmakunbound();
   
-  void setSetfFdefinition(Function_sp fn) { _SetfFunction.store(fn, std::memory_order_relaxed); }
-  inline Function_sp getSetfFdefinition() const { return _SetfFunction.load(std::memory_order_relaxed); }
+  inline void setSetfFdefinition(Function_sp fn) { setfFunctionCellSet(fn); }
+  Function_sp getSetfFdefinition() const;
   bool fboundp_setf() const;
   void fmakunbound_setf();
   
   /*! Set the global function value of this symbol */
-  void setf_symbolFunction(Function_sp exec);
+  inline void setf_symbolFunction(Function_sp exec) { functionCellSet(exec); }
 
   /*! Return the global bound function */
-  inline Function_sp symbolFunction() const { return _Function.load(std::memory_order_relaxed); }
+  Function_sp symbolFunction() const;
 
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const;
+
+  // These can be used when the result is going to be called immediately.
+  // They don't check for fboundedness, because if un-fbound the cell
+  // will just signal an error when it is called.
+  inline Function_sp symbolFunctionCalled() const { return functionCell(); }
+  inline Function_sp getSetfFdefinitionCalled() const { return setfFunctionCell(); }
 
  public: // packages, the name, misc
 

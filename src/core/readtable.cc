@@ -875,7 +875,7 @@ Readtable_sp Readtable_O::create_standard_readtable() {
                           _sym_reader_backquoted_expression,
                           nil<T_O>());
   rt->set_macro_character_(clasp_make_standard_character(','),
-                          _sym_reader_comma_form->symbolFunction(),
+                           _sym_reader_comma_form,
                           nil<T_O>());
   SYMBOL_SC_(CorePkg, read_list_allow_consing_dot);
   rt->set_macro_character_(clasp_make_standard_character('('),

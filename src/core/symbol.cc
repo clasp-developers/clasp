@@ -134,9 +134,6 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(symbolFunction)dx");
 DOCGROUP(clasp);
 CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
-  if (!sym->fboundp()) {
-    ERROR_UNDEFINED_FUNCTION(sym);
-  }
   return sym->symbolFunction();
 };
 
@@ -350,7 +347,7 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   ASSERTF(nm != "", "You cannot create a symbol without a name");
   return n;
 };
-   
+
 Symbol_sp Symbol_O::makunbound() {
   if (this->getReadOnly())
     // would be a nice extension to make this a continuable error
@@ -367,22 +364,36 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
   return functionName->makunbound();
 }
 
+Function_sp Symbol_O::symbolFunction() const {
+  Function_sp cell = functionCell();
+  if (cell->entry() != UnboundFunctionEntryPoint::entry_point_n)
+    return cell;
+  else ERROR_UNDEFINED_FUNCTION(this->asSmartPtr());
+}
+
+Function_sp Symbol_O::getSetfFdefinition() const {
+  Function_sp cell = setfFunctionCell();
+  if (cell->entry() != UnboundSetfFunctionEntryPoint::entry_point_n)
+    return cell;
+  else ERROR_UNDEFINED_FUNCTION(this->asSmartPtr());
+}
+
 bool Symbol_O::fboundp() const {
-  return symbolFunction()->entry() != UnboundFunctionEntryPoint::entry_point_n;
+  return functionCell()->entry() != UnboundFunctionEntryPoint::entry_point_n;
 };
 
 void Symbol_O::fmakunbound()
 {
-  setf_symbolFunction(make_unbound_symbol_function(this->asSmartPtr()));
+  functionCellSet(make_unbound_symbol_function(this->asSmartPtr()));
 }
 
 bool Symbol_O::fboundp_setf() const {
-  return getSetfFdefinition()->entry() != UnboundSetfFunctionEntryPoint::entry_point_n;
+  return setfFunctionCell()->entry() != UnboundSetfFunctionEntryPoint::entry_point_n;
 };
 
 void Symbol_O::fmakunbound_setf()
 {
-  setSetfFdefinition(make_unbound_setf_symbol_function(this->asSmartPtr()));
+  setfFunctionCellSet(make_unbound_setf_symbol_function(this->asSmartPtr()));
 }
 
 
@@ -510,17 +521,6 @@ T_sp Symbol_O::defparameter(T_sp val) {
   T_sp result = this->setf_symbolValue(val);
   this->setf_specialP(true);
   return result;
-}
-
-void Symbol_O::setf_symbolFunction(Function_sp exec) {
-  _Function.store(exec, std::memory_order_relaxed);
-}
-
-CL_LISPIFY_NAME("core:setf_symbolFunction");
-CL_LAMBDA(function symbol);
-DOCGROUP(clasp);
-CL_DEFUN void core__setf_symbolFunction(Function_sp exec, Symbol_sp symbol){
-  symbol->setf_symbolFunction(exec);
 }
 
 string Symbol_O::symbolNameAsString() const {
