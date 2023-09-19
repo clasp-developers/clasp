@@ -942,5 +942,123 @@ CL_DEFUN void core__closure_slots_dump(Function_sp closure) {
     printf("    Slot[%d] --> %s\n", i, _rep_(core__closure_ref(closure,i)).c_str());
   }
 }
+
+struct CellUnboundFunctionEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
+    ERROR_UNDEFINED_FUNCTION((*closure)[0]);
+  }
+  static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
 };
+
+CL_LISPIFY_NAME(FunctionCell/make);
+CL_DEFUN FunctionCell_sp make_function_cell(T_sp name, Function_sp fun)
+{
+  GlobalSimpleFun_sp entryPoint =
+    makeGlobalSimpleFunAndFunctionDescription<FunctionCell_O>(name, nil<T_O>());
+  return gctools::GC<FunctionCell_O>::allocate(entryPoint, fun);
+}
+
+CL_LISPIFY_NAME(FunctionCell/make-unbound);
+CL_DEFUN FunctionCell_sp make_unbound_function_cell(T_sp name) {
+  // FIXME: Cache (see make_unbound_symbol_function in symbol.cc)
+  GlobalSimpleFun_sp f =
+    makeGlobalSimpleFunAndFunctionDescription<CellUnboundFunctionEntryPoint>(name, nil<T_O>());
+  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, f);
+  (*cf)[0] = name;
+  return make_function_cell(name, cf);
+}
+
+CL_LISPIFY_NAME(FunctionCell/fmakunbound);
+CL_DEFUN void function_cell_fmakunbound(FunctionCell_sp fcell, T_sp name)
+{
+  GlobalSimpleFun_sp f =
+    makeGlobalSimpleFunAndFunctionDescription<CellUnboundFunctionEntryPoint>(name, nil<T_O>());
+  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, f);
+  (*cf)[0] = name;
+  fcell->real_function_set(cf);
+}
+
+CL_LISPIFY_NAME(FunctionCell/function);
+DOCGROUP(clasp);
+CL_DEFUN Function_sp function_cell_function(FunctionCell_sp fcell) {
+  return fcell->real_function();
+}
+
+CL_LISPIFY_NAME(function-cell/function);
+DOCGROUP(clasp);
+CL_DEFUN_SETF Function_sp function_cell_function_set(Function_sp nv, FunctionCell_sp fcell) {
+  fcell->real_function_set(nv);
+  return nv;
+}
+
+CL_LISPIFY_NAME(function-cell/fboundp);
+CL_DEFUN bool function_cell_boundp(FunctionCell_sp fcell) {
+  return fcell->real_function()->entry() != CellUnboundFunctionEntryPoint::entry_point_n;
+}
+
+
+/*
+FunctionCell_sp ensure_function_cell(T_sp name) {
+  T_sp cell = find_function_cell(name);
+  if (cell.nilp()) {
+    FunctionCell_sp n = make_unbound_function_cell(name);
+    set_function_cell(name, n);
+    return n;
+  } else return gc::As_assert<FunctionCell_sp>(cell);
+}
+
+void set_fdefinition(T_sp name, Function_sp fun) {
+  // could be done with ensure_function_cell, but like this we can
+  // skip putting in an unbound marker
+  T_sp cell = find_function_cell(name);
+  if (cell.nilp()) {
+    FunctionCell_sp n = make_function_cell(name, fun);
+    set_function_cell(name, n);
+    return n;
+  } else {
+    gc::As_assert<FunctionCell_sp>(cell)->real_function_set(fun);
+  }
+}
+
+Function_sp unsafe_fdefinition(T_sp name) {
+  // used for e.g. calls
+  return ensure_function_cell(name)->real_function();
+}
+
+Function_sp safe_fdefinition(T_sp name) {
+  // We go through some extra effort to not ensure a function cell
+  // to reduce garbage a bit.
+  T_sp cell = find_function_cell(name);
+  if (!cell.nilp()) {
+    Function_sp fun = gc::As_assert<FunctionCell_sp>(cell)->real_function();
+    if (function_boundp(fun)) return fun;
+  }
+  ERROR_UNDEFINED_FUNCTION(name);
+}
+*/
+}; // namespace core
 

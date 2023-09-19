@@ -2,13 +2,14 @@
                           "core::SimpleMDArray_fixnum_O" "core::ComplexVector_O"
                           "core::SimpleMDArray_int32_t_O" "core::Integer_O"
                           "clbind::ClassRegistry_O" "mp::Process_O" "core::Record_O"
-                          "core::LightUserData_O" "core::MDArrayT_O" "core::DirectoryEntry_O"
-                          "llvmo::Linker_O" "comp::FunInfo_O" "core::MDArray_float_O"
-                          "core::SimpleFun_O" "core::SourcePosInfo_O" "llvmo::BranchInst_O"
-                          "llvmo::AllocaInst_O" "core::StandardClassCreator_O"
-                          "core::ComplexVector_float_O" "core::HashTableCustom_O"
-                          "comp::LexicalVarInfo_O" "core::ComplexVector_byte8_t_O"
-                          "core::OptionalArgument" "comp::FunctionCellInfo_O" "core::HashTable_O"
+                          "core::LightUserData_O" "core::MDArrayT_O" "core::FunctionCell_O"
+                          "core::DirectoryEntry_O" "llvmo::Linker_O" "comp::FunInfo_O"
+                          "core::MDArray_float_O" "core::SimpleFun_O" "core::SourcePosInfo_O"
+                          "llvmo::BranchInst_O" "llvmo::AllocaInst_O"
+                          "core::StandardClassCreator_O" "core::ComplexVector_float_O"
+                          "core::HashTableCustom_O" "comp::LexicalVarInfo_O"
+                          "core::ComplexVector_byte8_t_O" "core::OptionalArgument"
+                          "comp::FunctionCellInfo_O" "core::HashTable_O"
                           "core::SimpleVector_size_t_O" "llvmo::DIScope_O" "core::FileStatus_O"
                           "core::CodeSimpleFun_O" "llvmo::IndirectBrInst_O"
                           "core::BytecodeDebugExit_O" "llvmo::ConstantArray_O" "llvmo::PHINode_O"
@@ -580,6 +581,15 @@
              :offset-base-ctype "core::LocalSimpleFun_O" :layout-offset-field-names ("_Code")}
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::LocalSimpleFun_O" :layout-offset-field-names ("_Entry")}
+{class-kind :stamp-name "STAMPWTAG_core__FunctionCell_O" :stamp-key "core::FunctionCell_O"
+            :parent-class "core::Function_O" :lisp-class-base "core::Function_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::SimpleFun_O>"
+             :offset-base-ctype "core::FunctionCell_O" :layout-offset-field-names ("_TheSimpleFun")}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Function_O>"
+             :offset-base-ctype "core::FunctionCell_O" :layout-offset-field-names ("_Function")}
 {class-kind :stamp-name "STAMPWTAG_core__ImmobileObject_O" :stamp-key "core::ImmobileObject_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
