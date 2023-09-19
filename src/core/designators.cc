@@ -55,6 +55,21 @@ Function_sp functionDesignator(T_sp obj) {
   TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
 }
 
+// Like the above, but doesn't bother checking fboundp, on the premise
+// that the cell will end up signaling unboundedness anyway.
+Function_sp calledFunctionDesignator(T_sp obj) {
+  if (Function_sp fnobj = obj.asOrNull<Function_O>()) {
+    return fnobj;
+  } else if (obj.nilp()) {
+    ERROR_UNDEFINED_FUNCTION(obj);
+  } else if (obj.unboundp()) {
+    ERROR_UNDEFINED_FUNCTION(obj);
+  } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
+    return sym->symbolFunctionCalled();
+  }
+  TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
+}
+
 // this very similar to functionDesignator, can we merge?
 // only use is core__function_source_pos_info
 // perhaps expected type == core::_sym_closure or cl::_sym_symbol

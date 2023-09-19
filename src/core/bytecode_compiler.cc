@@ -2,7 +2,7 @@
 #include <clasp/core/evaluator.h>         // extract_decl...
 #include <clasp/core/sysprop.h>           // core__get_sysprop
 #include <clasp/core/lambdaListHandler.h> // lambda list parsing
-#include <clasp/core/designators.h>       // functionDesignator
+#include <clasp/core/designators.h>       // calledFunctionDesignator
 #include <clasp/core/primitives.h>        // gensym, function_block_name
 #include <clasp/core/sourceFileInfo.h>    // source info stuff
 #include <clasp/llvmo/llvmoPackage.h>
@@ -1185,7 +1185,7 @@ static T_sp expand_macro(Function_sp expander, T_sp form, Lexenv_sp env) {
   // This is copied from cl__macroexpand. I guess eval::funcall doesn't do the
   // coercion itself?
   T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-  Function_sp hook = coerce::functionDesignator(macroexpandHook);
+  Function_sp hook = coerce::calledFunctionDesignator(macroexpandHook);
   return eval::funcall(hook, expander, form, env);
 }
 
