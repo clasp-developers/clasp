@@ -417,10 +417,12 @@ Module_sp Context::module() const { return this->cfunction()->module(); }
 size_t Context::literal_index(T_sp literal) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   // FIXME: Smarter POSITION
-  for (size_t i = 0; i < literals->length(); ++i)
-    if ((*literals)[i] == literal)
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<ConstantInfo_sp>(slit) && gc::As_unsafe<ConstantInfo_sp>(slit)->value() == literal)
       return i;
-  Fixnum_sp nind = literals->vectorPushExtend(literal);
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(ConstantInfo_O::make(literal));
   return nind.unsafe_fixnum();
 }
 
@@ -429,7 +431,51 @@ size_t Context::literal_index(T_sp literal) const {
 // they've previously appeared in the literals vector.
 // This is also used by LTV processing to put in a placeholder.
 size_t Context::new_literal_index(T_sp literal) const {
-  Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(literal);
+  Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(ConstantInfo_O::make(literal));
+  return nind.unsafe_fixnum();
+}
+
+// We never coalesce LTVs at the moment. Hypothetically we could, but
+// it seems like a pretty marginal thing.
+size_t Context::ltv_index(T_sp form, bool read_only_p) const {
+  LoadTimeValueInfo_sp ltvi = LoadTimeValueInfo_O::make(form, read_only_p);
+  Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(ltvi);
+  return nind.unsafe_fixnum();
+}
+
+size_t Context::cfunction_index(Cfunction_sp fun) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  // FIXME: Smarter POSITION
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<Cfunction_sp>(slit) && slit == fun)
+      return i;
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(fun);
+  return nind.unsafe_fixnum();
+}
+
+size_t Context::fcell_index(T_sp name) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  // FIXME: Smarter POSITION
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<FunctionCellInfo_sp>(slit) && gc::As_unsafe<FunctionCellInfo_sp>(slit)->fname() == name)
+      return i;
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(FunctionCellInfo_O::make(name));
+  return nind.unsafe_fixnum();
+}
+
+size_t Context::vcell_index(Symbol_sp name) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  // FIXME: Smarter POSITION
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<VariableCellInfo_sp>(slit) && gc::As_unsafe<VariableCellInfo_sp>(slit)->vname() == name)
+      return i;
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(VariableCellInfo_O::make(name));
   return nind.unsafe_fixnum();
 }
 
@@ -592,7 +638,7 @@ void Context::emit_mv_call() const {
   }
 }
 
-void Context::emit_special_bind(Symbol_sp sym) const { this->assemble1(vm_special_bind, this->literal_index(sym)); }
+void Context::emit_special_bind(Symbol_sp sym) const { this->assemble1(vm_special_bind, this->vcell_index(sym)); }
 
 void Context::emit_unbind(size_t count) const {
   for (size_t i = 0; i < count; ++i)
@@ -1077,15 +1123,22 @@ void Module_O::link_load(T_sp compile_info) {
   }
   // Replace the cfunctions in the cmodule literal vector with
   // real bytecode functions in the module vector.
-  // Also replace load-time-value infos with the evaluated forms.
+  // Also replace load-time-value infos with the evaluated forms,
+  // and resolve cells.
   for (size_t i = 0; i < literal_length; ++i) {
     T_sp lit = (*cmodule_literals)[i];
     if (gc::IsA<Cfunction_sp>(lit))
       (*literals)[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
     else if (gc::IsA<LoadTimeValueInfo_sp>(lit))
       (*literals)[i] = gc::As_unsafe<LoadTimeValueInfo_sp>(lit)->eval();
-    else
-      (*literals)[i] = lit;
+    else if (gc::IsA<ConstantInfo_sp>(lit))
+      (*literals)[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
+    else if (gc::IsA<FunctionCellInfo_sp>(lit))
+      (*literals)[i] = gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname();
+    else if (gc::IsA<VariableCellInfo_sp>(lit))
+      (*literals)[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname();
+    else SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}",
+                      _rep_(lit));
   }
   // Also replace the cfunctions in the debug info.
   // We just modify the vector rather than cons a new one since create_debug_info
@@ -1184,7 +1237,7 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
       }
       context.maybe_emit_cell_ref(lvinfo);
     } else if (std::holds_alternative<SpecialVarInfoV>(info))
-      context.assemble1(vm_symbol_value, context.literal_index(sym));
+      context.assemble1(vm_symbol_value, context.vcell_index(sym));
     else if (std::holds_alternative<ConstantVarInfoV>(info)) {
       compile_literal(std::get<ConstantVarInfoV>(info).value(), env, context);
       // Avoid the pop code below - compile-literal handles it.
@@ -1193,7 +1246,7 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
       if (_sym_warn_undefined_global_variable->fboundp() && !code_walking_p())
         eval::funcall(_sym_warn_undefined_global_variable,
                       context.source_info(), sym);
-      context.assemble1(vm_symbol_value, context.literal_index(sym));
+      context.assemble1(vm_symbol_value, context.vcell_index(sym));
     } if (context.receiving() == -1)
       // Values return - put value in mv vector.
       context.assemble0(vm_pop);
@@ -1773,9 +1826,9 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>((*closed)[i]));
     }
     if (closed->length() == 0) // don't need to actually close
-      ctxt.assemble1(vm_const, ctxt.literal_index(fun));
+      ctxt.assemble1(vm_const, ctxt.cfunction_index(fun));
     else
-      ctxt.assemble1(vm_make_closure, ctxt.literal_index(fun));
+      ctxt.assemble1(vm_make_closure, ctxt.cfunction_index(fun));
   } else { // ought to be a function name
     FunInfoV info = fun_info_v(fnameoid, env);
     if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
@@ -1784,7 +1837,7 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
           && !code_walking_p())
         eval::funcall(_sym_register_global_function_ref, fnameoid,
                       ctxt.source_info());
-      ctxt.assemble1(vm_fdefinition, ctxt.literal_index(fnameoid));
+      ctxt.assemble1(vm_fdefinition, ctxt.fcell_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
       ctxt.reference_lexical_info(lfinfo->lex());
@@ -1859,7 +1912,7 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
     T_sp fun_body = Cons_O::createList(Cons_O::create(cl::_sym_declare, declares), block);
     Cfunction_sp fun = compile_lambda(oCadr(definition), fun_body, new_env, ctxt.module(),
                                       source_location_for(definition, ctxt.source_info()));
-    size_t literal_index = ctxt.literal_index(fun);
+    size_t literal_index = ctxt.cfunction_index(fun);
     LocalFunInfo_sp lfi = gc::As_assert<LocalFunInfo_sp>(fun_info(name, new_env));
     if (fun->closed()->length() == 0) // not a closure- easy
       ctxt.assemble1(vm_const, literal_index);
@@ -1909,7 +1962,7 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     if (ctxt.receiving() != 0) {
       ctxt.assemble0(vm_dup);
     }
-    ctxt.assemble1(vm_symbol_value_set, ctxt.literal_index(var));
+    ctxt.assemble1(vm_symbol_value_set, ctxt.vcell_index(var));
     if (ctxt.receiving() == -1) // need values
       ctxt.assemble0(vm_pop);
   } else if (std::holds_alternative<LexicalVarInfoV>(info)) {
@@ -2217,9 +2270,8 @@ void compile_load_time_value(T_sp form, T_sp tread_only_p, Lexenv_sp env, const 
   else
     SIMPLE_ERROR("load-time-value read-only-p is not T or NIL: {}", _rep_(tread_only_p));
 
-  auto ltv = LoadTimeValueInfo_O::make(form, read_only_p);
   // Add the LTV to the cmodule.
-  size_t ind = context.new_literal_index(ltv);
+  size_t ind = context.ltv_index(form, read_only_p);
   // With that done, we basically just need to compile a literal load.
   // (Note that we do always need to register the LTV, since it may have
   //  some weird side effect. We could hypothetically save some space by

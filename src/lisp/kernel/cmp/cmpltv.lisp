@@ -159,6 +159,24 @@
 (defclass fdefinition-lookup (creator)
   ((%name :initarg :name :reader name :type creator)))
 
+;;; Look up the "cell" for a function binding - something that the VM's
+;;; FDEFINITION instruction can get an actual function out of.
+;;; The nature of this cell is implementation-dependent.
+;;; In a simple implementation, the "cell" can just be the function name,
+;;; and the FDEFINITION instruction just does CL:FDEFINITION.
+(defclass fcell-lookup (creator)
+  ((%name :initarg :name :reader name :type creator)))
+
+;;; Look up the "cell" for special variable binding. This is used by the
+;;; SPECIAL-BIND, SYMBOL-VALUE, and SYMBOL-VALUE-SET VM instructions
+;;; as a lookup key for the binding, as well as for establishing new
+;;; local bindings.
+;;; The nature of this cell is implementation-dependent.
+;;; In a simple implementation, the "cell" can just be the symbol itself,
+;;; and the SYMBOL-VALUE instruction just does CL:SYMBOL-VALUE, etc.
+(defclass vcell-lookup (creator)
+  ((%name :initarg :name :reader name :type creator)))
+
 (defclass general-creator (vcreator)
   (;; Reference to a function designator to call to allocate the object,
    ;; e.g. a function made of the first return value from make-load-form.
@@ -293,6 +311,13 @@
 ;;; EQL hash table from objects to creators.
 (defvar *coalesce*)
 
+;;; Another EQL hash table for out-of-band objects that are also "coalesced".
+;;; So far this means cfunctions, modules, fcells, and vcells.
+;;; This a separate variable because perverse code could use an out-of-band
+;;; object in band (e.g. compiling a literal module) and we don't want to
+;;; confuse those things.
+(defvar *oob-coalesce*)
+
 ;; Look up a value in the existing instructions.
 ;; On success returns the creator, otherwise NIL.
 ;; Could be extended with coalescence relations or made more efficient,
@@ -302,6 +327,9 @@
   #+(or)
   (find-if (lambda (c) (and (typep c 'creator) (similarp c value)))
            sequence))
+
+(defun find-oob (value)
+  (values (gethash value *oob-coalesce*)))
 
 ;;; List of instructions to be executed by the loader.
 ;;; In reverse.
@@ -316,7 +344,7 @@
 
 (defmacro with-constants ((&key) &body body)
   `(let ((*instructions* nil) (*creating* nil)
-         (*coalesce* (make-hash-table)))
+         (*coalesce* (make-hash-table)) (*oob-coalesce* (make-hash-table)))
      ,@body))
 
 (defun find-constant (value)
@@ -336,6 +364,10 @@
   (setf (gethash value *coalesce*) instruction)
   (add-instruction instruction))
 
+(defun add-oob (key instruction)
+  (setf (gethash key *oob-coalesce*) instruction)
+  (add-instruction instruction))
+
 (defgeneric add-constant (value))
 
 (defun ensure-constant (value &key permanent)
@@ -347,7 +379,7 @@
 ;;; have the effect of evaluating the form in a null lexical environment.
 (defun add-form (form &optional env)
   ;; PROGN so that (declare ...) expressions for example correctly cause errors.
-  (add-constant
+  (add-function
    (bytecode-cf-compile-lexpr `(lambda () (progn ,form)) env)))
 
 (defmethod add-constant ((value cons))
@@ -525,12 +557,12 @@
 (defun f-dumpable-form-creator (env)
   (lambda (form)
     (cond ((lambda-expression-p form)
-           (ensure-constant (bytecode-cf-compile-lexpr form env)))
+           (add-function (bytecode-cf-compile-lexpr form env)))
           ((not (function-form-p form)) ; must be a constant
            (ensure-constant (ext:constant-form-value form env)))
           ((and (consp (second form)) (eq (caadr form) 'cl:lambda))
            ;; #'(lambda ...)
-           (ensure-constant (bytecode-cf-compile-lexpr (second form) env)))
+           (add-function (bytecode-cf-compile-lexpr (second form) env)))
           (t
            ;; #'function-name
            (add-instruction
@@ -625,14 +657,6 @@
         (t
          (error 'circular-dependency :value value :path *creating*))))
 
-(defmethod add-constant ((value cmp:load-time-value-info))
-  (add-instruction
-   (make-instance 'load-time-value-creator
-     :function (add-form (cmp:load-time-value-info/form value))
-     :read-only-p (cmp:load-time-value-info/read-only-p value)
-     :form (cmp:load-time-value-info/form value)
-     :info value)))
-
 ;;; Loop over the instructions, assigning indices to the creators such that
 ;;; the permanent objects come first. This only affects their position in the
 ;;; similar vector, not the order the instructions must be executed in.
@@ -698,6 +722,8 @@
     (funcall-create 93 sind find nargs . args)
     (funcall-initialize 94 find nargs . args)
     (fdefinition 95 find nameind)
+    (fcell 96 find nameind)
+    (vcell 97 vind nameind)
     (find-class 98 sind cnind)
     ;; set-ltv-funcall in clasp- redundant
     #+(or) ; obsolete as of v0.3
@@ -1058,6 +1084,16 @@
   (write-index inst stream)
   (write-index (name inst) stream))
 
+(defmethod encode ((inst fcell-lookup) stream)
+  (write-mnemonic 'fcell stream)
+  (write-index inst stream)
+  (write-index (name inst) stream))
+
+(defmethod encode ((inst vcell-lookup) stream)
+  (write-mnemonic 'vcell stream)
+  (write-index inst stream)
+  (write-index (name inst) stream))
+
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)
   (write-index inst stream)
@@ -1111,13 +1147,14 @@
                  :type (unsigned-byte 32))
    (%size :initarg :size :reader size :type (unsigned-byte 32))))
 
-(defmethod add-constant ((value cmp:cfunction))
+;;; Given a CFUNCTION, generate a creator for the eventual runtime function.
+(defun add-function (value)
   (let ((inst
-          (add-creator
+          (add-oob
            value
            (make-instance 'bytefunction-creator
              :cfunction value
-             :module (ensure-constant (cmp:cfunction/module value))
+             :module (ensure-module (cmp:cfunction/module value))
              :name (ensure-constant (cmp:cfunction/name value))
              :lambda-list (ensure-constant
                            (cmp:cfunction/lambda-list value))
@@ -1170,11 +1207,49 @@
    (%literals :initarg :literals :reader setf-literals-literals
               :type simple-vector)))
 
+(defgeneric ensure-module-literal (literal-info))
+
+(defmethod ensure-module-literal ((info cmp:constant-info))
+  (ensure-constant (cmp:constant-info/value info)))
+
+(defun ensure-function (cfunction)
+  (or (find-oob cfunction) (add-function cfunction)))
+
+(defmethod ensure-module-literal ((info cmp:cfunction))
+  (ensure-function info))
+
+(defmethod ensure-module-literal ((info cmp:load-time-value-info))
+  (add-instruction
+   (make-instance 'load-time-value-creator
+     :function (add-form (cmp:load-time-value-info/form info))
+     :read-only-p (cmp:load-time-value-info/read-only-p info)
+     :form (cmp:load-time-value-info/form info)
+     :info info)))
+
+(defun ensure-fcell (info)
+  (or (find-oob info)
+      (let ((name (cmp:function-cell-info/fname info)))
+        (add-oob info
+                 (make-instance 'fcell-lookup :name (ensure-constant name))))))
+
+(defmethod ensure-module-literal ((info cmp:function-cell-info))
+  (ensure-fcell info))
+
+(defun ensure-vcell (info)
+  (or (find-oob info)
+      (let ((name (cmp:variable-cell-info/vname info)))
+        (add-oob info
+                 (make-instance 'vcell-lookup
+                   :name (ensure-constant name))))))
+
+(defmethod ensure-module-literal ((info cmp:variable-cell-info))
+  (ensure-vcell info))
+
 (defgeneric process-debug-info (debug-info))
 
 (defmethod process-debug-info ((info cmp:cfunction))
   (make-instance 'debug-info-function
-    :function (ensure-constant info)))
+    :function (ensure-function info)))
 
 (defmethod process-debug-info ((item core:bytecode-debug-vars))
   (make-instance 'debug-info-vars
@@ -1227,11 +1302,11 @@
     :end (core:bytecode-debug-info/end item)
     :receiving (core:bytecode-debug-exit/receiving item)))
 
-(defmethod add-constant ((value cmp:module))
+(defun add-module (value)
   ;; Add the module first to prevent recursion.
   (cmp:module/link value)
   (let ((mod
-          (add-creator
+          (add-oob
            value
            (make-instance 'bytemodule-creator
              :prototype value :lispcode (cmp:module/create-bytecode value)))))
@@ -1239,7 +1314,7 @@
     ;; cfunctions, so we need to 2stage it here.
     (add-instruction
      (make-instance 'setf-literals
-       :module mod :literals (map 'simple-vector #'ensure-constant
+       :module mod :literals (map 'simple-vector #'ensure-module-literal
                                   (cmp:module/literals value))))
     #+clasp ; debug info
     (let ((info (cmp:module/create-debug-info value)))
@@ -1249,6 +1324,9 @@
            :module mod
            :infos (map 'vector #'process-debug-info info)))))
     mod))
+
+(defun ensure-module (module)
+  (or (find-oob module) (add-module module)))
 
 (defmethod encode ((inst bytemodule-creator) stream)
   ;; Write instructions.

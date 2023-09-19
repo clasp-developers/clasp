@@ -8,7 +8,7 @@
                           "llvmo::AllocaInst_O" "core::StandardClassCreator_O"
                           "core::ComplexVector_float_O" "core::HashTableCustom_O"
                           "comp::LexicalVarInfo_O" "core::ComplexVector_byte8_t_O"
-                          "core::OptionalArgument" "core::HashTable_O"
+                          "core::OptionalArgument" "comp::FunctionCellInfo_O" "core::HashTable_O"
                           "core::SimpleVector_size_t_O" "llvmo::DIScope_O" "core::FileStatus_O"
                           "core::CodeSimpleFun_O" "llvmo::IndirectBrInst_O"
                           "core::BytecodeDebugExit_O" "llvmo::ConstantArray_O" "llvmo::PHINode_O"
@@ -60,10 +60,10 @@
                           "asttooling::AsttoolingExposer_O" "core::GlobalSimpleFunGenerator_O"
                           "llvmo::IntegerType_O" "comp::GlobalMacroInfo_O"
                           "core::MDArray_int64_t_O" "core::SimpleMDArray_size_t_O"
-                          "core::SmallMultimap_O" "llvmo::PassManagerBuilder_O"
-                          "core::Fixnum_dummy_O" "core::AuxArgument" "core::MDArray_int8_t_O"
-                          "llvmo::ConstantFP_O" "core::BlockDynEnv_O" "core::Cons_O"
-                          "core::WRAPPER_Translator_O" "clbind::detail::vertex"
+                          "comp::VariableCellInfo_O" "core::SmallMultimap_O"
+                          "llvmo::PassManagerBuilder_O" "core::Fixnum_dummy_O" "core::AuxArgument"
+                          "core::MDArray_int8_t_O" "llvmo::ConstantFP_O" "core::BlockDynEnv_O"
+                          "core::Cons_O" "core::WRAPPER_Translator_O" "clbind::detail::vertex"
                           "llvmo::LLVMContext_O" "core::MDArray_int4_t_O"
                           "core::WeakKeyHashTable_O" "core::Rack_O" "core::MDArrayBaseChar_O"
                           "core::UserData_O" "core::ExternalObject_O" "llvmo::DINode_O"
@@ -126,12 +126,12 @@
                           "core::Rational_O" "core::CatchDynEnv_O" "core::MDArrayCharacter_O"
                           "llvmo::LandingPadInst_O" "core::ImmobileObject_O" "core::Function_O"
                           "core::SimpleMDArray_int2_t_O" "core::HashTableEql_O"
-                          "mp::ConditionVariable_O" "core::Real_O" "core::Lisp"
-                          "core::MDArray_byte8_t_O" "core::FuncallableInstanceCreator_O"
-                          "core::StringOutputStream_O" "llvmo::AttributeSet_O"
-                          "llvmo::AtomicRMWInst_O" "comp::Module_O" "llvmo::MDBuilder_O"
-                          "llvmo::PassManager_O" "core::SimpleVector_O" "llvmo::DISubprogram_O"
-                          "core::SymbolStorage" "llvmo::ArrayType_O"
+                          "comp::ConstantInfo_O" "mp::ConditionVariable_O" "core::Real_O"
+                          "core::Lisp" "core::MDArray_byte8_t_O"
+                          "core::FuncallableInstanceCreator_O" "core::StringOutputStream_O"
+                          "llvmo::AttributeSet_O" "llvmo::AtomicRMWInst_O" "comp::Module_O"
+                          "llvmo::MDBuilder_O" "llvmo::PassManager_O" "core::SimpleVector_O"
+                          "llvmo::DISubprogram_O" "core::SymbolStorage" "llvmo::ArrayType_O"
                           "core::SimpleMDArray_int64_t_O" "core::SimpleString_O"
                           "llvmo::DIVariable_O" "core::SimpleMDArray_byte2_t_O"
                           "llvmo::BlockAddress_O" "llvmo::DICompositeType_O"
@@ -218,6 +218,12 @@
 {class-kind :stamp-name "STAMPWTAG_llvmo__AttributeSet_O" :stamp-key "llvmo::AttributeSet_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_comp__ConstantInfo_O" :stamp-key "comp::ConstantInfo_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "comp::ConstantInfo_O" :layout-offset-field-names ("_value")}
 {class-kind :stamp-name "STAMPWTAG_core__Function_O" :stamp-key "core::Function_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -4626,6 +4632,12 @@
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>"
              :offset-base-ctype "core::SmallMultimap_O"
              :layout-offset-field-names ("map" "._Contents")}
+{class-kind :stamp-name "STAMPWTAG_comp__VariableCellInfo_O" :stamp-key "comp::VariableCellInfo_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
+             :offset-base-ctype "comp::VariableCellInfo_O" :layout-offset-field-names ("_vname")}
 {class-kind :stamp-name "STAMPWTAG_core__Sigset_O" :stamp-key "core::Sigset_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
@@ -6654,6 +6666,12 @@
 {class-kind :stamp-name "STAMPWTAG_core__FileStatus_O" :stamp-key "core::FileStatus_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{class-kind :stamp-name "STAMPWTAG_comp__FunctionCellInfo_O" :stamp-key "comp::FunctionCellInfo_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "comp::FunctionCellInfo_O" :layout-offset-field-names ("_fname")}
 {class-kind :stamp-name "STAMPWTAG_core__SourcePosInfo_O" :stamp-key "core::SourcePosInfo_O"
             :parent-class "core::General_O" :lisp-class-base "core::General_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
