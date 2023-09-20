@@ -95,6 +95,11 @@ DOCGROUP(clasp);
 CL_DEFUN Function_sp coerce_fdesignator(T_sp obj) {
   return coerce::functionDesignator(obj);
 }
+
+DOCGROUP(clasp);
+CL_DEFUN Function_sp core__coerce_called_fdesignator(T_sp obj) {
+  return coerce::calledFunctionDesignator(obj);
+}
 };
 
 namespace core {
