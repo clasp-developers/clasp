@@ -1144,6 +1144,45 @@
                          :inputs (list const) :outputs (list fdef-out))
       (stack-push fdef-out context))))
 
+;; Identical to the above, but BIR should maybe have a
+;; CONSTANT-CALLED-FDEFINITION for this.
+(defmethod compile-instruction ((mnemonic (eql :called-fdefinition))
+                                inserter annot context &rest args)
+  (declare (ignore annot))
+  (destructuring-bind (fcell) args
+    (let* ((iblock (ast-to-bir::iblock inserter))
+           (ifun (bir:function iblock))
+           (module (bir:module ifun))
+           (fname (core:function-name fcell))
+           (const (bir:constant-in-module fname module))
+           (attributes (clasp-cleavir::function-attributes fname))
+           (fdef-out (make-instance 'bir:output
+                       :name fname :attributes attributes)))
+      (ast-to-bir:insert inserter 'bir:constant-fdefinition
+                         :inputs (list const) :outputs (list fdef-out))
+      (stack-push fdef-out context))))
+
+(defmethod compile-instruction ((mnemonic (eql :fdesignator))
+                                inserter annot context &rest args)
+  ;; Just call CORE:COERCE-CALLED-FDESIGNATOR.
+  (declare (ignore annot))
+  (let* ((desig (stack-pop context))
+         (iblock (ast-to-bir::iblock inserter))
+         (ifun (bir:function iblock))
+         (module (bir:module ifun))
+         (fname 'core:coerce-called-fdesignator)
+         (const (bir:constant-in-module fname module))
+         (attributes (clasp-cleavir::function-attributes fname))
+         (fdef-out (make-instance 'bir:output
+                     :name fname :attributes attributes))
+         (out (make-instance 'bir:output :name '#:callee)))
+    (ast-to-bir:insert inserter 'bir:constant-fdefinition
+                       :inputs (list const) :outputs (list fdef-out))
+    (ast-to-bir:insert inserter 'bir:call
+                       :inputs (list fdef-out desig)
+                       :outputs (list out))
+    (stack-push out context)))
+
 (defmethod compile-instruction ((mnemonic (eql :nil))
                                 inserter annot context &rest args)
   (declare (ignore annot))
