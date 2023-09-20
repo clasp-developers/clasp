@@ -538,6 +538,8 @@ public:
   }
   void fmakunbound(T_sp name);
   bool fboundp();
+  // like real_function() but signals an error if we are un-fbound.
+  Function_sp fdefinition() const;
 public:
   // probably unnecessary
   virtual bool compiledP() const {

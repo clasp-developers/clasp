@@ -1850,6 +1850,39 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
     ctxt.assemble0(vm_pop);
 }
 
+// Compile a function designator knowing that it will be immediately
+// called. We ignore ctxt's actual receiving and return one value,
+// and we can skip some runtime checks.
+void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
+  if (gc::IsA<Cons_sp>(fnameoid) && oCar(fnameoid) == cl::_sym_lambda) {
+    Cfunction_sp fun = compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt.module(),
+                                      source_location_for(fnameoid, ctxt.source_info()));
+    ComplexVector_T_sp closed = fun->closed();
+    for (size_t i = 0; i < closed->length(); ++i) {
+      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>((*closed)[i]));
+    }
+    if (closed->length() == 0) // don't need to actually close
+      ctxt.assemble1(vm_const, ctxt.cfunction_index(fun));
+    else
+      ctxt.assemble1(vm_make_closure, ctxt.cfunction_index(fun));
+  } else { // ought to be a function name
+    FunInfoV info = fun_info_v(fnameoid, env);
+    if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
+      if (std::holds_alternative<NoFunInfoV>(info) // Warn
+          && _sym_register_global_function_ref->fboundp()
+          && !code_walking_p())
+        eval::funcall(_sym_register_global_function_ref, fnameoid,
+                      ctxt.source_info());
+      ctxt.assemble1(vm_called_fdefinition, ctxt.fcell_index(fnameoid));
+    } else if (std::holds_alternative<LocalFunInfoV>(info)) {
+      LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
+      ctxt.reference_lexical_info(lfinfo->lex());
+    } else
+      // FIXME: e.g. #'with-open-file. needs better error.
+      SIMPLE_ERROR("{} does not name a function", _rep_(fnameoid));
+  }
+}
+
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
   ql::list fun_vars;
   size_t fun_count = 0;
@@ -2209,9 +2242,8 @@ void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Cont
 void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, const Context ctxt) {
   // Compile the function. Coerce it as a designator.
   // TODO: When the fform is a #'foo form we could skip coercion.
-  compile_function(core::_sym_coerce_fdesignator, env, ctxt.sub_receiving(1));
   compile_form(fform, env, ctxt.sub_receiving(1));
-  ctxt.sub_receiving(1).emit_call(1);
+  ctxt.assemble0(vm_fdesignator);
   if (aforms.nilp()) {
     ctxt.emit_call(0);
   } else {
@@ -2397,21 +2429,21 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     // Better would be to use the EQ opcode. Better than that would be
     // eliminating the special operator entirely and working with the
     // function instead.
-    compile_function(cl::_sym_eq, env, context.sub_receiving(1));
+    compile_called_function(cl::_sym_eq, env, context);
     compile_call(rest, env, context);
   } else if (head == cleavirPrimop::_sym_typeq) {
     // KLUDGE: call to typep.
     T_sp type = oCadr(rest);
     if (type == cl::_sym_cons) {
-      compile_function(cl::_sym_consp, env, context.sub_receiving(1));
+      compile_called_function(cl::_sym_consp, env, context);
       compile_form(oCar(rest), env, context.sub_receiving(1));
       context.emit_call(1);
     } else if (type == cl::_sym_symbol) {
-      compile_function(cl::_sym_symbolp, env, context.sub_receiving(1));
+      compile_called_function(cl::_sym_symbolp, env, context);
       compile_form(oCar(rest), env, context.sub_receiving(1));
       context.emit_call(1);
     } else {
-      compile_function(cl::_sym_typep, env, context.sub_receiving(1));
+      compile_called_function(cl::_sym_typep, env, context);
       compile_form(oCar(rest), env, context.sub_receiving(1));
       compile_literal(oCadr(rest), env, context.sub_receiving(1));
       context.emit_call(2);
@@ -2448,19 +2480,19 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
             return;
           }
         } // no compiler macro, or expansion declined: call
-        compile_function(head, env, context.sub_receiving(1));
+        compile_called_function(head, env, context);
         compile_call(rest, env, context);
       } else if (std::holds_alternative<LocalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
         // unknown function warning handled by compile-function (eventually)
         // note we do a double lookup of the fun info,
         // which is inefficient in the compiler (doesn't affect generated code)
-        compile_function(head, env, context.sub_receiving(1));
+        compile_called_function(head, env, context);
         compile_call(rest, env, context);
       } else
         UNREACHABLE();
     } else if (gc::IsA<Cons_sp>(head) && (oCar(head) == cl::_sym_lambda)) {
       // Lambda form
-      compile_function(head, env, context.sub_receiving(1));
+      compile_called_function(head, env, context);
       compile_call(rest, env, context);
     } else
       SIMPLE_ERROR("Illegal combination head: {} rest: {}", _rep_(head), _rep_(rest));

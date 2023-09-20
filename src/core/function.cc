@@ -1002,5 +1002,19 @@ bool FunctionCell_O::fboundp() {
   return real_function()->entry() != UnboundCellFunctionEntryPoint::entry_point_n;
 }
 
+Function_sp FunctionCell_O::fdefinition() const {
+  // We don't use fboundp since we want to only load the real function
+  // once, in order to avoid strange race condition nonsense.
+  Function_sp rf = real_function();
+  if (real_function()->entry() != UnboundCellFunctionEntryPoint::entry_point_n)
+    return rf;
+  else {
+    // It's an unbound cell closure, so this will signal an
+    // appropriate error.
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)(rf.raw_()));
+    ERROR_UNDEFINED_FUNCTION((*closure)[0]);
+  }
+}
+
 }; // namespace core
 

@@ -12,7 +12,7 @@
 #include <clasp/core/array.h>
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
-
+#include <clasp/core/designators.h> // calledFunctionDesignator
 
 
 #define VM_CODES
@@ -842,14 +842,12 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
     }
     case vm_fdefinition: {
       // We have function cells in the literals vector. While these are
-      // themselves callable, we have to resolve the cell because we also
+      // themselves callable, we have to resolve the cell because we
       // use vm_fdefinition for lookup of #'foo.
-      // (This doesn't increase indirections in the call case, since when
-      //  called the cell would have to read its function anyway.)
       uint8_t c = *(++pc);
       DBG_VM1("fdefinition %" PRIu8 "\n", c);
       T_sp cell((gctools::Tagged)literals[c]);
-      Function_sp fun = gc::As_assert<FunctionCell_sp>(cell)->real_function();
+      Function_sp fun = gc::As_assert<FunctionCell_sp>(cell)->fdefinition();
       vm.push(sp, fun.raw_());
       VM_RECORD_PLAYBACK(fun.raw_(), "fdefinition");
       pc++;
@@ -878,6 +876,29 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       T_O* obj = vm.pop(sp);
       vm.push(sp, obj);
       vm.push(sp, obj);
+      pc++;
+      break;
+    }
+    case vm_fdesignator: {
+      DBG_VM1("fdesignator");
+      T_sp desig((gctools::Tagged)vm.pop(sp));
+      Function_sp fun = coerce::calledFunctionDesignator(desig);
+      vm.push(sp, fun.raw_());
+      VM_RECORD_PLAYBACK(run.raw_(), "fdesignator");
+      pc++;
+      break;
+    }
+    case vm_called_fdefinition: {
+      // This is like FDEFINITION except that we know the result will
+      // just be called. So, we can just use the cell directly
+      // without checking fboundedness, and this is just like const.
+      // (const would be different on an implementation that doesn't
+      //  have funcallable function cells.)
+      uint8_t c = *(++pc);
+      DBG_VM1("called-fdefinition %" PRIu8 "\n", c);
+      T_O* fun = literals[c];
+      vm.push(sp, fun);
+      VM_RECORD_PLAYBACK(fun, "called-fdefinition");
       pc++;
       break;
     }
@@ -1024,7 +1045,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long fdefinition %" PRIu16 "\n", n);
     T_sp cell((gctools::Tagged)literals[n]);
-    Function_sp fun = gc::As_assert<FunctionCell_sp>(cell)->real_function();
+    Function_sp fun = gc::As_assert<FunctionCell_sp>(cell)->fdefinition();
     vm.push(sp, fun.raw_());
     VM_RECORD_PLAYBACK(fun.raw_(),"long fdefinition");
     pc++;
@@ -1307,6 +1328,16 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     Symbol_sp sym = gc::As_assert<Symbol_sp>(sym_sp);
     T_sp value((gctools::Tagged)(vm.pop(sp)));
     sym->setf_symbolValue(value);
+    pc++;
+    break;
+  }
+  case vm_called_fdefinition: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM1("long called-fdefinition %" PRIu16 "\n", n);
+    T_O* fun = literals[n];
+    vm.push(sp, fun);
+    VM_RECORD_PLAYBACK(fun, "long called-fdefinition");
     pc++;
     break;
   }
