@@ -10,8 +10,6 @@
 #include <clasp/core/lispStream.h>
 #include <clasp/core/bytecode.h>
 #include <clasp/core/array.h>
-#include <clasp/core/primitives.h>
-#include <clasp/core/primitives.h> // cl__fdefinition
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
 
@@ -286,7 +284,11 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM1("call %" PRIu8 "\n", nargs);
       T_O* func = *(vm.stackref(sp, nargs));
       T_O** args = vm.stackref(sp, nargs-1);
-      ASSERT(gctools::tagged_generalp<T_O*>(func));
+      //ASSERT(gctools::tagged_generalp<T_O*>(func));
+      if (!(gctools::tagged_generalp<T_O*>(func))) {
+        T_sp tfun((gctools::Tagged)func);
+        SIMPLE_ERROR("Tried to call {} which is not a function", _rep_(tfun));
+      }
       vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
@@ -839,10 +841,17 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       return gctools::return_type(nil<T_O>().raw_(), 0);
     }
     case vm_fdefinition: {
+      // We have function cells in the literals vector. While these are
+      // themselves callable, we have to resolve the cell because we also
+      // use vm_fdefinition for lookup of #'foo.
+      // (This doesn't increase indirections in the call case, since when
+      //  called the cell would have to read its function anyway.)
       uint8_t c = *(++pc);
       DBG_VM1("fdefinition %" PRIu8 "\n", c);
-      T_sp sym((gctools::Tagged)literals[c]);
-      vm.push(sp, cl__fdefinition(sym).raw_());
+      T_sp cell((gctools::Tagged)literals[c]);
+      Function_sp fun = gc::As_assert<FunctionCell_sp>(cell)->real_function();
+      vm.push(sp, fun.raw_());
+      VM_RECORD_PLAYBACK(fun.raw_(), "fdefinition");
       pc++;
       break;
     }
@@ -1014,8 +1023,10 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long fdefinition %" PRIu16 "\n", n);
-    T_sp sym((gctools::Tagged)literals[n]);
-    vm.push(sp, cl__fdefinition(sym).raw_());
+    T_sp cell((gctools::Tagged)literals[n]);
+    Function_sp fun = gc::As_assert<FunctionCell_sp>(cell)->real_function();
+    vm.push(sp, fun.raw_());
+    VM_RECORD_PLAYBACK(fun.raw_(),"long fdefinition");
     pc++;
     break;
   }

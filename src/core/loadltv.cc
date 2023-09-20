@@ -9,7 +9,7 @@
 #include <clasp/core/core.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/ql.h>            // ql::list
-#include <clasp/core/primitives.h>    // cl__fdefinition
+#include <clasp/core/primitives.h>    // core__ensure_function_cell
 #include <clasp/core/bytecode.h>      // modules, functions
 #include <clasp/core/lispStream.h>    // I/O
 #include <clasp/core/hashTable.h>     // making hash tables
@@ -65,13 +65,13 @@ namespace core {
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 10
+#define BC_VERSION_MINOR 11
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
 
 const BCVersion min_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
-const BCVersion max_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR + 1};
+const BCVersion max_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
 
 static uint64_t ltv_header_decode(uint8_t *header) {
   if (header[0] != FASL_MAGIC_NUMBER_0 || header[1] != FASL_MAGIC_NUMBER_1 || header[2] != FASL_MAGIC_NUMBER_2 || header[3] != FASL_MAGIC_NUMBER_3)
@@ -611,10 +611,9 @@ struct loadltv {
   }
 
   void op_fcell() {
-    // Currently Clasp does not have FDEFNs, so this is just an identity.
     size_t index = read_index();
     T_sp name = get_ltv(read_index());
-    set_ltv(name, index);
+    set_ltv(core__ensure_function_cell(name), index);
   }
 
   void op_vcell() {
