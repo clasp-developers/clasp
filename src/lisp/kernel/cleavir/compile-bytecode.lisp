@@ -1129,10 +1129,13 @@
 (defmethod compile-instruction ((mnemonic (eql :fdefinition))
                                 inserter annot context &rest args)
   (declare (ignore annot))
-  (destructuring-bind (fname) args
+  (destructuring-bind (fcell) args
     (let* ((iblock (ast-to-bir::iblock inserter))
            (ifun (bir:function iblock))
            (module (bir:module ifun))
+           ;; FIXME: May not be a sufficiently reliable way to get
+           ;; the name from the cell in all cases? Probably ok though
+           (fname (core:function-name fcell))
            (const (bir:constant-in-module fname module))
            (attributes (clasp-cleavir::function-attributes fname))
            (fdef-out (make-instance 'bir:output
