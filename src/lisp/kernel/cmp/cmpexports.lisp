@@ -443,6 +443,7 @@
           new-table-index
           constants-table-reference
           constants-table-value
+          reference-function-cell
           load-time-value-from-thunk
           with-rtv
           arrange-thunk-as-top-level

@@ -411,6 +411,12 @@ Boehm and MPS use a single pointer"
 (defconstant +funcallable-instance.rack-index+ (c++-field-index :rack info.%funcallable-instance%))
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
 
+;;; Ditto for FunctionCell_O
+(define-c++-struct %function-cell% +general-tag+
+  ((%i8*% :vtable)
+   (%t*% :entry-point)
+   (%atomic<tsp>% :real-function)))
+
 ;;;
 ;;; The %symbol% type MUST match the layout and size of Symbol_O in symbol.h
 ;;;

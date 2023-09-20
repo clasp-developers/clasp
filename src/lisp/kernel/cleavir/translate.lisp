@@ -1662,14 +1662,12 @@
 (defmethod translate-simple-instruction ((inst bir:constant-fdefinition) abi)
   (declare (ignore abi))
   (let* ((output (bir:output inst))
-         (name (datum-name-as-string output)))
-    (out (let* ((constant (bir:input inst))
-                (value (bir:constant-value constant)))
-           (etypecase value
-             (symbol
-              (cmp:irc-fdefinition (translate-constant-value constant) name))
-             ((cons (eql setf) (cons symbol null))
-              (cmp:irc-setf-fdefinition (%literal-value (second value)) name))))
+         (name (datum-name-as-string output))
+         (cell (bir:input inst))
+         (index (gethash cell *constant-values*)))
+    (assert index () "Function cell not found!")
+    (out (cmp:irc-fdefinition
+          (literal:constants-table-value index :literal-name ""))
          output)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-symbol-value) abi)
@@ -2000,30 +1998,39 @@
 (defun get-or-create-lambda-name (bir)
   (or (bir:name bir) 'top-level))
 
-(defun allocate-constant (ir value read-only-p)
+(defgeneric allocate-constant (ir))
+
+(defun %allocate-constant (value read-only-p)
   (let ((immediate (core:create-tagged-immediate-value-or-nil value)))
-    (setf (gethash ir *constant-values*)
-          (if immediate
-              (cmp:irc-int-to-ptr (%i64 immediate) cmp:%t*%)
-              (literal:reference-literal value read-only-p)))))
+    (if immediate
+        (cmp:irc-int-to-ptr (%i64 immediate) cmp:%t*%)
+        (literal:reference-literal value read-only-p))))
+
+(defmethod allocate-constant ((ir bir:constant))
+  (%allocate-constant (bir:constant-value ir) t))
+
+(defmethod allocate-constant ((ir bir:load-time-value))
+  (if (eq cst-to-ast:*compiler* 'cl:compile-file)
+      ;; Allocate an index in the literal table
+      ;; for this load-time-value.
+      (literal:load-time-value-from-thunk
+       (compile-form (bir:form ir) *clasp-env*))
+      (%allocate-constant (eval (bir:form ir)) (bir:read-only-p ir))))
+
+(defmethod allocate-constant ((ir bir:function-cell))
+  (literal:reference-function-cell (bir:function-name ir)))
+
+(defmethod allocate-constant ((ir bir:variable-cell))
+  ;; Clasp just uses symbols as cells, at least for now.
+  (%allocate-constant (bir:variable-name ir) nil))
 
 ;;; Given a BIR module, allocate its constants and load time
 ;;; values. We translate immediates directly, and use an index into
 ;;; the literal table for non-immediate constants.
 (defun allocate-module-constants (module)
   (cleavir-set:doset (constant (bir:constants module))
-    (allocate-constant constant (bir:constant-value constant) t))
-  (if (eq cst-to-ast:*compiler* 'cl:compile-file)
-      (cleavir-set:doset (load-time-value (bir:load-time-values module))
-        (let ((form (bir:form load-time-value)))
-          (setf (gethash load-time-value *constant-values*)
-                ;; Allocate an index in the literal table
-                ;; for this load-time-value.
-                (literal:load-time-value-from-thunk
-                 (compile-form form *clasp-env*)))))
-      (cleavir-set:doset (load-time-value (bir:load-time-values module))
-        (allocate-constant load-time-value (eval (bir:form load-time-value))
-                           (bir:read-only-p load-time-value)))))
+    (setf (gethash constant *constant-values*)
+          (allocate-constant constant))))
 
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
   ;; Create llvm IR functions for each BIR function.

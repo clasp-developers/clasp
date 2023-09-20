@@ -171,6 +171,7 @@
   (entry-point-coalesce (make-similarity-table #'eq))
   (package-coalesce (make-similarity-table #'eq))
   (double-float-coalesce (make-similarity-table #'eql))
+  (fcell-coalesce (make-similarity-table #'equal))
   (llvm-values (make-hash-table))
 )
 
@@ -711,6 +712,27 @@ rewrite the slot in the literal table to store a closure."
                                   (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)
                                   (cmp:jit-constant-size_t index)
                                   (cmp:jit-constant-size_t (cmp:entry-point-reference-index entry-point-ref))))))
+
+;; Note that this is set up so that we don't need to actually create a
+;; function cell in the compiler's environment.
+(defun %reference-function-cell (fname)
+  (let* ((similarity (literal-machine-fcell-coalesce *literal-machine*))
+         (existing (find-similar fname similarity)))
+    (if existing
+        (datum-literal-node-creator existing)
+        (let ((datum (new-datum t)))
+          (add-similar fname datum similarity)
+          (add-creator "ltvc_ensure_fcell" datum fname
+                       (load-time-reference-literal fname t
+                                                    :toplevelp nil))))))
+
+(defun reference-function-cell (fname)
+  (let* ((data (if (cmp:generate-load-time-values)
+                   (%reference-function-cell fname)
+                   (run-time-reference-literal
+                    (core:ensure-function-cell fname) nil)))
+         (index (literal-node-index data)))
+    (values index t)))
 
 (defparameter *ltv-trap* nil)
 

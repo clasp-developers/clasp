@@ -483,11 +483,16 @@
          (bir:come-from var))
        context))))
 
+(defun inserter-module (inserter)
+  ;; FIXME: Export a-t-b:iblock or something.
+  (bir:module (bir:function (ast-to-bir::iblock inserter))))
+
 (defun inserter-constant (value inserter)
-  (let* ((iblock (ast-to-bir::iblock inserter)) ; FIXME
-         (ifun (bir:function iblock))
-         (module (bir:module ifun)))
-    (bir:constant-in-module value module)))
+  (bir:constant-in-module value (inserter-module inserter)))
+(defun inserter-vcell (symbol inserter)
+  (bir:variable-cell-in-module symbol (inserter-module inserter)))
+(defun inserter-fcell (fname inserter)
+  (bir:function-cell-in-module fname (inserter-module inserter)))
 
 (defun compile-constant (value inserter)
   (let* ((const (inserter-constant value inserter))
@@ -1088,7 +1093,7 @@
   (destructuring-bind (symbol) args
     (let* ((next (mapcar #'bt:block-entry-extra
                          (context-successors context)))
-           (const (inserter-constant symbol inserter))
+           (const (inserter-vcell symbol inserter))
            (value (stack-pop context))
            (bind (ast-to-bir:terminate inserter 'bir:constant-bind
                                        :inputs (list const value)
@@ -1099,7 +1104,7 @@
                                 inserter annot context &rest args)
   (declare (ignore annot))
   (destructuring-bind (symbol) args
-    (let ((const (inserter-constant symbol inserter))
+    (let ((const (inserter-vcell symbol inserter))
           (out (make-instance 'bir:output :name symbol)))
       (ast-to-bir:insert inserter 'bir:constant-symbol-value
                          :inputs (list const) :outputs (list out))
@@ -1109,7 +1114,7 @@
                                 inserter annot context &rest args)
   (declare (ignore annot))
   (destructuring-bind (symbol) args
-    (let ((const (inserter-constant symbol inserter))
+    (let ((const (inserter-vcell symbol inserter))
           (in (stack-pop context)))
       (ast-to-bir:insert inserter 'bir:set-constant-symbol-value
                          :inputs (list const in)))))
@@ -1130,13 +1135,10 @@
                                 inserter annot context &rest args)
   (declare (ignore annot))
   (destructuring-bind (fcell) args
-    (let* ((iblock (ast-to-bir::iblock inserter))
-           (ifun (bir:function iblock))
-           (module (bir:module ifun))
-           ;; FIXME: May not be a sufficiently reliable way to get
+    (let* (;; FIXME: May not be a sufficiently reliable way to get
            ;; the name from the cell in all cases? Probably ok though
            (fname (core:function-name fcell))
-           (const (bir:constant-in-module fname module))
+           (const (inserter-fcell fname inserter))
            (attributes (clasp-cleavir::function-attributes fname))
            (fdef-out (make-instance 'bir:output
                        :name fname :attributes attributes)))
@@ -1150,11 +1152,8 @@
                                 inserter annot context &rest args)
   (declare (ignore annot))
   (destructuring-bind (fcell) args
-    (let* ((iblock (ast-to-bir::iblock inserter))
-           (ifun (bir:function iblock))
-           (module (bir:module ifun))
-           (fname (core:function-name fcell))
-           (const (bir:constant-in-module fname module))
+    (let* ((fname (core:function-name fcell))
+           (const (inserter-fcell fname inserter))
            (attributes (clasp-cleavir::function-attributes fname))
            (fdef-out (make-instance 'bir:output
                        :name fname :attributes attributes)))
@@ -1167,11 +1166,8 @@
   ;; Just call CORE:COERCE-CALLED-FDESIGNATOR.
   (declare (ignore annot))
   (let* ((desig (stack-pop context))
-         (iblock (ast-to-bir::iblock inserter))
-         (ifun (bir:function iblock))
-         (module (bir:module ifun))
          (fname 'core:coerce-called-fdesignator)
-         (const (bir:constant-in-module fname module))
+         (const (inserter-fcell fname inserter))
          (attributes (clasp-cleavir::function-attributes fname))
          (fdef-out (make-instance 'bir:output
                      :name fname :attributes attributes))

@@ -439,6 +439,14 @@ LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, ch
   NO_UNWIND_END();
 }
 
+LtvcReturnVoid ltvc_ensure_fcell(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* fname)
+{
+  NO_UNWIND_BEGIN();
+  T_sp tfname((gctools::Tagged)fname);
+  FunctionCell_sp fcell = core__ensure_function_cell(tfname);
+  LTVCRETURN holder->setTaggedIndex(tag,index,fcell.tagged_());
+  NO_UNWIND_END();
+}
 
 LtvcReturnVoid ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* package_name_t )
 {

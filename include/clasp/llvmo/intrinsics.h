@@ -79,6 +79,7 @@ LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char ta
 
 LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t, size_t localEntryPointIndex );
 
+LtvcReturn ltvc_ensure_fcell(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* fname);
 
 
 LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* package_name_t );
