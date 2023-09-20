@@ -185,7 +185,7 @@
   (let ((module (llvm-create-module (format nil "module~a" (ast-job-form-index job))))
         (core:*current-source-pos-info* (ast-job-source-pos-info job)))
     (with-module (:module module
-                  :optimize (when optimize #'optimize-module-for-compile-file)
+                  :optimize (when optimize #'llvm-sys:optimize-module)
                   :optimize-level optimize-level)
       (with-debug-info-generator (:module module
                                   :pathname *compile-file-source-debug-pathname*)

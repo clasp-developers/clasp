@@ -1021,11 +1021,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_class_kind(core::SmallMap_O);
      Init_class_kind(mpip::Mpi_O);
      Init_class_kind(core::ExternalObject_O);
-     Init_class_kind(llvmo::Pass_O);
-     Init_class_kind(llvmo::ModulePass_O);
-     Init_class_kind(llvmo::ImmutablePass_O);
-     Init_class_kind(llvmo::TargetLibraryInfoWrapperPass_O);
-     Init_class_kind(llvmo::FunctionPass_O);
      Init_class_kind(llvmo::ExecutionEngine_O);
      Init_class_kind(llvmo::MCSubtargetInfo_O);
      Init_class_kind(llvmo::TargetSubtargetInfo_O);
@@ -1038,7 +1033,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_class_kind(llvmo::IntegerType_O);
      Init_class_kind(llvmo::JITDylib_O);
      Init_class_kind(llvmo::DIContext_O);
-     Init_class_kind(llvmo::TargetPassConfig_O);
      Init_class_kind(llvmo::IRBuilderBase_O);
      Init_class_kind(llvmo::IRBuilder_O);
      Init_class_kind(llvmo::APFloat_O);
@@ -1046,9 +1040,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_class_kind(llvmo::DIBuilder_O);
      Init_class_kind(llvmo::SectionedAddress_O);
      Init_class_kind(llvmo::EngineBuilder_O);
-     Init_class_kind(llvmo::PassManagerBase_O);
-     Init_class_kind(llvmo::PassManager_O);
-     Init_class_kind(llvmo::FunctionPassManager_O);
      Init_class_kind(llvmo::Metadata_O);
      Init_class_kind(llvmo::MDNode_O);
      Init_class_kind(llvmo::DINode_O);
@@ -1118,7 +1109,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
      Init_class_kind(llvmo::TargetOptions_O);
      Init_class_kind(llvmo::ObjectFile_O);
      Init_class_kind(llvmo::LLVMContext_O);
-     Init_class_kind(llvmo::PassManagerBuilder_O);
      Init_class_kind(llvmo::Module_O);
      Init_class_kind(llvmo::Target_O);
      Init_class_kind(llvmo::Linker_O);

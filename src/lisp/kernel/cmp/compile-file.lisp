@@ -144,27 +144,20 @@ and the pathname of the source file - this will also be used as the module initi
                (target-options (llvm-sys:make-target-options)))
           (multiple-value-bind (target msg)
               (llvm-sys:target-registry-lookup-target "" triple)
-            (unless target (error msg))
-            (let* ((target-machine (llvm-sys:create-target-machine target
-                                                                   (llvm-sys:get-triple triple)
-                                                                   ""
-                                                                   ""
-                                                                   target-options
-                                                                   reloc-model
-                                                                   (code-model :jit nil :target-faso-file target-faso-file)
-                                                                   'llvm-sys:code-gen-opt-default
-                                                                   NIL ; JIT?
-                                                                   ))
-                   (pm (llvm-sys:make-pass-manager))
-                   (target-pass-config (llvm-sys:create-pass-config target-machine pm))
-                   (_ (llvm-sys:set-enable-tail-merge target-pass-config nil))
-                   (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
-                   (data-layout (llvm-sys:create-data-layout target-machine)))
-              (declare (ignore _))
-              (llvm-sys:set-data-layout module data-layout)
-              (llvm-sys:pass-manager-add pm tli)
-              (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module)))))))
-
+            (unless target
+              (error msg))
+            (llvm-sys:emit-module (llvm-sys:create-target-machine target
+                                                                  (llvm-sys:get-triple triple)
+                                                                  ""
+                                                                  ""
+                                                                  target-options
+                                                                  reloc-model
+                                                                  (code-model :jit nil :target-faso-file target-faso-file)
+                                                                  'llvm-sys:code-gen-opt-default
+                                                                  nil)
+                                  output-stream
+                                  nil ; dwo-stream for dwarf objects
+                                  file-type module))))))
 
 (defun compile-file-generate-obj-asm (module output-pathname &key file-type (reloc-model 'llvm-sys:reloc-model-undefined))
   (with-atomic-file-rename (temp-output-pathname output-pathname)
@@ -204,7 +197,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
     (unless module (error "module is NIL"))
     (cmp-log "About to with-module%N")
     (with-module (:module module
-                  :optimize (when optimize #'optimize-module-for-compile-file)
+                  :optimize (when optimize #'llvm-sys:optimize-module)
                   :optimize-level optimize-level)
       ;; (1) Generate the code
       (cmp-log "About to with-debug-info-generator%N")
@@ -383,7 +376,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
     (llvm-link fasl-output-file :input-files (list input-file) :input-type :bitcode)))
 
 (defun compile-file-output-module-to-faso (module output-file
-                                           &key position (output-bitcode t))
+                                           &key position output-bitcode)
   "Generate a faso file from the module"
   (when output-bitcode
     (let ((temp-bitcode-file
@@ -403,7 +396,7 @@ Compile a Lisp source stream and return a corresponding LLVM module."
     (core:write-faso output-file (list stream) :start-object-id position)))
 
 (defun compile-file-output-module (module output-file output-type type
-                                   &key position (output-bitcode t))
+                                   &key position output-bitcode)
   (ensure-directories-exist output-file)
   (ecase output-type
     ((:object)

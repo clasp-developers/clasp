@@ -57,8 +57,12 @@ THE SOFTWARE.
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/MDBuilder.h>
 #include <llvm/IR/LegacyPassManager.h>
-#include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <llvm/Passes/PassBuilder.h>
+#if LLVM_VERSION_MAJOR < 17
 #include <llvm/ADT/Triple.h>
+#else
+#include <llvm/TargetParser/Triple.h>
+#endif
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Transforms/Scalar.h>
@@ -394,61 +398,6 @@ struct to_object<llvm::orc::JITDylib&> {
   }
 };
 };
-    ;
-
-namespace llvmo {
-FORWARD(Pass);
-class Pass_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::Pass, Pass_O, "Pass", core::ExternalObject_O);
-  typedef llvm::Pass ExternalType;
-  typedef llvm::Pass *PointerToExternalType;
-
-protected:
-  PointerToExternalType _ptr;
-
-public:
-  virtual void *externalObject() const {
-    return this->_ptr;
-  };
-  PointerToExternalType wrappedPtr() const {
-    return this->_ptr;
-  }
-
-public:
-  void set_wrapped(PointerToExternalType ptr) {
-    /* delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  Pass_O() : Base(), _ptr(NULL){};
-  ~Pass_O() {
-    /* delete _ptr;*/
-    _ptr = NULL;
-  }
-
-}; // Pass_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-struct from_object<llvm::Pass *, std::true_type> {
-  typedef llvm::Pass *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::Pass_sp>(object)->wrappedPtr()){};
-};
-};
-
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::Pass *> {
-  static core::T_sp convert(llvm::Pass *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::Pass_O, llvm::Pass *>(ptr)));
-  }
-};
-};
-    ;
 
 namespace llvmo {
 FORWARD(AttributeSet);
@@ -852,7 +801,7 @@ struct from_object<llvm::CodeGenOpt::Level, std::true_type> {
   }
 };
 
-#if __clang_major__ < 16
+#if LLVM_VERSION_MAJOR < 16
 template <>
   struct from_object<llvm::Optional<llvm::Reloc::Model>, std::true_type> {
   typedef llvm::Optional<llvm::Reloc::Model> DeclareType;
@@ -943,7 +892,6 @@ struct gctools::GCInfo<llvmo::TargetMachine_O> {
 
 namespace llvmo {
 FORWARD(TargetMachine);
-FORWARD(PassManager);
 class TargetMachine_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetMachine, TargetMachine_O, "TargetMachine", core::ExternalObject_O);
   typedef llvm::TargetMachine ExternalType;
@@ -965,19 +913,13 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  
-  /*! Return (values CodeGenFileType-symbol) */
-  core::T_sp addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
-                                                  core::T_sp stream_or_symbol,
-                                                  core::T_sp dwo_stream,
-                                                  llvm::CodeGenFileType,
-                                                  Module_sp module);
+
+  core::T_sp emitModule(core::T_sp stream, core::T_sp dwo_stream, llvm::CodeGenFileType FileType, Module_sp module);
 
   TargetMachine_O() : Base(), _ptr(NULL){};
   ~TargetMachine_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
-//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
                                             printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
@@ -1032,7 +974,6 @@ template <typename T, typename U>
 }
 
 namespace llvmo {
-FORWARD(PassManagerBase);
 FORWARD(LLVMTargetMachine);
 class LLVMTargetMachine_O : public TargetMachine_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::LLVMTargetMachine, LLVMTargetMachine_O, "LLVMTargetMachine", TargetMachine_O);
@@ -1046,10 +987,6 @@ public:
     this->_ptr = ptr;
   }
 
-  //        static LLVMTargetMachine_sp makeLLVMTargetMachine(
-  bool LLVMTargetMachine_addPassesToEmitFile(PassManagerBase_sp pm,
-                                             core::T_sp stream,
-                                             core::Symbol_sp fileType);
   LLVMTargetMachine_O() : Base(){};
   ~LLVMTargetMachine_O() {}
 
@@ -1076,295 +1013,6 @@ struct to_object<llvm::LLVMTargetMachine *> {
   }
 };
 };
-    ;
-
-namespace llvmo {
-FORWARD(FunctionPass);
-class FunctionPass_O : public Pass_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::FunctionPass, FunctionPass_O, "FunctionPass", Pass_O);
-  typedef llvm::FunctionPass ExternalType;
-  typedef llvm::FunctionPass *PointerToExternalType;
-
-public:
-  PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /* delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  FunctionPass_O() : Base(){};
-  ~FunctionPass_O() {}
-
-}; // FunctionPass_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-struct from_object<llvm::FunctionPass *, std::true_type> {
-  typedef llvm::FunctionPass *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::FunctionPass_sp>(object)->wrappedPtr()){};
-};
-};
-    ;
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::FunctionPass *> {
-  static core::T_sp convert(llvm::FunctionPass *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::FunctionPass_O, llvm::FunctionPass *>(ptr)));
-  }
-};
-};
-    ;
-
-
-template <>
-struct gctools::GCInfo<llvmo::TargetPassConfig_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-
-namespace llvmo {
-FORWARD(TargetPassConfig);
-FORWARD(PassManager);
-class TargetPassConfig_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetPassConfig, TargetPassConfig_O, "TargetPassConfig", core::ExternalObject_O);
-  typedef llvm::TargetPassConfig ExternalType;
-  typedef llvm::TargetPassConfig *PointerToExternalType;
-
-protected:
-  PointerToExternalType _ptr;
-
-public:
-  virtual void *externalObject() const {
-    return this->_ptr;
-  };
-  PointerToExternalType wrappedPtr() const {
-    return this->_ptr;
-  }
-
-public:
-  void set_wrapped(PointerToExternalType ptr) {
-    delete this->_ptr;
-    this->_ptr = ptr;
-  }
-
-  TargetPassConfig_O() : Base(), _ptr(NULL){};
-  ~TargetPassConfig_O() {
-    if (_ptr != NULL) {
-      auto ptr = this->_ptr;
-//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr] (void) {
-#ifdef DEBUG_DTORS
-                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-                                            delete ptr;
-                                          });
-      _ptr = NULL;
-    };
-  }
-}; // TargetPassConfig_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-struct from_object<llvm::TargetPassConfig *, std::true_type> {
-  typedef llvm::TargetPassConfig *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(object.nilp() ? NULL : gc::As<llvmo::TargetPassConfig_sp>(object)->wrappedPtr()){};
-};
-};
-
-/* to_object translators */
-
-namespace translate {
-  template <>
-    struct to_object<llvm::TargetPassConfig *> {
-    static core::T_sp convert(llvm::TargetPassConfig *ptr) {
-      return ((core::RP_Create_wrapped<llvmo::TargetPassConfig_O, llvm::TargetPassConfig *>(ptr)));
-    }
-  };
-};
-
-namespace translate {
-  template <>
-    struct to_object<llvm::TargetPassConfig&> {
-    static core::T_sp convert(llvm::TargetPassConfig& obj) {
-      return ((core::RP_Create_wrapped<llvmo::TargetPassConfig_O, llvm::TargetPassConfig *>(&obj)));
-    }
-  };
-};
-
-
-
-
-
-
-namespace llvmo {
-FORWARD(ModulePass);
-class ModulePass_O : public Pass_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::ModulePass, ModulePass_O, "ModulePass", Pass_O);
-  typedef llvm::ModulePass ExternalType;
-  typedef llvm::ModulePass *PointerToExternalType;
-
-public:
-  PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /* delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  ModulePass_O() : Base(){};
-  ~ModulePass_O() {}
-
-}; // ModulePass_O
-}; // llvmo
-
-namespace translate {
-template <>
-struct from_object<llvm::ModulePass *, std::true_type> {
-  typedef llvm::ModulePass *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::ModulePass_sp>(object)->wrappedPtr()){};
-};
-};
-    ;
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::ModulePass *> {
-  static core::T_sp convert(llvm::ModulePass *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::ModulePass_O, llvm::ModulePass *>(ptr)));
-  }
-};
-};
-    ;
-
-namespace llvmo {
-FORWARD(ImmutablePass);
-/*! ImmutablePass_O doesn't own its pointer because ownership is given to the PassManager */
-class ImmutablePass_O : public ModulePass_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::ImmutablePass, ImmutablePass_O, "ImmutablePass", ModulePass_O);
-  typedef llvm::ImmutablePass ExternalType;
-  typedef llvm::ImmutablePass *PointerToExternalType;
-
-public:
-  PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /* delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  ImmutablePass_O() : Base(){};
-  ~ImmutablePass_O() {}
-
-}; // ImmutablePass_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-struct from_object<llvm::ImmutablePass *, std::true_type> {
-  typedef llvm::ImmutablePass *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::ImmutablePass_sp>(object)->wrappedPtr()){};
-};
-};
-    ;
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::ImmutablePass *> {
-  static core::T_sp convert(llvm::ImmutablePass *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::ImmutablePass_O, llvm::ImmutablePass *>(ptr)));
-  }
-};
-};
-    ;
-
-
-template <>
-struct gctools::GCInfo<llvmo::PassManagerBase_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-
-namespace llvmo {
-FORWARD(PassManagerBase);
-class PassManagerBase_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::legacy::PassManagerBase, PassManagerBase_O, "PassManagerBase", core::ExternalObject_O);
-  typedef llvm::legacy::PassManagerBase ExternalType;
-  typedef llvm::legacy::PassManagerBase *PointerToExternalType;
-
-protected:
-  PointerToExternalType _ptr;
-
-public:
-  virtual void *externalObject() const {
-    return this->_ptr;
-  };
-  PointerToExternalType wrappedPtr() const {
-    return this->_ptr;
-  }
-
-public:
-  void set_wrapped(PointerToExternalType ptr) {
-    delete this->_ptr;
-    this->_ptr = ptr;
-  }
-  PassManagerBase_O() : Base(), _ptr(NULL){};
-  virtual ~PassManagerBase_O() {
-    if (_ptr != NULL) {
-      auto ptr = this->_ptr;
-//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr] (void) {
-#ifdef DEBUG_DTORS
-                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-                                            delete ptr;
-                                          });
-      _ptr = NULL;
-    };
-  }
-
-}; // PassManagerBase_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-  struct from_object<llvm::legacy::PassManagerBase *, std::true_type> {
-  typedef llvm::legacy::PassManagerBase *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::PassManagerBase_sp>(object)->wrappedPtr()){};
-};
-template <>
-  struct from_object<llvm::legacy::PassManagerBase &, std::true_type> {
-  typedef llvm::legacy::PassManagerBase &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*gc::As<llvmo::PassManagerBase_sp>(object)->wrappedPtr()){};
-  ~from_object() {/*non trivial*/};
-};
-};
-    ;
-/* to_object translators */
-
-namespace translate {
-template <>
-  struct to_object<llvm::legacy::PassManagerBase *> {
-  static core::T_sp convert(llvm::legacy::PassManagerBase *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::PassManagerBase_O, llvm::legacy::PassManagerBase *>(ptr)));
-  }
-};
-};
-    ;
 
 namespace llvmo {
 FORWARD(Value);
@@ -2226,197 +1874,6 @@ struct to_object<llvm::ExecutionEngine *> {
   }
 };
 };
-    ;
-
-
-//
-// This is needed for llvm3.7     What did I do before this?????
-//
-namespace llvmo {
-FORWARD(TargetLibraryInfoWrapperPass);
-class TargetLibraryInfoWrapperPass_O : public ImmutablePass_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetLibraryInfoWrapperPass, TargetLibraryInfoWrapperPass_O, "TargetLibraryInfoWrapperPass", ImmutablePass_O);
-  typedef llvm::TargetLibraryInfoWrapperPass ExternalType;
-  typedef llvm::TargetLibraryInfoWrapperPass *PointerToExternalType;
-
-public:
-  static TargetLibraryInfoWrapperPass_sp make(llvm::Triple * triple);
-
-public:
-  PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    // delete this->_ptr;
-    this->_ptr = ptr;
-  }
-  TargetLibraryInfoWrapperPass_O() : Base(){};
-  ~TargetLibraryInfoWrapperPass_O() { /* delete this->_ptr;*/
-  }
-}; // TargetLibraryInfoWrapperPass_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-struct from_object<llvm::TargetLibraryInfoWrapperPass *, std::true_type> {
-  typedef llvm::TargetLibraryInfoWrapperPass *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(object.as<llvmo::TargetLibraryInfoWrapperPass_O>()->wrappedPtr()){};
-};
-template <>
-struct from_object<llvm::TargetLibraryInfoWrapperPass const &, std::true_type> {
-  typedef llvm::TargetLibraryInfoWrapperPass const &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*(object.as<llvmo::TargetLibraryInfoWrapperPass_O>()->wrappedPtr())){};
-};
-template <>
-struct to_object<llvm::TargetLibraryInfoWrapperPass *> {
-  static core::T_sp convert(llvm::TargetLibraryInfoWrapperPass *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::TargetLibraryInfoWrapperPass_O, llvm::TargetLibraryInfoWrapperPass *>(ptr)));
-  }
-};
-template <>
-struct to_object<const llvm::TargetLibraryInfoWrapperPass *> {
-  static core::T_sp convert(const llvm::TargetLibraryInfoWrapperPass *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::TargetLibraryInfoWrapperPass_O, llvm::TargetLibraryInfoWrapperPass *>(const_cast<llvm::TargetLibraryInfoWrapperPass *>(ptr))));
-  }
-};
-};
-
-
-template <>
-struct gctools::GCInfo<llvmo::FunctionPassManager_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace llvmo {
-FORWARD(FunctionPassManager);
-class FunctionPassManager_O : public PassManagerBase_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::legacy::FunctionPassManager, FunctionPassManager_O, "FUNCTION-PASS-MANAGER", PassManagerBase_O);
-  typedef llvm::legacy::FunctionPassManager ExternalType;
-  typedef llvm::legacy::FunctionPassManager *PointerToExternalType;
-
-public:
-  static FunctionPassManager_sp make(llvm::Module *module);
-
-public:
-  PointerToExternalType wrappedPtr() { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    delete this->_ptr;
-    this->_ptr = ptr;
-  }
-  FunctionPassManager_O() : Base(){};
-  ~FunctionPassManager_O() {
-    if ( this->_ptr!=NULL ) {
-      auto ptr = this->_ptr;
-//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr] (void) {
-#ifdef DEBUG_DTORS
-                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-                                            delete ptr;
-                                          });
-      this->_ptr = NULL;
-    }
-  }
-
-public:
-}; // FunctionPassManager_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-  struct from_object<llvm::legacy::FunctionPassManager *, std::true_type> {
-  typedef llvm::legacy::FunctionPassManager *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) { this->_v = gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr(); };
-};
-template <>
-  struct from_object<llvm::legacy::FunctionPassManager &, std::true_type> {
-  typedef llvm::legacy::FunctionPassManager &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr()){};
-  ~from_object() {/*non trivial*/};
-};
-};
-    ;
-/* to_object translators */
-
-namespace translate {
-template <>
-  struct to_object<llvm::legacy::FunctionPassManager *> {
-  static core::T_sp convert(llvm::legacy::FunctionPassManager *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::FunctionPassManager_O, llvm::legacy::FunctionPassManager *>(ptr)));
-  }
-};
-};
-    ;
-
-template <>
-struct gctools::GCInfo<llvmo::PassManager_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace llvmo {
-FORWARD(PassManager);
-class PassManager_O : public PassManagerBase_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::legacy::PassManager, PassManager_O, "PASS-MANAGER", PassManagerBase_O);
-  typedef llvm::legacy::PassManager ExternalType;
-  typedef llvm::legacy::PassManager *PointerToExternalType;
-
-public:
-  static PassManager_sp make();
-
-public:
-  PointerToExternalType wrappedPtr() { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    delete this->_ptr;
-    this->_ptr = ptr;
-  }
-  PassManager_O() : Base(){};
-  virtual ~PassManager_O() {
-    if (this->_ptr) {
-      auto ptr = this->_ptr;
-//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr] (void) {
-#ifdef DEBUG_DTORS
-                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-                                            delete ptr;
-                                          });
-      this->_ptr = NULL;
-    }
-  }
-
-public:
-}; // PassManager_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-  struct from_object<llvm::legacy::PassManager *, std::true_type> {
-  typedef llvm::legacy::PassManager *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) { this->_v = gc::As<llvmo::PassManager_sp>(object)->wrappedPtr(); };
-};
-};
-    ;
-/* to_object translators */
-
-namespace translate {
-template <>
-  struct to_object<llvm::legacy::PassManager *> {
-  static core::T_sp convert(llvm::legacy::PassManager *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::PassManager_O, llvm::legacy::PassManager *>(ptr)));
-  }
-};
-};
-    ;
 
 namespace llvmo {
 FORWARD(EngineBuilder);
@@ -2482,98 +1939,6 @@ struct from_object<llvm::EngineBuilder *, std::true_type> {
   };
 };
 };
-    ;
-/* to_object translators */
-
-
-template <>
-struct gctools::GCInfo<llvmo::PassManagerBuilder_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace llvmo {
-FORWARD(PassManagerBuilder);
-class PassManagerBuilder_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::PassManagerBuilder, PassManagerBuilder_O, "PASS-MANAGER-BUILDER", core::ExternalObject_O);
-  typedef llvm::PassManagerBuilder ExternalType;
-  typedef llvm::PassManagerBuilder *PointerToExternalType;
-
-protected:
-  PointerToExternalType _ptr;
-public:
-  virtual void *externalObject() const {
-    return this->_ptr;
-  };
-  PointerToExternalType wrappedPtr() const {
-    return this->_ptr;
-  }
-
-public:
-  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    delete this->_ptr;
-    this->_ptr = ptr;
-  }
-  PassManagerBuilder_O() : Base(), _ptr(NULL){
-#ifdef DEBUG_FINALIZERS
-    printf("%s:%d:%s creating PassManagerBuilder_O at %p  badge: 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, this, this->_badge);
-#endif
-  };
-#ifdef DEBUG_FINALIZERS  
-  PassManagerBuilder_O(const PassManagerBuilder_O& orig) : core::ExternalObject_O(orig) {
-    printf("%s:%d:%s copy ctor PassManagerBuilder_O from %p to %p\n", __FILE__, __LINE__, __FUNCTION__, &orig, this);
-    this->_ptr = orig._ptr;
-  }
-#endif
-  ~PassManagerBuilder_O() {
-#ifdef DEBUG_FINALIZERS    
-    printf("%s:%d:%s destructor for object this=%p this->_ptr=%p\n", __FILE__, __LINE__, __FUNCTION__, this, this->_ptr );
-#endif
-    if (_ptr != NULL) {
-      auto ptr = this->_ptr;
-//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr] (void) {
-#ifdef DEBUG_DTORS
-                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-                                            delete ptr;
-                                          });
-      _ptr = NULL;
-    };
-  }
-  static PassManagerBuilder_sp make();
-
-  /*! Create the ExecutionEngine */
-  ExecutionEngine_sp createExecutionEngine();
-
-  /*! kind can be INTERPRETER or JIT */
-  void setEngineKind(core::Symbol_sp kind);
-
-  /*! Set the target options (see llvm:PassManagerBuilder::setTargetOptions).
-	  Options are passed as a p-list with keyword/value pairs like :jitemit-debug-info t.
-	*/
-  //	void setTargetOptions(TargetOptions_sp targetOptions);
-
-  /*! Set to use MCJIT */
-  void setUseMCJIT(bool mcjit);
-
-}; // PassManagerBuilder_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-  struct from_object<llvm::PassManagerBuilder *, std::true_type> {
-  typedef llvm::PassManagerBuilder *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) {
-    this->_v = (gc::As<llvmo::PassManagerBuilder_sp>(object)->wrappedPtr());
-  };
-};
-};
-    ;
 /* to_object translators */
 
 namespace llvmo {
@@ -4708,7 +4073,7 @@ ENUM_TRANSLATOR(llvm::GlobalValue::UnnamedAddr,llvmo::_sym_STARGlobalValueUnname
 
 
 
-#if __clang_major__ < 16
+#if LLVM_VERSION_MAJOR < 16
 namespace translate {
  template <typename T>
 struct from_object<llvm::Optional<T>> {

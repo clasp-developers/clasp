@@ -70,7 +70,11 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/LTO/legacy/ThinLTOCodeGenerator.h>
 #include <llvm/Analysis/ModuleSummaryAnalysis.h>
 #include <llvm/Analysis/ProfileSummaryInfo.h>
+#if LLVM_VERSION_MAJOR < 17
 #include <llvm/ADT/Triple.h>
+#else
+#include <llvm/TargetParser/Triple.h>
+#endif
 #include <llvm/IR/Module.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Constants.h>
@@ -558,31 +562,14 @@ CL_DEFUN void llvm_sys__sanity_check_module(Module_sp module, int depth)
 
 namespace llvmo {
 
-
 CL_LISPIFY_NAME(createTargetMachine);
+#if LLVM_VERSION_MAJOR < 17
 CL_EXTERN_DEFMETHOD(Target_O, (llvm::TargetMachine *(llvm::Target::*)(llvm::StringRef, llvm::StringRef, llvm::StringRef, const llvm::TargetOptions &, Optional<Reloc::Model>, Optional<CodeModel::Model>, CodeGenOpt::Level, bool) const)&llvm::Target::createTargetMachine);
-
-
-DOCGROUP(clasp);
-CL_DEFUN TargetPassConfig_sp llvm_sys__createPassConfig(TargetMachine_sp targetMachine, PassManagerBase_sp pmb) {
-  llvm::TargetMachine* tm = targetMachine->wrappedPtr();
-  llvm::LLVMTargetMachine* ltm = dynamic_cast<llvm::LLVMTargetMachine*>(tm);
-  if (ltm==NULL) {
-    SIMPLE_ERROR("Could not get LLVMTargetMachine");
-  }
-  llvm::TargetPassConfig* tpc = ltm->createPassConfig(*pmb->wrappedPtr());
-  TargetPassConfig_sp tpcsp = gc::As_unsafe<TargetPassConfig_sp>(translate::to_object<llvm::TargetPassConfig*>::convert(tpc));
-  return tpcsp;
-}
-
-
-CL_LISPIFY_NAME(setEnableTailMerge);
-CL_EXTERN_DEFMETHOD(TargetPassConfig_O, &llvm::TargetPassConfig::setEnableTailMerge);
-
-;
+#else
+CL_EXTERN_DEFMETHOD(Target_O, (llvm::TargetMachine *(llvm::Target::*)(llvm::StringRef, llvm::StringRef, llvm::StringRef, const llvm::TargetOptions &, std::optional<Reloc::Model>, std::optional<CodeModel::Model>, CodeGenOpt::Level, bool) const)&llvm::Target::createTargetMachine);
+#endif
 
 }; // llvmo
-
 
 namespace llvmo {
 
@@ -599,22 +586,23 @@ struct Safe_raw_pwrite_stream {
   }
 };
 
-CL_LISPIFY_NAME("addPassesToEmitFileAndRunPassManager");
-CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
-                                                                              core::T_sp stream,
-                                                                              core::T_sp dwo_stream,
-                                                                              llvm::CodeGenFileType FileType,
-                                                                              Module_sp module) {
+CL_LISPIFY_NAME("emitModule")
+CL_DEFMETHOD core::T_sp TargetMachine_O::emitModule(core::T_sp stream, core::T_sp dwo_stream, llvm::CodeGenFileType FileType,
+                                                    Module_sp module) {
   if (stream.nilp()) {
     SIMPLE_ERROR("You must pass a valid stream");
   }
+
+  llvm::TargetMachine *TM = this->wrappedPtr();
+
   Safe_raw_pwrite_stream ostream;
   llvm::SmallString<1024> stringOutput;
   bool stringOutputStream = false;
+
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
     ostream.set_stream(new llvm::raw_svector_ostream(stringOutput));
     stringOutputStream = true;
-  } else if ( stream == kw::_sym_simple_vector_byte8 ) {
+  } else if (stream == kw::_sym_simple_vector_byte8) {
     (void)sos;
     ostream.set_stream(new llvm::raw_svector_ostream(stringOutput));
   } else if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
@@ -625,9 +613,11 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
   } else {
     SIMPLE_ERROR("Illegal file type {} for addPassesToEmitFileAndRunPassManager", _rep_(stream));
   }
+
   llvm::SmallString<1024> dwo_stringOutput;
   Safe_raw_pwrite_stream dwo_ostream;
   bool dwo_stringOutputStream = false;
+
   if (core::StringOutputStream_sp sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
     (void)sos;
     dwo_ostream.set_stream(new llvm::raw_svector_ostream(dwo_stringOutput));
@@ -642,23 +632,39 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
   } else {
     SIMPLE_ERROR("Illegal file type {} for addPassesToEmitFileAndRunPassManager", _rep_(dwo_stream));
   }
-  if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), *ostream.get_stream(), dwo_ostream.get_stream(), FileType, true, nullptr)) {
+
+  llvm::legacy::PassManager PM;
+
+  llvm::LLVMTargetMachine* LTM = dynamic_cast<llvm::LLVMTargetMachine*>(TM);
+  if (LTM) {
+    llvm::TargetPassConfig* TPC = LTM->createPassConfig(PM);
+    // Disable tail merges to improve debug info accuracy
+    TPC->setEnableTailMerge(false);
+  }
+
+  PM.add(new llvm::TargetLibraryInfoWrapperPass(TM->getTargetTriple()));
+  module->wrappedPtr()->setDataLayout(TM->createDataLayout());
+  if (TM->addPassesToEmitFile(PM, *ostream.get_stream(), dwo_ostream.get_stream(), FileType, true, nullptr)) {
     SIMPLE_ERROR("Could not generate file type");
   }
-  passManager->wrappedPtr()->run(*module->wrappedPtr());
+  PM.run(*module->wrappedPtr());
+
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
     sos->fill(stringOutput.c_str());
   } else if (stream == kw::_sym_simple_vector_byte8) {
-    SYMBOL_EXPORT_SC_(KeywordPkg,simple_vector_byte8);
-    core::SimpleVector_byte8_t_sp vector_byte8 = core::SimpleVector_byte8_t_O::make(stringOutput.size(),0,false,stringOutput.size(),(const unsigned char*)stringOutput.data());
+    SYMBOL_EXPORT_SC_(KeywordPkg, simple_vector_byte8);
+    core::SimpleVector_byte8_t_sp vector_byte8 = core::SimpleVector_byte8_t_O::make(
+        stringOutput.size(), 0, false, stringOutput.size(), (const unsigned char *)stringOutput.data());
     if (dwo_stream.notnilp()) {
       SIMPLE_ERROR("dwo_stream must be nil");
     }
     return vector_byte8;
   }
+
   if (core::StringOutputStream_sp dwo_sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
     dwo_sos->fill(dwo_stringOutput.c_str());
   }
+
   return nil<core::T_O>();
 }
 
@@ -667,8 +673,6 @@ CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::createDataLayout);
 CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::setFastISel);
 CL_LISPIFY_NAME(getSubtargetImpl);
 CL_EXTERN_DEFMETHOD(TargetMachine_O, (const llvm::TargetSubtargetInfo *(llvm::TargetMachine::*)() const) & llvm::TargetMachine::getSubtargetImpl);
-CL_LISPIFY_NAME(addPassesToEmitFileAndRunPassManager);
-CL_EXTERN_DEFMETHOD(TargetMachine_O, &TargetMachine_O::addPassesToEmitFileAndRunPassManager);
 CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::setFastISel);
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType);
@@ -995,21 +999,6 @@ CL_DEFUN TargetOptions_sp TargetOptions_O::make(bool functionSections ) {
 };
 
 
-
-}; // llvmo
-
-namespace llvmo {
-
-CL_LISPIFY_NAME("LLVMTargetMachine_addPassesToEmitFile");
-CL_DEFMETHOD bool LLVMTargetMachine_O::LLVMTargetMachine_addPassesToEmitFile(PassManagerBase_sp pm,
-                                                                             core::T_sp stream,
-                                                                             core::Symbol_sp fileType) {
-  IMPLEMENT_ME();
-}
-
-
-
-;
 
 }; // llvmo
 
@@ -1725,69 +1714,6 @@ CL_DEFMETHOD size_t StructLayout_O::getElementOffset(size_t idx) const
 
 }; // llvmo
 
-// This is needed for llvm3.7
-//
-namespace llvmo {
-
-
-CL_LAMBDA(triple);
-CL_PKG_NAME(LlvmoPkg,"makeTargetLibraryInfoWrapperPass");
-DOCGROUP(clasp);
-CL_DEFUN TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(llvm::Triple *tripleP) {
-  auto  self = gctools::GC<TargetLibraryInfoWrapperPass_O>::allocate_with_default_constructor();
-  self->_ptr = new llvm::TargetLibraryInfoWrapperPass(*tripleP);
-  return self;
-};
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-CL_LAMBDA(module);
-CL_PKG_NAME(LlvmoPkg,"makeFunctionPassManager");
-DOCGROUP(clasp);
-CL_DEFUN FunctionPassManager_sp FunctionPassManager_O::make(llvm::Module *module) {
-  auto  self = gctools::GC<FunctionPassManager_O>::allocate_with_default_constructor();
-  self->_ptr = new llvm::legacy::FunctionPassManager(module);
-  return self;
-};
-
-
-CL_LISPIFY_NAME(function-pass-manager-add);
-CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::add);
-CL_LISPIFY_NAME(doInitialization);
-CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::doInitialization);
-CL_LISPIFY_NAME(doFinalization);
-CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::doFinalization);
-CL_LISPIFY_NAME(function-pass-manager-run);
-CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::run);;
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-CL_LAMBDA();
-CL_PKG_NAME(LlvmoPkg,"makePassManager");
-DOCGROUP(clasp);
-CL_DEFUN PassManager_sp PassManager_O::make() {
-  auto  self = gctools::GC<PassManager_O>::allocate_with_default_constructor();
-  self->_ptr = new llvm::legacy::PassManager();
-  return self;
-};
-
-
-
-CL_LISPIFY_NAME(passManagerAdd);
-CL_EXTERN_DEFMETHOD(PassManager_O, &llvm::legacy::PassManager::add);
-CL_LISPIFY_NAME(passManagerRun);
-CL_EXTERN_DEFMETHOD(PassManager_O, &llvm::legacy::PassManager::run);;
-
-;
-
-}; // llvmo
-
 namespace llvmo {
 
 string EngineBuilder_O::__repr__() const {
@@ -1825,7 +1751,6 @@ CL_DEFMETHOD void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
   }
 }
 
-
 CL_LISPIFY_NAME("setTargetOptions");
 CL_DEFMETHOD void EngineBuilder_O::setTargetOptions(TargetOptions_sp options) {
   this->wrappedPtr()->setTargetOptions(*options->wrappedPtr());
@@ -1845,41 +1770,6 @@ CL_DEFMETHOD ExecutionEngine_sp EngineBuilder_O::createExecutionEngine() {
   }
   return eeo;
 }
-
-}; // llvmo
-
-namespace llvmo {
-CL_LAMBDA();
-CL_PKG_NAME(LlvmoPkg,"make-PassManagerBuilder");
-DOCGROUP(clasp);
-CL_DEFUN PassManagerBuilder_sp PassManagerBuilder_O::make() {
-  auto  self = gctools::GC<PassManagerBuilder_O>::allocate_with_default_constructor();
-  self->_ptr = new llvm::PassManagerBuilder();
-  return self;
-};
-
-DOCGROUP(clasp);
-CL_DEFUN void PassManagerBuilderSetfInliner(PassManagerBuilder_sp pmb, llvm::Pass *inliner) {
-  //  printf("%s:%d Setting inliner for PassManagerBuilder to %p\n", __FILE__, __LINE__, inliner );
-  pmb->wrappedPtr()->Inliner = inliner;
-};
-
-DOCGROUP(clasp);
-CL_DEFUN void PassManagerBuilderSetfOptLevel(PassManagerBuilder_sp pmb, int optLevel) {
-  pmb->wrappedPtr()->OptLevel = optLevel;
-};
-
-DOCGROUP(clasp);
-CL_DEFUN void PassManagerBuilderSetfSizeLevel(PassManagerBuilder_sp pmb, int level) {
-  pmb->wrappedPtr()->SizeLevel = level;
-};
-
-
-
-CL_LISPIFY_NAME(populateModulePassManager);
-CL_EXTERN_DEFMETHOD(PassManagerBuilder_O, &llvm::PassManagerBuilder::populateModulePassManager);
-CL_LISPIFY_NAME(populateFunctionPassManager);
-CL_EXTERN_DEFMETHOD(PassManagerBuilder_O, &llvm::PassManagerBuilder::populateFunctionPassManager);
 
 }; // llvmo
 
@@ -2059,14 +1949,7 @@ CL_DOCSTRING(R"dx(Return the next non-debug instruction or NIL if there is none)
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction_sp instr)
 {
-#if (LLVM_VERSION_X100<900)  
-  const llvm::Instruction* next = instr->wrappedPtr()->getNextNode();
-  for (; next; next = next->getNextNode()) {
-    if (!llvm::isa<llvm::DbgInfoIntrinsic>(next)) break;
-  }
-#else
   const llvm::Instruction* next = instr->wrappedPtr()->getNextNonDebugInstruction();
-#endif
   if (next!=NULL) {
     return translate::to_object<llvm::Instruction*>::convert(const_cast<llvm::Instruction*>(next));
   }
@@ -3403,7 +3286,7 @@ string Function_O::__repr__() const {
 
 CL_LISPIFY_NAME("appendBasicBlock");
 CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
-#if __clang_major__ < 16
+#if LLVM_VERSION_MAJOR < 16
   this->wrappedPtr()->getBasicBlockList().push_back(basicBlock->wrappedPtr());
 #else
   this->wrappedPtr()->insert(this->wrappedPtr()->end(), basicBlock->wrappedPtr());
@@ -3586,8 +3469,6 @@ CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
 #endif
 CL_LISPIFY_NAME(getScalarType);
 CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getScalarType);
-CL_LISPIFY_NAME(getPointerElementType);
-CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getPointerElementType);
 
   CL_LISPIFY_NAME("type-get-void-ty");
   CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getVoidTy);
@@ -3933,72 +3814,9 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple)
   CL_VALUE_ENUM(_sym_Local, llvm::GlobalValue::UnnamedAddr::Local);
   CL_VALUE_ENUM(_sym_Global, llvm::GlobalValue::UnnamedAddr::Global);
   CL_END_ENUM(_sym_STARGlobalValueUnnamedAddrSTAR);
-  //
-  // Compiler optimization passes
-  //
-  CL_LISPIFY_NAME(createFunctionInliningPass);
-  CL_EXTERN_DEFUN((llvm::Pass * (*)(unsigned, unsigned,bool)) & llvm::createFunctionInliningPass);
 
-  CL_LISPIFY_NAME(createAlwaysInlinerLegacyPass);
-  CL_EXTERN_DEFUN( (llvm::Pass * (*)()) & llvm::createAlwaysInlinerLegacyPass);
-
-  CL_LISPIFY_NAME(createAAEvalPass);
-  CL_EXTERN_DEFUN( &llvm::createAAEvalPass);
-
-  CL_LISPIFY_NAME(createLazyValueInfoPass);
-  CL_EXTERN_DEFUN( &llvm::createLazyValueInfoPass);
-  CL_LISPIFY_NAME(createInstCountPass);
-  CL_EXTERN_DEFUN( &llvm::createInstCountPass);
-  CL_LISPIFY_NAME(createRegionInfoPass);
-  CL_EXTERN_DEFUN( &llvm::createRegionInfoPass);
-
-  CL_LISPIFY_NAME(createModuleDebugInfoPrinterPass);
-  CL_EXTERN_DEFUN( &llvm::createModuleDebugInfoPrinterPass);
-  CL_LISPIFY_NAME(createMemDepPrinter);
-  CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   CL_LISPIFY_NAME(InitializeNativeTarget);
   CL_EXTERN_DEFUN( &llvm::InitializeNativeTarget);
-
-  CL_LISPIFY_NAME(createAggressiveDCEPass);
-  CL_EXTERN_DEFUN( &llvm::createAggressiveDCEPass);
-  CL_LISPIFY_NAME(createCFGSimplificationPass);
-  CL_EXTERN_DEFUN( &llvm::createCFGSimplificationPass);
-  CL_LISPIFY_NAME(createDeadStoreEliminationPass);
-  CL_EXTERN_DEFUN( &llvm::createDeadStoreEliminationPass);
-  CL_LISPIFY_NAME(createGVNPass);
-  CL_EXTERN_DEFUN( &llvm::createGVNPass);
-  CL_LISPIFY_NAME(createIndVarSimplifyPass);
-  CL_EXTERN_DEFUN( &llvm::createIndVarSimplifyPass);
-  CL_LISPIFY_NAME(createInstructionCombiningPass);
-  CL_EXTERN_DEFUN( (llvm::FunctionPass* (*)(unsigned))&llvm::createInstructionCombiningPass);
-  CL_LISPIFY_NAME(createJumpThreadingPass);
-  CL_EXTERN_DEFUN( &llvm::createJumpThreadingPass);
-  CL_LISPIFY_NAME(createLoopDeletionPass);
-  CL_EXTERN_DEFUN( &llvm::createLoopDeletionPass);
-  CL_LISPIFY_NAME(createLoopIdiomPass);
-  CL_EXTERN_DEFUN( &llvm::createLoopIdiomPass);
-  CL_LISPIFY_NAME(createLoopRotatePass);
-  CL_EXTERN_DEFUN( &llvm::createLoopRotatePass);
-  CL_LISPIFY_NAME(createLoopUnrollPass);
-  CL_EXTERN_DEFUN( &llvm::createLoopUnrollPass);
-  CL_LISPIFY_NAME(createMemCpyOptPass);
-  CL_EXTERN_DEFUN( &llvm::createMemCpyOptPass);
-  CL_LISPIFY_NAME(createPromoteMemoryToRegisterPass);
-  CL_EXTERN_DEFUN( &llvm::createPromoteMemoryToRegisterPass);
-  CL_LISPIFY_NAME(createReassociatePass);
-  CL_EXTERN_DEFUN( &llvm::createReassociatePass);
-  CL_LISPIFY_NAME(createSCCPPass);
-  CL_EXTERN_DEFUN( &llvm::createSCCPPass);
-  CL_LISPIFY_NAME(createTailCallEliminationPass);
-  CL_EXTERN_DEFUN(&llvm::createTailCallEliminationPass);
-  CL_LISPIFY_NAME(createVerifierPass);
-  CL_EXTERN_DEFUN(&llvm::createVerifierPass);
-  CL_LISPIFY_NAME(createCorrelatedValuePropagationPass);
-  CL_EXTERN_DEFUN(&llvm::createCorrelatedValuePropagationPass);
-  CL_LISPIFY_NAME(createEarlyCSEPass);
-  CL_EXTERN_DEFUN(&llvm::createEarlyCSEPass);
-  CL_LISPIFY_NAME(createLowerExpectIntrinsicPass);
-  CL_EXTERN_DEFUN(&llvm::createLowerExpectIntrinsicPass);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARatomic_orderingSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, NotAtomic);
@@ -4412,85 +4230,47 @@ CL_DEFUN void llvm_sys__removeAlwaysInlineFunctions(llvm::Module* module)
   removeAlwaysInlineFunctions(module);
 }
 
-
-std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
-#if 0
-  // An attempt to move optimization into Common Lisp
-  Module_sp om = Module_O::create();
-  om->set_wrapped(&*M);
-  om = core::eval::funcall(comp::_sym_optimize_module_for_compile,om);
-  std::shared_ptr<llvm::Module> result(om->wrappedPtr());
-  printf("%s:%d  Returning module\n", __FILE__, __LINE__ );
-  return result;
-#else
-  if (comp::_sym_STARoptimization_levelSTAR->symbolValue().fixnump() &&
-      comp::_sym_STARoptimization_levelSTAR->symbolValue().unsafe_fixnum() >= 2) {
-  // Create a function pass manager.
-    auto FPM = std::make_unique<llvm::legacy::FunctionPassManager>(M.get());
-
-  // Add some optimizations.
-    printf("%s:%d Creating optimization passes - some of these have gone missing\n", __FILE__, __LINE__ );
-    FPM->add(createInstructionCombiningPass());
-    FPM->add(createReassociatePass());
-    FPM->add(createNewGVNPass());
-    FPM->add(createCFGSimplificationPass());
-    FPM->add(createPromoteMemoryToRegisterPass());
-    FPM->doInitialization();
-
-  // !!!! I run this after inlining again -
-  // - But if I don't run it here - it crashes when I try to clone the module for disassemble
-  // Run the optimizations over all functions in the module being added to the JIT.
-    for (auto &F : *M)
-      FPM->run(F);
-  
-    llvm::legacy::PassManager my_passes;
-    my_passes.add(llvm::createFunctionInliningPass(4096));
-    my_passes.run(*M);
-
-    // After inlining - run the optimizations over all functions again
-    for (auto &F : *M)
-      FPM->run(F);
-  
-  // Silently remove llvm.used functions if they are defined
-  //     I may use this to prevent functions from being removed from the bitcode
-  //     by clang before we need them.
-    llvm::GlobalVariable* used = M->getGlobalVariable("llvm.used");
-    if (used) {
-      Value* init = used->getInitializer();
-      used->eraseFromParent();
-    }
-
-    removeAlwaysInlineFunctions(&*M);
-
-  }
-  if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
-      comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
-    //printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
-    llvm::Module* o = &*M;
-    std::unique_ptr<llvm::Module> cm = llvm::CloneModule(*o);
-    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
-    comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
-  }
-  // Check if we should dump the module for debugging
-  {
-    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
-    core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
-    core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
-  }
-  //printf("%s:%d  Done optimizeModule\n", __FILE__, __LINE__ );
-  return M;
-#endif
-}
-
-
 DOCGROUP(clasp);
-CL_DEFUN llvm::Module* llvm_sys__optimizeModule(llvm::Module* module)
-{
-  std::shared_ptr<llvm::Module> M(module);
-  return &*optimizeModule(std::move(M));
+CL_DEFUN void llvm_sys__optimizeModule(llvm::Module *module, int level) {
+  llvm::LoopAnalysisManager LAM;
+  llvm::FunctionAnalysisManager FAM;
+  llvm::CGSCCAnalysisManager CGAM;
+  llvm::ModuleAnalysisManager MAM;
+
+  llvm::PipelineTuningOptions pipeline_opts;
+#if LLVM_VERSION_MAJOR > 15
+  pipeline_opts.InlinerThreshold = 0;
+#endif
+
+  llvm::PassBuilder PB(NULL, pipeline_opts);
+  llvm::ModulePassManager MPM;
+
+  PB.registerModuleAnalyses(MAM);
+  PB.registerCGSCCAnalyses(CGAM);
+  PB.registerFunctionAnalyses(FAM);
+  PB.registerLoopAnalyses(LAM);
+  PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
+
+  llvm::OptimizationLevel opt_level = OptimizationLevel::O0;
+
+#if LLVM_VERSION_MAJOR > 15
+  switch (level) {
+  case 1:
+      opt_level = OptimizationLevel::O1;
+      break;
+  case 2:
+      opt_level = OptimizationLevel::O2;
+      break;
+  case 3:
+      opt_level = OptimizationLevel::O3;
+      break;
+  }
+#endif
+
+  PB.buildPerModuleDefaultPipeline(opt_level);
+
+  MPM.run(*module, MAM);
 }
-
-
 
 SYMBOL_EXPORT_SC_(CorePkg,repl);
 SYMBOL_EXPORT_SC_(KeywordPkg, dump_repl_object_files);

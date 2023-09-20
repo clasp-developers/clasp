@@ -569,67 +569,6 @@ rewrite the slot in the literal table to store a closure."
     (t #+(or)(warn "object-similarity-table-and-creator object -> ~s" object)
        (values (literal-machine-identity-coalesce literal-machine) #'ltv/mlf))))
 
-(defun ensure-creator-llvm-value (obj)
-  "Lookup or create the llvm::Value for obj"
-  (let ((llvm-value (gethash obj (literal-machine-llvm-values *literal-machine*))))
-    (if llvm-value
-        llvm-value
-        (let* ((datum (literal-dnode-datum obj))
-               (index (datum-index datum))
-               (tag (datum-tag datum)))
-          (setf (gethash obj (literal-machine-llvm-values *literal-machine*))
-                (cmp:irc-intrinsic-call (literal-node-creator-name obj)
-                                        (list*
-                                         *gcroots-in-module*
-                                         (cmp:jit-constant-i8 tag)
-                                         (cmp:jit-constant-size_t index)
-                                         (fix-args (literal-node-creator-arguments obj)))))))))
-(defun lookup-arg (creator)
-  (labels ((object-label (creator idx &optional (prefix core:+literals-name+))
-             (if (literal-node-creator-literal-name creator)
-                 (core:fmt nil "{}[{}]/{}" prefix idx (literal-node-creator-literal-name creator))
-                 (core:fmt nil "{}[{}]%t*" prefix idx))))
-    (ensure-creator-llvm-value creator)
-    (let ((datum (literal-dnode-datum creator)))
-      (multiple-value-bind (index tag kind)
-          (datum-index-tag-kind datum)
-        (cond
-          ((eq kind :literal)
-           (let* ((label (object-label creator index))
-                  (entry (let ((type (llvm-sys:get-pointer-element-type
-                                      (llvm-sys:get-scalar-type
-                                       cmp:*load-time-value-holder-global-var-type*))))
-                           (llvm-sys:create-geparray cmp:*irbuilder*
-                                                     type
-                                                     cmp:*load-time-value-holder-global-var*
-                                                     (list (cmp:jit-constant-i32 0)
-                                                           (cmp:jit-constant-i32 index))
-                                                     label)))
-                  (arg (cmp:irc-t*-load entry label)))
-             arg))
-          ((eq kind :transient)
-           (let* ((label (object-label creator index "TRANSIENT"))
-                  (arg (cmp:irc-intrinsic-call "ltvc_lookup_transient" (list *gcroots-in-module*
-                                                                             (cmp:jit-constant-i8 tag)
-                                                                             (cmp:jit-constant-size_t index)) label)))
-             arg))
-          (t (error "Illegal creator for lookup-arg ~a" creator)))))))
-
-(defun fix-arg (arg)
-  (cond
-    ((function-datum-p arg) (cmp:jit-constant-i64 (function-datum-index arg)))
-    ((fixnump arg) (cmp:jit-constant-i64 arg))
-    ((stringp arg) (cmp:jit-constant-unique-string-ptr arg))
-    ((literal-node-creator-p arg) (lookup-arg arg))
-    ((single-float-datum-p arg) (llvm-sys:constant-fp-get (cmp:thread-local-llvm-context) (llvm-sys:make-apfloat-float (single-float-datum-value arg))))
-    ((double-float-datum-p arg) (llvm-sys:constant-fp-get (cmp:thread-local-llvm-context) (llvm-sys:make-apfloat-double (double-float-datum-value arg))))
-    ((immediate-datum-p arg) (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value arg)))
-    (t arg)))
-
-(defun fix-args (args)
-  "Convert the args from Lisp form into llvm::Value*'s"
-  (mapcar #'fix-arg args))
-
 (defun write-argument-byte-code (arg stream byte-index)
   (llog "    write-argument-byte-code arg: ~s byte-index ~d~%" arg byte-index)
   (cond

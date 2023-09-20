@@ -432,7 +432,7 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
   }
     return nil<core::T_O>();
   }
-#if __clang_major__ < 16  
+#if LLVM_VERSION_MAJOR < 16
   if (info.Source.hasValue())
     source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
   else source = nil<core::T_O>();

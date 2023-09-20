@@ -82,6 +82,7 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/wrappers.h>
 #include <version.h>
+#include <llvm/Config/llvm-config.h>
 
 #define DEBUG_LEVEL_NONE
 
@@ -474,10 +475,12 @@ CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
     printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__);
 }
 
-CL_DOCSTRING(R"dx(Return a string representing the llvm version (eg: 3.6.0))dx");
+CL_DOCSTRING(R"dx(Return the LLVM version as integer values, i.e. (VALUES major minor patch))dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv ext__llvm_version() {
-  return Values(core::SimpleBaseString_O::make(CXX_MACRO_STRING(LLVM_VERSION)),clasp_make_single_float(LLVM_VERSION));
+  return Values(clasp_make_fixnum(LLVM_VERSION_MAJOR),
+                clasp_make_fixnum(LLVM_VERSION_MINOR),
+                clasp_make_fixnum(LLVM_VERSION_PATCH));
 }
 
 

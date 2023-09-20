@@ -151,8 +151,6 @@
             irc-create-call-wft
             irc-calculate-entry
             compile-file-to-module
-            optimize-module-for-compile
-            optimize-module-for-compile-file
             codegen
             compile-error-if-not-enough-arguments
             compile-in-env
