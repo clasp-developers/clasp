@@ -66,6 +66,7 @@ namespace core {
 SMART(Package);
 SMART(NamedFunction);
 FORWARD(ClassHolder);
+FORWARD(FunctionCell);
 
 FORWARD(Symbol);
 class Symbol_O : public General_O {
@@ -77,8 +78,8 @@ class Symbol_O : public General_O {
   SimpleString_sp _Name; // offset 8
   std::atomic<T_sp> _HomePackage; // offset=16 NIL or Package
   std::atomic<T_sp> _GlobalValue; // offset=24
-  std::atomic<Function_sp> _Function; // offset=32
-  std::atomic<Function_sp> _SetfFunction; // offset=40
+  std::atomic<FunctionCell_sp> _Function; // offset=32
+  std::atomic<FunctionCell_sp> _SetfFunction; // offset=40
   mutable std::atomic<uint32_t> _BindingIdx;
   std::atomic<uint32_t>  _Flags;
   std::atomic<T_sp>   _PropertyList;
@@ -101,8 +102,6 @@ public:
   // to by global variable _sym_XXX  and will never be collected
     Symbol_sp n = gctools::GC<Symbol_O>::allocate(only_at_startup());
     n->setf_name(snm);
-    n->fmakunbound();
-    n->fmakunbound_setf();
 //    ASSERTF(nm != "", "You cannot create a symbol without a name");
     return n;
   };
@@ -308,24 +307,28 @@ public:
 
  public: // function value slots access
 
-  inline Function_sp functionCell() const { return _Function.load(std::memory_order_relaxed); }
-  inline Function_sp setfFunctionCell() const { return _SetfFunction.load(std::memory_order_relaxed); }
-  inline void functionCellSet(Function_sp f) {
+  inline FunctionCell_sp functionCell() const { return _Function.load(std::memory_order_relaxed); }
+  inline FunctionCell_sp setfFunctionCell() const { return _SetfFunction.load(std::memory_order_relaxed); }
+  inline void functionCellSet(FunctionCell_sp f) {
     _Function.store(f, std::memory_order_relaxed);
   }
-  inline void setfFunctionCellSet(Function_sp f) {
+  inline void setfFunctionCellSet(FunctionCell_sp f) {
     _SetfFunction.store(f, std::memory_order_relaxed);
   }
+  FunctionCell_sp ensureFunctionCell();
+  FunctionCell_sp ensureFunctionCell(Function_sp init);
+  FunctionCell_sp ensureSetfFunctionCell();
+  FunctionCell_sp ensureSetfFunctionCell(Function_sp init);
 
   void fmakunbound();
   
-  inline void setSetfFdefinition(Function_sp fn) { setfFunctionCellSet(fn); }
+  void setSetfFdefinition(Function_sp fn);
   Function_sp getSetfFdefinition() const;
   bool fboundp_setf() const;
   void fmakunbound_setf();
   
   /*! Set the global function value of this symbol */
-  inline void setf_symbolFunction(Function_sp exec) { functionCellSet(exec); }
+  void setf_symbolFunction(Function_sp exec);
 
   /*! Return the global bound function */
   Function_sp symbolFunction() const;
@@ -336,8 +339,8 @@ public:
   // These can be used when the result is going to be called immediately.
   // They don't check for fboundedness, because if un-fbound the cell
   // will just signal an error when it is called.
-  inline Function_sp symbolFunctionCalled() const { return functionCell(); }
-  inline Function_sp getSetfFdefinitionCalled() const { return setfFunctionCell(); }
+  inline Function_sp symbolFunctionCalled() { return ensureFunctionCell(); }
+  inline Function_sp getSetfFdefinitionCalled() { return ensureSetfFunctionCell(); }
 
  public: // packages, the name, misc
 
@@ -371,7 +374,9 @@ public:
 public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */
   explicit Symbol_O(const only_at_startup&);
-  explicit Symbol_O(SimpleBaseString_sp name) : _Name(name) {};
+  explicit Symbol_O(SimpleBaseString_sp name)
+    : _Name(name), _Function(unbound<FunctionCell_O>()),
+      _SetfFunction(unbound<FunctionCell_O>()) {};
   
   /*! Used to finish setting up symbol when created with the above constructor */
   void finish_setup(Package_sp pkg, bool exportp, bool shadowp);

@@ -609,6 +609,11 @@ public:
   }
 };
 
+FunctionCell_sp make_function_cell(T_sp name, Function_sp fun);
+FunctionCell_sp make_unbound_function_cell(T_sp name);
+void function_cell_fmakunbound(FunctionCell_sp fcell, T_sp name);
+bool function_cell_boundp(FunctionCell_sp fcell);
+
 }; // namespace core
 
 namespace core {

@@ -3359,10 +3359,10 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Symbol_O"
              :layout-offset-field-names ("_GlobalValue")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Function_O>"
+             :offset-ctype "gctools::smart_ptr<core::FunctionCell_O>"
              :offset-base-ctype "core::Symbol_O" :layout-offset-field-names ("_Function")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Function_O>"
+             :offset-ctype "gctools::smart_ptr<core::FunctionCell_O>"
              :offset-base-ctype "core::Symbol_O" :layout-offset-field-names ("_SetfFunction")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_int"
              :offset-ctype "unsigned int" :offset-base-ctype "core::Symbol_O"
@@ -3386,11 +3386,11 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Null_O"
              :layout-offset-field-names ("_GlobalValue")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Function_O>" :offset-base-ctype "core::Null_O"
-             :layout-offset-field-names ("_Function")}
+             :offset-ctype "gctools::smart_ptr<core::FunctionCell_O>"
+             :offset-base-ctype "core::Null_O" :layout-offset-field-names ("_Function")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Function_O>" :offset-base-ctype "core::Null_O"
-             :layout-offset-field-names ("_SetfFunction")}
+             :offset-ctype "gctools::smart_ptr<core::FunctionCell_O>"
+             :offset-base-ctype "core::Null_O" :layout-offset-field-names ("_SetfFunction")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_int"
              :offset-ctype "unsigned int" :offset-base-ctype "core::Null_O"
              :layout-offset-field-names ("_BindingIdx")}
@@ -6801,11 +6801,7 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::GlobalSimpleFun_O>"
              :offset-base-ctype "core::Lisp"
-             :layout-offset-field-names ("_Roots" "._UnboundSymbolFunctionEntryPoint")}
-{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::GlobalSimpleFun_O>"
-             :offset-base-ctype "core::Lisp"
-             :layout-offset-field-names ("_Roots" "._UnboundSetfSymbolFunctionEntryPoint")}
+             :layout-offset-field-names ("_Roots" "._UnboundCellFunctionEntryPoint")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Lisp"
              :layout-offset-field-names ("_Roots" "._TerminalIO")}

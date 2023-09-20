@@ -943,7 +943,7 @@ CL_DEFUN void core__closure_slots_dump(Function_sp closure) {
   }
 }
 
-struct CellUnboundFunctionEntryPoint {
+struct UnboundCellFunctionEntryPoint {
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
     ERROR_UNDEFINED_FUNCTION((*closure)[0]);
@@ -984,10 +984,9 @@ CL_DEFUN FunctionCell_sp make_function_cell(T_sp name, Function_sp fun)
 
 CL_LISPIFY_NAME(FunctionCell/make-unbound);
 CL_DEFUN FunctionCell_sp make_unbound_function_cell(T_sp name) {
-  // FIXME: Cache (see make_unbound_symbol_function in symbol.cc)
-  GlobalSimpleFun_sp f =
-    makeGlobalSimpleFunAndFunctionDescription<CellUnboundFunctionEntryPoint>(name, nil<T_O>());
-  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, f);
+  if (_lisp->_Roots._UnboundCellFunctionEntryPoint.unboundp())
+    _lisp->_Roots._UnboundCellFunctionEntryPoint = makeGlobalSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name, nil<T_O>());
+  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, _lisp->_Roots._UnboundCellFunctionEntryPoint);
   (*cf)[0] = name;
   return make_function_cell(name, cf);
 }
@@ -996,7 +995,7 @@ CL_LISPIFY_NAME(FunctionCell/fmakunbound);
 CL_DEFUN void function_cell_fmakunbound(FunctionCell_sp fcell, T_sp name)
 {
   GlobalSimpleFun_sp f =
-    makeGlobalSimpleFunAndFunctionDescription<CellUnboundFunctionEntryPoint>(name, nil<T_O>());
+    makeGlobalSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name, nil<T_O>());
   Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, f);
   (*cf)[0] = name;
   fcell->real_function_set(cf);
@@ -1017,7 +1016,7 @@ CL_DEFUN_SETF Function_sp function_cell_function_set(Function_sp nv, FunctionCel
 
 CL_LISPIFY_NAME(function-cell/fboundp);
 CL_DEFUN bool function_cell_boundp(FunctionCell_sp fcell) {
-  return fcell->real_function()->entry() != CellUnboundFunctionEntryPoint::entry_point_n;
+  return fcell->real_function()->entry() != UnboundCellFunctionEntryPoint::entry_point_n;
 }
 
 
