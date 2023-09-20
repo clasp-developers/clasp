@@ -1883,6 +1883,30 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
   }
 }
 
+// Compile fform, which needs to return one value (regardless of
+//  ctxt.receiving) and evaluates to an fdesignator that needs coercion
+//  to a function which will only be called immediately.
+void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
+  // If we get (function ...) or (lambda ...), which is quite common
+  // e.g. in (funcall #'(setf...) ...)
+  // and (multiple-value-call (lambda ...mv-bind code ...) form)
+  // we don't need to emit a vm_fdesignator instruction or anything.
+  // TODO: We could do something smarter if given 'foo or a constant,
+  // but those are more marginal.
+  if (fform.consp()) {
+    if (oCar(fform) == cl::_sym_Function_O) {
+      compile_called_function(oCadr(fform), env, ctxt);
+      return;
+    } else if (oCar(fform) == cl::_sym_lambda) {
+      compile_called_function(fform, env, ctxt);
+      return;
+    }
+  }
+  // default
+  compile_form(fform, env, ctxt.sub_receiving(1));
+  ctxt.assemble0(vm_fdesignator);
+}
+
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
   ql::list fun_vars;
   size_t fun_count = 0;
@@ -2240,10 +2264,7 @@ void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Cont
 }
 
 void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, const Context ctxt) {
-  // Compile the function. Coerce it as a designator.
-  // TODO: When the fform is a #'foo form we could skip coercion.
-  compile_form(fform, env, ctxt.sub_receiving(1));
-  ctxt.assemble0(vm_fdesignator);
+  compile_fdesignator(fform, env, ctxt);
   if (aforms.nilp()) {
     ctxt.emit_call(0);
   } else {
@@ -2373,7 +2394,34 @@ void compile_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, const Conte
   compile_locally(body, nenv, context);
 }
 
-void compile_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Context context) {
+void compile_funcall(T_sp fform, List_sp args, Lexenv_sp env, const Context context) {
+  // Expand compiler macros when fform = #'foo or #'(setf foo).
+  if (fform.consp() && oCar(fform) == cl::_sym_Function_O
+      && oCdr(fform).consp() && oCddr(fform).nilp()
+      && (gc::IsA<Symbol_sp>(oCadr(fform))
+          || (oCadr(fform).consp() && oCaadr(fform) != cl::_sym_lambda))) {
+    T_sp fname = oCadr(fform);
+    FunInfoV info = fun_info_v(fname, env);
+    if (std::holds_alternative<GlobalFunInfoV>(info)) {
+      T_sp cmexpander = std::get<GlobalFunInfoV>(info).cmexpander();
+      // We don't skip typep/case here since we don't actually use them
+      // in a dangerously recursive way with funcall.
+      if (cmexpander.notnilp() && !env->notinlinep(fname)) {
+        T_sp form = Cons_O::create(cl::_sym_funcall, Cons_O::create(fform, args));
+        T_sp expansion = expand_compiler_macro(gc::As<Function_sp>(cmexpander), form, env, context.source_info());
+        if (expansion != form) {
+          compile_form(expansion, env, context);
+          return;
+        }
+      }
+    }
+  }
+  // No compiler macro, but we can avoid actually calling FUNCALL.
+  compile_fdesignator(fform, env, context);
+  compile_call(args, env, context);
+}
+
+void compile_primop_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Context context) {
   compile_form(callee, env, context.sub_receiving(1));
   compile_call(args, env, context);
 }
@@ -2421,9 +2469,12 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     compile_eval_when(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_the)
     compile_the(oCar(rest), oCadr(rest), env, context);
+  // basic optimization
+  else if (head == cl::_sym_funcall)
+    compile_funcall(oCar(rest), oCdr(rest), env, context);
   // extension
   else if (head == cleavirPrimop::_sym_funcall)
-    compile_funcall(oCar(rest), oCdr(rest), env, context);
+    compile_primop_funcall(oCar(rest), oCdr(rest), env, context);
   else if (head == cleavirPrimop::_sym_eq) {
     // KLUDGE: Compile a call to EQ.
     // Better would be to use the EQ opcode. Better than that would be
