@@ -513,6 +513,11 @@
         :initform nil
         :type (or null pathname)
         :documentation "The cxx binary to use. If not set then llvm-config will be used to find clang++.")
+   (dis :accessor dis
+        :initarg :dis
+        :initform nil
+        :type (or null pathname)
+        :documentation "The llvm-dis binary to use. If not set then llvm-config will be used to find llvm-dis.")
    (git :accessor git
         :initarg :git
         :initform nil
@@ -612,11 +617,14 @@ is not compatible with snapshots.")
                   :documentation "Default stage for installation")
    (units :accessor units
           :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
-                      :clang :llvm :ar :cc :cxx :mpi :nm :etags :ctags :objcopy :jupyter :reproducible :asdf)
+                           :clang :llvm :ar :cc :cxx :dis :mpi :nm :etags :ctags :objcopy :jupyter
+                           :reproducible :asdf)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
-            :initform (alexandria:plist-hash-table (list :generate-sif
+            :initform (alexandria:plist-hash-table (list :trampoline
+                                                         (list (make-source #P"trampoline.lisp" :build))
+                                                         :generate-sif
                                                          (list (make-source #P"generate-sif.lisp" :build))
                                                          :generate-headers
                                                          (list (make-source #P"generate-headers.lisp" :variant)
@@ -658,7 +666,8 @@ is not compatible with snapshots.")
                                                                :bitcode :iclasp :cclasp :modules :eclasp
                                                                :eclasp-link :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
-                                                               :tags :install-extension-code :vm-header)
+                                                               :tags :install-extension-code :vm-header
+                                                               :trampoline)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
                                                                :scraper)

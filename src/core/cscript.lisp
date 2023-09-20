@@ -113,3 +113,6 @@
            #~"hwinfo.cc"
            #~"clasp_ffi_package.cc"
            #~"fli.cc")
+
+(k:sources :trampoline
+           #~"trampoline/trampoline.cc")
