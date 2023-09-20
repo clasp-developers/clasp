@@ -266,7 +266,7 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
 FunctionCell_sp Symbol_O::ensureFunctionCell() {
   FunctionCell_sp existing = functionCell();
   if (existing.unboundp()) {
-    FunctionCell_sp n = make_unbound_function_cell(this->asSmartPtr());
+    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr());
     if (this->_Function.compare_exchange_strong(existing, n, std::memory_order_relaxed))
       return n;
     else
@@ -277,7 +277,7 @@ FunctionCell_sp Symbol_O::ensureFunctionCell() {
 FunctionCell_sp Symbol_O::ensureFunctionCell(Function_sp init) {
   FunctionCell_sp existing = functionCell();
   if (existing.unboundp()) {
-    FunctionCell_sp n = make_function_cell(this->asSmartPtr(), init);
+    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr(), init);
     if (this->_Function.compare_exchange_strong(existing, n, std::memory_order_relaxed))
       return n;
     else
@@ -291,7 +291,7 @@ FunctionCell_sp Symbol_O::ensureFunctionCell(Function_sp init) {
 FunctionCell_sp Symbol_O::ensureSetfFunctionCell() {
   FunctionCell_sp existing = setfFunctionCell();
   if (existing.unboundp()) {
-    FunctionCell_sp n = make_unbound_function_cell(this->asSmartPtr());
+    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr());
     if (this->_SetfFunction.compare_exchange_strong(existing, n, std::memory_order_relaxed))
       return n;
     else
@@ -302,7 +302,7 @@ FunctionCell_sp Symbol_O::ensureSetfFunctionCell() {
 FunctionCell_sp Symbol_O::ensureSetfFunctionCell(Function_sp init) {
   FunctionCell_sp existing = setfFunctionCell();
   if (existing.unboundp()) {
-    FunctionCell_sp n = make_function_cell(this->asSmartPtr(), init);
+    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr(), init);
     if (this->_SetfFunction.compare_exchange_strong(existing, n, std::memory_order_relaxed))
       return n;
     else
@@ -311,35 +311,32 @@ FunctionCell_sp Symbol_O::ensureSetfFunctionCell(Function_sp init) {
 }
 
 Function_sp Symbol_O::symbolFunction() const {
-  Function_sp cell = functionCell();
+  FunctionCell_sp cell = functionCell();
   if (!cell.unboundp()) {
-    FunctionCell_sp fcell = gc::As_assert<FunctionCell_sp>(cell);
-    if (function_cell_boundp(fcell))
-      return fcell->real_function();
+    if (cell->fboundp())
+      return cell->real_function();
   }
   ERROR_UNDEFINED_FUNCTION(this->asSmartPtr());
 }
 
 Function_sp Symbol_O::getSetfFdefinition() const {
-  Function_sp cell = setfFunctionCell();
+  FunctionCell_sp cell = setfFunctionCell();
   if (!cell.unboundp()) {
-    FunctionCell_sp fcell = gc::As_assert<FunctionCell_sp>(cell);
-    if (function_cell_boundp(fcell))
-      return fcell->real_function();
+    if (cell->fboundp())
+      return cell->real_function();
   }
   ERROR_UNDEFINED_FUNCTION(this->asSmartPtr());
 }
 
 bool Symbol_O::fboundp() const {
-  Function_sp fcell = functionCell();
-  return !(fcell.unboundp()) && function_cell_boundp(gc::As_assert<FunctionCell_sp>(fcell));
+  FunctionCell_sp fcell = functionCell();
+  return !(fcell.unboundp()) && fcell->fboundp();
 };
 
 void Symbol_O::fmakunbound() {
-  Function_sp fcell = functionCell();
+  FunctionCell_sp fcell = functionCell();
   if (!fcell.unboundp())
-    function_cell_fmakunbound(gc::As_assert<FunctionCell_sp>(fcell),
-                              this->asSmartPtr());
+    fcell->fmakunbound(this->asSmartPtr());
 }
 
 void Symbol_O::setSetfFdefinition(Function_sp fn) {
@@ -347,16 +344,14 @@ void Symbol_O::setSetfFdefinition(Function_sp fn) {
 }
 
 bool Symbol_O::fboundp_setf() const {
-  Function_sp fcell = setfFunctionCell();
-  return !(fcell.unboundp()) && function_cell_boundp(gc::As_assert<FunctionCell_sp>(fcell));
+  FunctionCell_sp fcell = setfFunctionCell();
+  return !(fcell.unboundp()) && fcell->fboundp();
 };
 
-void Symbol_O::fmakunbound_setf()
-{
-  Function_sp fcell = setfFunctionCell();
+void Symbol_O::fmakunbound_setf() {
+  FunctionCell_sp fcell = setfFunctionCell();
   if (!fcell.unboundp())
-    function_cell_fmakunbound(gc::As_assert<FunctionCell_sp>(fcell),
-                              Cons_O::createList(cl::_sym_setf, this->asSmartPtr()));
+    gc::As_assert<FunctionCell_sp>(fcell)->fmakunbound(Cons_O::createList(cl::_sym_setf, this->asSmartPtr()));
 }
 
 void Symbol_O::setf_symbolFunction(Function_sp fn) {

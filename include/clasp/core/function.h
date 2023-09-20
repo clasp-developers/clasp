@@ -525,6 +525,9 @@ public:
 public:
   std::atomic<Function_sp> _Function;
 public:
+  static FunctionCell_sp make(T_sp name, Function_sp initial);
+  static FunctionCell_sp make(T_sp name); // unbound
+public:
   Function_sp real_function() const {
     // relaxed because nobody should be synchronizing on this,
     // but in practice it's probably irrelevant what we do?
@@ -533,7 +536,8 @@ public:
   void real_function_set(Function_sp fun) {
     this->_Function.store(fun, std::memory_order_relaxed);
   }
-
+  void fmakunbound(T_sp name);
+  bool fboundp();
 public:
   // probably unnecessary
   virtual bool compiledP() const {
@@ -608,11 +612,6 @@ public:
     return xep.invoke_5(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
   }
 };
-
-FunctionCell_sp make_function_cell(T_sp name, Function_sp fun);
-FunctionCell_sp make_unbound_function_cell(T_sp name);
-void function_cell_fmakunbound(FunctionCell_sp fcell, T_sp name);
-bool function_cell_boundp(FunctionCell_sp fcell);
 
 }; // namespace core
 
