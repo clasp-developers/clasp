@@ -298,10 +298,6 @@
   (:method (creator value) (declare (ignore creator value)) nil))
 ;;;
 
-;;; Return true iff the value is similar to the existing creator.
-(defgeneric similarp (creator value)
-  (:method (creator value) (declare (ignore creator value)) nil))
-
 (defmethod similarp ((creator vcreator) value)
   (eql (prototype creator) value))
 
@@ -312,11 +308,16 @@
 (defvar *coalesce*)
 
 ;;; Another EQL hash table for out-of-band objects that are also "coalesced".
-;;; So far this means cfunctions, modules, fcells, and vcells.
+;;; So far this means cfunctions and modules.
 ;;; This a separate variable because perverse code could use an out-of-band
 ;;; object in band (e.g. compiling a literal module) and we don't want to
 ;;; confuse those things.
 (defvar *oob-coalesce*)
+
+;;; For function cells. EQUAL since function names can be lists.
+(defvar *fcell-coalesce*)
+;;; And variable cells.
+(defvar *vcell-coalesce*)
 
 ;; Look up a value in the existing instructions.
 ;; On success returns the creator, otherwise NIL.
@@ -331,6 +332,9 @@
 (defun find-oob (value)
   (values (gethash value *oob-coalesce*)))
 
+(defun find-fcell (name) (values (gethash name *fcell-coalesce*)))
+(defun find-vcell (name) (values (gethash name *vcell-coalesce*)))
+
 ;;; List of instructions to be executed by the loader.
 ;;; In reverse.
 (defvar *instructions*)
@@ -344,7 +348,9 @@
 
 (defmacro with-constants ((&key) &body body)
   `(let ((*instructions* nil) (*creating* nil)
-         (*coalesce* (make-hash-table)) (*oob-coalesce* (make-hash-table)))
+         (*coalesce* (make-hash-table)) (*oob-coalesce* (make-hash-table))
+         (*fcell-coalesce* (make-hash-table :test #'equal))
+         (*vcell-coalesce* (make-hash-table)))
      ,@body))
 
 (defun find-constant (value)
@@ -366,6 +372,14 @@
 
 (defun add-oob (key instruction)
   (setf (gethash key *oob-coalesce*) instruction)
+  (add-instruction instruction))
+
+(defun add-fcell (key instruction)
+  (setf (gethash key *fcell-coalesce*) instruction)
+  (add-instruction instruction))
+
+(defun add-vcell (key instruction)
+  (setf (gethash key *vcell-coalesce*) instruction)
   (add-instruction instruction))
 
 (defgeneric add-constant (value))
@@ -1226,24 +1240,23 @@
      :form (cmp:load-time-value-info/form info)
      :info info)))
 
-(defun ensure-fcell (info)
-  (or (find-oob info)
-      (let ((name (cmp:function-cell-info/fname info)))
-        (add-oob info
-                 (make-instance 'fcell-lookup :name (ensure-constant name))))))
+(defun ensure-fcell (name)
+  (or (find-fcell name)
+      (add-fcell name
+                 (make-instance 'fcell-lookup
+                   :name (ensure-constant name)))))
 
 (defmethod ensure-module-literal ((info cmp:function-cell-info))
-  (ensure-fcell info))
+  (ensure-fcell (cmp:function-cell-info/fname info)))
 
-(defun ensure-vcell (info)
-  (or (find-oob info)
-      (let ((name (cmp:variable-cell-info/vname info)))
-        (add-oob info
+(defun ensure-vcell (name)
+  (or (find-vcell name)
+      (add-vcell name
                  (make-instance 'vcell-lookup
-                   :name (ensure-constant name))))))
+                   :name (ensure-constant name)))))
 
 (defmethod ensure-module-literal ((info cmp:variable-cell-info))
-  (ensure-vcell info))
+  (ensure-vcell (cmp:variable-cell-info/vname info)))
 
 (defgeneric process-debug-info (debug-info))
 
