@@ -13,10 +13,6 @@
 
 (in-package #:cmpltv)
 
-;;; For this first version, I'm going to track permanency but not do anything
-;;; with it - cutting out transients can be later, since I think it will need
-;;; more coordination with the compiler.
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Debugging
@@ -41,10 +37,7 @@
 ;;; An instruction that allocates or otherwise creates an object.
 ;;; The object may be fully initialized or may require further initialization.
 (defclass creator (instruction)
-  (;; T if the object outlasts loading (e.g. is referred to directly in code)
-   ;; otherwise NIL
-   (%permanency :initform nil :accessor permanency :type boolean)
-   (%index :initform nil :initarg :index :accessor index
+  ((%index :initform nil :initarg :index :accessor index
            :type (integer 0))))
 ;;; A creator for which a prototype value (which the eventual LTV will be
 ;;; similar to) is available.
@@ -57,26 +50,18 @@
 
 (defmethod print-object ((object creator) stream)
   (print-unreadable-object (object stream :type t)
-    (format stream "~a ~d"
-            (if (permanency object) :permanent :transient)
-            (index object))))
+    (format stream "~d" (index object))))
 
 (defmethod print-object ((object vcreator) stream)
   (print-unreadable-object (object stream :type t)
     (if (slot-boundp object '%prototype)
         (prin1 (prototype object) stream)
         (write-string "[no prototype]" stream))
-    (format stream " ~a ~d"
-            (if (permanency object) :permanent :transient)
-            (index object))))
+    (format stream " ~d" (index object))))
 
 ;;; An instruction that performs some action for effect. This can include
 ;;; initialization as well as arbitrary side effects (as from make-load-form).
 (defclass effect (instruction) ())
-
-(defun permanentize (creator) (setf (permanency creator) t) creator)
-
-;;;
 
 ;;; TODO: Abbreviate with list/dotted list, but make sure
 ;;; coalescence is still really possible.
@@ -215,9 +200,7 @@
    ;; The original form, for debugging/display
    (%form :initarg :form :reader load-time-value-creator-form)
    ;; The info object, for similarity checking
-   (%info :initarg :info :reader load-time-value-creator-info)
-   ;; If something's referenced directly from load-time-value, it's permanent.
-   (%permanency :initform t)))
+   (%info :initarg :info :reader load-time-value-creator-info)))
 
 (defclass init-object-array (instruction)
   ((%count :initarg :count :reader init-object-array-count)))
@@ -384,9 +367,8 @@
 
 (defgeneric add-constant (value))
 
-(defun ensure-constant (value &key permanent)
+(defun ensure-constant (value)
   (let ((creator (or (find-constant value) (add-constant value))))
-    (when permanent (permanentize creator))
     creator))
 
 ;;; Given a form, get a constant handle to a function that at load time will
@@ -671,24 +653,16 @@
         (t
          (error 'circular-dependency :value value :path *creating*))))
 
-;;; Loop over the instructions, assigning indices to the creators such that
-;;; the permanent objects come first. This only affects their position in the
-;;; similar vector, not the order the instructions must be executed in.
+;;; Loop over the instructions, assigning indices to the creators.
+;;; This only affects their position in the similar vector, not the order
+;;; the instructions must be executed in.
 ;;; The instructions must be in forward order, i.e. reversed from how they're
 ;;; pushed in above. (FIXME: The reversal is too awkward.)
 ;;; This could probably be done in one pass somehow?
 (defun assign-indices (instructions)
   (let ((next-index 0))
-    ;; Assign permanents early in the vector.
     (map nil (lambda (inst)
-               (when (and (typep inst 'creator) (permanency inst)
-                          (not (index inst)))
-                 (setf (index inst) next-index next-index (1+ next-index))))
-         instructions)
-    ;; Assign impermanents to the rest.
-    (map nil (lambda (inst)
-               (when (and (typep inst 'creator) (not (permanency inst))
-                          (not (index inst)))
+               (when (and (typep inst 'creator) (not (index inst)))
                  (setf (index inst) next-index next-index (1+ next-index))))
          instructions))
   (values))
