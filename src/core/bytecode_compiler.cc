@@ -2470,7 +2470,9 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
   else if (head == cl::_sym_the)
     compile_the(oCar(rest), oCadr(rest), env, context);
   // basic optimization
-  else if (head == cl::_sym_funcall)
+  else if (head == cl::_sym_funcall
+           // Do a basic syntax check so that (funcall) fails properly.
+           && rest.consp())
     compile_funcall(oCar(rest), oCdr(rest), env, context);
   // extension
   else if (head == cleavirPrimop::_sym_funcall)
