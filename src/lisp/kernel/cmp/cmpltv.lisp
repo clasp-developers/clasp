@@ -627,8 +627,11 @@
            (let ((*initializer-map* (or *initializer-map* (make-hash-table))))
              (prog1
                  (add-creator value (creation-form-creator value create))
+               ;; WARNING: If object initializations ever need instructions
+               ;; moved besides GENERAL-INITIALIZER, they have to be part of
+               ;; these TYPEPs.
                (setf *instructions* (nconc (remove-if (lambda (x)
-                                                        (not (typep x 'creator)))
+                                                        (typep x 'general-initializer))
                                                       (gethash value *initializer-map*))
                                            *instructions*))
                (let* ((*initializer-destination* value)
@@ -641,7 +644,7 @@
                            (nconc (gethash *initializer-destination* *initializer-map*)
                                   instructions))))
                (setf *instructions* (nconc (remove-if (lambda (x)
-                                                        (typep x 'creator))
+                                                        (not (typep x 'general-initializer)))
                                                       (gethash value *initializer-map*))
                                            *instructions*))))))
         (*initializer-destination*
