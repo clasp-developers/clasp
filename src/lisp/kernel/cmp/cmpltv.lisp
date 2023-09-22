@@ -48,16 +48,23 @@
   ((%prototype :reader prototype
                :initarg :prototype)))
 
+(defun pindex (object)
+  (etypecase object
+    (creator (index object))
+    (vcreator-reference (prototype object))))
+
 (defmethod print-object ((object creator) stream)
   (print-unreadable-object (object stream :type t)
-    (format stream "~d" (index object))))
+    (format stream "~d" (index object)))
+  object)
 
 (defmethod print-object ((object vcreator) stream)
   (print-unreadable-object (object stream :type t)
     (if (slot-boundp object '%prototype)
         (prin1 (prototype object) stream)
         (write-string "[no prototype]" stream))
-    (format stream " ~d" (index object))))
+    (format stream " ~d" (index object)))
+  object)
 
 ;;; An instruction that performs some action for effect. This can include
 ;;; initialization as well as arbitrary side effects (as from make-load-form).
@@ -71,9 +78,21 @@
   ((%cons :initarg :cons :reader rplac-cons :type cons-creator)
    (%value :initarg :value :reader rplac-value :type creator)))
 
+(defmethod print-object ((object rplaca-init) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "~d ~d"
+            (pindex (rplac-cons object)) (pindex (rplac-value object))))
+  object)
+
 (defclass rplacd-init (effect)
   ((%cons :initarg :cons :reader rplac-cons :type cons-creator)
    (%value :initarg :value :reader rplac-value :type creator)))
+
+(defmethod print-object ((object rplacd-init) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "~d ~d"
+            (pindex (rplac-cons object)) (pindex (rplac-value object))))
+  object)
 
 ;;; dimensions and element-type are encoded with the array since
 ;;; they shouldn't really need to be coalesced.
@@ -631,7 +650,7 @@
                ;; moved besides GENERAL-INITIALIZER, they have to be part of
                ;; these TYPEPs.
                (setf *instructions* (nconc (remove-if (lambda (x)
-                                                        (typep x 'general-initializer))
+                                                        (typep x '(or setf-literals general-initializer)))
                                                       (gethash value *initializer-map*))
                                            *instructions*))
                (let* ((*initializer-destination* value)
@@ -644,7 +663,7 @@
                            (nconc (gethash *initializer-destination* *initializer-map*)
                                   instructions))))
                (setf *instructions* (nconc (remove-if (lambda (x)
-                                                        (not (typep x 'general-initializer)))
+                                                        (not (typep x '(or setf-literals general-initializer))))
                                                       (gethash value *initializer-map*))
                                            *instructions*))))))
         (*initializer-destination*
@@ -1197,6 +1216,12 @@
    ;; so they're just encoded inline.
    (%literals :initarg :literals :reader setf-literals-literals
               :type simple-vector)))
+
+(defmethod print-object ((object setf-literals) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "~a~{ ~a~}" (pindex (setf-literals-module object))
+            (map 'list #'pindex (setf-literals-literals object))))
+  object)
 
 (defgeneric ensure-module-literal (literal-info))
 
