@@ -221,22 +221,22 @@ struct loadltv {
     // may not work. so we do something stupid.
     for (size_t i = 0; i < _literals.size(); ++i)
       if (_literals[i].unboundp()) // not initialized
-        SIMPLE_ERROR("Invalid FASL: did not initialize object #%zu", i);
+        SIMPLE_ERROR("Invalid FASL: did not initialize object #{:02d}", i);
   }
 
   T_sp get_ltv(size_t index) {
     if (index >= _literals.size())
-      SIMPLE_ERROR("Invalid FASL: requested object #%zu, which is out of range", index);
+      SIMPLE_ERROR("Invalid FASL: requested object #{:02d}, which is out of range", index);
     if (_literals[index].unboundp())
-      SIMPLE_ERROR("Invalid FASL: requested object #%zu, which has not yet been initialized", index);
+      SIMPLE_ERROR("Invalid FASL: requested object #{:02d}, which has not yet been initialized", index);
     return _literals[index];
   }
 
   void set_ltv(T_sp value, size_t index) {
     if (index >= _literals.size())
-      SIMPLE_ERROR("Invalid FASL: Tried to set object #%zu, which is out of range", index);
+      SIMPLE_ERROR("Invalid FASL: Tried to set object #{:02d}, which is out of range", index);
     if (!_literals[index].unboundp())
-      SIMPLE_ERROR("Invalid FASL: Tried to set object #%zu, which has already been initialized", index);
+      SIMPLE_ERROR("Invalid FASL: Tried to set object #{:02d}, which has already been initialized", index);
     _literals[index] = value;
   }
 
