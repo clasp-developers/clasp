@@ -186,14 +186,6 @@ CL_DEFUN T_sp core__cas_symbol_value(T_sp cmp, T_sp new_value, Symbol_sp sym) {
   return sym->casSymbolValue(cmp, new_value);
 }
 
-CL_LAMBDA(symbol cell unbound);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Get the value of a symbol from TLS or from the given CELL)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__symbol_value_from_cell(Symbol_sp symbol, Cons_sp cell, T_sp unbound_marker) {
-  return symbol->symbolValueFromCell(cell, unbound_marker);
-}
-
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(make_symbol)dx");

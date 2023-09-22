@@ -258,25 +258,9 @@ public:
       return cas_globalValue(cmp, new_value);
   }
 
-  inline T_sp symbolValueFromCell(Cons_sp cell, T_sp unbound_marker) const {
-    T_sp val = symbolValueUnsafe();
-    if (val.unboundp()) val = CONS_CAR(cell);
-    // FIXME: SICL allows many unbound values, but we don't even pick one properly,
-    // i.e. we just check for both rather than checking TLS.unboundp() and global.eq(marker).
-    if (val.unboundp() || val == unbound_marker) this->symbolUnboundError();
-    return val;
-  }
-
   inline bool boundP() const { return !(symbolValueUnsafe().unboundp()); };
 
-  inline bool boundPFomCell(Cons_sp cell) {
-    T_sp val = symbolValueUnsafe();
-    if (val.unboundp()) val = CONS_CAR(cell);
-    return !(val.unboundp());
-  }
-
   Symbol_sp makunbound();
-  //Symbol_sp makunboundFromCell(Cons_sp cell);
 
   T_sp defparameter(T_sp obj);
   T_sp defconstant(T_sp obj);
@@ -291,18 +275,6 @@ public:
 #endif
       set_globalValue(obj);
     return obj;
-  }
-
-  inline T_sp setf_symbolValueFromCell(T_sp val, Cons_sp cell) {
-#ifdef CLASP_THREADS
-    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    auto& bindings = my_thread->_Bindings;
-    if (bindings.thread_local_boundp(index))
-      set_threadLocalSymbolValue(val);
-    else
-#endif
-      CONS_CAR(cell) = val;
-    return val;
   }
 
  public: // function value slots access

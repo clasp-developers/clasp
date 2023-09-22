@@ -404,15 +404,6 @@ CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   return val;
 };
 
-CL_LAMBDA(sym value cell);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Set TLS symbol value, or if unbound there, the cell)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__setf_symbol_value_from_cell(Symbol_sp sym, T_sp val, Cons_sp cell) {
-  sym->setf_symbolValueFromCell(val, cell);
-  return val;
-}
-
 CL_LAMBDA(arg &optional msg);
 CL_DECLARE();
 DOCGROUP(clasp);
