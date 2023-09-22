@@ -6,6 +6,7 @@
 * The bytecode compiler tracks source positions for error reporting.
 * Circle detection for load forms in bytecode FASL.
 * Bytecode functions can be compiled directly into native code with `cl:compile` (experimental).
+* Support for Linux AARCH64.
 
 ## Fixed
 * Avoid segmentation faults from incorrectly calling MP:PROCESS-JOIN in
