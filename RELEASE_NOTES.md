@@ -1,8 +1,11 @@
 # Version 2.4.0 (LLVM15/LLVM16) Pending
 
 ## Added
-* Debug source position info for bytecode.
+* Bytecode stores source location info for debugging.
+* Bytecode stores variable info, so that variables can be viewed in the debugger.
+* The bytecode compiler tracks source positions for error reporting.
 * Circle detection for load forms in bytecode FASL.
+* Bytecode functions can be compiled directly into native code with `cl:compile` (experimental).
 
 ## Fixed
 * Avoid segmentation faults from incorrectly calling MP:PROCESS-JOIN in
