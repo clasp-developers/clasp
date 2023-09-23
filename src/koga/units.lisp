@@ -79,6 +79,16 @@
                                  (or cxx (merge-pathnames #P"clang++" llvm-bindir))
                                  :required t))))
 
+(defmethod configure-unit (configuration (unit (eql :dis)))
+  "Find the llvm0dis binary."
+  (with-accessors ((dis dis)
+                   (llvm-bindir llvm-bindir))
+      configuration
+    (message :emph "Configuring ar")
+    (setf dis (configure-program "dis"
+                                 (or dis (merge-pathnames #P"llvm-dis" llvm-bindir))
+                                 :required t))))
+
 (defmethod configure-unit (configuration (unit (eql :nm)))
   "Find the nm binary."
   (with-accessors ((nm nm)

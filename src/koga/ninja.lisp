@@ -28,6 +28,7 @@
                         :ar (ar configuration)
                         :cc (cc configuration)
                         :cxx (cxx configuration)
+                        :dis (dis configuration)
                         :ldflags (ldflags configuration)
                         :ldlibs (ldlibs configuration)
                         :lisp (lisp configuration)
@@ -99,6 +100,15 @@
                     :command "$cxx $variant-cxxflags $cxxflags -c -MD -MF $out.d -o$out $in"
                     :description "Compiling $in"
                     :depfile "$out.d")
+  (ninja:write-rule output-stream :cxx-llvm
+                    :command "$cxx $variant-cxxflags $cxxflags -c -emit-llvm -g -O3 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -o$out $in"
+                    :description "")
+  (ninja:write-rule output-stream :disassemble
+                    :command "$dis -o $out $in"
+                    :description "Dissassembling $in")
+  (ninja:write-rule output-stream :trampoline
+                    :command (lisp-command "trampoline.lisp" "$out $in")
+                    :description "Creating trampoline $out")
   (ninja:write-rule output-stream :link
                     :command "$cxx $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
@@ -184,6 +194,29 @@
   (ninja:write-rule output-stream :update-unicode
                     :command (lisp-command "update-unicode.lisp" "$source")
                     :description "Updating unicode tables"))
+
+(defmethod print-variant-target-source
+    (configuration (name (eql :ninja)) output-stream (target (eql :trampoline)) (source cc-source)
+     &aux (ll (make-source-output source :type "ll"))
+          (bc (make-source-output source :type "bc"))
+          (header (make-source "trampoline.h" :variant-generated))
+          (installed-header (make-source "trampoline.h" :installed-generated)))
+  (declare (ignore configuration))
+  (ninja:write-build output-stream :cxx-llvm
+                     :variant-cxxflags *variant-cxxflags*
+                     :inputs (list source)
+                     :outputs (list ll))
+  (ninja:write-build output-stream :disassemble
+                     :inputs (list ll)
+                     :outputs (list bc))
+  (ninja:write-build output-stream :trampoline
+                     :inputs (list bc)
+                     :outputs (list header))
+  (when *variant-default*
+    (ninja:write-build output-stream :install-file
+                                :inputs (list header)
+                                :outputs (list installed-header)))
+  (list :outputs header))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :tags)) sources
@@ -299,7 +332,8 @@
     (ninja:write-build output-stream :scrape-pp
                        :variant-cppflags *variant-cppflags*
                        :inputs (list source)
-                       :order-only-inputs (list (make-source "virtualMachine.h" :variant-generated))
+                       :order-only-inputs (list (make-source "virtualMachine.h" :variant-generated)
+                                                (make-source "trampoline.h" :variant-generated))
                        :outputs (list pp))
     (ninja:write-build output-stream :generate-sif
                        :inputs (list pp)
@@ -308,6 +342,7 @@
                        :variant-cxxflags *variant-cxxflags*
                        :inputs (list source)
                        :order-only-inputs (list* (make-source "virtualMachine.h" :variant-generated)
+                                                 (make-source "trampoline.h" :variant-generated)
                                                  (if *variant-precise*
                                                      (scraper-precise-headers configuration)
                                                      (scraper-headers configuration)))
@@ -420,6 +455,7 @@
                                                            "install_extension_code"
                                                            "install_bin"
                                                            (make-source "virtualMachine.h" :installed-generated)
+                                                           (make-source "trampoline.h" :installed-generated)
                                                            exe-installed
                                                            lib-installed
                                                            symlink-installed)

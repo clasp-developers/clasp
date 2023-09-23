@@ -312,3 +312,12 @@ fi
 cp -r ../src/lisp/modules/asdf \"$WORK_DIR\"
 cd \"$WORK_DIR\"/asdf
 make $2 l=clasp CLASP=$CLASP"))
+
+(defmethod print-prologue (configuration (name (eql :trampoline)) output-stream)
+  (print-asdf-stub output-stream t :alexandria)
+  (format output-stream "
+(with-open-file (stream (first (uiop:command-line-arguments)) :direction :output :if-exists :supersede :if-does-not-exist :create)
+  (write-line \"std::string global_trampoline = R\\\"trampoline(\" stream)
+  (write-string (alexandria:read-file-into-string (second (uiop:command-line-arguments)))
+                 stream)
+  (write-line \")trampoline\\\";\" stream))"))

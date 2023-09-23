@@ -1235,73 +1235,78 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebugVaslistSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_dtree_interpreterSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_symbol_lookupSTAR->defparameter(nil<core::T_O>());
-#if defined(__x86_64__)
-  SYMBOL_EXPORT_SC_(KeywordPkg, 64_bit);
-  Symbol_sp address_model = kw::_sym_64_bit;
 
-#if defined(__APPLE__) && defined(__MACH__)
-#include <TargetConditionals.h>
-
-#if TARGET_OS_IPHONE == 1
-#error Currently iPhone simulator and iOS are not supported
-#elif TARGET_OS_MAC == 1
-
-  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_darwin);
-  Symbol_sp target_os = kw::_sym_target_os_darwin;
-
-#else
-#error Your TargetConditionals.h file says you are not a Mac or iPhone?????
+  List_sp features = nil<core::T_O>();
+  features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
+  features = Cons_O::create(_lisp->internKeyword("COMMON-LISP"), features);
+  features = Cons_O::create(_lisp->internKeyword("ANSI-CL"), features);
+  features = Cons_O::create(_lisp->internKeyword("IEEE-FLOATING-POINT"), features);
+  features = Cons_O::create(_lisp->internKeyword("64-BIT"), features);
+#ifdef _TARGET_OS_DARWIN
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
+  features = Cons_O::create(_lisp->internKeyword("DARWIN"), features);
 #endif
-
-#elif defined(__linux__)
-
-  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
-  Symbol_sp target_os = kw::_sym_target_os_linux;
-
-#elif defined(__FreeBSD__)
-
-  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_freebsd);
-  Symbol_sp target_os = kw::_sym_target_os_freebsd;
-
-#elif defined(CLASP_APPLE_SILICON)
-#error "__arm__ is defined"
-#else
-#error Currently only MacOSX, linux and FreeBSD are supported for x86_64
+#ifdef _TARGET_OS_LINUX
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
 #endif
-
-#elif defined(__i386__)
-
-  SYMBOL_EXPORT_SC_(KeywordPkg, 32_bit);
-  Symbol_sp address_model = kw::_sym_32_bit;
-
-#if defined(__linux__)
-
-  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
-  Symbol_sp target_os = kw::_sym_target_os_linux;
-
-#else
-#error Currently only linux is supported for i386
+#ifdef _TARGET_OS_FREEBSD
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
+  features = Cons_O::create(_lisp->internKeyword("FREEBSD"), features);
 #endif
-
-#elif defined(CLASP_APPLE_SILICON)
-
-  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_darwin);
-  Symbol_sp target_os = kw::_sym_target_os_darwin;
-  SYMBOL_EXPORT_SC_(KeywordPkg, 64_bit);
-  Symbol_sp address_model = kw::_sym_64_bit;
-
-#else
-#error Currently only x86_64 and i386 is supported
+#ifdef __x86_64__
+  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
 #endif
-
-  ql::list features;
-  features << target_os;
-  features << address_model;
-
-  // Now add other standard features
-  // features << kw::_sym_brcl;
-
-  cl::_sym_STARfeaturesSTAR->exportYourself()->defparameter(features.cons());
+#ifdef __aarch64__
+  features = Cons_O::create(_lisp->internKeyword("ARM64"), features);
+#endif
+#ifdef CLASP_UNICODE
+  features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
+#endif
+  features = Cons_O::create(_lisp->internKeyword("LLVM" CXX_MACRO_STRING(__clang_major__)), features);
+#ifdef VARARGS
+  features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
+#endif
+#ifdef POLYMORPHIC_SMART_PTR
+  features = Cons_O::create(_lisp->internKeyword("POLYMORPHIC-SMART-PTR"), features);
+#endif
+#ifdef _DEBUG_BUILD
+  features = Cons_O::create(_lisp->internKeyword("DEBUG-BUILD"), features);
+#else // _RELEASE_BUILD
+  features = Cons_O::create(_lisp->internKeyword("RELEASE-BUILD"), features);
+#endif
+#ifdef USE_MPI
+  features = Cons_O::create(_lisp->internKeyword("USE-MPI"), features);
+#endif
+#if defined(USE_BOEHM)
+  features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
+#elif defined(USE_MPS)
+  features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
+#elif defined(USE_MMTK)
+  features = Cons_O::create(_lisp->internKeyword("USE-MMTK"), features);
+#endif
+#ifdef USE_PRECISE_GC
+  // Informs CL that precise GC is being used
+  features = Cons_O::create(_lisp->internKeyword("USE-PRECISE-GC"), features);
+#endif
+#ifdef CLASP_THREADS
+  features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
+#endif
+#if TAG_BITS==4
+  features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"),features);
+#endif
+#ifdef CLASP_EXTENSIONS
+  features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"),features);
+#endif
+#if CLASP_BUILD_MODE == 6
+  features = Cons_O::create(_lisp->internKeyword("BYTECODE"), features);
+#endif
+  cl::_sym_STARfeaturesSTAR->exportYourself()->defparameter(features);
 }
 
 void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
