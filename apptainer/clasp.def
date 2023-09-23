@@ -1,5 +1,5 @@
 BootStrap: docker
-From: ubuntu:kinetic
+From: ubuntu:lunar
 
 %post
     apt-get update
