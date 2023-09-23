@@ -182,9 +182,12 @@ public:
     return cmp;
   }
 
+  // Ensure that a symbol's binding index is set to something coherent.
+  uint32_t ensureBindingIndex() const;
+
   inline T_sp threadLocalSymbolValue() const {
 #ifdef CLASP_THREADS
-    return my_thread->_Bindings.thread_local_value(this);
+    return my_thread->_Bindings.thread_local_value(ensureBindingIndex());
 #else
     return globalValue();
 #endif
@@ -192,7 +195,7 @@ public:
 
   inline void set_threadLocalSymbolValue(T_sp value) {
 #ifdef CLASP_THREADS
-    my_thread->_Bindings.set_thread_local_value(value, this);
+    my_thread->_Bindings.set_thread_local_value(value, ensureBindingIndex());
 #else
     set_globalValue(value);
 #endif
@@ -215,7 +218,7 @@ public:
     uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
     auto& bindings = my_thread->_Bindings;
     if (bindings.thread_local_boundp(index))
-      return bindings.thread_local_value(this);
+      return bindings.thread_local_value(index);
     else
 #endif
       return globalValue();

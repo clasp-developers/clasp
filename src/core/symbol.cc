@@ -350,6 +350,27 @@ void Symbol_O::setf_symbolFunction(Function_sp fn) {
   ensureFunctionCell(fn)->real_function_set(fn);
 }
 
+uint32_t Symbol_O::ensureBindingIndex() const {
+  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
+  uint32_t binding_index = _BindingIdx.load(std::memory_order_relaxed);
+  if (binding_index == no_binding) {
+      // Get a new index and try to exchange it in.
+    auto& bindings = my_thread->_Bindings;
+    uint32_t new_index = bindings.new_binding_index();
+    // NOTE: We can use memory_order_relaxed because (a) nothing outside
+    // of Symbol_O deals with the _BindingIdx, and (b) the only guarantee we
+    // should need for this structure is modification order consistency.
+    if (!(_BindingIdx.compare_exchange_strong(no_binding, new_index,
+                                              std::memory_order_relaxed))) {
+        // Some other thread has beat us. That's fine - just use theirs
+        // (which is now in no_binding) and release the index we just
+        // grabbed.
+      bindings.release_binding_index(new_index);
+      return no_binding;
+    } else return new_index;
+  } else return binding_index;
+}
+
 NEVER_OPTIMIZE void Symbol_O::symbolUnboundError() const {
   UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
 }

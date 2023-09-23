@@ -31,11 +31,10 @@ namespace core {
   public:
     size_t new_binding_index() const;
     void release_binding_index(size_t index) const;
-    uint32_t ensure_binding_index(const Symbol_O*) const;
     // Access
-    T_sp thread_local_value(const Symbol_O*) const;
-    void set_thread_local_value(T_sp, const Symbol_O*);
-    bool thread_local_boundp(int index) const;
+    T_sp thread_local_value(uint32_t index) const;
+    void set_thread_local_value(T_sp, uint32_t);
+    bool thread_local_boundp(uint32_t index) const;
   public:
     T_sp* thread_local_reference(const uint32_t) const;
   };
