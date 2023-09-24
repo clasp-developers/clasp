@@ -337,9 +337,8 @@ T_mv call_with_catch(T_sp tag, Catchf&& cf) {
 template <typename Boundf>
 auto call_with_variable_bound(Symbol_sp sym, T_sp val,
                               Boundf&& bound) {
-  T_sp old = sym->threadLocalSymbolValue();
   DynamicScopeManager scope(sym, val);
-  gctools::StackAllocate<BindingDynEnv_O> bde(sym, old);
+  gctools::StackAllocate<BindingDynEnv_O> bde(sym, scope.oldBinding());
   gctools::StackAllocate<Cons_O> sa_ec(bde.asSmartPtr(), my_thread->dynEnvStackGet());
   DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
   return bound();

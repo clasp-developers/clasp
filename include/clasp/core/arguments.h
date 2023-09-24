@@ -126,12 +126,13 @@ private:
 public:
   inline explicit DynamicScopeManager(Symbol_sp sym, T_sp val) {
     _OldVar = sym;
-    _OldBinding = sym->threadLocalSymbolValue();
-    sym->set_threadLocalSymbolValue(val);
+    _OldBinding = sym->bind(val);
   }
   virtual ~DynamicScopeManager() {
-    _OldVar->set_threadLocalSymbolValue(_OldBinding);
+    _OldVar->unbind(_OldBinding);
   }
+  // used in unwind.h
+  inline T_sp oldBinding() { return _OldBinding; }
 };
 
 };

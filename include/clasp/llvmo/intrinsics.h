@@ -247,9 +247,6 @@ namespace llvmo {
                  couldNotCoerceToClosure,
                  destinationMustBeActivationFrame,
                  invalidIndexForFunctionFrame,
-                 unboundSymbolValue,
-                 unboundSymbolFunction,
-                 unboundSymbolSetfFunction,
                  dummyErrorCode
   } ErrorCode;
 

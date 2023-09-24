@@ -102,21 +102,6 @@ namespace llvmo {
       SIMPLE_ERROR("Destination must be ActivationFrame");
   case invalidIndexForFunctionFrame:
       SIMPLE_ERROR("Invalid index[{}] for FunctionFrame(size={})", _rep_(arg0) , _rep_(arg1));
-  case unboundSymbolValue:
-    {
-      core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      UNBOUND_VARIABLE_ERROR(sym);
-    };
-  case unboundSymbolFunction:
-    {
-      core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      ERROR_UNDEFINED_FUNCTION(sym);
-    }
-  case unboundSymbolSetfFunction:
-    {
-      core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR("The symbol {} has no setf function bound to it", sym->fullName() );
-    }
   case badCell:
     {
       SIMPLE_ERROR("The object with pointer {} is not a cell", (void*)arg0.raw_());
@@ -1096,6 +1081,7 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
 
 void cc_setTLSymbolValue(core::T_O* sym, core::T_O *val)
 {NO_UNWIND_BEGIN();
+  // FIXME: Grab binding index from compiled code to save a lookup.
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
   s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
   NO_UNWIND_END();

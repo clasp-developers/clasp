@@ -202,15 +202,13 @@ Symbol_O::Symbol_O(const only_at_startup& dummy) : _HomePackage(nil<T_O>()),
 #ifdef SYMBOL_CLASS
                                                    _Class(nil<T_O>()),
 #endif
-                                                   _GlobalValue(unbound<T_O>()),
+                                                   _Value(unbound<VariableCell_O>()),
                                                    _Function(unbound<FunctionCell_O>()),
                                                    _SetfFunction(unbound<FunctionCell_O>()),
-                                                   _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
                                                    _Flags(0),
                                                    _PropertyList(nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
-                       _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
                        _Flags(0),
                        _PropertyList(nil<List_V>()) {};
 
@@ -219,9 +217,7 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, "The package is UNDEFINED");
   this->_HomePackage = pkg;
   if (pkg->actsLikeKeywordPackage())
-    this->set_globalValue(this->asSmartPtr());
-  else
-    this->set_globalValue(unbound<T_O>());
+    this->setf_symbolValue(this->asSmartPtr());
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get_std_string().c_str(),
                                        this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->setf_plist(nil<T_O>());
@@ -239,12 +235,81 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   return n;
 };
 
-Symbol_sp Symbol_O::makunbound() {
+VariableCell_sp VariableCell_O::make() {
+  return gctools::GC<VariableCell_O>::allocate();
+}
+
+uint32_t VariableCell_O::ensureBindingIndex() const {
+  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
+  uint32_t binding_index = _BindingIdx.load(std::memory_order_relaxed);
+  if (binding_index == no_binding) {
+      // Get a new index and try to exchange it in.
+    auto& bindings = my_thread->_Bindings;
+    uint32_t new_index = bindings.new_binding_index();
+    // NOTE: We can use memory_order_relaxed because (a) nothing outside
+    // of VariableCell_O deals with the _BindingIdx, and (b) the only guarantee we
+    // should need for this structure is modification order consistency.
+    if (!(_BindingIdx.compare_exchange_strong(no_binding, new_index,
+                                              std::memory_order_relaxed))) {
+        // Some other thread has beat us. That's fine - just use theirs
+        // (which is now in no_binding) and release the index we just
+        // grabbed.
+      bindings.release_binding_index(new_index);
+      return no_binding;
+    } else return new_index;
+  } else return binding_index;
+}
+
+void VariableCell_O::unboundError(T_sp name) const {
+  UNBOUND_VARIABLE_ERROR(name);
+}
+
+VariableCell_sp Symbol_O::ensureVariableCell() {
+  VariableCell_sp vcell = variableCell();
+  if (vcell.unboundp()) {
+    VariableCell_sp n = VariableCell_O::make();
+    if (_Value.compare_exchange_strong(vcell, n, std::memory_order_relaxed))
+      return n;
+    else return vcell;
+  } else return vcell;
+}
+
+bool Symbol_O::boundP() const {
+  VariableCell_sp vcell = variableCell();
+  if (vcell.unboundp()) return false;
+  else return vcell->boundP();
+}
+
+T_sp Symbol_O::symbolValue() const {
+  VariableCell_sp vcell = variableCell();
+  if (vcell.unboundp())
+    UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
+  else return vcell->value(this->asSmartPtr());
+}
+
+T_sp Symbol_O::atomicSymbolValue() const {
+  VariableCell_sp vcell = variableCell();
+  if (vcell.unboundp())
+    UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
+  else return vcell->value(this->asSmartPtr());
+}
+
+void Symbol_O::setf_symbolValue(T_sp nv) {
+  ensureVariableCell()->set_value(nv);
+}
+void Symbol_O::set_atomicSymbolValue(T_sp nv) {
+  ensureVariableCell()->set_valueSeqCst(nv);
+}
+
+T_sp Symbol_O::casSymbolValue(T_sp cmp, T_sp nv) {
+  return ensureVariableCell()->cas_globalValueSeqCst(cmp, nv);
+}
+
+void Symbol_O::makunbound() {
   if (this->getReadOnly())
     // would be a nice extension to make this a continuable error
     SIMPLE_ERROR("Cannot make constant {} unbound", this->__repr__());
   setf_symbolValue(unbound<T_O>());
-  return this->asSmartPtr();
 }
 
 CL_LAMBDA(function-name);
@@ -252,7 +317,8 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(makunbound)dx");
 DOCGROUP(clasp);
 CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
-  return functionName->makunbound();
+  functionName->makunbound();
+  return functionName;
 }
 
 FunctionCell_sp Symbol_O::ensureFunctionCell() {
@@ -350,31 +416,6 @@ void Symbol_O::setf_symbolFunction(Function_sp fn) {
   ensureFunctionCell(fn)->real_function_set(fn);
 }
 
-uint32_t Symbol_O::ensureBindingIndex() const {
-  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
-  uint32_t binding_index = _BindingIdx.load(std::memory_order_relaxed);
-  if (binding_index == no_binding) {
-      // Get a new index and try to exchange it in.
-    auto& bindings = my_thread->_Bindings;
-    uint32_t new_index = bindings.new_binding_index();
-    // NOTE: We can use memory_order_relaxed because (a) nothing outside
-    // of Symbol_O deals with the _BindingIdx, and (b) the only guarantee we
-    // should need for this structure is modification order consistency.
-    if (!(_BindingIdx.compare_exchange_strong(no_binding, new_index,
-                                              std::memory_order_relaxed))) {
-        // Some other thread has beat us. That's fine - just use theirs
-        // (which is now in no_binding) and release the index we just
-        // grabbed.
-      bindings.release_binding_index(new_index);
-      return no_binding;
-    } else return new_index;
-  } else return binding_index;
-}
-
-NEVER_OPTIMIZE void Symbol_O::symbolUnboundError() const {
-  UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
-}
-
 void Symbol_O::sxhash_(HashGenerator &hg) const {
   // clhs 18.2.14 sxhash
   // Although similarity is defined for symbols in terms of both the symbol's name and the packages
@@ -395,7 +436,7 @@ Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     if (this->boundP())
-      new_symbol->set_globalValue(this->symbolValue());
+      new_symbol->setf_symbolValue(this->symbolValue());
     new_symbol->setReadOnly(this->getReadOnly());
     new_symbol->setf_plist(cl__copy_list(this->plist()));
     if (this->fboundp()) new_symbol->setf_symbolFunction(this->symbolFunction());
@@ -484,17 +525,17 @@ CL_DEFUN void core__STARmakeSpecial(Symbol_sp symbol) {
 
 T_sp Symbol_O::defconstant(T_sp val) {
   
-  T_sp result = this->setf_symbolValue(val);
+  this->setf_symbolValue(val);
   this->setf_specialP(true);
   this->setReadOnly(true);
-  return result;
+  return val;
 }
 
 T_sp Symbol_O::defparameter(T_sp val) {
   
-  T_sp result = this->setf_symbolValue(val);
+  this->setf_symbolValue(val);
   this->setf_specialP(true);
-  return result;
+  return val;
 }
 
 string Symbol_O::symbolNameAsString() const {
@@ -634,15 +675,17 @@ void Symbol_O::dump() {
       ss << "Package: ";
       ss << _rep_(this->getPackage()) << std::endl;
     }
-    T_sp val = this->symbolValueUnsafe();
-    if (!val) {
-      ss << "VALUE: NULL" << std::endl;
-    } else if (val.unboundp()) {
-      ss << "Value: UNBOUND" << std::endl;
-    } else if (val.nilp()) {
-      ss << "Value: nil" << std::endl;
+    if (this->boundP()) {
+      T_sp val = this->symbolValue();
+      if (val.unboundp()) {
+        ss << "Value: UNBOUND" << std::endl;
+      } else if (val.nilp()) {
+        ss << "Value: nil" << std::endl;
+      } else {
+        ss << "Value: " << _rep_(val) << std::endl;
+      }
     } else {
-      ss << "Value: " << _rep_(val) << std::endl;
+      ss << "No Value" << std::endl;
     }
     if (this->fboundp()) {
       ss << "Function: " << _rep_(this->symbolFunction()) << std::endl;
@@ -676,44 +719,14 @@ void Symbol_O::remove_package(Package_sp pkg)
 };
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__symbol_global_value(Symbol_sp s) {
-  return s->globalValue();
-}
-
-CL_DOCSTRING(R"(Set the value slot of the symbol to the value.
-This bypasses thread local storage of symbol value slots and any threads that start
-after this has been set will start with the value set here.)")
-DOCGROUP(clasp);
-CL_DEFUN void core__symbol_global_value_set(Symbol_sp symbol, T_sp value) {
-  symbol->set_globalValue(value);
-}
-
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__symbol_thread_local_value(Symbol_sp s) {
-  return s->threadLocalSymbolValue();
-}
-
-DOCGROUP(clasp);
 CL_DEFUN bool core__no_thread_local_bindingp(T_sp object) {
   return gctools::tagged_no_thread_local_bindingp(object.raw_());
 }
 
-/*! For debugging only - return the address of whatever word contains the
-    symbol-value for this symbol.  It's either &_GlobalValue or the address
-    of the thread local vector slot at _BindingIdx */
-DOCGROUP(clasp);
-CL_DEFUN Pointer_sp core__symbol_value_address(Symbol_sp s) {
-  if (s->_BindingIdx == NO_THREAD_LOCAL_BINDINGS) {
-    return Pointer_O::create((void*)&s->_GlobalValue);
-  }
-  return Pointer_O::create((void*)my_thread->bindings().thread_local_reference(s->_BindingIdx));
-}
-
-
 SYMBOL_EXPORT_SC_(KeywordPkg,vtable);
 SYMBOL_EXPORT_SC_(KeywordPkg,name);
 SYMBOL_EXPORT_SC_(KeywordPkg,home_package);
-SYMBOL_EXPORT_SC_(KeywordPkg,global_value);
+SYMBOL_EXPORT_SC_(KeywordPkg,value);
 SYMBOL_EXPORT_SC_(KeywordPkg,function);
 SYMBOL_EXPORT_SC_(KeywordPkg,setf_function);
 SYMBOL_EXPORT_SC_(KeywordPkg,binding_idx);
@@ -725,10 +738,9 @@ CL_DEFUN void core__verify_symbol_layout(T_sp alist)
 {
   expect_offset(kw::_sym_name,alist,offsetof(Symbol_O,_Name)-gctools::general_tag);
   expect_offset(kw::_sym_home_package,alist,offsetof(Symbol_O,_HomePackage)-gctools::general_tag);
-  expect_offset(kw::_sym_global_value,alist,offsetof(Symbol_O,_GlobalValue)-gctools::general_tag);
+  expect_offset(kw::_sym_value,alist,offsetof(Symbol_O,_Value)-gctools::general_tag);
   expect_offset(kw::_sym_function,alist,offsetof(Symbol_O,_Function)-gctools::general_tag);
   expect_offset(kw::_sym_setf_function,alist,offsetof(Symbol_O,_SetfFunction)-gctools::general_tag);
-  expect_offset(kw::_sym_binding_idx,alist,offsetof(Symbol_O,_BindingIdx)-gctools::general_tag);
   expect_offset(kw::_sym_flags,alist,offsetof(Symbol_O,_Flags)-gctools::general_tag);
   expect_offset(kw::_sym_property_list,alist,offsetof(Symbol_O,_PropertyList)-gctools::general_tag);
 }

@@ -259,7 +259,7 @@ public:
     reg::lisp_registerClassSymbol<OT>(this->_ClassSymbol);
     /*! Accumulate all of the classes in reverse order of how they were initialized
               in the core::*all-cxx-classes* variable */
-    if (_sym_STARallCxxClassesSTAR->symbolValueUnsafe()) {
+    if (_sym_STARallCxxClassesSTAR->boundP()) {
       _sym_STARallCxxClassesSTAR->setf_symbolValue(Cons_O::create(OT::static_classSymbol(), _sym_STARallCxxClassesSTAR->symbolValue()));
     }
 

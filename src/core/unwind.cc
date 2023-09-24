@@ -97,7 +97,7 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
 }
 
 void BindingDynEnv_O::proceed() {
-  this->sym->set_threadLocalSymbolValue(this->old);
+  this->sym->unbind(this->old);
 }
 
 [[noreturn]] void sjlj_unwind(LexDynEnv_sp dest, size_t index) {

@@ -360,7 +360,7 @@ void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
 namespace core {
 
 void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol) {
-  if (_sym_STARallCxxClassesSTAR->symbolValueUnsafe()) {
+  if (_sym_STARallCxxClassesSTAR->boundP()) {
     _sym_STARallCxxClassesSTAR->setf_symbolValue(Cons_O::create(classSymbol, _sym_STARallCxxClassesSTAR->symbolValue()));
   }
 };
