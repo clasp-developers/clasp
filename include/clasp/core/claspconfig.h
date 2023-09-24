@@ -36,4 +36,6 @@ THE SOFTWARE.
 #define CLASP_FORMAT_SIZE_T PY_FORMAT_SIZE_T
 #define CLASP_UNICODE_TYPE PY_UNICODE_TYPE
 
+#include <llvm/Config/llvm-config.h>
+
 #endif

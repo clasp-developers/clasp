@@ -57,8 +57,12 @@ THE SOFTWARE.
 #include <llvm/Analysis/Passes.h>
 #include <llvm/IR/MDBuilder.h>
 #include <llvm/IR/LegacyPassManager.h>
-#include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <llvm/Passes/PassBuilder.h>
+#if LLVM_VERSION_MAJOR < 17
 #include <llvm/ADT/Triple.h>
+#else
+#include <llvm/TargetParser/Triple.h>
+#endif
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Transforms/Scalar.h>

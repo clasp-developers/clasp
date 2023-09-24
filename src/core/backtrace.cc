@@ -135,7 +135,7 @@ static T_sp getSourcePosInfoForAddress(llvmo::DWARFContext_sp dcontext, llvmo::S
   }
 
   std::string source_path = info.FileName;
-#if __clang_major__ < 16
+#if LLVM_VERSION_MAJOR < 16
   if (info.Source.hasValue()) {
     std::smatch match;
     std::string source = info.Source.getValue().str();

@@ -1,4 +1,4 @@
-# Version 2.4.0 (LLVM15/LLVM16) Pending
+# Version 2.4.0 (LLVM15-17) Pending
 
 ## Added
 * Bytecode stores source location info for debugging.
@@ -7,12 +7,13 @@
 * Circle detection for load forms in bytecode FASL.
 * Bytecode functions can be compiled directly into native code with `cl:compile` (experimental).
 * Support for Linux AARCH64.
+* LLVM17 support. LLVM15 and LLVM16 are still supported.
 
 ## Fixed
 * Avoid segmentation faults from incorrectly calling MP:PROCESS-JOIN in
   EXT:RUN-PROGRAM.
 
-# Version 2.3.0 (LLVM15/LLVM16) 2023-06-04
+# Version 2.3.0 (LLVM15-16) 2023-06-04
 
 ## Added
 * Bytecode compiled images via build mode `:bytecode`.

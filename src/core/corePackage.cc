@@ -1100,7 +1100,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym__PLUS_class_name_to_lisp_name_PLUS_->defparameter(nil<T_O>());
   _sym__PLUS_type_header_value_map_PLUS_->defparameter(nil<T_O>());
   initialize_typeq_map();
-  _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(CXX_MACRO_STRING(LLVM_VERSION)));
+  _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(LLVM_VERSION_STRING));
 #ifdef USE_PARALLEL_BUILD
   _sym_STARuseParallelBuildSTAR->defparameter(_lisp->_true());
 #else
@@ -1206,7 +1206,11 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   comp::_sym_STARdefault_object_typeSTAR->defparameter(kw::_sym_faso);
   comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(nil<core::T_O>());
   gctools::_sym_STARdebug_gcrootsSTAR->defparameter(nil<core::T_O>());
+#ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
+  int optimization_level = 0;
+#else
   int optimization_level = 3;
+#endif
   const char *optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
   if (optLevel) {
     optimization_level = strtol(optLevel, NULL, 10);
@@ -1216,15 +1220,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
       optimization_level = 3;
     printf("%s:%d Due to CLASP_OPTIMIZATION_LEVEL environment variable --> cmp:*optimization-level* = %d\n", __FILE__, __LINE__,
            optimization_level);
-  } else {
-    optimization_level = 3;
-#ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
-    optimization_level = 0;
-    printf("%s:%d Due to DEBUG_LLVM_OPTIMIZATION_LEVEL_0 --> cmp:*optimization-level* = %d\n", __FILE__, __LINE__,
-           optimization_level);
-#else
-    optimization_level = 3;
-#endif
   }
   comp::_sym_STARoptimization_levelSTAR->defparameter(core::make_fixnum(optimization_level));
   _sym_STARreader_generate_cstSTAR->defparameter(nil<core::T_O>());

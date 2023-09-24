@@ -232,8 +232,8 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
         } else {
           const char* versionNumStr = version+7; // advance to the number of @@LLVM_number
           int versionNum = atoi(versionNumStr);
-          if (versionNum != LLVM_VERSION_INT) {
-            printf("%s:%d:%s We encountered a symbol that does not have the correct version \"@@LLVM_%d\" - it has \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, LLVM_VERSION_INT, version );
+          if (versionNum != LLVM_VERSION_MAJOR) {
+            printf("%s:%d:%s We encountered a symbol that does not have the correct version \"@@LLVM_%d\" - it has \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, LLVM_VERSION_MAJOR, version );
             abort();
           }
         } // fall through because we don't worry about versions right now

@@ -834,7 +834,7 @@ namespace translate {
 
 
 
-#if __clang_major__ < 16
+#if LLVM_VERSION_MAJOR < 16
 namespace translate {
 template <>
 struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, std::true_type> {
@@ -916,7 +916,7 @@ struct from_object<std::optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, s
 };
 #endif
 
-#if __clang_major__ < 16
+#if LLVM_VERSION_MAJOR < 16
 namespace translate {
 template <>
 struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {

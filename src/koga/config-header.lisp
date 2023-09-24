@@ -149,13 +149,6 @@
           do (write-defines output-stream
                             (format nil "_TARGET_OS_~A" os)
                             t))
-  (destructuring-bind (major minor &rest junk)
-      (uiop:parse-version (llvm-version configuration))
-    (declare (ignore junk))
-    (write-defines output-stream
-                   "LLVM_VERSION_X100" (+ (* 100 major) minor)
-                   "LLVM_VERSION" (+ major (* 0.01 minor))
-                   "LLVM_VERSION_INT" major))
   (if *variant-debug*
       (write-defines output-stream
                      "_DEBUG_BUILD" t
