@@ -800,14 +800,15 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       DBG_VM("special-bind %" PRIu8 "\n", c);
       T_sp value((gctools::Tagged)(vm.pop(sp)));
       pc++;
-      T_sp symbol((gctools::Tagged)literals[c]);
+      T_sp cell((gctools::Tagged)literals[c]);
       vm._pc = pc;
-      call_with_variable_bound(symbol, value,
-                               [&]() { return bytecode_vm(vm, literals, closed,
-                                                          closure,
-                                                          fp, sp,
-                                                          lcc_nargs, lcc_args);
-                               });
+      call_with_cell_bound(gc::As_assert<VariableCell_sp>(cell),
+                           value,
+                           [&]() { return bytecode_vm(vm, literals, closed,
+                                                      closure,
+                                                      fp, sp,
+                                                      lcc_nargs, lcc_args);
+                           });
       sp = vm._stackPointer;
       pc = vm._pc;
       break;
@@ -815,20 +816,19 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_symbol_value: {
       uint8_t c = *(++pc);
       DBG_VM("symbol-value %" PRIu8 "\n", c);
-      T_sp sym_sp((gctools::Tagged)literals[c]);
-      Symbol_sp sym = gc::As_assert<Symbol_sp>(sym_sp);
-      vm.push(sp, sym->symbolValue().raw_());
+      T_sp cell_sp((gctools::Tagged)literals[c]);
+      VariableCell_sp cell = gc::As_assert<VariableCell_sp>(cell_sp);
+      vm.push(sp, cell->value().raw_());
       pc++;
       break;
     }
     case vm_symbol_value_set: {
       uint8_t c = *(++pc);
       DBG_VM("symbol-value-set %" PRIu8 "\n", c);
-      T_sp sym_sp((gctools::Tagged)literals[c]);
-      ASSERT(gc::IsA<Symbol_sp>(sym_sp));
-      Symbol_sp sym = gc::As_assert<Symbol_sp>(sym_sp);
+      T_sp cell_sp((gctools::Tagged)literals[c]);
+      VariableCell_sp cell = gc::As_assert<VariableCell_sp>(cell_sp);
       T_sp value((gctools::Tagged)(vm.pop(sp)));
-      sym->setf_symbolValue(value);
+      cell->set_value(value);
       pc++;
       break;
     }
@@ -1299,13 +1299,13 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     DBG_VM("long special-bind %" PRIu16 "\n", c);
     T_sp value((gctools::Tagged)(vm.pop(sp)));
     pc += 3;
-    T_sp symbol((gctools::Tagged)literals[c]);
+    T_sp cell((gctools::Tagged)literals[c]);
     vm._pc = pc;
-    call_with_variable_bound(symbol, value,
-                             [&]() { return bytecode_vm(vm, literals, closed,
-                                                        closure,
-                                                        fp, sp, lcc_nargs, lcc_args);
-                             });
+    call_with_cell_bound(gc::As_assert<VariableCell_sp>(cell), value,
+                         [&]() { return bytecode_vm(vm, literals, closed,
+                                                    closure,
+                                                    fp, sp, lcc_nargs, lcc_args);
+                         });
     pc = vm._pc;
     sp = vm._stackPointer;
     break;
@@ -1314,9 +1314,9 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long symbol-value %" PRIu16 "\n", n);
-    T_sp sym_sp((gctools::Tagged)literals[n]);
-    Symbol_sp sym = gc::As_assert<Symbol_sp>(sym_sp);
-    vm.push(sp, sym->symbolValue().raw_());
+    T_sp cell_sp((gctools::Tagged)literals[n]);
+    VariableCell_sp cell = gc::As_assert<VariableCell_sp>(cell_sp);
+    vm.push(sp, cell->value().raw_());
     pc++;
     break;
   }
@@ -1324,10 +1324,10 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long symbol-value %" PRIu16 "\n", n);
-    T_sp sym_sp((gctools::Tagged)literals[n]);
-    Symbol_sp sym = gc::As_assert<Symbol_sp>(sym_sp);
+    T_sp cell_sp((gctools::Tagged)literals[n]);
+    VariableCell_sp cell = gc::As_assert<VariableCell_sp>(cell_sp);
     T_sp value((gctools::Tagged)(vm.pop(sp)));
-    sym->setf_symbolValue(value);
+    cell->set_value(value);
     pc++;
     break;
   }

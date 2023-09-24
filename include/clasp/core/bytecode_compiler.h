@@ -850,7 +850,7 @@ public:
   }
 public:
   CL_LISPIFY_NAME(VariableCellInfo/vname)
-  CL_DEFMETHOD T_sp vname() { return this->_vname; }
+  CL_DEFMETHOD Symbol_sp vname() { return this->_vname; }
 };
 
 class Module_O : public General_O {
