@@ -72,7 +72,7 @@
               (funcall *macroexpand-hook* cmf form env)
               `(cleavir-primop:funcall ,function ,@arguments))))))
   `(cleavir-primop:funcall
-    (core:coerce-fdesignator ,function)
+    (core:coerce-called-fdesignator ,function)
     ,@arguments))
 
 ;;; We do this so that the compiler only has one form of variadic call to

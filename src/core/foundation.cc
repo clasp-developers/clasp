@@ -1375,7 +1375,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
     printf("%s:%d lisp_error ->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
     early_debug(nil<T_O>(), false);
   }
-  core__apply1(coerce::functionDesignator(cl::_sym_error), arguments, datum);
+  core__apply1(coerce::calledFunctionDesignator(cl::_sym_error), arguments, datum);
   UNREACHABLE();
 }
 

@@ -134,9 +134,6 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(symbolFunction)dx");
 DOCGROUP(clasp);
 CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
-  if (!sym->fboundp()) {
-    ERROR_UNDEFINED_FUNCTION(sym);
-  }
   return sym->symbolFunction();
 };
 
@@ -205,103 +202,6 @@ CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
   SimpleString_sp name = coerce::simple_string(tstrng);
   Symbol_sp sym = Symbol_O::create(name);
   return sym;
-};
-};
-
-namespace core {
-
-
-struct UnboundFunctionEntryPoint {
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
-    ERROR_UNDEFINED_FUNCTION(symbol);
-  }
-    static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
-  }
-
-};
-
-struct UnboundSetfFunctionEntryPoint {
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
-    Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
-    List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
-    ERROR_UNDEFINED_FUNCTION(name);
-  }
-  static inline LISP_ENTRY_0() {
-    return entry_point_n(lcc_closure,0,NULL);
-  }
-  static inline LISP_ENTRY_1() {
-    core::T_O* args[1] = {lcc_farg0};
-    return entry_point_n(lcc_closure,1,args);
-  }
-  static inline LISP_ENTRY_2() {
-    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
-    return entry_point_n(lcc_closure,2,args);
-  }
-  static inline LISP_ENTRY_3() {
-    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
-    return entry_point_n(lcc_closure,3,args);
-  }
-  static inline LISP_ENTRY_4() {
-    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
-    return entry_point_n(lcc_closure,4,args);
-  }
-  static inline LISP_ENTRY_5() {
-    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
-    return entry_point_n(lcc_closure,5,args);
-  }
-
-};
-
-
-Closure_sp make_unbound_symbol_function(Symbol_sp name)
-{
-  if (_lisp->_Roots._UnboundSymbolFunctionEntryPoint.unboundp()) {
-    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalSimpleFunAndFunctionDescription<UnboundFunctionEntryPoint>(name,nil<T_O>());
-  }
-  Closure_sp closure = 
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false,1,
-                                                                                       _lisp->_Roots._UnboundSymbolFunctionEntryPoint);
-  (*closure)[0] = name;
-  return closure;
-}
-
-
-
-Closure_sp make_unbound_setf_symbol_function(Symbol_sp name)
-{
-  if (_lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint.unboundp()) {
-    List_sp sname = Cons_O::createList(cl::_sym_setf,name);
-    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalSimpleFunAndFunctionDescription<UnboundSetfFunctionEntryPoint>(sname,nil<T_O>());
-  }
-  Closure_sp closure = 
-      gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1,
-                                                                                       _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint);
-  (*closure)[0] = name;
-  return closure;
 }
 
 
@@ -311,8 +211,8 @@ Symbol_O::Symbol_O(const only_at_startup& dummy) : _HomePackage(nil<T_O>()),
                                                    _Class(nil<T_O>()),
 #endif
                                                    _GlobalValue(unbound<T_O>()),
-                                                   _Function(unbound<Function_O>()),
-                                                   _SetfFunction(unbound<Function_O>()),
+                                                   _Function(unbound<FunctionCell_O>()),
+                                                   _SetfFunction(unbound<FunctionCell_O>()),
                                                    _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
                                                    _Flags(0),
                                                    _PropertyList(nil<List_V>()) {};
@@ -330,8 +230,6 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
     this->set_globalValue(this->asSmartPtr());
   else
     this->set_globalValue(unbound<T_O>());
-  this->fmakunbound();
-  this->fmakunbound_setf();
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get_std_string().c_str(),
                                        this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->setf_plist(nil<T_O>());
@@ -345,12 +243,10 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
   // The following are done in finish_setup
-  //  n->fmakunbound();
-  //  n->fmakunbound_setf();
   ASSERTF(nm != "", "You cannot create a symbol without a name");
   return n;
 };
-   
+
 Symbol_sp Symbol_O::makunbound() {
   if (this->getReadOnly())
     // would be a nice extension to make this a continuable error
@@ -367,24 +263,100 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
   return functionName->makunbound();
 }
 
+FunctionCell_sp Symbol_O::ensureFunctionCell() {
+  FunctionCell_sp existing = functionCell();
+  if (existing.unboundp()) {
+    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr());
+    if (this->_Function.compare_exchange_strong(existing, n, std::memory_order_relaxed))
+      return n;
+    else
+      return existing;
+  } else return existing;
+}
+
+FunctionCell_sp Symbol_O::ensureFunctionCell(Function_sp init) {
+  FunctionCell_sp existing = functionCell();
+  if (existing.unboundp()) {
+    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr(), init);
+    if (this->_Function.compare_exchange_strong(existing, n, std::memory_order_relaxed))
+      return n;
+    else
+      // Some other thread installed a cell with presumably some other
+      // function, but we don't have to bother putting in our function,
+      // since we can just act like that other thread acted after us.
+      return existing;
+  } else return existing;
+}
+
+FunctionCell_sp Symbol_O::ensureSetfFunctionCell() {
+  FunctionCell_sp existing = setfFunctionCell();
+  if (existing.unboundp()) {
+    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr());
+    if (this->_SetfFunction.compare_exchange_strong(existing, n, std::memory_order_relaxed))
+      return n;
+    else
+      return existing;
+  } else return existing;
+}
+
+FunctionCell_sp Symbol_O::ensureSetfFunctionCell(Function_sp init) {
+  FunctionCell_sp existing = setfFunctionCell();
+  if (existing.unboundp()) {
+    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr(), init);
+    if (this->_SetfFunction.compare_exchange_strong(existing, n, std::memory_order_relaxed))
+      return n;
+    else
+      return existing;
+  } else return existing;
+}
+
+Function_sp Symbol_O::symbolFunction() const {
+  FunctionCell_sp cell = functionCell();
+  if (!cell.unboundp()) {
+    if (cell->fboundp())
+      return cell->real_function();
+  }
+  ERROR_UNDEFINED_FUNCTION(this->asSmartPtr());
+}
+
+Function_sp Symbol_O::getSetfFdefinition() const {
+  FunctionCell_sp cell = setfFunctionCell();
+  if (!cell.unboundp()) {
+    if (cell->fboundp())
+      return cell->real_function();
+  }
+  ERROR_UNDEFINED_FUNCTION(this->asSmartPtr());
+}
+
 bool Symbol_O::fboundp() const {
-  return symbolFunction()->entry() != UnboundFunctionEntryPoint::entry_point_n;
+  FunctionCell_sp fcell = functionCell();
+  return !(fcell.unboundp()) && fcell->fboundp();
 };
 
-void Symbol_O::fmakunbound()
-{
-  setf_symbolFunction(make_unbound_symbol_function(this->asSmartPtr()));
+void Symbol_O::fmakunbound() {
+  FunctionCell_sp fcell = functionCell();
+  if (!fcell.unboundp())
+    fcell->fmakunbound(this->asSmartPtr());
+}
+
+void Symbol_O::setSetfFdefinition(Function_sp fn) {
+  ensureSetfFunctionCell(fn)->real_function_set(fn);
 }
 
 bool Symbol_O::fboundp_setf() const {
-  return getSetfFdefinition()->entry() != UnboundSetfFunctionEntryPoint::entry_point_n;
+  FunctionCell_sp fcell = setfFunctionCell();
+  return !(fcell.unboundp()) && fcell->fboundp();
 };
 
-void Symbol_O::fmakunbound_setf()
-{
-  setSetfFdefinition(make_unbound_setf_symbol_function(this->asSmartPtr()));
+void Symbol_O::fmakunbound_setf() {
+  FunctionCell_sp fcell = setfFunctionCell();
+  if (!fcell.unboundp())
+    gc::As_assert<FunctionCell_sp>(fcell)->fmakunbound(Cons_O::createList(cl::_sym_setf, this->asSmartPtr()));
 }
 
+void Symbol_O::setf_symbolFunction(Function_sp fn) {
+  ensureFunctionCell(fn)->real_function_set(fn);
+}
 
 NEVER_OPTIMIZE void Symbol_O::symbolUnboundError() const {
   UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
@@ -510,17 +482,6 @@ T_sp Symbol_O::defparameter(T_sp val) {
   T_sp result = this->setf_symbolValue(val);
   this->setf_specialP(true);
   return result;
-}
-
-void Symbol_O::setf_symbolFunction(Function_sp exec) {
-  _Function.store(exec, std::memory_order_relaxed);
-}
-
-CL_LISPIFY_NAME("core:setf_symbolFunction");
-CL_LAMBDA(function symbol);
-DOCGROUP(clasp);
-CL_DEFUN void core__setf_symbolFunction(Function_sp exec, Symbol_sp symbol){
-  symbol->setf_symbolFunction(exec);
 }
 
 string Symbol_O::symbolNameAsString() const {
@@ -759,4 +720,4 @@ CL_DEFUN void core__verify_symbol_layout(T_sp alist)
   expect_offset(kw::_sym_property_list,alist,offsetof(Symbol_O,_PropertyList)-gctools::general_tag);
 }
 
-};
+}; // namespace core

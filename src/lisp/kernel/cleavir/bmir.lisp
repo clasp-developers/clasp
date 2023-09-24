@@ -66,3 +66,10 @@
 (cleavir-stealth-mixins:define-stealth-mixin
     constant (datum) bir:constant
   ((%rtype :initform '(:object))))
+
+(cleavir-stealth-mixins:define-stealth-mixin
+    function-cell (datum) bir:function-cell
+  ((%rtype :initform '(:object))))
+(cleavir-stealth-mixins:define-stealth-mixin
+    variable-cell (datum) bir:variable-cell
+  ((%rtype :initform '(:object))))

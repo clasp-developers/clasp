@@ -9,7 +9,7 @@
 #include <clasp/core/core.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/ql.h>            // ql::list
-#include <clasp/core/primitives.h>    // cl__fdefinition
+#include <clasp/core/primitives.h>    // core__ensure_function_cell
 #include <clasp/core/bytecode.h>      // modules, functions
 #include <clasp/core/lispStream.h>    // I/O
 #include <clasp/core/hashTable.h>     // making hash tables
@@ -43,9 +43,11 @@
 #define LTV_OP_BCFUNC 87
 #define LTV_OP_BCMOD 88
 #define LTV_OP_SLITS 89
-#define LTV_OP_FDEF 95
 #define LTV_OP_CREATE 93
 #define LTV_OP_INIT 94
+#define LTV_OP_FDEF 95
+#define LTV_OP_FCELL 96
+#define LTV_OP_VCELL 97
 #define LTV_OP_CLASS 98
 #define LTV_OP_INIT_OBJECT_ARRAY 99
 #define LTV_OP_ATTR 255
@@ -63,7 +65,7 @@ namespace core {
 #define BC_HEADER_SIZE 16
 
 #define BC_VERSION_MAJOR 0
-#define BC_VERSION_MINOR 10
+#define BC_VERSION_MINOR 12
 
 // versions are std::arrays so that we can compare them.
 typedef std::array<uint16_t, 2> BCVersion;
@@ -79,7 +81,7 @@ static uint64_t ltv_header_decode(uint8_t *header) {
   BCVersion version = {header[4] << 8 | header[5], header[6] << 8 | header[7]};
   if ((version < min_version) || (version > max_version))
     // FIXME: Condition classes
-    SIMPLE_ERROR("FASL version {:04x}{:04x} is out of range of this loader", version[0], version[1]);
+    SIMPLE_ERROR("FASL version {:04x}.{:04x} is out of range of this loader", version[0], version[1]);
   return ((uint64_t)header[8] << 56) | ((uint64_t)header[9] << 48) | ((uint64_t)header[10] << 40) | ((uint64_t)header[11] << 32) |
          ((uint64_t)header[12] << 24) | ((uint64_t)header[13] << 16) | ((uint64_t)header[14] << 8) | ((uint64_t)header[15] << 0);
 }
@@ -219,22 +221,22 @@ struct loadltv {
     // may not work. so we do something stupid.
     for (size_t i = 0; i < _literals.size(); ++i)
       if (_literals[i].unboundp()) // not initialized
-        SIMPLE_ERROR("Invalid FASL: did not initialize object #%zu", i);
+        SIMPLE_ERROR("Invalid FASL: did not initialize object #{:02d}", i);
   }
 
   T_sp get_ltv(size_t index) {
     if (index >= _literals.size())
-      SIMPLE_ERROR("Invalid FASL: requested object #%zu, which is out of range", index);
+      SIMPLE_ERROR("Invalid FASL: requested object #{:02d}, which is out of range", index);
     if (_literals[index].unboundp())
-      SIMPLE_ERROR("Invalid FASL: requested object #%zu, which has not yet been initialized", index);
+      SIMPLE_ERROR("Invalid FASL: requested object #{:02d}, which has not yet been initialized", index);
     return _literals[index];
   }
 
   void set_ltv(T_sp value, size_t index) {
     if (index >= _literals.size())
-      SIMPLE_ERROR("Invalid FASL: Tried to set object #%zu, which is out of range", index);
+      SIMPLE_ERROR("Invalid FASL: Tried to set object #{:02d}, which is out of range", index);
     if (!_literals[index].unboundp())
-      SIMPLE_ERROR("Invalid FASL: Tried to set object #%zu, which has already been initialized", index);
+      SIMPLE_ERROR("Invalid FASL: Tried to set object #{:02d}, which has already been initialized", index);
     _literals[index] = value;
   }
 
@@ -608,6 +610,19 @@ struct loadltv {
     set_ltv(cl__fdefinition(name), index);
   }
 
+  void op_fcell() {
+    size_t index = read_index();
+    T_sp name = get_ltv(read_index());
+    set_ltv(core__ensure_function_cell(name), index);
+  }
+
+  void op_vcell() {
+    // We also don't really have variable cells.
+    size_t index = read_index();
+    T_sp name = get_ltv(read_index());
+    set_ltv(name, index);
+  }
+
   void op_create() {
     size_t index = read_index();
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
@@ -843,6 +858,12 @@ struct loadltv {
       break; // setf literals
     case LTV_OP_FDEF:
       op_fdef();
+      break;
+    case LTV_OP_FCELL:
+      op_fcell();
+      break;
+    case LTV_OP_VCELL:
+      op_vcell();
       break;
     case LTV_OP_CREATE:
       op_create();

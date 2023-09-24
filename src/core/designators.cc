@@ -50,9 +50,22 @@ Function_sp functionDesignator(T_sp obj) {
   } else if (obj.unboundp()) {
     ERROR_UNDEFINED_FUNCTION(obj);
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
-    if (!sym->fboundp())
-      SIMPLE_ERROR("Function value for {} is unbound", _rep_(sym));
     return sym->symbolFunction();
+  }
+  TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
+}
+
+// Like the above, but doesn't bother checking fboundp, on the premise
+// that the cell will end up signaling unboundedness anyway.
+Function_sp calledFunctionDesignator(T_sp obj) {
+  if (Function_sp fnobj = obj.asOrNull<Function_O>()) {
+    return fnobj;
+  } else if (obj.nilp()) {
+    ERROR_UNDEFINED_FUNCTION(obj);
+  } else if (obj.unboundp()) {
+    ERROR_UNDEFINED_FUNCTION(obj);
+  } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
+    return sym->symbolFunctionCalled();
   }
   TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
 }
@@ -81,6 +94,11 @@ CL_PKG_NAME(CorePkg,coerce-fdesignator);
 DOCGROUP(clasp);
 CL_DEFUN Function_sp coerce_fdesignator(T_sp obj) {
   return coerce::functionDesignator(obj);
+}
+
+DOCGROUP(clasp);
+CL_DEFUN Function_sp core__coerce_called_fdesignator(T_sp obj) {
+  return coerce::calledFunctionDesignator(obj);
 }
 };
 

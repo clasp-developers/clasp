@@ -942,5 +942,79 @@ CL_DEFUN void core__closure_slots_dump(Function_sp closure) {
     printf("    Slot[%d] --> %s\n", i, _rep_(core__closure_ref(closure,i)).c_str());
   }
 }
+
+struct UnboundCellFunctionEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)lcc_closure);
+    ERROR_UNDEFINED_FUNCTION((*closure)[0]);
+  }
+  static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
 };
+
+FunctionCell_sp FunctionCell_O::make(T_sp name, Function_sp fun)
+{
+  GlobalSimpleFun_sp entryPoint =
+    makeGlobalSimpleFunAndFunctionDescription<FunctionCell_O>(name, nil<T_O>());
+  return gctools::GC<FunctionCell_O>::allocate(entryPoint, fun);
+}
+
+FunctionCell_sp FunctionCell_O::make(T_sp name) {
+  if (_lisp->_Roots._UnboundCellFunctionEntryPoint.unboundp())
+    _lisp->_Roots._UnboundCellFunctionEntryPoint = makeGlobalSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name, nil<T_O>());
+  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, _lisp->_Roots._UnboundCellFunctionEntryPoint);
+  (*cf)[0] = name;
+  return FunctionCell_O::make(name, cf);
+}
+
+void FunctionCell_O::fmakunbound(T_sp name)
+{
+  GlobalSimpleFun_sp f =
+    makeGlobalSimpleFunAndFunctionDescription<UnboundCellFunctionEntryPoint>(name, nil<T_O>());
+  Closure_sp cf = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, 1, f);
+  (*cf)[0] = name;
+  real_function_set(cf);
+}
+
+bool FunctionCell_O::fboundp() {
+  return real_function()->entry() != UnboundCellFunctionEntryPoint::entry_point_n;
+}
+
+Function_sp FunctionCell_O::fdefinition() const {
+  // We don't use fboundp since we want to only load the real function
+  // once, in order to avoid strange race condition nonsense.
+  Function_sp rf = real_function();
+  if (real_function()->entry() != UnboundCellFunctionEntryPoint::entry_point_n)
+    return rf;
+  else {
+    // It's an unbound cell closure, so this will signal an
+    // appropriate error.
+    Closure_O* closure = gctools::untag_general<Closure_O*>((Closure_O*)(rf.raw_()));
+    ERROR_UNDEFINED_FUNCTION((*closure)[0]);
+  }
+}
+
+}; // namespace core
 

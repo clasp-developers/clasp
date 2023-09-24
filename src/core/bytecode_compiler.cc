@@ -2,7 +2,7 @@
 #include <clasp/core/evaluator.h>         // extract_decl...
 #include <clasp/core/sysprop.h>           // core__get_sysprop
 #include <clasp/core/lambdaListHandler.h> // lambda list parsing
-#include <clasp/core/designators.h>       // functionDesignator
+#include <clasp/core/designators.h>       // calledFunctionDesignator
 #include <clasp/core/primitives.h>        // gensym, function_block_name
 #include <clasp/core/sourceFileInfo.h>    // source info stuff
 #include <clasp/llvmo/llvmoPackage.h>
@@ -417,10 +417,12 @@ Module_sp Context::module() const { return this->cfunction()->module(); }
 size_t Context::literal_index(T_sp literal) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   // FIXME: Smarter POSITION
-  for (size_t i = 0; i < literals->length(); ++i)
-    if ((*literals)[i] == literal)
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<ConstantInfo_sp>(slit) && gc::As_unsafe<ConstantInfo_sp>(slit)->value() == literal)
       return i;
-  Fixnum_sp nind = literals->vectorPushExtend(literal);
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(ConstantInfo_O::make(literal));
   return nind.unsafe_fixnum();
 }
 
@@ -429,7 +431,51 @@ size_t Context::literal_index(T_sp literal) const {
 // they've previously appeared in the literals vector.
 // This is also used by LTV processing to put in a placeholder.
 size_t Context::new_literal_index(T_sp literal) const {
-  Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(literal);
+  Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(ConstantInfo_O::make(literal));
+  return nind.unsafe_fixnum();
+}
+
+// We never coalesce LTVs at the moment. Hypothetically we could, but
+// it seems like a pretty marginal thing.
+size_t Context::ltv_index(T_sp form, bool read_only_p) const {
+  LoadTimeValueInfo_sp ltvi = LoadTimeValueInfo_O::make(form, read_only_p);
+  Fixnum_sp nind = this->cfunction()->module()->literals()->vectorPushExtend(ltvi);
+  return nind.unsafe_fixnum();
+}
+
+size_t Context::cfunction_index(Cfunction_sp fun) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  // FIXME: Smarter POSITION
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<Cfunction_sp>(slit) && slit == fun)
+      return i;
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(fun);
+  return nind.unsafe_fixnum();
+}
+
+size_t Context::fcell_index(T_sp name) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  // FIXME: Smarter POSITION
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<FunctionCellInfo_sp>(slit) && gc::As_unsafe<FunctionCellInfo_sp>(slit)->fname() == name)
+      return i;
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(FunctionCellInfo_O::make(name));
+  return nind.unsafe_fixnum();
+}
+
+size_t Context::vcell_index(Symbol_sp name) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  // FIXME: Smarter POSITION
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<VariableCellInfo_sp>(slit) && gc::As_unsafe<VariableCellInfo_sp>(slit)->vname() == name)
+      return i;
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(VariableCellInfo_O::make(name));
   return nind.unsafe_fixnum();
 }
 
@@ -592,7 +638,7 @@ void Context::emit_mv_call() const {
   }
 }
 
-void Context::emit_special_bind(Symbol_sp sym) const { this->assemble1(vm_special_bind, this->literal_index(sym)); }
+void Context::emit_special_bind(Symbol_sp sym) const { this->assemble1(vm_special_bind, this->vcell_index(sym)); }
 
 void Context::emit_unbind(size_t count) const {
   for (size_t i = 0; i < count; ++i)
@@ -1077,15 +1123,22 @@ void Module_O::link_load(T_sp compile_info) {
   }
   // Replace the cfunctions in the cmodule literal vector with
   // real bytecode functions in the module vector.
-  // Also replace load-time-value infos with the evaluated forms.
+  // Also replace load-time-value infos with the evaluated forms,
+  // and resolve cells.
   for (size_t i = 0; i < literal_length; ++i) {
     T_sp lit = (*cmodule_literals)[i];
     if (gc::IsA<Cfunction_sp>(lit))
       (*literals)[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
     else if (gc::IsA<LoadTimeValueInfo_sp>(lit))
       (*literals)[i] = gc::As_unsafe<LoadTimeValueInfo_sp>(lit)->eval();
-    else
-      (*literals)[i] = lit;
+    else if (gc::IsA<ConstantInfo_sp>(lit))
+      (*literals)[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
+    else if (gc::IsA<FunctionCellInfo_sp>(lit))
+      (*literals)[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
+    else if (gc::IsA<VariableCellInfo_sp>(lit))
+      (*literals)[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname();
+    else SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}",
+                      _rep_(lit));
   }
   // Also replace the cfunctions in the debug info.
   // We just modify the vector rather than cons a new one since create_debug_info
@@ -1132,7 +1185,7 @@ static T_sp expand_macro(Function_sp expander, T_sp form, Lexenv_sp env) {
   // This is copied from cl__macroexpand. I guess eval::funcall doesn't do the
   // coercion itself?
   T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-  Function_sp hook = coerce::functionDesignator(macroexpandHook);
+  Function_sp hook = coerce::calledFunctionDesignator(macroexpandHook);
   return eval::funcall(hook, expander, form, env);
 }
 
@@ -1184,7 +1237,7 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
       }
       context.maybe_emit_cell_ref(lvinfo);
     } else if (std::holds_alternative<SpecialVarInfoV>(info))
-      context.assemble1(vm_symbol_value, context.literal_index(sym));
+      context.assemble1(vm_symbol_value, context.vcell_index(sym));
     else if (std::holds_alternative<ConstantVarInfoV>(info)) {
       compile_literal(std::get<ConstantVarInfoV>(info).value(), env, context);
       // Avoid the pop code below - compile-literal handles it.
@@ -1193,7 +1246,7 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
       if (_sym_warn_undefined_global_variable->fboundp() && !code_walking_p())
         eval::funcall(_sym_warn_undefined_global_variable,
                       context.source_info(), sym);
-      context.assemble1(vm_symbol_value, context.literal_index(sym));
+      context.assemble1(vm_symbol_value, context.vcell_index(sym));
     } if (context.receiving() == -1)
       // Values return - put value in mv vector.
       context.assemble0(vm_pop);
@@ -1773,9 +1826,9 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>((*closed)[i]));
     }
     if (closed->length() == 0) // don't need to actually close
-      ctxt.assemble1(vm_const, ctxt.literal_index(fun));
+      ctxt.assemble1(vm_const, ctxt.cfunction_index(fun));
     else
-      ctxt.assemble1(vm_make_closure, ctxt.literal_index(fun));
+      ctxt.assemble1(vm_make_closure, ctxt.cfunction_index(fun));
   } else { // ought to be a function name
     FunInfoV info = fun_info_v(fnameoid, env);
     if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
@@ -1784,7 +1837,7 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
           && !code_walking_p())
         eval::funcall(_sym_register_global_function_ref, fnameoid,
                       ctxt.source_info());
-      ctxt.assemble1(vm_fdefinition, ctxt.literal_index(fnameoid));
+      ctxt.assemble1(vm_fdefinition, ctxt.fcell_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
       ctxt.reference_lexical_info(lfinfo->lex());
@@ -1795,6 +1848,63 @@ void compile_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
   // Coerce to values if necessary.
   if (mvp)
     ctxt.assemble0(vm_pop);
+}
+
+// Compile a function designator knowing that it will be immediately
+// called. We ignore ctxt's actual receiving and return one value,
+// and we can skip some runtime checks.
+void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
+  if (gc::IsA<Cons_sp>(fnameoid) && oCar(fnameoid) == cl::_sym_lambda) {
+    Cfunction_sp fun = compile_lambda(oCadr(fnameoid), oCddr(fnameoid), env, ctxt.module(),
+                                      source_location_for(fnameoid, ctxt.source_info()));
+    ComplexVector_T_sp closed = fun->closed();
+    for (size_t i = 0; i < closed->length(); ++i) {
+      ctxt.reference_lexical_info(gc::As_assert<LexicalInfo_sp>((*closed)[i]));
+    }
+    if (closed->length() == 0) // don't need to actually close
+      ctxt.assemble1(vm_const, ctxt.cfunction_index(fun));
+    else
+      ctxt.assemble1(vm_make_closure, ctxt.cfunction_index(fun));
+  } else { // ought to be a function name
+    FunInfoV info = fun_info_v(fnameoid, env);
+    if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
+      if (std::holds_alternative<NoFunInfoV>(info) // Warn
+          && _sym_register_global_function_ref->fboundp()
+          && !code_walking_p())
+        eval::funcall(_sym_register_global_function_ref, fnameoid,
+                      ctxt.source_info());
+      ctxt.assemble1(vm_called_fdefinition, ctxt.fcell_index(fnameoid));
+    } else if (std::holds_alternative<LocalFunInfoV>(info)) {
+      LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
+      ctxt.reference_lexical_info(lfinfo->lex());
+    } else
+      // FIXME: e.g. #'with-open-file. needs better error.
+      SIMPLE_ERROR("{} does not name a function", _rep_(fnameoid));
+  }
+}
+
+// Compile fform, which needs to return one value (regardless of
+//  ctxt.receiving) and evaluates to an fdesignator that needs coercion
+//  to a function which will only be called immediately.
+void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
+  // If we get (function ...) or (lambda ...), which is quite common
+  // e.g. in (funcall #'(setf...) ...)
+  // and (multiple-value-call (lambda ...mv-bind code ...) form)
+  // we don't need to emit a vm_fdesignator instruction or anything.
+  // TODO: We could do something smarter if given 'foo or a constant,
+  // but those are more marginal.
+  if (fform.consp()) {
+    if (oCar(fform) == cl::_sym_Function_O) {
+      compile_called_function(oCadr(fform), env, ctxt);
+      return;
+    } else if (oCar(fform) == cl::_sym_lambda) {
+      compile_called_function(fform, env, ctxt);
+      return;
+    }
+  }
+  // default
+  compile_form(fform, env, ctxt.sub_receiving(1));
+  ctxt.assemble0(vm_fdesignator);
 }
 
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
@@ -1859,7 +1969,7 @@ void compile_labels(List_sp definitions, List_sp body, Lexenv_sp env, const Cont
     T_sp fun_body = Cons_O::createList(Cons_O::create(cl::_sym_declare, declares), block);
     Cfunction_sp fun = compile_lambda(oCadr(definition), fun_body, new_env, ctxt.module(),
                                       source_location_for(definition, ctxt.source_info()));
-    size_t literal_index = ctxt.literal_index(fun);
+    size_t literal_index = ctxt.cfunction_index(fun);
     LocalFunInfo_sp lfi = gc::As_assert<LocalFunInfo_sp>(fun_info(name, new_env));
     if (fun->closed()->length() == 0) // not a closure- easy
       ctxt.assemble1(vm_const, literal_index);
@@ -1909,7 +2019,7 @@ static void compile_setq_1(Symbol_sp var, T_sp valf, Lexenv_sp env, const Contex
     if (ctxt.receiving() != 0) {
       ctxt.assemble0(vm_dup);
     }
-    ctxt.assemble1(vm_symbol_value_set, ctxt.literal_index(var));
+    ctxt.assemble1(vm_symbol_value_set, ctxt.vcell_index(var));
     if (ctxt.receiving() == -1) // need values
       ctxt.assemble0(vm_pop);
   } else if (std::holds_alternative<LexicalVarInfoV>(info)) {
@@ -2154,11 +2264,7 @@ void compile_progv(T_sp syms, T_sp vals, List_sp body, Lexenv_sp env, const Cont
 }
 
 void compile_multiple_value_call(T_sp fform, List_sp aforms, Lexenv_sp env, const Context ctxt) {
-  // Compile the function. Coerce it as a designator.
-  // TODO: When the fform is a #'foo form we could skip coercion.
-  compile_function(core::_sym_coerce_fdesignator, env, ctxt.sub_receiving(1));
-  compile_form(fform, env, ctxt.sub_receiving(1));
-  ctxt.sub_receiving(1).emit_call(1);
+  compile_fdesignator(fform, env, ctxt);
   if (aforms.nilp()) {
     ctxt.emit_call(0);
   } else {
@@ -2217,9 +2323,8 @@ void compile_load_time_value(T_sp form, T_sp tread_only_p, Lexenv_sp env, const 
   else
     SIMPLE_ERROR("load-time-value read-only-p is not T or NIL: {}", _rep_(tread_only_p));
 
-  auto ltv = LoadTimeValueInfo_O::make(form, read_only_p);
   // Add the LTV to the cmodule.
-  size_t ind = context.new_literal_index(ltv);
+  size_t ind = context.ltv_index(form, read_only_p);
   // With that done, we basically just need to compile a literal load.
   // (Note that we do always need to register the LTV, since it may have
   //  some weird side effect. We could hypothetically save some space by
@@ -2289,7 +2394,34 @@ void compile_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, const Conte
   compile_locally(body, nenv, context);
 }
 
-void compile_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Context context) {
+void compile_funcall(T_sp fform, List_sp args, Lexenv_sp env, const Context context) {
+  // Expand compiler macros when fform = #'foo or #'(setf foo).
+  if (fform.consp() && oCar(fform) == cl::_sym_Function_O
+      && oCdr(fform).consp() && oCddr(fform).nilp()
+      && (gc::IsA<Symbol_sp>(oCadr(fform))
+          || (oCadr(fform).consp() && oCaadr(fform) != cl::_sym_lambda))) {
+    T_sp fname = oCadr(fform);
+    FunInfoV info = fun_info_v(fname, env);
+    if (std::holds_alternative<GlobalFunInfoV>(info)) {
+      T_sp cmexpander = std::get<GlobalFunInfoV>(info).cmexpander();
+      // We don't skip typep/case here since we don't actually use them
+      // in a dangerously recursive way with funcall.
+      if (cmexpander.notnilp() && !env->notinlinep(fname)) {
+        T_sp form = Cons_O::create(cl::_sym_funcall, Cons_O::create(fform, args));
+        T_sp expansion = expand_compiler_macro(gc::As<Function_sp>(cmexpander), form, env, context.source_info());
+        if (expansion != form) {
+          compile_form(expansion, env, context);
+          return;
+        }
+      }
+    }
+  }
+  // No compiler macro, but we can avoid actually calling FUNCALL.
+  compile_fdesignator(fform, env, context);
+  compile_call(args, env, context);
+}
+
+void compile_primop_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Context context) {
   compile_form(callee, env, context.sub_receiving(1));
   compile_call(args, env, context);
 }
@@ -2337,29 +2469,34 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     compile_eval_when(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_the)
     compile_the(oCar(rest), oCadr(rest), env, context);
+  // basic optimization
+  else if (head == cl::_sym_funcall
+           // Do a basic syntax check so that (funcall) fails properly.
+           && rest.consp())
+    compile_funcall(oCar(rest), oCdr(rest), env, context);
   // extension
   else if (head == cleavirPrimop::_sym_funcall)
-    compile_funcall(oCar(rest), oCdr(rest), env, context);
+    compile_primop_funcall(oCar(rest), oCdr(rest), env, context);
   else if (head == cleavirPrimop::_sym_eq) {
     // KLUDGE: Compile a call to EQ.
     // Better would be to use the EQ opcode. Better than that would be
     // eliminating the special operator entirely and working with the
     // function instead.
-    compile_function(cl::_sym_eq, env, context.sub_receiving(1));
+    compile_called_function(cl::_sym_eq, env, context);
     compile_call(rest, env, context);
   } else if (head == cleavirPrimop::_sym_typeq) {
     // KLUDGE: call to typep.
     T_sp type = oCadr(rest);
     if (type == cl::_sym_cons) {
-      compile_function(cl::_sym_consp, env, context.sub_receiving(1));
+      compile_called_function(cl::_sym_consp, env, context);
       compile_form(oCar(rest), env, context.sub_receiving(1));
       context.emit_call(1);
     } else if (type == cl::_sym_symbol) {
-      compile_function(cl::_sym_symbolp, env, context.sub_receiving(1));
+      compile_called_function(cl::_sym_symbolp, env, context);
       compile_form(oCar(rest), env, context.sub_receiving(1));
       context.emit_call(1);
     } else {
-      compile_function(cl::_sym_typep, env, context.sub_receiving(1));
+      compile_called_function(cl::_sym_typep, env, context);
       compile_form(oCar(rest), env, context.sub_receiving(1));
       compile_literal(oCadr(rest), env, context.sub_receiving(1));
       context.emit_call(2);
@@ -2396,19 +2533,19 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
             return;
           }
         } // no compiler macro, or expansion declined: call
-        compile_function(head, env, context.sub_receiving(1));
+        compile_called_function(head, env, context);
         compile_call(rest, env, context);
       } else if (std::holds_alternative<LocalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
         // unknown function warning handled by compile-function (eventually)
         // note we do a double lookup of the fun info,
         // which is inefficient in the compiler (doesn't affect generated code)
-        compile_function(head, env, context.sub_receiving(1));
+        compile_called_function(head, env, context);
         compile_call(rest, env, context);
       } else
         UNREACHABLE();
     } else if (gc::IsA<Cons_sp>(head) && (oCar(head) == cl::_sym_lambda)) {
       // Lambda form
-      compile_function(head, env, context.sub_receiving(1));
+      compile_called_function(head, env, context);
       compile_call(rest, env, context);
     } else
       SIMPLE_ERROR("Illegal combination head: {} rest: {}", _rep_(head), _rep_(rest));

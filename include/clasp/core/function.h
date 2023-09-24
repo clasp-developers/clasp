@@ -515,6 +515,109 @@ namespace core {
 };
 
 namespace core {
+
+FORWARD(FunctionCell)
+class FunctionCell_O : public Function_O {
+  LISP_CLASS(core, CorePkg, FunctionCell_O, "FunctionCell", Function_O);
+public:
+  FunctionCell_O(GlobalSimpleFun_sp ep, Function_sp function)
+    : Base(ep), _Function(function) {}
+public:
+  std::atomic<Function_sp> _Function;
+public:
+  static FunctionCell_sp make(T_sp name, Function_sp initial);
+  static FunctionCell_sp make(T_sp name); // unbound
+public:
+  Function_sp real_function() const {
+    // relaxed because nobody should be synchronizing on this,
+    // but in practice it's probably irrelevant what we do?
+    return this->_Function.load(std::memory_order_relaxed);
+  }
+  void real_function_set(Function_sp fun) {
+    this->_Function.store(fun, std::memory_order_relaxed);
+  }
+  void fmakunbound(T_sp name);
+  bool fboundp();
+  // like real_function() but signals an error if we are un-fbound.
+  Function_sp fdefinition() const;
+public:
+  // probably unnecessary
+  virtual bool compiledP() const {
+    return this->real_function()->compiledP();
+  }
+
+public:
+  static inline LCC_RETURN entry_point_n(core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args) {
+    SETUP_CLOSURE(FunctionCell_O, closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
+    // We need to be sure to load the real function only once to avoid race conditions.
+    Function_sp funcallable_closure = closure->real_function();
+    GlobalSimpleFunBase_sp simpleFun = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load());
+    ClaspXepGeneralFunction entry_point = (ClaspXepGeneralFunction)simpleFun->_EntryPoints[0];
+    return (entry_point)(funcallable_closure.raw_(), lcc_nargs, lcc_args);
+  }
+
+  static inline LCC_RETURN entry_point_0(core::T_O *lcc_closure) {
+    SETUP_CLOSURE(FunctionCell_O, closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
+    Function_sp funcallable_closure = closure->real_function();
+    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    return xep.invoke_0(funcallable_closure.raw_());
+  }
+
+  static inline LCC_RETURN entry_point_1(core::T_O *lcc_closure, core::T_O *lcc_farg0) {
+    SETUP_CLOSURE(FunctionCell_O, closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
+    Function_sp funcallable_closure = closure->real_function();
+    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    return xep.invoke_1(funcallable_closure.raw_(), lcc_farg0);
+  }
+
+  static inline LCC_RETURN entry_point_2(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1) {
+    SETUP_CLOSURE(FunctionCell_O, closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
+    Function_sp funcallable_closure = closure->real_function();
+    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    return xep.invoke_2(funcallable_closure.raw_(), lcc_farg0, lcc_farg1);
+  }
+
+  static inline LCC_RETURN entry_point_3(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1, core::T_O *lcc_farg2) {
+    SETUP_CLOSURE(FunctionCell_O, closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
+    Function_sp funcallable_closure = closure->real_function();
+    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    return xep.invoke_3(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2);
+  }
+
+  static inline LCC_RETURN entry_point_4(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1, core::T_O *lcc_farg2,
+                                         core::T_O *lcc_farg3) {
+    SETUP_CLOSURE(FunctionCell_O, closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
+    Function_sp funcallable_closure = closure->real_function();
+    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    return xep.invoke_4(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
+  }
+
+  static inline LCC_RETURN entry_point_5(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1, core::T_O *lcc_farg2,
+                                         core::T_O *lcc_farg3, core::T_O *lcc_farg4) {
+    SETUP_CLOSURE(FunctionCell_O, closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    DO_DRAG_CXX_CALLS();
+    Function_sp funcallable_closure = closure->real_function();
+    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    return xep.invoke_5(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
+  }
+};
+
+}; // namespace core
+
+namespace core {
   void core__closure_slots_dump(Function_sp func);
 
 };

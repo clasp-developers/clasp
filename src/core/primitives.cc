@@ -1030,17 +1030,11 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
       if (dname.consp()) {
         Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
         if (name.notnilp() && oCdr(dname).nilp()) {
-          if (!name->fboundp_setf()) {
-            ERROR_UNDEFINED_FUNCTION(functionName);
-          }
           return name->getSetfFdefinition();
         }
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
-    if (!sym->fboundp()) {
-      ERROR_UNDEFINED_FUNCTION(functionName);
-    }
     return sym->symbolFunction();
   }
   TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
@@ -1072,6 +1066,26 @@ CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
     }
   }
   TYPE_ERROR(name, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
+}
+
+// Used by the FASL loaders.
+DOCGROUP(clasp);
+CL_DEFUN FunctionCell_sp core__ensure_function_cell(T_sp functionName) {
+  if (functionName.consp()) {
+    List_sp cname = functionName;
+    if (oCar(cname) == cl::_sym_setf) {
+      T_sp dname = oCdr(cname);
+      if (dname.consp()) {
+        Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
+        if (name.notnilp() && oCdr(dname).nilp()) {
+          return name->ensureSetfFunctionCell();
+        }
+      }
+    }
+  } else if (gc::IsA<Symbol_sp>(functionName)) {
+    return gc::As_unsafe<Symbol_sp>(functionName)->ensureFunctionCell();
+  }
+  TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
 }
 
 // reader in symbol.cc; this additionally involves function properties, so it's here

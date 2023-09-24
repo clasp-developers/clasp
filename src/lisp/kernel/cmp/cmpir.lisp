@@ -407,12 +407,10 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-ptr-to-int (val int-type &optional (label "ptrtoint"))
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
 
-(defun irc-fdefinition (symbol &optional (label ""))
-  (irc-t*-load-atomic (c++-field-ptr info.%symbol% symbol :function) :label label))
-
-(defun irc-setf-fdefinition (symbol &optional (label ""))
-  (irc-t*-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)
-                   :label label))
+(defun irc-fdefinition (fcell &optional (label ""))
+  (irc-t*-load-atomic
+   (c++-field-ptr info.%function-cell% fcell :real-function)
+   :label label))
 
 (defun irc-maybe-check-tag (tagged-ptr tag)
   (if (member :check-tags *features*)

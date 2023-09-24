@@ -46,6 +46,9 @@ namespace coerce {
 	*/
 extern Function_sp functionDesignator(T_sp obj);
 extern Function_sp closureDesignator(T_sp obj);
+// Coerce a designator that's about to be called.
+// This lets us save an fboundp check.
+extern Function_sp calledFunctionDesignator(T_sp obj);
 
 #if 0
 /*! Return a Path by interpreting a pathname designator */

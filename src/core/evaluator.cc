@@ -521,7 +521,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(apply)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
-  Function_sp func = coerce::functionDesignator( head );
+  Function_sp func = coerce::calledFunctionDesignator( head );
   if (args->nargs_zero()) eval::errorApplyZeroArguments();
   size_t lenArgs = args->nargs();
   T_O* lastArgRaw = (*args)[lenArgs - 1];
@@ -659,27 +659,18 @@ CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
 
 
 // fast funcall
-CL_LAMBDA(function-desig &rest args);
-CL_DECLARE((declare (dynamic-extent args)));
+CL_LAMBDA(function-desig core:&va-rest args);
+CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS: funcall)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
-  //    printf("%s:%d cl__funcall should be inlined after the compiler starts up\n", __FILE__, __LINE__ );
-  Function_sp func = coerce::functionDesignator(function_desig);
-  if (func.nilp()) {
-    ERROR_UNDEFINED_FUNCTION(function_desig);
-  }
-  if (func.unboundp()) {
-    if (function_desig.nilp()) SIMPLE_ERROR("The function designator was NIL");
-    if (function_desig.unboundp()) SIMPLE_ERROR("The function designator was UNBOUND");
-    SIMPLE_ERROR("The function {} was unbound", _rep_(function_desig));
-  }
-  size_t nargs = cl__length(args);
+CL_DEFUN T_mv cl__funcall(T_sp function_desig, Vaslist_sp args) {
+  Function_sp func = coerce::calledFunctionDesignator(function_desig);
+  size_t nargs = args->nargs();
   MAKE_STACK_FRAME( fargs, nargs );
   size_t ia(0);
-  gctools::fill_frame_list( fargs, ia, args );
-  T_mv res = funcall_general<core::Function_O>(func.tagged_(), nargs, fargs->arguments(0));
+  gctools::fill_frame_vaslist( fargs, ia, args );
+  T_mv res = funcall_general<core::Function_O>(func.tagged_(), nargs, fargs->arguments());
   return res;
 }
 
@@ -692,16 +683,11 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
   if (Function_sp fnobj = arg.asOrNull<Function_O>()) {
     return fnobj;
   } else if (Symbol_sp sym = arg.asOrNull<Symbol_O>()) {
-    if (!sym->fboundp())
-      SIMPLE_ERROR("Function value for {} is unbound", _rep_(sym));
     return sym->symbolFunction();
   } else if (Cons_sp carg = arg.asOrNull<Cons_O>()) {
     T_sp head = oCar(carg);
     if (head == cl::_sym_setf) {
       Symbol_sp sym = oCadr(carg).as<Symbol_O>();
-      if (!sym->fboundp_setf()) {
-        SIMPLE_ERROR("SETF function value for {} is unbound", _rep_(sym));
-      }
       return sym->getSetfFdefinition();
     } else if (head == cl::_sym_lambda) {
       // Really, this will always return a function, but we'll sanity check.

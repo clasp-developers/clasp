@@ -201,8 +201,7 @@ Lisp::GCRoots::GCRoots() :
   _AllLibraries(nil<T_O>()),
   _AllBytecodeModules(nil<T_O>()),
 #ifdef CLASP_THREADS
-    _UnboundSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
-    _UnboundSetfSymbolFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
+  _UnboundCellFunctionEntryPoint(unbound<GlobalSimpleFun_O>()),
   _ActiveThreads(nil<T_O>()),
   _DefaultSpecialBindings(nil<T_O>()),
 #endif
@@ -1740,7 +1739,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
   }
   if (expansionFunction.notnilp()) {
     T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-    Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
+    Function_sp hookFunc = coerce::calledFunctionDesignator(macroexpandHook);
     T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
     return (Values(expanded, _lisp->_true()));
   } else

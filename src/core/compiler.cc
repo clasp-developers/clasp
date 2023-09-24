@@ -1580,7 +1580,7 @@ void ltvc_mlf_create_basic_call_varargs(gctools::GCRootsInModule *holder, char t
                                         Cons_O *varargs) {
   T_sp tfname((gctools::Tagged)fname);
   T_sp tvarargs((gctools::Tagged)varargs);
-  T_sp val = core__apply0(coerce::functionDesignator(tfname), tvarargs);
+  T_sp val = core__apply0(coerce::calledFunctionDesignator(tfname), tvarargs);
   holder->setTaggedIndex(tag, index, val.tagged_());
 }
 
@@ -1588,7 +1588,7 @@ void ltvc_mlf_init_basic_call_varargs(gctools::GCRootsInModule *holder, T_O *fna
   (void)len; // don't need it.
   T_sp tfname((gctools::Tagged)fname);
   T_sp tvarargs((gctools::Tagged)varargs);
-  core__apply0(coerce::functionDesignator(tfname), tvarargs);
+  core__apply0(coerce::calledFunctionDesignator(tfname), tvarargs);
 }
 
 void dump_start_code(T_sp fin, size_t length, bool useFrom = false, size_t from = 0) {

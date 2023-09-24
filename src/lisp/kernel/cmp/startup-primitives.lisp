@@ -17,13 +17,15 @@
 ;;;   The gcroots, tag, targetIndex are used to get a reference to a cell in the gcroots
 ;;;   and the ...args... are used to construct the object.
 ;;; If you add a new ltvc_xxxx function then do the following to rebuild the virtual machine
-;;; To build the machine in the src/core/byte-code-interpreter.cc file use:
+;;; To build the machine in the src/core/byte-code-interpreter.cc file manually use:
 ;;; (0) Erase the code in byte-code-interpreter.cc
 ;;; (1) ./waf build_rboehm
 ;;; (2) (literal::build-c++-machine)
 ;;; (3) copy the result into byte-code-interpreter.cc
+;;; But the build system will rebuild the interpreter automatically.
 ;;;
 (defvar *startup-primitives-as-list*
+  ;; (unwindsp name argtypes &key varargs)
   '((nil "ltvc_make_nil"                  (:i8 :size_t))
     (nil "ltvc_make_t"                    (:i8 :size_t))
     (nil "ltvc_make_ratio"                (:i8 :size_t :t* :t*))
@@ -49,6 +51,7 @@
                                            :size_t :size_t))
     (nil "ltvc_make_global_entry_point"   (:i8 :size_t :size_t :t* :size_t))
     (nil "ltvc_make_local_entry_point"    (:i8 :size_t :size_t :t*))
+    (nil "ltvc_ensure_fcell"              (:i8 :size_t :t*))
     (nil "ltvc_make_random_state"         (:i8 :size_t :t*))
     (nil "ltvc_make_float"                (:i8 :size_t :single-float))
     (nil "ltvc_make_double"               (:i8 :size_t :double-float))

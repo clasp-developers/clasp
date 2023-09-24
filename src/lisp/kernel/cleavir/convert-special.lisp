@@ -47,7 +47,7 @@
 ;;;
 
 (def-convert-macro multiple-value-call (function-form &rest forms)
-  (let ((cf `(core:coerce-fdesignator ,function-form)))
+  (let ((cf `(core:coerce-called-fdesignator ,function-form)))
     (case (length forms)
       (0
        `(cleavir-primop:funcall ,cf))

@@ -441,6 +441,10 @@ public:
 public:
   size_t literal_index(T_sp literal) const;
   size_t new_literal_index(T_sp literal) const;
+  size_t ltv_index(T_sp form, bool read_only_p) const;
+  size_t cfunction_index(Cfunction_sp fun) const;
+  size_t fcell_index(T_sp name) const;
+  size_t vcell_index(Symbol_sp name) const;
   size_t closure_index(T_sp info) const;
   void push_debug_info(T_sp info) const;
   void assemble0(uint8_t opcode) const;
@@ -767,7 +771,8 @@ public:
   virtual size_t resize();
 };
 
-
+// Object that lives in the compiler's literals vector to represent a
+// LOAD-TIME-VALUE form.
 FORWARD(LoadTimeValueInfo);
 class LoadTimeValueInfo_O : public General_O {
   LISP_CLASS(comp, CompPkg, LoadTimeValueInfo_O, "LoadTimeValueInfo", General_O);
@@ -792,7 +797,62 @@ public:
   CL_LISPIFY_NAME(LoadTimeValueInfo/eval)
   CL_DEFMETHOD T_sp eval();
 };
- 
+
+// Wrapper for compiler constant literals. Having this is necessary to
+// avoid any weird problems from using any of the other wrappers as
+// constants... which isn't terribly likely, but better safe than sorry.
+FORWARD(ConstantInfo)
+class ConstantInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, ConstantInfo_O, "ConstantInfo", General_O);
+public:
+  ConstantInfo_O(T_sp value) : _value(value) {}
+public:
+  T_sp _value; // the value of the constant.
+public:
+  static ConstantInfo_sp make(T_sp value) {
+    return gctools::GC<ConstantInfo_O>::allocate<gctools::RuntimeStage>(value);
+  }
+public:
+  CL_LISPIFY_NAME(ConstantInfo/value)
+  CL_DEFMETHOD T_sp value() { return this->_value; }
+};
+
+// Compiler literals marker representing the load-time lookup of a
+// function cell. (Clasp doesn't currently have function cells, so the
+// "cell" will just be the function name.)
+FORWARD(FunctionCellInfo)
+class FunctionCellInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, FunctionCellInfo_O, "FunctionCellInfo", General_O);
+public:
+  FunctionCellInfo_O(T_sp fname) : _fname(fname) {}
+public:
+  T_sp _fname; // Name of the function being looked up.
+public:
+  static FunctionCellInfo_sp make(T_sp fname) {
+    return gctools::GC<FunctionCellInfo_O>::allocate<gctools::RuntimeStage>(fname);
+  }
+public:
+  CL_LISPIFY_NAME(FunctionCellInfo/fname)
+  CL_DEFMETHOD T_sp fname() { return this->_fname; }
+};
+
+// Ditto, but for variables.
+FORWARD(VariableCellInfo)
+class VariableCellInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, VariableCellInfo_O, "VariableCellInfo", General_O);
+public:
+  VariableCellInfo_O(Symbol_sp vname) : _vname(vname) {}
+public:
+  Symbol_sp _vname; // Name of the variable being looked up.
+public:
+  static VariableCellInfo_sp make(Symbol_sp vname) {
+    return gctools::GC<VariableCellInfo_O>::allocate<gctools::RuntimeStage>(vname);
+  }
+public:
+  CL_LISPIFY_NAME(VariableCellInfo/vname)
+  CL_DEFMETHOD T_sp vname() { return this->_vname; }
+};
+
 class Module_O : public General_O {
   LISP_CLASS(comp, CompPkg, Module_O, "Module", General_O);
 public:

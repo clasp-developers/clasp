@@ -21,7 +21,7 @@
             `(funcall ,function ,@fixed)
             ;; The LET is so that we evaluate the arguments to APPLY
             ;; in the correct order.
-            `(let ((,fsym (core:coerce-fdesignator ,function))
+            `(let ((,fsym (core:coerce-called-fdesignator ,function))
                    ,@(mapcar #'list syms fixed))
                (,op ,fsym ,last ,@syms))))))
 
@@ -39,6 +39,16 @@
 (define-compiler-macro core:coerce-fdesignator (&whole form designator
                                                        &environment env)
   ;; In order to cover (lambda ...), among other possibilities, macroexpand.
+  (let ((designator (macroexpand designator env)))
+    (cond ((function-form-p designator) designator)
+          ((constantp designator env)
+           (let ((value (ext:constant-form-value designator env)))
+             (cond ((symbolp value) `(fdefinition ,designator))
+                   ((functionp value) value)
+                   (t form))))
+          (t form))))
+(define-compiler-macro core:coerce-called-fdesignator
+    (&whole form designator &environment env)
   (let ((designator (macroexpand designator env)))
     (cond ((function-form-p designator) designator)
           ((constantp designator env)
