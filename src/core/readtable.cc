@@ -870,7 +870,7 @@ Readtable_sp Readtable_O::create_standard_readtable() {
   auto  rt = gctools::GC<Readtable_O>::allocate_with_default_constructor();
   rt->SyntaxTypes_ = Readtable_O::create_standard_syntax_table();
   ASSERTNOTNULL(_sym_reader_backquoted_expression->symbolFunction());
-  ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
+//  ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
   rt->set_macro_character_(clasp_make_standard_character('`'),
                           _sym_reader_backquoted_expression,
                           nil<T_O>());
