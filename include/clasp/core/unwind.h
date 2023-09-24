@@ -148,9 +148,9 @@ FORWARD(BindingDynEnv);
 class BindingDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, BindingDynEnv_O, "BindingDynEnv", DynEnv_O);
 public:
-  BindingDynEnv_O(Symbol_sp a_sym, T_sp a_old) : DynEnv_O(), sym(a_sym), old(a_old) {};
+  BindingDynEnv_O(VariableCell_sp a_cell, T_sp a_old) : DynEnv_O(), cell(a_cell), old(a_old) {};
   virtual ~BindingDynEnv_O() {};
-  Symbol_sp sym;
+  VariableCell_sp cell;
   T_sp old;
   virtual SearchStatus search() const { return Continue; };
   virtual void proceed();
@@ -335,13 +335,19 @@ T_mv call_with_catch(T_sp tag, Catchf&& cf) {
 }
 
 template <typename Boundf>
-auto call_with_variable_bound(Symbol_sp sym, T_sp val,
-                              Boundf&& bound) {
-  DynamicScopeManager scope(sym, val);
-  gctools::StackAllocate<BindingDynEnv_O> bde(sym, scope.oldBinding());
+inline auto call_with_cell_bound(VariableCell_sp cell, T_sp val,
+                                 Boundf&& bound) {
+  DynamicScopeManager scope(cell, val);
+  gctools::StackAllocate<BindingDynEnv_O> bde(cell, scope.oldBinding());
   gctools::StackAllocate<Cons_O> sa_ec(bde.asSmartPtr(), my_thread->dynEnvStackGet());
   DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
   return bound();
+}
+
+template <typename Boundf>
+auto call_with_variable_bound(Symbol_sp sym, T_sp val,
+                              Boundf&& bound) {
+  return call_with_cell_bound(sym->ensureVariableCell(), val, bound);
 }
 
 }; // namespace core

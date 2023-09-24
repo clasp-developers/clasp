@@ -948,7 +948,7 @@ core::T_O* cc_initializeAndPushBindingDynenv(void* space, void* cspace,
   core::T_sp told((gc::Tagged)old);
   core::T_sp tsym((gc::Tagged)sym);
   core::Symbol_sp rsym = gc::As_unsafe<Symbol_sp>(tsym);
-  auto newde = InitObject<core::BindingDynEnv_O>(space, rsym, told);
+  auto newde = InitObject<core::BindingDynEnv_O>(space, rsym->ensureVariableCell(), told);
   auto newstack = InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
   my_thread->dynEnvStackSet(newstack);
   return newde.raw_();

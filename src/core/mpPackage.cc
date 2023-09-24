@@ -157,7 +157,7 @@ struct SafeRegisterDeregisterProcessWithLisp {
 void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
   if (bindings.consp()) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(CONS_CAR(bindings));
-    core::DynamicScopeManager scope(pair->ocar(),core::eval::evaluate(pair->cdr(),nil<core::T_O>()));
+    core::DynamicScopeManager scope(gc::As<core::Symbol_sp>(pair->ocar()),core::eval::evaluate(pair->cdr(),nil<core::T_O>()));
     do_start_thread_inner(process,CONS_CDR(bindings));
   } else {
     core::List_sp args = process->_Arguments;

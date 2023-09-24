@@ -322,11 +322,6 @@ public:
   T_sp casSymbolValue(T_sp cmp, T_sp new_value);
   bool boundP() const;
 
-  inline T_sp bind(T_sp nval) {
-    return ensureVariableCell()->bind(nval);
-  }
-  inline void unbind(T_sp oval) { ensureVariableCell()->unbind(oval); }
-
   // TODO: Remove
   inline T_sp threadLocalSymbolValue() {
     return my_thread->_Bindings.thread_local_value(ensureVariableCell()->ensureBindingIndex());

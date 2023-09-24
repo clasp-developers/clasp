@@ -801,7 +801,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::UnwindProtectDynEnv_O,0,RAW_POINTER_OFFSET,target);
 
   Init_class_kind(core::BindingDynEnv_O);
-  Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,sym);
+  Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,cell);
   Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,old);
 
   Init_class_kind(core::BytecodeModule_O);

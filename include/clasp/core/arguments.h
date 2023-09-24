@@ -121,15 +121,20 @@ public:
 // this will be a problem because some of the have smart_ptr's in them
 class DynamicScopeManager : gctools::StackBoundClass {
 private:
-  Symbol_sp _OldVar;
+  VariableCell_sp _Cell;
   T_sp _OldBinding;
 public:
+  inline explicit DynamicScopeManager(VariableCell_sp cell, T_sp val) {
+    _Cell = cell;
+    _OldBinding = _Cell->bind(val);
+  }
+  // Compatibility
   inline explicit DynamicScopeManager(Symbol_sp sym, T_sp val) {
-    _OldVar = sym;
-    _OldBinding = sym->bind(val);
+    _Cell = sym->ensureVariableCell();
+    _OldBinding = _Cell->bind(val);
   }
   virtual ~DynamicScopeManager() {
-    _OldVar->unbind(_OldBinding);
+    _Cell->unbind(_OldBinding);
   }
   // used in unwind.h
   inline T_sp oldBinding() { return _OldBinding; }
