@@ -145,6 +145,14 @@ void Function_O::__write__(T_sp stream) const {
   clasp_write_char('>', stream);
 }
 
+void VariableCell_O::__write__(T_sp stream) const {
+  clasp_write_string("#<", stream);
+  clasp_write_string(this->className(), stream);
+  clasp_write_char(' ', stream);
+  write_ugly_object(this->name(), stream);
+  clasp_write_char('>', stream);
+}
+
 void _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
   SafeBufferStr8Ns buffer;
   core__integer_to_string(buffer._Buffer, clasp_make_fixnum(i), clasp_make_fixnum(clasp_print_base()),

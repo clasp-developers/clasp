@@ -73,8 +73,9 @@ FORWARD(VariableCell);
 class VariableCell_O : public General_O {
   LISP_CLASS(core, CorePkg, VariableCell_O, "VariableCell", General_O);
 public:
-  VariableCell_O()
-    : _GlobalValue(unbound<T_O>()), _BindingIdx(NO_THREAD_LOCAL_BINDINGS)
+  VariableCell_O(T_sp name)
+    : _GlobalValue(unbound<T_O>()),
+      _BindingIdx(NO_THREAD_LOCAL_BINDINGS), _Name(name)
   {}
 #ifdef CLASP_THREADS
   virtual ~VariableCell_O() {
@@ -86,14 +87,16 @@ public:
 public:
   std::atomic<T_sp> _GlobalValue;
   mutable std::atomic<uint32_t> _BindingIdx;
+  T_sp _Name; // used for error messages and printing only
 public:
-  static VariableCell_sp make();
+  static VariableCell_sp make(T_sp name);
 private:
   inline uint32_t bindingIndex() const {
     return _BindingIdx.load(std::memory_order_relaxed);
   }
-  [[noreturn]] void unboundError(T_sp name) const;
+  [[noreturn]] void unboundError() const;
 public:
+  inline T_sp name() const { return this->_Name; }
   inline T_sp globalValue() const {
     return _GlobalValue.load(std::memory_order_relaxed);
   }
@@ -141,9 +144,9 @@ public:
   inline bool boundP() const { return !(valueUnsafe().unboundp()); }
 
   // Return the value or signal an error if unbound.
-  inline T_sp value(T_sp name) const {
+  inline T_sp value() const {
     T_sp val = valueUnsafe();
-    if (val.unboundp()) unboundError(name);
+    if (val.unboundp()) unboundError();
     else return val;
   }
   void set_value(T_sp value) {
@@ -159,9 +162,9 @@ public:
   inline void makunbound() {
     set_value(unbound<T_O>());
   }
-  inline T_sp valueSeqCst(T_sp name) const {
+  inline T_sp valueSeqCst() const {
     T_sp val = valueUnsafeSeqCst();
-    if (val.unboundp()) unboundError(name);
+    if (val.unboundp()) unboundError();
     else return val;
   }
   void set_valueSeqCst(T_sp value) {
@@ -208,6 +211,7 @@ public:
     my_thread->_Bindings.set_thread_local_value(oval, index);
   }
 public:
+  virtual void __write__(T_sp stream) const; // in write_ugly.cc
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup)
   {
     // Reset the _BindingIdx (erasing any local bindings).

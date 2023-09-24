@@ -235,8 +235,8 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
   return n;
 };
 
-VariableCell_sp VariableCell_O::make() {
-  return gctools::GC<VariableCell_O>::allocate();
+VariableCell_sp VariableCell_O::make(T_sp name) {
+  return gctools::GC<VariableCell_O>::allocate(name);
 }
 
 uint32_t VariableCell_O::ensureBindingIndex() const {
@@ -260,18 +260,22 @@ uint32_t VariableCell_O::ensureBindingIndex() const {
   } else return binding_index;
 }
 
-void VariableCell_O::unboundError(T_sp name) const {
-  UNBOUND_VARIABLE_ERROR(name);
+void VariableCell_O::unboundError() const {
+  UNBOUND_VARIABLE_ERROR(name());
 }
 
 VariableCell_sp Symbol_O::ensureVariableCell() {
   VariableCell_sp vcell = variableCell();
   if (vcell.unboundp()) {
-    VariableCell_sp n = VariableCell_O::make();
+    VariableCell_sp n = VariableCell_O::make(this->asSmartPtr());
     if (_Value.compare_exchange_strong(vcell, n, std::memory_order_relaxed))
       return n;
     else return vcell;
   } else return vcell;
+}
+
+CL_DEFUN VariableCell_sp core__ensure_variable_cell(Symbol_sp name) {
+  return name->ensureVariableCell();
 }
 
 bool Symbol_O::boundP() const {
@@ -284,14 +288,14 @@ T_sp Symbol_O::symbolValue() const {
   VariableCell_sp vcell = variableCell();
   if (vcell.unboundp())
     UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
-  else return vcell->value(this->asSmartPtr());
+  else return vcell->value();
 }
 
 T_sp Symbol_O::atomicSymbolValue() const {
   VariableCell_sp vcell = variableCell();
   if (vcell.unboundp())
     UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
-  else return vcell->value(this->asSmartPtr());
+  else return vcell->value();
 }
 
 void Symbol_O::setf_symbolValue(T_sp nv) {
