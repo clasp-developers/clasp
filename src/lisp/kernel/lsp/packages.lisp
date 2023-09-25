@@ -165,6 +165,11 @@
             source-location-description
             compiled-function-name
             compiled-function-file
+            who-calls
+            who-binds
+            who-sets
+            who-references
+            who-macroexpands
             list-all-logical-hosts
             logical-host-p
             array-index
