@@ -170,6 +170,7 @@
             who-sets
             who-references
             who-macroexpands
+            who-specializes-directly
             list-callers
             list-callees
             list-all-logical-hosts

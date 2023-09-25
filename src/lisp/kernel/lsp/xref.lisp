@@ -124,3 +124,28 @@
             (bc-list-callees simple)
             nil))
       nil))
+
+(defun %function-spi (function)
+  (multiple-value-bind (file pos line col)
+      (core:function-source-pos function)
+    (core:make-source-pos-info :filepos pos :lineno line :column col
+                               :filename (namestring file))))
+
+(defun %method-spi (method)
+  (or (clos::method-source-position method)
+      (%function-spi (clos::fast-method-function method))
+      (%function-spi (clos::contf-method-function method))
+      (%function-spi (clos:method-function method))))
+
+(defun ext:who-specializes-directly (class-designator)
+  (let ((class (typecase class-designator
+                 (class class-designator)
+                 (symbol (find-class class-designator nil))
+                 (t nil))))
+    (unless class (return-from ext:who-specializes-directly nil))
+    (let ((methods (clos:specializer-direct-methods class)))
+      (loop for method in methods
+            for fname = (core:function-name
+                         (clos:method-generic-function method))
+            for spi = (%method-spi method)
+            collect (cons `(method ,fname) spi)))))
