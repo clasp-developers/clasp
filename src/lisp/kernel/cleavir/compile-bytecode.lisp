@@ -1090,10 +1090,10 @@
 (defmethod compile-instruction ((mnemonic (eql :special-bind))
                                  inserter annot context &rest args)
   (declare (ignore annot))
-  (destructuring-bind (symbol) args
+  (destructuring-bind (vcell) args
     (let* ((next (mapcar #'bt:block-entry-extra
                          (context-successors context)))
-           (const (inserter-vcell symbol inserter))
+           (const (inserter-vcell (core:variable-cell/name vcell) inserter))
            (value (stack-pop context))
            (bind (ast-to-bir:terminate inserter 'bir:constant-bind
                                        :inputs (list const value)
@@ -1103,9 +1103,10 @@
 (defmethod compile-instruction ((mnemonic (eql :symbol-value))
                                 inserter annot context &rest args)
   (declare (ignore annot))
-  (destructuring-bind (symbol) args
-    (let ((const (inserter-vcell symbol inserter))
-          (out (make-instance 'bir:output :name symbol)))
+  (destructuring-bind (vcell) args
+    (let* ((symbol (core:variable-cell/name vcell))
+           (const (inserter-vcell symbol inserter))
+           (out (make-instance 'bir:output :name symbol)))
       (ast-to-bir:insert inserter 'bir:constant-symbol-value
                          :inputs (list const) :outputs (list out))
       (stack-push out context))))
@@ -1113,8 +1114,8 @@
 (defmethod compile-instruction ((mnemonic (eql :symbol-value-set))
                                 inserter annot context &rest args)
   (declare (ignore annot))
-  (destructuring-bind (symbol) args
-    (let ((const (inserter-vcell symbol inserter))
+  (destructuring-bind (vcell) args
+    (let ((const (inserter-vcell (core:variable-cell/name vcell) inserter))
           (in (stack-pop context)))
       (ast-to-bir:insert inserter 'bir:set-constant-symbol-value
                          :inputs (list const in)))))

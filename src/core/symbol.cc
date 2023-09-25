@@ -278,6 +278,11 @@ CL_DEFUN VariableCell_sp core__ensure_variable_cell(Symbol_sp name) {
   return name->ensureVariableCell();
 }
 
+CL_LISPIFY_NAME(variable-cell/name);
+CL_DEFUN T_sp core__variable_cell_name(VariableCell_sp vcell) {
+  return vcell->name();
+}
+
 bool Symbol_O::boundP() const {
   VariableCell_sp vcell = variableCell();
   if (vcell.unboundp()) return false;
