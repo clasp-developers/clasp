@@ -162,6 +162,19 @@ CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
   return arg->symbolValue();
 };
 
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__symbol_global_value(Symbol_sp s) {
+  return s->globalSymbolValue();
+}
+
+CL_DOCSTRING(R"(Set the value slot of the symbol to the value.
+This bypasses thread local storage of symbol value slots and any threads that start
+after this has been set will start with the value set here.)")
+DOCGROUP(clasp);
+CL_DEFUN void core__symbol_global_value_set(Symbol_sp sym, T_sp nv) {
+  sym->set_globalSymbolValue(nv);
+}
+
 CL_LAMBDA(symbol);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Sequentially-consistent atomic read of SYMBOL-VALUE.)dx");
@@ -303,11 +316,21 @@ T_sp Symbol_O::atomicSymbolValue() const {
   else return vcell->value();
 }
 
+T_sp Symbol_O::globalSymbolValue() const {
+  VariableCell_sp vcell = variableCell();
+  if (vcell.unboundp())
+    UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
+  else return vcell->globalValue();
+}
+
 void Symbol_O::setf_symbolValue(T_sp nv) {
   ensureVariableCell()->set_value(nv);
 }
 void Symbol_O::set_atomicSymbolValue(T_sp nv) {
   ensureVariableCell()->set_valueSeqCst(nv);
+}
+void Symbol_O::set_globalSymbolValue(T_sp nv) {
+  ensureVariableCell()->set_globalValue(nv);
 }
 
 T_sp Symbol_O::casSymbolValue(T_sp cmp, T_sp nv) {

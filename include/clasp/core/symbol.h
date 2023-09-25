@@ -108,10 +108,10 @@ private:
   [[noreturn]] void unboundError() const;
 public:
   inline T_sp name() const { return this->_Name; }
-  inline T_sp globalValue() const {
+  inline T_sp globalValueUnsafe() const {
     return _GlobalValue.load(std::memory_order_relaxed);
   }
-  inline T_sp globalValueSeqCst() const {
+  inline T_sp globalValueUnsafeSeqCst() const {
     return _GlobalValue.load();
   }
   inline void set_globalValue(T_sp val) {
@@ -140,7 +140,7 @@ public:
       return bindings.thread_local_value(index);
     else
 #endif
-      return globalValue();
+      return globalValueUnsafe();
   }
   T_sp valueUnsafeSeqCst() const {
 #ifdef CLASP_THREADS
@@ -150,7 +150,7 @@ public:
       return bindings.thread_local_value(index);
     else
 #endif
-      return globalValueSeqCst();
+      return globalValueUnsafeSeqCst();
   }
   inline bool boundP() const { return !(valueUnsafe().unboundp()); }
 
@@ -169,6 +169,11 @@ public:
     else
 #endif
       set_globalValue(value);
+  }
+  inline T_sp globalValue() const {
+    T_sp val = globalValueUnsafe();
+    if (val.unboundp()) unboundError();
+    else return val;
   }
   inline void makunbound() {
     set_value(unbound<T_O>());
@@ -334,13 +339,8 @@ public:
   T_sp casSymbolValue(T_sp cmp, T_sp new_value);
   bool boundP() const;
 
-  // TODO: Remove
-  inline T_sp threadLocalSymbolValue() {
-    return my_thread->_Bindings.thread_local_value(ensureVariableCell()->ensureBindingIndex());
-  }
-  inline void set_threadLocalSymbolValue(T_sp val) {
-    my_thread->_Bindings.set_thread_local_value(val, ensureVariableCell()->ensureBindingIndex());
-  }
+  T_sp globalSymbolValue() const;
+  void set_globalSymbolValue(T_sp nv);
 
   void makunbound();
 
