@@ -442,6 +442,7 @@
           constants-table-reference
           constants-table-value
           reference-function-cell
+          reference-variable-cell
           load-time-value-from-thunk
           with-rtv
           arrange-thunk-as-top-level
