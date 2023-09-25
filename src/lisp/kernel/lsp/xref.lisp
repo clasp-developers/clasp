@@ -94,3 +94,33 @@
   ;; TODO: implement me.
   (declare (ignore macro-name))
   nil)
+
+;;; this is supposed to be "lower level", but we don't need to.
+(setf (fdefinition 'ext:list-callers) #'ext:who-calls)
+
+;;; Kind of a reverse version of all the above stuff.
+(defun bc-list-callees (fun)
+  (let* ((module (core:simple-fun-code fun))
+         (literals (core:bytecode-module/literals module))
+         (start (core:bytecode-debug-info/start fun))
+         (end (core:bytecode-debug-info/end fun))
+         (result nil))
+    (do-module-instructions (mnem args opip ip) (module)
+      (when (eql mnem :called-fdefinition)
+        (let* ((arg (first args))
+               (pos (cdr arg))
+               (cell (aref literals pos))
+               (fname (core:function-name cell))
+               (spi (spi-at-ip opip module))
+               (xref (cons fname spi)))
+          (push xref result))))
+    result))
+
+(defun ext:list-callees (function-name)
+  (if (fboundp function-name)
+      (let* ((function (fdefinition function-name))
+             (simple (core:function/entry-point function)))
+        (if (typep simple 'core:global-bytecode-simple-fun)
+            (bc-list-callees simple)
+            nil))
+      nil))

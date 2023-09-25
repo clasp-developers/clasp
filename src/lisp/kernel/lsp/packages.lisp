@@ -170,6 +170,8 @@
             who-sets
             who-references
             who-macroexpands
+            list-callers
+            list-callees
             list-all-logical-hosts
             logical-host-p
             array-index
