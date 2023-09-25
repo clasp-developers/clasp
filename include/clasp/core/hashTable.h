@@ -56,7 +56,6 @@ struct KeyValuePair {
 
   FORWARD(HashTable);
   class HashTable_O : public HashTableBase_O {
-    struct metadata_bootstrap_class {};
     friend T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe, T_sp hashf);
     friend class HashTableReadLock;
     friend class HashTableWriteLock;

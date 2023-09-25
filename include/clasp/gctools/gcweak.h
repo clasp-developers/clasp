@@ -116,7 +116,6 @@ void safeRun(std::function<Proto> f) {
 namespace gctools {
 
 struct WeakObject {
-  struct metadata_always_fix_pointers_to_derived_classes;
 WeakObject() {};
 
   virtual void *dependentPtr() const { return NULL; };

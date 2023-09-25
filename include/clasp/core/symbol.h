@@ -222,10 +222,7 @@ public:
 
 FORWARD(Symbol);
 class Symbol_O : public General_O {
-  struct metadata_bootstrap_class {};
-  struct metadata_gc_do_not_move {};
-
- public:
+public:
   // This MUST match the layout for %symbol% in cmpintrinsics.lisp and the sanity check core__verify_symbol_layout
   SimpleString_sp _Name; // offset 8
   std::atomic<T_sp> _HomePackage; // offset=16 NIL or Package
