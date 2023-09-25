@@ -44,6 +44,17 @@ THE SOFTWARE.
 #define IS_CONSTANT 0x02
 #define IS_MACRO    0x04
 
+template <>
+struct gctools::GCInfo<core::VariableCell_O> {
+  static bool constexpr NeedsInitialization = false;
+#ifdef CLASP_THREADS
+  // Gotta release the binding index.
+  static bool constexpr NeedsFinalization = true;
+#else
+  static bool constexpr NeedsFinalization = false;
+#endif
+  static GCInfo_policy constexpr Policy = normal;
+};
 
 template <>
 struct gctools::GCInfo<core::Symbol_O> {
