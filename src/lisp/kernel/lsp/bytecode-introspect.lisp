@@ -42,7 +42,7 @@
            for ,op = (cmpref::decode-instr (aref ,bsym ,ip))
            for ,mnemonic = (intern (string-upcase (first ,op)) "KEYWORD")
            if (eql ,mnemonic :long)
-             do (setf ,longp t)
+             do (setf ,longp t ,ip (1+ ,ip))
            else
              do (let ((,opip ,ip))
                   (incf ,ip)
