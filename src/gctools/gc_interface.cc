@@ -773,7 +773,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::Symbol_O);
   Init__fixed_field(core::Symbol_O,0,SMART_PTR_OFFSET,_Name);
   Init__fixed_field(core::Symbol_O,1,SMART_PTR_OFFSET,_HomePackage);
-  Init__fixed_field(core::Symbol_O,2,SMART_PTR_OFFSET,_GlobalValue);
+  Init__fixed_field(core::Symbol_O,2,SMART_PTR_OFFSET,_Value);
   Init__fixed_field(core::Symbol_O,3,SMART_PTR_OFFSET,_Function);
   Init__fixed_field(core::Symbol_O,4,SMART_PTR_OFFSET,_SetfFunction);
   Init__fixed_field(core::Symbol_O,5,SMART_PTR_OFFSET,_PropertyList);
@@ -801,7 +801,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init__fixed_field(core::UnwindProtectDynEnv_O,0,RAW_POINTER_OFFSET,target);
 
   Init_class_kind(core::BindingDynEnv_O);
-  Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,sym);
+  Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,cell);
   Init__fixed_field(core::BindingDynEnv_O,0,SMART_PTR_OFFSET,old);
 
   Init_class_kind(core::BytecodeModule_O);

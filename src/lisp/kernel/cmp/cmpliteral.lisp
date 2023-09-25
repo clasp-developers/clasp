@@ -172,6 +172,7 @@
   (package-coalesce (make-similarity-table #'eq))
   (double-float-coalesce (make-similarity-table #'eql))
   (fcell-coalesce (make-similarity-table #'equal))
+  (vcell-coalesce (make-similarity-table #'eq))
   (llvm-values (make-hash-table))
 )
 
@@ -670,6 +671,25 @@ rewrite the slot in the literal table to store a closure."
                    (%reference-function-cell fname)
                    (run-time-reference-literal
                     (core:ensure-function-cell fname) nil)))
+         (index (literal-node-index data)))
+    (values index t)))
+
+(defun %reference-variable-cell (vname)
+  (let* ((similarity (literal-machine-vcell-coalesce *literal-machine*))
+         (existing (find-similar vname similarity)))
+    (if existing
+        (datum-literal-node-creator existing)
+        (let ((datum (new-datum t)))
+          (add-similar vname datum similarity)
+          (add-creator "ltvc_ensure_vcell" datum vname
+                       (load-time-reference-literal vname t
+                                                    :toplevelp nil))))))
+
+(defun reference-variable-cell (vname)
+  (let* ((data (if (cmp:generate-load-time-values)
+                   (%reference-variable-cell vname)
+                   (run-time-reference-literal
+                    (core:ensure-variable-cell vname) nil)))
          (index (literal-node-index data)))
     (values index t)))
 

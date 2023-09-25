@@ -86,43 +86,21 @@ void DynamicBindingStack::release_binding_index(size_t index) const
 #endif
 };
 
-// Ensure that a symbol's binding index is set to something coherent.
-// NOTE: We can use memory_order_relaxed because (a) this is the only code in
-// the system that deals with the _BindingIdx, and (b) the only guarantee we
-// should need for this structure is modification order consistency.
-uint32_t DynamicBindingStack::ensure_binding_index(const Symbol_O* var) const {
-  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
-  uint32_t binding_index = var->_BindingIdx.load(std::memory_order_relaxed);
-  if (binding_index == no_binding) {
-    // Get a new index and try to exchange it in.
-    uint32_t new_index = this->new_binding_index();
-    if (!(var->_BindingIdx.compare_exchange_strong(no_binding, new_index,
-                                                   std::memory_order_relaxed))) {
-      // Some other thread has beat us. That's fine - just use theirs (which is
-      // now in no_binding), and release the one we just grabbed.
-      this->release_binding_index(new_index);
-      return no_binding;
-    } else return new_index;
-  } else return binding_index;
-}
-
 T_sp* DynamicBindingStack::thread_local_reference(const uint32_t index) const {
   unlikely_if (index >= this->_ThreadLocalBindings.size())
     this->_ThreadLocalBindings.resize(index+1,no_thread_local_binding<T_O>());
   return &(this->_ThreadLocalBindings[index]);
 }
 
-T_sp DynamicBindingStack::thread_local_value(const Symbol_O* sym) const {
-  // TODO: Rearrange this - in all cases, ensure_binding_index has already been called,
-  // and should not be necessary.
-  return *thread_local_reference(ensure_binding_index(sym));
+T_sp DynamicBindingStack::thread_local_value(uint32_t index) const {
+  return *thread_local_reference(index);
 }
 
-void DynamicBindingStack::set_thread_local_value(T_sp value, const Symbol_O* sym) {
-  *thread_local_reference(ensure_binding_index(sym)) = value;
+void DynamicBindingStack::set_thread_local_value(T_sp value, uint32_t index) {
+  *thread_local_reference(index) = value;
 }
 
-bool DynamicBindingStack::thread_local_boundp(int32_t index) const {
+bool DynamicBindingStack::thread_local_boundp(uint32_t index) const {
   if (index == NO_THREAD_LOCAL_BINDINGS) return false;
   else if (index >= this->_ThreadLocalBindings.size()) return false;
   else if (gctools::tagged_no_thread_local_bindingp(_ThreadLocalBindings[index].raw_()))

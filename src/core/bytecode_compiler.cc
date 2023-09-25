@@ -1136,7 +1136,7 @@ void Module_O::link_load(T_sp compile_info) {
     else if (gc::IsA<FunctionCellInfo_sp>(lit))
       (*literals)[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
     else if (gc::IsA<VariableCellInfo_sp>(lit))
-      (*literals)[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname();
+      (*literals)[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
     else SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}",
                       _rep_(lit));
   }

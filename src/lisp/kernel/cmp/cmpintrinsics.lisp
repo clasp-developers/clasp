@@ -424,12 +424,11 @@ Boehm and MPS use a single pointer"
   ((%i8*% :sym-vtable) ; index=0 offset=0
    (%t*% :name) ; index=1 offset=8
    (%t*% :home-package) ; index=2 offset=16
-   (%t*% :global-value) ; index=3 offset=24
+   (%t*% :value) ; index=3 offset=24
    (%t*% :function) ; index=4 offset=32
    (%t*% :setf-function) ; index=5 offset=40
-   (%i32% :binding-idx) ; index=6 offset=48
-   (%i32% :flags) ; index=7 offset=56
-   (%t*% :property-list))) ; index=8 offset=64
+   (%i32% :flags) ; index=6 offset=48
+   (%t*% :property-list))) ; index=7 offset=56
 
 (defconstant +symbol.function-index+ (c++-field-index :function info.%symbol%))
 (defconstant +symbol.setf-function-index+ (c++-field-index :setf-function info.%symbol%))

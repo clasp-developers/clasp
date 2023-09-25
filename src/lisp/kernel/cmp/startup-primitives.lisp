@@ -52,6 +52,7 @@
     (nil "ltvc_make_global_entry_point"   (:i8 :size_t :size_t :t* :size_t))
     (nil "ltvc_make_local_entry_point"    (:i8 :size_t :size_t :t*))
     (nil "ltvc_ensure_fcell"              (:i8 :size_t :t*))
+    (nil "ltvc_ensure_vcell"              (:i8 :size_t :t*))
     (nil "ltvc_make_random_state"         (:i8 :size_t :t*))
     (nil "ltvc_make_float"                (:i8 :size_t :single-float))
     (nil "ltvc_make_double"               (:i8 :size_t :double-float))

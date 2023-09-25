@@ -617,10 +617,9 @@ struct loadltv {
   }
 
   void op_vcell() {
-    // We also don't really have variable cells.
     size_t index = read_index();
-    T_sp name = get_ltv(read_index());
-    set_ltv(name, index);
+    Symbol_sp name = gc::As<Symbol_sp>(get_ltv(read_index()));
+    set_ltv(name->ensureVariableCell(), index);
   }
 
   void op_create() {

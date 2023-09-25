@@ -53,8 +53,6 @@ redirect its virtual functions to the Derivable<T> functions. */
   template <class Alien>
     class Derivable : public core::DerivableCxxObject_O, public Alien  {
   public:
-// All classes derived from Derivable must be put in the non-moving pool
-    struct metadata_gc_do_not_move {};
     typedef Derivable<Alien> DerivableType;
     typedef Alien AlienType;
   public:

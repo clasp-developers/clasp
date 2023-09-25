@@ -87,14 +87,6 @@ ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object)
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  T_O *sv = symP->symbolValueUnsafe().raw_();
-  if (!gctools::tagged_unboundp(sv)) return sv;
-  intrinsic_error(llvmo::unboundSymbolValue, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
-}
-
-
 ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(Vaslist* vaslist, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
   new(&untagged_vargs_rest[0]) Vaslist(nargs, vaslist->args());

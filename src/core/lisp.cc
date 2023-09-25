@@ -291,7 +291,6 @@ void Lisp::setupSpecialSymbols() {
   symbol_no_key->_HomePackage = symbol_nil;
   symbol_deleted->_HomePackage = symbol_nil;
   symbol_same_as_key->_HomePackage = symbol_nil;
-  symbol_nil->_BindingIdx.store(NO_THREAD_LOCAL_BINDINGS);
 }
 
 void Lisp::finalizeSpecialSymbols() {
@@ -1800,14 +1799,14 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
             if (sym->macroP()) ss << "(MACRO)";
           }
         }
-        if ( !(sym)->symbolValueUnsafe() ) {
+        if ( !(sym)->boundP() ) {
           ss << " !!UNDEFINED!!";
         } else {
-          if ( (sym)->specialP() || (sym)->symbolValueUnsafe() ) {
+          if ( (sym)->specialP() || (sym)->boundP() ) {
             ss << " VALUE";
             if ( print_values ) {
               stringstream sval;
-              T_sp symVal = (sym)->symbolValueUnsafe();
+              T_sp symVal = (sym)->symbolValue();
               sval << _rep_(symVal);
               ss << ": " << sval.str().substr(0,50);
             }

@@ -44,6 +44,17 @@ THE SOFTWARE.
 #define IS_CONSTANT 0x02
 #define IS_MACRO    0x04
 
+template <>
+struct gctools::GCInfo<core::VariableCell_O> {
+  static bool constexpr NeedsInitialization = false;
+#ifdef CLASP_THREADS
+  // Gotta release the binding index.
+  static bool constexpr NeedsFinalization = true;
+#else
+  static bool constexpr NeedsFinalization = false;
+#endif
+  static GCInfo_policy constexpr Policy = normal;
+};
 
 template <>
 struct gctools::GCInfo<core::Symbol_O> {
@@ -68,19 +79,172 @@ SMART(NamedFunction);
 FORWARD(ClassHolder);
 FORWARD(FunctionCell);
 
+// FIXME: Not the best place for this class, probably.
+FORWARD(VariableCell);
+class VariableCell_O : public General_O {
+  LISP_CLASS(core, CorePkg, VariableCell_O, "VariableCell", General_O);
+public:
+  VariableCell_O(T_sp name)
+    : _GlobalValue(unbound<T_O>()),
+      _BindingIdx(NO_THREAD_LOCAL_BINDINGS), _Name(name)
+  {}
+#ifdef CLASP_THREADS
+  virtual ~VariableCell_O() {
+    uint32_t idx = bindingIndex();
+    if (idx != NO_THREAD_LOCAL_BINDINGS)
+      my_thread->_Bindings.release_binding_index(idx);
+  }
+#endif
+public:
+  std::atomic<T_sp> _GlobalValue;
+  mutable std::atomic<uint32_t> _BindingIdx;
+  T_sp _Name; // used for error messages and printing only
+public:
+  static VariableCell_sp make(T_sp name);
+private:
+  inline uint32_t bindingIndex() const {
+    return _BindingIdx.load(std::memory_order_relaxed);
+  }
+  [[noreturn]] void unboundError() const;
+public:
+  inline T_sp name() const { return this->_Name; }
+  inline T_sp globalValueUnsafe() const {
+    return _GlobalValue.load(std::memory_order_relaxed);
+  }
+  inline T_sp globalValueUnsafeSeqCst() const {
+    return _GlobalValue.load();
+  }
+  inline void set_globalValue(T_sp val) {
+    _GlobalValue.store(val, std::memory_order_relaxed);
+  }
+  inline void set_globalValueSeqCst(T_sp val) {
+    _GlobalValue.store(val);
+  }
+  inline T_sp cas_globalValueSeqCst(T_sp cmp, T_sp val) {
+    _GlobalValue.compare_exchange_strong(cmp, val);
+    return cmp;
+  }
+
+  // Make sure the binding index is coherent.
+  // This is used when doing local special bindings.
+  // Hypothetically, we could do it even earlier at load time,
+  // but only when a cell is actually bound and not just global.
+  uint32_t ensureBindingIndex() const;
+
+  // Return the value, or UNBOUND if unbound.
+  T_sp valueUnsafe() const {
+#ifdef CLASP_THREADS
+    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
+    auto& bindings = my_thread->_Bindings;
+    if (bindings.thread_local_boundp(index))
+      return bindings.thread_local_value(index);
+    else
+#endif
+      return globalValueUnsafe();
+  }
+  T_sp valueUnsafeSeqCst() const {
+#ifdef CLASP_THREADS
+    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
+    auto& bindings = my_thread->_Bindings;
+    if (bindings.thread_local_boundp(index))
+      return bindings.thread_local_value(index);
+    else
+#endif
+      return globalValueUnsafeSeqCst();
+  }
+  inline bool boundP() const { return !(valueUnsafe().unboundp()); }
+
+  // Return the value or signal an error if unbound.
+  inline T_sp value() const {
+    T_sp val = valueUnsafe();
+    if (val.unboundp()) unboundError();
+    else return val;
+  }
+  void set_value(T_sp value) {
+#ifdef CLASP_THREADS
+    uint32_t index = _BindingIdx.load(std::memory_order_relaxed);
+    auto& bindings = my_thread->_Bindings;
+    if (bindings.thread_local_boundp(index))
+      bindings.set_thread_local_value(value, index);
+    else
+#endif
+      set_globalValue(value);
+  }
+  inline T_sp globalValue() const {
+    T_sp val = globalValueUnsafe();
+    if (val.unboundp()) unboundError();
+    else return val;
+  }
+  inline void makunbound() {
+    set_value(unbound<T_O>());
+  }
+  inline T_sp valueSeqCst() const {
+    T_sp val = valueUnsafeSeqCst();
+    if (val.unboundp()) unboundError();
+    else return val;
+  }
+  void set_valueSeqCst(T_sp value) {
+#ifdef CLASP_THREADS
+    uint32_t index = _BindingIdx.load(std::memory_order_relaxed);
+    auto& bindings = my_thread->_Bindings;
+    if (bindings.thread_local_boundp(index))
+      bindings.set_thread_local_value(value, index);
+    else
+#endif
+      set_globalValueSeqCst(value);
+  }
+  T_sp cas_valueSeqCst(T_sp cmp, T_sp new_value) {
+#ifdef CLASP_THREADS
+    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
+    auto& bindings = my_thread->_Bindings;
+    if (bindings.thread_local_boundp(index)) {
+      // Not actually atomic, since local bindings are only
+      // accessible within their thread. For now at least.
+      T_sp actual = bindings.thread_local_value(index);
+      if (actual == cmp) {
+        bindings.set_thread_local_value(new_value, index);
+        return actual;
+      } else return cmp;
+    }
+    else
+#endif
+      return cas_globalValueSeqCst(cmp, new_value);
+  }
+  // Used by DynamicScopeManager.
+  // Give the cell a new thread local value and return the old value,
+  // which may be an unboundedness marker.
+  T_sp bind(T_sp nval) {
+    auto& bindings = my_thread->_Bindings;
+    uint32_t index = ensureBindingIndex();
+    T_sp oval = bindings.thread_local_value(index);
+    bindings.set_thread_local_value(nval, index);
+    return oval;
+  }
+  void unbind(T_sp oval) {
+    // If this always follows a bind call, the _BindingIdx has already
+    // been ensured so we don't need to check again.
+    uint32_t index = _BindingIdx.load(std::memory_order_relaxed);
+    my_thread->_Bindings.set_thread_local_value(oval, index);
+  }
+public:
+  virtual void __write__(T_sp stream) const; // in write_ugly.cc
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup)
+  {
+    // Reset the _BindingIdx (erasing any local bindings).
+    if (snapshotSaveLoad::operation(fixup)==snapshotSaveLoad::SaveOp)
+      _BindingIdx.store(NO_THREAD_LOCAL_BINDINGS);
+  }
+};
+
 FORWARD(Symbol);
 class Symbol_O : public General_O {
-  struct metadata_bootstrap_class {};
-  struct metadata_gc_do_not_move {};
-
- public: // FIXME: Probably oughta be private.
-  // This MUST match the layout for %sym% in cmpintrinsics.lisp and the sanity check core__verify_symbol_layout
+public:
+  // This MUST match the layout for %symbol% in cmpintrinsics.lisp and the sanity check core__verify_symbol_layout
   SimpleString_sp _Name; // offset 8
   std::atomic<T_sp> _HomePackage; // offset=16 NIL or Package
-  std::atomic<T_sp> _GlobalValue; // offset=24
+  mutable std::atomic<VariableCell_sp> _Value; // offset=24
   std::atomic<FunctionCell_sp> _Function; // offset=32
   std::atomic<FunctionCell_sp> _SetfFunction; // offset=40
-  mutable std::atomic<uint32_t> _BindingIdx;
   std::atomic<uint32_t>  _Flags;
   std::atomic<T_sp>   _PropertyList;
 
@@ -106,13 +270,6 @@ public:
     return n;
   };
 public:
-  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
-    // Write any thread local symbol value into the global value and
-    // reset the _BindingIdx
-    if (snapshotSaveLoad::operation(fixup)==snapshotSaveLoad::SaveOp) {
-      this->_BindingIdx.store(NO_THREAD_LOCAL_BINDINGS);
-    }
-  }
 
  public:
   string formattedName(bool prefixAlways) const;
@@ -169,141 +326,26 @@ public:
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
 
-  void symbolUnboundError() const;
-
  public: // value slot access
 
-  inline T_sp globalValue() const { return _GlobalValue.load(std::memory_order_relaxed); }
-  inline void set_globalValue(T_sp val) { _GlobalValue.store(val, std::memory_order_relaxed); }
-  inline T_sp globalValueSeqCst() const { return _GlobalValue.load(std::memory_order_seq_cst); }
-  inline void set_globalValueSeqCst(T_sp val) { _GlobalValue.store(val, std::memory_order_seq_cst); }
-  inline T_sp cas_globalValue(T_sp cmp, T_sp new_value) {
-    _GlobalValue.compare_exchange_strong(cmp, new_value);
-    return cmp;
-  }
-
-  inline T_sp threadLocalSymbolValue() const {
-#ifdef CLASP_THREADS
-    return my_thread->_Bindings.thread_local_value(this);
-#else
-    return globalValue();
-#endif
-  }
-
-  inline void set_threadLocalSymbolValue(T_sp value) {
-#ifdef CLASP_THREADS
-    my_thread->_Bindings.set_thread_local_value(value, this);
-#else
-    set_globalValue(value);
-#endif
-  }
-
-  // As of now this is a sham operation in that it doesn't do anything atomically,
-  // since bindings are thread-local anyway.
-  // However, if like SBCL we were to make local special bindings accessible from other
-  // threads at some point, we would need to do an actual CAS.
-  inline T_sp cas_threadLocalSymbolValue(T_sp cmp, T_sp new_value) {
-    T_sp old = threadLocalSymbolValue();
-    if (old == cmp)
-      set_threadLocalSymbolValue(new_value);
-    return old;
-  }
-
-  /*! Return the value slot of the symbol or UNBOUND if unbound */
-  inline T_sp symbolValueUnsafe() const {
-#ifdef CLASP_THREADS
-    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    auto& bindings = my_thread->_Bindings;
-    if (bindings.thread_local_boundp(index))
-      return bindings.thread_local_value(this);
-    else
-#endif
-      return globalValue();
-  };
+  inline VariableCell_sp variableCell() const { return _Value.load(std::memory_order_relaxed); }
+  VariableCell_sp ensureVariableCell();
   
   /*! Return the value slot of the symbol - throws if unbound */
-  inline T_sp symbolValue() const {
-    T_sp val = symbolValueUnsafe();
-    if (val.unboundp()) this->symbolUnboundError();
-    return val;
-  }
+  T_sp symbolValue() const;
+  T_sp atomicSymbolValue() const;
+  void setf_symbolValue(T_sp obj);
+  void set_atomicSymbolValue(T_sp nv);
+  T_sp casSymbolValue(T_sp cmp, T_sp new_value);
+  bool boundP() const;
 
-  // Above note on thread local bindings applies to these as well.
-  inline T_sp atomicSymbolValue() const {
-#ifdef CLASP_THREADS
-    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    if (my_thread->_Bindings.thread_local_boundp(index))
-      return threadLocalSymbolValue();
-#endif
-    return globalValueSeqCst();
-  }
+  T_sp globalSymbolValue() const;
+  void set_globalSymbolValue(T_sp nv);
 
-  inline void set_atomicSymbolValue(T_sp nv) {
-#ifdef CLASP_THREADS
-    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    if (my_thread->_Bindings.thread_local_boundp(index))
-      set_threadLocalSymbolValue(nv);
-#endif
-    return set_globalValueSeqCst(nv);
-  }
-
-  inline T_sp casSymbolValue(T_sp cmp, T_sp new_value) {
-#ifdef CLASP_THREADS
-    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    auto& bindings = my_thread->_Bindings;
-    if (bindings.thread_local_boundp(index))
-      return cas_threadLocalSymbolValue(cmp, new_value);
-    else
-#endif
-      return cas_globalValue(cmp, new_value);
-  }
-
-  inline T_sp symbolValueFromCell(Cons_sp cell, T_sp unbound_marker) const {
-    T_sp val = symbolValueUnsafe();
-    if (val.unboundp()) val = CONS_CAR(cell);
-    // FIXME: SICL allows many unbound values, but we don't even pick one properly,
-    // i.e. we just check for both rather than checking TLS.unboundp() and global.eq(marker).
-    if (val.unboundp() || val == unbound_marker) this->symbolUnboundError();
-    return val;
-  }
-
-  inline bool boundP() const { return !(symbolValueUnsafe().unboundp()); };
-
-  inline bool boundPFomCell(Cons_sp cell) {
-    T_sp val = symbolValueUnsafe();
-    if (val.unboundp()) val = CONS_CAR(cell);
-    return !(val.unboundp());
-  }
-
-  Symbol_sp makunbound();
-  //Symbol_sp makunboundFromCell(Cons_sp cell);
+  void makunbound();
 
   T_sp defparameter(T_sp obj);
   T_sp defconstant(T_sp obj);
-
-  inline T_sp setf_symbolValue(T_sp obj) {
-#ifdef CLASP_THREADS
-    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    auto& bindings = my_thread->_Bindings;
-    if (bindings.thread_local_boundp(index))
-      set_threadLocalSymbolValue(obj);
-    else
-#endif
-      set_globalValue(obj);
-    return obj;
-  }
-
-  inline T_sp setf_symbolValueFromCell(T_sp val, Cons_sp cell) {
-#ifdef CLASP_THREADS
-    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    auto& bindings = my_thread->_Bindings;
-    if (bindings.thread_local_boundp(index))
-      set_threadLocalSymbolValue(val);
-    else
-#endif
-      CONS_CAR(cell) = val;
-    return val;
-  }
 
  public: // function value slots access
 
@@ -375,7 +417,8 @@ public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */
   explicit Symbol_O(const only_at_startup&);
   explicit Symbol_O(SimpleBaseString_sp name)
-    : _Name(name), _Function(unbound<FunctionCell_O>()),
+    : _Name(name), _Value(unbound<VariableCell_O>()),
+      _Function(unbound<FunctionCell_O>()),
       _SetfFunction(unbound<FunctionCell_O>()) {};
   
   /*! Used to finish setting up symbol when created with the above constructor */
@@ -399,13 +442,6 @@ public: // ctor/dtor for classes with shared virtual base
   void remove_package(Package_sp pkg);
 public:
   explicit Symbol_O();
-  virtual ~Symbol_O(){
-#ifdef CLASP_THREADS
-    if (this->_BindingIdx.load() != NO_THREAD_LOCAL_BINDINGS) {
-      my_thread->_Bindings.release_binding_index(this->_BindingIdx.load());
-    }
-#endif
-  };
 };
 
 T_sp cl__symbol_value(const Symbol_sp sym);

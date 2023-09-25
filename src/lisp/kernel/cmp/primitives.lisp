@@ -237,12 +237,12 @@
                                                     :t*
                                                     :size_t ))
          (primitive-unwinds "cc_initialize_closure" :void (list :t*
-                                                            :size_t ) :varargs t)
-         (primitive-unwinds "cc_safe_symbol_value" :t* (list :t*))
-         (primitive         "cc_setSymbolValue" :void (list :t* :t*))
-         (primitive         "cc_TLSymbolValue" :t* (list :t*))
-         (primitive         "cc_setTLSymbolValue" :void (list :t* :t*))
-         (primitive         "cc_resetTLSymbolValue" :void (list :t* :t*))
+                                                           :size_t ) :varargs t)
+         (primitive-unwinds "cc_variableCellValue" :t* (list :t*))
+         (primitive         "cc_set_variableCellValue" :void (list :t* :t*))
+         (primitive         "cc_getCellTLIndex" :i32 (list :t*))
+         (primitive         "cc_specialBind" :t* (list :i32 :t*))
+         (primitive         "cc_specialUnbind" :void (list :i32 :t*))
 
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" :return-type (list :t* :return-type))
          (primitive-unwinds "cc_oddKeywordException" :void (list :t*))

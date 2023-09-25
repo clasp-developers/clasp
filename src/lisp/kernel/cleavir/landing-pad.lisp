@@ -85,12 +85,12 @@
 (defun alloca-go-index.slot ()
   (cmp:alloca-size_t "go-index.slot"))
 
-(defun generate-unbind (symbol old-value de-stack next)
+(defun generate-unbind (index old-value de-stack next)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "unbind-special-variable")))
       (cmp:irc-begin-block bb)
       ;; These functions cannot throw, so no landing pad needed
-      (%intrinsic-call "cc_setTLSymbolValue" (list symbol old-value))
+      (%intrinsic-call "cc_specialUnbind" (list index old-value))
       (%intrinsic-call "cc_set_dynenv_stack" (list de-stack))
       (cmp:irc-br next)
       bb)))
@@ -274,8 +274,8 @@
           bb))))
 
 (defmethod compute-maybe-entry-processor ((instruction bir:constant-bind) tags)
-  (destructuring-bind (symbol old-value de-stack) (dynenv-storage instruction)
-    (generate-unbind symbol old-value de-stack
+  (destructuring-bind (index old-value de-stack) (dynenv-storage instruction)
+    (generate-unbind index old-value de-stack
                      (maybe-entry-processor
                       (cleavir-bir:parent instruction) tags))))
 
@@ -414,8 +414,8 @@
   (never-entry-processor (cleavir-bir:parent dynenv)))
 
 (defmethod compute-never-entry-processor ((instruction bir:constant-bind))
-  (destructuring-bind (symbol old-value de-stack) (dynenv-storage instruction)
-    (generate-unbind symbol old-value de-stack
+  (destructuring-bind (index old-value de-stack) (dynenv-storage instruction)
+    (generate-unbind index old-value de-stack
                      (compute-never-entry-processor
                       (cleavir-bir:parent instruction)))))
 

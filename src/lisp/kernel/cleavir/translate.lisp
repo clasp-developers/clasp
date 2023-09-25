@@ -581,20 +581,20 @@
                                  :alignment cmp:+alignment+
                                  :label "binding-dynenv-mem"))
          (inputs (bir:inputs instruction))
-         (symv (translate-constant-value (first inputs)))
+         (cellv (translate-constant-value (first inputs)))
+         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
          (val (in (second inputs)))
-         (old (%intrinsic-call "cc_TLSymbolValue" (list symv)))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil)))
+         (ind (%intrinsic-call "cc_getCellTLIndex" (list cellv)))
+         (old (%intrinsic-call "cc_specialBind" (list ind val))))
     (%intrinsic-call "cc_initializeAndPushBindingDynenv"
-                     (list bde-mem bde-cons-mem symv old))
-    (setf (dynenv-storage instruction) (list symv old old-de-stack))
-    (%intrinsic-call "cc_setTLSymbolValue" (list symv val)))
+                     (list bde-mem bde-cons-mem cellv old))
+    (setf (dynenv-storage instruction) (list ind old old-de-stack)))
   (cmp:irc-br (first next)))
 
 (defmethod undo-dynenv ((dynenv bir:constant-bind) tmv)
   (declare (ignore tmv))
   (let ((store (dynenv-storage dynenv)))
-    (%intrinsic-call "cc_resetTLSymbolValue"
+    (%intrinsic-call "cc_specialUnbind"
                      (list (first store) (second store)))
     (%intrinsic-call "cc_set_dynenv_stack" (list (third store)))))
 
@@ -1672,18 +1672,18 @@
 
 (defmethod translate-simple-instruction ((inst bir:constant-symbol-value) abi)
   (declare (ignore abi))
-  (let ((output (bir:output inst)))
+  (let ((cell (translate-constant-value (bir:input inst)))
+        (output (bir:output inst)))
     (out (%intrinsic-invoke-if-landing-pad-or-call
-          "cc_safe_symbol_value" (list (translate-constant-value (bir:input inst)))
+          "cc_variableCellValue" (list cell)
           (datum-name-as-string output))
          output)))
 
 (defmethod translate-simple-instruction ((inst bir:set-constant-symbol-value) abi)
   (declare (ignore abi))
-  (let ((sym (translate-constant-value (first (bir:inputs inst))))
+  (let ((cell (translate-constant-value (first (bir:inputs inst))))
         (val (in (second (bir:inputs inst)))))
-    (%intrinsic-invoke-if-landing-pad-or-call
-     "cc_setSymbolValue" (list sym val))))
+    (%intrinsic-call "cc_set_variableCellValue" (list cell val))))
 
 (defmethod translate-simple-instruction
     ((inst cc-bmir:unboxed-constant-reference) abi)
@@ -2021,8 +2021,7 @@
   (literal:reference-function-cell (bir:function-name ir)))
 
 (defmethod allocate-constant ((ir bir:variable-cell))
-  ;; Clasp just uses symbols as cells, at least for now.
-  (%allocate-constant (bir:variable-name ir) nil))
+  (literal:reference-variable-cell (bir:variable-name ir)))
 
 ;;; Given a BIR module, allocate its constants and load time
 ;;; values. We translate immediates directly, and use an index into

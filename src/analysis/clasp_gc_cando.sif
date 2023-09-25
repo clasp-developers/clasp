@@ -73,14 +73,15 @@
                           "chem::ConformationCollectionEntry_O" "core::TagbodyDynEnv_O"
                           "geom::OMatrix_O" "llvmo::ValueAsMetadata_O" "chem::EnergyDihedral"
                           "llvmo::ConstantPointerNull_O" "llvmo::ConstantExpr_O"
-                          "llvmo::VectorType_O" "chem::FFStretch_O" "chem::IterateRestraints_O"
-                          "chem::FFNonbondDb_O" "llvmo::StructType_O" "chem::EnergyNonbond_O"
-                          "core::ComplexVector_int16_t_O" "chem::EnergySketchNonbond_O"
-                          "core::GFBytecodeSimpleFun_O" "core::SimpleMDArray_float_O"
-                          "chem::Residue_O" "chem::CalculatePosition_O"
-                          "chem::SuperposeSelectedAtoms_O" "llvmo::Target_O" "core::RandomState_O"
-                          "core::SimpleVector_int2_t_O" "chem::AtomReferenceBase_O"
-                          "comp::LocalFunInfo_O" "core::MDArray_byte64_t_O" "chem::ForceField_O"
+                          "core::VariableCell_O" "llvmo::VectorType_O" "chem::FFStretch_O"
+                          "chem::IterateRestraints_O" "chem::FFNonbondDb_O" "llvmo::StructType_O"
+                          "chem::EnergyNonbond_O" "core::ComplexVector_int16_t_O"
+                          "chem::EnergySketchNonbond_O" "core::GFBytecodeSimpleFun_O"
+                          "core::SimpleMDArray_float_O" "chem::Residue_O"
+                          "chem::CalculatePosition_O" "chem::SuperposeSelectedAtoms_O"
+                          "llvmo::Target_O" "core::RandomState_O" "core::SimpleVector_int2_t_O"
+                          "chem::AtomReferenceBase_O" "comp::LocalFunInfo_O"
+                          "core::MDArray_byte64_t_O" "chem::ForceField_O"
                           "core::SimpleVector_fixnum_O" "core::SimpleVector_byte32_t_O"
                           "core::AnsiStream_O" "chem::EnergyRigidBodyStaple"
                           "core::KeywordArgument" "llvmo::Module_O" "llvmo::DIExpression_O"
@@ -321,8 +322,8 @@
             :parent-class "core::DynEnv_O" :lisp-class-base "core::DynEnv_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::Symbol_O>"
-             :offset-base-ctype "core::BindingDynEnv_O" :layout-offset-field-names ("sym")}
+             :offset-ctype "gctools::smart_ptr<core::VariableCell_O>"
+             :offset-base-ctype "core::BindingDynEnv_O" :layout-offset-field-names ("cell")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::BindingDynEnv_O" :layout-offset-field-names ("old")}
@@ -5448,17 +5449,14 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Symbol_O"
              :layout-offset-field-names ("_HomePackage")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Symbol_O"
-             :layout-offset-field-names ("_GlobalValue")}
+             :offset-ctype "gctools::smart_ptr<core::VariableCell_O>"
+             :offset-base-ctype "core::Symbol_O" :layout-offset-field-names ("_Value")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::FunctionCell_O>"
              :offset-base-ctype "core::Symbol_O" :layout-offset-field-names ("_Function")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::FunctionCell_O>"
              :offset-base-ctype "core::Symbol_O" :layout-offset-field-names ("_SetfFunction")}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_int"
-             :offset-ctype "unsigned int" :offset-base-ctype "core::Symbol_O"
-             :layout-offset-field-names ("_BindingIdx")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_int"
              :offset-ctype "unsigned int" :offset-base-ctype "core::Symbol_O"
              :layout-offset-field-names ("_Flags")}
@@ -5475,17 +5473,14 @@
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Null_O"
              :layout-offset-field-names ("_HomePackage")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
-             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::Null_O"
-             :layout-offset-field-names ("_GlobalValue")}
+             :offset-ctype "gctools::smart_ptr<core::VariableCell_O>"
+             :offset-base-ctype "core::Null_O" :layout-offset-field-names ("_Value")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::FunctionCell_O>"
              :offset-base-ctype "core::Null_O" :layout-offset-field-names ("_Function")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::FunctionCell_O>"
              :offset-base-ctype "core::Null_O" :layout-offset-field-names ("_SetfFunction")}
-{fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_int"
-             :offset-ctype "unsigned int" :offset-base-ctype "core::Null_O"
-             :layout-offset-field-names ("_BindingIdx")}
 {fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_int"
              :offset-ctype "unsigned int" :offset-base-ctype "core::Null_O"
              :layout-offset-field-names ("_Flags")}
@@ -9661,6 +9656,18 @@
              :offset-base-ctype "core::DebuggerFrame_O" :layout-offset-field-names ("down")}
 {fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
              :offset-base-ctype "core::DebuggerFrame_O" :layout-offset-field-names ("is_xep")}
+{class-kind :stamp-name "STAMPWTAG_core__VariableCell_O" :stamp-key "core::VariableCell_O"
+            :parent-class "core::General_O" :lisp-class-base "core::General_O"
+            :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::VariableCell_O" :layout-offset-field-names ("_GlobalValue")}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_int"
+             :offset-ctype "unsigned int" :offset-base-ctype "core::VariableCell_O"
+             :layout-offset-field-names ("_BindingIdx")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::VariableCell_O" :layout-offset-field-names ("_Name")}
 {class-kind :stamp-name "STAMPWTAG_comp__LoadTimeValueInfo_O"
             :stamp-key "comp::LoadTimeValueInfo_O" :parent-class "core::General_O"
             :lisp-class-base "core::General_O" :root-class "core::T_O" :stamp-wtag 3

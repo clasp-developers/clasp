@@ -102,21 +102,6 @@ namespace llvmo {
       SIMPLE_ERROR("Destination must be ActivationFrame");
   case invalidIndexForFunctionFrame:
       SIMPLE_ERROR("Invalid index[{}] for FunctionFrame(size={})", _rep_(arg0) , _rep_(arg1));
-  case unboundSymbolValue:
-    {
-      core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      UNBOUND_VARIABLE_ERROR(sym);
-    };
-  case unboundSymbolFunction:
-    {
-      core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      ERROR_UNDEFINED_FUNCTION(sym);
-    }
-  case unboundSymbolSetfFunction:
-    {
-      core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR("The symbol {} has no setf function bound to it", sym->fullName() );
-    }
   case badCell:
     {
       SIMPLE_ERROR("The object with pointer {} is not a cell", (void*)arg0.raw_());
@@ -445,6 +430,15 @@ LtvcReturnVoid ltvc_ensure_fcell(gctools::GCRootsInModule* holder, char tag, siz
   T_sp tfname((gctools::Tagged)fname);
   FunctionCell_sp fcell = core__ensure_function_cell(tfname);
   LTVCRETURN holder->setTaggedIndex(tag,index,fcell.tagged_());
+  NO_UNWIND_END();
+}
+
+LtvcReturnVoid ltvc_ensure_vcell(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* vname)
+{
+  NO_UNWIND_BEGIN();
+  T_sp tvname((gctools::Tagged)vname);
+  VariableCell_sp vcell = gc::As_assert<Symbol_sp>(tvname)->ensureVariableCell();
+  LTVCRETURN holder->setTaggedIndex(tag,index,vcell.tagged_());
   NO_UNWIND_END();
 }
 
@@ -958,12 +952,12 @@ core::T_O* cc_initializeAndPushCleanupDynenv(void* space, void* cspace, jmp_buf*
 }
 
 core::T_O* cc_initializeAndPushBindingDynenv(void* space, void* cspace,
-                                             core::T_O* sym, core::T_O* old)
+                                             core::T_O* cell, core::T_O* old)
 {NO_UNWIND_BEGIN();
   core::T_sp told((gc::Tagged)old);
-  core::T_sp tsym((gc::Tagged)sym);
-  core::Symbol_sp rsym = gc::As_unsafe<Symbol_sp>(tsym);
-  auto newde = InitObject<core::BindingDynEnv_O>(space, rsym, told);
+  core::T_sp tcell((gc::Tagged)cell);
+  core::VariableCell_sp rcell = gc::As_assert<VariableCell_sp>(tcell);
+  auto newde = InitObject<core::BindingDynEnv_O>(space, rcell, told);
   auto newstack = InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
   my_thread->dynEnvStackSet(newstack);
   return newde.raw_();
@@ -1086,33 +1080,46 @@ core::T_O* cc_overflowed_signed_bignum(int64_t add_over) {
   return core::Bignum_O::create_from_limbs(len,limb,true).raw_();
 }
 
-void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
+core::T_O *cc_variableCellValue(core::T_O *cell)
+{
+  core::VariableCell_sp tcell = gctools::smart_ptr<core::VariableCell_O>((gc::Tagged)cell);
+  return tcell->value().raw_();
+}
+
+void cc_set_variableCellValue(core::T_O *cell, core::T_O *val)
 {NO_UNWIND_BEGIN();
-  //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
-  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
-  s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  core::VariableCell_sp tcell = gctools::smart_ptr<core::VariableCell_O>((gc::Tagged)cell);
+  core::T_sp tval((gc::Tagged)val);
+  tcell->set_value(tval);
   NO_UNWIND_END();
 }
 
-void cc_setTLSymbolValue(core::T_O* sym, core::T_O *val)
+uint32_t cc_getCellTLIndex(core::T_O *sym)
 {NO_UNWIND_BEGIN();
-  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
-  s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  core::VariableCell_sp s = gctools::smart_ptr<core::VariableCell_O>((gc::Tagged)sym);
+  return s->ensureBindingIndex();
   NO_UNWIND_END();
 }
 
-// identical to above, but used so bindings are readable as read->set->reset
-void cc_resetTLSymbolValue(core::T_O* sym, core::T_O *val)
+// Set the thread local value to be the new value, and return the old value
+// for replacement later. The old value may be an unboundedness marker, but
+// tlindex must be a real index.
+core::T_O *cc_specialBind(uint32_t tlindex, core::T_O *val)
 {NO_UNWIND_BEGIN();
-  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
-  s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  core::T_sp v = gctools::smart_ptr<core::T_O>((gc::Tagged)val);
+  auto& bindings = my_thread->_Bindings;
+  T_sp old = bindings.thread_local_value(tlindex);
+  bindings.set_thread_local_value(v, tlindex);
+  return old.raw_();
   NO_UNWIND_END();
 }
 
-core::T_O *cc_TLSymbolValue(core::T_O* sym)
+// Reset the thread local value to whatever it was.
+void cc_specialUnbind(uint32_t tlindex, core::T_O *old)
 {NO_UNWIND_BEGIN();
-  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
-  return s->threadLocalSymbolValue().raw_();
+  core::T_sp o = gctools::smart_ptr<core::T_O>((gc::Tagged)old);
+  auto& bindings = my_thread->_Bindings;
+  bindings.set_thread_local_value(o, tlindex);
   NO_UNWIND_END();
 }
 
