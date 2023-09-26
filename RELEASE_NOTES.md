@@ -6,6 +6,7 @@
 * The bytecode compiler tracks source positions for error reporting.
 * Circle detection for load forms in bytecode FASL.
 * Bytecode functions can be compiled directly into native code with `cl:compile` (experimental).
+* Cross-reference (xref) capability: Search for callers of a given function with `ext:who-calls`, and etc. Only works for bytecode right now.
 * Support for Linux AARCH64.
 * LLVM17 support. LLVM15 and LLVM16 are still supported.
 
