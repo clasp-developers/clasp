@@ -654,7 +654,7 @@
                ;; moved besides GENERAL-INITIALIZER, they have to be part of
                ;; these TYPEPs.
                (setf *instructions* (nconc (remove-if (lambda (x)
-                                                        (typep x '(or setf-literals general-initializer)))
+                                                        (typep x '(or setf-literals attribute general-initializer)))
                                                       (gethash value *initializer-map*))
                                            *instructions*))
                (let* ((*initializer-destination* value)
@@ -667,7 +667,7 @@
                            (nconc (gethash *initializer-destination* *initializer-map*)
                                   instructions))))
                (setf *instructions* (nconc (remove-if (lambda (x)
-                                                        (not (typep x '(or setf-literals general-initializer))))
+                                                        (not (typep x '(or setf-literals attribute general-initializer))))
                                                       (gethash value *initializer-map*))
                                            *instructions*))))))
         (*initializer-destination*
