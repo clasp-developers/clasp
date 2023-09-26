@@ -221,6 +221,27 @@ public:
     CL_DEFMETHOD Fixnum receiving() const { return this->_receiving; }
 };
 
+// Indicates that a macroexpansion occurred. This is used to
+// implement xref; see ext:who-macroexpands.
+// Only stored for global macros. Not stored for compiler macros.
+FORWARD(BytecodeDebugMacroexpansion);
+class BytecodeDebugMacroexpansion_O : public BytecodeDebugInfo_O {
+  LISP_CLASS(core, CorePkg, BytecodeDebugMacroexpansion_O, "BytecodeDebugMacroexpansion", BytecodeDebugInfo_O);
+public:
+  BytecodeDebugMacroexpansion_O(T_sp start, T_sp end, T_sp macro_name)
+    : BytecodeDebugInfo_O(start, end), _macro_name(macro_name) {}
+  CL_LISPIFY_NAME(BytecodeDebugMacroexpansion/make)
+    CL_DEF_CLASS_METHOD
+    static BytecodeDebugMacroexpansion_sp make(T_sp start, T_sp end, T_sp macro_name) {
+    return gctools::GC<BytecodeDebugMacroexpansion_O>::allocate<gctools::RuntimeStage>(start, end, macro_name);
+  }
+public:
+  T_sp _macro_name;
+public:
+  CL_LISPIFY_NAME(BytecodeDebugMacroexpansion/macro-name)
+    CL_DEFMETHOD T_sp macro_name() const { return this->_macro_name; }
+};
+
 
 // Dynenv used for VM call frames to ensure the unwinder properly
 // cleans up stack frames.

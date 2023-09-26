@@ -91,9 +91,16 @@
   (who-whats (core:variable-cell variable-name) #'module-setters))
 
 (defun ext:who-macroexpands (macro-name)
-  ;; TODO: implement me.
-  (declare (ignore macro-name))
-  nil)
+  (let ((result nil))
+    (do-bytecode-modules (module result)
+      (map nil
+           (lambda (dinfo)
+             (when (and (typep dinfo 'core:bytecode-debug-macroexpansion)
+                        (eql macro-name (core:bytecode-debug-macroexpansion/macro-name dinfo)))
+               (let ((xref (xref-at-ip (core:bytecode-debug-info/start dinfo) module)))
+                 (when xref
+                   (push xref result)))))
+           (core:bytecode-module/debug-info module)))))
 
 ;;; this is supposed to be "lower level", but we don't need to.
 (setf (fdefinition 'ext:list-callers) #'ext:who-calls)

@@ -2510,7 +2510,12 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
       if (std::holds_alternative<GlobalMacroInfoV>(info)) {
         Function_sp expander = std::get<GlobalMacroInfoV>(info).expander();
         T_sp expansion = expand_macro(expander, Cons_O::create(head, rest), env);
+        Label_sp begin_label = Label_O::make(),
+          end_label = Label_O::make();
+        begin_label->contextualize(context);
+        context.push_debug_info(BytecodeDebugMacroexpansion_O::make(begin_label, end_label, head));
         compile_form(expansion, env, context);
+        end_label->contextualize(context);
       } else if (std::holds_alternative<LocalMacroInfoV>(info)) {
         Function_sp expander = std::get<LocalMacroInfoV>(info).expander();
         T_sp expansion = expand_macro(expander, Cons_O::create(head, rest), env);
