@@ -82,15 +82,25 @@
       nil))
 
 (defun ext:who-calls (function-name)
+  "Find callers of a given function. This includes only direct calls, so not e.g. using the function as an argument to MAPCAR. Results may vary based on debug level and other factors and are not comprehensive.
+Returns an alist. Each CAR is the name of the calling function, and the CDR is a source position for the call if available, or else NIL."
   (who-whats (core:function-cell function-name) #'module-callers))
 (defun ext:who-binds (variable-name)
+  "Find code that binds a given special variable. This includes only literal bindings, so not e.g. PROGV. Results may vary based on debug level and other factors and are not comprehensive.
+Returns an alist. Each CAR is the name of the binding function, and the CDR is a source position for the bind if available, or else NIL."
   (who-whats (core:variable-cell variable-name) #'module-binders))
 (defun ext:who-references (variable-name)
+  "Find code that reads a given special variable. This includes only literal reads, so not necessarily e.g. SYMBOL-VALUE. Results may vary based on debug level and other factors and are not comprehensive.
+Returns an alist. Each CAR is the name of the referencing function, and the CDR is a source position for the reference if available, or else NIL."
   (who-whats (core:variable-cell variable-name) #'module-referencers))
 (defun ext:who-sets (variable-name)
+  "Find code that modifies a given special variable. This includes only literal sets, so not necessarily e.g. SET. Results may vary based on debug level and other factors and are not comprehensive.
+Returns an alist. Each CAR is the name of the modifying function, and the CDR is a source position for the set if available, or else NIL."
   (who-whats (core:variable-cell variable-name) #'module-setters))
 
 (defun ext:who-macroexpands (macro-name)
+  "Find code that includes use of a given macro. This includes only literal macro usage, so not e.g. EVAL or MACROEXPAND. Results may vary based on debug level and other factors and are not comprehensive.
+Returns an alist. Each CAR is name of the function using the macro, and the CDR is a source position for the macro form if available, or else NIL."
   (let ((result nil))
     (do-bytecode-modules (module result)
       (map nil
@@ -124,6 +134,8 @@
     result))
 
 (defun ext:list-callees (function-name)
+  "List functions called by a given function. This includes only direct calls, so not e.g. using the function as an argument to MAPCAR. Results may vary based on debug level and other factors and are not comprehensive.
+Returns an alist. Each CAR is the name of the called function, and the CDR is a source position for the call if available, or else NIL."
   (if (fboundp function-name)
       (let* ((function (fdefinition function-name))
              (simple (core:function/entry-point function)))
@@ -145,6 +157,8 @@
       (%function-spi (clos:method-function method))))
 
 (defun ext:who-specializes-directly (class-designator)
+  "Find methods that directly specialize a given class.
+Returns an alist. Each CAR is the name of a method specialized on the class, and each CDR is the source location of the method definition if available, and otherwise NIL."
   (let ((class (typecase class-designator
                  (class class-designator)
                  (symbol (find-class class-designator nil))
