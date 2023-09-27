@@ -291,6 +291,12 @@ CL_DEFUN VariableCell_sp core__ensure_variable_cell(Symbol_sp name) {
   return name->ensureVariableCell();
 }
 
+CL_DEFUN T_sp core__variable_cell(Symbol_sp name) {
+  VariableCell_sp vcell = name->variableCell();
+  if (vcell.unboundp()) return nil<T_O>();
+  else return vcell;
+}
+
 CL_LISPIFY_NAME(variable-cell/name);
 CL_DEFUN T_sp core__variable_cell_name(VariableCell_sp vcell) {
   return vcell->name();

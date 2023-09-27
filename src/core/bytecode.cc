@@ -13,6 +13,7 @@
 #include <clasp/core/unwind.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/designators.h> // calledFunctionDesignator
+#include <clasp/core/evaluator.h> // eval::funcall
 
 
 #define VM_CODES
@@ -77,9 +78,9 @@ void BytecodeModule_O::setf_compileInfo(T_sp o) {
 
 void BytecodeModule_O::register_for_debug() {
   // An atomic push, as the variable is shared.
-  T_sp old = _lisp->_Roots._AllBytecodeModules.load();
+  T_sp old = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
   Cons_sp newc = Cons_O::create(this->asSmartPtr(), old);
-  while (!_lisp->_Roots._AllBytecodeModules.compare_exchange_weak(old, newc))
+  while (!_lisp->_Roots._AllBytecodeModules.compare_exchange_weak(old, newc, std::memory_order_relaxed))
     newc->setCdr(old);
 }
 
@@ -1517,6 +1518,16 @@ List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void* pc, T_O** fp) {
 
 void* bytecode_pc() {
   return my_thread->_VM._pc;
+}
+
+CL_DOCSTRING(R"(Call a function on each registered bytecode module. Order is undefined. New modules created during the mapping process may be skipped; this function does not synchronize. Return value undefined.)")
+DOCGROUP(clasp);
+CL_DEFUN void core__map_bytecode_modules(Function_sp f) {
+  List_sp modules = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
+  for (auto mods : modules) {
+    BytecodeModule_sp mod = gc::As_assert<BytecodeModule_sp>(oCar(mods));
+    eval::funcall(f, mod);
+  }
 }
 
 }; // namespace core

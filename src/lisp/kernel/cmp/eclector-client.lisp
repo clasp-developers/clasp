@@ -34,3 +34,13 @@
   (core::make-structure
    name
    (map-make-structure-arguments initargs)))
+
+(defmethod eclector.reader:wrap-in-quasiquote
+    ((client clasp-eclector-client-mixin) form)
+  (list 'core:quasiquote form))
+(defmethod eclector.reader:wrap-in-unquote
+    ((client clasp-eclector-client-mixin) form)
+  (list 'core::unquote form))
+(defmethod eclector.reader:wrap-in-unquote-splicing
+    ((client clasp-eclector-client-mixin) form)
+  (list 'core::unquote-splice form))

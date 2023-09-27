@@ -293,6 +293,10 @@
 (defclass debug-info-exit (debug-info)
   ((%receiving :initarg :receiving :reader di-receiving :type (signed-byte 32))))
 
+#+clasp
+(defclass debug-info-macroexpansion (debug-info)
+  ((%macro-name :initarg :macro-name :reader di-macro-name)))
+
 ;;;
 
 ;;; Return true iff the value is similar to the existing creator.
@@ -650,7 +654,7 @@
                ;; moved besides GENERAL-INITIALIZER, they have to be part of
                ;; these TYPEPs.
                (setf *instructions* (nconc (remove-if (lambda (x)
-                                                        (typep x '(or setf-literals general-initializer)))
+                                                        (typep x '(or setf-literals attribute general-initializer)))
                                                       (gethash value *initializer-map*))
                                            *instructions*))
                (let* ((*initializer-destination* value)
@@ -663,7 +667,7 @@
                            (nconc (gethash *initializer-destination* *initializer-map*)
                                   instructions))))
                (setf *instructions* (nconc (remove-if (lambda (x)
-                                                        (not (typep x '(or setf-literals general-initializer))))
+                                                        (not (typep x '(or setf-literals attribute general-initializer))))
                                                       (gethash value *initializer-map*))
                                            *instructions*))))))
         (*initializer-destination*
@@ -1317,6 +1321,13 @@
     :end (core:bytecode-debug-info/end item)
     :receiving (core:bytecode-debug-exit/receiving item)))
 
+(defmethod process-debug-info ((item core:bytecode-debug-macroexpansion))
+  (make-instance 'debug-info-macroexpansion
+    :start (core:bytecode-debug-info/start item)
+    :end (core:bytecode-debug-info/end item)
+    :macro-name (ensure-constant
+                 (core:bytecode-debug-macroexpansion/macro-name item))))
+
 (defun add-module (value)
   ;; Add the module first to prevent recursion.
   (cmp:module/link value)
@@ -1386,7 +1397,8 @@
     (decls 3)
     (the 4)
     (block 5)
-    (exit 6)))
+    (exit 6)
+    (macro 7)))
 
 (defun debug-info-opcode (mnemonic)
   (let ((inst (assoc mnemonic +debug-info-ops+)))
@@ -1462,6 +1474,14 @@
   (write-b32 (di-receiving info) stream))
 (defmethod info-length ((info debug-info-exit))
   (+ 1 4 4 4))
+
+(defmethod encode ((info debug-info-macroexpansion) stream)
+  (write-debug-info-mnemonic 'macro stream)
+  (write-b32 (di-start info) stream)
+  (write-b32 (di-end info) stream)
+  (write-index (di-macro-name info) stream))
+(Defmethod info-length ((info debug-info-macroexpansion))
+  (+ 1 4 4 *index-bytes*))
 
 (defmethod encode ((attr module-debug-attr) stream)
   ;; Write the length in bytes.

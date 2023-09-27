@@ -147,27 +147,30 @@
 	(quote
 	 (write-char #\' stream)
 	 (write-object (cadr list) stream))
-        (eclector.reader:quasiquote
+        ((eclector.reader:quasiquote core:quasiquote)
          (write-char #\` stream)
          (write-object (cadr list) stream))
-        (eclector.reader:unquote
+        ((eclector.reader:unquote core:unquote)
          (write-char #\, stream)
          (write-object (cadr list) stream))
-        (eclector.reader:unquote-splicing
+        ((eclector.reader:unquote-splicing core:unquote-splice)
          (write-string ",@" stream)
          (write-object (cadr list) stream))
 	(t
 	 (pprint-fill stream list)))
       (pprint-fill stream list)))
 
-(defparameter +eclector-magic-forms+
+(defparameter +quasiquote-magic-forms+
   '((eclector.reader:quasiquote pprint-quote)
     (eclector.reader:unquote pprint-quote)
-    (eclector.reader:unquote-splicing pprint-quote)))
+    (eclector.reader:unquote-splicing pprint-quote)
+    (core:quasiquote pprint-quote)
+    (core:unquote pprint-quote)
+    (core:unquote-splice pprint-quote)))
 
 (progn
   (setf (pprint-dispatch-table-read-only-p *standard-pprint-dispatch*) nil)
-  (dolist (magic-form +eclector-magic-forms+)
+  (dolist (magic-form +quasiquote-magic-forms+)
     (set-pprint-dispatch `(cons (eql ,(first magic-form)))
 			 (symbol-function (second magic-form))
                          0 *standard-pprint-dispatch*))
@@ -177,13 +180,13 @@
 (defmethod print-object ((l cons) stream)
   (if (cdr l)
       (case (first l)
-        (eclector.reader:quasiquote
+        ((eclector.reader:quasiquote core:quasiquote)
          (write-char #\` stream)
          (core:write-object (second l) stream))
-        (eclector.reader:unquote
+        ((eclector.reader:unquote core:unquote)
          (write-char #\, stream)
          (core:write-object (second l) stream))
-        (eclector.reader:unquote-splicing
+        ((eclector.reader:unquote-splicing core:unquote-splice)
          (write-string ",@" stream)
          (core:write-object (second l) stream))
         (otherwise

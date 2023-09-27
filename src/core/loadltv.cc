@@ -59,6 +59,7 @@
 #define LTV_DI_OP_THE 4
 #define LTV_DI_OP_BLOCK 5
 #define LTV_DI_OP_EXIT 6
+#define LTV_DI_OP_MACRO 7
 
 namespace core {
 
@@ -503,7 +504,7 @@ struct loadltv {
   void op_package() {
     size_t index = read_index();
     String_sp name = gc::As<String_sp>(get_ltv(read_index()));
-    set_ltv(_lisp->findPackage(name->get_std_string()), index);
+    set_ltv(_lisp->findPackage(name->get_std_string(), true), index);
   }
 
   void op_bignum() {
@@ -718,6 +719,13 @@ struct loadltv {
     return BytecodeDebugExit_O::make(start, end, receiving);
   }
 
+  T_sp di_op_macro() {
+    Integer_sp start = Integer_O::create(read_u32()),
+      end = Integer_O::create(read_u32());
+    T_sp macro_name = get_ltv(read_index());
+    return BytecodeDebugMacroexpansion_O::make(start, end, macro_name);
+  }
+
   void attr_clasp_module_debug_info(uint32_t bytes) {
     BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
     gctools::Vec0<T_sp> vargs;
@@ -745,6 +753,9 @@ struct loadltv {
           break;
       case LTV_DI_OP_EXIT:
           vargs.push_back(di_op_exit());
+          break;
+      case LTV_DI_OP_MACRO:
+          vargs.push_back(di_op_macro());
           break;
       default:
           SIMPLE_ERROR("Unknown debug info opcode {:02x}", op);

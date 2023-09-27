@@ -1064,9 +1064,9 @@ CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
 
 // Used by the FASL loaders.
 DOCGROUP(clasp);
-CL_DEFUN FunctionCell_sp core__ensure_function_cell(T_sp functionName) {
-  if (functionName.consp()) {
-    List_sp cname = functionName;
+CL_DEFUN FunctionCell_sp core__ensure_function_cell(T_sp function_name) {
+  if (function_name.consp()) {
+    List_sp cname = function_name;
     if (oCar(cname) == cl::_sym_setf) {
       T_sp dname = oCdr(cname);
       if (dname.consp()) {
@@ -1076,10 +1076,35 @@ CL_DEFUN FunctionCell_sp core__ensure_function_cell(T_sp functionName) {
         }
       }
     }
-  } else if (gc::IsA<Symbol_sp>(functionName)) {
-    return gc::As_unsafe<Symbol_sp>(functionName)->ensureFunctionCell();
+  } else if (gc::IsA<Symbol_sp>(function_name)) {
+    return gc::As_unsafe<Symbol_sp>(function_name)->ensureFunctionCell();
   }
-  TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
+  TYPE_ERROR(function_name, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
+}
+
+// Used in xref.
+CL_DOCSTRING(R"(Return the function cell for FUNCTION-NAME if it exists already, or else NIL.)")
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__function_cell(T_sp function_name) {
+  T_sp result = unbound<T_O>();
+  if (function_name.consp()) {
+    List_sp cname = function_name;
+    if (oCar(cname) == cl::_sym_setf) {
+      T_sp dname = oCdr(cname);
+      if (dname.consp()) {
+        Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
+        if (name.notnilp() && oCdr(dname).nilp()) {
+          result = name->setfFunctionCell();
+        }
+      }
+    }
+  } else if (gc::IsA<Symbol_sp>(function_name)) {
+    result = gc::As_unsafe<Symbol_sp>(function_name)->functionCell();
+  }
+  // Don't signal an error here - this function should be harmless
+  // since it's used for debugging type stuff.
+  if (result.unboundp()) return nil<T_O>();
+  else return result;
 }
 
 // reader in symbol.cc; this additionally involves function properties, so it's here
