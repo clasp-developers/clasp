@@ -906,10 +906,46 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_values: {
       // POP with n values. Or alternately, POP-VALUES with a fixed n.
       uint8_t n = *(++pc);
-      DBG_VM1("values %" PRIu8 "\n", c);
+      DBG_VM1("values %" PRIu8 "\n", n);
       vm.copyto(sp, n, &my_thread->_MultipleValues._Values[0]);
       multipleValues.setSize(n);
       vm.drop(sp, n);
+      pc++;
+      break;
+    }
+    case vm_push_fixed: {
+      // Mark the previous N values as being part of MV call args.
+      // This is actually identical to pushing an integer constant,
+      // but semantically very distinct.
+      uint8_t n = *(++pc);
+      DBG_VM1("push-fixed %" PRIu8 "\n", n);
+      vm.push(sp, make_fixnum(n).raw_());
+      pc++;
+      break;
+    }
+    case vm_append_values_list: {
+      // Pop a list or valist, and then append it all to the stack
+      // for an upcoming MV call.
+      DBG_VM1("append-values-list");
+      T_sp L((gctools::Tagged)vm.pop(sp));
+      T_sp texisting_values((gctools::Tagged)vm.pop(sp));
+      size_t existing_values = texisting_values.unsafe_fixnum();
+      size_t nargs = 0;
+      if (gc::IsA<Vaslist_sp>(L)) {
+        Vaslist_sp vl = gc::As_unsafe<Vaslist_sp>(L);
+        nargs = vl->nargs();
+        // Make sure we do NOT advance the vaslist,
+        // as we do not own it and something else might be using it.
+        // TODO: direct copy?
+        for (size_t i = 0; i < nargs; ++i) vm.push(sp, (*vl)[i]);
+      } else { // list
+        List_sp arglist = gc::As<List_sp>(L);
+        for (auto largs : arglist) {
+          ++nargs;
+          vm.push(sp, oCar(largs).raw_());
+        }
+      }
+      vm.push(sp, make_fixnum(nargs + existing_values).raw_());
       pc++;
       break;
     }
@@ -1359,6 +1395,14 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     vm.copyto(sp, n, &my_thread->_MultipleValues._Values[0]);
     multipleValues.setSize(n);
     vm.drop(sp, n);
+    pc++;
+    break;
+  }
+  case vm_push_fixed: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM1("long push-fixed %" PRIu16 "\n", n);
+    vm.push(sp, make_fixnum(n).raw_());
     pc++;
     break;
   }

@@ -2435,6 +2435,27 @@ void compile_primop_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Cont
   compile_call(args, env, context);
 }
 
+void compile_apply(T_sp callee, List_sp args, Lexenv_sp env, const Context context) {
+  // Compile (apply f a b c L)
+  // as (mv-call f (values a b c) (values-list L))
+  compile_fdesignator(callee, env, context);
+  size_t nfixed = 0;
+  for (auto largs : args) {
+    if (oCdr(largs).notnilp()) {
+      // Fixed argument.
+      ++nfixed;
+      compile_form(oCar(largs), env, context.sub_receiving(1));
+    } else {
+      // Last argument: Accumulate the fixed arguments for the mv call,
+      // then do the same with the variadic last argument.
+      context.assemble1(vm_push_fixed, nfixed);
+      compile_form(oCar(largs), env, context.sub_receiving(1));
+      context.assemble0(vm_append_values_list);
+    }
+  }
+  context.emit_mv_call();
+}
+
 void compile_values(List_sp args, Lexenv_sp env, const Context context) {
   size_t nreceiving = context.receiving();
   if (nreceiving == -1) { // All values needed.
@@ -2507,6 +2528,8 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
            // Do a basic syntax check so that (funcall) fails properly.
            && rest.consp())
     compile_funcall(oCar(rest), oCdr(rest), env, context);
+  else if (head == cl::_sym_apply && rest.consp())
+    compile_apply(oCar(rest), oCdr(rest), env, context);
   else if (head == cl::_sym_values)
     compile_values(rest, env, context);
   // extension
