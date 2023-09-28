@@ -646,6 +646,18 @@
 	(quote
 	 (write-char #\' stream)
 	 (write-object (cadr list) stream))
+        (core:quasiquote
+         (write-char #\` stream)
+         (write-object (cadr list) stream))
+        (core:unquote
+         (write-char #\, stream)
+         (write-object (cadr list) stream))
+        (core:unquote-splice
+         (write-string ",@" stream)
+         (write-object (cadr list) stream))
+        (core:unquote-nsplice
+         (write-string ",." stream)
+         (write-object (cadr list) stream))
 	(t
 	 (pprint-fill stream list)))
       (pprint-fill stream list)))
@@ -801,6 +813,10 @@
     (tagbody pprint-tagbody)
     (throw pprint-block)
     (unwind-protect pprint-block)
+    (core:quasiquote pprint-quote)
+    (core:unquote pprint-quote)
+    (core:unquote-splice pprint-quote)
+    (core:unquote-nsplice pprint-quote)
     
     ;; Macros.
     (case pprint-case)

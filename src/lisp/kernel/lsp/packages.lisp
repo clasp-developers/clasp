@@ -149,6 +149,10 @@
           core:weak-pointer-valid
           core:weak-pointer-value
           core:num-logical-processors
+          core:quasiquote
+          core:unquote
+          core:unquote-splice
+          core:unquote-nsplice
           gctools:finalize
           gctools:garbage-collect
           gctools:save-lisp-and-die)
@@ -205,6 +209,10 @@
             getpid argc argv rmdir temporary-directory mkstemp weak-pointer-value
             make-weak-pointer weak-pointer-valid hash-table-weakness
             num-logical-processors
+            quasiquote
+            unquote
+            unquote-splice
+            unquote-nsplice
             compiler-note
             muffle-note
             segmentation-violation
