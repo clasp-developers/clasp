@@ -903,6 +903,16 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       pc++;
       break;
     }
+    case vm_values: {
+      // POP with n values. Or alternately, POP-VALUES with a fixed n.
+      uint8_t n = *(++pc);
+      DBG_VM1("values %" PRIu8 "\n", c);
+      vm.copyto(sp, n, &my_thread->_MultipleValues._Values[0]);
+      multipleValues.setSize(n);
+      vm.drop(sp, n);
+      pc++;
+      break;
+    }
     case vm_long: {
       // In a separate function to facilitate better icache utilization
       // by bytecode_vm (hopefully)
@@ -1339,6 +1349,16 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     T_O* fun = literals[n];
     vm.push(sp, fun);
     VM_RECORD_PLAYBACK(fun, "long called-fdefinition");
+    pc++;
+    break;
+  }
+  case vm_values: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM1("long values %" PRIu16 "\n", n);
+    vm.copyto(sp, n, &my_thread->_MultipleValues._Values[0]);
+    multipleValues.setSize(n);
+    vm.drop(sp, n);
     pc++;
     break;
   }

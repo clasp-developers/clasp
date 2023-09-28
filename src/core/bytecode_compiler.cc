@@ -2426,6 +2426,30 @@ void compile_primop_funcall(T_sp callee, List_sp args, Lexenv_sp env, const Cont
   compile_call(args, env, context);
 }
 
+void compile_values(List_sp args, Lexenv_sp env, const Context context) {
+  size_t nreceiving = context.receiving();
+  if (nreceiving == -1) { // All values needed.
+    size_t nargs = 0;
+    for (auto largs : args) {
+      T_sp form = oCar(largs);
+      ++nargs;
+      compile_form(form, env, context.sub_receiving(1));
+    }
+    if (nargs == 1)
+      context.assemble0(vm_pop);
+    else
+      context.assemble1(vm_values, nargs);
+  } else { // Get the first n values and discard the rest.
+    // Note that if args = nil oCar will properly return nil.
+    for (size_t i = 0; i < nreceiving; ++i) {
+      compile_form(oCar(args), env, context.sub_receiving(1));
+      args = oCdr(args);
+    }
+    for (auto largs : args)
+      compile_form(oCar(largs), env, context.sub_receiving(0));
+  }
+}
+
 void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context context) {
   if (head == cl::_sym_progn)
     compile_progn(rest, env, context);
@@ -2474,6 +2498,8 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
            // Do a basic syntax check so that (funcall) fails properly.
            && rest.consp())
     compile_funcall(oCar(rest), oCdr(rest), env, context);
+  else if (head == cl::_sym_values)
+    compile_values(rest, env, context);
   // extension
   else if (head == cleavirPrimop::_sym_funcall)
     compile_primop_funcall(oCar(rest), oCdr(rest), env, context);

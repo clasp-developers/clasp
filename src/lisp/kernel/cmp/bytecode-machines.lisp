@@ -94,6 +94,7 @@
     ("dup" 58)
     ("fdesignator" 59)
     ("called-fdefinition" 60 ((constant-arg 1)) ((constant-arg 2)))
+    ("values" 61 (1) (2))
     ("long" 255)))
 
 (defun pythonify-arguments (args)
