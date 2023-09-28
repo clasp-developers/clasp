@@ -1894,10 +1894,19 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
   // TODO: We could do something smarter if given 'foo or a constant,
   // but those are more marginal.
   if (fform.consp()) {
+    // In either case we are skipping compile_form on fform,
+    // so make sure to call the walker manually.
+    // We ignore the result though. That would be bad, except we don't
+    // actually use the code walker for rewriting anyway.
+    // FIXME: Encode that.
     if (oCar(fform) == cl::_sym_Function_O) {
+      if (code_walking_p())
+        eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), fform, env);
       compile_called_function(oCadr(fform), env, ctxt);
       return;
     } else if (oCar(fform) == cl::_sym_lambda) {
+      if (code_walking_p())
+        eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), fform, env);
       compile_called_function(fform, env, ctxt);
       return;
     }
