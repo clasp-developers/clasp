@@ -31,7 +31,7 @@ RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUME
       if ( header->_badge_stamp_wtag_mtag.consObjectP() ) {
         //        printf("%s:%d It's a regular cons\n", __FILE__, __LINE__ );
 #if DEBUG_VALIDATE_GUARD
-        client_validate(cons->ocar().raw_());
+        client_validate(cons->car().raw_());
         client_validate(cons->cdr().raw_());
 #endif
         POINTER_FIX(&cons->_Car);
@@ -47,7 +47,7 @@ RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUME
         //        printf("%s:%d It's a padP\n", __FILE__, __LINE__ );
         client = reinterpret_cast<ADDR_T>((char *)(client) + header->_badge_stamp_wtag_mtag.padSize());
       } else {
-        printf("%s:%d CONS in cons_scan client=%p original_client=%p limit=%p\n(it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, (void*)client, (void*)original_client, (void*)limit, cons->ocar().raw_(), cons->cdr().raw_());
+        printf("%s:%d CONS in cons_scan client=%p original_client=%p limit=%p\n(it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, (void*)client, (void*)original_client, (void*)limit, cons->car().raw_(), cons->cdr().raw_());
         abort();
       }};
   } SCAN_END(ss);

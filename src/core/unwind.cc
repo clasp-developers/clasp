@@ -61,7 +61,7 @@ DynEnv_O::SearchStatus sjlj_throw_search(T_sp tag, CatchDynEnv_sp& dest) {
 #ifdef UNWIND_INVALIDATE_STRICT
 void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
   for (T_sp iter = my_thread->dynEnvStackGet();
-       iter.notnilp() && (iter->ocar() != dest);
+       iter.notnilp() && (iter->car() != dest);
        iter = CONS_CDR(iter))
     iter->invalidate();
 }

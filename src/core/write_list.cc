@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -44,59 +44,62 @@ THE SOFTWARE.
 
 namespace core {
 
+bool Cons_O::maybe_write_quoted_form(bool tail, T_sp stream) const {
+  if (car().nilp() || !cdr().consp() || oCdr(cdr()).notnilp())
+    return false;
+
+  T_sp op = car();
+
+  if (op == cl::_sym_quote) {
+    if (tail)
+      return false;
+    clasp_write_char('\'', stream);
+    write_object(oCar(cdr()), stream);
+    return true;
+  }
+
+  if (op == cl::_sym_function) {
+    if (tail)
+      return false;
+    clasp_write_string("#'", stream);
+    write_object(oCar(cdr()), stream);
+    return true;
+  }
+
+  T_sp quasiquote = _sym_STARquasiquoteSTAR->symbolValue();
+  T_sp iq = nil<T_O>();
+
+  if (op == _sym_quasiquote) {
+    iq = _lisp->_true();
+    clasp_write_string(tail ? " . `" : "`", stream);
+  } else if (cl__getf(quasiquote, stream, nil<T_O>()).nilp()) {
+    return false;
+  } else if (op == _sym_unquote) {
+    clasp_write_string(tail ? " . ," : ",", stream);
+  } else if (op == _sym_unquote_splice) {
+    clasp_write_string(tail ? " . ,@" : ",@", stream);
+  } else if (op == _sym_unquote_nsplice) {
+    clasp_write_string(tail ? " . ,." : ",.", stream);
+  } else {
+    return false;
+  }
+
+  DynamicScopeManager scope(_sym_STARquasiquoteSTAR, Cons_O::create(stream, Cons_O::create(iq, quasiquote)));
+
+  write_object(oCar(cdr()), stream);
+
+  return true;
+}
+
 void Cons_O::__write__(T_sp stream) const {
-  T_sp x;
-  bool circle;
-  Fixnum print_level, print_length;
-  _Index i;
-  T_sp y;
-  SYMBOL_EXPORT_SC_(CorePkg, _SHARP__BANG_);
-  if (this->ocar() == _sym__SHARP__BANG_) {
-    clasp_write_string("#!", stream);
-    x = this->cdr();
-    write_object(x, stream);
+  stream = coerce::outputStreamDesignator(stream);
+
+  if (maybe_write_quoted_form(false, stream))
     return;
-  }
-  if ((this->cdr()).consp() && oCdr(this->cdr()).nilp()) {
-    if (this->ocar() == cl::_sym_quote) {
-      clasp_write_char('\'', stream);
-      x = oCar(this->cdr());
-      write_object(x, stream);
-      return;
-    }
-    if (this->ocar() == cl::_sym_function) {
-      clasp_write_char('#', stream);
-      clasp_write_char('\'', stream);
-      x = oCar(this->cdr());
-      write_object(x, stream);
-      return;
-    }
-    if (this->ocar() == _sym_quasiquote) {
-      clasp_write_char('`', stream);
-      x = oCar(this->cdr());
-      write_object(x, stream);
-      return;
-    }
-    if (this->ocar() == _sym_unquote) {
-      clasp_write_char(',', stream);
-      x = oCar(this->cdr());
-      write_object(x, stream);
-      return;
-    }
-    if (this->ocar() == _sym_unquote_splice) {
-      clasp_write_string(",@", stream);
-      x = oCar(this->cdr());
-      write_object(x, stream);
-      return;
-    }
-    if (this->ocar() == _sym_unquote_nsplice) {
-      clasp_write_string(",.", stream);
-      x = oCar(this->cdr());
-      write_object(x, stream);
-      return;
-    }
-  }
-  circle = clasp_print_circle();
+
+  bool circle = clasp_print_circle();
+  Fixnum print_level, print_length;
+
   if (clasp_print_readably()) {
     print_level = MOST_POSITIVE_FIXNUM;
     print_length = MOST_POSITIVE_FIXNUM;
@@ -104,42 +107,43 @@ void Cons_O::__write__(T_sp stream) const {
     print_level = clasp_print_level();
     print_length = clasp_print_length();
   }
+
   if (print_level == 0) {
     clasp_write_char('#', stream);
     return;
   }
-  x = this->const_sharedThis<Cons_O>();
+
+  T_sp x = this->const_sharedThis<Cons_O>();
+
   clasp_write_char('(', stream);
-  for (i = 0;; i++) {
+
+  for (_Index i = 0;; i++) {
     if (i >= print_length) {
       clasp_write_string("...", stream);
       break;
     }
-    y = oCar(x);
-    x = oCdr(x);
+
     // recursion with printlevel -1
     DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, clasp_make_fixnum(print_level - 1));
-    write_object(y, stream);
-    /* FIXME! */
-    if (!x || cl__atom(x) ||
-        (circle && will_print_as_hash(x))) {
-      if (!x.nilp()) {
-        clasp_write_char(' ', stream);
-        clasp_write_string(". ", stream);
-        write_object(x, stream);
-      }
+    write_object(oCar(x), stream);
+
+    x = oCdr(x);
+
+    if (x.nilp())
+      break;
+
+    if (cl__atom(x) || (circle && will_print_as_hash(x))) {
+      clasp_write_string(" . ", stream);
+      write_object(x, stream);
       break;
     }
-    if (i == 0 && !y._NULLp() && cl__symbolp(y))
-      clasp_write_char(' ', stream);
-    else
-      clasp_write_char(' ', stream);
+
+    if (x.consp() && gc::As<Cons_sp>(x)->maybe_write_quoted_form(true, stream))
+      break;
+
+    clasp_write_char(' ', stream);
   }
+
   clasp_write_char(')', stream);
-#if 0
-	stringstream ss;
-	ss << "@" << (void*)(this) << " ";
-	clasp_write_string(ss.str(),stream);
-#endif
 }
-};
+}; // namespace core

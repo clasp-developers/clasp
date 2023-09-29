@@ -416,7 +416,7 @@ bool Cons_O::equal(T_sp obj) const {
   if (!obj.consp()) return false;
   if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
-  if (!cl__equal(this->ocar(), CONS_CAR(other))) return false;
+  if (!cl__equal(this->car(), CONS_CAR(other))) return false;
   T_sp this_cdr = this->cdr();
   T_sp other_cdr = cons_cdr(other);
   return cl__equal(this_cdr, other_cdr);
@@ -426,7 +426,7 @@ bool Cons_O::equalp(T_sp obj) const {
   if (!obj.consp()) return false;
   if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
-  if (!cl__equalp(this->ocar(), oCar(other)))
+  if (!cl__equalp(this->car(), oCar(other)))
     return false;
   T_sp this_cdr = this->cdr();
   T_sp other_cdr = oCdr(other);
@@ -647,7 +647,7 @@ List_sp Cons_O::copyTree() const {
 
 List_sp Cons_O::copyTreeCar() const {
   
-  T_sp obj = this->ocar();
+  T_sp obj = this->car();
   ASSERTNOTNULL(obj);
   Cons_sp rootCopy = Cons_O::create(nil<T_O>(), nil<T_O>());
   List_sp cobj;
@@ -691,13 +691,13 @@ void Cons_O::describe(T_sp stream)
 
 string Cons_O::__repr__() const {
   Cons_sp start = this->asSmartPtr();
-  T_sp car = start->ocar();
+  T_sp car = start->car();
   T_sp cdr = start->cdr();
   stringstream sout;
   sout << "(" << _safe_rep_(car);
   while (cdr.consp()) {
     Cons_sp p = gc::As<Cons_sp>(cdr);
-    car = p->ocar();
+    car = p->car();
     sout << " " << _safe_rep_(car);
     cdr = oCdr(p);
   }

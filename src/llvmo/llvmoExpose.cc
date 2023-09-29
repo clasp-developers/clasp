@@ -1218,7 +1218,7 @@ Attribute_sp Attribute_O::get(LLVMContext_sp context, core::Cons_sp attribute_sy
   core::SymbolToEnumConverter_sp converter = _sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
   for ( core::Cons_sp cur=attribute_symbols;cur->notNil(); cur=cur->cdr() )
   {
-    core::Symbol_sp sym = cur->ocar().as<core::Symbol_O>();
+    core::Symbol_sp sym = cur->car().as<core::Symbol_O>();
     llvm::Attribute::AttrKind e = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
     attrBuilder.addAttribute(e);
   }
@@ -4159,7 +4159,7 @@ CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
   ht->map_while_true([ptr,&result] (core::T_sp key, core::T_sp value) -> bool {
                        if (value.consp()) {
                          core::T_sp address = value.unsafe_cons()->ocadr();
-                         core::T_sp size = value.unsafe_cons()->ocar();
+                         core::T_sp size = value.unsafe_cons()->car();
                          char* start = (char*)(gc::As<core::Pointer_sp>(address)->ptr());
                          if (size.fixnump()) {
                            char* end = start+size.unsafe_fixnum();

@@ -503,6 +503,7 @@ SYMBOL_EXPORT_SC_(ClPkg, hash_table_p);
 SYMBOL_EXPORT_SC_(CorePkg, STARenablePrintPrettySTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcircle_counterSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcircle_stackSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARquasiquoteSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, dynamicGo);
 SYMBOL_EXPORT_SC_(CorePkg, localGo);
 SYMBOL_EXPORT_SC_(ClPkg, _DIVIDE_);
@@ -846,7 +847,7 @@ void testConses() {
     fastTimer.start();
     for (int i = 0; i < times; ++i) {
       for (auto c : l.full()) {
-        T_sp t = c->ocar();
+        T_sp t = c->car();
         fastCount += unbox_fixnum(gc::As<Fixnum_sp>(t));
       }
     }
@@ -859,7 +860,7 @@ void testConses() {
     normalTimer.start();
     for (int i = 0; i < times; ++i) {
       for (auto c : l) {
-        T_sp t = c->ocar();
+        T_sp t = c->car();
         normalCount += unbox_fixnum(gc::As<Fixnum_sp>(t));
       }
     }
@@ -1064,6 +1065,10 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARprintPackageSTAR->defparameter(nil<T_O>());
   _sym_STARcircle_counterSTAR->defparameter(nil<T_O>());
   _sym_STARcircle_stackSTAR->defparameter(nil<T_O>());
+  // *quasiquote* is currently a dynamically bound plist of stream to nil/t values. It indicates whether or not the current stream
+  // in inside a quasiquote during printing. This is used so that unquote forms print correctly inside of a quasiquote but print as
+  // normal forms outside of a quasiquote.
+  _sym_STARquasiquoteSTAR->defparameter(nil<T_O>());
   _sym_STARdebugReaderSTAR->defparameter(nil<T_O>());
   _sym__PLUS_known_typep_predicates_PLUS_->defparameter(nil<T_O>());
   cl::_sym_STARloadPathnameSTAR->defparameter(nil<T_O>());
