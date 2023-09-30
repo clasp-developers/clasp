@@ -1145,21 +1145,21 @@ struct ISLFileHeader {
 
   void describe(const std::string& mesg) {
     printf("%s\n", mesg.c_str() );
-    printf(" %30s -> %lu\n", "size_t _Magic", _Magic );
-    printf(" %30s -> %lu(0x%lx)\n", "uintptr_t _LibrariesOffset", _LibrariesOffset, _LibrariesOffset  );
-    printf(" %30s -> %lu\n", "uintptr_t _NumberOfLibraries", _NumberOfLibraries );
-    printf(" %30s -> 0x%lx\n", "uintptr_t _SaveTimeMemoryAddress", _SaveTimeMemoryAddress  );
-    printf(" %30s -> %lu(0x%lx)\n", "uintptr_t _MemoryStart", _MemoryStart, _MemoryStart  );
-    printf(" %30s -> %lu\n", "uintptr_t _NumberOfObjects", _NumberOfObjects );
-    printf(" %30s -> %lu(0x%lx)\n", "uintptr_t _MemorySize", _MemorySize, _MemorySize  );
-    printf(" %30s -> %lu\n", "size_t _LispRootOffset", _LispRootOffset );
-    printf(" %30s -> %lu\n", "size_t _LispRootCount", _LispRootCount );
-    printf(" %30s -> %lu\n", "size_t _SymbolRootsOffset", _SymbolRootsOffset );
-    printf(" %30s -> %lu\n", "size_t _SymbolRootsCount", _SymbolRootsCount );
-    printf(" %30s -> %lu(0x%lx)\n", "uintptr_t _ObjectFileStart", _ObjectFileStart, _ObjectFileStart  );
-    printf(" %30s -> %lu(0x%lx)\n", "uintptr_t _ObjectFileSize", _ObjectFileSize, _ObjectFileSize  );
-    printf(" %30s -> %lu(0x%lx)\n", "NextUnshiftedClbindStamp", _NextUnshiftedClbindStamp, _NextUnshiftedClbindStamp );
-    printf(" %30s -> %lu(0x%lx)\n", "NextUnshiftedStamp", _NextUnshiftedStamp, _NextUnshiftedStamp );
+    printf(" %32s -> %lu\n", "size_t _Magic", _Magic );
+    printf(" %32s -> %lu(0x%lx)\n", "uintptr_t _LibrariesOffset", _LibrariesOffset, _LibrariesOffset  );
+    printf(" %32s -> %lu\n", "uintptr_t _NumberOfLibraries", _NumberOfLibraries );
+    printf(" %32s -> 0x%lx\n", "uintptr_t _SaveTimeMemoryAddress", _SaveTimeMemoryAddress  );
+    printf(" %32s -> %lu(0x%lx)\n", "uintptr_t _MemoryStart", _MemoryStart, _MemoryStart  );
+    printf(" %32s -> %lu\n", "uintptr_t _NumberOfObjects", _NumberOfObjects );
+    printf(" %32s -> %lu(0x%lx)\n", "uintptr_t _MemorySize", _MemorySize, _MemorySize  );
+    printf(" %32s -> %lu\n", "size_t _LispRootOffset", _LispRootOffset );
+    printf(" %32s -> %lu\n", "size_t _LispRootCount", _LispRootCount );
+    printf(" %32s -> %lu\n", "size_t _SymbolRootsOffset", _SymbolRootsOffset );
+    printf(" %32s -> %lu\n", "size_t _SymbolRootsCount", _SymbolRootsCount );
+    printf(" %32s -> %lu(0x%lx)\n", "uintptr_t _ObjectFileStart", _ObjectFileStart, _ObjectFileStart  );
+    printf(" %32s -> %lu(0x%lx)\n", "uintptr_t _ObjectFileSize", _ObjectFileSize, _ObjectFileSize  );
+    printf(" %32s -> %lu(0x%lx)\n", "NextUnshiftedClbindStamp", _NextUnshiftedClbindStamp, _NextUnshiftedClbindStamp );
+    printf(" %32s -> %lu(0x%lx)\n", "NextUnshiftedStamp", _NextUnshiftedStamp, _NextUnshiftedStamp );
   }
 };
 
@@ -1217,7 +1217,7 @@ struct copy_buffer_t {
 
   size_t write_to_filedes(int filedes) {
     size_t wrote = write( filedes, this->_BufferStart, this->_Size );
-    printf("%s:%d:%s Wrote %lu bytes from %p to filedes %d\n", __FILE__, __LINE__, __FUNCTION__, wrote, this->_BufferStart, filedes );
+//    printf("%s:%d:%s Wrote %lu bytes from %p to filedes %d\n", __FILE__, __LINE__, __FUNCTION__, wrote, this->_BufferStart, filedes );
     return wrote;
   }
 };
@@ -1584,7 +1584,7 @@ struct copy_progress {
     intptr_t delta = cur - this->_begin;
     if (delta > this->_next_progress_tic) {
       this->_next_progress_tic += this->_inc;
-      core::lisp_write(fmt::format("\rCopy memory to snapshot buffer {:6.2f} done        ", (100.0*(float)delta/(float)this->_size)));
+      core::lisp_write(fmt::format("\rCopy memory to snapshot buffer {:6.2f} done     ", (100.0*(float)delta/(float)this->_size)));
     }
   }
 };
@@ -1602,7 +1602,7 @@ struct copy_objects_t : public walker_callback_t {
       walker_callback_t(info),
       _progress((uintptr_t)objects->_BufferStart,(uintptr_t)objects->_Size)
   {};
-  
+
   void callback(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
@@ -1625,7 +1625,7 @@ struct copy_objects_t : public walker_callback_t {
         if (generalSize==0) ISL_ERROR(fmt::format("A zero size general at {} was encountered", (void*)clientStart ));
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)clientStart;
         ISLGeneralHeader_s islheader( General, code->frontSize()+code->literalsSize(), (gctools::Header_s*)header, false );
-        char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLGeneralHeader_s)); 
+        char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLGeneralHeader_s));
         char* new_client = this->_objects->write_buffer((char*)clientStart, code->frontSize() );
         llvmo::ObjectFile_O* newObjectFile = (llvmo::ObjectFile_O*)new_client;
         DBG_OF(
@@ -1934,7 +1934,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
       if (ii%1000==0 && ii>0) {
-        printf("%6lu remaining pointers to dladdr\n", ii );
+        core::lisp_write(fmt::format("\r{} remaining pointers to dladdr    ", ii ));
       }
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       std::string saveName("");
@@ -1949,6 +1949,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
         this->_Library._SymbolBuffer.push_back('\0');
       }
     }
+    core::lisp_write(fmt::format("\rAll pointers passed through dladdr    \n"));
     if (hitBadPointers) {
       printf("There were %lu bad pointers - we need to figure out how to get this to zero\n", hitBadPointers );
       abort();
@@ -2114,8 +2115,8 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   for ( size_t idx=0; idx<fixup->_libraries.size(); idx++ ) {
     int groupPointerIdx = -1;
     ISLLibrary& curLib = fixup->_libraries[idx];
-    printf("%s:%d:%s  Dealing with library#%lu:  %s @%p\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._Name.c_str(), &curLib );
-    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._InternalPointers.size() );
+//    printf("%s:%d:%s  Dealing with library#%lu:  %s @%p\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._Name.c_str(), &curLib );
+//    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._InternalPointers.size() );
     for ( size_t ii=0; ii<curLib._InternalPointers.size(); ii++ ) {
       if (groupPointerIdx < 0 || curLib._InternalPointers[ii]._address != curLib._InternalPointers[ii-1]._address ) {
         curLib._GroupedPointers.emplace_back( curLib._InternalPointers[ii]._pointerType, curLib._InternalPointers[ii]._address );
@@ -2129,17 +2130,17 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
       *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_( firstByte, idx, groupPointerIdx );
 //      printf("%s:%d:%s                             to %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)*curLib._InternalPointers[ii]._ptrptr );
     }
-    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
+    core::lisp_write(fmt::format("{} unique pointers need to be passed to dladdr\n", curLib._GroupedPointers.size() ));
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
     thing.generateSymbolTable(fixup,symbolLookup);
-    printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
+    core::lisp_write(fmt::format("Library #{} {} contains {} unique pointers\n", idx, curLib._Name, curLib._GroupedPointers.size() ));
     for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
       if (curLib._SymbolInfo[ii]._SymbolLength<0) {
-        printf("%s:%d:%s The _SymbolInfo[%lu] does not have an length\n", __FILE__, __LINE__, __FUNCTION__, ii );
+        printf("%s:%d:%s The _SymbolInfo[%lu] does not have a length\n", __FILE__, __LINE__, __FUNCTION__, ii );
       }
     }
-    printf("%s:%d:%s  Done with library: %s @%p\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str(), &curLib );
+    core::lisp_write(fmt::format("Done with library #{} at {}\n", curLib._Name, (void*)&curLib ));
   }
   DBG_SLS("Step done\n" );
 }
@@ -2516,7 +2517,7 @@ void* snapshot_save_impl(void* data) {
     fixup_vtables_t fixup_vtables( &fixup, (uintptr_t)start, (uintptr_t)end, &islInfo );
     walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart,fixup_vtables);
   }
-
+  core::lisp_write(fmt::format("Copy memory done\n"));
 
   //
   // Now generate libraries
@@ -2604,7 +2605,7 @@ void* snapshot_save_impl(void* data) {
       }
       filename = tfbuffer;
     }
-    printf("Writing snapshot to %s filedes = %d\n", filename.c_str(), filedes );
+    printf("Writing snapshot to temporary file %s filedes = %d\n", filename.c_str(), filedes );
     snapshot._HeaderBuffer->write_to_filedes(filedes);
     snapshot._Libraries->write_to_filedes(filedes);
     snapshot._Memory->write_to_filedes(filedes);
@@ -2679,7 +2680,7 @@ void* snapshot_save_impl(void* data) {
   printf("%s:%d:%s global_badge_count = %lu\n", __FILE__, __LINE__, __FUNCTION__, global_badge_count );
 #endif
 #ifdef USE_BOEHM
-  printf("%s:%d:%s Not using GC_start_world_external();\n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s Not using GC_start_world_external();\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
   exit(0);
 }
@@ -2752,7 +2753,7 @@ void snapshot_save(core::SaveLispAndDie& data) {
   // For saving we may want to save snapshots and not die - so use noStomp forwarding.
   //
   global_forwardingKind = noStomp;
-  printf("%s:%d:%s Updated with noStomp forwarding for snapshot_save\n", __FILE__, __LINE__, __FUNCTION__ );
+  core::lisp_write(fmt::format("Updated with noStomp forwarding for snapshot_save\n"));
   //
   // Call Common Lisp code to release things at snapshot-save time
   //
@@ -2761,7 +2762,7 @@ void snapshot_save(core::SaveLispAndDie& data) {
     core::eval::funcall( comp::_sym_invoke_save_hooks );
   }
 
-  printf("%s:%d:%s Finished invoking cmp:invoke-save-hooks\n", __FILE__, __LINE__, __FUNCTION__ );
+  core::lisp_write(fmt::format("Finished invoking cmp:invoke-save-hooks\n"));
 
 #if defined(USE_BOEHM)
   GC_call_with_alloc_lock( snapshot_save_impl, &data );
