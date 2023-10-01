@@ -191,7 +191,7 @@ core::T_sp pop_signal_or_interrupt(core::ThreadLocalState* thread) {
   { // <---- brace for spinlock scope
     mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
     record = gc::As<core::Cons_sp>(thread->_PendingInterrupts);
-    value = record->ocar();
+    value = record->car();
     thread->_PendingInterrupts = record->cdr();
     if (value.fixnump() || gc::IsA<core::Symbol_sp>(value)) {
       // Conses that contain fixnum or symbol values are recycled onto the

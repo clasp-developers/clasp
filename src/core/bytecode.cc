@@ -370,7 +370,7 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_cell_ref: {
       DBG_VM1("cell-ref\n");
       T_sp cons((gctools::Tagged)vm.pop(sp));
-      vm.push(sp, cons.unsafe_cons()->ocar().raw_());
+      vm.push(sp, cons.unsafe_cons()->car().raw_());
       pc++;
       break;
     }
@@ -1487,10 +1487,10 @@ List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void* pc, T_O** fp) {
       size_t end = entry->end().unsafe_fixnum();
       if ((start <= bpc) && (bpc < end)) {
         for (Cons_sp cur : entry->bindings()) {
-          T_sp tinfo = cur->ocar();
+          T_sp tinfo = cur->car();
           if (gc::IsA<Cons_sp>(tinfo)) {
             Cons_sp info = gc::As_unsafe<Cons_sp>(tinfo);
-            T_sp name = info->ocar();
+            T_sp name = info->car();
             T_sp cdr = info->cdr();
             if (cdr.fixnump()) {
               gc::Fixnum index = cdr.unsafe_fixnum();
@@ -1500,11 +1500,11 @@ List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void* pc, T_O** fp) {
               bindings << Cons_O::create(name, value);
             } else if (gc::IsA<Cons_sp>(cdr)) {
               // indirect cell
-              T_sp tindex = gc::As_unsafe<Cons_sp>(cdr)->ocar();
+              T_sp tindex = gc::As_unsafe<Cons_sp>(cdr)->car();
               if (tindex.fixnump()) {
                 gc::Fixnum index = tindex.unsafe_fixnum();
                 T_sp cell((gctools::Tagged)(*(fp+index+1)));
-                T_sp value = gc::As<Cons_sp>(cell)->ocar();
+                T_sp value = gc::As<Cons_sp>(cell)->car();
                 bindings << Cons_O::create(name, value);
               }
             }

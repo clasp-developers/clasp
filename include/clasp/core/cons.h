@@ -91,7 +91,7 @@ T_sp oEighth(T_sp o);
 T_sp oNinth(T_sp o);
 T_sp oTenth(T_sp o);
 
-#define CONS_CAR(x) (gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(x)->ocar())
+#define CONS_CAR(x) (gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(x)->car())
 #define CONS_CDR(x) (gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(x)->cdr())
 #define CAR(x) oCar(x)
 #define CDR(x) oCdr(x)
@@ -121,7 +121,7 @@ namespace core {
     friend T_sp oCdr(T_sp o);
 #ifdef USE_PRECISE_GC
   public: // Garbage collector functions
-    uintptr_t rawRefCar() const { return (uintptr_t)this->ocar().raw_(); }
+    uintptr_t rawRefCar() const { return (uintptr_t)this->car().raw_(); }
     uintptr_t rawRefCdr() const { return (uintptr_t)this->cdr().raw_(); }
     void rawRefSetCar(uintptr_t val) { T_sp tval((gctools::Tagged)val); this->setCarNoValidate(tval); }
     void rawRefSetCdr(uintptr_t val) { T_sp tval((gctools::Tagged)val); this->setCdrNoValidate(tval); }
@@ -182,7 +182,7 @@ namespace core {
     }
 
   public: // basic access
-    inline T_sp ocar() const { return _Car.load(std::memory_order_relaxed); }
+    inline T_sp car() const { return _Car.load(std::memory_order_relaxed); }
     inline T_sp cdr() const { return _Cdr.load(std::memory_order_relaxed); }
     inline void setCarNoValidate(T_sp o) {
       _Car.store(o, std::memory_order_relaxed);
@@ -245,14 +245,14 @@ namespace core {
       T_sp cdr = this->cdr();
       if (UNLIKELY(!cdr.consp()))
         return nil<T_O>();
-      return cdr.unsafe_cons()->ocar();
+      return cdr.unsafe_cons()->car();
     }
 
   /*! Get the data for the first element */
     template <class o_class>
       gctools::smart_ptr<o_class> car() {
-      ASSERTNOTNULL(this->ocar());
-      return gc::As<gc::smart_ptr<o_class>>(this->ocar());
+      ASSERTNOTNULL(this->car());
+      return gc::As<gc::smart_ptr<o_class>>(this->car());
     };
     T_sp setf_nth(cl_index index, T_sp val);
   /*! Return the last cons (not the last element) of list.
@@ -266,7 +266,7 @@ namespace core {
   /*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
     inline void sxhash_(HashGenerator &hg) const {
       if (hg.isFilling())
-        hg.hashObject(this->ocar());
+        hg.hashObject(this->car());
       if (hg.isFilling())
         hg.hashObject(this->cdr());
     }
@@ -325,6 +325,7 @@ namespace core {
     void describe(T_sp stream);
     string __repr__() const;
     void __write__(T_sp stream) const;
+    bool maybe_write_quoted_form(bool tail, T_sp stream) const;
 
   /*!Set the owner of every car in the list
 	 */
@@ -350,10 +351,10 @@ namespace core {
     // These are necessary because atomics are not copyable.
     // More specifically they are necessary if you want to store conses in vectors,
     // which the hash table code does.
-    Cons_O(const Cons_O& other) : _Car(other.ocar()), _Cdr(other.cdr())  {};
+    Cons_O(const Cons_O& other) : _Car(other.car()), _Cdr(other.cdr())  {};
     Cons_O& operator=(const Cons_O& other) {
         if (this != &other) {
-            setCar(other.ocar());
+            setCar(other.car());
             setCdr(other.cdr());
         }
         return *this;
@@ -385,7 +386,7 @@ CL_DOCSTRING("Return the first object in a list.")
 DOCGROUP(clasp)
 CL_DEFUN inline core::T_sp oCar(T_sp obj) {
  if (obj.consp())
-   return obj.unsafe_cons()->ocar();
+   return obj.unsafe_cons()->car();
  if (obj.nilp())
    return obj;
  TYPE_ERROR(obj, cl::_sym_Cons_O);
@@ -638,15 +639,15 @@ CL_DOCSTRING("Return the tenth object in a list.")
 DOCGROUP(clasp)
 CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); }
 
-inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->ocar();};
+inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->car();};
 
 inline T_sp cons_cdr(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->cdr();};
 
-inline T_sp cons_car(Cons_sp x) {ASSERT(x.consp());return x->ocar();};
+inline T_sp cons_car(Cons_sp x) {ASSERT(x.consp());return x->car();};
 
 inline T_sp cons_cdr(Cons_sp x) {ASSERT(x.consp());return x->cdr();};
 
-inline T_sp cons_car(Cons_O* x) {return x->ocar();};
+inline T_sp cons_car(Cons_O* x) {return x->car();};
 
 inline T_sp cons_cdr(Cons_O* x) {return x->cdr();};
 
@@ -709,7 +710,7 @@ template <class T>
 void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
   vec.clear();
   for (auto me : (List_sp)(c)) {
-    vec.emplace_back(gc::As<T>(me->ocar()));
+    vec.emplace_back(gc::As<T>(me->car()));
   }
 }
 

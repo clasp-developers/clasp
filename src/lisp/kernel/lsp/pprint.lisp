@@ -113,6 +113,11 @@
 (defun pretty-stream-p (stream)
   (typep stream 'pretty-stream))
 
+(defun target-stream (stream)
+  (if (pretty-stream-p stream)
+      (pretty-stream-target stream)
+      stream))
+
 (defun make-pretty-stream (target)
   (make-instance 'pretty-stream :target target
 		 :buffer-start-column (or (file-column target) 0)
@@ -705,7 +710,14 @@
 ;;;; Utilities.
 
 (defun pprint-pop-helper (object count stream &aux code)
-  (cond ((not (listp object))
+  (cond ((or (not (listp object))
+             (and (plusp count)
+                  (consp (cdr object))
+                  (null (cddr object))
+                  (or (eq (car object) 'core:quasiquote)
+                      (and (getf core:*quasiquote* (target-stream stream))
+                           (member (car object)
+                                   '(core:unquote core:unquote-splice core:unquote-nsplice))))))
 	 (write-string ". " stream)
 	 (write-object object stream)
 	 nil)

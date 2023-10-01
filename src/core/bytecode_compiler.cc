@@ -968,7 +968,7 @@ static void resolve_debug_vars(BytecodeDebugVars_sp info) {
   else
     info->setEnd(clasp_make_fixnum(0));
   for (Cons_sp cur : info->bindings()) {
-    T_sp tentry = cur->ocar();
+    T_sp tentry = cur->car();
     if (gc::IsA<Cons_sp>(tentry)) {
       Cons_sp entry = gc::As_unsafe<Cons_sp>(tentry);
       T_sp tlvinfo = entry->cdr();

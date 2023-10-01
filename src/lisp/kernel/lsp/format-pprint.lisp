@@ -636,31 +636,40 @@
 
 (defun pprint-quote (stream list &rest noise)
   (declare (ignore noise))
-  (if (and (consp list)
-	   (consp (cdr list))
-	   (null (cddr list)))
-      (case (car list)
-	(function
+  (cond ((or (not (consp list))
+             (not (consp (cdr list)))
+             (cddr list))
+	 (pprint-fill stream list))
+        ((eq (car list) 'function)
 	 (write-string "#'" stream)
 	 (write-object (cadr list) stream))
-	(quote
+	((eq (car list) 'quote)
 	 (write-char #\' stream)
 	 (write-object (cadr list) stream))
-        (core:quasiquote
-         (write-char #\` stream)
-         (write-object (cadr list) stream))
-        (core:unquote
-         (write-char #\, stream)
-         (write-object (cadr list) stream))
-        (core:unquote-splice
-         (write-string ",@" stream)
-         (write-object (cadr list) stream))
-        (core:unquote-nsplice
-         (write-string ",." stream)
-         (write-object (cadr list) stream))
+        ((eq (car list) 'core:quasiquote)
+         (let ((core:*quasiquote* (list* (target-stream stream) t
+                                         core:*quasiquote*)))
+           (write-char #\` stream)
+           (write-object (cadr list) stream)))
+        ((not (getf core:*quasiquote* (target-stream stream)))
+         (pprint-fill stream list))
+        ((eq (car list) 'core:unquote)
+         (let ((core:*quasiquote* (list* (target-stream stream) nil
+                                         core:*quasiquote*)))
+           (write-char #\, stream)
+           (write-object (cadr list) stream)))
+        ((eq (car list) 'core:unquote-splice)
+         (let ((core:*quasiquote* (list* (target-stream stream) nil
+                                         core:*quasiquote*)))
+           (write-string ",@" stream)
+           (write-object (cadr list) stream)))
+        ((eq (car list) 'core:unquote-nsplice)
+         (let ((core:*quasiquote* (list* (target-stream stream) nil
+                                         core:*quasiquote*)))
+           (write-string ",." stream)
+           (write-object (cadr list) stream)))
 	(t
-	 (pprint-fill stream list)))
-      (pprint-fill stream list)))
+	 (pprint-fill stream list))))
 
 (defun pprint-setq (stream list &rest noise)
   (declare (ignore noise))
