@@ -567,3 +567,24 @@ BBBBCCCC**DDDD"))
 (test format-parameters-colon-at-08
       (format nil "a~4@:A" nil)
       ("a  ()"))
+
+(test write-quasiquote-01
+      (write-to-string '(a (core:unquote a)
+                           (core:unquote-splice a)
+                           (core:unquote-nsplice a)
+                           core:quasiquote (a (core:unquote-splice (a (core:unquote a)))
+                                              (core:unquote-nsplice a)
+                                              core:unquote a))
+                       :pretty nil)
+      ("(A (CORE:UNQUOTE A) (CORE:UNQUOTE-SPLICE A) (CORE:UNQUOTE-NSPLICE A) . `(A ,@(A (CORE:UNQUOTE A)) ,.A . ,A))"))
+
+(test write-quasiquote-02
+      (write-to-string '(a (core:unquote a)
+                           (core:unquote-splice a)
+                           (core:unquote-nsplice a)
+                           core:quasiquote (a (core:unquote-splice (a (core:unquote a)))
+                                              (core:unquote-nsplice a)
+                                              core:unquote a))
+                       :pretty t)
+      ("(A (CORE:UNQUOTE A) (CORE:UNQUOTE-SPLICE A) (CORE:UNQUOTE-NSPLICE A)
+ . `(A ,@(A (CORE:UNQUOTE A)) ,.A . ,A))"))
