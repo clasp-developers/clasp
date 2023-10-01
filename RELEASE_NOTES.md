@@ -1,4 +1,4 @@
-# Version 2.4.0 (LLVM15-17) Pending
+# Version 2.4.0 (LLVM15-17) 2023-10-01
 
 ## Added
 * Bytecode stores source location info for debugging.
