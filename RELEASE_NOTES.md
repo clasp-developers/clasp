@@ -10,6 +10,9 @@
 * Support for Linux AARCH64.
 * LLVM17 support. LLVM15 and LLVM16 are still supported.
 
+## Changed
+* Improved printing of backquote and unquote.
+
 ## Fixed
 * Avoid segmentation faults from incorrectly calling MP:PROCESS-JOIN in
   EXT:RUN-PROGRAM.
