@@ -1339,6 +1339,12 @@ gctools::return_type bytecode_call(unsigned char *pc, core::T_O *lcc_closure, si
   core::Closure_O *closure = gctools::untag_general<core::Closure_O *>((core::Closure_O *)lcc_closure);
   ASSERT(gc::IsA<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint()));
   auto entry = closure->entryPoint();
+  // Set the closure's simple fun to be its simple fun's simple fun.
+  // This is so that if a bytecode's simple fun has been replaced with
+  // a native compiled version, that native simple fun will be used
+  // for subsequent calls.
+  closure->setSimpleFun(entry->entryPoint());
+  // Proceed with the bytecode call.
   core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(entry);
   DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc);
   size_t nlocals = entryPoint->_LocalsFrameSize;
