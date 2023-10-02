@@ -562,6 +562,9 @@
 {fixed-field :offset-type-cxx-identifier "RAW_POINTER_OFFSET" :offset-ctype "UnknownType"
              :offset-base-ctype "core::GlobalBytecodeSimpleFun_O"
              :layout-offset-field-names ("_Trampoline")}
+{fixed-field :offset-type-cxx-identifier "ATOMIC_POD_OFFSET_unsigned_short"
+             :offset-ctype "unsigned short" :offset-base-ctype "core::GlobalBytecodeSimpleFun_O"
+             :layout-offset-field-names ("_CallCount")}
 {class-kind :stamp-name "STAMPWTAG_core__LocalSimpleFun_O" :stamp-key "core::LocalSimpleFun_O"
             :parent-class "core::CodeSimpleFun_O" :lisp-class-base "core::CodeSimpleFun_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}

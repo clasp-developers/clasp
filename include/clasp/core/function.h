@@ -328,6 +328,11 @@ public:
   // Size of this function in bytes - used for debugging
   unsigned int _BytecodeSize;
   BytecodeTrampolineFunction _Trampoline;
+  // How many times this function has been called.
+  // Tracked to get data about what functions should be optimized.
+  // uint16 is "small" so this will roll over eventually, but we
+  // will probably compile it before that point.
+  std::atomic<uint16_t> _CallCount = 0;
 
 public:
   // Accessors
@@ -339,10 +344,10 @@ public:
   virtual Pointer_sp defaultEntryAddress() const;
   BytecodeModule_sp code() const;
   string __repr__() const;
-
+  
   bool compiledP() const override { return true; }
   virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
-
+  
   CL_DEFMETHOD Fixnum localsFrameSize() const { return this->_LocalsFrameSize; };
   CL_DEFMETHOD Fixnum environmentSize() const { return this->_EnvironmentSize; };
   size_t entryPcN() const;
@@ -351,6 +356,15 @@ public:
   // Used for bytecode debug info; see function.cc
   T_sp start() const;
   T_sp end() const;
+  CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/call-count)
+  CL_DEFMETHOD Fixnum callCount() const {
+    return this->_CallCount.load(std::memory_order_relaxed);
+  }
+private:
+  inline void count_call() {
+    // We use this instead of ++ to get a weak memory ordering.
+    this->_CallCount.fetch_add(1, std::memory_order_relaxed);
+  }
 };
 
 FORWARD(GlobalSimpleFunGenerator);
