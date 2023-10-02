@@ -59,6 +59,7 @@ enum Data_types {
     ctype_size_t,
     ctype_opaque_ptr,
     CXX_FIXUP_OFFSET,
+    ATOMIC_POD_OFFSET_unsigned_short,
     ATOMIC_POD_OFFSET_unsigned_long,
     ATOMIC_POD_OFFSET_mp__ProcessPhase,
     ATOMIC_POD_OFFSET_unsigned_int,
