@@ -156,14 +156,14 @@ public:
   //  virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
 
   CL_DEFMETHOD SimpleFun_sp entryPoint() const {
-    SimpleFun_sp ep = this->_TheSimpleFun.load();
+    SimpleFun_sp ep = this->_TheSimpleFun.load(std::memory_order_relaxed);
     ASSERT(ep.generalp());
     return ep;
   }
 
   CL_DEFMETHOD void setSimpleFun(SimpleFun_sp ep) {
     ASSERT(ep.generalp());
-    return this->_TheSimpleFun.store(ep);
+    return this->_TheSimpleFun.store(ep, std::memory_order_relaxed);
   }
 
   CL_LISPIFY_NAME("core:functionName");
