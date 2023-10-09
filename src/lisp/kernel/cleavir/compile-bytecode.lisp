@@ -1345,8 +1345,11 @@
                      in (core:bytecode-debug-decls/decls annot)
                    when (eq spec 'cl:optimize)
                      do (loop for optim in rest
-                              unless (assoc (car optim) optimize)
-                                do (push optim optimize)))
+                              for roptim = (if (consp optim)
+                                               optim
+                                               `(,optim 3))
+                              unless (assoc (car roptim) optimize)
+                                do (push roptim optimize)))
         finally (return
                   ;; If the declarations don't have enough OPTIMIZE qualities
                   ;; to cover the gamut (arguably they always should), fill
