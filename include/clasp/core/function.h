@@ -360,8 +360,7 @@ public:
   CL_DEFMETHOD Fixnum callCount() const {
     return this->_CallCount.load(std::memory_order_relaxed);
   }
-private:
-  inline void count_call() {
+  inline void countCall() {
     // We use this instead of ++ to get a weak memory ordering.
     this->_CallCount.fetch_add(1, std::memory_order_relaxed);
   }

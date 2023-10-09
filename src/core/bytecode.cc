@@ -1346,7 +1346,8 @@ gctools::return_type bytecode_call(unsigned char *pc, core::T_O *lcc_closure, si
   closure->setSimpleFun(entry->entryPoint());
   // Proceed with the bytecode call.
   core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(entry);
-  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc);
+  entryPoint->countCall();
+  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
   size_t nlocals = entryPoint->_LocalsFrameSize;
   core::BytecodeModule_sp module = gc::As_assert<core::BytecodeModule_sp>(entryPoint->_Code);
   core::T_O **literals = (core::T_O **)&gc::As_assert<core::SimpleVector_sp>(module->_Literals)->_Data[0];
