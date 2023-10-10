@@ -646,7 +646,10 @@ mp::Mutex* global_trampoline_mutex = NULL;
 #endif
 
 CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
-  if (global_trampoline_mutex == NULL) {
+#if CLASP_BUILD_MODE != 6 // :bytecode
+      return Values(Pointer_O::create((void *)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
+#endif
+ if (global_trampoline_mutex == NULL) {
     global_trampoline_mutex = new mp::Mutex(DISSASSM_NAMEWORD);
   }
   WITH_READ_WRITE_LOCK(*global_trampoline_mutex);
