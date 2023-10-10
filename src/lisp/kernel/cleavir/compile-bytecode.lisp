@@ -1584,4 +1584,7 @@
 ;;; To be bound to cmp:*btb-compile-hook*.
 (defun compile-hook (definition environment)
   (declare (ignore environment))
-  (compile-function definition))
+  (handler-case (compile-function definition)
+    (error (e)
+      (warn "BUG: Error during BTB compilation: ~a" e)
+      definition)))

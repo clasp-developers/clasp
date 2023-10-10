@@ -18,6 +18,8 @@
 #include <clasp/core/pathname.h>      // making pathnames
 #include <clasp/core/unixfsys.h>      // cl__truename
 #include <clasp/llvmo/llvmoPackage.h> // cmp__compile_trampoline
+#include <clasp/core/bytecode_compiler.h> // btb_bcfun_p
+#include <clasp/core/evaluator.h>     // eval::funcall
 
 // FIXME: Move these to the generated file thingie
 #define LTV_OP_NIL 65
@@ -583,6 +585,12 @@ struct loadltv {
     FunctionDescription_sp fdesc = makeFunctionDescription(name, lambda_list, docstring, nil<T_O>(), nil<T_O>(), -1, -1, -1);
     GlobalBytecodeSimpleFun_sp fun = core__makeGlobalBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
                                                                        llvmo::cmp__compile_trampoline(name));
+    if (core::_sym_STARbytecode_autocompileSTAR->symbolValue().notnilp()
+        && cl::_sym_compile->fboundp()
+        && comp::btb_bcfun_p(fun, gc::As<SimpleVector_sp>(module->debugInfo()))) {
+      T_sp nfun = eval::funcall(cl::_sym_compile, nil<T_O>(), fun);
+      fun->setSimpleFun(gc::As<SimpleFun_sp>(nfun));
+    }
     set_ltv(fun, index);
   }
 
