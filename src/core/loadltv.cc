@@ -109,9 +109,10 @@ static void ltv_header_encode(uint8_t *header, uint64_t instruction_count) {
 struct loadltv {
   Stream_sp _stream;
   gctools::Vec0<T_sp> _literals;
-  uint8_t _index_bytes;
+  uint8_t _index_bytes = 1;
+  size_t _next_index = 0;
 
-  loadltv(Stream_sp stream) : _stream(stream), _index_bytes(1) {}
+  loadltv(Stream_sp stream) : _stream(stream) {}
 
   inline uint8_t read_u8() { return clasp_read_byte(_stream).unsafe_fixnum(); }
 
@@ -217,6 +218,10 @@ struct loadltv {
     }
   }
 
+  inline size_t next_index() {
+    return _next_index++;
+  }
+
   void check_initialization() {
     // bool vectors are apparently stupid and weird so using std algorithms
     // may not work. so we do something stupid.
@@ -241,11 +246,11 @@ struct loadltv {
     _literals[index] = value;
   }
 
-  void op_nil() { set_ltv(nil<T_O>(), read_index()); }
+  void op_nil() { set_ltv(nil<T_O>(), next_index()); }
 
-  void op_t() { set_ltv(cl::_sym_T_O, read_index()); }
+  void op_t() { set_ltv(cl::_sym_T_O, next_index()); }
 
-  void op_cons() { set_ltv(Cons_O::create(nil<T_O>(), nil<T_O>()), read_index()); }
+  void op_cons() { set_ltv(Cons_O::create(nil<T_O>(), nil<T_O>()), next_index()); }
 
   void op_rplaca() {
     Cons_sp c = gc::As<Cons_sp>(get_ltv(read_index()));
@@ -431,7 +436,7 @@ struct loadltv {
   void op_array() {
     // FIXME: This is pretty inefficient, including consing way more than it
     // ought to. We don't really have C++ equivalents for make-array.
-    size_t index = read_index();
+    size_t index = next_index();
     uint8_t uaet_code = read_u8();
     T_sp uaet = decode_uaet(uaet_code);
     uint8_t packing_code = read_u8();
@@ -463,7 +468,7 @@ struct loadltv {
   }
 
   void op_hasht() {
-    size_t index = read_index();
+    size_t index = next_index();
     uint8_t testcode = read_u8();
     uint16_t count = read_u16();
     // Resolve test
@@ -497,18 +502,18 @@ struct loadltv {
   }
 
   void op_sb64() {
-    size_t index = read_index();
+    size_t index = next_index();
     set_ltv(Integer_O::create(read_s64()), index);
   }
 
   void op_package() {
-    size_t index = read_index();
+    size_t index = next_index();
     String_sp name = gc::As<String_sp>(get_ltv(read_index()));
     set_ltv(_lisp->findPackage(name->get_std_string(), true), index);
   }
 
   void op_bignum() {
-    size_t index = read_index();
+    size_t index = next_index();
     int64_t ssize = read_s64();
     mp_limb_t limbs[std::abs(ssize)];
     for (size_t i = std::abs(ssize); i > 0; --i)
@@ -517,50 +522,50 @@ struct loadltv {
   }
 
   void op_float() {
-    size_t index = read_index();
+    size_t index = next_index();
     set_ltv(clasp_make_single_float(read_f32()), index);
   }
 
   void op_double() {
-    size_t index = read_index();
+    size_t index = next_index();
     set_ltv(clasp_make_double_float(read_f64()), index);
   }
 
   void op_ratio() {
-    size_t index = read_index();
+    size_t index = next_index();
     Integer_sp num = gc::As<Integer_sp>(get_ltv(read_index()));
     Integer_sp den = gc::As<Integer_sp>(get_ltv(read_index()));
     set_ltv(contagion_div(num, den), index);
   }
 
   void op_complex() {
-    size_t index = read_index();
+    size_t index = next_index();
     Real_sp real = gc::As<Real_sp>(get_ltv(read_index()));
     Real_sp imag = gc::As<Real_sp>(get_ltv(read_index()));
     set_ltv(clasp_make_complex(real, imag), index);
   }
 
   void op_symbol() {
-    size_t index = read_index();
+    size_t index = next_index();
     SimpleString_sp name = gc::As<SimpleString_sp>(get_ltv(read_index()));
     set_ltv(Symbol_O::create(name), index);
   }
 
   void op_intern() {
-    size_t index = read_index();
+    size_t index = next_index();
     Package_sp pack = gc::As<Package_sp>(get_ltv(read_index()));
     SimpleString_sp name = gc::As<SimpleString_sp>(get_ltv(read_index()));
     set_ltv(pack->intern(name), index);
   }
 
   void op_character() {
-    size_t index = read_index();
+    size_t index = next_index();
     uint32_t code = read_u32();
     set_ltv(clasp_make_character(code), index);
   }
 
   void op_pathname() {
-    size_t index = read_index();
+    size_t index = next_index();
     T_sp host = get_ltv(read_index());
     T_sp device = get_ltv(read_index());
     T_sp directory = get_ltv(read_index());
@@ -571,7 +576,7 @@ struct loadltv {
   }
 
   void op_bcfunc() {
-    size_t index = read_index();
+    size_t index = next_index();
     uint32_t entry_point = read_u32();
     uint32_t final_size = read_u32();
     uint16_t nlocals = read_u16();
@@ -587,7 +592,7 @@ struct loadltv {
   }
 
   void op_bcmod() {
-    size_t index = read_index();
+    size_t index = next_index();
     uint32_t len = read_u32();
     BytecodeModule_sp mod = BytecodeModule_O::make();
     SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make(len);
@@ -606,25 +611,25 @@ struct loadltv {
   }
 
   void op_fdef() {
-    size_t index = read_index();
+    size_t index = next_index();
     T_sp name = get_ltv(read_index());
     set_ltv(cl__fdefinition(name), index);
   }
 
   void op_fcell() {
-    size_t index = read_index();
+    size_t index = next_index();
     T_sp name = get_ltv(read_index());
     set_ltv(core__ensure_function_cell(name), index);
   }
 
   void op_vcell() {
-    size_t index = read_index();
+    size_t index = next_index();
     Symbol_sp name = gc::As<Symbol_sp>(get_ltv(read_index()));
     set_ltv(name->ensureVariableCell(), index);
   }
 
   void op_create() {
-    size_t index = read_index();
+    size_t index = next_index();
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
     // fmt::print("create {}\n", _rep_(func));
     uint16_t nargs = read_u16();
@@ -646,7 +651,7 @@ struct loadltv {
   }
 
   void op_class() {
-    size_t index = read_index();
+    size_t index = next_index();
     Symbol_sp name = gc::As<Symbol_sp>(get_ltv(read_index()));
     set_ltv(cl__find_class(name, true, nil<T_O>()), index);
   }
@@ -790,6 +795,7 @@ struct loadltv {
     } else {
       _index_bytes = 8;
     }
+    _next_index = 0;
     _literals.assign(nobjs, unbound<T_O>());
   }
 

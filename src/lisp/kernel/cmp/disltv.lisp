@@ -97,6 +97,11 @@
 ;;  that may not make sense in the examining image, e.g. package refs.)
 (defvar *index-to-creator*)
 
+;; Index of the next created object.
+(defvar *next-index*)
+(defun next-index ()
+  (prog1 *next-index* (incf *next-index*)))
+
 (defun creator (index)
   (let ((inst (aref *index-to-creator* index)))
     (or inst
@@ -117,19 +122,19 @@
 (defgeneric %load-instruction (mnemonic stream))
 
 (defmethod %load-instruction ((mnemonic (eql 'nil)) stream)
-  (let ((index (read-index stream)))
+  (let ((index (next-index)))
     (dbgprint " (nil ~d)" index)
     (setf (creator index)
           (make-instance 'singleton-creator :prototype nil))))
 
 (defmethod %load-instruction ((mnemonic (eql 't)) stream)
-  (let ((index (read-index stream)))
+  (let ((index (next-index)))
     (dbgprint " (t ~d)" index)
     (setf (creator index)
           (make-instance 'singleton-creator :prototype t))))
 
 (defmethod %load-instruction ((mnemonic (eql 'cons)) stream)
-  (let ((index (read-index stream)))
+  (let ((index (next-index)))
     (dbgprint " (cons ~d)" index)
     (setf (creator index)
           (make-instance 'cons-creator))))
@@ -174,7 +179,7 @@
 (defun decode-packing (code) (decode-uaet code)) ; same for now
 
 (defmethod %load-instruction ((mnemonic (eql 'make-array)) stream)
-  (let* ((index (read-index stream)) (uaet-code (read-byte stream))
+  (let* ((index (next-index)) (uaet-code (read-byte stream))
          (uaet (decode-uaet uaet-code))
          (packing-code (read-byte stream))
          (packing-type (decode-packing packing-code))
@@ -248,7 +253,7 @@
     (make-instance 'setf-aref :array array :index index :value value)))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-hash-table)) stream)
-  (let* ((index (read-index stream)) (testcode (read-byte stream))
+  (let* ((index (next-index)) (testcode (read-byte stream))
          (test (ecase testcode
                  ((#b00) 'eq)
                  ((#b01) 'eql)
@@ -266,19 +271,19 @@
     (make-instance 'setf-gethash :hash-table ht :key key :value value)))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-sb64)) stream)
-  (let ((index (read-index stream)) (fix (read-sb64 stream)))
+  (let ((index (next-index)) (fix (read-sb64 stream)))
     (dbgprint " (make-sb64 ~d ~d)" index fix)
     (setf (creator index)
           (make-instance 'sb64-creator :prototype fix))))
 
 (defmethod %load-instruction ((mnemonic (eql 'find-package)) stream)
-  (let ((index (read-index stream)) (name (read-creator stream)))
+  (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (find-package ~d ~s)" index name)
     (setf (creator index)
           (make-instance 'package-creator :name name))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-bignum)) stream)
-  (let* ((index (read-index stream))
+  (let* ((index (next-index))
          (ssize (read-sb64 stream)) (result 0) (size (abs ssize)))
     (loop repeat size
           do (let ((word (read-ub64 stream)))
@@ -288,40 +293,40 @@
     (setf (creator index) (make-instance 'bignum-creator :prototype result))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-single-float)) stream)
-  (let ((index (read-index stream))
+  (let ((index (next-index))
         (float (ext:bits-to-single-float (read-ub32 stream))))
     (dbgprint " (make-single-float ~d ~e)" index float)
     (setf (creator index)
           (make-instance 'single-float-creator :prototype float))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-double-float)) stream)
-  (let ((index (read-index stream))
+  (let ((index (next-index))
         (float (ext:bits-to-double-float (read-ub64 stream))))
     (dbgprint " (make-double-float ~d ~e)" index float)
     (setf (creator index)
           (make-instance 'double-float-creator :prototype float))))
 
 (defmethod %load-instruction ((mnemonic (eql 'ratio)) stream)
-  (let ((index (read-index stream))
+  (let ((index (next-index))
         (num (read-creator stream)) (den (read-creator stream)))
     (dbgprint " (ratio ~d ~d ~d)" index num den)
     (setf (creator index)
           (make-instance 'ratio-creator :numerator num :denominator den))))
 
 (defmethod %load-instruction ((mnemonic (eql 'complex)) stream)
-  (let ((index (read-index stream))
+  (let ((index (next-index))
         (real (read-creator stream)) (imag (read-creator stream)))
     (dbgprint " (complex ~d ~s ~s)" index real imag)
     (setf (creator index)
           (make-instance 'complex-creator :realpart real :imagpart imag))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-symbol)) stream)
-  (let ((index (read-index stream)) (name (read-creator stream)))
+  (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (make-symbol ~d ~s)" index name)
     (setf (creator index) (make-instance 'symbol-creator :name name))))
 
 (defmethod %load-instruction ((mnemonic (eql 'intern)) stream)
-  (let ((index (read-index stream))
+  (let ((index (next-index))
         (pkg (read-creator stream)) (name (read-creator stream)))
     (dbgprint " (intern ~d ~s ~s)" index name pkg)
     (setf (creator index)
@@ -329,13 +334,13 @@
             :package pkg :name name))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-character)) stream)
-  (let ((index (read-index stream)) (char (code-char (read-ub32 stream))))
+  (let ((index (next-index)) (char (code-char (read-ub32 stream))))
     (dbgprint " (make-character ~d ~:c)" index char)
     (setf (creator index)
           (make-instance 'character-creator :prototype char))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-pathname)) stream)
-  (let ((index (read-index stream))
+  (let ((index (next-index))
         (host (read-creator stream)) (device (read-creator stream))
         (directory (read-creator stream)) (name (read-creator stream))
         (type (read-creator stream)) (version (read-creator stream)))
@@ -348,7 +353,7 @@
             :type type :version version))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-bytecode-function)) stream)
-  (let ((index (read-index stream))
+  (let ((index (next-index))
         (entry-point (read-ub32 stream))
         (size (if (and (= *load-major* 0) (< *load-minor* 8))
                   0
@@ -369,7 +374,7 @@
             :docstring docstring))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-bytecode-module)) stream)
-  (let ((index (read-index stream)) (len (read-ub32 stream)))
+  (let ((index (next-index)) (len (read-ub32 stream)))
     (dbgprint " (make-bytecode-module ~d ~d)" index len)
     (setf (creator index)
           (let ((lispcode (make-array len :element-type '(unsigned-byte 8))))
@@ -391,12 +396,12 @@
           :module module :literals literals))))
 
 (defmethod %load-instruction ((mnemonic (eql 'fdefinition)) stream)
-  (let ((index (read-index stream)) (name (read-creator stream)))
+  (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (fdefinition ~d ~s)" index name)
     (setf (creator index) (make-instance 'fdefinition-lookup :name name))))
 
 (defmethod %load-instruction ((mnemonic (eql 'funcall-create)) stream)
-  (let ((index (read-index stream)) (fun (read-creator stream))
+  (let ((index (next-index)) (fun (read-creator stream))
         (args (if (and (= *load-major* 0) (<= *load-minor* 4))
                   ()
                   (loop repeat (read-ub16 stream)
@@ -416,7 +421,7 @@
     (make-instance 'general-initializer :function fun :arguments args)))
 
 (defmethod %load-instruction ((mnemonic (eql 'find-class)) stream)
-  (let ((index (read-index stream)) (name (read-creator stream)))
+  (let ((index (next-index)) (name (read-creator stream)))
     (dbgprint " (find-class ~d ~s)" index name)
     (setf (creator index) (make-instance 'class-creator :name name))))
 
@@ -425,6 +430,7 @@
     (dbgprint " (init-object-array ~d)" nobjs)
     (setf *index-bytes* (max (ash 1 (1- (ceiling (integer-length nobjs) 8)))
                              1)
+          *next-index* 0
           *index-to-creator* (make-array nobjs :initial-element nil))
     (make-instance 'init-object-array :count nobjs)))
 
@@ -540,6 +546,7 @@
   (multiple-value-bind (*load-major* *load-minor*)
       (load-version stream)
     (loop with *index-bytes* = 1
+          with *next-index* = 0
           with ninsts = (read-ub64 stream)
           with *instructions* = (make-array ninsts)
           with *index-to-creator* = (make-array 0)
