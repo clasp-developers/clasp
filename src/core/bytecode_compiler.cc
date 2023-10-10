@@ -479,6 +479,16 @@ size_t Context::vcell_index(Symbol_sp name) const {
   return nind.unsafe_fixnum();
 }
 
+size_t Context::env_index() const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = (*literals)[i];
+    if (gc::IsA<EnvInfo_sp>(slit)) return i;
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(EnvInfo_O::make());
+  return nind.unsafe_fixnum();
+}
+
 size_t Context::closure_index(T_sp info) const {
   ComplexVector_T_sp closed = this->cfunction()->closed();
   for (size_t i = 0; i < closed->length(); ++i)
@@ -1137,6 +1147,8 @@ void Module_O::link_load(T_sp compile_info) {
       (*literals)[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
     else if (gc::IsA<VariableCellInfo_sp>(lit))
       (*literals)[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
+    else if (gc::IsA<EnvInfo_sp>(lit))
+      (*literals)[i] = nil<T_O>(); // the only environment we have
     else SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}",
                       _rep_(lit));
   }
@@ -1904,7 +1916,7 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
   }
   // default
   compile_form(fform, env, ctxt.sub_receiving(1));
-  ctxt.assemble1(vm_fdesignator, ctxt.literal_index(nil<T_O>()));
+  ctxt.assemble1(vm_fdesignator, ctxt.env_index());
 }
 
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {

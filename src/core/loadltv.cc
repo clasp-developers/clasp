@@ -50,6 +50,7 @@
 #define LTV_OP_VCELL 97
 #define LTV_OP_CLASS 98
 #define LTV_OP_INIT_OBJECT_ARRAY 99
+#define LTV_OP_ENVIRONMENT 100
 #define LTV_OP_ATTR 255
 
 #define LTV_DI_OP_FUNCTION 0
@@ -656,6 +657,12 @@ struct loadltv {
     set_ltv(cl__find_class(name, true, nil<T_O>()), index);
   }
 
+  void op_environment() {
+    // We don't support multiple FCGEs right now, so just use
+    // _the_ global environment, indicated by NIL.
+    set_ltv(nil<T_O>(), next_index());
+  }
+
   void attr_clasp_source_pos_info(uint32_t bytes) {
     Function_sp func = gc::As<Function_sp>(get_ltv(read_index()));
     T_sp path = get_ltv(read_index());
@@ -892,6 +899,9 @@ struct loadltv {
       break;
     case LTV_OP_INIT_OBJECT_ARRAY:
       op_init_object_array();
+      break;
+    case LTV_OP_ENVIRONMENT:
+      op_environment();
       break;
     case LTV_OP_ATTR:
       op_attribute();

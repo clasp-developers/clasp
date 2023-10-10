@@ -181,6 +181,9 @@
 (defclass vcell-lookup (creator)
   ((%name :initarg :name :reader name :type creator)))
 
+;;; And the "cell" for the loader environment.
+(defclass environment-lookup (creator) ())
+
 (defclass general-creator (vcreator)
   (;; Reference to a function designator to call to allocate the object,
    ;; e.g. a function made of the first return value from make-load-form.
@@ -324,6 +327,9 @@
 (defvar *fcell-coalesce*)
 ;;; And variable cells.
 (defvar *vcell-coalesce*)
+;;; Since there's only ever at most one environment cell, it's just
+;;; stored directly in this variable rather than a table.
+(defvar *environment-coalesce*)
 
 ;; Look up a value in the existing instructions.
 ;; On success returns the creator, otherwise NIL.
@@ -341,6 +347,8 @@
 (defun find-fcell (name) (values (gethash name *fcell-coalesce*)))
 (defun find-vcell (name) (values (gethash name *vcell-coalesce*)))
 
+(defun find-environment () *environment-coalesce*)
+
 ;;; List of instructions to be executed by the loader.
 ;;; In reverse.
 (defvar *instructions*)
@@ -356,7 +364,8 @@
   `(let ((*instructions* nil) (*creating* nil)
          (*coalesce* (make-hash-table)) (*oob-coalesce* (make-hash-table))
          (*fcell-coalesce* (make-hash-table :test #'equal))
-         (*vcell-coalesce* (make-hash-table)))
+         (*vcell-coalesce* (make-hash-table))
+         (*environment-coalesce* nil))
      ,@body))
 
 (defun find-constant (value)
@@ -386,6 +395,10 @@
 
 (defun add-vcell (key instruction)
   (setf (gethash key *vcell-coalesce*) instruction)
+  (add-instruction instruction))
+
+(defun add-environment (instruction)
+  (setf *environment-coalesce* instruction)
   (add-instruction instruction))
 
 (defgeneric add-constant (value))
@@ -743,6 +756,7 @@
     #+(or) ; obsolete as of v0.3
     (make-specialized-array 97 sind rank dims etype . elems)
     (init-object-array 99 ub64)
+    (environment 100)
     (attribute 255 name nbytes . data)))
 
 ;;; STREAM is a ub8 stream.
@@ -1090,6 +1104,9 @@
   (write-mnemonic 'vcell stream)
   (write-index (name inst) stream))
 
+(defmethod encode ((inst environment-lookup) stream)
+  (write-mnemonic 'environment stream))
+
 (defmethod encode ((inst general-creator) stream)
   (write-mnemonic 'funcall-create stream)
   (write-index (general-function inst) stream)
@@ -1241,6 +1258,10 @@
 
 (defmethod ensure-module-literal ((info cmp:variable-cell-info))
   (ensure-vcell (cmp:variable-cell-info/vname info)))
+
+(defmethod ensure-module-literal ((info cmp:env-info))
+  (or (find-environment)
+      (add-environment (make-instance 'environment-lookup))))
 
 (defgeneric process-debug-info (debug-info))
 
