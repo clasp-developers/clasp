@@ -698,6 +698,17 @@ argument was specialized.
 	     qualifiers specializers)))
   nil)
 
+(defun compile-method (method)
+  (let ((mf (method-function method)))
+    (if (typep mf '%method-function)
+        (let ((fmf (%mf-fast-method-function mf)))
+          (multiple-value-bind (new-fmf warningsp failurep)
+              (compile nil fmf)
+            (unless failurep
+              (setf (%mf-fast-method-function mf) new-fmf))
+            (values mf warningsp failurep)))
+        (values mf nil nil))))
+
 ;;; ----------------------------------------------------------------------
 ;;;                                                         with-accessors
 

@@ -68,6 +68,9 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
            (push (core:closure-ref definition i) cells))
          (values (apply #'core:make-closure csfun (nreverse cells))
                  warn fail))))
+    ((typep definition 'generic-function)
+     ;; TODO? Compile discriminator
+     (clos::compile-generic-function-methods definition))
     ((compiled-function-p definition) (values definition nil nil))
     ((functionp definition)
      (error "COMPILE doesn't know how to handle ~a definition"))

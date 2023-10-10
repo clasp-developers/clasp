@@ -281,7 +281,7 @@
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (core:defconstant-equal +%method-function-slots+
     '((fast-method-function :initarg :fmf :initform nil
-                            :reader %mf-fast-method-function)
+                            :accessor %mf-fast-method-function)
       (contf :initarg :contf :initform nil
              :reader %mf-contf))))
 

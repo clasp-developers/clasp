@@ -362,3 +362,15 @@ Not a valid documentation object ~A"
     (multiple-value-bind (req opt restvar keyflag) ; rest are irrelevant
         (core:process-lambda-list (generic-function-lambda-list gf) 'function)
       (values (car req) (if (or restvar keyflag) nil (+ (car req) (car opt)))))))
+
+(defun compile-generic-function-methods (gf)
+  (loop with overall-warningsp = nil
+        with overall-failurep = nil
+        for method in (generic-function-methods gf)
+        do (multiple-value-bind (_ warningsp failurep)
+               (compile-method method)
+             (declare (ignore _))
+             (setf overall-warningsp (or overall-warningsp warningsp)
+                   overall-failurep (or overall-failurep failurep)))
+        finally (return
+                  (values gf overall-warningsp overall-failurep))))
