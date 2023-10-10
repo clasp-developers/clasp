@@ -881,7 +881,8 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       break;
     }
     case vm_fdesignator: {
-      DBG_VM1("fdesignator");
+      uint8_t c = *(++pc); // ignored environment parameter
+      DBG_VM1("fdesignator" % PRIu8 % "\n", c);
       T_sp desig((gctools::Tagged)vm.pop(sp));
       Function_sp fun = coerce::calledFunctionDesignator(desig);
       vm.push(sp, fun.raw_());
@@ -1329,6 +1330,16 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     VariableCell_sp cell = gc::As_assert<VariableCell_sp>(cell_sp);
     T_sp value((gctools::Tagged)(vm.pop(sp)));
     cell->set_value(value);
+    pc++;
+    break;
+  }
+  case vm_fdesignator: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM1("long fdesignator %" PRIu16 "\n", n);
+    T_sp desig((gctools::Tagged)vm.pop(sp));
+    Function_sp fun = coerce::calledFunctionDesignator(desig);
+    vm.push(sp, fun.raw_());
     pc++;
     break;
   }

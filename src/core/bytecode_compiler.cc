@@ -1904,7 +1904,7 @@ void compile_fdesignator(T_sp fform, Lexenv_sp env, const Context ctxt) {
   }
   // default
   compile_form(fform, env, ctxt.sub_receiving(1));
-  ctxt.assemble0(vm_fdesignator);
+  ctxt.assemble1(vm_fdesignator, ctxt.literal_index(nil<T_O>()));
 }
 
 void compile_flet(List_sp definitions, List_sp body, Lexenv_sp env, const Context ctxt) {
