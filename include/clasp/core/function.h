@@ -367,6 +367,8 @@ FORWARD(GlobalBytecodeSimpleFun);
    // Used for bytecode debug info; see function.cc
    T_sp start() const;
    T_sp end() const;
+   // Used in loadltv.cc since functions may be named after they are made.
+   void set_trampoline(Pointer_sp trampoline);
  };
 
 

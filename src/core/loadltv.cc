@@ -611,12 +611,9 @@ struct loadltv {
     uint16_t nlocals = read_u16();
     uint16_t nclosed = read_u16();
     BytecodeModule_sp module = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
-    T_sp name = get_ltv(read_index());
-    T_sp lambda_list = get_ltv(read_index());
-    T_sp docstring = get_ltv(read_index());
-    FunctionDescription_sp fdesc = makeFunctionDescription(name, lambda_list, docstring, nil<T_O>(), nil<T_O>(), -1, -1, -1);
+    FunctionDescription_sp fdesc = makeFunctionDescription(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), -1, -1, -1);
     GlobalBytecodeSimpleFun_sp fun = core__makeGlobalBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
-                                                                       llvmo::cmp__compile_trampoline(name));
+                                                                       llvmo::cmp__compile_trampoline(nil<T_O>()));
     set_ltv(fun, index);
   }
 
@@ -689,6 +686,32 @@ struct loadltv {
     // We don't support multiple FCGEs right now, so just use
     // _the_ global environment, indicated by NIL.
     set_ltv(nil<T_O>(), next_index());
+  }
+
+  // FIXME: Have these fail gracefully if the byte count is wrong.
+  void attr_name(uint32_t bytes) {
+    T_sp named = get_ltv(read_index());
+    T_sp name = get_ltv(read_index());
+    if (gc::IsA<Function_sp>(named)) {
+      Function_sp fun = gc::As_unsafe<Function_sp>(named);
+      fun->setf_functionName(name);
+      if (gc::IsA<GlobalBytecodeSimpleFun_sp>(named))
+        gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(named)->set_trampoline(llvmo::cmp__compile_trampoline(name));
+    }
+  }
+
+  void attr_docstring(uint32_t bytes) {
+    T_sp function = get_ltv(read_index());
+    T_sp docstring = get_ltv(read_index());
+    if (gc::IsA<Function_sp>(function)) // could be extended to more types
+      gc::As_unsafe<Function_sp>(function)->setf_docstring(docstring);
+  }
+
+  void attr_lambda_list(uint32_t bytes) {
+    T_sp function = get_ltv(read_index());
+    T_sp lambda_list = get_ltv(read_index());
+    if (gc::IsA<Function_sp>(function))
+      gc::As_unsafe<Function_sp>(function)->setf_lambdaList(lambda_list);
   }
 
   void attr_clasp_source_pos_info(uint32_t bytes) {
@@ -808,7 +831,13 @@ struct loadltv {
   void op_attribute() {
     std::string name = (gc::As<String_sp>(get_ltv(read_index())))->get_std_string();
     uint32_t attrbytes = read_u32();
-    if (name == "clasp:source-pos-info") {
+    if (name == "name") {
+      attr_name(attrbytes);
+    } else if (name == "docstring") {
+      attr_docstring(attrbytes);
+    } else if (name == "lambda-list") {
+      attr_lambda_list(attrbytes);
+    } else if (name == "clasp:source-pos-info") {
       attr_clasp_source_pos_info(attrbytes);
     } else if (name == "clasp:module-debug-info") {
       attr_clasp_module_debug_info(attrbytes);

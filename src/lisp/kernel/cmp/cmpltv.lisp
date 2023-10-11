@@ -243,6 +243,21 @@
    ;; FIXME: Do this more cleanly.
    (%name :reader name :initarg :name :type creator)))
 
+(defclass name-attr (attribute)
+  ((%name :initform (ensure-constant "name"))
+   (%object :initarg :object :reader object :type creator)
+   (%objname :initarg :objname :reader objname :type creator)))
+
+(defclass docstring-attr (attribute)
+  ((%name :initform (ensure-constant "docstring"))
+   (%object :initarg :object :reader object :type creator)
+   (%docstring :initarg :docstring :reader docstring :type creator)))
+
+(defclass lambda-list-attr (attribute)
+  ((%name :initform (ensure-constant "lambda-list"))
+   (%function :initarg :function :reader ll-function :type creator)
+   (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)))
+
 #+clasp
 (defclass spi-attr (attribute)
   ((%name :initform (ensure-constant "clasp:source-pos-info"))
@@ -891,8 +906,7 @@
 	 (write-byte (logior #b10000000 (ldb (byte 6  6) cpoint)) stream)
 	 (write-byte (logior #b10000000 (ldb (byte 6  0) cpoint)) stream))
 	(t ; not allowed by RFC3629
-	 (error "Code point #x~x for character ~:c is out of range for UTF-8"
-		cpoint char))))
+	 (error "Code point #x~x is out of range for UTF-8" cpoint))))
 
 (defmethod encode ((inst array-creator) stream)
   (write-mnemonic 'make-array stream)
@@ -1166,9 +1180,6 @@
 (defclass bytefunction-creator (creator)
   ((%cfunction :initarg :cfunction :reader cfunction)
    (%module :initarg :module :reader module)
-   (%name :initarg :name :reader name :type creator)
-   (%lambda-list :initarg :lambda-list :reader lambda-list :type creator)
-   (%docstring :initarg :docstring :reader docstring :type creator)
    (%nlocals :initarg :nlocals :reader nlocals :type (unsigned-byte 16))
    (%nclosed :initarg :nclosed :reader nclosed :type (unsigned-byte 16))
    (%entry-point :initarg :entry-point :reader entry-point
@@ -1183,15 +1194,24 @@
            (make-instance 'bytefunction-creator
              :cfunction value
              :module (ensure-module (cmp:cfunction/module value))
-             :name (ensure-constant (cmp:cfunction/name value))
-             :lambda-list (ensure-constant
-                           (cmp:cfunction/lambda-list value))
-             :docstring (ensure-constant (cmp:cfunction/doc value))
              :nlocals (cmp:cfunction/nlocals value)
              :nclosed (length (cmp:cfunction/closed value))
              :entry-point (cmp:annotation/module-position
                            (cmp:cfunction/entry-point value))
              :size (cmp:cfunction/final-size value)))))
+    (add-instruction (make-instance 'name-attr
+                       :object inst
+                       :objname (ensure-constant
+                                 (cmp:cfunction/name value))))
+    (when (cmp:cfunction/doc value)
+      (add-instruction (make-instance 'docstring-attr
+                         :object inst
+                         :docstring (ensure-constant
+                                     (cmp:cfunction/doc value)))))
+    (add-instruction (make-instance 'lambda-list-attr
+                       :function inst
+                       :lambda-list (ensure-constant
+                                     (cmp:cfunction/lambda-list value))))
     #+clasp ; source info
     (let ((cspi core:*current-source-pos-info*))
       (add-instruction
@@ -1214,10 +1234,7 @@
   (write-b32 (size inst) stream)
   (write-b16 (nlocals inst) stream)
   (write-b16 (nclosed inst) stream)
-  (write-index (module inst) stream)
-  (write-index (name inst) stream)
-  (write-index (lambda-list inst) stream)
-  (write-index (docstring inst) stream))
+  (write-index (module inst) stream))
 
 ;;; Having this be a vcreator with a prototype is a slight abuse of notation,
 ;;; since what we actually create is a bytecode module, not a compiler module.
@@ -1394,6 +1411,21 @@
 (defmethod encode :before ((attr attribute) stream)
   (write-mnemonic 'attribute stream)
   (write-index (name attr) stream))
+
+(defmethod encode ((attr name-attr) stream)
+  (write-b32 (+ *index-bytes* *index-bytes*) stream)
+  (write-index (object attr) stream)
+  (write-index (objname attr) stream))
+
+(defmethod encode ((attr docstring-attr) stream)
+  (write-b32 (+ *index-bytes* *index-bytes*) stream)
+  (write-index (object attr) stream)
+  (write-index (docstring attr) stream))
+
+(defmethod encode ((attr lambda-list-attr) stream)
+  (write-b32 (+ *index-bytes* *index-bytes*) stream)
+  (write-index (ll-function attr) stream)
+  (write-index (lambda-list attr) stream))
 
 #+clasp
 (defmethod encode ((attr spi-attr) stream)

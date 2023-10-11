@@ -144,6 +144,10 @@ CL_DEFMETHOD T_sp GlobalBytecodeSimpleFun_O::end() const {
   return Integer_O::create(this->_EntryPcN + this->_BytecodeSize);
 }
 
+void GlobalBytecodeSimpleFun_O::set_trampoline(Pointer_sp trampoline) {
+  this->_Trampoline = (BytecodeTrampolineFunction)trampoline->ptr();
+}
+
 LocalSimpleFun_O::LocalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code ) : CodeSimpleFun_O(fdesc,code), _Entry(entry_point) {
   llvmo::validateEntryPoint( code, entry_point );
 };

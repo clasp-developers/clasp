@@ -359,19 +359,14 @@
                   0
                   (read-ub32 stream)))
         (nlocals (read-ub16 stream))
-        (nclosed (read-ub16 stream)) (module (read-creator stream))
-        (name (read-creator stream)) (lambda-list (read-creator stream))
-        (docstring (read-creator stream)))
-    (dbgprint " (make-bytecode-function ~d ~d ~d ~d ~d ~s ~s ~s ~s)"
-              index entry-point size nlocals nclosed module
-              name lambda-list docstring)
+        (nclosed (read-ub16 stream)) (module (read-creator stream)))
+    (dbgprint " (make-bytecode-function ~d ~d ~d ~d ~d ~s)"
+              index entry-point size nlocals nclosed module)
     (setf (creator index)
           (make-instance 'bytefunction-creator
             :entry-point entry-point :size size
             :nlocals nlocals :nclosed nclosed
-            :module module
-            :name name :lambda-list lambda-list
-            :docstring docstring))))
+            :module module))))
 
 (defmethod %load-instruction ((mnemonic (eql 'make-bytecode-module)) stream)
   (let ((index (next-index)) (len (read-ub32 stream)))
