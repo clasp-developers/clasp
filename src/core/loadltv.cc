@@ -202,6 +202,34 @@ struct loadltv {
     return converter.d;
   }
 
+  // Read a UTF-8 continuation byte or signal an error if invalid.
+  inline uint8_t read_continuation_byte() {
+    uint8_t byte = read_u8();
+    if (byte >> 6 == 0b10)
+      return byte & 0b111111;
+    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid continuation byte {:02x}", byte);
+  }
+
+  // Read a UTF-8 encoded character.
+  inline claspCharacter read_utf8() {
+    uint8_t head = read_u8();
+    if (head >> 7 == 0)
+      return head;
+    else if (head >> 5 == 0b110)
+      return (claspCharacter)(head & 0b11111) << 6
+        | read_continuation_byte();
+    else if (head >> 4 == 0b1110)
+      return (claspCharacter)(head & 0b1111) << 12
+        | (claspCharacter)read_continuation_byte() << 6
+        | read_continuation_byte();
+    else if (head >> 3 == 0b11110)
+      return (claspCharacter)(head & 0b111) << 18
+        | (claspCharacter)read_continuation_byte() << 12
+        | (claspCharacter)read_continuation_byte() << 6
+        | read_continuation_byte();
+    else SIMPLE_ERROR("Invalid UTF-8 in FASL: invalid header byte {:02x}", head);
+  }
+
   inline uint8_t read_opcode() { return read_u8(); }
 
   inline size_t read_index() {
@@ -385,7 +413,7 @@ struct loadltv {
       READ_ARRAY(SimpleBaseString_sp, read_u8(), clasp_make_character(read_u8()));
       break;
     case UAETCode::character:
-      READ_ARRAY(SimpleCharacterString_sp, read_u32(), clasp_make_character(read_u32()));
+      READ_ARRAY(SimpleCharacterString_sp, read_utf8(), clasp_make_character(read_utf8()));
       break;
     case UAETCode::single_float:
       READ_ARRAY(SimpleVector_float_sp, read_f32(), clasp_make_single_float(read_f32()));
