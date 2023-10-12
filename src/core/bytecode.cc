@@ -465,7 +465,7 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
         T_sp tobj((gctools::Tagged)lcc_args[i]);
         rest << tobj;
       }
-      vm.push(sp, rest.cons().raw_());
+      vm.setreg(fp, start, rest.cons().raw_());
       pc++;
       break;
     }
@@ -477,15 +477,7 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       uint8_t start = *(++pc);
       DBG_VM("vaslistify-rest-args %" PRIu8 "\n", start);
       auto theVaslist = vm.alloca_vaslist2(sp, lcc_args + start, lcc_nargs - start);
-#if 0
-      printf("%s:%d:%s About to dump vm.alloca_vaslst result\n", __FILE__, __LINE__, __FUNCTION__ );
-      dump_Vaslist_ptr(stdout,gctools::untag_vaslist<T_O*>(theVaslist));
-      Vaslist_sp vl((gctools::Tagged)theVaslist);
-      if ((*vl).nargs() >= 3 && (*vl).iarg(0) == kw::_sym_name && (*vl).iarg(2)==kw::_sym_name) {
-        core::core__gdb(nil<core::T_O>());
-      }
-#endif
-      vm.push(sp, theVaslist);
+      vm.setreg(fp, start, theVaslist);
       pc++;
       break;
     }
@@ -1137,7 +1129,7 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
       T_sp tobj((gctools::Tagged)lcc_args[i]);
       rest << tobj;
     }
-    vm.push(sp, rest.cons().raw_());
+    vm.setreg(fp, start, rest.cons().raw_());
     pc += 3;
     break;
   }
