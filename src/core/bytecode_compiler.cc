@@ -544,8 +544,6 @@ void Context::maybe_emit_make_cell(LexicalVarInfo_sp info) const { LexRefFixup_O
 
 void Context::maybe_emit_cell_ref(LexicalVarInfo_sp info) const { LexRefFixup_O::make(info->lex(), vm_cell_ref)->contextualize(*this); }
 
-// FIXME: This is probably a good candidate for a specialized
-// instruction.
 void Context::maybe_emit_encage(LexicalVarInfo_sp info) const { EncageFixup_O::make(info->lex())->contextualize(*this); }
 
 void Context::emit_lexical_set(LexicalVarInfo_sp info) const { LexSetFixup_O::make(info->lex())->contextualize(*this); }
@@ -767,23 +765,15 @@ void EncageFixup_O::emit(size_t position, SimpleVector_byte8_t_sp code) {
   size_t size = this->size();
   size_t index = this->lex()->frameIndex();
   switch (size) {
-  case 5: // FIXME: Use assemble_into?
-    (*code)[position] = vm_ref;
+  case 2: // FIXME: Use assemble_into?
+    (*code)[position] = vm_encell;
     (*code)[position + 1] = index;
-    (*code)[position + 2] = vm_make_cell;
-    (*code)[position + 3] = vm_set;
-    (*code)[position + 4] = index;
     break;
-  case 9:
+  case 4:
     (*code)[position] = vm_long;
-    (*code)[position + 1] = vm_ref;
+    (*code)[position + 1] = vm_encell;
     (*code)[position + 2] = index & 0xff;
     (*code)[position + 3] = index >> 8;
-    (*code)[position + 4] = vm_make_cell;
-    (*code)[position + 5] = vm_long;
-    (*code)[position + 6] = vm_set;
-    (*code)[position + 7] = index & 0xff;
-    (*code)[position + 8] = index >> 8;
     break;
   default:
     UNREACHABLE();
@@ -795,9 +785,9 @@ size_t EncageFixup_O::resize() {
   if (!this->lex()->indirectLexicalP())
     return 0;
   else if (index < 1 << 8)
-    return 5;
+    return 2;
   else if (index < 1 << 16)
-    return 9;
+    return 4;
   else
     SIMPLE_ERROR("Bytecode compiler limit reached: Fixup delta too large");
 }

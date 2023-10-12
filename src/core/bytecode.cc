@@ -896,6 +896,15 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
       pc++;
       break;
     }
+    case vm_encell: {
+      // abbreviation for ref N; make-cell; set N
+      uint8_t n = *(++pc);
+      DBG_VM1("encell %" PRIu8 "\n", n);
+      T_sp val((gctools::Tagged)(*(vm.reg(fp, n))));
+      vm.setreg(fp, n, Cons_O::create(val, nil<T_O>()).raw_());
+      pc++;
+      break;
+    }
     case vm_long: {
       // In a separate function to facilitate better icache utilization
       // by bytecode_vm (hopefully)
@@ -1342,6 +1351,15 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     T_O* fun = literals[n];
     vm.push(sp, fun);
     VM_RECORD_PLAYBACK(fun, "long called-fdefinition");
+    pc++;
+    break;
+  }
+  case vm_encell: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM1("encell %" PRIu16 "\n", n);
+    T_sp val((gctools::Tagged)(*(vm.reg(fp, n))));
+    vm.setreg(fp, n, Cons_O::create(val, nil<T_O>()).raw_());
     pc++;
     break;
   }
