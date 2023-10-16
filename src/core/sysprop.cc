@@ -35,11 +35,11 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(key area value);
+CL_NAME("GET-SYSPROP");
+CL_LAMBDA(value key area);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(put_sysprop - returns value)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
+CL_DEFUN_SETF T_sp core__put_sysprop(T_sp value, T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
   KeyValuePair *area_pair = sysprops->find(area);

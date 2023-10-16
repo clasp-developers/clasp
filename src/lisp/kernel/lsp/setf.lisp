@@ -374,7 +374,6 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 (defsetf elt setf-elt)
 (defsetf symbol-value set)
 (defsetf core:sharp-equal-wrapper-value core:setf-sharp-equal-wrapper-value)
-(defsetf get-sysprop put-sysprop)
 (defsetf nth (n l) (v) `(progn (rplaca (nthcdr ,n ,l) ,v) ,v))
 #+clos
 (progn
