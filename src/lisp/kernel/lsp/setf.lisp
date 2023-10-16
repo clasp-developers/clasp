@@ -373,7 +373,6 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 (defsetf sbit (array &rest indices) (value) `(setf (aref ,array ,@indices) ,value))
 (defsetf elt setf-elt)
 (defsetf symbol-value set)
-(defsetf core:sharp-equal-wrapper-value core:setf-sharp-equal-wrapper-value)
 (defsetf nth (n l) (v) `(progn (rplaca (nthcdr ,n ,l) ,v) ,v))
 #+clos
 (progn

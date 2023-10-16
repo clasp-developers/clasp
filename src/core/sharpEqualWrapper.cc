@@ -48,5 +48,11 @@ string SharpEqualWrapper_O::__repr__() const
   return ss.str();
 }
 
+CL_NAME("SHARP-EQUAL-WRAPPER-VALUE");
+DOCGROUP(clasp);
+CL_DEFUN_SETF T_sp core__setf_sharp_equal_wrapper_value(T_sp value, SharpEqualWrapper_sp wrapper) {
+  wrapper->set_sharp_equal_wrapper_value(value);
+  return value;
+}
 
 }; // namespace core

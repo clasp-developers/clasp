@@ -52,30 +52,25 @@ class SharpEqualWrapper_O : public General_O {
   T_sp   _Label;
  public:
   CL_DEFMETHOD T_sp sharp_equal_wrapper_value() const { return this->_Value; };
-  CL_DEFMETHOD T_sp setf_sharp_equal_wrapper_value(T_sp v) { this->_Value = v; return v;};
+  void set_sharp_equal_wrapper_value(T_sp v) { this->_Value = v;};
   string __repr__() const;
   
   SharpEqualWrapper_O(T_sp label) : _Value(_sym__PLUS_sharp_marker_PLUS_), _Label(label) {};
   virtual ~SharpEqualWrapper_O() {};
 };
 
-
- DOCGROUP(clasp)
-   inline CL_DEFUN SharpEqualWrapper_sp make_sharp_equal_wrapper(T_sp label)
+DOCGROUP(clasp)
+inline CL_DEFUN SharpEqualWrapper_sp make_sharp_equal_wrapper(T_sp label)
 {
   auto sew = gctools::GC<SharpEqualWrapper_O>::allocate(label);
   return sew;
 }
 
-
-
-
- CL_DOCSTRING("Return true if sharp-tag")
-   DOCGROUP(clasp)
-   CL_DEFUN inline bool core__sharp_equal_wrapper_p(T_sp o)
- {
+CL_DOCSTRING("Return true if sharp-tag")
+DOCGROUP(clasp)
+CL_DEFUN inline bool core__sharp_equal_wrapper_p(T_sp o) {
    return gc::IsA<SharpEqualWrapper_sp>(o);
- }
+}
 
 };
 
