@@ -553,9 +553,9 @@ CL_DEFUN void core__mdarray_dump(Array_sp a)
   }
 }
 
-CL_NAME("FILL-POINTER-SET");
+CL_NAME("FILL-POINTER");
 DOCGROUP(clasp);
-CL_DEFUN size_t core__fillPointerSet(Array_sp vector, size_t idx)
+CL_DEFUN_SETF size_t core__fillPointerSet(size_t idx, Array_sp vector)
 {
   unlikely_if (!vector->arrayHasFillPointerP()) noFillPointerError(core::_sym_fillPointerSet,vector);
   sequenceIndexInBounds(core::_sym_fillPointerSet,vector->arrayTotalSize(),idx);

@@ -376,7 +376,6 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 (defsetf core:sharp-equal-wrapper-value core:setf-sharp-equal-wrapper-value)
 (defsetf get-sysprop put-sysprop)
 (defsetf nth (n l) (v) `(progn (rplaca (nthcdr ,n ,l) ,v) ,v))
-(defsetf fill-pointer sys:fill-pointer-set)
 #+clos
 (progn
   (defsetf instance-ref instance-set)
