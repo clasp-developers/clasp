@@ -292,8 +292,7 @@
 (defun defstruct-class-writer-body (structure-name element-type location)
   (declare (ignore element-type))
   `(if (typep object ',structure-name)
-       (progn (si:instance-set object ,location new)
-              new)
+       (setf (si:instance-ref object ,location) new)
        (error 'type-error
               :datum object
               :expected-type ',structure-name)))
@@ -486,7 +485,8 @@
            (let ((class (load-time-value (list nil))))
              (or (car class)
                  (car (rplaca class (find-class ',structure-name))))))
-         (lambda (obj var loc) `(si:instance-set ,obj ,loc ,var))))
+         (lambda (obj var loc)
+           `(setf (si:instance-ref ,obj ,loc) ,var))))
       ((:print-function :print-object)
        (let ((obj (gensym "OBJ")) (stream (gensym "STREAM")))
          `(defmethod print-object ((,obj ,structure-name) ,stream)

@@ -112,12 +112,12 @@
 (defun reader-closure (index)
   (lambda (object)
     (declare (core:lambda-name reader-closure.lambda))
-    (si::instance-ref object index)))
+    (si:instance-ref object index)))
 
 (defun writer-closure (index)
   (lambda (value object)
     (declare (core:lambda-name writer-closure.lambda))
-    (si::instance-set object index value)))
+    (setf (si:instance-ref object index) value)))
 
 ;;; Loop through the entire class hierarchy making accessors.
 ;;; Some classes may be reachable from multiple superclasses, so we have to

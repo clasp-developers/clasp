@@ -131,7 +131,7 @@
                         ((initializerp name key-value-pairs)
                          (setf initform (getf key-value-pairs name))))
                when (si:sl-boundp initform)
-                 collect `(si::instance-set ,object ,index ,initform)))
+                 collect `(setf (si:instance-ref ,object ,index) ,initform)))
      (with-early-accessors (,slots)
        ,@body)))
 
@@ -155,7 +155,7 @@
                         ((initializerp name key-value-pairs)
                          (setf initform (getf key-value-pairs name))))
                when (si:sl-boundp initform)
-                 collect `(si::instance-set ,object ,index ,initform)))
+                 collect `(setf (si:instance-ref ,object ,index) ,initform)))
      (with-early-accessors (,slots)
        ,@body)))
 

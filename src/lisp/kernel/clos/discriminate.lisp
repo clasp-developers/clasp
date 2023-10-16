@@ -373,8 +373,8 @@
     (declare (ignore rest))
     (unless (>= (length arguments) 2)
       (error "BUG: SLOT-WRITE effective method has insufficient required parameters"))
-    (cond ((si:fixnump location)         ;
-           `(si:instance-set ,(second arguments) ,location ,(first arguments)))
+    (cond ((si:fixnump location)
+           `(setf (si:instance-ref ,(second arguments) ,location) ,(first arguments)))
           ((consp location)
            ;; class location
            ;; Note we don't actually need the instance.

@@ -374,15 +374,6 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 (defsetf elt setf-elt)
 (defsetf symbol-value set)
 (defsetf nth (n l) (v) `(progn (rplaca (nthcdr ,n ,l) ,v) ,v))
-#+clos
-(progn
-  (defsetf instance-ref instance-set)
-  (defsetf instance-class (instance) (class)
-    `(progn (instance-class-set ,instance ,class) ,class))
-  (defsetf instance-rack (instance) (new)
-    `(progn (instance-rack-set ,instance ,new) ,new))
-  (defsetf rack-ref (rack index) (value)
-    `(progn (rack-set ,rack ,index ,value) ,value)))
 
 (define-setf-expander getf (&environment env place indicator
                             &optional (default nil default-p))
