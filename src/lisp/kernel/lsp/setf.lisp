@@ -371,7 +371,6 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 
 (defsetf bit (array &rest indices) (value) `(setf (aref ,array ,@indices) ,value))
 (defsetf sbit (array &rest indices) (value) `(setf (aref ,array ,@indices) ,value))
-(defsetf elt setf-elt)
 (defsetf symbol-value set)
 (defsetf nth (n l) (v) `(progn (rplaca (nthcdr ,n ,l) ,v) ,v))
 

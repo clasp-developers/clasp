@@ -564,7 +564,7 @@ Optimizations are available for any of:
 #+(or)
 (progn
 (deftransform elt ((seq list) n) '(nth n seq))
-(deftransform core:setf-elt ((seq list) n value) '(setf (nth n seq) value))
+(deftransform (setf elt) (value (seq list) n) '(setf (nth n seq) value))
 )
 
 (deftransform reverse (((x list))) '(core:list-reverse x))
