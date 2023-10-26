@@ -1648,6 +1648,12 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     Label_sp begin_label = Label_O::make();
     // Bind the required arguments.
     context.assemble1(vm_bind_required_args, min_count);
+    List_sp svdecls = decls_for_vars(lreqs.cons(), declares);
+    if (svdecls.notnilp()) {
+      Label_sp debug_begin_label = Label_O::make();
+      debug_begin_label->contextualize(context);
+      context.push_debug_info(BytecodeDebugDecls_O::make(debug_begin_label, end_label, svdecls));
+    }
     ql::list debugbindings;
     ql::list debugdecls;
     ql::list sreqs; // required parameters that are special
@@ -1671,9 +1677,6 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     T_sp dbindings = debugbindings.cons();
     if (dbindings.notnilp())
       context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, dbindings));
-    List_sp vdecls = decls_for_vars(lreqs.cons(), declares);
-    if (vdecls.notnilp())
-      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, vdecls));
   }
   Lexenv_sp optkey_env = new_env;
   if (optional_count > 0) {
@@ -1686,7 +1689,16 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     ql::list opts;
     for (auto &it : optionals)
       opts << it._ArgTarget;
-    optkey_env = optkey_env->bind_vars(opts.cons(), context);
+    List_sp lopts = opts.cons();
+    optkey_env = optkey_env->bind_vars(lopts, context);
+    // Grab declarations. We do this here so that the b2b compiler can
+    // make variables with proper ignore/whatever declarations.
+    List_sp odecls = decls_for_vars(lopts, declares);
+    if (odecls.notnilp()) {
+      Label_sp begin_label = Label_O::make();
+      begin_label->contextualize(context);
+      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, odecls));
+    }
     // new_env has enough space for the optional arguments, but without the
     // variables actually bound, so that default forms can be compiled correctly
     new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(), optkey_env->blocks(), optkey_env->funs(), optkey_env->decls(),
@@ -1712,7 +1724,14 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     ql::list keyvars;
     for (auto &it : keys)
       keyvars << it._ArgTarget;
-    optkey_env = optkey_env->bind_vars(keyvars.cons(), context);
+    List_sp lkeyvars = keyvars.cons();
+    List_sp kdecls = decls_for_vars(lkeyvars, declares);
+    if (kdecls.notnilp()) {
+      Label_sp begin_label = Label_O::make();
+      begin_label->contextualize(context);
+      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, kdecls));
+    }
+    optkey_env = optkey_env->bind_vars(lkeyvars, context);
     new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(), optkey_env->blocks(), optkey_env->funs(), optkey_env->decls(),
                              optkey_env->frameEnd());
   }

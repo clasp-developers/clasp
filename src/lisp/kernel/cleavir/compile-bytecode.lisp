@@ -679,10 +679,11 @@
             for (name . index) in bindings
             for cellp = (consp index)
             for rindex = (if cellp (car index) index)
+            for ignore = (variable-ignore name annots)
             for arg = (make-instance 'bir:argument
                         :name name :function ifun)
             for var = (make-instance 'bir:variable
-                        :name name :ignore nil)
+                        :name name :ignore ignore)
             do (assert (= i rindex))
                (setf (aref locals i) (cons var cellp))
                (bind-variable var arg inserter annots)
