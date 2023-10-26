@@ -77,54 +77,6 @@
      (cons :keys (cmpref::bc-unsigned bytecode ip nbytes)))
     (t (cons :operand (cmpref::bc-unsigned bytecode ip nbytes)))))
 
-(defmacro do-instructions ((mnemonic args opip ip)
-                           (bytecode &key (start 0) end)
-                           &body body)
-  (let ((bsym (gensym "BYTECODE"))
-        (gend (gensym "END"))
-        (longp (gensym "LONGP"))
-        (op (gensym "OP")))
-    `(loop with ,bsym = ,bytecode
-           with ,ip = ,start
-           with ,longp = nil
-           with ,gend = ,(or end `(+ ,ip (length ,bsym)))
-           for ,op = (cmpref::decode-instr (aref ,bsym ,ip))
-           for ,mnemonic = (intern (string-upcase (first ,op)) "KEYWORD")
-           if (eql ,mnemonic :long)
-             do (setf ,longp t)
-           else
-             do (let ((,opip ,ip))
-                  (incf ,ip)
-                  (let ((,args
-                          (loop for argspec
-                                  in (if ,longp (fourth ,op) (third ,op))
-                                for nbytes = (logandc2 argspec
-                                                       cmpref::+mask-arg+)
-                                collect (next-arg argspec ,bsym ,opip ,ip
-                                                  nbytes)
-                                do (incf ,ip nbytes))))
-                    (declare (ignorable ,args ,ip))
-                    ,@body
-                    (setf ,longp nil)))
-           until (>= ,ip ,gend))))
-
-;;; FIXME: Should be encoded in *full-codes* probably.
-(defparameter *dynenv-instructions*
-  '(:push-values :append-values :pop-values :entry :catch-8 :catch-16
-    :special-bind :progv
-    ;; terminators as well
-    ;; these are necessary in case of multiple arguments
-    ;; we could track things to only do that if we need to, but
-    ;; extra blocks should be pretty harmless
-    :mv-call :mv-call-receive-one :mv-call-receive-fixed
-    :cdentry-close :catch-close :unbind))
-
-;;; FIXME: Also one for full-codes
-(defparameter *branch-instructions*
-  '(:jump-8 :jump-16 :jump-24
-    :jump-if-8 :jump-if-16 :jump-if-24
-    :jump-if-supplied-8 :jump-if-supplied-16))
-
 (defun bcfun/entry (bcfun)
   (core:global-bytecode-simple-fun/entry-pc-n bcfun))
 (defun bcfun/locals-size (bcfun)
@@ -1447,7 +1399,7 @@
     (assert (zerop (bt:function-entry-start function)))
     (setf (bir:start (bt:function-entry-extra function))
           (bt:block-entry-extra block))
-    (do-instructions (mnemonic args opip ip) (bytecode)
+    (core::do-instructions (mnemonic args opip ip) (bytecode)
       ;; Update annotations.
       ;; Note that we keep tighter annotations at the front.
       (setf (values *active-annotations* next-annotation-index
