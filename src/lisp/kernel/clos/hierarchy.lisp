@@ -283,7 +283,7 @@
     '((fast-method-function :initarg :fmf :initform nil
                             :accessor %mf-fast-method-function)
       (contf :initarg :contf :initform nil
-             :reader %mf-contf))))
+             :accessor %mf-contf))))
 
 
 ;;; ----------------------------------------------------------------------
