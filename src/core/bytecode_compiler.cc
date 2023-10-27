@@ -1704,6 +1704,34 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(), optkey_env->blocks(), optkey_env->funs(), optkey_env->decls(),
                              optkey_env->frameEnd());
   }
+  // &rest
+  if (restarg._ArgTarget.notnilp()) {
+    Symbol_sp rest = restarg._ArgTarget;
+    bool varestp = restarg.VaRest;
+    if (varestp) {
+      context.assemble1(vm_vaslistify_rest_args, max_count);
+    } else {
+      context.assemble1(vm_listify_rest_args, max_count);
+    }
+    context.assemble1(vm_set, new_env->frameEnd());
+    new_env = new_env->bind1var(rest, context);
+    optkey_env = optkey_env->bind1var(rest, context);
+    auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(rest));
+    if (special_binding_p(rest, specials, env)) {
+      context.assemble1(vm_ref, lvinfo->frameIndex());
+      context.emit_special_bind(rest);
+      ++special_binding_count;
+      new_env = new_env->add_specials(Cons_O::createList(rest));
+    } else {
+      context.maybe_emit_encage(lvinfo);
+      Label_sp begin_label = Label_O::make();
+      begin_label->contextualize(context);
+      context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(rest, lvinfo->lex()))));
+      List_sp rdecls = decls_for_var(rest, declares);
+      if (rdecls.notnilp())
+        context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, rdecls));
+    }
+  }
   if (key_flag.notnilp()) {
     // Generate code to parse the key args. As with optionals, we don't do
     // defaulting yet.
@@ -1754,34 +1782,6 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
         ++special_binding_count;
       if (supplied_special_p)
         ++special_binding_count;
-    }
-  }
-  // &rest
-  if (restarg._ArgTarget.notnilp()) {
-    Symbol_sp rest = restarg._ArgTarget;
-    bool varestp = restarg.VaRest;
-    if (varestp) {
-      context.assemble1(vm_vaslistify_rest_args, max_count);
-    } else {
-      context.assemble1(vm_listify_rest_args, max_count);
-    }
-    context.assemble1(vm_set, new_env->frameEnd());
-    new_env = new_env->bind1var(rest, context);
-    auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(rest));
-    if (special_binding_p(rest, specials, env)) {
-      context.assemble1(vm_ref, lvinfo->frameIndex());
-      context.emit_special_bind(rest);
-      ++special_binding_count;
-      new_env = new_env->add_specials(Cons_O::createList(rest));
-    } else {
-      context.maybe_emit_encage(lvinfo);
-      Label_sp begin_label = Label_O::make();
-      begin_label->contextualize(context);
-      context.push_debug_info(
-          BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(rest, lvinfo->lex()))));
-      List_sp rdecls = decls_for_var(rest, declares);
-      if (rdecls.notnilp())
-        context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, rdecls));
     }
   }
   // Generate defaulting code for key args, and special-bind them if necessary
