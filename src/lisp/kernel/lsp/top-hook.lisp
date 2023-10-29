@@ -8,9 +8,10 @@
           do (ignore-errors (funcall load-foreign-library name)))))
 
 (defun sys::load-extensions ()
-  (unless (some (lambda (feature)
-                  (member feature '(:ignore-extensions :ignore-extension-systems)))
-                *features*)
+  (when (and core:*extension-systems*
+             (notany (lambda (feature)
+                       (member feature '(:ignore-extensions :ignore-extension-systems)))
+                     *features*))
     (require :asdf)
     (loop with load-system = (or (ignore-errors (find-symbol "QUICKLOAD" :quicklisp))
                                  (find-symbol "LOAD-SYSTEM" :asdf))

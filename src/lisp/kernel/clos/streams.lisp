@@ -774,6 +774,7 @@
 (defun redefine-cl-functions ()
   "Some functions in CL package are expected to be generic. We make them so."
   (unless (and (not (member :eclasp *features*)) (member :staging *features*))
+    (provide '#:gray-streams)
     (loop with previous-lock = (si::package-lock "COMMON-LISP" nil)
           with gray-package = (find-package "GRAY")
           finally (si::package-lock "COMMON-LISP" previous-lock)
@@ -785,5 +786,14 @@
           (import cl-symbol gray-package)
           (export cl-symbol gray-package))
     nil))
+
+(pushnew :gray-streams-module *features*)
+
+(defun gray-streams-module-provider (name)
+  (when (string= name '#:gray-streams)
+    (redefine-cl-functions)
+    t))
+
+(pushnew 'gray-streams-module-provider ext:*module-provider-functions*)
 
 #+(or cclasp eclasp) (eval-when (:load-toplevel) (setf clos:*clos-booted* t))
