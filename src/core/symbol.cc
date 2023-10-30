@@ -346,7 +346,7 @@ FunctionCell_sp Symbol_O::ensureFunctionCell(Function_sp init) {
 FunctionCell_sp Symbol_O::ensureSetfFunctionCell() {
   FunctionCell_sp existing = setfFunctionCell();
   if (existing.unboundp()) {
-    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr());
+    FunctionCell_sp n = FunctionCell_O::make(Cons_O::createList(cl::_sym_setf, this->asSmartPtr()));
     if (this->_SetfFunction.compare_exchange_strong(existing, n, std::memory_order_relaxed))
       return n;
     else
@@ -358,7 +358,7 @@ FunctionCell_sp Symbol_O::ensureSetfFunctionCell() {
 FunctionCell_sp Symbol_O::ensureSetfFunctionCell(Function_sp init) {
   FunctionCell_sp existing = setfFunctionCell();
   if (existing.unboundp()) {
-    FunctionCell_sp n = FunctionCell_O::make(this->asSmartPtr(), init);
+    FunctionCell_sp n = FunctionCell_O::make(Cons_O::createList(cl::_sym_setf, this->asSmartPtr()), init);
     if (this->_SetfFunction.compare_exchange_strong(existing, n, std::memory_order_relaxed))
       return n;
     else
