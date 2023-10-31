@@ -5,11 +5,11 @@
 ;;;;   4. src/ - C/C++ dependencies for iclasp
 ;;;;   5. extensions/ - extensions and their dependencies
 ((:name :ansi-test
-  :repository "https://gitlab.common-lisp.net/ansi-test/ansi-test.git"
+  :repository "https://github.com/clasp-developers/ansi-test.git"
   :directory "dependencies/ansi-test/"
   :branch "master")
  (:name :cl-bench
-  :repository "https://gitlab.common-lisp.net/ansi-test/cl-bench.git"
+  :repository "https://github.com/clasp-developers/cl-bench.git"
   :directory "dependencies/cl-bench/"
   :branch "master")
  (:name :cl-who
@@ -37,7 +37,7 @@
   :directory "src/lisp/kernel/contrib/Acclimation/"
   :commit "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
  (:name :alexandria
-  :repository "https://gitlab.common-lisp.net/alexandria/alexandria.git"
+  :repository "https://github.com/clasp-developers/alexandria.git"
   :directory "src/lisp/kernel/contrib/alexandria/"
   :commit "v1.4")
  (:name :anaphora
@@ -66,7 +66,7 @@
   :commit "a4c5ad600425842e8b6233b1fa22610ffcd874c3"
   :extension :cando)
  (:name :trivial-utf-8
-  :repository "https://gitlab.common-lisp.net/trivial-utf-8/trivial-utf-8.git"
+  :repository "https://github.com/clasp-developers/trivial-utf-8.git"
   :directory "src/lisp/kernel/contrib/trivial-utf-8/"
   :commit "6ca9943588cbc61ad22a3c1ff81beb371e122394"
   :extension :cando)
@@ -201,7 +201,7 @@
   :directory "src/lisp/kernel/contrib/usocket/"
   :commit "7ad6582cc1ce9e7fa5931a10e73b7d2f2688fa81")
  (:name :asdf
-  :repository "https://gitlab.common-lisp.net/yitzchak/asdf.git"
+  :repository "https://github.com/clasp-developers/asdf.git"
   :directory "src/lisp/modules/asdf/"
   :branch "add-clasp-bytecode-support")
  (:name :mps
