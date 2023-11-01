@@ -258,7 +258,7 @@ std::string Library_O::__repr__() const {
 
 void Library_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
-    printf("%s:%d:%s for Library_O - resetting pointers for DWARFContext - make sure this works\n", __FILE__, __LINE__, __FUNCTION__ );
+//    printf("%s:%d:%s for Library_O - resetting pointers for DWARFContext - make sure this works\n", __FILE__, __LINE__, __FUNCTION__ );
     this->_MemoryBuffer = unbound<MemoryBuffer_O>();
     this->_ObjectFile.release();
     this->_DWARFContext = unbound<DWARFContext_O>();
