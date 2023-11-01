@@ -1195,13 +1195,13 @@ void Module_O::link_load(T_sp compile_info) {
   // and install the resulting simple funs.
   // We can only do native compilations after the module is
   // fully realized above.
-  if (core::_sym_STARbytecode_autocompileSTAR->symbolValue().notnilp()
-      && cl::_sym_compile->fboundp()) {
+  if (_sym_STARautocompile_hookSTAR->boundP()
+      && _sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
     for (T_sp tfun : *cfunctions) {
       Cfunction_sp cfun = gc::As_assert<Cfunction_sp>(tfun);
       GlobalBytecodeSimpleFun_sp fun = cfun->info();
       if (btb_bcfun_p(fun, debug_info)) {
-        T_sp nat = eval::funcall(cl::_sym_compile, nil<T_O>(), fun);
+        T_sp nat = eval::funcall(_sym_STARautocompile_hookSTAR->symbolValue(), fun, nil<T_O>());
         fun->setSimpleFun(gc::As_assert<SimpleFun_sp>(nat));
       }
     }

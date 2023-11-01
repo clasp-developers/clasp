@@ -585,10 +585,14 @@ struct loadltv {
     FunctionDescription_sp fdesc = makeFunctionDescription(name, lambda_list, docstring, nil<T_O>(), nil<T_O>(), -1, -1, -1);
     GlobalBytecodeSimpleFun_sp fun = core__makeGlobalBytecodeSimpleFun(fdesc, module, nlocals, nclosed, entry_point, final_size,
                                                                        llvmo::cmp__compile_trampoline(name));
-    if (core::_sym_STARbytecode_autocompileSTAR->symbolValue().notnilp()
-        && cl::_sym_compile->fboundp()
-        && comp::btb_bcfun_p(fun, gc::As<SimpleVector_sp>(module->debugInfo()))) {
-      T_sp nfun = eval::funcall(cl::_sym_compile, nil<T_O>(), fun);
+    if (comp::_sym_STARautocompile_hookSTAR->boundP()
+        && comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()
+        // Not sure exactly how it happens that we get here with
+        // an unfinished module. From the bcfuns in the debug info,
+        // maybe? Maybe.
+        && gc::IsA<SimpleVector_sp>(module->debugInfo())
+        && comp::btb_bcfun_p(fun, gc::As_unsafe<SimpleVector_sp>(module->debugInfo()))) {
+      T_sp nfun = eval::funcall(comp::_sym_STARautocompile_hookSTAR->symbolValue(), fun, nil<T_O>());
       fun->setSimpleFun(gc::As<SimpleFun_sp>(nfun));
     }
     set_ltv(fun, index);

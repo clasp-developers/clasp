@@ -139,7 +139,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARuseParallelBuildSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseBuildForkRedirectSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_generate_cstSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_cst_resultSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARbytecode_autocompileSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, arguments);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_valuesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
@@ -1081,7 +1080,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   cl::_sym_arrayDimensionLimit->defconstant(make_fixnum(MOST_POSITIVE_FIXNUM));
   cl::_sym_arrayTotalSizeLimit->defconstant(make_fixnum(MOST_POSITIVE_FIXNUM));
   core::_sym_STARpollTicksPerGcSTAR->defparameter(make_fixnum(POLL_TICKS_PER_GC));
-  core::_sym_STARbytecode_autocompileSTAR->defparameter(nil<T_O>());
   comp::_sym_STARlowLevelTraceSTAR->defparameter(nil<T_O>());
   comp::_sym_STARlowLevelTracePrintSTAR->defparameter(nil<T_O>());
   comp::_sym_STARsave_module_for_disassembleSTAR->defparameter(nil<core::T_O>());
