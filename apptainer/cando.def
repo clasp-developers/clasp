@@ -17,14 +17,12 @@ From: ubuntu:lunar
     bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/cando/miniconda3
     rm -rf Miniconda3-latest-Linux-x86_64.sh
     export PATH="/home/cando/miniconda3/bin:${PATH}"
-    conda install -y -c conda-forge jupyterlab ambertools
-    HOME=/home/cando cando-user-install
+    conda install -y -c conda-forge jupyterlab sidecar ambertools
     apt-get install -y -o Dpkg::Options::="--force-overwrite" emacs
     chmod -R ugo+rw /home/cando/
 
 %environment
     export PATH="/home/cando/miniconda3/bin:${PATH}"
     export AMBERHOME=/home/cando/miniconda3
-    export CLASP_QUICKLISP_DIRECTORY=/home/cando/quicklisp/
 
 
