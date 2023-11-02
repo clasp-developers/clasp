@@ -1473,11 +1473,7 @@
          (bytecode (core:bytecode-module/bytecode bytecode-module))
          (literals (core:bytecode-module/literals bytecode-module))
          (functions (bytecode-module/functions bytecode-module))
-         ;; bit circuitous to work around a bug in compile-file that
-         ;; doesn't maintain identities of module bcfuns in the
-         ;; debug info. FIXME
-         (fpos (position (bcfun/entry function) functions
-                         :key #'bcfun/entry))
+         (fpos (position function functions))
          (annotations
            (core:bytecode-module/debug-info bytecode-module))
          (*closures* nil))
