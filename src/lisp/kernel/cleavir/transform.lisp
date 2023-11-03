@@ -301,6 +301,10 @@ Optimizations are available for any of:
                (declare (ignorable ,@',ignorable))
                ,,bodysym)))))))
 
+(defmacro deftransform-type-predicate (name type)
+  `(progn (deftransform ,name (((object ,type))) 't)
+          (deftransform ,name (((object (not ,type)))) 'nil)))
+
 ;;;
 
 (defmethod cleavir-bir-transformations:generate-type-check-function
@@ -320,6 +324,10 @@ Optimizations are available for any of:
 ;;;
 ;;; (5) DATA AND CONTROL FLOW
 
+(deftransform-type-predicate functionp function)
+
+(deftransform-type-predicate compiled-function-p compiled-function)
+
 (deftransform equal (((x number) (y t))) '(eql x y))
 (deftransform equal (((x t) (y number))) '(eql x y))
 (deftransform equalp (((x number) (y number))) '(= x y))
@@ -332,7 +340,32 @@ Optimizations are available for any of:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; (10) SYMBOLS
+
+(deftransform-type-predicate symbolp symbol)
+(deftransform-type-predicate keywordp keyword)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (11) PACKAGES
+
+(deftransform-type-predicate packagep package)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; (12) NUMBERS
+
+(deftransform-type-predicate numberp number)
+(deftransform-type-predicate complexp complex)
+(deftransform-type-predicate realp real)
+(deftransform-type-predicate rationalp rational)
+(deftransform-type-predicate floatp float)
+(deftransform-type-predicate core:single-float-p single-float)
+(deftransform-type-predicate core:double-float-p double-float)
+(deftransform-type-predicate integerp integer)
+(deftransform-type-predicate core:fixnum fixnum)
+
+(deftransform-type-predicate random-state-p random-state)
 
 (macrolet ((define-two-arg-f (name)
              `(progn
@@ -463,7 +496,25 @@ Optimizations are available for any of:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; (13) CHARACTERS
+
+(define-deriver characterp (object)
+  (derive-type-predicate object 'character *clasp-system*))
+
+(deftransform standard-char-p (((object standard-char))) 't)
+(deftransform standard-char-p (((object (and character (not standard-char)))))
+  'nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; (14) CONSES
+
+(deftransform consp (((x cons))) 't)
+(deftransform consp (((x atom))) 'nil)
+(deftransform atom (((o atom))) 't)
+(deftransform atom (((o cons))) 'nil)
+
+(deftransform-type-predicate listp list)
 
 (deftransform length (((x null))) 0)
 (deftransform length (((x cons))) '(core:cons-length x))
@@ -471,6 +522,9 @@ Optimizations are available for any of:
   `(if (null x)
        0
        (core:cons-length x)))
+
+(deftransform-type-predicate endp null)
+(deftransform-type-predicate null null)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -549,12 +603,26 @@ Optimizations are available for any of:
 (deftransform array-dimension (((arr (simple-array * (*))) (dimension (eql 0))))
   '(length arr))
 
+(deftransform-type-predicate arrayp array)
+
+(deftransform-type-predicate vectorp vector)
+(deftransform vectorp (((o array))) '(eql (array-rank o) 1))
+
+(deftransform-type-predicate bit-vector-p bit-vector)
+(deftransform-type-predicate simple-bit-vector-p simple-bit-vector)
+
+(deftransform-type-predicate core:data-vector-p core:abstract-simple-vector)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (16) STRINGS
 
+(deftransform-type-predicate simple-string-p simple-string)
+
 (deftransform string (((x symbol))) '(symbol-name x))
 (deftransform string (((x string))) '(progn x))
+
+(deftransform-type-predicate stringp string)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -569,6 +637,12 @@ Optimizations are available for any of:
 
 (deftransform reverse (((x list))) '(core:list-reverse x))
 (deftransform nreverse (((x list))) '(core:list-nreverse x))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (18) HASH TABLES
+
+(deftransform-type-predicate hash-table-p core:hash-table-base)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
