@@ -8,7 +8,7 @@ From: ubuntu:lunar
     echo 'en_US.UTF-8 UTF-8' >/etc/locale.gen
     locale-gen
     cd /mnt
-    ./koga --llvm-config=/usr/lib/llvm-16/bin/llvm-config --extensions=cando,seqan-clasp --build-path=build-apptainer/
+    ./koga --llvm-config=/usr/lib/llvm-16/bin/llvm-config --extensions=cando --build-path=build-apptainer/
     ninja -C build-apptainer
     ninja -C build-apptainer install
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
