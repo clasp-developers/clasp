@@ -574,3 +574,17 @@
            (index (in (fifth (bir:inputs inst))))
            (addr (%vector-element-address vec etype index)))
       (cmp:irc-cmpxchg addr old new :order (cmp::order-spec->order order)))))
+
+;;; Type tests
+
+(macrolet ((def-simple-predicate (name mask tag)
+             `(deftprimop ,name (:object) (inst)
+                (assert (= (length (bir:inputs inst)) 1))
+                (cmp:tag-check-cond (in (first (bir:inputs inst)))
+                                    ,mask ,tag))))
+  (def-simple-predicate core:fixnump cmp:+fixnum-mask+ cmp:+fixnum00-tag+)
+  (def-simple-predicate consp cmp:+immediate-mask+ cmp:+cons-tag+)
+  (def-simple-predicate characterp cmp:+immediate-mask+ cmp:+character-tag+)
+  (def-simple-predicate core:single-float-p
+    cmp:+immediate-mask+ cmp:+single-float-tag+)
+  (def-simple-predicate core:generalp cmp:+immediate-mask+ cmp:+general-tag+))

@@ -140,6 +140,11 @@
 #+(or)
 (deftransform symbol-value symbol-value symbol)
 
+(deftransform core:generalp core:generalp t)
+
+(deftransform core:fixnump core:fixnump t)
+(deftransform core:single-float-p core:single-float-p t)
+
 (deftransform core:to-single-float core::double-to-single double-float)
 (deftransform core:to-single-float core::fixnum-to-single fixnum)
 (deftransform core:to-double-float core::single-to-double single-float)
@@ -276,8 +281,11 @@
 
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 
+(deftransform characterp characterp t)
+
 (deftransform length core::vector-length (simple-array * (*)))
 
+(deftransform consp consp t)
 (deftransform car cleavir-primop:car cons)
 (deftransform cdr cleavir-primop:cdr cons)
 (deftransform rplaca cleavir-primop:rplaca cons t)
