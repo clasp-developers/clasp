@@ -1989,7 +1989,6 @@ public:
   static APInt_sp makeAPInt64(core::Integer_sp val);
 
 public:
-  string toString(int radix, bool isigned) const;
   core::Integer_sp toInteger(bool issigned) const;
   APInt_O() : Base(){};
   ~APInt_O(){};

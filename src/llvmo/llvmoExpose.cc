@@ -2387,11 +2387,10 @@ namespace llvmo {
 ;
 
 
-CL_LISPIFY_NAME("toString");
-CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
+__attribute__((noinline))
+CL_DEFUN string llvm_sys__apint_to_string(APInt_sp api, int radix, bool isigned ) {
   llvm::SmallString<256> istr;
-  printf("%s:%d:%s converting %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(this->asSmartPtr()).c_str() );
-  this->_value._value.toString(istr,radix, isigned);
+  api->_value._value.toString(istr,radix, isigned);
   return istr.str().str();
 }
 

@@ -823,6 +823,15 @@ CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(co
   return Values(translate::to_object<clang::tooling::JSONCompilationDatabase*,translate::adopt_pointer>::convert(result.release()), core::SimpleBaseString_O::make(ErrorMessage));
 }
 
+CL_DEFUN core::T_sp ast_tooling__build_asts(clang::tooling::ClangTool& tool) {
+  std::vector<std::unique_ptr<clang::ASTUnit>> ASTs;
+  tool.buildASTs(ASTs);
+  ql::list ll;
+  for (int i(0), iEnd(ASTs.size()); i < iEnd; ++i) {
+    ll << clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::make_wrapper(std::move(ASTs[i]), reg::registered_class<clang::ASTUnit>::id);
+  }
+  return ll.result();
+}
 
 
 void initialize_clangTooling() {
@@ -908,6 +917,7 @@ void initialize_clangTooling() {
         //            .  def("addArgumentsAdjuster",&clang::tooling::ClangTool::addArgumentsAdjuster)
         .def("appendArgumentsAdjuster", &clang::tooling::ClangTool::appendArgumentsAdjuster)
         .def("clangToolRun", &clang::tooling::ClangTool::run);
+#if 0
     m.def("buildASTs", +[](clang::tooling::ClangTool& tool ){
           std::vector<std::unique_ptr<clang::ASTUnit>> ASTs;
           tool.buildASTs(ASTs);
@@ -917,6 +927,7 @@ void initialize_clangTooling() {
           }
           return ll.result();
         });
+#endif
     class_<clang::tooling::Replacement>(m,"Replacement")
         .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, llvm::StringRef>())
         .def("toString", &clang::tooling::Replacement::toString)
