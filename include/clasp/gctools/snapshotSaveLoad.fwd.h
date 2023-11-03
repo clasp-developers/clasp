@@ -31,7 +31,9 @@ struct snapshot_save_load_init_s {
            this->_clientEnd-this->_clientStart);
   }
 };
-  
+
+
+
 };
 
 

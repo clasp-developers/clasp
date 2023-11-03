@@ -113,6 +113,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
   stringstream nm_cmd;
   uintptr_t textRegionStart = 0;
   bool gotSearchSymbol = false;
+  size_t missedSearchSymbols = 0;
   std::string searchSymbol;
   uintptr_t searchAddress = 0;
   uintptr_t search_dlsym = 0;
@@ -225,10 +226,13 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
       // now fullname contains the full name of the symbol - including any @@ suffix
       // name will contain the name to the end or to the first '@'
       // version will point into fullname starting at the first '@' or NULL
+#if 0
+      // We don't worry about libraries and versions right now so skip this test
+      // It doesn't work on all systems anyway
       // We should check that version is a library version that we accept
       if (version) {
         if (strncmp(version,"@@LLVM_",7)!=0) {
-          printf("%s:%d:%s We encountered a symbol that does not have the correct version \"@@LLVM_xxx\" - it has \"%s\" - we need to generalize this version test\n", __FILE__, __LINE__, __FUNCTION__, version );
+          printf("%s:%d:%s We encountered a symbol that does not match the expected library/version \"@@LLVM_xxx\"\n  - it has \"%s\" - we need to generalize this version test\n - the symbol is: %s\n", __FILE__, __LINE__, __FUNCTION__, version, fullname );
         } else {
           const char* versionNumStr = version+7; // advance to the number of @@LLVM_number
           int versionNum = atoi(versionNumStr);
@@ -238,6 +242,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
           }
         } // fall through because we don't worry about versions right now
       }
+#endif
       std::string sname(name);
       bool useSymbol = false;
       if (type == 't' ||
@@ -280,9 +285,13 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
 #endif
           search_dlsym = (uintptr_t)dlsym( RTLD_DEFAULT, realSearchSymbol.c_str() );
           if (search_dlsym==0) {
-            if (fout) fprintf( fout, "# Could not find address of \"%s\" with dlsym!!!\n", realSearchSymbol.c_str() );
-            printf("%s:%d:%s Could not find address of \"%s\" with dlsym - searching for next symbol to anchor library\n", __FILE__, __LINE__, __FUNCTION__, realSearchSymbol.c_str() );
             gotSearchSymbol = false; // try again
+            missedSearchSymbols++;
+            if (missedSearchSymbols>10) {
+              // If we miss more than 10 search symbols then start complaining
+              if (fout) fprintf( fout, "# Could not find address of \"%s\" with dlsym!!!\n", realSearchSymbol.c_str() );
+              printf("%s:%d:%s Could not find address of \"%s\" with dlsym - searching for next symbol to anchor library\n", __FILE__, __LINE__, __FUNCTION__, realSearchSymbol.c_str() );
+            }
           } else {
             loadAddress = (search_dlsym - searchAddress); // calculate where library is loaded
             gotLoadAddress = true;

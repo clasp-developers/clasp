@@ -84,7 +84,11 @@ Options:
       Print version
   -s, --verbose
       Print more info while booting
-  -y, --snapshot-symbols <file>
+  -y, --snapshot-symbols
+      Check symbols while starting up and verify that snapshot save will
+      work. The symbols can be recovered at runtime calling by
+      (core:mangled-symbol-names <stream>).
+  -z, --snapshot-symbols-save <file>
       Accumulate symbols while starting up and verify that snapshot save will
       work. The symbols can be recovered at runtime calling by
       (core:mangled-symbol-names <stream>). They are written out to the <file>
@@ -270,7 +274,7 @@ void CommandLineOptions::printVersion() {
 void process_clasp_arguments(CommandLineOptions *options) {
   std::set<std::string> parameter_required = {
       "-i",          "--image", "--snapshot", "--type",   "-L",     "--llvm-debug", "-d", "--describe",         "-a",
-      "--addresses", "-e",      "--eval",     "-l",       "--load", "--script",     "-y", "--snapshot-symbols", "--rc",
+      "--addresses", "-e",      "--eval",     "-l",       "--load", "--script",     "-z", "--snapshot-symbols-save", "--rc",
       "-S",          "--seed",  "-f",         "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
     if (parameter_required.find(*arg) != parameter_required.end() && (arg + 1) == end) {
@@ -313,7 +317,10 @@ void process_clasp_arguments(CommandLineOptions *options) {
     } else if (*arg == "-w" || *arg == "--wait") {
       options->_PauseForDebugger = true;
     } else if (*arg == "-y" || *arg == "--snapshot-symbols") {
-      options->_ExportedSymbolsAccumulate = true;
+      options->_ExportedSymbolsCheck = true;
+    } else if (*arg == "-z" || *arg == "--snapshot-symbols-save") {
+      options->_ExportedSymbolsCheck = true;
+      options->_ExportedSymbolsSave = true;
       options->_ExportedSymbolsFilename = *++arg;
     } else if (*arg == "-m" || *arg == "--disable-mpi") {
       options->_DisableMpi = true;
@@ -415,7 +422,12 @@ void process_clasp_arguments(CommandLineOptions *options) {
 
 CommandLineOptions::CommandLineOptions(int argc, const char *argv[])
     : _ProcessArguments(process_clasp_arguments), _DisableMpi(false), _AddressesP(false), _StartupType(DEFAULT_STARTUP_TYPE),
-      _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0),
+      _FreezeStartupType(false),
+      _HasDescribeFile(false),
+      _StartupFile(""),
+      _ExportedSymbolsCheck(false),
+      _ExportedSymbolsSave(false),
+      _RandomNumberSeed(0),
       _NoInform(false), _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false)
     , _SilentStartup(true)
     , _GenerateTrampolines(false)

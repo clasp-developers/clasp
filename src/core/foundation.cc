@@ -1645,16 +1645,7 @@ std::set<uintptr_t> global_addresses;
 snapshotSaveLoad::SymbolLookup *global_SymbolLookup = NULL;
 
 void maybe_register_symbol_using_dladdr_ep(void *functionPointer, size_t size, const std::string &name, size_t arityCode) {
-#if 0
-  if (name=="BUILD-ASTS") {
-    printf("%s:%d:%s Registering BUILD-ASTS function with %s:%lu functionPointer = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), arityCode, functionPointer );
-  } else if (name=="unkfunc" || name=="namenil") {
-    printf("%s:%d:%s Registering function with %s:%lu functionPointer = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), arityCode, functionPointer );
-  } else {
-    printf("%s:%d:%s name = |%s:%lu|  functionPointer = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), arityCode, functionPointer );
-  }
-#endif
-  if (core::global_options->_ExportedSymbolsAccumulate) {
+  if (core::global_options->_ExportedSymbolsCheck) {
     if (!global_SymbolLookup) {
       global_SymbolLookup = new snapshotSaveLoad::SymbolLookup();
       global_SymbolLookup->addAllLibraries();
@@ -1672,16 +1663,19 @@ void maybe_register_symbol_using_dladdr_ep(void *functionPointer, size_t size, c
 #endif
       bool system_dladdr_had_problem = false;
       if (ret == 0) {
-        printf("%s:%d %lu/%lu FAIL system dladdr returned 0x0 for %s\n", __FILE__, __LINE__,
-               (global_pointerCount - global_goodPointerCount), global_pointerCount, name.c_str());
+        printf("%s:%d Out of %lu pointers, #%lu FAIL - system dladdr returned 0x0 for %s\n", __FILE__, __LINE__,
+               global_pointerCount, (global_pointerCount - global_goodPointerCount), name.c_str());
         system_dladdr_had_problem = true;
       } else if (!info.dli_sname) {
-        printf("%s:%d %lu/%lu FAIL system dladdr could not find a symbol to match %p of %s\n", __FILE__, __LINE__,
-               (global_pointerCount - global_goodPointerCount), global_pointerCount, functionPointer, name.c_str());
+        printf("%s:%d Out of %lu pointers, #%lu FAIL - system dladdr could not find a symbol to match %p of %s : dli_fname = %p dli_fbase = %p dli_saddr = %p\n", __FILE__, __LINE__,
+               global_pointerCount, (global_pointerCount - global_goodPointerCount), functionPointer, name.c_str(),
+               info.dli_fname,
+               info.dli_fbase,
+               info.dli_saddr );
         system_dladdr_had_problem = true;
       } else if (info.dli_saddr != functionPointer) {
-        printf("%s:%d %lu/%lu FAIL system dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__,
-               (global_pointerCount - global_goodPointerCount), global_pointerCount, functionPointer, info.dli_saddr, name.c_str());
+        printf("%s:%d Out of %lu pointers, #%lu FAIL - system dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__,
+               global_pointerCount, (global_pointerCount - global_goodPointerCount), functionPointer, info.dli_saddr, name.c_str());
         system_dladdr_had_problem = true;
       } else if (dlsym(RTLD_DEFAULT, info.dli_sname) == 0) {
         printf("%s:%d %lu/%lu WARNING system dlsym could not find name %s - I'm going to add it anyway - if this works - remove "

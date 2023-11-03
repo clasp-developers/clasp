@@ -66,7 +66,8 @@ struct CommandLineOptions {
   bool _HasDescribeFile;
   std::string _DescribeFile;
   long _RandomNumberSeed;
-  bool _ExportedSymbolsAccumulate;
+  bool _ExportedSymbolsCheck;
+  bool _ExportedSymbolsSave;
   std::string _ExportedSymbolsFilename;
   bool _NoInform;
   bool _NoPrint;
