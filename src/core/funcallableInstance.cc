@@ -296,8 +296,10 @@ template <> struct ReadArg<2> {
   inline static size_t read(unsigned char *addr, uintptr_t offset) {
     unsigned char low = *(addr + 1 + 2 * (offset - 1));
     unsigned char high = *(addr + 1 + 2 * (offset - 1) + 1);
+#if 0
     size_t val = (high << 8) + low;
-    //    printf("%s:%d:%s read low %u  high %u  val = %lu\n", __FILE__, __LINE__, __FUNCTION__, low, high, val );
+    printf("%s:%d:%s read low %u  high %u  val = %lu\n", __FILE__, __LINE__, __FUNCTION__, low, high, val );
+#endif
     return (high << 8) + low;
   }
   inline static T_sp read_literal(unsigned char *addr, uintptr_t offset, T_sp *literals) {
