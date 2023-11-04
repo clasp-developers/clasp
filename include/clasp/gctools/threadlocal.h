@@ -144,7 +144,7 @@ struct VirtualMachine {
   inline core::T_O* alloca_vaslist2(core::T_O**& stackPointer,
                                     core::T_O** args, size_t nargs) {
     core::T_O* vl = this->alloca_vaslist1(stackPointer,args,nargs);
-    core::T_O* vl_backup = this->alloca_vaslist1(stackPointer,args,nargs);
+    this->alloca_vaslist1(stackPointer,args,nargs);
     return vl;
   }
 
