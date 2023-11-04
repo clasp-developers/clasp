@@ -551,6 +551,7 @@ CL_DEFUN void llvm_sys__sanity_check_module(Module_sp module, int depth)
         for ( auto &B : F ) {
           if (depth > 1) {
             for ( auto &I : B )
+              I;
               /*nothing*/;
           }
         }
