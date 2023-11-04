@@ -218,7 +218,7 @@ void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_p
       ExecutableLibraryInfo* eli = dynamic_cast<ExecutableLibraryInfo*>(entry.second);
       start = eli->_VtableSectionStart;
       end = eli->_VtableSectionEnd;
-      printf("%s:%d:%s start %p   end %p\n", __FILE__, __LINE__, __FUNCTION__, start, end );
+      //printf("%s:%d:%s start %p   end %p\n", __FILE__, __LINE__, __FUNCTION__, start, end );
       return;
     }
   }
@@ -247,7 +247,7 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
 //    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
     if ( ExecutableLibraryInfo* eli = dynamic_cast<ExecutableLibraryInfo*>(entry.second) ) {
       if ( eli->_TextStart <= address && address < eli->_TextEnd
-        || ( eli->_VtableSectionStart <= address && address < eli->_VtableSectionEnd ) ){
+           || ( eli->_VtableSectionStart <= address && address < eli->_VtableSectionEnd ) ){
         libraryName = eli->_Filename;
         start = eli->_TextStart;
         end = eli->_TextEnd;
@@ -255,15 +255,15 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
         vtableStart = (uintptr_t)eli->_VtableSectionStart;
         vtableEnd = (uintptr_t)eli->_VtableSectionEnd;
         return true;
-      } else {
-        libraryName = entry.second->_Filename;
-        start = entry.second->_TextStart;
-        end = entry.second->_TextEnd;
-        executable = false;
-        vtableStart = 0; // libraries don't have vtables we care about
-        vtableEnd = 0;
-        return true;
       }
+    } else if ( entry.second->_TextStart <= address && address < entry.second->_TextEnd ) {
+      libraryName = entry.second->_Filename;
+      start = entry.second->_TextStart;
+      end = entry.second->_TextEnd;
+      executable = false;
+      vtableStart = 0; // libraries don't have vtables we care about
+      vtableEnd = 0;
+      return true;
     }
   }
   return false;

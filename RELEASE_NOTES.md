@@ -4,6 +4,8 @@
 * New module named "gray-streams" which makes it possible to
   initialize the Gray stream protocol without calls to internal
   functions.
+* New build mode `:bytecode-faso` which builds the kernel as native
+  code (FASO) while the bytecode compiler is active.
 
 # Version 2.4.0 (LLVM15-17) 2023-10-01
 

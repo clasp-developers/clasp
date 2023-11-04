@@ -624,7 +624,7 @@
                                                                        :variant-lib)))
                                        sources))
     (ninja:write-build output-stream (case (build-mode configuration)
-                                       ((:bytecode :faso :fasoll :fasobc) :link-fasl)
+                                       ((:bytecode :bytecode-faso :faso :fasoll :fasobc) :link-fasl)
                                        (otherwise "link-fasl-abc"))
                        :variant-ldflags *variant-ldflags*
                        :variant-ldlibs *variant-ldlibs*
@@ -752,7 +752,7 @@
                                                                           :variant-lib)))
                                           eclasp-sources))
       (ninja:write-build output-stream (case (build-mode configuration)
-                                         ((:bytecode :faso :fasoll :fasobc) :link-fasl)
+                                         ((:bytecode :bytecode-faso :faso :fasoll :fasobc) :link-fasl)
                                          (otherwise "link-fasl-abc"))
                          :variant-ldflags *variant-ldflags*
                          :variant-ldlibs *variant-ldlibs*

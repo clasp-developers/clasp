@@ -1131,16 +1131,16 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   List_sp hooks = nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lfasl"), _sym_loadSource), hooks); // List of load commands
 #if CLASP_BUILD_MODE == 6
+  hooks = Cons_O::create(Cons_O::create(clasp_make_fixnum(FASL_MAGIC_NUMBER), _sym_load_bytecode), hooks);
   // This not ideal, but ANSI tests uses FASL as a generic pathname type so dispatching in LOAD via
   // *LOAD-HOOKS* will end up sending a FASO with an extension of FASL to the FASL loader. We
   // could sniff the magic number before we dispatch on pathname type, but this is inefficient since
   // it results in two file opens. If we had only one FASL format this wouldn't be an issue.
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_bytecode), hooks);
 #endif
-  hooks = Cons_O::create(Cons_O::create(clasp_make_fixnum(FASL_MAGIC_NUMBER), _sym_load_bytecode), hooks);
+  hooks = Cons_O::create(Cons_O::create(clasp_make_fixnum(FASO_MAGIC_NUMBER), _sym_load_faso), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faso"), _sym_load_faso), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasp"), _sym_load_faso), hooks);
-  hooks = Cons_O::create(Cons_O::create(clasp_make_fixnum(FASO_MAGIC_NUMBER), _sym_load_faso), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasoll"), _sym_load_fasoll), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faspll"), _sym_load_fasoll), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasobc"), _sym_load_fasobc), hooks);
