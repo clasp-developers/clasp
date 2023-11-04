@@ -414,7 +414,7 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
                               gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end,
                               bool hasVtableSection,
                               gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd ) {
-  printf("%s:%d:%s libraryName = %s   is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), is_executable );
+  //printf("%s:%d:%s libraryName = %s   is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), is_executable );
   BT_LOG(("Starting to load library: %s\n", libraryName.c_str() ));
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 // Get the start of the library and the symbol_table
@@ -446,12 +446,12 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
   OpenDynamicLibraryInfo* odli = NULL;
   LoadableKind loadable;
   if (is_executable) {
-    printf("%s:%d:%s  Creating an ExecutableLibraryInfo\n", __FILE__, __LINE__, __FUNCTION__ );
+    //printf("%s:%d:%s  Creating an ExecutableLibraryInfo\n", __FILE__, __LINE__, __FUNCTION__ );
     odli = new ExecutableLibraryInfo(libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end,
                                      hasVtableSection,vtableSectionStart,vtableSectionEnd);
     loadable = Executable;
   } else {
-    printf("%s:%d:%s  Creating an OpenDynamicLibraryInfo\n", __FILE__, __LINE__, __FUNCTION__ );
+    //printf("%s:%d:%s  Creating an OpenDynamicLibraryInfo\n", __FILE__, __LINE__, __FUNCTION__ );
     odli = new OpenDynamicLibraryInfo(libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end );
     loadable = Library;
   }

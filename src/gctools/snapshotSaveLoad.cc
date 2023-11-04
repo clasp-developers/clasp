@@ -585,8 +585,7 @@ size_t Fixup::ensureLibraryRegistered(uintptr_t address) {
   core::lookup_address_in_library( (gctools::clasp_ptr_t)address,start,end,libraryPath,isExecutable,vtableStart,vtableEnd);
   ISLLibrary lib(libraryPath,isExecutable,start,end,vtableStart,vtableEnd);
   size_t idx = this->_Libraries.size();
-  printf("%s:%d:%s Registering library %s address: %p start: %p end: %p vtableStart: %p vtableEnd: %p \n", __FILE__, __LINE__, __FUNCTION__, libraryPath.c_str(),
-         address, start, end, vtableStart, vtableEnd );
+//  printf("%s:%d:%s Registering library %s address: %p start: %p end: %p vtableStart: %p vtableEnd: %p \n", __FILE__, __LINE__, __FUNCTION__, libraryPath.c_str(), address, start, end, vtableStart, vtableEnd );
   this->_Libraries.push_back(lib);
   return idx;
 };
@@ -2128,8 +2127,8 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   for ( size_t idx=0; idx<fixup->_Libraries.size(); idx++ ) {
     int groupPointerIdx = -1;
     ISLLibrary& curLib = fixup->_Libraries[idx];
-    printf("%s:%d:%s  Dealing with library#%lu:  %s @%p\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._Name.c_str(), &curLib );
-//    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._InternalPointers.size() );
+    //printf("%s:%d:%s  Dealing with library#%lu:  %s @%p\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._Name.c_str(), &curLib );
+    //printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._InternalPointers.size() );
     for ( size_t ii=0; ii<curLib._InternalPointers.size(); ii++ ) {
       if (groupPointerIdx < 0 || curLib._InternalPointers[ii]._address != curLib._InternalPointers[ii-1]._address ) {
         curLib._GroupedPointers.emplace_back( curLib._InternalPointers[ii]._pointerType, curLib._InternalPointers[ii]._address );
@@ -2231,6 +2230,7 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message ) {
   //
   // For saving we may want to save snapshots and not die - so use noStomp forwarding.
   //
+  core::lisp_write(fmt::format("Running memory test and gathering objects\n"));
   gctools::GatherObjects gather(gctools::room_test);
   gctools::gatherAllObjects(gather);
 
@@ -2245,33 +2245,15 @@ size_t memory_test(bool dosleep, FILE* fout, const char* message ) {
   if (fout) dump_test_results( fout, gather );
 
   size_t result = gather._corruptObjects.size();
-  if (dosleep) {
-    if (result == 0) {
-      printf("!\n");
-      printf("!\n");
-      printf("!\n");
-      printf("! Passed the memory test with zero corrupt objects!\n");
-      if (message) {
-        printf("! %s\n", message);
-      }
-      printf("!\n");
-      printf("!\n");
-      printf("!\n");
-    } else if (result>0) {
-      printf("!\n");
-      printf("!\n");
-      printf("!\n");
-      printf("! Ran a memory test\n");
-      if (message) {
-        printf("! %s\n", message);
-      }
-      printf("! %lu corrupt objects were found in memory test - sleeping for 1000000 seconds\n", result );
-      dump_test_results(stdout,gather);
-      printf("!  Connect a debugger to pid %d\n", getpid() );
-      printf("!\n");
-      printf("!\n");
-      printf("!\n");
-      printf("!\n");
+  if (result == 0) {
+    core::lisp_write(fmt::format("Passed the memory test with zero corrupt objects\n"));
+    if (message) core::lisp_write(fmt::format("  {}\n", message ));
+  } else if (result>0) {
+    core::lisp_write(fmt::format("{} corrupt objects in memory test\n", result ));
+    if (message) core::lisp_write(fmt::format("  {}\n", message ));
+    dump_test_results(stdout,gather);
+    if (dosleep) {
+      core::lisp_write(fmt::format("!   Connect a debugger to pid {}\n", getpid() ));
       sleep(1000000);
     }
   }
