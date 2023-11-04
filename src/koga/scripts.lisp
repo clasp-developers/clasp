@@ -77,7 +77,7 @@
               :output-type ~s)"
           (case (build-mode configuration)
             (:bytecode :bytecode)
-            (:faso :fasp)
+            ((:faso :bytecode-faso) :fasp)
             (:fasoll :faspll)
             (:fasobc :faspbc)
             (otherwise :fasl))))
@@ -104,23 +104,31 @@
 (core:quit)" (jobs configuration) (reproducible-build configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-clasp)) output-stream)
-  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+  (format output-stream "(setq core:*clasp-build-mode* ~s)
+(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
 (core:load-and-compile-clasp :reproducible ~s :system-sort ~s
                              :name (elt core:*command-line-arguments* 0)
                              :position (parse-integer (elt core:*command-line-arguments* 1))
                              :system (core:command-line-paths 2))
 (core:quit)"
+          (if (eq (build-mode configuration) :bytecode-faso)
+              :faso
+              (build-mode configuration))
           (jobs configuration) (reproducible-build configuration)
           (and (> (jobs configuration) 1) (parallel-build configuration))))
 
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
-  (write-string "(setq *features* (cons :aclasp *features*))
+  (format output-stream "(setq *features* (cons :aclasp *features*)
+      core:*clasp-build-mode* ~s)
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (load #P\"sys:src;lisp;kernel;cmp;jit-setup.lisp\")
 (core:link-fasl :output-file (pathname (elt core:*command-line-arguments* 0))
                 :system (core:command-line-paths 1))
-(core:quit)" output-stream))
+(core:quit)"
+          (if (eq (build-mode configuration) :bytecode-faso)
+              :faso
+              (build-mode configuration))))
 
 (defmethod print-prologue (configuration (name (eql :analyze-generate)) output-stream)
   (declare (ignore configuration))
