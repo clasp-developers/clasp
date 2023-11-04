@@ -339,20 +339,22 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
   gctools::clasp_ptr_t vtablePtr = *(gctools::clasp_ptr_t*)&general;
 //  printf("%s:%d:%s one vtablePtr = %p\n", __FILE__, __LINE__, __FUNCTION__, vtablePtr );
   ScanInfo* scan_callback_info = (ScanInfo*)data;
-  bool is_executable;
+  bool is_executable = false;
   const char* libname;
   if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
     libname = getExecutablePath();
     is_executable = true;
+    // printf("%s:%d:%s getExecutablePath() libname %s is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libname, is_executable );
   } else {
     libname = info->dlpi_name;
     is_executable = false;
+    // printf("%s:%d:%s info->dlpi_name libname %s is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libname, is_executable );
   }
   gctools::clasp_ptr_t text_start;
   gctools::clasp_ptr_t text_end;
   bool hasVtableSection = false;
-  gctools::clasp_ptr_t vtableSectionStart;
-  gctools::clasp_ptr_t vtableSectionEnd;
+  gctools::clasp_ptr_t vtableSectionStart=NULL;
+  gctools::clasp_ptr_t vtableSectionEnd=NULL;
   for (int j = 0; j < info->dlpi_phnum; j++) {
     int p_type = info->dlpi_phdr[j].p_type;
     gctools::clasp_ptr_t low = (gctools::clasp_ptr_t) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
@@ -360,7 +362,7 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
     if (p_type==PT_LOAD && (info->dlpi_phdr[j].p_flags&0x1)) { // executable
       text_start = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
       text_end = (gctools::clasp_ptr_t)(text_start + info->dlpi_phdr[j].p_memsz);
-//      printf("%s:%d:%s      text_start = %p     text_end = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)text_start, (void*)text_end );
+      //printf("%s:%d:%s      text_start = %p     text_end = %p\n    low = %p  high = %p  vtablePtr = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)text_start, (void*)text_end, low, high, vtablePtr );
     }
     if (low<= vtablePtr && vtablePtr<high) {
       //
@@ -372,15 +374,18 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
         if (newSize>oldSize) {
           vtableSectionStart = low;
           vtableSectionEnd = high;
+          printf("%s:%d:%s   moved vtableSection Start/End = %p/%p\n", __FILE__, __LINE__, __FUNCTION__, low, high );
         }
       } else {
         hasVtableSection = true;
         vtableSectionStart = low;
         vtableSectionEnd = high;
+        //printf("%s:%d:%s   set vtableSection Start/End = %p/%p\n", __FILE__, __LINE__, __FUNCTION__, low, high );
       }
-//      printf("%s:%d:%s Found vtableSection %p to %p\n", __FILE__, __LINE__, __FUNCTION__, vtableSectionStart, vtableSectionEnd );
+      //printf("%s:%d:%s Found vtableSection %p to %p\n", __FILE__, __LINE__, __FUNCTION__, vtableSectionStart, vtableSectionEnd );
     }
   }
+  //printf("%s:%d:%s  About to call add_dynamic_library_using_origin libname = %s   is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libname, is_executable );
   add_dynamic_library_using_origin(scan_callback_info->_AdderOrNull,is_executable,libname,(uintptr_t)info->dlpi_addr,
                                    text_start,text_end,
                                    hasVtableSection,
@@ -409,61 +414,49 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
                               gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end,
                               bool hasVtableSection,
                               gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd ) {
+  //printf("%s:%d:%s libraryName = %s   is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), is_executable );
   BT_LOG(("Starting to load library: %s\n", libraryName.c_str() ));
-#ifdef CLASP_THREADS
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
 // Get the start of the library and the symbol_table
   if (!use_origin) {
-    printf("%s:%d:%s   This path should never be taken!!!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s   This path should never be taken - use_origin must always be true!!!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
     // Walk all objects looking for the one we just loaded
-    library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
-    if (library_origin==0) {
+  library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
+  if (library_origin==0) {
       // Try looking for _init symbol
-      void* lorigin;
-      Dl_info data;
-      dlerror();
-      void* addr = dlsym(handle,"_init");
-      const char* error = dlerror();
-      if (error) {
-        printf("%s:%d:%s Could not find library by walking objects or by searching for external symbol '_init' - library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error, libraryName.c_str());
-        abort();
-      }
-      int ret = dladdr(addr,&data);
-      if (ret==0) {
-        printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
-        abort();
-      }
-      library_origin = (uintptr_t)data.dli_fbase;
+    Dl_info data;
+    dlerror();
+    void* addr = dlsym(handle,"_init");
+    const char* error = dlerror();
+    if (error) {
+      printf("%s:%d:%s Could not find library by walking objects or by searching for external symbol '_init' - library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error, libraryName.c_str());
+      abort();
     }
+    int ret = dladdr(addr,&data);
+    if (ret==0) {
+      printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
+      abort();
+    }
+    library_origin = (uintptr_t)data.dli_fbase;
   }
-//  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
-  uintptr_t stackmap_start;
-  size_t section_size;
-//  SymbolTable symbol_table = load_linux_symbol_table(libraryName.c_str(),library_origin,stackmap_start,section_size);
   SymbolTable symbol_table;
-  if (is_executable) {
-    symbol_table._StackmapStart = stackmap_start;
-    symbol_table._StackmapEnd = stackmap_start+section_size;
-  } else {
-    if (stackmap_start) {
-      symbol_table._StackmapStart = stackmap_start+library_origin;
-      symbol_table._StackmapEnd = stackmap_start+section_size+library_origin;
-    }
-  }
-//  symbol_table.optimize();
-//  symbol_table.sort();
-//  if (!symbol_table.is_sorted()) {
-//    printf("%s:%d The symbol table for %s is not sorted\n", __FILE__, __LINE__, libraryName.c_str());
-//    abort();
-//  }
   BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t library_end = (gctools::clasp_ptr_t)library_origin;
-  OpenDynamicLibraryInfo odli(is_executable,libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end,
-                              hasVtableSection,vtableSectionStart,vtableSectionEnd);
-  if (callback) {
-    (*callback)(odli);
+  OpenDynamicLibraryInfo* odli = NULL;
+  LoadableKind loadable;
+  if (is_executable) {
+    //printf("%s:%d:%s  Creating an ExecutableLibraryInfo\n", __FILE__, __LINE__, __FUNCTION__ );
+    odli = new ExecutableLibraryInfo(libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end,
+                                     hasVtableSection,vtableSectionStart,vtableSectionEnd);
+    loadable = Executable;
+  } else {
+    //printf("%s:%d:%s  Creating an OpenDynamicLibraryInfo\n", __FILE__, __LINE__, __FUNCTION__ );
+    odli = new OpenDynamicLibraryInfo(libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end );
+    loadable = Library;
   }
+  TrapProblem trap(is_executable,libraryName,odli->loadableKind());
+  if (callback) (*callback)(odli);
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }
 

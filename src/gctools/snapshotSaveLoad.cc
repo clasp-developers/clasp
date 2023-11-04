@@ -339,8 +339,8 @@ bool SymbolLookup::addLibrary( const std::string& libraryPath, FILE* fout ) {
 
 void SymbolLookup::addAllLibraries(FILE* fout) {
   for ( auto& entry : core::debugInfo()._OpenDynamicLibraryHandles ) {
-    if (fout) fprintf( fout, "#  entry.name = %s\n", entry.second._Filename.c_str() );
-    this->addLibrary( entry.second._Filename, fout );
+    if (fout) fprintf( fout, "#  entry.name = %s\n", entry.second->_Filename.c_str() );
+    this->addLibrary( entry.second->_Filename, fout );
   }
 }
 
@@ -3048,6 +3048,9 @@ void snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const 
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
     core::executableVtableSectionRange(start,end);
+    if (start == NULL) {
+      printf("%s:%d:%s vtable section range start is NULL\n", __FILE__, __LINE__, __FUNCTION__ );
+    }
     {
       MaybeTimeStartup time3("Fixup vtables");
       fixup_vtables_t fixup_vtables( &fixup, (uintptr_t)start, (uintptr_t)end, &islInfo );
