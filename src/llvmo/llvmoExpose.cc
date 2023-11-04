@@ -550,9 +550,11 @@ CL_DEFUN void llvm_sys__sanity_check_module(Module_sp module, int depth)
       if ( depth > 0 ) {
         for ( auto &B : F ) {
           if (depth > 1) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
             for ( auto &I : B )
-              I;
               /*nothing*/;
+#pragma clang diagnostic pop
           }
         }
       }
