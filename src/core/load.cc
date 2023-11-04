@@ -178,29 +178,41 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
       filename = nil<T_O>();
     } else {
       function = nil<T_O>();
-      if (hooks.consp()) {
-        function = oCdr(gc::As<Cons_sp>(hooks)->assoc(pathname->_Type, nil<T_O>(), cl::_sym_equalp, nil<T_O>()));
-        if (function.nilp()) {
-          T_sp stream = cl__open(pathname, kw::_sym_input, ext::_sym_byte8, nil<T_O>(), false, nil<T_O>(), false, external_format,
-                                 nil<T_O>());
-          uint8_t bytes[4];
-          clasp_read_byte8(stream, bytes, 4);
-          cl__close(stream);
-          T_sp magic = clasp_make_fixnum(((uint32_t)bytes[0] << 24) | ((uint32_t)bytes[1] << 16) | ((uint32_t)bytes[2] << 8) |
-                                         ((uint32_t)bytes[3] << 0));
-          function = oCdr(gc::As<Cons_sp>(hooks)->assoc(magic, nil<T_O>(), cl::_sym_equalp, nil<T_O>()));
+      T_sp magic = nil<T_O>();
+      for (T_sp _hooks = hooks; _hooks.notnilp(); _hooks = oCdr(_hooks)) {
+        T_sp key = oCaar(_hooks);
+        if (gc::IsA<String_sp>(key)) {
+          if (cl__equalp(key, pathname->_Type)) {
+            function = oCdar(_hooks);
+            break;
+          }
+        } else {
+          if (magic.nilp()) {
+            T_sp stream = cl__open(pathname, kw::_sym_input, ext::_sym_byte8, nil<T_O>(), false, nil<T_O>(), false, external_format,
+                                   nil<T_O>());
+            uint8_t bytes[4];
+            magic = clasp_make_fixnum((clasp_read_byte8(stream, bytes, 4) == 4)
+                                          ? (((uint32_t)bytes[0] << 24) | ((uint32_t)bytes[1] << 16) | ((uint32_t)bytes[2] << 8) |
+                                             ((uint32_t)bytes[3] << 0))
+                                          : 0);
+            cl__close(stream);
+          }
+          if (cl__equalp(key, magic)) {
+            function = oCdar(_hooks);
+            break;
+          }
         }
       }
     }
   } else {
-    for (; hooks.notnilp(); hooks = oCdr(hooks)) {
-      if (gc::IsA<String_sp>(oCaar(hooks))) {
+    for (T_sp _hooks = hooks; _hooks.notnilp(); _hooks = oCdr(_hooks)) {
+      if (gc::IsA<String_sp>(oCaar(_hooks))) {
         /* Otherwise try with known extensions until a matching
                      file is found */
         T_sp kind;
         filename = pathname;
-        pathname->_Type = oCaar(hooks);
-        function = oCdar(hooks);
+        pathname->_Type = oCaar(_hooks);
+        function = oCdar(_hooks);
         kind = core__file_kind(pathname, true);
         if (kind == kw::_sym_file || kind == kw::_sym_special)
           break;
