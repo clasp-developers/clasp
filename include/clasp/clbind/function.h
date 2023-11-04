@@ -107,7 +107,7 @@ public:
   enum { NumParams = sizeof...(ARGS) };
 
   WRAPPER_VariadicFunction(FuncType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-      : fptr(ptr), GlobalSimpleFunBase_O(fdesc, core::ClaspXepFunction::make<MyType>(), code) {
+      : GlobalSimpleFunBase_O(fdesc, core::ClaspXepFunction::make<MyType>(), code), fptr(ptr) {
     this->validateCodePointer((void **)&this->fptr, sizeof(this->fptr));
   };
 

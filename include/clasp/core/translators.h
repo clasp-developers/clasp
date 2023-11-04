@@ -285,7 +285,7 @@ template <>
 
     DeclareType _v;
     bool _val;
-  from_object( T_P o ) : _val( false ), _v( &_val ){};
+    from_object( T_P o ) : _v( &_val ), _val(false) {};
   };
 
   template <>
@@ -295,7 +295,7 @@ template <>
 
     DeclareType _v;
     bool _val;
-    from_object( T_P o ) : _val( false ), _v( &_val ){};
+    from_object( T_P o ) : _v(&_val), _val( false ) {};
     ~from_object() {/*non trivial*/};
   };
 
@@ -306,7 +306,7 @@ template <>
 
     DeclareType _v;
     bool _val;
-  from_object( T_P o ) : _val( true ), _v( &_val ){};
+    from_object( T_P o ) : _v(&_val), _val( true ) {};
   };
 
   // TO_OBJECT TRANSLATORS

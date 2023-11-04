@@ -305,26 +305,25 @@ struct VirtualMachine {
     List_sp               _BufferStrWNsPool;
     StringOutputStream_sp _BFormatStringOutputStream;
     StringOutputStream_sp _WriteToStringOutputStream;
-
-    MultipleValues _MultipleValues;
-    void* _sigaltstack_buffer;
-    size_t  _unwinds;
-    stack_t _original_stack;
-    std::string       _initializer_symbol;
-    void*             _object_file_start;
-    size_t            _object_file_size;
+    MultipleValues        _MultipleValues;
+    void*                 _sigaltstack_buffer;
+    size_t                _unwinds;
+    stack_t               _original_stack;
+    std::string           _initializer_symbol;
+    void*                 _object_file_start;
+    size_t                _object_file_size;
     gctools::GCRootsInModule*  _GCRootsInModule;
-    StartupInfo       _Startup;
-    bool              _Breakstep; // Should we check for breaks?
+    StartupInfo           _Startup;
+    bool                  _Breakstep; // Should we check for breaks?
     // What frame are we stepping over? NULL means step-into mode.
-    void*             _BreakstepFrame;
+    void*                 _BreakstepFrame;
     // Stuff for SJLJ unwinding
-    List_sp           _DynEnvStackBottom;
-    T_sp              _UnwindDest;
-    size_t            _UnwindDestIndex;
+    List_sp               _DynEnvStackBottom;
+    T_sp                  _UnwindDest;
+    size_t                _UnwindDestIndex;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
-    void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
+    void*                 _IHSBacktrace[IHS_BACKTRACE_SIZE];
 #endif
     size_t                 _xorshf_x; // Marsaglia's xorshf generator
     size_t                 _xorshf_y;

@@ -215,14 +215,14 @@ struct globals_t {
   mutable mp::SharedMutex _FinalizersMutex;
   mutable mp::SharedMutex _SourceFilesMutex; // Protect _SourceFileIndices
   mutable mp::SharedMutex _PackagesMutex; // Protect _PackageNameIndexMap
-  mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
-  mutable mp::SharedMutex _JITLogMutex; // Protect _jit logging
-  mutable mp::SharedMutex _UnixSignalHandlersMutex; // Protect _UnixSignalHandlers
-  mutable mp::SharedMutex _CodeBlocksMutex;
 #ifdef DEBUG_MONITOR_SUPPORT
   mutable mp::SharedMutex _MonitorMutex;
   std::ofstream _MonitorStream;
 #endif
+  mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
+  mutable mp::SharedMutex _JITLogMutex; // Protect _jit logging
+  mutable mp::SharedMutex _UnixSignalHandlersMutex; // Protect _UnixSignalHandlers
+  mutable mp::SharedMutex _CodeBlocksMutex;
   uint           _StackWarnSize;
   uint           _StackSampleCount;
   uint           _StackSampleSize;
@@ -257,9 +257,7 @@ public:
   // ------------------------------------------------------------
   // ------------------------------------------------------------
   // ------------------------------------------------------------
-  globals_t() : _MakePackageCallback(NULL),
-                _ExportSymbolCallback(NULL),
-                _PathMax(CLASP_MAXPATHLEN),
+  globals_t() :
                 _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
                 _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
                 _FinalizersMutex(MPSMESSG_NAMEWORD),
@@ -279,7 +277,10 @@ public:
                 _ReplCounter(1),
                 _Bundle(NULL),
                 _DebugStream(NULL),
-                _SingleStepLevel(UndefinedUnsignedInt)
+                _SingleStepLevel(UndefinedUnsignedInt),
+                _MakePackageCallback(NULL),
+                _ExportSymbolCallback(NULL),
+                _PathMax(CLASP_MAXPATHLEN)
   {
     this->_GlobalInitializationCallbacks.clear();
     this->_TraceLevel = 0;

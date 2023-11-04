@@ -292,10 +292,10 @@ public:
   typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
 
 public:
-  core::Number_sp _RehashSize;
-  double _RehashThreshold;
-  size_t _Length;
-  gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
+  size_t                                    _Length;
+  core::Number_sp                           _RehashSize;
+  double                                    _RehashThreshold;
+  gctools::tagged_pointer<KeyBucketsType>   _Keys;     // hash buckets for keys
   gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex_sp _Mutex;

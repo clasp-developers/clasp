@@ -29,12 +29,12 @@ namespace gctools {
 
  struct GlobalAllocationProfiler {
    std::atomic<int64_t> _BytesAllocated;
-   std::atomic<int64_t> _AllocationNumberCounter;
+   size_t               _AllocationSizeThreshold;
+   size_t               _AllocationNumberThreshold;
    std::atomic<int64_t> _AllocationSizeCounter;
+   std::atomic<int64_t> _AllocationNumberCounter;
    std::atomic<int64_t> _HitAllocationNumberCounter;
    std::atomic<int64_t> _HitAllocationSizeCounter;
-   size_t               _AllocationNumberThreshold;
-   size_t               _AllocationSizeThreshold;
 #ifdef DEBUG_MONITOR_ALLOCATIONS
    MonitorAllocations _Monitor;
 #endif

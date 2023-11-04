@@ -141,7 +141,10 @@ class contention_free_shared_mutex {
 
 public:
   contention_free_shared_mutex() :
-      shared_locks_array_ptr(std::make_shared<array_slock_t>()), shared_locks_array(*shared_locks_array_ptr), want_x_lock(false), recursive_xlock_count(0),
+      want_x_lock(false),
+      shared_locks_array_ptr(std::make_shared<array_slock_t>()),
+      shared_locks_array(*shared_locks_array_ptr),
+      recursive_xlock_count(0),
       owner_thread_id(thread_id_t()) {}
 
   ~contention_free_shared_mutex() {

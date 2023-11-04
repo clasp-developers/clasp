@@ -148,10 +148,21 @@ public:
 #endif
 public:
   Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings = nil<core::T_O>(),
-            size_t stack_size = 8 * 1024 * 1024)
-      : _Parent(nil<core::T_O>()), _UniqueID(global_process_UniqueID++), _Name(name), _Function(function), _Arguments(arguments),
-        _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(nil<core::T_O>()), _Aborted(false),
-        _AbortCondition(nil<core::T_O>()), _StackSize(stack_size), _Phase(Nascent), _SuspensionMutex(SUSPBARR_NAMEWORD) {
+            size_t stack_size = 8 * 1024 * 1024) :
+      _UniqueID(global_process_UniqueID++)
+      , _Parent(nil<core::T_O>())
+      , _Name(name)
+      , _Function(function)
+      , _Arguments(arguments)
+      , _InitialSpecialBindings(initialSpecialBindings)
+      , _ReturnValuesList(nil<core::T_O>())
+      , _Aborted(false)
+      , _AbortCondition(nil<core::T_O>())
+      , _ThreadInfo(NULL)
+      , _Phase(Nascent)
+      , _SuspensionMutex(SUSPBARR_NAMEWORD)
+      , _StackSize(stack_size)
+  {
     if (!function) {
       printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__);
     }

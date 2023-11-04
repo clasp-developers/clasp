@@ -57,10 +57,10 @@ struct ClaspInfo {
   const char **_argv;
   size_t _stackMax;
   core::ThreadLocalState *_threadLocalStateP;
+  core::LispHolder *_lispHolder;
   bool _mpiEnabled;
   int _mpiRank;
   int _mpiSize;
-  core::LispHolder *_lispHolder;
 
   ClaspInfo(int argc, const char **argv, size_t stackMax)
       : _argc(argc), _argv(argv), _stackMax(stackMax), _lispHolder(NULL), _mpiEnabled(false), _mpiRank(0), _mpiSize(1){};

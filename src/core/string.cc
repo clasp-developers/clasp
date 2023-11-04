@@ -189,7 +189,11 @@ struct StringCharPointer {
   size_t _pos;
   size_t _start;
   typedef typename T::simple_element_type CharacterType;
-  StringCharPointer(const T* strP, size_t start) : _stringPtr(strP), _start(start), _pos(start) {}
+  StringCharPointer(const T* strP, size_t start) :
+      _stringPtr(strP)
+      , _pos(start)
+      , _start(start)
+  {}
   inline size_t offset() { return this->_pos - this->_start;};
   CharacterType operator*() {
     CharacterType c = (*this->_stringPtr)[this->_pos];

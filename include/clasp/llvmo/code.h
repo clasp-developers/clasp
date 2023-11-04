@@ -72,7 +72,6 @@ typedef enum { SaveState, RunState } CodeState_t;
     size_t         _FasoIndex;
     //
     // Code data
-    //
     gctools::GCRootsInModule* _gcRoots;
     void*         _TextSectionStart;
     void*         _TextSectionEnd;
@@ -101,21 +100,22 @@ typedef enum { SaveState, RunState } CodeState_t;
     ObjectFile_O( core::SimpleBaseString_sp codename, JITDylib_sp jitdylib, size_t objectId ) :
         _State(RunState),
         _CodeName(codename),
+        _ObjectId(objectId),
         _TheJITDylib(jitdylib),
         _gcRoots(NULL),
-        _CodeBlock(unbound<CodeBlock_O>()),
-        _ObjectId(objectId) {
+        _CodeBlock(unbound<CodeBlock_O>())
+    {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   codename = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(codename).c_str() ));
     };
     ObjectFile_O( core::SimpleBaseString_sp codename, CodeBlock_sp codeBlock, JITDylib_sp dylib, size_t objectId) :
         _State(RunState),
         _CodeName(codename),
+        _ObjectId(objectId),
         _TheJITDylib(dylib),
         _gcRoots(NULL),
-        _CodeBlock(codeBlock),
         _TextSectionStart(0),
         _TextSectionEnd(0),
-        _ObjectId(objectId)
+        _CodeBlock(codeBlock)
     {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s created with CodeBlock_sp   codename = %s CodeBlock = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(codename).c_str(), core::_rep_(codeBlock).c_str() ));
     };

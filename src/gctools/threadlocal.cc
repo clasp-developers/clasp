@@ -112,10 +112,10 @@ bool DynamicBindingStack::thread_local_boundp(uint32_t index) const {
 
 namespace gctools {
 ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top) :
-  _DisableInterrupts(false)
-  ,  _StackTop(stack_top)
+    _StackTop(stack_top)
+    , _DisableInterrupts(false)
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  , _RecursiveAllocationCounter(0)
+    , _RecursiveAllocationCounter(0)
 #endif
   
 {};
@@ -193,8 +193,8 @@ VirtualMachine::~VirtualMachine() {
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy) :
   _unwinds(0)
-  ,_CleanupFunctions(NULL)
   ,_PendingInterrupts()
+  ,_CleanupFunctions(NULL)
   ,_ObjectFiles()
   ,_BufferStr8NsPool()
   ,_BufferStrWNsPool()
