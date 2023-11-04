@@ -271,8 +271,10 @@
 ;; (further) bounds check.
 (defmacro define-vector-transforms (element-type ref set)
   `(progn
-     (deftransform core:vref ,ref (simple-array ,element-type (*)) fixnum)
-     (deftransform (setf core:vref) ,set t (simple-array ,element-type (*)) fixnum)))
+     (deftransform core:vref (core:vref ,element-type)
+       (simple-array ,element-type (*)) fixnum)
+     (deftransform (setf core:vref) (core::vset ,element-type)
+       t (simple-array ,element-type (*)) fixnum)))
 (define-vector-transforms t core::t-vref core::t-vset)
 (define-vector-transforms single-float core::sf-vref core::sf-vset)
 (define-vector-transforms double-float core::df-vref core::df-vset)

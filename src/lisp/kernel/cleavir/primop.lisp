@@ -39,16 +39,27 @@
 
 ;;; Hash table from primop infos to rtype info.
 ;;; An rtype info is just a list (return-rtype argument-rtypes...)
-;;; If there is no entry in the table, it's assumed to return (:object)
-;;; and take :object arguments.
+;;; For almost all primops, we just put in an entry in the table,
+;;; but for some compound rtypes we use %primop-rtype-info to compute.
 ;;; See bir-to-bmir for more information about rtypes.
-(defvar *primop-rtypes* (make-hash-table :test #'eq))
+(defvar *primop-rtypes* (make-hash-table :test #'equal))
+
+(defgeneric %primop-rtype-info (name primop-info))
+
+;;; Default method: Assume all :object.
+(defmethod %primop-rtype-info (name primop-info)
+  (declare (ignore name))
+  (list* '(:object)
+         (make-list (cleavir-primop-info:ninputs primop-info)
+                    :initial-element :object)))
 
 (defun primop-rtype-info (primop-info)
-  (or (gethash (cleavir-primop-info:name primop-info) *primop-rtypes*)
-      (list* '(:object)
-             (make-list (cleavir-primop-info:ninputs primop-info)
-                        :initial-element :object))))
+  (let* ((name (cleavir-primop-info:name primop-info))
+         (aname
+           (list* name (cleavir-primop-info:arguments primop-info))))
+    (or (gethash aname *primop-rtypes*)
+        (setf (gethash aname *primop-rtypes*)
+              (%primop-rtype-info name primop-info)))))
 
 ;;; Define a primop that returns values.
 ;;; param-info is either (return-rtype param-rtypes...) or an integer; the
@@ -71,7 +82,7 @@
       `(progn
          (cleavir-primop-info:defprimop ,name ,(length (rest param-info))
            :value ,@flags)
-         (setf (gethash ',name *primop-rtypes*) '(,@param-info))
+         (setf (gethash '(,name) *primop-rtypes*) '(,@param-info))
          (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
            (out (progn ,@body) (first (bir:outputs ,instparam))))
          ',name))))
@@ -98,7 +109,7 @@
       `(progn
          (cleavir-primop-info:defprimop ,name ,(length (rest param-info))
            :effect ,@flags)
-         (setf (gethash ',name *primop-rtypes*) '(,@param-info))
+         (setf (gethash '(,name) *primop-rtypes*) '(,@param-info))
          (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
            ,@body
            (when (bir:outputs ,instparam)
@@ -313,30 +324,53 @@
          (gep-indices (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) index)))
     (cmp:irc-typed-gep-variable vtype cvec gep-indices)))
 
-(defmacro define-vector-primops (refname setname element-type vrtype)
-  `(progn
-     (defvprimop (,refname :flags (:flushable))
-         ((,vrtype) :object :utfixnum) (inst)
-       (let* ((vec (in (first (bir:inputs inst))))
-              (index (in (second (bir:inputs inst))))
-              (addr (%vector-element-address vec ',element-type index)))
-         (cmp:irc-typed-load (vrtype->llvm ',vrtype) addr)))
-     ;; These return the new value because it's a bit involved to rewrite BIR to use
-     ;; a linear datum more than once.
-     (defvprimop ,setname
-         ((,vrtype) ,vrtype :object :utfixnum) (inst)
-       (let* ((val (in (first (bir:inputs inst))))
-              (vec (in (second (bir:inputs inst))))
-              (index (in (third (bir:inputs inst))))
-              (addr (%vector-element-address vec ',element-type index)))
-         (cmp:irc-store val addr)
-         val))))
+(defun element-type->vrtype (element-type)
+  (ecase element-type
+    ((t) :object)
+    ((single-float) :single-float)
+    ((double-float) :double-float)
+    ((base-char) :base-char)
+    ((character) :character)))
 
-(define-vector-primops core::t-vref core::t-vset t :object)
-(define-vector-primops core::sf-vref core::sf-vset single-float :single-float)
-(define-vector-primops core::df-vref core::df-vset double-float :double-float)
-(define-vector-primops core::bc-vref core::bc-vset base-char :base-char)
-(define-vector-primops core::c-vref core::c-vset character :character)
+(cleavir-primop-info:defprimop core:vref 2 :value :flushable)
+(cleavir-primop-info:defprimop core::vset 3 :value :flushable)
+
+(defmethod %primop-rtype-info ((name (eql 'core:vref)) info)
+  (let ((vrtype (element-type->vrtype
+                 (first (cleavir-primop-info:arguments info)))))
+    `((,vrtype) :object :utfixnum)))
+(defmethod %primop-rtype-info ((name (eql 'core::vset)) info)
+  (let ((vrtype (element-type->vrtype
+                 (first (cleavir-primop-info:arguments info)))))
+    `((,vrtype) ,vrtype :object :utfixnum)))
+
+(defmethod translate-primop ((nsym (eql 'core:vref)) inst)
+  (destructuring-bind (element-type &optional order)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (let* ((vec (in (first (bir:inputs inst))))
+           (index (in (second (bir:inputs inst))))
+           (addr (%vector-element-address vec element-type index))
+           (vrtype (element-type->vrtype element-type)))
+      (out
+       (if order
+           (cmp:irc-typed-load-atomic (vrtype->llvm vrtype) addr
+                                      :order (cmp::order-spec->order order))
+           (cmp:irc-typed-load (vrtype->llvm vrtype) addr))
+       (first (bir:outputs inst))))))
+
+(defmethod translate-primop ((nsym (eql 'core::vset)) inst)
+  (destructuring-bind (element-type &optional order)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (let* ((val (in (first (bir:inputs inst))))
+           (vec (in (second (bir:inputs inst))))
+           (index (in (third (bir:inputs inst))))
+           (addr (%vector-element-address vec element-type index)))
+      (if order
+          (cmp:irc-store-atomic val addr :order (cmp::order-spec->order order))
+          (cmp:irc-store val addr))
+      ;; Teturn the new value because it's a bit involved to rewrite BIR to use
+      ;; a linear datum more than once.
+      (out val (first (bir:outputs inst))))))
 
 ;;;
 
