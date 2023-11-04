@@ -105,13 +105,11 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
   }
 #define BUFLEN 2048
   int baddigit = 0;
-  size_t lineno = 0;
   struct stat buf;
   if (stat(filename.c_str(),&buf)!=0) {
     return false;
   }
   stringstream nm_cmd;
-  uintptr_t textRegionStart = 0;
   bool gotSearchSymbol = false;
   size_t missedSearchSymbols = 0;
   std::string searchSymbol;
@@ -146,8 +144,6 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
     char name[BUFLEN+1];
     const char* version;
     size_t lineno = 0;
-    char prev_type = '\0';
-    uintptr_t prev_real_address;
     std::string prev_sname;
     uintptr_t highest_code_address(0);
     uintptr_t lowest_other_address(~0);
@@ -384,6 +380,7 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #endif
 
 #if 0
+#define DBG_SL_ROOT_DO 1
 #define DBG_SL_ROOT(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_ROOT(_fmt_)
@@ -633,7 +630,6 @@ uintptr_t encodeEntryPointOffset( uintptr_t address, uintptr_t codeStart, uintpt
 
 void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr) {
   size_t libraryIndex = fixup->ensureLibraryRegistered(*ptrptr);
-  uintptr_t val = *ptrptr;
   fixup->registerFunctionPointer(libraryIndex,ptrptr);
 }
 
@@ -717,10 +713,8 @@ void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
       decodeEntryPointInLibrary( fixup, ptrptr );
     }
   } else if (gc::IsA<llvmo::Library_sp>(codebase)) {
-    llvmo::Library_sp library = gc::As_unsafe<llvmo::Library_sp>(codebase);
     decodeEntryPointInLibrary(fixup,ptrptr);
   } else if (gc::IsA<core::BytecodeModule_sp>(codebase)) {
-    llvmo::Library_sp library = gc::As_unsafe<llvmo::Library_sp>(codebase);
     decodeEntryPointInLibrary(fixup,ptrptr);
   } else {
     SIMPLE_ERROR("The codebase must be a Code_sp or a Library_sp it is {}", _rep_(codebase) );
@@ -1066,9 +1060,13 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
 //
 void followForwardingPointersForRoots(gctools::clasp_ptr_t* start, size_t number, void* user_data) {
   for ( size_t idx = 0; idx<number; idx++ ) {
+#ifdef DEBUG_SL_ROOT_DO
     gctools::clasp_ptr_t before = *start;
+#endif
     POINTER_FIX(start);
+#ifdef DEBUG_SL_ROOT_DO
     gctools::clasp_ptr_t after = *start;
+#endif
     DBG_SL_ROOT(BF("Fixed root pointer %d from %p to %p GC_base %p\n") % idx % (void*)before % (void*)after % GC_base((void*)after) );
     start++;
   }

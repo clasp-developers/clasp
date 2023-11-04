@@ -132,9 +132,9 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   ASSERT(((uintptr_t)(closure_address)&0x7)==0); //
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
   const gctools::Header_s::BadgeStampWtagMtag closure_header = gctools::Header_s::BadgeStampWtagMtag::make<core::Closure_O>();
-  size_t size = gctools::sizeof_container_with_header<core::Closure_O>(numCells);
 //  gctools::global_stack_closure_bytes_allocated += size;
 #ifdef DEBUG_GUARD
+  size_t size = gctools::sizeof_container_with_header<core::Closure_O>(numCells);
   new (header) gctools::GCHeader<core::Closure_O>::HeaderType(closure_header,size,0,size);
 #else
   new (header) gctools::GCHeader<core::Closure_O>::HeaderType(closure_header);
