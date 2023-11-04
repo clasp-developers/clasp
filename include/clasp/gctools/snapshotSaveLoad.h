@@ -91,7 +91,7 @@ struct ISLLibrary {
 struct Fixup {
   FixupOperation_           _operation;
   uintptr_t                 _memoryStart;
-  std::vector<ISLLibrary>   _libraries;
+  std::vector<ISLLibrary>   _Libraries;
   bool                      _trackAddressName;
   map<void*,std::string>    _addressName;
   
@@ -101,7 +101,7 @@ struct Fixup {
   size_t ensureLibraryRegistered(uintptr_t address);
   
   void registerVtablePointer(size_t libraryIndex, core::T_O* vtablePtrPtr) {
-    this->_libraries[libraryIndex]._InternalPointers.emplace_back( VtablePointer, (uintptr_t*)vtablePtrPtr, *(uintptr_t*)vtablePtrPtr );
+    this->_Libraries[libraryIndex]._InternalPointers.emplace_back( VtablePointer, (uintptr_t*)vtablePtrPtr, *(uintptr_t*)vtablePtrPtr );
   };
 
   void registerFunctionPointer(size_t libraryIndex, uintptr_t* functionPtrPtr) {
@@ -109,7 +109,7 @@ struct Fixup {
       printf("%s:%d:%s The library id %lu is too large - change the pointer coding scheme to add more bits to the library id\n", __FILE__, __LINE__, __FUNCTION__, libraryIndex );
       abort();
     }
-    this->_libraries[libraryIndex]._InternalPointers.emplace_back( FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr );
+    this->_Libraries[libraryIndex]._InternalPointers.emplace_back( FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr );
   };
 
   void addAddressName(void* address, std::string name) {
