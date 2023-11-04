@@ -865,12 +865,9 @@ struct SafeBufferStr8Ns {
 
 void initializeLisp();
 
-class LispHolder //: public gctools::StackRoot
-    {
-private:
+struct LispHolder //: public gctools::StackRoot
+{
   LispPtr lisp_;
-
-public:
   /*! Pass the mpiProcess rank in (rank) or set to 0 if there is only one process */
   LispHolder(bool mpiEnabled, int mpiRank, int mpiSize);
 

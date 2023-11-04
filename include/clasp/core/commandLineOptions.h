@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 namespace core {
 
-class CommandLineOptions;
+struct CommandLineOptions;
 
 typedef void (*process_arguments_callback)(CommandLineOptions *);
 

@@ -48,10 +48,11 @@ size_t next_hash_table_id();
 
 namespace core{
 
-struct KeyValuePair {
-  KeyValuePair(T_sp k, T_sp v) : _Key(k), _Value(v) {};
+class KeyValuePair {
+public:
   core::T_sp _Key;
   core::T_sp _Value;
+  KeyValuePair(T_sp k, T_sp v) : _Key(k), _Value(v) {};
 };
 
   FORWARD(HashTable);

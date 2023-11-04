@@ -813,7 +813,7 @@ typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 } // namespace core
 
 namespace gctools {
-class Layout_code;
+struct Layout_code;
 // Defined in clasp/src/gctools/gc_interface.cc
 extern Layout_code *get_stamp_layout_codes();
 }; // namespace gctools

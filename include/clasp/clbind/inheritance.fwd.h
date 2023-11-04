@@ -6,7 +6,8 @@ namespace detail {
 
 typedef void *(*cast_function)(void *);
 
-struct edge {
+class edge {
+public:
   edge(class_id target, cast_function cast)
       : target(target), cast(cast) {}
   edge() {};
@@ -18,7 +19,8 @@ inline bool operator<(edge const &x, edge const &y) {
   return x.target < y.target;
 }
 
-struct vertex {
+class vertex {
+public:
   vertex(class_id id)
     : id(id) {}
 

@@ -61,7 +61,7 @@ typedef int32_t integer32_t;
 typedef int64_t integer64_t;
 
 namespace core {
-  class Vaslist;
+  struct Vaslist;
   class Code_S;
 };
 
