@@ -39,6 +39,7 @@ SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 }
 
 bool SimpleBitVector_O::equal(T_sp other) const {
+  if (!other.generalp()) return false;
   if (this == &*other) return true;
   if (SimpleBitVector_sp sbv = other.asOrNull<SimpleBitVector_O>()) {
     if (this->length()!=sbv->length()) return false;

@@ -442,7 +442,8 @@ string SourcePosInfo_O::__repr__() const {
 
 #if 0
 bool SourcePosInfo_O::equalp(T_sp other) const {
-  if (this == &*other) { return true; };
+  if (!other.generalp()) return false;
+  if (this == &*other) return true;
   if (!gc::IsA<SourcePosInfo_sp>(other)) return false;
   SourcePosInfo_sp spi_other = gc::As_unsafe<SourcePosInfo_sp>(other);
   if (this->_FileId != spi_other->_FileId) return false;
