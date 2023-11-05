@@ -87,9 +87,8 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(getf)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
-  if (plist.nilp())
-    return (default_value);
-  return plist.asCons()->getf(indicator, default_value);
+  if (plist.consp()) return gc::As_unsafe<Cons_sp>(plist)->getf(indicator, default_value);
+  return default_value;
 };
 
 CL_LAMBDA(plist indicator);
@@ -402,15 +401,32 @@ List_sp Cons_O::subseq(cl_index start, T_sp end) const {
 // Constructor
 //
 SYMBOL_EXPORT_SC_(ClPkg, getf);
+#if 1
 T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
-  
-  for (List_sp cur = this->asSmartPtr(); cur.notnilp(); cur = oCddr(cur)) {
-    if (key == oCar(cur)) {
-      return ((oCadr(cur)));
-    }
+  T_sp cur = this->asSmartPtr();
+  while (cur.consp()) {
+    T_sp ccur = CONS_CDR(cur);
+    unlikely_if (!ccur.consp()) TYPE_ERROR_PROPER_LIST(ccur);
+    if (key == CONS_CAR(cur)) return CONS_CAR(ccur);
+    cur = CONS_CDR(ccur);
   }
-  return ((defVal));
+  unlikely_if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(cur);
+  return defVal;
 }
+#else
+
+T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
+  T_sp cur = this->asSmartPtr();
+  while (cur.notnilp()) {
+    if (!cur.consp() || !oCdr(cur).consp()) TYPE_ERROR_PROPER_LIST(cur);
+    if (key == oCar(cur)) {
+      return oCadr(cur);
+    }
+    cur = oCddr(cur);
+  }
+  return defVal;
+}
+#endif
 
 bool Cons_O::equal(T_sp obj) const {
   if (!obj.consp()) return false;
@@ -473,38 +489,37 @@ CL_DEFUN List_sp core__list_nreverse(List_sp list) {
 
 List_sp Cons_O::revappend(T_sp tail) {
   List_sp reversed = nil<T_O>();
-  List_sp cur = this->asSmartPtr();
+  T_sp cur = this->asSmartPtr();
+  T_sp initial = cur;
   List_sp first_reversed;
-  while (cur.notnilp()) {
-    reversed = Cons_O::create(oCar(cur), reversed);
-    if (!first_reversed) {
-      first_reversed = reversed;
-    }
-    cur = oCdr(cur);
+  while (cur.consp()) {
+    reversed = Cons_O::create(CONS_CAR(cur), reversed);
+    if (!first_reversed) first_reversed = reversed;
+    cur = CONS_CDR(cur);
   }
+  if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(cur);
   first_reversed.asCons()->setCdr(tail);
-  return ((reversed));
+  return reversed;
 }
 
 
 List_sp Cons_O::nreconc(T_sp tail) {
-  
   List_sp reversed = nil<T_O>();
   Cons_sp original_first = this->asSmartPtr();
-  List_sp cur = original_first;
-  List_sp hold = nil<T_O>();
-  while (cur.notnilp()) {
-    hold = oCdr(cur);
-    cur.asCons()->setCdr(reversed);
+  T_sp cur = original_first;
+  T_sp hold = nil<T_O>();
+  while (cur.consp()) {
+    hold = CONS_CDR(cur);
+    gc::As_unsafe<Cons_sp>(cur)->setCdr(reversed);
     reversed = cur;
     cur = hold;
   }
+  if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(cur);
   original_first->setCdr(tail);
-  return ((reversed));
+  return reversed;
 }
 
 T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
-  
   if (index >= (int)this->length()) {
     SIMPLE_ERROR("Index[{}] is beyond the length[{}] of the cons", index , this->length());
   }
