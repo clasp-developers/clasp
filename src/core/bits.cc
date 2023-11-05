@@ -253,7 +253,7 @@ mp_size_t next_xor(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
     if (len2 < 0) {
       // Both negative. Result is positive.
       // (-x) ^ (-y) = ~(x-1) ^ ~(y-1) = (x-1) ^ (y-1)
-      mp_size_t size1 = -len1, size2 = -len2, result_size;
+      mp_size_t size1 = -len1, size2 = -len2;
       mp_limb_t temp1[size1];
       mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
       mp_limb_t temp2[size2];

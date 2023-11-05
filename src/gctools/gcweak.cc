@@ -478,7 +478,6 @@ DOCGROUP(clasp);
 CL_DEFUN core::Vector_sp weak_key_hash_table_pairs(const gctools::WeakKeyHashTable& ht) {
   size_t len = (*ht._Keys).length();
   core::ComplexVector_T_sp keyvalues = core::ComplexVector_T_O::make(len*2,nil<core::T_O>(),core::make_fixnum(0));
-  size_t idx(0);
   HT_READ_LOCK(&ht);
   for ( size_t i(0); i<len; ++i ) {
     if ( (*ht._Keys)[i].raw_() &&

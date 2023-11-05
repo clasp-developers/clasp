@@ -256,7 +256,6 @@ CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp stream) {
 //    .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
 //    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
 //    .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
-  bool stringOutputStream = false;
   llvm::SmallString<1024> stringOutput;
   llvm::raw_svector_ostream ostream(stringOutput);
   core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(obj);

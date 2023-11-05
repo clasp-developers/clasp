@@ -49,7 +49,6 @@ void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& BL) {
   size_t PageSize = getpagesize();
   auto rwxProt = llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE | llvm::sys::Memory::MF_EXEC;
   for (auto &KV : BL.segments()) {
-    const auto &AG = KV.first;
     auto &Seg = KV.second;
     uint64_t SegSize =
         alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize );
@@ -552,7 +551,7 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
 {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s entered looking for instruction_pointer@%p search Code_O objects\n", __FILE__, __LINE__, __FUNCTION__, instruction_pointer ));
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
-  size_t count;
+  size_t count = 0;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, (char*)instruction_pointer, cur.raw_()));
   if ((cur.nilp()) && verbose){
     core::clasp_write_string(fmt::format("No object files registered - cannot find object file for address {}\n" , (void*)instruction_pointer));
@@ -678,7 +677,6 @@ CL_DEFUN void ext__generate_perf_map() {
   FILE* fout = fopen(ss.str().c_str(),"w");
   jit_code_entry* jce = __jit_debug_descriptor.first_entry;
   ql::list ll;
-  size_t idx;
   while (jce) {
     const char* of_start = jce->symfile_addr;
     size_t of_length = jce->symfile_size;
@@ -847,7 +845,6 @@ size_t countObjectFileNames(const std::string& name) {
 };
 
 CL_DEFUN core::T_sp llvm_sys__allObjectFileNames() {
-  size_t count = 0;
   core::T_sp result = nil<core::T_O>();
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   while ( cur.consp() ) {

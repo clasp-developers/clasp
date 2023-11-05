@@ -726,7 +726,7 @@ GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make(Function_sp generic_function)
   T_mv compiled = eval::funcall(clos::_sym_bytecode_dtree_compile, generic_function);
   SimpleVector_byte8_t_sp bytecode = gc::As<SimpleVector_byte8_t_sp>(compiled);
   MultipleValues &mv = my_thread->_MultipleValues;
-  SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
+  //SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
   SimpleVector_sp literals = mv.third(compiled.number_of_values());
   size_t specialized_length = mv.fourth(compiled.number_of_values()).unsafe_fixnum();
   auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate(fdesc, 0, bytecode, literals, generic_function, specialized_length);

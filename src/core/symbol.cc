@@ -611,7 +611,7 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
         ss << ":" << this->_Name->get_std_string();
       } else {
         Package_sp currentPackage = _lisp->getCurrentPackage();
-        if (prefixAlways) {
+        if (prefixAlways || myPackage != currentPackage) {
           ss << myPackage->getName() << "::" << this->_Name->get_std_string();
         } else {
           ss << this->_Name->get_std_string();

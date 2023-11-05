@@ -150,7 +150,6 @@ void walk_elf_symbol_table(struct dl_phdr_info *info,
       for (ii = 0; ii < count; ++ii) {
         GElf_Sym sym;
         gelf_getsym(data, ii, &sym);
-        int seg = sym.st_shndx;
         uintptr_t addr = 0;
         symbol_start = (uintptr_t)sym.st_value + addr; // symbols are loaded at 0x0 // +start;
         symbol_end = symbol_start+sym.st_size;
@@ -442,7 +441,6 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
   }
   SymbolTable symbol_table;
   BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
-  gctools::clasp_ptr_t library_end = (gctools::clasp_ptr_t)library_origin;
   OpenDynamicLibraryInfo* odli = NULL;
   LoadableKind loadable;
   if (is_executable) {

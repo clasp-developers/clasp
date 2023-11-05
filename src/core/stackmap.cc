@@ -25,7 +25,6 @@ static T read_then_advance(uintptr_t& address) {
 static bool parse_header(uintptr_t& address, uintptr_t end, smHeader& header,
                          size_t& NumFunctions, size_t& NumConstants,
                          size_t& NumRecords) {
-  uintptr_t headerAddress = address;
   header.version = read_then_advance<uint8_t>(address);
   header.reserved0 = read_then_advance<uint8_t>(address);
   header.reserved1 = read_then_advance<uint16_t>(address);
@@ -40,7 +39,6 @@ static bool parse_header(uintptr_t& address, uintptr_t end, smHeader& header,
 }
 
 static void parse_function(uintptr_t& address, smStkSizeRecord& function) {
-  uintptr_t functionAddress = address;
   function.FunctionAddress = read_then_advance<uint64_t>(address);
   function.StackSize = read_then_advance<uint64_t>(address);
   function.RecordCount = read_then_advance<uint64_t>(address);
@@ -55,9 +53,9 @@ static void parse_record(std::function<void(size_t, const smStkSizeRecord&,
                          uintptr_t& address, size_t functionIndex,
                          const smStkSizeRecord& function,
                          smStkMapRecord& record) {
-  uintptr_t recordAddress = address;
+  [[maybe_unused]]uintptr_t recordAddress = address;
   uint64_t patchPointID = read_then_advance<uint64_t>(address);
-  uint32_t instructionOffset = read_then_advance<uint32_t>(address);
+  [[maybe_unused]]uint32_t instructionOffset = read_then_advance<uint32_t>(address);
   /* record.Reserved = */ read_then_advance<uint16_t>(address);
   size_t NumLocations = read_then_advance<uint16_t>(address);
   for ( size_t index=0; index<NumLocations; ++index ) {
@@ -130,7 +128,6 @@ void walk_one_llvm_stackmap(std::function<void(size_t, const smStkSizeRecord&, i
     uint64_t constant;
     parse_constant(address,constant);
   }
-  size_t functionIndex = 0;
   for ( size_t functionIndex = 0; functionIndex < NumFunctions; ++functionIndex ) {
     smStkSizeRecord function;
     parse_function(functionAddress,function);

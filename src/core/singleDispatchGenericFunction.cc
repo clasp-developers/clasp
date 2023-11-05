@@ -101,7 +101,6 @@ CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_f
       ASSERT(gc::IsA<Symbol_sp>(gfname));
       Symbol_sp gfname_symbol = gc::As_unsafe<Symbol_sp>(gfname);
       if (gfname_symbol->fboundp()) {
-        T_sp symFunc = gfname_symbol->symbolFunction();
         SIMPLE_ERROR("The symbol {} has something bound to its function slot but not a single dispatch generic function", _rep_(gfname));
       }
       gfn = SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(gfname,singleDispatchArgumentIndex, lambdaList);

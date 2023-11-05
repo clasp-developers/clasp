@@ -427,7 +427,6 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
     }
     return Values(nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
-  Function_sp fsym = coerce::functionDesignator(sym);
   return Values(nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
@@ -765,7 +764,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     std::string uniqueName = llvmo::ensureUniqueMemoryBufferName(tryUniqueName.str());
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false));
-    llvmo::ObjectFile_sp objectFile =
+    [[maybe_unused]]llvmo::ObjectFile_sp objectFile =
         jit->addObjectFile(jitDylib, std::move(memoryBuffer), print.notnilp(), header->_ObjectFiles[fasoIndex]._ObjectId);
     //    printf("%s:%d:%s addObjectFile objectFile = %p badge: 0x%0x jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__,
     //    objectFile.raw_(), lisp_badge(objectFile), jitDylib.raw_());
@@ -833,13 +832,9 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig) {
     close(fd);
     SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(pathDesig), strerror(errno));
   }
-  llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
   FasoHeader *header = (FasoHeader *)memory;
   clasp_write_string(fmt::format("NumberOfObjectFiles {}\n", header->_NumberOfObjectFiles));
   for (size_t fasoIndex = 0; fasoIndex < header->_NumberOfObjectFiles; ++fasoIndex) {
-    size_t fasoIndexd = header->_ObjectFiles[fasoIndex]._ObjectId;
-    void *of_start = (void *)((char *)header + header->_ObjectFiles[fasoIndex]._StartPage * header->_PageSize);
-    size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
     //    clasp_write_string(fmt::format("Adding faso {} object file {} to jit\n" , _rep_(filename) , fasoIndex));
     clasp_write_string(fmt::format("Object file {}  ObjectId: {} start-page: {}  bytes: {} pages: {}\n", fasoIndex,
                                  header->_ObjectFiles[fasoIndex]._ObjectId, header->_ObjectFiles[fasoIndex]._StartPage,
@@ -1162,7 +1157,6 @@ CL_DOCSTRING(R"dx(multipleValueFuncall)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
   MAKE_STACK_FRAME(frame, MultipleValues::MultipleValuesLimit);
-  size_t numArgs = 0;
   size_t idx = 0;
   for (auto cur : thunks) {
     Function_sp tfunc = gc::As<Function_sp>(oCar(cur));

@@ -148,7 +148,7 @@ T_mv apply0_inner_valist(Function_sp func, Vaslist_sp var) {
   T_O *a0, *a1, *a2, *a3;
   int lenRest = var->nargs();
   int nargs = lenRest + 0;
-  Vaslist* vaslist = &*var;
+  //Vaslist* vaslist = &*var;
   switch (lenRest) {
   case 0: 
       return (*func).entry_0()(func.raw_());
@@ -739,7 +739,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
   // First check for a (declare (core:function-name XXX))
   for ( auto cur : declares ) {
-    T_sp decl = CONS_CAR(declares);
+    T_sp decl = CONS_CAR(cur);
     if (decl.consp()) {
       if (oCar(decl) == core::_sym_dump_module) {
         return oCadr(decl);
@@ -770,7 +770,6 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
     T_sp first = oCar(form);
     if ((first).consp()) {
       if (oCar(first) == cl::_sym_block) {
-        T_sp second = oCadr(first);
         Symbol_sp name = gc::As<Symbol_sp>(oCadr(first));
         if (name.notnilp()) {
           // Only return block name if not nil

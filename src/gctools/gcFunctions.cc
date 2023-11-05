@@ -835,7 +835,6 @@ CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) {
 };
 
 bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& ss) {
-  bool metrics_file = false;
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   bool debugging = false;
   bool use_boehm_memory_marker = false;
@@ -1200,7 +1199,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (fmt::format("DISABLE_TYPE_INFERENCE = {}\n" , (disable_type_inference ? "**DEFINED**" : "undefined") ));
 
-  bool use_compile_file_parallel = true;
 #if USE_COMPILE_FILE_PARALLEL == 0
   use_compile_file_parallel = false;
   INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(nil<core::T_O>());
@@ -1210,7 +1208,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (fmt::format("USE_COMPILE_FILE_PARALLEL = {}\n" , USE_COMPILE_FILE_PARALLEL));
   
-  bool force_startup_external_linkage = true;
 #if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
   force_startup_external_linkage = false;
   INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(nil<core::T_O>());
@@ -1314,7 +1311,7 @@ DOCGROUP(clasp);
 CL_DEFUN void gctools__configuration()
 {
   stringstream ss;
-  bool debugging = debugging_configuration(false,true,ss);
+  [[maybe_unused]]bool debugging = debugging_configuration(false,true,ss);
   core::clasp_writeln_string(ss.str());
 }
 

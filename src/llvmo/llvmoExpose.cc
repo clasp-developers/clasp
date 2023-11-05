@@ -454,7 +454,6 @@ CL_DEFUN core::T_mv llvm_sys__linkModules(Module_sp linkedModule, Module_sp modu
   // Take ownership of the pointer and give it to the linker
   llvm::Module* linkedModulePtr = linkedModule->wrappedPtr();
   llvm::Module* mptr = module->wrappedPtr();
-  llvm::LLVMContext &Ctx = mptr->getContext();
   module->reset_wrappedPtr();
   std::unique_ptr<llvm::Module> u_module(mptr);
 //  Ctx.setDiagnosticHandler(std::make_unique<ClaspDiagnosticHandler>(), true);
@@ -1365,7 +1364,6 @@ CL_DEFUN bool llvm_sys__valid(core::T_sp value) {
 namespace llvmo {
 
 void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type *> &velements) {
-  core::T_sp save_elements = elements;
   if (elements.nilp()) {
     return;
   } else if (core::Cons_sp celements = elements.asOrNull<core::Cons_O>()) {
@@ -1509,7 +1507,6 @@ CL_DEFMETHOD void Module_O::moduleDelete() {
 
 CL_LISPIFY_NAME("dump_namedMDList");
 CL_DEFMETHOD void Module_O::dump_namedMDList() const {
-  llvm::Module *M = this->wrappedPtr();
   IMPLEMENT_MEF("Come up with a way to dump the MDList without using dump() (only enabled when LLVM_ENABLE_DUMP is on)");
 }
 
@@ -1712,7 +1709,7 @@ CL_LISPIFY_NAME(struct-layout-get-element-offset);
 CL_DEFMETHOD size_t StructLayout_O::getElementOffset(size_t idx) const
 {
   size_t offset = this->_StructLayout->getElementOffset(idx);
-  return this->_StructLayout->getElementOffset(idx);
+  return offset;
 }
 
 }; // llvmo
@@ -1945,7 +1942,7 @@ CL_DOCSTRING(R"dx(Erase the instruction from its parent basic block and return t
 DOCGROUP(clasp);
 CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr)
 {
-  llvm::SymbolTableList<llvm::Instruction>::iterator next = instr->wrappedPtr()->eraseFromParent();
+  [[maybe_unused]]llvm::SymbolTableList<llvm::Instruction>::iterator next = instr->wrappedPtr()->eraseFromParent();
 }
 
 CL_DOCSTRING(R"dx(Return the next non-debug instruction or NIL if there is none)dx");

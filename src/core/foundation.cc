@@ -96,7 +96,6 @@ void dump_class_ids() {
     printf("The global_registered_ids_ptr is NULL\n");
     return;
   }
-  char buffer[1024];
   for (auto it : (*global_registered_ids_ptr)) {
     const char *fnName = it.first.name();
     size_t length;
@@ -888,7 +887,6 @@ List_sp lisp_lexical_variable_names(List_sp lambda_list, bool &trivial_wrapper) 
   RestArgument restarg;
   T_sp key_flag;
   T_sp allow_other_keys;
-  T_sp decl_dict = nil<T_O>();
   parse_lambda_list(lambda_list, cl::_sym_function, reqs, optionals, restarg, key_flag, keys, allow_other_keys, auxs);
   //
   // trivial_wrapper is true if only required arguments are in lambda_list
@@ -1279,7 +1277,6 @@ T_sp lisp_createFixnum(int fn) { return make_fixnum(fn); }
 SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos, int lineno) {
   SimpleBaseString_sp fn = SimpleBaseString_O::make(fileName);
   T_mv sfi_mv = core__file_scope(fn);
-  FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
   MultipleValues &mvn = core::lisp_multipleValues();
   Fixnum_sp handle = gc::As<Fixnum_sp>(mvn.valueGet(1, sfi_mv.number_of_values()));
   int sfindex = unbox_fixnum(handle);

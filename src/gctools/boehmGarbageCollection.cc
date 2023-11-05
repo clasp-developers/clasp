@@ -114,7 +114,6 @@ void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *cli
     uintptr_t tag = (uintptr_t)tp&0xf;
     if (GC_is_heap_ptr(tp) && (tag == GENERAL_TAG || tag == CONS_TAG)) {
       void* obj = gctools::untag_object(tp);
-      uintptr_t addr = (uintptr_t)obj;
       void* base = gctools::GeneralPtrToHeaderPtr(obj);
 #if 0
       printf("%s:%d Looking at cur->%p\n", __FILE__, __LINE__, cur);
@@ -147,8 +146,6 @@ size_t dumpResults(const std::string &name, T *data, std::ostringstream& OutputS
                                        return (x.totalSize > y.totalSize);
                                      });
   size_t idx = 0;
-  size_t totalCons = 0;
-  size_t numCons = 0;
   for (auto it : values) {
     // Does that print? If so should go to the OutputStream
     size_t sz = it.print(OutputStream);
@@ -184,9 +181,7 @@ size_t summarizeResults(T *data, Summary& summary ) {
     values.push_back(it.second);
   }
   size_t idx = 0;
-  size_t totalCons = 0;
   size_t totalSize = 0;
-  size_t numCons = 0;
   for (auto it : values) {
     // Does that print? If so should go to the OutputStream
     Fixnum k = it._Kind;
@@ -269,7 +264,7 @@ void run_finalizers(core::T_sp obj, void* data)
 
 void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* data)
 {
-  gctools::Header_s* header = (gctools::Header_s*)((char*)client - sizeof(gctools::Header_s));
+//  gctools::Header_s* header = (gctools::Header_s*)((char*)client - sizeof(gctools::Header_s));
 //  printf("%s:%d:%s for client: %p stamp: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)client, header->_badge_stamp_wtag_mtag.stamp());
 //  printf("         obj class from stamp -> %s\n", obj_name(header->_badge_stamp_wtag_mtag.stamp()) );
   if ((uintptr_t)client&gctools::ptag_mask) {
@@ -393,7 +388,6 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
     void* base = SmartPtrToBasePtr(object);
     GC_register_finalizer_no_order(base,NULL,NULL,&orig_finalizer,&data);
     if ( data != NULL ) {
-      gctools::Tagged list_tagged = *reinterpret_cast<gctools::Tagged*>(data);
       GC_free(data);
       data = NULL;
     }
@@ -404,7 +398,6 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
     void* base = (void*)gctools::ConsPtrToHeaderPtr(&*object);
     GC_register_finalizer_no_order(base,NULL,NULL,&orig_finalizer,&data);
     if ( data != NULL ) {
-      gctools::Tagged list_tagged = *reinterpret_cast<gctools::Tagged*>(data);
       GC_free(data);
       data = NULL;
     }

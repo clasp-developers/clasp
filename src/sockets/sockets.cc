@@ -865,7 +865,6 @@ CL_DEFUN int sockets_internal__do_select(core::T_sp to_secs,
                                          unsigned int to_musecs,
                                          core::Pointer_sp rfds,
                                          int max_fd) {
-  int count;
   struct timeval tv;
   if (to_secs.fixnump()) {
     tv.tv_sec = to_secs.unsafe_fixnum();

@@ -237,7 +237,6 @@ void Lisp::shutdownLispEnvironment() {
 }
 
 void Lisp::lisp_initSymbols(LispPtr lisp) {
-  Package_sp corePackage = lisp->_Roots._CorePackage;
 }
 
 /*! Allocations go here
@@ -1795,7 +1794,6 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
           ss << cl__class_of(cl__symbol_function((sym)))->_classNameAsString();
           T_sp tfn = cl__symbol_function(sym);
           if ( !tfn.unboundp() && gc::IsA<Function_sp>(tfn)) {
-            Function_sp fn = gc::As_unsafe<Function_sp>(tfn);
             if (sym->macroP()) ss << "(MACRO)";
           }
         }
@@ -1992,8 +1990,8 @@ DOCGROUP(clasp);
 NEVER_OPTIMIZE
 CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
   // These are volatile in an effort to make them available to debuggers.
-  volatile T_sp saved_datum = datum;
-  volatile List_sp saved_initializers = initializers;
+  [[maybe_unused]]volatile T_sp saved_datum = datum;
+  [[maybe_unused]]volatile List_sp saved_initializers = initializers;
   T_sp objErrorDepth = _sym_STARnestedErrorDepthSTAR->symbolValue();
   int nestedErrorDepth;
   /* *nested-error-depth* should be a fixnum, but if it's not we can't signal
@@ -2163,7 +2161,6 @@ void Lisp::parseStringIntoPackageAndSymbolName(const string &name, bool &package
 Symbol_mv Lisp::intern(const string &name, T_sp optionalPackageDesignator) {
   Package_sp package;
   string symbolName;
-  bool exported, packageDefined;
   symbolName = name;
   package = coerce::packageDesignator(optionalPackageDesignator);
   ASSERTNOTNULL(package);
@@ -2304,7 +2301,6 @@ bool Lisp::load(int &exitCode) {
 
 int Lisp::run() {
   int exitCode;
-  MultipleValues &mvn = core::lisp_multipleValues();
   try {
     if (ext::_sym_STARtoplevel_hookSTAR->symbolValue().notnilp()) {
       core::T_sp fn = ext::_sym_STARtoplevel_hookSTAR->symbolValue();

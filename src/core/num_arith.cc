@@ -69,7 +69,6 @@ Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
   case_Bignum_v_Fixnum : {
       T_mv trunc = core__next_ftruncate(gc::As_unsafe<Bignum_sp>(x),
                                         y.unsafe_fixnum());
-      T_sp quotient = trunc;
       return gc::As_unsafe<Integer_sp>(trunc);
     }
   case_Bignum_v_Bignum : {
@@ -79,7 +78,6 @@ Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
       // Would save some heap allocation.
       T_mv trunc = core__next_truncate(gc::As_unsafe<Bignum_sp>(x),
                                        gc::As_unsafe<Bignum_sp>(y));
-      T_sp quotient = trunc;
       return gc::As_unsafe<Integer_sp>(trunc);
     }
   };

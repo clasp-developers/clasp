@@ -1095,7 +1095,6 @@ void Module_O::link_load(T_sp compile_info) {
   SimpleVector_sp debug_info = cmodule->create_debug_info();
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make();
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
-  size_t function_index = 0;
   // Create the real function objects.
   for (T_sp tfun : *cfunctions) {
     Cfunction_sp cfunction = gc::As_assert<Cfunction_sp>(tfun);
@@ -1500,7 +1499,6 @@ Lexenv_sp compile_optional_or_key_item(Symbol_sp var, T_sp defaulting_form, Lexi
                                        Lexenv_sp env, List_sp vardecls, List_sp spdecls) {
   Label_sp supplied_label = Label_O::make();
   Label_sp next_label = Label_O::make();
-  T_sp supinfo = nil<T_O>();
   context.emit_jump_if_supplied(supplied_label, varinfo->frameIndex());
   // Emit code for the case of the variable not being supplied:
   // Bind the var to the default, and the suppliedvar to NIL if applicable.
@@ -2505,7 +2503,6 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
   // not a special form
   else {
     if (gc::IsA<Symbol_sp>(head)) {
-      Symbol_sp shead = gc::As_unsafe<Symbol_sp>(head);
       FunInfoV info = fun_info_v(head, env);
       if (std::holds_alternative<GlobalMacroInfoV>(info)) {
         Function_sp expander = std::get<GlobalMacroInfoV>(info).expander();

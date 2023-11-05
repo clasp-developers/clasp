@@ -81,7 +81,6 @@ void first_exit() {
 }
 
 void last_exit() {
-  struct timespec now_time;
   systemReadClock(global__end_end_time);
   size_t seconds = global__end_end_time.tv_sec - global__start_end_time.tv_sec;
   if (strcmp(getenv("CLASP_TIME_EXIT"),"wait-")==0 ||

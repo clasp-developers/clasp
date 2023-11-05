@@ -461,7 +461,6 @@ GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription
                                                              size_t bytecodeSize,
                                                              Pointer_sp trampoline )
 {
-  size_t idx = 0;
   ClaspXepFunction xep;
   xep.setup<BytecodeClosureEntryPoint>();
   auto entryPoint = gctools::GC<GlobalBytecodeSimpleFun_O>::allocate( fdesc,

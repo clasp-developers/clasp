@@ -1015,7 +1015,6 @@ KeyValuePair* HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   }
   gc::Vec0<KeyValuePair> oldTable;
   oldTable.swap(this->_Table);
-  size_t oldHashTableCount = this->_HashTableCount;
   newSize = this->resizeEmptyTable_no_lock(newSize);
   LOG("Resizing table to size: {}" , newSize);
   size_t oldSize = oldTable.size();

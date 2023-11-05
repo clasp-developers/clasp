@@ -97,7 +97,6 @@ bool BootStrapCoreSymbolMap::find_symbol(string const &packageName, string const
 
 void BootStrapCoreSymbolMap::finish_setup_of_symbols() {
   //printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
-  int idxEnd = this->_SymbolNamesToIndex.size();
   for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin();
        it != this->_SymbolNamesToIndex.end(); it++) {
     int idx = it->second;

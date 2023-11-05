@@ -836,8 +836,6 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       SIMPLE_ERROR("Unprintable pathname {} found in TRUENAME", _rep_(pathname));
     }
   }
-  T_sp original_pathname = pathname;
-  T_sp original_filename = filename;
   kind = file_kind((char *)gc::As<String_sp>(filename)->get_std_string().c_str(), false);
   //  kind = smart_file_kind( filename, false);
   if (kind.nilp()) {

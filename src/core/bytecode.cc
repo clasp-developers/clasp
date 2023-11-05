@@ -739,7 +739,6 @@ gctools::return_type bytecode_vm(VirtualMachine& vm,
     case vm_entry: {
       uint8_t n = *(++pc);
       DBG_VM("entry %" PRIu8 "\n", n);
-      T_O** old_sp = sp;
       pc++;
       jmp_buf target;
       void* frame = __builtin_frame_address(0);
@@ -1269,7 +1268,6 @@ static unsigned char *long_dispatch(VirtualMachine& vm,
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM("long entry %" PRIu16 "\n", n);
-    T_O** old_sp = sp;
     pc++;
     jmp_buf target;
     void* frame = __builtin_frame_address(0);

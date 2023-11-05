@@ -538,8 +538,7 @@ CL_DEFUN core::T_sp mp__process_enable(Process_sp process)
 {
   /* process_env and ok are changed after the setjmp call in
    * ECL_UNWIND_PROTECT_BEGIN, so they need to be declared volatile */
-  volatile core::cl_env_ptr process_env = NULL;
-  core::cl_env_ptr the_env = core::clasp_process_env();
+  //core::cl_env_ptr the_env = core::clasp_process_env();
   volatile int ok = 0;
   core::funwind_protect( [&]() {
     /* Try to gain exclusive access to the process at the same

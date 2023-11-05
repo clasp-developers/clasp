@@ -244,7 +244,6 @@ size_t Array_O::arrayRowMajorIndex(Vaslist_sp indices) const {
   }
   size_t offset = 0;
   size_t idx = 0;
-  size_t idxEnd(indices_passed);
   for ( ; idx<rank; ++idx ) {
     core::T_sp one((gctools::Tagged)(*indices)[idx]);
     size_t curDimension = this->arrayDimension(idx);
@@ -1186,7 +1185,7 @@ CL_DEFUN Array_sp ext__array_storage_vector(Array_sp source )
     SIMPLE_ERROR("array-storage-vector cannot be used with displaced arrays");
   }
   AbstractSimpleVector_sp bsv;
-  size_t ostart, oend;
+  size_t ostart=0, oend;
   ASSERT(ostart==0);
   source->asAbstractSimpleVectorRange(bsv,ostart,oend);
   return bsv;

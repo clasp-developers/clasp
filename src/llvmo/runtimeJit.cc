@@ -232,7 +232,6 @@ public:
       }
     private:
       Error applyProtections() {
-        size_t PageSize = getpagesize();
         JITMemoryReadExecute(BL);
         return Error::success();
       }
@@ -245,7 +244,7 @@ public:
     //
     BasicLayout BL(G);
     size_t segmentCount = 0;
-    for ( auto& KV : BL.segments() ) {
+    for ( [[maybe_unused]]auto& KV : BL.segments() ) {
       segmentCount++;
     }
     
@@ -286,11 +285,11 @@ public:
 #endif
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating JD = %p \n", __FILE__, __LINE__, __FUNCTION__, JD ));
       ObjectFile_sp codeObject;
-      size_t objectId = objectIdFromName(G.getName());
+      [[maybe_unused]]size_t objectId = objectIdFromName(G.getName());
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to allocate ObjectFile_sp with name %s  objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str(), objectId ));
       codeObject = lookupObjectFile(G.getName());
       codeObject->_CodeBlock = codeBlock;
-      core::SimpleBaseString_sp codeName = createSimpleBaseStringForStage(G.getName());
+      [[maybe_unused]]core::SimpleBaseString_sp codeName = createSimpleBaseStringForStage(G.getName());
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s looked up codeObject = %p with name: %s\n", __FILE__, __LINE__, __FUNCTION__, &*codeObject, _rep_(codeName).c_str() ));
     } else {
       for ( auto& KV : BL.segments() ) {
@@ -468,7 +467,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered with G.getName() = %s\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str() ));
     uintptr_t textStart = ~0;
     uintptr_t textEnd = 0;
-    bool gotGcroots = false;
     ObjectFile_sp currentCode = lookupObjectFile(G.getName());
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     currentCode: %p\n", __FILE__, __LINE__, __FUNCTION__, &*currentCode ));
     for (auto &S : G.sections()) {
@@ -480,8 +478,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         llvm::jitlink::SectionRange range(S);
         for ( auto& sym : S.symbols() ) {
           std::string name = sym->getName().str();
-          void* address = (void*)sym->getAddress().getValue();
-          size_t size = sym->getSize();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
         }
       }
@@ -523,8 +519,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         }
       } else if (sectionName.find(EH_FRAME_NAME)!=string::npos) {
         llvm::jitlink::SectionRange range(S);
-        void* start = (void*)range.getStart().getValue();
-        uintptr_t size = range.getSize();
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
       } else if (sectionName.find(STACKMAPS_NAME)!=string::npos) {
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range currentCode %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(currentCode).c_str() ));
@@ -553,8 +547,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
     //
-    size_t gcroots_in_module_name_len = gcroots_in_module_name.size();
-    size_t literals_name_len = literals_name.size();
     bool found_gcroots_in_module = false;
     bool found_literals = false;
     for (auto ssym : G.defined_symbols()) {
@@ -582,7 +574,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         if (pos!=std::string::npos) {
           found_gcroots_in_module = true;
           void* address = (void*)ssym->getAddress().getValue();
-          size_t size = ssym->getSize();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
                                     gcroots_in_module_name.c_str(),
                                     address, size ));

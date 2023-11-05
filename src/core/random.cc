@@ -77,7 +77,6 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
   } else if (gc::IsA<Bignum_sp>(olimit)) {
     Bignum_sp gbn = gc::As_unsafe<Bignum_sp>(olimit);
     mp_size_t len = gbn->length();
-    const mp_limb_t* limbs = gbn->limbs();
     if (len < 1) TYPE_ERROR_cl_random(olimit); // positive only
     mp_limb_t res[len];
     const mp_limb_t minlimb = std::numeric_limits<mp_limb_t>::min();

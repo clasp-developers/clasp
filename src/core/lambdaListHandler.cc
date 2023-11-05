@@ -718,7 +718,6 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   RestArgument restarg;
   T_sp key_flag;
   T_sp allow_other_keys;
-  T_sp decl_dict = nil<T_O>();
   parse_lambda_list(lambdaList,
                     context,
                     reqs,

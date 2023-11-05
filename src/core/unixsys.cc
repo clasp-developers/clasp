@@ -264,8 +264,8 @@ CL_DEFUN T_sp sys__killpid(T_sp pid, T_sp signal)
 void describe_fildes(int fildes, const char* name) 
 {
   struct stat info;
-  int fstat_error = fstat( fildes, &info );
-  int fdflags, tmp, oflags;
+  [[maybe_unused]]int fstat_error = fstat( fildes, &info );
+  int fdflags;
   if ((fdflags = fcntl(fildes, F_GETFL, 0)) < 0) perror("fcntl failed");
   printf("%s:%d name: %s filedes: %d  fdflags = %d\n", __FUNCTION__, __LINE__, name, fildes, fdflags );
 }

@@ -237,7 +237,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
     case fixed_field:
       {
         size_t data_type = codes[idx].data0;
-        size_t index = local_stamp_layout[cur_stamp].number_of_fields;
         const char* field_name = codes[idx].description;
         size_t field_offset = codes[idx].data2;
         if (walk == lldb_info) {
@@ -387,7 +386,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout)
     case variable_field:
       {
         size_t data_type = codes[idx].data0;
-        size_t index = local_stamp_layout[cur_stamp].container_layout->number_of_fields;
         size_t field_offset = codes[idx].data2;
         const char* field_name = codes[idx].description;
         if (walk == lldb_info) fmt::print(fout, "{}Init__variable_field( stamp={}, index={}, data_type={}, field_name=\"{}\", field_offset={} )\n",

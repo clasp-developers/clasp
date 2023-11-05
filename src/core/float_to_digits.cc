@@ -94,7 +94,6 @@ static float_approx *setup(Float_sp number, float_approx *approx) {
   }
   approx->low_ok = approx->high_ok = clasp_evenp(f);
   if (e > 0) {
-    Fixnum_sp zz(make_fixnum(1));
     Real_sp be = EXPT_RADIX(e);
     if (limit_f) {
       Real_sp be1 = gc::As<Real_sp>(clasp_times(be, clasp_make_fixnum(FLT_RADIX)));
@@ -207,7 +206,6 @@ change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
     {
       Real_sp e1 = gc::As<Real_sp>(cl__expt(PRINT_BASE, position));
       Real_sp e2 = gc::As<Real_sp>(clasp_divide(e1, clasp_make_fixnum(2)));
-      Real_sp e3 = gc::As<Real_sp>(cl__expt(PRINT_BASE, k));
       if (clasp_greatereq(clasp_plus(approx->r, clasp_times(approx->s, e1)),
                           clasp_times(approx->s, e2)))
         position = gc::As<Real_sp>(clasp_one_minus(position));

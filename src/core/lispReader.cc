@@ -556,7 +556,6 @@ void apply_readtable_case(Token& token, size_t start, size_t end) {
 
 
 SimpleString_sp symbolTokenStr(T_sp stream, Token &token, size_t start, size_t end, bool only_dots_ok=false) {
-  bool extended = false;
   SafeBufferStrWNs buffer;
   apply_readtable_case(token,start,end);
   bool only_dots = true;
@@ -583,7 +582,6 @@ SimpleString_sp symbolTokenStr(T_sp stream, Token &token, size_t start, size_t e
 }
 
 SimpleString_sp tokenStr(T_sp stream, const Token &token, size_t start = 0, size_t end = UNDEF_UINT, bool only_dots_ok=false) {
-  bool extended = false;
   if (end==UNDEF_UINT) end = token.size();
   SafeBufferStrWNs buffer;
   bool only_dots = true;

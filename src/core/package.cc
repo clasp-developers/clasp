@@ -900,7 +900,6 @@ void Package_O::unexport(Symbol_sp sym) {
       goto package_lock_violation;
     SimpleString_sp nameKey = sym->_Name;
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
-    Symbol_sp foundSym = gc::As<Symbol_sp>(values);
     Symbol_sp status = gc::As<Symbol_sp>(mvn.second(values.number_of_values()));
     if (status.nilp()) {
       goto not_accessible;

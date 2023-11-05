@@ -929,7 +929,6 @@ static claspCharacter eformat_write_char_crlf(T_sp strm, claspCharacter c) {
  */
 
 static claspCharacter passthrough_decoder(T_sp stream, unsigned char **buffer, unsigned char *buffer_end) {
-  unsigned char aux;
   if (*buffer >= buffer_end)
     return EOF;
   else
@@ -1326,7 +1325,7 @@ static claspCharacter utf_8_decoder(T_sp stream, unsigned char **buffer, unsigne
 }
 
 static int utf_8_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
-  int nbytes;
+  int nbytes = 0;
   if (c < 0) {
     nbytes = 0;
   } else if (c <= 0x7F) {
@@ -2665,7 +2664,7 @@ static FILE *safe_fdopen(int fildes, const char *mode) {
   if (output == NULL) {
     std::string serr = strerror(errno);
     struct stat info;
-    int fstat_error = fstat(fildes, &info);
+    [[maybe_unused]]int fstat_error = fstat(fildes, &info);
     int flags, fdflags, tmp, oflags;
     if ((flags = sflags(mode, &oflags)) == 0)
       perror("sflags failed");
@@ -4268,13 +4267,15 @@ SYMBOL_EXPORT_SC_(KeywordPkg, input_output);
 CL_LAMBDA(fd direction &key buffering element-type (external-format :default) (name "FD-STREAM"));
 CL_DEFUN T_sp ext__make_stream_from_fd(int fd, T_sp direction, T_sp buffering, T_sp element_type, T_sp external_format,
                                        String_sp name) {
-  enum StreamMode smm_mode;
+  enum StreamMode smm_mode = clasp_smm_output;
   if (direction == kw::_sym_input) {
     smm_mode = clasp_smm_input;
   } else if (direction == kw::_sym_output) {
     smm_mode = clasp_smm_output;
   } else if (direction == kw::_sym_io || direction == kw::_sym_input_output) {
     smm_mode = clasp_smm_io;
+  } else {
+    SIMPLE_ERROR("Unknown smm_mode");
   }
   if (cl__integerp(element_type)) {
     external_format = nil<T_O>();
@@ -4621,7 +4622,6 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
       T_sp elt_type = cl__stream_element_type(stream);
       bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
       seq = cl__nthcdr(clasp_make_integer(start), seq);
-      T_sp orig = seq;
       for (; seq.notnilp(); seq = oCdr(seq)) {
         if (start >= end) {
           return make_fixnum(start);
@@ -6179,7 +6179,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, file_stream_file_descriptor);
 CL_DOCSTRING(R"dx(Use read to read characters if they are available - return (values num-read errno-or-nil))dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
-  char c;
   size_t buffer_length = cl__length(buffer);
   unsigned char *buffer_data = &(*buffer)[0];
   while (1) {
