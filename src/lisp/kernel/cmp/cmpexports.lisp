@@ -21,7 +21,6 @@
             *default-compile-linkage*
             quick-module-dump
             write-bitcode
-            load-bitcode
             *irbuilder*
             *compile-file-unique-symbol-prefix*
             *optimize* *policy*
@@ -320,8 +319,6 @@
             jit-function-name
             module-make-global-string
             make-boot-function-global-variable
-            llvm-link
-            load-bitcode
             setup-calling-convention
             initialize-calling-convention
             ensure-cleavir-lambda-list

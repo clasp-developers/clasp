@@ -448,23 +448,17 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__startup_image_pathname(bool extension) {
   stringstream ss;
   ss << "sys:lib;images;" << (extension ? "extension" : "base");
-  T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
+  T_sp mode = comp::_sym_STARdefault_output_typeSTAR->symbolValue();
   if (mode == kw::_sym_faso) {
-    ss << ".fasp";
+    ss << ".faso";
   } else if (mode == kw::_sym_fasoll) {
-    ss << ".faspll";
+    ss << ".fasoll";
   } else if (mode == kw::_sym_fasobc) {
-    ss << ".faspbc";
-  } else if (mode == kw::_sym_object) {
-    ss << ".fasl";
-  } else if (mode == kw::_sym_bitcode) {
-    ss << ".fasl";
-  } else if (mode == kw::_sym_fasl) {
-    ss << ".lfasl";
+    ss << ".fasobc";
   } else if (mode == kw::_sym_bytecode) {
     ss << ".fasl";
   } else {
-    SIMPLE_ERROR("Add support for *clasp-build-mode* = {}", _rep_(mode));
+    SIMPLE_ERROR("Add support for *default-output-type* = {}", _rep_(mode));
   }
   String_sp spath = SimpleBaseString_O::make(ss.str());
   Pathname_sp pn = cl__pathname(spath);
@@ -873,7 +867,7 @@ void clasp_unpack_faso(const std::string &path_designator) {
   }
 }
 
-CL_DOCSTRING(R"dx(Unpack the faso/fasp file into individual object files.)dx");
+CL_DOCSTRING(R"dx(Unpack the faso file into individual object files.)dx");
 DOCGROUP(clasp);
 CL_DEFUN void core__unpack_faso(T_sp path_designator) {
   Pathname_sp pn_filename = cl__pathname(path_designator);
@@ -1646,7 +1640,7 @@ void start_code_interpreter(gctools::GCRootsInModule *roots,
         fasoFile = objectFile->_FasoName->get_std_string();
         fasoIndex = objectFile->_FasoIndex;
       }
-      SIMPLE_ERROR("While loading the fasp file {} {} an illegal byte-code %d was detected. This usually happens when a fasp file "
+      SIMPLE_ERROR("While loading the faso file {} {} an illegal byte-code %d was detected. This usually happens when a faso file "
                     "is out of date and the byte code has changed in the meantime.",
                    fasoFile, fasoIndex, (int)c);
     }

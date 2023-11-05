@@ -130,54 +130,22 @@
 
 ;;;
 
-(defun compile-from-module (job &key
-                                  optimize
-                                  optimize-level
-                                  intermediate-output-type
-                                  write-bitcode)
+(defun compile-from-module (job
+                            &key optimize
+                                 optimize-level
+                                 intermediate-output-type)
   (declare (ignore optimize optimize-level))
   (let ((module (ast-job-module job)))
-    (cond
-      ((member intermediate-output-type '(:object :in-memory-object))
-       (let ((reloc-model (cond
-                            ((or (member :linux *features*)
-                                 (member :freebsd *features*))
-                             'llvm-sys:reloc-model-pic-)
-                            (t 'llvm-sys:reloc-model-undefined))))
-         (when write-bitcode
-           (let ((bitcode-filename (core:coerce-to-filename
-                                    (cfp-output-file-default
-                                     (ast-job-form-output-path job)
-                                     :bitcode))))
-             (write-bitcode module bitcode-filename :output-type :object)))
-         (let ((output (generate-obj-asm-stream
-                        module (ast-job-output-object job)
-                        'llvm-sys:code-gen-file-type-object-file reloc-model)))
-           (when output (setf (ast-job-output-object job) output)))))
-      ((eq intermediate-output-type :in-memory-module)
+    (ecase intermediate-output-type
+      (:in-memory-object
+       (let ((output (generate-obj-asm-stream
+                      module (ast-job-output-object job)
+                      'llvm-sys:code-gen-file-type-object-file *default-reloc-model*)))
+         (when output (setf (ast-job-output-object job) output))))
+      (:in-memory-module
        (let ((llvm-ir (with-output-to-string (sout)
                         (llvm-sys:dump-module module sout))))
-       (setf (ast-job-output-object job) llvm-ir)))
-      #+(or)
-      ((eq intermediate-output-type :object)
-       (let ((object-file-path (make-pathname :type "o" :defaults (ast-job-form-output-path job))))
-         (ensure-directories-exist object-file-path)
-         ;; Save the bitcode so we can take a look at it
-         (with-track-llvm-time
-             (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default object-file-path :bitcode))))
-               (write-bitcode module bitcode-file)))
-         (let ((reloc-model (cond
-                              ((or (member :linux *features*) (member :freebsd *features*))
-                               'llvm-sys:reloc-model-pic-)
-                              (t 'llvm-sys:reloc-model-undefined))))
-           (generate-obj-asm module object-file-path :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
-      #+(or)
-      ((eq intermediate-output-type :bitcode)
-       (with-track-llvm-time
-           (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
-             (write-bitcode module bitcode-file))))
-      (t ;; fasl
-       (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type)))
+       (setf (ast-job-output-object job) llvm-ir))))
     (gctools:thread-local-cleanup))
   (values))
 
@@ -218,14 +186,12 @@
 (defun compile-from-ast (job &key
                                optimize
                                optimize-level
-                               intermediate-output-type
-                               write-bitcode)
+                               intermediate-output-type)
   (setf (ast-job-module job)
         (ast-job-to-module job :optimize optimize
                                :optimize-level optimize-level))
   (compile-from-module job :optimize optimize :optimize-level optimize-level
-                           :intermediate-output-type intermediate-output-type
-                           :write-bitcode write-bitcode))
+                           :intermediate-output-type intermediate-output-type))
 
 (defun read-one-ast (source-sin environment eof-value)
   ;; Required to update the source pos info. FIXME!?
@@ -254,7 +220,7 @@
 (defun ast-job-special-bindings ()
   `((*compile-print* . ',*compile-print*)
     (*compile-file-parallel* . ',*compile-file-parallel*)
-    (*default-object-type* . ',*default-object-type*)
+    (*default-output-type* . ',*default-output-type*)
     (*compile-verbose* . ',*compile-verbose*)
     (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
     (*package* . ',*package*)
@@ -279,7 +245,6 @@
                        optimize
                        optimize-level
                        output-path
-                       write-bitcode
                        (intermediate-output-type :in-memory-object) ; or :bitcode
 
                        ast-only)
@@ -311,8 +276,7 @@ multithreaded performance that we should explore."
          ast-jobs
          (_ (cfp-log "Starting the pool of threads~%"))
          (job-args `(:optimize ,optimize :optimize-level ,optimize-level
-                     :intermediate-output-type ,intermediate-output-type
-                     :write-bitcode ,write-bitcode))
+                     :intermediate-output-type ,intermediate-output-type))
          (pool (make-thread-pool (if compile-from-module
                                      'compile-from-module
                                      'compile-from-ast)
@@ -374,33 +338,22 @@ multithreaded performance that we should explore."
                                    environment
                                    (optimize t)
                                    (optimize-level *optimization-level*)
-                                   ast-only
-                                   write-bitcode)
+                                   ast-only)
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
-  (let ((intermediate-output-type (ecase output-type
-                                    (:fasl :in-memory-object)
-                                    (:faso :in-memory-object)
-                                    (:fasoll :in-memory-module)
-                                    (:fasobc :in-memory-module)
-                                    (:faspll :in-memory-module)
-                                    (:bytecode :in-memory-module)
-                                    (:faspbc :in-memory-module)
-                                    (:fasp :in-memory-object)
-                                    (:object :in-memory-object)
-                                    (:bitcode :bitcode))))
-    (cclasp-loop2 input-stream environment
-                  :optimize optimize
-                  :optimize-level optimize-level
-                  :output-path output-path
-                  :intermediate-output-type intermediate-output-type
-                  :ast-only ast-only
-                  :write-bitcode write-bitcode)))
-
-
+  (cclasp-loop2 input-stream environment
+                :optimize optimize
+                :optimize-level optimize-level
+                :output-path output-path
+                :intermediate-output-type (ecase output-type
+                                            (:faso :in-memory-object)
+                                            (:fasoll :in-memory-module)
+                                            (:fasobc :in-memory-module)
+                                            (:bytecode :in-memory-module))
+                :ast-only ast-only))
 
 (defun link-compile-file-parallel-modules (output-pathname parts)
   "Link a bunch of modules together, return the linked module"
@@ -417,67 +370,52 @@ Compile a lisp source file into an LLVM module."
 
 (defun output-cfp-result (ast-jobs output-path output-type)
   (ensure-directories-exist output-path)
-  (cond
-    ((member output-type '(:object :fasl :faso :fasp))
-     (let (#+(or)(output-path (compile-file-pathname output-path :output-type output-type)))
-       #+(or)(format t "Output the object files in ast-jobs to ~s~%" output-path)
-       (let* ((object-files (loop for ast-job in ast-jobs
-                                  for index = (ast-job-form-index ast-job)
-                                  for ostream = (ast-job-output-object ast-job)
-                                  collect (cons index ostream)))
-              (sorted-object-files (sort object-files #'< :key #'car)))
-         #+(or)(format t "sorted-object-files length ~d output-path: ~s~%" (length sorted-object-files) output-path)
-         (core:write-faso output-path (mapcar #'cdr sorted-object-files)))))
-    ((member output-type '(:fasoll :fasobc :faspll :faspbc))
-     (let ((module (link-compile-file-parallel-modules (namestring output-path)
-                                                       (mapcar #'ast-job-output-object ast-jobs))))
-       (cond
-         ((member output-type '(:fasoll :faspll))
-          (let ((fout (open output-path :direction :output :if-exists :supersede)))
-            (llvm-sys:dump-module module fout)))
-         ((member output-type '(:fasobc :faspbc))
-          (llvm-sys:write-bitcode-to-file module (namestring output-path)))
-         (t (error "Handle output-type for ~a" output-type)))))
-    (t ;; unknown
+  (case output-type
+    (:faso
+     (core:write-faso output-path
+                      (mapcar #'ast-job-output-object
+                              (sort (copy-list ast-jobs) #'<
+                                    :key #'ast-job-form-index))))
+    (:fasoll
+     (with-open-file (fout output-path :direction :output :if-exists :supersede)
+       (llvm-sys:dump-module (link-compile-file-parallel-modules
+                              (namestring output-path)
+                              (mapcar #'ast-job-output-object ast-jobs))
+                             fout)))
+    (:fasobc
+     (llvm-sys:write-bitcode-to-file
+      (link-compile-file-parallel-modules (namestring output-path)
+                                          (mapcar #'ast-job-output-object ast-jobs))
+      (namestring (translate-logical-pathname output-path))))
+    (otherwise ;; unknown
      (error "Add support for output-type: ~a" output-type))))
 
-(defvar *compile-file-parallel-write-bitcode* nil
-  "Force compile-file-parallel to write out bitcode for each module. 
-Each bitcode filename will contain the form-index.")
-
 (defun compile-stream/parallel (input-stream output-path
-                                &key
-                                  (optimize t)
-                                  (optimize-level *optimization-level*)
-                                  (output-type (default-library-type)
-                                               output-type-p)
-                                  environment
-                                  ;; Use as little llvm as possible for timing
-                                  dry-run ast-only
-                                  (write-bitcode *compile-file-parallel-write-bitcode*)
+                                &key (optimize t)
+                                     (optimize-level *optimization-level*)
+                                     (output-type *default-output-type*)
+                                     environment
+                                     ;; Use as little llvm as possible for timing
+                                     dry-run ast-only
                                 &allow-other-keys)
-  (let ((output-type (if output-type-p
-                         (fixup-output-type output-type)
-                         output-type)))
-    (with-compiler-env ()
-      (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose *compile-verbose*)
-        (let ((ast-jobs
-                (compile-stream-to-result
-                 input-stream
-                 :output-type output-type
-                 :output-path output-path
-                 :environment environment
-                 :optimize optimize
-                 :optimize-level optimize-level
-                 :ast-only ast-only
-                 :write-bitcode write-bitcode)))
-          (cond (dry-run (format t "Doing nothing further~%") nil)
-                ((some #'job-serious-condition ast-jobs)
-                 ;; There was an insurmountable error - fail.
-                 nil)
-                ;; Usual result
-                (t (output-cfp-result ast-jobs output-path output-type)
-                   (truename output-path))))))))
+  (with-compiler-env ()
+    (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose *compile-verbose*)
+      (let ((ast-jobs
+              (compile-stream-to-result
+               input-stream
+               :output-type output-type
+               :output-path output-path
+               :environment environment
+               :optimize optimize
+               :optimize-level optimize-level
+               :ast-only ast-only)))
+        (cond (dry-run (format t "Doing nothing further~%") nil)
+              ((some #'job-serious-condition ast-jobs)
+               ;; There was an insurmountable error - fail.
+               nil)
+              ;; Usual result
+              (t (output-cfp-result ast-jobs output-path output-type)
+                 (truename output-path)))))))
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* *use-compile-file-parallel*))

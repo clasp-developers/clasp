@@ -112,10 +112,6 @@
   (ninja:write-rule output-stream :link
                     :command "$cxx $variant-ldflags $ldflags -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
-  (ninja:write-rule output-stream :bc
-                    :command "$cxx $variant-cxxflags $cxxflags -emit-llvm -c -MD -MF $out.d -o$out $in"
-                    :description "Creating bitcode for $in"
-                    :depfile "$out.d")
   (ninja:write-rule output-stream :load-cclasp
                     :command "$clasp --norc --disable-mpi --ignore-image --feature clasp-min --load load-clasp.lisp -- base 0 $source"
                     :description "Loading clasp $name"
@@ -450,8 +446,7 @@
                                        :inputs (list clasp-sh)
                                        :outputs (list clasp-sh-installed)))
     (ninja:write-build output-stream :phony
-                                     :inputs (append (list "install_bitcode"
-                                                           "install_code"
+                                     :inputs (append (list "install_code"
                                                            "install_extension_code"
                                                            "install_bin"
                                                            (make-source "virtualMachine.h" :installed-generated)
@@ -463,85 +458,6 @@
                                                        (list clasp-sh-installed cleap-symlink-installed))
                                                      products)
                                      :outputs (list "install_iclasp"))))
-
-(defmethod print-variant-target-source
-    (configuration (name (eql :ninja)) output-stream
-     (target (eql :bitcode)) (source cc-source)
-     &aux (bitcode-name (format nil "~a-cxx.bc" (pathname-name (source-path source))))
-          (bitcode-output (make-source bitcode-name :variant-lib))
-          (bitcode-install (make-source bitcode-name :package-lib))
-          (bitcode-nd-name (format nil "~a-no-debug-info-cxx.bc"
-                                   (pathname-name (source-path source))))
-          (bitcode-nd-output (make-source bitcode-nd-name :variant-lib))
-          (bitcode-nd-install (make-source bitcode-nd-name :package-lib))
-          (object (make-source-output source :type "o"))
-          (archive-name (format nil "~a-cxx.a" (pathname-name (source-path source))))
-          (archive-output (make-source archive-name :variant-lib))
-          (archive-install (make-source archive-name :package-lib))
-          (object-nd (make-source (make-pathname :directory (pathname-directory (source-path source))
-                                                 :name (concatenate 'string
-                                                                    (pathname-name (source-path source))
-                                                                    "-no-debug-info")
-                                                 :type "o")
-                                  :variant))
-          (archive-nd-name (format nil "~a-no-debug-info-cxx.a"
-                                   (pathname-name (source-path source))))
-          (archive-nd-output (make-source archive-nd-name :variant-lib))
-          (archive-nd-install (make-source archive-nd-name :package-lib))
-          (headers (if *variant-precise*
-                       (scraper-precise-headers configuration)
-                       (scraper-headers configuration)))
-          (no-debug-flags (remove-flag "-g" *variant-cxxflags*)))
-  (ninja:write-build output-stream :bc
-                     :variant-cxxflags *variant-cxxflags*
-                     :inputs (list source)
-                     :order-only-inputs headers
-                     :outputs (list bitcode-output))
-  (ninja:write-build output-stream :bc
-                     :variant-cxxflags no-debug-flags
-                     :inputs (list source)
-                     :order-only-inputs headers
-                     :outputs (list bitcode-nd-output))
-  (ninja:write-build output-stream :ar
-                     :inputs (list object)
-                     :outputs (list archive-output))
-  (ninja:write-build output-stream :cxx
-                     :variant-cxxflags no-debug-flags
-                     :inputs (list source)
-                     :order-only-inputs headers
-                     :outputs (list object-nd))
-  (ninja:write-build output-stream :ar
-                     :inputs (list object-nd)
-                     :outputs (list archive-nd-output))
-  (when *variant-default*
-    (ninja:write-build output-stream :install-file
-                       :inputs (list bitcode-output)
-                       :outputs (list bitcode-install))
-    (ninja:write-build output-stream :install-file
-                       :inputs (list bitcode-nd-output)
-                       :outputs (list bitcode-nd-install))
-    (ninja:write-build output-stream :install-file
-                       :inputs (list archive-output)
-                       :outputs (list archive-install))
-    (ninja:write-build output-stream :install-file
-                       :inputs (list archive-nd-output)
-                       :outputs (list archive-nd-install)))
-  (list :install-outputs (list bitcode-install bitcode-nd-install
-                               archive-install archive-nd-install)
-        :outputs (list bitcode-output bitcode-nd-output
-                       archive-output archive-nd-output)))
-
-(defmethod print-variant-target-sources
-    (configuration (name (eql :ninja)) output-stream
-     (target (eql :bitcode)) sources
-     &key install-outputs outputs &allow-other-keys)
-  (ninja:write-build output-stream :phony
-                     :inputs outputs
-                     :outputs (list (build-name "bitcode")))
-  (when *variant-default*
-    (ninja:write-build output-stream :phony
-                       :inputs install-outputs
-                       :outputs (list "install_bitcode"))))
 
 (defun make-kernel-source-list (configuration sources)
   (if (reproducible-build configuration)
@@ -575,7 +491,7 @@
   (let* ((image (image-source configuration nil))
          (name (pathname-name (source-path source)))
          (module-name (format nil "modules/~a.~a"
-                              name (module-fasl-extension configuration)))
+                              name (fasl-extension configuration)))
          (output (make-source module-name :variant-lib))
          (install-output (make-source module-name :package-lib))
          (iclasp (make-source "iclasp" :variant)))
@@ -606,7 +522,6 @@
                        :source (make-kernel-source-list configuration sources)
                        :inputs sources
                        :implicit-inputs (list iclasp
-                                              (build-name "bitcode")
                                               (make-source "tools-for-build/character-names.sexp" :code))
                        :outputs (list (build-name "load_cclasp")))
     (ninja:write-build output-stream :compile-cclasp
@@ -614,11 +529,10 @@
                        :source (make-kernel-source-list configuration sources)
                        :inputs sources
                        :implicit-inputs (list iclasp
-                                              (build-name "bitcode")
                                               (make-source "tools-for-build/character-names.sexp" :code))
                        :outputs (mapcar (lambda (x)
                                          (make-source-output x
-                                                             :type (file-faso-extension configuration)
+                                                             :type (fasl-extension configuration)
                                                              :root (if (eq (source-root x) :variant-generated)
                                                                        :variant-lib-generated
                                                                        :variant-lib)))
@@ -632,7 +546,7 @@
                        :target "cclasp"
                        :inputs (mapcar (lambda (x)
                                          (make-source-output x
-                                                             :type (file-faso-extension configuration)
+                                                             :type (fasl-extension configuration)
                                                              :root (if (eq (source-root x) :variant-generated)
                                                                        :variant-lib-generated
                                                                        :variant-lib)))
@@ -746,7 +660,7 @@
                                                 (make-source "tools-for-build/character-names.sexp" :code))
                          :outputs (mapcar (lambda (x)
                                             (make-source-output x
-                                                                :type (file-faso-extension configuration)
+                                                                :type (fasl-extension configuration)
                                                                 :root (if (eq (source-root x) :variant-generated)
                                                                           :variant-lib-generated
                                                                           :variant-lib)))
@@ -760,7 +674,7 @@
                          :target "eclasp"
                          :inputs (mapcar (lambda (x)
                                            (make-source-output x
-                                                               :type (file-faso-extension configuration)
+                                                               :type (fasl-extension configuration)
                                                                :root (if (eq (source-root x) :variant-generated)
                                                                          :variant-lib-generated
                                                                          :variant-lib)))

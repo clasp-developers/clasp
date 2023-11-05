@@ -1215,42 +1215,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
 #endif
   if (buildReport) ss << (fmt::format("FORCE_STARTUP_EXTERNAL_LINKAGE = {}\n" , FORCE_STARTUP_EXTERNAL_LINKAGE));
-                          
-  bool use_lto = false;
-  // CLASP_BUILD_MODE == 0 means generate fasls
-#if CLASP_BUILD_MODE == 0
-  use_lto = false;
-  debugging = true;
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasl);
-  // CLASP_BUILD_MODE == 1 means generate object files
-#elif CLASP_BUILD_MODE == 1
-  use_lto = false;
-  debugging = true;
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_object);
-  // CLASP_BUILD_MODE == 2 means generate bitcode and use thinlto
-#elif CLASP_BUILD_MODE == 2
-  use_lto = true;
-  debugging = false;
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_bitcode);
-#elif CLASP_BUILD_MODE == 3
-  use_lto = false;
-  debugging = false;
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_faso);
-#elif CLASP_BUILD_MODE == 4
-  use_lto = false;
-  debugging = false;
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasoll);
-#elif CLASP_BUILD_MODE == 5
-  use_lto = false;
-  debugging = false;
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasobc);
-#elif CLASP_BUILD_MODE == 6
-  use_lto = false;
-  debugging = false;
-  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_bytecode);
-#endif
-  if (buildReport) ss << (fmt::format("CLASP_BUILD_MODE = {}\n" , CLASP_BUILD_MODE));
-  
+
   bool use_human_readable_bitcode = false;
 #if USE_HUMAN_READABLE_BITCODE==1
   use_human_readable_bitcode = true;

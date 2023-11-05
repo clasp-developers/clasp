@@ -75,12 +75,9 @@
               :source-debug-pathname (elt core:*command-line-arguments* 1)
               :output-file (elt core:*command-line-arguments* 0)
               :output-type ~s)"
-          (case (build-mode configuration)
-            (:bytecode :bytecode)
-            ((:faso :bytecode-faso) :fasp)
-            (:fasoll :faspll)
-            (:fasobc :faspbc)
-            (otherwise :fasl))))
+          (if (eq (build-mode configuration) :bytecode-faso)
+              :faso
+              (build-mode configuration))))
 
 (defmethod print-prologue (configuration (name (eql :load-clasp)) output-stream)
   (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
@@ -104,7 +101,7 @@
 (core:quit)" (jobs configuration) (reproducible-build configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-clasp)) output-stream)
-  (format output-stream "(setq core:*clasp-build-mode* ~s)
+  (format output-stream "(setq cmp:*default-output-type* ~s)
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
 (core:load-and-compile-clasp :reproducible ~s :system-sort ~s
@@ -120,7 +117,7 @@
 
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (format output-stream "(setq *features* (cons :aclasp *features*)
-      core:*clasp-build-mode* ~s)
+      cmp:*default-output-type* ~s)
 (load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (load #P\"sys:src;lisp;kernel;cmp;jit-setup.lisp\")
 (core:link-fasl :output-file (pathname (elt core:*command-line-arguments* 0))
@@ -304,8 +301,7 @@ exec $(dirname \"$0\")/iclasp -f ignore-extensions --base \"$@\""))
                                 :type \"lsp\"))))
         (t
          (load #P\"../dependencies/ansi-test/init.lsp\"))))
-(rt:do-tests :exit t :expected-failures \"../tools-for-build/ansi-test-expected-failures~:[~;-bytecode~].sexp\")"
-          (eq (build-mode configuration) :bytecode)))
+(rt:do-tests :exit t :expected-failures \"../tools-for-build/ansi-test-expected-failures.sexp\")"))
 
 (defmethod print-prologue (configuration (name (eql :asdf-test)) output-stream)
   (format output-stream "~
