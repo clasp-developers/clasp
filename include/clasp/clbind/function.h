@@ -111,8 +111,6 @@ public:
     this->validateCodePointer((void **)&this->fptr, sizeof(this->fptr));
   };
 
-  virtual const char *describe() const { return "VariadicFunctor"; };
-
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {

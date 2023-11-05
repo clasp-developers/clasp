@@ -466,7 +466,7 @@ namespace core {
       return this->length();
     }
     virtual T_sp vectorPush(T_sp newElement) override {noFillPointerError(cl::_sym_vectorPush,this->asSmartPtr());  };
-    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension) override {noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());  };
+    virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension) {noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());  };
     virtual T_sp replaceArray(T_sp other) override {notAdjustableError(core::_sym_replaceArray,this->asSmartPtr());  };
     virtual std::string get_std_string() const override {notStringError(this->asSmartPtr());};
     virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const

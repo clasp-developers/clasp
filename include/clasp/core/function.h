@@ -128,7 +128,6 @@ namespace core {
   public:
     std::atomic<SimpleFun_sp>    _TheSimpleFun;
   public:
-    virtual const char *describe() const { return "Function - subclass must implement describe()"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
   Function_O(SimpleFun_sp ptr)
@@ -478,7 +477,6 @@ namespace core {
   public:
     gctools::GCArray_moveable<value_type> _Slots;
   public:
-    virtual const char *describe() const override { return "CompiledClosure"; };
     virtual size_t templatedSizeof() const override {
       return gctools::sizeof_container<Closure_O>(this->_Slots.size());
     };

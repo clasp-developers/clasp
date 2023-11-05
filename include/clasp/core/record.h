@@ -379,7 +379,7 @@ public:
     } break;
     case patching: {
       RECORD_LOG(("Patching"));
-      size_t i = 0;
+      [[maybe_unused]]size_t i = 0;
       for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig = pairi.second;
         T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
