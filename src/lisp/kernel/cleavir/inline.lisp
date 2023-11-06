@@ -117,7 +117,7 @@
 #+(or)
 (defmacro if-in-bounds ((val low high) then else)
   `(core::local-block nil
-     (if (cleavir-primop:typeq ,val fixnum)
+     (if (core:fixnump ,val)
          (if (cleavir-primop:fixnum-not-less ,val ,low)
              (if (cleavir-primop:fixnum-less ,val ,high)
                  (return ,then)))
@@ -164,7 +164,7 @@
 (defun car (list)
   "Return the first object in a list."
   (declare (optimize (safety 0)) (notinline car))
-  (if (cleavir-primop:typeq list cons)
+  (if (consp list)
       (car (the cons list))
       (if (eq list nil)
           (the null list)

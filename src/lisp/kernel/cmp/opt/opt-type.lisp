@@ -128,7 +128,7 @@
     (flet ((generate-test (simple complex if-simple if-complex if-no)
              (ecase simplicity
                ((simple-array)
-                `(if (cleavir-primop:typeq object ,simple)
+                `(if (headerp object ',simple)
                      ,if-simple ,if-no))
                ((complex-array)
                 ;; KLUDGE: Because simple-mdarray is a subtype of mdarray,
@@ -136,14 +136,14 @@
                 ;; the simple. This means we do a redudant test for vectors,
                 ;; though, since this confusion isn't in place for the
                 ;; vector classes.
-                `(if (cleavir-primop:typeq object ,simple)
+                `(if (headerp object ',simple)
                      nil
-                     (if (cleavir-primop:typeq object ,complex)
+                     (if (headerp object ',complex)
                          ,if-complex ,if-no)))
                ((array)
-                `(if (cleavir-primop:typeq object ,simple)
+                `(if (headerp object ',simple)
                      ,if-simple
-                     (if (cleavir-primop:typeq object ,complex)
+                     (if (headerp object ',complex)
                          ,if-complex ,if-no))))))
       (case rank
         ((1) ; vector
@@ -164,7 +164,7 @@
         ((*) ; anything, and dimensions are unspecified
          ;; for general arrays we have superclasses to use
          (if (and (eq uaet '*) (eq simplicity 'array))
-             `(if (cleavir-primop:typeq object array) t nil)
+             `(if (headerp object 'array) t nil)
              (generate-test simple-vector-type complex-vector-type
                             't 't
                             (generate-test simple-mdarray-type
@@ -188,7 +188,7 @@
                        collect `(eq (array-dimension object ',i) ,dim)))))))))
 
 (defun cons-typep-form (cart cdrt env)
-  `(if (cleavir-primop:typeq object cons)
+  `(if (consp object)
        (and ,@(if (eq cart '*)
                   nil
                   (list
@@ -250,7 +250,7 @@
       (let ((bignum-test
               (if (and (null bignum-low) (null bignum-high)) ; none
                   'nil
-                  `(if (cleavir-primop:typeq object bignum)
+                  `(if (headerp object 'bignum)
                        (and ,@(cond ((null bignum-low) ; no negative bignums
                                      `((core:two-arg-> (the bignum object)
                                                        ,most-positive-fixnum)))
@@ -281,7 +281,7 @@
                          `(if (<= ,fixnum-low (the fixnum object))
                               ,high-test
                               nil))))
-              `(if (cleavir-primop:typeq object fixnum) ,low-test ,bignum-test)))))))
+              `(if (core:fixnump object) ,low-test ,bignum-test)))))))
 
 ;;; The simpler version
 ;;; FIXME: Use floating point compares, etc, when available
@@ -303,28 +303,32 @@
         ((integer) (integral-interval-typep-form low high))
         ((rational)
          `(or ,(integral-interval-typep-form low high)
-              (if (cleavir-primop:typeq object ratio)
+              (if (ratiop object)
                   ,(real-interval-test `(the ratio object) low high)
                   nil)))
-        ((short-float single-float double-float long-float)
-         `(if (cleavir-primop:typeq object ,head)
+        ;; only singles and doubles actually exist.
+        ;; FIXME: write in this assumption better in case we change it later.
+        ((short-float single-float)
+         `(if (core:single-float-p object)
+              ,(real-interval-test `(the ,head object) low high)
+              nil))
+        ((double-float long-float)
+         `(if (core:double-float-p object)
               ,(real-interval-test `(the ,head object) low high)
               nil))
         ((float)
-         ;; only singles and doubles actually exist.
-         ;; FIXME: write in this assumption better in case we change it later.
-         `(if (if (cleavir-primop:typeq object single-float)
+         `(if (if (core:single-float-p object)
                   t
-                  (if (cleavir-primop:typeq object double-float) t nil))
+                  (if (core:double-float-p object) t nil))
               ,(real-interval-test `(the float object) low high)
               nil))
         ((real)
          `(or ,(integral-interval-typep-form low high)
-              (if (if (cleavir-primop:typeq object single-float)
+              (if (if (core:single-float-p object)
                       t
-                      (if (cleavir-primop:typeq object double-float)
+                      (if (core:double-float-p object)
                           t
-                          (if (cleavir-primop:typeq object ratio) t nil)))
+                          (if (ratiop object) t nil)))
                   ,(real-interval-test '(the real object) low high)
                   nil))))))
 
@@ -391,7 +395,7 @@
              ;; for anything that could be subclassed. The most likely candidate
              ;; for this problem is STREAM, but it's caught by the previous case.
              ((and (null args) (gethash head core:+type-header-value-map+))
-              `(if (cleavir-primop:typeq object ,type) t nil))
+              `(if (headerp object ',type) t nil))
              ;; Maybe it's a class name? (See also, comment in clos/defclass.lisp.)
              ((and (null args) (symbolp head) (class-info head env))
               ;; By semantic constraints, classes that are defined at compile time

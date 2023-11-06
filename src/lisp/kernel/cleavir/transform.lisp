@@ -322,6 +322,64 @@ Optimizations are available for any of:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; (4) TYPES AND CLASSES
+
+;;; With constant typespec, fold when able.
+;;; TODO? Could expand into semi-constant types, as in
+;;; (typep foo `(cons ...))
+#|
+(defun maybe-expand-typep (ctype form sys defaultf)
+  (labels ((default (form ct) `(typep ,form ',ct))
+           (rec (form subct)
+             `(let ((object ,form))
+                ,(maybe-expand-typep subct 'object sys #'default))))
+    (cond
+      ((ctype:top-p ctype sys) 't)
+      ((ctype:bottom-p ctype sys) 'nil)
+      ((ctype:conjunctionp ctype sys)
+       `(and ,@(loop for sub in (ctype:conjunction-ctypes ctype sys)
+                     collect (rec form sub))))
+      ((ctype:disjunctionp ctype sys)
+       `(or ,@(loop for sub in (ctype:disjunction-ctypes ctype sys)
+                    collect (rec form sub))))
+      ((ctype:negationp ctype sys)
+       `(not ,(rec form (ctype:negation-ctype ctype sys))))
+      ((ctype:member-p sys ctype)
+       `(member ,form ',(ctype:member-members sys ctype)))
+      ((ctype:satisfiesp ctype sys)
+       `(,(ctype:satisfies-fname ctype sys) ,form))
+      ((ctype:arrayp ctype sys)
+       ...)
+      ((ctype:consp ctype sys)
+       (let* ((car (ctype:cons-car ctype sys))
+              (cart (if (ctype:top-p car sys)
+                        nil
+                        (list (rec `(car ,form) car))))
+              (cdr (ctype:cons-cdr ctype sys))
+              (cdrt (if (ctype:top-p cdr sys)
+                        nil
+                        (list (rec `(cdr ,form) cdr)))))
+         `(and (consp ,form) ,@cart ,@cdrt)))               
+|#
+(deftransform typep (((object t) (tspec t))
+                     :argstype args)
+  (with-transformer-types (object tspec &optional env) args
+    (declare (ignore env))
+    (let ((sys *clasp-system*))
+      (if (and (ctype:member-p sys tspec)
+               (= (length (ctype:member-members sys tspec)) 1))
+          (let* ((tspec (first (ctype:member-members sys tspec)))
+                 (type (env:parse-type-specifier tspec nil sys)))
+            (cond ((ctype:subtypep object type sys) 't)
+                  ((ctype:disjointp object type sys) 'nil)
+                  (t
+                   (decline-transform "TODO")
+                   #+(or)
+                   (maybe-expand-typep type 'object))))
+          (decline-transform "non-constant type specifier")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; (5) DATA AND CONTROL FLOW
 
 (deftransform-type-predicate functionp function)
