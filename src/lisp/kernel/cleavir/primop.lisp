@@ -622,3 +622,33 @@
   (def-simple-predicate core:single-float-p
     cmp:+immediate-mask+ cmp:+single-float-tag+)
   (def-simple-predicate core:generalp cmp:+immediate-mask+ cmp:+general-tag+))
+
+(cleavir-primop-info:defprimop core::headerq 1 :value :flushable)
+
+(defmethod %primop-rtype-info ((name (eql 'core::headerq)) info)
+  (declare (ignore info))
+  '((:boolean) :object))
+
+(defmethod translate-primop ((name (eql 'core::headerq)) inst)
+  (destructuring-bind (type)
+      (cleavir-primop-info:arguments (bir:info inst))
+  ;; We can only actually look at the header value if we have a general,
+  ;; so we have to use a phi.
+  ;; LLVM's jump-threading analysis ought to take care of the if-if.
+  (let ((curb (cmp:irc-get-insert-block))
+        (hedb (cmp:irc-basic-block-create "headerq-check"))
+        (merge (cmp:irc-basic-block-create "headerq-merge"))
+        (in (in (first (bir:inputs inst))))
+        (header-info (gethash type core:+type-header-value-map+)))
+    (unless (typep header-info '(or integer cons))
+      (error "BUG: headerq for unknown type: ~a" type))
+    (cmp:compile-tag-check in cmp:+immediate-mask+ cmp:+general-tag+
+                           hedb merge)
+    (cmp:irc-begin-block hedb)
+    (let ((hedp (cmp:header-check-cond header-info in)))
+      (cmp:irc-br merge)
+      (cmp:irc-begin-block merge)
+      (let ((phi (cmp:irc-phi cmp:%i1% 2 "headerq-check")))
+        (cmp:irc-phi-add-incoming phi (%i1 0) curb)
+        (cmp:irc-phi-add-incoming phi hedp hedb)
+        (out phi (first (bir:outputs inst))))))))

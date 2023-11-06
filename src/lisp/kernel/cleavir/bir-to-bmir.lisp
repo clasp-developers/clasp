@@ -142,8 +142,23 @@
 
 (deftransform core:generalp core:generalp t)
 
+(deftransform functionp (core::headerq function) t)
+
+(deftransform symbolp (core::headerq symbol) t)
+(deftransform packagep (core::headerq package) t)
+
+(deftransform arrayp (core::headerq array) t)
+(deftransform core:data-vector-p
+    (core::headerq core:abstract-simple-vector) t)
+
+(deftransform hash-table-p (core::headerq core:hash-table-base) t)
+
+(deftransform pathnamep (core::headerq pathname) t)
+
 (deftransform core:fixnump core:fixnump t)
 (deftransform core:single-float-p core:single-float-p t)
+
+(deftransform random-state-p (core::headerq random-state) t)
 
 (deftransform core:to-single-float core::double-to-single double-float)
 (deftransform core:to-single-float core::fixnum-to-single fixnum)
