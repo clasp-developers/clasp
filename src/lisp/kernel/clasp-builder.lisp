@@ -69,24 +69,18 @@
                       ,@body))))
            t)
 
-(defun load-kernel-file (path &key (type core:*clasp-build-mode*) silent)
+(defun load-kernel-file (path &key (type cmp:*default-output-type*) silent)
   (let ((filename (make-pathname :type (if (eq type :faso) "faso" "fasl")
                                  :defaults path)))
-    (unless (or (eq type :bitcode) (eq type :object)
-                (eq type :fasl) (eq type :faso))
+    (unless (eq type :faso)
       (message :err "Illegal type {} for load-kernel-file {}" type (namestring path)))
-    (cond ((or (eq type :bitcode)
-               (and (or (eq type :object) (eq type :fasl))
-                    (not (probe-file filename))))
-           (cmp:load-bitcode path :print (not silent)))
-          (t
-           (unless silent
-             (message nil "Loading {}" (namestring filename)))
-           (load filename :print nil :verbose nil)))
+    (unless silent
+      (message nil "Loading {}" (namestring filename)))
+    (load filename :print nil :verbose nil)
     path))
 
 (defun compile-kernel-file (entry &rest args
-                                  &key reload count (output-type core:*clasp-build-mode*) verbose print silent)
+                                  &key reload count (output-type cmp:*default-output-type*) verbose print silent)
   (let* ((filename (getf entry :source-path))
          (position (getf entry :position))
          (output-path (getf entry :output-path))
@@ -126,14 +120,14 @@
                    `',result))
              t))
 
-(defun compile-system-serial (system &key reload (output-type core:*clasp-build-mode*) &allow-other-keys
+(defun compile-system-serial (system &key reload (output-type cmp:*default-output-type*) &allow-other-keys
                                      &aux (count (length system)))
   (message :emph "Compiling system serially...")
   (dolist (entry system)
     (compile-kernel-file entry :reload reload :output-type output-type :count count :print t :verbose t)))
 
 (defun compile-system-parallel (system
-                                &key reload (output-type core:*clasp-build-mode*)
+                                &key reload (output-type cmp:*default-output-type*)
                                      (parallel-jobs *number-of-jobs*)
                                 &allow-other-keys)
   (message :emph "Compiling system with {:d} parallel jobs..." parallel-jobs)
@@ -248,52 +242,35 @@ been initialized with install path versus the build path of the source code file
             (funcall make-create-file-args source-path (namestring source-path) install-path))
         system))
 
-(defun generate-loader (output-file all-compiled-files)
-  (let ((output-file (make-pathname :type "lfasl" :defaults output-file)))
-    (with-open-file (fout output-file :direction :output :if-exists :supersede)
-      (format fout ";;;; Generated in clasp-builder.lisp by generate-loader - do not edit - these fasls need to be loaded in the given order~%")
-      (dolist (one-file all-compiled-files)
-        (let* ((name (make-pathname :type "fasl" :defaults one-file))
-               (relative-name (enough-namestring name (translate-logical-pathname (make-pathname :host "sys:lib;")))))
-          (format fout "(load #P\"sys:lib;~a\")~%" (namestring relative-name)))))))
-
 (defun link-modules (output-file all-modules)
   (format t "link-modules output-file: ~a  all-modules: ~a~%" output-file all-modules)
-  (cond ((eq core:*clasp-build-mode* :bitcode)
-         (cmp:link-bitcode-modules output-file all-modules))
-        ((eq core:*clasp-build-mode* :bytecode)
+  (cond ((eq cmp:*default-output-type* :bytecode)
          (core:link-fasl-files output-file all-modules))
-        ((eq core:*clasp-build-mode* :object)) ; Do nothing - object files are the result
-        ((eq core:*clasp-build-mode* :faso)
+        ((eq cmp:*default-output-type* :faso)
          (core:link-faso-files output-file all-modules nil))
-        ((eq core:*clasp-build-mode* :fasoll)
+        ((eq cmp:*default-output-type* :fasoll)
          (cmp::link-fasoll-modules output-file all-modules))
-        ((eq core::*clasp-build-mode* :fasobc)
+        ((eq cmp:*default-output-type* :fasobc)
          (cmp::link-fasobc-modules output-file all-modules))
-        ((eq core:*clasp-build-mode* :fasl)
-         (generate-loader output-file all-modules))
         (t
-         (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
+         (error "Unsupported value for cmp:*default-output-type* -> ~a" cmp:*default-output-type*))))
 
 (defun link-fasl (&key (output-file (build-common-lisp-bitcode-pathname))
                        (system (command-line-paths)))
-  (cond ((eq core:*clasp-build-mode* :bitcode)
-         (cmp:link-bitcode-modules output-file system))
-        ((eq core:*clasp-build-mode* :bytecode)
+  (cond ((eq cmp:*default-output-type* :bytecode)
          (core:link-fasl-files output-file system))
-        ((eq core:*clasp-build-mode* :object)) ; Do nothing - object files are the result
-        ((eq core:*clasp-build-mode* :faso)
+        ((eq cmp:*default-output-type* :faso)
          ;; Do nothing - faso files are the result
          (core:link-faso-files output-file system nil))
-        ((eq core:*clasp-build-mode* :fasoll)
-         (let* ((module (cmp:link-bitcode-modules-together output-file system :clasp-build-mode :fasoll))
+        ((eq cmp:*default-output-type* :fasoll)
+         (let* ((module (cmp:link-bitcode-modules-together output-file system :output-type :fasoll))
                 (fout (open output-file :direction :output :if-exists :supersede)))
            (llvm-sys:dump-module module fout)))
-        ((eq core::*clasp-build-mode* :fasobc)
-         (let* ((module (cmp:link-bitcode-modules-together output-file system :clasp-build-mode :fasobc)))
+        ((eq cmp:*default-output-type* :fasobc)
+         (let* ((module (cmp:link-bitcode-modules-together output-file system :output-type :fasobc)))
            (llvm-sys:write-bitcode-to-file module (namestring output-file))))
         (t
-         (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
+         (error "Unsupported value for cmp:*default-output-type* -> ~a" cmp:*default-output-type*))))
 
 (defun construct-system (files position reproducible
                          &aux source-path output-path system last item new-last)
@@ -409,7 +386,7 @@ been initialized with install path versus the build path of the source code file
                         (stage-count (when (ext:getenv "CLASP_STAGE_COUNT")
                                        (parse-integer (ext:getenv "CLASP_STAGE_COUNT"))))
                         (system (command-line-paths)))
-  (when (eq core:*clasp-build-mode* :bytecode)
+  (when (eq cmp:*default-output-type* :bytecode)
     (setq *features* (list* :bytecode *features*)))
   (setq *features* (list* :staging *features*)
         system (construct-system system position reproducible))

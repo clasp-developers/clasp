@@ -703,7 +703,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
       (let ((timer-start (get-internal-real-time)))
         (unwind-protect
             (if (and #-cclasp nil compile cmp:*cleavir-compile-hook*
-                     (not (eq core:*clasp-build-mode* :bytecode)))
+                     (not (eq cmp:*default-output-type* :bytecode)))
                 (compile nil (generate-discriminator generic-function))
                 (bytecode-interpreted-discriminator generic-function))
           (let ((delta-seconds (/ (float (- (get-internal-real-time) timer-start) 1d0)

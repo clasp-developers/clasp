@@ -116,17 +116,11 @@
   (:documentation "Class that represents a variant."))
 
 (defclass configuration (flags)
-  ((build-mode :accessor build-mode ; TODO Add logic for :bitcode, :object and :fasl
+  ((build-mode :accessor build-mode
                :initarg :build-mode
                :initform :faso
-               :type (member :faso :bitcode :bytecode :bytecode-faso :object :fasoll :fasobc :fasl)
-               :documentation "Define how clasp is built.
-- :bitcode compiles to bitcode and thinLTO is used to link everything.
-  This gives the fastest product but linking takes a long time.
-- :object produces object files and regular linking is used.
-  This is probably not as fast as bitcode (maybe a few percent slower)
-  but it links fast.
-- :faso generates faso files. This is good for development.")
+               :type (member :faso :bytecode :bytecode-faso :fasoll :fasobc :fasl)
+               :documentation "Define how clasp is built.")
    (build-path :accessor build-path
                :initarg :build-path
                :initform #P"build/"
@@ -663,7 +657,7 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"bench.lisp" :build))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
-                                                               :bitcode :iclasp :cclasp :modules :eclasp
+                                                               :iclasp :cclasp :modules :eclasp
                                                                :eclasp-link :sclasp :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
                                                                :tags :install-extension-code :vm-header
@@ -788,39 +782,19 @@ then they will overide the current variant's corresponding property."
                 (t
                  *variant-bitcode-name*))))
 
-(defun file-faso-extension (configuration)
-  "Return the file extension based on the build mode."
+(defun fasl-extension (configuration)
+  "Return the fasl extension based on the build mode."
   (case (build-mode configuration)
-    ((:bytecode :bytecode-faso) "fasl")
     (:faso "faso")
     (:fasobc "fasobc")
     (:fasoll "fasoll")
-    (otherwise "fasl")))
-
-(defun module-fasl-extension (configuration)
-  "Return the module extension, i.e. faso -> fasp, etc."
-  (case (build-mode configuration)
-    ((:bytecode :bytecode-faso) "fasl")
-    (:faso "fasp")
-    (:fasobc "faspbc")
-    (:fasoll "faspll")
-    (otherwise "fasl")))
-
-(defun image-fasl-extension (configuration)
-  "Return the extension for the clasp image."
-  (case (build-mode configuration)
-    ((:bytecode :bytecode-faso) "fasl")
-    (:fasl "lfasl")
-    (:faso "fasp")
-    (:fasobc "faspbc")
-    (:fasoll "faspll")
     (otherwise "fasl")))
 
 (defun image-source (configuration extension &optional (root :variant-lib))
   "Return the name of an image based on a target name, the bitcode name
 and the build mode."
   (make-source (format nil "images/~:[base~;extension~].~a"
-                       extension (image-fasl-extension configuration))
+                       extension (fasl-extension configuration))
                root))
 
 (defun funcall-variant (configuration func

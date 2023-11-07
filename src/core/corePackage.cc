@@ -174,7 +174,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_single_dispatch_method_namesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_setf_function_namesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuiltin_macro_function_namesSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARcompile_file_parallelSTAR);
-SYMBOL_EXPORT_SC_(CompPkg, STARdefault_object_typeSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARdefault_output_typeSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARforce_startup_external_linkageSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARthread_safe_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR);
@@ -1129,24 +1129,16 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
   comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = nil<T_O>();
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lfasl"), _sym_loadSource), hooks); // List of load commands
-#if CLASP_BUILD_MODE == 6
   hooks = Cons_O::create(Cons_O::create(clasp_make_fixnum(FASL_MAGIC_NUMBER), _sym_load_bytecode), hooks);
   // This not ideal, but ANSI tests uses FASL as a generic pathname type so dispatching in LOAD via
   // *LOAD-HOOKS* will end up sending a FASO with an extension of FASL to the FASL loader. We
   // could sniff the magic number before we dispatch on pathname type, but this is inefficient since
   // it results in two file opens. If we had only one FASL format this wouldn't be an issue.
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_bytecode), hooks);
-#endif
   hooks = Cons_O::create(Cons_O::create(clasp_make_fixnum(FASO_MAGIC_NUMBER), _sym_load_faso), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faso"), _sym_load_faso), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasp"), _sym_load_faso), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasoll"), _sym_load_fasoll), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faspll"), _sym_load_fasoll), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasobc"), _sym_load_fasobc), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faspbc"), _sym_load_fasobc), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("ll"), llvmo::_sym_load_ll), hooks);
-  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bc"), llvmo::_sym_load_bc), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("l"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("L"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lsp"), _sym_loadSource), hooks);
@@ -1205,7 +1197,18 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARnumber_of_entry_pointsSTAR->defparameter(make_fixnum(NUMBER_OF_ENTRY_POINTS));
   _sym_STARcore_startup_functionSTAR->defparameter(nil<core::T_O>());
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(nil<core::T_O>());
-  comp::_sym_STARdefault_object_typeSTAR->defparameter(kw::_sym_faso);
+#ifdef DEFAULT_OUTPUT_TYPE_FASO
+  comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_faso);
+#endif
+#ifdef DEFAULT_OUTPUT_TYPE_FASOLL
+  comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_fasoll);
+#endif
+#ifdef DEFAULT_OUTPUT_TYPE_FASOBC
+  comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_fasobc);
+#endif
+#ifdef DEFAULT_OUTPUT_TYPE_BYTECODE
+  comp::_sym_STARdefault_output_typeSTAR->defparameter(kw::_sym_bytecode);
+#endif
   comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(nil<core::T_O>());
   gctools::_sym_STARdebug_gcrootsSTAR->defparameter(nil<core::T_O>());
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
@@ -1300,7 +1303,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #ifdef CLASP_EXTENSIONS
   features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"),features);
 #endif
-#if CLASP_BUILD_MODE == 6
+#ifdef DEFAULT_OUTPUT_TYPE_BYTECODE
   features = Cons_O::create(_lisp->internKeyword("BYTECODE"), features);
 #endif
   cl::_sym_STARfeaturesSTAR->exportYourself()->defparameter(features);

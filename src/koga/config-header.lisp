@@ -22,14 +22,10 @@
                  "CLASP_CONFIG_H" t
                  "CST" (cst configuration)
                  "USE_PARALLEL_BUILD" (parallel-build configuration)
-                 "CLASP_BUILD_MODE" (case (build-mode configuration)
-                                      (:fasl 0)
-                                      (:object 1)
-                                      (:bitcode 2)
-                                      (:faso 3)
-                                      (:fasoll 4)
-                                      (:fasobc 5)
-                                      ((:bytecode :bytecode-faso) 6))
+                 (format nil "DEFAULT_OUTPUT_TYPE_~a"
+                         (if (eq (build-mode configuration) :bytecode-faso)
+                             :bytecode
+                             (build-mode configuration))) t
                  "USE_COMPILE_FILE_PARALLEL" (if (compile-file-parallel configuration) 1 0)
                  "FORCE_STARTUP_EXTERNAL_LINKAGE" (if (force-startup-external-linkage configuration) 1 0)
                  "USE_PRECISE_GC" *variant-precise*

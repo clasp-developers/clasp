@@ -127,39 +127,18 @@
     (llvm-sys:add-irmodule (llvm-sys:clasp-jit) dylib module *thread-safe-context*)
     (llvm-sys:jit-finalize-run-cxx-function (llvm-sys:clasp-jit) dylib function-name)))
 
-
-(defun load-bitcode (filename &key print clasp-build-mode)
-  (cond
-    ((eq clasp-build-mode :bitcode)
-     (if *use-human-readable-bitcode*
-         (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
-           (if print (core:fmt t "Loading {}%N" input-name))
-           (llvm-sys:load-ll input-name (thread-local-llvm-context)))
-         (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
-           (if print (core:fmt t "Loading {}%N" input-name))
-           (llvm-sys:load-bc input-name (thread-local-llvm-context)))))
-    (t (error "Add support for load-bitcode with clasp-build-mode of ~a" clasp-build-mode))))
-
-(defun parse-bitcode (filename context &key print clasp-build-mode)
+(defun parse-bitcode (filename context &key print output-type)
   ;; Load a module from a bitcode or .ll file
   (cond
-    ((eq clasp-build-mode :fasobc)
+    ((eq output-type :fasobc)
      (if print (core:fmt t "Loading {}%N" filename))
      (llvm-sys:parse-bitcode-file filename context))
-    ((eq clasp-build-mode :fasoll)
+    ((eq output-type :fasoll)
      (if print (core:fmt t "Loading {}%N" filename))
      (llvm-sys:parse-irfile filename context))
-    ((eq clasp-build-mode :bitcode)
-     (if *use-human-readable-bitcode*
-         (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
-           (if print (core:fmt t "Loading {}%N" input-name))
-           (llvm-sys:parse-irfile input-name context))
-         (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
-           (if print (core:fmt t "Loading {}%N" input-name))
-           (llvm-sys:parse-bitcode-file input-name context))))
-    (t (error "Add support for clasp-build-mode ~a" clasp-build-mode))))
+    (t (error "Add support for output-type ~a" output-type))))
 
-(export '(write-bitcode load-bitcode parse-bitcode load-ir-run-c-function))
+(export '(write-bitcode parse-bitcode load-ir-run-c-function))
 
 (defun get-builtin-target-triple-and-data-layout ()
   "Query llvm for the target triple and the data-layout"
@@ -191,7 +170,7 @@
 
 (defun link-bitcode-modules-together (output-pathname part-pathnames
                                       &key additional-bitcode-pathnames
-                                        clasp-build-mode)
+                                           output-type)
   "Link a bunch of modules together, return the linked module"
   (let* ((link-module (llvm-create-module (pathname-name output-pathname))))
     (let* ((part-index 1))
@@ -211,7 +190,7 @@
                          (file-length fin)
                        (close fin))))
            (let* ((part-module (parse-bitcode (namestring (truename part-pn)) (thread-local-llvm-context)
-                                              :clasp-build-mode clasp-build-mode)))
+                                              :output-type output-type)))
              (setq part-index (+ 1 part-index))
              (multiple-value-call (function (lambda (failure error-msg)
                                     (if failure
@@ -261,7 +240,7 @@
 
 (defun load-object-files (&optional (object-files core:*command-line-arguments*))
   (format t "load-object-files trying to load ~a~%" object-files)
-  (format t "clasp-build-mode = ~a~%" core:*clasp-build-mode*))
+  (format t "output-type = ~a~%" cmp:*default-output-type*))
 
 (export 'load-object-files)
 
@@ -620,11 +599,10 @@ No DIBuilder is defined for the default module")
 ;;;
 
 
-(defun code-model (&key jit (target-faso-file *default-object-type*))
-  (declare (ignore jit target-faso-file))
+(defun code-model (&key jit (output-type *default-output-type*))
+  (declare (ignore jit output-type))
   "Return the code-model for the compilation mode"
-  #+darwin 'llvm-sys:code-model-small
-  #+(or freebsd linux) 'llvm-sys:code-model-small)
+  'llvm-sys:code-model-small)
 
 (export 'code-model)
 

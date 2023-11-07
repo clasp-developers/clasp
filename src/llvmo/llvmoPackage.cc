@@ -646,7 +646,7 @@ mp::Mutex* global_trampoline_mutex = NULL;
 #endif
 
 CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
-#if CLASP_BUILD_MODE != 6 // :bytecode
+#if !defined(DEFAULT_OUTPUT_TYPE_BYTECODE)
       return Values(Pointer_O::create((void *)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
 #endif
  if (global_trampoline_mutex == NULL) {

@@ -91,6 +91,11 @@ Options are :tagbody :go :all :eh-landing-pads
 ;;
 (defparameter *next-try-id* 0)
 
+;; llvm reloc model
+(defparameter *default-reloc-model*
+  #+(or linux freebsd) 'llvm-sys:reloc-model-pic-
+  #-(or linux freebsd) 'llvm-sys:reloc-model-undefined)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Turn off compiler debugging code once we are confident it works

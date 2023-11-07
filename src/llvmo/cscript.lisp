@@ -12,8 +12,3 @@
            #~"llvmoPackage.cc"
            #~"runtimeJit.cc"
            #~"clbindLlvmExpose.cc")
-
-(k:sources :bitcode
-           #~"intrinsics.cc"
-           #~"builtins.cc")
-

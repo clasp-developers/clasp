@@ -132,22 +132,13 @@
 
 (defun write-bitcode (module output-path &key output-type)
   ;; Write bitcode as either .bc files or .ll files
-  (cond
-    ((eq output-type :object)
-     (if *use-human-readable-bitcode*
-         (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path))))
-           (with-atomic-file-rename (temp-pathname filename)
-             (with-open-file (fout temp-pathname :direction :output
-                                   :if-does-not-exist :create)
-               (llvm-sys:dump-module module fout))))
-         (with-atomic-file-rename (temp-pathname output-path)
-           (llvm-sys:write-bitcode-to-file module (namestring temp-pathname)))))
-    ((eq output-type :faspll)
+  (ecase output-type
+    (:fasoll
      (with-atomic-file-rename (temp-pathname output-path)
        (with-open-file (fout temp-pathname :direction :output
                              :if-does-not-exist :create)
          (llvm-sys:dump-module module fout))))
-    ((eq output-type :faspbc)
+    (:fasobc
      (with-atomic-file-rename (temp-pathname output-path)
        (llvm-sys:write-bitcode-to-file module (namestring temp-pathname)))))
   (let ((file-length 0))
