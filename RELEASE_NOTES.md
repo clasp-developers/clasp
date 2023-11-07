@@ -7,6 +7,9 @@
 * New build mode `:bytecode-faso` which builds the kernel as native
   code (FASO) while the bytecode compiler is active.
 
+## Removed
+* Obsolete `:object`, `:ll`, `:bc`, and `:fasl` build modes.
+
 # Version 2.4.0 (LLVM15-17) 2023-10-01
 
 ## Added
