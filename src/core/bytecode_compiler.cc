@@ -2484,23 +2484,6 @@ void compile_combination(T_sp head, T_sp rest, Lexenv_sp env, const Context cont
     // function instead.
     compile_called_function(cl::_sym_eq, env, context);
     compile_call(rest, env, context);
-  } else if (head == cleavirPrimop::_sym_typeq) {
-    // KLUDGE: call to typep.
-    T_sp type = oCadr(rest);
-    if (type == cl::_sym_cons) {
-      compile_called_function(cl::_sym_consp, env, context);
-      compile_form(oCar(rest), env, context.sub_receiving(1));
-      context.emit_call(1);
-    } else if (type == cl::_sym_symbol) {
-      compile_called_function(cl::_sym_symbolp, env, context);
-      compile_form(oCar(rest), env, context.sub_receiving(1));
-      context.emit_call(1);
-    } else {
-      compile_called_function(cl::_sym_typep, env, context);
-      compile_form(oCar(rest), env, context.sub_receiving(1));
-      compile_literal(oCadr(rest), env, context.sub_receiving(1));
-      context.emit_call(2);
-    }
   }
   // not a special form
   else {

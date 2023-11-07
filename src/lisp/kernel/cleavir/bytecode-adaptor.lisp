@@ -10,26 +10,9 @@
 
 ;;; Wipe out macros we can't have for cleavir
 
-  (fmakunbound 'cleavir-primop:typeq)
   (fmakunbound 'cleavir-primop:car)
   (fmakunbound 'cleavir-primop:cdr)
 ;;;  (fmakunbound 'core::header-stamp-case)
-  )
-
-;;; From opt-type.lisp
-
-(eval-when (:execute :load-toplevel)
-  (define-compiler-macro typep (&whole whole object type &optional environment
-                                       &environment macro-env)
-    (unless (and (constantp type macro-env) (null environment))
-      (return-from typep whole))
-    (let* ((type (ext:constant-form-value type macro-env))
-           (expanded (typep-expansion type macro-env whole)))
-      (if (eq expanded whole)
-          whole                         ; failure
-          `(let ((object ,object))
-             (declare (ignorable object)) ; e.g. for type T
-             ,expanded))))
   )
 
 ;;; From opt-condition.lisp
