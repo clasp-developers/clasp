@@ -222,6 +222,15 @@
               (ctype:single-value (ctype:member sys t nil) sys)))
         (ctype:single-value (ctype:member sys t nil) sys))))
 
+(define-deriver core::headerp (obj type)
+  (let ((sys *clasp-system*))
+    (if (ctype:member-p sys type)
+        (let ((members (ctype:member-members sys type)))
+          (if (= (length members) 1)
+              (derive-type-predicate obj (first members) sys)
+              (ctype:single-value (ctype:member sys t nil) sys)))
+        (ctype:single-value (ctype:member sys t nil) sys))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (5) DATA AND CONTROL FLOW

@@ -100,6 +100,24 @@
       (change-class inst 'cc-bmir:fixed-mv-local-call
                     :nvalues (length req)))))
 
+(defstruct call-transform
+  ;; Either:
+  ;; a function that receives the return type and arg types and returns the
+  ;;  primop, or
+  ;; a primop name (symbol or cons)
+  primop
+  ;; a values ctype that the call return type must be a subtype of
+  ;; for the transformation to apply
+  return-type
+  ;; a list of non-values ctypes that the arguments must be subtypes of
+  argtypes
+  ;; either NIL, or an extra function (receiving the types) to be an
+  ;;  additional test for the transform to apply
+  test
+  ;; either T, meaning use the call's arguments as is, or a list of indices
+  ;;  to permute a subset of the arguments for the primop
+  permutation)
+
 ;;; Calls we can reduce to primops. We do this late so that the more high level inference
 ;;; steps don't need to concern themselves with primops.
 ;;; We do reductions based on the derived types of the arguments and of the
@@ -110,18 +128,27 @@
 ;;; The values are alists (primop return-type . argtypes).
 (defvar *call-to-primop* (make-hash-table :test #'equal))
 
-(defun %deftransform (name primop-name return-type argtypes)
+(defun more-specific-transform-p (transform1 transform2)
+  (let ((argtypes1 (call-transform-argtypes transform1))
+        (argtypes2 (call-transform-argtypes transform2)))
+    (and (= (length argtypes1) (length argtypes2))
+         (every #'subtypep argtypes1 argtypes2)
+         (cleavir-ctype:values-subtypep
+          (call-transform-return-type transform1)
+          (call-transform-return-type transform2)
+          clasp-cleavir:*clasp-system*)
+         (null (call-transform-test transform2)))))
+
+(defun %deftransform (name primop-name return-type argtypes
+                      &optional test (permutation t))
   (setf (gethash name *call-to-primop*)
-        (merge 'list (list (list* primop-name return-type argtypes))
+        (merge 'list (list (make-call-transform
+                            :primop primop-name
+                            :return-type return-type
+                            :argtypes argtypes
+                            :test test :permutation permutation))
                (gethash name *call-to-primop*)
-               (lambda (k1 k2)
-                 (let ((rt1 (first k1)) (ts1 (rest k1))
-                       (rt2 (first k2)) (ts2 (rest k2)))
-                   (and (= (length ts1) (length ts2))
-                        (every #'subtypep ts1 ts2)
-                        (cleavir-ctype:values-subtypep
-                         rt1 rt2 clasp-cleavir:*clasp-system*))))
-               :key #'cdr)))
+               #'more-specific-transform-p)))
 
 (defmacro deftransform (name primop-name &rest argtypes)
   `(progn (%deftransform ',name ',primop-name
@@ -137,10 +164,36 @@
                          ',argtypes)
           ',name))
 
+;;; full deftransform with evaluated primop (for functional computation),
+;;; additional test, and permutation.
+(defmacro deftransform-f (name primopf test permutation
+                          return-type &rest argtypes)
+  `(progn (%deftransform ',name ,primopf
+                         (cleavir-env:parse-values-type-specifier
+                          ',return-type nil clasp-cleavir:*clasp-system*)
+                         ',argtypes
+                         ,test ',permutation)))
+
 #+(or)
 (deftransform symbol-value symbol-value symbol)
 
 (deftransform core:generalp core:generalp t)
+
+(defun compute-headerp-primop (return-type object-type header-type)
+  (declare (ignore return-type object-type))
+  `(core::headerq ,(first (cleavir-ctype:member-members
+                           clasp-cleavir:*clasp-system*
+                           header-type))))
+
+(defun headerp-test (return-type object-type header-type)
+  (declare (ignore return-type object-type))
+  (and (cleavir-ctype:member-p clasp-cleavir:*clasp-system* header-type)
+       (let ((h (first (cleavir-ctype:member-members
+                        clasp-cleavir:*clasp-system* header-type))))
+         (and (gethash h core:+type-header-value-map+) t))))
+
+(deftransform-f core::headerp #'compute-headerp-primop 'headerp-test (0)
+  t t t)
 
 (deftransform functionp (core::headerq function) t)
 
@@ -284,17 +337,17 @@
   t fixnum t)
 ;; These are unsafe - make sure we only use core:vref when we don't need a
 ;; (further) bounds check.
-(defmacro define-vector-transforms (element-type ref set)
+(defmacro define-vector-transforms (element-type)
   `(progn
      (deftransform core:vref (core:vref ,element-type)
        (simple-array ,element-type (*)) fixnum)
      (deftransform (setf core:vref) (core::vset ,element-type)
        t (simple-array ,element-type (*)) fixnum)))
-(define-vector-transforms t core::t-vref core::t-vset)
-(define-vector-transforms single-float core::sf-vref core::sf-vset)
-(define-vector-transforms double-float core::df-vref core::df-vset)
-(define-vector-transforms base-char core::bc-vref core::bc-vset)
-(define-vector-transforms character core::c-vref core::c-vset)
+(define-vector-transforms t)
+(define-vector-transforms single-float)
+(define-vector-transforms double-float)
+(define-vector-transforms base-char)
+(define-vector-transforms character)
 
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 
@@ -347,11 +400,32 @@
 (deftransform core:acas (core:acas :relaxed t 1)
   (eql :relaxed) t t simple-vector fixnum)
 
+;;; e.g. (permute '(1 0) '(7 18 29)) => (18 7)
+(defun permute (permutation list)
+  (loop for index in permutation
+        collect (nth index list)))
+
+(defun reduce-call-to-primop (call primop permutation)
+  (let* ((callee (bir:callee call))
+         (args (rest (bir:inputs call)))
+         (primop-args
+           (if (eq permutation t)
+               args
+               (permute permutation args))))
+    (change-class call 'bir:primop :inputs primop-args
+                                   :info (cleavir-primop-info:info primop))
+    ;; Delete the callee in the usual case that it's an fdef lookup.
+    ;; KLUDGEy since we don't delete more generally.
+    (when (typep callee 'bir:output)
+      (let ((fdef (bir:definition callee)))
+        (when (typep fdef 'bir:constant-fdefinition)
+          (bir:delete-instruction fdef)))))
+  (values))
+
 (defmethod reduce-instruction ((inst bir:call))
   (let ((ids (cleavir-attributes:identities (bir:attributes inst))))
     (when ids
       (let* ((sys clasp-cleavir:*clasp-system*)
-             (callee (bir:callee inst))
              (args (rest (bir:inputs inst)))
              (output (bir:output inst))
              (prtype (bir:ctype output))
@@ -359,20 +433,22 @@
              (ptypes (mapcar (lambda (vty) (cleavir-ctype:primary vty sys)) types))
              (lptypes (length ptypes)))
         (dolist (id ids)
-          (loop for (primop trtype . ttypes) in (gethash id *call-to-primop*)
-                when (and (= lptypes (length ttypes))
-                          (every #'subtypep ptypes ttypes)
-                          (cleavir-ctype:values-subtypep
-                           prtype trtype clasp-cleavir:*clasp-system*))
-                  ;; Do the reduction to primop.
-                  ;; If the callee is an fdefinition, delete that.
-                  ;; KLUDGEy as we don't do a fully usedness analysis.
-                  do (when (typep callee 'bir:output)
-                       (let ((fdef (bir:definition callee)))
-                         (when (typep fdef 'bir:constant-fdefinition)
-                           (bir:delete-instruction fdef))))
-                     (change-class inst 'bir:primop :inputs args
-                                                    :info (cleavir-primop-info:info primop))
+          (loop for transform in (gethash id *call-to-primop*)
+                for primopf = (call-transform-primop transform)
+                when (let ((trtype (call-transform-return-type transform))
+                           (ttypes (call-transform-argtypes transform))
+                           (test (call-transform-test transform)))
+                       (and (= lptypes (length ttypes))
+                            (every #'subtypep ptypes ttypes)
+                            (cleavir-ctype:values-subtypep
+                             prtype trtype clasp-cleavir:*clasp-system*)
+                            (or (not test)
+                                (apply test prtype ptypes))))
+                  do (let ((primop (if (functionp primopf)
+                                       (apply primopf prtype ptypes)
+                                       primopf))
+                           (perm (call-transform-permutation transform)))
+                       (reduce-call-to-primop inst primop perm))
                      (return-from reduce-instruction)))))))
 
 (defun reduce-instructions (function)
