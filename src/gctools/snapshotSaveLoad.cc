@@ -125,6 +125,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
   core::executableTextSectionRange( start, end );
+  uintptr_t textRegionStart = 0;
   textRegionStart = (uintptr_t)start;
   nm_cmd << NM_BINARY << " -p --defined-only \"" << filename << "\"";
 #else

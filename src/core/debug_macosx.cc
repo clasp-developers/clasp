@@ -327,8 +327,15 @@ void startup_register_loaded_objects(add_dynamic_library* callback) {
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
-void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start, gctools::clasp_ptr_t dummy_text_end, bool dummyHasDataConst, gctools::clasp_ptr_t dummyDataConstStart, gctools::clasp_ptr_t dummyDataConstEnd ) {
-//  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
+ void add_dynamic_library_impl(add_dynamic_library* callback,
+                              bool is_executable,
+                              const std::string& libraryName,
+                              bool use_origin,
+                              uintptr_t library_origin,
+                              void* handle,
+                              gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end,
+                              bool hasVtableSection,
+                              gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd ) {
   BT_LOG(("Starting to load library: %s\n", libraryName.c_str() ));
 //  printf("%s:%d:%s Entered is_executable = %d use_origin = %d library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, use_origin, (void*)library_origin );
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
@@ -374,23 +381,17 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
                     "__TEXT",
                     text_segment_start,
                     text_segment_size);
-//  printf("%s:%d:%s       Looking for __TEXT  library_origin = %p - %p  text_segment_start = %p - %p text_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+text_segment_size), (void*)text_segment_start, (void*)((char*)text_segment_start + text_segment_size), text_segment_size );
-  uintptr_t vtableRegionStart = 0;
-  uintptr_t vtableRegionEnd = 0;
-  bool found = false;
+  OpenDynamicLibraryInfo* odli = NULL;
+  LoadableKind loadable;
   if (is_executable) {
-    General_O general;
-    uintptr_t seek = *(uintptr_t*)&general; // get vtable
-    found = vmmap(seek,vtableRegionStart,vtableRegionEnd,false);
+    odli = new ExecutableLibraryInfo(libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end,
+                                     hasVtableSection,vtableSectionStart,vtableSectionEnd);
+    loadable = Executable;
+  } else {
+    odli = new OpenDynamicLibraryInfo(libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end );
+    loadable = Library;
   }
-  OpenDynamicLibraryInfo odli(is_executable,
-                              libraryName,handle,symbol_table,
-                              reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
-                              reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
-                              reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size),
-                              found,
-                              (gctools::clasp_ptr_t)vtableRegionStart,
-                              (gctools::clasp_ptr_t)vtableRegionEnd);
+  TrapProblem trap(is_executable,libraryName,odli->loadableKind());
   if (callback) (*callback)(odli);
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }
