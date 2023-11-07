@@ -64,11 +64,11 @@ jobs:
     - name: Clasp koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'clasp' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} --llvm-config=/usr/local/opt/llvm@15/bin/llvm-config
+        ./koga --build-mode=${{ matrix.mode }} --llvm-config=/usr/local/opt/llvm@17/bin/llvm-config
     - name: Cando koga @ MacOS
       if: ${{ matrix.os == 'macos-latest' && matrix.build == 'cando' }}
       run: |
-        ./koga --build-mode=${{ matrix.mode }} --extensions=cando,seqan-clasp --llvm-config=/usr/local/opt/llvm@15/bin/llvm-config
+        ./koga --build-mode=${{ matrix.mode }} --extensions=cando,seqan-clasp --llvm-config=/usr/local/opt/llvm@17/bin/llvm-config
     - name: Build
       run: |
         ninja -C build
