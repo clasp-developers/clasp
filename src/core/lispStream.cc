@@ -1459,7 +1459,7 @@ static int clos_stream_interactive_p(T_sp strm) { return !T_sp(eval::funcall(gra
 
 static T_sp clos_stream_element_type(T_sp strm) { return eval::funcall(gray::_sym_stream_element_type, strm); }
 
-#define clos_stream_length not_a_file_stream
+static T_sp clos_stream_length(T_sp strm) { return eval::funcall(gray::_sym_stream_file_length, strm); }
 
 static T_sp clos_stream_get_position(T_sp strm) { return eval::funcall(gray::_sym_stream_file_position, strm); }
 
