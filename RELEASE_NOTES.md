@@ -6,6 +6,8 @@
   functions.
 * New build mode `:bytecode-faso` which builds the kernel as native
   code (FASO) while the bytecode compiler is active.
+* Generic `gray:stream-file-length` which implements `cl:file-length`
+  for Gray streams.
 
 ## Removed
 * Obsolete `:object`, `:ll`, `:bc`, and `:fasl` build modes.
