@@ -8,6 +8,7 @@ namespace core {
   FORWARD(SimpleVector_size_t);
   FORWARD(MDArray_size_t);
   FORWARD(SimpleMDArray_size_t);
+  FORWARD(ComplexVector_size_t);
 };
 template <>
 struct gctools::GCInfo<core::SimpleVector_size_t_O> {

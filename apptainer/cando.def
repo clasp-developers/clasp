@@ -14,6 +14,7 @@ From: ubuntu:lunar
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
     mkdir -p /home/cando/
     chmod ugo+rwx /home/cando/
+    tar -xvf /mnt/systems.tar -C /home/cando
     bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/cando/miniconda3
     rm -rf Miniconda3-latest-Linux-x86_64.sh
     export PATH="/home/cando/miniconda3/bin:${PATH}"

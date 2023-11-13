@@ -106,6 +106,7 @@
   (eclector.reader::set-standard-macro-characters readtable)
   (eclector.reader::set-standard-dispatch-macro-characters readtable)
   (cl:set-dispatch-macro-character #\# #\A 'core:sharp-a-reader readtable)
+  (cl:set-dispatch-macro-character #\# #\D 'core::do-read-dense-specialized-array readtable)
   (cl:set-dispatch-macro-character #\# #\I 'core::read-cxx-object readtable))
 
 (defun init-clasp-as-eclector-reader ()

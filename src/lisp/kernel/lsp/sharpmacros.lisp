@@ -127,10 +127,20 @@
   (let ((description (read stream t nil t)))
     (apply #'core:load-cxx-object (car description) (cdr description))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Reader macro for builtin objects
+;;
+(defun do-read-dense-specialized-array (stream char n)
+  (declare (ignore char))
+  (core:read-dense-specialized-array stream n))
+
 (defun sharpmacros-enhance ()
   (set-dispatch-macro-character #\# #\= #'sharp-equal)
   (set-dispatch-macro-character #\# #\# #'sharp-sharp)
-  (set-dispatch-macro-character #\# #\I #'read-cxx-object))
+  (set-dispatch-macro-character #\# #\I #'read-cxx-object)
+  (set-dispatch-macro-character #\# #\D #'read-dense-specialized-array))
+
 
 (defun sharpmacros-lisp-redefine (readtable)
   (cond ((boundp '*read-hook*)
@@ -141,8 +151,10 @@
          (set-dispatch-macro-character #\# #\I #'read-cxx-object readtable)
          (set-dispatch-macro-character #\# #\a 'sharp-a-reader readtable)
          (set-dispatch-macro-character #\# #\A 'sharp-a-reader readtable)
+         (set-dispatch-macro-character #\# #\D 'do-read-dense-specialized-array readtable)
          (set-dispatch-macro-character #\# #\s 'sharp-s-reader readtable)
          (set-dispatch-macro-character #\# #\S 'sharp-s-reader readtable)))
-  (values))      
-        
+  (values))
+
+
 (sharpmacros-enhance)

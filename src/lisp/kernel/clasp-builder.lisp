@@ -104,7 +104,7 @@
           (apply #'compile-file compile-file-arguments)
           (let ((after-ms (get-internal-run-time))
                 (after-bytes (gctools:bytes-allocated)))
-            (message :info "Compile time run({:.3f} secs) consed({} bytes)"
+            (message :info "; Compile time run({:.3f} secs) consed({} bytes)"
                      (float (/ (- after-ms before-ms) internal-time-units-per-second))
                      (- after-bytes before-bytes))))
         (apply #'compile-file compile-file-arguments))
@@ -168,9 +168,6 @@
                          wpid (core:wexitstatus status)))
               (when reload
                 (load-kernel-file (getf entry :output-path) :silent nil))
-              (message :info "Parent time run({:.3f} secs)"
-                       (float (/ (- (get-internal-run-time) (getf entry :start-time))
-                                 internal-time-units-per-second)))
               (decf child-count))))
         (when system
           (setq entry (car system)
@@ -199,7 +196,7 @@
                          (core:sigthreadmask :sig-setmask old-sigset nil)
                          (when fail
                            (message :err "sigthreadmask has an error errno = {}" errno))
-                         (message :info "Child time run({:.3f} secs) consed({} bytes)"
+                         (message :info "; Child time run({:.3f} secs) consed({} bytes)"
                                   (float (/ (- (get-internal-run-time) start-time)
                                             internal-time-units-per-second))
                                   (- (gctools:bytes-allocated) start-bytes))

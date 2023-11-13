@@ -43,6 +43,7 @@ Symbol_sp clasp_print_case();
 bool clasp_print_gensym();
 bool clasp_print_array();
 bool clasp_print_readably();
+bool clasp_print_dense();
 bool clasp_print_escape();
 bool clasp_print_circle();
 

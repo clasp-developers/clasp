@@ -43,8 +43,11 @@ THE SOFTWARE.
     Heavily modified by Christian Schafmeister 2014
 */
 
+#define DEBUG_DENSE 0
+
 // #define DEBUG_LEVEL_FULL
 #include <stdio.h>
+#include <bitset>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -6192,6 +6195,121 @@ CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
     }
   }
 };
+
+// Read dense (6-bit) character strings into blobs of bytes
+// See the reverse function denseWriteTo6Bit
+void denseReadTo8Bit(T_sp stream, size_t charCount, unsigned char* buffer) {
+
+# define CODING
+# include "dense_specialized_array_dispatch.cc"
+# undef CODING
+  unsigned char reverse_coding[128];
+  memset(reverse_coding,0,128);
+  for ( unsigned char ii=0; ii<64; ii++ ) reverse_coding[coding[ii]] = (unsigned char)ii;
+
+      // Initialize variables to keep track of remaining bits from the previous character
+  size_t total8bits = 0;
+  size_t total6bits = 0;
+  unsigned int remainingBits = 0;
+  unsigned int previousBits = 0;
+#if DEBUG_DENSE
+  std::stringstream sout8;
+  std::stringstream sout6;
+#endif
+      // Iterate through each character in the input stream
+  for (size_t i = 0; i < charCount; ++i) {
+            // Read and map the printable character back to a 6-bit value
+    unsigned char printableChar = clasp_read_char(stream);
+    unsigned char sixBitValue = reverse_coding[printableChar];
+    total6bits += 6;
+#if DEBUG_DENSE
+      std::bitset<6> bits6(sixBitValue);
+      sout6 << bits6;
+#endif
+
+            // Combine the remaining bits from the previous character with the current 6-bit value
+    unsigned int currentSixBitValue = (previousBits << 6) | sixBitValue;
+
+            // Update the number of remaining bits
+    remainingBits += 6;
+
+            // Continue until there are at least 8 bits to extract
+    while (remainingBits >= 8) {
+                  // Extract the next 8 bits
+      unsigned int eightBitValue = (currentSixBitValue >> (remainingBits - 8)) & 0xFF;
+#if DEBUG_DENSE
+      std::bitset<8> bits(eightBitValue);
+      sout8 << bits;
+#endif
+
+                  // Add the 8-bit value to the result vector
+      *buffer = (unsigned char)eightBitValue;
+      total8bits += 8;
+      buffer++;
+
+                  // Update variables for the next iteration
+      remainingBits -= 8;
+    }
+
+            // Save the remaining bits for the next iteration
+    previousBits = currentSixBitValue & ((1 << remainingBits) - 1);
+  }
+  // Subtract any trailing bits that weren't needed to generate the 8bit stream
+  total6bits -= remainingBits;
+
+#if DEBUG_DENSE
+  printf("%s:%d:%s bit8 stream\n%s\n", __FILE__, __LINE__, __FUNCTION__, sout8.str().c_str() );
+  printf("%s\n%s:%d:%s bit6 stream\n", sout6.str().c_str(), __FILE__, __LINE__, __FUNCTION__);
+#endif
+  if (total8bits!=total6bits) {
+    SIMPLE_ERROR("total8bits {} must match total6bits {}", total8bits, total6bits );
+  }
+}
+
+void read_array_readable_binary(T_sp stream, size_t num6bit, void* start, void* end ) {
+  size_t numBytes = (num6bit*6)/8;
+  size_t size = ((const char*)end) - ((const char*)start);
+  if (numBytes != size) SIMPLE_ERROR("Mismatch between the number of bytes {} from num6bit {}  and the size of the buffer {}", numBytes, size, num6bit );
+  denseReadTo8Bit( stream, num6bit, (unsigned char*)start );
+}
+
+#define DISPATCH(_vtype_,_type_,_code_) \
+  if (kind == _code_) { \
+    size_t elements = ((num6bit*6)/8)/sizeof(_type_); \
+    auto svf = SimpleVector_##_vtype_##_O::make( elements, 0.0 ); \
+    unsigned char* start = (unsigned char*)svf->rowMajorAddressOfElement_(0); \
+    unsigned char* end = (unsigned char*)svf->rowMajorAddressOfElement_(elements); \
+    read_array_readable_binary( stream, num6bit, start, end ); \
+    claspCharacter c = clasp_read_char(stream); \
+    if (c != ' ') SIMPLE_ERROR("Expected space at end of dense blob - got #\\{} ", c ); \
+    return svf; \
+  }
+
+CL_DEFUN T_sp core__read_dense_specialized_array( T_sp stream, size_t num6bit ) {
+  std::string kind = "  ";
+  kind[0] = clasp_read_char(stream);
+  kind[1] = clasp_read_char(stream);
+//  printf("%s:%d:%s  num6bit = %lu  kind=%s\n", __FILE__, __LINE__, __FUNCTION__, num6bit, kind.c_str() );
+# define DISPATCHES
+# include "dense_specialized_array_dispatch.cc"
+# undef DISPATCHES
+
+#if 0
+  if (kind == "sf") {
+    size_t elements = (((num6bit*6) + 7)/8)/sizeof(float);
+//    printf("%s:%d:%s elements = %lu\n", __FILE__, __LINE__, __FUNCTION__, elements );
+    SimpleVector_float_sp svf = SimpleVector_float_O::make( elements, 0.0 );
+    unsigned char* start = (unsigned char*)svf->rowMajorAddressOfElement_(0);
+    unsigned char* end = (unsigned char*)svf->rowMajorAddressOfElement_(elements);
+    read_array_readable_binary( stream, num6bit, start, end );
+    claspCharacter c = clasp_read_char(stream); // Eat the trailing space
+    if (c != ' ') SIMPLE_ERROR("Expected space at end of dense blob - got #\\{} ", c );
+    return svf;
+  }
+#endif
+  SIMPLE_ERROR("Illegal dense type {}", kind );
+}
+
 
 CL_DOCSTRING(R"dx(Read 4 bytes and interpret them as a single float))dx");
 DOCGROUP(clasp);

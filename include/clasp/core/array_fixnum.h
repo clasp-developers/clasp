@@ -8,6 +8,7 @@ namespace core {
   FORWARD(SimpleVector_fixnum);
   FORWARD(MDArray_fixnum);
   FORWARD(SimpleMDArray_fixnum);
+  FORWARD(ComplexVector_fixnum);
 };
 template <>
 struct gctools::GCInfo<core::SimpleVector_fixnum_O> {

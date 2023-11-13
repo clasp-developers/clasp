@@ -139,6 +139,11 @@ bool clasp_print_readably(void) {
   return cl::_sym_STARprint_readablySTAR->symbolValue().isTrue();
 }
 
+bool clasp_print_dense(void) {
+  unlikely_if (!core::_sym_STARprint_denseSTAR) return false;
+  return core::_sym_STARprint_denseSTAR->symbolValue().isTrue();
+}
+
 bool clasp_print_escape(void) {
   unlikely_if (!cl::_sym_STARprint_escapeSTAR) return false;
   return cl::_sym_STARprint_escapeSTAR->symbolValue().isTrue();

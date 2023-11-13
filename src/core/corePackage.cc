@@ -563,6 +563,7 @@ SYMBOL_EXPORT_SC_(ClPkg, STARprint_caseSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_gensymSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_arraySTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_readablySTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARprint_denseSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_escapeSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_circleSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_linesSTAR);
@@ -1013,6 +1014,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   cl::_sym_STARprint_prettySTAR->defparameter(nil<T_O>());
   cl::_sym_STARprint_radixSTAR->defparameter(nil<T_O>());
   cl::_sym_STARprint_readablySTAR->defparameter(nil<T_O>());
+  core::_sym_STARprint_denseSTAR->defparameter(nil<T_O>());
   cl::_sym_STARprint_right_marginSTAR->defparameter(nil<T_O>());
 
   //        testPointers();

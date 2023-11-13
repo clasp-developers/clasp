@@ -655,6 +655,8 @@ T_mv cl__read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = n
 T_sp clasp_openRead(T_sp pathDesig);
 T_sp clasp_openWrite(T_sp pathDesig);
 
+void denseReadTo8Bit(T_sp stream, size_t charCount, unsigned char* buffer);
+
 }; // namespace core
 
 #endif
