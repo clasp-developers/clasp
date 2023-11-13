@@ -575,6 +575,19 @@
       (cleavir-primop-info:arguments (bir:info inst))
     (cmp::gen-fence order)))
 
+(defmethod %primop-rtype-info ((name (eql 'core:atomic-aref)) info)
+  (let ((vrtype (element-type->vrtype
+                 (second (cleavir-primop-info:arguments info)))))
+    `((,vrtype) :object :object :utfixnum)))
+(defmethod %primop-rtype-info ((name (eql 'core::atomic-aset)) info)
+  (let ((vrtype (element-type->vrtype
+                 (second (cleavir-primop-info:arguments info)))))
+    `((,vrtype) ,vrtype :object :object :utfixnum)))
+(defmethod %primop-rtype-info ((name (eql 'core:acas)) info)
+  (let ((vrtype (element-type->vrtype
+                 (second (cleavir-primop-info:arguments info)))))
+    `((,vrtype) :object ,vrtype ,vrtype :object :utfixnum)))
+
 (defvprimop (core:atomic-aref :flags (:flushable))
     ((:object) :object :object :utfixnum) (inst)
   ;; only simple vectors are allowed right now.
