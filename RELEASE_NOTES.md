@@ -9,6 +9,10 @@
 * Generic `gray:stream-file-length` which implements `cl:file-length`
   for Gray streams.
 
+## Changed
+* `cl:format` and `pprint` now respect the value returned bye
+  `gray:stream-line-length`.
+
 ## Removed
 * Obsolete `:object`, `:ll`, `:bc`, and `:fasl` build modes.
 
