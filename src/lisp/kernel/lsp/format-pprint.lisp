@@ -281,7 +281,9 @@
                 (check-output-layout-mode 2)
                 (interpret-bind-defaults
                     ((extra 0)
-                     (len (or #-(or ecl clasp) (sys::line-length stream) 72)))
+                     (len (or *print-right-margin*
+                              (gray:stream-line-length stream)
+                              default-line-length)))
                     (format-directive-params first-semi)
                   (setf newline-string
                         (with-output-to-string (stream)
