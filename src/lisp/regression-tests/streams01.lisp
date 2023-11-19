@@ -178,3 +178,48 @@
 (test-expect-error stream-element-type.error.3.simplified
                    (stream-element-type 0)
                    :type type-error)
+
+(require :gray-streams)
+
+(defclass character-input-stream
+    (gray:fundamental-character-input-stream)
+  ((value :reader value
+          :initarg :value)
+   (index :accessor index
+          :initform 0)))
+
+(defmethod gray:stream-read-char ((stream character-input-stream))
+  (with-accessors ((value value)
+                   (index index))
+      stream
+    (if (< index (length value))
+        (prog1 (char value index)
+          (incf index))
+        :eof)))
+
+(defmethod gray:stream-unread-char ((stream character-input-stream) character)
+  (with-accessors ((value value)
+                   (index index))
+      stream
+    (when (zerop index)
+      (error "Stream is at beginning, cannot unread character"))
+    (when (char/= character (char value (decf index)))
+      (error "Cannot unread a character that does not match."))
+    nil))
+
+(test-expect-error read-line.eof.01
+  (read-line (make-instance 'character-input-stream :value ""))
+  :type end-of-file)
+
+(test read-line.eof.02
+  (read-line (make-instance 'character-input-stream :value "") nil :wibble)
+  (:wibble t))
+
+(test read-line.eof.03
+  (read-line (make-instance 'character-input-stream :value "a
+"))
+  ("a" nil))
+
+(test read-line.eof.04
+  (read-line (make-instance 'character-input-stream :value "a"))
+  ("a" t))
