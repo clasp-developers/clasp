@@ -5797,7 +5797,8 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
   if (!AnsiStreamP(sin)) {
     T_mv results = eval::funcall(gray::_sym_stream_read_line, sin);
     MultipleValues &mvn = core::lisp_multipleValues();
-    if (mvn.second(results.number_of_values()).isTrue()) {
+    if (mvn.second(results.number_of_values()).isTrue() &&
+        (gc::As<core::String_sp>(results)->length() == 0)) {
       if (eof_error_p.notnilp()) {
         ERROR_END_OF_FILE(sin);
       } else {
