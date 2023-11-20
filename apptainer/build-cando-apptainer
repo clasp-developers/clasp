@@ -5,5 +5,5 @@
 #
 
 rm -rf build-apptainer/*
-tar --exclude-vcs -cvf systems.tar -C $HOME ./common-lisp ./work/spiros/data ./work/data
+tar --exclude-vcs -cvf systems.tar -C $HOME ./common-lisp ./work/spiros/data ./work/data ~/common-lisp/amber-protein/products/
 apptainer build -F --bind $PWD:/mnt cando.sif apptainer/cando.def
