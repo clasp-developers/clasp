@@ -16,6 +16,9 @@
 ## Removed
 * Obsolete `:object`, `:ll`, `:bc`, and `:fasl` build modes.
 
+## Fixed
+* `cl:read-line` so it correctly returns lines that end with EOF.
+
 # Version 2.4.0 (LLVM15-17) 2023-10-01
 
 ## Added
