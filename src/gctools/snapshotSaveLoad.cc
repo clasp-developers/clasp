@@ -1823,11 +1823,11 @@ struct fixup_internals_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     if (header->_badge_stamp_wtag_mtag.stampP()) {
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
-//        printf("%s:%d:%s load_snapshot saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__  );
+        //printf("%s:%d:%s load_snapshot saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__  );
         gctools::GCVector_moveable<clbind::detail::edge>* edges = (gctools::GCVector_moveable<clbind::detail::edge>*)HEADER_PTR_TO_GENERAL_PTR(header);
-//        printf("%s:%d:%s load_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
+        //printf("%s:%d:%s load_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
         for ( size_t ii = 0; ii< edges->size(); ii++ ) {
-//          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
+          //printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
           decodeEntryPointInLibrary(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
         }
       }
@@ -1838,7 +1838,9 @@ struct fixup_internals_t : public walker_callback_t {
         core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
         if (cast::Cast<core::General_O*,core::T_O*>::isA(client)) {
           core::General_O* generalObject = (core::General_O*)client;
+          // printf("%s:%d:%s fixupInternals addr %p stamp = %X\n", __FILE__, __LINE__, __FUNCTION__, (void*)generalObject, header->_badge_0stamp_wtag_mtag.stamp_());
           generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
+          //printf("%s:%d:%s Done\n", __FILE__, __LINE__, __FUNCTION__ );
         }
       }
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
@@ -2119,7 +2121,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
       sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer );
     }
   }
-  DBG_SLS("Step2 - there are %lu libraries with function pointers that need relocating\n", fixup->_libraries.size() );
+  DBG_SLS("Step2 - there are %lu libraries with function pointers that need relocating\n", fixup->_Libraries.size() );
   for ( size_t idx=0; idx<fixup->_Libraries.size(); idx++ ) {
     int groupPointerIdx = -1;
     ISLLibrary& curLib = fixup->_Libraries[idx];
