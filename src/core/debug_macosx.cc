@@ -383,14 +383,21 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
     uintptr_t seek = *(uintptr_t*)&general; // get vtable
     found = vmmap(seek,vtableRegionStart,vtableRegionEnd,false);
   }
-  OpenDynamicLibraryInfo odli(is_executable,
-                              libraryName,handle,symbol_table,
-                              reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
-                              reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
-                              reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size),
-                              found,
-                              (gctools::clasp_ptr_t)vtableRegionStart,
-                              (gctools::clasp_ptr_t)vtableRegionEnd);
+  OpenDynamicLibraryInfo* odli = NULL;
+  if (is_executable) {
+    odli = new ExecutableLibraryInfo(libraryName,handle,symbol_table,
+                                     reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
+                                     reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
+                                     reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size),
+                                     found,
+                                     (gctools::clasp_ptr_t)vtableRegionStart,
+                                     (gctools::clasp_ptr_t)vtableRegionEnd);
+  } else {
+    odli = new OpenDynamicLibraryInfo(libraryName,handle,symbol_table,
+                                      reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
+                                      reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
+                                      reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size) );
+  }
   if (callback) (*callback)(odli);
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }

@@ -599,8 +599,10 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             // On DARWIN assume symbolSize of 8 is really 0
             // because DARWIN doesn't save symbol size
             // This may be a cludge - I'm not sure (Chris Schafmeister, 2023)
+#if 0
             printf("%s:%d:%s Assuming symbolSize is 0 on DARWIN for currentCode->_LiteralVectorStart = %p\n",
                    __FILE__, __LINE__, __FUNCTION__, (void*)currentCode->_LiteralVectorStart );
+#endif
             symbolSize = 0;
 #endif
 

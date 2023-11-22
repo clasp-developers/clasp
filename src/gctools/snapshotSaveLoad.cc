@@ -125,7 +125,6 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
   core::executableTextSectionRange( start, end );
-  textRegionStart = (uintptr_t)start;
   nm_cmd << NM_BINARY << " -p --defined-only \"" << filename << "\"";
 #else
 #error "Handle other operating systems - how is main found using dlsym and in the output of nm"
