@@ -223,3 +223,53 @@
 (test read-line.eof.04
   (read-line (make-instance 'character-input-stream :value "a"))
   ("a" t))
+
+(test close.abort.01
+  (let* ((name (core:mkstemp "close-abort"))
+         (stream (open name :if-does-not-exist :create :direction :output)))
+    (write-string "wibble" stream)
+    (close stream)
+    (when (core:file-kind name nil)
+      (delete-file name)))
+  (t))
+
+(test close.abort.02
+  (let* ((name (core:mkstemp "close-abort"))
+         (stream (open name :if-does-not-exist :create :direction :output)))
+    (write-string "wibble" stream)
+    (close stream :abort t)
+    (when (core:file-kind name nil)
+      (delete-file name)))
+  (nil))
+
+(test close.abort.03
+  (let* ((name (core:mkstemp "close-abort"))
+         (stream (open name :if-does-not-exist :create :direction :output))
+         (buffer (make-array 3 :element-type 'character)))
+    (write-string "foo" stream)
+    (close stream)
+    (setf stream (open name :if-does-not-exist :create :if-exists :supersede :direction :output))
+    (write-string "bar" stream)
+    (close stream)
+    (setf stream (open name :direction :input))
+    (read-sequence buffer stream :start 0 :end 3)
+    (close stream)
+    (delete-file name)
+    buffer)
+  ("bar"))
+
+(test close.abort.04
+  (let* ((name (core:mkstemp "close-abort"))
+         (stream (open name :if-does-not-exist :create :direction :output))
+         (buffer (make-array 3 :element-type 'character)))
+    (write-string "foo" stream)
+    (close stream)
+    (setf stream (open name :if-does-not-exist :create :if-exists :supersede :direction :output))
+    (write-string "bar" stream)
+    (close stream :abort t)
+    (setf stream (open name :direction :input))
+    (read-sequence buffer stream :start 0 :end 3)
+    (close stream)
+    (delete-file name)
+    buffer)
+  ("foo"))

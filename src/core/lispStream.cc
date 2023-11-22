@@ -159,13 +159,9 @@ int &StreamClosed(T_sp strm) {
   return stream->_Closed;
 }
 
-bool AnsiStreamP(T_sp strm) {
-  return gc::IsA<AnsiStream_sp>(strm);
-}
+bool AnsiStreamP(T_sp strm) { return gc::IsA<AnsiStream_sp>(strm); }
 
-bool AnsiStreamTypeP(T_sp strm, int mode) {
-  return gc::IsA<AnsiStream_sp>(strm) && StreamMode(strm) == mode;
-}
+bool AnsiStreamTypeP(T_sp strm, int mode) { return gc::IsA<AnsiStream_sp>(strm) && StreamMode(strm) == mode; }
 
 bool FileStreamP(T_sp strm) { return AnsiStreamP(strm) && (StreamMode(strm) < clasp_smm_synonym); }
 
@@ -316,6 +312,16 @@ T_sp &FileStreamFilename(T_sp strm) {
 T_sp &FileStreamEltType(T_sp strm) {
   FileStream_sp iofs = gc::As<FileStream_sp>(strm);
   return iofs->_ElementType;
+}
+
+bool &FileStreamCreated(T_sp strm) {
+  FileStream_sp iofs = gc::As<FileStream_sp>(strm);
+  return iofs->_Created;
+}
+
+T_sp &FileStreamTempFilename(T_sp strm) {
+  FileStream_sp iofs = gc::As<FileStream_sp>(strm);
+  return iofs->_TempFilename;
 }
 
 int &IOFileStreamDescriptor(T_sp strm) {
@@ -721,7 +727,7 @@ static int generic_set_column(T_sp strm, int column) { return column; }
 
 static T_sp generic_set_position(T_sp strm, T_sp pos) { return nil<T_O>(); }
 
-static T_sp generic_close(T_sp strm) {
+static T_sp generic_close(T_sp strm, T_sp abort) {
   struct FileOps &ops = StreamOps(strm);
   if (clasp_input_stream_p(strm)) {
     ops.read_byte8 = closed_stream_read_byte8;
@@ -1474,7 +1480,7 @@ static int clos_stream_column(T_sp strm) {
   return col.nilp() ? -1 : clasp_to_integral<int>(clasp_floor1(gc::As<Real_sp>(col)));
 }
 
-static T_sp clos_stream_close(T_sp strm) { return eval::funcall(gray::_sym_close, strm); }
+static T_sp clos_stream_close(T_sp strm, T_sp abort) { return eval::funcall(gray::_sym_close, strm, kw::_sym_abort, abort); }
 
 static int illegal_op_int__T_sp(T_sp strm) {
   printf("%s:%d Illegal op\n", __FILE__, __LINE__);
@@ -1495,7 +1501,6 @@ static T_sp illegal_op_T_sp__T_sp(T_sp strm) {
   printf("%s:%d Illegal op\n", __FILE__, __LINE__);
   abort();
 }
-
 static void illegal_op_void__T_sp(T_sp strm) {
   printf("%s:%d Illegal op\n", __FILE__, __LINE__);
   abort();
@@ -1556,7 +1561,7 @@ const FileOps startup_stream_ops = {
     illegal_op_T_sp__T_sp_T_sp,              // set_position
     illegal_op_int__T_sp,                    // column
     illegal_op_int__T_sp_int,                // set_column
-    illegal_op_T_sp__T_sp                    // close
+    illegal_op_T_sp__T_sp_T_sp               // close
 };
 
 const FileOps clos_stream_ops = {
@@ -1941,12 +1946,12 @@ static int two_way_column(T_sp strm) { return clasp_file_column(TwoWayStreamOutp
 
 static int two_way_set_column(T_sp strm, int column) { return clasp_file_column_set(TwoWayStreamOutput(strm), column); }
 
-static T_sp two_way_close(T_sp strm) {
+static T_sp two_way_close(T_sp strm, T_sp abort) {
   if (StreamFlags(strm) & CLASP_STREAM_CLOSE_COMPONENTS) {
-    eval::funcall(cl::_sym_close, TwoWayStreamInput(strm));
-    eval::funcall(cl::_sym_close, TwoWayStreamOutput(strm));
+    eval::funcall(cl::_sym_close, TwoWayStreamInput(strm), abort);
+    eval::funcall(cl::_sym_close, TwoWayStreamOutput(strm), abort);
   }
-  return generic_close(strm);
+  return generic_close(strm, abort);
 }
 
 const FileOps two_way_ops = {
@@ -2110,11 +2115,13 @@ static int broadcast_set_column(T_sp strm, int column) {
   return column;
 }
 
-static T_sp broadcast_close(T_sp strm) {
+static T_sp broadcast_close(T_sp strm, T_sp abort) {
   if (StreamFlags(strm) & CLASP_STREAM_CLOSE_COMPONENTS) {
-    cl__mapc(cl::_sym_close, gc::As<Cons_sp>(BroadcastStreamList(strm)));
+    for (T_sp head = BroadcastStreamList(strm); head.notnilp() && gc::IsA<Cons_sp>(head); head = oCdr(head)) {
+      eval::funcall(cl::_sym_close, oCar(head), abort);
+    }
   }
-  return generic_close(strm);
+  return generic_close(strm, abort);
 }
 
 const FileOps broadcast_ops = {
@@ -2251,12 +2258,12 @@ static int echo_column(T_sp strm) { return clasp_file_column(EchoStreamOutput(st
 
 static int echo_set_column(T_sp strm, int column) { return clasp_file_column_set(EchoStreamOutput(strm), column); }
 
-static T_sp echo_close(T_sp strm) {
+static T_sp echo_close(T_sp strm, T_sp abort) {
   if (StreamFlags(strm) & CLASP_STREAM_CLOSE_COMPONENTS) {
-    eval::funcall(cl::_sym_close, EchoStreamInput(strm));
-    eval::funcall(cl::_sym_close, EchoStreamOutput(strm));
+    eval::funcall(cl::_sym_close, EchoStreamInput(strm), abort);
+    eval::funcall(cl::_sym_close, EchoStreamOutput(strm), abort);
   }
-  return generic_close(strm);
+  return generic_close(strm, abort);
 }
 
 const FileOps echo_ops = {
@@ -2398,11 +2405,13 @@ static int concatenated_listen(T_sp strm) {
   return CLASP_LISTEN_EOF;
 }
 
-static T_sp concatenated_close(T_sp strm) {
+static T_sp concatenated_close(T_sp strm, T_sp abort) {
   if (StreamFlags(strm) & CLASP_STREAM_CLOSE_COMPONENTS) {
-    cl__mapc(cl::_sym_close, gc::As<Cons_sp>(ConcatenatedStreamList(strm)));
+    for (T_sp head = ConcatenatedStreamList(strm); head.notnilp() && gc::IsA<Cons_sp>(head); head = oCdr(head)) {
+      eval::funcall(cl::_sym_close, oCar(head), abort);
+    }
   }
-  return generic_close(strm);
+  return generic_close(strm, abort);
 }
 
 const FileOps concatenated_ops = {
@@ -2667,7 +2676,7 @@ static FILE *safe_fdopen(int fildes, const char *mode) {
   if (output == NULL) {
     std::string serr = strerror(errno);
     struct stat info;
-    [[maybe_unused]]int fstat_error = fstat(fildes, &info);
+    [[maybe_unused]] int fstat_error = fstat(fildes, &info);
     int flags, fdflags, tmp, oflags;
     if ((flags = sflags(mode, &oflags)) == 0)
       perror("sflags failed");
@@ -2882,7 +2891,21 @@ static int io_file_column(T_sp strm) { return StreamOutputColumn(strm); }
 
 static int io_file_set_column(T_sp strm, int column) { return StreamOutputColumn(strm) = column; }
 
-static T_sp io_file_close(T_sp strm) {
+static void file_close_cleanup(T_sp strm, T_sp abort) {
+  T_sp filename = FileStreamFilename(strm), temp_filename = FileStreamTempFilename(strm);
+  bool created = FileStreamCreated(strm);
+  if (abort.nilp()) {
+    if (temp_filename.notnilp()) {
+      cl__rename_file(temp_filename, cl__truename(filename), kw::_sym_supersede);
+    }
+  } else if (created) {
+    cl__delete_file(filename);
+  } else if (temp_filename.notnilp()) {
+    cl__delete_file(temp_filename);
+  }
+}
+
+static T_sp io_file_close(T_sp strm, T_sp abort) {
   int f = IOFileStreamDescriptor(strm);
   int failed;
   unlikely_if(f == STDOUT_FILENO) FEerror("Cannot close the standard output", 0);
@@ -2890,7 +2913,8 @@ static T_sp io_file_close(T_sp strm) {
   failed = safe_close(f);
   unlikely_if(failed < 0) cannot_close(strm);
   IOFileStreamDescriptor(strm) = -1;
-  return generic_close(strm);
+  file_close_cleanup(strm, abort);
+  return generic_close(strm, abort);
 }
 
 static claspCharacter io_file_decode_char_from_buffer(AnsiStream_sp strm, unsigned char *buffer, unsigned char **buffer_pos,
@@ -3509,8 +3533,10 @@ void si_stream_external_format_set(T_sp stream, T_sp format) {
 }
 
 T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size, int flags,
-                                    T_sp external_format) {
+                                    T_sp external_format, T_sp tempName, bool created) {
   T_sp stream = IOFileStream_O::create();
+  FileStreamTempFilename(stream) = tempName;
+  FileStreamCreated(stream) = created;
   switch (smm) {
   case clasp_smm_input:
     smm = clasp_smm_input_file;
@@ -3716,7 +3742,7 @@ static int io_stream_column(T_sp strm) { return StreamOutputColumn(strm); }
 
 static int io_stream_set_column(T_sp strm, int column) { return StreamOutputColumn(strm) = column; }
 
-static T_sp io_stream_close(T_sp strm) {
+static T_sp io_stream_close(T_sp strm, T_sp abort) {
   FILE *f = IOStreamStreamFile(strm);
   int failed;
   unlikely_if(f == stdout) FEerror("Cannot close the standard output", 0);
@@ -3730,7 +3756,8 @@ static T_sp io_stream_close(T_sp strm) {
   gctools::clasp_dealloc(StreamBuffer(strm));
   StreamBuffer(strm) = NULL;
   IOStreamStreamFile(strm) = NULL;
-  return generic_close(strm);
+  file_close_cleanup(strm, abort);
+  return generic_close(strm, abort);
 }
 
 /*
@@ -4203,9 +4230,11 @@ void clasp_setup_stream_ops(T_sp stream, enum StreamMode smm) {
 }
 
 T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm, gctools::Fixnum byte_size, int flags,
-                                 T_sp external_format) {
+                                 T_sp external_format, T_sp tempName, bool created) {
   T_sp stream;
   stream = IOStreamStream_O::create();
+  FileStreamTempFilename(stream) = tempName;
+  FileStreamCreated(stream) = created;
   StreamMode(stream) = smm;
   StreamClosed(stream) = 0;
   clasp_setup_stream_ops(stream, smm);
@@ -4215,8 +4244,8 @@ T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm, gctoo
   return stream;
 }
 
-T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size, int flags,
-                               T_sp external_format) {
+T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size, int flags, T_sp external_format,
+                               T_sp tempName, bool created) {
   const char *mode; /* file open mode */
   FILE *fp;         /* file pointer */
   switch (smm) {
@@ -4262,7 +4291,7 @@ T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools:
         gc::As<String_sp>(fname)->get_std_string().c_str(), mode, strerror(errno), fstat_error, info.st_mode,
         string_mode(info.st_mode));
   }
-  return clasp_make_stream_from_FILE(fname, fp, smm, byte_size, flags, external_format);
+  return clasp_make_stream_from_FILE(fname, fp, smm, byte_size, flags, external_format, tempName, created);
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, input_output);
@@ -4866,7 +4895,8 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
     SIMPLE_ERROR("In {} the filename is NIL", __FUNCTION__);
   String_sp filename = core__coerce_to_filename(fn);
   string fname = filename->get_std_string();
-  bool appending = 0;
+  T_sp temp_name = nil<T_O>();
+  bool appending = false, created = false;
   ASSERT(filename);
   bool exists = core__file_kind(filename, true).notnilp();
   if (smm == clasp_smm_input || smm == clasp_smm_probe) {
@@ -4888,7 +4918,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
   } else if (smm == clasp_smm_output || smm == clasp_smm_io) {
     int base = (smm == clasp_smm_output) ? O_WRONLY : O_RDWR;
     if (if_exists == kw::_sym_new_version && if_does_not_exist == kw::_sym_create) {
-      exists = 0;
+      exists = false;
       if_does_not_exist = kw::_sym_create;
     }
     if (exists) {
@@ -4898,7 +4928,8 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
         f = clasp_backup_open(fname.c_str(), base | O_CREAT, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
       } else if (if_exists == kw::_sym_rename_and_delete || if_exists == kw::_sym_new_version || if_exists == kw::_sym_supersede) {
-        f = safe_open(fname.c_str(), base | O_TRUNC, mode);
+        temp_name = core__mkstemp(filename);
+        f = safe_open(core__coerce_to_filename(temp_name)->get_std_string().c_str(), base | O_CREAT, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
       } else if (if_exists == kw::_sym_overwrite || if_exists == kw::_sym_append) {
         f = safe_open(fname.c_str(), base, mode);
@@ -4914,6 +4945,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
         FEdoes_not_exist(fn);
       } else if (if_does_not_exist == kw::_sym_create) {
         f = safe_open(fname.c_str(), base | O_CREAT | O_TRUNC, mode);
+        created = true;
         unlikely_if(f < 0) FEcannot_open(fn);
       } else if (if_does_not_exist.nilp()) {
         return nil<T_O>();
@@ -4926,28 +4958,25 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists, T_sp if_doe
   }
   if (flags & CLASP_STREAM_C_STREAM) {
     FILE *fp = NULL;
-    safe_close(f);
-    /* We do not use fdopen() because Windows seems to
-     * have problems with the resulting streams. Furthermore, even for
-     * output we open with w+ because we do not want to
-     * overwrite the file. */
     switch (smm) {
     case clasp_smm_probe:
     case clasp_smm_input:
-      fp = safe_fopen(fname.c_str(), OPEN_R);
+      fp = safe_fdopen(f, OPEN_R);
       break;
     case clasp_smm_output:
+      fp = safe_fdopen(f, OPEN_W);
+      break;
     case clasp_smm_io:
-      fp = safe_fopen(fname.c_str(), OPEN_RW);
+      fp = safe_fdopen(f, OPEN_RW);
       break;
     default:; /* never reached */
       SIMPLE_ERROR("Illegal smm mode: {} for CLASP_STREAM_C_STREAM", smm);
       UNREACHABLE();
     }
-    output = clasp_make_stream_from_FILE(fn, fp, smm, byte_size, flags, external_format);
+    output = clasp_make_stream_from_FILE(fn, fp, smm, byte_size, flags, external_format, temp_name, created);
     core__set_buffering_mode(output, byte_size ? kw::_sym_full : kw::_sym_line);
   } else {
-    output = clasp_make_file_stream_from_fd(fn, f, smm, byte_size, flags, external_format);
+    output = clasp_make_file_stream_from_fd(fn, f, smm, byte_size, flags, external_format, temp_name, created);
   }
   if (smm == clasp_smm_probe) {
     eval::funcall(cl::_sym_close, output);
@@ -5027,7 +5056,7 @@ CL_DOCSTRING(R"dx(Lower-level version of cl:close)dx");
 CL_DOCSTRING_LONG(
     R"dx(However, this won't be redefined by gray streams and will be available to call after cl:close is redefined by gray::redefine-cl-functions.)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__closeSTAR(T_sp strm, T_sp abort) { return stream_dispatch_table(strm).close(strm); }
+CL_DEFUN T_sp core__closeSTAR(T_sp strm, T_sp abort) { return stream_dispatch_table(strm).close(strm, abort); }
 
 CL_LAMBDA(strm &key abort);
 CL_DECLARE();
@@ -5415,13 +5444,15 @@ size_t clasp_input_filePos(T_sp strm) {
 int clasp_input_lineno(T_sp strm) {
   if (gc::IsA<AnsiStream_sp>(strm))
     return StreamInputCursor(strm)._LineNumber;
-  else return 0;
+  else
+    return 0;
 }
 
 int clasp_input_column(T_sp strm) {
   if (gc::IsA<AnsiStream_sp>(strm))
     return StreamInputCursor(strm)._Column;
-  else return 0;
+  else
+    return 0;
 }
 
 CL_LAMBDA(stream file line-offset positional-offset);
@@ -5464,9 +5495,10 @@ AnsiStream_O::~AnsiStream_O() {
   this->_Buffer = NULL;
 };
 
-IOStreamStream_O::~IOStreamStream_O() { stream_dispatch_table(this->asSmartPtr()).close(this->asSmartPtr()); }
+IOStreamStream_O::~IOStreamStream_O() { stream_dispatch_table(this->asSmartPtr()).close(this->asSmartPtr(), nil<T_O>()); }
 
-IOFileStream_O::~IOFileStream_O() { stream_dispatch_table(this->asSmartPtr()).close(this->asSmartPtr()); }
+IOFileStream_O::~IOFileStream_O() { stream_dispatch_table(this->asSmartPtr()).close(this->asSmartPtr(), nil<T_O>()); }
+
 void IOFileStream_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     std::string name = gc::As<String_sp>(this->_Filename)->get_std_string();
@@ -5800,8 +5832,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
   if (!AnsiStreamP(sin)) {
     T_mv results = eval::funcall(gray::_sym_stream_read_line, sin);
     MultipleValues &mvn = core::lisp_multipleValues();
-    if (mvn.second(results.number_of_values()).isTrue() &&
-        (gc::As<core::String_sp>(results)->length() == 0)) {
+    if (mvn.second(results.number_of_values()).isTrue() && (gc::As<core::String_sp>(results)->length() == 0)) {
       if (eof_error_p.notnilp()) {
         ERROR_END_OF_FILE(sin);
       } else {
@@ -6198,16 +6229,17 @@ CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
 
 // Read dense (6-bit) character strings into blobs of bytes
 // See the reverse function denseWriteTo6Bit
-void denseReadTo8Bit(T_sp stream, size_t charCount, unsigned char* buffer) {
+void denseReadTo8Bit(T_sp stream, size_t charCount, unsigned char *buffer) {
 
-# define CODING
-# include "dense_specialized_array_dispatch.cc"
-# undef CODING
+#define CODING
+#include "dense_specialized_array_dispatch.cc"
+#undef CODING
   unsigned char reverse_coding[128];
-  memset(reverse_coding,0,128);
-  for ( unsigned char ii=0; ii<64; ii++ ) reverse_coding[coding[ii]] = (unsigned char)ii;
+  memset(reverse_coding, 0, 128);
+  for (unsigned char ii = 0; ii < 64; ii++)
+    reverse_coding[coding[ii]] = (unsigned char)ii;
 
-      // Initialize variables to keep track of remaining bits from the previous character
+  // Initialize variables to keep track of remaining bits from the previous character
   size_t total8bits = 0;
   size_t total6bits = 0;
   unsigned int remainingBits = 0;
@@ -6216,83 +6248,85 @@ void denseReadTo8Bit(T_sp stream, size_t charCount, unsigned char* buffer) {
   std::stringstream sout8;
   std::stringstream sout6;
 #endif
-      // Iterate through each character in the input stream
+  // Iterate through each character in the input stream
   for (size_t i = 0; i < charCount; ++i) {
-            // Read and map the printable character back to a 6-bit value
+    // Read and map the printable character back to a 6-bit value
     unsigned char printableChar = clasp_read_char(stream);
     unsigned char sixBitValue = reverse_coding[printableChar];
     total6bits += 6;
 #if DEBUG_DENSE
-      std::bitset<6> bits6(sixBitValue);
-      sout6 << bits6;
+    std::bitset<6> bits6(sixBitValue);
+    sout6 << bits6;
 #endif
 
-            // Combine the remaining bits from the previous character with the current 6-bit value
+    // Combine the remaining bits from the previous character with the current 6-bit value
     unsigned int currentSixBitValue = (previousBits << 6) | sixBitValue;
 
-            // Update the number of remaining bits
+    // Update the number of remaining bits
     remainingBits += 6;
 
-            // Continue until there are at least 8 bits to extract
+    // Continue until there are at least 8 bits to extract
     while (remainingBits >= 8) {
-                  // Extract the next 8 bits
+      // Extract the next 8 bits
       unsigned int eightBitValue = (currentSixBitValue >> (remainingBits - 8)) & 0xFF;
 #if DEBUG_DENSE
       std::bitset<8> bits(eightBitValue);
       sout8 << bits;
 #endif
 
-                  // Add the 8-bit value to the result vector
+      // Add the 8-bit value to the result vector
       *buffer = (unsigned char)eightBitValue;
       total8bits += 8;
       buffer++;
 
-                  // Update variables for the next iteration
+      // Update variables for the next iteration
       remainingBits -= 8;
     }
 
-            // Save the remaining bits for the next iteration
+    // Save the remaining bits for the next iteration
     previousBits = currentSixBitValue & ((1 << remainingBits) - 1);
   }
   // Subtract any trailing bits that weren't needed to generate the 8bit stream
   total6bits -= remainingBits;
 
 #if DEBUG_DENSE
-  printf("%s:%d:%s bit8 stream\n%s\n", __FILE__, __LINE__, __FUNCTION__, sout8.str().c_str() );
+  printf("%s:%d:%s bit8 stream\n%s\n", __FILE__, __LINE__, __FUNCTION__, sout8.str().c_str());
   printf("%s\n%s:%d:%s bit6 stream\n", sout6.str().c_str(), __FILE__, __LINE__, __FUNCTION__);
 #endif
-  if (total8bits!=total6bits) {
-    SIMPLE_ERROR("total8bits {} must match total6bits {}", total8bits, total6bits );
+  if (total8bits != total6bits) {
+    SIMPLE_ERROR("total8bits {} must match total6bits {}", total8bits, total6bits);
   }
 }
 
-void read_array_readable_binary(T_sp stream, size_t num6bit, void* start, void* end ) {
-  size_t numBytes = (num6bit*6)/8;
-  size_t size = ((const char*)end) - ((const char*)start);
-  if (numBytes != size) SIMPLE_ERROR("Mismatch between the number of bytes {} from num6bit {}  and the size of the buffer {}", numBytes, size, num6bit );
-  denseReadTo8Bit( stream, num6bit, (unsigned char*)start );
+void read_array_readable_binary(T_sp stream, size_t num6bit, void *start, void *end) {
+  size_t numBytes = (num6bit * 6) / 8;
+  size_t size = ((const char *)end) - ((const char *)start);
+  if (numBytes != size)
+    SIMPLE_ERROR("Mismatch between the number of bytes {} from num6bit {}  and the size of the buffer {}", numBytes, size, num6bit);
+  denseReadTo8Bit(stream, num6bit, (unsigned char *)start);
 }
 
-#define DISPATCH(_vtype_,_type_,_code_) \
-  if (kind == _code_) { \
-    size_t elements = ((num6bit*6)/8)/sizeof(_type_); \
-    auto svf = SimpleVector_##_vtype_##_O::make( elements, 0.0 ); \
-    unsigned char* start = (unsigned char*)svf->rowMajorAddressOfElement_(0); \
-    unsigned char* end = (unsigned char*)svf->rowMajorAddressOfElement_(elements); \
-    read_array_readable_binary( stream, num6bit, start, end ); \
-    claspCharacter c = clasp_read_char(stream); \
-    if (c != ' ') SIMPLE_ERROR("Expected space at end of dense blob - got #\\{} ", c ); \
-    return svf; \
+#define DISPATCH(_vtype_, _type_, _code_)                                                                                          \
+  if (kind == _code_) {                                                                                                            \
+    size_t elements = ((num6bit * 6) / 8) / sizeof(_type_);                                                                        \
+    auto svf = SimpleVector_##_vtype_##_O::make(elements, 0.0);                                                                    \
+    unsigned char *start = (unsigned char *)svf->rowMajorAddressOfElement_(0);                                                     \
+    unsigned char *end = (unsigned char *)svf->rowMajorAddressOfElement_(elements);                                                \
+    read_array_readable_binary(stream, num6bit, start, end);                                                                       \
+    claspCharacter c = clasp_read_char(stream);                                                                                    \
+    if (c != ' ')                                                                                                                  \
+      SIMPLE_ERROR("Expected space at end of dense blob - got #\\{} ", c);                                                         \
+    return svf;                                                                                                                    \
   }
 
-CL_DEFUN T_sp core__read_dense_specialized_array( T_sp stream, size_t num6bit ) {
+CL_DEFUN T_sp core__read_dense_specialized_array(T_sp stream, size_t num6bit) {
   std::string kind = "  ";
   kind[0] = clasp_read_char(stream);
   kind[1] = clasp_read_char(stream);
 //  printf("%s:%d:%s  num6bit = %lu  kind=%s\n", __FILE__, __LINE__, __FUNCTION__, num6bit, kind.c_str() );
-# define DISPATCHES
-# include "dense_specialized_array_dispatch.cc"
-# undef DISPATCHES
+#define DISPATCHES
+#include "dense_specialized_array_dispatch.cc"
+#undef DISPATCHES
 
 #if 0
   if (kind == "sf") {
@@ -6307,9 +6341,8 @@ CL_DEFUN T_sp core__read_dense_specialized_array( T_sp stream, size_t num6bit ) 
     return svf;
   }
 #endif
-  SIMPLE_ERROR("Illegal dense type {}", kind );
+  SIMPLE_ERROR("Illegal dense type {}", kind);
 }
-
 
 CL_DOCSTRING(R"dx(Read 4 bytes and interpret them as a single float))dx");
 DOCGROUP(clasp);
@@ -6403,11 +6436,6 @@ CL_DEFUN T_sp core__copy_stream(T_sp in, T_sp out, T_sp wait) {
   return (c == EOF) ? _lisp->_true() : nil<T_O>();
 }
 
-
-void lisp_write(const std::string& s) {
-  clasp_write_string(s);
-}
-
-
+void lisp_write(const std::string &s) { clasp_write_string(s); }
 
 }; // namespace core
