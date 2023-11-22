@@ -299,6 +299,8 @@
      (deftransform core:vref (core:vref ,element-type)
        (simple-array ,element-type (*)) fixnum)
      (deftransform (setf core:vref) (core::vset ,element-type)
+       ;; FIXME: we should probably check the new value's type?
+       ;; ditto for atomic aref below.
        t (simple-array ,element-type (*)) fixnum)))
 (define-vector-transforms t)
 (define-vector-transforms single-float)
@@ -324,27 +326,53 @@
 (deftransform mp:fence (mp:fence :acquire) (eql :acquire))
 (deftransform mp:fence (mp:fence :release) (eql :release))
 
-(deftransform core:atomic-aref (core:atomic-aref :sequentially-consistent t 1)
-  (eql :sequentially-consistent) simple-vector fixnum)
-(deftransform core:atomic-aref (core:atomic-aref :acquire-release t 1)
-  (eql :acquire-release) simple-vector fixnum)
-(deftransform core:atomic-aref (core:atomic-aref :acquire t 1)
-  (eql :acquire) simple-vector fixnum)
-(deftransform core:atomic-aref (core:atomic-aref :release t 1)
-  (eql :release) simple-vector fixnum)
-(deftransform core:atomic-aref (core:atomic-aref :relaxed t 1)
-  (eql :relaxed) simple-vector fixnum)
+(defun atomic-aref-test* (array-type order-type system)
+  ;; what we want to check is that we know the exact array element
+  ;; type and atomic access order.
+  (declare (ignore return-type index-types))
+  (and (cleavir-ctype:arrayp array-type system)
+       (member (cleavir-ctype:array-element-type array-type system)
+               ;; FIXME: Expand this set
+               '(t single-float double-float
+                 base-char character))
+       (cleavir-ctype:member-p system order-type)
+       (let ((mems (cleavir-ctype:member-members system order-type)))
+         (and (= (length mems) 1)
+              (member (first mems)
+                      '(:sequentially-consistent :relaxed
+                        :acquire-release :acquire :release))))))
 
-(deftransform (setf core:atomic-aref) (core::atomic-aset :sequentially-consistent t 1)
-  t (eql :sequentially-consistent) simple-vector fixnum)
-(deftransform (setf core:atomic-aref) (core::atomic-aset :acquire-release t 1)
-  t (eql :acquire-release) simple-vector fixnum)
-(deftransform (setf core:atomic-aref) (core::atomic-aset :acquire t 1)
-  t (eql :acquire) simple-vector fixnum)
-(deftransform (setf core:atomic-aref) (core::atomic-aset :release t 1)
-  t (eql :release) simple-vector fixnum)
-(deftransform (setf core:atomic-aref) (core::atomic-aset :relaxed t 1)
-  t (eql :relaxed) simple-vector fixnum)
+(defun atomic-aref-test (return-type order-type array-type
+                         &rest index-types)
+  (declare (ignore return-type index-types))
+  (atomic-aref-test* array-type order-type
+                     clasp-cleavir:*clasp-system*))
+(defun atomic-aset-test (return-type new-type order-type array-type
+                         &rest index-types)
+  (declare (ignore return-type new-type index-types))
+  (atomic-aref-test* array-type order-type
+                     clasp-cleavir:*clasp-system*))
+
+(defun compute-atomic-aref-primop (return-type order-type array-type
+                                   &rest index-types)
+  (declare (ignore return-type index-types))
+  (let ((sys clasp-cleavir:*clasp-system*))
+    `(core:vref ,(cleavir-ctype:array-element-type array-type sys)
+                ,(first
+                  (cleavir-ctype:member-members sys order-type)))))
+(defun compute-atomic-aset-primop (return-type new-type
+                                   order-type array-type
+                                   &rest index-types)
+  (declare (ignore return-type new-type index-types))
+  (let ((sys clasp-cleavir:*clasp-system*))
+    `(core::vset ,(cleavir-ctype:array-element-type array-type sys)
+                ,(first
+                  (cleavir-ctype:member-members sys order-type)))))
+
+(deftransform-f core:atomic-aref #'compute-atomic-aref-primop
+  'atomic-aref-test (1 2) t t (simple-array * (*)) fixnum)
+(deftransform-f (setf core:atomic-aref) #'compute-atomic-aset-primop
+  'atomic-aset-test (0 2 3) t t t (simple-array * (*)) fixnum)
 
 (deftransform core:acas (core:acas :sequentially-consistent t 1)
   (eql :sequentially-consistent) t t simple-vector fixnum)
