@@ -1604,27 +1604,28 @@
                                 &key (environment
                                       (cmp:make-null-lexical-environment))
                                 &allow-other-keys)
-  (cmp:with-atomic-file-rename (temp-output-path output-path)
-    (with-open-file (output temp-output-path
-                            :direction :output
-                            :if-does-not-exist :create
-                            :element-type '(unsigned-byte 8))
-      (with-constants ()
-        ;; Read and compile the forms.
-        (loop with eof = (gensym "EOF")
-              with *compile-time-too* = nil
-              with eclector.reader:*client* = (make-instance 'eclector.readtable::clasp-tracking-elector-client)
-              with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
-              with cfsdl = cmp::*compile-file-source-debug-lineno*
-              with cfsdo = cmp::*compile-file-source-debug-offset*
-              for core:*current-source-pos-info*
-                = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
-              for cmp:*source-locations* = (make-hash-table :test #'eq)
-              for form = (eclector.parse-result:read eclector.reader:*client* input nil eof)
-              until (eq form eof)
-              do (when *compile-print*
-                   (cmp::describe-form form))
-                 (bytecode-compile-toplevel form environment))
-        ;; Write out the FASL bytecode.
+  (with-constants ()
+    ;; Read and compile the forms.
+    (loop with eof = (gensym "EOF")
+          with *compile-time-too* = nil
+          with eclector.reader:*client* = (make-instance 'eclector.readtable::clasp-tracking-elector-client)
+          with cfsdp = (core:file-scope cmp::*compile-file-source-debug-pathname*)
+          with cfsdl = cmp::*compile-file-source-debug-lineno*
+          with cfsdo = cmp::*compile-file-source-debug-offset*
+          for core:*current-source-pos-info*
+            = (core:input-stream-source-pos-info input cfsdp cfsdl cfsdo)
+          for cmp:*source-locations* = (make-hash-table :test #'eq)
+          for form = (eclector.parse-result:read eclector.reader:*client* input nil eof)
+          until (eq form eof)
+          do (when *compile-print*
+               (cmp::describe-form form))
+             (bytecode-compile-toplevel form environment))
+    ;; Write out the FASL bytecode.
+    (cmp:with-atomic-file-rename (temp-output-path output-path)
+      (with-open-file (output temp-output-path
+                              :direction :output
+                              :if-does-not-exist :create
+                              :element-type '(unsigned-byte 8))
+
         (%write-bytecode output))))
   (truename output-path))
