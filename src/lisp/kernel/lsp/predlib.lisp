@@ -465,6 +465,17 @@ and is not adjustable."
 (defun of-class-p (object class)
   (si::subclassp (class-of object) class))
 
+(defun headerp (object type)
+  (if (generalp object)
+      (let ((info (gethash type core:+type-header-value-map+))
+            (stamp (core:header-stamp object)))
+        (cond ((consp info)
+               (<= (car info) stamp (cdr info)))
+              ((fixnump info)
+               (= info stamp))
+              (t (error "BUG: HEADERP for unknown type: ~a" type))))
+      nil))
+
 (defun typep (object type &optional env &aux tp i c)
   "Args: (object type)
 Returns T if X belongs to TYPE; NIL otherwise."

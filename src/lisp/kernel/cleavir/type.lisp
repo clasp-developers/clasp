@@ -222,6 +222,15 @@
               (ctype:single-value (ctype:member sys t nil) sys)))
         (ctype:single-value (ctype:member sys t nil) sys))))
 
+(define-deriver core::headerp (obj type)
+  (let ((sys *clasp-system*))
+    (if (ctype:member-p sys type)
+        (let ((members (ctype:member-members sys type)))
+          (if (= (length members) 1)
+              (derive-type-predicate obj (first members) sys)
+              (ctype:single-value (ctype:member sys t nil) sys)))
+        (ctype:single-value (ctype:member sys t nil) sys))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (5) DATA AND CONTROL FLOW
@@ -304,7 +313,36 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; (11) PACKAGES
+
+(define-deriver packagep (object)
+  (derive-type-predicate object 'package *clasp-system*))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; (12) NUMBERS
+
+(define-deriver numberp (object)
+  (derive-type-predicate object 'number *clasp-system*))
+(define-deriver complexp (object)
+  (derive-type-predicate object 'complex *clasp-system*))
+(define-deriver realp (object)
+  (derive-type-predicate object 'real *clasp-system*))
+(define-deriver rationalp (object)
+  (derive-type-predicate object 'rational *clasp-system*))
+(define-deriver floatp (object)
+  (derive-type-predicate object 'float *clasp-system*))
+(define-deriver core:single-float-p (object)
+  (derive-type-predicate object 'single-float *clasp-system*))
+(define-deriver core:double-float-p (object)
+  (derive-type-predicate object 'double-float *clasp-system*))
+(define-deriver integerp (object)
+  (derive-type-predicate object 'integer *clasp-system*))
+(define-deriver core:fixnump (object)
+  (derive-type-predicate object 'fixnum *clasp-system*))
+
+(define-deriver random-state-p (object)
+  (derive-type-predicate object 'random-state *clasp-system*))
 
 (defun contagion (ty1 ty2)
   (ecase ty1
@@ -1082,6 +1120,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; (13) CHARACTERS
+
+(define-deriver characterp (object)
+  (derive-type-predicate object 'character *clasp-system*))
+
+(define-deriver standard-char-p (object)
+  ;; We could be more specific here, since standard-char-p of a non-character
+  ;; is actually an error, but this valid.
+  (derive-type-predicate object 'standard-char-p *clasp-system*))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; (14) CONSES
 
 (define-deriver cons (car cdr)
@@ -1097,6 +1147,9 @@
   (derive-type-predicate obj 'cons *clasp-system*))
 (define-deriver atom (obj)
   (derive-type-predicate obj 'atom *clasp-system*))
+
+(define-deriver listp (obj)
+  (derive-type-predicate obj 'list *clasp-system*))
 
 (defun type-car (type sys)
   (if (ctype:consp type sys)
@@ -1298,6 +1351,9 @@
 (define-deriver simple-bit-vector-p (obj)
   (derive-type-predicate obj 'simple-bit-vector *clasp-system*))
 
+(define-deriver core:data-vector-p (obj)
+  (derive-type-predicate obj 'core:abstract-simple-vector *clasp-system*))
+
 (macrolet ((def (fname etype)
              `(define-deriver ,fname (&rest ignore)
                 (declare (ignore ignore))
@@ -1421,6 +1477,27 @@
 (define-deriver core::concatenate-into-sequence (result &rest seqs)
   (declare (ignore seqs))
   (type-consless-id result *clasp-system*))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (18) HASH TABLES
+
+(define-deriver hash-table-p (object)
+  (derive-type-predicate object 'core:hash-table-base *clasp-system*))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (19) FILENAMES
+
+(define-deriver pathnamep (object)
+  (derive-type-predicate object 'pathname *clasp-system*))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; (21) STREAMS
+
+(define-deriver streamp (object)
+  (derive-type-predicate object 'stream *clasp-system*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

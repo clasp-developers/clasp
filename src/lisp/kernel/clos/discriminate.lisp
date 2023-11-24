@@ -145,15 +145,10 @@
 (defun tag-spec-p (class) ; is CLASS one that's manifested as a tag test?
   (member (core:class-stamp-for-instances class) *tag-tests* :key #'second))
 
-(defun tag-type (class)
-  ;; This is essentially just class-name, but avoiding the generic function call.
-  (case (first (find (core:class-stamp-for-instances class)  *tag-tests*
-                     :key #'second))
-    ((:fixnum-tag) 'fixnum)
-    ((:single-float-tag) 'single-float)
-    ((:character-tag) 'character)
-    ((:cons-tag) 'cons)
-    (t (error "BUG: Unknown tag class ~a" class))))
+(defun tag-type-test (class)
+  (or (fourth (find (core:class-stamp-for-instances class)  *tag-tests*
+                    :key #'second))
+      (error "BUG: Unknown tag class ~a" class)))
 
 (defun safe-eql-specializer-p (specializer)
   (let ((sc (class-of specializer)))
@@ -189,7 +184,7 @@
                                        tag)
                                  eql-specs))
                           ((tag-spec-p spec)
-                           (push (cons (tag-type spec) tag) tag-specs))
+                           (push (cons (tag-type-test spec) tag) tag-specs))
                           ((< (core:class-stamp-for-instances spec)
                               cmp:+c++-stamp-max+)
                            (push (cons (core:class-stamp-for-instances spec)
@@ -232,10 +227,9 @@
                                in (partition eql-specs :key #'cdr :getter #'car)
                              collect `((,@objects) (go ,tag)))
                      (otherwise
-                      (cond ,@(loop for (type . tag) in tag-specs
-                                     collect `((cleavir-primop:typeq ,form ,type)
-                                               (go ,tag)))
-                            ((cleavir-primop:typeq ,form core:general)
+                      (cond ,@(loop for (test . tag) in tag-specs
+                                     collect `((,test ,form) (go ,tag)))
+                            ((core:generalp ,form)
                              (let ((,stamp (core::header-stamp ,form)))
                                ,header-case))
                             (t (go ,default-tag)))))

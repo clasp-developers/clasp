@@ -105,8 +105,6 @@
 ;;;;;;;;
 ;;;;;;;;
 
-(defmacro cleavir-primop:typeq (object type) `(typep ,object ',type))
-
 #-clasp-min
 (defmacro core::header-stamp-case (stamp derivable rack wrapped header)
   `(case (logand (ash ,stamp 2) ,cmp:+where-tag-mask+)
