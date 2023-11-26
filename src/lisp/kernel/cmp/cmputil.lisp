@@ -121,14 +121,11 @@
 (export 'with-atomic-file-rename)
 (defmacro with-atomic-file-rename ((temp-pathname final-pathname) &body body)
   `(let ((,temp-pathname (core:mkstemp (namestring ,final-pathname))))
-     #+(or)(format t "Writing to ~s~%" ,temp-pathname)
      (unwind-protect
           (progn
             ,@body)
-       (progn
-         #+(or)(format t "Renaming ~s to ~s~%" ,temp-pathname ,final-pathname)
+       (when (core:file-kind ,temp-pathname t)
          (rename-file ,temp-pathname ,final-pathname :if-exists t)))))
-
 
 (defun write-bitcode (module output-path &key output-type)
   ;; Write bitcode as either .bc files or .ll files

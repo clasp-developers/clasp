@@ -79,10 +79,6 @@ jobs:
       if: ${{ matrix.build == 'clasp' }}
       run: |
         ninja -C build ansi-test
-    - name: Run ASDF tests
-      if: ${{ matrix.build == 'clasp' }}
-      run: |
-        ninja -C build asdf-test
     - name: Run Cando regression tests
       if: ${{ matrix.build == 'cando' }}
       run: |

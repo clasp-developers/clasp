@@ -12,6 +12,12 @@
 ## Changed
 * `cl:format` and `pprint` now respect the value returned bye
   `gray:stream-line-length`.
+* `cl:close` now uses the `:abort` argument to decide what to do with
+  the resulting file. If `:abort` is non-NIL and the file was created
+  as a result of `:if-does-not-exist :create` then the file is
+  deleted. If `:abort` is non-NIL, there was an existing file and
+  `:if-exists` is either `:supersede` or `:rename-and-delete` then the
+  original file is restored.
 
 ## Removed
 * Obsolete `:object`, `:ll`, `:bc`, and `:fasl` build modes.

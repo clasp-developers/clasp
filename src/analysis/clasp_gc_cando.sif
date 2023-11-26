@@ -1843,6 +1843,10 @@
 {fixed-field :offset-type-cxx-identifier "ctype_int" :offset-ctype "int"
              :offset-base-ctype "kinematics::JumpJoint_O"
              :layout-offset-field-names ("_DofRefoldIndex")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "kinematics::JumpJoint_O"
+             :layout-offset-field-names ("_Orientation")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>>"
              :offset-base-ctype "kinematics::JumpJoint_O"
@@ -5924,6 +5928,9 @@
 {class-kind :stamp-name "STAMPWTAG_core__WeakKeyHashTable_O" :stamp-key "core::WeakKeyHashTable_O"
             :parent-class "core::HashTableBase_O" :lisp-class-base "core::HashTableBase_O"
             :root-class "core::T_O" :stamp-wtag 3 :definition-data "IS_POLYMORPHIC"}
+{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
+             :offset-base-ctype "core::WeakKeyHashTable_O"
+             :layout-offset-field-names ("_HashTable" "._Length")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::Number_O>"
              :offset-base-ctype "core::WeakKeyHashTable_O"
@@ -5931,9 +5938,6 @@
 {fixed-field :offset-type-cxx-identifier "ctype_double" :offset-ctype "double"
              :offset-base-ctype "core::WeakKeyHashTable_O"
              :layout-offset-field-names ("_HashTable" "._RehashThreshold")}
-{fixed-field :offset-type-cxx-identifier "ctype_unsigned_long" :offset-ctype "unsigned long"
-             :offset-base-ctype "core::WeakKeyHashTable_O"
-             :layout-offset-field-names ("_HashTable" "._Length")}
 {fixed-field :offset-type-cxx-identifier "TAGGED_POINTER_OFFSET"
              :offset-ctype "gctools::tagged_pointer<gctools::Buckets<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>,gctools::WeakLinks>>"
              :offset-base-ctype "core::WeakKeyHashTable_O"
@@ -10952,6 +10956,11 @@
              :layout-offset-field-names ("_Filename")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
+             :layout-offset-field-names ("_TempFilename")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::FileStream_O" :layout-offset-field-names ("_Created")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>" :offset-base-ctype "core::FileStream_O"
              :layout-offset-field-names ("_ElementType")}
 {class-kind :stamp-name "STAMPWTAG_core__IOFileStream_O" :stamp-key "core::IOFileStream_O"
             :parent-class "core::FileStream_O" :lisp-class-base "core::FileStream_O"
@@ -11078,6 +11087,11 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_Filename")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_TempFilename")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_Created")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOFileStream_O" :layout-offset-field-names ("_ElementType")}
@@ -11215,6 +11229,12 @@
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_Filename")}
+{fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
+             :offset-ctype "gctools::smart_ptr<core::T_O>"
+             :offset-base-ctype "core::IOStreamStream_O"
+             :layout-offset-field-names ("_TempFilename")}
+{fixed-field :offset-type-cxx-identifier "ctype__Bool" :offset-ctype "_Bool"
+             :offset-base-ctype "core::IOStreamStream_O" :layout-offset-field-names ("_Created")}
 {fixed-field :offset-type-cxx-identifier "SMART_PTR_OFFSET"
              :offset-ctype "gctools::smart_ptr<core::T_O>"
              :offset-base-ctype "core::IOStreamStream_O"

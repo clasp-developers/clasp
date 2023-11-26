@@ -95,8 +95,11 @@ T_sp cl__probe_file(T_sp filespec);
 Symbol_sp core__file_kind(T_sp filename, bool follow_links = true);
 T_mv af_renameFile(T_sp oldn, T_sp newn, T_sp if_exists = kw::_sym_supersede);
 T_sp cl__delete_file(T_sp filespec);
+T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists);
 String_sp clasp_strerror(int e);
 bool clasp_has_file_position (int filedescriptor);
+
+T_sp core__mkstemp(String_sp thetemplate);
 };
 
 namespace ext {
