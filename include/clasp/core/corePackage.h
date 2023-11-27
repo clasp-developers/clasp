@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: corePackage.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef corePackage_H
-#define corePackage_H
 
 #include <clasp/core/lisp.h>
 #include <clasp/core/corePackage.fwd.h>
@@ -33,14 +32,17 @@ THE SOFTWARE.
 namespace core {
 
 extern const char *CorePkg_nicknames[];
- 
- FORWARD(CoreExposer);
+
+FORWARD(CoreExposer);
 class CoreExposer_O : public core::Exposer_O {
-  LISP_CLASS(core,CorePkg,CoreExposer_O,"CoreExposer",core::Exposer_O);
+  LISP_CLASS(core, CorePkg, CoreExposer_O, "CoreExposer", core::Exposer_O);
+
 public:
   CoreExposer_O(LispPtr lisp);
- public:
+
+public:
   virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
+
 public:
   /*! Lisp::startupLispEnvironment calls this to create the core classes */
   static CoreExposer_sp create_core_packages_and_classes();
@@ -50,6 +52,4 @@ public:
 };
 
 void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn);
-};
-
-#endif
+}; // namespace core

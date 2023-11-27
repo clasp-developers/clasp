@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -393,7 +393,7 @@ bool General_O::equalp(T_sp obj) const { return this->equal(obj); }
 
 T_sp HashGenerator::asList() const {
   ql::list l;
-  for ( int ii = 0; ii < this->_NextPartIndex; ii++ ) {
+  for (int ii = 0; ii < this->_NextPartIndex; ii++) {
     l << make_fixnum(this->_Parts[ii]);
   }
   return l.cons();

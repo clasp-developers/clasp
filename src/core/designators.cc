@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -52,7 +52,7 @@ Function_sp functionDesignator(T_sp obj) {
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     return sym->symbolFunction();
   }
-  TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
+  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
 }
 
 // Like the above, but doesn't bother checking fboundp, on the premise
@@ -67,7 +67,7 @@ Function_sp calledFunctionDesignator(T_sp obj) {
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     return sym->symbolFunctionCalled();
   }
-  TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
+  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
 }
 
 // this very similar to functionDesignator, can we merge?
@@ -86,26 +86,22 @@ Function_sp closureDesignator(T_sp obj) {
   SIMPLE_ERROR("Illegal closure designator {}", _rep_(obj));
 }
 
-};
-};
+}; // namespace coerce
+}; // namespace core
 
 namespace core {
-CL_PKG_NAME(CorePkg,coerce-fdesignator);
+CL_PKG_NAME(CorePkg, coerce-fdesignator);
 DOCGROUP(clasp);
-CL_DEFUN Function_sp coerce_fdesignator(T_sp obj) {
-  return coerce::functionDesignator(obj);
-}
+CL_DEFUN Function_sp coerce_fdesignator(T_sp obj) { return coerce::functionDesignator(obj); }
 
 DOCGROUP(clasp);
-CL_DEFUN Function_sp core__coerce_called_fdesignator(T_sp obj) {
-  return coerce::calledFunctionDesignator(obj);
-}
-};
+CL_DEFUN Function_sp core__coerce_called_fdesignator(T_sp obj) { return coerce::calledFunctionDesignator(obj); }
+}; // namespace core
 
 namespace core {
 namespace coerce {
-core::T_sp packageDesignatorInternal(core::T_sp obj, bool errorp){
-    // TODO: Add support for Unicode package names
+core::T_sp packageDesignatorInternal(core::T_sp obj, bool errorp) {
+  // TODO: Add support for Unicode package names
   String_sp packageName;
   if (Package_sp apkg = obj.asOrNull<Package_O>()) {
     return apkg;
@@ -117,39 +113,34 @@ core::T_sp packageDesignatorInternal(core::T_sp obj, bool errorp){
     goto PACKAGE_NAME;
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     if (clasp_base_char_p(chr))
-      packageName = SimpleBaseString_O::make(1,chr.unsafe_character());
+      packageName = SimpleBaseString_O::make(1, chr.unsafe_character());
     else
-      packageName = SimpleCharacterString_O::make(1,chr.unsafe_character());
+      packageName = SimpleCharacterString_O::make(1, chr.unsafe_character());
     goto PACKAGE_NAME;
   }
   TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
- PACKAGE_NAME:
-  T_sp tpkg = _lisp->findPackage(packageName->get_std_string(),false);
+PACKAGE_NAME:
+  T_sp tpkg = _lisp->findPackage(packageName->get_std_string(), false);
   if (tpkg.notnilp()) {
     Package_sp pkg = gc::As<Package_sp>(tpkg);
     return pkg;
   }
   if (errorp)
     PACKAGE_ERROR(packageName);
-  else return nil<T_O>();
+  else
+    return nil<T_O>();
 }
 
-core::T_sp packageDesignatorNoError(core::T_sp obj) {
-  return packageDesignatorInternal(obj, false);
-}
-core::Package_sp packageDesignator(core::T_sp obj) {
-  return gc::As<Package_sp>(packageDesignatorInternal(obj, true));
-}
-};
-};
+core::T_sp packageDesignatorNoError(core::T_sp obj) { return packageDesignatorInternal(obj, false); }
+core::Package_sp packageDesignator(core::T_sp obj) { return gc::As<Package_sp>(packageDesignatorInternal(obj, true)); }
+}; // namespace coerce
+}; // namespace core
 
 namespace core {
-CL_PKG_NAME(CorePkg,coerce-to-package);
+CL_PKG_NAME(CorePkg, coerce-to-package);
 DOCGROUP(clasp);
-CL_DEFUN core::Package_sp coerce_to_package(core::T_sp obj) {
-  return coerce::packageDesignator(obj);
-}
-};
+CL_DEFUN core::Package_sp coerce_to_package(core::T_sp obj) { return coerce::packageDesignator(obj); }
+}; // namespace core
 
 namespace core {
 namespace coerce {
@@ -174,7 +165,7 @@ List_sp listOfPackageDesignators(T_sp obj) {
     return res.cons();
   }
   Package_sp onePackage = packageDesignator(obj);
-  return Cons_O::create(onePackage,nil<T_O>());
+  return Cons_O::create(onePackage, nil<T_O>());
 }
 
 List_sp listOfSymbols(T_sp syms) {
@@ -182,7 +173,7 @@ List_sp listOfSymbols(T_sp syms) {
     return nil<List_V>();
   List_sp symbols;
   if (cl__symbolp(syms)) {
-    symbols = Cons_O::create(syms,nil<T_O>());
+    symbols = Cons_O::create(syms, nil<T_O>());
   } else {
     symbols = syms;
   }
@@ -197,22 +188,22 @@ SimpleString_sp simple_string(T_sp obj) {
       Str8Ns_sp s8 = gc::As_unsafe<Str8Ns_sp>(obj);
       AbstractSimpleVector_sp base;
       size_t start, end;
-      s8->asAbstractSimpleVectorRange(base,start,end);
-      return gc::As_unsafe<SimpleString_sp>(base->unsafe_subseq(start,end));
+      s8->asAbstractSimpleVectorRange(base, start, end);
+      return gc::As_unsafe<SimpleString_sp>(base->unsafe_subseq(start, end));
     }
     StrWNs_sp sw = gc::As_unsafe<StrWNs_sp>(obj);
     AbstractSimpleVector_sp base;
     size_t start, end;
-    sw->asAbstractSimpleVectorRange(base,start,end);
-    return gc::As_unsafe<SimpleString_sp>(base->unsafe_subseq(start,end));
+    sw->asAbstractSimpleVectorRange(base, start, end);
+    return gc::As_unsafe<SimpleString_sp>(base->unsafe_subseq(start, end));
     SIMPLE_ERROR("This should never happen - the string {} was not recognized as a concrete string type", _rep_(obj));
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     return cl__symbol_name(sym);
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     if (clasp_base_char_p(chr)) {
-      return SimpleBaseString_O::make(1,chr.unsafe_character());
+      return SimpleBaseString_O::make(1, chr.unsafe_character());
     }
-    return SimpleCharacterString_O::make(1,chr.unsafe_character());
+    return SimpleCharacterString_O::make(1, chr.unsafe_character());
   }
   TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
 }
@@ -224,9 +215,9 @@ String_sp stringDesignator(T_sp obj) {
     return cl__symbol_name(sym);
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     if (clasp_base_char_p(chr)) {
-      return SimpleBaseString_O::make(1,chr.unsafe_character(),true);
+      return SimpleBaseString_O::make(1, chr.unsafe_character(), true);
     }
-    return SimpleCharacterString_O::make(1,chr.unsafe_character(),true);
+    return SimpleCharacterString_O::make(1, chr.unsafe_character(), true);
   }
   TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
 }
@@ -234,10 +225,10 @@ String_sp stringDesignator(T_sp obj) {
 List_sp listOfStringDesignators(T_sp obj) {
   if (obj.consp()) {
     List_sp lobj = gc::As_unsafe<Cons_sp>(obj);
-    Cons_sp first = Cons_O::create(nil<T_O>(),nil<T_O>());
+    Cons_sp first = Cons_O::create(nil<T_O>(), nil<T_O>());
     Cons_sp cur = first;
     for (auto ic : lobj) {
-      Cons_sp one = Cons_O::create(stringDesignator(oCar(ic)),nil<T_O>());
+      Cons_sp one = Cons_O::create(stringDesignator(oCar(ic)), nil<T_O>());
       cur->setCdr(one);
       cur = one;
     }
@@ -245,7 +236,7 @@ List_sp listOfStringDesignators(T_sp obj) {
   } else if (obj.nilp()) {
     return nil<List_V>();
   } else {
-    return Cons_O::create(stringDesignator(obj),nil<T_O>());
+    return Cons_O::create(stringDesignator(obj), nil<T_O>());
   }
   SIMPLE_ERROR("Illegal list of string designators[{}]", _rep_(obj));
 }
@@ -272,7 +263,6 @@ T_sp outputStreamDesignator(T_sp obj) {
   TYPE_ERROR(obj, cl::_sym_Stream_O);
 }
 
-
 T_sp coerce_to_base_string(T_sp str) {
   if (gc::IsA<SimpleBaseString_sp>(str)) {
     return str;
@@ -286,14 +276,6 @@ T_sp coerce_to_base_string(T_sp str) {
   SIMPLE_ERROR("Cannot coerce {} to base-string", _rep_(str));
 }
 
+}; // namespace coerce
 
-
-
-}; /* coerce */
-
-
-
-
-
-
-}; /* core */
+}; // namespace core

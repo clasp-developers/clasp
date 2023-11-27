@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: random.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_random_H_
-#define _core_random_H_
 
 #include <random>
 
@@ -33,22 +32,18 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 
-
-
-template <>
-struct gctools::GCInfo<core::RandomState_O> {
+template <> struct gctools::GCInfo<core::RandomState_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = atomic;
 };
 
-
 namespace core {
-  
+
 SMART(RandomState);
 
 class RandomState_O : public General_O {
-  LISP_CLASS(core, ClPkg, RandomState_O, "random-state",General_O);
+  LISP_CLASS(core, ClPkg, RandomState_O, "random-state", General_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   typedef std::mt19937 Generator;
@@ -69,12 +64,10 @@ public: // ctor/dtor for classes with shared virtual base
       this->_Producer._value = temp_gen; // this->_Producer.seed(tt);
     } else {
       Generator temp_gen(0);
-      this->_Producer._value = temp_gen; //this->_Producer.seed(0);
+      this->_Producer._value = temp_gen; // this->_Producer.seed(0);
     }
   };
-  explicit RandomState_O(const RandomState_O &state) {
-    this->_Producer._value = state._Producer._value;
-  };
+  explicit RandomState_O(const RandomState_O &state) { this->_Producer._value = state._Producer._value; };
   virtual ~RandomState_O() {}
 
   CL_DEFMETHOD std::string random_state_get() const {
@@ -82,20 +75,20 @@ public: // ctor/dtor for classes with shared virtual base
     ss << this->_Producer._value;
     return ss.str();
   }
-  CL_DEFMETHOD RandomState_sp random_state_set(const std::string& s) {
+  CL_DEFMETHOD RandomState_sp random_state_set(const std::string &s) {
     stringstream ss(s);
     ss >> this->_Producer._value;
     return this->asSmartPtr();
   }
 
- public: // Functions here
+public: // Functions here
   static RandomState_sp make(T_sp state);
   static RandomState_sp create(RandomState_sp other) {
-    auto  b = gctools::GC<RandomState_O>::allocate( *other);
+    auto b = gctools::GC<RandomState_O>::allocate(*other);
     return b;
   };
   static RandomState_sp create_random() {
-    auto  b = gctools::GC<RandomState_O>::allocate( true );
+    auto b = gctools::GC<RandomState_O>::allocate(true);
     return b;
   }
 
@@ -104,6 +97,4 @@ public: // ctor/dtor for classes with shared virtual base
 
 }; // RandomState class
 
-}; // core namespace
-
-#endif /* _random_H_ */
+}; // namespace core

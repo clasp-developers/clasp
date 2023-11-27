@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: lispStream.fwd.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef lispStream_fwd_H
-#define lispStream_fwd_H
 namespace core {
 FORWARD(Stream);
 FORWARD(AnsiStream);
@@ -45,10 +44,9 @@ void clasp_write_string(const string &str, T_sp strm);
 
 #define STDOUT_BFORMAT(x) core::clasp_write_string((x).str(), ::cl::_sym_STARstandard_outputSTAR->symbolValue())
 
-#define CPP_SOURCE() (fmt::format("{}:{}:{}",__FILE__,__LINE__,__FUNCTION__))
+#define CPP_SOURCE() (fmt::format("{}:{}:{}", __FILE__, __LINE__, __FUNCTION__))
 
-void lisp_write(const std::string& s);
-void lisp_write(const std::string& s, T_sp stream);
+void lisp_write(const std::string &s);
+void lisp_write(const std::string &s, T_sp stream);
 
-}
-#endif
+} // namespace core

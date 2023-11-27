@@ -1,3 +1,4 @@
+#pragma once
 /*
 Utilities for dealing with the FPU environment.
 In Lisp we want floating point problems (overflow, etc) to be indicated
@@ -13,9 +14,6 @@ TODO: Rounding mode stuff should go here too.
 
 // NOTE: IMPORTANT NOTE: None of this works at the moment.
 // Some day.
-
-#ifndef _core_fp_env_H
-#define _core_fp_env_H
 
 /** // support is nonexistent at the moment
 
@@ -85,5 +83,3 @@ TODO: Rounding mode stuff should go here too.
 // Function called from image initialization to set the flags to
 // CLASP_FPT_INIT_EXCEPT
 void init_float_traps(void);
-
-#endif /* guard */

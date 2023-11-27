@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: arguments.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_arguments_H
-#define _core_arguments_H
 
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -42,9 +41,7 @@ public:
   int _ArgTargetFrameIndex;
   explicit Argument() : _ArgTarget(nil<T_O>()), _ArgTargetFrameIndex(UNDEFINED_TARGET) {}
   explicit Argument(T_sp target) : _ArgTarget(target), _ArgTargetFrameIndex(UNDEFINED_TARGET){};
-  int targetFrameIndex() const {
-    return this->_ArgTargetFrameIndex;
-  }
+  int targetFrameIndex() const { return this->_ArgTargetFrameIndex; }
   void clear() {
     _G();
     this->_ArgTarget = nil<T_O>();
@@ -104,7 +101,8 @@ public:
   T_sp _Keyword;
   Argument _Sensor;
   KeywordArgument() : ArgumentWithDefault(), _Keyword(nil<T_O>()), _Sensor(){};
-  KeywordArgument(T_sp keyword, T_sp target, T_sp def, T_sp sensor) : ArgumentWithDefault(target, def), _Keyword(keyword), _Sensor(sensor){};
+  KeywordArgument(T_sp keyword, T_sp target, T_sp def, T_sp sensor)
+      : ArgumentWithDefault(target, def), _Keyword(keyword), _Sensor(sensor){};
   string asString() const;
 };
 
@@ -123,6 +121,7 @@ class DynamicScopeManager : gctools::StackBoundClass {
 private:
   VariableCell_sp _Cell;
   T_sp _OldBinding;
+
 public:
   inline explicit DynamicScopeManager(VariableCell_sp cell, T_sp val) {
     _Cell = cell;
@@ -133,13 +132,9 @@ public:
     _Cell = sym->ensureVariableCell();
     _OldBinding = _Cell->bind(val);
   }
-  virtual ~DynamicScopeManager() {
-    _Cell->unbind(_OldBinding);
-  }
+  virtual ~DynamicScopeManager() { _Cell->unbind(_OldBinding); }
   // used in unwind.h
   inline T_sp oldBinding() { return _OldBinding; }
 };
 
-};
-
-#endif
+}; // namespace core

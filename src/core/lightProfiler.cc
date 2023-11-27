@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -38,8 +38,7 @@ LightEventCounter::LightEventCounter() {
   this->_Problems = 0;
 }
 
-LightEventCounter::~LightEventCounter() {
-}
+LightEventCounter::~LightEventCounter() {}
 
 void LightEventCounter::recordCallAndProblem(bool prob) {
   this->_Calls++;
@@ -47,7 +46,9 @@ void LightEventCounter::recordCallAndProblem(bool prob) {
     this->_Problems++;
 }
 
-LightTimer::LightTimer(LightProfiler *profiler) : _Profiler(profiler), _Id(0), _IsOn(false), _AccumulatedTime(0.0), _Calls(0), _ClockResolutionFails(0), _Parent(UndefinedUnsignedInt), _Sibling(UndefinedUnsignedInt), _Child(UndefinedUnsignedInt), _StartTime(0.0) {
+LightTimer::LightTimer(LightProfiler *profiler)
+    : _Profiler(profiler), _Id(0), _IsOn(false), _AccumulatedTime(0.0), _Calls(0), _ClockResolutionFails(0),
+      _Parent(UndefinedUnsignedInt), _Sibling(UndefinedUnsignedInt), _Child(UndefinedUnsignedInt), _StartTime(0.0) {
 #ifdef DARWIN_CLOCK
   mach_timebase_info_data_t info;
   kern_return_t err = mach_timebase_info(&info);
@@ -199,9 +200,7 @@ void LightProfiler::dumpChildTimers(uint level, uint top) {
   prefix << "%" << level + 20 << "s";
   printf("\n%s%s", prefix.str().c_str(), this->_Timers[top].getDescription().c_str());
   if (this->_Timers[top].getClockResolutionFails()) {
-    printf("\n %10.4lf s  %6d calls  %6d clockResFails",
-           this->_Timers[top].getAccumulatedTime(),
-           this->_Timers[top].getCalls(),
+    printf("\n %10.4lf s  %6d calls  %6d clockResFails", this->_Timers[top].getAccumulatedTime(), this->_Timers[top].getCalls(),
            this->_Timers[top].getClockResolutionFails());
   } else {
     printf("\n %10.4lf s  %6d calls\n", this->_Timers[top].getAccumulatedTime(), this->_Timers[top].getCalls());
@@ -229,7 +228,8 @@ void LightProfiler::dump() {
   // Find the root timer
   //
   while (this->_Timers[root].getParent() != UndefinedUnsignedInt) {
-    //	printf("\n%s:%d  looking for root - this->_Timers[%d]._Parent = %d", __FILE__,__LINE__,root,this->_Timers[root].getParent());
+    //	printf("\n%s:%d  looking for root - this->_Timers[%d]._Parent = %d",
+    //__FILE__,__LINE__,root,this->_Timers[root].getParent());
     root = this->_Timers[root].getParent();
   }
 #ifdef DARWIN_CLOCK
@@ -250,9 +250,8 @@ void LightProfiler::dump() {
     int calls = this->_EventCounters[i].getCalls();
     if (calls == 0)
       continue;
-    printf("\n %40s %10d problems over %10d calls (%lf%% problems)",
-           this->_EventCounters[i].getDescription().c_str(),
-           problems, calls, (1.0 * problems) / calls);
+    printf("\n %40s %10d problems over %10d calls (%lf%% problems)", this->_EventCounters[i].getDescription().c_str(), problems,
+           calls, (1.0 * problems) / calls);
   }
   printf("\n");
 }
@@ -298,18 +297,16 @@ void LightProfiler::popTimerStates() {
 }
 
 LightEventCounter &LightProfiler::eventCounter(uint c) {
-  
+
   ASSERT_lessThan(c, this->_EventCounters.size());
   return this->_EventCounters[c];
 }
 
 LightTimer &LightProfiler::timer(uint c) {
-  
+
   ASSERT_lessThan(c, this->_Timers.size());
   return this->_Timers[c];
 }
 
-void LightProfiler::disableMessages() {
-  this->_MessagesEnabled = false;
-}
-};
+void LightProfiler::disableMessages() { this->_MessagesEnabled = false; }
+}; // namespace core

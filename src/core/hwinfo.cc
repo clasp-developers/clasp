@@ -28,19 +28,18 @@ THE SOFTWARE.
 #include <clasp/core/hwinfo.h>
 #include <clasp/core/wrappers.h>
 
-#if defined( _WIN32 ) || defined( _TARGET_OS_WIN )
+#if defined(_WIN32) || defined(_TARGET_OS_WIN)
 #include <windows.h>
 #endif
 
-#if defined( __APPLE__ ) || defined( _TARGET_OS_DARWIN )
+#if defined(__APPLE__) || defined(_TARGET_OS_DARWIN)
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
 
-#if !defined( _WIN32 ) && !defined( _TARGET_OS_WIN  )
+#if !defined(_WIN32) && !defined(_TARGET_OS_WIN)
 #include <unistd.h>
 #endif
-
 
 namespace core {
 
@@ -48,18 +47,18 @@ CL_DOCSTRING(R"dx(Returns the number of logical processors in the system.)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__num_logical_processors() {
 
-#if defined( _WIN32 ) || defined( _TARGET_OS_WIN )
+#if defined(_WIN32) || defined(_TARGET_OS_WIN)
 
   SYSTEM_INFO systeminfo;
-  GetSystemInfo( &systeminfo );
+  GetSystemInfo(&systeminfo);
 
-  return core::make_fixnum( systeminfo.dwNumberOfProcessors );
+  return core::make_fixnum(systeminfo.dwNumberOfProcessors);
 
 #else
 
-  return core::make_fixnum( sysconf( _SC_NPROCESSORS_ONLN ) );
+  return core::make_fixnum(sysconf(_SC_NPROCESSORS_ONLN));
 
 #endif
 };
 
-} // namespace
+} // namespace core

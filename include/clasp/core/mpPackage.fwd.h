@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: mpPackage.fwd.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef mpPackage_fwd_H
-#define mpPackage_fwd_H
 
 #include <sys/time.h>
 #include <cassert>
@@ -38,8 +37,6 @@ THE SOFTWARE.
 PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(mp, MpPkg, "MP")
 
-
-
 namespace sf {
 
 //
@@ -48,21 +45,24 @@ namespace sf {
 //
 
 // contention free shared mutex (same-lock-type is recursive for X->X, X->S or S->S locks), but (S->X - is UB)
-template<unsigned contention_free_count = 36, bool shared_flag = false>
-class contention_free_shared_mutex {
+template <unsigned contention_free_count = 36, bool shared_flag = false> class contention_free_shared_mutex {
   std::atomic<bool> want_x_lock;
-  //struct cont_free_flag_t { alignas(std::hardware_destructive_interference_size) std::atomic<int> value; cont_free_flag_t() { value = 0; } }; // C++17
-  struct cont_free_flag_t { char tmp[60]; std::atomic<int> value; cont_free_flag_t() { value = 0; } };   // tmp[] to avoid false sharing
+  // struct cont_free_flag_t { alignas(std::hardware_destructive_interference_size) std::atomic<int> value; cont_free_flag_t() {
+  // value = 0; } }; // C++17
+  struct cont_free_flag_t {
+    char tmp[60];
+    std::atomic<int> value;
+    cont_free_flag_t() { value = 0; }
+  }; // tmp[] to avoid false sharing
   typedef std::array<cont_free_flag_t, contention_free_count> array_slock_t;
-        
-  const std::shared_ptr<array_slock_t> shared_locks_array_ptr;  // 0 - unregistred, 1 registred & free, 2... - busy
+
+  const std::shared_ptr<array_slock_t> shared_locks_array_ptr; // 0 - unregistred, 1 registred & free, 2... - busy
   char avoid_falsesharing_1[64];
 
   array_slock_t &shared_locks_array;
   char avoid_falsesharing_2[64];
 
   int recursive_xlock_count;
-
 
   enum index_op_t { unregister_thread_op, get_index_op, register_thread_op };
 
@@ -71,27 +71,26 @@ class contention_free_shared_mutex {
   std::atomic<thread_id_t> owner_thread_id;
   std::array<int64_t, contention_free_count> register_thread_array;
   int64_t get_fast_this_thread_id() {
-    static __declspec(thread) int64_t fast_this_thread_id = 0;  // MSVS 2013 thread_local partially supported - only POD
+    static __declspec(thread) int64_t fast_this_thread_id = 0; // MSVS 2013 thread_local partially supported - only POD
     if (fast_this_thread_id == 0) {
       std::stringstream ss;
-      ss << std::this_thread::get_id();   // https://connect.microsoft.com/VisualStudio/feedback/details/1558211
+      ss << std::this_thread::get_id(); // https://connect.microsoft.com/VisualStudio/feedback/details/1558211
       fast_this_thread_id = std::stoll(ss.str());
     }
     return fast_this_thread_id;
   }
 
   int get_or_set_index(index_op_t index_op = get_index_op, int set_index = -1) {
-    if (index_op == get_index_op) {  // get index
+    if (index_op == get_index_op) { // get index
       auto const thread_id = get_fast_this_thread_id();
 
       for (size_t i = 0; i < register_thread_array.size(); ++i) {
         if (register_thread_array[i] == thread_id) {
-          set_index = i;   // thread already registred                
+          set_index = i; // thread already registred
           break;
         }
       }
-    }
-    else if (index_op == register_thread_op) {  // register thread
+    } else if (index_op == register_thread_op) { // register thread
       register_thread_array[set_index] = get_fast_this_thread_id();
     }
     return set_index;
@@ -105,9 +104,12 @@ class contention_free_shared_mutex {
   struct unregister_t {
     int thread_index;
     std::shared_ptr<array_slock_t> array_slock_ptr;
-    unregister_t(int index, std::shared_ptr<array_slock_t> const& ptr) : thread_index(index), array_slock_ptr(ptr) {}
+    unregister_t(int index, std::shared_ptr<array_slock_t> const &ptr) : thread_index(index), array_slock_ptr(ptr) {}
     unregister_t(unregister_t &&src) : thread_index(src.thread_index), array_slock_ptr(std::move(src.array_slock_ptr)) {}
-    ~unregister_t() { if (array_slock_ptr.use_count() > 0) (*array_slock_ptr)[thread_index].value--; }
+    ~unregister_t() {
+      if (array_slock_ptr.use_count() > 0)
+        (*array_slock_ptr)[thread_index].value--;
+    }
   };
 
   int get_or_set_index(index_op_t index_op = get_index_op, int set_index = -1) {
@@ -117,18 +119,17 @@ class contention_free_shared_mutex {
     if (it != thread_local_index_hashmap.cend())
       set_index = it->second.thread_index;
 
-    if (index_op == unregister_thread_op) {  // unregister thread
+    if (index_op == unregister_thread_op) {         // unregister thread
       if (shared_locks_array[set_index].value == 1) // if isn't shared_lock now
         thread_local_index_hashmap.erase(this);
       else
         return -1;
-    }
-    else if (index_op == register_thread_op) {  // register thread
+    } else if (index_op == register_thread_op) { // register thread
       thread_local_index_hashmap.emplace(this, unregister_t(set_index, shared_locks_array_ptr));
 
       // remove info about deleted contfree-mutexes
       for (auto it = thread_local_index_hashmap.begin(), ite = thread_local_index_hashmap.end(); it != ite;) {
-        if (it->second.array_slock_ptr->at(it->second.thread_index).value < 0)    // if contfree-mtx was deleted
+        if (it->second.array_slock_ptr->at(it->second.thread_index).value < 0) // if contfree-mtx was deleted
           it = thread_local_index_hashmap.erase(it);
         else
           ++it;
@@ -140,17 +141,14 @@ class contention_free_shared_mutex {
 #endif
 
 public:
-  contention_free_shared_mutex() :
-      want_x_lock(false),
-      shared_locks_array_ptr(std::make_shared<array_slock_t>()),
-      shared_locks_array(*shared_locks_array_ptr),
-      recursive_xlock_count(0),
-      owner_thread_id(thread_id_t()) {}
+  contention_free_shared_mutex()
+      : want_x_lock(false), shared_locks_array_ptr(std::make_shared<array_slock_t>()), shared_locks_array(*shared_locks_array_ptr),
+        recursive_xlock_count(0), owner_thread_id(thread_id_t()) {}
 
   ~contention_free_shared_mutex() {
-    for (auto &i : shared_locks_array) i.value = -1;
+    for (auto &i : shared_locks_array)
+      i.value = -1;
   }
-
 
   bool unregister_thread() { return get_or_set_index(unregister_thread_op) >= 0; }
 
@@ -158,19 +156,19 @@ public:
     int cur_index = get_or_set_index();
 
     if (cur_index == -1) {
-      if (shared_locks_array_ptr.use_count() <= (int)shared_locks_array.size())  // try once to register thread
+      if (shared_locks_array_ptr.use_count() <= (int)shared_locks_array.size()) // try once to register thread
       {
         for (size_t i = 0; i < shared_locks_array.size(); ++i) {
           int unregistred_value = 0;
           if (shared_locks_array[i].value == 0)
             if (shared_locks_array[i].value.compare_exchange_strong(unregistred_value, 1)) {
               cur_index = i;
-              get_or_set_index(register_thread_op, cur_index);   // thread registred success
+              get_or_set_index(register_thread_op, cur_index); // thread registred success
               break;
             }
         }
-          //std::cout << "\n thread_id = " << std::this_thread::get_id() << ", register_thread_index = " << cur_index <<
-          //    ", shared_locks_array[cur_index].value = " << shared_locks_array[cur_index].value << std::endl;
+        // std::cout << "\n thread_id = " << std::this_thread::get_id() << ", register_thread_index = " << cur_index <<
+        //     ", shared_locks_array[cur_index].value = " << shared_locks_array[cur_index].value << std::endl;
       }
     }
     return cur_index;
@@ -189,19 +187,20 @@ public:
         shared_locks_array[register_index].value.store(recursion_depth + 1, std::memory_order_seq_cst); // if first -> sequential
         while (want_x_lock.load(std::memory_order_seq_cst)) {
           shared_locks_array[register_index].value.store(recursion_depth, std::memory_order_seq_cst);
-          for ( size_t i = 0; want_x_lock.load(std::memory_order_seq_cst); ++i) 
-            if (i % 100000 == 0) std::this_thread::yield();
+          for (size_t i = 0; want_x_lock.load(std::memory_order_seq_cst); ++i)
+            if (i % 100000 == 0)
+              std::this_thread::yield();
           shared_locks_array[register_index].value.store(recursion_depth + 1, std::memory_order_seq_cst);
         }
       }
       // (shared_locks_array[register_index] == 2 && want_x_lock == false) ||     // first shared lock
       // (shared_locks_array[register_index] > 2)                                 // recursive shared lock
-    }
-    else {
+    } else {
       if (owner_thread_id.load(std::memory_order_acquire) != get_fast_this_thread_id()) {
         size_t i = 0;
         for (bool flag = false; !want_x_lock.compare_exchange_weak(flag, true, std::memory_order_seq_cst); flag = false)
-          if (++i % 100000 == 0) std::this_thread::yield();
+          if (++i % 100000 == 0)
+            std::this_thread::yield();
         owner_thread_id.store(get_fast_this_thread_id(), std::memory_order_release);
       }
       ++recursive_xlock_count;
@@ -216,8 +215,7 @@ public:
       assert(recursion_depth > 1);
 
       shared_locks_array[register_index].value.store(recursion_depth - 1, std::memory_order_release);
-    }
-    else {
+    } else {
       if (--recursive_xlock_count == 0) {
         owner_thread_id.store(decltype(owner_thread_id)(), std::memory_order_release);
         want_x_lock.store(false, std::memory_order_release);
@@ -234,12 +232,14 @@ public:
     if (owner_thread_id.load(std::memory_order_acquire) != get_fast_this_thread_id()) {
       size_t i = 0;
       for (bool flag = false; !want_x_lock.compare_exchange_weak(flag, true, std::memory_order_seq_cst); flag = false)
-        if (++i % 1000000 == 0) std::this_thread::yield();
+        if (++i % 1000000 == 0)
+          std::this_thread::yield();
 
       owner_thread_id.store(get_fast_this_thread_id(), std::memory_order_release);
 
       for (auto &i : shared_locks_array)
-        while (i.value.load(std::memory_order_seq_cst) > 1);
+        while (i.value.load(std::memory_order_seq_cst) > 1)
+          ;
     }
 
     ++recursive_xlock_count;
@@ -254,8 +254,7 @@ public:
   }
 };
 
-template<typename mutex_t>
-struct shared_lock_guard {
+template <typename mutex_t> struct shared_lock_guard {
   mutex_t &ref_mtx;
   shared_lock_guard(mutex_t &mtx) : ref_mtx(mtx) { ref_mtx.lock_shared(); }
   ~shared_lock_guard() { ref_mtx.unlock_shared(); }
@@ -264,62 +263,48 @@ struct shared_lock_guard {
 using default_contention_free_shared_mutex = contention_free_shared_mutex<>;
 // ---------------------------------------------------------------
 
-}   // namespace sf;
-
+} // namespace sf
 
 namespace mp {
-  class Process_O;
-  typedef gctools::smart_ptr<Process_O> Process_sp;
-};
+class Process_O;
+typedef gctools::smart_ptr<Process_O> Process_sp;
+}; // namespace mp
 
 namespace core {
-  extern int clasp_musleep(double dsec, bool alertable);
+extern int clasp_musleep(double dsec, bool alertable);
 }
 
 namespace mp {
-  struct SpinLock {
-  public:
-    void lock()
-    {
-      while(lck.test_and_set(std::memory_order_acquire))
-      {}
+struct SpinLock {
+public:
+  void lock() {
+    while (lck.test_and_set(std::memory_order_acquire)) {
     }
- 
-    void unlock()
-    {
-      lck.clear(std::memory_order_release);
-    }
- 
-  private:
-    std::atomic_flag lck;
-  };
-  struct SafeSpinLock {
-    SpinLock& _SpinLock;
-  SafeSpinLock(SpinLock& l) : _SpinLock(l) {
-    _SpinLock.lock();
-  };
-    ~SafeSpinLock() {
-      _SpinLock.unlock();
-    }
-  };
-    
+  }
 
-extern "C" void mutex_lock_enter(char* nameword);
-extern "C" void mutex_lock_return(char* nameword);
+  void unlock() { lck.clear(std::memory_order_release); }
+
+private:
+  std::atomic_flag lck;
+};
+struct SafeSpinLock {
+  SpinLock &_SpinLock;
+  SafeSpinLock(SpinLock &l) : _SpinLock(l) { _SpinLock.lock(); };
+  ~SafeSpinLock() { _SpinLock.unlock(); }
+};
+
+extern "C" void mutex_lock_enter(char *nameword);
+extern "C" void mutex_lock_return(char *nameword);
 
 struct DtraceLockProbe {
-  char* _NameWord;
-  DtraceLockProbe(char* nw) : _NameWord(nw) {
-    mutex_lock_enter(nw);
-  };
-  ~DtraceLockProbe() {
-    mutex_lock_return(this->_NameWord);
-  }
+  char *_NameWord;
+  DtraceLockProbe(char *nw) : _NameWord(nw) { mutex_lock_enter(nw); };
+  ~DtraceLockProbe() { mutex_lock_return(this->_NameWord); }
 };
 
 struct Mutex;
-void debug_mutex_lock(Mutex* m);
-void debug_mutex_unlock(Mutex* m);
+void debug_mutex_lock(Mutex *m);
+void debug_mutex_unlock(Mutex *m);
 
 #define DEFAULT__NAMEWORD 0x0045454545454545
 #define PACKAGE__NAMEWORD 0x004547414b434150
@@ -344,16 +329,16 @@ void debug_mutex_unlock(Mutex* m);
 #define SUSPBARR_NAMEWORD 0x0052424250535553
 #define DISSASSM_NAMEWORD 0x0053534153534944
 #define JITGDBIF_NAMEWORD 0x004942444754494a
-#define MPSMESSG_NAMEWORD 0x005353454d53504d     // MPSMESSG
+#define MPSMESSG_NAMEWORD 0x005353454d53504d // MPSMESSG
 
 struct Mutex {
   uint64_t _NameWord;
   pthread_mutex_t _Mutex;
   gctools::Fixnum _Counter;
   bool _Recursive;
-  Mutex(uint64_t nameword, bool recursive=false) : _NameWord(nameword), _Counter(0), _Recursive(recursive) {
+  Mutex(uint64_t nameword, bool recursive = false) : _NameWord(nameword), _Counter(0), _Recursive(recursive) {
     if (!recursive) {
-      pthread_mutex_init(&this->_Mutex,NULL);
+      pthread_mutex_init(&this->_Mutex, NULL);
     } else {
       pthread_mutexattr_t Attr;
       pthread_mutexattr_init(&Attr);
@@ -362,22 +347,20 @@ struct Mutex {
       pthread_mutexattr_destroy(&Attr);
     }
   };
-  Mutex() : _NameWord(DEFAULT__NAMEWORD), _Counter(0), _Recursive(false) {
-    pthread_mutex_init(&this->_Mutex,NULL);
-  };
-  bool lock(bool waitp=true) {
+  Mutex() : _NameWord(DEFAULT__NAMEWORD), _Counter(0), _Recursive(false) { pthread_mutex_init(&this->_Mutex, NULL); };
+  bool lock(bool waitp = true) {
 #ifdef DEBUG_THREADS
     debug_mutex_lock(this);
 #endif
     if (waitp) {
 #ifdef DEBUG_DTRACE_LOCK_PROBE
-      DtraceLockProbe _guard((char*)&this->_NameWord);
+      DtraceLockProbe _guard((char *)&this->_NameWord);
 #endif
-      bool result = (pthread_mutex_lock(&this->_Mutex)==0);
+      bool result = (pthread_mutex_lock(&this->_Mutex) == 0);
       ++this->_Counter;
       return result;
     }
-    return pthread_mutex_trylock(&this->_Mutex)==0;
+    return pthread_mutex_trylock(&this->_Mutex) == 0;
   };
   void unlock() {
 #ifdef DEBUG_THREADS
@@ -386,12 +369,8 @@ struct Mutex {
     --this->_Counter;
     pthread_mutex_unlock(&this->_Mutex);
   };
-  size_t counter() const {
-    return this->_Counter;
-  }
-  ~Mutex() {
-    pthread_mutex_destroy(&this->_Mutex);
-  };
+  size_t counter() const { return this->_Counter; }
+  ~Mutex() { pthread_mutex_destroy(&this->_Mutex); };
 };
 
 #if 0
@@ -423,166 +402,140 @@ struct SharedMutex {
 };
 #else
 struct SharedMutex : public sf::contention_free_shared_mutex<> {
-  SharedMutex() {};
+  SharedMutex(){};
   uint64_t _r;
-  SharedMutex(uint64_t nameword) : _r(nameword) {};
+  SharedMutex(uint64_t nameword) : _r(nameword){};
   // shared access
-  void shared_lock() {
-    this->lock_shared();
-  }
-  void shared_unlock() {
-    this->unlock_shared();
-  }
+  void shared_lock() { this->lock_shared(); }
+  void shared_unlock() { this->unlock_shared(); }
 };
 #endif
 
-
-  inline void muSleep(uint usec) { core::clasp_musleep(usec/1000000.0,false); };
+inline void muSleep(uint usec) { core::clasp_musleep(usec / 1000000.0, false); };
 
 /* I derived this code from https://oroboro.com/upgradable-read-write-locks/ */
-  class UpgradableSharedMutex {
-  public:
-    UpgradableSharedMutex() {};
-  public:
-    dont_expose<Mutex> mReadMutex;
-    dont_expose<Mutex> mWriteMutex;
-    bool    mReadsBlocked;
-    uint     mMaxReaders;
-    uint     mReaders;
-  public:
-    UpgradableSharedMutex(uint64_t nameword, uint maxReaders = 64, uint64_t writenameword=0 ) :
-      mReadMutex(nameword),
-      mWriteMutex(writenameword ? writenameword : nameword),
-      mReadsBlocked( false ), mMaxReaders( maxReaders ), mReaders( 0 ) {};
-    void readLock() {
-      while ( 1 ) {
-        mReadMutex._value.lock();
-        if (( !mReadsBlocked ) && ( mReaders < mMaxReaders )) {
-          mReaders++; 
-          mReadMutex._value.unlock();
-          return;
-        }
+class UpgradableSharedMutex {
+public:
+  UpgradableSharedMutex(){};
+
+public:
+  dont_expose<Mutex> mReadMutex;
+  dont_expose<Mutex> mWriteMutex;
+  bool mReadsBlocked;
+  uint mMaxReaders;
+  uint mReaders;
+
+public:
+  UpgradableSharedMutex(uint64_t nameword, uint maxReaders = 64, uint64_t writenameword = 0)
+      : mReadMutex(nameword), mWriteMutex(writenameword ? writenameword : nameword), mReadsBlocked(false), mMaxReaders(maxReaders),
+        mReaders(0){};
+  void readLock() {
+    while (1) {
+      mReadMutex._value.lock();
+      if ((!mReadsBlocked) && (mReaders < mMaxReaders)) {
+        mReaders++;
         mReadMutex._value.unlock();
-        muSleep( 0 );
+        return;
       }
-      assert( 0 );
-    };
-    void readUnlock() { 
-      mReadMutex._value.lock(); 
-      assert( mReaders );
-      mReaders--; 
-      mReadMutex._value.unlock(); 
-    };
-
-    /* Pass true for upgrade if you want to upgrade a read lock to a write lock.
-      Be careful though!!!! If two threads try to upgrade at the same time 
-      there will be a deadlock unless they do it in a loop using withTryLock(true).
-      See the hashTable.cc rehash_upgrade_write_lock for an example. */
-    bool writeTryLock(bool upgrade = false) {
-      if ( !mWriteMutex._value.lock(false))
-        return false;
-      waitReaders( upgrade ? 1 : 0 );
-      return true;
-    }
-    void writeLock(bool upgrade = false) {
-      mWriteMutex._value.lock(); 
-      waitReaders( upgrade ? 1 : 0 );
-    }
-    /*! Pass true releaseReadLock if when you release the write lock it also
-       releases the read lock */
-    void writeUnlock(bool releaseReadLock = false) {
-      mReadMutex._value.lock();
-      if ( releaseReadLock ) {
-        assert( mReaders <= 1 );
-        if ( mReaders == 1 )
-          mReaders--; 
-      }
-      mReadsBlocked = false;
       mReadMutex._value.unlock();
-      mWriteMutex._value.unlock(); 
+      muSleep(0);
     }
-  public:
-    void waitReaders(uint numReaders) {
-   // block new readers 
+    assert(0);
+  };
+  void readUnlock() {
+    mReadMutex._value.lock();
+    assert(mReaders);
+    mReaders--;
+    mReadMutex._value.unlock();
+  };
+
+  /* Pass true for upgrade if you want to upgrade a read lock to a write lock.
+    Be careful though!!!! If two threads try to upgrade at the same time
+    there will be a deadlock unless they do it in a loop using withTryLock(true).
+    See the hashTable.cc rehash_upgrade_write_lock for an example. */
+  bool writeTryLock(bool upgrade = false) {
+    if (!mWriteMutex._value.lock(false))
+      return false;
+    waitReaders(upgrade ? 1 : 0);
+    return true;
+  }
+  void writeLock(bool upgrade = false) {
+    mWriteMutex._value.lock();
+    waitReaders(upgrade ? 1 : 0);
+  }
+  /*! Pass true releaseReadLock if when you release the write lock it also
+     releases the read lock */
+  void writeUnlock(bool releaseReadLock = false) {
+    mReadMutex._value.lock();
+    if (releaseReadLock) {
+      assert(mReaders <= 1);
+      if (mReaders == 1)
+        mReaders--;
+    }
+    mReadsBlocked = false;
+    mReadMutex._value.unlock();
+    mWriteMutex._value.unlock();
+  }
+
+public:
+  void waitReaders(uint numReaders) {
+    // block new readers
+    mReadMutex._value.lock();
+    mReadsBlocked = true;
+    mReadMutex._value.unlock();
+    // wait for current readers to finish
+    while (1) {
       mReadMutex._value.lock();
-      mReadsBlocked = true;
-      mReadMutex._value.unlock();  
-   // wait for current readers to finish
-      while ( 1 ) {
-        mReadMutex._value.lock();
-        if ( mReaders == numReaders )
-        {
-          mReadMutex._value.unlock();  
-          break;
-        }
-        mReadMutex._value.unlock();  
-        muSleep( 0 );
+      if (mReaders == numReaders) {
+        mReadMutex._value.unlock();
+        break;
       }
-      assert( mReaders == numReaders );
+      mReadMutex._value.unlock();
+      muSleep(0);
     }
-  };
+    assert(mReaders == numReaders);
+  }
+};
 
-
-  struct ConditionVariable {
-    pthread_cond_t _ConditionVariable;
-    ConditionVariable() {
-      pthread_cond_init(&this->_ConditionVariable,NULL);
-    };
-    ~ConditionVariable() {
-      pthread_cond_destroy(&this->_ConditionVariable);
-    };
-    bool wait(Mutex& m) {
-      return pthread_cond_wait(&this->_ConditionVariable,&m._Mutex)==0;
+struct ConditionVariable {
+  pthread_cond_t _ConditionVariable;
+  ConditionVariable() { pthread_cond_init(&this->_ConditionVariable, NULL); };
+  ~ConditionVariable() { pthread_cond_destroy(&this->_ConditionVariable); };
+  bool wait(Mutex &m) { return pthread_cond_wait(&this->_ConditionVariable, &m._Mutex) == 0; }
+  bool timed_wait(Mutex &m, double timeout) {
+    struct timespec timeToWait;
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    double dtimeout_sec = floor(timeout);
+    size_t timeout_sec = dtimeout_sec;
+    size_t timeout_nsec = static_cast<size_t>((timeout - dtimeout_sec) * 1000000000.0);
+    timeToWait.tv_sec = now.tv_sec;
+    timeToWait.tv_nsec = (now.tv_usec * 1000UL);
+    timeToWait.tv_sec += timeout_sec;
+    timeToWait.tv_nsec += timeout_nsec;
+    if (timeToWait.tv_nsec > 1000000000) {
+      timeToWait.tv_sec++;
+      timeToWait.tv_nsec -= 1000000000;
     }
-    bool timed_wait(Mutex& m, double timeout) {
-      struct timespec timeToWait;
-      struct timeval now;
-      gettimeofday(&now,NULL);
-      double dtimeout_sec = floor(timeout);
-      size_t timeout_sec = dtimeout_sec;
-      size_t timeout_nsec = static_cast<size_t>((timeout-dtimeout_sec)*1000000000.0);
-      timeToWait.tv_sec = now.tv_sec;
-      timeToWait.tv_nsec = (now.tv_usec*1000UL);
-      timeToWait.tv_sec += timeout_sec;
-      timeToWait.tv_nsec += timeout_nsec;
-      if (timeToWait.tv_nsec>1000000000) {
-        timeToWait.tv_sec++;
-        timeToWait.tv_nsec -= 1000000000;
-      }
-      int rt = pthread_cond_timedwait(&this->_ConditionVariable,&m._Mutex,&timeToWait);
-      return rt==0;
-    }
-    bool signal() {
-      return pthread_cond_signal(&this->_ConditionVariable)==0;
-    }
-    bool broadcast() {
-      return pthread_cond_broadcast(&this->_ConditionVariable)==0;
-    }
-      
-  };
+    int rt = pthread_cond_timedwait(&this->_ConditionVariable, &m._Mutex, &timeToWait);
+    return rt == 0;
+  }
+  bool signal() { return pthread_cond_signal(&this->_ConditionVariable) == 0; }
+  bool broadcast() { return pthread_cond_broadcast(&this->_ConditionVariable) == 0; }
+};
 
 #ifdef CLASP_THREADS
-  template <typename T>
-    struct RAIIReadLock {
-      T& _Mutex;
-    RAIIReadLock(T& p) : _Mutex(p) {
-      _Mutex.shared_lock();
-    }
-      ~RAIIReadLock() {
-        _Mutex.shared_unlock();
-      }
-    };
+template <typename T> struct RAIIReadLock {
+  T &_Mutex;
+  RAIIReadLock(T &p) : _Mutex(p) { _Mutex.shared_lock(); }
+  ~RAIIReadLock() { _Mutex.shared_unlock(); }
+};
 
-    template <typename T>
- struct RAIIReadWriteLock {
-   T& _Mutex;
- RAIIReadWriteLock(T& p) : _Mutex(p) {
-   _Mutex.lock();
- }
-   ~RAIIReadWriteLock() {
-     _Mutex.unlock();
-   }
- };
+template <typename T> struct RAIIReadWriteLock {
+  T &_Mutex;
+  RAIIReadWriteLock(T &p) : _Mutex(p) { _Mutex.lock(); }
+  ~RAIIReadWriteLock() { _Mutex.unlock(); }
+};
 
 #define WITH_READ_LOCK(mutex) mp::RAIIReadLock<decltype(mutex)> lock__(mutex)
 #define WITH_READ_WRITE_LOCK(mutex) mp::RAIIReadWriteLock<decltype(mutex)> lock__(mutex)
@@ -591,17 +544,14 @@ struct SharedMutex : public sf::contention_free_shared_mutex<> {
 #define WITH_READ_WRITE_LOCK(m)
 #endif
 
-  
-void* start_thread(void* info);
+void *start_thread(void *info);
 
-  inline void ClaspThreads_exit() {
-//    printf("%s:%d Exiting pthread\n", __FILE__, __LINE__ );
-//    pthread_exit(NULL);
-//    printf("%s:%d Done pthread\n", __FILE__, __LINE__ );
-  }
+inline void ClaspThreads_exit() {
+  //    printf("%s:%d Exiting pthread\n", __FILE__, __LINE__ );
+  //    pthread_exit(NULL);
+  //    printf("%s:%d Done pthread\n", __FILE__, __LINE__ );
+}
 
-  class SharedMutex_O;
-  typedef gctools::smart_ptr<SharedMutex_O> SharedMutex_sp;
-};
-
-#endif
+class SharedMutex_O;
+typedef gctools::smart_ptr<SharedMutex_O> SharedMutex_sp;
+}; // namespace mp

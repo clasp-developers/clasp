@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #pragma clang diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -51,13 +51,12 @@ THE SOFTWARE.
 #include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_gctools_mem
 
-SYMBOL_EXPORT_SC_(ClosPkg,forward_referenced_class);
-SYMBOL_EXPORT_SC_(ClPkg,built_in_class);
-SYMBOL_EXPORT_SC_(ClPkg,standard_class);
-SYMBOL_EXPORT_SC_(CorePkg,std_class);
-SYMBOL_EXPORT_SC_(ClPkg,structure_class);
-SYMBOL_EXPORT_SC_(CorePkg,cxx_class);
-      
+SYMBOL_EXPORT_SC_(ClosPkg, forward_referenced_class);
+SYMBOL_EXPORT_SC_(ClPkg, built_in_class);
+SYMBOL_EXPORT_SC_(ClPkg, standard_class);
+SYMBOL_EXPORT_SC_(CorePkg, std_class);
+SYMBOL_EXPORT_SC_(ClPkg, structure_class);
+SYMBOL_EXPORT_SC_(CorePkg, cxx_class);
 
 namespace core {
 
@@ -76,11 +75,10 @@ gc::Nilable<Instance_sp> identifyCxxDerivableAncestorClass(Instance_sp aClass) {
   return nil<Instance_O>();
 }
 
-SYMBOL_EXPORT_SC_(KeywordPkg,creator);
+SYMBOL_EXPORT_SC_(KeywordPkg, creator);
 
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, List_sp superclasses)
-{
+CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, List_sp superclasses) {
   // If there is no metaclass - then use _TheStandardClass
   if (tmetaclass.nilp()) {
     tmetaclass = _lisp->_Roots._TheStandardClass;
@@ -88,15 +86,18 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
   Instance_sp instance = gc::As<Instance_sp>(tinstance);
   Instance_sp metaclass = gc::As<Instance_sp>(tmetaclass);
   // If instance class already has an allocator then leave it alone
-  if (instance->CLASS_has_creator()) return instance->CLASS_get_creator();
+  if (instance->CLASS_has_creator())
+    return instance->CLASS_get_creator();
   if (metaclass->_className() == clos::_sym_funcallable_standard_class) {
-    GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<FuncallableInstanceCreator_O>(kw::_sym_creator,nil<T_O>());
-    Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(entryPoint,instance);
+    GlobalSimpleFun_sp entryPoint =
+        makeGlobalSimpleFunAndFunctionDescription<FuncallableInstanceCreator_O>(kw::_sym_creator, nil<T_O>());
+    Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(entryPoint, instance);
     return funcallableInstanceCreator;
   };
   Instance_sp aCxxDerivableAncestorClass_unsafe; // The constructor will initialize this pointer to NULL.
 #ifdef DEBUG_CLASS_INSTANCE
-  printf("%s:%d:%s   for class -> %s   superclasses -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(instance->name()).c_str(), _rep_(superclasses).c_str());
+  printf("%s:%d:%s   for class -> %s   superclasses -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(instance->name()).c_str(),
+         _rep_(superclasses).c_str());
 #endif
   for (auto cur : superclasses) {
     T_sp tsuper = oCar(cur);
@@ -113,7 +114,8 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
       } else {
         SIMPLE_ERROR("Only one derivable C++ class is allowed to be"
                      " derived from at a time instead we have two {} and {}",
-                     _rep_(aCxxDerivableAncestorClass_unsafe->_className()) , _rep_(aPossibleCxxDerivableAncestorClass->_className()));
+                     _rep_(aCxxDerivableAncestorClass_unsafe->_className()),
+                     _rep_(aPossibleCxxDerivableAncestorClass->_className()));
       }
     }
   }
@@ -121,17 +123,18 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
     // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
     Creator_sp aCxxAllocator(gctools::As<Creator_sp>(aCxxDerivableAncestorClass_unsafe->CLASS_get_creator()));
 #ifdef DEBUG_CLASS_INSTANCE
-    printf("%s:%d   duplicating aCxxDerivableAncestorClass_unsafe %s creator\n", __FILE__, __LINE__, _rep_(aCxxDerivableAncestorClass_unsafe).c_str());
+    printf("%s:%d   duplicating aCxxDerivableAncestorClass_unsafe %s creator\n", __FILE__, __LINE__,
+           _rep_(aCxxDerivableAncestorClass_unsafe).c_str());
 #endif
     Creator_sp dup = aCxxAllocator->duplicateForClassName(instance->_className());
     return dup;
   } else {
- // I think this is the most common outcome -
+    // I think this is the most common outcome -
 #ifdef DEBUG_CLASS_INSTANCE
     printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(instance->name()).c_str());
 #endif
-    GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<InstanceCreator_O>( kw::_sym_creator, nil<T_O>() );
-    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(entryPoint,instance);
+    GlobalSimpleFun_sp entryPoint = makeGlobalSimpleFunAndFunctionDescription<InstanceCreator_O>(kw::_sym_creator, nil<T_O>());
+    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(entryPoint, instance);
     return instanceAllocator;
   }
 }
@@ -153,7 +156,7 @@ bool subsetp(List_sp subset, List_sp superset) {
   }
   return true;
 }
-  
+
 CL_LAMBDA(low high);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(subclassp)dx");
@@ -173,4 +176,4 @@ CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
 SYMBOL_SC_(CorePkg, subclassp);
 SYMBOL_SC_(CorePkg, allocateRawClass);
 
-};
+}; // namespace core

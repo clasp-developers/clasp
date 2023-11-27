@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -45,8 +45,7 @@ string myReadLine(const string &prompt, bool &end_of_transmission) {
   /* Get a line from the user. */
   //      lisp->print(BF("%s")%prompt);
   stringstream ss;
-  ss << std::endl
-     << prompt;
+  ss << std::endl << prompt;
   line_read = ::readline(ss.str().c_str()); // prompt.c_str());
   if (line_read != NULL) {
     if (*line_read)
@@ -58,12 +57,13 @@ string myReadLine(const string &prompt, bool &end_of_transmission) {
   }
 #else
   if (prompt != "") {
-    clasp_write_string(fmt::format("{} " , prompt));
+    clasp_write_string(fmt::format("{} ", prompt));
   }
   ws(std::cin);
   getline(std::cin, res);
-  if ( res == "" ) end_of_transmission = true;
+  if (res == "")
+    end_of_transmission = true;
 #endif
   return res;
 }
-};
+}; // namespace core

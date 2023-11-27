@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: character.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_character_H
-#define _core_character_H
 
 #include <clasp/core/object.h>
 #include <clasp/core/array.fwd.h>
@@ -47,14 +46,12 @@ THE SOFTWARE.
 
 namespace core {
 
-  // Utility
-  void notCharacterError();
-  void handleWideCharactersError(claspCharacter cc);
+// Utility
+void notCharacterError();
+void handleWideCharactersError(claspCharacter cc);
 
 Character_sp clasp_make_standard_character(claspCharacter c);
-inline claspCharacter unbox_character(Character_sp c) {
-  return c.unsafe_character();
-};
+inline claspCharacter unbox_character(Character_sp c) { return c.unsafe_character(); };
 
 SimpleBaseString_sp cl__char_name(Character_sp och);
 
@@ -64,7 +61,7 @@ Fixnum clasp_digitp(claspCharacter ch, int basis);
 bool cl__standard_char_p(Character_sp ch);
 
 class Character_dummy_O : public General_O {
-  LISP_ABSTRACT_CLASS(core, ClPkg, Character_dummy_O, "character",core::General_O);
+  LISP_ABSTRACT_CLASS(core, ClPkg, Character_dummy_O, "character", core::General_O);
 };
 
 #if 0
@@ -72,9 +69,7 @@ class Character_dummy_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, CPointer_dummy_O, "cpointer",core::T_O);
 };
 #endif
-};
-
-
+}; // namespace core
 
 namespace core {
 inline short clasp_digit_char(Fixnum w, Fixnum r) {
@@ -86,42 +81,35 @@ inline short clasp_digit_char(Fixnum w, Fixnum r) {
     return (w - 10 + 'A');
 }
 
- inline bool clasp_is_character_type( T_sp the_type) {
-   return ( the_type == cl::_sym_character ||
-            the_type == cl::_sym_base_char ||
-            the_type == cl::_sym_extended_char ||
-            the_type == cl::_sym_standard_char );
- }
+inline bool clasp_is_character_type(T_sp the_type) {
+  return (the_type == cl::_sym_character || the_type == cl::_sym_base_char || the_type == cl::_sym_extended_char ||
+          the_type == cl::_sym_standard_char);
+}
 
-}; /* core */
+}; // namespace core
 
 namespace translate {
 
-  template <>
-    struct from_object< char, std::true_type >
-  {
-    typedef char DeclareType;
+template <> struct from_object<char, std::true_type> {
+  typedef char DeclareType;
 
-    DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.unsafe_fixnum() ){};
-  };
-
-  template <>
-    struct to_object<char> {
-    typedef uint GivenType;
-    static core::T_sp convert(GivenType v) {
-      _G();
-      return core::clasp_make_fixnum(v);
-    }
-  };
+  DeclareType _v;
+  from_object(core::T_sp o) : _v(o.unsafe_fixnum()){};
 };
 
-namespace core {
-//claspCharacter clasp_charCode(T_sp elt); // like ecl__char_code
+template <> struct to_object<char> {
+  typedef uint GivenType;
+  static core::T_sp convert(GivenType v) {
+    _G();
+    return core::clasp_make_fixnum(v);
+  }
+};
+}; // namespace translate
 
-inline bool clasp_invalid_base_char_p(claspCharacter c) {
-  return (c <= 32) || (c == 127);
-}
+namespace core {
+// claspCharacter clasp_charCode(T_sp elt); // like ecl__char_code
+
+inline bool clasp_invalid_base_char_p(claspCharacter c) { return (c <= 32) || (c == 127); }
 
 claspCharacter char_upcase(claspCharacter code);
 
@@ -134,13 +122,9 @@ claspCharacter char_downcase(claspCharacter code);
 }
 #endif
 
-inline bool clasp_base_char_p(claspCharacter c) {
-  return c<=255;
-}
+inline bool clasp_base_char_p(claspCharacter c) { return c <= 255; }
 
-inline bool clasp_base_char_p(Character_sp c) {
-  return c.unsafe_character()>=0 && c.unsafe_character()<=255;
-}
+inline bool clasp_base_char_p(Character_sp c) { return c.unsafe_character() >= 0 && c.unsafe_character() <= 255; }
 
 bool alphanumericp(claspCharacter c);
 
@@ -156,11 +140,7 @@ bool lower_case_p(claspCharacter cc);
 
 bool both_case_p(claspCharacter cc);
 
-inline Character_sp clasp_make_standard_character(claspCharacter c) {
-  return gc::make_tagged_character(c);
-}
+inline Character_sp clasp_make_standard_character(claspCharacter c) { return gc::make_tagged_character(c); }
 
 Character_sp clasp_character_create_from_name(string const &name);
-};
-
-#endif
+}; // namespace core

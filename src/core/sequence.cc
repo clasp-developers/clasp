@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -56,7 +56,8 @@ CL_DEFUN size_t cl__length(T_sp arg) {
     T_sp result = eval::funcall(seqext::_sym_length, arg);
     if (result.fixnump())
       return result.unsafe_fixnum();
-    else TYPE_ERROR(result, cl::_sym_fixnum);
+    else
+      TYPE_ERROR(result, cl::_sym_fixnum);
   }
 };
 
@@ -71,8 +72,8 @@ CL_DEFUN T_sp cl__reverse(T_sp seq) {
     return nil<T_O>();
   } else if (Array_sp arr = seq.asOrNull<Array_O>()) {
     return arr->reverse();
-  }
-  else return eval::funcall(seqext::_sym_reverse, seq);
+  } else
+    return eval::funcall(seqext::_sym_reverse, seq);
 };
 
 CL_LAMBDA(seq);
@@ -86,8 +87,8 @@ CL_DEFUN T_sp cl__nreverse(T_sp seq) {
     return nil<T_O>();
   } else if (Array_sp arr = seq.asOrNull<Array_O>()) {
     return arr->nreverse();
-  }
-  else return eval::funcall(seqext::_sym_nreverse, seq);
+  } else
+    return eval::funcall(seqext::_sym_nreverse, seq);
 };
 
 CL_LAMBDA(sequence start &optional end);
@@ -121,8 +122,8 @@ CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
     return nil<T_O>();
   } else if (Vector_sp vseq = seq.asOrNull<Vector_O>()) {
     return vseq->subseq(0, nil<T_O>());
-  }
-  else return eval::funcall(seqext::_sym_copy_seq, seq);
+  } else
+    return eval::funcall(seqext::_sym_copy_seq, seq);
 };
 
 CL_LAMBDA(sequence index);
@@ -135,29 +136,24 @@ CL_DEFUN T_sp cl__elt(T_sp sequence, size_t index) {
   } else if (sequence.nilp()) {
     // nil is a sequence, so can't type error on sequence
     ERROR(core::_sym_sequence_out_of_bounds,
-            core::lisp_createList(kw::_sym_expected_type,
-                                  core::lisp_createList(cl::_sym_integer,
-                                                        clasp_make_fixnum(0),
-                                                        core::lisp_createList(clasp_make_fixnum(0))),
-                                  kw::_sym_datum, clasp_make_fixnum(index),
-                                  kw::_sym_object, sequence));
+          core::lisp_createList(
+              kw::_sym_expected_type,
+              core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), core::lisp_createList(clasp_make_fixnum(0))),
+              kw::_sym_datum, clasp_make_fixnum(index), kw::_sym_object, sequence));
   } else if (Vector_sp vsequence = sequence.asOrNull<Vector_O>()) {
     size_t max = vsequence->length();
-    unlikely_if (index < 0 || index >= max)
-      ERROR(core::_sym_sequence_out_of_bounds,
-            core::lisp_createList(kw::_sym_expected_type,
-                                  core::lisp_createList(cl::_sym_integer,
-                                                        clasp_make_fixnum(0),
-                                                        core::lisp_createList(clasp_make_fixnum(max))),
-                                  kw::_sym_datum, clasp_make_fixnum(index),
-                                  kw::_sym_object, vsequence));
+    unlikely_if(index < 0 || index >= max)
+        ERROR(core::_sym_sequence_out_of_bounds,
+              core::lisp_createList(
+                  kw::_sym_expected_type,
+                  core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), core::lisp_createList(clasp_make_fixnum(max))),
+                  kw::_sym_datum, clasp_make_fixnum(index), kw::_sym_object, vsequence));
     return vsequence->rowMajorAref(index);
   } else {
     T_sp tindex = clasp_make_fixnum(index);
     return eval::funcall(seqext::_sym_elt, sequence, tindex);
   }
 };
-
 
 CL_LAMBDA(sequence index value);
 CL_DECLARE();
@@ -170,41 +166,35 @@ CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
   } else if (sequence.nilp()) {
     // nil is a sequence, so can't type error on sequence
     ERROR(core::_sym_sequence_out_of_bounds,
-            core::lisp_createList(kw::_sym_expected_type,
-                                  core::lisp_createList(cl::_sym_integer,
-                                                        clasp_make_fixnum(0),
-                                                        core::lisp_createList(clasp_make_fixnum(0))),
-                                  kw::_sym_datum, clasp_make_fixnum(index),
-                                  kw::_sym_object, sequence));
+          core::lisp_createList(
+              kw::_sym_expected_type,
+              core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), core::lisp_createList(clasp_make_fixnum(0))),
+              kw::_sym_datum, clasp_make_fixnum(index), kw::_sym_object, sequence));
   } else if (Vector_sp vsequence = sequence.asOrNull<Vector_O>()) {
     size_t max = vsequence->length();
-    unlikely_if (index < 0 || index >= max)
-      ERROR(core::_sym_sequence_out_of_bounds,
-            core::lisp_createList(kw::_sym_expected_type,
-                                  core::lisp_createList(cl::_sym_integer,
-                                                        clasp_make_fixnum(0),
-                                                        core::lisp_createList(clasp_make_fixnum(max))),
-                                  kw::_sym_datum, clasp_make_fixnum(index),
-                                  kw::_sym_object, vsequence));
+    unlikely_if(index < 0 || index >= max)
+        ERROR(core::_sym_sequence_out_of_bounds,
+              core::lisp_createList(
+                  kw::_sym_expected_type,
+                  core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), core::lisp_createList(clasp_make_fixnum(max))),
+                  kw::_sym_datum, clasp_make_fixnum(index), kw::_sym_object, vsequence));
     vsequence->rowMajorAset(index, value);
     return value;
   } else {
     // FIXME: Having setf elt cons - and for this reason - is completely stupid.
     T_sp tindex = clasp_make_fixnum(index);
-    return eval::funcall(Cons_O::createList(cl::_sym_setf, seqext::_sym_elt),
-                         value, sequence, tindex);
+    return eval::funcall(Cons_O::createList(cl::_sym_setf, seqext::_sym_elt), value, sequence, tindex);
   }
 };
 
-  SYMBOL_EXPORT_SC_(CorePkg, setfElt);
-  SYMBOL_EXPORT_SC_(CorePkg, setfSubseq);
-  SYMBOL_EXPORT_SC_(ClPkg, make_sequence);
-  SYMBOL_EXPORT_SC_(ClPkg, reverse);
-  SYMBOL_EXPORT_SC_(ClPkg, nreverse);
-  SYMBOL_EXPORT_SC_(ClPkg, subseq);
-  SYMBOL_EXPORT_SC_(ClPkg, copySeq);
-  SYMBOL_EXPORT_SC_(ClPkg, length);
-
+SYMBOL_EXPORT_SC_(CorePkg, setfElt);
+SYMBOL_EXPORT_SC_(CorePkg, setfSubseq);
+SYMBOL_EXPORT_SC_(ClPkg, make_sequence);
+SYMBOL_EXPORT_SC_(ClPkg, reverse);
+SYMBOL_EXPORT_SC_(ClPkg, nreverse);
+SYMBOL_EXPORT_SC_(ClPkg, subseq);
+SYMBOL_EXPORT_SC_(ClPkg, copySeq);
+SYMBOL_EXPORT_SC_(ClPkg, length);
 
 /*! From ecl_sequence_start_end */
 
@@ -213,72 +203,56 @@ size_t_pair sequenceKeywordStartEnd(Symbol_sp fn_name, T_sp sequence, Fixnum_sp 
   size_t l;
   p.length = l = cl__length(sequence);
   unlikely_if(!core__fixnump(start) || clasp_minusp(start)) {
-    ERROR_WRONG_TYPE_KEY_ARG(fn_name,
-                             kw::_sym_start, start, cl::_sym_UnsignedByte);
+    ERROR_WRONG_TYPE_KEY_ARG(fn_name, kw::_sym_start, start, cl::_sym_UnsignedByte);
   }
   p.start = unbox_fixnum(start);
   if (end.nilp()) {
     p.end = l;
   } else {
     unlikely_if(!core__fixnump(end) || clasp_minusp(gc::As<Fixnum_sp>(end))) {
-      ERROR_WRONG_TYPE_KEY_ARG(fn_name,
-                               kw::_sym_end, end,
-                               Cons_O::createList(cl::_sym_or, cl::_sym_null, cl::_sym_UnsignedByte));
+      ERROR_WRONG_TYPE_KEY_ARG(fn_name, kw::_sym_end, end, Cons_O::createList(cl::_sym_or, cl::_sym_null, cl::_sym_UnsignedByte));
     }
     p.end = unbox_fixnum(gc::As<Fixnum_sp>(end));
     unlikely_if(p.end > l) {
       //      T_sp fillp = make_fixnum(static_cast<uint>(l));
-      ERROR_WRONG_TYPE_KEY_ARG( fn_name,
-                                kw::_sym_end, end,
-                                Integer_O::makeIntegerType(unbox_fixnum(start), static_cast<int>(l)));
+      ERROR_WRONG_TYPE_KEY_ARG(fn_name, kw::_sym_end, end, Integer_O::makeIntegerType(unbox_fixnum(start), static_cast<int>(l)));
     }
   }
   unlikely_if(p.end < p.start) {
-    ERROR_WRONG_TYPE_KEY_ARG(fn_name,
-                             kw::_sym_start, start,
-                             Integer_O::makeIntegerType(0, static_cast<uint>(p.end)));
+    ERROR_WRONG_TYPE_KEY_ARG(fn_name, kw::_sym_start, start, Integer_O::makeIntegerType(0, static_cast<uint>(p.end)));
   }
   return p;
 }
 
 void sequenceIndexInBounds(Symbol_sp fn_name, size_t vector_length, size_t index) {
-  unlikely_if(index<0) {
-    FUNCTION_WRONG_TYPE_ARG(fn_name, clasp_make_fixnum(index), cl::_sym_UnsignedByte);
-  }
+  unlikely_if(index < 0) { FUNCTION_WRONG_TYPE_ARG(fn_name, clasp_make_fixnum(index), cl::_sym_UnsignedByte); }
   unlikely_if(vector_length < index) {
-    FUNCTION_WRONG_TYPE_ARG(fn_name, clasp_make_fixnum(index),
-                            Integer_O::makeIntegerType(0, static_cast<uint>(vector_length-1)));
+    FUNCTION_WRONG_TYPE_ARG(fn_name, clasp_make_fixnum(index), Integer_O::makeIntegerType(0, static_cast<uint>(vector_length - 1)));
   }
 }
-
 
 size_t_pair sequenceStartEnd(Symbol_sp fn_name, size_t vector_length, size_t start, T_sp end) {
   size_t_pair p;
   size_t l;
   p.length = l = vector_length;
-  unlikely_if(start<0) {
-    FUNCTION_WRONG_TYPE_ARG(fn_name, clasp_make_fixnum(start), cl::_sym_UnsignedByte);
-  }
+  unlikely_if(start < 0) { FUNCTION_WRONG_TYPE_ARG(fn_name, clasp_make_fixnum(start), cl::_sym_UnsignedByte); }
   p.start = start;
   if (end.nilp()) {
     p.end = l;
   } else {
     unlikely_if(!core__fixnump(end) || clasp_minusp(gc::As<Fixnum_sp>(end))) {
-      FUNCTION_WRONG_TYPE_ARG(fn_name, end,
-                              Cons_O::createList(cl::_sym_or, cl::_sym_null, cl::_sym_UnsignedByte));
+      FUNCTION_WRONG_TYPE_ARG(fn_name, end, Cons_O::createList(cl::_sym_or, cl::_sym_null, cl::_sym_UnsignedByte));
     }
     p.end = unbox_fixnum(gc::As<Fixnum_sp>(end));
     unlikely_if(p.end > l) {
       //      T_sp fillp = make_fixnum(static_cast<uint>(l));
-      FUNCTION_WRONG_TYPE_ARG( fn_name, end,
-                               Integer_O::makeIntegerType(start, static_cast<int>(l)));
+      FUNCTION_WRONG_TYPE_ARG(fn_name, end, Integer_O::makeIntegerType(start, static_cast<int>(l)));
     }
   }
   unlikely_if(p.end < p.start) {
-    FUNCTION_WRONG_TYPE_ARG(fn_name, clasp_make_fixnum(start),
-                            Integer_O::makeIntegerType(0, static_cast<uint>(p.end)));
+    FUNCTION_WRONG_TYPE_ARG(fn_name, clasp_make_fixnum(start), Integer_O::makeIntegerType(0, static_cast<uint>(p.end)));
   }
   return p;
 }
 
-}; /* core */
+}; // namespace core

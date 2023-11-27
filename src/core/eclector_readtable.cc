@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2019, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -35,27 +35,25 @@ THE SOFTWARE.
 
 namespace eclector_readtable {
 
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,syntax_type);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,setf_syntax_type);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,get_macro_character);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,set_macro_character);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,get_dispatch_macro_character);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,set_dispatch_macro_character);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,copy_readtable);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,copy_readtable_into);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,make_dispatch_macro_character);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,readtable_case);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,setf_readtable_case);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,set_syntax_from_char);
-SYMBOL_EXPORT_SC_(EclectorReadtablePkg,readtablep);
-};
-
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, syntax_type);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, setf_syntax_type);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, get_macro_character);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, set_macro_character);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, get_dispatch_macro_character);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, set_dispatch_macro_character);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, copy_readtable);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, copy_readtable_into);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, make_dispatch_macro_character);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, readtable_case);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, setf_readtable_case);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, set_syntax_from_char);
+SYMBOL_EXPORT_SC_(EclectorReadtablePkg, readtablep);
+}; // namespace eclector_readtable
 
 namespace core {
 
-CL_DEFUN void core__set_eclector_reader_readmacros( T_sp readtable ) {
+CL_DEFUN void core__set_eclector_reader_readmacros(T_sp readtable) {
   SIMPLE_ERROR("This function needs to be redefined in cleavir");
 }
 
-
-};
+}; // namespace core

@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: documentation.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,15 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_documentation_H_
-#define _core_documentation_H_
 
 #include <clasp/core/object.h>
 
 namespace core {
 
-  T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value);
+T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value);
 
-  void initialize_documentation_primitives(LispPtr lisp);
-};
-#endif /* _documentation_H_ */
+void initialize_documentation_primitives(LispPtr lisp);
+}; // namespace core

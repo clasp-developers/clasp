@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: clasp_ffi_package.h
 */
@@ -24,19 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#if !defined( __CLASP_CORE_FFI_PACKAGE_H__ )
-#define __CLASP_CORE_FFI_PACKAGE_H__ __FILE__" $Id$"
 
 #include <clasp/core/object.h>
 #include <clasp/core/clasp_ffi_package.fwd.h>
 
-#if defined( __cplusplus )
+#if defined(__cplusplus)
 
 namespace clasp_ffi {
 
-  void initialize_clasp_ffi_package( void );
+void initialize_clasp_ffi_package(void);
 
 };
 
 #endif // __cplusplus
-#endif // __CLASP_CORE_FFI_PACKAGE_H__

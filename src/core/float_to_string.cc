@@ -24,42 +24,38 @@
 #include <clasp/core/numberToString.h>
 #include <clasp/core/float_to_digits.h>
 namespace core {
-T_sp
-_clasp_ensure_buffer(T_sp buffer, gc::Fixnum length) {
+T_sp _clasp_ensure_buffer(T_sp buffer, gc::Fixnum length) {
   if (buffer.nilp()) {
-          buffer = Str8Ns_O::make(length, ' ', true, clasp_make_fixnum(0));
+    buffer = Str8Ns_O::make(length, ' ', true, clasp_make_fixnum(0));
   }
   return buffer;
 }
 
-void
-_clasp_string_push_c_string(StrNs_sp s, const char *c) {
-    for (; *c; c++) {
-	s->vectorPushExtend(clasp_make_character(*c));
-    }
+void _clasp_string_push_c_string(StrNs_sp s, const char *c) {
+  for (; *c; c++) {
+    s->vectorPushExtend(clasp_make_character(*c));
+  }
 }
 
-static void
-insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
-    ASSERT(buffer->arrayHasFillPointerP());
-    gc::Fixnum end = buffer->fillPointer();
-    buffer->vectorPushExtend(clasp_make_character('.'));
-    if ( Str8Ns_sp buffer8 = buffer.asOrNull<Str8Ns_O>() ) {
-	memmove(&(*buffer8)[where + 1], &(*buffer8)[where], (end - where)*buffer8->elementSizeInBytes());
-	(*buffer8)[where] = c;
-    } else {
-	StrWNs_sp bufferw = gc::As_unsafe<StrWNs_sp>(buffer);
-	memmove(&(*bufferw)[where + 1], &(*bufferw)[where], (end - where)*bufferw->elementSizeInBytes());
-	(*bufferw)[where] = c;
-    }
+static void insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
+  ASSERT(buffer->arrayHasFillPointerP());
+  gc::Fixnum end = buffer->fillPointer();
+  buffer->vectorPushExtend(clasp_make_character('.'));
+  if (Str8Ns_sp buffer8 = buffer.asOrNull<Str8Ns_O>()) {
+    memmove(&(*buffer8)[where + 1], &(*buffer8)[where], (end - where) * buffer8->elementSizeInBytes());
+    (*buffer8)[where] = c;
+  } else {
+    StrWNs_sp bufferw = gc::As_unsafe<StrWNs_sp>(buffer);
+    memmove(&(*bufferw)[where + 1], &(*bufferw)[where], (end - where) * bufferw->elementSizeInBytes());
+    (*bufferw)[where] = c;
+  }
 }
 
 /**********************************************************************
-     * FREE FORMAT (FIXED OR EXPONENT) OF FLOATS
-     */
+ * FREE FORMAT (FIXED OR EXPONENT) OF FLOATS
+ */
 
-static void
-print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
+static void print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
   T_sp r = cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue();
   gc::Fixnum e;
   switch (clasp_t_of(gc::As<Number_sp>(number))) {
@@ -82,13 +78,13 @@ print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
     break;
 #endif
   default:
-                  SIMPLE_ERROR("Handle additional enumeration values value={} t_of={}", _rep_(number).c_str() , clasp_t_of(gc::As<Number_sp>(number)));
+    SIMPLE_ERROR("Handle additional enumeration values value={} t_of={}", _rep_(number).c_str(),
+                 clasp_t_of(gc::As<Number_sp>(number)));
   }
   if (e != 'e' || exp != 0) {
     StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);
     sbuffer->vectorPushExtend(clasp_make_character(e));
-    core__integer_to_string(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10),
-                         false, false);
+    core__integer_to_string(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10), false, false);
   }
 }
 
@@ -101,7 +97,7 @@ T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max
   }
   T_mv mv_exp = core__float_to_digits(nil<T_O>(), number, nil<T_O>(), nil<T_O>());
   Fixnum_sp exp = gc::As_unsafe<Fixnum_sp>(mv_exp);
-  MultipleValues& mv = core::lisp_multipleValues();
+  MultipleValues &mv = core::lisp_multipleValues();
   StrNs_sp buffer = gc::As<StrNs_sp>(mv.second(mv_exp.number_of_values()));
   e = exp.unsafe_fixnum();
   if (clasp_signbit(number)) {
@@ -112,9 +108,9 @@ T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max
     insert_char(buffer, base + 1, '.');
     print_float_exponent(buffer, number, e - 1);
   } else if (e > 0) {
-          gc::Fixnum l = gc::As<StrNs_sp>(buffer)->fillPointer() - base;
+    gc::Fixnum l = gc::As<StrNs_sp>(buffer)->fillPointer() - base;
     while (l++ <= e) {
-            buffer->vectorPushExtend(clasp_make_character('0'));
+      buffer->vectorPushExtend(clasp_make_character('0'));
     }
     insert_char(buffer, base + e, '.');
     print_float_exponent(buffer, number, 0);
@@ -128,4 +124,4 @@ T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max
   }
   return buffer;
 }
-};
+}; // namespace core

@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: sort.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef sort_H //[
-#define sort_H
 
 #include <stdio.h>
 #include <string>
@@ -33,7 +32,7 @@ THE SOFTWARE.
 #include <set>
 #include <clasp/core/object.h>
 
-//#define	DEBUG_SORT
+// #define	DEBUG_SORT
 
 namespace sort {
 
@@ -43,23 +42,20 @@ class	OrderByLessThan
 public:
     bool operator()(T_sp x, T_sp y )
     {
-	return x < y;
+        return x < y;
     }
 };
 
 */
 
-template <typename _RandomAccessIterator>
-struct SortWork {
+template <typename _RandomAccessIterator> struct SortWork {
   _RandomAccessIterator _Begin;
   _RandomAccessIterator _End;
-  SortWork(_RandomAccessIterator b, _RandomAccessIterator e) : _Begin(b), _End(e) {};
-  SortWork() {};
+  SortWork(_RandomAccessIterator b, _RandomAccessIterator e) : _Begin(b), _End(e){};
+  SortWork(){};
 };
 
-
-template <typename Oelement>
-void swap(Oelement &x, Oelement &y) {
+template <typename Oelement> void swap(Oelement &x, Oelement &y) {
   Oelement t(x);
   x = y;
   y = t;
@@ -68,22 +64,23 @@ void swap(Oelement &x, Oelement &y) {
 template <typename _RandomAccessIterator, typename Ocomp>
 void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer) {
   std::vector<SortWork<_RandomAccessIterator>> work;
-  work.emplace_back(m,en);
-  while (work.size()>0) {
+  work.emplace_back(m, en);
+  while (work.size() > 0) {
     SortWork<_RandomAccessIterator> one(work.back());
     work.pop_back();
     m = one._Begin;
     en = one._End;
     _RandomAccessIterator k;
     _RandomAccessIterator n = en - 1;
-    if ((en-m) <= 1) continue;
-  //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+    if ((en - m) <= 1)
+      continue;
+    //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
     typedef typename _RandomAccessIterator::value_type _ValueType;
     if (m < n) {
 #ifdef DEBUG_SORT
       LOG(("Sorting list at start"));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
+        LOG(("element %d = %s"), (ii - m), (*ii)->__repr__());
       }
 #endif
       ssize_t half = (n - m);
@@ -93,23 +90,23 @@ void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer
 #ifdef DEBUG_SORT
       LOG(("Sorting list pivot is now first element: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
+        LOG(("element %d = %s"), (ii - m), (*ii)->__repr__());
       }
 #endif
       _RandomAccessIterator i = m + 1;
       _RandomAccessIterator j = n;
       while (i <= j) {
         while ((i <= n) && (comparer(*i, *m))) {
-          LOG(("skipping lower bin index: %d value: %s") , (i - m) , _rep_((*i)));
+          LOG(("skipping lower bin index: %d value: %s"), (i - m), _rep_((*i)));
           i++;
         }
         while ((j >= i) && (!comparer(*j, *m))) {
-          LOG(("skipping upper bin index: %d value: %s") , (j - m) , _rep_((*j)));
+          LOG(("skipping upper bin index: %d value: %s"), (j - m), _rep_((*j)));
           j--;
         }
         if (i < j) {
-          LOG(("swapping value lower index: %d value: %s") , (i - m) , _rep_((*i)));
-          LOG(("swapping value upper index: %d value: %s") , (j - m) , _rep_((*j)));
+          LOG(("swapping value lower index: %d value: %s"), (i - m), _rep_((*i)));
+          LOG(("swapping value upper index: %d value: %s"), (j - m), _rep_((*j)));
           swap<_ValueType>(*i, *j);
         }
       }
@@ -117,48 +114,50 @@ void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer
 #ifdef DEBUG_SORT
       LOG(("After pivot list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
+        LOG(("element %d = %s"), (ii - m), (*ii)->__repr__());
       }
 #endif
-      LOG(("element at j -- index: %d value: %s") , (j - m) , _rep_((*j)));
-      work.emplace_back(m,j);
-      work.emplace_back(j+1,n+1);
+      LOG(("element at j -- index: %d value: %s"), (j - m), _rep_((*j)));
+      work.emplace_back(m, j);
+      work.emplace_back(j + 1, n + 1);
 #ifdef DEBUG_SORT
       LOG(("After sort list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
+        LOG(("element %d = %s"), (ii - m), (*ii)->__repr__());
       }
 #endif
     }
   }
 }
 
-
 template <typename _RandomAccessIterator, typename Ocomp>
-void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer ) {
+void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer) {
   std::vector<SortWork<_RandomAccessIterator>> work;
-  work.emplace_back(m,en);
-  while (work.size()>0) {
+  work.emplace_back(m, en);
+  while (work.size() > 0) {
     SortWork<_RandomAccessIterator> one(work.back());
     work.pop_back();
     m = one._Begin;
     en = one._End;
     _RandomAccessIterator k;
     _RandomAccessIterator n = en - 1;
-      // First check if in order already
-    if ((en-m) <= 1) continue;
+    // First check if in order already
+    if ((en - m) <= 1)
+      continue;
     bool ordered = true;
-    for ( auto ii = m; ii < n; ii ++ ) {
-      ordered &= comparer(*ii,*(ii+1));
-      if (!ordered) break;
+    for (auto ii = m; ii < n; ii++) {
+      ordered &= comparer(*ii, *(ii + 1));
+      if (!ordered)
+        break;
     }
-    if (ordered) continue;
+    if (ordered)
+      continue;
     typedef typename _RandomAccessIterator::value_type _ValueType;
     if (m < n) {
 #ifdef DEBUG_SORT
       LOG(("Sorting list at start"));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
+        LOG(("element %d = %s"), (ii - m), (*ii)->__repr__());
       }
 #endif
       ssize_t half = (n - m);
@@ -168,7 +167,7 @@ void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en,
 #ifdef DEBUG_SORT
       LOG(("Sorting list pivot is now first element: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
+        LOG(("element %d = %s"), (ii - m), (*ii)->__repr__());
       }
 #endif
       _RandomAccessIterator i = m + 1;
@@ -188,17 +187,17 @@ void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en,
 #ifdef DEBUG_SORT
       LOG(("After pivot list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
+        LOG(("element %d = %s"), (ii - m), (*ii)->__repr__());
       }
 #endif
-      work.emplace_back(m,j);
-      work.emplace_back(j+1,n+1);
+      work.emplace_back(m, j);
+      work.emplace_back(j + 1, n + 1);
       // quickSortFirstCheckOrder(m, j, comparer, start, debug );
-      //quickSortFirstCheckOrder(j + 1, n + 1, comparer, start, debug);
+      // quickSortFirstCheckOrder(j + 1, n + 1, comparer, start, debug);
 #ifdef DEBUG_SORT
       LOG(("After sort list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
+        LOG(("element %d = %s"), (ii - m), (*ii)->__repr__());
       }
 #endif
     }
@@ -273,20 +272,18 @@ void quickSortDebugDepth(_RandomAccessIterator m, _RandomAccessIterator en, Ocom
 }
 #endif
 
-
-
-template <typename _RandomAccessIterator>
-void quickSort(_RandomAccessIterator m, _RandomAccessIterator en) {
+template <typename _RandomAccessIterator> void quickSort(_RandomAccessIterator m, _RandomAccessIterator en) {
   std::vector<SortWork<_RandomAccessIterator>> work;
-  work.emplace_back(m,en);
-  while (work.size()>0) {
+  work.emplace_back(m, en);
+  while (work.size() > 0) {
     SortWork<_RandomAccessIterator> one(work.back());
     work.pop_back();
     m = one._Begin;
     en = one._End;
     _RandomAccessIterator k;
     _RandomAccessIterator n = en - 1;
-    if ((en-m)<=1) continue;
+    if ((en - m) <= 1)
+      continue;
     typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
     if (m < n) {
       ssize_t half = (n - m);
@@ -305,15 +302,13 @@ void quickSort(_RandomAccessIterator m, _RandomAccessIterator en) {
         }
       }
       swap<_ValueType>(*m, *j);
-      work.emplace_back(m,j);
-      work.emplace_back(j+1,n+1);
+      work.emplace_back(m, j);
+      work.emplace_back(j + 1, n + 1);
     }
   }
 }
 
-
-template <class Oit>
-void reverse(Oit m, Oit n) {
+template <class Oit> void reverse(Oit m, Oit n) {
   n--;
   while (m < n) {
     swap(*m, *n);
@@ -322,22 +317,20 @@ void reverse(Oit m, Oit n) {
   }
 }
 
-
-
-
 template <typename ValueType, typename Ocomp>
-void quickSortVec0(gctools::Vec0<ValueType>& array,ssize_t m, ssize_t en, Ocomp comparer) {
+void quickSortVec0(gctools::Vec0<ValueType> &array, ssize_t m, ssize_t en, Ocomp comparer) {
   std::vector<SortWork<size_t>> work;
-  work.emplace_back(m,en);
-  while ( work.size() > 0 ) {
+  work.emplace_back(m, en);
+  while (work.size() > 0) {
     SortWork<size_t> one(work.back());
     work.pop_back();
     m = one._Begin;
     en = one._End;
     ssize_t k;
     ssize_t n = en - 1;
-    if ((en-m)<=1) continue;
-  //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+    if ((en - m) <= 1)
+      continue;
+    //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
     if (m < n) {
 #if 0
       printf("%s:%d  Sorting from m=%d n=%d\n", __FILE__, __LINE__, m,  n);
@@ -352,9 +345,12 @@ void quickSortVec0(gctools::Vec0<ValueType>& array,ssize_t m, ssize_t en, Ocomp 
       ssize_t i = m + 1;
       ssize_t j = n;
       while (i <= j) {
-        while ((i <= n) && (comparer(array[i], array[m]))) i++;
-        while ((j >= i) && (!comparer(array[j], array[m]))) j--;
-        if (i < j) swap<ValueType>(array[i], array[j]);
+        while ((i <= n) && (comparer(array[i], array[m])))
+          i++;
+        while ((j >= i) && (!comparer(array[j], array[m])))
+          j--;
+        if (i < j)
+          swap<ValueType>(array[i], array[j]);
       }
       swap<ValueType>(array[m], array[j]);
 #if 0
@@ -363,28 +359,26 @@ void quickSortVec0(gctools::Vec0<ValueType>& array,ssize_t m, ssize_t en, Ocomp 
         printf("%s:%d  element %d = %s\n", __FILE__, __LINE__, ii,  _rep_(array[ii]).c_str());
       }
 #endif
-      work.emplace_back(m,j);
-      work.emplace_back(j+1,n+1);
+      work.emplace_back(m, j);
+      work.emplace_back(j + 1, n + 1);
     }
   }
 }
- 
 
-
- // The default sorter, increasing order
-template <typename ValueType>
-void quickSortVec0(gctools::Vec0<ValueType>& array,ssize_t m, ssize_t en) {
+// The default sorter, increasing order
+template <typename ValueType> void quickSortVec0(gctools::Vec0<ValueType> &array, ssize_t m, ssize_t en) {
   std::vector<SortWork<size_t>> work;
-  work.emplace_back(m,en);
+  work.emplace_back(m, en);
   while (work.size() > 0) {
     SortWork<size_t> one(work.back());
     work.pop_back();
     m = one._Begin;
     en = one._End;
-    if ((en-m)<=1) continue;
+    if ((en - m) <= 1)
+      continue;
     ssize_t k;
     ssize_t n = en - 1;
-  //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+    //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
     if (m < n) {
       ssize_t half = (n - m);
       half = half / 2;
@@ -393,32 +387,34 @@ void quickSortVec0(gctools::Vec0<ValueType>& array,ssize_t m, ssize_t en) {
       ssize_t i = m + 1;
       ssize_t j = n;
       while (i <= j) {
-        while ((i <= n) && ( array[i] < array[m] )) i++;
-        while ((j >= i) && (!(array[j] < array[m]))) j--;
-        if (i < j) swap<ValueType>(array[i], array[j]);
+        while ((i <= n) && (array[i] < array[m]))
+          i++;
+        while ((j >= i) && (!(array[j] < array[m])))
+          j--;
+        if (i < j)
+          swap<ValueType>(array[i], array[j]);
       }
       swap<ValueType>(array[m], array[j]);
-      work.emplace_back(m,j);
-      work.emplace_back(j+1,n+1);
+      work.emplace_back(m, j);
+      work.emplace_back(j + 1, n + 1);
     }
   }
 }
 
-
-   // The default sorter, increasing order
-template <typename ValueType>
-void quickSortMemory(ValueType* array,ssize_t m, ssize_t en) {
+// The default sorter, increasing order
+template <typename ValueType> void quickSortMemory(ValueType *array, ssize_t m, ssize_t en) {
   std::vector<SortWork<size_t>> work;
-  work.emplace_back(m,en);
+  work.emplace_back(m, en);
   while (work.size() > 0) {
     SortWork<size_t> one(work.back());
     work.pop_back();
     m = one._Begin;
     en = one._End;
-    if ((en-m) <= 1) continue;
+    if ((en - m) <= 1)
+      continue;
     ssize_t k;
     ssize_t n = en - 1;
-  //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+    //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
     if (m < n) {
       ssize_t half = (n - m);
       half = half / 2;
@@ -427,17 +423,18 @@ void quickSortMemory(ValueType* array,ssize_t m, ssize_t en) {
       ssize_t i = m + 1;
       ssize_t j = n;
       while (i <= j) {
-        while ((i <= n) && ( array[i] < array[m] )) i++;
-        while ((j >= i) && (!(array[j] < array[m]))) j--;
-        if (i < j) swap<ValueType>(array[i], array[j]);
+        while ((i <= n) && (array[i] < array[m]))
+          i++;
+        while ((j >= i) && (!(array[j] < array[m])))
+          j--;
+        if (i < j)
+          swap<ValueType>(array[i], array[j]);
       }
       swap<ValueType>(array[m], array[j]);
-      work.emplace_back(m,j);
-      work.emplace_back(j+1,n+1);
+      work.emplace_back(m, j);
+      work.emplace_back(j + 1, n + 1);
     }
   }
 }
 
-
-};
-#endif //]
+}; // namespace sort

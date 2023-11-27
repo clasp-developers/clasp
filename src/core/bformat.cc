@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <type_traits>
 #include <fmt/core.h>
@@ -40,91 +40,86 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-
-string::size_type find_first_format_specifier( const std::string& str, string::size_type lastPos, bool fmt=false )
-{
-  if(fmt) {
-    lastPos = str.find_first_of("{",lastPos);
-    if ( lastPos == string::npos ) return str.size();
-    for (string::size_type ii = lastPos; ii< str.size(); ii++ ) {
-      if (str[ii] == '}') return ii+1;
+string::size_type find_first_format_specifier(const std::string &str, string::size_type lastPos, bool fmt = false) {
+  if (fmt) {
+    lastPos = str.find_first_of("{", lastPos);
+    if (lastPos == string::npos)
+      return str.size();
+    for (string::size_type ii = lastPos; ii < str.size(); ii++) {
+      if (str[ii] == '}')
+        return ii + 1;
     }
   } else {
-    lastPos = str.find_first_of("%", lastPos );
-    if ( lastPos == string::npos ) return str.size();
-    for (string::size_type ii = lastPos; ii< str.size(); ii++ ) {
-      if (str[ii] >= 'a' && str[ii] <= 'z') return ii+1;
+    lastPos = str.find_first_of("%", lastPos);
+    if (lastPos == string::npos)
+      return str.size();
+    for (string::size_type ii = lastPos; ii < str.size(); ii++) {
+      if (str[ii] >= 'a' && str[ii] <= 'z')
+        return ii + 1;
     }
   }
   return str.size();
 }
 
-void tokenize_format_specifiers(const string &str,
-                                vector<string> &tokens,
-                                bool fmt=false) {
+void tokenize_format_specifiers(const string &str, vector<string> &tokens, bool fmt = false) {
   tokens.erase(tokens.begin(), tokens.end());
   // Skip delimiters at beginning.
   string::size_type lastPos = 0;
   // Find first "non-delimiter".
-  while (lastPos != str.size() ) {
-    string::size_type pos = find_first_format_specifier( str, lastPos, fmt );
+  while (lastPos != str.size()) {
+    string::size_type pos = find_first_format_specifier(str, lastPos, fmt);
     tokens.push_back(str.substr(lastPos, pos - lastPos));
     lastPos = pos;
   }
 }
 
-
-CL_DEFUN T_sp core__tokenize_format_specifiers(const string& str, bool fmt) {
+CL_DEFUN T_sp core__tokenize_format_specifiers(const string &str, bool fmt) {
   std::vector<std::string> parts;
-  tokenize_format_specifiers( str, parts, fmt );
+  tokenize_format_specifiers(str, parts, fmt);
   ql::list ll;
-  for ( auto& part : parts ) {
+  for (auto &part : parts) {
     ll << SimpleBaseString_O::make(part);
   }
   return ll.cons();
 }
 
-
-
 // If FMT is 0 then use printf(%s) formatting otherwise use fmt formatting({})
-template <int FMT>
-struct formatter {
+template <int FMT> struct formatter {
   std::vector<std::string> _controls;
   std::vector<std::string> _results;
   size_t _pos;
-  formatter( const std::string&  fmt_string ) {
-    tokenize_format_specifiers( fmt_string, this->_controls, FMT );
+  formatter(const std::string &fmt_string) {
+    tokenize_format_specifiers(fmt_string, this->_controls, FMT);
     this->_pos = 0;
   }
 
-  template <typename T>
-  void format(const T& obj) {
-    static_assert(FMT==1);
-    const std::string& ctl = this->_controls[this->_pos];
-#if (FMT_VERSION>80000)
-    this->_results.push_back(fmt::format(fmt::runtime(ctl),obj));
+  template <typename T> void format(const T &obj) {
+    static_assert(FMT == 1);
+    const std::string &ctl = this->_controls[this->_pos];
+#if (FMT_VERSION > 80000)
+    this->_results.push_back(fmt::format(fmt::runtime(ctl), obj));
 #else
     // FMT version less than 8.0.0 ... 80000
-    this->_results.push_back(fmt::format(ctl,obj));
+    this->_results.push_back(fmt::format(ctl, obj));
 #endif
     this->_pos++;
   }
 
   T_sp write(T_sp destination, T_sp output) {
     if (output == _sym_printf) {
-      for ( size_t ii=0; ii<this->_pos; ii++ ) {
-        printf("%s", this->_results[ii].c_str() );
+      for (size_t ii = 0; ii < this->_pos; ii++) {
+        printf("%s", this->_results[ii].c_str());
       }
-      for ( size_t ii=this->_pos; ii<this->_controls.size(); ii++ ) {
-        printf( "%s", this->_controls[ii].c_str() );
+      for (size_t ii = this->_pos; ii < this->_controls.size(); ii++) {
+        printf("%s", this->_controls[ii].c_str());
       }
       return nil<T_O>();
     } else {
-      for ( size_t ii=0; ii<this->_pos; ii++ ) {
-        clasp_write_string( this->_results[ii], output );
+      for (size_t ii = 0; ii < this->_pos; ii++) {
+        clasp_write_string(this->_results[ii], output);
       }
-      for ( size_t ii=this->_pos; ii<this->_controls.size(); ii++ ) {
-        clasp_write_string( this->_controls[ii], output );
+      for (size_t ii = this->_pos; ii < this->_controls.size(); ii++) {
+        clasp_write_string(this->_controls[ii], output);
       }
     }
     if (destination.nilp()) {
@@ -133,21 +128,19 @@ struct formatter {
       return result;
     }
     return nil<T_O>();
-  } 
+  }
 };
 
-
-CL_DEFUN std::string core__tostring(T_sp fobj)
-{
+CL_DEFUN std::string core__tostring(T_sp fobj) {
   if (fobj.fixnump()) {
     Fixnum_sp fint = gc::As<Fixnum_sp>(fobj);
-    return fmt::format("{}",unbox_fixnum(fint));
+    return fmt::format("{}", unbox_fixnum(fint));
   } else if (fobj.characterp()) {
     Character_sp fc = gc::As<Character_sp>(fobj);
-    return fmt::format("{}",(char)unbox_character(fc));
+    return fmt::format("{}", (char)unbox_character(fc));
   } else if (fobj.single_floatp()) {
     SingleFloat_sp ff = gc::As<SingleFloat_sp>(fobj);
-    return fmt::format("{}",unbox_single_float(ff));
+    return fmt::format("{}", unbox_single_float(ff));
   } else if (core__bignump(fobj)) {
     Bignum_sp flli = gc::As<Bignum_sp>(fobj);
     stringstream ss;
@@ -158,12 +151,10 @@ CL_DEFUN std::string core__tostring(T_sp fobj)
     return ftext->get_std_string();
   } else if (core__double_float_p(fobj)) {
     DoubleFloat_sp freal = gc::As<DoubleFloat_sp>(fobj);
-    return fmt::format("{}",freal->get());
+    return fmt::format("{}", freal->get());
   }
   return _rep_(fobj);
 }
-
-
 
 /*! Boost-format interface - works like CL:format but uses boost format strings
  */
@@ -182,12 +173,12 @@ CL_DEFUN T_sp core__fmt(T_sp destination, const string &original_control, List_s
   } else if (cl__streamp(destination)) {
     output = destination;
   } else {
-    TYPE_ERROR(destination,cl::_sym_streamError);
+    TYPE_ERROR(destination, cl::_sym_streamError);
   }
   std::stringstream scontrol;
   std::string control;
-  if (original_control.size()>1) {
-    for ( int i(0); i<original_control.size(); ++i ) {
+  if (original_control.size() > 1) {
+    for (int i(0); i < original_control.size(); ++i) {
       if (original_control[i] == '%') {
         switch (original_control[++i]) {
         case 'a':
@@ -262,17 +253,14 @@ CL_DEFUN T_sp core__fmt(T_sp destination, const string &original_control, List_s
         fmter.format(_rep_(fobj));
       }
     }
-    return fmter.write(destination,output);
-  }
-  catch (...) {
+    return fmter.write(destination, output);
+  } catch (...) {
     SIMPLE_ERROR("Unknown fmt command error in format string: \"{}\"", original_control);
   }
 }
 
 DOCGROUP(clasp);
-CL_DEFUN void core__fflush() {
-  fflush(stdout);
-}
+CL_DEFUN void core__fflush() { fflush(stdout); }
 
 CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
@@ -321,7 +309,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
         break;
       default: {
         success = false;
-        return core__fmt(destination,"Could not format {} {}", Cons_O::createList(control, args));
+        return core__fmt(destination, "Could not format {} {}", Cons_O::createList(control, args));
       } break;
       }
       ++cur;
@@ -334,19 +322,14 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
     }
   }
   if (!success) {
-    return core__fmt(destination,"(failed-format <stream> {} {})", Cons_O::createList(control,args));
+    return core__fmt(destination, "(failed-format <stream> {} {})", Cons_O::createList(control, args));
   }
   return core__fmt(destination, tf.str(), args);
 };
 
+CL_DEFUN T_sp core__clformat(T_sp destination, T_sp control, List_sp args) { return cl__format(destination, control, args); }
 
-CL_DEFUN T_sp core__clformat(T_sp destination, T_sp control, List_sp args) {
-  return cl__format(destination,control,args);
-}
+SYMBOL_SC_(CorePkg, bformat);
+SYMBOL_EXPORT_SC_(ClPkg, format);
 
-
-  SYMBOL_SC_(CorePkg, bformat);
-  SYMBOL_EXPORT_SC_(ClPkg, format);
-
-
-}; /* (>>>namespace<<<) */
+}; // namespace core

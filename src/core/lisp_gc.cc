@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -30,14 +30,14 @@ mps_res_t mps_scan_LispRoots(mps_ss_t ss, mps_thr_t thr, void *p, size_t s, Lisp
   mps_scan_MultipleValues(ss, thr, p, s, this->_MultipleValues);
   mps_scan_DynamicBindingStack(ss, thr, p, s, this->_Bindings);
   // this->_SourceFiles is a Vec0
-//  STLMAP_SMART_SECOND_FIX(this->_SourceFiles)
+  //  STLMAP_SMART_SECOND_FIX(this->_SourceFiles)
   GCHOLDER_UNORDEREDSET_FIX(this->_TraceFunctions);
   SMART_PTR_FIX(this->_SystemProperties);
   SMART_PTR_FIX(this->_CatchInfo);
   GCHOLDER_SYMBOLMAP_FIX(this->_BootClassTable);
   STLMAP_SMART_SECOND_FIX(this->_LoadTimeValueArrays);
   SMART_PTR_FIX(this->_Packages);
-//  GCHOLDER_SYMBOLMAP_FIX(this->_SetfDefinitions);
+  //  GCHOLDER_SYMBOLMAP_FIX(this->_SetfDefinitions);
   SMART_PTR_FIX(this->_CorePackage);
   SMART_PTR_FIX(this->_KeywordPackage);
   SMART_PTR_FIX(this->_HiddenBinder);

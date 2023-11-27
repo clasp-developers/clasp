@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: numerics.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -25,30 +26,24 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#ifndef NUMERICS_H
-#define NUMERICS_H
-
 #include <clasp/core/object.h>
 
 namespace core {
-//#define	REAL	double	// we may want to use float on cell processors
-//#define	FLOAT	float
-//#define	DOUBLE	double
-
+// #define	REAL	double	// we may want to use float on cell processors
+// #define	FLOAT	float
+// #define	DOUBLE	double
 
 namespace numerics {
 
 static const double pi = 3.14159265;
 
-inline double radFromDeg(const double &deg) {
-  return deg * 0.0174533;
-}
+inline double radFromDeg(const double &deg) { return deg * 0.0174533; }
 
 inline double degFromRad(const double &rad) {
 #define DEG_FROM_RAD 1.0 / 0.0174533;
   return rad * DEG_FROM_RAD;
 }
-};
+}; // namespace numerics
 
 /*! Convert a collection of positive mixed-base digits to a Bignum index.
  * If the index can not be stored in a Bignum then return -1
@@ -66,14 +61,11 @@ extern Bignum numberOfIndicesForMixedBase(const vector<int> &bases);
 double randomNumber01();
 double randomNumberNormal01();
 
-bool almostEqualAbsoluteOrRelative(double va, double vb,
-                                   double absEpsilon, double relEpsilon);
+bool almostEqualAbsoluteOrRelative(double va, double vb, double absEpsilon, double relEpsilon);
 
 inline double degrees(double rad) { return rad / 0.0174533; };
 inline double radians(double deg) { return deg * 0.0174533; };
 
 void exposeCando_Numerics();
 
-};
-
-#endif
+}; // namespace core

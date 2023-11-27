@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: posixTime.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef PosixTime_H //[
-#define PosixTime_H
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <stdio.h>
@@ -39,15 +38,12 @@ THE SOFTWARE.
 
 namespace core {
 
-
 void first_exit();
 void last_exit();
-
 
 T_sp cl__get_internal_real_time();
 T_sp cl__get_internal_run_time();
 
 void systemReadClock(struct timespec &ts);
 
-};
-#endif //]
+}; // namespace core

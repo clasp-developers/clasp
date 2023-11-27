@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: instance.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_instance_H_
-#define _core_instance_H_
 
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
@@ -310,5 +309,3 @@ public:
   explicit ClassHolder_O(Instance_sp c) : _Class(c){};
 };
 }; // namespace core
-
-#endif /* _core_instance_H_ */

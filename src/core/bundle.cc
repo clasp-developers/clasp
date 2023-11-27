@@ -24,10 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 
-//#define DEBUG_DESC_BUNDLE
+// #define DEBUG_DESC_BUNDLE
 
 #include <errno.h>
 #include <stdio.h>

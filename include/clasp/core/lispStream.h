@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: lispStream.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef lispStream_H
-#define lispStream_H
 
 #define MERGE_FDSTREAM
 
@@ -167,13 +166,16 @@ T_sp cl__stream_element_type(T_sp strm);
 T_sp cl__stream_external_format(T_sp strm);
 
 T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm, gctools::Fixnum byte_size = 8,
-                                 int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
+                                 int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
+                                 T_sp tempName = nil<T_O>(), bool created = false);
 
 T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size = 8,
-                               int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
+                               int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
+                               T_sp tempName = nil<T_O>(), bool created = false);
 
 T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size = 8,
-                                    int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(), T_sp tempName = nil<T_O>(), bool created = false);
+                                    int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>(),
+                                    T_sp tempName = nil<T_O>(), bool created = false);
 
 T_sp cl__make_synonym_stream(T_sp sym);
 T_sp cl__make_two_way_stream(T_sp in, T_sp out);
@@ -339,8 +341,7 @@ class FileStream_O : public AnsiStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   FileStream_O(){};
-  GCPROTECTED :
-  T_sp _Filename;
+  GCPROTECTED : T_sp _Filename;
   T_sp _TempFilename;
   bool _Created = false;
   T_sp _ElementType;
@@ -658,8 +659,6 @@ T_mv cl__read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = n
 T_sp clasp_openRead(T_sp pathDesig);
 T_sp clasp_openWrite(T_sp pathDesig);
 
-void denseReadTo8Bit(T_sp stream, size_t charCount, unsigned char* buffer);
+void denseReadTo8Bit(T_sp stream, size_t charCount, unsigned char *buffer);
 
 }; // namespace core
-
-#endif

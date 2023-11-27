@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/symbolTable.h>
@@ -58,7 +58,8 @@ CL_LAMBDA(tochar fromchar &optional (toreadtable *readtable*) (fromreadtable nil
 CL_DECLARE();
 CL_DOCSTRING(R"dx(setSyntaxFromChar)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromChar, T_sp ttoReadTable, T_sp tfromReadTable, T_sp fromReadTableP) {
+CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromChar, T_sp ttoReadTable, T_sp tfromReadTable,
+                                       T_sp fromReadTableP) {
   if (gc::IsA<Readtable_sp>(ttoReadTable)) {
     Readtable_sp toReadTable = gc::As_unsafe<Readtable_sp>(ttoReadTable);
     if (fromReadTableP.nilp()) {
@@ -69,27 +70,25 @@ CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromCha
       }
     }
     Readtable_sp fromReadTable = gc::As<Readtable_sp>(tfromReadTable);
-    T_sp syntax = core__syntax_type(fromReadTable,fromChar);
-    core__setf_syntax_type(syntax,toReadTable,toChar);
-    T_mv macro = cl__get_macro_character(fromChar,tfromReadTable);
+    T_sp syntax = core__syntax_type(fromReadTable, fromChar);
+    core__setf_syntax_type(syntax, toReadTable, toChar);
+    T_mv macro = cl__get_macro_character(fromChar, tfromReadTable);
     if (macro.notnilp()) {
-      MultipleValues& mvn = core::lisp_multipleValues();
+      MultipleValues &mvn = core::lisp_multipleValues();
       T_sp nonTerminating = mvn.second(macro.number_of_values());
       toReadTable->set_macro_character_(toChar, macro, nonTerminating);
     }
     gc::Nilable<HashTable_sp> fromTable = fromReadTable->DispatchMacroCharacters_->gethash(fromChar);
     if (fromTable.notnilp()) {
       HashTableEql_sp toTable = HashTableEql_O::create_default();
-      fromTable->maphash([&toTable](T_sp key, T_sp val) {
-                           toTable->setf_gethash(key,val);
-                         });
+      fromTable->maphash([&toTable](T_sp key, T_sp val) { toTable->setf_gethash(key, val); });
       toReadTable->DispatchMacroCharacters_->setf_gethash(toChar, toTable);
     } else {
       toReadTable->DispatchMacroCharacters_->remhash(toChar);
     }
     return _lisp->_true();
   }
-  return eval::funcall(eclector_readtable::_sym_set_syntax_from_char,toChar,fromChar,ttoReadTable,tfromReadTable);
+  return eval::funcall(eclector_readtable::_sym_set_syntax_from_char, toChar, fromChar, ttoReadTable, tfromReadTable);
 }
 
 CL_LAMBDA(char &optional non-terminating-p (readtable *readtable*));
@@ -101,7 +100,7 @@ CL_DEFUN T_sp cl__make_dispatch_macro_character(Character_sp ch, T_sp nonTermina
     gc::As_unsafe<Readtable_sp>(readtable)->make_dispatch_macro_character_(ch, nonTerminatingP);
     return _lisp->_true();
   }
-  return eval::funcall(eclector_readtable::_sym_make_dispatch_macro_character,readtable,ch,nonTerminatingP);
+  return eval::funcall(eclector_readtable::_sym_make_dispatch_macro_character, readtable, ch, nonTerminatingP);
 };
 
 CL_LAMBDA(char &optional (readtable *readtable*));
@@ -112,7 +111,7 @@ CL_DEFUN T_mv cl__get_macro_character(Character_sp chr, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) {
     return gc::As_unsafe<Readtable_sp>(readtable)->get_macro_character_(chr);
   }
-  return eval::funcall(eclector_readtable::_sym_get_macro_character,readtable,chr);
+  return eval::funcall(eclector_readtable::_sym_get_macro_character, readtable, chr);
 };
 
 CL_LAMBDA(&optional (from-readtable cl:*readtable*) to-readtable);
@@ -125,14 +124,14 @@ CL_DEFUN T_sp cl__copy_readtable(T_sp fromReadTable, T_sp toReadTable) {
   }
   if (gc::IsA<Readtable_sp>(fromReadTable)) {
     if (toReadTable.notnilp() && !gc::IsA<Readtable_sp>(toReadTable)) {
-      SIMPLE_ERROR("Mismatch in readtable-type from-read-table {} and to-read-table {}", _rep_(fromReadTable) , _rep_(toReadTable));
+      SIMPLE_ERROR("Mismatch in readtable-type from-read-table {} and to-read-table {}", _rep_(fromReadTable), _rep_(toReadTable));
     }
     return gc::As_unsafe<Readtable_sp>(fromReadTable)->copyReadtable_(toReadTable);
   }
   if (toReadTable.nilp())
-    return eval::funcall(eclector_readtable::_sym_copy_readtable,fromReadTable);
+    return eval::funcall(eclector_readtable::_sym_copy_readtable, fromReadTable);
   else
-    return eval::funcall(eclector_readtable::_sym_copy_readtable_into,fromReadTable, toReadTable);
+    return eval::funcall(eclector_readtable::_sym_copy_readtable_into, fromReadTable, toReadTable);
 }
 
 CL_LAMBDA(readtable);
@@ -152,9 +151,9 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(clhs: (setf readtable-case))dx");
 DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__readtable_case_set(T_sp mode, T_sp readTable) {
-  if (gc::IsA<Readtable_sp>(readTable)) 
+  if (gc::IsA<Readtable_sp>(readTable))
     return gc::As_unsafe<Readtable_sp>(readTable)->setf_readtable_case_(gc::As<Symbol_sp>(mode));
-  return eval::funcall(eclector_readtable::_sym_setf_readtable_case,mode,readTable);
+  return eval::funcall(eclector_readtable::_sym_setf_readtable_case, mode, readTable);
 }
 
 CL_LAMBDA(dispChar subChar newFunction &optional (readtable *readtable*));
@@ -165,7 +164,7 @@ CL_DEFUN T_sp cl__set_dispatch_macro_character(Character_sp dispChar, Character_
   if (gc::IsA<Readtable_sp>(readtable)) {
     return gc::As_unsafe<Readtable_sp>(readtable)->set_dispatch_macro_character_(dispChar, subChar, newFunctionDesig);
   }
-  return eval::funcall(eclector_readtable::_sym_set_dispatch_macro_character,readtable,dispChar,subChar,newFunctionDesig);
+  return eval::funcall(eclector_readtable::_sym_set_dispatch_macro_character, readtable, dispChar, subChar, newFunctionDesig);
 };
 
 CL_LAMBDA(dispChar subChar &optional (readtable *readtable*));
@@ -173,9 +172,9 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(getDispatchMacroCharacter)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__get_dispatch_macro_character(Character_sp dispChar, Character_sp subChar, T_sp readtable) {
-  if (gc::IsA<Readtable_sp>(readtable)) 
+  if (gc::IsA<Readtable_sp>(readtable))
     return gc::As_unsafe<Readtable_sp>(readtable)->get_dispatch_macro_character_(dispChar, subChar);
-  return eval::funcall(eclector_readtable::_sym_get_dispatch_macro_character,readtable,dispChar,subChar);
+  return eval::funcall(eclector_readtable::_sym_get_dispatch_macro_character, readtable, dispChar, subChar);
 };
 
 CL_LAMBDA(ch func-desig &optional non-terminating-p (readtable *readtable*));
@@ -183,31 +182,33 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(setMacroCharacter)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non_terminating_p, T_sp readtable) {
-  if (gc::IsA<Readtable_sp>(readtable)) 
-    return gc::As_unsafe<Readtable_sp>(readtable)->set_macro_character_(ch,func_desig,non_terminating_p);
-  return eval::funcall(eclector_readtable::_sym_set_macro_character,readtable,ch,func_desig,non_terminating_p);
+  if (gc::IsA<Readtable_sp>(readtable))
+    return gc::As_unsafe<Readtable_sp>(readtable)->set_macro_character_(ch, func_desig, non_terminating_p);
+  return eval::funcall(eclector_readtable::_sym_set_macro_character, readtable, ch, func_desig, non_terminating_p);
 };
 
 CL_LAMBDA(readtable chr);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return the syntax type of chr. Either :whitespace, :terminating-macro, :non-terminating-macro, :constituent, :single-escape, :multiple-escape, or :invalid.)dx");
+CL_DOCSTRING(
+    R"dx(Return the syntax type of chr. Either :whitespace, :terminating-macro, :non-terminating-macro, :constituent, :single-escape, :multiple-escape, or :invalid.)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__syntax_type(T_sp readtable, Character_sp chr) {
   if (gc::IsA<Readtable_sp>(readtable))
     return gc::As_unsafe<Readtable_sp>(readtable)->syntax_type_(chr);
-  return eval::funcall(eclector_readtable::_sym_syntax_type,readtable,chr);
+  return eval::funcall(eclector_readtable::_sym_syntax_type, readtable, chr);
 }
 
 CL_LAMBDA(syntax-type readtable chr);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Return the syntax type of chr. Either :whitespace, :terminating-macro, :non-terminating-macro, :constituent, :single-escape, :multiple-escape, or :invalid.)dx");
+CL_DOCSTRING(
+    R"dx(Return the syntax type of chr. Either :whitespace, :terminating-macro, :non-terminating-macro, :constituent, :single-escape, :multiple-escape, or :invalid.)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__setf_syntax_type(T_sp syntax_type, T_sp readtable, Character_sp chr) {
   if (gc::IsA<Readtable_sp>(readtable))
-    return gc::As_unsafe<Readtable_sp>(readtable)->set_syntax_type_(chr,syntax_type);
-  return eval::funcall(eclector_readtable::_sym_setf_syntax_type,syntax_type,readtable,chr);
+    return gc::As_unsafe<Readtable_sp>(readtable)->set_syntax_type_(chr, syntax_type);
+  return eval::funcall(eclector_readtable::_sym_setf_syntax_type, syntax_type, readtable, chr);
 }
- 
+
 SYMBOL_EXPORT_SC_(KeywordPkg, constituent);
 SYMBOL_EXPORT_SC_(KeywordPkg, whitespace);
 SYMBOL_EXPORT_SC_(KeywordPkg, single_escape);
@@ -274,15 +275,13 @@ CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
     READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in stream at line: ~a column ~a."),
-                 Cons_O::createList(
-                     Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
-                     Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
+                 Cons_O::createList(Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
+                                    Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
                  sin);
   } else {
     READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in file: ~a line: ~a column ~a."),
-                 Cons_O::createList(SimpleBaseString_O::make(fn),
-                                    Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
-                                    Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
+                 Cons_O::createList(SimpleBaseString_O::make(fn), Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
+                                    Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
                  sin);
   };
   return (Values(nil<T_O>()));
@@ -332,18 +331,16 @@ CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character
   FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
-      	READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
-    		Cons_O::createList(
-                                   Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
-                                   Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
-    		sin);
+    READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
+                 Cons_O::createList(Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
+                                    Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                 sin);
   } else {
-  	  READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in file ~a line: ~a column ~a."),
-    	Cons_O::createList(SimpleBaseString_O::make(fn),
-                           Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
-                           Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
-    	sin);
-  };	
+    READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in file ~a line: ~a column ~a."),
+                 Cons_O::createList(SimpleBaseString_O::make(fn), Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
+                                    Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                 sin);
+  };
   return (Values(nil<T_O>()));
 };
 
@@ -370,11 +367,13 @@ CL_DEFUN T_mv core__reader_skip_semicolon_comment(T_sp sin, Character_sp ch) {
   bool done = false;
   while (!done) {
     T_sp tc = cl__read_char(sin, nil<core::T_O>(), _sym_eof_value, _lisp->_true());
-    if ( tc == _sym_eof_value ) break;
+    if (tc == _sym_eof_value)
+      break;
     ASSERT(tc.characterp());
     Character_sp nc = gc::As<Character_sp>(tc);
     claspCharacter cc = clasp_as_claspCharacter(nc);
-    if (cc == '\n') break;
+    if (cc == '\n')
+      break;
   }
   // Return one value in a MultipleValues object to indicate that something is being returned
   return (Values0<T_O>());
@@ -402,29 +401,23 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
   if (sawnumarg)
     onumarg = make_fixnum(numarg);
   Character_sp subchar = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
-  T_sp macro_func = cl__get_dispatch_macro_character(ch, subchar,_lisp->getCurrentReadTable());
-  if (macro_func.nilp()){
-    //SIMPLE_ERROR("Undefined reader macro for {} {}", _rep_(ch) , _rep_(subchar));
-    // Need to be a reader error
+  T_sp macro_func = cl__get_dispatch_macro_character(ch, subchar, _lisp->getCurrentReadTable());
+  if (macro_func.nilp()) {
+    // SIMPLE_ERROR("Undefined reader macro for {} {}", _rep_(ch) , _rep_(subchar));
+    //  Need to be a reader error
     FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
-    string fn = info->fileName();	
+    string fn = info->fileName();
     if (fn.compare("-no-name-") == 0) {
-      	READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in stream at line: ~a column ~a."),
-    		Cons_O::createList(
-    			ch,
-    			subchar,
-    			Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
-    			Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
-    		sin);
+      READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in stream at line: ~a column ~a."),
+                   Cons_O::createList(ch, subchar, Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
+                                      Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                   sin);
     } else {
-  	  READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in file ~a line: ~a column ~a."),
-    	Cons_O::createList(
-    		ch,
-    		subchar,
-    		SimpleBaseString_O::make(fn),
-    		Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
-    		Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
-    	sin);
+      READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in file ~a line: ~a column ~a."),
+                   Cons_O::createList(ch, subchar, SimpleBaseString_O::make(fn),
+                                      Cons_O::create(make_fixnum(clasp_input_lineno(sin)), nil<T_O>()),
+                                      Cons_O::create(make_fixnum(clasp_input_column(sin)), nil<T_O>())),
+                   sin);
     };
   }
   return eval::funcall(macro_func, sin, subchar, onumarg);
@@ -439,7 +432,7 @@ CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
   List_sp lexemes = collect_lexemes(ch, sin);
   make_str_preserve_case(sslexemes.string(), lexemes);
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    if (sslexemes.string()->length() == 1 ) {
+    if (sslexemes.string()->length() == 1) {
       return Values(sslexemes.string()->rowMajorAref(0));
     } else {
       T_sp tch = eval::funcall(cl::_sym_name_char, sslexemes.string());
@@ -448,7 +441,7 @@ CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
       return Values(gc::As<Character_sp>(tch));
     }
   }
-  return Values(nil<T_O>());//(Values0<T_O>());
+  return Values(nil<T_O>()); //(Values0<T_O>());
 }
 
 CL_LAMBDA(stream ch num);
@@ -459,9 +452,7 @@ CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
   T_sp object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     if (!cl::_sym_STARread_evalSTAR->symbolValue().isTrue()) {
-      READER_ERROR(SimpleBaseString_O::make("Cannot evaluate the form #.~S"),
-                   Cons_O::create(object,nil<T_O>()),
-                   sin);
+      READER_ERROR(SimpleBaseString_O::make("Cannot evaluate the form #.~S"), Cons_O::create(object, nil<T_O>()), sin);
     }
     return cl__eval(object);
   }
@@ -494,7 +485,7 @@ CL_DEFUN T_mv core__sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_s
     if (tnum.notnilp()) {
       Fixnum_sp num = gc::As<Fixnum_sp>(tnum);
       if (list_length > unbox_fixnum(num))
-        SIMPLE_ERROR("vector is longer than specified length {}: {}", unbox_fixnum(num) , _rep_(list));
+        SIMPLE_ERROR("vector is longer than specified length {}: {}", unbox_fixnum(num), _rep_(list));
       int need_length = unbox_fixnum(num);
       if (list_length < need_length) {
         List_sp reversed = cl__nreverse(list);
@@ -505,16 +496,14 @@ CL_DEFUN T_mv core__sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_s
         list = cl__nreverse(reversed);
       }
     }
-    SimpleVector_sp vec = SimpleVector_O::make( cl__length(list),nil<T_O>());
+    SimpleVector_sp vec = SimpleVector_O::make(cl__length(list), nil<T_O>());
     vec->fillInitialContents(list);
     return Values(vec);
   }
   return (Values(nil<T_O>()));
 };
 
-
-
-SYMBOL_EXPORT_SC_(CorePkg,STARforeign_data_reader_callbackSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARforeign_data_reader_callbackSTAR);
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
@@ -525,10 +514,10 @@ CL_DEFUN T_mv core__sharp_foreign_data_reader(T_sp tsin, Character_sp ch, /*Fixn
   StringInputStream_sp sin = gc::As<StringInputStream_sp>(tsin);
   if (tnum.notnilp() && tnum.fixnump()) {
     size_t list_length = tnum.unsafe_fixnum();
-    for ( size_t i=0; i<list_length; ++i ) {
-//      printf("%s:%d reader: |%s|\n", __FILE__, __LINE__, sin->peer(50).c_str());
-      T_sp object = cl__read(sin,_lisp->_true(),nil<T_O>(),_lisp->_true());
-      eval::funcall(loader,sin,core::make_fixnum(i),object);
+    for (size_t i = 0; i < list_length; ++i) {
+      //      printf("%s:%d reader: |%s|\n", __FILE__, __LINE__, sin->peer(50).c_str());
+      T_sp object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
+      eval::funcall(loader, sin, core::make_fixnum(i), object);
     }
     return Values(nil<T_O>());
   }
@@ -552,15 +541,14 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     if (tch.nilp())
       break;
     ch = gc::As<Character_sp>(tch);
-    Symbol_sp syntaxType = core__syntax_type(rtbl,ch);
+    Symbol_sp syntaxType = core__syntax_type(rtbl, ch);
     if (syntaxType == kw::_sym_terminating_macro || syntaxType == kw::_sym_whitespace) {
       unread_ch(sin, ch);
       break;
     }
-    unlikely_if(syntaxType == kw::_sym_single_escape ||
-                syntaxType == kw::_sym_multiple_escape ||
+    unlikely_if(syntaxType == kw::_sym_single_escape || syntaxType == kw::_sym_multiple_escape ||
                 (clasp_as_claspCharacter(ch) != '0' && clasp_as_claspCharacter(ch) != '1')) {
-      READER_ERROR(SimpleBaseString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch,nil<T_O>()), sin);
+      READER_ERROR(SimpleBaseString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch, nil<T_O>()), sin);
     }
     pattern << (char)(clasp_as_claspCharacter(ch));
   }
@@ -568,21 +556,18 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     dim = dimcount;
   } else if (gc::IsA<Fixnum_sp>(num)) {
     dim = unbox_fixnum(gc::As<Fixnum_sp>(num));
-    unlikely_if(dim < 0 ||
-                (dim > CLASP_ARRAY_DIMENSION_LIMIT)) {
-      READER_ERROR(SimpleBaseString_O::make("Wrong vector dimension size ~D in #*."), Cons_O::create(num,nil<T_O>()), sin);
+    unlikely_if(dim < 0 || (dim > CLASP_ARRAY_DIMENSION_LIMIT)) {
+      READER_ERROR(SimpleBaseString_O::make("Wrong vector dimension size ~D in #*."), Cons_O::create(num, nil<T_O>()), sin);
     }
-    unlikely_if(dimcount > dim)
-      READER_ERROR(SimpleBaseString_O::make("Too many elements in #*."), nil<T_O>(), sin);
-    unlikely_if(dim && (dimcount == 0))
-      READER_ERROR(SimpleBaseString_O::make("Cannot fill the bit-vector #*."), nil<T_O>(), sin);
+    unlikely_if(dimcount > dim) READER_ERROR(SimpleBaseString_O::make("Too many elements in #*."), nil<T_O>(), sin);
+    unlikely_if(dim && (dimcount == 0)) READER_ERROR(SimpleBaseString_O::make("Cannot fill the bit-vector #*."), nil<T_O>(), sin);
   }
   string bitPattern = pattern.str();
-  char last = bitPattern.size() > 0 ? bitPattern[bitPattern.size()-1] : '0';
+  char last = bitPattern.size() > 0 ? bitPattern[bitPattern.size() - 1] : '0';
   SimpleBitVector_sp x = SimpleBitVector_O::make(dim);
   for (int i = 0; i < dim; i++) {
     char elt = (i < dimcount) ? bitPattern[i] : last;
-    x->setBit(i,elt-'0');
+    x->setBit(i, elt - '0');
   }
   return Values(x);
 };
@@ -598,7 +583,7 @@ CL_DEFUN T_mv core__sharp_colon(T_sp sin, Character_sp ch, T_sp num) {
   make_str(sslexemes.string(), lexemes);
   SimpleString_sp lexeme_str = sslexemes.string()->asMinimalSimpleString();
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    Symbol_sp new_symbol = Symbol_O::create(gc::As<SimpleString_sp>(lexeme_str->unsafe_subseq(1,lexeme_str->length())));
+    Symbol_sp new_symbol = Symbol_O::create(gc::As<SimpleString_sp>(lexeme_str->unsafe_subseq(1, lexeme_str->length())));
     return Values(new_symbol);
   }
   return Values(nil<T_O>());
@@ -626,7 +611,7 @@ CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, T_sp nradix) {
       DynamicScopeManager scope(cl::_sym_STARread_baseSTAR, oradix);
       T_sp val = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
       if (!gc::IsA<Rational_sp>(val)) {
-        SIMPLE_ERROR("#{} (base {}) is not a rational: {}", _rep_(ch) , iradix , _rep_(val));
+        SIMPLE_ERROR("#{} (base {}) is not a rational: {}", _rep_(ch), iradix, _rep_(val));
       }
       return (Values(val));
     }
@@ -637,25 +622,19 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(sharp_b)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__sharp_b(T_sp sin, Character_sp ch, T_sp num) {
-  return core__sharp_r(sin, ch, make_fixnum(2));
-};
+CL_DEFUN T_mv core__sharp_b(T_sp sin, Character_sp ch, T_sp num) { return core__sharp_r(sin, ch, make_fixnum(2)); };
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(sharp_o)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__sharp_o(T_sp sin, Character_sp ch, T_sp num) {
-  return core__sharp_r(sin, ch, make_fixnum(8));
-};
+CL_DEFUN T_mv core__sharp_o(T_sp sin, Character_sp ch, T_sp num) { return core__sharp_r(sin, ch, make_fixnum(8)); };
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(sharp_x)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__sharp_x(T_sp sin, Character_sp ch, T_sp num) {
-  return core__sharp_r(sin, ch, make_fixnum(16));
-};
+CL_DEFUN T_mv core__sharp_x(T_sp sin, Character_sp ch, T_sp num) { return core__sharp_r(sin, ch, make_fixnum(16)); };
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
@@ -682,10 +661,10 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(sharp_a)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
-   if (core::_sym_sharp_a_reader->fboundp())
-     return eval::funcall(core::_sym_sharp_a_reader, sin, ch, num);
+  if (core::_sym_sharp_a_reader->fboundp())
+    return eval::funcall(core::_sym_sharp_a_reader, sin, ch, num);
   if (num.nilp()) {
-    T_sp initial_contents = core::eval::funcall(cl::_sym_read,sin,nil<T_O>(),_lisp->_true());
+    T_sp initial_contents = core::eval::funcall(cl::_sym_read, sin, nil<T_O>(), _lisp->_true());
     if (cl::_sym_STARread_suppressSTAR->symbolValue().notnilp()) {
       return Values(nil<T_O>());
     } else if (num.nilp()) {
@@ -694,14 +673,15 @@ CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
       T_sp dims = gc::As<T_sp>(oCadr(initial_contents));
       // is either a number or a list of n elements
       List_sp linitial_contents = gc::As<List_sp>(oCaddr(initial_contents));
-      if (!dims.consp() || cl__length(dims)==1) {
-        if (dims.consp()) 
-            dims = oCar(dims);
-        Vector_sp vec = core__make_vector(elt_type,dims.unsafe_fixnum(),false,nil<T_O>(),nil<T_O>(),core::make_fixnum(0),nil<T_O>(),true);
+      if (!dims.consp() || cl__length(dims) == 1) {
+        if (dims.consp())
+          dims = oCar(dims);
+        Vector_sp vec = core__make_vector(elt_type, dims.unsafe_fixnum(), false, nil<T_O>(), nil<T_O>(), core::make_fixnum(0),
+                                          nil<T_O>(), true);
         size_t idx = 0;
-        for ( auto e : linitial_contents ) {
+        for (auto e : linitial_contents) {
           T_sp val = CONS_CAR(e);
-          vec->rowMajorAset(idx,val);
+          vec->rowMajorAset(idx, val);
           idx++;
         }
         return Values(vec);
@@ -717,8 +697,8 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(sharp_s)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__sharp_s(T_sp sin, Character_sp ch, T_sp num) {
-   if (core::_sym_sharp_s_reader->fboundp())
-     return eval::funcall(core::_sym_sharp_s_reader, sin, ch, num);
+  if (core::_sym_sharp_s_reader->fboundp())
+    return eval::funcall(core::_sym_sharp_s_reader, sin, ch, num);
   IMPLEMENT_MEF("Implement sharp_s");
 }; // core__sharp_s
 
@@ -739,7 +719,6 @@ CL_DEFUN T_mv core__sharp_p(T_sp sin, Character_sp ch, T_sp num) {
   return Values(d);
 }; // core__sharp_p
 
-
 CL_LAMBDA(feature-test);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(feature_p takes one argument - a feature test)dx");
@@ -751,8 +730,7 @@ CL_DEFUN T_sp core__reader_feature_p(T_sp feature_test) {
     List_sp features_list = cl::_sym_STARfeaturesSTAR->symbolValue();
     if (features_list.nilp())
       return nil<T_O>();
-    return features_list.asCons()->member(gc::As<Symbol_sp>(feature_test),
-                                          nil<T_O>(), nil<T_O>(), nil<T_O>());
+    return features_list.asCons()->member(gc::As<Symbol_sp>(feature_test), nil<T_O>(), nil<T_O>(), nil<T_O>());
   } else {
     ASSERT(cl__listp(feature_test));
     List_sp features_cons = feature_test;
@@ -787,11 +765,11 @@ CL_DOCSTRING(R"dx(sharp_plus)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
   T_sp feat = read_feature_test(sin);
-  LOG("feature[{}]" , _rep_(feat));
+  LOG("feature[{}]", _rep_(feat));
   if (T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
     LOG("The feature test passed - reading lisp object");
     T_sp obj = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
-    LOG("Read the object[{}]" , _rep_(obj));
+    LOG("Read the object[{}]", _rep_(obj));
     return Values(obj);
   } else {
     DynamicScopeManager dynScopeManager(cl::_sym_STARread_suppressSTAR, _lisp->_true());
@@ -806,11 +784,11 @@ CL_DOCSTRING(R"dx(sharp_minus)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__sharp_minus(T_sp sin, Character_sp ch, T_sp num) {
   T_sp feat = read_feature_test(sin);
-  LOG("feature[{}]" , _rep_(feat));
+  LOG("feature[{}]", _rep_(feat));
   if (!T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
     LOG("The feature test passed - reading lisp object");
     T_sp obj = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
-    LOG("Read the object[{}]" , _rep_(obj));
+    LOG("Read the object[{}]", _rep_(obj));
     return Values(obj);
   } else {
     LOG("The feature test failed - returning nil");
@@ -850,7 +828,6 @@ DONE:
   return (Values0<T_O>());
 }; // core__sharp_vertical_bar
 
-
 SYMBOL_EXPORT_SC_(KeywordPkg, syntax);
 HashTable_sp Readtable_O::create_standard_syntax_table() {
   HashTableEql_sp syntax = HashTableEql_O::create_default();
@@ -867,62 +844,41 @@ HashTable_sp Readtable_O::create_standard_syntax_table() {
 }
 
 Readtable_sp Readtable_O::create_standard_readtable() {
-  auto  rt = gctools::GC<Readtable_O>::allocate_with_default_constructor();
+  auto rt = gctools::GC<Readtable_O>::allocate_with_default_constructor();
   rt->SyntaxTypes_ = Readtable_O::create_standard_syntax_table();
   ASSERTNOTNULL(_sym_reader_backquoted_expression->symbolFunction());
-//  ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
-  rt->set_macro_character_(clasp_make_standard_character('`'),
-                          _sym_reader_backquoted_expression,
-                          nil<T_O>());
-  rt->set_macro_character_(clasp_make_standard_character(','),
-                           _sym_reader_comma_form,
-                          nil<T_O>());
+  //  ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
+  rt->set_macro_character_(clasp_make_standard_character('`'), _sym_reader_backquoted_expression, nil<T_O>());
+  rt->set_macro_character_(clasp_make_standard_character(','), _sym_reader_comma_form, nil<T_O>());
   SYMBOL_SC_(CorePkg, read_list_allow_consing_dot);
-  rt->set_macro_character_(clasp_make_standard_character('('),
-                          _sym_reader_list_allow_consing_dot,
-                          nil<T_O>());
-  rt->set_macro_character_(clasp_make_standard_character(')'),
-                          _sym_reader_error_unmatched_close_parenthesis,
-                          nil<T_O>());
-  rt->set_macro_character_(clasp_make_standard_character('\''),
-                          _sym_reader_quote,
-                          nil<T_O>());
-  rt->set_macro_character_(clasp_make_standard_character(';'),
-                          _sym_reader_skip_semicolon_comment,
-                          nil<T_O>());
+  rt->set_macro_character_(clasp_make_standard_character('('), _sym_reader_list_allow_consing_dot, nil<T_O>());
+  rt->set_macro_character_(clasp_make_standard_character(')'), _sym_reader_error_unmatched_close_parenthesis, nil<T_O>());
+  rt->set_macro_character_(clasp_make_standard_character('\''), _sym_reader_quote, nil<T_O>());
+  rt->set_macro_character_(clasp_make_standard_character(';'), _sym_reader_skip_semicolon_comment, nil<T_O>());
   SYMBOL_SC_(CorePkg, reader_read_double_quote_string);
-  rt->set_macro_character_(clasp_make_standard_character('"'),
-                          _sym_reader_double_quote_string,
-                          nil<T_O>());
+  rt->set_macro_character_(clasp_make_standard_character('"'), _sym_reader_double_quote_string, nil<T_O>());
   Character_sp sharp = clasp_make_standard_character('#');
   rt->make_dispatch_macro_character_(sharp, _lisp->_true());
   ql::list dispatchers;
-  dispatchers << clasp_make_standard_character('\\') << _sym_sharp_backslash
-              << clasp_make_standard_character('\'') << _sym_sharp_single_quote
-              << clasp_make_standard_character('(') << _sym_sharp_left_parenthesis
-              << clasp_make_standard_character('f') << _sym_sharp_foreign_data_reader
-              << clasp_make_standard_character('*') << _sym_sharp_asterisk
-              << clasp_make_standard_character(':') << _sym_sharp_colon
-              << clasp_make_standard_character('.') << _sym_sharp_dot
-              << clasp_make_standard_character('b') << _sym_sharp_b
-              << clasp_make_standard_character('o') << _sym_sharp_o
-              << clasp_make_standard_character('x') << _sym_sharp_x
-              << clasp_make_standard_character('r') << _sym_sharp_r
-              << clasp_make_standard_character('c') << _sym_sharp_c
-              << clasp_make_standard_character('a') << _sym_sharp_a
-              << clasp_make_standard_character('s') << _sym_sharp_s
-              << clasp_make_standard_character('p') << _sym_sharp_p
+  dispatchers << clasp_make_standard_character('\\') << _sym_sharp_backslash << clasp_make_standard_character('\'')
+              << _sym_sharp_single_quote << clasp_make_standard_character('(') << _sym_sharp_left_parenthesis
+              << clasp_make_standard_character('f') << _sym_sharp_foreign_data_reader << clasp_make_standard_character('*')
+              << _sym_sharp_asterisk << clasp_make_standard_character(':') << _sym_sharp_colon << clasp_make_standard_character('.')
+              << _sym_sharp_dot << clasp_make_standard_character('b') << _sym_sharp_b << clasp_make_standard_character('o')
+              << _sym_sharp_o << clasp_make_standard_character('x') << _sym_sharp_x << clasp_make_standard_character('r')
+              << _sym_sharp_r << clasp_make_standard_character('c') << _sym_sharp_c << clasp_make_standard_character('a')
+              << _sym_sharp_a << clasp_make_standard_character('s') << _sym_sharp_s << clasp_make_standard_character('p')
+              << _sym_sharp_p
               //		    << clasp_make_standard_character('=') << _sym_sharp_equal
               //		    << clasp_make_standard_character('#') << _sym_sharp_sharp
-              << clasp_make_standard_character('+') << _sym_sharp_plus
-              << clasp_make_standard_character('-') << _sym_sharp_minus
+              << clasp_make_standard_character('+') << _sym_sharp_plus << clasp_make_standard_character('-') << _sym_sharp_minus
               << clasp_make_standard_character('|') << _sym_sharp_vertical_bar;
   for (List_sp cur = dispatchers.cons(); cur.notnilp(); cur = oCdr(oCdr(cur))) {
     Character_sp ch = gc::As<Character_sp>(oCar(cur));
     Symbol_sp sym = gc::As<Symbol_sp>(oCadr(cur));
     rt->set_dispatch_macro_character_(sharp, ch, sym);
   }
-  //reinstall the things defined in lisp
+  // reinstall the things defined in lisp
   if (core::_sym_sharpmacros_lisp_redefine->fboundp())
     eval::funcall(core::_sym_sharpmacros_lisp_redefine, rt);
   return rt;
@@ -933,7 +889,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, downcase);
 SYMBOL_EXPORT_SC_(KeywordPkg, preserve);
 SYMBOL_EXPORT_SC_(KeywordPkg, invert);
 void Readtable_O::initialize() {
-  
+
   this->Base::initialize();
   //	printf("%s:%d Initializing readtable\n", __FILE__, __LINE__ );
   this->Case_ = kw::_sym_upcase;
@@ -957,12 +913,14 @@ clasp_readtable_case Readtable_O::getReadtableCaseAsEnum_() {
 }
 
 Symbol_sp Readtable_O::setf_readtable_case_(Symbol_sp newCase) {
-  
-  if ((newCase == kw::_sym_upcase) || (newCase == kw::_sym_downcase) || (newCase == kw::_sym_preserve) || (newCase == kw::_sym_invert)) {
+
+  if ((newCase == kw::_sym_upcase) || (newCase == kw::_sym_downcase) || (newCase == kw::_sym_preserve) ||
+      (newCase == kw::_sym_invert)) {
     this->Case_ = newCase;
     return newCase;
   } else {
-    TYPE_ERROR(newCase,Cons_O::createList(cl::_sym_member,kw::_sym_upcase,kw::_sym_downcase, kw::_sym_preserve,kw::_sym_invert));
+    TYPE_ERROR(newCase,
+               Cons_O::createList(cl::_sym_member, kw::_sym_upcase, kw::_sym_downcase, kw::_sym_preserve, kw::_sym_invert));
   }
 }
 
@@ -979,8 +937,8 @@ T_sp Readtable_O::set_macro_character_(Character_sp ch, T_sp funcDesig, T_sp non
   } else {
     this->set_syntax_type_(ch, kw::_sym_terminating_macro);
   }
-  if (!(gctools::IsA<core::Symbol_sp>(funcDesig)||gctools::IsA<core::Function_sp>(funcDesig))) {
-    TYPE_ERROR(funcDesig,Cons_O::createList(cl::_sym_or,cl::_sym_symbol,cl::_sym_function));
+  if (!(gctools::IsA<core::Symbol_sp>(funcDesig) || gctools::IsA<core::Function_sp>(funcDesig))) {
+    TYPE_ERROR(funcDesig, Cons_O::createList(cl::_sym_or, cl::_sym_symbol, cl::_sym_function));
   }
   this->MacroCharacters_->setf_gethash(ch, funcDesig);
   return _lisp->_true();
@@ -996,14 +954,14 @@ string Readtable_O::__repr__() const {
 }
 
 Symbol_sp Readtable_O::syntax_type_(Character_sp ch) const {
-  
+
   Symbol_sp result = this->SyntaxTypes_->gethash(ch, kw::_sym_constituent);
-  LOG("character[{}] syntax_type: {}" , _rep_(ch) , _rep_(result));
+  LOG("character[{}] syntax_type: {}", _rep_(ch), _rep_(result));
   return result;
 }
 
 T_mv Readtable_O::get_macro_character_(Character_sp ch) {
-  
+
   T_sp dispatcher = this->MacroCharacters_->gethash(ch, nil<T_O>());
   Symbol_sp syntaxType = this->syntax_type_(ch);
   if (syntaxType == kw::_sym_terminating_macro) {
@@ -1015,25 +973,24 @@ T_mv Readtable_O::get_macro_character_(Character_sp ch) {
 }
 
 T_sp Readtable_O::make_dispatch_macro_character_(Character_sp ch, T_sp non_terminating_p) {
-  
+
   this->set_macro_character_(ch, _sym_dispatch_macro_character, non_terminating_p);
   this->DispatchMacroCharacters_->setf_gethash(ch, HashTableEql_O::create_default());
   return _lisp->_true();
 }
 
-T_sp Readtable_O::set_dispatch_macro_character_(Character_sp disp_char, Character_sp sub_char,
-                                               T_sp new_func_desig) {
+T_sp Readtable_O::set_dispatch_macro_character_(Character_sp disp_char, Character_sp sub_char, T_sp new_func_desig) {
   T_sp tdispatch_table = this->DispatchMacroCharacters_->gethash(disp_char);
   if (!gc::IsA<HashTable_sp>(tdispatch_table)) {
     SIMPLE_ERROR("{} is not a dispatching macro character", _rep_(disp_char));
   }
   HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
-  ASSERTF(dispatch_table.notnilp(), "The dispatch table for the character[{}] is nil! - this shouldn't happen" , _rep_(disp_char));
+  ASSERTF(dispatch_table.notnilp(), "The dispatch table for the character[{}] is nil! - this shouldn't happen", _rep_(disp_char));
   Character_sp upcase_sub_char = clasp_make_character(char_upcase(sub_char.unsafe_character()));
-  if (!(gctools::IsA<core::Symbol_sp>(new_func_desig)||gctools::IsA<core::Function_sp>(new_func_desig))) {
-    TYPE_ERROR(new_func_desig,Cons_O::createList(cl::_sym_or,cl::_sym_symbol,cl::_sym_function));
+  if (!(gctools::IsA<core::Symbol_sp>(new_func_desig) || gctools::IsA<core::Function_sp>(new_func_desig))) {
+    TYPE_ERROR(new_func_desig, Cons_O::createList(cl::_sym_or, cl::_sym_symbol, cl::_sym_function));
   }
-//  Function_sp new_func = coerce::functionDesignator(new_func_desig);
+  //  Function_sp new_func = coerce::functionDesignator(new_func_desig);
   dispatch_table->hash_table_setf_gethash(upcase_sub_char, new_func_desig);
   return _lisp->_true();
 }
@@ -1050,7 +1007,7 @@ T_sp Readtable_O::get_dispatch_macro_character_(Character_sp disp_char, Characte
 }
 
 Character_sp Readtable_O::convert_case_(Character_sp cc) {
-  
+
   if (this->Case_ == kw::_sym_upcase) {
     return clasp_make_character(char_upcase(cc.unsafe_character()));
   } else if (this->Case_ == kw::_sym_downcase) {
@@ -1067,7 +1024,7 @@ Readtable_sp Readtable_O::copyReadtable_(gc::Nilable<Readtable_sp> tdest) {
   //	printf("%s:%d copy-readtable\n", __FILE__, __LINE__ );
   if (tdest.nilp()) {
     //	    printf("%s:%d allocating copy-readtable\n", __FILE__, __LINE__ );
-    auto  temp = gctools::GC<Readtable_O>::allocate_with_default_constructor();
+    auto temp = gctools::GC<Readtable_O>::allocate_with_default_constructor();
     tdest = temp;
   }
   Readtable_sp dest = gc::As<Readtable_sp>(tdest);
@@ -1078,19 +1035,13 @@ Readtable_sp Readtable_O::copyReadtable_(gc::Nilable<Readtable_sp> tdest) {
   //	printf("%s:%d about to MacroCharacters_->clrhash() copy-readtable\n", __FILE__, __LINE__ );
   dest->MacroCharacters_->clrhash();
   dest->DispatchMacroCharacters_->clrhash();
-  this->SyntaxTypes_->maphash([&dest](T_sp key, T_sp val) {
-		dest->SyntaxTypes_->setf_gethash(key,val);
-  });
-  this->MacroCharacters_->maphash([&dest](T_sp key, T_sp val) {
-		dest->MacroCharacters_->setf_gethash(key,val);
-  });
+  this->SyntaxTypes_->maphash([&dest](T_sp key, T_sp val) { dest->SyntaxTypes_->setf_gethash(key, val); });
+  this->MacroCharacters_->maphash([&dest](T_sp key, T_sp val) { dest->MacroCharacters_->setf_gethash(key, val); });
   this->DispatchMacroCharacters_->maphash([&dest](T_sp key, T_sp val) {
-		HashTable_sp entry = gc::As<HashTable_sp>(val);
-		HashTable_sp table = HashTableEql_O::create_default();
-		entry->maphash( [&table] (T_sp subkey, T_sp func) {
-			table->setf_gethash(subkey,func);
-		    } );
-		dest->DispatchMacroCharacters_->setf_gethash(key,table);
+    HashTable_sp entry = gc::As<HashTable_sp>(val);
+    HashTable_sp table = HashTableEql_O::create_default();
+    entry->maphash([&table](T_sp subkey, T_sp func) { table->setf_gethash(subkey, func); });
+    dest->DispatchMacroCharacters_->setf_gethash(key, table);
   });
   dest->Case_ = this->Case_;
   return dest;
@@ -1127,7 +1078,4 @@ SYMBOL_EXPORT_SC_(CorePkg, reader_feature_p);
 SYMBOL_EXPORT_SC_(ClPkg, setDispatchMacroCharacter);
 SYMBOL_EXPORT_SC_(ClPkg, getDispatchMacroCharacter);
 
-
-
-
-}; /* core */
+}; // namespace core

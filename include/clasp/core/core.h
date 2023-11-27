@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: foundation.h
 */
@@ -30,15 +31,12 @@ THE SOFTWARE.
         @ingroup exports
  */
 
-#ifndef CORE_H //[
-#define CORE_H
-
 // Debug flow control
 
 /*! Turn this on to force turn on xxx_ASSERT messages in release code*/
-//#ifndef DEBUG_ASSERT
-//#define DEBUG_ASSERT
-//#endif
+// #ifndef DEBUG_ASSERT
+// #define DEBUG_ASSERT
+// #endif
 
 // Load the waf config file
 #pragma clang diagnostic push
@@ -88,7 +86,7 @@ class type_info;
 //
 // Don't use P0 ptr with BOEHM
 #ifdef USE_MPS
-//#define USE_TAGGED_PTR_P0 1
+// #define USE_TAGGED_PTR_P0 1
 #endif
 
 #define DLL_PUBLIC __attribute__((visibility("default")))
@@ -105,7 +103,7 @@ class type_info;
 #define VARARGS
 
 #include <clasp/core/gcInterface.h>
-//#include <cstdio>
+// #include <cstdio>
 
 //! Macro for attribute that causes symbols to be exposed
 #define ATTR_WEAK __attribute__((weak))
@@ -187,11 +185,11 @@ using DefaultWrapper = BytecodeWrapper;
 //		define DEBUG_LEVEL_FULL at the top of a .cc file
 //
 
-//#undef SOURCE_DEBUG
-//#define ENABLE_PROFILING 1
+// #undef SOURCE_DEBUG
+// #define ENABLE_PROFILING 1
 //
-// Turn on INIT_DEBUG if you want LISP initialization log messages
-// - there are lots and startup will be very slow
+//  Turn on INIT_DEBUG if you want LISP initialization log messages
+//  - there are lots and startup will be very slow
 #undef INIT_DEBUG
 
 // Debug CLOS 0 - no debug 1 - slight debug 2 - verbose debug
@@ -242,11 +240,11 @@ using DefaultWrapper = BytecodeWrapper;
 #endif
 
 //
-//#define	DEBUG_LEVEL_FULL_REFCOUNT
+// #define	DEBUG_LEVEL_FULL_REFCOUNT
 //
 //
 // To just debug object creation/destruction define REFCOUNTDEBUG
-//#define	REFCOUNTDEBUG
+// #define	REFCOUNTDEBUG
 
 //
 // Turn on DEBUG_SIGNALS to log commands signal/catchSignal/propagate calls
@@ -452,7 +450,9 @@ private:
 };
 
 class_id allocate_class_id(type_id const &cls);
-template <class T> struct registered_class { static class_id const id; };
+template <class T> struct registered_class {
+  static class_id const id;
+};
 template <class T> class_id const registered_class<T>::id = allocate_class_id(typeid(T));
 template <class T> struct registered_class<T const> : registered_class<T> {};
 }; // namespace reg
@@ -706,8 +706,8 @@ typedef vector<AtomHandle> VectorAtomHandle;
 #define ATOMHANDLE_NEXT2 -23
 
 #ifdef WIN32
-//#define	assert(x)   {if (!(x)) abort(); }
-// # p r a g m a warning( disable : 4290 )
+// #define	assert(x)   {if (!(x)) abort(); }
+//  # p r a g m a warning( disable : 4290 )
 #endif
 
 }; // namespace core
@@ -824,8 +824,8 @@ extern Layout_code *get_stamp_layout_codes();
 #ifdef RUNNING_PRECISEPREP
 #define FRIEND_GC_SCANNER(nscl)
 #else
-//#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs,
-//mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
+// #define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs,
+// mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
 #define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code *gctools::get_stamp_layout_codes();
 #endif
 #endif
@@ -1124,4 +1124,3 @@ extern void *_ZTVN4core6LispE;
 #define FASL_MAGIC_NUMBER 0x8d7498b1
 
 #endif
-#endif //]

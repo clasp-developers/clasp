@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -51,7 +51,7 @@ namespace core {
 #ifdef DEBUG_DTREE_INTERPRETER // for debugging
 #define DTILOG(...)                                                                                                                \
   {                                                                                                                                \
-    fprintf(DTILOG_fout, "%5lu: %s", my_thread->_DtreeInterpreterCallCount, (fmt::format(__VA_ARGS__).c_str()));                  \
+    fprintf(DTILOG_fout, "%5lu: %s", my_thread->_DtreeInterpreterCallCount, (fmt::format(__VA_ARGS__).c_str()));                   \
     fflush(DTILOG_fout);                                                                                                           \
   }
 #define DTIDO(x)                                                                                                                   \
@@ -197,9 +197,7 @@ void FuncallableInstance_O::describe(T_sp stream) {
 
 // FIXME: Don't export this.
 DOCGROUP(clasp);
-CL_DEFUN Function_sp clos__getFuncallableInstanceFunction(FuncallableInstance_sp obj) {
-  return obj->REAL_FUNCTION();
-};
+CL_DEFUN Function_sp clos__getFuncallableInstanceFunction(FuncallableInstance_sp obj) { return obj->REAL_FUNCTION(); };
 
 DOCGROUP(clasp);
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
@@ -715,7 +713,8 @@ struct GFBytecodeEntryPoint {
 GFBytecodeSimpleFun_O::GFBytecodeSimpleFun_O(FunctionDescription_sp fdesc, unsigned int entryPcN, SimpleVector_byte8_t_sp bytecode,
                                              SimpleVector_sp literals, Function_sp generic_function, size_t specialized_length)
     : GlobalSimpleFunBase_O(fdesc, ClaspXepFunction::make<GFBytecodeEntryPoint>(specialized_length), nil<T_O>()),
-      _EntryPcN(entryPcN), _Bytecode(bytecode), _Literals(literals), _GenericFunction(generic_function), _SpecializedLength(specialized_length){};
+      _EntryPcN(entryPcN), _Bytecode(bytecode), _Literals(literals), _GenericFunction(generic_function),
+      _SpecializedLength(specialized_length){};
 
 SYMBOL_EXPORT_SC_(ClosPkg, bytecode_dtree_compile);
 CL_LISPIFY_NAME(GFBytecodeSimpleFun/make);
@@ -726,7 +725,7 @@ GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make(Function_sp generic_function)
   T_mv compiled = eval::funcall(clos::_sym_bytecode_dtree_compile, generic_function);
   SimpleVector_byte8_t_sp bytecode = gc::As<SimpleVector_byte8_t_sp>(compiled);
   MultipleValues &mv = my_thread->_MultipleValues;
-  //SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
+  // SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
   SimpleVector_sp literals = mv.third(compiled.number_of_values());
   size_t specialized_length = mv.fourth(compiled.number_of_values()).unsafe_fixnum();
   auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate(fdesc, 0, bytecode, literals, generic_function, specialized_length);

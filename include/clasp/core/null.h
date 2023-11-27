@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: null.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,28 +25,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_Null_H
-#define _core_Null_H
 
 #include <clasp/core/symbol.h>
 #include <clasp/core/lispList.h>
 
 namespace core {
 
-  FORWARD(SimpleBaseString);
-  FORWARD(Null);
+FORWARD(SimpleBaseString);
+FORWARD(Null);
 class Null_O : public Symbol_O {
-  LISP_CLASS(core, ClPkg, Null_O, "null",Symbol_O);
+  LISP_CLASS(core, ClPkg, Null_O, "null", Symbol_O);
+
 public:                             // ctor/dtor for classes with shared virtual base
   explicit Null_O() : Symbol_O(){}; // List_O
-  explicit Null_O(SimpleBaseString_sp name) : Symbol_O(name) {};
+  explicit Null_O(SimpleBaseString_sp name) : Symbol_O(name){};
   virtual ~Null_O(){};
-  static Null_sp create_at_boot(const string& nm);
+  static Null_sp create_at_boot(const string &nm);
+
 public: // Functions here
   string __repr__() const;
 };
 
-}; /* core */
-
-
-#endif /* _core_Null_H */
+}; // namespace core

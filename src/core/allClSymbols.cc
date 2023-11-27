@@ -53,10 +53,10 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
   Package_sp commonLispPackage = _lisp->commonLispPackage();
   List_sp missing = nil<T_O>();
-  MultipleValues& mvn = core::lisp_multipleValues();
+  MultipleValues &mvn = core::lisp_multipleValues();
   for (auto it : globalAllClSymbols) {
     T_mv sym = commonLispPackage->findSymbol(it.first);
-    T_sp found = mvn.valueGet(1,sym.number_of_values());
+    T_sp found = mvn.valueGet(1, sym.number_of_values());
     if (found.nilp()) {
       missing = Cons_O::create(SimpleBaseString_O::make(it.first), missing);
     }
@@ -65,10 +65,10 @@ CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
 }
 
 void initializeAllClSymbols(Package_sp commonLispPkg) {
-#define AddClSymbol(name)                        \
-  {                                              \
-    Symbol_sp sym = commonLispPkg->intern(SimpleBaseString_O::make(name)); \
-    commonLispPkg->_export2(sym);                \
+#define AddClSymbol(name)                                                                                                          \
+  {                                                                                                                                \
+    Symbol_sp sym = commonLispPkg->intern(SimpleBaseString_O::make(name));                                                         \
+    commonLispPkg->_export2(sym);                                                                                                  \
   }
   AddClSymbol("&ALLOW-OTHER-KEYS");
   AddClSymbol("&AUX");
@@ -1050,8 +1050,6 @@ void initializeAllClSymbols(Package_sp commonLispPkg) {
   AddClSymbol("ZEROP");
 };
 
-void initializeAllClSymbolsFunctions() {
-  SYMBOL_EXPORT_SC_(CorePkg, calculateMissingCommonLispSymbols);
-};
-};
+void initializeAllClSymbolsFunctions() { SYMBOL_EXPORT_SC_(CorePkg, calculateMissingCommonLispSymbols); };
+}; // namespace core
 #endif

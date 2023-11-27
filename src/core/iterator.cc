@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -38,9 +38,7 @@ CL_LAMBDA(it);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(iteratorUnsafeElement)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__iterator_unsafe_element(Iterator_sp it) {
-  return it->unsafeElement();
-};
+CL_DEFUN T_sp core__iterator_unsafe_element(Iterator_sp it) { return it->unsafeElement(); };
 
 CL_LAMBDA(it);
 CL_DECLARE();
@@ -51,8 +49,6 @@ CL_DEFUN Iterator_sp core__iterator_step(Iterator_sp it) {
   return it;
 };
 
-void Iterator_O::initialize() {
-  this->Base::initialize();
-}
+void Iterator_O::initialize() { this->Base::initialize(); }
 
-};
+}; // namespace core

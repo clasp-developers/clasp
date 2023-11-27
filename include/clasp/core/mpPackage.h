@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: mpPackage.h
 */
@@ -25,8 +26,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#ifndef _clasp_mpPackage_H
-#define _clasp_mpPackage_H
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/sequence.h> // cl__reverse
 
@@ -148,21 +147,11 @@ public:
 #endif
 public:
   Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings = nil<core::T_O>(),
-            size_t stack_size = 8 * 1024 * 1024) :
-      _UniqueID(global_process_UniqueID++)
-      , _Parent(nil<core::T_O>())
-      , _Name(name)
-      , _Function(function)
-      , _Arguments(arguments)
-      , _InitialSpecialBindings(initialSpecialBindings)
-      , _ReturnValuesList(nil<core::T_O>())
-      , _Aborted(false)
-      , _AbortCondition(nil<core::T_O>())
-      , _ThreadInfo(NULL)
-      , _Phase(Nascent)
-      , _SuspensionMutex(SUSPBARR_NAMEWORD)
-      , _StackSize(stack_size)
-  {
+            size_t stack_size = 8 * 1024 * 1024)
+      : _UniqueID(global_process_UniqueID++), _Parent(nil<core::T_O>()), _Name(name), _Function(function), _Arguments(arguments),
+        _InitialSpecialBindings(initialSpecialBindings), _ReturnValuesList(nil<core::T_O>()), _Aborted(false),
+        _AbortCondition(nil<core::T_O>()), _ThreadInfo(NULL), _Phase(Nascent), _SuspensionMutex(SUSPBARR_NAMEWORD),
+        _StackSize(stack_size) {
     if (!function) {
       printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__);
     }
@@ -338,5 +327,3 @@ public:
 };
 void mp__interrupt_process(Process_sp process, core::T_sp func);
 }; // namespace mp
-
-#endif

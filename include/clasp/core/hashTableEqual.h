@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: hashTableEqual.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_HashTableEqual_H
-#define _core_HashTableEqual_H
 
 #include <clasp/core/object.h>
 #include <clasp/core/symbolTable.h>
@@ -36,8 +35,8 @@ namespace core {
 
 FORWARD(HashTableEqual);
 class HashTableEqual_O : public HashTable_O {
-  LISP_CLASS(core, CorePkg, HashTableEqual_O, "HashTableEqual",HashTable_O);
-  HashTableEqual_O() {};
+  LISP_CLASS(core, CorePkg, HashTableEqual_O, "HashTableEqual", HashTable_O);
+  HashTableEqual_O(){};
 
 public:
   static HashTableEqual_sp create(uint sz, Number_sp rehashSize, double rehashThreshold);
@@ -50,16 +49,12 @@ public: // Functions here
 
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
+  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator &hg) const;
 };
 
-}; /* core */
-template <>
-struct gctools::GCInfo<core::HashTableEqual_O> {
+}; // namespace core
+template <> struct gctools::GCInfo<core::HashTableEqual_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
-
-#endif /* _core_HashTableEqual_H */

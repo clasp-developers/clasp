@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -41,7 +41,7 @@ THE SOFTWARE.
 namespace core {
 
 T_sp record_circle_subst(Record_sp record, T_sp tree) {
-  RECORD_LOG("Checking record_circle_subst orig@{}: {}\n" , (void *)(tree.raw_()) ,  _rep_(tree));
+  RECORD_LOG("Checking record_circle_subst orig@{}: {}\n", (void *)(tree.raw_()), _rep_(tree));
   T_sp result;
   T_sp patching_callback = record->_patching_callback;
   if (patching_callback.notnilp()) {
@@ -51,13 +51,15 @@ T_sp record_circle_subst(Record_sp record, T_sp tree) {
   }
 #ifdef DEBUG_RECORD
   if (result.raw_() != tree.raw_()) {
-    RECORD_LOG("  YES!!! record_circle_subst tree@{} subst@{}: {}\n" , (void*)(tree.raw_()) , (void *)(result.raw_()) ,  _rep_(result));
+    RECORD_LOG("  YES!!! record_circle_subst tree@{} subst@{}: {}\n", (void *)(tree.raw_()), (void *)(result.raw_()),
+               _rep_(result));
   }
 #endif
   return result;
 }
 
-Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _patching_callback(nil<T_O>()), _Seen(nil<T_O>()) {}
+Record_O::Record_O(RecordStage stage, bool dummy, List_sp data)
+    : _stage(stage), _alist(data), _patching_callback(nil<T_O>()), _Seen(nil<T_O>()) {}
 
 void Record_O::initialize() {
   if (this->_stage == initializing) {
@@ -95,10 +97,7 @@ void Record_O::errorIfInvalidArguments() {
 
 CL_LAMBDA(&optional patcher-callback);
 DOCGROUP(clasp);
-CL_DEFUN Record_sp core__make_record_patcher(T_sp patcher_callback)
-{
-  return Record_O::create_patcher(patcher_callback);
-}
+CL_DEFUN Record_sp core__make_record_patcher(T_sp patcher_callback) { return Record_O::create_patcher(patcher_callback); }
 
 DOCGROUP(clasp);
 CL_DEFUN void core__patch_object(General_sp tree, Record_sp record) {
@@ -108,47 +107,47 @@ CL_DEFUN void core__patch_object(General_sp tree, Record_sp record) {
 }
 
 CL_DEFMETHOD T_sp Record_O::field_read(Symbol_sp name) {
-  if (this->_stage==loading) {
+  if (this->_stage == loading) {
     T_sp result;
-    this->field(name,result);
+    this->field(name, result);
     return result;
   }
   SIMPLE_ERROR("field-read called on a record that is not loading");
 }
 
 CL_DEFMETHOD void Record_O::field_write(Symbol_sp name, T_sp object) {
-  if (this->_stage==saving || this->_stage==initializing) {
-    this->field(name,object);
+  if (this->_stage == saving || this->_stage == initializing) {
+    this->field(name, object);
     return;
   }
   SIMPLE_ERROR("field-write called on a record that is not saving or initializing");
 }
 
 CL_DEFMETHOD T_sp Record_O::field_patch(Symbol_sp name, T_sp object) {
-  if (this->_stage==patching) {
-    this->field(name,object);
+  if (this->_stage == patching) {
+    this->field(name, object);
     return object;
   }
   SIMPLE_ERROR("field-patch called on a record that is not patching");
 }
 
-SYMBOL_EXPORT_SC_(KeywordPkg,initializing);
-SYMBOL_EXPORT_SC_(KeywordPkg,saving);
-SYMBOL_EXPORT_SC_(KeywordPkg,loading);
-SYMBOL_EXPORT_SC_(KeywordPkg,patching);
+SYMBOL_EXPORT_SC_(KeywordPkg, initializing);
+SYMBOL_EXPORT_SC_(KeywordPkg, saving);
+SYMBOL_EXPORT_SC_(KeywordPkg, loading);
+SYMBOL_EXPORT_SC_(KeywordPkg, patching);
 CL_DEFMETHOD Symbol_sp Record_O::record_stage() const {
   switch (this->_stage) {
   case initializing:
-      return kw::_sym_initializing;
+    return kw::_sym_initializing;
   case loading:
-      return kw::_sym_loading;
+    return kw::_sym_loading;
   case saving:
-      return kw::_sym_saving;
+    return kw::_sym_saving;
   case patching:
-      return kw::_sym_patching;
+    return kw::_sym_patching;
   default:
-      SIMPLE_ERROR("Illegal stage");
+    SIMPLE_ERROR("Illegal stage");
   }
 }
 
-};
+}; // namespace core

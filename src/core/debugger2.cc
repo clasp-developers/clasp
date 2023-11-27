@@ -37,13 +37,14 @@ static void debugger_helpmsg() {
 // negative. If the top or bottom is reached, stays there. The index of the
 // current frame frame is read from index, and then the new frame's index is
 // stored there.
-static DebuggerFrame_sp debugger_frame_rel(DebuggerFrame_sp cur, int shift,
-                                           int& index) {
+static DebuggerFrame_sp debugger_frame_rel(DebuggerFrame_sp cur, int shift, int &index) {
   if (shift > 0) {
     while (shift > 0) {
       T_sp next = cur->up;
       if (next.notnilp()) {
-        cur = gc::As<DebuggerFrame_sp>(next); --shift; ++index;
+        cur = gc::As<DebuggerFrame_sp>(next);
+        --shift;
+        ++index;
       } else // hit top frame
         return cur;
     }
@@ -52,12 +53,15 @@ static DebuggerFrame_sp debugger_frame_rel(DebuggerFrame_sp cur, int shift,
     while (shift < 0) {
       T_sp next = cur->down;
       if (next.notnilp()) {
-        cur = gc::As<DebuggerFrame_sp>(next); ++shift; --index;
+        cur = gc::As<DebuggerFrame_sp>(next);
+        ++shift;
+        --index;
       } else // hit bottom frame
         return cur;
     }
     return cur;
-  } else return cur;
+  } else
+    return cur;
 }
 
 static std::string thing_as_string(T_sp obj) {
@@ -69,7 +73,8 @@ static std::string thing_as_string(T_sp obj) {
     return gc::As_unsafe<Str8Ns_sp>(obj)->get_std_string();
   } else if (gc::IsA<StrWNs_sp>(obj)) {
     return gc::As_unsafe<StrWNs_sp>(obj)->get_std_string();
-  } else return _rep_(obj);
+  } else
+    return _rep_(obj);
 }
 
 static void debugger_display_frame(DebuggerFrame_sp cur, int index) {
@@ -91,16 +96,16 @@ static void debugger_dump_current_module(DebuggerFrame_sp cur, int index) {
   num << std::setw(4);
   num << index;
   if (!gc::IsA<Function_sp>(cur->closure)) {
-    clasp_write_string(fmt::format("  cur->closure is not a Function_sp: {}\n", (void*)cur->closure.raw_()),stream);
+    clasp_write_string(fmt::format("  cur->closure is not a Function_sp: {}\n", (void *)cur->closure.raw_()), stream);
     return;
   }
   Function_sp func = gc::As_unsafe<Function_sp>(cur->closure);
   SimpleFun_sp ep = func->entryPoint();
   if (gc::IsA<GlobalBytecodeSimpleFun_sp>(ep)) {
     Array_sp bytecode = gc::As<Array_sp>(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(ep)->code());
-    clasp_write_string(fmt::format("Start address: {}\n",(void*)bytecode->rowMajorAddressOfElement_(0)),stream);
-    for ( size_t ii=0; ii<cl__length(bytecode); ii++ ) {
-      clasp_write_string(fmt::format("{} ", _rep_(bytecode->rowMajorAref(ii)) ),stream);
+    clasp_write_string(fmt::format("Start address: {}\n", (void *)bytecode->rowMajorAddressOfElement_(0)), stream);
+    for (size_t ii = 0; ii < cl__length(bytecode); ii++) {
+      clasp_write_string(fmt::format("{} ", _rep_(bytecode->rowMajorAref(ii))), stream);
     }
     clasp_write_string("\n", stream);
   } else {
@@ -108,26 +113,28 @@ static void debugger_dump_current_module(DebuggerFrame_sp cur, int index) {
   }
 }
 
-SYMBOL_EXPORT_SC_(CorePkg,primitive_print_backtrace);
+SYMBOL_EXPORT_SC_(CorePkg, primitive_print_backtrace);
 
-static void debugger_backtrace(DebuggerFrame_sp cur, int index, bool showArgs=true) {
+static void debugger_backtrace(DebuggerFrame_sp cur, int index, bool showArgs = true) {
   // Bind *print-circle* to T for backtrace so things don't blow up
-  DynamicScopeManager tempBind(cl::_sym_STARprint_circleSTAR, _lisp->_true() );
+  DynamicScopeManager tempBind(cl::_sym_STARprint_circleSTAR, _lisp->_true());
   if (showArgs && _sym_primitive_print_backtrace.boundp() && _sym_primitive_print_backtrace->fboundp()) {
-    printf("%s:%d:%s Calling sys:primitive-print-backtrace\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s Calling sys:primitive-print-backtrace\n", __FILE__, __LINE__, __FUNCTION__);
     eval::funcall(_sym_primitive_print_backtrace);
   } else {
     while (1) {
       debugger_display_frame(cur, index);
       T_sp next = cur->up;
-      if (next.nilp()) break;
-      else cur = gc::As<DebuggerFrame_sp>(next);
+      if (next.nilp())
+        break;
+      else
+        cur = gc::As<DebuggerFrame_sp>(next);
       ++index;
     }
   }
 }
 
-static bool debugger_parse_integer(string s, int& new_frame_index) {
+static bool debugger_parse_integer(string s, int &new_frame_index) {
   try {
     new_frame_index = std::stoi(s);
     return true;
@@ -155,7 +162,8 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
     }
     char cmd;
     string eline;
-    if (line.empty()) continue;
+    if (line.empty())
+      continue;
     if ((line[0] == ':') && (line.size() > 1)) {
       cmd = line[1];
       eline = line.substr(2);
@@ -166,55 +174,60 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
     switch (cmd) {
     case '?':
     case 'h': // help
-        debugger_helpmsg();
-        break;
-    case 'q': { // quit
-        int code;
-        exit(debugger_parse_integer(eline, code) ? code : 0);
-      }
+      debugger_helpmsg();
       break;
+    case 'q': { // quit
+      int code;
+      exit(debugger_parse_integer(eline, code) ? code : 0);
+    } break;
     case 'g': { // go to frame
       int new_frame_index;
       if (debugger_parse_integer(eline, new_frame_index)) {
-        clasp_write_string(fmt::format("Switching to frame: {}\n" , new_frame_index));
+        clasp_write_string(fmt::format("Switching to frame: {}\n", new_frame_index));
         cur = debugger_frame_rel(cur, new_frame_index - frame_index, frame_index);
-      } else clasp_write_string("You must provide a frame index\n");
+      } else
+        clasp_write_string("You must provide a frame index\n");
       break;
     }
     case 'u': // up
-        cur = debugger_frame_rel(cur, 1, frame_index);
-        break;
+      cur = debugger_frame_rel(cur, 1, frame_index);
+      break;
     case 'd': // down
-        cur = debugger_frame_rel(cur, -1, frame_index);
-        break;
+      cur = debugger_frame_rel(cur, -1, frame_index);
+      break;
     case 'D': // Dump code
-        debugger_dump_current_module(cur,frame_index);
-        break;
+      debugger_dump_current_module(cur, frame_index);
+      break;
     case 'B': // backtrace no args
-        debugger_backtrace(cur, frame_index, false);
-        break;
+      debugger_backtrace(cur, frame_index, false);
+      break;
     case 'b': // backtrace
-        debugger_backtrace(cur, frame_index);
-        break;
+      debugger_backtrace(cur, frame_index);
+      break;
     case 'x': // examine current frame
-        debugger_display_frame(cur, frame_index);
-        break;
+      debugger_display_frame(cur, frame_index);
+      break;
     case 'a': // abort
-        throw(DebuggerSaysAbortToRepl());
+      throw(DebuggerSaysAbortToRepl());
     case 'c': // continue with given result
-        if (can_continue)
-          return _lisp->readEvalPrintString(eline, nil<T_O>(), true);
-        else clasp_write_string("Cannot continue from this error\n");
-        break;
+      if (can_continue)
+        return _lisp->readEvalPrintString(eline, nil<T_O>(), true);
+      else
+        clasp_write_string("Cannot continue from this error\n");
+      break;
     case 'e': // evaluate
-        try { _lisp->readEvalPrintString(eline, nil<T_O>(), true); }
-        // If the debugger is entered recursively and aborted out of,
-        // return here.
-        catch (DebuggerSaysAbortToRepl &err) {}
-        break;
-    default: clasp_write_string(fmt::format("Unknown command[{}] - try ':?'\n" , cmd));
+      try {
+        _lisp->readEvalPrintString(eline, nil<T_O>(), true);
+      }
+      // If the debugger is entered recursively and aborted out of,
+      // return here.
+      catch (DebuggerSaysAbortToRepl &err) {
+      }
+      break;
+    default:
+      clasp_write_string(fmt::format("Unknown command[{}] - try ':?'\n", cmd));
     } // cmd switch
-  } // read eval print loop
+  }   // read eval print loop
 }
 
 struct DebuggerLevelRAII {
@@ -239,12 +252,10 @@ T_mv early_debug(T_sp condition, bool can_continue) {
     clasp_write_string(fmt::format("Debugger entered with condition: {}\n", _rep_(condition)));
   }
   DynamicScopeManager scope(core::_sym_STARdebugConditionSTAR, condition);
-  return call_with_frame([=](auto frame){return early_debug_inner(frame, can_continue);});
+  return call_with_frame([=](auto frame) { return early_debug_inner(frame, can_continue); });
 }
 
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__early_debug(T_sp condition) {
-  return early_debug(condition, true);
-}
+CL_DEFUN T_mv core__early_debug(T_sp condition) { return early_debug(condition, true); }
 
 }; // namespace core

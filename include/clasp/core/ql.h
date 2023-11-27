@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: ql.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_quickList_H
-#define _core_quickList_H
 
 #include <clasp/core/sourceFileInfo.h>
 
@@ -35,31 +34,31 @@ namespace ql {
 
 /*! list is a class for constructing free-form Cons lists
   from within C++.
-  
+
   eg:
-  C++: (ql::list(lisp) , x , y , z , _lisp->symbol(kw::_sym_color) , objBlue ).cons() 
+  C++: (ql::list(lisp) , x , y , z , _lisp->symbol(kw::_sym_color) , objBlue ).cons()
   returns --> (list X Y Z :color BLUE )   where X,Y,Z,BLUE are the objects contained by the
   C++ values x, y, z, objBlue which are of type T_sp
 */
 
 class list {
- private:
+private:
   core::T_sp _Head;
-  core::T_sp _Tail;  // ROOT
- public:
+  core::T_sp _Tail; // ROOT
+public:
   /*! ctor sets up _Lisp and the first element of the Cons */
   list() {
     this->_Head = nil<core::T_O>();
     this->_Tail = this->_Head;
   }
-  
+
   int length() const {
-    LIKELY_if (this->_Head.consp()) return this->_Head.unsafe_cons()->proper_list_length();
+    LIKELY_if(this->_Head.consp()) return this->_Head.unsafe_cons()->proper_list_length();
     return 0;
   };
 
   inline list &operator<<(core::T_sp const &obj) {
-    core::Cons_sp one = core::Cons_O::create(obj,nil<core::T_O>());
+    core::Cons_sp one = core::Cons_O::create(obj, nil<core::T_O>());
     if (!this->_Head.consp())
       this->_Head = one;
     else {
@@ -91,17 +90,10 @@ class list {
     return *this;
   }
 
-  inline core::T_sp cons() const {
-    return this->_Head;
-  }
+  inline core::T_sp cons() const { return this->_Head; }
 
   /*! Return all of the list including the (usually) dummy first element */
-  inline core::T_sp result() const {
-    return this->cons();
-  }
-
+  inline core::T_sp result() const { return this->cons(); }
 };
 
-};
-
-#endif // _core_quickList_H
+}; // namespace ql

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <atomic> // memory_order_etc
 #include <clasp/core/foundation.h>
@@ -87,14 +87,16 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(getf)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
-  if (plist.consp()) return gc::As_unsafe<Cons_sp>(plist)->getf(indicator, default_value);
+  if (plist.consp())
+    return gc::As_unsafe<Cons_sp>(plist)->getf(indicator, default_value);
   return default_value;
 };
 
 CL_LAMBDA(plist indicator);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
-CL_DOCSTRING(R"dx(Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found)dx");
+CL_DOCSTRING(
+    R"dx(Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
   if (oCar(plist) == indicator) {
@@ -120,9 +122,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(cons)dx");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
-  return Cons_O::create(obj1, obj2);
-};
+CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) { return Cons_O::create(obj1, obj2); };
 
 CL_LAMBDA(order cons);
 CL_DECLARE();
@@ -140,27 +140,21 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(cdr-atomic)dx");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__cdr_atomic(T_sp order, Cons_sp c) {
-  return c->cdrAtomic(std::memory_order_seq_cst);
-}
+CL_DEFUN T_sp core__cdr_atomic(T_sp order, Cons_sp c) { return c->cdrAtomic(std::memory_order_seq_cst); }
 
 CL_LAMBDA(c o);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx()dx");
 DOCGROUP(clasp);
-CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
-  return c->rplaca(o);
-};
+CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) { return c->rplaca(o); };
 
 CL_LAMBDA(c o);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx()dx");
 DOCGROUP(clasp);
-CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
-  return c->rplacd(o);
-};
+CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) { return c->rplacd(o); };
 
 CL_LAMBDA(order value cons);
 CL_DECLARE();
@@ -187,18 +181,14 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx()dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__cas_car(T_sp order, T_sp old, T_sp newv, Cons_sp c) {
-  return c->carCAS(old, newv, std::memory_order_seq_cst);
-}
+CL_DEFUN T_sp core__cas_car(T_sp order, T_sp old, T_sp newv, Cons_sp c) { return c->carCAS(old, newv, std::memory_order_seq_cst); }
 
 CL_LAMBDA(order old new cons);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx()dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__cas_cdr(T_sp order, T_sp old, T_sp newv, Cons_sp c) {
-  return c->cdrCAS(old, newv, std::memory_order_seq_cst);
-}
+CL_DEFUN T_sp core__cas_cdr(T_sp order, T_sp old, T_sp newv, Cons_sp c) { return c->cdrCAS(old, newv, std::memory_order_seq_cst); }
 
 CL_LAMBDA(osize &key initial-element);
 CL_DECLARE();
@@ -213,10 +203,10 @@ CL_DEFUN List_sp cl__make_list(Fixnum size, T_sp initial_element) {
   else {
     T_sp result = nil<T_O>();
     for (size_t i = 0; i < size; i++) {
-      result = gctools::ConsAllocator<gctools::RuntimeStage,Cons_O,gctools::DontRegister>::allocate(initial_element,result);
+      result = gctools::ConsAllocator<gctools::RuntimeStage, Cons_O, gctools::DontRegister>::allocate(initial_element, result);
     }
-    size_t cons_size = gctools::ConsSizeCalculator<gctools::RuntimeStage,Cons_O,gctools::DontRegister>::value();
-    my_thread_low_level->_Allocations.registerAllocation(gctools::STAMPWTAG_CONS,size*cons_size);
+    size_t cons_size = gctools::ConsSizeCalculator<gctools::RuntimeStage, Cons_O, gctools::DontRegister>::value();
+    my_thread_low_level->_Allocations.registerAllocation(gctools::STAMPWTAG_CONS, size * cons_size);
     return result;
   }
 };
@@ -224,24 +214,16 @@ CL_DEFUN List_sp cl__make_list(Fixnum size, T_sp initial_element) {
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN size_t core__cons_size() {
-  return gctools::ConsSizeCalculator<gctools::RuntimeStage,Cons_O,gctools::DontRegister>::value();
+  return gctools::ConsSizeCalculator<gctools::RuntimeStage, Cons_O, gctools::DontRegister>::value();
 }
 
-Cons_sp Cons_O::createList(T_sp o1) {
-  return (Cons_O::create(o1, nil<T_O>()));
-}
+Cons_sp Cons_O::createList(T_sp o1) { return (Cons_O::create(o1, nil<T_O>())); }
 
-Cons_sp Cons_O::createList(T_sp o1, T_sp o2) {
-  return (Cons_O::create(o1, Cons_O::create(o2,nil<T_O>())));
-}
+Cons_sp Cons_O::createList(T_sp o1, T_sp o2) { return (Cons_O::create(o1, Cons_O::create(o2, nil<T_O>()))); }
 
-Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3) {
-  return ((Cons_O::create(o1, Cons_O::createList(o2, o3))));
-}
+Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3) { return ((Cons_O::create(o1, Cons_O::createList(o2, o3)))); }
 
-Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4) {
-  return ((Cons_O::create(o1, Cons_O::createList(o2, o3, o4))));
-}
+Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4) { return ((Cons_O::create(o1, Cons_O::createList(o2, o3, o4)))); }
 
 Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5) {
   return ((Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5))));
@@ -269,9 +251,7 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(append2 - append l2 to l1 by copying l1 and pointing the end of it to l2)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
-  return Cons_O::append(x, y);
-};
+CL_DEFUN T_sp core__append2(List_sp x, List_sp y) { return Cons_O::append(x, y); };
 
 T_sp Cons_O::append(List_sp x, List_sp y) {
   ql::list result;
@@ -289,9 +269,7 @@ struct Tester {
   bool _test_pass;
   bool _use_key_func;
   Function_sp _key_func;
-  Tester(T_sp item, T_sp key, T_sp test, T_sp testNot, bool applyKey) {
-    this->setup(item, key, test, testNot, applyKey);
-  }
+  Tester(T_sp item, T_sp key, T_sp test, T_sp testNot, bool applyKey) { this->setup(item, key, test, testNot, applyKey); }
 
   void setup(T_sp item, T_sp key, T_sp test, T_sp testNot, bool apply_key_to_item) {
     this->_test_pass = true;
@@ -326,7 +304,7 @@ struct Tester {
 };
 
 List_sp Cons_O::memberEq(T_sp item) const {
-  for (auto cur : (List_sp) this->asSmartPtr()) {
+  for (auto cur : (List_sp)this->asSmartPtr()) {
     if (CONS_CAR(cur) == item) {
       return cur;
     }
@@ -335,7 +313,7 @@ List_sp Cons_O::memberEq(T_sp item) const {
 }
 
 List_sp Cons_O::memberEql(T_sp item) const {
-  for (auto cur : (List_sp) this->asSmartPtr()) {
+  for (auto cur : (List_sp)this->asSmartPtr()) {
     if (cl__eql(CONS_CAR(cur), item))
       return cur;
   }
@@ -344,10 +322,11 @@ List_sp Cons_O::memberEql(T_sp item) const {
 
 List_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   Tester t(item, key, test, testNot, false);
-  for (auto cur : (List_sp) this->asSmartPtr()) {
-    LOG("Testing for member with item={} entry = {}" , item , oCar(cur));
+  for (auto cur : (List_sp)this->asSmartPtr()) {
+    LOG("Testing for member with item={} entry = {}", item, oCar(cur));
     T_sp obj = CONS_CAR(cur);
-    if (t.test(obj)) return ((cur));
+    if (t.test(obj))
+      return ((cur));
   }
   return ((nil<T_O>()));
 }
@@ -355,21 +334,22 @@ List_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
 /*! Just like member except if there is a key function then apply it to the item
   before you start the test (see ecl:list.d:member1 function) */
 List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
-  
+
   Tester t(item, key, test, testNot, true);
-  for (auto cur : (List_sp) this->asSmartPtr()) {
-    LOG("Testing for member with item={} entry = {}" , item , oCar(cur));
+  for (auto cur : (List_sp)this->asSmartPtr()) {
+    LOG("Testing for member with item={} entry = {}", item, oCar(cur));
     T_sp obj = CONS_CAR(cur);
-    if (t.test(obj)) return ((cur));
+    if (t.test(obj))
+      return ((cur));
   }
   return ((nil<T_O>()));
 }
 
 List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
-  
+
   Tester t(item, key, test, testNot, false);
-  for (auto cur : (List_sp) this->asSmartPtr()) {
-    LOG("Testing for assoc with item={} entry = {}" , item , oCar(cur));
+  for (auto cur : (List_sp)this->asSmartPtr()) {
+    LOG("Testing for assoc with item={} entry = {}", item, oCar(cur));
     T_sp obj = CONS_CAR(cur);
     if (!obj.nilp()) {
       if (obj.consp()) {
@@ -386,7 +366,7 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
 }
 
 List_sp Cons_O::subseq(cl_index start, T_sp end) const {
-  size_t_pair bounds = sequenceStartEnd(cl::_sym_subseq,this->length(),start,end);
+  size_t_pair bounds = sequenceStartEnd(cl::_sym_subseq, this->length(), start, end);
   ql::list l;
   List_sp cur = this->onthcdr(start);
   for (size_t start(bounds.start); start < bounds.end; ++start) {
@@ -395,7 +375,6 @@ List_sp Cons_O::subseq(cl_index start, T_sp end) const {
   }
   return l.cons();
 }
-
 
 //
 // Constructor
@@ -406,11 +385,12 @@ T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
   T_sp cur = this->asSmartPtr();
   while (cur.consp()) {
     T_sp ccur = CONS_CDR(cur);
-    unlikely_if (!ccur.consp()) TYPE_ERROR_PROPER_LIST(ccur);
-    if (key == CONS_CAR(cur)) return CONS_CAR(ccur);
+    unlikely_if(!ccur.consp()) TYPE_ERROR_PROPER_LIST(ccur);
+    if (key == CONS_CAR(cur))
+      return CONS_CAR(ccur);
     cur = CONS_CDR(ccur);
   }
-  unlikely_if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(cur);
+  unlikely_if(cur.notnilp()) TYPE_ERROR_PROPER_LIST(cur);
   return defVal;
 }
 #else
@@ -418,7 +398,8 @@ T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
 T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
   T_sp cur = this->asSmartPtr();
   while (cur.notnilp()) {
-    if (!cur.consp() || !oCdr(cur).consp()) TYPE_ERROR_PROPER_LIST(cur);
+    if (!cur.consp() || !oCdr(cur).consp())
+      TYPE_ERROR_PROPER_LIST(cur);
     if (key == oCar(cur)) {
       return oCadr(cur);
     }
@@ -429,18 +410,23 @@ T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
 #endif
 
 bool Cons_O::equal(T_sp obj) const {
-  if (!obj.consp()) return false;
-  if (this == obj.unsafe_cons()) return true;
+  if (!obj.consp())
+    return false;
+  if (this == obj.unsafe_cons())
+    return true;
   List_sp other = obj;
-  if (!cl__equal(this->car(), CONS_CAR(other))) return false;
+  if (!cl__equal(this->car(), CONS_CAR(other)))
+    return false;
   T_sp this_cdr = this->cdr();
   T_sp other_cdr = cons_cdr(other);
   return cl__equal(this_cdr, other_cdr);
 }
 
 bool Cons_O::equalp(T_sp obj) const {
-  if (!obj.consp()) return false;
-  if (this == obj.unsafe_cons()) return true;
+  if (!obj.consp())
+    return false;
+  if (this == obj.unsafe_cons())
+    return true;
   List_sp other = obj;
   if (!cl__equalp(this->car(), oCar(other)))
     return false;
@@ -462,12 +448,14 @@ List_sp Cons_O::reverse() {
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN List_sp core__list_reverse(List_sp list) {
-  if (list.nilp()) return list;
-  else return list.unsafe_cons()->reverse();
+  if (list.nilp())
+    return list;
+  else
+    return list.unsafe_cons()->reverse();
 }
 
 List_sp Cons_O::nreverse() {
-  
+
   List_sp reversed = nil<T_O>();
   List_sp cur = this->asSmartPtr();
   List_sp hold = nil<T_O>();
@@ -483,8 +471,10 @@ List_sp Cons_O::nreverse() {
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN List_sp core__list_nreverse(List_sp list) {
-  if (list.nilp()) return list;
-  else return list.unsafe_cons()->nreverse();
+  if (list.nilp())
+    return list;
+  else
+    return list.unsafe_cons()->nreverse();
 }
 
 List_sp Cons_O::revappend(T_sp tail) {
@@ -494,14 +484,15 @@ List_sp Cons_O::revappend(T_sp tail) {
   List_sp first_reversed;
   while (cur.consp()) {
     reversed = Cons_O::create(CONS_CAR(cur), reversed);
-    if (!first_reversed) first_reversed = reversed;
+    if (!first_reversed)
+      first_reversed = reversed;
     cur = CONS_CDR(cur);
   }
-  if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(cur);
+  if (cur.notnilp())
+    TYPE_ERROR_PROPER_LIST(cur);
   first_reversed.asCons()->setCdr(tail);
   return reversed;
 }
-
 
 List_sp Cons_O::nreconc(T_sp tail) {
   List_sp reversed = nil<T_O>();
@@ -514,14 +505,15 @@ List_sp Cons_O::nreconc(T_sp tail) {
     reversed = cur;
     cur = hold;
   }
-  if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(cur);
+  if (cur.notnilp())
+    TYPE_ERROR_PROPER_LIST(cur);
   original_first->setCdr(tail);
   return reversed;
 }
 
 T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
   if (index >= (int)this->length()) {
-    SIMPLE_ERROR("Index[{}] is beyond the length[{}] of the cons", index , this->length());
+    SIMPLE_ERROR("Index[{}] is beyond the length[{}] of the cons", index, this->length());
   }
   List_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < index; i++)
@@ -531,31 +523,27 @@ T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
 }
 
 T_sp Cons_O::elt(cl_index index) const {
-  
+
   size_t max = this->length();
-  unlikely_if (index < 0 || index >= max) {
+  unlikely_if(index < 0 || index >= max) {
     ERROR(core::_sym_sequence_out_of_bounds,
-          core::lisp_createList(kw::_sym_expected_type,
-                                core::lisp_createList(cl::_sym_integer,
-                                                      clasp_make_fixnum(0),
-                                                      core::lisp_createList(clasp_make_fixnum(max))),
-                                kw::_sym_datum, clasp_make_fixnum(index),
-                                kw::_sym_object, this->asSmartPtr()));
+          core::lisp_createList(
+              kw::_sym_expected_type,
+              core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), core::lisp_createList(clasp_make_fixnum(max))),
+              kw::_sym_datum, clasp_make_fixnum(index), kw::_sym_object, this->asSmartPtr()));
   }
   return ((this->onth(index)));
 }
 
 T_sp Cons_O::setf_elt(cl_index index, T_sp value) {
-  
+
   size_t max = this->length();
-  unlikely_if (index < 0 || index >= this->length()) {
+  unlikely_if(index < 0 || index >= this->length()) {
     ERROR(core::_sym_sequence_out_of_bounds,
-          core::lisp_createList(kw::_sym_expected_type,
-                                core::lisp_createList(cl::_sym_integer,
-                                                      clasp_make_fixnum(0),
-                                                      core::lisp_createList(clasp_make_fixnum(max))),
-                                kw::_sym_datum, clasp_make_fixnum(index),
-                                kw::_sym_object, this->asSmartPtr()));
+          core::lisp_createList(
+              kw::_sym_expected_type,
+              core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), core::lisp_createList(clasp_make_fixnum(max))),
+              kw::_sym_datum, clasp_make_fixnum(index), kw::_sym_object, this->asSmartPtr()));
   }
   return ((this->setf_nth(index, value)));
 }
@@ -563,31 +551,30 @@ T_sp Cons_O::setf_elt(cl_index index, T_sp value) {
 T_sp Cons_O::onth(cl_index idx) const {
   T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
-    LIKELY_if (cur.consp()) {
-      cur = cons_cdr(cur);
-    } else if (cur.nilp()) {
+    LIKELY_if(cur.consp()) { cur = cons_cdr(cur); }
+    else if (cur.nilp()) {
       return cur;
-    } else {
-      TYPE_ERROR(cur,cl::_sym_Cons_O);
+    }
+    else {
+      TYPE_ERROR(cur, cl::_sym_Cons_O);
     }
   }
-  LIKELY_if (cur.consp()) {
-    return CONS_CAR(cur);
-  } else if (cur.nilp()) {
+  LIKELY_if(cur.consp()) { return CONS_CAR(cur); }
+  else if (cur.nilp()) {
     return cur;
   }
-  TYPE_ERROR(cur,cl::_sym_Cons_O);
+  TYPE_ERROR(cur, cl::_sym_Cons_O);
 }
 
 T_sp Cons_O::onthcdr(cl_index idx) const {
   T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
-    LIKELY_if (cur.consp()) {
-      cur = cur.unsafe_cons()->cdr();
-    } else if (cur.nilp()) {
+    LIKELY_if(cur.consp()) { cur = cur.unsafe_cons()->cdr(); }
+    else if (cur.nilp()) {
       return cur;
-    } else {
-      TYPE_ERROR(cur,cl::_sym_Cons_O);
+    }
+    else {
+      TYPE_ERROR(cur, cl::_sym_Cons_O);
     }
   }
   return cur;
@@ -639,7 +626,7 @@ List_sp Cons_O::copyList() const {
 };
 
 List_sp Cons_O::copyTree() const {
-  
+
   List_sp first, cur;
   first = Cons_O::create(nil<T_O>(), nil<T_O>());
   cur = first;
@@ -661,7 +648,7 @@ List_sp Cons_O::copyTree() const {
 }
 
 List_sp Cons_O::copyTreeCar() const {
-  
+
   T_sp obj = this->car();
   ASSERTNOTNULL(obj);
   Cons_sp rootCopy = Cons_O::create(nil<T_O>(), nil<T_O>());
@@ -681,7 +668,8 @@ DOCGROUP(clasp);
 CL_DEFUN size_t core__cons_length(Cons_sp cons) {
   size_t sz = 1;
   T_sp cur;
-  for (cur = oCdr(cons); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) ++sz;
+  for (cur = oCdr(cons); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr())
+    ++sz;
   if (cur.notnilp()) {
     TYPE_ERROR_PROPER_LIST(cur->asSmartPtr());
   }
@@ -692,17 +680,15 @@ CL_DEFUN size_t core__cons_length(Cons_sp cons) {
 size_t Cons_O::length() const {
   size_t sz = 1;
   T_sp cur;
-  for (cur = this->cdr(); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) ++sz;
+  for (cur = this->cdr(); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr())
+    ++sz;
   if (cur.notnilp()) {
     TYPE_ERROR_PROPER_LIST(cur);
   }
   return sz;
 };
 
-void Cons_O::describe(T_sp stream)
-{
-  clasp_write_string(this->__repr__(),stream);
-}
+void Cons_O::describe(T_sp stream) { clasp_write_string(this->__repr__(), stream); }
 
 string Cons_O::__repr__() const {
   Cons_sp start = this->asSmartPtr();
@@ -724,18 +710,17 @@ string Cons_O::__repr__() const {
   return ((sout.str()));
 }
 
- void not_alist_error(T_sp obj) {
-   SIMPLE_ERROR("Not an alist -> {}", _rep_(obj));
- }
+void not_alist_error(T_sp obj) { SIMPLE_ERROR("Not an alist -> {}", _rep_(obj)); }
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
   if (alist.consp()) {
-    for ( auto cur : alist ) {
+    for (auto cur : alist) {
       T_sp pair = CONS_CAR(cur);
       if (pair.consp()) {
-        if (CONS_CAR(pair) == key) return pair;
+        if (CONS_CAR(pair) == key)
+          return pair;
       } else {
         not_alist_error(alist);
       }
@@ -748,10 +733,11 @@ CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
   if (alist.consp()) {
-    for ( auto cur : alist ) {
+    for (auto cur : alist) {
       T_sp pair = CONS_CAR(cur);
       if (pair.consp()) {
-        if (cl__eql(CONS_CAR(pair),key)) return pair;
+        if (cl__eql(CONS_CAR(pair), key))
+          return pair;
       } else {
         not_alist_error(alist);
       }
@@ -764,10 +750,11 @@ CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
 CL_DEFUN List_sp core__alist_assoc_equal(List_sp alist, T_sp key) {
   if (alist.consp()) {
-    for ( auto cur : alist ) {
+    for (auto cur : alist) {
       T_sp pair = CONS_CAR(cur);
       if (pair.consp()) {
-        if (cl__equal(CONS_CAR(pair),key)) return pair;
+        if (cl__equal(CONS_CAR(pair), key))
+          return pair;
       } else {
         not_alist_error(alist);
       }
@@ -776,23 +763,22 @@ CL_DEFUN List_sp core__alist_assoc_equal(List_sp alist, T_sp key) {
   return nil<T_O>();
 }
 
-
 SYMBOL_EXPORT_SC_(CorePkg, cons_length);
 SYMBOL_EXPORT_SC_(ClPkg, make_list);
-  SYMBOL_EXPORT_SC_(ClPkg, cons);
-  SYMBOL_EXPORT_SC_(ClPkg, getf);
-  SYMBOL_EXPORT_SC_(CorePkg, rem_f);
-  SYMBOL_SC_(CorePkg, put_f);
+SYMBOL_EXPORT_SC_(ClPkg, cons);
+SYMBOL_EXPORT_SC_(ClPkg, getf);
+SYMBOL_EXPORT_SC_(CorePkg, rem_f);
+SYMBOL_SC_(CorePkg, put_f);
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN void core__verify_cons_layout(size_t cons_size, size_t cons_car_offset, size_t cons_cdr_offset)
-{
-  if (cons_size!=sizeof(Cons_O)) SIMPLE_ERROR("The cmpintrinsics.lisp cons_size {} does not match sizeof(Cons_O) {}", cons_size , sizeof(Cons_O));
-   if (cons_car_offset!=offsetof(Cons_O,_Car))
-     SIMPLE_ERROR("cons_rack_offset {} does not match offsetof(_Car,Cons_O) {}", cons_car_offset , offsetof(Cons_O,_Car));
-   if (cons_cdr_offset!=offsetof(Cons_O,_Cdr))
-     SIMPLE_ERROR("cons_rack_offset {} does not match offsetof(_Cdr,Cons_O) {}", cons_cdr_offset , offsetof(Cons_O,_Cdr));
+CL_DEFUN void core__verify_cons_layout(size_t cons_size, size_t cons_car_offset, size_t cons_cdr_offset) {
+  if (cons_size != sizeof(Cons_O))
+    SIMPLE_ERROR("The cmpintrinsics.lisp cons_size {} does not match sizeof(Cons_O) {}", cons_size, sizeof(Cons_O));
+  if (cons_car_offset != offsetof(Cons_O, _Car))
+    SIMPLE_ERROR("cons_rack_offset {} does not match offsetof(_Car,Cons_O) {}", cons_car_offset, offsetof(Cons_O, _Car));
+  if (cons_cdr_offset != offsetof(Cons_O, _Cdr))
+    SIMPLE_ERROR("cons_rack_offset {} does not match offsetof(_Cdr,Cons_O) {}", cons_cdr_offset, offsetof(Cons_O, _Cdr));
 }
 
-};
+}; // namespace core

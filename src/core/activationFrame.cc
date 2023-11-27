@@ -1,5 +1,5 @@
 /*
-*/
+ */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
@@ -29,8 +29,3 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/wrappers.h>
-
-namespace core {
-
-
-};

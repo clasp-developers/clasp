@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 // #define EXPOSE_DLOPEN
 // #define EXPOSE_DLLOAD
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -626,15 +626,15 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
         size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
         if (verbose)
           clasp_write_string(fmt::format("{}:{} object file {} id: {}  length: {}\n", __FILE__, __LINE__, ofi,
-                                       header->_ObjectFiles[ofi]._ObjectId, of_length));
+                                         header->_ObjectFiles[ofi]._ObjectId, of_length));
         FasoObjectFileInfo fofi(header->_ObjectFiles[ofi]._ObjectId, of_length);
         allObjectFiles.emplace_back(fofi);
         if (verbose)
           clasp_write_string(fmt::format("allObjectFiles.size() = {}\n", allObjectFiles.size()));
       }
     } else {
-      SIMPLE_ERROR("Illegal and unknown file type - magic number: %X%X%X%X\n",
-                   (uint8_t)header->_Magic[0], (uint8_t)header->_Magic[1], (uint8_t)header->_Magic[2], (uint8_t)header->_Magic[3]);
+      SIMPLE_ERROR("Illegal and unknown file type - magic number: %X%X%X%X\n", (uint8_t)header->_Magic[0],
+                   (uint8_t)header->_Magic[1], (uint8_t)header->_Magic[2], (uint8_t)header->_Magic[3]);
     }
   }
   FasoHeader *header = (FasoHeader *)malloc(FasoHeader::calculateSize(allObjectFiles.size()));
@@ -653,8 +653,8 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
     header->_ObjectFiles[ofi]._ObjectFileSize = allObjectFiles[ofi]._ObjectFileSize;
     if (verbose)
       clasp_write_string(fmt::format("object file {}   _StartPage={}  _NumberOfPages={}   _ObjectFileSize={}\n", ofi,
-                                   header->_ObjectFiles[ofi]._StartPage, header->_ObjectFiles[ofi]._NumberOfPages,
-                                   header->_ObjectFiles[ofi]._ObjectFileSize));
+                                     header->_ObjectFiles[ofi]._StartPage, header->_ObjectFiles[ofi]._NumberOfPages,
+                                     header->_ObjectFiles[ofi]._ObjectFileSize));
   }
   String_sp filename = gc::As<String_sp>(cl__namestring(outputPathDesig));
 
@@ -758,13 +758,14 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     std::string uniqueName = llvmo::ensureUniqueMemoryBufferName(tryUniqueName.str());
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false));
-    [[maybe_unused]]llvmo::ObjectFile_sp objectFile =
+    [[maybe_unused]] llvmo::ObjectFile_sp objectFile =
         jit->addObjectFile(jitDylib, std::move(memoryBuffer), print.notnilp(), header->_ObjectFiles[fasoIndex]._ObjectId);
     //    printf("%s:%d:%s addObjectFile objectFile = %p badge: 0x%0x jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__,
     //    objectFile.raw_(), lisp_badge(objectFile), jitDylib.raw_());
     T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId, nil<core::T_O>());
     String_sp startupName_str = gc::As<String_sp>(startupName);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, startupName_str->get_std_string().c_str()));
+    DEBUG_OBJECT_FILES_PRINT(
+        ("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, startupName_str->get_std_string().c_str()));
     jit->runStartupCode(jitDylib, startupName_str->get_std_string(), unbound<core::T_O>());
   }
   return _lisp->_true();
@@ -831,8 +832,9 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig) {
   for (size_t fasoIndex = 0; fasoIndex < header->_NumberOfObjectFiles; ++fasoIndex) {
     //    clasp_write_string(fmt::format("Adding faso {} object file {} to jit\n" , _rep_(filename) , fasoIndex));
     clasp_write_string(fmt::format("Object file {}  ObjectId: {} start-page: {}  bytes: {} pages: {}\n", fasoIndex,
-                                 header->_ObjectFiles[fasoIndex]._ObjectId, header->_ObjectFiles[fasoIndex]._StartPage,
-                                 header->_ObjectFiles[fasoIndex]._ObjectFileSize, header->_ObjectFiles[fasoIndex]._NumberOfPages));
+                                   header->_ObjectFiles[fasoIndex]._ObjectId, header->_ObjectFiles[fasoIndex]._StartPage,
+                                   header->_ObjectFiles[fasoIndex]._ObjectFileSize,
+                                   header->_ObjectFiles[fasoIndex]._NumberOfPages));
   }
   return _lisp->_true();
 }
@@ -955,9 +957,7 @@ CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(load-binary)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
-  DEPRECATED();
-};
+CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) { DEPRECATED(); };
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -1115,8 +1115,8 @@ CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
       return Values(SimpleBaseString_O::make(info.dli_fname), Pointer_O::create(info.dli_fbase),
                     SimpleBaseString_O::make(info.dli_sname), Pointer_O::create(info.dli_saddr));
     } else {
-      return Values(SimpleBaseString_O::make(info.dli_fname), Pointer_O::create(info.dli_fbase),
-                    SimpleBaseString_O::make("NULL"), Pointer_O::create(info.dli_saddr));
+      return Values(SimpleBaseString_O::make(info.dli_fname), Pointer_O::create(info.dli_fbase), SimpleBaseString_O::make("NULL"),
+                    Pointer_O::create(info.dli_saddr));
     }
   }
 }
@@ -1295,7 +1295,7 @@ char ll_read_char(T_sp stream, bool log, size_t &index) {
     claspCharacter _cc = ll_read_char(stream, log, index);                                                                         \
     ++index;                                                                                                                       \
     if (_xx != _cc)                                                                                                                \
-      SIMPLE_ERROR("Mismatch of ltvc read types read '%c' expected '%c'", _cc, _xx);                                             \
+      SIMPLE_ERROR("Mismatch of ltvc read types read '%c' expected '%c'", _cc, _xx);                                               \
   }
 #else
 #define SELF_DOCUMENT(ty, stream, index)                                                                                           \
@@ -1319,8 +1319,9 @@ CL_DEFUN size_t core__ltvc_write_char(T_sp object, T_sp stream, size_t index) {
   return index;
 }
 
-char ltvc_read_char(char*& bytecode, char* byteend, bool log) {
-  if (bytecode >= byteend) SIMPLE_ERROR("Unexpected EOF"); // FIXME
+char ltvc_read_char(char *&bytecode, char *byteend, bool log) {
+  if (bytecode >= byteend)
+    SIMPLE_ERROR("Unexpected EOF"); // FIXME
   char c = *bytecode++;
   if (log)
     printf("%s:%d:%s -> '%c'/%d\n", __FILE__, __LINE__, __FUNCTION__, c, c);
@@ -1339,15 +1340,17 @@ void compact_write_size_t(size_t data, T_sp stream, size_t &index) {
   index += nb + 1;
 }
 
-size_t compact_read_size_t(char*& bytecode, char* byteend) {
-  if (bytecode >= byteend) SIMPLE_ERROR("Unexpected EOF"); // FIXME
+size_t compact_read_size_t(char *&bytecode, char *byteend) {
+  if (bytecode >= byteend)
+    SIMPLE_ERROR("Unexpected EOF"); // FIXME
   size_t data = 0;
   int64_t nb = *bytecode++ - '0';
   if (nb < 0 || nb > 8) {
     printf("%s:%d Illegal size_t size %lld\n", __FILE__, __LINE__, (long long)nb);
     abort();
   }
-  if (bytecode > byteend - nb) SIMPLE_ERROR("Unexpected EOF");
+  if (bytecode > byteend - nb)
+    SIMPLE_ERROR("Unexpected EOF");
   for (size_t ii = 0; ii < nb; ++ii) {
     ((char *)&data)[ii] = *bytecode++;
   }
@@ -1362,7 +1365,7 @@ CL_DEFUN size_t core__ltvc_write_size_t(T_sp object, T_sp stream, size_t index) 
   return index;
 }
 
-size_t ltvc_read_size_t(char*& bytecode, char* byteend, bool log) {
+size_t ltvc_read_size_t(char *&bytecode, char *byteend, bool log) {
   size_t data = compact_read_size_t(bytecode, byteend);
   if (log)
     printf("%s:%d:%s -> %lu\n", __FILE__, __LINE__, __FUNCTION__, data);
@@ -1379,10 +1382,11 @@ CL_DEFUN size_t core__ltvc_write_string(T_sp object, T_sp stream, size_t index) 
   return index;
 }
 
-std::string ltvc_read_string(char*& bytecode, char* byteend, bool log) {
-  //SELF_CHECK(char *, stream, index);
+std::string ltvc_read_string(char *&bytecode, char *byteend, bool log) {
+  // SELF_CHECK(char *, stream, index);
   size_t len = ltvc_read_size_t(bytecode, byteend, log);
-  if (bytecode > byteend - len) SIMPLE_ERROR("Unexpected EOF"); // FIXME
+  if (bytecode > byteend - len)
+    SIMPLE_ERROR("Unexpected EOF"); // FIXME
   std::string str(len, ' ');
   for (size_t i = 0; i < len; ++i) {
     str[i] = *bytecode++;
@@ -1404,8 +1408,8 @@ CL_DEFUN size_t core__ltvc_write_bignum(T_sp object, T_sp stream, size_t index) 
   return index;
 }
 
-T_O *ltvc_read_bignum(char*& bytecode, char* byteend, bool log) {
-//  SELF_CHECK(long long, stream, index);
+T_O *ltvc_read_bignum(char *&bytecode, char *byteend, bool log) {
+  //  SELF_CHECK(long long, stream, index);
   mp_size_t length = compact_read_size_t(bytecode, byteend);
   size_t size = std::abs(length);
   mp_limb_t limbs[size];
@@ -1428,10 +1432,11 @@ CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index) {
   return index;
 }
 
-float ltvc_read_float(char*& bytecode, char* byteend, bool log) {
-//  SELF_CHECK(float, stream, index);
+float ltvc_read_float(char *&bytecode, char *byteend, bool log) {
+  //  SELF_CHECK(float, stream, index);
   float data;
-  if (bytecode > byteend - sizeof(data)) SIMPLE_ERROR("Unexpected EOF");
+  if (bytecode > byteend - sizeof(data))
+    SIMPLE_ERROR("Unexpected EOF");
   for (size_t i = 0; i < sizeof(data); ++i) {
     ((char *)&data)[i] = *bytecode++;
   }
@@ -1449,10 +1454,11 @@ CL_DEFUN size_t core__ltvc_write_double(T_sp object, T_sp stream, size_t index) 
   return index;
 }
 
-double ltvc_read_double(char*& bytecode, char* byteend, bool log) {
+double ltvc_read_double(char *&bytecode, char *byteend, bool log) {
   SELF_CHECK(double, stream, index);
   double data;
-  if (bytecode > byteend - sizeof(data)) SIMPLE_ERROR("Unexpected EOF");
+  if (bytecode > byteend - sizeof(data))
+    SIMPLE_ERROR("Unexpected EOF");
   for (size_t i = 0; i < sizeof(data); ++i) {
     ((char *)&data)[i] = *bytecode++;
   }
@@ -1484,10 +1490,10 @@ CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp
   SIMPLE_ERROR("tag must be 0, 1 or 2 - you passed {}", _rep_(ttag));
 }
 
-T_O *ltvc_read_object(gctools::GCRootsInModule *roots,
-                      char*& bytecode, char* byteend, bool log) {
-  //SELF_CHECK(T_O *, stream, index);
-  if (bytecode >= byteend) SIMPLE_ERROR("Unexpected EOF");
+T_O *ltvc_read_object(gctools::GCRootsInModule *roots, char *&bytecode, char *byteend, bool log) {
+  // SELF_CHECK(T_O *, stream, index);
+  if (bytecode >= byteend)
+    SIMPLE_ERROR("Unexpected EOF");
   char tag = *bytecode++;
   char ttag;
   if (tag == 'l')
@@ -1537,8 +1543,7 @@ T_O *ltvc_read_object(gctools::GCRootsInModule *roots,
   };
 }
 
-Cons_O *ltvc_read_list(gctools::GCRootsInModule *roots, size_t num,
-                       char*& bytecode, char* byteend, bool log) {
+Cons_O *ltvc_read_list(gctools::GCRootsInModule *roots, size_t num, char *&bytecode, char *byteend, bool log) {
   ql::list result;
   for (size_t ii = 0; ii < num; ++ii) {
     T_sp obj((gctools::Tagged)ltvc_read_object(roots, bytecode, byteend, log));
@@ -1606,8 +1611,7 @@ void dump_start_code(T_sp fin, size_t length, bool useFrom = false, size_t from 
 #include <virtualMachine.h>
 #undef DEFINE_LTV_PARSERS
 
-void start_code_interpreter(gctools::GCRootsInModule *roots,
-                            char* bytecode, size_t nbytes, bool log) {
+void start_code_interpreter(gctools::GCRootsInModule *roots, char *bytecode, size_t nbytes, bool log) {
   volatile uint32_t i = 0x01234567;
   // return 0 for big endian, 1 for little endian.
   if ((*((uint8_t *)(&i))) == 0x67) {
@@ -1618,7 +1622,7 @@ void start_code_interpreter(gctools::GCRootsInModule *roots,
            __FILE__, __LINE__);
     abort();
   }
-  char* byteend = bytecode + nbytes;
+  char *byteend = bytecode + nbytes;
   while (1) {
     if (log) {
       printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__);
@@ -1641,7 +1645,7 @@ void start_code_interpreter(gctools::GCRootsInModule *roots,
         fasoIndex = objectFile->_FasoIndex;
       }
       SIMPLE_ERROR("While loading the faso file {} {} an illegal byte-code %d was detected. This usually happens when a faso file "
-                    "is out of date and the byte code has changed in the meantime.",
+                   "is out of date and the byte code has changed in the meantime.",
                    fasoFile, fasoIndex, (int)c);
     }
     }
@@ -1661,11 +1665,10 @@ void initialize_compiler_primitives(LispPtr lisp) {
   comp::_sym_STARsourceLocationsSTAR->makeSpecial();
   {
     Fixnum_sp one = clasp_make_fixnum(1);
-    comp::_sym_STARoptimizeSTAR->defparameter(Cons_O::createList(Cons_O::createList(cl::_sym_compilation_speed, one),
-                                                                 Cons_O::createList(cl::_sym_debug, one),
-                                                                 Cons_O::createList(cl::_sym_space, one),
-                                                                 Cons_O::createList(cl::_sym_speed, one),
-                                                                 Cons_O::createList(cl::_sym_safety, one)));
+    comp::_sym_STARoptimizeSTAR->defparameter(
+        Cons_O::createList(Cons_O::createList(cl::_sym_compilation_speed, one), Cons_O::createList(cl::_sym_debug, one),
+                           Cons_O::createList(cl::_sym_space, one), Cons_O::createList(cl::_sym_speed, one),
+                           Cons_O::createList(cl::_sym_safety, one)));
   }
 }
 

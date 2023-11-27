@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: newhash.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -26,8 +27,6 @@ THE SOFTWARE.
 /* -^- */
 /* -*- mode: c; c-basic-offset: 8 -*- */
 
-#ifndef newhash_H
-#define newhash_H
 /********************
  * HASHING ROUTINES *
  ********************/
@@ -41,53 +40,51 @@ THE SOFTWARE.
  * 64 bit version
  */
 #define GOLDEN_RATIO 0x9e3779b97f4a7c13L
-#define clasp_hash_mix(a, b, c)   \
-  {                    \
-    a = a - b;         \
-    a = a - c;         \
-    a = a ^ (c >> 43); \
-    b = b - c;         \
-    b = b - a;         \
-    b = b ^ (a << 9);  \
-    c = c - a;         \
-    c = c - b;         \
-    c = c ^ (b >> 8);  \
-    a = a - b;         \
-    a = a - c;         \
-    a = a ^ (c >> 38); \
-    b = b - c;         \
-    b = b - a;         \
-    b = b ^ (a << 23); \
-    c = c - a;         \
-    c = c - b;         \
-    c = c ^ (b >> 5);  \
-    a = a - b;         \
-    a = a - c;         \
-    a = a ^ (c >> 35); \
-    b = b - c;         \
-    b = b - a;         \
-    b = b ^ (a << 49); \
-    c = c - a;         \
-    c = c - b;         \
-    c = c ^ (b >> 11); \
-    a = a - b;         \
-    a = a - c;         \
-    a = a ^ (c >> 12); \
-    b = b - c;         \
-    b = b - a;         \
-    b = b ^ (a << 18); \
-    c = c - a;         \
-    c = c - b;         \
-    c = c ^ (b >> 22); \
+#define clasp_hash_mix(a, b, c)                                                                                                    \
+  {                                                                                                                                \
+    a = a - b;                                                                                                                     \
+    a = a - c;                                                                                                                     \
+    a = a ^ (c >> 43);                                                                                                             \
+    b = b - c;                                                                                                                     \
+    b = b - a;                                                                                                                     \
+    b = b ^ (a << 9);                                                                                                              \
+    c = c - a;                                                                                                                     \
+    c = c - b;                                                                                                                     \
+    c = c ^ (b >> 8);                                                                                                              \
+    a = a - b;                                                                                                                     \
+    a = a - c;                                                                                                                     \
+    a = a ^ (c >> 38);                                                                                                             \
+    b = b - c;                                                                                                                     \
+    b = b - a;                                                                                                                     \
+    b = b ^ (a << 23);                                                                                                             \
+    c = c - a;                                                                                                                     \
+    c = c - b;                                                                                                                     \
+    c = c ^ (b >> 5);                                                                                                              \
+    a = a - b;                                                                                                                     \
+    a = a - c;                                                                                                                     \
+    a = a ^ (c >> 35);                                                                                                             \
+    b = b - c;                                                                                                                     \
+    b = b - a;                                                                                                                     \
+    b = b ^ (a << 49);                                                                                                             \
+    c = c - a;                                                                                                                     \
+    c = c - b;                                                                                                                     \
+    c = c ^ (b >> 11);                                                                                                             \
+    a = a - b;                                                                                                                     \
+    a = a - c;                                                                                                                     \
+    a = a ^ (c >> 12);                                                                                                             \
+    b = b - c;                                                                                                                     \
+    b = b - a;                                                                                                                     \
+    b = b ^ (a << 18);                                                                                                             \
+    c = c - a;                                                                                                                     \
+    c = c - b;                                                                                                                     \
+    c = c ^ (b >> 22);                                                                                                             \
   }
 
-#define extract_word(k)                                                                      \
-  (k[0] + ((uintptr_t)k[1] << 8) + ((uintptr_t)k[2] << 16) + ((uintptr_t)k[3] << 24) + \
-   ((uintptr_t)k[4] << 32) + ((uintptr_t)k[5] << 40) + ((uintptr_t)k[6] << 48) +       \
-   ((uintptr_t)k[7] << 52))
+#define extract_word(k)                                                                                                            \
+  (k[0] + ((uintptr_t)k[1] << 8) + ((uintptr_t)k[2] << 16) + ((uintptr_t)k[3] << 24) + ((uintptr_t)k[4] << 32) +                   \
+   ((uintptr_t)k[5] << 40) + ((uintptr_t)k[6] << 48) + ((uintptr_t)k[7] << 52))
 
-inline uintptr_t
-hash_string(int initval, const unsigned char *k, int length) {
+inline uintptr_t hash_string(int initval, const unsigned char *k, int length) {
   uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
   int len;
   for (len = length; len >= 24; len -= 24) {
@@ -164,41 +161,39 @@ hash_string(int initval, const unsigned char *k, int length) {
  */
 
 #define GOLDEN_RATIO 0x9e3779b9L
-#define clasp_hash_mix(a, b, c) \
-  {                  \
-    a -= b;          \
-    a -= c;          \
-    a ^= (c >> 13);  \
-    b -= c;          \
-    b -= a;          \
-    b ^= (a << 8);   \
-    c -= a;          \
-    c -= b;          \
-    c ^= (b >> 13);  \
-    a -= b;          \
-    a -= c;          \
-    a ^= (c >> 12);  \
-    b -= c;          \
-    b -= a;          \
-    b ^= (a << 16);  \
-    c -= a;          \
-    c -= b;          \
-    c ^= (b >> 5);   \
-    a -= b;          \
-    a -= c;          \
-    a ^= (c >> 3);   \
-    b -= c;          \
-    b -= a;          \
-    b ^= (a << 10);  \
-    c -= a;          \
-    c -= b;          \
-    c ^= (b >> 15);  \
+#define clasp_hash_mix(a, b, c)                                                                                                    \
+  {                                                                                                                                \
+    a -= b;                                                                                                                        \
+    a -= c;                                                                                                                        \
+    a ^= (c >> 13);                                                                                                                \
+    b -= c;                                                                                                                        \
+    b -= a;                                                                                                                        \
+    b ^= (a << 8);                                                                                                                 \
+    c -= a;                                                                                                                        \
+    c -= b;                                                                                                                        \
+    c ^= (b >> 13);                                                                                                                \
+    a -= b;                                                                                                                        \
+    a -= c;                                                                                                                        \
+    a ^= (c >> 12);                                                                                                                \
+    b -= c;                                                                                                                        \
+    b -= a;                                                                                                                        \
+    b ^= (a << 16);                                                                                                                \
+    c -= a;                                                                                                                        \
+    c -= b;                                                                                                                        \
+    c ^= (b >> 5);                                                                                                                 \
+    a -= b;                                                                                                                        \
+    a -= c;                                                                                                                        \
+    a ^= (c >> 3);                                                                                                                 \
+    b -= c;                                                                                                                        \
+    b -= a;                                                                                                                        \
+    b ^= (a << 10);                                                                                                                \
+    c -= a;                                                                                                                        \
+    c -= b;                                                                                                                        \
+    c ^= (b >> 15);                                                                                                                \
   }
-#define extract_word(k) \
-  (k[0] + ((uintptr_t)k[1] << 8) + ((uintptr_t)k[2] << 16) + ((uintptr_t)k[3] << 24))
+#define extract_word(k) (k[0] + ((uintptr_t)k[1] << 8) + ((uintptr_t)k[2] << 16) + ((uintptr_t)k[3] << 24))
 
-inline uintptr_t
-hash_string(int initval, const unsigned char *k, int length) {
+inline uintptr_t hash_string(int initval, const unsigned char *k, int length) {
   uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
   int len;
   for (len = length; len >= 12; len -= 12) {
@@ -302,4 +297,3 @@ static uintptr_t hash_full_string(const claspCharacter *s, int len, int h) {
 }
 #endif
 #endif // #if 0
-#endif

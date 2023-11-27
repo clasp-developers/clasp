@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: sysprop.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_sysprop_H
-#define _core_sysprop_H
 
 #include <clasp/core/object.h>
 #include <clasp/core/corePackage.fwd.h>
@@ -35,8 +34,5 @@ namespace core {
 T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
 
 T_mv core__get_sysprop(T_sp key, T_sp area);
- 
 
-};
-
-#endif /* _core_sysprop_H */
+}; // namespace core

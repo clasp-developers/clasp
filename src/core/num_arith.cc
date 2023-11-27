@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -56,30 +56,27 @@ namespace core {
 Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
   MATH_DISPATCH_BEGIN(x, y) {
   case_Fixnum_v_Fixnum : {
-      Fixnum fy = y.unsafe_fixnum();
-      if (fy == 0)
-        ERROR_DIVISION_BY_ZERO(x, y);
-      else
-        // Note that / truncates towards zero as of C++11, as we want.
-        return clasp_make_fixnum(x.unsafe_fixnum() / fy);
-    }
-  case_Fixnum_v_Bignum :
-    return fix_divided_by_next(x.unsafe_fixnum(),
-                               gc::As_unsafe<Bignum_sp>(x));
+    Fixnum fy = y.unsafe_fixnum();
+    if (fy == 0)
+      ERROR_DIVISION_BY_ZERO(x, y);
+    else
+      // Note that / truncates towards zero as of C++11, as we want.
+      return clasp_make_fixnum(x.unsafe_fixnum() / fy);
+  }
+  case_Fixnum_v_Bignum:
+    return fix_divided_by_next(x.unsafe_fixnum(), gc::As_unsafe<Bignum_sp>(x));
   case_Bignum_v_Fixnum : {
-      T_mv trunc = core__next_ftruncate(gc::As_unsafe<Bignum_sp>(x),
-                                        y.unsafe_fixnum());
-      return gc::As_unsafe<Integer_sp>(trunc);
-    }
+    T_mv trunc = core__next_ftruncate(gc::As_unsafe<Bignum_sp>(x), y.unsafe_fixnum());
+    return gc::As_unsafe<Integer_sp>(trunc);
+  }
   case_Bignum_v_Bignum : {
-      // FIXME: MPN doesn't export a quotient-only division that I can see,
-      // but we could call a version of truncate that doesn't cons up the
-      // actual bignum for the remainder, hypothetically.
-      // Would save some heap allocation.
-      T_mv trunc = core__next_truncate(gc::As_unsafe<Bignum_sp>(x),
-                                       gc::As_unsafe<Bignum_sp>(y));
-      return gc::As_unsafe<Integer_sp>(trunc);
-    }
+    // FIXME: MPN doesn't export a quotient-only division that I can see,
+    // but we could call a version of truncate that doesn't cons up the
+    // actual bignum for the remainder, hypothetically.
+    // Would save some heap allocation.
+    T_mv trunc = core__next_truncate(gc::As_unsafe<Bignum_sp>(x), gc::As_unsafe<Bignum_sp>(y));
+    return gc::As_unsafe<Integer_sp>(trunc);
+  }
   };
   MATH_DISPATCH_END();
   UNREACHABLE();
@@ -110,27 +107,24 @@ CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
 // Euclid's algorithm. (Probably not though, machine integers are small.)
 // In any case we should probably use it, if C++ implementations ever
 // reliably get that far.
-gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b)
-{
-    if (a == 0)
-      return (std::abs(b));
-    return gcd(b % a, a);
+gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b) {
+  if (a == 0)
+    return (std::abs(b));
+  return gcd(b % a, a);
 }
 
 Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   MATH_DISPATCH_BEGIN(x, y) {
-  case_Fixnum_v_Fixnum :
+  case_Fixnum_v_Fixnum:
     return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
-  case_Fixnum_v_Bignum :
-    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(y),
-                           x.unsafe_fixnum());
-  case_Bignum_v_Fixnum :
-    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(x),
-                           y.unsafe_fixnum());
-  case_Bignum_v_Bignum :
-    return core__next_gcd(gc::As_unsafe<Bignum_sp>(x),
-                          gc::As_unsafe<Bignum_sp>(y));
-    default: UNREACHABLE();
+  case_Fixnum_v_Bignum:
+    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(y), x.unsafe_fixnum());
+  case_Bignum_v_Fixnum:
+    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(x), y.unsafe_fixnum());
+  case_Bignum_v_Bignum:
+    return core__next_gcd(gc::As_unsafe<Bignum_sp>(x), gc::As_unsafe<Bignum_sp>(y));
+  default:
+    UNREACHABLE();
   };
   MATH_DISPATCH_END();
 }
@@ -144,7 +138,7 @@ CL_DEFUN Integer_sp cl__lcm(List_sp nums) {
   if (nums.nilp())
     return clasp_make_fixnum(1);
   /* INV: clasp_gcd() checks types. By placing `numi' before `lcm' in
-	   this call, we make sure that errors point to `numi' */
+           this call, we make sure that errors point to `numi' */
   Integer_sp lcm = gc::As<Integer_sp>(oCar(nums));
   int yidx = 1;
   nums = oCdr(nums);
@@ -161,7 +155,7 @@ CL_DEFUN Integer_sp cl__lcm(List_sp nums) {
   return clasp_minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);
 };
 
-  SYMBOL_EXPORT_SC_(ClPkg, gcd);
-  SYMBOL_EXPORT_SC_(ClPkg, lcm);
+SYMBOL_EXPORT_SC_(ClPkg, gcd);
+SYMBOL_EXPORT_SC_(ClPkg, lcm);
 
-};
+}; // namespace core
