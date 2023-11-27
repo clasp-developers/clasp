@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -70,23 +70,13 @@ public:
 
 void initialize_example() {
   using namespace clbind;
-  package(AstToolingPkg)[
-    class_<A>("A")
-        .def_constructor("make-a", constructor<>())
-        .def("a1", &A::a1)
-        .def("a2", &A::a2)
-        .def("dox", &A::dox),
-    class_<B, bases<A>>("B")
-        .def_constructor("make-b", constructor<>())
-        .def("b1", &B::b1),
-    class_<C, bases<B>>("C")
-        .def_constructor("make-c", constructor<>())
-        .def("c1", &C::c1),
-    class_<B_Adapter, B>("B-Adapter")
-        .def("x", &B_Adapter::default_x)
-  ];
+  package(AstToolingPkg)
+      [class_<A>("A").def_constructor("make-a", constructor<>()).def("a1", &A::a1).def("a2", &A::a2).def("dox", &A::dox),
+       class_<B, bases<A>>("B").def_constructor("make-b", constructor<>()).def("b1", &B::b1),
+       class_<C, bases<B>>("C").def_constructor("make-c", constructor<>()).def("c1", &C::c1),
+       class_<B_Adapter, B>("B-Adapter").def("x", &B_Adapter::default_x)];
 };
-};
+}; // namespace asttooling
 
 typedef clbind::Wrapper<asttooling::A> A_wrapper;
 typedef clbind::Wrapper<asttooling::B> B_wrapper;

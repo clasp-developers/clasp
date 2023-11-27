@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: otherPackageClasses.h
 */

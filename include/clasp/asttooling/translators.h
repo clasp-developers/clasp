@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: translators.h
 */
@@ -24,8 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef asttooling_translators_H
-#define asttooling_translators_H
 
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
@@ -42,11 +42,9 @@ THE SOFTWARE.
 
 namespace translate {
 
-
-template <>
-struct to_object<std::vector<std::string>, translate::adopt_pointer> {
+template <> struct to_object<std::vector<std::string>, translate::adopt_pointer> {
   static core::T_sp convert(std::vector<std::string> strings) {
-    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(strings.size(),nil<core::T_O>());
+    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(strings.size(), nil<core::T_O>());
     int i(0);
     for (auto ai = strings.begin(); ai != strings.end(); ai++) {
       vo->rowMajorAset(i++, core::lisp_createStr(*ai));
@@ -55,10 +53,9 @@ struct to_object<std::vector<std::string>, translate::adopt_pointer> {
   }
 };
 
-template <>
-struct to_object<std::vector<std::string>, translate::dont_adopt_pointer> {
+template <> struct to_object<std::vector<std::string>, translate::dont_adopt_pointer> {
   static core::T_sp convert(std::vector<std::string> strings) {
-    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(strings.size(),nil<core::T_O>());
+    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(strings.size(), nil<core::T_O>());
     int i(0);
     for (auto ai = strings.begin(); ai != strings.end(); ai++) {
       vo->rowMajorAset(i++, core::lisp_createStr(*ai));
@@ -67,8 +64,7 @@ struct to_object<std::vector<std::string>, translate::dont_adopt_pointer> {
   }
 };
 
-template <>
-struct from_object<const vector<string> &> {
+template <> struct from_object<const vector<string> &> {
   typedef vector<string> DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
@@ -96,169 +92,148 @@ struct from_object<const vector<string> &> {
   }
 };
 
-template <>
-struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>> &> {
+template <> struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>> &> {
   typedef std::vector<std::unique_ptr<clang::ASTUnit>> GivenType;
   static core::T_sp convert(std::vector<std::unique_ptr<clang::ASTUnit>> &vals) {
-    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make( vals.size(), nil<core::T_O>(), core::clasp_make_fixnum(0));
+    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(vals.size(), nil<core::T_O>(), core::clasp_make_fixnum(0));
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
-      vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit,
-                           std::unique_ptr<clang::ASTUnit>>::make_wrapper(std::move(vals[i]),
-                                                                          reg::registered_class<clang::ASTUnit>::id ));
+      vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::make_wrapper(
+          std::move(vals[i]), reg::registered_class<clang::ASTUnit>::id));
     }
     return vo;
   }
 };
 
-template <>
-struct to_object<std::vector<clang::tooling::CompileCommand>> {
+template <> struct to_object<std::vector<clang::tooling::CompileCommand>> {
   typedef std::vector<clang::tooling::CompileCommand> GivenType;
   static core::T_sp convert(GivenType vals) {
     core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(vals.size(), nil<core::T_O>(), core::clasp_make_fixnum(0));
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
-      vo->vectorPushExtend(clbind::Wrapper<clang::tooling::CompileCommand,std::unique_ptr<clang::tooling::CompileCommand>>::make_wrapper(vals[i],
-                                                                                                                                         reg::registered_class<clang::tooling::CompileCommand>::id ));
+      vo->vectorPushExtend(
+          clbind::Wrapper<clang::tooling::CompileCommand, std::unique_ptr<clang::tooling::CompileCommand>>::make_wrapper(
+              vals[i], reg::registered_class<clang::tooling::CompileCommand>::id));
     }
     return vo;
   }
 };
 
-
-template <>
-struct to_object<std::map<std::string,clang::tooling::Replacements>&,translate::dont_adopt_pointer> {
-  typedef std::map<std::string,clang::tooling::Replacements> GivenType;
+template <> struct to_object<std::map<std::string, clang::tooling::Replacements> &, translate::dont_adopt_pointer> {
+  typedef std::map<std::string, clang::tooling::Replacements> GivenType;
   static core::T_sp convert(GivenType vals) {
     core::HashTableEqual_sp result = core::HashTableEqual_O::create_default();
-    for ( auto pair : vals ) {
+    for (auto pair : vals) {
       core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(pair.first);
-      core::T_sp obj = to_object<const clang::tooling::Replacements&>::convert(pair.second);
-      result->setf_gethash(str,obj);
+      core::T_sp obj = to_object<const clang::tooling::Replacements &>::convert(pair.second);
+      result->setf_gethash(str, obj);
     }
     return result;
   }
 };
 
-
-
-
-
-template <>
-struct from_object<clang::QualType, std::true_type> {
+template <> struct from_object<clang::QualType, std::true_type> {
   typedef clang::QualType DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::QualType_sp>(o)->_Value._value) {
-//     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
+    //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
   }
 };
 
-template <>
-struct to_object<clang::QualType,translate::dont_adopt_pointer> {
+template <> struct to_object<clang::QualType, translate::dont_adopt_pointer> {
   typedef clang::QualType HolderType;
   typedef clbind::Wrapper<clang::QualType, HolderType> WrapperType;
   static core::T_sp convert(clang::QualType val) {
     auto qtval = gctools::GC<asttooling::QualType_O>::allocate(val);
-//    printf("%s:%d:%s clang::QualType size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
+    //    printf("%s:%d:%s clang::QualType size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val),
+    //    val.getAsOpaquePtr() );
     return qtval;
   }
 };
 
-template <>
-struct to_object<clang::QualType,translate::adopt_pointer> {
+template <> struct to_object<clang::QualType, translate::adopt_pointer> {
   typedef clang::QualType HolderType;
   typedef clbind::Wrapper<clang::QualType, HolderType> WrapperType;
   static core::T_sp convert(clang::QualType val) {
     auto qtval = gctools::GC<asttooling::QualType_O>::allocate(val);
-    printf("%s:%d:%s clang::QualType size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
+    printf("%s:%d:%s clang::QualType size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val),
+           val.getAsOpaquePtr());
     return qtval;
   }
 };
 
-
-
-
-template <>
-struct from_object<clang::PresumedLoc, std::true_type> {
+template <> struct from_object<clang::PresumedLoc, std::true_type> {
   typedef clang::PresumedLoc DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::PresumedLoc_sp>(o)->_Value._value) {
-//     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
+    //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
   }
 };
 
-template <>
-struct from_object<const clang::PresumedLoc&, std::true_type> {
+template <> struct from_object<const clang::PresumedLoc &, std::true_type> {
   typedef clang::PresumedLoc DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::PresumedLoc_sp>(o)->_Value._value) {
-//     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
+    //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
   }
 };
 
-template <>
-struct to_object<clang::PresumedLoc,translate::dont_adopt_pointer> {
+template <> struct to_object<clang::PresumedLoc, translate::dont_adopt_pointer> {
   typedef clang::PresumedLoc HolderType;
   typedef clbind::Wrapper<clang::PresumedLoc, HolderType> WrapperType;
   static core::T_sp convert(clang::PresumedLoc val) {
     auto ploc = gctools::GC<asttooling::PresumedLoc_O>::allocate(val);
-//    printf("%s:%d:%s clang::PresumedLoc size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
+    //    printf("%s:%d:%s clang::PresumedLoc size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val),
+    //    val.getAsOpaquePtr() );
     return ploc;
   }
 };
 
-template <>
-struct to_object<clang::PresumedLoc,translate::adopt_pointer> {
+template <> struct to_object<clang::PresumedLoc, translate::adopt_pointer> {
   typedef clang::PresumedLoc HolderType;
   typedef clbind::Wrapper<clang::PresumedLoc, HolderType> WrapperType;
   static core::T_sp convert(clang::PresumedLoc val) {
     auto ploc = gctools::GC<asttooling::PresumedLoc_O>::allocate(val);
-//    printf("%s:%d:%s clang::PresumedLoc size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
+    //    printf("%s:%d:%s clang::PresumedLoc size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val),
+    //    val.getAsOpaquePtr() );
     return ploc;
   }
 };
 
-
-
-
-template <>
-struct from_object<clang::SourceLocation, std::true_type> {
+template <> struct from_object<clang::SourceLocation, std::true_type> {
   typedef clang::SourceLocation DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::SourceLocation_sp>(o)->_Value._value) {
-//     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
+    //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
   }
 };
 
-template <>
-struct from_object<const clang::SourceLocation&, std::true_type> {
+template <> struct from_object<const clang::SourceLocation &, std::true_type> {
   typedef clang::SourceLocation DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(gc::As<asttooling::SourceLocation_sp>(o)->_Value._value) {
-//     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
+    //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
   }
 };
 
-template <>
-struct to_object<clang::SourceLocation,translate::dont_adopt_pointer> {
+template <> struct to_object<clang::SourceLocation, translate::dont_adopt_pointer> {
   typedef clang::SourceLocation HolderType;
   typedef clbind::Wrapper<clang::SourceLocation, HolderType> WrapperType;
   static core::T_sp convert(clang::SourceLocation val) {
     auto ploc = gctools::GC<asttooling::SourceLocation_O>::allocate(val);
-//    printf("%s:%d:%s clang::SourceLocation size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
+    //    printf("%s:%d:%s clang::SourceLocation size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val),
+    //    val.getAsOpaquePtr() );
     return ploc;
   }
 };
 
-template <>
-struct to_object<clang::SourceLocation,translate::adopt_pointer> {
+template <> struct to_object<clang::SourceLocation, translate::adopt_pointer> {
   typedef clang::SourceLocation HolderType;
   typedef clbind::Wrapper<clang::SourceLocation, HolderType> WrapperType;
   static core::T_sp convert(clang::SourceLocation val) {
     auto ploc = gctools::GC<asttooling::SourceLocation_O>::allocate(val);
-//    printf("%s:%d:%s clang::SourceLocation size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
+    //    printf("%s:%d:%s clang::SourceLocation size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val),
+    //    val.getAsOpaquePtr() );
     return ploc;
   }
 };
 
-};
-
-#endif
+}; // namespace translate
