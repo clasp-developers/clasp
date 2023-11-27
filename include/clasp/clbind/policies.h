@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: policies.h
 */
@@ -24,8 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef clbind_policies_H
-#define clbind_policies_H
 
 #include <boost/mpl/if.hpp>
 #include <boost/mpl/and.hpp>
@@ -214,5 +214,3 @@ inline clbind::LambdaList operator"" _ll(const char *arg, size_t len) { return c
 inline clbind::DocString operator"" _docstring(const char *arg, size_t len) { return clbind::DocString(std::string(arg, len)); }
 
 inline clbind::Keyword operator"" _a(const char *arg, size_t len) { return clbind::Keyword(std::string(arg, len)); }
-
-#endif

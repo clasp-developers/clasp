@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: clbindPackage.h
 */
@@ -25,9 +27,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#ifndef clbind_clbindPackage_H
-#define clbind_clbindPackage_H
-
 #include <clasp/core/common.h>
 
 PACKAGE_USE("COMMON-LISP");
@@ -42,4 +41,3 @@ public:
   virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
 };
 };
-#endif

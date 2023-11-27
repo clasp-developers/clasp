@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -55,8 +55,8 @@ THE SOFTWARE.
 #include <clasp/clbind/clbind.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/core/symbolTable.h>
-//#include <clasp/clbind/function.h>
-//#include <clasp/clbind/get_main_thread.h>
+// #include <clasp/clbind/function.h>
+// #include <clasp/clbind/get_main_thread.h>
 
 namespace clbind {
 
@@ -67,14 +67,13 @@ detail::class_id_map *globalClassIdMap;
 
 class Test {
 public:
-  Test() : multiplier(1234) {};
+  Test() : multiplier(1234){};
+
 public:
-  int  multiplier;
+  int multiplier;
   std::vector<int> numbers;
 
-  void setMultiplier(int m) {
-    this->multiplier = m;
-  }
+  void setMultiplier(int m) { this->multiplier = m; }
   void set2(int n0, int n1) {
     this->numbers.clear();
     printf("%s:%d In set2 n0-> %d n1-> %d\n", __FILE__, __LINE__, n0, n1);
@@ -117,25 +116,23 @@ public:
   }
 
   void print_numbers() {
-    int idx=0;
+    int idx = 0;
     for (auto n : this->numbers) {
-      printf("%s:%d number[%d] -> %d\n", __FILE__, __LINE__, idx, n*this->multiplier);
+      printf("%s:%d number[%d] -> %d\n", __FILE__, __LINE__, idx, n * this->multiplier);
       ++idx;
     }
   }
 };
-  
+
 class TestChild : public Test {
 public:
-  TestChild() : Test() {};
+  TestChild() : Test(){};
 };
-
-
 
 void initializeCastGraph() {
   globalClassIdMap = new detail::class_id_map();
   globalCastGraph = new detail::cast_graph();
-};  
+};
 
 CLBIND_API void initialize_clbind() {
   ClassRegistry_sp registry = ClassRegistry_O::create();
@@ -144,4 +141,3 @@ CLBIND_API void initialize_clbind() {
 }
 
 } // namespace clbind
- 

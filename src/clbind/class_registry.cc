@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -58,14 +58,11 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/clbind/class_rep.h>
-//#include <clasp/clbind/detail/operator_id.h>
+// #include <clasp/clbind/detail/operator_id.h>
 #include <clasp/core/wrappers.h>
 namespace clbind {
 
 CLBIND_API void push_instance_metatable();
-
-
-
 
 #if 0
     namespace {
@@ -168,14 +165,14 @@ core::Integer_sp type_id_toClassRegistryKey(type_id const &info) {
 
 void ClassRegistry_O::add_class(type_id const &info, ClassRep_sp crep) {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
-  //ASSERTF(!this->m_classes->contains(key), "You are trying to register the class {} twice", info.name());
+  // ASSERTF(!this->m_classes->contains(key), "You are trying to register the class {} twice", info.name());
   this->m_classes->setf_gethash(key, crep);
 }
 
 ClassRep_sp ClassRegistry_O::find_class(type_id const &info) const {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
-  core::T_sp value = this->m_classes->gethash(key,nil<core::T_O>());
-  if ( value.nilp() ) {
+  core::T_sp value = this->m_classes->gethash(key, nil<core::T_O>());
+  if (value.nilp()) {
     SIMPLE_ERROR("Could not find class for typeid: {} name: {}", _rep_(key), info.name());
   }
   return gc::As<ClassRep_sp>(value);

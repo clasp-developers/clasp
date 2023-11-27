@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -52,12 +52,12 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/clbind/cl_include.h>
 
-//#include <clasp/clbind/detail/stack_utils.hpp>
-//#include <clasp/clbind/detail/conversion_storage.hpp>
+// #include <clasp/clbind/detail/stack_utils.hpp>
+// #include <clasp/clbind/detail/conversion_storage.hpp>
 #include <clasp/clbind/clbind.h>
-//#include <clasp/clbind/exception_handler.hpp>
-//#include <clasp/clbind/get_main_thread.hpp>
-//#include <utility>
+// #include <clasp/clbind/exception_handler.hpp>
+// #include <clasp/clbind/get_main_thread.hpp>
+// #include <utility>
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/wrappers.h>
 
@@ -66,9 +66,7 @@ using namespace clbind::detail;
 namespace clbind {
 
 ClassRep_O::ClassRep_O(core::Instance_sp class_, type_id const &type, core::Symbol_sp name, bool derivable)
-  : Instance_O(class_/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/ ),
-    m_type(type),
-    m_name(name)
+    : Instance_O(class_ /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/), m_type(type), m_name(name)
       //	, m_class_type(cpp_class)
       //	, m_operator_cache(0)
       ,
@@ -149,8 +147,6 @@ ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
 }
 #endif
 
-
-
 #if 0
 // leaves object on cl stack
     std::pair<void*,void*> 
@@ -215,7 +211,7 @@ ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
 #endif
 
 void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base)
-//const ClassRep_O::base_info& binfo)
+// const ClassRep_O::base_info& binfo)
 {
   // If you hit this assert you are deriving from a type that is not registered
   // in cl. That is, in the class_<> you are giving a baseclass that isn't registered.
@@ -433,4 +429,4 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
 	return (m_operator_cache & mask) != 0;
     }
 #endif
-};
+}; // namespace clbind

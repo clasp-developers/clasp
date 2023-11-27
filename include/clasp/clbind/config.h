@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: config.h
 */
@@ -46,9 +48,6 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef CLBIND_CONFIG_HPP_INCLUDED
-#define CLBIND_CONFIG_HPP_INCLUDED
-
 #include <boost/config.hpp>
 
 #ifdef BOOST_MSVC
@@ -59,15 +58,17 @@ THE SOFTWARE.
 
 #if defined(BOOST_MSVC) && (BOOST_MSVC <= 1200)
 
-#define for if (false){} else for
+#define for                                                                                                                        \
+  if (false) {                                                                                                                     \
+  } else for
 
 #include <cstring>
 
 namespace std {
-using ::strlen;
 using ::strcmp;
+using ::strlen;
 using ::type_info;
-}
+} // namespace std
 
 #endif
 
@@ -147,5 +148,3 @@ namespace clbind {
 CLBIND_API void disable_super_deprecation();
 
 } // namespace clbind
-
-#endif // CLBIND_CONFIG_HPP_INCLUDED

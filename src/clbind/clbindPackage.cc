@@ -37,7 +37,7 @@ THE SOFTWARE.
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/wrappers.h>
 
-SYMBOL_EXPORT_SC_(ClbindPkg,class_rep);
+SYMBOL_EXPORT_SC_(ClbindPkg, class_rep);
 
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
@@ -55,17 +55,15 @@ void ClbindExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose w
   case candoClasses: {
   } break;
   case candoFunctions: {
-    //nothing
+    // nothing
     //	    initialize_clbind();
-  };
-      break;
+  }; break;
   case candoGlobals: {
     list<string> nicknames;
-    list<string> usePackages = {"COMMON-LISP" /*, "CLOS"*/ , ClbindPkg};
+    list<string> usePackages = {"COMMON-LISP" /*, "CLOS"*/, ClbindPkg};
     _lisp->makePackage("SB-BSD-CLBIND", nicknames, usePackages);
     initialize_clbind();
-  };
-      break;
+  }; break;
   case pythonClasses:
   case pythonFunctions:
   case pythonGlobals: {
@@ -73,4 +71,4 @@ void ClbindExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose w
   } break;
   }
 }
-};
+}; // namespace clbind

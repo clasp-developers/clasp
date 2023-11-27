@@ -1,17 +1,19 @@
+#pragma once
+
 /*
     File: derivable_class.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -46,53 +48,50 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef CLBIND_DERIVABLE_CLASS_HPP_INCLUDED
-#define CLBIND_DERIVABLE_CLASS_HPP_INCLUDED
-
 /*
-	ISSUES:
-	------------------------------------------------------
+        ISSUES:
+        ------------------------------------------------------
 
-	* solved for member functions, not application operator *
-	if we have a base class that defines a function a derived class must be able to
-	override that function (not just overload). Right now we just add the other overload
-	to the overloads list and will probably get an ambiguity. If we want to support this
-	each method_rep must include a vector of type_info pointers for each parameter.
-	Operators do not have this problem, since operators always have to have
-	it's own type as one of the arguments, no ambiguity can occur. Application
-	operator, on the other hand, would have this problem.
-	Properties cannot be overloaded, so they should always be overridden.
-	If this is to work for application operator, we really need to specify if an application
-	operator is const or not.
+        * solved for member functions, not application operator *
+        if we have a base class that defines a function a derived class must be able to
+        override that function (not just overload). Right now we just add the other overload
+        to the overloads list and will probably get an ambiguity. If we want to support this
+        each method_rep must include a vector of type_info pointers for each parameter.
+        Operators do not have this problem, since operators always have to have
+        it's own type as one of the arguments, no ambiguity can occur. Application
+        operator, on the other hand, would have this problem.
+        Properties cannot be overloaded, so they should always be overridden.
+        If this is to work for application operator, we really need to specify if an application
+        operator is const or not.
 
-	If one class registers two functions with the same name and the same
-	signature, there's currently no error. The last registered function will
-	be the one that's used.
-	How do we know which class registered the function? If the function was
-	defined by the base class, it is a legal operation, to override it.
-	we cannot look at the pointer offset, since it always will be zero for one of the bases.
+        If one class registers two functions with the same name and the same
+        signature, there's currently no error. The last registered function will
+        be the one that's used.
+        How do we know which class registered the function? If the function was
+        defined by the base class, it is a legal operation, to override it.
+        we cannot look at the pointer offset, since it always will be zero for one of the bases.
 
 
 
-	TODO:
-	------------------------------------------------------
+        TODO:
+        ------------------------------------------------------
 
- 	finish smart pointer support
-		* the adopt policy should not be able to adopt pointers to held_types. This
-		must be prohibited.
-		* name_of_type must recognize holder_types and not return "custom"
+        finish smart pointer support
+                * the adopt policy should not be able to adopt pointers to held_types. This
+                must be prohibited.
+                * name_of_type must recognize holder_types and not return "custom"
 
-	document custom policies, custom converters
+        document custom policies, custom converters
 
-	store the instance object for policies.
+        store the instance object for policies.
 
-	support the __concat metamethod. This is a bit tricky, since it cannot be
-	treated as a normal operator. It is a binary operator but we want to use the
-	__tostring implementation for both arguments.
-	
+        support the __concat metamethod. This is a bit tricky, since it cannot be
+        treated as a normal operator. It is a binary operator but we want to use the
+        __tostring implementation for both arguments.
+
 */
 
-//#include <clasp/clbind/prefix.hpp>
+// #include <clasp/clbind/prefix.hpp>
 #include <clasp/clbind/config.h>
 
 #include <utility>
@@ -125,8 +124,7 @@ THE SOFTWARE.
 
 namespace boost {
 
-template <class T>
-class shared_ptr;
+template <class T> class shared_ptr;
 
 } // namespace boost
 
@@ -134,107 +132,110 @@ namespace clbind {
 
 namespace detail {
 
-  struct derivable_class_registration;
+struct derivable_class_registration;
 
-  struct derivable_class_registration : registration {
-    derivable_class_registration(char const *name);
+struct derivable_class_registration : registration {
+  derivable_class_registration(char const *name);
 
-    void register_() const;
+  void register_() const;
 
-    const char *m_name;
+  const char *m_name;
 
-  virtual std::string name() const { return this->m_name;}
+  virtual std::string name() const { return this->m_name; }
   virtual std::string kind() const { return "derivable_class_registration"; };
-    
-    mutable std::map<const char *, int, detail::ltstr> m_static_constants;
 
-    typedef std::pair<type_id, cast_function> base_desc;
-    mutable std::vector<base_desc> m_bases;
+  mutable std::map<const char *, int, detail::ltstr> m_static_constants;
 
-    type_id m_type;
-    class_id m_id;
-    class_id m_wrapper_id;
-    type_id m_wrapper_type;
-    std::vector<cast_entry> m_casts;
+  typedef std::pair<type_id, cast_function> base_desc;
+  mutable std::vector<base_desc> m_bases;
 
-    scope_ m_scope;
-    scope_ m_members;
-    detail::registration *m_default_constructor;
-    scope_ m_default_members;
-    bool m_derivable;
+  type_id m_type;
+  class_id m_id;
+  class_id m_wrapper_id;
+  type_id m_wrapper_type;
+  std::vector<cast_entry> m_casts;
+
+  scope_ m_scope;
+  scope_ m_members;
+  detail::registration *m_default_constructor;
+  scope_ m_default_members;
+  bool m_derivable;
+};
+
+struct CLBIND_API derivable_class_base : scope_ {
+public:
+  derivable_class_base(char const *name);
+
+  struct base_desc {
+    type_id type;
+    int ptr_offset;
   };
 
-  struct CLBIND_API derivable_class_base : scope_ {
-  public:
-    derivable_class_base(char const *name);
+  void init(type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
 
-    struct base_desc {
-      type_id type;
-      int ptr_offset;
-    };
+  void add_base(type_id const &base, cast_function cast);
 
-    void init(type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
+  void set_default_constructor(registration *member);
+  void add_member(registration *member);
+  void add_default_member(registration *member);
 
-    void add_base(type_id const &base, cast_function cast);
+  const char *name() const;
 
-    void set_default_constructor(registration *member);
-    void add_member(registration *member);
-    void add_default_member(registration *member);
+  void add_static_constant(const char *name, int val);
+  void add_inner_scope(scope_ &s);
 
-    const char *name() const;
+  void add_cast(class_id src, class_id target, cast_function cast);
 
-    void add_static_constant(const char *name, int val);
-    void add_inner_scope(scope_ &s);
+private:
+  derivable_class_registration *m_registration;
 
-    void add_cast(class_id src, class_id target, cast_function cast);
-
-  private:
-    derivable_class_registration *m_registration;
-  public:
-    int m_init_counter;
-  };
+public:
+  int m_init_counter;
+};
 
 /*! This is the constructor registration for default constructors of non derivable classes,
          Specialized by making second template parameter reg::null_type
         */
 template <class Class, class Policies>
-  struct constructor_registration<Class, reg::null_type, default_constructor, Policies, construct_derivable_class> : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
-  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring), mm_name(name){};
+struct constructor_registration<Class, reg::null_type, default_constructor, Policies, construct_derivable_class>
+    : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
+  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares,
+                           string const &docstring)
+      : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares,
+                                                                                            docstring),
+        mm_name(name){};
   core::Creator_sp registerDefaultConstructor_() const {
-    //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-    core::GlobalSimpleFun_sp entryPoint = core::makeGlobalSimpleFunAndFunctionDescription<DerivableDefaultConstructorCreator_O<Class>>(nil<core::T_O>(),nil<core::T_O>());
+    //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> -----
+    //                Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
+    core::GlobalSimpleFun_sp entryPoint =
+        core::makeGlobalSimpleFunAndFunctionDescription<DerivableDefaultConstructorCreator_O<Class>>(nil<core::T_O>(),
+                                                                                                     nil<core::T_O>());
     return gc::As_unsafe<core::Creator_sp>(gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate(entryPoint));
   }
-  virtual std::string name() const { return this->mm_name;}
+  virtual std::string name() const { return this->mm_name; }
   virtual std::string kind() const { return "derivable constructor_registration"; };
   std::string mm_name;
 };
 
 } // namespace detail
 
-
- void validateRackOffset(size_t wrapped_type_offset);
-  
+void validateRackOffset(size_t wrapped_type_offset);
 
 // registers a class in the cl environment
-template <class T, class Base = no_bases>
-struct derivable_class_ : detail::derivable_class_base {
+template <class T, class Base = no_bases> struct derivable_class_ : detail::derivable_class_base {
   typedef derivable_class_<T, Base> self_t;
 
 private:
-  template <class A, class B>
-  derivable_class_(const derivable_class_<A, B> &);
+  template <class A, class B> derivable_class_(const derivable_class_<A, B> &);
 
 public:
-
-// WrappedType MUST inherit from T
+  // WrappedType MUST inherit from T
   typedef T WrappedType;
 
   typedef std::unique_ptr<T> HoldType;
 
-  template <class Src, class Target>
-  void add_downcast(Src *, Target *) {
-    if constexpr(std::is_polymorphic_v<Src>) {
+  template <class Src, class Target> void add_downcast(Src *, Target *) {
+    if constexpr (std::is_polymorphic_v<Src>) {
       add_cast(reg::registered_class<Src>::id, reg::registered_class<Target>::id, detail::dynamic_cast_<Src, Target>::execute);
     }
   }
@@ -243,8 +244,7 @@ public:
   // in the given class_rep structure. It will be able
   // to implicitly cast to the given template type
   // Dummy return value
-  template <class To>
-  int gen_base_info(detail::type_<To>) {
+  template <class To> int gen_base_info(detail::type_<To>) {
     add_base(typeid(To), detail::static_cast_<T, To>::execute);
     add_cast(reg::registered_class<T>::id, reg::registered_class<To>::id, detail::static_cast_<T, To>::execute);
 
@@ -254,15 +254,14 @@ public:
 
 #define CLBIND_GEN_BASE_INFO(z, n, text) gen_base_info(detail::type_<BaseClass##n>());
 
-  template <class... BaseClass>
-  void generate_baseclass_list(detail::type_<bases<BaseClass...>>)
-  {
+  template <class... BaseClass> void generate_baseclass_list(detail::type_<bases<BaseClass...>>) {
     (gen_base_info(detail::type_<BaseClass>()), ...);
   }
 
 #undef CLBIND_GEN_BASE_INFO
 
-  derivable_class_(scope_& outer_scope, const char *name, default_constructor_type, const char* docstring="") : derivable_class_base(name), _outer_scope(&outer_scope), scope(*this) {
+  derivable_class_(scope_ &outer_scope, const char *name, default_constructor_type, const char *docstring = "")
+      : derivable_class_base(name), _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
@@ -270,24 +269,21 @@ public:
     // I have a constructor and I can test isDerivableCxxClass<T>(0)
     // I should dispatch to def_derivable_default_constructor
     this->def_default_constructor_("default_ctor", NULL, policies<>(), "", "", "");
-    validateRackOffset(offsetof(WrappedType,_Rack));
+    validateRackOffset(offsetof(WrappedType, _Rack));
     this->_outer_scope->operator,(*this);
   }
-  
-  derivable_class_(scope_& outer_scope, const char *name, const char* docstring="") : derivable_class_base(name), scope(*this) {
+
+  derivable_class_(scope_ &outer_scope, const char *name, const char *docstring = "") : derivable_class_base(name), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
     init(false /* Does not have constructor */);
-//    validateRackOffset(offsetof(WrappedType,_Rack));
+    //    validateRackOffset(offsetof(WrappedType,_Rack));
   }
 
   template <typename... Types>
-  derivable_class_ &def_constructor(const string &name,
-                                    constructor<Types...> sig,
-                                    string const &arguments = "",
-                                    string const &declares = "",
-                                    string const &docstring = "") {
+  derivable_class_ &def_constructor(const string &name, constructor<Types...> sig, string const &arguments = "",
+                                    string const &declares = "", string const &docstring = "") {
     if (isDerivableCxxClass<T>(0)) {
       THROW_HARD_ERROR("ERROR - The derivable class %s should not have other constructors", this->name());
     }
@@ -295,47 +291,40 @@ public:
   }
 
   template <typename... Types, class Policies>
-  derivable_class_ &def_constructor(const string &name,
-                                    constructor<Types...> sig,
-                                    const Policies &policies,
-                                    string const &arguments = "",
-                                    string const &declares = "",
-                                    string const &docstring = "") {
+  derivable_class_ &def_constructor(const string &name, constructor<Types...> sig, const Policies &policies,
+                                    string const &arguments = "", string const &declares = "", string const &docstring = "") {
     if (isDerivableCxxClass<T>(0)) {
-      THROW_HARD_ERROR( "ERROR - The derivable class %s should not have other constructors with policies", this->name());
+      THROW_HARD_ERROR("ERROR - The derivable class %s should not have other constructors with policies", this->name());
     }
     return this->def_constructor_(name, &sig, policies, arguments, declares, docstring);
   }
 
-  template <class F, class... PTypes>
-  derivable_class_ &def(const char *name, F f, PTypes... pols)
-  {
+  template <class F, class... PTypes> derivable_class_ &def(const char *name, F f, PTypes... pols) {
     typedef policies<PTypes...> Policies;
     Policies curPolicies;
-    maybe_register_symbol_using_dladdr(*(void**)&f,sizeof(f),name);
-    walk_policy(curPolicies,pols...);
-    return this->virtual_def(PrepareName(name), f, curPolicies,reg::null_type());
+    maybe_register_symbol_using_dladdr(*(void **)&f, sizeof(f), name);
+    walk_policy(curPolicies, pols...);
+    return this->virtual_def(PrepareName(name), f, curPolicies, reg::null_type());
   }
 
   template <class Getter>
-  derivable_class_ &property(const char *name, Getter g, string const &arguments = "", string const &declares = "", string const &docstring = "") {
-    this->add_member(
-                     new detail::property_registration<T, Getter, reg::null_type>(
-                                                                                  name // name
+  derivable_class_ &property(const char *name, Getter g, string const &arguments = "", string const &declares = "",
+                             string const &docstring = "") {
+    this->add_member(new detail::property_registration<T, Getter, reg::null_type>(name // name
                                                                                   ,
                                                                                   g // Get
                                                                                   ,
                                                                                   reg::null_type() // GetPolicies
                                                                                   ,
-                                                                                  reg::null_type(), reg::null_type(), arguments, declares, docstring));
+                                                                                  reg::null_type(), reg::null_type(), arguments,
+                                                                                  declares, docstring));
     return *this;
   }
 
   template <class Begin, class End>
-  derivable_class_ &iterator(const char *iteratorName, Begin beginFn, End endFn, string const &arguments = "", string const &declares = "", string const &docstring = "") {
-    this->add_member(
-                     new detail::iterator_registration<T, Begin, End, reg::null_type>(
-                                                                                      iteratorName // name
+  derivable_class_ &iterator(const char *iteratorName, Begin beginFn, End endFn, string const &arguments = "",
+                             string const &declares = "", string const &docstring = "") {
+    this->add_member(new detail::iterator_registration<T, Begin, End, reg::null_type>(iteratorName // name
                                                                                       ,
                                                                                       beginFn // begin
                                                                                       ,
@@ -352,7 +341,7 @@ public:
     return enum_maker(this, converter);
   }
 #endif
-  scope_* _outer_scope;
+  scope_ *_outer_scope;
   detail::static_scope<self_t> scope;
 
 private:
@@ -360,10 +349,8 @@ private:
 
   void add_wrapper_cast(reg::null_type *) {}
 
-  template <class U>
-  void add_wrapper_cast(U *) {
-    add_cast(
-             reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
+  template <class U> void add_wrapper_cast(U *) {
+    add_cast(reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
 
     add_downcast((T *)0, (U *)0);
   }
@@ -373,11 +360,11 @@ private:
 
     if (!hasConstructor && isDerivableCxxClass<T>(0)) {
       THROW_HARD_ERROR("ERROR - The derivable class %s must have a default constructor"
-                          " - otherwise how can you create instances of their derived classes?\n"
-                       , this->name());
+                       " - otherwise how can you create instances of their derived classes?\n",
+                       this->name());
     }
-    derivable_class_base::init(
-                               typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id, isDerivableCxxClass<T>(0));
+    derivable_class_base::init(typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id,
+                               isDerivableCxxClass<T>(0));
 
     //            printf("%s:%d Should I be adding a wrapper cast???\n", __FILE__, __LINE__ );
     add_wrapper_cast((WrappedType *)0);
@@ -387,39 +374,32 @@ private:
 
   // these handle default implementation of virtual functions
   template <class F, class Policies>
-  derivable_class_ &virtual_def(const std::string& name, F const &fn,
-                                Policies const &policies, reg::null_type) {
-    maybe_register_symbol_using_dladdr(*(void**)&fn,sizeof(fn),name);
-    this->add_member( new detail::memfun_registration<T, F, Policies>(name, fn, policies));
+  derivable_class_ &virtual_def(const std::string &name, F const &fn, Policies const &policies, reg::null_type) {
+    maybe_register_symbol_using_dladdr(*(void **)&fn, sizeof(fn), name);
+    this->add_member(new detail::memfun_registration<T, F, Policies>(name, fn, policies));
     return *this;
   }
 
   template <class Policies>
-  derivable_class_ &def_default_constructor_(const char *name, void *, Policies const &, string const &arguments, string const &declares, string const &docstring) {
+  derivable_class_ &def_default_constructor_(const char *name, void *, Policies const &, string const &arguments,
+                                             string const &declares, string const &docstring) {
     typedef T construct_type;
-    this->set_default_constructor(new detail::constructor_registration<
-                                  construct_type,
-                                  reg::null_type,
-                                  default_constructor,
-                                  Policies,
-                                  detail::construct_derivable_class>(Policies(),
-                                                                     name,
-                                                                     arguments,
-                                                                     declares,
-                                                                     docstring));
+    this->set_default_constructor(
+        new detail::constructor_registration<construct_type, reg::null_type, default_constructor, Policies,
+                                             detail::construct_derivable_class>(Policies(), name, arguments, declares, docstring));
     return *this;
   }
 
   template <class Signature, class Policies>
-  derivable_class_ &def_constructor_(const string &name, Signature *, Policies const &, string const &arguments, string const &declares, string const &docstring) {
+  derivable_class_ &def_constructor_(const string &name, Signature *, Policies const &, string const &arguments,
+                                     string const &declares, string const &docstring) {
     typedef Signature signature;
 
     typedef std::conditional_t<std::is_same_v<WrappedType, reg::null_type>, T, WrappedType> construct_type;
 
     this->add_member(
-                     new detail::constructor_registration<
-                     construct_type, HoldType, signature, Policies, detail::construct_derivable_class>(
-                                                                                                       Policies(), name, arguments, declares, docstring));
+        new detail::constructor_registration<construct_type, HoldType, signature, Policies, detail::construct_derivable_class>(
+            Policies(), name, arguments, declares, docstring));
 
 #if 0
     this->add_default_member(
@@ -431,28 +411,23 @@ private:
   }
 
 public:
-      // static functions
-  template <typename... Types>
-  derivable_class_ &def(constructor<Types...> sig) {
-    printf("%s:%d def(expose::init...)\n", __FILE__, __LINE__ );
+  // static functions
+  template <typename... Types> derivable_class_ &def(constructor<Types...> sig) {
+    printf("%s:%d def(expose::init...)\n", __FILE__, __LINE__);
     stringstream ss;
     ss << "make-";
     ss << this->name();
     if (this->m_init_counter) {
       ss << this->m_init_counter;
     }
-    maybe_register_symbol_using_dladdr((void*)sig,sizeof(sig),ss.str());
-    this->def_constructor_(ss.str(),&sig,policies<>(),"","","");
+    maybe_register_symbol_using_dladdr((void *)sig, sizeof(sig), ss.str());
+    this->def_constructor_(ss.str(), &sig, policies<>(), "", "", "");
     this->m_init_counter++;
     return *this;
   }
-
-
 };
-}
+} // namespace clbind
 
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-
-#endif // CLBIND_CLASS_HPP_INCLUDED
