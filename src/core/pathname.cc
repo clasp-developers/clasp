@@ -1137,8 +1137,8 @@ CL_DEFUN String_sp core__coerce_to_filename(T_sp pathname_orig) {
   T_sp tnamestring = clasp_namestring(pathname, CLASP_NAMESTRING_TRUNCATE_IF_ERROR | CLASP_NAMESTRING_FORCE_BASE_STRING);
   if (tnamestring.nilp()) {
     SIMPLE_ERROR("Pathname without a physical namestring:"
-                  "\n :HOST {}\n :DEVICE {}\n :DIRECTORY {}"
-                  "\n :NAME {}\n :TYPE {}\n :VERSION {}",
+                 "\n :HOST {}\n :DEVICE {}\n :DIRECTORY {}"
+                 "\n :NAME {}\n :TYPE {}\n :VERSION {}",
                  _rep_(pathname->_Host), _rep_(pathname->_Device), _rep_(pathname->_Directory), _rep_(pathname->_Name),
                  _rep_(pathname->_Type), _rep_(pathname->_Version));
   }
@@ -1573,7 +1573,7 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
                                      EN_MATCH(path, defaults, _Type), EN_MATCH(path, defaults, _Version), kw::_sym_local);
   ASSERTF(core__logical_pathname_p(newpath) == core__logical_pathname_p(path),
           "Mismatch between the newpath and path - they must be the same kind and it is the responsibility of makePathname to "
-           "ensure that they are the same kind");
+          "ensure that they are the same kind");
   if (newpath.nilp())
     SIMPLE_ERROR("{} is about to pass NIL to clasp_namestring", __FUNCTION__);
   return clasp_namestring(newpath, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);

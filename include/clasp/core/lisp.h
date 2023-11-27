@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: lisp.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef Lisp_H //[
-#define Lisp_H
 
 #include <stdio.h>
 #include <string>
@@ -51,40 +50,37 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 
 namespace cl {
-extern core::Symbol_sp& _sym_eq;
+extern core::Symbol_sp &_sym_eq;
 };
 
 namespace mpip {
 class Mpi_O;
 typedef gc::smart_ptr<Mpi_O> Mpi_sp;
-};
+}; // namespace mpip
 
 namespace clbind {
 class ClassRep_O;
 typedef gc::smart_ptr<ClassRep_O> ClassRep_sp;
-};
+}; // namespace clbind
 
 namespace llvmo {
-  class LibraryFile_O;
-  class ObjectFile_O;
-  FORWARD(LibraryFile);
-  FORWARD(ObjectFile);
-};
-
+class LibraryFile_O;
+class ObjectFile_O;
+FORWARD(LibraryFile);
+FORWARD(ObjectFile);
+}; // namespace llvmo
 
 extern "C" {
-extern unsigned char* global_python_virtual_machine_codes;
-extern uintptr_t      global_python_virtual_machine_codes_size;
-extern unsigned char* global_python_class_layouts;
-extern uintptr_t      global_python_class_layouts_size;
+extern unsigned char *global_python_virtual_machine_codes;
+extern uintptr_t global_python_virtual_machine_codes_size;
+extern unsigned char *global_python_class_layouts;
+extern uintptr_t global_python_class_layouts_size;
 };
-
 
 namespace core {
 
-
-  extern CommandLineOptions *global_options;
-  extern bool global_initialize_builtin_classes;
+extern CommandLineOptions *global_options;
+extern bool global_initialize_builtin_classes;
 
 class Bundle;
 class CallStack;
@@ -98,10 +94,10 @@ SMART(Binder);
 SMART(Hierarchy);
 SMART(Environment);
 
-T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=nil<core::T_O>() );
- 
+T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key = nil<core::T_O>());
+
 List_sp cl__member(T_sp item, T_sp list, T_sp key = nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = nil<T_O>());
-[[noreturn]]void core__invoke_internal_debugger(T_sp condition);
+[[noreturn]] void core__invoke_internal_debugger(T_sp condition);
 
 class SymbolClassHolderPair {
 public:
@@ -111,10 +107,10 @@ public:
 };
 
 /*! A structure that stores the integer byte/word ordering information for this processor.
-      It is calculated when the Lisp environment starts up and can be accessed by routines to 
+      It is calculated when the Lisp environment starts up and can be accessed by routines to
       handle slicing up uint64_t */
 class IntegerOrdering //: public gctools::GCIgnoreClass
-    {
+{
 public:
   bool _BigEndian;
   bool _MostSignificantWordFirst;
@@ -137,12 +133,12 @@ public:
       this->_MostSignificantWordFirst = true;
       this->_mpz_import_word_order = 1;
     } else {
-throw_hard_error("What the heck? - the Endian test failed when starting up Lisp environment");
+      throw_hard_error("What the heck? - the Endian test failed when starting up Lisp environment");
     }
   }
 };
 
-/*! Class for defining new packages and doing package dependent 
+/*! Class for defining new packages and doing package dependent
      exposure of classes/functions/globals.  You can create more than one
      PackageHolder for a package to expose successive things.
      If you invoke the Ctor and the package hasn't been created then
@@ -154,56 +150,50 @@ throw_hard_error("What the heck? - the Endian test failed when starting up Lisp 
      used to expose things.
      For instance, the lisp interpreter creates a CorePackage to expose
      the clasp stuff and then the python interface creates another one and
-     gets the Package_sp for the core package from lisp and then 
+     gets the Package_sp for the core package from lisp and then
      exposes the python classes/functions/globals */
- class Exposer_O : public General_O {
-   FRIEND_GC_SCANNER(Exposer_O);
-   LISP_ABSTRACT_CLASS(core,CorePkg,Exposer_O,"Exposer",General_O);
- public:
-   CLASP_DEFAULT_CTOR Exposer_O() {};
-public:
-  typedef enum { candoClasses,
-                 candoFunctions,
-                 candoGlobals,
-                 pythonClasses,
-                 pythonFunctions,
-                 pythonGlobals } WhatToExpose;
- private:
-  // The package is put here
-//   Package_sp _Package;
-   std::string _PackageName;
-public:
+class Exposer_O : public General_O {
+  FRIEND_GC_SCANNER(Exposer_O);
+  LISP_ABSTRACT_CLASS(core, CorePkg, Exposer_O, "Exposer", General_O);
 
+public:
+  CLASP_DEFAULT_CTOR Exposer_O(){};
+
+public:
+  typedef enum { candoClasses, candoFunctions, candoGlobals, pythonClasses, pythonFunctions, pythonGlobals } WhatToExpose;
+
+private:
+  // The package is put here
+  //   Package_sp _Package;
+  std::string _PackageName;
+
+public:
   /*! CTor that looks up a Package with packageName and if it
-	  doesn't exist it makes it - no nicknames allowed */
+          doesn't exist it makes it - no nicknames allowed */
   Exposer_O(LispPtr lisp, const string &packageName);
 
   virtual ~Exposer_O();
 
   /*! Return the packageName */
-   string packageName() const { return this->_PackageName; };
+  string packageName() const { return this->_PackageName; };
 
   /*! Return the Package that this Exposer holds */
-//   Package_sp package() const { return _lisp->findPackage(this->_PackageName); };
+  //   Package_sp package() const { return _lisp->findPackage(this->_PackageName); };
 
   /* Evaluate the code that exposes the package Classes/Functions/Globals
-	 to Cando-lisp or to Python depending on the value of (what) */
+         to Cando-lisp or to Python depending on the value of (what) */
   virtual void expose(core::LispPtr lisp, WhatToExpose what) const = 0;
-
 };
 
-template <typename oclass>
-class class_;
+template <typename oclass> class class_;
 
-};
+}; // namespace core
 
-template <>
-struct gctools::GCInfo<core::Lisp> {
+template <> struct gctools::GCInfo<core::Lisp> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = unmanaged;
 };
-
 
 namespace core {
 
@@ -214,19 +204,19 @@ struct globals_t {
   mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
   mutable mp::SharedMutex _FinalizersMutex;
   mutable mp::SharedMutex _SourceFilesMutex; // Protect _SourceFileIndices
-  mutable mp::SharedMutex _PackagesMutex; // Protect _PackageNameIndexMap
+  mutable mp::SharedMutex _PackagesMutex;    // Protect _PackageNameIndexMap
 #ifdef DEBUG_MONITOR_SUPPORT
   mutable mp::SharedMutex _MonitorMutex;
   std::ofstream _MonitorStream;
 #endif
   mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
-  mutable mp::SharedMutex _JITLogMutex; // Protect _jit logging
-  mutable mp::SharedMutex _UnixSignalHandlersMutex; // Protect _UnixSignalHandlers
+  mutable mp::SharedMutex _JITLogMutex;                  // Protect _jit logging
+  mutable mp::SharedMutex _UnixSignalHandlersMutex;      // Protect _UnixSignalHandlers
   mutable mp::SharedMutex _CodeBlocksMutex;
-  uint           _StackWarnSize;
-  uint           _StackSampleCount;
-  uint           _StackSampleSize;
-  uint           _StackSampleMax;
+  uint _StackWarnSize;
+  uint _StackSampleCount;
+  uint _StackSampleSize;
+  uint _StackSampleMax;
   /*! Map source file path strings to FileScope_sp */
   uint _ReplCounter;
   /*! Store paths to important directories */
@@ -236,8 +226,8 @@ struct globals_t {
   int _TraceLevel;
   std::atomic<int> _DebuggerLevel;
   /*! Global environment initialization hooks can be added until
-	  the environment is started up.
-	*/
+          the environment is started up.
+        */
   bool _LockGlobalInitialization;
   vector<InitializationCallback> _GlobalInitializationCallbacks;
   string _FunctionName;
@@ -257,95 +247,76 @@ public:
   // ------------------------------------------------------------
   // ------------------------------------------------------------
   // ------------------------------------------------------------
-  globals_t() :
-                _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
-                _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
-                _FinalizersMutex(MPSMESSG_NAMEWORD),
-                _SourceFilesMutex(SRCFILES_NAMEWORD),
-                _PackagesMutex(PKGSMUTX_NAMEWORD),
+  globals_t()
+      : _ActiveThreadsMutex(ACTVTHRD_NAMEWORD), _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
+        _FinalizersMutex(MPSMESSG_NAMEWORD), _SourceFilesMutex(SRCFILES_NAMEWORD), _PackagesMutex(PKGSMUTX_NAMEWORD),
 #ifdef DEBUG_MONITOR_SUPPORT
-                _MonitorMutex(LOGMUTEX_NAMEWORD),
+        _MonitorMutex(LOGMUTEX_NAMEWORD),
 #endif
-                _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD),
-                _JITLogMutex(JITLOG___NAMEWORD),
-                _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD),
-                _CodeBlocksMutex(CODEBLOK_NAMEWORD),
-                _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
-                _StackSampleCount(0),
-                _StackSampleSize(0),
-                _StackSampleMax(0),
-                _ReplCounter(1),
-                _Bundle(NULL),
-                _DebugStream(NULL),
-                _SingleStepLevel(UndefinedUnsignedInt),
-                _MakePackageCallback(NULL),
-                _ExportSymbolCallback(NULL),
-                _PathMax(CLASP_MAXPATHLEN)
-  {
+        _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD), _JITLogMutex(JITLOG___NAMEWORD),
+        _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD), _CodeBlocksMutex(CODEBLOK_NAMEWORD),
+        _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
+        _StackSampleCount(0), _StackSampleSize(0), _StackSampleMax(0), _ReplCounter(1), _Bundle(NULL), _DebugStream(NULL),
+        _SingleStepLevel(UndefinedUnsignedInt), _MakePackageCallback(NULL), _ExportSymbolCallback(NULL),
+        _PathMax(CLASP_MAXPATHLEN) {
     this->_GlobalInitializationCallbacks.clear();
     this->_TraceLevel = 0;
     this->_DebuggerLevel = 0;
   };
-}
-  ;
-
 };
 
-
+}; // namespace core
 
 //
 // All non-gc managed globals go here
 //
-extern core::globals_t* globals_;
-
-
-
-
+extern core::globals_t *globals_;
 
 namespace core {
 
 class Lisp {
   friend T_mv core__file_scope(T_sp sourceFile);
-  friend gctools::Layout_code* gctools::get_stamp_layout_codes();
+  friend gctools::Layout_code *gctools::get_stamp_layout_codes();
+
 public:
   struct GCRoots //: public gctools::HeapRoot
   {
-    T_sp                       _TrueObject; // The True object
-    T_sp                       _NilObject; // The NIL object
-    T_sp                       _ClaspJIT;
-    std::atomic<T_sp>          _JITDylibs; // Maintain a list of loaded JITDylibs 
-    std::atomic<T_sp>          _AllLibraries;
-    std::atomic<T_sp>          _AllObjectFiles;
-    std::atomic<T_sp>          _AllCodeBlocks;
-    std::atomic<T_sp>          _AllBytecodeModules;
-    GlobalSimpleFun_sp         _UnboundCellFunctionEntryPoint;
-    T_sp                       _TerminalIO;
-    List_sp                    _ActiveThreads;
-    List_sp                    _DefaultSpecialBindings;
-    WeakKeyHashTable_sp        _Finalizers;
-    HashTable_sp               _Sysprop;
-    HashTable_sp               _ClassTable;
-    CharacterInfo              charInfo; // Contains GC managed pointers
+    T_sp _TrueObject; // The True object
+    T_sp _NilObject;  // The NIL object
+    T_sp _ClaspJIT;
+    std::atomic<T_sp> _JITDylibs; // Maintain a list of loaded JITDylibs
+    std::atomic<T_sp> _AllLibraries;
+    std::atomic<T_sp> _AllObjectFiles;
+    std::atomic<T_sp> _AllCodeBlocks;
+    std::atomic<T_sp> _AllBytecodeModules;
+    GlobalSimpleFun_sp _UnboundCellFunctionEntryPoint;
+    T_sp _TerminalIO;
+    List_sp _ActiveThreads;
+    List_sp _DefaultSpecialBindings;
+    WeakKeyHashTable_sp _Finalizers;
+    HashTable_sp _Sysprop;
+    HashTable_sp _ClassTable;
+    CharacterInfo charInfo; // Contains GC managed pointers
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolderUnshiftedNowhere;
-    gctools::Vec0<Instance_sp>     staticClassesUnshiftedNowhere;
-    gctools::Vec0<Symbol_sp>    staticClassSymbolsUnshiftedNowhere;
-    gctools::Vec0<Creator_sp>   staticInstanceCreatorsUnshiftedNowhere;
+    gctools::Vec0<Instance_sp> staticClassesUnshiftedNowhere;
+    gctools::Vec0<Symbol_sp> staticClassSymbolsUnshiftedNowhere;
+    gctools::Vec0<Creator_sp> staticInstanceCreatorsUnshiftedNowhere;
     gctools::Vec0<FileScope_sp> _SourceFiles;
     gctools::Vec0<clbind::detail::vertex> _CastGraph;
     gctools::Vec0<SymbolClassHolderPair> bootClassTable; // Map class symbols to classes
-    mpip::Mpi_sp                _MpiWorld;
+    mpip::Mpi_sp _MpiWorld;
     //! Class_map
     gctools::Vec0<clbind::ClassRep_sp> _ClassMap;
     //! Any class defined here needs to be added to predicates.cc::clos__classp
-    Instance_sp                 _TheClass;
-    Instance_sp                 _TheBuiltInClass;
-    Instance_sp                 _TheStandardClass;
-    Instance_sp                 _TheStructureClass;
-    Instance_sp                 _TheDerivableCxxClass;
-    Instance_sp                 _TheClbindCxxClass;
-    Package_sp                  _CorePackage;
-    Package_sp                  _KeywordPackage;
-    Package_sp                  _CommonLispPackage;
+    Instance_sp _TheClass;
+    Instance_sp _TheBuiltInClass;
+    Instance_sp _TheStandardClass;
+    Instance_sp _TheStructureClass;
+    Instance_sp _TheDerivableCxxClass;
+    Instance_sp _TheClbindCxxClass;
+    Package_sp _CorePackage;
+    Package_sp _KeywordPackage;
+    Package_sp _CommonLispPackage;
     /*! Store a list of all of the _SingleDispatchGenericFunction names
      *  We will use this once the compiler is up and running to compile their discriminating functions.
      */
@@ -362,12 +333,12 @@ public:
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
     List_sp _UnixSignalHandlers;
-//    DynamicBindingStack _Bindings;
-    HashTableEqual_sp _SourceFileIndices; // map<string,int>
+    //    DynamicBindingStack _Bindings;
+    HashTableEqual_sp _SourceFileIndices;   // map<string,int>
     HashTableEqual_sp _PackageNameIndexMap; // map<string,int>
-    bool           _PrintSymbolsProperly;
-    bool           _TheSystemIsUp;
-    bool           _Started;
+    bool _PrintSymbolsProperly;
+    bool _TheSystemIsUp;
+    bool _Started;
     GCRoots();
   };
 
@@ -376,25 +347,26 @@ public:
   friend class BootStrapCoreSymbolMap;
   friend T_sp sp_eval_when(List_sp args, T_sp env);
   friend List_sp core__all_source_files();
-  template <class oclass>
-  friend void define_base_class(Instance_sp co, Instance_sp cob, uint &classesUpdated);
-  template <class oclass>
-  friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
+  template <class oclass> friend void define_base_class(Instance_sp co, Instance_sp cob, uint &classesUpdated);
+  template <class oclass> friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
   friend void core__clear_gfun_hash(T_sp what);
+
 public:
   static void initializeGlobals(LispPtr lisp);
-  
+
 public:
   static void lisp_initSymbols(LispPtr lisp);
+
 public:
   static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 public:
   void initialize();
+
 public:
-  GCRoots        _Roots;   // Always make this first - so it's close to the front of the object
-    /*! Stores whether the system is big-endian or not */
+  GCRoots _Roots; // Always make this first - so it's close to the front of the object
+  /*! Stores whether the system is big-endian or not */
   IntegerOrdering _IntegerOrdering;
   bool _BootClassTableIsValid;
   int _RequireLevel;
@@ -419,9 +391,7 @@ public:
   List_sp copy_default_special_bindings() const;
 #endif
 public:
-  DebugStream &debugLog() {
-    return *(globals_->_DebugStream);
-  };
+  DebugStream &debugLog() { return *(globals_->_DebugStream); };
 
 public:
   uint nextReplCounter() { return ++globals_->_ReplCounter; };
@@ -450,7 +420,7 @@ public:
   //	List_sp catchFindTag(T_sp tag);
 public:
   HashTableEqualp_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
-  //void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
+  // void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
   /*! Return the maximum path length for the system */
 public:
   bool bootClassTableIsValid() const { return this->_BootClassTableIsValid; };
@@ -466,13 +436,13 @@ public:
 
 public:
   /*! Get the LoadTimeValues_sp that corresponds to the name.
-	  If it doesn't exist then make one and return it. */
-//NEW_LTV  LoadTimeValues_sp getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues = 0);
-//NEW_LTV  List_sp loadTimeValuesIds() const;
-//NEW_LTV  T_sp loadTimeValue(const string &name, int idx);
-//NEW_LTV  Symbol_sp loadTimeSymbol(const string &name, int idx);
-//NEW_LTV  LoadTimeValues_sp findLoadTimeValues(const string &name);
-  //NEW_LTV LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string &name, int &count);
+          If it doesn't exist then make one and return it. */
+  // NEW_LTV  LoadTimeValues_sp getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues = 0);
+  // NEW_LTV  List_sp loadTimeValuesIds() const;
+  // NEW_LTV  T_sp loadTimeValue(const string &name, int idx);
+  // NEW_LTV  Symbol_sp loadTimeSymbol(const string &name, int idx);
+  // NEW_LTV  LoadTimeValues_sp findLoadTimeValues(const string &name);
+  // NEW_LTV LoadTimeValues_sp findLoadTimeValuesWithNameContaining(const string &name, int &count);
 
 public:
   /*! Keep track of every source file that is read by the system */
@@ -495,11 +465,13 @@ public: // numerical constants
   Complex_sp imaginaryUnit() const { return this->_Roots._ImaginaryUnit; };
   Complex_sp imaginaryUnitNegative() const { return this->_Roots._ImaginaryUnitNegative; };
   Ratio_sp plusHalf() const { return this->_Roots._PlusHalf; };
+
 public:
   /*! Setup makePackage and exportSymbol callbacks */
 
 public:
   List_sp allPackagesAsCons() const;
+
 public:
   /*! Add a function to trace */
   void add_trace(Function_sp func);
@@ -510,7 +482,7 @@ public:
   List_sp trace_functions() const;
 
 public:
-//  inline DynamicBindingStack &bindings() { return this->_Roots._Bindings; };
+  //  inline DynamicBindingStack &bindings() { return this->_Roots._Bindings; };
 
 public:
   /*! Add a pair of symbolIDs that provide an accessor get/setf pair */
@@ -538,9 +510,9 @@ public:
   //	bool remove_setfDefinition(Symbol_sp fnName);
 
 public:
-  /*! This function is called whenever a symbol is exported 
-	  it will be used to callback to Python to install python callable functions
-	*/
+  /*! This function is called whenever a symbol is exported
+          it will be used to callback to Python to install python callable functions
+        */
   void exportingSymbol(Symbol_sp sym);
 
   void dump_apropos(const char *part) const;
@@ -554,7 +526,7 @@ public:
   //	void load(T_sp filespec, bool verbose=false, bool print=false, bool ifDoesNotExist=true );
 public:
   /*! Constantly updated line number as programs execute
-	 */
+   */
   uint _LineNumber;
 
 public:
@@ -564,7 +536,8 @@ public:
   Package_sp commonLispPackage() { return this->_Roots._CommonLispPackage; };
 
 private:
-  void parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName, bool &exported) const;
+  void parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName,
+                                           bool &exported) const;
 
 public:
   T_sp _true() const { return this->_Roots._TrueObject; };
@@ -579,11 +552,11 @@ public:
 public:
   //	void createHiddenBinder();
   /*! Return the hidden binder
-	 */
+   */
   //	Binder_sp hiddenBinder();
 public:
   /*! Return true if running a graphical environment
-	 */
+   */
   bool graphical();
   //	void setGraphical(bool g) { this->_Graphical = g;};
 public:
@@ -595,14 +568,13 @@ public:
   /*! Pass the mpi process rank in (rank) */
   static LispPtr createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize);
 
-    void initializeMainThread();
+  void initializeMainThread();
 
-    
   /*! Call this to setup the lisp environment
-	 */
+   */
   void startupLispEnvironment();
   /*! Call this to shut down the lisp environment before it is destructed
-	 */
+   */
   void shutdownLispEnvironment();
 
   void setCurrentWorkingDirectory(Path_sp path);
@@ -610,24 +582,18 @@ public:
 
   T_sp getCurrentReadTable();
 
-  template <class oclass>
-  gctools::smart_ptr<Cons_O> cons(gctools::smart_ptr<oclass> obj, gctools::smart_ptr<Cons_O> tail) {
+  template <class oclass> gctools::smart_ptr<Cons_O> cons(gctools::smart_ptr<oclass> obj, gctools::smart_ptr<Cons_O> tail) {
     return this->create<Cons_O>(obj, tail);
   }
   /*! Zero argument creator */
-  template <class oclass>
-  gctools::smart_ptr<oclass> create() {
-    return oclass::create();
-  }
+  template <class oclass> gctools::smart_ptr<oclass> create() { return oclass::create(); }
   /*! One argument creator */
-  template <class oclass, typename targ1>
-  gctools::smart_ptr<oclass> create(targ1 x) {
+  template <class oclass, typename targ1> gctools::smart_ptr<oclass> create(targ1 x) {
     gctools::smart_ptr<oclass> res = oclass::create(x);
     return res;
   }
   /*! Two argument creator */
-  template <class oclass, typename targ1, typename targ2>
-  gctools::smart_ptr<oclass> create(targ1 x, targ2 y) {
+  template <class oclass, typename targ1, typename targ2> gctools::smart_ptr<oclass> create(targ1 x, targ2 y) {
     gctools::smart_ptr<oclass> res = oclass::create(x, y);
     return res;
   }
@@ -643,10 +609,9 @@ private:
   static void finalizeSpecialSymbols();
 
 public:
-
   /*! Lookup a class in the _ClassTable by name
-	 If errorp == true then throw an exception if the class is not
-	found otherwise return nil */
+         If errorp == true then throw an exception if the class is not
+        found otherwise return nil */
   T_sp boot_findClassHolder(Symbol_sp className, bool errorp = true) const;
   /*! associate a class in the _ClassTable by name */
   Instance_sp boot_setf_findClass(Symbol_sp className, Instance_sp mc);
@@ -658,7 +623,8 @@ public:
   void setBuiltInClassesInitialized(bool b) { this->_BuiltInClassesInitialized = b; };
   void throwIfBuiltInClassesNotInitialized();
 
-  void defineMethod(const string &name, Symbol_sp classSymbol, Function_sp methoid, const string &arguments, const string &docString, bool autoExport);
+  void defineMethod(const string &name, Symbol_sp classSymbol, Function_sp methoid, const string &arguments,
+                    const string &docString, bool autoExport);
 
   //	string getRenderFileName() { return this->_RenderFileName; };
 
@@ -686,8 +652,8 @@ public:
   /*! Create nils for all classes that don't have them yet */
   //	void	createNils();
   /*! When global initialization is locked then no more callbacks can be added
-	 * and globals can be initialized
-	 */
+   * and globals can be initialized
+   */
   void installGlobalInitializationCallback(InitializationCallback c);
 
   /*! Find symbol or nil */
@@ -708,9 +674,9 @@ public:
   List_sp allLocalNamesAsCons();
 
   /*! The core REPL loop.  Set printResults to true if you want
-	  each eval result to be printed. Return false if (quit) or (exit) was evaluated.
-	  sin - an input stream designator
-	*/
+          each eval result to be printed. Return false if (quit) or (exit) was evaluated.
+          sin - an input stream designator
+        */
   T_mv readEvalPrint(T_sp sin, T_sp environ, bool printResults, bool prompt);
   T_mv readEvalPrintString(const string &string, T_sp environ, bool printResults);
   void readEvalPrintInteractive();
@@ -747,27 +713,27 @@ public:
   //	bool isGlobalDefined(Symbol_sp sym);
 
   /*! Push a new variable stack frame
-	 */
+   */
   //	Binder_sp _pushFrame();
   //	void _pushFrame(Binder_sp);
   //	void _popFrame();
   /*! Return the value currently bound to the symbol
-	 */
+   */
   //	T_sp value(Symbol_sp sym);
   /*! Set the value of the symbol in the local frame */
   //	void	setLocal(Symbol_sp sym, T_sp obj);
 
   /*! Update the value of a symbol
-	 */
+   */
   //	void	update(Symbol_sp sym, T_sp obj);
 
   /*! Update the value of a symbol or define it in the local namespace
-	 * if it doesn't exist
-	 */
+   * if it doesn't exist
+   */
   //	void	updateOrDefine(Symbol_sp sym, T_sp obj);
 
   /*! Return true if classSymbol is the id for a class that has the baseClassSymbol
-	 */
+   */
   //	bool subClassOrder(Symbol_sp baseClassSymbol,Symbol_sp classSymbol);
 
   bool recognizesPackage(const string &packageName) const;
@@ -780,9 +746,11 @@ public:
   Package_sp getCurrentPackage() const;
   void mapNameToPackage(const string &name, Package_sp pkg);
   void unmapNameToPackage(const string &name);
-  void finishPackageSetup(const string &packageName, list<string> const &nicknames, list<string> const &usePackages, list<string> const& shadow = {});
-  Package_sp makePackage(const string &packageName, list<string> const &nicknames, list<string> const &usePackages, list<string> const& shadow = {});
-  void remove_package(const string& package_name);
+  void finishPackageSetup(const string &packageName, list<string> const &nicknames, list<string> const &usePackages,
+                          list<string> const &shadow = {});
+  Package_sp makePackage(const string &packageName, list<string> const &nicknames, list<string> const &usePackages,
+                         list<string> const &shadow = {});
+  void remove_package(const string &package_name);
   bool usePackage(const string &packageName);
 
   List_sp getBackTrace() const;
@@ -791,15 +759,15 @@ public:
   Path_sp translateLogicalPathname(T_sp logicalPathName);
 
   /*! Return a path to an existing file indicated by logicalPathName.
-	  If the file is in the current directory return it.
-	  Otherwise use the *PATH* variable to search for paths that could contain the logicalPathName file */
+          If the file is in the current directory return it.
+          Otherwise use the *PATH* variable to search for paths that could contain the logicalPathName file */
   Path_sp translateLogicalPathnameUsingPaths(T_sp logicalPathName);
 
   /*! Parse the command line arguments and return a
-	 * Cons of code if code was provided on the command line or through a script file
-	 * Otherwise return nil
-	 */
-  void parseCommandLineArguments(const CommandLineOptions& options);
+   * Cons of code if code was provided on the command line or through a script file
+   * Otherwise return nil
+   */
+  void parseCommandLineArguments(const CommandLineOptions &options);
 
   Intrinsic_sp getIntrinsic(const string &name);
   string getMethodName(uint methodId);
@@ -816,51 +784,45 @@ public:
   string errorMessage();
 
   //	void setProgram(List_sp p) { this->_Program = p; };
-  //!Wipes out namespace and fills it with new values
+  //! Wipes out namespace and fills it with new values
   void initializeEnvironment();
 
   void addClassNameToPackageAsDynamic(const string &package, const string &name, Instance_sp cl);
-  void addClassSymbol(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-//  void addClass(Symbol_sp classSymbol, Instance_sp theClass);
+  void addClassSymbol(Symbol_sp classSymbol, Creator_sp creator,
+                      Symbol_sp base1ClassSymbol); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol =
+                                                   //UNDEFINED_SYMBOL);
+                                                   //  void addClass(Symbol_sp classSymbol, Instance_sp theClass);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;
 
   /*! From gdb - start trace on functions using function names separated by spaces.
-	  If the names string is empty then dump all the functions currently being
-	  traced */
+          If the names string is empty then dump all the functions currently being
+          traced */
   void gdb_trace_by_name(const char *names);
 
   /*! From gdb - stop trace on functions using function names separated by spaces.
-	  if the names string is empty then untrace all functions. */
+          if the names string is empty then untrace all functions. */
   void gdb_untrace_by_name(const char *name);
 
   explicit Lisp();
   virtual ~Lisp();
-} ;
-
- /*! Use RAII to safely allocate a buffer */
- 
-struct SafeBufferStr8Ns {
-  Str8Ns_sp _Buffer;
-  SafeBufferStr8Ns() {
-    this->_Buffer = _lisp->get_Str8Ns_buffer_string();
-  };
-  ~SafeBufferStr8Ns() {
-    _lisp->put_Str8Ns_buffer_string(this->_Buffer);
-  };
-  Str8Ns_sp string() const {return this->_Buffer;};
 };
 
- struct SafeBufferStrWNs {
+/*! Use RAII to safely allocate a buffer */
+
+struct SafeBufferStr8Ns {
+  Str8Ns_sp _Buffer;
+  SafeBufferStr8Ns() { this->_Buffer = _lisp->get_Str8Ns_buffer_string(); };
+  ~SafeBufferStr8Ns() { _lisp->put_Str8Ns_buffer_string(this->_Buffer); };
+  Str8Ns_sp string() const { return this->_Buffer; };
+};
+
+struct SafeBufferStrWNs {
   StrWNs_sp _Buffer;
-  SafeBufferStrWNs() {
-    this->_Buffer = _lisp->get_StrWNs_buffer_string();
-  };
-  ~SafeBufferStrWNs() {
-    _lisp->put_StrWNs_buffer_string(this->_Buffer);
-  };
-  StrWNs_sp string() const {return this->_Buffer;};
+  SafeBufferStrWNs() { this->_Buffer = _lisp->get_StrWNs_buffer_string(); };
+  ~SafeBufferStrWNs() { _lisp->put_StrWNs_buffer_string(this->_Buffer); };
+  StrWNs_sp string() const { return this->_Buffer; };
 };
 
 void initializeLisp();
@@ -871,7 +833,7 @@ struct LispHolder //: public gctools::StackRoot
   /*! Pass the mpiProcess rank in (rank) or set to 0 if there is only one process */
   LispHolder(bool mpiEnabled, int mpiRank, int mpiSize);
 
-  virtual void startup(const CommandLineOptions& options);
+  virtual void startup(const CommandLineOptions &options);
 
   virtual ~LispHolder();
 };
@@ -884,33 +846,33 @@ public:
   explicit ChangePackage(Package_sp newPackage);
   virtual ~ChangePackage();
 };
-};
+}; // namespace core
 
 namespace core {
 
-  T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments);
-  T_mv cl__macroexpand_1(T_sp form, T_sp env);
-  T_mv cl__macroexpand(T_sp form, T_sp env);
+T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments);
+T_mv cl__macroexpand_1(T_sp form, T_sp env);
+T_mv cl__macroexpand(T_sp form, T_sp env);
 
-  List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = nil<T_O>());
+List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = nil<T_O>());
 
-  T_sp cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = nil<T_O>());
-  T_sp core__setf_find_class(T_sp newValue, Symbol_sp name);
+T_sp cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = nil<T_O>());
+T_sp core__setf_find_class(T_sp newValue, Symbol_sp name);
 
-  void cl__error(T_sp err, List_sp initializers);
-};
+void cl__error(T_sp err, List_sp initializers);
+}; // namespace core
 
 #define INTERN(x) _lisp->internWithPackageName(x, CurrentPkg)
 
 namespace core {
-  void initialize_Lisp();
+void initialize_Lisp();
 #ifdef DEBUG_MONITOR_SUPPORT
 std::string core__monitor_directory();
-FILE* monitor_file(const std::string& filename_prefix);
+FILE *monitor_file(const std::string &filename_prefix);
 #endif
 
 #ifdef DEBUG_MONITOR
-  void monitor_message(const std::string& msg);
+void monitor_message(const std::string &msg);
 #define MONITOR(x) core::monitor_message((x).str());
 #else
 #define MONITOR(x)
@@ -920,9 +882,4 @@ extern bool global_Started;
 void dumpDebuggingLayouts();
 T_mv cl__intern(String_sp symbol_name, T_sp package_desig);
 
-
-};
-
-
-
-#endif //]
+}; // namespace core

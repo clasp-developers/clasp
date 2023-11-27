@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -37,16 +37,16 @@ namespace clos {
 
 SYMBOL_SC_(ClosPkg, aSingleClosSymbol);
 SYMBOL_EXPORT_SC_(ClosPkg, class_precedence_list);
-SYMBOL_EXPORT_SC_(ClosPkg,slot_definition);
-SYMBOL_SC_(ClosPkg,NAME);
-SYMBOL_EXPORT_SC_(ClosPkg,subclassesSTAR);
-SYMBOL_SC_(ClosPkg,LOCATION_TABLE);
-SYMBOL_EXPORT_SC_(ClosPkg,update_instance);
-SYMBOL_EXPORT_SC_(ClosPkg,dispatch_miss_va);
-SYMBOL_EXPORT_SC_(ClosPkg,single_dispatch_miss_va);
-SYMBOL_EXPORT_SC_(ClosPkg,_PLUS_the_standard_class_PLUS_);
-SYMBOL_EXPORT_SC_(ClosPkg,funcallable_standard_class);
-SYMBOL_EXPORT_SC_(ClosPkg,dispatcher_count);
+SYMBOL_EXPORT_SC_(ClosPkg, slot_definition);
+SYMBOL_SC_(ClosPkg, NAME);
+SYMBOL_EXPORT_SC_(ClosPkg, subclassesSTAR);
+SYMBOL_SC_(ClosPkg, LOCATION_TABLE);
+SYMBOL_EXPORT_SC_(ClosPkg, update_instance);
+SYMBOL_EXPORT_SC_(ClosPkg, dispatch_miss_va);
+SYMBOL_EXPORT_SC_(ClosPkg, single_dispatch_miss_va);
+SYMBOL_EXPORT_SC_(ClosPkg, _PLUS_the_standard_class_PLUS_);
+SYMBOL_EXPORT_SC_(ClosPkg, funcallable_standard_class);
+SYMBOL_EXPORT_SC_(ClosPkg, dispatcher_count);
 
 SYMBOL_EXPORT_SC_(ClosPkg, DIRECT_SUPERCLASSES);
 SYMBOL_SC_(ClosPkg, DIRECT_SUBCLASSES);
@@ -68,4 +68,4 @@ void initialize_closPackage() {
   _lisp->makePackage("CLOS", lnicknames, luse);
   // We don't have to create the CLOS symbols here - it's done in bootStrapCoreSymbolMap
 }
-};
+}; // namespace clos

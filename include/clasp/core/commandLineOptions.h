@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: commandLineOptions.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef CommandLineOptions_H
-#define CommandLineOptions_H
 
 namespace core {
 
@@ -95,5 +94,3 @@ template <typename Char> struct fmt::formatter<core::LoadEvalEnum, Char> : fmt::
         o == core::cloLoad ? "load" : (o == core::cloEval ? "eval" : "script"), ctx);
   }
 };
-
-#endif

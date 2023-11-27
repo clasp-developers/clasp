@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: bignum.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_bignum_H_
-#define _core_bignum_H_
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/object.h>
@@ -36,9 +35,7 @@ namespace core {
 class Bignum_O;
 };
 
-
-template <>
-struct gctools::GCInfo<core::Bignum_O> {
+template <> struct gctools::GCInfo<core::Bignum_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = atomic;
@@ -46,47 +43,48 @@ struct gctools::GCInfo<core::Bignum_O> {
 
 namespace core {
 class Bignum_O : public Integer_O {
-  LISP_CLASS(core, ClPkg, Bignum_O, "Bignum",Integer_O);
+  LISP_CLASS(core, ClPkg, Bignum_O, "Bignum", Integer_O);
+
 public:
-  Bignum_O(int64_t signed_length, mp_limb_t initialElement=0, bool initialElementSupplied=false,size_t initialContentsSize=0, const mp_limb_t* initialContents=NULL) : _limbs(signed_length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {
-  }
+  Bignum_O(int64_t signed_length, mp_limb_t initialElement = 0, bool initialElementSupplied = false, size_t initialContentsSize = 0,
+           const mp_limb_t *initialContents = NULL)
+      : _limbs(signed_length, initialElement, initialElementSupplied, initialContentsSize, initialContents) {}
+
 public:
   typedef mp_limb_t value_type;
+
 public: // instance variables here
   gctools::GCArraySignedLength_moveable<mp_limb_t> _limbs;
 
 public: // Functions here
   // NOTE: Not just create since (a) it's the lowest level, and
   // (b) it would cause ambiguity with create(fixnum).
-  static Bignum_sp create_from_limbs( int64_t signed_number_of_limbs, mp_limb_t initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const mp_limb_t* initialContents=NULL)
-  {
-    auto b = gctools::GC<Bignum_O>::allocate_container<gctools::RuntimeStage>(false/*static_vector_p*/,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+  static Bignum_sp create_from_limbs(int64_t signed_number_of_limbs, mp_limb_t initialElement = 0,
+                                     bool initialElementSupplied = false, size_t initialContentsSize = 0,
+                                     const mp_limb_t *initialContents = NULL) {
+    auto b = gctools::GC<Bignum_O>::allocate_container<gctools::RuntimeStage>(false /*static_vector_p*/, signed_number_of_limbs,
+                                                                              initialElement, initialElementSupplied,
+                                                                              initialContentsSize, initialContents);
     return b;
   };
-  static Bignum_sp create(const mpz_class&);
-  static Bignum_sp create(gc::Fixnum fix) {
-    return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true);
-  }
-#if !defined( CLASP_UNSIGNED_LONG_LONG_IS_UINT64 )
+  static Bignum_sp create(const mpz_class &);
+  static Bignum_sp create(gc::Fixnum fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
+#if !defined(CLASP_UNSIGNED_LONG_LONG_IS_UINT64)
   static Bignum_sp create(unsigned long long ull) {
-    ASSERT(sizeof(unsigned long long)<=sizeof(mp_limb_t));
+    ASSERT(sizeof(unsigned long long) <= sizeof(mp_limb_t));
     return create_from_limbs(1, ull, true);
   }
 #endif
-#if !defined( CLASP_LONG_LONG_IS_INT64 )
+#if !defined(CLASP_LONG_LONG_IS_INT64)
   static Bignum_sp create(long long ll) {
-    ASSERT(sizeof(long long)<=sizeof(mp_limb_t));
+    ASSERT(sizeof(long long) <= sizeof(mp_limb_t));
     return create_from_limbs((ll < 0) ? -1 : 1, std::abs(ll), true);
   }
 #endif
 #if !defined(CLASP_FIXNUM_IS_INT64)
-  static Bignum_sp create(int64_t v) {
-    return create_from_limbs((v < 0) ? -1 : 1, std::abs(v), true);
-  }
+  static Bignum_sp create(int64_t v) { return create_from_limbs((v < 0) ? -1 : 1, std::abs(v), true); }
 #endif
-  static Bignum_sp create(uint64_t v) {
-    return create_from_limbs(1, v, true);
-  }
+  static Bignum_sp create(uint64_t v) { return create_from_limbs(1, v, true); }
   static Bignum_sp create(double d) {
     // KLUDGE: there is no mpn function for converting from a double.
     // However, this conses, which we shouldn't need to do.
@@ -98,7 +96,7 @@ public: // Functions here
   static Bignum_sp make(const string &value_in_string);
 
   mp_size_t length() const { return _limbs.signedLength(); }
-  const mp_limb_t* limbs() const { return &(_limbs._Data[0]);}
+  const mp_limb_t *limbs() const { return &(_limbs._Data[0]); }
 
   void sxhash_(HashGenerator &hg) const;
 
@@ -134,8 +132,7 @@ public: // Functions here
   virtual bool evenp_() const override { return !((this->limbs())[0] & 1); }
   virtual bool oddp_() const override { return (this->limbs())[0] & 1; }
 
-  template<typename integral>
-  integral to_integral() const {
+  template <typename integral> integral to_integral() const {
     integral mn = std::numeric_limits<integral>::min();
     integral mx = std::numeric_limits<integral>::max();
     // First, if integral can only hold fixnums, conversion will always fail.
@@ -144,32 +141,33 @@ public: // Functions here
       // The actual conversion is a KLUDGE right now.
       // We assume the type is exactly big enough to fit one mp_limb_t.
       mp_size_t len = this->length();
-      const mp_limb_t* limbs = this->limbs();
+      const mp_limb_t *limbs = this->limbs();
       if (std::is_signed<integral>::value) {
-        if (len == 1) return limbs[0];
-        else if (len == -1) return -(limbs[0]);
-      } else if (len == 1) return limbs[0];
+        if (len == 1)
+          return limbs[0];
+        else if (len == -1)
+          return -(limbs[0]);
+      } else if (len == 1)
+        return limbs[0];
     }
     // Fell through: Bignum is out of range
-    TYPE_ERROR(this->asSmartPtr(),
-               Cons_O::createList(cl::_sym_Integer_O,
-                                  Integer_O::create(mn),
-                                  Integer_O::create(mx)));
+    TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(mn), Integer_O::create(mx)));
   };
-  
+
 }; // Bignum class
 
 // Remove any high limbs that are equal to zero,
 // starting from the right (most significant)
 // Can result in zero limbs.
-#define BIGNUM_NORMALIZE(NLIMBS, LIMBS)\
-  while((NLIMBS) > 0) {\
-    if ((LIMBS)[(NLIMBS) - 1] != 0) break;\
-    (NLIMBS)--;\
+#define BIGNUM_NORMALIZE(NLIMBS, LIMBS)                                                                                            \
+  while ((NLIMBS) > 0) {                                                                                                           \
+    if ((LIMBS)[(NLIMBS)-1] != 0)                                                                                                  \
+      break;                                                                                                                       \
+    (NLIMBS)--;                                                                                                                    \
   }
 
 Bignum_sp core__next_from_fixnum(Fixnum);
-Integer_sp bignum_result(mp_size_t, const mp_limb_t*);
+Integer_sp bignum_result(mp_size_t, const mp_limb_t *);
 Integer_sp core__next_fmul(Bignum_sp, Fixnum);
 Bignum_sp core__next_mul(Bignum_sp, Bignum_sp);
 Bignum_sp core__mul_fixnums(Fixnum, Fixnum);
@@ -186,28 +184,22 @@ Integer_sp core__next_fadd(Bignum_sp, Fixnum);
 Integer_sp core__next_fsub(Fixnum, Bignum_sp);
 int core__next_compare(Bignum_sp, Bignum_sp);
 
-template<typename integral>
-integral clasp_to_integral(T_sp obj) {
-  static_assert(std::is_integral<integral>::value,
-                "clasp_to_integral needs an integral type");
+template <typename integral> integral clasp_to_integral(T_sp obj) {
+  static_assert(std::is_integral<integral>::value, "clasp_to_integral needs an integral type");
   integral mn = std::numeric_limits<integral>::min();
   integral mx = std::numeric_limits<integral>::max();
   if (obj.fixnump()) {
     gc::Fixnum f = obj.unsafe_fixnum();
-    if ((mn <= f) && (f <= mx)) return f;
-    else TYPE_ERROR(obj, Cons_O::createList(cl::_sym_Integer_O,
-                                            Integer_O::create(mn),
-                                            Integer_O::create(mx)));
+    if ((mn <= f) && (f <= mx))
+      return f;
+    else
+      TYPE_ERROR(obj, Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(mn), Integer_O::create(mx)));
   } else if (gc::IsA<Bignum_sp>(obj))
     return (gc::As_unsafe<Bignum_sp>(obj))->template to_integral<integral>();
   else if (gc::IsA<Bignum_sp>(obj))
     return (gc::As_unsafe<Bignum_sp>(obj))->template to_integral<integral>();
-  else TYPE_ERROR(obj, Cons_O::createList(cl::_sym_Integer_O,
-                                          Integer_O::create(mn),
-                                          Integer_O::create(mx)));
+  else
+    TYPE_ERROR(obj, Cons_O::createList(cl::_sym_Integer_O, Integer_O::create(mn), Integer_O::create(mx)));
 };
 
-}; // core namespace
-
-
-#endif /* _bignum_H_ */
+}; // namespace core

@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 //
 // (C) 2004 Christian E. Schafmeister
@@ -47,14 +47,14 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(makeSmallMultimap)dx");
 DOCGROUP(clasp);
 CL_DEFUN SmallMultimap_sp core__make_small_multimap() {
-  auto  sm = gctools::GC<SmallMultimap_O>::allocate_with_default_constructor();
+  auto sm = gctools::GC<SmallMultimap_O>::allocate_with_default_constructor();
   return sm;
 };
 
 CL_LISPIFY_NAME("small_multimap_describe");
 CL_DEFMETHOD void SmallMultimap_O::describe() {
   for (auto it = this->map.begin(); it != this->map.end(); ++it) {
-    clasp_write_string(fmt::format("{}:{}  key: {}   value: {}\n" , __FILE__ , __LINE__ , _rep_(it->first) , _rep_(it->second)));
+    clasp_write_string(fmt::format("{}:{}  key: {}   value: {}\n", __FILE__, __LINE__, _rep_(it->first), _rep_(it->second)));
   }
 }
 
@@ -62,7 +62,7 @@ CL_LISPIFY_NAME("small_multimap_describe_range");
 CL_DEFMETHOD void SmallMultimap_O::describeRange(T_sp key) {
   pair<map_type::iterator, map_type::iterator> range = this->map.equal_range(key);
   for (auto it = range.first; it != range.second; ++it) {
-    clasp_write_string(fmt::format("{}:{}  key: {}   value: {}\n" , __FILE__ , __LINE__ , _rep_(it->first) , _rep_(it->second)));
+    clasp_write_string(fmt::format("{}:{}  key: {}   value: {}\n", __FILE__, __LINE__, _rep_(it->first), _rep_(it->second)));
   }
 }
 
@@ -73,10 +73,6 @@ CL_DEFMETHOD void SmallMultimap_O::insert(T_sp key, T_sp val) {
 }
 
 CL_LISPIFY_NAME("small_multimap_contains");
-CL_DEFMETHOD bool SmallMultimap_O::contains(T_sp key) {
-  return this->map.contains(key);
-}
+CL_DEFMETHOD bool SmallMultimap_O::contains(T_sp key) { return this->map.contains(key); }
 
-
-
-};
+}; // namespace core

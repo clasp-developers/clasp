@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: sequence.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,13 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_Sequence_fwd_H
 namespace core {
-  size_t_pair sequenceKeywordStartEnd(Symbol_sp function_name,
-                               T_sp seq, Fixnum_sp start, T_sp end);
-  size_t_pair sequenceStartEnd(Symbol_sp function_name,
-                               size_t length, size_t start, T_sp end);
-  void sequenceIndexInBounds(Symbol_sp fn_name, size_t vector_length, size_t index);
+size_t_pair sequenceKeywordStartEnd(Symbol_sp function_name, T_sp seq, Fixnum_sp start, T_sp end);
+size_t_pair sequenceStartEnd(Symbol_sp function_name, size_t length, size_t start, T_sp end);
+void sequenceIndexInBounds(Symbol_sp fn_name, size_t vector_length, size_t index);
 
-};
-#endif
+}; // namespace core

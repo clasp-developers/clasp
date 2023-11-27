@@ -34,8 +34,8 @@ THE SOFTWARE.
 
 namespace clasp_ffi {
 
-void initialize_clasp_ffi_package( void ) {
-  // Nothing yet to be done here
+void initialize_clasp_ffi_package(void){
+    // Nothing yet to be done here
 };
 
 };

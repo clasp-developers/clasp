@@ -272,10 +272,28 @@ void CommandLineOptions::printVersion() {
 }
 
 void process_clasp_arguments(CommandLineOptions *options) {
-  std::set<std::string> parameter_required = {
-      "-i",          "--image", "--snapshot", "--type",   "-L",     "--llvm-debug", "-d", "--describe",         "-a",
-      "--addresses", "-e",      "--eval",     "-l",       "--load", "--script",     "-z", "--snapshot-symbols-save", "--rc",
-      "-S",          "--seed",  "-f",         "--feature"};
+  std::set<std::string> parameter_required = {"-i",
+                                              "--image",
+                                              "--snapshot",
+                                              "--type",
+                                              "-L",
+                                              "--llvm-debug",
+                                              "-d",
+                                              "--describe",
+                                              "-a",
+                                              "--addresses",
+                                              "-e",
+                                              "--eval",
+                                              "-l",
+                                              "--load",
+                                              "--script",
+                                              "-z",
+                                              "--snapshot-symbols-save",
+                                              "--rc",
+                                              "-S",
+                                              "--seed",
+                                              "-f",
+                                              "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
     if (parameter_required.find(*arg) != parameter_required.end() && (arg + 1) == end) {
       std::cerr << "Missing parameter for " << *arg << " option." << std::endl;
@@ -422,16 +440,10 @@ void process_clasp_arguments(CommandLineOptions *options) {
 
 CommandLineOptions::CommandLineOptions(int argc, const char *argv[])
     : _ProcessArguments(process_clasp_arguments), _DisableMpi(false), _AddressesP(false), _StartupType(DEFAULT_STARTUP_TYPE),
-      _FreezeStartupType(false),
-      _HasDescribeFile(false),
-      _StartupFile(""),
-      _ExportedSymbolsCheck(false),
-      _ExportedSymbolsSave(false),
-      _RandomNumberSeed(0),
-      _NoInform(false), _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false)
-    , _SilentStartup(true)
-    , _GenerateTrampolines(false)
-    , _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false), _PauseForDebugger(false) {
+      _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsCheck(false),
+      _ExportedSymbolsSave(false), _RandomNumberSeed(0), _NoInform(false), _NoPrint(false), _DebuggerDisabled(false),
+      _Interactive(true), _Version(false), _SilentStartup(true), _GenerateTrampolines(false),
+      _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false), _PauseForDebugger(false) {
   if (argc == 0) {
     this->_RawArguments.push_back("./");
   } else {

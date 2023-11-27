@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: wrapped_iterator.h
 */
@@ -24,8 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef clbind_wrapped_iterator_H
-#define clbind_wrapped_iterator_H
 
 #include <clasp/core/iterator.h>
 #include <clasp/core/instance.h>
@@ -78,5 +78,3 @@ template <typename IT, typename Policy> class gctools::GCStamp<clbind::Iterator<
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Iterator<IT, Policy>::TemplatedBase>::StampWtag;
 };
-
-#endif // clbind_wrapped_iterator

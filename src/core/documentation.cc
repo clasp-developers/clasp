@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/array.h>
@@ -48,7 +48,8 @@ CL_DEFUN T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
   for (auto cur : coerce_to_list(record)) {
     List_sp i = oCar(cur);
     T_sp obj = oCar(i);
-    if (cl__equalp(obj, cons)) return i;
+    if (cl__equalp(obj, cons))
+      return i;
   }
   return (nil<T_O>());
 }
@@ -99,7 +100,8 @@ CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
 
 CL_LAMBDA(object key sub-key value);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(annotate - see ecl>>helpfile.lisp>>annotate; **key** is either 'documentation or 'setf-documentation **object** must be a symbol)dx");
+CL_DOCSTRING(
+    R"dx(annotate - see ecl>>helpfile.lisp>>annotate; **key** is either 'documentation or 'setf-documentation **object** must be a symbol)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value) {
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
@@ -109,7 +111,6 @@ CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value) {
   return result;
 };
 
-
 CL_LAMBDA(object key sub-key);
 CL_DOCSTRING(R"(Remove an annotation)");
 DOCGROUP(clasp);
@@ -118,9 +119,9 @@ CL_DEFUN void ext__remove_annotation(T_sp object, T_sp key, T_sp sub_key) {
   if (tdict.notnilp()) {
     HashTable_sp dict = gc::As<HashTable_sp>(tdict);
     T_sp value = dict->gethash(object);
-    T_sp record = core__rem_record_field(value,key,sub_key);
+    T_sp record = core__rem_record_field(value, key, sub_key);
     if (record.notnilp()) {
-      dict->hash_table_setf_gethash(object,record);
+      dict->hash_table_setf_gethash(object, record);
     } else {
       dict->remhash(object);
     }
@@ -139,7 +140,7 @@ CL_LAMBDA(object doc-type string);
 CL_DOCSTRING(R"dx(Set the documentation of an object)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__set_documentation(T_sp object, T_sp doc_type, T_sp string) {
-  if ( !(cl__stringp(string) || string.nilp()) ) {
+  if (!(cl__stringp(string) || string.nilp())) {
     SIMPLE_ERROR("{} is not a valid documentation string", _rep_(string));
   }
   T_sp key = cl::_sym_documentation;
@@ -148,9 +149,9 @@ CL_DEFUN T_sp core__set_documentation(T_sp object, T_sp doc_type, T_sp string) {
     key = core::_sym_setf_documentation;
   }
   if (string.notnilp()) {
-    ext__annotate(object,key,doc_type,string);
+    ext__annotate(object, key, doc_type, string);
   } else {
-    ext__remove_annotation(object,key,doc_type);
+    ext__remove_annotation(object, key, doc_type);
   }
   return string;
 }
@@ -163,8 +164,8 @@ void initialize_documentation_primitives(LispPtr lisp) {
   SYMBOL_EXPORT_SC_(ExtPkg, annotate);
   SYMBOL_SC_(CorePkg, ensure_documentation);
   // TODO move help_file.dat definition somewhere better
-//  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), Str_O::create("help_file.dat")));
-//  _sym_STARdocumentation_poolSTAR->exportYourself();
+  //  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(),
+  //  Str_O::create("help_file.dat"))); _sym_STARdocumentation_poolSTAR->exportYourself();
 }
 
-}; /* namespace */
+}; // namespace core

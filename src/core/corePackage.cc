@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 #include <limits.h>
 #include <float.h>
 #include <stdio.h>
@@ -161,8 +161,8 @@ SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_object);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcache_macroexpandSTAR);
-//SYMBOL_EXPORT_SC_(CorePkg, STARclasp_startup_function_nameSTAR);
-//SYMBOL_EXPORT_SC_(CorePkg, STARclasp_shutdown_function_nameSTAR);
+// SYMBOL_EXPORT_SC_(CorePkg, STARclasp_startup_function_nameSTAR);
+// SYMBOL_EXPORT_SC_(CorePkg, STARclasp_shutdown_function_nameSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, class_source_location)
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_hash_tableSTAR)
@@ -929,8 +929,8 @@ __attribute((optnone)) void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpo
   case candoGlobals: {
     // expose the CorePkg constants here
     //----------- symbols are created in lisp.cc::startupLispEnvironment ----------
-    //#define SYMBOLS_CREATE
-    //#i n c l u d e SYMBOLS_SCRAPED_INC_H
+    // #define SYMBOLS_CREATE
+    // #i n c l u d e SYMBOLS_SCRAPED_INC_H
     //-----------------------------------------------------------------------------
   }
 
@@ -1297,13 +1297,13 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   features = Cons_O::create(_lisp->internKeyword("USE-PRECISE-GC"), features);
 #endif
 #ifdef CLASP_THREADS
-  features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
+  features = Cons_O::create(_lisp->internKeyword("THREADS"), features);
 #endif
-#if TAG_BITS==4
-  features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"),features);
+#if TAG_BITS == 4
+  features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"), features);
 #endif
 #ifdef CLASP_EXTENSIONS
-  features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"),features);
+  features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"), features);
 #endif
 #ifdef DEFAULT_OUTPUT_TYPE_BYTECODE
   features = Cons_O::create(_lisp->internKeyword("BYTECODE"), features);
@@ -1320,6 +1320,6 @@ void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
 
 #define EXPAND_CLASS_MACROS
 #define _CLASS_MACRO(_T_) STATIC_CLASS_INFO(_T_);
-//#include <clasp/core/initClasses.h>
+// #include <clasp/core/initClasses.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS

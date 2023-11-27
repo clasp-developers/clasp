@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: clasp_ffiPackage.fwd.h
 */
@@ -24,10 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#if !defined( __CLASP_CORE_FFI_PACKAGE_FWD_H__ )
-#define __CLASP_CORE_FFI_PACKAGE_FWD_H__ __FILE__" $Id$"
 
 PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(clasp_ffi, Clasp_ffi_pkg, "CLASP-FFI")
-
-#endif // __CLASP_CORE_FFI_PACKAGE_FWD_H__

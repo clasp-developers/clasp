@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -32,43 +32,31 @@ THE SOFTWARE.
 
 #define WEAK_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, (x).str().c_str())
 
+namespace core {
+
+WeakKeyHashTable_O::WeakKeyHashTable_O() : _HashTable(16, core::make_single_float(2.0), 0.5){};
+
+void WeakKeyHashTable_O::initialize() { this->_HashTable.initialize(); }
+}; // namespace core
 
 namespace core {
 
-    WeakKeyHashTable_O::WeakKeyHashTable_O() : _HashTable(16, core::make_single_float(2.0),0.5) {};
-  
-void WeakKeyHashTable_O::initialize() {
-  this->_HashTable.initialize();
-}
-};
+Number_sp WeakKeyHashTable_O::rehash_size() { return this->_HashTable._RehashSize; }
 
+double WeakKeyHashTable_O::rehash_threshold() { return this->_HashTable._RehashThreshold; }
 
-namespace core {
-
-
-Number_sp WeakKeyHashTable_O::rehash_size()
-{
-  return this->_HashTable._RehashSize;
-}
-
-double WeakKeyHashTable_O::rehash_threshold() {
-  return this->_HashTable._RehashThreshold;
-}
-
-T_sp WeakKeyHashTable_O::hash_table_test() {
-  return cl::_sym_eq;
-}
-
+T_sp WeakKeyHashTable_O::hash_table_test() { return cl::_sym_eq; }
 
 void WeakKeyHashTable_O::describe(T_sp stream) {
   KeyBucketsType &keys = *this->_HashTable._Keys;
   ValueBucketsType &values = *this->_HashTable._Values;
   stringstream ss;
-  ss << fmt::format("WeakKeyHashTable   size: {}u\n" , this->_HashTable.length());
-  ss << fmt::format("   keys memory range:  {}  - {} \n" , (void*)&keys[0].rawRef_() , (void*)&keys[this->_HashTable.length()].rawRef_());
-  ss << fmt::format("   _HashTable.length = {}\n" , keys.length());
-  ss << fmt::format("   _HashTable.used = {}\n" , keys.used());
-  ss << fmt::format("   _HashTable.deleted = {}\n" , keys.deleted());
+  ss << fmt::format("WeakKeyHashTable   size: {}u\n", this->_HashTable.length());
+  ss << fmt::format("   keys memory range:  {}  - {} \n", (void *)&keys[0].rawRef_(),
+                    (void *)&keys[this->_HashTable.length()].rawRef_());
+  ss << fmt::format("   _HashTable.length = {}\n", keys.length());
+  ss << fmt::format("   _HashTable.used = {}\n", keys.used());
+  ss << fmt::format("   _HashTable.deleted = {}\n", keys.deleted());
   for (int i(0), iEnd(this->_HashTable.length()); i < iEnd; ++i) {
     value_type &key = keys[i];
     stringstream sentry;
@@ -108,21 +96,13 @@ SYMBOL_EXPORT_SC_(KeywordPkg, deleted);
  * table. See topic/location.
  * Return (values value t) or (values nil nil)
  */
-T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue) {
-  return this->_HashTable.gethash(key, defaultValue);
-}
+T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue) { return this->_HashTable.gethash(key, defaultValue); }
 
-void WeakKeyHashTable_O::maphashLowLevel(std::function<void(T_sp, T_sp)> const &fn) {
-  this->_HashTable.maphash(fn);
-}
+void WeakKeyHashTable_O::maphashLowLevel(std::function<void(T_sp, T_sp)> const &fn) { this->_HashTable.maphash(fn); }
 
-void WeakKeyHashTable_O::maphash(T_sp func) {
-  this->_HashTable.maphashFn(func);
-}
+void WeakKeyHashTable_O::maphash(T_sp func) { this->_HashTable.maphashFn(func); }
 
-bool WeakKeyHashTable_O::remhash(T_sp tkey) {
-  return this->_HashTable.remhash(tkey);
-}
+bool WeakKeyHashTable_O::remhash(T_sp tkey) { return this->_HashTable.remhash(tkey); }
 
 T_sp WeakKeyHashTable_O::clrhash() {
   this->_HashTable.clrhash();
@@ -141,7 +121,7 @@ CL_DOCSTRING(R"dx(makeWeakKeyHashTable)dx");
 DOCGROUP(clasp);
 CL_DEFUN WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size) {
   int sz = unbox_fixnum(size);
-  WeakKeyHashTable_sp ht = gctools::GC<WeakKeyHashTable_O>::allocate(sz,DoubleFloat_O::create(2.0),0.5);
+  WeakKeyHashTable_sp ht = gctools::GC<WeakKeyHashTable_O>::allocate(sz, DoubleFloat_O::create(2.0), 0.5);
   return ht;
 }
 
@@ -149,9 +129,7 @@ CL_LAMBDA(key hash-table &optional default-value);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(weakGethash)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__weak_gethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp defaultValue) {
-  return ht->gethash(tkey, defaultValue);
-};
+CL_DEFUN T_mv core__weak_gethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp defaultValue) { return ht->gethash(tkey, defaultValue); };
 
 T_sp WeakKeyHashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   this->_HashTable.set(key, value);
@@ -162,26 +140,19 @@ CL_LAMBDA(ht key value);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(weakSetfGethash)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__weak_setf_gethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val) {
-  ht->hash_table_setf_gethash(key, val);
-};
+CL_DEFUN void core__weak_setf_gethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val) { ht->hash_table_setf_gethash(key, val); };
 
 CL_LAMBDA(ht key);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(weakRemhash)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__weak_remhash(WeakKeyHashTable_sp ht, T_sp key) {
-  ht->remhash(key);
-};
-
+CL_DEFUN void core__weak_remhash(WeakKeyHashTable_sp ht, T_sp key) { ht->remhash(key); };
 
 CL_LAMBDA(ht);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(weakClrhash)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__weak_clrhash(WeakKeyHashTable_sp ht) {
-  ht->clrhash();
-};
+CL_DEFUN void core__weak_clrhash(WeakKeyHashTable_sp ht) { ht->clrhash(); };
 
 CL_LAMBDA(ht idx);
 CL_DECLARE();
@@ -209,12 +180,8 @@ CL_DEFUN void core__weak_rehash(WeakKeyHashTable_sp ht, T_sp sz) {
   size_t dummyPos;
   ht->_HashTable.rehash(dummyKey, dummyPos);
 };
-};
-
-
-
+}; // namespace core
 
 SYMBOL_EXPORT_SC_(KeywordPkg, splatted);
 SYMBOL_EXPORT_SC_(KeywordPkg, unbound);
 SYMBOL_EXPORT_SC_(KeywordPkg, deleted);
-

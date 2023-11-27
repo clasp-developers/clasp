@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/array.h>
@@ -40,25 +40,20 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
-                                                       Instance_sp receiverClass,
-                                                       List_sp declares,
-                                                       gc::Nilable<String_sp> docstr,
-                                                       Function_sp body) {
-  auto  method = gctools::GC<SingleDispatchMethod_O>::allocate( name,receiverClass,declares,docstr,body);
+SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name, Instance_sp receiverClass, List_sp declares,
+                                                       gc::Nilable<String_sp> docstr, Function_sp body) {
+  auto method = gctools::GC<SingleDispatchMethod_O>::allocate(name, receiverClass, declares, docstr, body);
   return method;
 }
 
 string SingleDispatchMethod_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString()
-     << " :name " << _rep_(this->_name)
-     << " :receiver-class " << _rep_(this->_receiver_class)
-     << " :code " << _rep_(this->_function)
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " :name " << _rep_(this->_name) << " :receiver-class "
+     << _rep_(this->_receiver_class) << " :code "
+     << _rep_(this->_function)
      //	   << " :method_builtin " << _rep_(this->_method_builtin)
      << " >";
   return ss.str();
 }
 
-
-}; /* core */
+}; // namespace core

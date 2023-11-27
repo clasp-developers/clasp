@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: mathDispatch.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_mathDispatch_H
-#define _core_mathDispatch_H
 
 //
 // Macros to assist in dispatching for mathematical operations between mixed types
@@ -34,11 +33,11 @@ THE SOFTWARE.
 // in math_dispatch2.h
 //
 //
-#define MATH_DISPATCH_BEGIN(a, b)              \
-  {                                            \
-    int ta = (int)(clasp_t_of(a));             \
-    int tb = (int)(clasp_t_of(b));             \
-    int dispatch_combo = ta * (number_NUM)+tb; \
+#define MATH_DISPATCH_BEGIN(a, b)                                                                                                  \
+  {                                                                                                                                \
+    int ta = (int)(clasp_t_of(a));                                                                                                 \
+    int tb = (int)(clasp_t_of(b));                                                                                                 \
+    int dispatch_combo = ta * (number_NUM) + tb;                                                                                   \
     switch (dispatch_combo)
 
 #define MDL(na, nb) ((int)(na) * (int)(number_NUM) + (int)(nb))
@@ -114,8 +113,6 @@ THE SOFTWARE.
 #define case_Complex_v_Ratio case MDL(number_Complex, number_Ratio)
 #define case_Complex_v_Complex case MDL(number_Complex, number_Complex)
 
-#define MATH_DISPATCH_END() \
-  }                         \
+#define MATH_DISPATCH_END()                                                                                                        \
+  }                                                                                                                                \
   ;
-
-#endif

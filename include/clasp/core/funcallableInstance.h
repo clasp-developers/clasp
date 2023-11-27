@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: instance.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_funcallable_instance_H_
-#define _core_funcallable_instance_H_
 
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
@@ -63,10 +62,7 @@ public: // ctor/dtor for classes with shared virtual base
   explicit FuncallableInstance_O(GlobalSimpleFun_sp fdesc, Instance_sp metaClass, size_t slots)
       : Base(fdesc), _Class(metaClass), _RealFunction(nil<Function_O>()){};
   FuncallableInstance_O(GlobalSimpleFun_sp fdesc, Instance_sp cl, Rack_sp rack)
-      : Base(fdesc),
-        _Rack(rack),
-        _Class(cl),
-        _RealFunction(nil<Function_O>()){};
+      : Base(fdesc), _Rack(rack), _Class(cl), _RealFunction(nil<Function_O>()){};
   virtual ~FuncallableInstance_O(){};
 
 public:
@@ -283,6 +279,3 @@ public:
 };
 
 }; // namespace core
-
-
-#endif /* _core_funcallable_instance_H_ */

@@ -52,8 +52,7 @@ Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digi
   ASSERT(bases.size() >= 1);
   ASSERT(digits[0] < bases[0]);
   index = digits[0];
-  for (bi = bases.begin() + 1, di = digits.begin() + 1;
-       bi != bases.end(); bi++, di++) {
+  for (bi = bases.begin() + 1, di = digits.begin() + 1; bi != bases.end(); bi++, di++) {
     index = index * (*bi) + (*di);
     if (index < 0)
       break;
@@ -84,7 +83,7 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
   vector<int>::reverse_iterator di;
   int digitIdx;
   curIndex = index;
-  LOG("*starting index={}0lld" , curIndex);
+  LOG("*starting index={}0lld", curIndex);
   ASSERT(bases.size() >= 1);
   digits.resize(bases.size());
   digitIdx = digits.size() - 1;
@@ -92,9 +91,9 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
     Bignum bb = (curIndex % (*bi));
     *di = bb.get_si();
     curIndex /= *bi;
-    LOG("*di={}  *bi={} curIndex={}" , *di , *bi , curIndex);
+    LOG("*di={}  *bi={} curIndex={}", *di, *bi, curIndex);
   }
-  LOG("digits[0] = {}" , digits[0]);
+  LOG("digits[0] = {}", digits[0]);
   return digits;
 }
 CL_DEFUN
@@ -103,20 +102,20 @@ List_sp core__positive_integer_to_mixed_base_digits(core::Integer_sp number, Lis
     SIMPLE_ERROR("The number {} must be zero or positive", _rep_(number));
   }
   vector<int> ibases;
-  for ( auto cur : bases ) {
+  for (auto cur : bases) {
     T_sp val = CONS_CAR(cur);
     if (!val.fixnump()) {
       SIMPLE_ERROR("Bases {} must all be fixnums", _rep_(bases));
     }
-    if (val.unsafe_fixnum()<1) {
+    if (val.unsafe_fixnum() < 1) {
       SIMPLE_ERROR("Bases {} must all be values > 1", _rep_(bases));
     }
     ibases.push_back(val.unsafe_fixnum());
   }
   Bignum bn = core::clasp_to_mpz(number);
-  vector<int> digits = bignumToMixedBaseDigits(bn,ibases);
+  vector<int> digits = bignumToMixedBaseDigits(bn, ibases);
   ql::list ll;
-  for ( int ii : digits ) {
+  for (int ii : digits) {
     ll << clasp_make_fixnum(ii);
   }
   return ll.cons();
@@ -136,9 +135,7 @@ CL_DEFUN Integer_sp cl__get_universal_time() {
   return utime;
 }
 
-bool almostEqualAbsoluteOrRelative(double va, double vb,
-                                   double absEpsilon,
-                                   double relEpsilon) {
+bool almostEqualAbsoluteOrRelative(double va, double vb, double absEpsilon, double relEpsilon) {
   if (fabs(va - vb) < absEpsilon)
     return true;
   if (fabs(va) > fabs(vb)) {
@@ -156,46 +153,36 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(asin)dx");
 DOCGROUP(clasp);
-CL_DEFUN double core__num_op_asin(double x) {
-  return asin(x);
-}
+CL_DEFUN double core__num_op_asin(double x) { return asin(x); }
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(num-op-acos)dx");
 DOCGROUP(clasp);
-CL_DEFUN double core__num_op_acos(double x) {
-  return acos(x);
-}
+CL_DEFUN double core__num_op_acos(double x) { return acos(x); }
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(asinh)dx");
 DOCGROUP(clasp);
-CL_DEFUN double core__num_op_asinh(double x) {
-  return log(x + sqrt(1.0 + x * x));
-}
+CL_DEFUN double core__num_op_asinh(double x) { return log(x + sqrt(1.0 + x * x)); }
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(num_op_acosh)dx");
 DOCGROUP(clasp);
-CL_DEFUN double core__num_op_acosh(double x) {
-  return log(x + sqrt((x - 1) * (x + 1)));
-}
+CL_DEFUN double core__num_op_acosh(double x) { return log(x + sqrt((x - 1) * (x + 1))); }
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(atanh)dx");
 DOCGROUP(clasp);
-CL_DEFUN double core__num_op_atanh(double x) {
-  return log((1 + x) / (1 - x)) / 2;
-}
-};
+CL_DEFUN double core__num_op_atanh(double x) { return log((1 + x) / (1 - x)) / 2; }
+}; // namespace core
 
 namespace core {
 
@@ -237,11 +224,11 @@ SYMBOL_EXPORT_SC_(ClPkg, pi);
 void exposeCando_Numerics() {
   cl::_sym_mostPositiveSingleFloat->defconstant(clasp_make_single_float(std::numeric_limits<float>::max()));
   cl::_sym_mostNegativeSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::max()));
-  cl::_sym_leastPositiveSingleFloat->defconstant(clasp_make_single_float( std::numeric_limits<float>::denorm_min()));
+  cl::_sym_leastPositiveSingleFloat->defconstant(clasp_make_single_float(std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_mostPositiveShortFloat->defconstant(clasp_make_single_float(std::numeric_limits<float>::max()));
   cl::_sym_mostNegativeShortFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::max()));
-  cl::_sym_leastPositiveShortFloat->defconstant(clasp_make_single_float( std::numeric_limits<float>::denorm_min()));
+  cl::_sym_leastPositiveShortFloat->defconstant(clasp_make_single_float(std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeShortFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_mostPositiveDoubleFloat->defconstant(DoubleFloat_O::create(std::numeric_limits<double>::max()));
   cl::_sym_mostNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::max()));
@@ -251,7 +238,7 @@ void exposeCando_Numerics() {
   cl::_sym_mostNegativeLongFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::max()));
   cl::_sym_leastPositiveLongFloat->defconstant(DoubleFloat_O::create(std::numeric_limits<double>::denorm_min()));
   cl::_sym_leastNegativeLongFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
-  
+
   cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::min()));
   cl::_sym_leastNegativeNormalizedShortFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::min()));
   cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::min()));
@@ -261,7 +248,7 @@ void exposeCando_Numerics() {
   cl::_sym_leastPositiveNormalizedShortFloat->defconstant(clasp_make_single_float(std::numeric_limits<float>::min()));
   cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(std::numeric_limits<double>::min()));
   cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(std::numeric_limits<double>::min()));
-  
+
   cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));
   // extensions
   ext::_sym_singleFloatPositiveInfinity->defconstant(clasp_make_single_float(std::numeric_limits<float>::infinity()));
@@ -274,4 +261,4 @@ void exposeCando_Numerics() {
   ext::_sym_longFloatNegativeInfinity->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::infinity()));
 }
 
-};
+}; // namespace core

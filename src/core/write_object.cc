@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 /* This is copied from ECL write_object.c and modified for C++ */
 
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -144,9 +144,8 @@ T_sp do_write_object_circle(T_sp x, T_sp stream) {
 
 T_sp write_object(T_sp x, T_sp stream) {
   // With *print-pretty*, go immediately to the pretty printer, which does its own *print-circle* etc.
-  if (!cl::_sym_STARprint_prettySTAR.unboundp()
-      && cl::_sym_STARprint_prettySTAR->boundP()
-      && cl::_sym_STARprint_prettySTAR->symbolValue().notnilp()) {
+  if (!cl::_sym_STARprint_prettySTAR.unboundp() && cl::_sym_STARprint_prettySTAR->boundP() &&
+      cl::_sym_STARprint_prettySTAR->symbolValue().notnilp()) {
     T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, x);
     T_sp f0 = mv_f;
     MultipleValues &mvn = core::lisp_multipleValues();

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -39,7 +39,7 @@ THE SOFTWARE.
 namespace core {
 
 CL_LAMBDA(&optional state);
-CL_PKG_NAME(ClPkg,make-random-state);
+CL_PKG_NAME(ClPkg, make-random-state);
 DOCGROUP(clasp);
 CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
   if (RandomState_sp rs = state.asOrNull<RandomState_O>()) {
@@ -56,9 +56,8 @@ CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
 
 // sbcl says this type is needed for random  (OR (SINGLE-FLOAT (0.0)) (DOUBLE-FLOAT (0.0d0)) (INTEGER 1))
 // better use just float instead of using all subtypes
-#define TYPE_ERROR_cl_random(_datum_)                                                                              \
-  TYPE_ERROR(_datum_, Cons_O::createList(cl::_sym_or,                                                              \
-                                         Cons_O::createList(cl::_sym_Integer_O, make_fixnum(1)),                   \
+#define TYPE_ERROR_cl_random(_datum_)                                                                                              \
+  TYPE_ERROR(_datum_, Cons_O::createList(cl::_sym_or, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(1)),                      \
                                          Cons_O::createList(cl::_sym_float, Cons_O::createList(clasp_make_single_float(0.0)))))
 
 CL_LAMBDA(olimit &optional (random-state cl:*random-state*));
@@ -73,11 +72,13 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     if (n > 0) {
       std::uniform_int_distribution<uint64_t> range(0, n - 1);
       return make_fixnum(range(random_state->_Producer._value));
-    } else TYPE_ERROR_cl_random(olimit);
+    } else
+      TYPE_ERROR_cl_random(olimit);
   } else if (gc::IsA<Bignum_sp>(olimit)) {
     Bignum_sp gbn = gc::As_unsafe<Bignum_sp>(olimit);
     mp_size_t len = gbn->length();
-    if (len < 1) TYPE_ERROR_cl_random(olimit); // positive only
+    if (len < 1)
+      TYPE_ERROR_cl_random(olimit); // positive only
     mp_limb_t res[len];
     const mp_limb_t minlimb = std::numeric_limits<mp_limb_t>::min();
     const mp_limb_t maxlimb = std::numeric_limits<mp_limb_t>::max();
@@ -97,13 +98,15 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     if (df->get() > 0.0) {
       std::uniform_real_distribution<> range(0.0, df->get());
       return DoubleFloat_O::create(range(random_state->_Producer._value));
-    } else TYPE_ERROR_cl_random(olimit);
+    } else
+      TYPE_ERROR_cl_random(olimit);
   } else if (olimit.single_floatp()) {
     float flimit = olimit.unsafe_single_float();
-    if (flimit >  0.0f) {
+    if (flimit > 0.0f) {
       std::uniform_real_distribution<> range(0.0, flimit);
       return clasp_make_single_float(range(random_state->_Producer._value));
-    } else TYPE_ERROR_cl_random(olimit);
+    } else
+      TYPE_ERROR_cl_random(olimit);
   }
   TYPE_ERROR_cl_random(olimit);
 }
@@ -131,18 +134,14 @@ void RandomState_O::__write__(T_sp stream) const {
     this->__writeReadable__(stream);
     return;
   }
-  clasp_write_string("#<RANDOM-STATE>",stream);
+  clasp_write_string("#<RANDOM-STATE>", stream);
 }
-
 
 void RandomState_O::__writeReadable__(T_sp stream) const {
-  clasp_write_string("#.(core:random-state-set (make-random-state t) \"",stream);
+  clasp_write_string("#.(core:random-state-set (make-random-state t) \"", stream);
   std::string state = this->random_state_get();
-  clasp_write_string(state,stream);
-  clasp_write_string("\")",stream);
+  clasp_write_string(state, stream);
+  clasp_write_string("\")", stream);
 }
-  
 
-
-
-};
+}; // namespace core

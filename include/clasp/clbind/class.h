@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: class.h
 */
@@ -46,9 +48,6 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef CLBIND_CLASS_HPP_INCLUDED
-#define CLBIND_CLASS_HPP_INCLUDED
-
 /*
         ISSUES:
         ------------------------------------------------------
@@ -92,7 +91,7 @@ THE SOFTWARE.
 
 */
 
-//#include <clbind/prefix.hpp>
+// #include <clbind/prefix.hpp>
 #include <clasp/clbind/config.h>
 
 #include <utility>
@@ -164,8 +163,7 @@ namespace detail {
 
 template <class T> struct is_bases : std::false_type {};
 
-template <typename... Bases>
-struct is_bases<bases<Bases...>> : std::true_type {};
+template <typename... Bases> struct is_bases<bases<Bases...>> : std::true_type {};
 
 struct CLBIND_API create_class {
   static int stage1();
@@ -356,9 +354,13 @@ template <class Class, class Begin, class End, class Policies> struct iterator_r
 #pragma pack(pop)
 #endif
 
-template <class P, class T> struct default_pointer { typedef P type; };
+template <class P, class T> struct default_pointer {
+  typedef P type;
+};
 
-template <class T> struct default_pointer<reg::null_type, T> { typedef std::unique_ptr<T> type; };
+template <class T> struct default_pointer<reg::null_type, T> {
+  typedef std::unique_ptr<T> type;
+};
 
 template <typename ConstructorType> struct CountConstructorArguments {
   enum { value = 0 };
@@ -544,30 +546,25 @@ struct property_registration<Class, Get, GetPolicies, reg::null_type, reg::null_
 } // namespace detail
 
 // registers a class in the cl environment
-template <class T, class Base = no_bases, class WrappedType = reg::null_type>
-struct class_ : detail::class_base {
+template <class T, class Base = no_bases, class WrappedType = reg::null_type> struct class_ : detail::class_base {
   typedef class_<T, Base> self_t;
 
 private:
   template <class A, class B> class_(const class_<A, B> &);
 
 public:
-
-  static_assert(std::is_same_v<WrappedType, reg::null_type>
-                || std::is_base_of_v<T, WrappedType>,
+  static_assert(std::is_same_v<WrappedType, reg::null_type> || std::is_base_of_v<T, WrappedType>,
                 "If provided, WrappedType must inherit from T");
 
   // TODO: Assert that if Base is a bases<...>, everything in it is a base of T.
-  static_assert(detail::is_bases<Base>::value || std::is_base_of_v<Base, T>,
-                "If provided, Base must be bases of T");
-  
+  static_assert(detail::is_bases<Base>::value || std::is_base_of_v<Base, T>, "If provided, Base must be bases of T");
+
   typedef std::unique_ptr<T> HoldType;
 
-  template <class Src, class Target>
-  void add_downcast(Src *, Target *) {
+  template <class Src, class Target> void add_downcast(Src *, Target *) {
     // We use if constexpr. This will discard the add_cast when Src is not
     // polymorphic, which is important as add_cast would not be instantiable.
-    if constexpr(std::is_polymorphic_v<Src>) {
+    if constexpr (std::is_polymorphic_v<Src>) {
       add_cast(reg::registered_class<Src>::id, reg::registered_class<Target>::id, detail::dynamic_cast_<Src, Target>::execute);
     }
   }
@@ -588,9 +585,7 @@ public:
 
 #define CLBIND_GEN_BASE_INFO(z, n, text) gen_base_info(detail::type_<BaseClass##n>());
 
-  template <class... BaseClass>
-  void generate_baseclass_list(detail::type_<bases<BaseClass...>>)
-  {
+  template <class... BaseClass> void generate_baseclass_list(detail::type_<bases<BaseClass...>>) {
     // Fold expression to call gen_base_info for each base.
     (gen_base_info(detail::type_<BaseClass>()), ...);
   }
@@ -725,7 +720,7 @@ public:
     return this->def(Derived::name(), &Derived::template apply<T, detail::null_type>::execute);
   }
 
-  //#endif // end_meister_disabled
+  // #endif // end_meister_disabled
 
 #if 0
   enum_maker enum_(core::Symbol_sp converter) {
@@ -805,5 +800,3 @@ public:
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-
-#endif // CLBIND_CLASS_HPP_INCLUDED

@@ -1,5 +1,4 @@
-#ifndef clbind_taggedCast_H
-#define clbind_taggedCast_H
+#pragma once
 
 namespace gctools {
 
@@ -18,5 +17,4 @@ struct TaggedCast<core::BuiltinClosure *, clbind::VariadicConstructorFunctoid<Po
   }
 };
 #endif
-};
-#endif
+}; // namespace gctools

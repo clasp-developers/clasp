@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
-// This should be the last TURN_DEBUG_off turned off when compiling production code
+// #define DEBUG_LEVEL_FULL
+//  This should be the last TURN_DEBUG_off turned off when compiling production code
 
 //
 // (C) 2004 Christian E. Schafmeister
@@ -62,15 +62,13 @@ namespace core {
 
 bool stackmap_log = true;
 
-NEVER_OPTIMIZE void assert_failure(const char* file, size_t line, const char* func, const char* msg)
-{
-  printf("%s:%lu:%s Assertion failure msg: %s\n", file, line, func, msg );
-  SIMPLE_ERROR("{}:{}:{}  Assertion failure: {}", file , line , func , msg);
+NEVER_OPTIMIZE void assert_failure(const char *file, size_t line, const char *func, const char *msg) {
+  printf("%s:%lu:%s Assertion failure msg: %s\n", file, line, func, msg);
+  SIMPLE_ERROR("{}:{}:{}  Assertion failure: {}", file, line, func, msg);
 }
 
-NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y)
-{
-  SIMPLE_ERROR("{}:{}:{}  Assertion failure: bounds error - {} must be less than {}", file , line , func , x , y);
+NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char *file, size_t line, const char *func, int64_t x, int64_t y) {
+  SIMPLE_ERROR("{}:{}:{}  Assertion failure: bounds error - {} must be less than {}", file, line, func, x, y);
 }
 
 /*! These are here just so that the clang compiler
@@ -79,65 +77,52 @@ NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char* file, size_t line
 void CatchThrow::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
-SYMBOL_EXPORT_SC_(KeywordPkg,called_function);
+SYMBOL_EXPORT_SC_(KeywordPkg, called_function);
 void throwTooFewArgumentsError(core::T_sp closure, size_t given, size_t required) {
-  lisp_error(core::_sym_wrongNumberOfArguments,
-             lisp_createList(kw::_sym_called_function, closure,
-                             kw::_sym_givenNargs, make_fixnum(given),
-                             kw::_sym_minNargs, make_fixnum(required)));
+  lisp_error(core::_sym_wrongNumberOfArguments, lisp_createList(kw::_sym_called_function, closure, kw::_sym_givenNargs,
+                                                                make_fixnum(given), kw::_sym_minNargs, make_fixnum(required)));
 }
 
 void throwTooManyArgumentsError(core::T_sp closure, size_t given, size_t required) {
-  lisp_error(core::_sym_wrongNumberOfArguments,
-             lisp_createList(kw::_sym_called_function, closure,
-                             kw::_sym_givenNargs, make_fixnum(given),
-                             kw::_sym_maxNargs, make_fixnum(required)));
+  lisp_error(core::_sym_wrongNumberOfArguments, lisp_createList(kw::_sym_called_function, closure, kw::_sym_givenNargs,
+                                                                make_fixnum(given), kw::_sym_maxNargs, make_fixnum(required)));
 }
 
 void throwOddKeywordsError(core::T_sp closure) {
-  lisp_error(core::_sym_oddKeywords,
-             lisp_createList(kw::_sym_called_function, closure));
+  lisp_error(core::_sym_oddKeywords, lisp_createList(kw::_sym_called_function, closure));
 }
 
 void throwUnrecognizedKeywordArgumentError(core::T_sp closure, core::T_sp kws) {
   lisp_error(core::_sym_unrecognizedKeywordArgumentError,
-             lisp_createList(kw::_sym_unrecognizedKeywords, kws,
-                             kw::_sym_called_function,closure));
+             lisp_createList(kw::_sym_unrecognizedKeywords, kws, kw::_sym_called_function, closure));
 }
 
 void wrongNumberOfArguments(core::T_sp closure, size_t givenNumberOfArguments, size_t requiredNumberOfArguments) {
   if (givenNumberOfArguments < requiredNumberOfArguments)
-    throwTooFewArgumentsError(closure,givenNumberOfArguments, requiredNumberOfArguments);
+    throwTooFewArgumentsError(closure, givenNumberOfArguments, requiredNumberOfArguments);
   else
-    throwTooManyArgumentsError(closure,givenNumberOfArguments, requiredNumberOfArguments);
+    throwTooManyArgumentsError(closure, givenNumberOfArguments, requiredNumberOfArguments);
 }
 
 #define DebugOpenLeft "{{{ "
 #define DebugOpenRight ""
 #define DebugClose "}}}"
 
-//#define	DebugOpenLeft "/* {{{ "
-//#define DebugOpenRight " */"
-//#define	DebugClose "/* }}} */"
+// #define	DebugOpenLeft "/* {{{ "
+// #define DebugOpenRight " */"
+// #define	DebugClose "/* }}} */"
 
 CxxFunctionInvocationLogger::CxxFunctionInvocationLogger(const char *cPSourceFile, const char *cPFunctionName, uint lineNumber) {
   _lisp->debugLog().beginNode(DEBUG_CPP_FUNCTION, cPSourceFile, cPFunctionName, lineNumber, 0, "");
 };
-CxxFunctionInvocationLogger::~CxxFunctionInvocationLogger() {
-  _lisp->debugLog().endNode(DEBUG_CPP_FUNCTION);
-};
+CxxFunctionInvocationLogger::~CxxFunctionInvocationLogger() { _lisp->debugLog().endNode(DEBUG_CPP_FUNCTION); };
 
 size_t global_signal_simple_error_depth = 0;
 
 struct SignalSimpleErrorTrap {
-  SignalSimpleErrorTrap() {
-    global_signal_simple_error_depth++;
-  }
-  ~SignalSimpleErrorTrap() {
-    global_signal_simple_error_depth--;
-  }
+  SignalSimpleErrorTrap() { global_signal_simple_error_depth++; }
+  ~SignalSimpleErrorTrap() { global_signal_simple_error_depth--; }
 };
-    
 
 CL_LAMBDA(base-condition continue-message format-control format-args &rest args);
 CL_DECLARE();
@@ -149,8 +134,8 @@ CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage
   printf("%s:%d baseCondition: %s\n", __FILE__, __LINE__, _rep_(baseCondition).c_str());
   printf("%s:%d formatControl: %s\n", __FILE__, __LINE__, _rep_(formatControl).c_str());
   printf("%s:%d    formatArgs: %s\n", __FILE__, __LINE__, _rep_(formatArgs).c_str());
-  if ( global_signal_simple_error_depth > 3 ) {
-    printf("%s:%d    signal-simple-error depth is %zu - aborting\n", __FILE__, __LINE__, global_signal_simple_error_depth );
+  if (global_signal_simple_error_depth > 3) {
+    printf("%s:%d    signal-simple-error depth is %zu - aborting\n", __FILE__, __LINE__, global_signal_simple_error_depth);
     abort();
   }
   printf("%s:%d  About to try and FORMAT the error\n", __FILE__, __LINE__);
@@ -161,8 +146,7 @@ CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage
   return nil<T_O>();
 };
 
-void _trapThrow(const string &fileName, uint line, const string &msg) {
-  /* do nothing */
+void _trapThrow(const string &fileName, uint line, const string &msg) { /* do nothing */
 }
 
 string debugFlagsAsNodeName(uint flags) {
@@ -227,9 +211,7 @@ void debugBreakPoint() {
 
 CL_DOCSTRING(R"dx(Add a debug filename.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__add_debug_filename(const string& name) {
-  lisp_debugLog()->addDebugFileName(name);
-}
+CL_DEFUN void core__add_debug_filename(const string &name) { lisp_debugLog()->addDebugFileName(name); }
 
 DebugStream::DebugStream(int rank) : DebugLogAsXml(false) {
   this->_Enabled = true;
@@ -257,8 +239,7 @@ DebugStream::DebugStream(int rank) : DebugLogAsXml(false) {
     tokenize(allFileNames, fileNameVector, ",");
     this->_DebugAll = false;
     this->_DebugScript = false;
-    for (vector<string>::iterator fi = fileNameVector.begin();
-         fi != fileNameVector.end(); fi++) {
+    for (vector<string>::iterator fi = fileNameVector.begin(); fi != fileNameVector.end(); fi++) {
       if ((*fi) == "ALL") {
         this->_DebugAll = true;
         printf("--- Logging all c-code source files\n");
@@ -331,27 +312,25 @@ DebugStream &DebugStream::beginNode(uint debugFlags) {
   if (this->DebugLogAsXml) {
     this->writeRaw(fmt::format("<{}>\n", debugFlagsAsNodeName(debugFlags)));
   } else {
-    this->writeRaw(fmt::format("{}{}{}\n", DebugOpenLeft , debugFlagsAsNodeName(debugFlags) , DebugOpenRight));
+    this->writeRaw(fmt::format("{}{}{}\n", DebugOpenLeft, debugFlagsAsNodeName(debugFlags), DebugOpenRight));
   }
   return *this;
 }
 
-DebugStream &DebugStream::beginNode(uint debugFlags,
-                                    const char *cPsourceFile,
-                                    const char *cPfunctionName,
-                                    uint lineNumber,
-                                    uint column,
-                                    const string &message) {
+DebugStream &DebugStream::beginNode(uint debugFlags, const char *cPsourceFile, const char *cPfunctionName, uint lineNumber,
+                                    uint column, const string &message) {
   const char *shortSourceFile = trimSourceFilePathName(cPsourceFile);
   if (shortSourceFile == NULL)
     shortSourceFile = "-begin-node-no-file-";
   if (this->DebugLogAsXml) {
-    string stuff = fmt::format("<{} s=\"{}\" f=\"{}\" l=\"{}\">\n", debugFlagsAsNodeName(debugFlags) , shortSourceFile , cPfunctionName , lineNumber);
+    string stuff = fmt::format("<{} s=\"{}\" f=\"{}\" l=\"{}\">\n", debugFlagsAsNodeName(debugFlags), shortSourceFile,
+                               cPfunctionName, lineNumber);
     this->writeRaw(stuff);
     if (message != "")
       this->writeTextCr(message);
   } else {
-    string stuff = fmt::format("{}{} {{{}:{}:{}}}{}" , DebugOpenLeft , debugFlagsAsNodeName(debugFlags) , cPfunctionName , shortSourceFile , lineNumber , DebugOpenRight);
+    string stuff = fmt::format("{}{} {{{}:{}:{}}}{}", DebugOpenLeft, debugFlagsAsNodeName(debugFlags), cPfunctionName,
+                               shortSourceFile, lineNumber, DebugOpenRight);
     this->writeRaw(stuff);
     this->writeTextCr(message);
   }
@@ -388,13 +367,13 @@ DebugStream &DebugStream::writeText(const string &data) {
     return *this;
   this->open();
   const char *cp;
-  for (cl_index i=0; i<data.size(); ++i ) {
+  for (cl_index i = 0; i < data.size(); ++i) {
     cp = &data[i];
     if (this->DebugLogAsXml) {
       switch (*cp) {
       case '\0':
-          this->_OutStream << "&NUL;";
-          break;
+        this->_OutStream << "&NUL;";
+        break;
       case '<':
         this->_OutStream << "&lt;";
         break;
@@ -540,9 +519,7 @@ char *internalPrintf(const LispPtr &lisp, const char *fmt, va_list arg_ptr) {
 #define ARGS_af_wrongTypeKeyArg "(source-file lineno function narg value type)"
 #define DECL_af_wrongTypeKeyArg ""
 #define DOCS_af_wrongTypeKeyArg "wrongTypeKeyArg"
-void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
-                        Symbol_sp function,
-                        T_sp key, T_sp value, T_sp type) {
+void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type) {
   stringstream message;
   message << "In ";
   if (function.nilp()) {
@@ -552,12 +529,10 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
   }
   message << "the value of the argument ~S is ~&   ~S~&which is not of the expected type ~A";
   eval::funcall(_sym_signalSimpleError,
-                cl::_sym_simpleTypeError,           //arg0
-                nil<T_O>(),                  // arg1
+                cl::_sym_simpleTypeError,                // arg0
+                nil<T_O>(),                              // arg1
                 SimpleBaseString_O::make(message.str()), // arg2
-                Cons_O::createList(function, key, value, type),
-                kw::_sym_expected_type, type,
-                kw::_sym_datum, value);
+                Cons_O::createList(function, key, value, type), kw::_sym_expected_type, type, kw::_sym_datum, value);
 };
 
 #define ARGS_af_wrongTypeOnlyArg "(source-file lineno function narg value type)"
@@ -570,23 +545,19 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
     message << "the value of the only argument is~&  ~S~&which is ";
     message << "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError,           //arg0
-                  nil<T_O>(),                  // arg1
+                  cl::_sym_simpleTypeError,                // arg0
+                  nil<T_O>(),                              // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
-                  Cons_O::createList(value, type),
-                  kw::_sym_expected_type, type,
-                  kw::_sym_datum, value);
+                  Cons_O::createList(value, type), kw::_sym_expected_type, type, kw::_sym_datum, value);
   } else {
     message << "In function ~A,";
     message << "the value of the only argument is~&  ~S~&which is ";
     message << "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError,           //arg0
-                  nil<T_O>(),                  // arg1
+                  cl::_sym_simpleTypeError,                // arg0
+                  nil<T_O>(),                              // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
-                  Cons_O::createList(function, value, type),
-                  kw::_sym_expected_type, type,
-                  kw::_sym_datum, value);
+                  Cons_O::createList(function, value, type), kw::_sym_expected_type, type, kw::_sym_datum, value);
   }
   UNREACHABLE();
 };
@@ -600,23 +571,19 @@ DOCGROUP(clasp);
                "the value of an argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError,           //arg0
-                  nil<T_O>(),                  // arg1
+                  cl::_sym_simpleTypeError,                // arg0
+                  nil<T_O>(),                              // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
-                  Cons_O::createList(value, type),
-                  kw::_sym_expected_type, type,
-                  kw::_sym_datum, value);
+                  Cons_O::createList(value, type), kw::_sym_expected_type, type, kw::_sym_datum, value);
   } else {
     message << "In function ~A, "
                "the value of an argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError,           //arg0
-                  nil<T_O>(),                  // arg1
+                  cl::_sym_simpleTypeError,                // arg0
+                  nil<T_O>(),                              // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
-                  Cons_O::createList(function, value, type),
-                  kw::_sym_expected_type, type,
-                  kw::_sym_datum, value);
+                  Cons_O::createList(function, value, type), kw::_sym_expected_type, type, kw::_sym_datum, value);
   }
   UNREACHABLE();
 };
@@ -625,30 +592,27 @@ CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(wrongTypeArgument)dx");
 DOCGROUP(clasp);
-[[noreturn]] CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
+[[noreturn]] CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value,
+                                                     T_sp type) {
   stringstream message;
   if (function.nilp()) {
     message << "In an anonymous function, "
                "the value of an argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError,           //arg0
-                  nil<T_O>(),                  // arg1
+                  cl::_sym_simpleTypeError,                // arg0
+                  nil<T_O>(),                              // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
-                  Cons_O::createList(value, type),
-                  kw::_sym_expected_type, type,
-                  kw::_sym_datum, value);
+                  Cons_O::createList(value, type), kw::_sym_expected_type, type, kw::_sym_datum, value);
   } else {
     message << "In function ~A, "
                "the value of an argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError,           //arg0
-                  nil<T_O>(),                  // arg1
+                  cl::_sym_simpleTypeError,                // arg0
+                  nil<T_O>(),                              // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
-                  Cons_O::createList(function, value, type),
-                  kw::_sym_expected_type, type,
-                  kw::_sym_datum, value);
+                  Cons_O::createList(function, value, type), kw::_sym_expected_type, type, kw::_sym_datum, value);
   }
   UNREACHABLE();
 };
@@ -657,31 +621,29 @@ CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(wrongTypeNthArg)dx");
 DOCGROUP(clasp);
-[[noreturn]] CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
+[[noreturn]] CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value,
+                                                    T_sp type) {
   if (function.nilp()) {
     stringstream message;
     message << "In an anonymous function, "
                "the value of the ~:R argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError,           //arg0
-                  nil<T_O>(),                  // arg1
+                  cl::_sym_simpleTypeError,                // arg0
+                  nil<T_O>(),                              // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
-                  Cons_O::createList(make_fixnum(narg), value, type),
-                  kw::_sym_expected_type, type,
-                  kw::_sym_datum, value);
+                  Cons_O::createList(make_fixnum(narg), value, type), kw::_sym_expected_type, type, kw::_sym_datum, value);
   } else {
     stringstream message;
     message << "In function ~A, "
                "the value of the ~:R argument is~&  ~S~&which is "
                "not of the expected type ~A";
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError,           //arg0
-                  nil<T_O>(),                  // arg1
+                  cl::_sym_simpleTypeError,                // arg0
+                  nil<T_O>(),                              // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
-                  Cons_O::createList(function, make_fixnum(narg), value, type),
-                  kw::_sym_expected_type, type,
-                  kw::_sym_datum, value);
+                  Cons_O::createList(function, make_fixnum(narg), value, type), kw::_sym_expected_type, type, kw::_sym_datum,
+                  value);
   }
   UNREACHABLE();
 };
@@ -690,68 +652,60 @@ CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(wrongIndex)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int nonincl_limit) {
+CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index,
+                                int nonincl_limit) {
   if (function.nilp()) {
-    const char *message1 =
-        "In an anonymous function, "
-        "the ~*index into the object~% ~A.~%"
-        "takes a value ~D out of the range ~A.";
-    const char *message2 =
-        "In an anonymous function, "
-        "the ~:R index into the object~% ~A~%"
-        "takes a value ~D out of the range ~A.";
+    const char *message1 = "In an anonymous function, "
+                           "the ~*index into the object~% ~A.~%"
+                           "takes a value ~D out of the range ~A.";
+    const char *message2 = "In an anonymous function, "
+                           "the ~:R index into the object~% ~A~%"
+                           "takes a value ~D out of the range ~A.";
     T_sp type = Integer_O::makeIntegerType(0, (gc::Fixnum)(nonincl_limit - 1));
     const char *msg = (which < 0) ? message1 : message2;
     SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError, //arg0
-                  nil<T_O>(),        // arg1
-                  message,            // arg2
-                  Cons_O::createList(make_fixnum(which + 1), array, index, type),
-                  kw::_sym_expected_type, type,
-                  kw::_sym_datum, index);
+                  cl::_sym_simpleTypeError, // arg0
+                  nil<T_O>(),               // arg1
+                  message,                  // arg2
+                  Cons_O::createList(make_fixnum(which + 1), array, index, type), kw::_sym_expected_type, type, kw::_sym_datum,
+                  index);
   } else {
-    const char *message1 =
-        "In function ~A, "
-        "the ~*index into the object~% ~A.~%"
-        "takes a value ~D out of the range ~A.";
-    const char *message2 =
-        "In function ~A, "
-        "the ~:R index into the object~% ~A~%"
-        "takes a value ~D out of the range ~A.";
+    const char *message1 = "In function ~A, "
+                           "the ~*index into the object~% ~A.~%"
+                           "takes a value ~D out of the range ~A.";
+    const char *message2 = "In function ~A, "
+                           "the ~:R index into the object~% ~A~%"
+                           "takes a value ~D out of the range ~A.";
     T_sp type = Integer_O::makeIntegerType(0, (gc::Fixnum)(nonincl_limit - 1));
     const char *msg = (which < 0) ? message1 : message2;
     SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,
-                  cl::_sym_simpleTypeError, //arg0
-                  nil<T_O>(),        // arg1
-                  message,            // arg2
-                  Cons_O::createList(function, make_fixnum(which + 1), array, index, type),
-                  kw::_sym_expected_type, type,
+                  cl::_sym_simpleTypeError, // arg0
+                  nil<T_O>(),               // arg1
+                  message,                  // arg2
+                  Cons_O::createList(function, make_fixnum(which + 1), array, index, type), kw::_sym_expected_type, type,
                   kw::_sym_datum, index);
   }
 };
 
-//no need to call this from lisp
+// no need to call this from lisp
 NEVER_OPTIMIZE
-void core__reader_error_internal(const string &sourceFile, uint lineno,
-                    String_sp fmt, List_sp fmtargs, T_sp stream) {
+void core__reader_error_internal(const string &sourceFile, uint lineno, String_sp fmt, List_sp fmtargs, T_sp stream) {
   // printf("%s:%d:%s  sourceFile: %s lineno: %u fmt: %s  fmtargs: %s\n",
   //       __FILE__, __LINE__, __FUNCTION__, sourceFile.c_str(), lineno, _rep_(fmt).c_str(), _rep_(fmtargs).c_str() );
   ASSERT(cl__stringp(fmt));
   if (stream.nilp()) {
-    eval::funcall(_sym_signalSimpleError,
-                  core::_sym_simpleParseError,
+    eval::funcall(_sym_signalSimpleError, core::_sym_simpleParseError,
                   nil<T_O>(), // not correctable
-                  fmt,         // format control
-                  fmtargs      // format args
-                  );
+                  fmt,        // format control
+                  fmtargs     // format args
+    );
   } else {
-    eval::funcall(_sym_signalSimpleError,
-                  core::_sym_simpleReaderError,
+    eval::funcall(_sym_signalSimpleError, core::_sym_simpleReaderError,
                   nil<T_O>(), // not correctable
-                  fmt,         // format control
-                  fmtargs,     // format args
+                  fmt,        // format control
+                  fmtargs,    // format args
                   kw::_sym_stream, stream);
   }
 };
@@ -788,14 +742,10 @@ void file_libc_error(T_sp error_type, T_sp stream, const char *msg, int narg, ..
   va_start(args, narg);
   T_sp rest = clasp_grab_rest_args(args, narg);
   va_end(args);
-  eval::funcall(core::_sym_signalSimpleError,
-                error_type, nil<T_O>(),
-                SimpleBaseString_O::make("~?~%C library explanation: ~A."),
-                Cons_O::createList(SimpleBaseString_O::make(std::string(msg)), rest,
-                                   error));
+  eval::funcall(core::_sym_signalSimpleError, error_type, nil<T_O>(), SimpleBaseString_O::make("~?~%C library explanation: ~A."),
+                Cons_O::createList(SimpleBaseString_O::make(std::string(msg)), rest, error));
   UNREACHABLE();
 }
-
 
 void FElibc_error(const char *msg, int nargs, ...) {
   T_sp error = SimpleBaseString_O::make(strerror(errno));
@@ -804,72 +754,49 @@ void FElibc_error(const char *msg, int nargs, ...) {
   va_start(args, nargs);
   List_sp l = clasp_grab_rest_args(args, nargs);
   va_end(args);
-  FEerror("~?~%C library explanation: ~A.", 3,
-          smsg.raw_(), l.raw_(),
-          error.raw_());
+  FEerror("~?~%C library explanation: ~A.", 3, smsg.raw_(), l.raw_(), error.raw_());
 }
 
-void FEcannot_open(T_sp fileName) {
-  cl__error(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, fileName));
-}
+void FEcannot_open(T_sp fileName) { cl__error(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, fileName)); }
 
-void FEdoes_not_exist(T_sp fileName) {
-  cl__error(core::_sym_fileDoesNotExist, Cons_O::createList(kw::_sym_pathname, fileName));
-}
+void FEdoes_not_exist(T_sp fileName) { cl__error(core::_sym_fileDoesNotExist, Cons_O::createList(kw::_sym_pathname, fileName)); }
 
-void FEexists(T_sp fileName) {
-  cl__error(core::_sym_fileExists, Cons_O::createList(kw::_sym_pathname, fileName));
-}
+void FEexists(T_sp fileName) { cl__error(core::_sym_fileExists, Cons_O::createList(kw::_sym_pathname, fileName)); }
 
 T_sp CEerror(T_sp c, const char *err, int narg, ...) {
   va_list args;
   va_start(args, narg);
   T_sp result = eval::funcall(core::_sym_universalErrorHandler,
-                              c,                  // correctable
+                              c,                             // correctable
                               SimpleBaseString_O::make(err), // continue format string
                               clasp_grab_rest_args(args, narg));
   va_end(args);
   return result;
 }
 
-void CEpackage_error(const char *fmt,
-                     const char *continue_message,
-                     T_sp package,
-                     int nargs, ...) {
+void CEpackage_error(const char *fmt, const char *continue_message, T_sp package, int nargs, ...) {
   va_list args;
   va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
   va_end(args);
-  if (fmtargs.nilp()) fmtargs = Cons_O::create(package,nil<T_O>());
-  eval::funcall(core::_sym_signalSimpleError,
-                core::_sym_simplePackageError,
-                SimpleBaseString_O::make(continue_message),
-                SimpleBaseString_O::make(std::string(fmt)),
-                fmtargs,
-                kw::_sym_package,
-                package);
+  if (fmtargs.nilp())
+    fmtargs = Cons_O::create(package, nil<T_O>());
+  eval::funcall(core::_sym_signalSimpleError, core::_sym_simplePackageError, SimpleBaseString_O::make(continue_message),
+                SimpleBaseString_O::make(std::string(fmt)), fmtargs, kw::_sym_package, package);
 }
 
-void FEpackage_error(const char *fmt,
-                     T_sp package,
-                     int nargs, ...) {
+void FEpackage_error(const char *fmt, T_sp package, int nargs, ...) {
   va_list args;
   va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
   va_end(args);
-  if (fmtargs.nilp()) fmtargs = Cons_O::create(package,nil<T_O>());
-  eval::funcall(core::_sym_signalSimpleError,
-                core::_sym_simplePackageError,
-                nil<T_O>(),
-                SimpleBaseString_O::make(std::string(fmt)),
-                fmtargs,
-                kw::_sym_package,
-                package);
+  if (fmtargs.nilp())
+    fmtargs = Cons_O::create(package, nil<T_O>());
+  eval::funcall(core::_sym_signalSimpleError, core::_sym_simplePackageError, nil<T_O>(), SimpleBaseString_O::make(std::string(fmt)),
+                fmtargs, kw::_sym_package, package);
 }
 
-void Warn(T_sp datum, List_sp arguments) {
-  core__apply1( core::coerce::calledFunctionDesignator(cl::_sym_warn), arguments, datum);
-}
+void Warn(T_sp datum, List_sp arguments) { core__apply1(core::coerce::calledFunctionDesignator(cl::_sym_warn), arguments, datum); }
 
 void clasp_internal_error(const char *msg) {
   printf("%s:%d %s\n", __FILE__, __LINE__, msg);
@@ -880,4 +807,4 @@ SYMBOL_EXPORT_SC_(CorePkg, signalSimpleError);
 SYMBOL_EXPORT_SC_(CorePkg, wrongTypeNthArg);
 SYMBOL_EXPORT_SC_(CorePkg, wrongIndex);
 
-};
+}; // namespace core

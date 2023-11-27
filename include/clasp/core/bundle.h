@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: bundle.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef Bundle_H //[
-#define Bundle_H
 
 #include <stdio.h>
 #include <string>
@@ -72,5 +71,4 @@ public:
   virtual ~Bundle(){};
 };
 
-};     // namespace core
-#endif //]
+}; // namespace core

@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: allHeaders.h
 */
@@ -24,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
 #include <cffiPackage.h>
 #include <cffi.fwd.h>
 #include <cffi.h>

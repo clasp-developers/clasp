@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -32,19 +32,16 @@ THE SOFTWARE.
 
 namespace core {
 
-List_sp Argument::lambda_list() const {
-  return ((this->_ArgTarget));
-};
+List_sp Argument::lambda_list() const { return ((this->_ArgTarget)); };
 
-Symbol_sp Argument::symbol() const {
-  return ((gc::As<Symbol_sp>(this->_ArgTarget)));
-};
+Symbol_sp Argument::symbol() const { return ((gc::As<Symbol_sp>(this->_ArgTarget))); };
 
 List_sp Argument::classified() const {
   if (this->_ArgTargetFrameIndex == SPECIAL_TARGET) {
     return coerce_to_list(Cons_O::create(ext::_sym_specialVar, this->_ArgTarget));
   } else if (this->_ArgTargetFrameIndex >= 0) {
-    return coerce_to_list(Cons_O::create(ext::_sym_lexicalVar, Cons_O::create(this->_ArgTarget, make_fixnum(this->_ArgTargetFrameIndex))));
+    return coerce_to_list(
+        Cons_O::create(ext::_sym_lexicalVar, Cons_O::create(this->_ArgTarget, make_fixnum(this->_ArgTargetFrameIndex))));
   } else if (this->_ArgTargetFrameIndex == UNDEFINED_TARGET) {
     return ((nil<List_V>()));
   }
@@ -133,4 +130,4 @@ string AuxArgument::asString() const {
   return ((ss.str()));
 }
 
-};
+}; // namespace core

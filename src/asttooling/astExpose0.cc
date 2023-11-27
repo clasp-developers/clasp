@@ -64,5 +64,3 @@ THE SOFTWARE.
 #endif
 
 #include <clasp/clbind/clbind.h>
-
-

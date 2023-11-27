@@ -48,12 +48,10 @@ void AsttoolingExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpo
     initialize_astExpose();
     //	    initialize_tools();
     initialize_clangTooling();
-//    initialize_Registry();
-  };
-      break;
+    //    initialize_Registry();
+  }; break;
   case candoGlobals: {
-  };
-      break;
+  }; break;
   case pythonClasses:
   case pythonFunctions:
   case pythonGlobals: {
@@ -61,4 +59,4 @@ void AsttoolingExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpo
   } break;
   }
 }
-};
+}; // namespace asttooling

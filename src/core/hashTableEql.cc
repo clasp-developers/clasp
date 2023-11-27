@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -36,15 +36,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-
-
-
-
-
 HashTableEql_sp HashTableEql_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
   if (sz == 0)
     sz = 16;
-  auto  hashTable = gctools::GC<HashTableEql_O>::allocate_with_default_constructor();
+  auto hashTable = gctools::GC<HashTableEql_O>::allocate_with_default_constructor();
   hashTable->setup(sz, rehashSize, rehashThreshold);
   return hashTable;
 }
@@ -56,16 +51,13 @@ HashTableEql_sp HashTableEql_O::create_default() {
   return ht;
 }
 
-bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const {
-  
-  return cl__eql(entryKey, searchKey);
-}
+bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const { return cl__eql(entryKey, searchKey); }
 
-gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
+gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator &hg) const {
   HashTable_O::sxhash_eql(hg, obj);
   gc::Fixnum hash = hg.hashBound(bound);
-  LOG("HashTableEql_O::sxhashKey obj[{}] raw_hash[{}] bound[{}] hash[{}]" , _rep_(obj) , hg.asString() , bound , hash);
+  LOG("HashTableEql_O::sxhashKey obj[{}] raw_hash[{}] bound[{}] hash[{}]", _rep_(obj), hg.asString(), bound, hash);
   return hash;
 }
 
-}; /* core */
+}; // namespace core

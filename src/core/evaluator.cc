@@ -26,8 +26,8 @@ THE SOFTWARE.
 /* -^- */
 // If you turn on SOURCE_DEBUG and uncomment the DEBUG_LEVEL_FULL define
 //    - it will slow the interpreter down a lot!!!!!!!!!
-//#define DEBUG_LEVEL_FULL
-//#include "core/foundation.h"
+// #define DEBUG_LEVEL_FULL
+// #include "core/foundation.h"
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
@@ -37,7 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/hashTable.h>
-//#i n c l u d e "setfExpander.h"
+// #i n c l u d e "setfExpander.h"
 #include <clasp/core/bytecode_compiler.h> // Lexenv
 #include <clasp/core/designators.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -57,10 +57,10 @@ THE SOFTWARE.
 #include <clasp/core/unwind.h> // funwind_protect, etc
 
 namespace cl {
-extern core::Symbol_sp& _sym_or;
-extern core::Symbol_sp& _sym_Symbol_O;
-extern core::Symbol_sp& _sym_Cons_O;
-};
+extern core::Symbol_sp &_sym_or;
+extern core::Symbol_sp &_sym_Symbol_O;
+extern core::Symbol_sp &_sym_Cons_O;
+}; // namespace cl
 
 namespace core {
 namespace eval {
@@ -68,17 +68,14 @@ int _evaluateVerbosity = 0;
 
 T_mv t1Evaluate(T_sp exp, T_sp environment);
 
-void errorApplyZeroArguments() {
-  SIMPLE_ERROR("Illegal to have zero arguments for APPLY");
-}
+void errorApplyZeroArguments() { SIMPLE_ERROR("Illegal to have zero arguments for APPLY"); }
 
-void errorApplyLastArgumentNotList(T_sp lastArg ) {
+void errorApplyLastArgumentNotList(T_sp lastArg) {
   SIMPLE_ERROR("Last argument of APPLY is not a list/frame/activation-frame - passed {}", _rep_(lastArg));
 }
 
-
-};
-};
+}; // namespace eval
+}; // namespace core
 
 namespace core {
 CL_LAMBDA(form &optional env stepping compiler-env-p (execute t));
@@ -91,35 +88,31 @@ CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp ste
   return result;
 };
 
-
-
-
-
 /*! The following APPLY function works by exploiting variadic arrays in C++.
 Variadic arrays are allocated at the bottom of the stack frame (that grows down from high memory).
-Since there is only 0 or 1 variadic array allocated in any path of the code 
+Since there is only 0 or 1 variadic array allocated in any path of the code
 the variadic array is always at the very bottom of the stack frame.
-The TRICK: when you call a function from this APPLY function, the return address gets pushed 
-on the stack immediately below the start of the variadic array and the T_O* variadic array 
+The TRICK: when you call a function from this APPLY function, the return address gets pushed
+on the stack immediately below the start of the variadic array and the T_O* variadic array
 will appear exactly like a vector of arguments passed on the stack!
 Say you use (apply <func> a0 a1 list-of-5-arguments-a2-a7)
 On x86-64 six (6) arguments are passed in the registers (di, si, dx, cx, r8, r9) respectively.
 The closure object is passed in (di) and the total number of arguments is passed in (si)
-This APPLY will allocate a variadic array and fill it - then just after the 
+This APPLY will allocate a variadic array and fill it - then just after the
 callee function is called, the stack will look like...
 a7 <- variadic[3]          sp+4w
 a6 <- variadic[2]          sp+3w
 a5 <- variadic[1]          sp+2w
 a4 <- variadic[0]          sp+1w
 <return-address-to-apply>  sp
-<where-bp-will-be-pushed>  sp-1w (stack-pointer)   
+<where-bp-will-be-pushed>  sp-1w (stack-pointer)
 ... and arguments a0 a1 a2 a3 will be in registers dx, cx, r8, r9
 -----
 Note: If you pass fewer than four Common Lisp arguments the remaining
 register arguments are passed with values NULL.  The overhead of loading
 constants into registers is insignificant.
 Note: The call to cc_protect_alloca passes the pointer to variadic
-to cc_protect_alloca that is declared __attribute__((optnone) and 
+to cc_protect_alloca that is declared __attribute__((optnone) and
 cc_protect_alloca immediately returns.
 The TRICK: The act of passing the pointer of the lexical (variadic)
 to another function prevents the compiler from optimizing (variadic)
@@ -137,163 +130,166 @@ Refinements:
 
 */
 
-extern "C" void cc_protect_alloca(char* ptr);
-#define REG_ARGS 4  // 4 common lisp arguments in registers
-#define ALLOCA_variadic() T_O* variadic[nargs-REG_ARGS]; cc_protect_alloca((char*)&variadic[0]);
-#define GET_AND_ADVANCE_LIST(x_,cur_) {x_ = CONS_CAR(cur_).raw_(); cur_ = CONS_CDR(gc::As_unsafe<Cons_sp>(cur_)); }
-#define GET_AND_ADVANCE_VASLIST(x_,cur_) {x_ = cur_->next_arg_raw(); };
+extern "C" void cc_protect_alloca(char *ptr);
+#define REG_ARGS 4 // 4 common lisp arguments in registers
+#define ALLOCA_variadic()                                                                                                          \
+  T_O *variadic[nargs - REG_ARGS];                                                                                                 \
+  cc_protect_alloca((char *)&variadic[0]);
+#define GET_AND_ADVANCE_LIST(x_, cur_)                                                                                             \
+  {                                                                                                                                \
+    x_ = CONS_CAR(cur_).raw_();                                                                                                    \
+    cur_ = CONS_CDR(gc::As_unsafe<Cons_sp>(cur_));                                                                                 \
+  }
+#define GET_AND_ADVANCE_VASLIST(x_, cur_)                                                                                          \
+  { x_ = cur_->next_arg_raw(); };
 // NOTE that changes to REG_ARGS require changes to code below.
 
 T_mv apply0_inner_valist(Function_sp func, Vaslist_sp var) {
   T_O *a0, *a1, *a2, *a3;
   int lenRest = var->nargs();
   int nargs = lenRest + 0;
-  //Vaslist* vaslist = &*var;
+  // Vaslist* vaslist = &*var;
   switch (lenRest) {
-  case 0: 
-      return (*func).entry_0()(func.raw_());
-      break;
-  case 1: 
-      a0 = (*var)[0];
-      return (*func).entry_1()(func.raw_(),a0);
-      break;
-  case 2: 
-      a0 = (*var)[0];
-      a1 = (*var)[1];
-      return (*func).entry_2()(func.raw_(),a0,a1);
-      break;
-  case 3: 
-      a0 = (*var)[0];
-      a1 = (*var)[1];
-      a2 = (*var)[2];
-      return (*func).entry_3()(func.raw_(),a0,a1,a2);
-      break;
-  case 4: 
-      a0 = (*var)[0];
-      a1 = (*var)[1];
-      a2 = (*var)[2];
-      a3 = (*var)[3];
-      return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
-      break;
+  case 0:
+    return (*func).entry_0()(func.raw_());
+    break;
+  case 1:
+    a0 = (*var)[0];
+    return (*func).entry_1()(func.raw_(), a0);
+    break;
+  case 2:
+    a0 = (*var)[0];
+    a1 = (*var)[1];
+    return (*func).entry_2()(func.raw_(), a0, a1);
+    break;
+  case 3:
+    a0 = (*var)[0];
+    a1 = (*var)[1];
+    a2 = (*var)[2];
+    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    break;
+  case 4:
+    a0 = (*var)[0];
+    a1 = (*var)[1];
+    a2 = (*var)[2];
+    a3 = (*var)[3];
+    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    break;
   default: { // lenRest>=4
-    return (*func).entry()(func.raw_(),nargs,var->args());
+    return (*func).entry()(func.raw_(), nargs, var->args());
   }
   }
 }
 
-T_mv apply1_inner_valist(Function_sp func, T_O* a0, Vaslist_sp var) {
+T_mv apply1_inner_valist(Function_sp func, T_O *a0, Vaslist_sp var) {
   T_O *a1, *a2, *a3;
   size_t lenRest = var->nargs();
   size_t nargs = lenRest + 1;
   switch (lenRest) {
-  case 0: 
-      return (*func).entry_1()(func.raw_(),a0);
-      break;
-  case 1: 
-      a1 = (*var)[0];
-      return (*func).entry_2()(func.raw_(),a0,a1);
-      break;
-  case 2: 
-      a1 = (*var)[0];
-      a2 = (*var)[1];
-      return (*func).entry_3()(func.raw_(),a0,a1,a2);
-      break;
-  case 3: 
-      a1 = (*var)[0];
-      a2 = (*var)[1];
-      a3 = (*var)[2];
-      return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
-      break;
+  case 0:
+    return (*func).entry_1()(func.raw_(), a0);
+    break;
+  case 1:
+    a1 = (*var)[0];
+    return (*func).entry_2()(func.raw_(), a0, a1);
+    break;
+  case 2:
+    a1 = (*var)[0];
+    a2 = (*var)[1];
+    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    break;
+  case 3:
+    a1 = (*var)[0];
+    a2 = (*var)[1];
+    a3 = (*var)[2];
+    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    break;
   default: { // lenRest>=4
-    MAKE_STACK_FRAME( frame, nargs );
+    MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
-    gctools::fill_frame_one( frame, idx, a0 );
-    gctools::fill_frame_vaslist( frame, idx, var );
-    CHECK_FRAME( frame, idx, nargs );
-    return (*func).entry()(func.raw_(),nargs,frame->arguments());
+    gctools::fill_frame_one(frame, idx, a0);
+    gctools::fill_frame_vaslist(frame, idx, var);
+    CHECK_FRAME(frame, idx, nargs);
+    return (*func).entry()(func.raw_(), nargs, frame->arguments());
   }
   }
 }
 
-T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, Vaslist_sp var) {
+T_mv apply2_inner_valist(Function_sp func, T_O *a0, T_O *a1, Vaslist_sp var) {
   T_O *a2, *a3;
   size_t lenRest = var->nargs();
   size_t nargs = lenRest + 2;
   switch (lenRest) {
-  case 0: 
-      return (*func).entry_2()(func.raw_(),a0,a1);
-      break;
-  case 1: 
-      a2 = (*var)[0];
-      return (*func).entry_3()(func.raw_(),a0,a1,a2);
-      break;
-  case 2: 
-      a2 = (*var)[0];
-      a3 = (*var)[1];
-      return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
-      break;
+  case 0:
+    return (*func).entry_2()(func.raw_(), a0, a1);
+    break;
+  case 1:
+    a2 = (*var)[0];
+    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    break;
+  case 2:
+    a2 = (*var)[0];
+    a3 = (*var)[1];
+    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    break;
   default: { // lenRest>=4
-    MAKE_STACK_FRAME( frame, nargs );
+    MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
-    gctools::fill_frame_one( frame, idx, a0 );
-    gctools::fill_frame_one( frame, idx, a1 );
-    gctools::fill_frame_vaslist( frame, idx, var );
-    CHECK_FRAME( frame, idx, nargs );
-    return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
+    gctools::fill_frame_one(frame, idx, a0);
+    gctools::fill_frame_one(frame, idx, a1);
+    gctools::fill_frame_vaslist(frame, idx, var);
+    CHECK_FRAME(frame, idx, nargs);
+    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
   }
   }
 }
 
-T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, Vaslist_sp var) {
+T_mv apply3_inner_valist(Function_sp func, T_O *a0, T_O *a1, T_O *a2, Vaslist_sp var) {
   T_O *a3;
   size_t lenRest = var->nargs();
   size_t nargs = lenRest + 3;
   switch (lenRest) {
-  case 0: 
-      return (*func).entry_3()(func.raw_(),a0,a1,a2);
-      break;
-  case 1: 
-      a3 = (*var)[0];
-      return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
-      break;
+  case 0:
+    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    break;
+  case 1:
+    a3 = (*var)[0];
+    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    break;
   default: { // lenRest>=4
-    MAKE_STACK_FRAME( frame, nargs );
+    MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
-    gctools::fill_frame_one( frame, idx, a0 );
-    gctools::fill_frame_one( frame, idx, a1 );
-    gctools::fill_frame_one( frame, idx, a2 );
-    gctools::fill_frame_vaslist( frame, idx, var );
-    CHECK_FRAME( frame, idx, nargs );
-    return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
+    gctools::fill_frame_one(frame, idx, a0);
+    gctools::fill_frame_one(frame, idx, a1);
+    gctools::fill_frame_one(frame, idx, a2);
+    gctools::fill_frame_vaslist(frame, idx, var);
+    CHECK_FRAME(frame, idx, nargs);
+    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
   }
   }
 }
 
-T_mv apply4_inner_valist(Function_sp func, Vaslist_sp v,
-                         T_O* a0, T_O* a1, T_O* a2, T_O *a3,
-                         Vaslist_sp var) {
+T_mv apply4_inner_valist(Function_sp func, Vaslist_sp v, T_O *a0, T_O *a1, T_O *a2, T_O *a3, Vaslist_sp var) {
   size_t lenRest = var->nargs();
   size_t nargs = lenRest + 4 + v->nargs();
-  MAKE_STACK_FRAME( frame, nargs );
+  MAKE_STACK_FRAME(frame, nargs);
   size_t idx(0);
-  gctools::fill_frame_one( frame, idx, a0 );
-  gctools::fill_frame_one( frame, idx, a1 );
-  gctools::fill_frame_one( frame, idx, a2 );
-  gctools::fill_frame_one( frame, idx, a3 );
-  gctools::fill_frame_vaslist( frame, idx, var );
-  gctools::fill_frame_vaslist( frame, idx, v );
-  CHECK_FRAME( frame, idx, nargs );
-  return (*func).entry()(func.raw_(),idx,frame->arguments(0));
+  gctools::fill_frame_one(frame, idx, a0);
+  gctools::fill_frame_one(frame, idx, a1);
+  gctools::fill_frame_one(frame, idx, a2);
+  gctools::fill_frame_one(frame, idx, a3);
+  gctools::fill_frame_vaslist(frame, idx, var);
+  gctools::fill_frame_vaslist(frame, idx, v);
+  CHECK_FRAME(frame, idx, nargs);
+  return (*func).entry()(func.raw_(), idx, frame->arguments(0));
 }
 
-
-T_mv apply0_inner_list(Function_sp func, T_sp var )
-{
+T_mv apply0_inner_list(Function_sp func, T_sp var) {
   const size_t fargs = 0;
-  T_O* a0;
-  T_O* a1;
-  T_O* a2;
-  T_O* a3;
+  T_O *a0;
+  T_O *a1;
+  T_O *a2;
+  T_O *a3;
   size_t rargs = 0;
   {
     T_sp cur = var;
@@ -301,52 +297,51 @@ T_mv apply0_inner_list(Function_sp func, T_sp var )
       ++rargs;
       cur = CONS_CDR(cur);
     }
-    if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(var);
+    if (cur.notnilp())
+      TYPE_ERROR_PROPER_LIST(var);
   }
   size_t nargs = fargs + rargs;
   switch (rargs) {
   case 0:
-      return (*func).entry_0()(func.raw_());
-      break;
-  case 1: 
-      GET_AND_ADVANCE_LIST(a0,var);
-      return (*func).entry_1()(func.raw_(),a0);
-      break;
-  case 2: 
-      GET_AND_ADVANCE_LIST(a0,var);
-      GET_AND_ADVANCE_LIST(a1,var);
-      return (*func).entry_2()(func.raw_(),a0,a1);
-      break;
-  case 3: 
-      GET_AND_ADVANCE_LIST(a0,var);
-      GET_AND_ADVANCE_LIST(a1,var);
-      GET_AND_ADVANCE_LIST(a2,var);
-      return (*func).entry_3()(func.raw_(),a0,a1,a2);
-      break;
-  case 4: 
-      GET_AND_ADVANCE_LIST(a0,var);
-      GET_AND_ADVANCE_LIST(a1,var);
-      GET_AND_ADVANCE_LIST(a2,var);
-      GET_AND_ADVANCE_LIST(a3,var);
-      return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
-      break;
+    return (*func).entry_0()(func.raw_());
+    break;
+  case 1:
+    GET_AND_ADVANCE_LIST(a0, var);
+    return (*func).entry_1()(func.raw_(), a0);
+    break;
+  case 2:
+    GET_AND_ADVANCE_LIST(a0, var);
+    GET_AND_ADVANCE_LIST(a1, var);
+    return (*func).entry_2()(func.raw_(), a0, a1);
+    break;
+  case 3:
+    GET_AND_ADVANCE_LIST(a0, var);
+    GET_AND_ADVANCE_LIST(a1, var);
+    GET_AND_ADVANCE_LIST(a2, var);
+    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    break;
+  case 4:
+    GET_AND_ADVANCE_LIST(a0, var);
+    GET_AND_ADVANCE_LIST(a1, var);
+    GET_AND_ADVANCE_LIST(a2, var);
+    GET_AND_ADVANCE_LIST(a3, var);
+    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    break;
   default: { // lenRest>=1
-    MAKE_STACK_FRAME( frame, nargs );
+    MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
-    gctools::fill_frame_list( frame, idx, var );
-    CHECK_FRAME( frame, idx, nargs );
-    return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
+    gctools::fill_frame_list(frame, idx, var);
+    CHECK_FRAME(frame, idx, nargs);
+    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
   }
   }
 }
 
-
-T_mv apply1_inner_list(Function_sp func, T_O* a0, T_sp var )
-{
+T_mv apply1_inner_list(Function_sp func, T_O *a0, T_sp var) {
   const size_t fargs = 1;
-  T_O* a1;
-  T_O* a2;
-  T_O* a3;
+  T_O *a1;
+  T_O *a2;
+  T_O *a3;
   size_t rargs = 0;
   {
     T_sp cur = var;
@@ -354,45 +349,44 @@ T_mv apply1_inner_list(Function_sp func, T_O* a0, T_sp var )
       ++rargs;
       cur = CONS_CDR(cur);
     }
-    if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(var);
+    if (cur.notnilp())
+      TYPE_ERROR_PROPER_LIST(var);
   }
   size_t nargs = fargs + rargs;
   switch (rargs) {
-  case 0: 
-      return (*func).entry_1()(func.raw_(),a0);
-      break;
-  case 1: 
-      GET_AND_ADVANCE_LIST(a1,var);
-      return (*func).entry_2()(func.raw_(),a0,a1);
-      break;
-  case 2: 
-      GET_AND_ADVANCE_LIST(a1,var);
-      GET_AND_ADVANCE_LIST(a2,var);
-      return (*func).entry_3()(func.raw_(),a0,a1,a2);
-      break;
-  case 3: 
-      GET_AND_ADVANCE_LIST(a1,var);
-      GET_AND_ADVANCE_LIST(a2,var);
-      GET_AND_ADVANCE_LIST(a3,var);
-      return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
-      break;
+  case 0:
+    return (*func).entry_1()(func.raw_(), a0);
+    break;
+  case 1:
+    GET_AND_ADVANCE_LIST(a1, var);
+    return (*func).entry_2()(func.raw_(), a0, a1);
+    break;
+  case 2:
+    GET_AND_ADVANCE_LIST(a1, var);
+    GET_AND_ADVANCE_LIST(a2, var);
+    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    break;
+  case 3:
+    GET_AND_ADVANCE_LIST(a1, var);
+    GET_AND_ADVANCE_LIST(a2, var);
+    GET_AND_ADVANCE_LIST(a3, var);
+    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    break;
   default: { // lenRest>=1
-    MAKE_STACK_FRAME( frame, nargs );
+    MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
-    gctools::fill_frame_one( frame, idx, a0 );
-    gctools::fill_frame_list( frame, idx, var );
-    CHECK_FRAME( frame, idx, nargs );
-    return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
+    gctools::fill_frame_one(frame, idx, a0);
+    gctools::fill_frame_list(frame, idx, var);
+    CHECK_FRAME(frame, idx, nargs);
+    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
   }
   }
 }
 
-
-T_mv apply2_inner_list(Function_sp func, T_O* a0, T_O* a1, T_sp var )
-{
+T_mv apply2_inner_list(Function_sp func, T_O *a0, T_O *a1, T_sp var) {
   const size_t fargs = 2;
-  T_O* a2;
-  T_O* a3;
+  T_O *a2;
+  T_O *a3;
   size_t rargs = 0;
   {
     T_sp cur = var;
@@ -400,39 +394,38 @@ T_mv apply2_inner_list(Function_sp func, T_O* a0, T_O* a1, T_sp var )
       ++rargs;
       cur = CONS_CDR(cur);
     }
-    if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(var);
+    if (cur.notnilp())
+      TYPE_ERROR_PROPER_LIST(var);
   }
   size_t nargs = fargs + rargs;
   switch (rargs) {
-  case 0: 
-      return (*func).entry_2()(func.raw_(),a0,a1);
-      break;
-  case 1: 
-      GET_AND_ADVANCE_LIST(a2,var);
-      return (*func).entry_3()(func.raw_(),a0,a1,a2);
-      break;
-  case 2: 
-      GET_AND_ADVANCE_LIST(a2,var);
-      GET_AND_ADVANCE_LIST(a3,var);
-      return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
-      break;
+  case 0:
+    return (*func).entry_2()(func.raw_(), a0, a1);
+    break;
+  case 1:
+    GET_AND_ADVANCE_LIST(a2, var);
+    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    break;
+  case 2:
+    GET_AND_ADVANCE_LIST(a2, var);
+    GET_AND_ADVANCE_LIST(a3, var);
+    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    break;
   default: { // lenRest>=1
-    MAKE_STACK_FRAME( frame, nargs );
+    MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
-    gctools::fill_frame_one( frame, idx, a0 );
-    gctools::fill_frame_one( frame, idx, a1 );
-    gctools::fill_frame_list( frame, idx, var );
-    CHECK_FRAME( frame, idx, nargs );
-    return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
+    gctools::fill_frame_one(frame, idx, a0);
+    gctools::fill_frame_one(frame, idx, a1);
+    gctools::fill_frame_list(frame, idx, var);
+    CHECK_FRAME(frame, idx, nargs);
+    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
   }
   }
 }
 
-
-T_mv apply3_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_sp var )
-{
+T_mv apply3_inner_list(Function_sp func, T_O *a0, T_O *a1, T_O *a2, T_sp var) {
   const size_t fargs = 3;
-  T_O* a3;
+  T_O *a3;
   size_t rargs = 0;
   {
     T_sp cur = var;
@@ -440,33 +433,32 @@ T_mv apply3_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_sp var )
       ++rargs;
       cur = CONS_CDR(cur);
     }
-    if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(var);
+    if (cur.notnilp())
+      TYPE_ERROR_PROPER_LIST(var);
   }
   size_t nargs = fargs + rargs;
   switch (rargs) {
-  case 0: 
-      return (*func).entry_3()(func.raw_(),a0,a1,a2);
-      break;
-  case 1: 
-      GET_AND_ADVANCE_LIST(a3,var);
-      return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
-      break;
+  case 0:
+    return (*func).entry_3()(func.raw_(), a0, a1, a2);
+    break;
+  case 1:
+    GET_AND_ADVANCE_LIST(a3, var);
+    return (*func).entry_4()(func.raw_(), a0, a1, a2, a3);
+    break;
   default: { // lenRest>=1
-    MAKE_STACK_FRAME( frame, nargs );
+    MAKE_STACK_FRAME(frame, nargs);
     size_t idx(0);
-    gctools::fill_frame_one( frame, idx, a0 );
-    gctools::fill_frame_one( frame, idx, a1 );
-    gctools::fill_frame_one( frame, idx, a2 );
-    gctools::fill_frame_list( frame, idx, var );
-    CHECK_FRAME( frame, idx, nargs );
-    return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
+    gctools::fill_frame_one(frame, idx, a0);
+    gctools::fill_frame_one(frame, idx, a1);
+    gctools::fill_frame_one(frame, idx, a2);
+    gctools::fill_frame_list(frame, idx, var);
+    CHECK_FRAME(frame, idx, nargs);
+    return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
   }
   }
 }
 
-T_mv apply4_inner_list(Function_sp func, T_sp var,
-                       T_O* a0, T_O* a1, T_O* a2, T_O* a3,
-                       Vaslist_sp fixed) {
+T_mv apply4_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1, T_O *a2, T_O *a3, Vaslist_sp fixed) {
   size_t lenRest = 0;
   {
     T_sp cur = var;
@@ -474,21 +466,21 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
       ++lenRest;
       cur = CONS_CDR(cur);
     }
-    if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(var);
+    if (cur.notnilp())
+      TYPE_ERROR_PROPER_LIST(var);
   }
   size_t nargs = lenRest + fixed->nargs() + 4;
-  MAKE_STACK_FRAME( frame, nargs );
+  MAKE_STACK_FRAME(frame, nargs);
   size_t idx(0);
-  gctools::fill_frame_one( frame, idx, a0 );
-  gctools::fill_frame_one( frame, idx, a1 );
-  gctools::fill_frame_one( frame, idx, a2 );
-  gctools::fill_frame_one( frame, idx, a3 );
-  gctools::fill_frame_vaslist( frame, idx, fixed );
-  gctools::fill_frame_list( frame, idx, var );
-  CHECK_FRAME( frame, idx, nargs );
-  return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
+  gctools::fill_frame_one(frame, idx, a0);
+  gctools::fill_frame_one(frame, idx, a1);
+  gctools::fill_frame_one(frame, idx, a2);
+  gctools::fill_frame_one(frame, idx, a3);
+  gctools::fill_frame_vaslist(frame, idx, fixed);
+  gctools::fill_frame_list(frame, idx, var);
+  CHECK_FRAME(frame, idx, nargs);
+  return (*func).entry()(func.raw_(), nargs, frame->arguments(0));
 }
-
 
 /* The idea is that given a call to apply: (apply f1 f2... fn var),
  * we end up here with var = var, lenFixed = n, fixed = the apply valist.
@@ -496,23 +488,23 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
 T_mv apply_inner_valist(Function_sp func, size_t lenFixed, Vaslist_sp fixed, Vaslist_sp var) {
   size_t nargs_var = var->nargs();
   size_t total_args = lenFixed + nargs_var;
-  MAKE_STACK_FRAME( frame, total_args );
+  MAKE_STACK_FRAME(frame, total_args);
   size_t idx(0);
-  gctools::fill_frame_nargs_args( frame, idx, lenFixed, fixed->args() );
-  gctools::fill_frame_vaslist( frame, idx, var );
-  CHECK_FRAME( frame, idx, total_args );
-  return (*func).entry()(func.raw_(),total_args,frame->arguments());
+  gctools::fill_frame_nargs_args(frame, idx, lenFixed, fixed->args());
+  gctools::fill_frame_vaslist(frame, idx, var);
+  CHECK_FRAME(frame, idx, total_args);
+  return (*func).entry()(func.raw_(), total_args, frame->arguments());
 }
 
 T_mv apply_inner_list(Function_sp func, size_t lenFixed, Vaslist_sp fixed, List_sp var) {
   size_t nargs_var = cl__length(var);
   size_t total_args = lenFixed + nargs_var;
-  MAKE_STACK_FRAME( frame, total_args );
+  MAKE_STACK_FRAME(frame, total_args);
   size_t idx(0);
-  gctools::fill_frame_nargs_args( frame, idx, lenFixed, fixed->args() );
-  gctools::fill_frame_list( frame, idx, var );
-  CHECK_FRAME( frame, idx, total_args );
-  return (*func).entry()(func.raw_(),total_args,frame->arguments());
+  gctools::fill_frame_nargs_args(frame, idx, lenFixed, fixed->args());
+  gctools::fill_frame_list(frame, idx, var);
+  CHECK_FRAME(frame, idx, total_args);
+  return (*func).entry()(func.raw_(), total_args, frame->arguments());
 }
 
 CL_LAMBDA(head core:&va-rest args);
@@ -521,14 +513,15 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(apply)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
-  Function_sp func = coerce::calledFunctionDesignator( head );
-  if (args->nargs_zero()) eval::errorApplyZeroArguments();
+  Function_sp func = coerce::calledFunctionDesignator(head);
+  if (args->nargs_zero())
+    eval::errorApplyZeroArguments();
   size_t lenArgs = args->nargs();
-  T_O* lastArgRaw = (*args)[lenArgs - 1];
+  T_O *lastArgRaw = (*args)[lenArgs - 1];
   if (gctools::tagged_vaslistp(lastArgRaw)) {
     Vaslist_sp valast((gc::Tagged)lastArgRaw);
     return apply_inner_valist(func, lenArgs - 1, args, valast);
-  } else if ( gctools::tagged_consp(lastArgRaw) || gctools::tagged_nilp(lastArgRaw)) {
+  } else if (gctools::tagged_consp(lastArgRaw) || gctools::tagged_nilp(lastArgRaw)) {
     T_sp lastArg((gc::Tagged)lastArgRaw);
     return apply_inner_list(func, lenArgs - 1, args, lastArg);
   } else {
@@ -548,10 +541,10 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
   if (lastArg.valistp()) {
     return apply0_inner_valist(func, gc::As_unsafe<Vaslist_sp>(lastArg));
-  }
-  else if (lastArg.consp() || lastArg.nilp())
+  } else if (lastArg.consp() || lastArg.nilp())
     return apply0_inner_list(func, lastArg);
-  else eval::errorApplyLastArgumentNotList(lastArg);
+  else
+    eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
 
@@ -562,10 +555,10 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv core__trace_apply0(Function_sp func, T_sp lastArg) {
   if (lastArg.valistp()) {
     return apply0_inner_valist(func, gc::As_unsafe<Vaslist_sp>(lastArg));
-  }
-  else if (lastArg.consp() || lastArg.nilp())
+  } else if (lastArg.consp() || lastArg.nilp())
     return apply0_inner_list(func, lastArg);
-  else eval::errorApplyLastArgumentNotList(lastArg);
+  else
+    eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
 
@@ -579,7 +572,8 @@ CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
     return apply1_inner_valist(func, arg0.raw_(), gc::As_unsafe<Vaslist_sp>(lastArg));
   else if (lastArg.consp() || lastArg.nilp())
     return apply1_inner_list(func, arg0.raw_(), lastArg);
-  else eval::errorApplyLastArgumentNotList(lastArg);
+  else
+    eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
 
@@ -588,29 +582,28 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b m) = (apply2 (coerce-fdesignator f) m a b))dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
-                           T_sp arg0, T_sp arg1) {
+CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg, T_sp arg0, T_sp arg1) {
   if (lastArg.valistp())
     return apply2_inner_valist(func, arg0.raw_(), arg1.raw_(), gc::As_unsafe<Vaslist_sp>(lastArg));
   else if (lastArg.consp() || lastArg.nilp())
     return apply2_inner_list(func, arg0.raw_(), arg1.raw_(), lastArg);
-  else eval::errorApplyLastArgumentNotList(lastArg);
+  else
+    eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
-
 
 CL_LAMBDA(func args arg0 arg1 arg2);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b c m) = (apply3 (coerce-fdesignator f) m a b c))dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
-                           T_sp arg0, T_sp arg1, T_sp arg2) {
+CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg, T_sp arg0, T_sp arg1, T_sp arg2) {
   if (lastArg.valistp())
     return apply3_inner_valist(func, arg0.raw_(), arg1.raw_(), arg2.raw_(), gc::As_unsafe<Vaslist_sp>(lastArg));
   else if (lastArg.consp() || lastArg.nilp())
     return apply3_inner_list(func, arg0.raw_(), arg1.raw_(), arg2.raw_(), lastArg);
-  else eval::errorApplyLastArgumentNotList(lastArg);
+  else
+    eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
 
@@ -619,18 +612,13 @@ CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...))dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
-                           T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3,
-                           Vaslist_sp more) {
+CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3, Vaslist_sp more) {
   if (lastArg.valistp())
-    return apply4_inner_valist(func, gc::As_unsafe<Vaslist_sp>(lastArg),
-                               arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(),
-                               more);
+    return apply4_inner_valist(func, gc::As_unsafe<Vaslist_sp>(lastArg), arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(), more);
   else if (lastArg.consp() || lastArg.nilp())
-    return apply4_inner_list(func, lastArg,
-                             arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(),
-                             more);
-  else eval::errorApplyLastArgumentNotList(lastArg);
+    return apply4_inner_list(func, lastArg, arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(), more);
+  else
+    eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
 
@@ -640,9 +628,7 @@ CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(eval)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv cl__eval(T_sp form) {
-  if (!core::_sym_STAReval_with_env_hookSTAR->boundP() ||
-      core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
-      ) {
+  if (!core::_sym_STAReval_with_env_hookSTAR->boundP() || core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()) {
     return eval::evaluate(form, nil<T_O>());
   } else {
     return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, nil<T_O>());
@@ -653,10 +639,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(Interpret FORM in the interpreter environment ENV.)dx");
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
-  return eval::evaluate(form, env);
-}
-
+CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) { return eval::evaluate(form, env); }
 
 // fast funcall
 CL_LAMBDA(function-desig core:&va-rest args);
@@ -667,9 +650,9 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, Vaslist_sp args) {
   Function_sp func = coerce::calledFunctionDesignator(function_desig);
   size_t nargs = args->nargs();
-  MAKE_STACK_FRAME( fargs, nargs );
+  MAKE_STACK_FRAME(fargs, nargs);
   size_t ia(0);
-  gctools::fill_frame_vaslist( fargs, ia, args );
+  gctools::fill_frame_vaslist(fargs, ia, args);
   T_mv res = funcall_general<core::Function_O>(func.tagged_(), nargs, fargs->arguments());
   return res;
 }
@@ -702,7 +685,8 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
 
 CL_LAMBDA(body &optional expectDocString);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials)dx");
+CL_DOCSTRING(
+    R"dx(Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString) {
   bool b_expect_doc = expectDocString.isTrue();
@@ -710,15 +694,15 @@ CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString
   gc::Nilable<String_sp> docstring;
   List_sp code;
   List_sp specials;
-  eval::extract_declares_docstring_code_specials(inputBody, declares,
-                                                 b_expect_doc, docstring, code, specials);
+  eval::extract_declares_docstring_code_specials(inputBody, declares, b_expect_doc, docstring, code, specials);
   T_sp tdeclares = core__canonicalize_declarations(declares);
   return Values(tdeclares, code, (T_sp)docstring, specials);
 };
 
 CL_LAMBDA(declare-list &optional default);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx");
+CL_DOCSTRING(
+    R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__extract_lambda_name_from_declares(List_sp declares, T_sp defaultValue) {
   // First check for a (declare (core:function-name XXX))
@@ -731,14 +715,14 @@ CL_DEFUN T_sp core__extract_lambda_name_from_declares(List_sp declares, T_sp def
   return defaultValue;
 }
 
-
 CL_LAMBDA(declare-list);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx");
+CL_DOCSTRING(
+    R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
   // First check for a (declare (core:function-name XXX))
-  for ( auto cur : declares ) {
+  for (auto cur : declares) {
     T_sp decl = CONS_CAR(cur);
     if (decl.consp()) {
       if (oCar(decl) == core::_sym_dump_module) {
@@ -753,7 +737,8 @@ CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
 
 CL_LAMBDA(form &optional default);
 CL_DECLARE();
-CL_DOCSTRING(R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx");
+CL_DOCSTRING(
+    R"dx(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultValue) {
   List_sp body = oCddr(lambdaExpression);
@@ -791,7 +776,8 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   if (env.nilp()) { // nothing
   } else if (gc::IsA<comp::Lexenv_sp>(env)) {
     T_sp local = gc::As_unsafe<comp::Lexenv_sp>(env)->lookupSymbolMacro(sym);
-    if (local.notnilp()) return local;
+    if (local.notnilp())
+      return local;
   } else { // pass to cleavir (which also checks global environment)
     SYMBOL_EXPORT_SC_(CorePkg, cleavirSymbolMacro);
     return eval::funcall(core::_sym_cleavirSymbolMacro, sym, env);
@@ -800,8 +786,8 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   SYMBOL_SC_(ExtPkg, symbolMacro);
   T_sp fn = nil<T_O>();
   T_mv result = core__get_sysprop(sym, ext::_sym_symbolMacro);
-  MultipleValues& mvn = core::lisp_multipleValues();
-  if (gc::As<T_sp>(mvn.valueGet(1,result.number_of_values())).notnilp()) {
+  MultipleValues &mvn = core::lisp_multipleValues();
+  if (gc::As<T_sp>(mvn.valueGet(1, result.number_of_values())).notnilp()) {
     fn = gc::As<Function_sp>(result);
   }
   return fn;
@@ -811,43 +797,39 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(evaluateVerbosity)dx");
 DOCGROUP(clasp);
-CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) {
-  eval::_evaluateVerbosity = unbox_fixnum(level);
-};
+CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) { eval::_evaluateVerbosity = unbox_fixnum(level); };
 
 CL_LAMBDA(form &optional env);
 CL_DECLARE();
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Evaluate the form in the environment using the interpreter)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) {
-  return comp::bytecode_toplevel_eval(form, environment);
-}
+CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) { return comp::bytecode_toplevel_eval(form, environment); }
 
-};
+}; // namespace core
 
 namespace core {
 
-    //void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code);
+// void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code);
 
+namespace interpret {
+SYMBOL_EXPORT_SC_(ClPkg, case);
 
-    namespace interpret {
-        SYMBOL_EXPORT_SC_(ClPkg, case);
+SYMBOL_EXPORT_SC_(ClPkg, multipleValueSetq);
 
-        SYMBOL_EXPORT_SC_(ClPkg, multipleValueSetq);
-
-        SYMBOL_EXPORT_SC_(ClPkg, prog1);
-    };
+SYMBOL_EXPORT_SC_(ClPkg, prog1);
+}; // namespace interpret
 
 namespace eval {
-        /*! LAMBDA expression processing.
-	  Process ( [[declaration* | documentation]] form* ) and
-	  aggregate the declarations into a list ( (decl-1) (decl-2) ... )
-	  and identify the last documentation string seen.
-	  Return the list of declarations, the documentation string and the rest
-	  of the forms in CODE.  Identify the local special declarations and
-          return them in SPECIALS but leave them in the DECLARES list */
-void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<String_sp> &documentation, List_sp &code, List_sp &specials) {
+/*! LAMBDA expression processing.
+  Process ( [[declaration* | documentation]] form* ) and
+  aggregate the declarations into a list ( (decl-1) (decl-2) ... )
+  and identify the last documentation string seen.
+  Return the list of declarations, the documentation string and the rest
+  of the forms in CODE.  Identify the local special declarations and
+  return them in SPECIALS but leave them in the DECLARES list */
+void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString,
+                                              gc::Nilable<String_sp> &documentation, List_sp &code, List_sp &specials) {
   List_sp body = inputBody;
   declares = nil<T_O>();
   specials = nil<T_O>();
@@ -856,17 +838,17 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
       SIMPLE_ERROR("Bad input to processDeclares: {}", _rep_(inputBody));
     }
     T_sp form = oCar(body);
-                // If we are expecting docstring and we hit a string, then we hit a possible docstring
+    // If we are expecting docstring and we hit a string, then we hit a possible docstring
     if (expectDocString && cl__stringp(form)) {
-                    // If there is something following the current element then treat it as a docstring
+      // If there is something following the current element then treat it as a docstring
       if (oCdr(body).notnilp()) {
-                        // Here we are in undefined behavior CLHS 3.4.11
-                        // we may be replacing previous docstrings
+        // Here we are in undefined behavior CLHS 3.4.11
+        // we may be replacing previous docstrings
         documentation = gc::As<String_sp>(form);
         continue;
       } else {
-                        // Nothing follows so the current form is a form
-                        // and stop looking for docstrings or declares
+        // Nothing follows so the current form is a form
+        // and stop looking for docstrings or declares
         break;
       }
     }
@@ -904,35 +886,30 @@ void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
 }
 
 void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code) {
-  LOG("Parsing lambda body: {}" , body->__repr__());
+  LOG("Parsing lambda body: {}", body->__repr__());
   List_sp specials;
   extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, execute);
 SYMBOL_EXPORT_SC_(KeywordPkg, load_toplevel);
-};
+}; // namespace eval
 
-    namespace eval {
+namespace eval {
 
-        SYMBOL_EXPORT_SC_(CompPkg, compileInEnv);
-    
-    T_mv evaluate(T_sp exp, T_sp environment) {
-      return comp::cmp__bytecode_implicit_compile_form(exp, environment);
-    }
+SYMBOL_EXPORT_SC_(CompPkg, compileInEnv);
 
-        SYMBOL_EXPORT_SC_(ClPkg, block);
-        SYMBOL_EXPORT_SC_(ClPkg, quote);
-        SYMBOL_EXPORT_SC_(ClPkg, progn);
-        SYMBOL_EXPORT_SC_(ClPkg, throw);
-    };
+T_mv evaluate(T_sp exp, T_sp environment) { return comp::cmp__bytecode_implicit_compile_form(exp, environment); }
 
+SYMBOL_EXPORT_SC_(ClPkg, block);
+SYMBOL_EXPORT_SC_(ClPkg, quote);
+SYMBOL_EXPORT_SC_(ClPkg, progn);
+SYMBOL_EXPORT_SC_(ClPkg, throw);
+}; // namespace eval
 
-};
-
+}; // namespace core
 
 namespace core {
-
 
 CL_DOCSTRING(R"dx(Return a list of all special operators as defined in aclasp)dx");
 DOCGROUP(clasp);
@@ -974,8 +951,8 @@ CL_DEFUN core::List_sp core__aclasp_list_of_all_special_operators() {
 
 SYMBOL_SC_(CorePkg, processDeclarations);
 SYMBOL_EXPORT_SC_(ClPkg, eval);
-    //	    SYMBOL_SC_(CorePkg,extractDeclaresDocstringCode);
-    //	    Defun(extractDeclaresDocstringCode);
+//	    SYMBOL_SC_(CorePkg,extractDeclaresDocstringCode);
+//	    Defun(extractDeclaresDocstringCode);
 SYMBOL_SC_(CorePkg, evaluateVerbosity);
 SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
 SYMBOL_EXPORT_SC_(ClPkg, ignore);
@@ -984,5 +961,4 @@ SYMBOL_EXPORT_SC_(ClPkg, funcall);
 SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 
-
-};
+}; // namespace core

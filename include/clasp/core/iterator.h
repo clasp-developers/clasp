@@ -1,17 +1,18 @@
+#pragma once
 /*
     File: iterator.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef Iterator_H //[
-#define Iterator_H
 
 #include <stdio.h>
 #include <string>
@@ -37,7 +36,7 @@ namespace core {
 
 SMART(Iterator);
 class Iterator_O : public General_O {
-  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator",General_O);
+  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator", General_O);
 
 public:
   void initialize() override;
@@ -54,41 +53,39 @@ public:
   virtual size_t templatedSizeof() const override { SUBIMP(); };
 
   // Old way of doing things
-CL_LISPIFY_NAME("core:begin");
-CL_DEFMETHOD   virtual void first() {
+  CL_LISPIFY_NAME("core:begin");
+  CL_DEFMETHOD virtual void first() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-CL_LISPIFY_NAME("next");
-CL_DEFMETHOD   virtual void next() {
+  CL_LISPIFY_NAME("next");
+  CL_DEFMETHOD virtual void next() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
 
- CL_LISPIFY_NAME("iterator_EQ_");
- CL_DEFMETHOD   virtual bool iterator_EQ_(core::T_sp other) {
-   return this->operator==(other);
-  };
- size_t iterator_distance(core::T_sp other);
- 
-CL_LISPIFY_NAME("isDone");
-CL_DEFMETHOD   virtual bool isDone() {
+  CL_LISPIFY_NAME("iterator_EQ_");
+  CL_DEFMETHOD virtual bool iterator_EQ_(core::T_sp other) { return this->operator==(other); };
+  size_t iterator_distance(core::T_sp other);
+
+  CL_LISPIFY_NAME("isDone");
+  CL_DEFMETHOD virtual bool isDone() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-CL_LISPIFY_NAME("notDone");
-CL_DEFMETHOD   virtual bool notDone() { return !this->isDone(); };
-CL_LISPIFY_NAME("currentObject");
-CL_DEFMETHOD   virtual T_sp currentObject() {
+  CL_LISPIFY_NAME("notDone");
+  CL_DEFMETHOD virtual bool notDone() { return !this->isDone(); };
+  CL_LISPIFY_NAME("currentObject");
+  CL_DEFMETHOD virtual T_sp currentObject() {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
-  template <typename OType>
-    gctools::smart_ptr<OType> current() { return gctools::As<gctools::smart_ptr<OType>>(this->currentObject()); };
+  template <typename OType> gctools::smart_ptr<OType> current() {
+    return gctools::As<gctools::smart_ptr<OType>>(this->currentObject());
+  };
 
   //	Iterator_O( const Iterator_O& ss ); //!< Copy constructor
 
   DEFAULT_CTOR_DTOR(Iterator_O);
 };
-};
-#endif //]
+}; // namespace core

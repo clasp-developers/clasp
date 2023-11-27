@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -46,7 +46,7 @@ cl_index clasp_print_base(void) {
   cl_index base;
   if (!core__fixnump(object) || (base = unbox_fixnum(gc::As<Fixnum_sp>(object))) < 2 || base > 36) {
     SIMPLE_ERROR("The value of *PRINT-BASE*\n {}\n"
-                  "is not of the expected type (INTEGER 2 36)",
+                 "is not of the expected type (INTEGER 2 36)",
                  _rep_(object));
   }
   return base;
@@ -62,15 +62,14 @@ cl_index clasp_print_level(void) {
   } else if (core__fixnump(object)) {
     level = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (level < 0) {
-    ERROR:
-      {
-        // Bind *print-level* to something valid so that we don't get
-        // recursive errors while printing error messages.
-        DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, nil<T_O>());
-        SIMPLE_ERROR("The value of *PRINT-LEVEL*\n {}\n"
-                        "is not of the expected type (OR NULL (INTEGER 0))",
-                     _rep_(object));
-      }
+    ERROR : {
+      // Bind *print-level* to something valid so that we don't get
+      // recursive errors while printing error messages.
+      DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, nil<T_O>());
+      SIMPLE_ERROR("The value of *PRINT-LEVEL*\n {}\n"
+                   "is not of the expected type (OR NULL (INTEGER 0))",
+                   _rep_(object));
+    }
     }
   } else if (core__bignump(object)) {
     // FIXME?: We could check if it's negative here to be really scrupulous.
@@ -95,12 +94,12 @@ cl_index clasp_print_length(void) {
   } else if (core__fixnump(object)) {
     length = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (length < 0) {
-    ERROR:
-      {
-        DynamicScopeManager scope(cl::_sym_STARprint_lengthSTAR, nil<T_O>());
-        SIMPLE_ERROR("The value of *PRINT-LENGTH*\n {}\n"
-                        "is not of the expected type (OR NULL (INTEGER 0))", _rep_(object));
-      }
+    ERROR : {
+      DynamicScopeManager scope(cl::_sym_STARprint_lengthSTAR, nil<T_O>());
+      SIMPLE_ERROR("The value of *PRINT-LENGTH*\n {}\n"
+                   "is not of the expected type (OR NULL (INTEGER 0))",
+                   _rep_(object));
+    }
     }
   } else if (core__bignump(object)) {
     length = MOST_POSITIVE_FIXNUM;
@@ -110,57 +109,46 @@ cl_index clasp_print_length(void) {
   return length;
 }
 
-bool clasp_print_radix(void) {
-  return cl::_sym_STARprint_radixSTAR->symbolValue().isTrue();
-}
+bool clasp_print_radix(void) { return cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(); }
 
 Symbol_sp clasp_print_case(void) {
   T_sp output = cl::_sym_STARprint_caseSTAR->symbolValue();
   if (Symbol_sp soutput = output.asOrNull<Symbol_O>()) {
-    if (soutput == kw::_sym_upcase ||
-        soutput == kw::_sym_downcase ||
-        soutput == kw::_sym_capitalize) {
+    if (soutput == kw::_sym_upcase || soutput == kw::_sym_downcase || soutput == kw::_sym_capitalize) {
       return soutput;
     }
   }
-  TYPE_ERROR(output,Cons_O::createList(cl::_sym_member,kw::_sym_upcase,kw::_sym_downcase,kw::_sym_capitalize));
+  TYPE_ERROR(output, Cons_O::createList(cl::_sym_member, kw::_sym_upcase, kw::_sym_downcase, kw::_sym_capitalize));
 }
 
-bool clasp_print_gensym(void) {
-  return cl::_sym_STARprint_gensymSTAR->symbolValue().isTrue();
-}
+bool clasp_print_gensym(void) { return cl::_sym_STARprint_gensymSTAR->symbolValue().isTrue(); }
 
-bool clasp_print_array(void) {
-  return cl::_sym_STARprint_arraySTAR->symbolValue().isTrue();
-}
+bool clasp_print_array(void) { return cl::_sym_STARprint_arraySTAR->symbolValue().isTrue(); }
 
 bool clasp_print_readably(void) {
-  unlikely_if (!cl::_sym_STARprint_readablySTAR) return false;
+  unlikely_if(!cl::_sym_STARprint_readablySTAR) return false;
   return cl::_sym_STARprint_readablySTAR->symbolValue().isTrue();
 }
 
 bool clasp_print_dense(void) {
-  unlikely_if (!core::_sym_STARprint_denseSTAR) return false;
+  unlikely_if(!core::_sym_STARprint_denseSTAR) return false;
   return core::_sym_STARprint_denseSTAR->symbolValue().isTrue();
 }
 
 bool clasp_print_escape(void) {
-  unlikely_if (!cl::_sym_STARprint_escapeSTAR) return false;
+  unlikely_if(!cl::_sym_STARprint_escapeSTAR) return false;
   return cl::_sym_STARprint_escapeSTAR->symbolValue().isTrue();
 }
 
-bool clasp_print_circle(void) {
-  return cl::_sym_STARprint_circleSTAR->symbolValue().isTrue();
-}
+bool clasp_print_circle(void) { return cl::_sym_STARprint_circleSTAR->symbolValue().isTrue(); }
 
 CL_LAMBDA(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (circle *print-circle*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser-width *print-miser-width*) (pprint-dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right-margin *print-right-margin*));
 CL_DECLARE();
 CL_DOCSTRING(R"dx(write)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
-              T_sp cas, T_sp circle, T_sp escape, T_sp gensym, T_sp length,
-              T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
-              T_sp pretty, T_sp radix, T_sp readably, T_sp right_margin) {
+CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base, T_sp cas, T_sp circle, T_sp escape, T_sp gensym, T_sp length,
+                        T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch, T_sp pretty, T_sp radix, T_sp readably,
+                        T_sp right_margin) {
   DynamicScopeManager scope(cl::_sym_STARprint_arraySTAR, array);
   DynamicScopeManager scope1(cl::_sym_STARprint_baseSTAR, base);
   DynamicScopeManager scope2(cl::_sym_STARprint_caseSTAR, cas);
@@ -211,7 +199,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__prin1(T_sp obj, T_sp output_stream_desig) {
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   //  T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
-//  printf("%s:%d cl__prin1  kw::_sym_stream@%p\n", __FILE__, __LINE__, kw::_sym_stream.raw_());
+  //  printf("%s:%d cl__prin1  kw::_sym_stream@%p\n", __FILE__, __LINE__, kw::_sym_stream.raw_());
   eval::funcall(cl::_sym_write, obj, kw::_sym_stream, output_stream_desig);
   return obj;
 }
@@ -229,8 +217,8 @@ CL_DEFUN T_sp cl__print(T_sp obj, T_sp output_stream_desig) {
   return obj;
 }
 
-  SYMBOL_EXPORT_SC_(ClPkg, print);
-  SYMBOL_EXPORT_SC_(ClPkg, prin1);
-  SYMBOL_EXPORT_SC_(ClPkg, princ);
+SYMBOL_EXPORT_SC_(ClPkg, print);
+SYMBOL_EXPORT_SC_(ClPkg, prin1);
+SYMBOL_EXPORT_SC_(ClPkg, princ);
 
-};
+}; // namespace core

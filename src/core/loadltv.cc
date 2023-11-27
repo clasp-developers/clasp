@@ -75,9 +75,9 @@ const BCVersion min_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
 const BCVersion max_version = {BC_VERSION_MAJOR, BC_VERSION_MINOR};
 
 static uint64_t ltv_header_decode(uint8_t *header) {
-  if (header[0] != FASL_MAGIC_NUMBER_0 || header[1] != FASL_MAGIC_NUMBER_1 || header[2] != FASL_MAGIC_NUMBER_2 || header[3] != FASL_MAGIC_NUMBER_3)
-    SIMPLE_ERROR("Invalid FASL: incorrect magic number {:02x}{:02x}{:02x}{:02x}", header[0], header[1], header[2],
-                 header[3]);
+  if (header[0] != FASL_MAGIC_NUMBER_0 || header[1] != FASL_MAGIC_NUMBER_1 || header[2] != FASL_MAGIC_NUMBER_2 ||
+      header[3] != FASL_MAGIC_NUMBER_3)
+    SIMPLE_ERROR("Invalid FASL: incorrect magic number {:02x}{:02x}{:02x}{:02x}", header[0], header[1], header[2], header[3]);
   // C++ guarantees sequencing in the aggregate initialization.
   BCVersion version = {header[4] << 8 | header[5], header[6] << 8 | header[7]};
   if ((version < min_version) || (version > max_version))
@@ -482,7 +482,7 @@ struct loadltv {
       test = cl::_sym_equalp;
       break;
     default:
-        SIMPLE_ERROR("Unknown hash table test code {:02x}", testcode);
+      SIMPLE_ERROR("Unknown hash table test code {:02x}", testcode);
     }
     set_ltv(cl__make_hash_table(test, clasp_make_fixnum(count), clasp_make_single_float(2.0), clasp_make_single_float(0.7),
                                 nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>()),
@@ -659,13 +659,10 @@ struct loadltv {
     func->setSourcePosInfo(path, filepos, line, column);
   }
 
-  T_sp di_op_function() {
-    return get_ltv(read_index());
-  }
+  T_sp di_op_function() { return get_ltv(read_index()); }
 
   T_sp di_op_vars() {
-    Integer_sp start = Integer_O::create(read_u32()),
-      end = Integer_O::create(read_u32());
+    Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     gctools::Vec0<T_sp> bindings;
     for (uint16_t bcount = read_u16(); bcount > 0; --bcount) {
       T_sp name = get_ltv(read_index());
@@ -683,45 +680,38 @@ struct loadltv {
     uint64_t line = read_u64(), column = read_u64(), filepos = read_u64();
     T_mv sfi_mv = core__file_scope(path);
     FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
-    SourcePosInfo_sp spi
-      = SourcePosInfo_O::create(sfi->fileHandle(),
-                                filepos, line, column);
+    SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), filepos, line, column);
     return BytecodeDebugLocation_O::make(start, end, spi);
   }
 
   T_sp di_op_decls() {
-    Integer_sp start = Integer_O::create(read_u32()),
-      end = Integer_O::create(read_u32());
+    Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     T_sp decls = get_ltv(read_index());
     return BytecodeDebugDecls_O::make(start, end, decls);
   }
 
   T_sp di_op_the() {
-    Integer_sp start = Integer_O::create(read_u32()),
-      end = Integer_O::create(read_u32());
+    Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     T_sp type = get_ltv(read_index());
     int32_t receiving = read_s32();
     return BytecodeDebugThe_O::make(start, end, type, receiving);
   }
-  
+
   T_sp di_op_block() {
-    Integer_sp start = Integer_O::create(read_u32()),
-      end = Integer_O::create(read_u32());
+    Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     T_sp name = get_ltv(read_index());
     int32_t receiving = read_s32();
     return BytecodeDebugBlock_O::make(start, end, name, receiving);
   }
 
   T_sp di_op_exit() {
-    Integer_sp start = Integer_O::create(read_u32()),
-      end = Integer_O::create(read_u32());
+    Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     int32_t receiving = read_s32();
     return BytecodeDebugExit_O::make(start, end, receiving);
   }
 
   T_sp di_op_macro() {
-    Integer_sp start = Integer_O::create(read_u32()),
-      end = Integer_O::create(read_u32());
+    Integer_sp start = Integer_O::create(read_u32()), end = Integer_O::create(read_u32());
     T_sp macro_name = get_ltv(read_index());
     return BytecodeDebugMacroexpansion_O::make(start, end, macro_name);
   }
@@ -734,31 +724,31 @@ struct loadltv {
       uint8_t op = read_u8();
       switch (op) {
       case LTV_DI_OP_FUNCTION:
-          vargs.push_back(di_op_function());
-          break;
+        vargs.push_back(di_op_function());
+        break;
       case LTV_DI_OP_VARS:
-          vargs.push_back(di_op_vars());
-          break;
+        vargs.push_back(di_op_vars());
+        break;
       case LTV_DI_OP_LOCATION:
-          vargs.push_back(di_op_location());
-          break;
+        vargs.push_back(di_op_location());
+        break;
       case LTV_DI_OP_DECLS:
-          vargs.push_back(di_op_decls());
-          break;
+        vargs.push_back(di_op_decls());
+        break;
       case LTV_DI_OP_THE:
-          vargs.push_back(di_op_the());
-          break;
+        vargs.push_back(di_op_the());
+        break;
       case LTV_DI_OP_BLOCK:
-          vargs.push_back(di_op_block());
-          break;
+        vargs.push_back(di_op_block());
+        break;
       case LTV_DI_OP_EXIT:
-          vargs.push_back(di_op_exit());
-          break;
+        vargs.push_back(di_op_exit());
+        break;
       case LTV_DI_OP_MACRO:
-          vargs.push_back(di_op_macro());
-          break;
+        vargs.push_back(di_op_macro());
+        break;
       default:
-          SIMPLE_ERROR("Unknown debug info opcode {:02x}", op);
+        SIMPLE_ERROR("Unknown debug info opcode {:02x}", op);
       }
     }
 
@@ -891,7 +881,7 @@ struct loadltv {
       op_attribute();
       break;
     default:
-        SIMPLE_ERROR("Unknown opcode {:02x}", opcode);
+      SIMPLE_ERROR("Unknown opcode {:02x}", opcode);
     }
   }
 
@@ -949,14 +939,13 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
 
   String_sp filename = gc::As<String_sp>(cl__namestring(output));
   std::string sfilename = filename->get_std_string();
-  char bfilename[sfilename.size()+7];
-  strncpy( bfilename, sfilename.c_str(), sfilename.size() );
+  char bfilename[sfilename.size() + 7];
+  strncpy(bfilename, sfilename.c_str(), sfilename.size());
   bfilename[sfilename.size()] = '\0';
-  strcat( bfilename, "XXXXXX" );
+  strcat(bfilename, "XXXXXX");
   int fout = mkstemp(bfilename);
-  if (fout<0) {
-    SIMPLE_ERROR("Could not open temporary mkstemp file with {} as the template - error: {}",
-                 _rep_(filename), strerror(errno));
+  if (fout < 0) {
+    SIMPLE_ERROR("Could not open temporary mkstemp file with {} as the template - error: {}", _rep_(filename), strerror(errno));
   }
 
   if (verbose) {
@@ -966,10 +955,10 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
   // Write header
   uint8_t header[BC_HEADER_SIZE];
   ltv_header_encode(header, instruction_count);
-  write( fout, header, BC_HEADER_SIZE );
+  write(fout, header, BC_HEADER_SIZE);
 
   for (auto mmap : mmaps) {
-    write( fout, mmap._Memory + BC_HEADER_SIZE, mmap._Len - BC_HEADER_SIZE );
+    write(fout, mmap._Memory + BC_HEADER_SIZE, mmap._Len - BC_HEADER_SIZE);
     int res = munmap(mmap._Memory, mmap._Len);
     if (res != 0) {
       SIMPLE_ERROR("Could not munmap memory");
@@ -979,10 +968,10 @@ CL_DEFUN void core__link_fasl_files(T_sp output, List_sp files, bool verbose) {
   if (verbose)
     clasp_write_string(fmt::format("Closing {}\n", _rep_(filename)));
   close(fout);
-  int ren = rename( bfilename, sfilename.c_str() );
-  if (ren<0) {
+  int ren = rename(bfilename, sfilename.c_str());
+  if (ren < 0) {
     std::string sbfilename(bfilename);
-    SIMPLE_ERROR("Could not rename {} to {}", sbfilename, sfilename.c_str() );
+    SIMPLE_ERROR("Could not rename {} to {}", sbfilename, sfilename.c_str());
   }
   if (verbose)
     clasp_write_string(fmt::format("Returning {}\n", _rep_(filename)));

@@ -25,8 +25,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
-//#include <clang/driver/Driver.h>
-//#include <clang/Frontend/TextDiagnosticPrinter.h>
+// #include <clang/driver/Driver.h>
+// #include <clang/Frontend/TextDiagnosticPrinter.h>
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -54,19 +54,18 @@ THE SOFTWARE.
 #undef NAMESPACE_clbind_clang
 #endif
 
-
 namespace clang_compile {
 using namespace clbind;
 
 class Foo {
 public:
   std::string _message;
-  void setMessage(const std::string& m) { this->_message = m; };
+  void setMessage(const std::string &m) { this->_message = m; };
   std::string message() { return this->_message; };
-  Foo() : _message("Hi there") {};
-  virtual ~Foo() {printf("%s:%d - destructing Foo\n", __FILE__, __LINE__ ); }
+  Foo() : _message("Hi there"){};
+  virtual ~Foo() { printf("%s:%d - destructing Foo\n", __FILE__, __LINE__); }
 };
-};
+}; // namespace clang_compile
 #if 0
 namespace clang_compile {
 class DerivableFoo : public clbind::Derivable<Foo> {
@@ -81,12 +80,12 @@ DERIVABLE_TRANSLATE(clang_compile::Foo);
 
 namespace clang_compile {
 void initialize_clang_compile() {
-  printf("%s:%d  initialize_clang_compile\n", __FILE__, __LINE__ );
+  printf("%s:%d  initialize_clang_compile\n", __FILE__, __LINE__);
   // overloaded functions that had trouble resolving
   package_ pkg(ClangCompilePkg, {"CLANG-COMPILER"}, {}); // "CL", "CORE"})
-    /* -- */
-  scope_& sc = pkg.scope();
-  class_<clang::DiagnosticOptions>(sc,"DiagnosticOptions"); //)
-  class_<clang::DiagnosticIDs>(sc,"DiagnosticIds");
+  /* -- */
+  scope_ &sc = pkg.scope();
+  class_<clang::DiagnosticOptions>(sc, "DiagnosticOptions"); //)
+  class_<clang::DiagnosticIDs>(sc, "DiagnosticIds");
 }
-};
+}; // namespace clang_compile

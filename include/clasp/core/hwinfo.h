@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: hwinfo.h
 */
@@ -25,9 +26,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#if !defined( CLASP_CORE_HWINFO_H )
-#define CLASP_CORE_HWINFO_H
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/corePackage.h>
 
@@ -36,6 +34,4 @@ namespace core {
 T_sp core__num_logical_processors();
 SYMBOL_EXPORT_SC_(CorePkg, num_logical_processors);
 
-}
-
-#endif
+} // namespace core

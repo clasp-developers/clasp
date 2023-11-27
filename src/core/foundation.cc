@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 //
 // (C) 2004 Christian E. Schafmeister
@@ -67,7 +67,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/debugger2.h>
-//#i n c l u d e "setfExpander.h"
+// #i n c l u d e "setfExpander.h"
 #include <clasp/core/primitives.h>
 
 #ifdef _TARGET_OS_LINUX
@@ -148,7 +148,6 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
 
 namespace core {
 
-
 union NW {
   uint64_t word;
   char name[8];
@@ -213,9 +212,7 @@ namespace core {
 DOCGROUP(clasp);
 CL_DEFUN void core__dump_class_ids() { reg::dump_class_ids(); }
 
-void lisp_nan_error() {
-  SIMPLE_ERROR("Encountered a NAN value");
-}
+void lisp_nan_error() { SIMPLE_ERROR("Encountered a NAN value"); }
 
 void lisp_errorExpectedList(core::T_O *v) {
   T_sp tv((gctools::Tagged)v);
@@ -261,8 +258,8 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expected_class_id, c
   if (expectedSym.nilp()) {
     core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__,
                             fmt::format("unexpected class_id for object {} (given_class_id {} / expected_class_id {}) could not "
-                                         "lookup expected_class_id symbol",
-                                         (void *)objP, given_class_id, expected_class_id));
+                                        "lookup expected_class_id symbol",
+                                        (void *)objP, given_class_id, expected_class_id));
   }
 
   if (given_class_id >= _lisp->classSymbolsHolder().size()) {
@@ -562,7 +559,7 @@ Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageNam
 
 typedef enum { ignore, upperCaseAlpha } NextCharTest;
 
-};
+}; // namespace core
 
 template <typename Char> struct fmt::formatter<core::NextCharTest, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
   template <typename FormatContext>
@@ -754,7 +751,7 @@ Instance_sp lisp_instance_class(T_sp o) {
   } else if (o.valistp()) {
     tc = core::Vaslist_dummy_O::staticClass();
   } else if (o.unboundp()) {
-    SIMPLE_ERROR("lisp_instance_class for called on #<UNBOUND>" );
+    SIMPLE_ERROR("lisp_instance_class for called on #<UNBOUND>");
   } else {
     SIMPLE_ERROR("Add support for unknown (immediate?) object to lisp_instance_class obj = {}", (void *)(o.raw_()));
   }
@@ -773,7 +770,7 @@ Instance_sp lisp_static_class(T_sp o) {
 }
 
 string _rep_(T_sp obj) {
-//#define USE_WRITE_OBJECT
+// #define USE_WRITE_OBJECT
 #if defined(USE_WRITE_OBJECT)
   T_sp sout = clasp_make_string_output_stream();
   write_object(obj, sout);
@@ -940,8 +937,7 @@ string fix_method_lambda(core::Symbol_sp class_symbol, const string &lambda) {
 SYMBOL_EXPORT_SC_(KeywordPkg, body);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
 
-static Function_sp bytecompile_wrapper(GlobalSimpleFunBase_sp entry, List_sp vars,
-                                       Symbol_sp name, List_sp lambda_list) {
+static Function_sp bytecompile_wrapper(GlobalSimpleFunBase_sp entry, List_sp vars, Symbol_sp name, List_sp lambda_list) {
   /*
   // Add the name to the list so we know to compile it later when the
   // native compiler is up.
@@ -955,14 +951,9 @@ static Function_sp bytecompile_wrapper(GlobalSimpleFunBase_sp entry, List_sp var
    (declare (core:lambda-name ,name))
    (cleavir-primop:funcall ,entry ,@vars))
 */
-  List_sp funcall_form
-    = Cons_O::create(cleavirPrimop::_sym_funcall, Cons_O::create(entry, vars));
-  List_sp declare_form
-    = Cons_O::createList(cl::_sym_declare,
-                         Cons_O::createList(core::_sym_lambdaName, name));
-  List_sp form
-    = Cons_O::createList(cl::_sym_lambda, lambda_list, declare_form,
-                         funcall_form);
+  List_sp funcall_form = Cons_O::create(cleavirPrimop::_sym_funcall, Cons_O::create(entry, vars));
+  List_sp declare_form = Cons_O::createList(cl::_sym_declare, Cons_O::createList(core::_sym_lambdaName, name));
+  List_sp form = Cons_O::createList(cl::_sym_lambda, lambda_list, declare_form, funcall_form);
   return comp::bytecompile(form, comp::Lexenv_O::make_top_level());
 }
 
@@ -1002,7 +993,7 @@ void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper &specializer,
   }
   if (TemplateDispatchOn != single_dispatch_argument_index) {
     SIMPLE_ERROR("Mismatch between single_dispatch_argument_index[{}] from lambda_list and TemplateDispatchOn[{}] for class {}  "
-                  "method: {}  lambda_list: {}",
+                 "method: {}  lambda_list: {}",
                  single_dispatch_argument_index, TemplateDispatchOn, _rep_(classSymbol), _rep_(name), arguments);
   }
   LOG("Interned method in class[{}]@{} with symbol[{}] arguments[{}] - autoexport[{}]", receiver_class->instanceClassName(),
@@ -1304,7 +1295,7 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp 
 [[noreturn]] void lisp_error_no_stamp(void *ptr) {
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(ptr));
   SIMPLE_ERROR("This General_O object {} does not return a stamp because its subclass should overload get_stamp_() and return one "
-                " - the subclass header stamp value is {}",
+               " - the subclass header stamp value is {}",
                ((void *)ptr), header->_badge_stamp_wtag_mtag.stamp_());
 }
 
@@ -1615,11 +1606,8 @@ CL_DEFUN void core__set_drag_general_allocation_delay(size_t num) {
 
 namespace core {
 
-
 DOCGROUP(clasp);
-CL_DEFUN size_t core__get_badge(T_sp object) {
-  return gctools::lisp_badge(object);
-}
+CL_DEFUN size_t core__get_badge(T_sp object) { return gctools::lisp_badge(object); }
 
 DOCGROUP(clasp);
 CL_DEFUN void core__debug_only_set_badge(T_sp object, size_t badge) {
@@ -1664,15 +1652,15 @@ void maybe_register_symbol_using_dladdr_ep(void *functionPointer, size_t size, c
                global_pointerCount, (global_pointerCount - global_goodPointerCount), name.c_str());
         system_dladdr_had_problem = true;
       } else if (!info.dli_sname) {
-        printf("%s:%d Out of %lu pointers, #%lu FAIL - system dladdr could not find a symbol to match %p of %s : dli_fname = %p dli_fbase = %p dli_saddr = %p\n", __FILE__, __LINE__,
-               global_pointerCount, (global_pointerCount - global_goodPointerCount), functionPointer, name.c_str(),
-               info.dli_fname,
-               info.dli_fbase,
-               info.dli_saddr );
+        printf("%s:%d Out of %lu pointers, #%lu FAIL - system dladdr could not find a symbol to match %p of %s : dli_fname = %p "
+               "dli_fbase = %p dli_saddr = %p\n",
+               __FILE__, __LINE__, global_pointerCount, (global_pointerCount - global_goodPointerCount), functionPointer,
+               name.c_str(), info.dli_fname, info.dli_fbase, info.dli_saddr);
         system_dladdr_had_problem = true;
       } else if (info.dli_saddr != functionPointer) {
-        printf("%s:%d Out of %lu pointers, #%lu FAIL - system dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__,
-               global_pointerCount, (global_pointerCount - global_goodPointerCount), functionPointer, info.dli_saddr, name.c_str());
+        printf("%s:%d Out of %lu pointers, #%lu FAIL - system dladdr could not find exact match to %p - found %p of %s\n", __FILE__,
+               __LINE__, global_pointerCount, (global_pointerCount - global_goodPointerCount), functionPointer, info.dli_saddr,
+               name.c_str());
         system_dladdr_had_problem = true;
       } else if (dlsym(RTLD_DEFAULT, info.dli_sname) == 0) {
         printf("%s:%d %lu/%lu WARNING system dlsym could not find name %s - I'm going to add it anyway - if this works - remove "

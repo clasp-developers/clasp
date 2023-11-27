@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: function.h
 */
@@ -28,9 +30,6 @@ THE SOFTWARE.
 // subject to the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef CLBIND_FUNCTION2_081014_HPP
-#define CLBIND_FUNCTION2_081014_HPP
-
 #if 0
 #define DEBUG_SCOPE 1
 #define LOG_SCOPE(xxx) printf xxx;
@@ -39,7 +38,7 @@ THE SOFTWARE.
 #endif
 
 #include <clasp/core/lambdaListHandler.fwd.h>
-//#include "clbind/prefix.h"
+// #include "clbind/prefix.h"
 #include <clasp/clbind/config.h>
 #include <clasp/clbind/cl_include.h>
 #include <clasp/llvmo/intrinsics.h>
@@ -230,5 +229,3 @@ struct function_registration<FunctionPointerType, policies<Policies...>, PureOut
 } // namespace detail
 
 } // namespace clbind
-
-#endif // CLBIND_FUNCTION2_081014_HPP

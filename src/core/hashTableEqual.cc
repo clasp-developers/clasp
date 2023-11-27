@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -36,13 +36,8 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-
-
-
-
-
 HashTableEqual_sp HashTableEqual_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  auto  hashTable = gctools::GC<HashTableEqual_O>::allocate_with_default_constructor();
+  auto hashTable = gctools::GC<HashTableEqual_O>::allocate_with_default_constructor();
   hashTable->setup(sz, rehashSize, rehashThreshold);
   return hashTable;
 }
@@ -62,13 +57,11 @@ HashTableEqual_sp HashTableEqual_O::create_default() {
     }
 #endif
 
-bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const {
-  return cl__equal(entryKey, searchKey);
-}
+bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const { return cl__equal(entryKey, searchKey); }
 
-gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
+gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator &hg) const {
   HashTable_O::sxhash_equal(hg, obj);
   return hg.hashBound(bound);
 }
 
-}; /* core */
+}; // namespace core

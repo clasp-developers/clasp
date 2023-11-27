@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -38,16 +38,13 @@ const int MultipleValues::MultipleValuesLimit;
 
 void MultipleValues::initialize(){};
 
-void dump_values_pos(T_sp v, const char* name, int n)
-{
-  if (n>4) {
-    if (_sym_STARdebug_valuesSTAR &&
-        _sym_STARdebug_valuesSTAR->boundP() &&
-        _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
-      if (strcmp(name,"v0")==0) {
+void dump_values_pos(T_sp v, const char *name, int n) {
+  if (n > 4) {
+    if (_sym_STARdebug_valuesSTAR && _sym_STARdebug_valuesSTAR->boundP() && _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
+      if (strcmp(name, "v0") == 0) {
         printf("--------------------- values dump ---------------\n");
       }
-      printf("%s:%d  VALUES[%s] -> %s\n",  __FILE__, __LINE__, name, _rep_(v).c_str() );
+      printf("%s:%d  VALUES[%s] -> %s\n", __FILE__, __LINE__, name, _rep_(v).c_str());
 #if 0
       if (strcmp(name,"v1")==0 && v==kw::_sym_internal) {
         printf("%s:%d  Trapped  VALUES[1] -> :INTERNAL\n",  __FILE__, __LINE__ );
@@ -57,7 +54,7 @@ void dump_values_pos(T_sp v, const char* name, int n)
   }
 }
 
-}; /* core */
+}; // namespace core
 
 core::T_mv ValuesFromCons(core::List_sp vals) {
   size_t len = cl__length(vals);
@@ -70,7 +67,8 @@ core::T_mv ValuesFromCons(core::List_sp vals) {
   me.setSize(0);
   for (auto cur : (core::List_sp)oCdr(vals)) {
     if (i >= core::MultipleValues::MultipleValuesLimit) {
-      SIMPLE_ERROR("Overflow when returning multiple values - only {} are supported and you tried to return {} values", core::MultipleValues::MultipleValuesLimit , cl__length(vals));
+      SIMPLE_ERROR("Overflow when returning multiple values - only {} are supported and you tried to return {} values",
+                   core::MultipleValues::MultipleValuesLimit, cl__length(vals));
     }
     core::T_sp obj = oCar(cur);
     me.valueSet(i, obj);

@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: scope.h
 */
@@ -46,50 +48,49 @@ THE SOFTWARE.
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 // OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef NEW_SCOPE_040211_HPP
-#define NEW_SCOPE_040211_HPP
-
 #include <clasp/clbind/names.h>
 
 namespace clbind {
 
 struct CLBIND_API scope_ {
-    scope_();
-    explicit scope_(std::unique_ptr<detail::registration> reg);
-    scope_(scope_ const &other_);
-    ~scope_();
+  scope_();
+  explicit scope_(std::unique_ptr<detail::registration> reg);
+  scope_(scope_ const &other_);
+  ~scope_();
 
-    scope_ &operator=(scope_ const &other_);
-    scope_ &operator, (scope_ s);
-    void register_() const;
- private:
-    detail::registration *m_chain;
- public:
- template <typename NameType, typename F, class... PTypes>
-    void def(const NameType& name, F f, PTypes... pols) {
-      typedef policies<PTypes...> Policies;
-      Policies curPolicies;
-      maybe_register_symbol_using_dladdr((void*)f,sizeof(f),PrepareName(name));
-      walk_policy(curPolicies,pols...);
-      LOG_SCOPE(("%s:%d function %s to chain of %p\n", __FILE__, __LINE__, name, this ));
-      scope_ fnscope(std::unique_ptr<detail::registration>(new detail::function_registration<F, Policies>(PrepareName(name), f, curPolicies)));
-      this->operator,(fnscope);
-    }
+  scope_ &operator=(scope_ const &other_);
+  scope_ &operator,(scope_ s);
+  void register_() const;
 
+private:
+  detail::registration *m_chain;
+
+public:
+  template <typename NameType, typename F, class... PTypes> void def(const NameType &name, F f, PTypes... pols) {
+    typedef policies<PTypes...> Policies;
+    Policies curPolicies;
+    maybe_register_symbol_using_dladdr((void *)f, sizeof(f), PrepareName(name));
+    walk_policy(curPolicies, pols...);
+    LOG_SCOPE(("%s:%d function %s to chain of %p\n", __FILE__, __LINE__, name, this));
+    scope_ fnscope(
+        std::unique_ptr<detail::registration>(new detail::function_registration<F, Policies>(PrepareName(name), f, curPolicies)));
+    this->operator,(fnscope);
+  }
 };
 
 /*! Declare a package - provide the package name (which will be lispified) and a list
       of nicknames and a list of usePackageNames */
 class CLBIND_API package_ : public scope_ {
- public:
- package_(string const &name, std::list<std::string> nicknames = {}, std::list<string> usePackageNames = {});
- ~package_();
- scope_& scope() { return *this; }
- private:
- string m_name;
- list<std::string> m_nicknames;
- list<std::string> m_usePackageNames;
- core::DynamicScopeManager* _PackageDynamicVariable;
+public:
+  package_(string const &name, std::list<std::string> nicknames = {}, std::list<string> usePackageNames = {});
+  ~package_();
+  scope_ &scope() { return *this; }
+
+private:
+  string m_name;
+  list<std::string> m_nicknames;
+  list<std::string> m_usePackageNames;
+  core::DynamicScopeManager *_PackageDynamicVariable;
 };
 
 inline package_ package(string const &name, std::list<std::string> nicknames = {}, std::list<std::string> usePackageNames = {}) {
@@ -97,5 +98,3 @@ inline package_ package(string const &name, std::list<std::string> nicknames = {
 }
 
 } // namespace clbind
-
-#endif // NEW_SCOPE_040211_HPP

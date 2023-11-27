@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: lambdaListHandler.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef LambdaListHandler_H //[
-#define LambdaListHandler_H
 
 #include <stdio.h>
 #include <string>
@@ -39,14 +38,7 @@ THE SOFTWARE.
 
 namespace core {
 
-typedef enum { required,
-               optional,
-               dot_rest,
-               va_rest,
-               rest,
-               keyword,
-               allowOtherKeys,
-               aux } ArgumentMode;
+typedef enum { required, optional, dot_rest, va_rest, rest, keyword, allowOtherKeys, aux } ArgumentMode;
 
 /*! A LambdaListHandler converts lambda-lists of all different types into
       an object that binds arguments to symbols in an environment.
@@ -64,29 +56,22 @@ typedef enum { required,
       See CLHS 3.4
     */
 
-}; // core
+}; // namespace core
 
-namespace core{
+namespace core {
 
-bool parse_lambda_list(List_sp, T_sp, gctools::Vec0<RequiredArgument>&,
-                       gctools::Vec0<OptionalArgument>&, RestArgument&,
-                       T_sp&, gctools::Vec0<KeywordArgument>&,
-                       T_sp&, gctools::Vec0<AuxArgument>&);
+bool parse_lambda_list(List_sp, T_sp, gctools::Vec0<RequiredArgument> &, gctools::Vec0<OptionalArgument> &, RestArgument &, T_sp &,
+                       gctools::Vec0<KeywordArgument> &, T_sp &, gctools::Vec0<AuxArgument> &);
 
-List_sp lexical_variable_names(gctools::Vec0<RequiredArgument> &reqs,
-                               gctools::Vec0<OptionalArgument> &optionals,
-                               RestArgument &restarg,
-                               gctools::Vec0<KeywordArgument> &keys,
-                               gctools::Vec0<AuxArgument> &auxs);
+List_sp lexical_variable_names(gctools::Vec0<RequiredArgument> &reqs, gctools::Vec0<OptionalArgument> &optionals,
+                               RestArgument &restarg, gctools::Vec0<KeywordArgument> &keys, gctools::Vec0<AuxArgument> &auxs);
 
 T_sp lambda_list_for_name(T_sp);
 List_sp core__canonicalize_declarations(List_sp declares);
-};
+}; // namespace core
 
 namespace core {
 T_mv process_single_dispatch_lambda_list(List_sp lambda_list, bool allow_first_argument_default_dispatcher = false);
 List_sp process_macro_lambda_list(List_sp lambda_list);
 
-};
-
-#endif //]
+}; // namespace core

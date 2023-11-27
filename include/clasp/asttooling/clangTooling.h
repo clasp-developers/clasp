@@ -1,17 +1,19 @@
+#pragma once
+
 /*
     File: clangTooling.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,9 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-
-#ifndef asttooling_clangTooling_H
-#define asttooling_clangTooling_H
 
 #include <clang/Basic/Version.h>
 #include <clang/Tooling/JSONCompilationDatabase.h>
@@ -62,8 +61,8 @@ struct MatchFinderMatchResult : public MatchFinder::MatchResult {
   clang::ASTContext *getContext() const { return this->Context; };
   clang::SourceManager *getSourceManager() const { return this->SourceManager; };
 };
-};
-};
+}; // namespace ast_matchers
+}; // namespace clang
 
 namespace asttooling {
 
@@ -80,8 +79,7 @@ public:
     return translate::from_object<std::unique_ptr<clang::ASTConsumer>>(obj)._v;
   }
 
-  std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(
-      clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+  std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
     return this->Base::CreateASTConsumer(Compiler, InFile);
   }
 
@@ -96,14 +94,14 @@ class DerivableSyntaxOnlyAction : public clbind::Derivable<clang::SyntaxOnlyActi
   typedef clang::SyntaxOnlyAction Base;
 
 public:
-  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
-      clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
-    core::T_sp obj = core::eval::funcall(_sym_CreateASTConsumer, this->asSmartPtr(), translate::to_object<clang::CompilerInstance &>::convert(Compiler), translate::to_object<llvm::StringRef>::convert(InFile));
+  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+    core::T_sp obj = core::eval::funcall(_sym_CreateASTConsumer, this->asSmartPtr(),
+                                         translate::to_object<clang::CompilerInstance &>::convert(Compiler),
+                                         translate::to_object<llvm::StringRef>::convert(InFile));
     return translate::from_object<std::unique_ptr<clang::ASTConsumer>>(obj)._v;
   }
 
-  std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(
-      clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+  std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
     return this->CreateASTConsumer(Compiler, InFile);
   }
 
@@ -113,7 +111,6 @@ public:
     this->ExecuteAction();
   }
 };
-
 
 class DerivableFrontendActionFactory : public clbind::Derivable<clang::tooling::FrontendActionFactory> {
   typedef clang::tooling::FrontendActionFactory Base;
@@ -126,55 +123,51 @@ public:
     return ret;
   }
 
-  clang::FrontendAction *default_create() {
-    SIMPLE_ERROR("Subclass must implement create");
-  };
+  clang::FrontendAction *default_create() { SIMPLE_ERROR("Subclass must implement create"); };
 };
 
-};
+}; // namespace asttooling
 
 namespace asttooling {
-  class DerivableMatchCallback;
+class DerivableMatchCallback;
 };
 
-template <>
-struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
+template <> struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;
 };
 
 namespace asttooling {
-class DerivableMatchCallback
-    : public clbind::Derivable<clang::ast_matchers::MatchFinder::MatchCallback> {
+class DerivableMatchCallback : public clbind::Derivable<clang::ast_matchers::MatchFinder::MatchCallback> {
   typedef clang::ast_matchers::MatchFinder::MatchCallback AlienBase;
 
 public:
   virtual void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
-    const clang::ast_matchers::MatchFinderMatchResult conv(Result); //  = static_cast<const clang::ast_matchers::MatchFinderMatchResult&>(Result);
-//    printf("%s:%d:%s Found a MatchResult context: %p sourceManger %p\n", __FILE__, __LINE__, __FUNCTION__, conv.getContext(), conv.getSourceManager() );
-    core::T_sp val =  translate::to_object<const clang::ast_matchers::MatchFinderMatchResult &>::convert(conv);
+    const clang::ast_matchers::MatchFinderMatchResult conv(
+        Result); //  = static_cast<const clang::ast_matchers::MatchFinderMatchResult&>(Result);
+    //    printf("%s:%d:%s Found a MatchResult context: %p sourceManger %p\n", __FILE__, __LINE__, __FUNCTION__, conv.getContext(),
+    //    conv.getSourceManager() );
+    core::T_sp val = translate::to_object<const clang::ast_matchers::MatchFinderMatchResult &>::convert(conv);
     core::eval::funcall(asttooling::_sym_run, this->asSmartPtr(), val);
   }
 
-  void default_run(const clang::ast_matchers::MatchFinderMatchResult &Result) {
-    SIMPLE_ERROR("Subclass must implement");
-  };
+  void default_run(const clang::ast_matchers::MatchFinderMatchResult &Result) { SIMPLE_ERROR("Subclass must implement"); };
 
   virtual void onStartOfTranslationUnit() {
-//    printf("%s:%d entered onStartOfTranslationUnit funcalling\n", __FILE__, __LINE__);
+    //    printf("%s:%d entered onStartOfTranslationUnit funcalling\n", __FILE__, __LINE__);
     core::eval::funcall(_sym_onStartOfTranslationUnit, this->asSmartPtr());
   }
   void default_onStartOfTranslationUnit() {
-//    printf("%s:%d entered default_onStartOfTranslationUnit\n", __FILE__, __LINE__);
+    //    printf("%s:%d entered default_onStartOfTranslationUnit\n", __FILE__, __LINE__);
     this->AlienBase::onStartOfTranslationUnit();
   }
   virtual void onEndOfTranslationUnit() {
-//    printf("%s:%d entered onEndOfTranslationUnit funcalling\n", __FILE__, __LINE__);
+    //    printf("%s:%d entered onEndOfTranslationUnit funcalling\n", __FILE__, __LINE__);
     core::eval::funcall(_sym_onEndOfTranslationUnit, this->asSmartPtr());
   }
   void default_onEndOfTranslationUnit() {
-//    printf("%s:%d entered default_onEndOfTranslationUnit\n", __FILE__, __LINE__);
+    //    printf("%s:%d entered default_onEndOfTranslationUnit\n", __FILE__, __LINE__);
     this->AlienBase::onEndOfTranslationUnit();
   }
 
@@ -183,8 +176,10 @@ public:
     printf("this=%p  typeid(this)@%p  typeid(this).name=%s\n", this, &typeid(this), typeid(this).name());
     printf("dynamic_cast<void*>(this) = %p\n", dynamic_cast<void *>(this));
     printf("dynamic_cast<core::T_O*>(this) = %p\n", dynamic_cast<core::T_O *>(this));
-    printf("typeid(dynamic_cast<core::T_O>*>(this))@%p  typeid.name=%s\n", &typeid(dynamic_cast<core::T_O *>(this)), typeid(dynamic_cast<core::T_O *>(this)).name());
-    printf("dynamic_cast<Derivable<clang::ast_matchers::MatchFinder::MatchCallback>*>(this) = %p\n", dynamic_cast<Derivable<clang::ast_matchers::MatchFinder::MatchCallback> *>(this));
+    printf("typeid(dynamic_cast<core::T_O>*>(this))@%p  typeid.name=%s\n", &typeid(dynamic_cast<core::T_O *>(this)),
+           typeid(dynamic_cast<core::T_O *>(this)).name());
+    printf("dynamic_cast<Derivable<clang::ast_matchers::MatchFinder::MatchCallback>*>(this) = %p\n",
+           dynamic_cast<Derivable<clang::ast_matchers::MatchFinder::MatchCallback> *>(this));
     printf("dynamic_cast<DerivableMatchCallback*>(this) = %p\n", dynamic_cast<DerivableMatchCallback *>(this));
 
     printf("alien pointer = %p\n", this->pointerToAlienWithin());
@@ -193,13 +188,9 @@ public:
       printf("_Slots[%lu]: %s\n", i, _rep_(this->instanceRef(i)).c_str());
     }
   }
-  virtual ~DerivableMatchCallback() {
-    printf("%s:%d ~DerivableMatchCallback dtor\n", __FILE__, __LINE__ );
-  }
+  virtual ~DerivableMatchCallback() { printf("%s:%d ~DerivableMatchCallback dtor\n", __FILE__, __LINE__); }
 };
-};
-
-
+}; // namespace asttooling
 
 namespace asttooling {
 void initialize_clangTooling();
@@ -235,7 +226,5 @@ namespace translate {
 
 
 };
-
-#endif
 
 #endif

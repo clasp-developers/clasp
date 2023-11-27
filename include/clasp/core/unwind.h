@@ -1,5 +1,4 @@
-#ifndef core_Unwind_H
-#define core_Unwind_H
+#pragma once
 
 #include <csetjmp>
 #include <clasp/core/foundation.h>
@@ -18,13 +17,14 @@ FORWARD(DestDynEnv);
 
 class DynEnv_O : public General_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, DynEnv_O, "DynEnv", General_O);
+
 public:
-  typedef enum {
-      Continue, Proceed, OutOfExtent, Abandoned, FallBack
-  } SearchStatus;
+  typedef enum { Continue, Proceed, OutOfExtent, Abandoned, FallBack } SearchStatus;
+
 public:
-  DynEnv_O() {};
-  virtual ~DynEnv_O() {};
+  DynEnv_O(){};
+  virtual ~DynEnv_O(){};
+
 public:
   /* Return information about this dynamic environment to the search
    * phase. Return values mean the following:
@@ -42,10 +42,10 @@ public:
 #ifdef UNWIND_INVALIDATE_STRICT
   /* Mark this dynamic environment as abandoned per CLHS 5.2,
    * if applicable. */
-  virtual void invalidate() {};
+  virtual void invalidate(){};
 #endif
   /* Undo this environment. */
-  virtual void proceed() {};
+  virtual void proceed(){};
 };
 
 /* A dynenv of this class is used to warn our unwinder that there is
@@ -54,9 +54,11 @@ public:
  * don't know. */
 class UnknownDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, UnknownDynEnv_O, "UnknownDynEnv", DynEnv_O);
+
 public:
-  UnknownDynEnv_O() : DynEnv_O() {};
-  virtual ~UnknownDynEnv_O() {};
+  UnknownDynEnv_O() : DynEnv_O(){};
+  virtual ~UnknownDynEnv_O(){};
+
 public:
   virtual SearchStatus search() const { return FallBack; };
 };
@@ -64,16 +66,17 @@ public:
 // Abstract class of dynenvs that can be destinations for unwinding.
 class DestDynEnv_O : public DynEnv_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, DestDynEnv_O, "DestDynEnv", DynEnv_O);
+
 public:
-  jmp_buf* target;
+  jmp_buf *target;
 #ifdef UNWIND_INVALIDATE_STRICT
   bool valid = true;
 #endif
-  DestDynEnv_O() : DynEnv_O() {};
-  DestDynEnv_O(jmp_buf* a_target) : DynEnv_O(), target(a_target) {};
-  virtual ~DestDynEnv_O() {};
+  DestDynEnv_O() : DynEnv_O(){};
+  DestDynEnv_O(jmp_buf *a_target) : DynEnv_O(), target(a_target){};
+  virtual ~DestDynEnv_O(){};
   virtual SearchStatus search() const { return Continue; };
-  virtual void proceed() {};
+  virtual void proceed(){};
 #ifdef UNWIND_INVALIDATE_STRICT
   virtual void invalidate() { valid = false; }
 #endif
@@ -86,23 +89,23 @@ public:
 FORWARD(LexDynEnv);
 class LexDynEnv_O : public DestDynEnv_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, LexDynEnv_O, "LexDynEnv", DestDynEnv_O);
+
 public:
-  void* frame; // for fallback
-  LexDynEnv_O() : DestDynEnv_O() {};
-  LexDynEnv_O(void* a_frame, jmp_buf* target) : DestDynEnv_O(target), frame(a_frame) {};
-  virtual ~LexDynEnv_O() {};
+  void *frame; // for fallback
+  LexDynEnv_O() : DestDynEnv_O(){};
+  LexDynEnv_O(void *a_frame, jmp_buf *target) : DestDynEnv_O(target), frame(a_frame){};
+  virtual ~LexDynEnv_O(){};
 };
 
 // Dynenv for a CL:BLOCK.
 FORWARD(BlockDynEnv);
 class BlockDynEnv_O : public LexDynEnv_O {
   LISP_CLASS(core, CorePkg, BlockDynEnv_O, "BlockDynEnv", LexDynEnv_O);
+
 public:
   using LexDynEnv_O::LexDynEnv_O; // inherit constructor
-  static BlockDynEnv_sp create(void* frame, jmp_buf* target) {
-    return gctools::GC<BlockDynEnv_O>::allocate(frame, target);
-  }
-  virtual ~BlockDynEnv_O() {};
+  static BlockDynEnv_sp create(void *frame, jmp_buf *target) { return gctools::GC<BlockDynEnv_O>::allocate(frame, target); }
+  virtual ~BlockDynEnv_O(){};
   virtual bool unwound_dynenv_p() { return true; }
 };
 
@@ -110,22 +113,23 @@ public:
 FORWARD(TagbodyDynEnv);
 class TagbodyDynEnv_O : public LexDynEnv_O {
   LISP_CLASS(core, CorePkg, TagbodyDynEnv_O, "TagbodyDynEnv", LexDynEnv_O);
+
 public:
   using LexDynEnv_O::LexDynEnv_O;
-  static TagbodyDynEnv_sp create(void* frame, jmp_buf* target) {
-    return gctools::GC<TagbodyDynEnv_O>::allocate(frame, target);
-  }
-  virtual ~TagbodyDynEnv_O() {};
+  static TagbodyDynEnv_sp create(void *frame, jmp_buf *target) { return gctools::GC<TagbodyDynEnv_O>::allocate(frame, target); }
+  virtual ~TagbodyDynEnv_O(){};
   virtual bool unwound_dynenv_p() { return false; }
 };
 
 FORWARD(CatchDynEnv);
 class CatchDynEnv_O : public DestDynEnv_O {
   LISP_CLASS(core, CorePkg, CatchDynEnv_O, "CatchDynEnv", DestDynEnv_O);
+
 public:
   T_sp tag;
-  CatchDynEnv_O(jmp_buf* target, T_sp a_tag) : DestDynEnv_O(target), tag(a_tag) {}
-  virtual ~CatchDynEnv_O() {};
+  CatchDynEnv_O(jmp_buf *target, T_sp a_tag) : DestDynEnv_O(target), tag(a_tag) {}
+  virtual ~CatchDynEnv_O(){};
+
 public:
   virtual bool unwound_dynenv_p() { return true; }
 };
@@ -133,11 +137,14 @@ public:
 // Dynenv for a CL:UNWIND-PROTECT cleanup.
 class UnwindProtectDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, UnwindProtectDynEnv_O, "UnwindProtectDynEnv", DynEnv_O);
+
 public:
-  UnwindProtectDynEnv_O(jmp_buf* a_target) : target(a_target) {};
-  virtual ~UnwindProtectDynEnv_O() {};
+  UnwindProtectDynEnv_O(jmp_buf *a_target) : target(a_target){};
+  virtual ~UnwindProtectDynEnv_O(){};
+
 public:
-  jmp_buf* target;
+  jmp_buf *target;
+
 public:
   virtual SearchStatus search() const { return Continue; };
   [[noreturn]] virtual void proceed();
@@ -147,9 +154,10 @@ public:
 FORWARD(BindingDynEnv);
 class BindingDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, BindingDynEnv_O, "BindingDynEnv", DynEnv_O);
+
 public:
-  BindingDynEnv_O(VariableCell_sp a_cell, T_sp a_old) : DynEnv_O(), cell(a_cell), old(a_old) {};
-  virtual ~BindingDynEnv_O() {};
+  BindingDynEnv_O(VariableCell_sp a_cell, T_sp a_old) : DynEnv_O(), cell(a_cell), old(a_old){};
+  virtual ~BindingDynEnv_O(){};
   VariableCell_sp cell;
   T_sp old;
   virtual SearchStatus search() const { return Continue; };
@@ -158,9 +166,9 @@ public:
 
 // RAII helper for augmenting the dynamic environment.
 struct DynEnvPusher {
-  ThreadLocalState* mthread;
+  ThreadLocalState *mthread;
   List_sp stack;
-  DynEnvPusher(ThreadLocalState* thread, List_sp newstack) {
+  DynEnvPusher(ThreadLocalState *thread, List_sp newstack) {
     mthread = thread;
     stack = thread->dynEnvStackGet();
     thread->dynEnvStackSet(newstack);
@@ -193,16 +201,14 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest);
 [[noreturn]] void sjlj_throw(T_sp tag);
 /* Convenience function for use in unwind-protect cleanups. */
 [[noreturn]] inline void sjlj_continue_unwinding() {
-  sjlj_unwind_proceed(gc::As_unsafe<DestDynEnv_sp>(my_thread->_UnwindDest),
-                      my_thread->_UnwindDestIndex);
+  sjlj_unwind_proceed(gc::As_unsafe<DestDynEnv_sp>(my_thread->_UnwindDest), my_thread->_UnwindDestIndex);
 }
 
 /* Functional unwind protect. Provided as a template function to reduce
  * runtime overhead by essentially inlining. Both thunks should accept no
  * arguments, and protected_thunk should return a T_mv.
  * See core__sjlj_funwind_protect for example usage. */
-template<typename Protf, typename Cleanupf>
-T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
+template <typename Protf, typename Cleanupf> T_mv funwind_protect(Protf &&protected_thunk, Cleanupf &&cleanup_thunk) {
   jmp_buf target;
   T_mv result;
   if (setjmp(target)) {
@@ -213,9 +219,9 @@ T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
     // itself unwinds.
     T_sp dest = my_thread->_UnwindDest;
     size_t dindex = my_thread->_UnwindDestIndex;
-    MultipleValues& multipleValues = lisp_multipleValues();
+    MultipleValues &multipleValues = lisp_multipleValues();
     size_t nvals = multipleValues.getSize();
-    T_O* mv_temp[nvals];
+    T_O *mv_temp[nvals];
     multipleValues.saveToTemp(nvals, mv_temp);
     cleanup_thunk();
     multipleValues.loadFromTemp(nvals, mv_temp);
@@ -232,16 +238,16 @@ T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       result = protected_thunk();
     } catch (...) { // C++ unwind. Do the same shit then rethrow
-      MultipleValues& multipleValues = core::lisp_multipleValues();
+      MultipleValues &multipleValues = core::lisp_multipleValues();
       size_t nvals = multipleValues.getSize();
-      T_O* mv_temp[nvals];
+      T_O *mv_temp[nvals];
       multipleValues.saveToTemp(nvals, mv_temp);
       cleanup_thunk();
       multipleValues.loadFromTemp(nvals, mv_temp);
       throw;
     }
     size_t nvals = result.number_of_values();
-    T_O* mv_temp[nvals];
+    T_O *mv_temp[nvals];
     returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
     cleanup_thunk();
     return returnTypeLoadFromTemp(nvals, mv_temp);
@@ -251,16 +257,15 @@ T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
 /* Similarly, BLOCK. Note that the use of __builtin_frame_address is a bit
  * hairy here, and nesting this function without intervening frames may cause
  * strange issues. thunkf should accept a BlockDynEnv_sp. */
-template <typename Blockf>
-T_mv call_with_escape(Blockf&& block) {
+template <typename Blockf> T_mv call_with_escape(Blockf &&block) {
   jmp_buf target;
-  void* frame = __builtin_frame_address(0);
+  void *frame = __builtin_frame_address(0);
   if (setjmp(target)) {
-    core::MultipleValues& mv = core::lisp_multipleValues();
+    core::MultipleValues &mv = core::lisp_multipleValues();
     T_mv result = mv.readFromMultipleValue0(mv.getSize());
     return result;
     // checkme    return T_mv::createFromValues(); // abnormal return
-  }  else
+  } else
     try {
       // the block dynenv is heap allocated, so that functions closing over it
       // can escape, and get a nice out-of-extent if they use it.
@@ -272,61 +277,61 @@ T_mv call_with_escape(Blockf&& block) {
       gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       return block(env);
-    } catch (Unwind& uw) {
+    } catch (Unwind &uw) {
       if (uw.getFrame() == frame) {
-        core::MultipleValues& mv = core::lisp_multipleValues();
+        core::MultipleValues &mv = core::lisp_multipleValues();
         T_mv result = mv.readFromMultipleValue0(mv.getSize());
         return result;
-    // checkme return T_mv::createFromValues();
-      }
-      else throw;
+        // checkme return T_mv::createFromValues();
+      } else
+        throw;
     }
 }
 
-template <typename Tagbodyf>
-void call_with_tagbody(Tagbodyf&& tagbody) {
+template <typename Tagbodyf> void call_with_tagbody(Tagbodyf &&tagbody) {
   jmp_buf target;
-  void* frame = __builtin_frame_address(0);
+  void *frame = __builtin_frame_address(0);
   TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
   gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
   DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
   /* Per the standard, we can't store the result of setjmp in a variable or
    * anything. So we kind of fake it via the dest index we set ourselves. */
   size_t index = 0;
-  if (setjmp(target)) index = my_thread->_UnwindDestIndex;
- again:
-  try { tagbody(env, index); }
-  catch (Unwind& uw) {
+  if (setjmp(target))
+    index = my_thread->_UnwindDestIndex;
+again:
+  try {
+    tagbody(env, index);
+  } catch (Unwind &uw) {
     if (uw.getFrame() == frame) {
       // The thrower may not be cooperative, so reset the dynenv.
       // (DynEnvPusher takes care of this when we actually escape.)
       my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
       index = uw.index();
       goto again;
-    }
-    else throw;
+    } else
+      throw;
   }
 }
 
-template <typename Catchf>
-T_mv call_with_catch(T_sp tag, Catchf&& cf) {
+template <typename Catchf> T_mv call_with_catch(T_sp tag, Catchf &&cf) {
   jmp_buf target;
   if (setjmp(target)) {
-    core::MultipleValues& mv = core::lisp_multipleValues();
+    core::MultipleValues &mv = core::lisp_multipleValues();
     T_mv result = mv.readFromMultipleValue0(mv.getSize());
     return result;
     // checkme return T_mv::createFromValues(); // abnormal return
-  }
-  else
+  } else
     try {
       gctools::StackAllocate<CatchDynEnv_O> env(&target, tag);
       gctools::StackAllocate<Cons_O> sa_ec(env.asSmartPtr(), my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       return cf();
-    } catch (CatchThrow& ct) {
-      if (ct.getTag() != tag) throw;
+    } catch (CatchThrow &ct) {
+      if (ct.getTag() != tag)
+        throw;
       else {
-        core::MultipleValues& mv = core::lisp_multipleValues();
+        core::MultipleValues &mv = core::lisp_multipleValues();
         T_mv result = mv.readFromMultipleValue0(mv.getSize());
         return result;
         // checkme return T_mv::createFromValues();
@@ -334,9 +339,7 @@ T_mv call_with_catch(T_sp tag, Catchf&& cf) {
     }
 }
 
-template <typename Boundf>
-inline auto call_with_cell_bound(VariableCell_sp cell, T_sp val,
-                                 Boundf&& bound) {
+template <typename Boundf> inline auto call_with_cell_bound(VariableCell_sp cell, T_sp val, Boundf &&bound) {
   DynamicScopeManager scope(cell, val);
   gctools::StackAllocate<BindingDynEnv_O> bde(cell, scope.oldBinding());
   gctools::StackAllocate<Cons_O> sa_ec(bde.asSmartPtr(), my_thread->dynEnvStackGet());
@@ -344,12 +347,8 @@ inline auto call_with_cell_bound(VariableCell_sp cell, T_sp val,
   return bound();
 }
 
-template <typename Boundf>
-auto call_with_variable_bound(Symbol_sp sym, T_sp val,
-                              Boundf&& bound) {
+template <typename Boundf> auto call_with_variable_bound(Symbol_sp sym, T_sp val, Boundf &&bound) {
   return call_with_cell_bound(sym->ensureVariableCell(), val, bound);
 }
 
 }; // namespace core
-
-#endif // core_Unwind_H guard

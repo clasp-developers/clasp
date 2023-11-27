@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -41,21 +41,22 @@ string BootStrapCoreSymbolMap::fullSymbolName(string const &packageName, string 
   return ((fullName));
 }
 
-BootStrapCoreSymbolMap::BootStrapCoreSymbolMap() {};
+BootStrapCoreSymbolMap::BootStrapCoreSymbolMap(){};
 
-void BootStrapCoreSymbolMap::add_package_info(std::string const& pkg, list<std::string> const& used)
-{
+void BootStrapCoreSymbolMap::add_package_info(std::string const &pkg, list<std::string> const &used) {
   this->_PackageUseInfo[pkg] = used;
 }
 
-Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp, bool shadowp) {
+Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp,
+                                                               bool shadowp) {
   string name = BootStrapCoreSymbolMap::fullSymbolName(pkgName, symbolName);
-  if ( !shadowp ) {
+  if (!shadowp) {
     core::SymbolStorage other;
-    bool found = this->find_symbol(pkgName,symbolName,other,false);
-    if ( found ) {
+    bool found = this->find_symbol(pkgName, symbolName, other, false);
+    if (found) {
       if ((exportp != other._Export)) {
-        printf("%s:%d WARNING   The symbol %s in package %s has been declared twice with different export setting\n", __FILE__, __LINE__, symbolName.c_str(), pkgName.c_str());
+        printf("%s:%d WARNING   The symbol %s in package %s has been declared twice with different export setting\n", __FILE__,
+               __LINE__, symbolName.c_str(), pkgName.c_str());
       }
       return other._Symbol;
     }
@@ -70,55 +71,55 @@ Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkg
     printf("%s:%d BootStrapCoreSymbolMap --> adding symbol %s to package: %s export: %d\n", __FILE__, __LINE__, symbolName.c_str(), pkgName.c_str(), exportp );
   }
 #endif
-  SymbolStorage store(pkgName, symbolName, sym, exportp,shadowp);
+  SymbolStorage store(pkgName, symbolName, sym, exportp, shadowp);
   int index = this->_IndexToSymbol.size();
   this->_IndexToSymbol.push_back(store);
   this->_SymbolNamesToIndex[name] = index;
   return (sym);
 }
 
-bool BootStrapCoreSymbolMap::find_symbol(string const &packageName, string const &rawSymbolName, SymbolStorage& symbolStorage, bool recursivep) const {
+bool BootStrapCoreSymbolMap::find_symbol(string const &packageName, string const &rawSymbolName, SymbolStorage &symbolStorage,
+                                         bool recursivep) const {
   string fullName = BootStrapCoreSymbolMap::fullSymbolName(packageName, rawSymbolName);
   map<string, int>::const_iterator it = this->_SymbolNamesToIndex.find(fullName);
   if (it != this->_SymbolNamesToIndex.end()) {
     symbolStorage = this->_IndexToSymbol[it->second];
     return true;
   }
-  if ( !recursivep ) {
+  if (!recursivep) {
     // If not a recursive call then look in the use list
-    map<string,list<string>>::const_iterator found = this->_PackageUseInfo.find(packageName);
-    for ( auto used_pkg : found->second ) {
-      bool found = this->find_symbol(used_pkg,rawSymbolName,symbolStorage,true);
-      if (found) return found;
+    map<string, list<string>>::const_iterator found = this->_PackageUseInfo.find(packageName);
+    for (auto used_pkg : found->second) {
+      bool found = this->find_symbol(used_pkg, rawSymbolName, symbolStorage, true);
+      if (found)
+        return found;
     }
   }
   return false;
 }
 
 void BootStrapCoreSymbolMap::finish_setup_of_symbols() {
-  //printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
-  for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin();
-       it != this->_SymbolNamesToIndex.end(); it++) {
+  // printf("%s:%d finish_setup_of_symbols\n", __FILE__, __LINE__ );
+  for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin(); it != this->_SymbolNamesToIndex.end(); it++) {
     int idx = it->second;
     SymbolStorage &ss = this->_IndexToSymbol[idx];
     string packageName = ss._PackageName;
-//    printf("%s:%d  Adding symbol(%s)[%d/%d] to package: %s\n", __FILE__, __LINE__, ss._SymbolName.c_str(), idx, idxEnd, packageName.c_str());
-    T_sp tpackage = _lisp->findPackage(packageName,true);
+    //    printf("%s:%d  Adding symbol(%s)[%d/%d] to package: %s\n", __FILE__, __LINE__, ss._SymbolName.c_str(), idx, idxEnd,
+    //    packageName.c_str());
+    T_sp tpackage = _lisp->findPackage(packageName, true);
     Package_sp pkg = gc::As<Package_sp>(tpackage);
-//    printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.raw_());
+    //    printf("%s:%d  The package most derived pointer base address adding symbol to: %p\n", __FILE__, __LINE__, pkg.raw_());
     //            printf("%s:%d  The symbol index is %d\n", __FILE__, __LINE__, idx );
-    ss._Symbol->finish_setup(pkg, ss._Export,ss._Shadow);
+    ss._Symbol->finish_setup(pkg, ss._Export, ss._Shadow);
   }
 }
 
 void BootStrapCoreSymbolMap::dump() {
-  for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin();
-       it != this->_SymbolNamesToIndex.end(); it++) {
+  for (map<string, int>::const_iterator it = this->_SymbolNamesToIndex.begin(); it != this->_SymbolNamesToIndex.end(); it++) {
     string ts = it->first;
     printf("%s\n", ts.c_str());
     SymbolStorage &ss = this->_IndexToSymbol[it->second];
-    printf("    _PackageName: %s   _SymbolName: %s   _Export: %d\n",
-           ss._PackageName.c_str(), ss._SymbolName.c_str(), ss._Export);
+    printf("    _PackageName: %s   _SymbolName: %s   _Export: %d\n", ss._PackageName.c_str(), ss._SymbolName.c_str(), ss._Export);
   }
 }
-};
+}; // namespace core

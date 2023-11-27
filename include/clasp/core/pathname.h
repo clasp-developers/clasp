@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: pathname.h
 */
@@ -24,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef core_pathname_H //[
-#define core_pathname_H
 
 #include <stdio.h>
 #include <string>
@@ -171,25 +170,23 @@ List_sp cl__logical_pathname_translations(String_sp host);
 T_sp cl__setf_logical_pathname_translations(List_sp translations, String_sp host);
 
 /* If you want to call makePathname use:
-		Pathname_sp backupPathname = af_makePathname(_Nil<T_O>(), // host 
-							     false, // hostp 
-							     _Nil<T_O>(), // device 
-							     false, // devicep 
-							     _Nil<T_O>(), // directory 
-							     false, // directoryp 
-							     _Nil<T_O>(), // name 
-							     false, // namep 
-							     <string>, // string
-							     true, // typep 
-							     _Nil<T_O>(), // version 
-							     false, // versionp 
-							     kw::_sym_local, // scase 
-							     this->_OriginalPathname, // defaults 
-							     )
+                Pathname_sp backupPathname = af_makePathname(_Nil<T_O>(), // host
+                                                             false, // hostp
+                                                             _Nil<T_O>(), // device
+                                                             false, // devicep
+                                                             _Nil<T_O>(), // directory
+                                                             false, // directoryp
+                                                             _Nil<T_O>(), // name
+                                                             false, // namep
+                                                             <string>, // string
+                                                             true, // typep
+                                                             _Nil<T_O>(), // version
+                                                             false, // versionp
+                                                             kw::_sym_local, // scase
+                                                             this->_OriginalPathname, // defaults
+                                                             )
     */
 Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name,
                               bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase = kw::_sym_local,
                               T_sp defaults = core__safe_default_pathname_defaults_host_only());
 }; // namespace core
-
-#endif //]

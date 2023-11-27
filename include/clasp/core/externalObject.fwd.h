@@ -1,3 +1,4 @@
+#pragma once
 /*
     File: externalObject.fwd.h
 */
@@ -24,10 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef externalObject_fwd_H
-#define externalObject_fwd_H
 namespace core {
-  // FORWARD(ExternalObjectManager); -- frgo, 2016-08-09: Nowhere implemented...
-  FORWARD(ExternalObject);
-}
-#endif
+// FORWARD(ExternalObjectManager); -- frgo, 2016-08-09: Nowhere implemented...
+FORWARD(ExternalObject);
+} // namespace core
