@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <string>
 #include <clasp/core/foundation.h>
@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/cons.h>
 
-int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
+int main(int argc, char* argv[]) { // Do not touch debug log until after MPI init
   core::Fixnum_sp fn = core::make_fixnum(1234);
   printf("in main: %s\n", fn->__repr__().c_str());
 }

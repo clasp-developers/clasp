@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -50,14 +50,14 @@ CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, MDNode_sp scope) {
 CL_LISPIFY_NAME(DebugLoc_make);
 DOCGROUP(clasp);
 CL_DEFUN DebugLoc_sp DebugLoc_O::make(const llvm::DebugLoc& dl) {
-  auto  oip = gctools::GC<DebugLoc_O>::allocate_with_default_constructor();
+  auto oip = gctools::GC<DebugLoc_O>::allocate_with_default_constructor();
   oip->_DebugLoc = dl;
   return oip;
 }
 
 CL_LISPIFY_NAME("getScope");
 CL_DEFMETHOD MDNode_sp DebugLoc_O::getScope() const {
-  return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc._value.getScope());
+  return translate::to_object<llvm::MDNode*>::convert(this->_DebugLoc._value.getScope());
 }
 
 CL_LISPIFY_NAME(DebugLoc_is_valid);
@@ -65,4 +65,4 @@ CL_DEFMETHOD bool DebugLoc_O::is_valid() const {
   return !!this->_DebugLoc._value; // bool operator
 }
 
-};
+}; // namespace llvmo

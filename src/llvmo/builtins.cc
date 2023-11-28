@@ -48,26 +48,19 @@ THE SOFTWARE.
 
 #define BUILTIN_ATTRIBUTES __attribute__((always_inline))
 
-
-
 extern "C" {
 
-gctools::return_type cm_vset(void* vector, void* idx, void* value)
-{
+gctools::return_type cm_vset(void* vector, void* idx, void* value) {
   core::AbstractSimpleVector_sp asv((gctools::Tagged)vector);
   core::T_sp tvalue((gctools::Tagged)value);
-  asv->vset(gctools::untag_fixnum((core::T_O*)idx),tvalue);
-  gctools::return_type result(value,1);
+  asv->vset(gctools::untag_fixnum((core::T_O*)idx), tvalue);
+  gctools::return_type result(value, 1);
   return result;
 };
 
-
-gctools::return_type cm_vref(void* vector, void* idx)
-{
+gctools::return_type cm_vref(void* vector, void* idx) {
   core::AbstractSimpleVector_sp asv((gctools::Tagged)vector);
-  gctools::return_type result(asv->vref(gctools::untag_fixnum((core::T_O*)idx)).raw_(),1);
+  gctools::return_type result(asv->vref(gctools::untag_fixnum((core::T_O*)idx)).raw_(), 1);
   return result;
 };
-
-
 };
