@@ -39,40 +39,37 @@ namespace serveEvent {
 using namespace core;
 
 DOCGROUP(clasp);
-CL_DEFUN void serve_event_internal__ll_fd_zero(clasp_ffi::ForeignData_sp fdset) {
-  FD_ZERO(fdset->data<fd_set *>());
-}
+CL_DEFUN void serve_event_internal__ll_fd_zero(clasp_ffi::ForeignData_sp fdset) { FD_ZERO(fdset->data<fd_set*>()); }
 
 DOCGROUP(clasp);
-CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp fdset) {
- FD_SET(fd, fdset->data<fd_set *>());
-}
+CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp fdset) { FD_SET(fd, fdset->data<fd_set*>()); }
 
 DOCGROUP(clasp);
 CL_DEFUN int serve_event_internal__ll_fd_isset(int fd, clasp_ffi::ForeignData_sp fdset) {
-  return FD_ISSET(fd, fdset->data<fd_set *>());
+  return FD_ISSET(fd, fdset->data<fd_set*>());
 }
 
 DOCGROUP(clasp);
-CL_DEFUN int serve_event_internal__ll_fdset_size() {
-  return sizeof(fd_set);
-}
+CL_DEFUN int serve_event_internal__ll_fdset_size() { return sizeof(fd_set); }
 
 DOCGROUP(clasp);
-CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventNoTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd, int maxfdp1) {
-  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, NULL);
+CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventNoTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd,
+                                                                       int maxfdp1) {
+  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set*>(), wfd->data<fd_set*>(), NULL, NULL);
   return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
 
 DOCGROUP(clasp);
-CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventWithTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd, int maxfdp1, double seconds) {
+CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventWithTimeout(clasp_ffi::ForeignData_sp rfd,
+                                                                         clasp_ffi::ForeignData_sp wfd, int maxfdp1,
+                                                                         double seconds) {
   if (seconds < 0.0) {
     SIMPLE_ERROR("Illegal timeout {} seconds", seconds);
   }
   struct timeval tv;
   tv.tv_sec = seconds;
   tv.tv_usec = ((seconds - floor(seconds)) * 1e6);
-  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, &tv);
+  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set*>(), wfd->data<fd_set*>(), NULL, &tv);
   return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
 
@@ -81,12 +78,11 @@ void initialize_serveEvent_globals() {
   _sym__PLUS_EINTR_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EINTR));
 };
 
+SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_zero);
+SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_set);
+SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_isset);
+SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fdset_size);
+SYMBOL_EXPORT_SC_(ServeEventPkg, ll_serveEventNoTimeout);
+SYMBOL_EXPORT_SC_(ServeEventPkg, ll_serveEventWithTimeout);
 
-  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_zero);
-  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_set);
-  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_isset);
-  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fdset_size);
-  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_serveEventNoTimeout);
-  SYMBOL_EXPORT_SC_(ServeEventPkg, ll_serveEventWithTimeout);
-
-};
+}; // namespace serveEvent

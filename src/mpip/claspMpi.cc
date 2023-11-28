@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -41,11 +41,13 @@ THE SOFTWARE.
 /*
 __BEGIN_DOC( mpi, chapter, MPI Message Passing core::Interface )
 
-Cando contains a subset of MPI functionality to allow {\CANDOSCRIPT} programs to be written that run in parallel on multiple computers.
+Cando contains a subset of MPI functionality to allow {\CANDOSCRIPT} programs to be written that run in parallel on multiple
+computers.
 
 Complex {\CANDOSCRIPT} objects are sent back and forth between processes using {\CANDOSCRIPT}s powerful XML serialization code.
 
-In this example code worker processes create Rectangle objects and send them back to a manager process which prints them on the screen.
+In this example code worker processes create Rectangle objects and send them back to a manager process which prints them on the
+screen.
 
 You can run it by saving it in the file mpi.csc and running: mpirun -np 5 candoMpi mpi.csc
 
@@ -61,7 +63,7 @@ static bool _MpiInitialized = false;
 static bool _MpiWorldInitialized = false;
 
 #ifdef USE_MPI
-static boost::mpi::environment *_MpiEnvironment;
+static boost::mpi::environment* _MpiEnvironment;
 #endif
 
 /*
@@ -92,7 +94,8 @@ bool Mpi_O::mpiEnabled() {
   __BEGIN_DOC( mpi.commands.mpiSize, subsection, mpiSize)
   \scriptCmdRet{mpiSize}{}{core::Int::}
 
-  Returns the number of processes available.  This function is available in all implementations of {\CANDOSCRIPT} but if MPI is not enabled it returns 1.
+  Returns the number of processes available.  This function is available in all implementations of {\CANDOSCRIPT} but if MPI is not
+  enabled it returns 1.
   __END_DOC
 */
 int Mpi_O::mpiSize() {
@@ -108,7 +111,8 @@ int Mpi_O::mpiSize() {
   __BEGIN_DOC( mpi.commands.mpiRank, subsection, mpiRank)
   \scriptCmdRet{mpiRank}{}{core::Int::}
 
-  Returns the rank of the current processes. The rank is a number from 0 to ([mpiSize] - 1). This function is available in all implementations of {\CANDOSCRIPT} but if MPI is not enabled it returns 0.
+  Returns the rank of the current processes. The rank is a number from 0 to ([mpiSize] - 1). This function is available in all
+  implementations of {\CANDOSCRIPT} but if MPI is not enabled it returns 0.
   __END_DOC
 */
 int Mpi_O::mpiRank() {
@@ -119,7 +123,7 @@ int Mpi_O::mpiRank() {
 #endif
 }
 
-void Mpi_O::Init(int &argc, char **&argv, bool &mpiEnabled, int &rank, int &msize) {
+void Mpi_O::Init(int& argc, char**& argv, bool& mpiEnabled, int& rank, int& msize) {
   mpiEnabled = false;
   rank = -1;
   msize = -1;
@@ -200,23 +204,24 @@ CL_DEFMETHOD int Mpi_O::Get_rank() {
 #endif
 }
 
-
-SYMBOL_EXPORT_SC_(MpiPkg,STARencode_object_hookSTAR);
-SYMBOL_EXPORT_SC_(MpiPkg,STARdecode_object_hookSTAR);
+SYMBOL_EXPORT_SC_(MpiPkg, STARencode_object_hookSTAR);
+SYMBOL_EXPORT_SC_(MpiPkg, STARdecode_object_hookSTAR);
 
 // Object_sp obj, int dest, int tag )
 /*
   __BEGIN_DOC( mpi.MpiObject.Send, subsection, Send)
   \scriptcore::Method{mpi}{Send}{Object::data core::Int::dest core::Int::tag}
 
-  Sends the \sa{Object::data} to the process \sa{dest} with the tag \sa{tag}. The data can be any Cando-Script object - it is archived into XML format and then sent to the process \sa{dest} and then dearchived back into a Cando-Script object on the other side.
+  Sends the \sa{Object::data} to the process \sa{dest} with the tag \sa{tag}. The data can be any Cando-Script object - it is
+  archived into XML format and then sent to the process \sa{dest} and then dearchived back into a Cando-Script object on the other
+  side.
   __END_DOC
 */
 CL_DEFMETHOD core::T_sp Mpi_O::prim_Send(int dest, int tag, core::T_sp obj) {
 #ifdef USE_MPI
-  core::T_sp msg = core::eval::funcall(_sym_STARencode_object_hookSTAR->symbolValue(),obj);
+  core::T_sp msg = core::eval::funcall(_sym_STARencode_object_hookSTAR->symbolValue(), obj);
   core::SimpleBaseString_sp sbs = gc::As<core::SimpleBaseString_sp>(msg);
-  LOG("About to call MPI_Send\n%s\n" , sbs->get_std_string());
+  LOG("About to call MPI_Send\n%s\n", sbs->get_std_string());
   this->_Communicator.send(dest, tag, sbs->get_std_string());
 #endif
   return nil<core::T_O>();
@@ -226,7 +231,9 @@ CL_DEFMETHOD core::T_sp Mpi_O::prim_Send(int dest, int tag, core::T_sp obj) {
   __BEGIN_DOC( mpi.Mpicore::T.Recv, subsection, Recv)
   \scriptMethodRet{mpi}{Recv}{core::Int::dest core::Int::tag}{core::T::data}
 
-  Blocks and waits for data from the process \sa{dest} with the requested tag \sa{tag}. You can provide the value MPI::ANY\_SOURCE if you want to receive data from any source and MPI::ANY\_TAG if you want any tag. You can use the \scmd{GetSource} and \scmd{GetTag} to query the source and tag that the sender sent. The data that is received is returned in \sa{core::T::data}.
+  Blocks and waits for data from the process \sa{dest} with the requested tag \sa{tag}. You can provide the value MPI::ANY\_SOURCE
+  if you want to receive data from any source and MPI::ANY\_TAG if you want any tag. You can use the \scmd{GetSource} and
+  \scmd{GetTag} to query the source and tag that the sender sent. The data that is received is returned in \sa{core::T::data}.
   __END_DOC
 */
 CL_DEFMETHOD core::T_mv Mpi_O::prim_Recv(int source, int tag) {
@@ -235,11 +242,11 @@ CL_DEFMETHOD core::T_mv Mpi_O::prim_Recv(int source, int tag) {
   boost::mpi::status stat = this->_Communicator.probe(source, tag);
   this->_Source = stat.source();
   this->_Tag = stat.tag();
-  LOG("Probe command returned source %d" , this->_Source); // vp0(("Probe command returned source %d", this->_Source ));
+  LOG("Probe command returned source %d", this->_Source); // vp0(("Probe command returned source %d", this->_Source ));
   string buffer;
   this->_Communicator.recv(source, tag, buffer);
   core::SimpleBaseString_sp sis = core::SimpleBaseString_O::make(buffer);
-  core::T_sp obj = core::eval::funcall(_sym_STARdecode_object_hookSTAR->symbolValue(),sis);
+  core::T_sp obj = core::eval::funcall(_sym_STARdecode_object_hookSTAR->symbolValue(), sis);
   return Values(obj, core::make_fixnum(this->_Source), core::make_fixnum(this->_Tag));
 #else
   return nil<core::T_O>();
@@ -253,9 +260,7 @@ CL_DEFMETHOD core::T_mv Mpi_O::prim_Recv(int source, int tag) {
   Returns the source for the most recent Recv command.
   __END_DOC
 */
-CL_DEFMETHOD int Mpi_O::Get_source() {
-  return this->_Source;
-}
+CL_DEFMETHOD int Mpi_O::Get_source() { return this->_Source; }
 
 /*
   __BEGIN_DOC( mpi.Mpicore::T.GetTag, subsection, GetTag)
@@ -264,9 +269,7 @@ CL_DEFMETHOD int Mpi_O::Get_source() {
   Returns the tag for the most recent Recv command.
   __END_DOC
 */
-CL_DEFMETHOD int Mpi_O::Get_tag() {
-  return this->_Tag;
-}
+CL_DEFMETHOD int Mpi_O::Get_tag() { return this->_Tag; }
 
 void Mpi_O::initializeGlobals(core::LispPtr lisp) {
 #ifdef USE_MPI
@@ -303,4 +306,4 @@ void Mpi_O::exposePython(core::LispPtr lisp) {
 #endif
 }
 #endif
-};
+}; // namespace mpip

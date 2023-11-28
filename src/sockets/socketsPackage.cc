@@ -44,16 +44,14 @@ void SocketsExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose 
   case candoClasses: {
   } break;
   case candoFunctions: {
-    //nothing
-  };
-      break;
+    // nothing
+  }; break;
   case candoGlobals: {
     list<string> nicknames;
-    list<string> usePackages = {"COMMON-LISP" /*, "CLOS"*/ , SocketsPkg};
+    list<string> usePackages = {"COMMON-LISP" /*, "CLOS"*/, SocketsPkg};
     _lisp->makePackage("SB-BSD-SOCKETS", nicknames, usePackages);
     initialize_sockets_globals();
-  };
-      break;
+  }; break;
   case pythonClasses:
   case pythonFunctions:
   case pythonGlobals: {
@@ -61,4 +59,4 @@ void SocketsExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose 
   } break;
   }
 }
-};
+}; // namespace sockets
