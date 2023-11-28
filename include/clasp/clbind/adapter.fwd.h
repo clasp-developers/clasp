@@ -47,9 +47,9 @@ template <class T> void support_initializeSlots(int slots, typename T::enable_sl
 
 template <class T> void support_initializeSlots(int slots, ...) { throwSlotsNotSupported(); }
 
-template <class T> void *support_adapterAddress(typename T::enable_slots adapter) { return adapter->address(); }
+template <class T> void* support_adapterAddress(typename T::enable_slots adapter) { return adapter->address(); }
 
-template <class T> void *support_adapterAddress(...) { return NULL; }
+template <class T> void* support_adapterAddress(...) { return NULL; }
 
 template <class T> core::T_sp support_instanceSigSet(typename T::enable_slots adapter) { return adapter->instanceSigSet(); }
 

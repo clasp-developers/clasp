@@ -77,7 +77,7 @@ template <class T> struct by_const_pointer {};
 struct converter_policy_tag {};
 
 struct ltstr {
-  bool operator()(const char *s1, const char *s2) const { return std::strcmp(s1, s2) < 0; }
+  bool operator()(const char* s1, const char* s2) const { return std::strcmp(s1, s2) < 0; }
 };
 
 template <int N> struct aligned {
@@ -88,9 +88,9 @@ template <int N> struct aligned {
 // TODO: return ptrdiff
 template <class Derived, class Base> int ptr_offset(type_<Derived>, type_<Base>) {
   aligned<sizeof(Derived)> obj;
-  Derived *ptr = reinterpret_cast<Derived *>(&obj);
+  Derived* ptr = reinterpret_cast<Derived*>(&obj);
 
-  return int(static_cast<char *>(static_cast<void *>(static_cast<Base *>(ptr))) - static_cast<char *>(static_cast<void *>(ptr)));
+  return int(static_cast<char*>(static_cast<void*>(static_cast<Base*>(ptr))) - static_cast<char*>(static_cast<void*>(ptr)));
 }
 } // namespace detail
 } // namespace clbind
@@ -98,12 +98,12 @@ template <class Derived, class Base> int ptr_offset(type_<Derived>, type_<Base>)
 namespace clbind {
 template <class T> class move_if_unique_ptr_and_forward_otherwise {
 public:
-  static T &&doit(T &&t) { return std::forward<T>(t); };
+  static T&& doit(T&& t) { return std::forward<T>(t); };
 };
 
 template <class U> class move_if_unique_ptr_and_forward_otherwise<std::unique_ptr<U>> {
 public:
-  static std::unique_ptr<U> &&doit(std::unique_ptr<U> &&t) { return std::move(t); }
+  static std::unique_ptr<U>&& doit(std::unique_ptr<U>&& t) { return std::move(t); }
 };
 
 template <typename T> struct format_descriptor {

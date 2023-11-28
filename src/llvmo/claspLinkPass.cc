@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -40,14 +40,14 @@ struct ClaspLinkPass : public ModulePass {
   static char ID;
   ClaspLinkPass() : ModulePass(ID) {}
 
-  virtual bool runOnModule(Module &M) {
+  virtual bool runOnModule(Module& M) {
     errs() << "ClaspLinkPass " << __FILE__ << ":" << __LINE__ << '\n';
-    GlobalVariable *funcs = M.getNamedGlobal(GLOBAL_BOOT_FUNCTIONS_NAME);
+    GlobalVariable* funcs = M.getNamedGlobal(GLOBAL_BOOT_FUNCTIONS_NAME);
     if (funcs == NULL) {
       errs() << "Could not find global variable " << GLOBAL_BOOT_FUNCTIONS_NAME << '\n';
       return false;
     }
-    llvm::PointerType *t = funcs->getType();
+    llvm::PointerType* t = funcs->getType();
 #if 0
     errs() << "Dumping t\n";
     t->dump();
@@ -60,7 +60,7 @@ struct ClaspLinkPass : public ModulePass {
     errs() << "Number of elements: " << num << '\n';
     funcs->dump();
 #endif
-    llvm::ConstantInt *ci = llvm::ConstantInt::get(M.getContext(), llvm::APInt(/*nbits*/ 32, num, true));
+    llvm::ConstantInt* ci = llvm::ConstantInt::get(M.getContext(), llvm::APInt(/*nbits*/ 32, num, true));
 #if 0
 #pragma clang diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
@@ -70,7 +70,7 @@ struct ClaspLinkPass : public ModulePass {
     return true; // Change this to true once we modify the module
   }
 };
-}
+} // namespace
 
 namespace llvmo {
 
@@ -79,14 +79,14 @@ namespace llvmo {
 #define DOCS_af_addGlobalBootFunctionsSizePass "addGlobalBootFunctionsSizePass"
 DOCGROUP(clasp);
 CL_DEFUN void llvm_sys__addGlobalBootFunctionsSizePass(llvmo::PassManager_sp passManager) {
-  ModulePass *claspLinkPass = new ClaspLinkPass();
+  ModulePass* claspLinkPass = new ClaspLinkPass();
   passManager->wrappedPtr()->add(claspLinkPass);
 }
 
 void initialize_claspLinkPass() {
-//  core::af_def(LlvmoPkg, "addGlobalBootFunctionsSizePass", &af_addGlobalBootFunctionsSizePass);
+  //  core::af_def(LlvmoPkg, "addGlobalBootFunctionsSizePass", &af_addGlobalBootFunctionsSizePass);
 }
-};
+}; // namespace llvmo
 
 #if 0
 char ClaspLinkPass::ID = 0;

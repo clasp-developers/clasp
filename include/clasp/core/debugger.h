@@ -65,7 +65,7 @@ typedef enum { Library, Executable } LoadableKind;
 
 struct TrapProblem {
   bool _IsExecutable;
-  TrapProblem(bool is_executable, const std::string &name, LoadableKind loadable) : _IsExecutable(is_executable) {
+  TrapProblem(bool is_executable, const std::string& name, LoadableKind loadable) : _IsExecutable(is_executable) {
     if (is_executable != (loadable == Executable ? true : false)) {
       printf("%s:%d:%s  library: %s is_executable = %d  loadable = %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(),
              is_executable, loadable == Executable ? "Executable" : "Library");
@@ -76,12 +76,12 @@ struct TrapProblem {
 
 struct OpenDynamicLibraryInfo {
   std::string _Filename;
-  void *_Handle;
+  void* _Handle;
   SymbolTable _SymbolTable;
   gctools::clasp_ptr_t _LibraryStart;
   gctools::clasp_ptr_t _TextStart;
   gctools::clasp_ptr_t _TextEnd;
-  OpenDynamicLibraryInfo(const std::string &f, void *h, const SymbolTable &symbol_table, gctools::clasp_ptr_t libstart,
+  OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart,
                          gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd)
       : _Filename(f), _Handle(h), _SymbolTable(symbol_table), _LibraryStart(libstart), _TextStart(textStart),
         _TextEnd(textEnd){
@@ -95,7 +95,7 @@ struct ExecutableLibraryInfo : OpenDynamicLibraryInfo {
   bool _HasVtableSection;
   gctools::clasp_ptr_t _VtableSectionStart;
   gctools::clasp_ptr_t _VtableSectionEnd;
-  ExecutableLibraryInfo(const std::string &f, void *h, const SymbolTable &symbol_table, gctools::clasp_ptr_t libstart,
+  ExecutableLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart,
                         gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd, bool hasVtableSection,
                         gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd)
       : OpenDynamicLibraryInfo(f, h, symbol_table, libstart, textStart, textEnd), _HasVtableSection(hasVtableSection),
@@ -113,12 +113,12 @@ struct ExecutableLibraryInfo : OpenDynamicLibraryInfo {
 };
 
 struct add_dynamic_library {
-  virtual void operator()(const OpenDynamicLibraryInfo *info) = 0;
+  virtual void operator()(const OpenDynamicLibraryInfo* info) = 0;
 };
 
 struct add_library : public add_dynamic_library {
-  std::vector<const OpenDynamicLibraryInfo *> _Libraries;
-  virtual void operator()(const OpenDynamicLibraryInfo *info) {
+  std::vector<const OpenDynamicLibraryInfo*> _Libraries;
+  virtual void operator()(const OpenDynamicLibraryInfo* info) {
     //    printf("%s:%d:%s registering library: %s start: %p  end: %p\n", __FILE__, __LINE__,  __FUNCTION__, info._Filename.c_str(),
     //    info._TextStart, info._TextEnd );
     this->_Libraries.push_back(info);
@@ -126,26 +126,26 @@ struct add_library : public add_dynamic_library {
 };
 
 void dbg_lowLevelDescribe(T_sp obj);
-void dbg_describe_tagged_T_Optr(T_O *p);
+void dbg_describe_tagged_T_Optr(T_O* p);
 
 bool check_for_frame(uintptr_t);
 void frame_check(uintptr_t);
 
-int safe_backtrace(void **&return_buffer);
+int safe_backtrace(void**& return_buffer);
 
-bool if_dynamic_library_loaded_remove(const std::string &libraryName);
+bool if_dynamic_library_loaded_remove(const std::string& libraryName);
 
-void add_dynamic_library_using_handle(add_dynamic_library *callback, const std::string &libraryName, void *handle);
-void add_dynamic_library_using_origin(add_dynamic_library *callback, bool is_executable, const std::string &libraryName,
+void add_dynamic_library_using_handle(add_dynamic_library* callback, const std::string& libraryName, void* handle);
+void add_dynamic_library_using_origin(add_dynamic_library* callback, bool is_executable, const std::string& libraryName,
                                       uintptr_t origin, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd,
                                       bool hasVtableSection, gctools::clasp_ptr_t vtableSectionStart,
                                       gctools::clasp_ptr_t vtableSectionEnd);
 
-bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t &start, gctools::clasp_ptr_t &end,
-                               std::string &libraryName, bool &isExecutable, uintptr_t &vtableStart, uintptr_t &vtableEnd);
-bool lookup_address(uintptr_t address, const char *&symbol, uintptr_t &start, uintptr_t &end);
-bool library_with_name(const std::string &name, bool isExecutable, std::string &libraryPath, uintptr_t &start, uintptr_t &end,
-                       uintptr_t &vtableStart, uintptr_t &vtableEnd);
+bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end,
+                               std::string& libraryName, bool& isExecutable, uintptr_t& vtableStart, uintptr_t& vtableEnd);
+bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end);
+bool library_with_name(const std::string& name, bool isExecutable, std::string& libraryPath, uintptr_t& start, uintptr_t& end,
+                       uintptr_t& vtableStart, uintptr_t& vtableEnd);
 
 }; // namespace core
 
@@ -187,34 +187,34 @@ namespace core {
 struct SymbolCallback {
   bool _debug;
   virtual bool debug() { return this->_debug; };
-  virtual bool interestedInLibrary(const char *name, bool executable) { return true; };
-  virtual bool interestedInSymbol(const char *name) { return true; };
-  virtual void callback(const char *name, uintptr_t start, uintptr_t end){};
+  virtual bool interestedInLibrary(const char* name, bool executable) { return true; };
+  virtual bool interestedInSymbol(const char* name) { return true; };
+  virtual void callback(const char* name, uintptr_t start, uintptr_t end){};
   SymbolCallback() : _debug(false){};
 };
 
-void walk_loaded_objects_symbol_table(SymbolCallback *symbolCallback);
+void walk_loaded_objects_symbol_table(SymbolCallback* symbolCallback);
 
 struct DebugInfo {
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex _OpenDynamicLibraryMutex;
 #endif
-  map<std::string, OpenDynamicLibraryInfo *> _OpenDynamicLibraryHandles;
+  map<std::string, OpenDynamicLibraryInfo*> _OpenDynamicLibraryHandles;
   DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD){};
 };
 
-void startup_register_loaded_objects(add_dynamic_library *addlib);
+void startup_register_loaded_objects(add_dynamic_library* addlib);
 
-uintptr_t load_stackmap_info(const char *filename, uintptr_t header, size_t &section_size);
-void add_dynamic_library_impl(add_dynamic_library *adder, bool is_executable, const std::string &libraryName, bool use_origin,
-                              uintptr_t library_origin, void *handle, gctools::clasp_ptr_t text_start,
+uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size);
+void add_dynamic_library_impl(add_dynamic_library* adder, bool is_executable, const std::string& libraryName, bool use_origin,
+                              uintptr_t library_origin, void* handle, gctools::clasp_ptr_t text_start,
                               gctools::clasp_ptr_t text_end, bool hasVtableSection, gctools::clasp_ptr_t vtableSectionStart,
                               gctools::clasp_ptr_t vtableSectionEnd);
 
-DebugInfo &debugInfo();
+DebugInfo& debugInfo();
 
-void executablePath(std::string &name);
-void executableTextSectionRange(gctools::clasp_ptr_t &start, gctools::clasp_ptr_t &end);
-void executableVtableSectionRange(gctools::clasp_ptr_t &start, gctools::clasp_ptr_t &end);
+void executablePath(std::string& name);
+void executableTextSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end);
+void executableVtableSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end);
 
 }; // namespace core

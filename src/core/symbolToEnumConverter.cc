@@ -44,13 +44,13 @@ List_sp SymbolToEnumConverter_O::enumSymbolsAsList() const {
   return symbols;
 }
 
-SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesEnumRepresent) {
+SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string& whatDoesEnumRepresent) {
   SymbolToEnumConverter_sp c = SymbolToEnumConverter_O::create();
   c->setWhatTheEnumsRepresent(whatDoesEnumRepresent);
   return c;
 }
 
-SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesEnumRepresent, string const &packageName,
+SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string& whatDoesEnumRepresent, string const& packageName,
                                                          NullTerminatedEnumAssociation assoc[], bool exportSymbols) {
   SymbolToEnumConverter_sp c = SymbolToEnumConverter_O::create(whatDoesEnumRepresent);
   for (int i = 0; assoc[i]._Key != ""; ++i) {
@@ -62,11 +62,11 @@ SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesE
   return c;
 }
 
-void SymbolToEnumConverter_O::setWhatTheEnumsRepresent(const string &what) {
+void SymbolToEnumConverter_O::setWhatTheEnumsRepresent(const string& what) {
   this->_WhatTheEnumsRepresent = SimpleBaseString_O::make(what);
 }
 
-Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp const &archiveSym, int enumIndex) {
+Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp const& archiveSym, int enumIndex) {
   Symbol_sp sym = asym;
   if (sym.nilp()) {
     sym = archiveSym;
@@ -82,7 +82,7 @@ Symbol_sp SymbolToEnumConverter_O::addSymbolEnumPair(Symbol_sp asym, Symbol_sp c
 CL_LISPIFY_NAME("enumIndexForSymbol");
 CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(T_sp obj) {
   T_mv match_mv = this->_SymbolToEnum->gethash(obj);
-  MultipleValues &mv = core::lisp_multipleValues();
+  MultipleValues& mv = core::lisp_multipleValues();
   if (mv.second(match_mv.number_of_values()).nilp())
     TYPE_ERROR(obj, Cons_O::create(cl::_sym_member, this->enumSymbolsAsList()));
   return unbox_fixnum(match_mv);

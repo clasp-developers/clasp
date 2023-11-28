@@ -37,7 +37,7 @@ static void debugger_helpmsg() {
 // negative. If the top or bottom is reached, stays there. The index of the
 // current frame frame is read from index, and then the new frame's index is
 // stored there.
-static DebuggerFrame_sp debugger_frame_rel(DebuggerFrame_sp cur, int shift, int &index) {
+static DebuggerFrame_sp debugger_frame_rel(DebuggerFrame_sp cur, int shift, int& index) {
   if (shift > 0) {
     while (shift > 0) {
       T_sp next = cur->up;
@@ -96,14 +96,14 @@ static void debugger_dump_current_module(DebuggerFrame_sp cur, int index) {
   num << std::setw(4);
   num << index;
   if (!gc::IsA<Function_sp>(cur->closure)) {
-    clasp_write_string(fmt::format("  cur->closure is not a Function_sp: {}\n", (void *)cur->closure.raw_()), stream);
+    clasp_write_string(fmt::format("  cur->closure is not a Function_sp: {}\n", (void*)cur->closure.raw_()), stream);
     return;
   }
   Function_sp func = gc::As_unsafe<Function_sp>(cur->closure);
   SimpleFun_sp ep = func->entryPoint();
   if (gc::IsA<GlobalBytecodeSimpleFun_sp>(ep)) {
     Array_sp bytecode = gc::As<Array_sp>(gc::As_unsafe<GlobalBytecodeSimpleFun_sp>(ep)->code());
-    clasp_write_string(fmt::format("Start address: {}\n", (void *)bytecode->rowMajorAddressOfElement_(0)), stream);
+    clasp_write_string(fmt::format("Start address: {}\n", (void*)bytecode->rowMajorAddressOfElement_(0)), stream);
     for (size_t ii = 0; ii < cl__length(bytecode); ii++) {
       clasp_write_string(fmt::format("{} ", _rep_(bytecode->rowMajorAref(ii))), stream);
     }
@@ -134,7 +134,7 @@ static void debugger_backtrace(DebuggerFrame_sp cur, int index, bool showArgs = 
   }
 }
 
-static bool debugger_parse_integer(string s, int &new_frame_index) {
+static bool debugger_parse_integer(string s, int& new_frame_index) {
   try {
     new_frame_index = std::stoi(s);
     return true;
@@ -221,7 +221,7 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
       }
       // If the debugger is entered recursively and aborted out of,
       // return here.
-      catch (DebuggerSaysAbortToRepl &err) {
+      catch (DebuggerSaysAbortToRepl& err) {
       }
       break;
     default:

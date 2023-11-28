@@ -37,13 +37,13 @@ THE SOFTWARE.
 // #include <clasp/core/lispList.h>
 
 namespace cl {
-extern core::Symbol_sp &_sym_type_error;
-extern core::Symbol_sp &_sym_Cons_O;
+extern core::Symbol_sp& _sym_type_error;
+extern core::Symbol_sp& _sym_Cons_O;
 }; // namespace cl
 
 namespace kw {
-extern core::Symbol_sp &_sym_datum;
-extern core::Symbol_sp &_sym_expected_type;
+extern core::Symbol_sp& _sym_datum;
+extern core::Symbol_sp& _sym_expected_type;
 }; // namespace kw
 
 namespace core {
@@ -106,7 +106,7 @@ template <> struct gctools::GCInfo<core::Cons_O> {
 };
 
 extern "C" {
-void cc_validate_tagged_pointer(core::T_O *ptr);
+void cc_validate_tagged_pointer(core::T_O* ptr);
 };
 
 namespace core {
@@ -134,7 +134,7 @@ public:
   // Return true if the address points to a Cons_O cell header
   //
   inline bool cons_header_p() {
-    uintptr_t val = *(uintptr_t *)this;
+    uintptr_t val = *(uintptr_t*)this;
     return (val & gctools::Header_s::mtag_mask) == gctools::Header_s::cons_mtag;
   }
 
@@ -143,7 +143,7 @@ public:
   std::atomic<T_sp> _Cdr;
 
 public:
-  template <class T> static List_sp createFromVec0(const gctools::Vec0<T> &vec) {
+  template <class T> static List_sp createFromVec0(const gctools::Vec0<T>& vec) {
     List_sp res(nil<T_O>());
     for (cl_index i(vec.size() - 1); i >= 0; --i) {
       res = Cons_O::create(vec[i], res);
@@ -151,7 +151,7 @@ public:
     return res;
   }
 
-  static Cons_sp createFrom_vaslist(Vaslist &va_args);
+  static Cons_sp createFrom_vaslist(Vaslist& va_args);
   static Cons_sp createList(T_sp o1);
   static Cons_sp createList(T_sp o1, T_sp o2);
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3);
@@ -251,7 +251,7 @@ public:
 
 public:
   /*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
-  inline void sxhash_(HashGenerator &hg) const {
+  inline void sxhash_(HashGenerator& hg) const {
     if (hg.isFilling())
       hg.hashObject(this->car());
     if (hg.isFilling())
@@ -337,8 +337,8 @@ public:
   // These are necessary because atomics are not copyable.
   // More specifically they are necessary if you want to store conses in vectors,
   // which the hash table code does.
-  Cons_O(const Cons_O &other) : _Car(other.car()), _Cdr(other.cdr()){};
-  Cons_O &operator=(const Cons_O &other) {
+  Cons_O(const Cons_O& other) : _Car(other.car()), _Cdr(other.cdr()){};
+  Cons_O& operator=(const Cons_O& other) {
     if (this != &other) {
       setCar(other.car());
       setCdr(other.cdr());
@@ -354,10 +354,10 @@ template <> struct StackAllocate<core::Cons_O> {
   core::Cons_O _Object;
 
   template <class... ARGS>
-  StackAllocate(ARGS &&...args)
+  StackAllocate(ARGS&&... args)
       : _Header(ConsHeader_s::StampWtagMtag::make<core::Cons_O>()), _Object(std::forward<ARGS>(args)...){};
 
-  smart_ptr<core::Cons_O> asSmartPtr() { return smart_ptr<core::Cons_O>((core::Cons_O *)&this->_Object); }
+  smart_ptr<core::Cons_O> asSmartPtr() { return smart_ptr<core::Cons_O>((core::Cons_O*)&this->_Object); }
 };
 
 }; // namespace gctools
@@ -640,15 +640,15 @@ inline T_sp cons_cdr(Cons_sp x) {
   return x->cdr();
 };
 
-inline T_sp cons_car(Cons_O *x) { return x->car(); };
+inline T_sp cons_car(Cons_O* x) { return x->car(); };
 
-inline T_sp cons_cdr(Cons_O *x) { return x->cdr(); };
+inline T_sp cons_cdr(Cons_O* x) { return x->cdr(); };
 
 }; // namespace core
 
 namespace gctools {
 
-inline void fill_frame_list(Frame *frame, size_t &idx, core::List_sp list) {
+inline void fill_frame_list(Frame* frame, size_t& idx, core::List_sp list) {
   for (auto val : list) {
     gctools::fill_frame_one(frame, idx, CONS_CAR(val).raw_());
     ;
@@ -659,7 +659,7 @@ inline void fill_frame_list(Frame *frame, size_t &idx, core::List_sp list) {
 
 namespace core {
 
-template <typename T> List_sp asCons(const gctools::Vec0<T> &vec) {
+template <typename T> List_sp asCons(const gctools::Vec0<T>& vec) {
   List_sp res(nil<T_O>());
   for (cl_index i(vec.size() - 1); i >= 0; --i) {
     res = Cons_O::create(vec[i], res);
@@ -667,7 +667,7 @@ template <typename T> List_sp asCons(const gctools::Vec0<T> &vec) {
   return res;
 }
 
-template <typename T> void fillVec0FromCons(gctools::Vec0<T> &vec, List_sp list) {
+template <typename T> void fillVec0FromCons(gctools::Vec0<T>& vec, List_sp list) {
   vec.clear();
   for (auto cur : list) {
     vec.push_back(oCar(cur));
@@ -696,7 +696,7 @@ void not_alist_error(T_sp l);
 }; // namespace core
 
 namespace core {
-template <class T> void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
+template <class T> void fillVec0(core::List_sp c, gctools::Vec0<T>& vec) {
   vec.clear();
   for (auto me : (List_sp)(c)) {
     vec.emplace_back(gc::As<T>(me->car()));

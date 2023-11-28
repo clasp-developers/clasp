@@ -75,7 +75,7 @@ public:
 
   void errorIfInvalidArguments();
 
-  template <typename ST> void field(Symbol_sp name, ST &value) {
+  template <typename ST> void field(Symbol_sp name, ST& value) {
     RECORD_LOG(("field(Symbol_sp name, ST& value ) name: %s"), _rep_(name));
     switch (this->stage()) {
     case saving: {
@@ -103,7 +103,7 @@ public:
     };
   }
 
-  template <typename OT> void field(Symbol_sp name, gc::smart_ptr<OT> &value) {
+  template <typename OT> void field(Symbol_sp name, gc::smart_ptr<OT>& value) {
     RECORD_LOG(("field(Symbol_sp name, gc::smart_ptr<OT>& value ) name: %s"), _rep_(name));
     switch (this->stage()) {
     case saving: {
@@ -121,9 +121,9 @@ public:
       T_sp v = CONS_CDR(apair);
       if (!gc::IsA<gc::smart_ptr<OT>>(v)) {
         class_id expected_typ = reg::registered_class<OT>::id;
-        lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(v.raw_()));
+        lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O*>(v.raw_()));
       }
-      RECORD_LOG(("init/load v: %s v.raw_=%p\n"), _rep_(v), (void *)v.raw_());
+      RECORD_LOG(("init/load v: %s v.raw_=%p\n"), _rep_(v), (void*)v.raw_());
       value.setRaw_(reinterpret_cast<gc::Tagged>(v.raw_()));
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -136,7 +136,7 @@ public:
       RECORD_LOG(("init/load find apair %s\n"), _rep_(apair));
       // Set the value and ignore its type!!!!!! This is to allow placeholders
       T_sp v = CONS_CDR(apair);
-      RECORD_LOG(("init/load v: %s v.raw_=%p\n"), _rep_(v), (void *)v.raw_());
+      RECORD_LOG(("init/load v: %s v.raw_=%p\n"), _rep_(v), (void*)v.raw_());
       value.setRaw_(reinterpret_cast<gc::Tagged>(v.raw_()));
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -145,7 +145,7 @@ public:
       gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
       T_sp patch = record_circle_subst(this->asSmartPtr(), orig);
       if (patch != orig) {
-        RECORD_LOG(("Patching orig@%p: %s --> new@%p: %s\n"), (void *)(orig.raw_()), _rep_(orig), (void *)(patch.raw_()),
+        RECORD_LOG(("Patching orig@%p: %s --> new@%p: %s\n"), (void*)(orig.raw_()), _rep_(orig), (void*)(patch.raw_()),
                    _rep_(patch));
         value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
       }
@@ -153,7 +153,7 @@ public:
     };
   }
 
-  template <typename OT> void field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>> &value) {
+  template <typename OT> void field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value) {
     RECORD_LOG(("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s"), _rep_(name));
     switch (this->stage()) {
     case saving: {
@@ -179,8 +179,8 @@ public:
       value.resize(cl__length(vec_value));
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void *)(val.raw_()), _rep_(val));
-        value[i].rawRef_() = reinterpret_cast<OT *>(val.raw_());
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void*)(val.raw_()), _rep_(val));
+        value[i].rawRef_() = reinterpret_cast<OT*>(val.raw_());
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -191,16 +191,16 @@ public:
         gc::smart_ptr<T_O> orig((gc::Tagged)value[i].raw_());
         T_sp patch = record_circle_subst(this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, _rep_(orig), (void *)(orig.raw_()), _rep_(patch),
-                     (void *)(patch.raw_()));
-          value[i].rawRef_() = reinterpret_cast<OT *>(patch.raw_());
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, _rep_(orig), (void*)(orig.raw_()), _rep_(patch),
+                     (void*)(patch.raw_()));
+          value[i].rawRef_() = reinterpret_cast<OT*>(patch.raw_());
         }
       }
     } break;
     }
   };
 
-  template <typename OT> void field(Symbol_sp name, gctools::Vec0_uncopyable<gc::smart_ptr<OT>> &value) {
+  template <typename OT> void field(Symbol_sp name, gctools::Vec0_uncopyable<gc::smart_ptr<OT>>& value) {
     RECORD_LOG(("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s"), _rep_(name));
     switch (this->stage()) {
     case saving: {
@@ -226,8 +226,8 @@ public:
       value.resize(cl__length(vec_value));
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void *)(val.raw_()), _rep_(val));
-        value[i].rawRef_() = reinterpret_cast<OT *>(val.raw_());
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void*)(val.raw_()), _rep_(val));
+        value[i].rawRef_() = reinterpret_cast<OT*>(val.raw_());
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -238,16 +238,16 @@ public:
         gc::smart_ptr<T_O> orig((gc::Tagged)value[i].raw_());
         T_sp patch = record_circle_subst(this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, _rep_(orig), (void *)(orig.raw_()), _rep_(patch),
-                     (void *)(patch.raw_()));
-          value[i].rawRef_() = reinterpret_cast<OT *>(patch.raw_());
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, _rep_(orig), (void*)(orig.raw_()), _rep_(patch),
+                     (void*)(patch.raw_()));
+          value[i].rawRef_() = reinterpret_cast<OT*>(patch.raw_());
         }
       }
     } break;
     }
   };
 
-  template <typename SC> void field(Symbol_sp name, gctools::Vec0<SC> &value) {
+  template <typename SC> void field(Symbol_sp name, gctools::Vec0<SC>& value) {
     RECORD_LOG(("field(Symbol_sp name, gctools::Vec0<SC& value ) name: %s"), _rep_(name));
     switch (this->stage()) {
     case saving: {
@@ -273,7 +273,7 @@ public:
       value.resize(cl__length(vec_value));
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void *)(val.raw_()), _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void*)(val.raw_()), _rep_(val));
         value[i] = translate::from_object<SC>(val)._v;
       }
       if (this->stage() == initializing)
@@ -285,8 +285,8 @@ public:
         gc::smart_ptr<T_O> orig((gc::Tagged)translate::to_object<SC>::convert(value[i]).raw_());
         T_sp patch = record_circle_subst(this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, _rep_(orig), (void *)(orig.raw_()), _rep_(patch),
-                     (void *)(patch.raw_()));
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, _rep_(orig), (void*)(orig.raw_()), _rep_(patch),
+                     (void*)(patch.raw_()));
           value[i] = translate::from_object<SC>(patch)._v;
         }
       }
@@ -294,7 +294,7 @@ public:
     }
   };
 
-  template <typename OT> void field(Symbol_sp name, gctools::SmallOrderedSet<gc::smart_ptr<OT>> &value) {
+  template <typename OT> void field(Symbol_sp name, gctools::SmallOrderedSet<gc::smart_ptr<OT>>& value) {
     RECORD_LOG(("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s"), _rep_(name));
     switch (this->stage()) {
     case saving: {
@@ -320,8 +320,8 @@ public:
       value.resize(cl__length(vec_value));
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void *)(val.raw_()), _rep_(val));
-        value[i].rawRef_() = reinterpret_cast<OT *>(val.raw_());
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void*)(val.raw_()), _rep_(val));
+        value[i].rawRef_() = reinterpret_cast<OT*>(val.raw_());
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -332,16 +332,16 @@ public:
         gc::smart_ptr<T_O> orig((gc::Tagged)value[i].raw_());
         T_sp patch = record_circle_subst(this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, _rep_(orig), (void *)(orig.raw_()), _rep_(patch),
-                     (void *)(patch.raw_()));
-          value[i].rawRef_() = reinterpret_cast<OT *>(patch.raw_());
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, _rep_(orig), (void*)(orig.raw_()), _rep_(patch),
+                     (void*)(patch.raw_()));
+          value[i].rawRef_() = reinterpret_cast<OT*>(patch.raw_());
         }
       }
     } break;
     }
   };
 
-  template <typename K, typename SV> void field(Symbol_sp name, gctools::SmallMap<K, gctools::smart_ptr<SV>> &value) {
+  template <typename K, typename SV> void field(Symbol_sp name, gctools::SmallMap<K, gctools::smart_ptr<SV>>& value) {
     RECORD_LOG(("field(Symbol_sp name, gctools::SmallMap<K,gctools::smart_ptr<SV>>& value ) name: %s"), _rep_(name));
     switch (this->stage()) {
     case saving: {
@@ -367,7 +367,7 @@ public:
       value.clear();
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void *)(val.raw_()), _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void*)(val.raw_()), _rep_(val));
         value.push_back(std::make_pair<K, gctools::smart_ptr<SV>>(translate::from_object<K>(oCar(val))._v,
                                                                   gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
       }
@@ -377,12 +377,12 @@ public:
     case patching: {
       RECORD_LOG(("Patching"));
       [[maybe_unused]] size_t i = 0;
-      for (auto &&pairi : value) {
+      for (auto&& pairi : value) {
         gc::smart_ptr<T_O> orig = pairi.second;
         T_sp patch = record_circle_subst(this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, (void *)(orig.raw_()), _rep_(orig),
-                     (void *)(patch.raw_()), _rep_(patch));
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n"), i, (void*)(orig.raw_()), _rep_(orig),
+                     (void*)(patch.raw_()), _rep_(patch));
           pairi.second = gc::As_unsafe<gctools::smart_ptr<SV>>(patch);
         }
         ++i;
@@ -392,7 +392,7 @@ public:
   };
 
   template <typename SK, typename SV>
-  void field(Symbol_sp name, gctools::SmallMap<gctools::smart_ptr<SK>, gctools::smart_ptr<SV>> &value) {
+  void field(Symbol_sp name, gctools::SmallMap<gctools::smart_ptr<SK>, gctools::smart_ptr<SV>>& value) {
     RECORD_LOG(("field(Symbol_sp name, gctools::SmallMap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s"), _rep_(name));
     switch (this->stage()) {
     case saving: {
@@ -418,7 +418,7 @@ public:
       value.clear();
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void *)(val.raw_()), _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void*)(val.raw_()), _rep_(val));
         value.push_back(std::make_pair<gctools::smart_ptr<SK>, gctools::smart_ptr<SV>>(
             gc::As_unsafe<gctools::smart_ptr<SK>>(oCar(val)), gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
       }
@@ -427,7 +427,7 @@ public:
     } break;
     case patching: {
       RECORD_LOG(("Patching"));
-      for (auto &&pairi : value) {
+      for (auto&& pairi : value) {
         gc::smart_ptr<T_O> orig_key = pairi.first;
         gc::smart_ptr<T_O> orig_value = pairi.second;
         T_sp patch_key = record_circle_subst(this->asSmartPtr(), orig_key);
@@ -442,7 +442,7 @@ public:
   };
 
   template <typename SK, typename SV, typename CMP>
-  void field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>, gctools::smart_ptr<SV>, CMP> &value) {
+  void field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>, gctools::smart_ptr<SV>, CMP>& value) {
     RECORD_LOG(("field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s"),
                _rep_(name));
     switch (this->stage()) {
@@ -469,7 +469,7 @@ public:
       value.clear();
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void *)(val.raw_()), _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n"), i, (void*)(val.raw_()), _rep_(val));
         value.push_back(std::make_pair<gctools::smart_ptr<SK>, gctools::smart_ptr<SV>>(
             gc::As_unsafe<gctools::smart_ptr<SK>>(oCar(val)), gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
       }
@@ -478,7 +478,7 @@ public:
     } break;
     case patching: {
       RECORD_LOG(("Patching"));
-      for (auto &&pairi : value) {
+      for (auto&& pairi : value) {
         gc::smart_ptr<T_O> orig_key = pairi.first;
         gc::smart_ptr<T_O> orig_value = pairi.second;
         T_sp patch_key = record_circle_subst(this->asSmartPtr(), orig_key);
@@ -493,7 +493,7 @@ public:
   };
 
   template <typename SK, typename SV, typename CMP>
-  void field(Symbol_sp name, gctools::SmallMultimap_uncopyable<gctools::smart_ptr<SK>, gctools::smart_ptr<SV>, CMP> &value) {
+  void field(Symbol_sp name, gctools::SmallMultimap_uncopyable<gctools::smart_ptr<SK>, gctools::smart_ptr<SV>, CMP>& value) {
     RECORD_LOG("field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: {}",
                _rep_(name));
     switch (this->stage()) {
@@ -520,7 +520,7 @@ public:
       value.clear();
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG("Loading vec0[{}] new@{}: {}\n", i, (void *)(val.raw_()), _rep_(val));
+        RECORD_LOG("Loading vec0[{}] new@{}: {}\n", i, (void*)(val.raw_()), _rep_(val));
         value.push_back(std::make_pair<gctools::smart_ptr<SK>, gctools::smart_ptr<SV>>(
             gc::As_unsafe<gctools::smart_ptr<SK>>(oCar(val)), gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
       }
@@ -529,7 +529,7 @@ public:
     } break;
     case patching: {
       RECORD_LOG("Patching");
-      for (auto &&pairi : value) {
+      for (auto&& pairi : value) {
         gc::smart_ptr<T_O> orig_key = pairi.first;
         gc::smart_ptr<T_O> orig_value = pairi.second;
         T_sp patch_key = record_circle_subst(this->asSmartPtr(), orig_key);
@@ -543,7 +543,7 @@ public:
     }
   };
 
-  template <typename OT> void field_if_not_empty(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>> &value) {
+  template <typename OT> void field_if_not_empty(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value) {
     switch (this->stage()) {
     case saving: {
       if (value.size() != 0)
@@ -571,7 +571,7 @@ public:
     }
   };
 
-  template <typename SC> void field_if_not_empty(Symbol_sp name, gctools::Vec0<SC> &value) {
+  template <typename SC> void field_if_not_empty(Symbol_sp name, gctools::Vec0<SC>& value) {
     switch (this->stage()) {
     case saving: {
       if (value.size() != 0)
@@ -599,7 +599,7 @@ public:
     }
   };
 
-  template <typename OT> void field_if_not_nil(Symbol_sp name, gc::smart_ptr<OT> &value) {
+  template <typename OT> void field_if_not_nil(Symbol_sp name, gc::smart_ptr<OT>& value) {
     switch (this->stage()) {
     case saving: {
       if (value.notnilp()) {
@@ -644,7 +644,7 @@ public:
     }
   }
 
-  template <typename OT> void field_if_not_unbound(Symbol_sp name, gc::smart_ptr<OT> &value) {
+  template <typename OT> void field_if_not_unbound(Symbol_sp name, gc::smart_ptr<OT>& value) {
     switch (this->stage()) {
     case saving: {
       if (!value.unboundp()) {
@@ -663,7 +663,7 @@ public:
         value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
         if (!gc::IsA<gc::smart_ptr<OT>>(value)) {
           class_id expected_typ = reg::registered_class<OT>::id;
-          lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(value.raw_()));
+          lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O*>(value.raw_()));
         }
         this->flagSeen(apair);
       }
@@ -693,7 +693,7 @@ public:
     }
   }
 
-  template <typename OT> void field_if_not_nil(Symbol_sp name, gc::Nilable<gc::smart_ptr<OT>> &value) {
+  template <typename OT> void field_if_not_nil(Symbol_sp name, gc::Nilable<gc::smart_ptr<OT>>& value) {
     switch (this->stage()) {
     case saving: {
       if (value.notnilp()) {
@@ -724,13 +724,13 @@ public:
         gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
         T_sp patch = record_circle_subst(this->asSmartPtr(), orig);
         if (patch != orig)
-          value.rawRef_() = reinterpret_cast<OT *>(patch.raw_());
+          value.rawRef_() = reinterpret_cast<OT*>(patch.raw_());
       }
     } break;
     }
   }
 
-  template <typename T> void field_if_not_default(Symbol_sp name, T &value, const T &default_value) {
+  template <typename T> void field_if_not_default(Symbol_sp name, T& value, const T& default_value) {
     switch (this->stage()) {
     case saving: {
       if (!(value == default_value)) {
@@ -759,7 +759,7 @@ public:
     }
   }
 
-  template <typename T> void field_if_defined(Symbol_sp name, bool &defined, T &value) {
+  template <typename T> void field_if_defined(Symbol_sp name, bool& defined, T& value) {
     switch (this->stage()) {
     case saving: {
       if (defined) {

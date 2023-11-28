@@ -135,8 +135,8 @@ THE SOFTWARE.
 #include <clasp/core/mpPackage.h>
 #endif
 #ifdef READLINE
-extern "C" char *readline(const char *prompt);
-extern "C" void add_history(char *line);
+extern "C" char* readline(const char* prompt);
+extern "C" void add_history(char* line);
 #endif
 
 #ifndef SCRAPING
@@ -155,11 +155,11 @@ extern "C" void add_history(char *line);
 // globals_ definition
 //
 
-core::globals_t *globals_;
+core::globals_t* globals_;
 
 namespace core {
 
-CommandLineOptions *global_options = NULL;
+CommandLineOptions* global_options = NULL;
 bool global_initialize_builtin_classes = false;
 
 const int Lisp::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
@@ -233,7 +233,7 @@ void Lisp::initialize() {
   this->_Roots._ThePathnameTranslations = HashTableEqualp_O::create_default();
 }
 
-template <class oclass> void setup_static_classSymbol(BootStrapCoreSymbolMap const &sidMap) {
+template <class oclass> void setup_static_classSymbol(BootStrapCoreSymbolMap const& sidMap) {
   DEPRECATED();
   oclass::___set_static_ClassSymbol(sidMap.find_symbol(oclass::static_packageName(), oclass::static_className()));
 }
@@ -266,7 +266,7 @@ void Lisp::setupSpecialSymbols() {
   SimpleBaseString_sp name_same_as_key = SimpleBaseString_O::make("SAME-AS-KEY");
   Symbol_sp symbol_same_as_key = gctools::GC<Symbol_O>::allocate(name_same_as_key);
   // TODO: Ensure that these globals are updated by the garbage collector
-  gctools::global_tagged_Symbol_OP_nil = reinterpret_cast<Symbol_O *>(symbol_nil.raw_());
+  gctools::global_tagged_Symbol_OP_nil = reinterpret_cast<Symbol_O*>(symbol_nil.raw_());
   symbol_unbound->_HomePackage = symbol_nil;
   symbol_no_thread_local_binding->_HomePackage = symbol_nil;
   symbol_no_key->_HomePackage = symbol_nil;
@@ -336,14 +336,14 @@ CL_DEFUN std::string core__monitor_directory() {
 #endif
 
 #ifdef DEBUG_MONITOR_SUPPORT
-FILE *monitor_file(const std::string &name) {
+FILE* monitor_file(const std::string& name) {
   if (my_thread->_MonitorFiles.find(name) != my_thread->_MonitorFiles.end()) {
     return my_thread->_MonitorFiles[name];
   }
   stringstream ss;
   ss << core__monitor_directory();
   ss << name << "-" << my_thread->_Tid;
-  FILE *file = fopen(ss.str().c_str(), "w");
+  FILE* file = fopen(ss.str().c_str(), "w");
   my_thread->_MonitorFiles[name] = file;
   return file;
 }
@@ -367,7 +367,7 @@ void ensure_monitor_file_exists_no_lock() {
 #endif
 }
 
-void monitor_message(const std::string &msg) {
+void monitor_message(const std::string& msg) {
 #ifdef DEBUG_MONITOR
   WITH_READ_WRITE_LOCK(globals_->_MonitorMutex);
   if (getpid() != global_monitor_pid) {
@@ -384,7 +384,7 @@ void monitor_message(const std::string &msg) {
 
 CL_UNWIND_COOP(true); // ok since monitor_message doesn't lisp-unwind
 DOCGROUP(clasp);
-CL_DEFUN void core__monitor_write(const std::string &msg) { monitor_message(msg); }
+CL_DEFUN void core__monitor_write(const std::string& msg) { monitor_message(msg); }
 
 CL_UNWIND_COOP(true);
 DOCGROUP(clasp);
@@ -404,7 +404,7 @@ void Lisp::startupLispEnvironment() {
 
   MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
-  char *debug_start_code = getenv("CLASP_DEBUG_START_CODE");
+  char* debug_start_code = getenv("CLASP_DEBUG_START_CODE");
   if (debug_start_code) {
     printf("%s:%d Turning on *debug-byte-code*\n", __FILE__, __LINE__);
     global_debug_start_code = true;
@@ -532,7 +532,7 @@ void Lisp::startupLispEnvironment() {
   }
   this->switchToClassNameHashTable();
   {
-    FILE *null_out = fopen("/dev/null", "w");
+    FILE* null_out = fopen("/dev/null", "w");
     this->_Roots._NullStream = IOStreamStream_O::makeIO("/dev/null", null_out);
     this->_Roots._RehashSize = DoubleFloat_O::create(2.0);
     this->_Roots._RehashThreshold = DoubleFloat_O::create(maybeFixRehashThreshold(0.7));
@@ -555,7 +555,7 @@ void Lisp::startupLispEnvironment() {
   // Pause if CLASP_PAUSE_INIT environment variable is defined
   //
   {
-    char *pause_startup = getenv("CLASP_PAUSE_INIT");
+    char* pause_startup = getenv("CLASP_PAUSE_INIT");
     if (pause_startup) {
 #ifdef USE_USER_SIGNAL
       gctools::wait_for_user_signal("Paused for CLASP_PAUSE_INIT");
@@ -642,7 +642,7 @@ void Lisp::add_process(mp::Process_sp process) {
   WITH_READ_WRITE_LOCK(globals_->_ActiveThreadsMutex);
   this->_Roots._ActiveThreads = Cons_O::create(process, this->_Roots._ActiveThreads);
 #ifdef DEBUG_ADD_PROCESS
-  printf("%s:%d Added process %s @%p active threads now: %s\n", __FILE__, __LINE__, _rep_(process).c_str(), (void *)process.raw_(),
+  printf("%s:%d Added process %s @%p active threads now: %s\n", __FILE__, __LINE__, _rep_(process).c_str(), (void*)process.raw_(),
          _rep_(this->_Roots._ActiveThreads).c_str());
   fflush(stdout);
 #endif
@@ -708,7 +708,7 @@ void Lisp::defconstant(Symbol_sp sym, T_sp obj) {
   sym->setReadOnly(true);
 }
 
-void Lisp::installPackage(const Exposer_O *pkg) {
+void Lisp::installPackage(const Exposer_O* pkg) {
   LOG("Installing package[{}]", pkg->packageName());
   int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
   ChangePackage change(gc::As<Package_sp>(_lisp->findPackage(pkg->packageName())));
@@ -726,7 +726,7 @@ void Lisp::installPackage(const Exposer_O *pkg) {
 
 void Lisp::installGlobalInitializationCallback(InitializationCallback c) { globals_->_GlobalInitializationCallbacks.push_back(c); }
 
-void Lisp::addClassNameToPackageAsDynamic(const string &package, const string &name, Instance_sp mc) {
+void Lisp::addClassNameToPackageAsDynamic(const string& package, const string& name, Instance_sp mc) {
   Symbol_sp classSymbol = _lisp->intern(name, gc::As<Package_sp>(_lisp->findPackage(package, true)));
   classSymbol->exportYourself();
   classSymbol->setf_symbolValue(mc);
@@ -747,7 +747,7 @@ void Lisp::addClassSymbol(Symbol_sp classSymbol, Creator_sp alloc, Symbol_sp bas
   cc->CLASS_set_creator(alloc);
 }
 
-void Lisp::mapNameToPackage(const string &name, Package_sp pkg) {
+void Lisp::mapNameToPackage(const string& name, Package_sp pkg) {
   // TODO Support package names with as regular strings
   int packageIndex;
   {
@@ -763,7 +763,7 @@ void Lisp::mapNameToPackage(const string &name, Package_sp pkg) {
   SIMPLE_ERROR("Could not find package with (nick)name: {}", pkg->getName());
 }
 
-void Lisp::unmapNameToPackage(const string &name) {
+void Lisp::unmapNameToPackage(const string& name) {
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
@@ -778,8 +778,8 @@ package_unfound:
   SIMPLE_ERROR("Could not find package with (nick)name: {}", name);
 }
 
-void Lisp::finishPackageSetup(const string &pkgname, list<string> const &nicknames, list<string> const &usePackages,
-                              list<std::string> const &shadow) {
+void Lisp::finishPackageSetup(const string& pkgname, list<string> const& nicknames, list<string> const& usePackages,
+                              list<std::string> const& shadow) {
   T_sp tpkg = _lisp->findPackage(pkgname, false);
   if (tpkg.nilp()) {
     this->makePackage(pkgname, nicknames, usePackages, shadow);
@@ -803,8 +803,8 @@ void Lisp::finishPackageSetup(const string &pkgname, list<string> const &nicknam
   }
 };
 
-Package_sp Lisp::makePackage(const string &name, list<string> const &nicknames, list<string> const &usePackages,
-                             list<std::string> const &shadow) {
+Package_sp Lisp::makePackage(const string& name, list<string> const& nicknames, list<string> const& usePackages,
+                             list<std::string> const& shadow) {
   /* This function is written somewhat bizarrely for lock safety reasons.
    * The trick is that the error infrastructure, among other things, uses the package system.
    * Therefore, if we lock the system, then signal an error, the error function will call findPackage or
@@ -902,7 +902,7 @@ nickname_exists:
   goto start;
 }
 
-T_sp Lisp::findPackage_no_lock(const string &name, bool errorp) const {
+T_sp Lisp::findPackage_no_lock(const string& name, bool errorp) const {
   // Check local nicknames first.
   // FIXME: This conses!
   if (_lisp->_Roots._TheSystemIsUp) {
@@ -927,7 +927,7 @@ T_sp Lisp::findPackage_no_lock(const string &name, bool errorp) const {
   return getPackage;
 }
 
-T_sp Lisp::findPackage(const string &name, bool errorp) const {
+T_sp Lisp::findPackage(const string& name, bool errorp) const {
   WITH_READ_LOCK(globals_->_PackagesMutex);
   return this->findPackage_no_lock(name, errorp);
 }
@@ -961,7 +961,7 @@ T_sp Lisp::findPackage(String_sp name, bool errorp) const {
   return this->findPackage_no_lock(name, errorp);
 }
 
-void Lisp::remove_package(const string &name) {
+void Lisp::remove_package(const string& name) {
   WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
   //        printf("%s:%d Lisp::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
   SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
@@ -973,7 +973,7 @@ void Lisp::remove_package(const string &name) {
   this->_Roots._Packages[fi.unsafe_fixnum()]->setZombieP(true);
 }
 
-bool Lisp::recognizesPackage(const string &packageName) const {
+bool Lisp::recognizesPackage(const string& packageName) const {
   WITH_READ_LOCK(globals_->_PackagesMutex);
   SimpleBaseString_sp sname = SimpleBaseString_O::make(packageName);
   T_sp pi = this->_Roots._PackageNameIndexMap->gethash(sname);
@@ -992,7 +992,7 @@ List_sp Lisp::allPackagesAsCons() const {
   return asCons(TempPackages);
 }
 
-void Lisp::inPackage(const string &p) {
+void Lisp::inPackage(const string& p) {
   WITH_READ_LOCK(globals_->_PackagesMutex);
   SimpleBaseString_sp sname = SimpleBaseString_O::make(p);
   T_sp pi = this->_Roots._PackageNameIndexMap->gethash(sname);
@@ -1073,14 +1073,14 @@ unsigned char global_python_vm_codes_literal[] =
 #undef PYTHON_OPCODES
 
 extern "C" {
-unsigned char *global_python_virtual_machine_codes;
+unsigned char* global_python_virtual_machine_codes;
 uintptr_t global_python_virtual_machine_codes_size;
-unsigned char *global_python_class_layouts;
+unsigned char* global_python_class_layouts;
 uintptr_t global_python_class_layouts_size;
 };
 
 void dumpDebuggingLayouts() {
-  global_python_virtual_machine_codes = (unsigned char *)global_python_vm_codes_literal;
+  global_python_virtual_machine_codes = (unsigned char*)global_python_vm_codes_literal;
   global_python_virtual_machine_codes_size = sizeof(global_python_vm_codes_literal);
   stringstream fout;
 #if defined(USE_PRECISE_GC)
@@ -1091,13 +1091,13 @@ void dumpDebuggingLayouts() {
   llvmo::dump_objects_for_debugger(fout, "");
 #endif
   size_t sz = fout.str().size();
-  global_python_class_layouts = (unsigned char *)malloc(sz + 1);
+  global_python_class_layouts = (unsigned char*)malloc(sz + 1);
   memcpy(global_python_class_layouts, fout.str().c_str(), sz);
   global_python_class_layouts[sz] = '\0';
   global_python_class_layouts_size = fout.str().size();
 }
 
-void Lisp::parseCommandLineArguments(const CommandLineOptions &options) {
+void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
   LOG("Parsing what is left over into lisp environment arguments");
   gctools::Vec0<T_sp> vargs;
   for (auto arg : options._LispArguments) {
@@ -1156,7 +1156,7 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions &options) {
 
 T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prompt) {
   T_mv result = Values(nil<T_O>());
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   while (1) {
     try {
       if (prompt) {
@@ -1216,14 +1216,14 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
           }
         }
       }
-    } catch (DebuggerSaysAbortToRepl &err) {
+    } catch (DebuggerSaysAbortToRepl& err) {
       printf("%s:%d Aborting to repl\n", __FILE__, __LINE__);
     }
   };
   return result;
 }
 
-T_mv Lisp::readEvalPrintString(const string &code, T_sp environ, bool printResults) {
+T_mv Lisp::readEvalPrintString(const string& code, T_sp environ, bool printResults) {
 
   StringInputStream_sp sin = gc::As_unsafe<StringInputStream_sp>(StringInputStream_O::make(code));
   T_mv result = this->readEvalPrint(sin, environ, printResults, false);
@@ -1316,13 +1316,13 @@ CL_DOCSTRING(R"dx(stackUsed)dx");
 DOCGROUP(clasp);
 CL_DEFUN size_t core__stack_used() {
   int x;
-  char *xaddr = (char *)(&x);
+  char* xaddr = (char*)(&x);
   if (xaddr > my_thread_low_level->_StackTop) {
     printf("%s:%d There is a problem with the stack _lisp->_StackTop@%p is below the current stack pointer@%p\n", __FILE__,
            __LINE__, my_thread_low_level->_StackTop, xaddr);
     abort();
   }
-  size_t stack = (size_t)((const char *)my_thread_low_level->_StackTop - xaddr);
+  size_t stack = (size_t)((const char*)my_thread_low_level->_StackTop - xaddr);
   return stack;
 };
 
@@ -1336,7 +1336,7 @@ struct ExceptionSafeResetInvokedInternalDebugger {
 void stackSizeWarning(size_t stackUsed) {
   if (!global_invokedInternalDebugger) {
     int x;
-    char *xaddr = (char *)(&x);
+    char* xaddr = (char*)(&x);
     printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes  top@%p current@%p\n", __FILE__, __LINE__,
            stackUsed, globals_->_StackWarnSize, my_thread_low_level->_StackTop, xaddr);
     ExceptionSafeResetInvokedInternalDebugger safe;
@@ -1364,7 +1364,7 @@ CL_DEFUN void core__exit(int exitValue) {
   if (getenv("CLASP_TIME_EXIT")) {
     atexit(first_exit);
   }
-  VirtualMachine &vm = my_thread->_VM;
+  VirtualMachine& vm = my_thread->_VM;
   vm.shutdown();
   throw(ExitProgramException(exitValue));
 };
@@ -1492,7 +1492,7 @@ CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
   ClassHolder_sp cell;
   HashTable_sp classNames = _lisp->_Roots._ClassTable;
   T_mv mc = classNames->gethash(symbol, nil<T_O>());
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   foundp = mvn.valueGet(1, mc.number_of_values()).notnilp();
   if (!foundp) {
     cell = ClassHolder_O::create(unbound<Instance_O>());
@@ -1682,7 +1682,7 @@ CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
   if (_sym_STARdebugMacroexpandSTAR->symbolValue().isTrue()) {
     printf("%s:%d - macroexpanding --> %s\n", __FILE__, 2551, _rep_(form).c_str());
   }
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   T_sp cur = form;
   do {
     T_mv rmv = cl__macroexpand_1(cur, env);
@@ -2028,8 +2028,8 @@ void Lisp::switchToClassNameHashTable() {
   this->_BootClassTableIsValid = false;
 }
 
-void Lisp::parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName,
-                                               bool &exported) const {
+void Lisp::parseStringIntoPackageAndSymbolName(const string& name, bool& packageDefined, Package_sp& package, string& symbolName,
+                                               bool& exported) const {
 
   packageDefined = true; // this will be true in most cases below
   LOG("Parsing string[{}] into package and symbol name", name);
@@ -2072,7 +2072,7 @@ void Lisp::parseStringIntoPackageAndSymbolName(const string &name, bool &package
   return;
 }
 
-Symbol_mv Lisp::intern(const string &name, T_sp optionalPackageDesignator) {
+Symbol_mv Lisp::intern(const string& name, T_sp optionalPackageDesignator) {
   Package_sp package;
   string symbolName;
   symbolName = name;
@@ -2082,19 +2082,19 @@ Symbol_mv Lisp::intern(const string &name, T_sp optionalPackageDesignator) {
   SimpleBaseString_sp sname = SimpleBaseString_O::make(symbolName);
   T_mv symStatus = package->intern(sname);
   Symbol_sp sym = gc::As<Symbol_sp>(symStatus);
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   T_sp status = mvn.second(symStatus.number_of_values());
   return Values(sym, status);
 }
 
 /*! The optionalPackageDesignator is nil */
-Symbol_sp Lisp::intern(string const &symbolName) {
+Symbol_sp Lisp::intern(string const& symbolName) {
   Package_sp curPackage = this->getCurrentPackage();
   ASSERTNOTNULL(curPackage);
   return this->intern(symbolName, curPackage);
 }
 
-Symbol_sp Lisp::findSymbol(const string &name, T_sp optionalPackageDesignator) const {
+Symbol_sp Lisp::findSymbol(const string& name, T_sp optionalPackageDesignator) const {
   Package_sp package;
   string symbolName;
   bool exported, packageDefined;
@@ -2105,28 +2105,28 @@ Symbol_sp Lisp::findSymbol(const string &name, T_sp optionalPackageDesignator) c
   return gc::As<Symbol_sp>(package->findSymbol(symbolName));
 }
 
-Symbol_sp Lisp::findSymbol(const string &symbolName /*, T_sp optionalPackageDesignator = nil */) const {
+Symbol_sp Lisp::findSymbol(const string& symbolName /*, T_sp optionalPackageDesignator = nil */) const {
   return this->findSymbol(symbolName, nil<T_O>());
 }
 
-Symbol_sp Lisp::intern(string const &symbolName, string const &packageName) {
+Symbol_sp Lisp::intern(string const& symbolName, string const& packageName) {
   T_sp package = this->findPackage(packageName);
   return this->intern(symbolName, package);
 }
 
-Symbol_sp Lisp::internUniqueWithPackageName(string const &packageName, string const &symbolName) {
+Symbol_sp Lisp::internUniqueWithPackageName(string const& packageName, string const& symbolName) {
   T_sp package = this->findPackage(packageName);
   Symbol_mv symStatus = this->intern(symbolName, package);
   //  T_sp status = symStatus.second();
   return symStatus;
 }
 
-Symbol_sp Lisp::internWithPackageName(string const &packageName, string const &symbolName) {
+Symbol_sp Lisp::internWithPackageName(string const& packageName, string const& symbolName) {
   Package_sp package = gc::As<Package_sp>(this->findPackage(packageName, true));
   return this->intern(symbolName, package);
 }
 
-Symbol_sp Lisp::internWithDefaultPackageName(string const &defaultPackageName, string const &possiblePackagePrefixedSymbolName) {
+Symbol_sp Lisp::internWithDefaultPackageName(string const& defaultPackageName, string const& possiblePackagePrefixedSymbolName) {
   size_t pkgSep = possiblePackagePrefixedSymbolName.find(':', 0);
   if (pkgSep == string::npos) {
     return this->internWithPackageName(defaultPackageName, possiblePackagePrefixedSymbolName);
@@ -2147,21 +2147,21 @@ Symbol_sp Lisp::internWithDefaultPackageName(string const &defaultPackageName, s
   return sym;
 }
 
-Symbol_sp Lisp::internKeyword(const string &name) {
+Symbol_sp Lisp::internKeyword(const string& name) {
   string realName = name;
   boost::to_upper(realName);
   SimpleBaseString_sp str_real_name = SimpleBaseString_O::make(realName);
   return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(str_real_name));
 }
 
-void Lisp::dump_apropos(const char *part) const {
+void Lisp::dump_apropos(const char* part) const {
   SimpleBaseString_sp substring = SimpleBaseString_O::make(std::string(part));
   List_sp packages = _lisp->allPackagesAsCons();
   searchForApropos(packages, substring, true);
 }
 
-bool Lisp::load(int &exitCode) {
-  MultipleValues &mvn = core::lisp_multipleValues();
+bool Lisp::load(int& exitCode) {
+  MultipleValues& mvn = core::lisp_multipleValues();
   try {
     switch (global_options->_StartupType) {
     case cloInitLisp: {
@@ -2195,7 +2195,7 @@ bool Lisp::load(int &exitCode) {
           exitCode = 1;
           return false;
         }
-        char *pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
+        char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
         if (pause_startup) {
           gctools::setup_user_signal();
           gctools::wait_for_user_signal("Paused at startup after object files added");
@@ -2205,7 +2205,7 @@ bool Lisp::load(int &exitCode) {
     default:
       break;
     }
-  } catch (core::ExitProgramException &ee) {
+  } catch (core::ExitProgramException& ee) {
     exitCode = ee.getExitResult();
     return false;
   }
@@ -2222,7 +2222,7 @@ int Lisp::run() {
       this->readEvalPrintInteractive();
     }
     exitCode = 0;
-  } catch (core::ExitProgramException &ee) {
+  } catch (core::ExitProgramException& ee) {
     exitCode = ee.getExitResult();
   }
   if (global_options->_ExportedSymbolsSave) {
@@ -2234,7 +2234,7 @@ int Lisp::run() {
   return exitCode;
 };
 
-FileScope_mv Lisp::getOrRegisterFileScope(const string &fileName) {
+FileScope_mv Lisp::getOrRegisterFileScope(const string& fileName) {
   SimpleBaseString_sp sfileName = SimpleBaseString_O::make(fileName);
   {
     WITH_READ_LOCK(globals_->_SourceFilesMutex);
@@ -2270,7 +2270,7 @@ CL_DEFUN List_sp core__all_source_files() {
   return _lisp->_Roots._SourceFileIndices->keysAsCons();
 }
 
-void Lisp::mapClassNamesAndClasses(KeyValueMapper *mapper) {
+void Lisp::mapClassNamesAndClasses(KeyValueMapper* mapper) {
   if (this->_BootClassTableIsValid) {
     SIMPLE_ERROR("What do I do here?");
   } else {
@@ -2293,7 +2293,7 @@ LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->lisp_ = Lisp::createLispEnvironment(mpiEnabled, mpiRank, mpiSize);
 }
 
-void LispHolder::startup(const CommandLineOptions &options) {
+void LispHolder::startup(const CommandLineOptions& options) {
   ::_lisp = this->lisp_;
 
   if (!globals_->_Bundle) {
@@ -2321,7 +2321,7 @@ LispHolder::~LispHolder() {
   this->lisp_->shutdownLispEnvironment();
 }
 
-Exposer_O::Exposer_O(LispPtr lisp, const string &packageName) {
+Exposer_O::Exposer_O(LispPtr lisp, const string& packageName) {
   this->_PackageName = packageName;
   if (!lisp->recognizesPackage(packageName)) {
     list<string> lnnames;

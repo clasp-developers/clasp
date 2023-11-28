@@ -59,7 +59,7 @@ template <unsigned contention_free_count = 36, bool shared_flag = false> class c
   const std::shared_ptr<array_slock_t> shared_locks_array_ptr; // 0 - unregistred, 1 registred & free, 2... - busy
   char avoid_falsesharing_1[64];
 
-  array_slock_t &shared_locks_array;
+  array_slock_t& shared_locks_array;
   char avoid_falsesharing_2[64];
 
   int recursive_xlock_count;
@@ -104,8 +104,8 @@ template <unsigned contention_free_count = 36, bool shared_flag = false> class c
   struct unregister_t {
     int thread_index;
     std::shared_ptr<array_slock_t> array_slock_ptr;
-    unregister_t(int index, std::shared_ptr<array_slock_t> const &ptr) : thread_index(index), array_slock_ptr(ptr) {}
-    unregister_t(unregister_t &&src) : thread_index(src.thread_index), array_slock_ptr(std::move(src.array_slock_ptr)) {}
+    unregister_t(int index, std::shared_ptr<array_slock_t> const& ptr) : thread_index(index), array_slock_ptr(ptr) {}
+    unregister_t(unregister_t&& src) : thread_index(src.thread_index), array_slock_ptr(std::move(src.array_slock_ptr)) {}
     ~unregister_t() {
       if (array_slock_ptr.use_count() > 0)
         (*array_slock_ptr)[thread_index].value--;
@@ -113,7 +113,7 @@ template <unsigned contention_free_count = 36, bool shared_flag = false> class c
   };
 
   int get_or_set_index(index_op_t index_op = get_index_op, int set_index = -1) {
-    thread_local static std::unordered_map<void *, unregister_t> thread_local_index_hashmap;
+    thread_local static std::unordered_map<void*, unregister_t> thread_local_index_hashmap;
     // get thread index - in any cases
     auto it = thread_local_index_hashmap.find(this);
     if (it != thread_local_index_hashmap.cend())
@@ -146,7 +146,7 @@ public:
         recursive_xlock_count(0), owner_thread_id(thread_id_t()) {}
 
   ~contention_free_shared_mutex() {
-    for (auto &i : shared_locks_array)
+    for (auto& i : shared_locks_array)
       i.value = -1;
   }
 
@@ -237,7 +237,7 @@ public:
 
       owner_thread_id.store(get_fast_this_thread_id(), std::memory_order_release);
 
-      for (auto &i : shared_locks_array)
+      for (auto& i : shared_locks_array)
         while (i.value.load(std::memory_order_seq_cst) > 1)
           ;
     }
@@ -255,8 +255,8 @@ public:
 };
 
 template <typename mutex_t> struct shared_lock_guard {
-  mutex_t &ref_mtx;
-  shared_lock_guard(mutex_t &mtx) : ref_mtx(mtx) { ref_mtx.lock_shared(); }
+  mutex_t& ref_mtx;
+  shared_lock_guard(mutex_t& mtx) : ref_mtx(mtx) { ref_mtx.lock_shared(); }
   ~shared_lock_guard() { ref_mtx.unlock_shared(); }
 };
 
@@ -288,23 +288,23 @@ private:
   std::atomic_flag lck;
 };
 struct SafeSpinLock {
-  SpinLock &_SpinLock;
-  SafeSpinLock(SpinLock &l) : _SpinLock(l) { _SpinLock.lock(); };
+  SpinLock& _SpinLock;
+  SafeSpinLock(SpinLock& l) : _SpinLock(l) { _SpinLock.lock(); };
   ~SafeSpinLock() { _SpinLock.unlock(); }
 };
 
-extern "C" void mutex_lock_enter(char *nameword);
-extern "C" void mutex_lock_return(char *nameword);
+extern "C" void mutex_lock_enter(char* nameword);
+extern "C" void mutex_lock_return(char* nameword);
 
 struct DtraceLockProbe {
-  char *_NameWord;
-  DtraceLockProbe(char *nw) : _NameWord(nw) { mutex_lock_enter(nw); };
+  char* _NameWord;
+  DtraceLockProbe(char* nw) : _NameWord(nw) { mutex_lock_enter(nw); };
   ~DtraceLockProbe() { mutex_lock_return(this->_NameWord); }
 };
 
 struct Mutex;
-void debug_mutex_lock(Mutex *m);
-void debug_mutex_unlock(Mutex *m);
+void debug_mutex_lock(Mutex* m);
+void debug_mutex_unlock(Mutex* m);
 
 #define DEFAULT__NAMEWORD 0x0045454545454545
 #define PACKAGE__NAMEWORD 0x004547414b434150
@@ -354,7 +354,7 @@ struct Mutex {
 #endif
     if (waitp) {
 #ifdef DEBUG_DTRACE_LOCK_PROBE
-      DtraceLockProbe _guard((char *)&this->_NameWord);
+      DtraceLockProbe _guard((char*)&this->_NameWord);
 #endif
       bool result = (pthread_mutex_lock(&this->_Mutex) == 0);
       ++this->_Counter;
@@ -501,8 +501,8 @@ struct ConditionVariable {
   pthread_cond_t _ConditionVariable;
   ConditionVariable() { pthread_cond_init(&this->_ConditionVariable, NULL); };
   ~ConditionVariable() { pthread_cond_destroy(&this->_ConditionVariable); };
-  bool wait(Mutex &m) { return pthread_cond_wait(&this->_ConditionVariable, &m._Mutex) == 0; }
-  bool timed_wait(Mutex &m, double timeout) {
+  bool wait(Mutex& m) { return pthread_cond_wait(&this->_ConditionVariable, &m._Mutex) == 0; }
+  bool timed_wait(Mutex& m, double timeout) {
     struct timespec timeToWait;
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -526,14 +526,14 @@ struct ConditionVariable {
 
 #ifdef CLASP_THREADS
 template <typename T> struct RAIIReadLock {
-  T &_Mutex;
-  RAIIReadLock(T &p) : _Mutex(p) { _Mutex.shared_lock(); }
+  T& _Mutex;
+  RAIIReadLock(T& p) : _Mutex(p) { _Mutex.shared_lock(); }
   ~RAIIReadLock() { _Mutex.shared_unlock(); }
 };
 
 template <typename T> struct RAIIReadWriteLock {
-  T &_Mutex;
-  RAIIReadWriteLock(T &p) : _Mutex(p) { _Mutex.lock(); }
+  T& _Mutex;
+  RAIIReadWriteLock(T& p) : _Mutex(p) { _Mutex.lock(); }
   ~RAIIReadWriteLock() { _Mutex.unlock(); }
 };
 
@@ -544,7 +544,7 @@ template <typename T> struct RAIIReadWriteLock {
 #define WITH_READ_WRITE_LOCK(m)
 #endif
 
-void *start_thread(void *info);
+void* start_thread(void* info);
 
 inline void ClaspThreads_exit() {
   //    printf("%s:%d Exiting pthread\n", __FILE__, __LINE__ );

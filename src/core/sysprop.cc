@@ -42,7 +42,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  KeyValuePair *area_pair = sysprops->find(area);
+  KeyValuePair* area_pair = sysprops->find(area);
   if (area_pair)
     return gc::As<HashTableEql_sp>(area_pair->_Value)->hash_table_setf_gethash(key, value);
 
@@ -59,7 +59,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  KeyValuePair *area_pair = sysprops->find(area);
+  KeyValuePair* area_pair = sysprops->find(area);
   if (area_pair)
     return gc::As<HashTableEql_sp>(area_pair->_Value)->gethash(key);
 
@@ -73,7 +73,7 @@ DOCGROUP(clasp);
 CL_DEFUN bool core__rem_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  KeyValuePair *area_pair = sysprops->find(area);
+  KeyValuePair* area_pair = sysprops->find(area);
   return area_pair && gc::As<HashTableEql_sp>(area_pair->_Value)->remhash(key);
 }
 

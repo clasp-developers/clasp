@@ -110,12 +110,12 @@ public:
                                          SimpleBaseString_sp writeLockName); // set everything up with defaults
 
 public:
-  static void sxhash_eq(Hash1Generator &running_hash, T_sp obj);
-  static void sxhash_eql(Hash1Generator &running_hash, T_sp obj);
-  static void sxhash_eq(HashGenerator &running_hash, T_sp obj);
-  static void sxhash_eql(HashGenerator &running_hash, T_sp obj);
-  static void sxhash_equal(HashGenerator &running_hash, T_sp obj);
-  static void sxhash_equalp(HashGenerator &running_hash, T_sp obj);
+  static void sxhash_eq(Hash1Generator& running_hash, T_sp obj);
+  static void sxhash_eql(Hash1Generator& running_hash, T_sp obj);
+  static void sxhash_eq(HashGenerator& running_hash, T_sp obj);
+  static void sxhash_eql(HashGenerator& running_hash, T_sp obj);
+  static void sxhash_equal(HashGenerator& running_hash, T_sp obj);
+  static void sxhash_equalp(HashGenerator& running_hash, T_sp obj);
   void setupThreadSafeHashTable();
   void setupDebug();
 
@@ -127,8 +127,8 @@ private:
 public:
   List_sp hash_table_bucket(size_t index);
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
-  KeyValuePair *rehash_no_lock(bool expandTable, T_sp findKey);
-  KeyValuePair *rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
+  KeyValuePair* rehash_no_lock(bool expandTable, T_sp findKey);
+  KeyValuePair* rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
   CL_LISPIFY_NAME("hash-table-buckets");
   //    CL_DEFMETHOD ComplexVector_T_sp hash_table_buckets() const { return this->_HashTable; };
   CL_LISPIFY_NAME("hash-table-shared-mutex");
@@ -151,16 +151,16 @@ public: // Functions here
   size_t hashTableSize() const override;
   size_t size() { return this->hashTableCount(); };
 
-  T_sp operator[](const std::string &key);
+  T_sp operator[](const std::string& key);
 
-  virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator &hg) const;
+  virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
   virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! I'm not sure I need this and tableRef */
   List_sp bucketsFind_no_lock(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
-  virtual KeyValuePair *searchTable_no_read_lock(T_sp key, cl_index index);
-  KeyValuePair *tableRef_no_read_lock(T_sp key, cl_index index);
+  virtual KeyValuePair* searchTable_no_read_lock(T_sp key, cl_index index);
+  KeyValuePair* tableRef_no_read_lock(T_sp key, cl_index index);
   //    List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
 
   T_sp hash_table_average_search_length();
@@ -169,7 +169,7 @@ public: // Functions here
   bool contains(T_sp key);
 
   /*! Return the key/value pair in a CONS if found or NIL if not */
-  KeyValuePair *find(T_sp key);
+  KeyValuePair* find(T_sp key);
 
   T_mv gethash(T_sp key, T_sp defaultValue = nil<T_O>()) override;
   gc::Fixnum hashIndex(T_sp key) const;
@@ -192,15 +192,15 @@ public: // Functions here
   void hash_table_pointers_dump();
   void hash_table_early_dump();
 
-  void lowLevelMapHash(KeyValueMapper *mapper) const;
+  void lowLevelMapHash(KeyValueMapper* mapper) const;
 
   void maphash(T_sp fn) override;
 
-  void mapHash(std::function<void(T_sp, T_sp)> const &fn);
-  void maphash(std::function<void(T_sp, T_sp)> const &fn) { this->mapHash(fn); };
+  void mapHash(std::function<void(T_sp, T_sp)> const& fn);
+  void maphash(std::function<void(T_sp, T_sp)> const& fn) { this->mapHash(fn); };
 
   /*! maps function across a hash table until the function returns false */
-  bool /*terminatingMapHash*/ map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const;
+  bool /*terminatingMapHash*/ map_while_true(std::function<bool(T_sp, T_sp)> const& fn) const;
 
   /*! Return the number of entries in the HashTable Vector0 */
   int hashTableNumberOfHashes() const;

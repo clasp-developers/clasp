@@ -348,9 +348,9 @@ template <typename X, typename Y> using multimap = std::multimap<X, Y>;
 template <typename X> using set = std::set<X>;
 template <typename X> using deque = std::deque<X>;
 
-void maybe_register_symbol_using_dladdr(void *functionPointer, size_t size = sizeof(void *), const std::string &name = "",
+void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size = sizeof(void*), const std::string& name = "",
                                         size_t arityCode = 0);
-void maybe_register_symbol_using_dladdr_ep(void *functionPointer, size_t size = sizeof(void *), const std::string &name = "",
+void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size = sizeof(void*), const std::string& name = "",
                                            size_t arityCode = 0);
 
 #ifdef WIN32
@@ -392,11 +392,11 @@ typedef long long int LongLongInt;
 #define STATIC_ROOT_FRAME_BEGIN(X) struct X : public gctools::HeapRoot
 #define STATIC_ROOT_FRAME_END(X, N)                                                                                                \
   ;                                                                                                                                \
-  static X *N = NULL;                                                                                                              \
+  static X* N = NULL;                                                                                                              \
   if (!N)                                                                                                                          \
     N = new X();
 
-void dbg_hook(const char *errorString);
+void dbg_hook(const char* errorString);
 
 namespace core {
 
@@ -427,29 +427,29 @@ class type_id {
 public:
   type_id() : id(&typeid(null_type)) {}
 
-  type_id(std::type_info const &id) : id(&id) {}
+  type_id(std::type_info const& id) : id(&id) {}
 
-  bool operator!=(type_id const &other) const { return *id != *other.id; }
+  bool operator!=(type_id const& other) const { return *id != *other.id; }
 
-  bool operator==(type_id const &other) const { return *id == *other.id; }
+  bool operator==(type_id const& other) const { return *id == *other.id; }
 
-  bool operator<(type_id const &other) const { return id->before(*other.id); }
+  bool operator<(type_id const& other) const { return id->before(*other.id); }
 
-  bool operator<=(type_id const &other) const { return id->before(*other.id) || (*id == *other.id); }
+  bool operator<=(type_id const& other) const { return id->before(*other.id) || (*id == *other.id); }
 
-  bool operator>=(type_id const &other) const { return !id->before(*other.id); }
+  bool operator>=(type_id const& other) const { return !id->before(*other.id); }
 
-  bool operator>(type_id const &other) const { return (*id != *other.id) && !id->before(*other.id); }
+  bool operator>(type_id const& other) const { return (*id != *other.id) && !id->before(*other.id); }
 
-  char const *name() const { return id->name(); }
+  char const* name() const { return id->name(); }
 
-  std::type_info const *get_type_info() const { return this->id; };
+  std::type_info const* get_type_info() const { return this->id; };
 
 private:
-  std::type_info const *id;
+  std::type_info const* id;
 };
 
-class_id allocate_class_id(type_id const &cls);
+class_id allocate_class_id(type_id const& cls);
 template <class T> struct registered_class {
   static class_id const id;
 };
@@ -466,33 +466,33 @@ class HashTableEqual_O;
 class SimpleVector_O;
 class SimpleVector_byte8_t_O;
 
-[[noreturn]] void lisp_error_sprintf(const char *file, int lineno, const char *function, const char *fmt, ...);
-[[noreturn]] void lisp_errorDereferencedNonPointer(core::T_O *objP);
-[[noreturn]] void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP);
-[[noreturn]] void lisp_errorBadCastStampWtag(size_t toStampWtag, core::T_O *objP);
-[[noreturn]] void lisp_errorBadCastFromT_O(class_id toType, core::T_O *objP);
-[[noreturn]] void lisp_errorBadCastToFixnum(class_id fromType, core::T_O *objP);
-[[noreturn]] void lisp_errorBadCastFromT_OToCons_O(core::T_O *objP);
-[[noreturn]] void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O *objP);
-[[noreturn]] void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O *objP);
+[[noreturn]] void lisp_error_sprintf(const char* file, int lineno, const char* function, const char* fmt, ...);
+[[noreturn]] void lisp_errorDereferencedNonPointer(core::T_O* objP);
+[[noreturn]] void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O* objP);
+[[noreturn]] void lisp_errorBadCastStampWtag(size_t toStampWtag, core::T_O* objP);
+[[noreturn]] void lisp_errorBadCastFromT_O(class_id toType, core::T_O* objP);
+[[noreturn]] void lisp_errorBadCastToFixnum(class_id fromType, core::T_O* objP);
+[[noreturn]] void lisp_errorBadCastFromT_OToCons_O(core::T_O* objP);
+[[noreturn]] void lisp_errorBadCastFromSymbol_O(class_id toType, core::Symbol_O* objP);
+[[noreturn]] void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O* objP);
 [[noreturn]] void lisp_errorUnexpectedNil(class_id expectedTyp);
 [[noreturn]] void lisp_errorDereferencedNil();
-[[noreturn]] void lisp_error_no_stamp(void *obj);
+[[noreturn]] void lisp_error_no_stamp(void* obj);
 [[noreturn]] void lisp_errorDereferencedUnbound();
-[[noreturn]] void lisp_errorIllegalDereference(void *v);
-[[noreturn]] void lisp_errorExpectedList(core::T_O *objP);
+[[noreturn]] void lisp_errorIllegalDereference(void* v);
+[[noreturn]] void lisp_errorExpectedList(core::T_O* objP);
 
 template <typename To, typename From, typename ObjPtrType> [[noreturn]] void lisp_errorCast(ObjPtrType objP) {
   class_id to_typ = reg::registered_class<To>::id;
   class_id from_typ = reg::registered_class<From>::id;
-  lisp_errorBadCast(to_typ, from_typ, reinterpret_cast<core::T_O *>(objP));
+  lisp_errorBadCast(to_typ, from_typ, reinterpret_cast<core::T_O*>(objP));
   __builtin_unreachable();
 }
 }; // namespace core
 
 namespace core {
 class MultipleValues;
-MultipleValues &lisp_multipleValues();
+MultipleValues& lisp_multipleValues();
 //  MultipleValues &lisp_callArgs();
 }; // namespace core
 
@@ -536,11 +536,11 @@ void drag_general_allocation();
 #define DO_DRAG_GENERAL_ALLOCATION()
 #endif
 
-extern void clasp_mps_debug_allocation(const char *poolName, void *base, void *objAddr, int size, int kind);
-extern void clasp_mps_debug_fix1_before(void *base, void *smartAddr);
-extern void clasp_mps_debug_fix_before(void *pbase, void *px, int offset);
-extern void clasp_mps_debug_fix_after(void *pbase, void *px);
-extern void clasp_mps_debug_container(const char *ctype, const char *name, int size);
+extern void clasp_mps_debug_allocation(const char* poolName, void* base, void* objAddr, int size, int kind);
+extern void clasp_mps_debug_fix1_before(void* base, void* smartAddr);
+extern void clasp_mps_debug_fix_before(void* pbase, void* px, int offset);
+extern void clasp_mps_debug_fix_after(void* pbase, void* px);
+extern void clasp_mps_debug_container(const char* ctype, const char* name, int size);
 
 #define LCC_MACROS
 #include <clasp/core/lispCallingConvention.h>
@@ -565,7 +565,7 @@ extern void clasp_mps_debug_container(const char *ctype, const char *name, int s
 #include <clasp/gctools/multiple_value_pointers.h>
 
 namespace gctools {
-void register_thread(mp::Process_sp process, void *stackTop);
+void register_thread(mp::Process_sp process, void* stackTop);
 void unregister_thread(mp::Process_sp process);
 }; // namespace gctools
 
@@ -623,7 +623,7 @@ Fixnum lisp_hash(uintptr_t v);
 
 class RootClass;
 
-#define EXTERN_SYMBOL(sym) extern core::Symbol_sp &_sym_##sym;
+#define EXTERN_SYMBOL(sym) extern core::Symbol_sp& _sym_##sym;
 
 namespace core {
 
@@ -643,28 +643,28 @@ private:
 
 public:
   void clear() { this->parts.clear(); };
-  void push(const string &s) { this->parts.push_back(s); };
+  void push(const string& s) { this->parts.push_back(s); };
   void pop();
-  string all(const string &separator);
+  string all(const string& separator);
 };
 
 /*! Escape all white space (spaces, cr, tab) */
-string escapeWhiteSpace(const string &inp);
+string escapeWhiteSpace(const string& inp);
 /*! Unescape all whitespace (spaces/cr/tab) */
-string unEscapeWhiteSpace(const string &inp);
+string unEscapeWhiteSpace(const string& inp);
 
-string trimWhiteSpace(const string &inp);
-string stripCharacters(const string &inp, const string &strip);
+string trimWhiteSpace(const string& inp);
+string stripCharacters(const string& inp, const string& strip);
 
-vector<string> split(const string &str, const string &delim = " \t");
-void tokenize(const string &str, vector<string> &tokens, const string &delimiters = " ");
-void queueSplitString(const string &str, std::queue<string> &tokens, const string &delimiters = " ");
+vector<string> split(const string& str, const string& delim = " \t");
+void tokenize(const string& str, vector<string>& tokens, const string& delimiters = " ");
+void queueSplitString(const string& str, std::queue<string>& tokens, const string& delimiters = " ");
 
-string stringUpper(const string &s);
-string stringUpper(const char *s);
+string stringUpper(const string& s);
+string stringUpper(const char* s);
 
 string concatenateVectorStrings(VectorStrings strs);
-void appendVectorStrings(VectorStrings &app, VectorStrings strs);
+void appendVectorStrings(VectorStrings& app, VectorStrings strs);
 
 bool wildcmp(string sWild, string sRegular);
 
@@ -676,7 +676,7 @@ bool wildcmp(string sWild, string sRegular);
 #define DOC_FUNCTION()
 
 struct NullTerminatedEnumAssociation {
-  NullTerminatedEnumAssociation(const string &key, int eval) : _Key(key), _Enum(eval){};
+  NullTerminatedEnumAssociation(const string& key, int eval) : _Key(key), _Enum(eval){};
   string _Key;
   int _Enum;
 };
@@ -713,42 +713,42 @@ typedef vector<AtomHandle> VectorAtomHandle;
 }; // namespace core
 
 /*! A type for an array of arguments */
-typedef core::T_O **ArgArray;
+typedef core::T_O** ArgArray;
 
 namespace core {
 
 class Lisp;
 typedef gctools::tagged_pointer<Lisp> LispPtr;
 
-typedef void (*MakePackageCallback)(string const &packageName, LispPtr);
+typedef void (*MakePackageCallback)(string const& packageName, LispPtr);
 typedef void (*ExportSymbolCallback)(Symbol_sp symbol, LispPtr);
 
 typedef void (*module_startup_function_type)(gctools::Tagged);
 typedef void (*module_shutdown_function_type)();
 
 /* A few symbols associated with error handling that everything needs */
-extern Symbol_sp &_sym_error;
-extern Symbol_sp &_sym_setThrowPosition;
-extern Symbol_sp &_sym_makeCondition;
-extern Symbol_sp &_sym_simpleError;
+extern Symbol_sp& _sym_error;
+extern Symbol_sp& _sym_setThrowPosition;
+extern Symbol_sp& _sym_makeCondition;
+extern Symbol_sp& _sym_simpleError;
 /*! Search for multiple occurances of a string and replace it
  * \param str The string that is modified
  * \param search The string to search for
  * \param replace The string to replace with
  */
-string searchAndReplaceString(const string &str, const string &search, const string &replace);
+string searchAndReplaceString(const string& str, const string& search, const string& replace);
 
 /* The CallingConvention for Common Lisp functions is a pointer to where the multiple value result
    should be written, the closed over environment for the function, the number of args, three explicit args that will pass in
    registers (or be NULL) and a varargs list */
-typedef void (*LispCallingConventionPtr)(T_mv *result, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, va_list rest);
+typedef void (*LispCallingConventionPtr)(T_mv* result, int nargs, T_sp arg1, T_sp arg2, T_sp arg3, va_list rest);
 } // namespace core
 
 #include <clasp/core/core_globals.h>
 
 namespace kw {
-extern core::Symbol_sp &_sym_format_control;
-extern core::Symbol_sp &_sym_format_arguments;
+extern core::Symbol_sp& _sym_format_control;
+extern core::Symbol_sp& _sym_format_arguments;
 }; // namespace kw
 
 // Can I get rid of this?
@@ -764,7 +764,7 @@ namespace core {
 /*! Fix lambda lists for methods.
     It converts ! in the string to the class symbol.
  */
-extern std::string fix_method_lambda(core::Symbol_sp class_symbol, const string &lambda);
+extern std::string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda);
 
 /*! Create the class hierarchy
  */
@@ -815,18 +815,18 @@ typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 namespace gctools {
 struct Layout_code;
 // Defined in clasp/src/gctools/gc_interface.cc
-extern Layout_code *get_stamp_layout_codes();
+extern Layout_code* get_stamp_layout_codes();
 }; // namespace gctools
 
 #if defined(USE_BOEHM) || defined(USE_MMTK)
-#define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code *gctools::get_stamp_layout_codes();
+#define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
 #elif defined(USE_MPS)
 #ifdef RUNNING_PRECISEPREP
 #define FRIEND_GC_SCANNER(nscl)
 #else
 // #define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs,
 // mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
-#define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code *gctools::get_stamp_layout_codes();
+#define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
 #endif
 #endif
 
@@ -840,8 +840,8 @@ class DebugStream;
 
 typedef void (*InitializationCallback)(LispPtr);
 
-[[noreturn]] void errorFormatted(const char *errorString);
-[[noreturn]] void errorFormatted(const string &msg);
+[[noreturn]] void errorFormatted(const char* errorString);
+[[noreturn]] void errorFormatted(const string& msg);
 
 //
 //  Lisp class access functions for when we only have a forward
@@ -852,19 +852,19 @@ typedef void (*InitializationCallback)(LispPtr);
 string _rep_(T_sp obj);
 /*! Convert underscores to "-" and "STAR" to "*" and "AMP" to "&"
       to convert a C++ name to a lisp symbol */
-string lispify_symbol_name(string const &name);
-string magic_name(const string &name, const string &optional_package = "");
-void colon_split(const string &name, string &package_part, string &symbol_part);
+string lispify_symbol_name(string const& name);
+string magic_name(const string& name, const string& optional_package = "");
+void colon_split(const string& name, string& package_part, string& symbol_part);
 
-Symbol_sp lispify_intern_keyword(string const &name);
+Symbol_sp lispify_intern_keyword(string const& name);
 //    Symbol_sp lispify_intern2(string const& name, string const& packageName);
 // lisp_lispifyAndInternWithPackageNameIfNotGiven
-Symbol_sp lispify_intern(const string &name, const string &packageName = "", bool exportSymbol = true);
+Symbol_sp lispify_intern(const string& name, const string& packageName = "", bool exportSymbol = true);
 //    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
-Symbol_sp lisp_upcase_intern(string const &name, string const &packageName);
-Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
-void *lisp_to_void_ptr(T_sp o);
-T_sp lisp_from_void_ptr(void *p);
+Symbol_sp lisp_upcase_intern(string const& name, string const& packageName);
+Symbol_sp lisp_upcase_intern_export(string const& name, string const& packageName);
+void* lisp_to_void_ptr(T_sp o);
+T_sp lisp_from_void_ptr(void* p);
 uint64_t lisp_nameword(T_sp name);
 
 List_sp lisp_copy_default_special_bindings();
@@ -883,9 +883,9 @@ core::T_sp lisp_false();
 // bool lisp_fixnumP(core::T_sp obj);
 // gctools::Fixnum lisp_asFixnum(core::T_sp obj);
 /*! Create a SourcePosInfo object for a C++ function */
-SourcePosInfo_sp lisp_createSourcePosInfo(const string &sourceFile, size_t filePos, int lineno);
+SourcePosInfo_sp lisp_createSourcePosInfo(const string& sourceFile, size_t filePos, int lineno);
 
-T_sp lisp_lookup_reader_patch(T_sp patches, T_sp key, bool &found);
+T_sp lisp_lookup_reader_patch(T_sp patches, T_sp key, bool& found);
 // bool lisp_characterP(core::T_sp obj);
 bool lisp_BuiltInClassesInitialized();
 Instance_sp lisp_built_in_class();
@@ -914,7 +914,7 @@ Instance_sp lisp_instance_class(T_sp obj);
 Instance_sp lisp_static_class(T_sp obj);
 Function_sp lisp_symbolFunction(Symbol_sp sym);
 string lisp_symbolNameAsString(Symbol_sp sym);
-T_sp lisp_createStr(const string &str);
+T_sp lisp_createStr(const string& str);
 T_sp lisp_createFixnum(int num);
 T_sp lisp_createList(T_sp a1);
 T_sp lisp_createList(T_sp a1, T_sp a2);
@@ -927,26 +927,26 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp 
 
 //    void lisp_setGlobalInt(const string& package, const string& n, uint val );
 //    Symbol_sp lisp_allocate_packageless_sid(string const& n);
-Symbol_sp lisp_getClassSymbolForClassName(const string &n);
-string lisp_convertCNameToLispName(string const &cname, bool convertUnderscoreToDash = true);
-List_sp lisp_parse_arguments(const string &packageName, const string &args, int numberOfRequiredArguments = 0,
+Symbol_sp lisp_getClassSymbolForClassName(const string& n);
+string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash = true);
+List_sp lisp_parse_arguments(const string& packageName, const string& args, int numberOfRequiredArguments = 0,
                              const std::set<int> skip_indices = std::set<int>());
-List_sp lisp_lexical_variable_names(List_sp lambda_list, bool &trivial_wrapper);
-List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
+List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
+List_sp lisp_parse_declares(const string& packageName, const string& declarestring);
 
-void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper &dummy_specializer, T_sp name, Symbol_sp classSymbol,
+void lisp_defineSingleDispatchMethod(const clbind::BytecodeWrapper& dummy_specializer, T_sp name, Symbol_sp classSymbol,
                                      GlobalSimpleFunBase_sp entry, size_t TemplateDispatchOn = 0,
-                                     bool useTemplateDispatchOn = false, const string &lambda_list = "",
-                                     const string &declares = "", const string &docstring = "", bool autoExport = true,
+                                     bool useTemplateDispatchOn = false, const string& lambda_list = "",
+                                     const string& declares = "", const string& docstring = "", bool autoExport = true,
                                      int number_of_required_arguments = -1, std::set<int> pureOutIndices = std::set<int>());
 
 typedef enum { symbol_function, symbol_function_setf, symbol_function_macro } SymbolFunctionEnum;
 
-void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, const string &packageName,
-                         GlobalSimpleFunBase_sp fc, const string &arguments = "", const string &declares = "",
-                         const string &docstring = "", const string &sourceFile = "", int lineNumber = 0,
+void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, const string& packageName,
+                         GlobalSimpleFunBase_sp fc, const string& arguments = "", const string& declares = "",
+                         const string& docstring = "", const string& sourceFile = "", int lineNumber = 0,
                          int numberOfRequiredArguments = 0, bool autoExport = true,
-                         const std::set<int> &skipIndices = std::set<int>());
+                         const std::set<int>& skipIndices = std::set<int>());
 
 //
 // You define what is being sent to the debug log using these constants
@@ -985,18 +985,18 @@ void lisp_bytecode_defun(SymbolFunctionEnum kind, int bytecodep, Symbol_sp sym, 
 #define DEBUG_COMPILED_LISP_CATCH 0x000B0000
 #define DEBUG_COMPILED_LISP_UNWIND_PROTECT 0x000C0000
 
-bool lisp_debugIsOn(const char *fileName, uint debugFlag = DEBUG_CPP_FUNCTION);
+bool lisp_debugIsOn(const char* fileName, uint debugFlag = DEBUG_CPP_FUNCTION);
 
-DebugStream *lisp_debugLog();
+DebugStream* lisp_debugLog();
 /*! Return a string representation of the object */
 string lisp_rep(T_sp obj);
-Symbol_sp lisp_internKeyword(const string &name);
-Symbol_sp lisp_intern(const string &name);
-Symbol_sp lisp_intern(const string &symbolName, const string &packageName);
+Symbol_sp lisp_internKeyword(const string& name);
+Symbol_sp lisp_intern(const string& name);
+Symbol_sp lisp_intern(const string& symbolName, const string& packageName);
 T_sp lisp_ComplexVector_TFromMultipleValues(T_mv values);
 string symbol_fullName(Symbol_sp s);
-void lisp_logException(const char *file, const char *fn, int line, const char *structure, T_sp condition);
-void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const &name, Symbol_sp const &archiveName,
+void lisp_logException(const char* file, const char* fn, int line, const char* structure, T_sp condition);
+void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const& name, Symbol_sp const& archiveName,
                                       int value);
 /*! Return the index of the top of the stack */
 size_t lisp_pushCatchThrowException(T_sp throwTag, T_sp value);
@@ -1009,8 +1009,8 @@ core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
 #include <clasp/core/exceptions.h>
 
 namespace kw {
-extern core::Symbol_sp &_sym_function;
-extern core::Symbol_sp &_sym_macro;
+extern core::Symbol_sp& _sym_function;
+extern core::Symbol_sp& _sym_macro;
 }; // namespace kw
 
 namespace core {
@@ -1031,17 +1031,17 @@ typedef T_sp (*ObjectReturnCallback)(LispPtr);
  * on a console or using WxWidgets
  */
 
-typedef void (*PrintvWriteCallback)(const char *outputBuffer);
+typedef void (*PrintvWriteCallback)(const char* outputBuffer);
 typedef void (*PrintvWriteCharCallback)(char outputChar);
 typedef void (*PrintvFlushCallback)();
 
-const char *trimSourceFilePathName(const char *fullPathName);
+const char* trimSourceFilePathName(const char* fullPathName);
 
 }; // namespace core
 
 namespace llvm_interface {
 
-typedef void (*llvmAddSymbolCallbackType)(const core::Symbol_sp &sym);
+typedef void (*llvmAddSymbolCallbackType)(const core::Symbol_sp& sym);
 extern llvmAddSymbolCallbackType addSymbol;
 } // namespace llvm_interface
 
@@ -1080,7 +1080,7 @@ template <class T> core::Symbol_sp lisp_classSymbol() {
 
 namespace core {
 struct cl_env {};
-typedef cl_env *cl_env_ptr;
+typedef cl_env* cl_env_ptr;
 
 inline cl_env_ptr clasp_process_env() {
   return NULL;
@@ -1107,7 +1107,7 @@ namespace core {
 void core__mangledSymbols(T_sp stream_designator);
 };
 
-extern void *_ZTVN4core6LispE;
+extern void* _ZTVN4core6LispE;
 
 #define CLASP_DEFAULT_CTOR
 

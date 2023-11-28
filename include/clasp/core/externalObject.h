@@ -47,8 +47,8 @@ private:
 public:
   virtual bool eql_(T_sp obj) const;
   CL_DEFMETHOD virtual bool isUndefined() const { return this->externalObject() == NULL; };
-  virtual void *externalObject() const { SUBCLASS_MUST_IMPLEMENT(); };
-  virtual void set_externalObject(void *ptr) { SUBCLASS_MUST_IMPLEMENT(); };
+  virtual void* externalObject() const { SUBCLASS_MUST_IMPLEMENT(); };
+  virtual void set_externalObject(void* ptr) { SUBCLASS_MUST_IMPLEMENT(); };
 
 public:
   explicit ExternalObject_O() : Base(), _Class(nil<Instance_O>()){};

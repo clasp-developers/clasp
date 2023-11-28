@@ -73,11 +73,11 @@ THE SOFTWARE.
 
 namespace core {
 
-void walk_loaded_objects_symbol_table(SymbolCallback *callback) {
+void walk_loaded_objects_symbol_table(SymbolCallback* callback) {
   //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
   for (size_t idx = 0; idx < num_loaded; ++idx) {
-    const char *filename = _dyld_get_image_name(idx);
+    const char* filename = _dyld_get_image_name(idx);
     printf("%s:%d:%s  loaded object[%lu]: %s\n", __FILE__, __LINE__, __FUNCTION__, idx, filename);
     // Here call for library
   }
@@ -106,7 +106,7 @@ static void format_memory_protection(char buf[4], int prot) {
   assert(len == 3);
 }
 
-static const char *share_mode_name(unsigned char share_mode) {
+static const char* share_mode_name(unsigned char share_mode) {
   switch (share_mode) {
   case SM_COW:
     return "COW";
@@ -129,7 +129,7 @@ static const char *share_mode_name(unsigned char share_mode) {
   }
 }
 
-static bool vmmap(uintptr_t seek, uintptr_t &regionStart, uintptr_t &regionEnd, bool verbose = true, uintptr_t start = 0,
+static bool vmmap(uintptr_t seek, uintptr_t& regionStart, uintptr_t& regionEnd, bool verbose = true, uintptr_t start = 0,
                   uintptr_t end = -1, uint32_t depth = 2048) {
   mach_port_t task = MACH_PORT_NULL;
   kern_return_t kr = task_for_pid(mach_task_self(), getpid(), &task);
@@ -150,9 +150,9 @@ static bool vmmap(uintptr_t seek, uintptr_t &regionStart, uintptr_t &regionEnd, 
     if (kr != KERN_SUCCESS || address > end) {
       if (first) {
         if (start == end) {
-          printf("no virtual memory region contains address %p\n", (void *)start);
+          printf("no virtual memory region contains address %p\n", (void*)start);
         } else {
-          printf("no virtual memory region intersects %p-%p\n", (void *)start, (void *)end);
+          printf("no virtual memory region intersects %p-%p\n", (void*)start, (void*)end);
         }
       }
       break;
@@ -194,17 +194,17 @@ static bool vmmap(uintptr_t seek, uintptr_t &regionStart, uintptr_t &regionEnd, 
   return false;
 }
 
-bool mygetsegmentsize(bool errorP, void *vmhp, const char *segname, gctools::clasp_ptr_t &segment_start, uintptr_t &segment_size) {
-  const struct mach_header_64 *mhp = (const struct mach_header_64 *)vmhp;
-  struct segment_command_64 *sgp;
-  struct section_64 *sp;
+bool mygetsegmentsize(bool errorP, void* vmhp, const char* segname, gctools::clasp_ptr_t& segment_start, uintptr_t& segment_size) {
+  const struct mach_header_64* mhp = (const struct mach_header_64*)vmhp;
+  struct segment_command_64* sgp;
+  struct section_64* sp;
   uint32_t i, j;
   intptr_t slide;
   uintptr_t address = (uintptr_t)vmhp;
   slide = 0;
   sp = 0;
-  sgp = (struct segment_command_64 *)((char *)mhp + sizeof(struct mach_header_64));
-  for (i = 0; i < mhp->ncmds; i++, sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize)) {
+  sgp = (struct segment_command_64*)((char*)mhp + sizeof(struct mach_header_64));
+  for (i = 0; i < mhp->ncmds; i++, sgp = (struct segment_command_64*)((char*)sgp + sgp->cmdsize)) {
     if (sgp->cmd == LC_SEGMENT_64) {
       if (strcmp(sgp->segname, "__TEXT") == 0) {
         slide = (uintptr_t)mhp - sgp->vmaddr;
@@ -225,54 +225,54 @@ bool mygetsegmentsize(bool errorP, void *vmhp, const char *segname, gctools::cla
   return false;
 }
 
-uint8_t *mygetsectiondata(void *vmhp, const char *segname, const char *sectname, unsigned long *size) {
-  const struct mach_header_64 *mhp = (const struct mach_header_64 *)vmhp;
-  struct segment_command_64 *sgp;
-  struct section_64 *sp;
+uint8_t* mygetsectiondata(void* vmhp, const char* segname, const char* sectname, unsigned long* size) {
+  const struct mach_header_64* mhp = (const struct mach_header_64*)vmhp;
+  struct segment_command_64* sgp;
+  struct section_64* sp;
   uint32_t i, j;
   intptr_t slide;
 
   slide = 0;
   sp = 0;
-  sgp = (struct segment_command_64 *)((char *)mhp + sizeof(struct mach_header_64));
+  sgp = (struct segment_command_64*)((char*)mhp + sizeof(struct mach_header_64));
   for (i = 0; i < mhp->ncmds; i++) {
     if (sgp->cmd == LC_SEGMENT_64) {
       if (strcmp(sgp->segname, "__TEXT") == 0) {
         slide = (uintptr_t)mhp - sgp->vmaddr;
       }
       if (strncmp(sgp->segname, segname, sizeof(sgp->segname)) == 0) {
-        sp = (struct section_64 *)((char *)sgp + sizeof(struct segment_command_64));
+        sp = (struct section_64*)((char*)sgp + sizeof(struct segment_command_64));
         for (j = 0; j < sgp->nsects; j++) {
           printf("%s:%d:%s sgp->segname %s   sp->sectname %s\n", __FILE__, __LINE__, __FUNCTION__, sgp->segname, sp->sectname);
           if (strncmp(sp->sectname, sectname, sizeof(sp->sectname)) == 0 &&
               strncmp(sp->segname, segname, sizeof(sp->segname)) == 0) {
             *size = sp->size;
             //   return (uint8_t*)sp;
-            uint8_t *addr = ((uint8_t *)(sp->addr) + slide);
+            uint8_t* addr = ((uint8_t*)(sp->addr) + slide);
             return addr;
           }
-          sp = (struct section_64 *)((char *)sp + sizeof(struct section_64));
+          sp = (struct section_64*)((char*)sp + sizeof(struct section_64));
         }
       }
     }
-    sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize);
+    sgp = (struct segment_command_64*)((char*)sgp + sgp->cmdsize);
   }
   return (0);
 }
 
-uintptr_t load_stackmap_info(const char *filename, uintptr_t header, size_t &section_size) {
+uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size) {
   // Use mygetsectiondata to walk the library because stackmaps are mmap'd
   // in places that I am not able to calculate using otool
-  uint8_t *p_section = mygetsectiondata((void *)header, "__LLVM_STACKMAPS", "__llvm_stackmaps", &section_size);
+  uint8_t* p_section = mygetsectiondata((void*)header, "__LLVM_STACKMAPS", "__llvm_stackmaps", &section_size);
   return (uintptr_t)p_section;
 }
 
-void startup_register_loaded_objects(add_dynamic_library *callback) {
+void startup_register_loaded_objects(add_dynamic_library* callback) {
   // printf("%s:%d:%s Registering loaded objects\n", __FILE__, __LINE__, __FUNCTION__);
   //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
   for (size_t idx = 0; idx < num_loaded; ++idx) {
-    const char *filename = _dyld_get_image_name(idx);
+    const char* filename = _dyld_get_image_name(idx);
     //    printf("%s:%d:%s Must be a full path!!!    filename = %s\n", __FILE__, __LINE__, __FUNCTION__, filename );
     std::string libname(filename);
     uintptr_t library_origin = (uintptr_t)_dyld_get_image_header(idx);
@@ -284,8 +284,8 @@ void startup_register_loaded_objects(add_dynamic_library *callback) {
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
-void add_dynamic_library_impl(add_dynamic_library *callback, bool is_executable, const std::string &libraryName, bool use_origin,
-                              uintptr_t library_origin, void *handle, gctools::clasp_ptr_t dummy_text_start,
+void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, bool use_origin,
+                              uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start,
                               gctools::clasp_ptr_t dummy_text_end, bool dummyHasDataConst, gctools::clasp_ptr_t dummyDataConstStart,
                               gctools::clasp_ptr_t dummyDataConstEnd) {
   //  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable,
@@ -299,7 +299,7 @@ void add_dynamic_library_impl(add_dynamic_library *callback, bool is_executable,
     printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
     uint32_t num_loaded = _dyld_image_count();
     for (size_t idx = 0; idx < num_loaded; ++idx) {
-      const char *filename = _dyld_get_image_name(idx);
+      const char* filename = _dyld_get_image_name(idx);
       printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
       if (strcmp(filename, libraryName.c_str()) == 0) {
         printf("%s:%d:%s Found library: %s !!!! I need the size!!!!!!\n", __FILE__, __LINE__, __FUNCTION__, filename);
@@ -316,7 +316,7 @@ void add_dynamic_library_impl(add_dynamic_library *callback, bool is_executable,
   //  printf("%s:%d:%s library_origin %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin);
   dlerror();
   exec_header = (uintptr_t)dlsym(RTLD_DEFAULT, "_mh_execute_header");
-  const char *dle = dlerror();
+  const char* dle = dlerror();
   if (dle) {
     printf("Could not find the symbol _mh_execute_header\n");
     abort();
@@ -331,11 +331,11 @@ void add_dynamic_library_impl(add_dynamic_library *callback, bool is_executable,
     symbol_table._StackmapStart = p_section;
     symbol_table._StackmapEnd = p_section + section_size;
   }
-  BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(), (void *)handle,
-          (void *)library_origin));
+  BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(), (void*)handle,
+          (void*)library_origin));
   gctools::clasp_ptr_t text_segment_start;
   uintptr_t text_segment_size;
-  mygetsegmentsize(true, (void *)library_origin, "__TEXT", text_segment_start, text_segment_size);
+  mygetsegmentsize(true, (void*)library_origin, "__TEXT", text_segment_start, text_segment_size);
   //  printf("%s:%d:%s       Looking for __TEXT  library_origin = %p - %p  text_segment_start = %p - %p text_section_size = %lu\n",
   //  __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+text_segment_size),
   //  (void*)text_segment_start, (void*)((char*)text_segment_start + text_segment_size), text_segment_size );
@@ -344,10 +344,10 @@ void add_dynamic_library_impl(add_dynamic_library *callback, bool is_executable,
   bool found = false;
   if (is_executable) {
     General_O general;
-    uintptr_t seek = *(uintptr_t *)&general; // get vtable
+    uintptr_t seek = *(uintptr_t*)&general; // get vtable
     found = vmmap(seek, vtableRegionStart, vtableRegionEnd, false);
   }
-  OpenDynamicLibraryInfo *odli = NULL;
+  OpenDynamicLibraryInfo* odli = NULL;
   if (is_executable) {
     odli = new ExecutableLibraryInfo(libraryName, handle, symbol_table, reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                                      reinterpret_cast<gctools::clasp_ptr_t>(library_origin),

@@ -52,7 +52,7 @@ __END_DOC
 */
 
 extern "C" {
-bool low_level_equal(core::T_O *a, core::T_O *b) {
+bool low_level_equal(core::T_O* a, core::T_O* b) {
   core::T_sp ta((gctools::Tagged)a);
   core::T_sp tb((gctools::Tagged)b);
   return cl__equal(ta, tb);
@@ -77,7 +77,7 @@ uint get_nextGlobalClassSymbolAndAdvance() {
   return n;
 }
 
-std::ostream &operator<<(std::ostream &out, T_sp obj) {
+std::ostream& operator<<(std::ostream& out, T_sp obj) {
   out << _rep_(obj);
   return out;
 }
@@ -372,13 +372,13 @@ string General_O::className() const {
   return this->__class()->_classNameAsString();
 }
 
-void General_O::sxhash_(HashGenerator &hg) const {
+void General_O::sxhash_(HashGenerator& hg) const {
   if (hg.isFilling()) {
     hg.addGeneralAddress(this->asSmartPtr());
   }
 }
 
-void General_O::sxhash_equal(HashGenerator &hg) const {
+void General_O::sxhash_equal(HashGenerator& hg) const {
   if (!hg.isFilling())
     return;
   hg.addGeneralAddress(this->asSmartPtr());
@@ -460,7 +460,7 @@ void HashGenerator::hashObject(T_sp obj) {
   this->_Depth = depth;
 }
 
-Fixnum bignum_hash(const mpz_class &bignum) {
+Fixnum bignum_hash(const mpz_class& bignum) {
   auto bn = bignum.get_mpz_t();
   unsigned int size = bn->_mp_size;
   if (size < 0)
@@ -472,12 +472,12 @@ Fixnum bignum_hash(const mpz_class &bignum) {
   return hash;
 }
 
-bool Hash1Generator::addValue(const mpz_class &bignum) {
+bool Hash1Generator::addValue(const mpz_class& bignum) {
   gc::Fixnum hash = bignum_hash(bignum);
   return this->addValue(hash);
 }
 
-bool HashGenerator::addValue(const mpz_class &bignum) {
+bool HashGenerator::addValue(const mpz_class& bignum) {
   gc::Fixnum hash = bignum_hash(bignum);
   return this->addValue(hash);
 }
@@ -512,7 +512,7 @@ string General_O::description() const {
   if (this == &*(_lisp->_true())) {
     ss << "t";
   } else {
-    General_O *me_gc_safe = const_cast<General_O *>(this);
+    General_O* me_gc_safe = const_cast<General_O*>(this);
     ss << "#<" << me_gc_safe->_instanceClass()->_classNameAsString() << " ";
     ss << this->descriptionOfContents() << ">";
   }
@@ -655,10 +655,10 @@ CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
   } else if (x.characterp()) {
     return clasp_charEqual2(x, y);
   } else if (x.consp()) {
-    Cons_O *cons = x.unsafe_cons();
+    Cons_O* cons = x.unsafe_cons();
     return cons->equalp(y);
   } else if (x.generalp()) {
-    General_O *genx = x.unsafe_general();
+    General_O* genx = x.unsafe_general();
     return genx->equalp(y);
   }
   SIMPLE_ERROR("Bad equalp comparison");

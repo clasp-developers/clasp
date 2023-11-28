@@ -3,6 +3,8 @@ Language: Cpp
 BasedOnStyle: LLVM
 ColumnLimit: 132
 SortIncludes: false
+DerivePointerAlignment: false
+PointerAlignment: Left
 WhitespaceSensitiveMacros:
   - CL_BEGIN_ENUM_TAG
   - CL_DECLARE
@@ -34,6 +36,7 @@ WhitespaceSensitiveMacros:
   - CL_UNWIND_COOP_TAG
   - CL_VALUE_ENUM_TAG
   - DETAILED_SYMBOL_EXTERNAL
+  - GC_MANAGED_TYPE
   - GC_MANAGED_TYPE_TAG
   - LISP_CLASS_TAG
   - LISP_EXTERNAL_CLASS_TAG

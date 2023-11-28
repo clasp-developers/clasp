@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-string::size_type find_first_format_specifier(const std::string &str, string::size_type lastPos, bool fmt = false) {
+string::size_type find_first_format_specifier(const std::string& str, string::size_type lastPos, bool fmt = false) {
   if (fmt) {
     lastPos = str.find_first_of("{", lastPos);
     if (lastPos == string::npos)
@@ -61,7 +61,7 @@ string::size_type find_first_format_specifier(const std::string &str, string::si
   return str.size();
 }
 
-void tokenize_format_specifiers(const string &str, vector<string> &tokens, bool fmt = false) {
+void tokenize_format_specifiers(const string& str, vector<string>& tokens, bool fmt = false) {
   tokens.erase(tokens.begin(), tokens.end());
   // Skip delimiters at beginning.
   string::size_type lastPos = 0;
@@ -73,11 +73,11 @@ void tokenize_format_specifiers(const string &str, vector<string> &tokens, bool 
   }
 }
 
-CL_DEFUN T_sp core__tokenize_format_specifiers(const string &str, bool fmt) {
+CL_DEFUN T_sp core__tokenize_format_specifiers(const string& str, bool fmt) {
   std::vector<std::string> parts;
   tokenize_format_specifiers(str, parts, fmt);
   ql::list ll;
-  for (auto &part : parts) {
+  for (auto& part : parts) {
     ll << SimpleBaseString_O::make(part);
   }
   return ll.cons();
@@ -88,14 +88,14 @@ template <int FMT> struct formatter {
   std::vector<std::string> _controls;
   std::vector<std::string> _results;
   size_t _pos;
-  formatter(const std::string &fmt_string) {
+  formatter(const std::string& fmt_string) {
     tokenize_format_specifiers(fmt_string, this->_controls, FMT);
     this->_pos = 0;
   }
 
-  template <typename T> void format(const T &obj) {
+  template <typename T> void format(const T& obj) {
     static_assert(FMT == 1);
-    const std::string &ctl = this->_controls[this->_pos];
+    const std::string& ctl = this->_controls[this->_pos];
 #if (FMT_VERSION > 80000)
     this->_results.push_back(fmt::format(fmt::runtime(ctl), obj));
 #else
@@ -162,7 +162,7 @@ CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Like CL format but uses fmt::format)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__fmt(T_sp destination, const string &original_control, List_sp args) {
+CL_DEFUN T_sp core__fmt(T_sp destination, const string& original_control, List_sp args) {
   T_sp output;
   if (destination.nilp()) {
     output = my_thread->_BFormatStringOutputStream;
@@ -275,7 +275,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
     SIMPLE_ERROR("FORMAT control must be a string or a function - you gave: {}", _rep_(control));
   }
   string ts = gc::As<String_sp>(control)->get_std_string();
-  const char *cur = ts.c_str();
+  const char* cur = ts.c_str();
   bool success = true;
   while (*cur) {
     if (*cur == '~') {

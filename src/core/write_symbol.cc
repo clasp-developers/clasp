@@ -213,7 +213,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
     bool print_package = false;
     if ((forced_package = forced_print_package(package)))
       print_package = true;
-    MultipleValues &mvn = core::lisp_multipleValues();
+    MultipleValues& mvn = core::lisp_multipleValues();
     if (!print_package) {
       T_mv symbol_mv = cl__find_symbol(name, _lisp->getCurrentPackage());
       Symbol_sp sym = symbol_mv;
@@ -232,7 +232,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
         if (sym2 != x) {
           clasp_write_string("<UNPRINTABLE-SYMBOL@", stream);
           stringstream ss;
-          ss << (void *)x.raw_();
+          ss << (void*)x.raw_();
           clasp_write_string(ss.str(), stream);
           clasp_write_string(">", stream);
           return;
@@ -245,7 +245,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
         } else {
           clasp_write_string("<PATHOLOGICAL-SYMBOL@", stream);
           stringstream ss;
-          ss << (void *)x.raw_();
+          ss << (void*)x.raw_();
           clasp_write_string(ss.str(), stream);
           clasp_write_string(">", stream);
           return;

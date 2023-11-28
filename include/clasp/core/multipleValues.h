@@ -37,7 +37,7 @@ public: // ctor
 
 public: // instance variables here
   size_t _Size;
-  T_O *_Values[MultipleValuesLimit];
+  T_O* _Values[MultipleValuesLimit];
   /*! Allocate the GCVector in the NonMoveable memory.
          This needs to stay pinned or things will go very bad if functions are called with arguments in
         this array (those beyond the arguments that can be passed in registers) or multiple values are returned
@@ -64,14 +64,14 @@ public: // Functions here
     this->_Size = 1;
   }
 
-  void setN(T_O *val, size_t vals) {
+  void setN(T_O* val, size_t vals) {
     this->_Values[0] = val;
     this->_Size = vals;
   }
 
   //        GC_RESULT scanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
 
-  T_O **returnValues(size_t start = 0) { return &this->_Values[start]; }
+  T_O** returnValues(size_t start = 0) { return &this->_Values[start]; }
 
   //        void setMaxSize() { this->_Size = MultipleValuesLimit;};
   void setSize(size_t sz) { this->_Size = sz; };
@@ -82,11 +82,11 @@ public: // Functions here
   };
   /*! Set the value */
 
-  T_O *&operator[](size_t i) { return this->_Values[i]; };
+  T_O*& operator[](size_t i) { return this->_Values[i]; };
 
   T_mv readFromMultipleValue0(size_t num) {
-    T_O *val0 = this->valueGet(0, num).raw_();
-    T_mv res((void *)val0, num);
+    T_O* val0 = this->valueGet(0, num).raw_();
+    T_mv res((void*)val0, num);
     return res;
   }
 
@@ -97,12 +97,12 @@ public: // Functions here
 
   // saveToTemp and loadFromTemp are like returnTypeSaveToTemp below,
   // but only use the MultipleValues structure.
-  inline void saveToTemp(size_t nvals, T_O **temp) {
+  inline void saveToTemp(size_t nvals, T_O** temp) {
     for (size_t i = 0; i < nvals; ++i)
       temp[i] = this->_Values[i];
   }
 
-  inline void loadFromTemp(size_t nvals, T_O **temp) {
+  inline void loadFromTemp(size_t nvals, T_O** temp) {
     this->setSize(nvals);
     for (size_t i = 0; i < nvals; ++i)
       this->_Values[i] = temp[i];
@@ -119,7 +119,7 @@ public: // Functions here
 #ifdef DEBUG_VALUES
 namespace core {
 // dump values
-extern void dump_values_pos(core::T_sp v, const char *name, int n);
+extern void dump_values_pos(core::T_sp v, const char* name, int n);
 }; // namespace core
 #define DUMP_VALUES_POS(v, n) core::dump_values_pos(v, #v, n);
 #else
@@ -127,11 +127,11 @@ extern void dump_values_pos(core::T_sp v, const char *name, int n);
 #endif
 
 template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9>
-inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1,
-                                          const gctools::smart_ptr<T2> &v2, const gctools::smart_ptr<T3> &v3,
-                                          const gctools::smart_ptr<T4> &v4, const gctools::smart_ptr<T5> &v5,
-                                          const gctools::smart_ptr<T6> &v6, const gctools::smart_ptr<T7> &v7,
-                                          const gctools::smart_ptr<T8> &v8, const gctools::smart_ptr<T9> &v9) {
+inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1,
+                                          const gctools::smart_ptr<T2>& v2, const gctools::smart_ptr<T3>& v3,
+                                          const gctools::smart_ptr<T4>& v4, const gctools::smart_ptr<T5>& v5,
+                                          const gctools::smart_ptr<T6>& v6, const gctools::smart_ptr<T7>& v7,
+                                          const gctools::smart_ptr<T8>& v8, const gctools::smart_ptr<T9>& v9) {
   DUMP_VALUES_POS(v0, 10);
   DUMP_VALUES_POS(v1, 10);
   DUMP_VALUES_POS(v2, 10);
@@ -142,7 +142,7 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
   DUMP_VALUES_POS(v7, 10);
   DUMP_VALUES_POS(v8, 10);
   DUMP_VALUES_POS(v9, 10);
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.valueSet(0, v0);
   me.valueSet(1, v1);
   me.valueSet(2, v2);
@@ -158,9 +158,9 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
 
 template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
 inline static gctools::return_type
-Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1, const gctools::smart_ptr<T2> &v2,
-       const gctools::smart_ptr<T3> &v3, const gctools::smart_ptr<T4> &v4, const gctools::smart_ptr<T5> &v5,
-       const gctools::smart_ptr<T6> &v6, const gctools::smart_ptr<T7> &v7, const gctools::smart_ptr<T8> &v8) {
+Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1, const gctools::smart_ptr<T2>& v2,
+       const gctools::smart_ptr<T3>& v3, const gctools::smart_ptr<T4>& v4, const gctools::smart_ptr<T5>& v5,
+       const gctools::smart_ptr<T6>& v6, const gctools::smart_ptr<T7>& v7, const gctools::smart_ptr<T8>& v8) {
   DUMP_VALUES_POS(v0, 9);
   DUMP_VALUES_POS(v1, 9);
   DUMP_VALUES_POS(v2, 9);
@@ -170,7 +170,7 @@ Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1, const
   DUMP_VALUES_POS(v6, 9);
   DUMP_VALUES_POS(v7, 9);
   DUMP_VALUES_POS(v8, 9);
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.valueSet(0, v0);
   me.valueSet(1, v1);
   me.valueSet(2, v2);
@@ -184,10 +184,10 @@ Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1, const
 }
 
 template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7>
-inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1,
-                                          const gctools::smart_ptr<T2> &v2, const gctools::smart_ptr<T3> &v3,
-                                          const gctools::smart_ptr<T4> &v4, const gctools::smart_ptr<T5> &v5,
-                                          const gctools::smart_ptr<T6> &v6, const gctools::smart_ptr<T7> &v7) {
+inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1,
+                                          const gctools::smart_ptr<T2>& v2, const gctools::smart_ptr<T3>& v3,
+                                          const gctools::smart_ptr<T4>& v4, const gctools::smart_ptr<T5>& v5,
+                                          const gctools::smart_ptr<T6>& v6, const gctools::smart_ptr<T7>& v7) {
   DUMP_VALUES_POS(v0, 8);
   DUMP_VALUES_POS(v1, 8);
   DUMP_VALUES_POS(v2, 8);
@@ -196,7 +196,7 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
   DUMP_VALUES_POS(v5, 8);
   DUMP_VALUES_POS(v6, 8);
   DUMP_VALUES_POS(v7, 8);
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.valueSet(0, v0);
   me.valueSet(1, v1);
   me.valueSet(2, v2);
@@ -209,10 +209,10 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
 }
 
 template <class T0, class T1, class T2, class T3, class T4, class T5, class T6>
-inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1,
-                                          const gctools::smart_ptr<T2> &v2, const gctools::smart_ptr<T3> &v3,
-                                          const gctools::smart_ptr<T4> &v4, const gctools::smart_ptr<T5> &v5,
-                                          const gctools::smart_ptr<T6> &v6) {
+inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1,
+                                          const gctools::smart_ptr<T2>& v2, const gctools::smart_ptr<T3>& v3,
+                                          const gctools::smart_ptr<T4>& v4, const gctools::smart_ptr<T5>& v5,
+                                          const gctools::smart_ptr<T6>& v6) {
   DUMP_VALUES_POS(v0, 7);
   DUMP_VALUES_POS(v1, 7);
   DUMP_VALUES_POS(v2, 7);
@@ -220,7 +220,7 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
   DUMP_VALUES_POS(v4, 7);
   DUMP_VALUES_POS(v5, 7);
   DUMP_VALUES_POS(v6, 7);
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.valueSet(0, v0);
   me.valueSet(1, v1);
   me.valueSet(2, v2);
@@ -232,16 +232,16 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
 }
 
 template <class T0, class T1, class T2, class T3, class T4, class T5>
-inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1,
-                                          const gctools::smart_ptr<T2> &v2, const gctools::smart_ptr<T3> &v3,
-                                          const gctools::smart_ptr<T4> &v4, const gctools::smart_ptr<T5> &v5) {
+inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1,
+                                          const gctools::smart_ptr<T2>& v2, const gctools::smart_ptr<T3>& v3,
+                                          const gctools::smart_ptr<T4>& v4, const gctools::smart_ptr<T5>& v5) {
   DUMP_VALUES_POS(v0, 6);
   DUMP_VALUES_POS(v1, 6);
   DUMP_VALUES_POS(v2, 6);
   DUMP_VALUES_POS(v3, 6);
   DUMP_VALUES_POS(v4, 6);
   DUMP_VALUES_POS(v5, 6);
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.valueSet(0, v0);
   me.valueSet(1, v1);
   me.valueSet(2, v2);
@@ -252,15 +252,15 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
 }
 
 template <class T0, class T1, class T2, class T3, class T4>
-inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1,
-                                          const gctools::smart_ptr<T2> &v2, const gctools::smart_ptr<T3> &v3,
-                                          const gctools::smart_ptr<T4> &v4) {
+inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1,
+                                          const gctools::smart_ptr<T2>& v2, const gctools::smart_ptr<T3>& v3,
+                                          const gctools::smart_ptr<T4>& v4) {
   DUMP_VALUES_POS(v0, 5);
   DUMP_VALUES_POS(v1, 5);
   DUMP_VALUES_POS(v2, 5);
   DUMP_VALUES_POS(v3, 5);
   DUMP_VALUES_POS(v4, 5);
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.valueSet(0, v0);
   me.valueSet(1, v1);
   me.valueSet(2, v2);
@@ -270,13 +270,13 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
 }
 
 template <class T0, class T1, class T2, class T3>
-inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1,
-                                          const gctools::smart_ptr<T2> &v2, const gctools::smart_ptr<T3> &v3) {
+inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1,
+                                          const gctools::smart_ptr<T2>& v2, const gctools::smart_ptr<T3>& v3) {
   DUMP_VALUES_POS(v0, 4);
   DUMP_VALUES_POS(v1, 4);
   DUMP_VALUES_POS(v2, 4);
   DUMP_VALUES_POS(v3, 4);
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.valueSet(0, v0);
   me.valueSet(1, v1);
   me.valueSet(2, v2);
@@ -285,12 +285,12 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
 }
 
 template <class T0, class T1, class T2>
-inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1,
-                                          const gctools::smart_ptr<T2> &v2) {
+inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1,
+                                          const gctools::smart_ptr<T2>& v2) {
   DUMP_VALUES_POS(v0, 3);
   DUMP_VALUES_POS(v1, 3);
   DUMP_VALUES_POS(v2, 3);
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.valueSet(0, v0);
   me.valueSet(1, v1);
   me.valueSet(2, v2);
@@ -298,16 +298,16 @@ inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, cons
 }
 
 template <class T0, class T1>
-inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0, const gctools::smart_ptr<T1> &v1) {
+inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0, const gctools::smart_ptr<T1>& v1) {
   DUMP_VALUES_POS(v0, 2);
   DUMP_VALUES_POS(v1, 2);
-  core::MultipleValues &me = (core::lisp_multipleValues());
+  core::MultipleValues& me = (core::lisp_multipleValues());
   me.valueSet(0, v0);
   me.valueSet(1, v1);
   return gctools::return_type(v0.raw_(), 2);
 }
 
-template <class T0> inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0) {
+template <class T0> inline static gctools::return_type Values(const gctools::smart_ptr<T0>& v0) {
   DUMP_VALUES_POS(v0, 1);
   return gctools::return_type(v0.raw_(), 1);
 }
@@ -316,11 +316,11 @@ template <class T0> inline static gctools::return_type Values0() { return gctool
 
 namespace gctools {
 
-inline void fill_frame_multiple_value_return(Frame *frame, size_t &idx, gctools::return_type ret) {
+inline void fill_frame_multiple_value_return(Frame* frame, size_t& idx, gctools::return_type ret) {
 #if LCC_RETURN_VALUES_IN_REGISTERS() == 1
   if (ret.nvals > 0) {
-    fill_frame_one(frame, idx, (core::T_O *)ret.ret0[0]);
-    core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
+    fill_frame_one(frame, idx, (core::T_O*)ret.ret0[0]);
+    core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
     if (ret.nvals > 1) {
       gctools::fill_frame_nargs_args(frame, idx, ret.nvals - 1, &mvThreadLocal._Values[1]);
     }
@@ -328,9 +328,9 @@ inline void fill_frame_multiple_value_return(Frame *frame, size_t &idx, gctools:
 #else
 #error "Code below should work for more than one register return value"
   if (ret.nvals > 0) {
-    gctools::fill_frame_nargs_args(frame, idx, LCC_RETURN_VALUES_IN_REGISTERS(), (core::T_O **)&ret.ret0[0]);
+    gctools::fill_frame_nargs_args(frame, idx, LCC_RETURN_VALUES_IN_REGISTERS(), (core::T_O**)&ret.ret0[0]);
     if (ret.nvals > LCC_RETURN_VALUES_IN_REGISTERS()) {
-      core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
+      core::MultipleValues& mvThreadLocal = core::lisp_multipleValues();
       gctools::fill_frame_nargs_args(frame, idx, ret.nvals - LCC_RETURN_VALUES_IN_REGISTERS(),
                                      &mvThreadLocal._Values[LCC_RETURN_VALUES_IN_REGISTERS()]);
     }
@@ -353,22 +353,22 @@ namespace core {
  *   return returnTypeLoadFromTemp(nvals, mv_temp);
  * }
  * FIXME: Formalize with a macro or templates or something? */
-inline void returnTypeSaveToTemp(size_t nvals, T_O *primary, T_O **temp) {
+inline void returnTypeSaveToTemp(size_t nvals, T_O* primary, T_O** temp) {
   if (nvals > 0) { // don't store even the primary unless the space actually exists
     temp[0] = primary;
     if (nvals > 1) {
       // Only grab this when we really have to - thread local variable
       // access is pretty expensive.
-      core::MultipleValues &mv = core::lisp_multipleValues();
+      core::MultipleValues& mv = core::lisp_multipleValues();
       for (size_t i = 1; i < nvals; ++i)
         temp[i] = mv._Values[i];
     }
   }
 }
 // Build and return a return_type from a temporary vector. See above.
-inline gctools::return_type returnTypeLoadFromTemp(size_t nvals, T_O **temp) {
+inline gctools::return_type returnTypeLoadFromTemp(size_t nvals, T_O** temp) {
   if (nvals > 1) {
-    core::MultipleValues &mv = core::lisp_multipleValues();
+    core::MultipleValues& mv = core::lisp_multipleValues();
     for (size_t i = 1; i < nvals; ++i) {
       mv._Values[i] = temp[i];
     }

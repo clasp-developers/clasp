@@ -102,9 +102,9 @@ void cache::invalidate() { m_cache.clear(); }
 
 class cast_graph::impl {
 public:
-  std::pair<void *, int> cast(void *p, class_id src, class_id target, class_id dynamic_id, void const *dynamic_ptr) const;
+  std::pair<void*, int> cast(void* p, class_id src, class_id target, class_id dynamic_id, void const* dynamic_ptr) const;
   void insert_impl(class_id src, class_id target, cast_function cast);
-  void dump_impl(FILE *fout);
+  void dump_impl(FILE* fout);
 
 private:
   //  std::vector<vertex> m_vertices;
@@ -114,9 +114,9 @@ private:
 namespace {
 
 struct queue_entry {
-  queue_entry(void *p, class_id vertex_id, int distance) : p(p), vertex_id(vertex_id), distance(distance) {}
+  queue_entry(void* p, class_id vertex_id, int distance) : p(p), vertex_id(vertex_id), distance(distance) {}
 
-  void *p;
+  void* p;
   class_id vertex_id;
   int distance;
 };
@@ -125,8 +125,8 @@ struct queue_entry {
 
 // #define DEBUG_CAST_GRAPH 1
 
-std::pair<void *, int> cast_graph::impl::cast(void *const p, class_id src, class_id target, class_id dynamic_id,
-                                              void const *dynamic_ptr) const {
+std::pair<void*, int> cast_graph::impl::cast(void* const p, class_id src, class_id target, class_id dynamic_id,
+                                             void const* dynamic_ptr) const {
 #ifdef DEBUG_CAST_GRAPH
   if (src != target) {
     // only print when non-trivial cases
@@ -140,31 +140,31 @@ std::pair<void *, int> cast_graph::impl::cast(void *const p, class_id src, class
 
   if (src >= _lisp->_Roots._CastGraph.size() || target >= _lisp->_Roots._CastGraph.size()) {
 #ifdef DEBUG_CAST_GRAPH
-    printf("%s:%d:%s returning B pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, (void *)0, -1);
+    printf("%s:%d:%s returning B pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, (void*)0, -1);
 #endif
-    return std::pair<void *, int>((void *)0, -1);
+    return std::pair<void*, int>((void*)0, -1);
   }
-  std::ptrdiff_t const object_offset = (char const *)dynamic_ptr - (char const *)p;
+  std::ptrdiff_t const object_offset = (char const*)dynamic_ptr - (char const*)p;
 
   cache_entry cached = m_cache.get(src, target, dynamic_id, object_offset);
 
   if (cached.first != cache::unknown) {
     if (cached.first == cache::invalid) {
 #ifdef DEBUG_CAST_GRAPH
-      printf("%s:%d:%s returning C pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, (void *)0, -1);
+      printf("%s:%d:%s returning C pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, (void*)0, -1);
 #endif
-      return std::pair<void *, int>((void *)0, -1);
+      return std::pair<void*, int>((void*)0, -1);
     }
 #ifdef DEBUG_CAST_GRAPH
-    char *ptr = (char *)p + cached.first;
+    char* ptr = (char*)p + cached.first;
     printf("%s:%d:%s returning cached D pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, ptr, cached.second);
     if (((uintptr_t)ptr) & 0x7) {
       printf("%s:%d:%s THERE IS A PROBLEM - RETURNED PTR %p IS NOT QWORD ALIGNED p -> %p  cached.first -> %lu cache::unknown -> "
              "%lu class_id_map::local_id_base -> %lu\n",
-             __FILE__, __LINE__, __FUNCTION__, ptr, (char *)p, cached.first, cache::unknown, class_id_map::local_id_base);
+             __FILE__, __LINE__, __FUNCTION__, ptr, (char*)p, cached.first, cache::unknown, class_id_map::local_id_base);
     }
 #endif
-    return std::make_pair((char *)p + cached.first, cached.second);
+    return std::make_pair((char*)p + cached.first, cached.second);
   }
 
   std::queue<queue_entry> q;
@@ -177,28 +177,28 @@ std::pair<void *, int> cast_graph::impl::cast(void *const p, class_id src, class
     q.pop();
 
     visited[qe.vertex_id] = true;
-    vertex const &v = _lisp->_Roots._CastGraph[qe.vertex_id];
+    vertex const& v = _lisp->_Roots._CastGraph[qe.vertex_id];
 
     if (v.id == target) {
-      m_cache.put_entry(src, target, dynamic_id, object_offset, (char *)qe.p - (char *)p, qe.distance);
+      m_cache.put_entry(src, target, dynamic_id, object_offset, (char*)qe.p - (char*)p, qe.distance);
 #ifdef DEBUG_CAST_GRAPH
       printf("%s:%d:%s returning E pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, qe.p, qe.distance);
 #endif
       return std::make_pair(qe.p, qe.distance);
     }
 
-    for (edge const &e : v.edges) {
+    for (edge const& e : v.edges) {
       if (visited[e.target])
         continue;
-      if (void *casted = e.cast(qe.p))
+      if (void* casted = e.cast(qe.p))
         q.push(queue_entry(casted, e.target, qe.distance + 1));
     }
   }
   m_cache.put_entry(src, target, dynamic_id, object_offset, cache::invalid, -1);
 #ifdef DEBUG_CAST_GRAPH
-  printf("%s:%d:%s returning F pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, (void *)0, -1);
+  printf("%s:%d:%s returning F pair(%p, %d)\n", __FILE__, __LINE__, __FUNCTION__, (void*)0, -1);
 #endif
-  return std::pair<void *, int>((void *)0, -1);
+  return std::pair<void*, int>((void*)0, -1);
 }
 
 void cast_graph::impl::insert_impl(class_id src, class_id target, cast_function cast) {
@@ -211,7 +211,7 @@ void cast_graph::impl::insert_impl(class_id src, class_id target, cast_function 
       _lisp->_Roots._CastGraph.push_back(vertex(i));
   }
 
-  gctools::Vec0<edge> &edges = _lisp->_Roots._CastGraph[src].edges;
+  gctools::Vec0<edge>& edges = _lisp->_Roots._CastGraph[src].edges;
 
   auto ii = std::lower_bound(edges.begin(), edges.end(), edge(target, 0));
   if (ii == edges.end() || ii->target != target) {
@@ -219,9 +219,9 @@ void cast_graph::impl::insert_impl(class_id src, class_id target, cast_function 
     m_cache.invalidate();
   }
 }
-void cast_graph::impl::dump_impl(FILE *fout) {
+void cast_graph::impl::dump_impl(FILE* fout) {
   for (class_id ii = 0; ii < _lisp->_Roots._CastGraph.size(); ++ii) {
-    gctools::Vec0<edge> &edges = _lisp->_Roots._CastGraph[ii].edges;
+    gctools::Vec0<edge>& edges = _lisp->_Roots._CastGraph[ii].edges;
     if (edges.size() > 0) {
       core::Symbol_sp sym = reg::lisp_classSymbolFromClassId(ii);
       printf("%s:%d:%s class_id: %lu/%s has %lu edges\n", __FILE__, __LINE__, __FUNCTION__, ii, _rep_(sym).c_str(), edges.size());
@@ -237,8 +237,7 @@ void cast_graph::impl::dump_impl(FILE *fout) {
   }
 }
 
-std::pair<void *, int> cast_graph::cast(void *p, class_id src, class_id target, class_id dynamic_id,
-                                        void const *dynamic_ptr) const {
+std::pair<void*, int> cast_graph::cast(void* p, class_id src, class_id target, class_id dynamic_id, void const* dynamic_ptr) const {
 #if 0
   printf("%s:%d:%s p=%p src=%lu target=%lu dynamic_id=%lu dynamic_ptr = %p\n",
          __FILE__, __LINE__, __FUNCTION__, p, src, target, dynamic_id, dynamic_ptr);
@@ -251,7 +250,7 @@ void cast_graph::insert(class_id src, class_id target, cast_function cast) {
   m_impl->insert_impl(src, target, cast);
 }
 
-void cast_graph::dump(FILE *fout) { m_impl->dump_impl(fout); }
+void cast_graph::dump(FILE* fout) { m_impl->dump_impl(fout); }
 
 cast_graph::cast_graph() : m_impl(new impl) {
   //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -272,7 +271,7 @@ CL_DEFUN void clbind__dump_class_id_map() {
   printf("m_local_id = %lu\n", globalClassIdMap->m_local_id);
   printf("Dump of m_classes\n");
   for (auto entry : globalClassIdMap->m_type_id_to_class_id) {
-    printf(" type_id @%p (%s) -> class_id(%lu)\n", (void *)entry.first.get_type_info(), entry.first.name(), entry.second);
+    printf(" type_id @%p (%s) -> class_id(%lu)\n", (void*)entry.first.get_type_info(), entry.first.name(), entry.second);
   }
   printf("------\n");
 };
@@ -284,7 +283,7 @@ CL_DEFUN void clbind__dump_cast_graph(core::T_sp filename) {
   printf("Dump of castGraph\n");
   if (gc::IsA<core::String_sp>(filename)) {
     std::string fn = gc::As_unsafe<core::String_sp>(filename)->get_std_string();
-    FILE *fout = fopen(fn.c_str(), "w");
+    FILE* fout = fopen(fn.c_str(), "w");
     fprintf(fout, "digraph {\n");
     globalCastGraph->dump(fout);
     fprintf(fout, "}\n");

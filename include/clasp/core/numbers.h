@@ -60,8 +60,8 @@
 #define CLASP_PI2_L 1.57079632679489661923132169163975144l
 
 namespace cl {
-extern core::Symbol_sp &_sym_Integer_O; // CL:INTEGER
-extern core::Symbol_sp &_sym_Real_O;    // CL:INTEGER
+extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
+extern core::Symbol_sp& _sym_Real_O;    // CL:INTEGER
 };                                      // namespace cl
 
 namespace core {
@@ -198,7 +198,7 @@ public:
   virtual Number_sp cosh_() const { SUBIMP(); };
   virtual Number_sp tanh_() const { SUBIMP(); };
 
-  virtual void sxhash_(HashGenerator &hg) const override { SUBIMP(); };
+  virtual void sxhash_(HashGenerator& hg) const override { SUBIMP(); };
   Number_O(){};
   virtual ~Number_O(){};
 };
@@ -223,7 +223,7 @@ class Rational_O : public Real_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Rational_O, "rational", Real_O);
 
 public:
-  static Rational_sp create(mpz_class const &num, mpz_class const &denom);
+  static Rational_sp create(mpz_class const& num, mpz_class const& denom);
   static Rational_sp create(Integer_sp num, Integer_sp denom);
 
 public:
@@ -250,10 +250,10 @@ class Integer_O : public Rational_O {
 public:
   /*! Return a Cons (integer low high) */
   static T_sp makeIntegerType(gc::Fixnum low, gc::Fixnum high);
-  static Integer_sp create(const mpz_class &v);
+  static Integer_sp create(const mpz_class& v);
   static Integer_sp create(gctools::Fixnum v);
-  static Integer_sp create(const string &v, int base = 0) { return create(v.c_str(), base); };
-  static Integer_sp create(const char *v, int base = 0) {
+  static Integer_sp create(const string& v, int base = 0) { return create(v.c_str(), base); };
+  static Integer_sp create(const char* v, int base = 0) {
     if (v[0] == '+')
       v = &v[1]; // skip leading +
     mpz_class zv(v, base);
@@ -366,7 +366,7 @@ public:
 
 public:
   float get() const { return this->_Value; };
-  void sxhash_(HashGenerator &hg) const override;
+  void sxhash_(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   Number_sp signum_() const override;
   string __repr__() const override;
@@ -434,7 +434,7 @@ public:
   static Rational_sp rational(double val);
 
 public:
-  void sxhash_(HashGenerator &hg) const override;
+  void sxhash_(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
   void set(double val) { this->_Value = val; };
@@ -530,7 +530,7 @@ public:
   Real_sp real() const { return this->_real; };
   Real_sp imaginary() const { return this->_imaginary; };
 
-  void sxhash_(HashGenerator &hg) const override;
+  void sxhash_(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
   Number_sp signum_() const override;
@@ -588,7 +588,7 @@ public:
     v->setf_numerator_denominator(num, denom);
     return v;
   };
-  static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
+  static Ratio_sp create(mpz_class const& num, mpz_class const& denom) {
     return Ratio_O::create(Integer_O::create(num), Integer_O::create(denom));
   }
   // For when it is known that the ratio is reduced already.
@@ -611,7 +611,7 @@ public:
   Integer_sp numerator() const { return this->_numerator; };
   Integer_sp denominator() const { return this->_denominator; };
 
-  void sxhash_(HashGenerator &hg) const override;
+  void sxhash_(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
   Number_sp signum_() const override;
@@ -773,7 +773,7 @@ Real_sp clasp_min2(Real_sp x, Real_sp y);
 
 template <typename Char> struct fmt::formatter<core::NumberType, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
   template <typename FormatContext>
-  auto format(const core::NumberType &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+  auto format(const core::NumberType& o, FormatContext& ctx) const -> typename FormatContext::iterator {
     fmt::basic_string_view<Char> name = "unknown";
     switch (o) {
     case core::number_Fixnum:

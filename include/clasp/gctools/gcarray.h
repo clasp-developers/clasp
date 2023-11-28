@@ -1,17 +1,19 @@
+#pragma once
+
 /*
     File: gcarray.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,106 +26,99 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef gc_gcarray_H
-#define gc_gcarray_H
-
 #include <atomic>
 
 namespace gctools {
 
-template <class T>
-class GCArray_moveable : public GCContainer {
+template <class T> class GCArray_moveable : public GCContainer {
 public:
-  GCArray_moveable() {};
- public:
- typedef T value_type;
- typedef T *pointer_type;
- typedef value_type &reference;
- typedef value_type container_value_type;
- typedef T *iterator;
- typedef T const *const_iterator;
-  int64_t _MaybeSignedLength; // Index one beyond the total number of elements allocated
- T _Data[0];      // Store llabs(_MaybeSignedLength) numbers of T structs/classes starting here
- // This is the deepest part of the array allocation machinery.
- // The arguments here don't exactly match make-array's, though. Having both is ok here.
- // initialElement is used most of the time.
- // initialContents takes a C array, so it's not directly accessible from Lisp.
- // But it's used for unsafe_subseq (which cl:subseq does use), among other things.
- // Providing both initialElement and initialContents is done when resizing arrays
- // (i.e. allocating new arrays based on old ones).
- GCArray_moveable(int64_t length, const T& initialElement, bool initialElementSupplied,
-                  size_t initialContentsSize=0, const T* initialContents=NULL) : _MaybeSignedLength(length) {
-   GCTOOLS_ASSERT(initialContentsSize<=length);
-   for ( size_t h(0); h<initialContentsSize; ++h ) {
-     this->_Data[h] = initialContents[h];
-   }
-#if 1
-   for (size_t i(initialContentsSize); i<std::llabs(this->_MaybeSignedLength); ++i)
-     new(&(this->_Data[i])) value_type(initialElement);
-#else
-   // You can use this to leave arrays uninitialized if there's no :initial-element.
-   // I'm leaving it off until we have good reason to know it's worth the attendant weird bugs.
-   // (Not that there are any specific known bugs- it's just that it's a bit dangerous.)
+  GCArray_moveable(){};
 
-   // An initial element must be supplied if T involves pointers, for GC reasons.
-   // All code that uses GCArray_moveable must ensure this.
-   if (initialElementSupplied) {
-     for ( size_t i(initialContentsSize); i<std::llabs(this->_MaybeSignedLength); ++i ) {
-       new(&(this->_Data[i])) value_type(initialElement);
-     }
-   }
+public:
+  typedef T value_type;
+  typedef T* pointer_type;
+  typedef value_type& reference;
+  typedef value_type container_value_type;
+  typedef T* iterator;
+  typedef T const* const_iterator;
+  int64_t _MaybeSignedLength; // Index one beyond the total number of elements allocated
+  T _Data[0];                 // Store llabs(_MaybeSignedLength) numbers of T structs/classes starting here
+  // This is the deepest part of the array allocation machinery.
+  // The arguments here don't exactly match make-array's, though. Having both is ok here.
+  // initialElement is used most of the time.
+  // initialContents takes a C array, so it's not directly accessible from Lisp.
+  // But it's used for unsafe_subseq (which cl:subseq does use), among other things.
+  // Providing both initialElement and initialContents is done when resizing arrays
+  // (i.e. allocating new arrays based on old ones).
+  GCArray_moveable(int64_t length, const T& initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,
+                   const T* initialContents = NULL)
+      : _MaybeSignedLength(length) {
+    GCTOOLS_ASSERT(initialContentsSize <= length);
+    for (size_t h(0); h < initialContentsSize; ++h) {
+      this->_Data[h] = initialContents[h];
+    }
+#if 1
+    for (size_t i(initialContentsSize); i < std::llabs(this->_MaybeSignedLength); ++i)
+      new (&(this->_Data[i])) value_type(initialElement);
+#else
+    // You can use this to leave arrays uninitialized if there's no :initial-element.
+    // I'm leaving it off until we have good reason to know it's worth the attendant weird bugs.
+    // (Not that there are any specific known bugs- it's just that it's a bit dangerous.)
+
+    // An initial element must be supplied if T involves pointers, for GC reasons.
+    // All code that uses GCArray_moveable must ensure this.
+    if (initialElementSupplied) {
+      for (size_t i(initialContentsSize); i < std::llabs(this->_MaybeSignedLength); ++i) {
+        new (&(this->_Data[i])) value_type(initialElement);
+      }
+    }
 #endif
- }
- public:
- inline uint64_t size() const { return this->length(); };
- inline uint64_t length() const { return static_cast<uint64_t>(this->_MaybeSignedLength); };
- value_type *data() { return this->_Data; };
- value_type &operator[](size_t i) { return this->_Data[i]; };
- const value_type &operator[](size_t i) const { return this->_Data[i]; };
- iterator begin() { return &this->_Data[0]; };
+  }
+
+public:
+  inline uint64_t size() const { return this->length(); };
+  inline uint64_t length() const { return static_cast<uint64_t>(this->_MaybeSignedLength); };
+  value_type* data() { return this->_Data; };
+  value_type& operator[](size_t i) { return this->_Data[i]; };
+  const value_type& operator[](size_t i) const { return this->_Data[i]; };
+  iterator begin() { return &this->_Data[0]; };
   iterator end() { return &this->_Data[this->length()]; };
- const_iterator begin() const { return &this->_Data[0]; };
+  const_iterator begin() const { return &this->_Data[0]; };
   const_iterator end() const { return &this->_Data[this->length()]; };
 };
 
 // Like _moveable, but with atomic access.
 // This rules out (I think) the data() operator, as well as operator[] due to
 // how C++ reference semantics work.
-template <class T>
-class GCArray_atomic : public GCContainer {
+template <class T> class GCArray_atomic : public GCContainer {
 public:
-  GCArray_atomic() {};
+  GCArray_atomic(){};
+
 public:
   int64_t _Length; // Index one beyond the total number of elements allocated
   std::atomic<T> _Data[0];
-  GCArray_atomic(size_t length, const T& initialElement, bool initialElementSupplied,
-                 size_t initialContentsSize=0, const T* initialContents=NULL)
-    : _Length(length) {
-    GCTOOLS_ASSERT(initialContentsSize<=length);
-    for (size_t h(0); h<initialContentsSize; ++h)
+  GCArray_atomic(size_t length, const T& initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,
+                 const T* initialContents = NULL)
+      : _Length(length) {
+    GCTOOLS_ASSERT(initialContentsSize <= length);
+    for (size_t h(0); h < initialContentsSize; ++h)
       _Data[h].store(initialContents[h], std::memory_order_relaxed);
     for (size_t i(initialContentsSize); i < length; ++i)
       // Copy constructs, I think
       _Data[i].store(initialElement, std::memory_order_relaxed);
   }
+
 public:
   inline uint64_t length() const { return _Length; }
   // A default order of even less strength, unordered, would probably be fine,
   // but C++ does not support it.
-  inline T load(size_t i,
-                std::memory_order order = std::memory_order_relaxed) {
-    return _Data[i].load(order);
-  }
-  inline void store(size_t i, T value,
-                    std::memory_order order = std::memory_order_relaxed) {
-    _Data[i].store(value, order);
-  }
-  std::atomic<T>& operator[](std::size_t idx)       { return _Data[idx]; }
+  inline T load(size_t i, std::memory_order order = std::memory_order_relaxed) { return _Data[i].load(order); }
+  inline void store(size_t i, T value, std::memory_order order = std::memory_order_relaxed) { _Data[i].store(value, order); }
+  std::atomic<T>& operator[](std::size_t idx) { return _Data[idx]; }
   const std::atomic<T>& operator[](std::size_t idx) const { return _Data[idx]; }
 };
 
-template <typename Array>
-void Array0_dump(const Array &v, const char *head = "") {
+template <typename Array> void Array0_dump(const Array& v, const char* head = "") {
   printf("%s Array0@%p _C[%zu]", head, v.contents(), v.length());
   size_t i;
   for (i = 0; i < v.length(); ++i) {
@@ -133,19 +128,18 @@ void Array0_dump(const Array &v, const char *head = "") {
   printf("\n");
 }
 
-template <class T>
-class GCArraySignedLength_moveable : public GCArray_moveable<T> {
+template <class T> class GCArraySignedLength_moveable : public GCArray_moveable<T> {
 public:
-  GCArraySignedLength_moveable() {};
+  GCArraySignedLength_moveable(){};
+
 public:
-  GCArraySignedLength_moveable(int64_t length, const T& initialElement, bool initialElementSupplied,
-                               size_t initialContentsSize=0, const T* initialContents=NULL) : GCArray_moveable<T>(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {}
+  GCArraySignedLength_moveable(int64_t length, const T& initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,
+                               const T* initialContents = NULL)
+      : GCArray_moveable<T>(length, initialElement, initialElementSupplied, initialContentsSize, initialContents) {}
   inline int64_t signedLength() const { return this->_MaybeSignedLength; };
   inline size_t length() const { return std::llabs(this->_MaybeSignedLength); };
   inline size_t size() const { return this->length(); };
-  inline int64_t sign() const { return this->_MaybeSignedLength>0 ? 1 : (this->_MaybeSignedLength<0 ? -1 : 0); }
+  inline int64_t sign() const { return this->_MaybeSignedLength > 0 ? 1 : (this->_MaybeSignedLength < 0 ? -1 : 0); }
 };
 
 } // namespace gctools
-
-#endif

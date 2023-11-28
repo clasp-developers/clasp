@@ -38,19 +38,16 @@ using namespace core;
 
 namespace serveEvent {
 
-
 void ServeEventExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
   } break;
   case candoFunctions: {
-    //nothing
-  };
-      break;
+    // nothing
+  }; break;
   case candoGlobals: {
     initialize_serveEvent_globals();
-  };
-      break;
+  }; break;
   case pythonClasses:
   case pythonFunctions:
   case pythonGlobals: {
@@ -58,4 +55,4 @@ void ServeEventExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpo
   } break;
   }
 }
-};
+}; // namespace serveEvent

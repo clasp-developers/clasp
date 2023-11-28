@@ -157,19 +157,19 @@ ClassRegistry_sp ClassRegistry_O::get_registry() {
   return gc::As<ClassRegistry_sp>(clbind::_sym_STARtheClassRegistrySTAR->symbolValue());
 }
 
-core::Integer_sp type_id_toClassRegistryKey(type_id const &info) {
-  mpz_class zz(GMP_ULONG((uintptr_t)(const_cast<void *>(static_cast<const void *>(info.get_type_info())))));
+core::Integer_sp type_id_toClassRegistryKey(type_id const& info) {
+  mpz_class zz(GMP_ULONG((uintptr_t)(const_cast<void*>(static_cast<const void*>(info.get_type_info())))));
   core::Integer_sp p = core::Integer_O::create(zz);
   return p;
 }
 
-void ClassRegistry_O::add_class(type_id const &info, ClassRep_sp crep) {
+void ClassRegistry_O::add_class(type_id const& info, ClassRep_sp crep) {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
   // ASSERTF(!this->m_classes->contains(key), "You are trying to register the class {} twice", info.name());
   this->m_classes->setf_gethash(key, crep);
 }
 
-ClassRep_sp ClassRegistry_O::find_class(type_id const &info) const {
+ClassRep_sp ClassRegistry_O::find_class(type_id const& info) const {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
   core::T_sp value = this->m_classes->gethash(key, nil<core::T_O>());
   if (value.nilp()) {

@@ -43,7 +43,7 @@ class WRAPPER_Translator_O : public core::GlobalSimpleFunBase_O {
 
 public:
   typedef WRAPPER_Translator_O MyType;
-  typedef core::T_O *(*Type)(core::T_O *arg);
+  typedef core::T_O* (*Type)(core::T_O* arg);
 
 public:
   Type fptr;
@@ -55,25 +55,25 @@ public:
     // Initialize the _EntryPoints with the addresses of this classes entrypoints
     //
     this->_EntryPoints.template setup<MyType>();
-    this->validateCodePointer((void **)&this->fptr, sizeof(this->fptr));
+    this->validateCodePointer((void**)&this->fptr, sizeof(this->fptr));
   };
 
 public:
   typedef GlobalSimpleFun_O TemplatedBase;
   virtual size_t templatedSizeof() const override { return sizeof(WRAPPER_Translator_O); };
 
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
-    this->fixupOneCodePointer(fixup, (void **)&this->fptr);
+    this->fixupOneCodePointer(fixup, (void**)&this->fptr);
   }
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    WRAPPER_Translator_O *closure = gctools::untag_general<WRAPPER_Translator_O *>((WRAPPER_Translator_O *)lcc_closure);
-    core::T_O *arg0 = lcc_args[0];
+    WRAPPER_Translator_O* closure = gctools::untag_general<WRAPPER_Translator_O*>((WRAPPER_Translator_O*)lcc_closure);
+    core::T_O* arg0 = lcc_args[0];
     return gctools::return_type((closure->fptr)(arg0), 1);
   }
   static inline LISP_ENTRY_0() { wrong_number_of_arguments(lcc_closure, 0, 1); };
   static inline LISP_ENTRY_1() {
-    WRAPPER_Translator_O *closure = gctools::untag_general<WRAPPER_Translator_O *>((WRAPPER_Translator_O *)lcc_closure);
+    WRAPPER_Translator_O* closure = gctools::untag_general<WRAPPER_Translator_O*>((WRAPPER_Translator_O*)lcc_closure);
     return gctools::return_type((closure->fptr)(lcc_farg0), 1);
   }
   static inline LISP_ENTRY_2() { wrong_number_of_arguments(lcc_closure, 2, 1); };
@@ -108,54 +108,54 @@ public:
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
       : core::GlobalSimpleFunBase_O(fdesc, core::ClaspXepFunction::make<MyType>(), code), mptr(ptr) {
-    this->validateCodePointer((void **)&this->mptr, sizeof(this->mptr));
+    this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
-  virtual const char *describe() const { return "VariadicMethoid"; };
+  virtual const char* describe() const { return "VariadicMethoid"; };
 
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
-  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
-    this->fixupOneCodePointer(fixup, (void **)&this->mptr);
+    this->fixupOneCodePointer(fixup, (void**)&this->mptr);
   };
 
-  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper &dummy, core::T_O *lcc_closure, size_t lcc_nargs,
-                                                 core::T_O **lcc_args) {
-    MyType *closure = gctools::untag_general<MyType *>((MyType *)lcc_closure);
+  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
+                                                 core::T_O** lcc_args) {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
-    OT &oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
+    OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goFrame(lcc_args);
     return clbind::method_apply_and_return<RT, core::policy::clasp_policy, decltype(closure->mptr), OT, decltype(all_args)>::go(
         std::move(closure->mptr), std::move(oto), std::move(all_args));
   }
 
-  static inline LCC_RETURN entry_point_n(core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
     return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
   static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
   static inline LISP_ENTRY_1() {
-    core::T_O *args[1] = {lcc_farg0};
+    core::T_O* args[1] = {lcc_farg0};
     return entry_point_n(lcc_closure, 1, args);
   }
   static inline LISP_ENTRY_2() {
-    core::T_O *args[2] = {lcc_farg0, lcc_farg1};
+    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
     return entry_point_n(lcc_closure, 2, args);
   }
   static inline LISP_ENTRY_3() {
-    core::T_O *args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
+    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
     return entry_point_n(lcc_closure, 3, args);
   }
   static inline LISP_ENTRY_4() {
-    core::T_O *args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
+    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
     return entry_point_n(lcc_closure, 4, args);
   }
   static inline LISP_ENTRY_5() {
-    core::T_O *args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
+    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
     return entry_point_n(lcc_closure, 5, args);
   }
 };
@@ -180,54 +180,54 @@ public:
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
       : core::GlobalSimpleFunBase_O(fdesc, core::ClaspXepFunction::make<MyType>(), code), mptr(ptr) {
-    this->validateCodePointer((void **)&this->mptr, sizeof(this->mptr));
+    this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
-  virtual const char *describe() const { return "VariadicMethoid"; };
+  virtual const char* describe() const { return "VariadicMethoid"; };
 
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
-  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     this->TemplatedBase::fixupInternalsForSnapshotSaveLoad(fixup);
-    this->fixupOneCodePointer(fixup, (void **)&this->mptr);
+    this->fixupOneCodePointer(fixup, (void**)&this->mptr);
   };
 
-  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper &dummy, core::T_O *lcc_closure, size_t lcc_nargs,
-                                                 core::T_O **lcc_args) {
-    MyType *closure = gctools::untag_general<MyType *>((MyType *)lcc_closure);
+  static inline LCC_RETURN wrapper_entry_point_n(const BytecodeWrapper& dummy, core::T_O* lcc_closure, size_t lcc_nargs,
+                                                 core::T_O** lcc_args) {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     if (lcc_nargs != NumParams)
       cc_wrong_number_of_arguments(lcc_closure, lcc_nargs, NumParams, NumParams);
-    OT &oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
+    OT& oto = *gc::As<gctools::smart_ptr<OT>>(core::T_sp((gctools::Tagged)lcc_args[0]));
     std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1, clbind::policies<>, ARGS...>::goFrame(lcc_args);
     return clbind::method_apply_and_return<RT, core::policy::clasp_policy, decltype(closure->mptr), OT, decltype(all_args)>::go(
         std::move(closure->mptr), std::move(oto), std::move(all_args));
   }
 
-  static inline LCC_RETURN entry_point_n(core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
     return wrapper_entry_point_n(ArgumentWrapper(), lcc_closure, lcc_nargs, lcc_args);
   }
 
   static inline LISP_ENTRY_0() { return entry_point_n(lcc_closure, 0, NULL); }
   static inline LISP_ENTRY_1() {
-    core::T_O *args[1] = {lcc_farg0};
+    core::T_O* args[1] = {lcc_farg0};
     return entry_point_n(lcc_closure, 1, args);
   }
   static inline LISP_ENTRY_2() {
-    core::T_O *args[2] = {lcc_farg0, lcc_farg1};
+    core::T_O* args[2] = {lcc_farg0, lcc_farg1};
     return entry_point_n(lcc_closure, 2, args);
   }
   static inline LISP_ENTRY_3() {
-    core::T_O *args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
+    core::T_O* args[3] = {lcc_farg0, lcc_farg1, lcc_farg2};
     return entry_point_n(lcc_closure, 3, args);
   }
   static inline LISP_ENTRY_4() {
-    core::T_O *args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
+    core::T_O* args[4] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3};
     return entry_point_n(lcc_closure, 4, args);
   }
   static inline LISP_ENTRY_5() {
-    core::T_O *args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
+    core::T_O* args[5] = {lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4};
     return entry_point_n(lcc_closure, 5, args);
   }
 };
@@ -235,9 +235,9 @@ public:
 
 namespace core {
 
-inline void wrap_translator(const string &packageName, const string &name, core::T_O *(*fp)(core::T_O *), const string &filename,
-                            const string &arguments = "", const string &declares = "", const string &docstring = "",
-                            const string &sourceFile = "", int sourceLine = 0) {
+inline void wrap_translator(const string& packageName, const string& name, core::T_O* (*fp)(core::T_O*), const string& filename,
+                            const string& arguments = "", const string& declares = "", const string& docstring = "",
+                            const string& sourceFile = "", int sourceLine = 0) {
   Symbol_sp symbol = lispify_intern(name, packageName);
   using VariadicType = WRAPPER_Translator_O;
   //    FunctionDescription_sp fdesc = makeFunctionDescription(symbol,nil<T_O>());
@@ -247,9 +247,9 @@ inline void wrap_translator(const string &packageName, const string &name, core:
 }
 
 template <typename RT, typename... ARGS>
-void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "",
-                   const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  maybe_register_symbol_using_dladdr(*(void **)&fp, sizeof(fp), name);
+void wrap_function(const string& packageName, const string& name, RT (*fp)(ARGS...), const string& arguments = "",
+                   const string& declares = "", const string& docstring = "", const string& sourceFile = "", int sourceLine = 0) {
+  maybe_register_symbol_using_dladdr(*(void**)&fp, sizeof(fp), name);
   Symbol_sp symbol = _lisp->intern(name, packageName);
   using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack<sizeof...(ARGS), clbind::policies<>>::type;
   using VariadicType =
@@ -262,10 +262,10 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
 
 // this is used in gc_interface.cc expose_function_setf
 template <typename RT, typename... ARGS>
-void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "",
-                        const string &declares = "", const string &docstring = "", const string &sourceFile = "",
+void wrap_function_setf(const string& packageName, const string& name, RT (*fp)(ARGS...), const string& arguments = "",
+                        const string& declares = "", const string& docstring = "", const string& sourceFile = "",
                         int sourceLine = 0) {
-  maybe_register_symbol_using_dladdr(*(void **)&fp, sizeof(fp), name);
+  maybe_register_symbol_using_dladdr(*(void**)&fp, sizeof(fp), name);
   Symbol_sp symbol = _lisp->intern(name, packageName);
   using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack<sizeof...(ARGS), clbind::policies<>>::type;
   using VariadicType =
@@ -300,9 +300,9 @@ class Function_O;
 // Wrapper for ActivationFrameMacroPtr
 
 // basically like wrap_function.
-inline void defmacro(const string &packageName, const string &name, T_mv (*fp)(List_sp, T_sp env), const string &arguments,
-                     const string &declares, const string &docstring, const string &sourcePathname, int lineno) {
-  maybe_register_symbol_using_dladdr(*(void **)&fp, sizeof(fp), name);
+inline void defmacro(const string& packageName, const string& name, T_mv (*fp)(List_sp, T_sp env), const string& arguments,
+                     const string& declares, const string& docstring, const string& sourcePathname, int lineno) {
+  maybe_register_symbol_using_dladdr(*(void**)&fp, sizeof(fp), name);
   Symbol_sp symbol = lispify_intern(name, packageName);
   using PureOutValuePack = typename clbind::inValueTrueFalseMaskPack<2, clbind::policies<>>::type;
   using VariadicType = clbind::WRAPPER_VariadicFunction<T_mv (*)(List_sp, T_sp), core::policy::clasp_policy, PureOutValuePack,
@@ -322,12 +322,12 @@ template <int N> struct DispatchOn {
 // ----------------------------------------
 // ----------------------------------------
 
-extern Symbol_sp &_sym_STARallCxxClassesSTAR;
+extern Symbol_sp& _sym_STARallCxxClassesSTAR;
 
 struct names_ {
   std::vector<std::string> _Names;
-  names_(const std::string &name1) : _Names({name1}){};
-  names_(const std::string &name1, const std::string &name2) : _Names({name1, name2}){};
+  names_(const std::string& name1) : _Names({name1}){};
+  names_(const std::string& name1, const std::string& name2) : _Names({name1, name2}){};
 };
 
 template <typename OT> class class_ {
@@ -338,7 +338,7 @@ private:
   Symbol_sp _ClassSymbol;
 
 public:
-  void setup_class(const string &makerName = "") {
+  void setup_class(const string& makerName = "") {
     _G();
     if (IS_SYMBOL_UNDEFINED(OT::static_classSymbol())) {
       SIMPLE_ERROR("Attempting to add methods for class that isn't defined yet");
@@ -376,17 +376,17 @@ public:
     this->setup_class("");
   }
 
-  class_(const string &makerName) {
+  class_(const string& makerName) {
     _G();
     this->setup_class(makerName);
   }
 
   // non-const function dispatch on parameter 0
   template <typename RT, class... ARGS>
-  class_ &def(const names_ &names, RT (OT::*mp)(ARGS...), string const &lambda_list = "", const string &declares = "",
-              const string &docstring = "", bool autoExport = true) {
-    for (auto &name : names._Names) {
-      maybe_register_symbol_using_dladdr(*(void **)&mp, sizeof(mp), name);
+  class_& def(const names_& names, RT (OT::*mp)(ARGS...), string const& lambda_list = "", const string& declares = "",
+              const string& docstring = "", bool autoExport = true) {
+    for (auto& name : names._Names) {
+      maybe_register_symbol_using_dladdr(*(void**)&mp, sizeof(mp), name);
       std::string pkgName;
       std::string symbolName;
       core::colon_split(name, pkgName, symbolName);
@@ -405,10 +405,10 @@ public:
 
   // const function dispatch on parameter 0
   template <typename RT, class... ARGS>
-  class_ &def(const names_ &names, RT (OT::*mp)(ARGS...) const, string const &lambda_list = "", const string &declares = "",
-              const string &docstring = "", bool autoExport = true) {
-    for (auto &name : names._Names) {
-      maybe_register_symbol_using_dladdr(*(void **)&mp, sizeof(mp), name);
+  class_& def(const names_& names, RT (OT::*mp)(ARGS...) const, string const& lambda_list = "", const string& declares = "",
+              const string& docstring = "", bool autoExport = true) {
+    for (auto& name : names._Names) {
+      maybe_register_symbol_using_dladdr(*(void**)&mp, sizeof(mp), name);
       std::string pkgName;
       std::string symbolName;
       core::colon_split(name, pkgName, symbolName);
@@ -445,19 +445,19 @@ private:
   Symbol_sp _PredefinedConverterSymbolId;
 
 public:
-  enum_(Symbol_sp symbol, const string &title) {
+  enum_(Symbol_sp symbol, const string& title) {
     _G();
     this->_PredefinedConverterSymbolId = symbol;
     this->_Converter = SymbolToEnumConverter_O::create(title);
     lisp_defparameter(symbol, this->_Converter);
   }
 
-  enum_ &value(Symbol_sp const &sym, X value) {
+  enum_& value(Symbol_sp const& sym, X value) {
     _G();
     lisp_extendSymbolToEnumConverter(this->_Converter, sym, sym, static_cast<int>(value));
     return *this;
   }
-  enum_ &value(Symbol_sp const &name, Symbol_sp const &archiveName, X value) {
+  enum_& value(Symbol_sp const& name, Symbol_sp const& archiveName, X value) {
     _G();
     lisp_extendSymbolToEnumConverter(this->_Converter, name, archiveName, value);
     return *this;

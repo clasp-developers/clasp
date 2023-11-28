@@ -1,17 +1,19 @@
+#pragma once
+
 /*
     File: llvmoPackage.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -25,9 +27,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#ifndef llvmoCando_H
-#define llvmoCando_H
-
 #include <clasp/core/common.h>
 
 PACKAGE_USE("COMMON-LISP");
@@ -38,11 +37,10 @@ namespace llvmo {
 
 FORWARD(ClaspJIT);
 
-
 class LlvmoExposer_O : public core::Exposer_O {
 private:
 public:
- LlvmoExposer_O(core::LispPtr lisp) : Exposer_O(lisp,LlvmoPkg) {};
+  LlvmoExposer_O(core::LispPtr lisp) : Exposer_O(lisp, LlvmoPkg){};
   virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
 };
 
@@ -57,17 +55,14 @@ void af_addAllSymbolsToExecutionEngine(llvmo::ExecutionEngine_sp engine, llvmo::
     */
 void redirect_llvm_interface_addSymbol();
 
-
-bool llvm_sys__load_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID );
-bool llvm_sys__load_bc(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID );
+bool llvm_sys__load_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID);
+bool llvm_sys__load_bc(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID);
 
 ClaspJIT_sp llvm_sys__clasp_jit();
-
 
 void initialize_llvm();
 void initialize_ClaspJIT();
 
 core::Pointer_mv cmp__compile_trampoline(core::T_sp name);
 
-};
-#endif
+}; // namespace llvmo

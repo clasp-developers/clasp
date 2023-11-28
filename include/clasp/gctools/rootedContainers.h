@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -25,15 +25,12 @@ THE SOFTWARE.
 */
 /* -^- */
 
-template <class _C_>
-rooted_vector : public vector<_C_> {
+template <class _C_> rooted_vector : public vector<_C_> {
 private:
-  typedef typename rooted_vector<_C_> *rooted_vector_ptr;
+  typedef typename rooted_vector<_C_>* rooted_vector_ptr;
   rooted_vector_ptr _next;
   rooted_vector_ptr _prev;
 
 private:
-  rooted_vector() : vector<_C_>() {
-    _thread.insert_rooted_vector(this);
-  };
+  rooted_vector() : vector<_C_>() { _thread.insert_rooted_vector(this); };
 }

@@ -31,11 +31,11 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 
 namespace cl {
-extern core::Symbol_sp &_sym_findClass;
-extern core::Symbol_sp &_sym_undefinedFunction;
+extern core::Symbol_sp& _sym_findClass;
+extern core::Symbol_sp& _sym_undefinedFunction;
 }; // namespace cl
 namespace kw {
-extern core::Symbol_sp &_sym_name;
+extern core::Symbol_sp& _sym_name;
 };
 
 namespace core {
@@ -98,20 +98,20 @@ inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3, T
   return func->entry_5()(func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(), arg4.raw_());
 }
 
-template <class... ARGS> inline LCC_RETURN funcall(T_sp fn, ARGS &&...args) {
+template <class... ARGS> inline LCC_RETURN funcall(T_sp fn, ARGS&&... args) {
   Function_sp func = coerce::calledFunctionDesignator(fn);
   size_t nargs = sizeof...(ARGS);
-  T_O *aargs[sizeof...(ARGS)] = {args.raw_()...};
+  T_O* aargs[sizeof...(ARGS)] = {args.raw_()...};
   return func->entry()(func.raw_(), nargs, &aargs[0]);
 }
 
 }; // namespace eval
 
 namespace eval {
-void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString,
-                                              gc::Nilable<String_sp> &documentation, List_sp &code, List_sp &specials);
+void extract_declares_docstring_code_specials(List_sp inputBody, List_sp& declares, bool expectDocString,
+                                              gc::Nilable<String_sp>& documentation, List_sp& code, List_sp& specials);
 
-void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code);
+void parse_lambda_body(List_sp body, List_sp& declares, gc::Nilable<String_sp>& docstring, List_sp& code);
 }; // namespace eval
 }; // namespace core
 

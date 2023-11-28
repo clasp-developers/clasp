@@ -158,7 +158,7 @@ template <int Start, typename Muple> struct muple_runsum {
 // Dump a muples value
 
 namespace clbind {
-template <typename... Ts> void print_muple(const std::string &name, const muple<Ts...> &muple) {
+template <typename... Ts> void print_muple(const std::string& name, const muple<Ts...>& muple) {
   (void)muple;
   std::cout << name << " -> ";
   ((std::cout << " " << Ts::value), ...);
@@ -385,7 +385,7 @@ template <typename ValIndex, typename Type> struct prepare_argument {};
 
 template <int Index, typename Type> struct prepare_argument<Val<Index>, Type> {
   using type = translate::from_object<Type, std::true_type>;
-  static translate::from_object<Type, std::true_type> goFrame(gctools::Frame::ElementType *frame) {
+  static translate::from_object<Type, std::true_type> goFrame(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
     return translate::from_object<Type, std::true_type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)(frame[Index])));
   }
@@ -399,7 +399,7 @@ template <int Index, typename Type> struct prepare_argument<Val<Index>, Type> {
 
 template <typename Type> struct prepare_argument<Val<32767>, Type> {
   using type = translate::from_object<Type, std::false_type>;
-  static translate::from_object<Type, std::false_type> goFrame(gctools::Frame::ElementType *frame) {
+  static translate::from_object<Type, std::false_type> goFrame(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
     return translate::from_object<Type, std::false_type>(nil<core::T_O>());
   }
@@ -418,7 +418,7 @@ template <typename MupleIndices, typename SequenceIndices, typename... Args> str
 template <typename MupleIndices, size_t... Is, typename... Args>
 struct arg_tuple_impl<MupleIndices, std::integer_sequence<size_t, Is...>, Args...> {
   using type = std::tuple<typename prepare_argument<typename muple_element<Is, MupleIndices>::type, Args>::type...>;
-  static type goFrame(gctools::Frame::ElementType *frame) {
+  static type goFrame(gctools::Frame::ElementType* frame) {
     return {(prepare_argument<typename muple_element<Is, MupleIndices>::type, Args>::goFrame(frame))...};
   }
 #if 0
@@ -433,7 +433,7 @@ template <int Start, typename Policies, typename... ARGS> struct arg_tuple {
   using maskMuple = typename inValueMaskMuple<sizeof...(ARGS), Policies>::type;
   using indexMuple = typename inValueIndexMuple<Start - 1, maskMuple>::type;
   using type = typename detail::arg_tuple_impl<indexMuple, std::index_sequence_for<ARGS...>, ARGS...>::type;
-  static type goFrame(gctools::Frame::ElementType *frame) {
+  static type goFrame(gctools::Frame::ElementType* frame) {
     return detail::arg_tuple_impl<indexMuple, std::index_sequence_for<ARGS...>, ARGS...>::goFrame(frame);
   };
 #if 0
@@ -456,7 +456,7 @@ template <typename Val, typename Policies, size_t Is, typename ArgTuple, typenam
 
 template <int Index, typename Policies, size_t Is, typename ArgTuple, typename Type>
 struct do_return<Val<Index>, Policies, Is, ArgTuple, Type> {
-  constexpr static void go(core::T_O **return_values, ArgTuple &&args) {
+  constexpr static void go(core::T_O** return_values, ArgTuple&& args) {
     // Return an initialized from_object for the argument
     auto preval = std::get<Is>(args)._v;
     auto val =
@@ -467,7 +467,7 @@ struct do_return<Val<Index>, Policies, Is, ArgTuple, Type> {
 
 template <typename Policies, size_t Is, typename ArgTuple, typename Type>
 struct do_return<Val<32767>, Policies, Is, ArgTuple, Type> {
-  constexpr static void go(core::T_O **return_values, ArgTuple &&args) {
+  constexpr static void go(core::T_O** return_values, ArgTuple&& args) {
     // Do nothing - this argument does not have a return value
   }
 };
@@ -478,7 +478,7 @@ template <int Start, typename Policies, typename ArgTuple, size_t... Is, typenam
 struct return_multiple_values<Start, Policies, ArgTuple, std::integer_sequence<size_t, Is...>, Types...> {
   using OutValueMaskMuple = typename outValueMaskMuple<sizeof...(Types), Policies>::type;
   using OutValueIndexMuple = typename outValueIndexMuple<Start - 1, OutValueMaskMuple>::type;
-  static size_t go(ArgTuple &&args, core::T_O **outputs) {
+  static size_t go(ArgTuple&& args, core::T_O** outputs) {
     (do_return<typename muple_element<Is, OutValueIndexMuple>::type, Policies, Is, ArgTuple, Types>::go(
          outputs, std::forward<ArgTuple>(args)),
      ...);
@@ -493,7 +493,7 @@ template <int Start, typename Policies, typename ArgTuple, typename... Types, si
 struct tuple_return_multiple_values<Start, Policies, ArgTuple, std::tuple<Types...>, std::integer_sequence<size_t, Is...>> {
   using OutValueMaskMuple = typename outValueMaskMuple<sizeof...(Types), Policies>::type;
   using OutValueIndexMuple = typename outValueIndexMuple<Start - 1, OutValueMaskMuple>::type;
-  static size_t go(ArgTuple &&args, core::T_O **outputs) {
+  static size_t go(ArgTuple&& args, core::T_O** outputs) {
     (do_return<typename muple_element<Is, OutValueIndexMuple>::type, Policies, Is, ArgTuple, Types>::go(
          outputs, std::forward<ArgTuple>(args)),
      ...);
@@ -507,7 +507,7 @@ struct tuple_return_multiple_values<Start, Policies, ArgTuple, std::tuple<Types.
 // apply
 namespace clbind {
 namespace detail {
-template <class F, class ArgTuple, std::size_t... I> decltype(auto) apply_impl(F &&f, ArgTuple &&t, std::index_sequence<I...>) {
+template <class F, class ArgTuple, std::size_t... I> decltype(auto) apply_impl(F&& f, ArgTuple&& t, std::index_sequence<I...>) {
   // This is where the MAGIC happens!
   // Apply the function to the arguments in the tuple of from_object objects
   //  return std::invoke(std::forward<F>(f), (std::get<I>(std::forward<Args>(t))._v)...);
@@ -515,7 +515,7 @@ template <class F, class ArgTuple, std::size_t... I> decltype(auto) apply_impl(F
 }
 } // namespace detail
 
-template <class F, class ArgTuple> decltype(auto) apply(F &&f, ArgTuple &&t) {
+template <class F, class ArgTuple> decltype(auto) apply(F&& f, ArgTuple&& t) {
   //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};
   return detail::apply_impl(std::forward<F>(f), std::forward<ArgTuple>(t),
                             std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
@@ -531,15 +531,15 @@ template <class F, class ArgTuple> decltype(auto) apply(F &&f, ArgTuple &&t) {
 namespace clbind {
 namespace detail {
 template <class ConstructType, class Args, std::size_t... I>
-constexpr decltype(auto) constructor_apply_impl(/*std::tuple<Args...>*/ Args &&t, std::index_sequence<I...>) {
+constexpr decltype(auto) constructor_apply_impl(/*std::tuple<Args...>*/ Args&& t, std::index_sequence<I...>) {
   // This is where the MAGIC happens!
   // Apply the function to the arguments in the tuple of from_object objects
-  ConstructType *obj(new ConstructType(std::get<I>(std::forward<Args>(t))._v...));
+  ConstructType* obj(new ConstructType(std::get<I>(std::forward<Args>(t))._v...));
   return obj;
 }
 } // namespace detail
 
-template <class ConstructType, class ArgTuple> constexpr decltype(auto) constructor_apply(ArgTuple &&t) {
+template <class ConstructType, class ArgTuple> constexpr decltype(auto) constructor_apply(ArgTuple&& t) {
   return detail::constructor_apply_impl<ConstructType>(std::forward<ArgTuple>(t),
                                                        std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
 }
@@ -550,13 +550,13 @@ template <class ConstructType, class ArgTuple> constexpr decltype(auto) construc
 namespace clbind {
 namespace detail {
 template <class F, class OT, class... Args, std::size_t... I>
-constexpr decltype(auto) method_apply_impl(F &&f, OT &&object, std::tuple<Args...> &&t, std::index_sequence<I...>) {
+constexpr decltype(auto) method_apply_impl(F&& f, OT&& object, std::tuple<Args...>&& t, std::index_sequence<I...>) {
   return std::invoke(std::forward<F>(f), std::forward<OT>(object), (get<I>(std::forward<std::tuple<Args...>>(t))._v)...);
   // Note: std::invoke is a C++17 feature
 }
 } // namespace detail
 
-template <class F, class OT, class ArgTuple> constexpr decltype(auto) method_apply(F &&f, OT &&object, ArgTuple &&t) {
+template <class F, class OT, class ArgTuple> constexpr decltype(auto) method_apply(F&& f, OT&& object, ArgTuple&& t) {
   //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};
   return detail::method_apply_impl(std::forward<F>(f), std::forward<OT>(object), std::forward<ArgTuple>(t),
                                    std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
@@ -571,13 +571,13 @@ template <class F, class OT, class ArgTuple> constexpr decltype(auto) method_app
 namespace clbind {
 namespace detail {
 template <class F, class OT, class... Args, std::size_t... I>
-constexpr decltype(auto) external_method_apply_impl(F &&f, OT *objectP, std::tuple<Args...> &&t, std::index_sequence<I...>) {
+constexpr decltype(auto) external_method_apply_impl(F&& f, OT* objectP, std::tuple<Args...>&& t, std::index_sequence<I...>) {
   return std::invoke(std::forward<F>(f), objectP->wrappedPtr(), (get<I>(std::forward<std::tuple<Args...>>(t))._v)...);
   // Note: std::invoke is a C++17 feature
 }
 } // namespace detail
 
-template <class F, class OT, class ArgTuple> constexpr decltype(auto) external_method_apply(F &&f, OT *objectP, ArgTuple &&t) {
+template <class F, class OT, class ArgTuple> constexpr decltype(auto) external_method_apply(F&& f, OT* objectP, ArgTuple&& t) {
   //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};
   return detail::external_method_apply_impl(std::forward<F>(f), objectP, std::forward<ArgTuple>(t),
                                             std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
@@ -592,14 +592,14 @@ template <class F, class OT, class ArgTuple> constexpr decltype(auto) external_m
 namespace clbind {
 namespace detail {
 template <class F, class OT, class... Args, std::size_t... I>
-constexpr decltype(auto) clbind_external_method_apply_impl(F &&f, OT *objectP, std::tuple<Args...> &&t, std::index_sequence<I...>) {
+constexpr decltype(auto) clbind_external_method_apply_impl(F&& f, OT* objectP, std::tuple<Args...>&& t, std::index_sequence<I...>) {
   return std::invoke(std::forward<F>(f), objectP, (get<I>(std::forward<std::tuple<Args...>>(t))._v)...);
   // Note: std::invoke is a C++17 feature
 }
 } // namespace detail
 
 template <class F, class OT, class ArgTuple>
-constexpr decltype(auto) clbind_external_method_apply(F &&f, OT *objectP, ArgTuple &&t) {
+constexpr decltype(auto) clbind_external_method_apply(F&& f, OT* objectP, ArgTuple&& t) {
   //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};
   return detail::clbind_external_method_apply_impl(std::forward<F>(f), objectP, std::forward<ArgTuple>(t),
                                                    std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
@@ -610,7 +610,7 @@ constexpr decltype(auto) clbind_external_method_apply(F &&f, OT *objectP, ArgTup
 
 #ifdef TEST_APPLY
 struct WrapperBase {
-  virtual size_t entry(size_t numArgs, gctools::Frame::ElementType *inputs, gctools::Frame::ElementType *outputs) {
+  virtual size_t entry(size_t numArgs, gctools::Frame::ElementType* inputs, gctools::Frame::ElementType* outputs) {
     std::cout << "WrapperBase::entry - entered entry point numArgs -> " << numArgs << "\n";
     std::cout << "You shouldn't call this one - you want the derived class\n";
     return 0;
@@ -623,7 +623,7 @@ template <typename Policies, typename RT, typename... Args> struct Wrapper<RT (*
   typedef RT (*FuncType)(Args...);
   FuncType fptr;
   Wrapper(FuncType func, Policies policies) : fptr(func){};
-  virtual size_t entry(size_t numArgs, gctools::Frame::ElementType *inputs, gctools::Frame::ElementType *outputs) {
+  virtual size_t entry(size_t numArgs, gctools::Frame::ElementType* inputs, gctools::Frame::ElementType* outputs) {
     std::cout << "The correct entry point numArgs = " << numArgs << "\n";
     auto args = clbind::arg_tuple<-1, Policies, Args...>::go(inputs);
     RT ret0 = clbind::apply(this->fptr, (args));
@@ -633,11 +633,11 @@ template <typename Policies, typename RT, typename... Args> struct Wrapper<RT (*
   };
 };
 
-template <typename Func, typename Policies> WrapperBase *wrap(const std::string &name, Func func, Policies policies) {
+template <typename Func, typename Policies> WrapperBase* wrap(const std::string& name, Func func, Policies policies) {
   return new Wrapper<Func, Policies>(func, policies);
 }
 
-int weirdo(int x, int y, int &subtract, int &divide, int z) {
+int weirdo(int x, int y, int& subtract, int& divide, int z) {
   std::cout << "Entered weirdo with x=" << x << " y=" << y << " z=" << z << std::endl;
   subtract = x - y + z;
   if (y == 0)
@@ -674,7 +674,7 @@ int main() // int argc, const char* argv[])
   using simple = clbind::SimpleMuple<9, 10>::type;
   print_muple("simple", simple());
 
-  WrapperBase *wrapped_weirdo = wrap("weirdo", &weirdo, policies<pureOutValue<2>, pureOutValue<3>>());
+  WrapperBase* wrapped_weirdo = wrap("weirdo", &weirdo, policies<pureOutValue<2>, pureOutValue<3>>());
 
   int inputs[10];
   int outputs[10];

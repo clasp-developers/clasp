@@ -35,7 +35,7 @@ CL_DOCSTRING(R"dx(Create a core:pointer using a fixnum as the address.)dx");
 DOCGROUP(clasp);
 CL_DEFUN Pointer_sp core__make_pointer(T_sp address) {
   if (address.fixnump()) {
-    return Pointer_O::create((void *)address.unsafe_fixnum());
+    return Pointer_O::create((void*)address.unsafe_fixnum());
   }
   SIMPLE_ERROR("Cannot convert {} to pointer", _rep_(address));
 }
@@ -46,7 +46,7 @@ CL_DEFUN SimpleBaseString_sp core__pointer_as_string(Pointer_sp p) {
   return s;
 }
 
-Pointer_sp Pointer_O::create(void *p) {
+Pointer_sp Pointer_O::create(void* p) {
   auto ptr = gctools::GC<Pointer_O>::allocate_with_default_constructor();
   ptr->m_raw_data = p;
   return ptr;
@@ -63,7 +63,7 @@ bool Pointer_O::eql_(T_sp obj) const {
 
 string Pointer_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " :ptr " << fmt::format("{}", (void *)this->m_raw_data) << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " :ptr " << fmt::format("{}", (void*)this->m_raw_data) << ">";
   return ss.str();
 }
 
@@ -97,12 +97,12 @@ CL_DEFUN Pointer_sp core__pointer_increment(Pointer_sp ptr,Fixnum inc)
 #endif
 
 CL_DEFMETHOD Fixnum Pointer_O::peekByte() const {
-  unsigned char byte = *(unsigned char *)this->ptr();
+  unsigned char byte = *(unsigned char*)this->ptr();
   return byte;
 };
 
 CL_DEFMETHOD void Pointer_O::inPlaceIncrement(Fixnum offset) {
-  this->m_raw_data = (void *)((unsigned char *)this->m_raw_data + offset);
+  this->m_raw_data = (void*)((unsigned char*)this->m_raw_data + offset);
 };
 
 }; // namespace core

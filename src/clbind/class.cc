@@ -82,7 +82,7 @@ void trapGetterMethoid() {
 namespace clbind {
 namespace detail {
 
-class_registration::class_registration(const std::string &name) : m_default_constructor(NULL) { m_name = name; }
+class_registration::class_registration(const std::string& name) : m_default_constructor(NULL) { m_name = name; }
 
 void class_registration::register_() const {
   LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
@@ -138,14 +138,14 @@ void class_registration::register_() const {
 
   m_members.register_();
 
-  cast_graph *const casts = globalCastGraph;
-  class_id_map *const class_ids = globalClassIdMap;
+  cast_graph* const casts = globalCastGraph;
+  class_id_map* const class_ids = globalClassIdMap;
 
   class_ids->put(m_id, m_type);
   if (has_wrapper)
     class_ids->put(m_wrapper_id, m_wrapper_type);
 
-  BOOST_FOREACH (cast_entry const &e, m_casts) {
+  BOOST_FOREACH (cast_entry const& e, m_casts) {
     casts->insert(e.src, e.target, e.cast);
   }
 
@@ -171,10 +171,10 @@ void class_registration::register_() const {
 
 // -- interface ---------------------------------------------------------
 
-class_base::class_base(const string &name)
+class_base::class_base(const string& name)
     : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name))), m_init_counter(0) {}
 
-void class_base::init(type_id const &type_id_, class_id id, type_id const &wrapper_type, class_id wrapper_id, bool derivable) {
+void class_base::init(type_id const& type_id_, class_id id, type_id const& wrapper_type, class_id wrapper_id, bool derivable) {
   //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   m_registration->m_type = type_id_;
   m_registration->m_id = id;
@@ -183,43 +183,43 @@ void class_base::init(type_id const &type_id_, class_id id, type_id const &wrapp
   m_registration->m_derivable = derivable;
 }
 
-void class_base::add_base(type_id const &base, cast_function cast) {
+void class_base::add_base(type_id const& base, cast_function cast) {
   m_registration->m_bases.push_back(std::make_pair(base, cast));
 }
 
-void class_base::set_default_constructor(registration *member) {
+void class_base::set_default_constructor(registration* member) {
   //            std::auto_ptr<registration> ptr(member);
   m_registration->m_default_constructor = member;
 }
 
-void class_base::add_member(registration *member) {
+void class_base::add_member(registration* member) {
   std::unique_ptr<registration> ptr(member);
   m_registration->m_members.operator,(scope_(std::move(ptr)));
 }
 
-void class_base::add_default_member(registration *member) {
+void class_base::add_default_member(registration* member) {
   std::unique_ptr<registration> ptr(member);
   m_registration->m_default_members.operator,(scope_(std::move(ptr)));
 }
 
 string class_base::name() const { return m_registration->m_name; }
 
-void class_base::add_static_constant(const char *name, int val) { m_registration->m_static_constants[name] = val; }
+void class_base::add_static_constant(const char* name, int val) { m_registration->m_static_constants[name] = val; }
 
-void class_base::add_inner_scope(scope_ &s) { m_registration->m_scope.operator,(s); }
+void class_base::add_inner_scope(scope_& s) { m_registration->m_scope.operator,(s); }
 
 void class_base::add_cast(class_id src, class_id target, cast_function cast) {
   //  printf("%s:%d:%s   src[%lu] target[%lu] cast=%p\n", __FILE__,__LINE__,__FUNCTION__,src,target,(void*)cast);
   m_registration->m_casts.push_back(cast_entry(src, target, cast));
 }
 
-void add_custom_name(type_id const &i, std::string &s) {
+void add_custom_name(type_id const& i, std::string& s) {
   s += " [";
   s += i.name();
   s += "]";
 }
 
-std::string get_class_name(core::LispPtr L, type_id const &i) {
+std::string get_class_name(core::LispPtr L, type_id const& i) {
   IMPLEMENT_MEF("get_class_name");
 #if 0  // start_meister_disabled
             std::string ret;

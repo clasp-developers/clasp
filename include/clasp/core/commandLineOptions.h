@@ -30,7 +30,7 @@ namespace core {
 
 struct CommandLineOptions;
 
-typedef void (*process_arguments_callback)(CommandLineOptions *);
+typedef void (*process_arguments_callback)(CommandLineOptions*);
 
 extern bool global_debug_start_code;
 
@@ -47,7 +47,7 @@ typedef enum {
 } StartupTypeEnum;
 
 struct CommandLineOptions {
-  CommandLineOptions(int argc, const char *argv[]);
+  CommandLineOptions(int argc, const char* argv[]);
   process_arguments_callback _ProcessArguments;
   std::string _ExecutableName;
   bool _JITLogSymbols;
@@ -79,17 +79,17 @@ struct CommandLineOptions {
   bool _PauseForDebugger;
   bool _GenerateTrampolines;
 
-  bool validStartupTypeOption(const std::string &arg);
+  bool validStartupTypeOption(const std::string& arg);
   void printVersion();
 };
 
-void maybeHandleAddressesOption(CommandLineOptions *options);
+void maybeHandleAddressesOption(CommandLineOptions* options);
 
 }; // namespace core
 
 template <typename Char> struct fmt::formatter<core::LoadEvalEnum, Char> : fmt::formatter<fmt::basic_string_view<Char>> {
   template <typename FormatContext>
-  auto format(const core::LoadEvalEnum &o, FormatContext &ctx) const -> typename FormatContext::iterator {
+  auto format(const core::LoadEvalEnum& o, FormatContext& ctx) const -> typename FormatContext::iterator {
     return fmt::formatter<fmt::basic_string_view<Char>>::format(
         o == core::cloLoad ? "load" : (o == core::cloEval ? "eval" : "script"), ctx);
   }

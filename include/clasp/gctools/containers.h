@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: containers.h
 */
@@ -24,8 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef gctools_memory_H
-#define gctools_memory_H
 
 #include <utility>
 namespace gctools {
@@ -51,9 +51,9 @@ template <class Vec> class Vec0_impl {
 public:
   typedef Vec vector_type;
   typedef typename vector_type::value_type value_type;
-  typedef typename vector_type::value_type *pointer_type;
-  typedef value_type &reference;
-  typedef const value_type &const_reference;
+  typedef typename vector_type::value_type* pointer_type;
+  typedef value_type& reference;
+  typedef const value_type& const_reference;
   typedef typename vector_type::iterator iterator;
   typedef typename vector_type::const_iterator const_iterator;
   typedef typename vector_type::difference_type difference_type;
@@ -70,7 +70,7 @@ public:
   typename Vec::pointer_to_moveable contents() const { return this->_Vector.contents(); };
 
 public:
-  void swap(Vec0_impl &other) { this->_Vector.swap(other._Vector); };
+  void swap(Vec0_impl& other) { this->_Vector.swap(other._Vector); };
   iterator begin() { return this->_Vector.begin(); };
   iterator end() { return this->_Vector.end(); };
   const_iterator begin() const { return this->_Vector.begin(); };
@@ -82,18 +82,18 @@ public:
   size_t capacity() const { return this->_Vector.capacity(); };
   size_t max_size() const { return ~(size_t)0; };
   pointer_type data() const { return this->_Vector._Contents->data(); };
-  inline void operator=(const Vec0_impl &other) { this->_Vector = other._Vector; }
+  inline void operator=(const Vec0_impl& other) { this->_Vector = other._Vector; }
   inline reference operator[](size_t i) { return this->_Vector[i]; };
   inline const_reference operator[](size_t i) const { return this->_Vector[i]; };
-  void resize(size_t n, const value_type &initialElement = value_type()) { this->_Vector.resize(n, initialElement); };
+  void resize(size_t n, const value_type& initialElement = value_type()) { this->_Vector.resize(n, initialElement); };
   void reserve(size_t n) { this->_Vector.reserve(n); };
-  void assign(size_t count, const value_type &value) {
+  void assign(size_t count, const value_type& value) {
     this->resize(count);
     for (size_t zz = 0; zz < count; zz++)
       this->_Vector[zz] = value;
   }
   void assign(const_iterator begin, const_iterator end) {
-    size_t count = std::distance(begin,end);
+    size_t count = std::distance(begin, end);
     this->resize(count);
     for (size_t zz = 0; zz < count; zz++)
       this->_Vector[zz] = begin[zz];
@@ -105,13 +105,13 @@ public:
   const_reference front() const { return this->_Vector[0]; }
   reference back() { return this->_Vector[this->_Vector.size() - 1]; }
   const_reference back() const { return this->_Vector[this->_Vector.size() - 1]; }
-  iterator insert(const_iterator position, const value_type &val) {
+  iterator insert(const_iterator position, const value_type& val) {
     return const_cast<iterator>(this->_Vector.emplace(position, val));
   };
-  template <typename... ARGS> iterator emplace(const_iterator position, ARGS &&...args) {
+  template <typename... ARGS> iterator emplace(const_iterator position, ARGS&&... args) {
     return this->_Vector.emplace(position, std::forward<ARGS>(args)...);
   };
-  template <typename... ARGS> void emplace_back(ARGS &&...args) { this->_Vector.emplace_back(std::forward<ARGS>(args)...); };
+  template <typename... ARGS> void emplace_back(ARGS&&... args) { this->_Vector.emplace_back(std::forward<ARGS>(args)...); };
   iterator erase(iterator position) { return this->_Vector.erase(position); };
 };
 
@@ -122,9 +122,9 @@ template <class Arr> class Array0_impl {
 public:
   typedef Arr array_type;
   typedef typename array_type::value_type value_type;
-  typedef typename array_type::value_type *pointer_type;
-  typedef value_type &reference;
-  typedef const value_type &const_reference;
+  typedef typename array_type::value_type* pointer_type;
+  typedef value_type& reference;
+  typedef const value_type& const_reference;
   typedef typename array_type::iterator iterator;
   typedef typename array_type::const_iterator const_iterator;
 
@@ -141,7 +141,7 @@ public:
   typename Arr::pointer_to_moveable contents() const { return this->_Array.contents(); };
 
 public:
-  template <typename... ARGS> void allocate(size_t numExtraArgs, const value_type &initialValue, ARGS &&...args) {
+  template <typename... ARGS> void allocate(size_t numExtraArgs, const value_type& initialValue, ARGS&&... args) {
     this->_Array.allocate(numExtraArgs, initialValue, std::forward<ARGS>(args)...);
   }
 
@@ -171,7 +171,7 @@ template <class T> class Vec0_uncopyable : public Vec0<T> {
 public:
   typedef Vec0<T> Base;
   Vec0_uncopyable() : Base(){};
-  Vec0_uncopyable(const Vec0_uncopyable<T> &orig) : Base(){};
+  Vec0_uncopyable(const Vec0_uncopyable<T>& orig) : Base(){};
 };
 
 template <class K, class V> class SmallMap : public GCSmallMap<K, V, GCContainerAllocator<GCVector_moveable<pair<K, V>>>> {
@@ -205,7 +205,7 @@ public:
   }
 
   SmallMultimap_uncopyable() : Base(){};
-  SmallMultimap_uncopyable(const SmallMultimap_uncopyable<K, V, Compare> &other) : Base(){};
+  SmallMultimap_uncopyable(const SmallMultimap_uncopyable<K, V, Compare>& other) : Base(){};
 };
 
 template <class K> class SmallOrderedSet : public GCSmallSet<K, GCContainerAllocator<GCVector_moveable<K>>> {
@@ -215,4 +215,3 @@ public:
 };
 
 }; // namespace gctools
-#endif

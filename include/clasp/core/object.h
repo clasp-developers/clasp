@@ -120,7 +120,7 @@ template <class T_Base> struct LispBases1 {
 };
 
 namespace core {
-extern void lisp_write(const std::string &s);
+extern void lisp_write(const std::string& s);
 };
 
 namespace core {
@@ -156,7 +156,7 @@ public:
     return true;
   }
   /* Add the limbs of the bignum - the value*/
-  bool addValue(const mpz_class &bignum);
+  bool addValue(const mpz_class& bignum);
 
   // Add an address - this may need to work with location dependency
   bool addConsAddress(Cons_sp part) { return this->addValue(gctools::lisp_cons_badge(part)); };
@@ -243,7 +243,7 @@ public:
   bool addGeneralAddress(General_sp part) { return this->addValue(gctools::lisp_general_badge(part)); };
 
   /*Add the bignum across multiple parts, return true if everything was added */
-  bool addValue(const mpz_class &bignum);
+  bool addValue(const mpz_class& bignum);
 
   gc::Fixnum rawhash() const {
     gc::Fixnum hash = 5381;
@@ -298,7 +298,7 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag value, Creat
                                                                                                                                    \
 public:                                                                                                                            \
   template <class DestClass> gctools::smart_ptr<DestClass> const_sharedThis() const {                                              \
-    oClass *not_const_this_gc_safe = const_cast<oClass *>(this);                                                                   \
+    oClass* not_const_this_gc_safe = const_cast<oClass*>(this);                                                                    \
     return gctools::smart_ptr<DestClass>(not_const_this_gc_safe);                                                                  \
   };                                                                                                                               \
   template <class DestClass> gctools::smart_ptr<DestClass> sharedThis() { return gctools::smart_ptr<DestClass>(this); };           \
@@ -328,7 +328,7 @@ public:                                                                         
   static string Package() { return oClass::static_packageName(); };                                                                \
   static string Pkg() { return Package(); };                                                                                       \
   static void register_class_with_redeye() { gctools::GCObjectAllocator<oClass>::register_class_with_redeye(); }                   \
-  oClass(snapshotSaveLoad::snapshot_save_load_init_s *isl) { isl->fill((void *)this); };                                           \
+  oClass(snapshotSaveLoad::snapshot_save_load_init_s* isl) { isl->fill((void*)this); };                                            \
   static void expose_to_clasp();
 
 #define LISP_TEMPLATE_CLASS(oClass) COMMON_CLASS_PARTS(CurrentPkg, oClass, typeid(oClass).name())
@@ -396,19 +396,19 @@ class General_O : public T_O {
 public:
   General_O(){};
 
-  virtual void sxhash_(HashGenerator &hg) const;
-  virtual void sxhash_equal(HashGenerator &hg) const;
-  virtual void sxhash_equalp(HashGenerator &hg) const { return this->sxhash_equal(hg); };
+  virtual void sxhash_(HashGenerator& hg) const;
+  virtual void sxhash_equal(HashGenerator& hg) const;
+  virtual void sxhash_equalp(HashGenerator& hg) const { return this->sxhash_equal(hg); };
 
   virtual size_t templatedSizeof() const { return 0; };
   virtual bool enableSnapshotSaveLoad() const { return true; };
-  virtual void validateCodePointer(void **funcPtr, size_t sizeofFuncPtr) {
+  virtual void validateCodePointer(void** funcPtr, size_t sizeofFuncPtr) {
     // Do nothing currently
   }
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup){
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup){
       // Do nothing by default
   };
-  virtual void fixupOneCodePointer(snapshotSaveLoad::Fixup *fixup, void **address) {
+  virtual void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** address) {
     printf("%s:%d:%s Should never be called - subclass must implement\n", __FILE__, __LINE__, __FUNCTION__);
   };
   //! Initialize member variables and those that depend on sharedThis
@@ -457,7 +457,7 @@ public:
   virtual bool equalp(T_sp obj) const;
 
   //! This is to support Derivable<T> classes in clbind
-  virtual void *pointerToAlienWithin() { return NULL; };
+  virtual void* pointerToAlienWithin() { return NULL; };
 
 public: // Instance protocol
         //! Some Class objects will create instances of classes different from themselves
@@ -475,7 +475,7 @@ public: // Instance protocol
   /*! Get the signature (metaclass slot definitions) for the instance */
   virtual T_sp instanceSig() const;
 
-  virtual Fixnum get_stamp_() const { lisp_error_no_stamp((void *)this); };
+  virtual Fixnum get_stamp_() const { lisp_error_no_stamp((void*)this); };
 };
 }; // namespace core
 
@@ -524,7 +524,7 @@ inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
   } else if (x.generalp()) {
     if (x.raw_() == y.raw_())
       return true;
-    General_O *general = x.unsafe_general();
+    General_O* general = x.unsafe_general();
     return general->eql_(y);
   }
   SIMPLE_ERROR("Bad eql comparison");
@@ -535,7 +535,7 @@ CL_DECLARE();
 CL_DOCSTRING("Underlying eql. Only valid on general objects (not fixnums, single floats, characters, or conses)")
 DOCGROUP(clasp)
 inline CL_DEFUN bool core__eql_underlying(T_sp x, T_sp y) {
-  General_O *general = x.unsafe_general();
+  General_O* general = x.unsafe_general();
   return general->eql_(y);
 };
 
@@ -557,10 +557,10 @@ inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
     }
     return false;
   } else if (x.consp()) {
-    Cons_O *cons = x.unsafe_cons();
+    Cons_O* cons = x.unsafe_cons();
     return cons->equal(y);
   } else if (x.generalp()) {
-    General_O *general = x.unsafe_general();
+    General_O* general = x.unsafe_general();
     return general->equal(y);
   }
   SIMPLE_ERROR("Bad equal comparison");
@@ -572,7 +572,7 @@ bool cl__equalp(T_sp x, T_sp y);
 }; // namespace core
 
 namespace core {
-inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
+inline void clasp_sxhash(T_sp obj, HashGenerator& hg) {
   if (obj.fixnump()) {
     hg.addValue(obj.unsafe_fixnum());
     return;
@@ -583,17 +583,17 @@ inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
     hg.addValue(obj.unsafe_character());
     return;
   } else if (obj.consp()) {
-    Cons_O *cons = obj.unsafe_cons();
+    Cons_O* cons = obj.unsafe_cons();
     cons->sxhash_(hg);
     return;
   } else if (obj.generalp()) {
-    General_O *general = obj.unsafe_general();
+    General_O* general = obj.unsafe_general();
     general->sxhash_(hg);
     return;
   }
   SIMPLE_ERROR("Handle sxhash_ for object");
 };
-inline void clasp_sxhash(T_sp obj, Hash1Generator &hg) {
+inline void clasp_sxhash(T_sp obj, Hash1Generator& hg) {
   if (obj.fixnump()) {
     hg.addValue(obj.unsafe_fixnum());
     return;

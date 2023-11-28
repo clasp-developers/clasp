@@ -11,7 +11,7 @@ FORWARD(SimpleMDArrayBit_O);
 } // namespace core
 
 namespace core {
-bool ranged_bit_vector_EQ_(const SimpleBitVector_O &x, const SimpleBitVector_O &y, size_t startx, size_t endx, size_t starty,
+bool ranged_bit_vector_EQ_(const SimpleBitVector_O& x, const SimpleBitVector_O& y, size_t startx, size_t endx, size_t starty,
                            size_t endy);
 
 }
@@ -34,16 +34,16 @@ class SimpleBitVector_O : public specialized_SimpleBitVector {
 public:
   typedef specialized_SimpleBitVector TemplatedBase;
   SimpleBitVector_O(size_t length, bit_array_word initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,
-                    const bit_array_word *initialContents = NULL)
+                    const bit_array_word* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, bit_array_word initialElement = 0, bool initialElementSupplied = false,
-                             size_t initialContentsSize = 0, const bit_array_word *initialContents = NULL,
+                             size_t initialContentsSize = 0, const bit_array_word* initialContents = NULL,
                              bool static_vector_p = false) {
     bit_array_word init = initialFillValue(initialElement);
     return gctools::GC<my_type>::allocate_bitunit_container(static_vector_p, length, init, initialElementSupplied,
                                                             initialContentsSize, initialContents);
   }
-  static smart_ptr_type make(const string &bv);
+  static smart_ptr_type make(const string& bv);
 
 public:
   virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector, clasp_make_fixnum(this->length())); }
@@ -59,8 +59,8 @@ public:
   // for convenience if not speed
   virtual void __write__(T_sp strm) const override final;
   virtual bool equal(T_sp other) const final;
-  virtual void sxhash_(HashGenerator &hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
-  virtual void ranged_sxhash(HashGenerator &hg, size_t start, size_t end) const final {
+  virtual void sxhash_(HashGenerator& hg) const final { this->ranged_sxhash(hg, 0, this->length()); }
+  virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
     if (hg.isFilling()) {
       Fixnum hash = 5381;
       for (size_t i(start); i < end; ++i) {
@@ -102,7 +102,7 @@ public:
   virtual bool equal(T_sp other) const final;
 
 public:
-  virtual void sxhash_(HashGenerator &hg) const final {
+  virtual void sxhash_(HashGenerator& hg) const final {
     if (hg.isFilling()) {
       AbstractSimpleVector_sp svec;
       size_t start, end;
@@ -144,7 +144,7 @@ namespace core {
 void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y);
 void SimpleBitVector_inPlaceAnd(SimpleBitVector_sp x, SimpleBitVector_sp y);
 void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y);
-void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res);
+void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t>& res);
 size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x);
 bool SimpleBitVector_isZero(SimpleBitVector_sp x);
 SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv);

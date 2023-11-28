@@ -38,9 +38,9 @@ struct RawName {
   RawName(const std::string name) : _raw_name(name){};
 };
 
-inline std::string PrepareName(const std::string &name) { return core::lispify_symbol_name(name); }
+inline std::string PrepareName(const std::string& name) { return core::lispify_symbol_name(name); }
 
-inline std::string PrepareName(const RawName &name) { return name._raw_name; }
+inline std::string PrepareName(const RawName& name) { return name._raw_name; }
 }; // namespace clbind
 
 //
@@ -49,4 +49,4 @@ inline std::string PrepareName(const RawName &name) { return name._raw_name; }
 // eg:  scope.def("foo<ThisIsATest>"_raw, ...)
 //          ;; This will bind the symbol |foo<ThisIsATest>|
 //
-inline clbind::RawName operator"" _raw(const char *arg, size_t len) { return clbind::RawName(std::string(arg, len)); }
+inline clbind::RawName operator"" _raw(const char* arg, size_t len) { return clbind::RawName(std::string(arg, len)); }

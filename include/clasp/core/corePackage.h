@@ -31,7 +31,7 @@ THE SOFTWARE.
 
 namespace core {
 
-extern const char *CorePkg_nicknames[];
+extern const char* CorePkg_nicknames[];
 
 FORWARD(CoreExposer);
 class CoreExposer_O : public core::Exposer_O {

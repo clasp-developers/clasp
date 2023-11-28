@@ -50,12 +50,12 @@ private:
   dont_expose<std::filesystem::path> _Path;
 
 public:
-  static Path_sp create(const string &path);
+  static Path_sp create(const string& path);
   static Path_sp create(std::filesystem::path p);
   static Path_sp pathnameDesignator(T_sp obj);
 
 public:
-  std::filesystem::path &getPath() { return this->_Path._value; };
+  std::filesystem::path& getPath() { return this->_Path._value; };
 
 public:
   CL_LISPIFY_NAME("isAbsolute");
@@ -69,10 +69,10 @@ public:
   /*! Return the POSIX time_t value for the last_write_time */
   Integer_sp last_write_time() const;
 
-  void setPath(const std::filesystem::path &p);
-  void setPathFromString(const string &path);
+  void setPath(const std::filesystem::path& p);
+  void setPathFromString(const string& path);
 
-  void sxhash_(HashGenerator &hg) const;
+  void sxhash_(HashGenerator& hg) const;
   Path_sp parent_path();
 
   /*! Return just the fileName (*--end) as a string*/
@@ -94,25 +94,25 @@ public:
   string extension();
 
   /*! Append to the extension with this new extension */
-  void appendToExtension(string const &newExtension);
+  void appendToExtension(string const& newExtension);
 
   /*! Replace the extension with this new extension */
-  Path_sp replaceExtension(string const &newExtension);
+  Path_sp replaceExtension(string const& newExtension);
 
   /*! Append a path component */
-  Path_O &operator/=(string const &pp);
+  Path_O& operator/=(string const& pp);
 
   /*! Append to the path - returns itself */
-  Path_sp path_append(string const &pp);
+  Path_sp path_append(string const& pp);
 
   /*! Break the path up into parts. */
   List_sp parts() const;
 
-  List_sp glob(const string &globTemplate);
+  List_sp glob(const string& globTemplate);
 
   /*! Return true if the file pointed to by this path exists */
   bool exists();
-  Path_O(const Path_O &ss); //!< Copy constructor
+  Path_O(const Path_O& ss); //!< Copy constructor
 
   DEFAULT_CTOR_DTOR(Path_O);
 };
@@ -134,7 +134,7 @@ public:
   /* A new CurrentIterator is created (new) whenever first() is called
            So we have to manage the memory for _CurrentIterator
          */
-  dont_expose<std::filesystem::directory_iterator *> _CurrentIterator;
+  dont_expose<std::filesystem::directory_iterator*> _CurrentIterator;
   dont_expose<std::filesystem::directory_iterator> _EndIterator;
 
 public:
@@ -149,7 +149,7 @@ public:
   virtual void next();
   virtual bool isDone();
   virtual T_sp currentObject();
-  explicit DirectoryIterator_O() : Base(), _CurrentIterator((std::filesystem::directory_iterator *)NULL){};
+  explicit DirectoryIterator_O() : Base(), _CurrentIterator((std::filesystem::directory_iterator*)NULL){};
   virtual ~DirectoryIterator_O(); // non-trivial destructor
 };
 }; // namespace core
@@ -172,7 +172,7 @@ public:
   /* A new CurrentIterator is created (new) whenever first() is called
            So we have to manage the memory for _CurrentIterator
          */
-  dont_expose<std::filesystem::recursive_directory_iterator *> _CurrentIterator;
+  dont_expose<std::filesystem::recursive_directory_iterator*> _CurrentIterator;
   dont_expose<std::filesystem::recursive_directory_iterator> _EndIterator;
 
 public:
@@ -188,7 +188,7 @@ public:
   virtual void next();
   virtual bool isDone();
   virtual T_sp currentObject();
-  explicit RecursiveDirectoryIterator_O() : Base(), _CurrentIterator((std::filesystem::recursive_directory_iterator *)NULL){};
+  explicit RecursiveDirectoryIterator_O() : Base(), _CurrentIterator((std::filesystem::recursive_directory_iterator*)NULL){};
   virtual ~RecursiveDirectoryIterator_O(); // nontrivial
 };
 }; // namespace core
@@ -204,10 +204,10 @@ public:
   void initialize();
 
 private:
-  std::filesystem::directory_entry *_Entry;
+  std::filesystem::directory_entry* _Entry;
 
 public:
-  void setEntry(const std::filesystem::directory_entry &entry);
+  void setEntry(const std::filesystem::directory_entry& entry);
 
 public:
   FileStatus_sp fileStatus();
@@ -235,7 +235,7 @@ private:
   std::filesystem::file_status _FileStatus;
 
 public:
-  void setFileStatus(const std::filesystem::file_status &fs);
+  void setFileStatus(const std::filesystem::file_status& fs);
 
 public:
   bool exists();

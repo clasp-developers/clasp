@@ -148,7 +148,7 @@ T_sp write_object(T_sp x, T_sp stream) {
       cl::_sym_STARprint_prettySTAR->symbolValue().notnilp()) {
     T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, x);
     T_sp f0 = mv_f;
-    MultipleValues &mvn = core::lisp_multipleValues();
+    MultipleValues& mvn = core::lisp_multipleValues();
     T_sp f1 = mvn.valueGet(1, mv_f.number_of_values());
     if (f1.notnilp()) {
       eval::funcall(f0, stream, x);

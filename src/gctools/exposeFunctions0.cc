@@ -35,9 +35,9 @@ THE SOFTWARE.
 #define EXPOSE_FUNCTION_BATCH3
 
 #ifndef SCRAPING
-  #define EXPOSE_FUNCTION_SIGNATURES
-  #include INIT_FUNCTIONS_INC_H
-  #undef EXPOSE_FUNCTION_SIGNATURES
+#define EXPOSE_FUNCTION_SIGNATURES
+#include INIT_FUNCTIONS_INC_H
+#undef EXPOSE_FUNCTION_SIGNATURES
 #endif
 
 extern "C" {
@@ -47,6 +47,4 @@ extern "C" {
 #endif
 };
 
-
 #endif // SCRAPING
-

@@ -32,26 +32,22 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/core/external_wrappers.h>
 
-
 #define BATCH1
 
 #ifndef SCRAPING
 // include INIT_CLASSES_INC_H despite USE_PRECISE_GC
- #define EXPOSE_METHODS
-  #include INIT_CLASSES_INC_H
- #undef EXPOSE_METHODS
+#define EXPOSE_METHODS
+#include INIT_CLASSES_INC_H
+#undef EXPOSE_METHODS
 #endif
 
-void initialize_exposeClasses1()
-{
+void initialize_exposeClasses1() {
 #ifndef SCRAPING
-// include INIT_CLASSES_INC_H despite USE_PRECISE_GC
- #define EXPOSE_CLASSES_AND_METHODS
- #include INIT_CLASSES_INC_H
- #undef EXPOSE_CLASSES_AND_METHODS
+  // include INIT_CLASSES_INC_H despite USE_PRECISE_GC
+#define EXPOSE_CLASSES_AND_METHODS
+#include INIT_CLASSES_INC_H
+#undef EXPOSE_CLASSES_AND_METHODS
 #endif
 }
 
 #endif // #ifndef SCRAPING at top
-
-

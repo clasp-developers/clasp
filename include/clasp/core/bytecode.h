@@ -263,19 +263,19 @@ class VMFrameDynEnv_O : public DynEnv_O {
   LISP_CLASS(core, CorePkg, VMFrameDynEnv_O, "VMFrameDynEnv", DynEnv_O);
 
 public:
-  VMFrameDynEnv_O(T_O **a_old_sp, T_O **a_old_fp) : old_sp(a_old_sp), old_fp(a_old_fp) {}
+  VMFrameDynEnv_O(T_O** a_old_sp, T_O** a_old_fp) : old_sp(a_old_sp), old_fp(a_old_fp) {}
   // Slightly sketchy: We use the destructor to reset the stack pointer,
   // so that C++ unwinds are also affected by this dynenv.
   // This means VMFrames must be stack allocated.
   ~VMFrameDynEnv_O() {
-    VirtualMachine &vm = my_thread->_VM;
+    VirtualMachine& vm = my_thread->_VM;
     vm._stackPointer = this->old_sp;
     vm._framePointer = this->old_fp;
   }
 
 public:
-  T_O **old_sp;
-  T_O **old_fp;
+  T_O** old_sp;
+  T_O** old_fp;
 
 public:
   virtual SearchStatus search() const { return Continue; }
@@ -285,17 +285,17 @@ public:
 
 namespace core {
 
-bool bytecode_module_contains_address_p(BytecodeModule_sp, void *);
-bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp, void *);
-T_sp bytecode_function_for_pc(BytecodeModule_sp, void *);
-T_sp bytecode_spi_for_pc(BytecodeModule_sp, void *);
-List_sp bytecode_bindings_for_pc(BytecodeModule_sp, void *, T_O **);
-void *bytecode_pc();
+bool bytecode_module_contains_address_p(BytecodeModule_sp, void*);
+bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp, void*);
+T_sp bytecode_function_for_pc(BytecodeModule_sp, void*);
+T_sp bytecode_spi_for_pc(BytecodeModule_sp, void*);
+List_sp bytecode_bindings_for_pc(BytecodeModule_sp, void*, T_O**);
+void* bytecode_pc();
 
 }; // namespace core
 
 extern "C" {
-gctools::return_type bytecode_call(unsigned char *pc, core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args);
+gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args);
 
-gctools::return_type gfbytecode_call(unsigned char *pc, core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args);
+gctools::return_type gfbytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args);
 };

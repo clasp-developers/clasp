@@ -76,8 +76,8 @@ THE SOFTWARE.
 
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 namespace core {
-void *find_base_of_loaded_object(const char *name);
-core::SymbolTable load_linux_symbol_table(const char *filename, uintptr_t start, uintptr_t &stackmap_start, size_t &stackmap_size);
+void* find_base_of_loaded_object(const char* name);
+core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintptr_t& stackmap_start, size_t& stackmap_size);
 }; // namespace core
 #endif
 
@@ -85,15 +85,15 @@ namespace core {
 
 DOCGROUP(clasp);
 CL_DEFUN Vaslist_sp core__vaslist_rewind(Vaslist_sp v) {
-  Vaslist *vaslist0 = &*v;
-  Vaslist *vaslist1 = &vaslist0[1];
+  Vaslist* vaslist0 = &*v;
+  Vaslist* vaslist1 = &vaslist0[1];
   memcpy(vaslist0, vaslist1, sizeof(Vaslist));
   return v;
 }
 
 DOCGROUP(clasp);
 CL_DEFUN Vaslist_sp core__do_validate_vaslist(Vaslist_sp v) {
-  if (!gctools::tagged_vaslistp<T_O *>(v.raw_())) {
+  if (!gctools::tagged_vaslistp<T_O*>(v.raw_())) {
     printf("%s:%d:%s vaslist is not tagged properly %p\n", __FILE__, __LINE__, __FUNCTION__, v.raw_());
     abort();
   }
@@ -152,16 +152,16 @@ CL_DEFUN List_sp core__list_from_vaslist(Vaslist_sp vorig) {
 
 namespace core {
 
-DebugInfo *global_DebugInfo = NULL;
+DebugInfo* global_DebugInfo = NULL;
 
-DebugInfo &debugInfo() {
+DebugInfo& debugInfo() {
   if (!global_DebugInfo) {
     global_DebugInfo = new DebugInfo();
   }
   return *global_DebugInfo;
 }
 
-void add_dynamic_library_using_origin(add_dynamic_library *adder, bool is_executable, const std::string &libraryName,
+void add_dynamic_library_using_origin(add_dynamic_library* adder, bool is_executable, const std::string& libraryName,
                                       uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end,
                                       bool hasDataConst, gctools::clasp_ptr_t dataConstStart, gctools::clasp_ptr_t dataConstEnd) {
   // printf("%s:%d:%s  About to call add_dynamic_library_using_origin libname = %s   is_executable = %d\n", __FILE__, __LINE__,
@@ -170,11 +170,11 @@ void add_dynamic_library_using_origin(add_dynamic_library *adder, bool is_execut
                            dataConstStart, dataConstEnd);
 }
 
-bool if_dynamic_library_loaded_remove(const std::string &libraryName) {
+bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
 #ifdef CLASP_THREADS
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 #endif
-  map<string, OpenDynamicLibraryInfo *>::iterator fi = debugInfo()._OpenDynamicLibraryHandles.find(libraryName);
+  map<string, OpenDynamicLibraryInfo*>::iterator fi = debugInfo()._OpenDynamicLibraryHandles.find(libraryName);
   bool exists = (fi != debugInfo()._OpenDynamicLibraryHandles.end());
   if (exists) {
     //    if (fi->second._SymbolTable._SymbolNames) free((void*)(fi->second._SymbolTable._SymbolNames));
@@ -190,9 +190,9 @@ bool if_dynamic_library_loaded_remove(const std::string &libraryName) {
   return exists;
 }
 
-void executablePath(std::string &name) {
+void executablePath(std::string& name) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  for (auto &entry : debugInfo()._OpenDynamicLibraryHandles) {
+  for (auto& entry : debugInfo()._OpenDynamicLibraryHandles) {
     if (entry.second->loadableKind() == Executable) {
       name = entry.second->_Filename;
       return;
@@ -200,11 +200,11 @@ void executablePath(std::string &name) {
   }
   SIMPLE_ERROR("Could not find the executablePath");
 }
-void executableVtableSectionRange(gctools::clasp_ptr_t &start, gctools::clasp_ptr_t &end) {
+void executableVtableSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  for (auto &entry : debugInfo()._OpenDynamicLibraryHandles) {
+  for (auto& entry : debugInfo()._OpenDynamicLibraryHandles) {
     if (entry.second->loadableKind() == Executable) {
-      ExecutableLibraryInfo *eli = dynamic_cast<ExecutableLibraryInfo *>(entry.second);
+      ExecutableLibraryInfo* eli = dynamic_cast<ExecutableLibraryInfo*>(entry.second);
       start = eli->_VtableSectionStart;
       end = eli->_VtableSectionEnd;
       // printf("%s:%d:%s start %p   end %p\n", __FILE__, __LINE__, __FUNCTION__, start, end );
@@ -214,9 +214,9 @@ void executableVtableSectionRange(gctools::clasp_ptr_t &start, gctools::clasp_pt
   SIMPLE_ERROR("Could not find the executableVtableSectionRange");
 }
 
-void executableTextSectionRange(gctools::clasp_ptr_t &start, gctools::clasp_ptr_t &end) {
+void executableTextSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  for (auto &entry : debugInfo()._OpenDynamicLibraryHandles) {
+  for (auto& entry : debugInfo()._OpenDynamicLibraryHandles) {
     if (entry.second->loadableKind() == Executable) {
       start = entry.second->_TextStart;
       end = entry.second->_TextEnd;
@@ -226,13 +226,13 @@ void executableTextSectionRange(gctools::clasp_ptr_t &start, gctools::clasp_ptr_
   SIMPLE_ERROR("Could not find the executableVtableSectionRange");
 }
 
-bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t &start, gctools::clasp_ptr_t &end,
-                               std::string &libraryName, bool &executable, uintptr_t &vtableStart, uintptr_t &vtableEnd) {
+bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end,
+                               std::string& libraryName, bool& executable, uintptr_t& vtableStart, uintptr_t& vtableEnd) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   for (auto entry : debugInfo()._OpenDynamicLibraryHandles) {
     //    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__,
     //    entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
-    if (ExecutableLibraryInfo *eli = dynamic_cast<ExecutableLibraryInfo *>(entry.second)) {
+    if (ExecutableLibraryInfo* eli = dynamic_cast<ExecutableLibraryInfo*>(entry.second)) {
       if (eli->_TextStart <= address && address < eli->_TextEnd ||
           (eli->_VtableSectionStart <= address && address < eli->_VtableSectionEnd)) {
         libraryName = eli->_Filename;
@@ -256,12 +256,12 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
   return false;
 }
 
-bool library_with_name(const std::string &name, bool isExecutable, std::string &libraryName, uintptr_t &start, uintptr_t &end,
-                       uintptr_t &vtableStart, uintptr_t &vtableEnd) {
+bool library_with_name(const std::string& name, bool isExecutable, std::string& libraryName, uintptr_t& start, uintptr_t& end,
+                       uintptr_t& vtableStart, uintptr_t& vtableEnd) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   for (auto entry : debugInfo()._OpenDynamicLibraryHandles) {
     std::string libName = entry.second->_Filename;
-    if (ExecutableLibraryInfo *eli = dynamic_cast<ExecutableLibraryInfo *>(entry.second)) {
+    if (ExecutableLibraryInfo* eli = dynamic_cast<ExecutableLibraryInfo*>(entry.second)) {
       if (isExecutable || (name.size() <= libName.size() && name == libName.substr(libName.size() - name.size()))) {
         libraryName = eli->_Filename;
         start = (uintptr_t)(eli->_TextStart);
@@ -292,8 +292,8 @@ bool library_with_name(const std::string &name, bool isExecutable, std::string &
   return false;
 }
 
-bool lookup_address(uintptr_t address, const char *&symbol, uintptr_t &start, uintptr_t &end) {
-  void *ip = (void *)address;
+bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end) {
+  void* ip = (void*)address;
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (!gc::IsA<llvmo::ObjectFile_sp>(of))
     return false; // no ofi found
@@ -334,11 +334,11 @@ CL_DEFUN void core__lowLevelDescribe(T_sp obj) { dbg_lowLevelDescribe(obj); }
 
 DOCGROUP(clasp);
 CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
-  const char *symbol;
+  const char* symbol;
   uintptr_t start;
   uintptr_t end;
   if (lookup_address((uintptr_t)(address->ptr()), symbol, start, end))
-    return Values(SimpleBaseString_O::make(symbol), Pointer_O::create((void *)start), Pointer_O::create((void *)end));
+    return Values(SimpleBaseString_O::make(symbol), Pointer_O::create((void*)start), Pointer_O::create((void*)end));
   else
     return Values(nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>());
 }
@@ -346,7 +346,7 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
 void dbg_Vaslist_sp_describe(T_sp obj) {
   // Convert the T_sp object into a Vaslist_sp object
   Vaslist_sp vl = Vaslist_sp((gc::Tagged)obj.raw_());
-  printf("Original vaslist at: %p\n", &*((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_()))));
+  printf("Original vaslist at: %p\n", &*((Vaslist*)gc::untag_vaslist(reinterpret_cast<Vaslist*>(obj.raw_()))));
   // Create a copy of the Vaslist with a va_copy of the vaslist
   Vaslist vlcopy_s(*vl);
   Vaslist_sp vlcopy(&vlcopy_s);
@@ -389,9 +389,9 @@ void dbg_lowLevelDescribe(T_sp obj) {
   fflush(stdout);
 }
 
-void dbg_describe_tagged_T_Optr(T_O *p) { client_describe(p); }
+void dbg_describe_tagged_T_Optr(T_O* p) { client_describe(p); }
 
-void dbg_describe_tagged_T_Optr_header(T_O *p) { client_describe(p); }
+void dbg_describe_tagged_T_Optr_header(T_O* p) { client_describe(p); }
 
 extern void dbg_describe(T_sp obj);
 void dbg_describe(T_sp obj) {
@@ -437,7 +437,7 @@ void dbg_describeTPtr(uintptr_t raw) {
 void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   core::T_sp sout = cl::_sym_STARstandard_outputSTAR->symbolValue();
   T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
-  clasp_write_string(fmt::format("dbg_printTPtr Raw pointer value: {}\n", (void *)obj.raw_()));
+  clasp_write_string(fmt::format("dbg_printTPtr Raw pointer value: {}\n", (void*)obj.raw_()));
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
   clasp_write_string(fmt::format("dbg_printTPtr object class --> {}\n", _rep_(lisp_instance_class(obj)->_className())), sout);
@@ -449,7 +449,7 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 } // namespace core
 
 extern "C" {
-#define REPR_ADDR(addr) << "@" << (void *)addr
+#define REPR_ADDR(addr) << "@" << (void*)addr
 // #define REPR_ADDR(addr)
 
 /*! Generate text representation of a objects without using the lisp printer!
@@ -502,13 +502,13 @@ std::string dbg_safe_repr(uintptr_t raw) {
       ss << "$>" REPR_ADDR(raw);
     } else if (gc::IsA<llvmo::SectionedAddress_sp>(obj)) {
       llvmo::SectionedAddress_sp sa = gc::As_unsafe<llvmo::SectionedAddress_sp>(obj);
-      ss << "#<$SECTIONED-ADDRESS :address " << (void *)sa->_value.Address;
+      ss << "#<$SECTIONED-ADDRESS :address " << (void*)sa->_value.Address;
       ss << " :section-index " << sa->_value.SectionIndex;
       ss << " " REPR_ADDR(raw) << "$>";
     } else if (gc::IsA<llvmo::ObjectFile_sp>(obj)) {
       llvmo::ObjectFile_sp of = gc::As_unsafe<llvmo::ObjectFile_sp>(obj);
-      ss << "#<$OBJECT-FILE :code-start " << (void *)of->codeStart();
-      ss << " :code-end " << (void *)of->codeEnd();
+      ss << "#<$OBJECT-FILE :code-start " << (void*)of->codeStart();
+      ss << " :code-end " << (void*)of->codeEnd();
       ss << " " REPR_ADDR(raw) << "$>";
     } else if (gc::IsA<core::Instance_sp>(obj)) {
       core::Instance_sp ii = gc::As_unsafe<core::Instance_sp>(obj);
@@ -593,9 +593,9 @@ void dbg_safe_println(uintptr_t raw) { printf(" %s\n", dbg_safe_repr(raw).c_str(
 
 extern "C" {
 
-void tprint(void *ptr) { core::dbg_printTPtr((uintptr_t)ptr, false); }
+void tprint(void* ptr) { core::dbg_printTPtr((uintptr_t)ptr, false); }
 
-void tsymbol(void *ptr) {
+void tsymbol(void* ptr) {
   printf("%s:%d Looking up symbol at ptr->%p\n", __FILE__, __LINE__, ptr);
   core::T_sp result = llvmo::llvm_sys__lookup_jit_symbol_info(ptr);
   printf("      Result -> %s\n", _rep_(result).c_str());

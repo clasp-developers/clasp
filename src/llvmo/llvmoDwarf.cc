@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 
 #include <llvm/IR/Metadata.h>
@@ -52,7 +52,7 @@ CL_DEFUN uint llvm_sys__dwTag(core::Symbol_sp tagsym, uint debugVersion) {
 
 void initialize_dwarf_constants() {
   SYMBOL_EXPORT_SC_(LlvmoPkg, dwTag);
-//  core::af_def(LlvmoPkg, "dwTag", &af_dwTag, ARGS_af_dwTag, DECL_af_dwTag, DOCS_af_dwTag);
+  //  core::af_def(LlvmoPkg, "dwTag", &af_dwTag, ARGS_af_dwTag, DECL_af_dwTag, DOCS_af_dwTag);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, LLVMDebugVersion11);
   SYMBOL_EXPORT_SC_(LlvmoPkg, LLVMDebugVersion10);
@@ -152,7 +152,7 @@ void initialize_dwarf_constants() {
   // Tags defined in llvm->dwarf.h
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARdwarfConstantsSTAR);
-  CL_BEGIN_ENUM(llvm::dwarf::Tag,_sym_STARdwarfConstantsSTAR, "llvm::dwarf::Constants");
+  CL_BEGIN_ENUM(llvm::dwarf::Tag, _sym_STARdwarfConstantsSTAR, "llvm::dwarf::Constants");
   CL_VALUE_ENUM(_sym_DW_TAG_array_type, llvm::dwarf::DW_TAG_array_type);
   CL_VALUE_ENUM(_sym_DW_TAG_class_type, llvm::dwarf::DW_TAG_class_type);
   CL_VALUE_ENUM(_sym_DW_TAG_entry_point, llvm::dwarf::DW_TAG_entry_point);
@@ -222,9 +222,10 @@ void initialize_dwarf_constants() {
   CL_VALUE_ENUM(_sym_DW_TAG_GNU_formal_parameter_pack, llvm::dwarf::DW_TAG_GNU_formal_parameter_pack);
   CL_VALUE_ENUM(_sym_DW_TAG_lo_user, llvm::dwarf::DW_TAG_lo_user);
   CL_VALUE_ENUM(_sym_DW_TAG_APPLE_property, llvm::dwarf::DW_TAG_APPLE_property);
-  CL_VALUE_ENUM(_sym_DW_TAG_hi_user, llvm::dwarf::DW_TAG_hi_user);;
+  CL_VALUE_ENUM(_sym_DW_TAG_hi_user, llvm::dwarf::DW_TAG_hi_user);
+  ;
   CL_END_ENUM(_sym_STARdwarfConstantsSTAR);
-  
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, DW_LANG_COMMON_LISP);
   _sym_DW_LANG_COMMON_LISP->defconstant(core::make_fixnum(llvm::dwarf::DW_LANG_lo_user));
 
@@ -266,6 +267,5 @@ void initialize_dwarf_constants() {
   _sym__PLUS_DW_ATE_decimal_float_PLUS_->defconstant(core::make_fixnum(llvm::dwarf::DW_ATE_decimal_float));
   SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_DW_ATE_UTF_PLUS_);
   _sym__PLUS_DW_ATE_UTF_PLUS_->defconstant(core::make_fixnum(llvm::dwarf::DW_ATE_UTF));
-    
 };
-};
+}; // namespace llvmo

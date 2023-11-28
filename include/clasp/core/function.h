@@ -57,7 +57,7 @@ namespace core {
 
 /*! Set to something other than NIL to dump functions as they are defined at startup */
 
-extern char *global_dump_functions;
+extern char* global_dump_functions;
 
 /* The following MUST MATCH %function-description% in cmpintrinsics.lisp
 Each thread maintains a current GCRootsInModule structure that stores roots
@@ -122,8 +122,8 @@ class Function_O : public General_O {
 
 public:
   CLASP_DEFAULT_CTOR Function_O(){};
-  Function_O(SimpleFun_O *ep) : _TheSimpleFun(SimpleFun_sp((gctools::Tagged)(gctools::tag_general<SimpleFun_O *>(ep)))) {
-    ASSERT(!gctools::tagged_generalp<SimpleFun_O *>(ep)); // on entry should not be tagged
+  Function_O(SimpleFun_O* ep) : _TheSimpleFun(SimpleFun_sp((gctools::Tagged)(gctools::tag_general<SimpleFun_O*>(ep)))) {
+    ASSERT(!gctools::tagged_generalp<SimpleFun_O*>(ep)); // on entry should not be tagged
   };
 
 public:
@@ -232,11 +232,11 @@ public:
   CodeSimpleFun_O(FunctionDescription_sp fdesc, T_sp code) : SimpleFun_O(fdesc), _Code(code){};
 
 public:
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     printf("%s:%d:%s Subclass must implement\n", __FILE__, __LINE__, __FUNCTION__);
     abort();
   }
-  void fixupOneCodePointer(snapshotSaveLoad::Fixup *fixup, void **ptr);
+  void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
   CL_DEFMETHOD T_sp SimpleFun_code() const { return this->_Code; };
 };
 
@@ -249,10 +249,10 @@ public:
 
 public:
   // Accessors
-  LocalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspLocalFunction &entry_point, T_sp code);
+  LocalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code);
 
 public:
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
   virtual Pointer_sp defaultEntryAddress() const;
   string __repr__() const;
 };
@@ -285,11 +285,11 @@ public:
 
 public:
   // Accessors
-  GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction &entry_point, T_sp code);
+  GlobalSimpleFunBase_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code);
   GlobalSimpleFunBase_O(){};
 
 public:
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 };
 
 FORWARD(GlobalSimpleFun);
@@ -301,7 +301,7 @@ public:
 
 public:
   // Accessors
-  GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepFunction &entry_point, T_sp code, T_sp localSimpleFun);
+  GlobalSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp localSimpleFun);
 
 public:
   virtual Pointer_sp defaultEntryAddress() const;
@@ -336,7 +336,7 @@ public:
 
 public:
   // Accessors
-  GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepFunction &entry_point, T_sp code,
+  GlobalBytecodeSimpleFun_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code,
                             unsigned short localsFrameSize, unsigned int environmentSize, unsigned int entryPcN,
                             unsigned int bytecodeSize, BytecodeTrampolineFunction trampoline);
 
@@ -344,10 +344,10 @@ public:
   virtual Pointer_sp defaultEntryAddress() const;
   BytecodeModule_sp code() const;
   string __repr__() const;
-  
+
   bool compiledP() const override { return true; }
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup);
-  
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
+
   CL_DEFMETHOD Fixnum localsFrameSize() const { return this->_LocalsFrameSize; };
   CL_DEFMETHOD Fixnum environmentSize() const { return this->_EnvironmentSize; };
   size_t entryPcN() const;
@@ -357,9 +357,7 @@ public:
   T_sp start() const;
   T_sp end() const;
   CL_LISPIFY_NAME(GlobalBytecodeSimpleFun/call-count)
-  CL_DEFMETHOD Fixnum callCount() const {
-    return this->_CallCount.load(std::memory_order_relaxed);
-  }
+  CL_DEFMETHOD Fixnum callCount() const { return this->_CallCount.load(std::memory_order_relaxed); }
   inline void countCall() {
     // We use this instead of ++ to get a weak memory ordering.
     this->_CallCount.fetch_add(1, std::memory_order_relaxed);
@@ -386,9 +384,9 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName, T_sp lambda_li
                                                T_sp declares = nil<T_O>(), T_sp sourcePathname = nil<T_O>(), int lineno = -1,
                                                int column = -1, int filePos = -1);
 
-LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc, const ClaspLocalFunction &entry_point);
+LocalSimpleFun_sp makeLocalSimpleFun(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point);
 
-GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp fdesc, const ClaspXepFunction &entry_point,
+GlobalSimpleFun_sp makeGlobalSimpleFun(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point,
                                        T_sp lep = nil<core::T_O>());
 
 template <typename Wrapper> GlobalSimpleFun_sp templated_makeGlobalSimpleFun(FunctionDescription_sp fdesc, T_sp lep) {
@@ -397,7 +395,7 @@ template <typename Wrapper> GlobalSimpleFun_sp templated_makeGlobalSimpleFun(Fun
   return makeGlobalSimpleFun(fdesc, xep, lep);
 }
 
-GlobalSimpleFun_sp makeGlobalSimpleFunCopy(GlobalSimpleFun_sp original, const ClaspXepFunction & = ClaspXepFunction());
+GlobalSimpleFun_sp makeGlobalSimpleFunCopy(GlobalSimpleFun_sp original, const ClaspXepFunction& = ClaspXepFunction());
 
 template <typename Wrapper> GlobalSimpleFun_sp templated_makeGlobalSimpleFunCopy(GlobalSimpleFun_sp original) {
   ClaspXepFunction xep;
@@ -419,14 +417,14 @@ GlobalBytecodeSimpleFun_sp core__makeGlobalBytecodeSimpleFun(FunctionDescription
                                                              size_t localsFrameSize, size_t environmentSize, size_t pcIndex,
                                                              size_t bytecodeSize, Pointer_sp trampoline);
 
-GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp ep, gctools::GCRootsInModule *roots, void **fptrs);
-LocalSimpleFun_sp makeLocalSimpleFunFromGenerator(LocalSimpleFunGenerator_sp ep, void **fptrs);
+GlobalSimpleFun_sp makeGlobalSimpleFunFromGenerator(GlobalSimpleFunGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
+LocalSimpleFun_sp makeLocalSimpleFunFromGenerator(LocalSimpleFunGenerator_sp ep, void** fptrs);
 
 }; // namespace core
 
 namespace core {
 extern bool cl__stringp(T_sp obj);
-extern void lisp_error_sprintf(const char *file, int line, const char *fmt, ...);
+extern void lisp_error_sprintf(const char* file, int line, const char* fmt, ...);
 
 }; // namespace core
 
@@ -448,7 +446,7 @@ public:
 public:
   static Closure_sp make_bytecode_closure(GlobalBytecodeSimpleFun_sp entryPoint, size_t closedOverSlots);
 
-  static Closure_sp make_cclasp_closure(T_sp name, const ClaspXepFunction &ptr, T_sp type, T_sp lambda_list, T_sp localSimpleFun,
+  static Closure_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localSimpleFun,
                                         core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno,
                                         core::Fixnum column);
 
@@ -459,11 +457,11 @@ public:
   core::T_sp lambdaListHandler() const override { return nil<T_O>(); }
   bool compiledP() const override { return true; }
   bool openP();
-  inline T_sp &operator[](size_t idx) {
+  inline T_sp& operator[](size_t idx) {
     BOUNDS_ASSERT(idx < this->_Slots.length());
     return this->_Slots[idx];
   };
-  inline const T_sp &operator[](size_t idx) const {
+  inline const T_sp& operator[](size_t idx) const {
     BOUNDS_ASSERT(idx < this->_Slots.length());
     return this->_Slots[idx];
   };
@@ -503,7 +501,7 @@ public:
   virtual bool compiledP() const { return this->real_function()->compiledP(); }
 
 public:
-  static inline LCC_RETURN entry_point_n(core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args) {
+  static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
     SETUP_CLOSURE(FunctionCell_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
@@ -514,59 +512,59 @@ public:
     return (entry_point)(funcallable_closure.raw_(), lcc_nargs, lcc_args);
   }
 
-  static inline LCC_RETURN entry_point_0(core::T_O *lcc_closure) {
+  static inline LCC_RETURN entry_point_0(core::T_O* lcc_closure) {
     SETUP_CLOSURE(FunctionCell_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_0(funcallable_closure.raw_());
   }
 
-  static inline LCC_RETURN entry_point_1(core::T_O *lcc_closure, core::T_O *lcc_farg0) {
+  static inline LCC_RETURN entry_point_1(core::T_O* lcc_closure, core::T_O* lcc_farg0) {
     SETUP_CLOSURE(FunctionCell_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_1(funcallable_closure.raw_(), lcc_farg0);
   }
 
-  static inline LCC_RETURN entry_point_2(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1) {
+  static inline LCC_RETURN entry_point_2(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1) {
     SETUP_CLOSURE(FunctionCell_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_2(funcallable_closure.raw_(), lcc_farg0, lcc_farg1);
   }
 
-  static inline LCC_RETURN entry_point_3(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1, core::T_O *lcc_farg2) {
+  static inline LCC_RETURN entry_point_3(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2) {
     SETUP_CLOSURE(FunctionCell_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_3(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2);
   }
 
-  static inline LCC_RETURN entry_point_4(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1, core::T_O *lcc_farg2,
-                                         core::T_O *lcc_farg3) {
+  static inline LCC_RETURN entry_point_4(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
+                                         core::T_O* lcc_farg3) {
     SETUP_CLOSURE(FunctionCell_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_4(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3);
   }
 
-  static inline LCC_RETURN entry_point_5(core::T_O *lcc_closure, core::T_O *lcc_farg0, core::T_O *lcc_farg1, core::T_O *lcc_farg2,
-                                         core::T_O *lcc_farg3, core::T_O *lcc_farg4) {
+  static inline LCC_RETURN entry_point_5(core::T_O* lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2,
+                                         core::T_O* lcc_farg3, core::T_O* lcc_farg4) {
     SETUP_CLOSURE(FunctionCell_O, closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     DO_DRAG_CXX_CALLS();
     Function_sp funcallable_closure = closure->real_function();
-    const ClaspXepFunction &xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
+    const ClaspXepFunction& xep = gc::As_assert<GlobalSimpleFunBase_sp>(funcallable_closure->_TheSimpleFun.load())->_EntryPoints;
     return xep.invoke_5(funcallable_closure.raw_(), lcc_farg0, lcc_farg1, lcc_farg2, lcc_farg3, lcc_farg4);
   }
 };
@@ -585,7 +583,7 @@ namespace core {
 }; // namespace core
 
 namespace core {
-typedef gctools::return_type (*bytecode_trampoline_function)(unsigned char *pc, core::T_O *closure, size_t nargs, core::T_O **args);
+typedef gctools::return_type (*bytecode_trampoline_function)(unsigned char* pc, core::T_O* closure, size_t nargs, core::T_O** args);
 extern bytecode_trampoline_function bytecode_trampoline;
 
 }; // namespace core

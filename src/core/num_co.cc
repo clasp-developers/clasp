@@ -177,7 +177,7 @@ CL_DEFUN Number_sp cl__denominator(Rational_sp x) {
 }
 
 // Stores the result in quotient, remainder.
-static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp &quotient, Real_sp &remainder) {
+static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp& quotient, Real_sp& remainder) {
   // The CL standard is a bit ambiguous about the type of the remainder.
   // We treat it as a contagion thing: If either argument is a float, the
   // remainder is a float of the largest format among the arguments.
@@ -245,7 +245,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp &quotie
     Fixnum fdivisor = divisor.unsafe_fixnum();
     T_mv rmv = core__next_ftruncate(bdividend, fdivisor);
     quotient = gc::As_unsafe<Integer_sp>(rmv);
-    MultipleValues &mvn = core::lisp_multipleValues();
+    MultipleValues& mvn = core::lisp_multipleValues();
     remainder = gc::As_unsafe<Integer_sp>(mvn.valueGet(1, rmv.number_of_values()));
     return;
   }
@@ -254,7 +254,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp &quotie
     Bignum_sp bdivisor = gc::As_unsafe<Bignum_sp>(divisor);
     T_mv mvr = core__next_truncate(bdividend, bdivisor);
     quotient = gc::As_unsafe<Integer_sp>(mvr);
-    MultipleValues &mvn = core::lisp_multipleValues();
+    MultipleValues& mvn = core::lisp_multipleValues();
     remainder = gc::As_unsafe<Integer_sp>(mvn.valueGet(1, mvr.number_of_values()));
     return;
   }
@@ -361,7 +361,7 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor, Integer_sp &quotie
   MATH_DISPATCH_END();
 }
 
-static void clasp_floor(Real_sp dividend, Real_sp divisor, Integer_sp &quotient, Real_sp &remainder) {
+static void clasp_floor(Real_sp dividend, Real_sp divisor, Integer_sp& quotient, Real_sp& remainder) {
   Integer_sp t0;
   Real_sp t1;
   clasp_truncate(dividend, divisor, t0, t1);
@@ -439,7 +439,7 @@ CL_DEFUN Real_mv cl__floor(Real_sp x, T_sp y) {
     return clasp_floor2(x, gc::As<Real_sp>(y));
 }
 
-static void clasp_ceiling(Real_sp dividend, Real_sp divisor, Integer_sp &quotient, Real_sp &remainder) {
+static void clasp_ceiling(Real_sp dividend, Real_sp divisor, Integer_sp& quotient, Real_sp& remainder) {
   Integer_sp t0;
   Real_sp t1;
   clasp_truncate(dividend, divisor, t0, t1);
@@ -590,7 +590,7 @@ static LongFloat round_long_double(LongFloat d) {
 }
 #endif
 
-static void clasp_round(Real_sp dividend, Real_sp divisor, Integer_sp &quotient, Real_sp &remainder) {
+static void clasp_round(Real_sp dividend, Real_sp divisor, Integer_sp& quotient, Real_sp& remainder) {
   Integer_sp tru;
   Real_sp rem;
   clasp_truncate(dividend, divisor, tru, rem);

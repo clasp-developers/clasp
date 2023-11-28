@@ -1,17 +1,19 @@
+#pragma once
+
 /*
     File: debugLoc.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _llvmo_debugLoc_H_
-#define _llvmo_debugLoc_H_
 
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -41,7 +41,7 @@ THE SOFTWARE.
 
 namespace llvmo {
 class DebugLoc_O : public core::General_O {
-  LISP_CLASS(llvmo, LlvmoPkg, DebugLoc_O, "DebugLoc",core::General_O);
+  LISP_CLASS(llvmo, LlvmoPkg, DebugLoc_O, "DebugLoc", core::General_O);
 
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(DebugLoc_O);
@@ -49,21 +49,19 @@ public: // Simple default ctor/dtor
 public:
   static DebugLoc_sp get(int lineno, int column, MDNode_sp scope);
   static DebugLoc_sp make(const llvm::DebugLoc& dl);
-  
+
 private: // instance variables here
   dont_expose<llvm::DebugLoc> _DebugLoc;
 
 public: // Functions here
-  llvm::DebugLoc &debugLoc() { return this->_DebugLoc._value; };
-CL_LISPIFY_NAME("getLine");
-CL_DEFMETHOD   uint getLine() const { return this->_DebugLoc._value.getLine(); };
-CL_LISPIFY_NAME("getCol");
-CL_DEFMETHOD   uint getCol() const { return this->_DebugLoc._value.getCol(); };
+  llvm::DebugLoc& debugLoc() { return this->_DebugLoc._value; };
+  CL_LISPIFY_NAME("getLine");
+  CL_DEFMETHOD uint getLine() const { return this->_DebugLoc._value.getLine(); };
+  CL_LISPIFY_NAME("getCol");
+  CL_DEFMETHOD uint getCol() const { return this->_DebugLoc._value.getCol(); };
   MDNode_sp getScope() const;
   bool is_valid() const;
-  
+
 }; // DebugLoc class
 
-}; // llvmo namespace
-
-#endif /* _llvmo_debugLoc_H_ */
+}; // namespace llvmo

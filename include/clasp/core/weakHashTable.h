@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 namespace cl {
-extern core::Symbol_sp &_sym_eq;
+extern core::Symbol_sp& _sym_eq;
 };
 
 template <> struct gctools::GCInfo<core::WeakKeyHashTable_O> {
@@ -78,7 +78,7 @@ public:
 
   gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
 
-  void maphashLowLevel(std::function<void(T_sp, T_sp)> const &fn);
+  void maphashLowLevel(std::function<void(T_sp, T_sp)> const& fn);
   void maphash(T_sp functionDesig) override;
 
   T_mv gethash(T_sp key, T_sp defaultValue = nil<T_O>()) override;

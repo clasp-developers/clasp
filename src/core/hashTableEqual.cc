@@ -59,7 +59,7 @@ HashTableEqual_sp HashTableEqual_O::create_default() {
 
 bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const { return cl__equal(entryKey, searchKey); }
 
-gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator &hg) const {
+gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
   HashTable_O::sxhash_equal(hg, obj);
   return hg.hashBound(bound);
 }

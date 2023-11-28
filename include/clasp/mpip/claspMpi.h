@@ -1,17 +1,19 @@
+#pragma once
+
 /*
     File: claspMpi.h
 */
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,8 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef claspMpi_H //[
-#define claspMpi_H
 
 #include <stdio.h>
 #include <string>
@@ -42,7 +42,8 @@ namespace mpip {
 
 FORWARD(Mpi);
 class Mpi_O : public core::General_O {
-  LISP_CLASS(mpip, MpiPkg, Mpi_O, "Mpi",core::General_O);
+  LISP_CLASS(mpip, MpiPkg, Mpi_O, "Mpi", core::General_O);
+
 private:
   //	bool		_Running;
   int _LastReturnCode;
@@ -59,19 +60,19 @@ public:
 
 public:
   /*! Equivalent to MPI_Init(argc,argv)
-	 * Returns the new commandLineArguments as a list
-	 */
-  static void Init(int &argc, char **&argv, bool &mpiEnabled, int &rank, int &msize);
+   * Returns the new commandLineArguments as a list
+   */
+  static void Init(int& argc, char**& argv, bool& mpiEnabled, int& rank, int& msize);
 
   static Mpi_sp mpiCommWorld();
   /*! Quick way to get the number of processes
-	 * If mpi is not enabled, always returns 1
-	 */
+   * If mpi is not enabled, always returns 1
+   */
   static int mpiSize();
 
   /*! Quick way to get the rank of current process
-	 * If mpi is not enabled, always returns 0
-	 */
+   * If mpi is not enabled, always returns 0
+   */
   static int mpiRank();
 
   //! Like MPI_Finalize()
@@ -96,14 +97,12 @@ public:
   core::T_sp prim_Send(int dest, int tag, core::T_sp obj);
 
   /*! Blocking receive an object, return (values object source tag)
-	  Alternatively you can recover the source and tag using (get-source (mpi-comm-world))
-	  or (get-tag (mpi-comm-world)) */
+          Alternatively you can recover the source and tag using (get-source (mpi-comm-world))
+          or (get-tag (mpi-comm-world)) */
 
   core::T_mv prim_Recv(int source, int tag);
 
   DEFAULT_CTOR_DTOR(Mpi_O);
 };
 
-};
-
-#endif //]
+}; // namespace mpip

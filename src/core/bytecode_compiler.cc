@@ -277,7 +277,7 @@ CL_DEFUN T_sp var_info(Symbol_sp sym, Lexenv_sp env) {
     return SpecialVarInfo_O::make(true);
   // Global symbol macro?
   T_mv symmac = core__get_sysprop(sym, ext::_sym_symbolMacro);
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   if (gc::As_unsafe<T_sp>(mvn.valueGet(1, symmac.number_of_values())).notnilp()) {
     T_sp symmac0 = symmac;
     Function_sp fsymmac = gc::As_assert<Function_sp>(symmac0);
@@ -306,7 +306,7 @@ VarInfoV var_info_v(Symbol_sp sym, Lexenv_sp env) {
     return VarInfoV(SpecialVarInfoV(true));
   // Global symbol macro?
   T_mv symmac = core__get_sysprop(sym, ext::_sym_symbolMacro);
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   if (gc::As_unsafe<T_sp>(mvn.valueGet(1, symmac.number_of_values())).notnilp()) {
     T_sp symmac0 = symmac;
     Function_sp fsymmac = gc::As_assert<Function_sp>(symmac0);
@@ -1086,8 +1086,7 @@ Function_sp Cfunction_O::link_function(T_sp compile_info) {
 
 // Should we BTB compile this new bytecode function?
 // We say yes if there's a (speed 3) declaration anywhere in it.
-bool btb_bcfun_p(GlobalBytecodeSimpleFun_sp fun,
-                 SimpleVector_sp debug_info) {
+bool btb_bcfun_p(GlobalBytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {
   size_t start = fun->entryPcN();
   size_t end = start + fun->bytecodeSize();
   for (size_t i = 0; i < debug_info->length(); ++i) {
@@ -1096,20 +1095,18 @@ bool btb_bcfun_p(GlobalBytecodeSimpleFun_sp fun,
       BytecodeDebugDecls_sp info = gc::As_unsafe<BytecodeDebugDecls_sp>(tinfo);
       size_t infostart = info->start().unsafe_fixnum();
       size_t infoend = info->start().unsafe_fixnum();
-      if (infostart > end) return false; // overshot.
-      if (infostart < start || infoend > end) continue;
+      if (infostart > end)
+        return false; // overshot.
+      if (infostart < start || infoend > end)
+        continue;
       // Look for an optimize speed 3.
       for (auto cur : info->decls()) {
         T_sp decl = oCar(cur);
         if (gc::IsA<Cons_sp>(decl) && oCar(decl) == cl::_sym_optimize)
           for (auto copt : gc::As<List_sp>(oCdr(decl))) {
             T_sp opt = oCar(copt);
-            if (opt == cl::_sym_speed
-                || (gc::IsA<Cons_sp>(opt)
-                    && oCar(opt) == cl::_sym_speed
-                    && gc::IsA<Cons_sp>(oCdr(opt))
-                    && gc::IsA<Fixnum_sp>(oCadr(opt))
-                    && oCadr(opt).unsafe_fixnum() == 3))
+            if (opt == cl::_sym_speed || (gc::IsA<Cons_sp>(opt) && oCar(opt) == cl::_sym_speed && gc::IsA<Cons_sp>(oCdr(opt)) &&
+                                          gc::IsA<Fixnum_sp>(oCadr(opt)) && oCadr(opt).unsafe_fixnum() == 3))
               return true;
           }
       }
@@ -1195,8 +1192,7 @@ void Module_O::link_load(T_sp compile_info) {
   // and install the resulting simple funs.
   // We can only do native compilations after the module is
   // fully realized above.
-  if (_sym_STARautocompile_hookSTAR->boundP()
-      && _sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
+  if (_sym_STARautocompile_hookSTAR->boundP() && _sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
     for (T_sp tfun : *cfunctions) {
       Cfunction_sp cfun = gc::As_assert<Cfunction_sp>(tfun);
       GlobalBytecodeSimpleFun_sp fun = cfun->info();
@@ -1628,7 +1624,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   bool morep = restarg._ArgTarget.notnilp() || key_flag.notnilp();
   Label_sp end_label = Label_O::make(); // for debug info
   ql::list lreqs;
-  for (auto &it : reqs)
+  for (auto& it : reqs)
     lreqs << it._ArgTarget;
   Lexenv_sp new_env = env->bind_vars(lreqs.cons(), context);
   // This environment is only used for assigning indices to opt/key variables.
@@ -1657,7 +1653,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     ql::list debugbindings;
     ql::list debugdecls;
     ql::list sreqs; // required parameters that are special
-    for (auto &it : reqs) {
+    for (auto& it : reqs) {
       // We account for special declarations in outer environments/globally
       // by checking the original environment - not our new one - for info.
       T_sp var = it._ArgTarget;
@@ -1687,7 +1683,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     // the variable will be specially bound, to match the placement by
     // bind_optional_args.
     ql::list opts;
-    for (auto &it : optionals)
+    for (auto& it : optionals)
       opts << it._ArgTarget;
     List_sp lopts = opts.cons();
     optkey_env = optkey_env->bind_vars(lopts, context);
@@ -1726,7 +1722,8 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
       context.maybe_emit_encage(lvinfo);
       Label_sp begin_label = Label_O::make();
       begin_label->contextualize(context);
-      context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(rest, lvinfo->lex()))));
+      context.push_debug_info(
+          BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(rest, lvinfo->lex()))));
       List_sp rdecls = decls_for_var(rest, declares);
       if (rdecls.notnilp())
         context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, rdecls));
@@ -1740,7 +1737,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     // they are consecutive even if the keyword appeared earlier in the literals.
     size_t first_key_index = 0;
     bool set_first_key_index = false;
-    for (auto &it : keys) {
+    for (auto& it : keys) {
       if (!set_first_key_index) {
         first_key_index = context.new_literal_index(it._Keyword);
         set_first_key_index = true;
@@ -1750,7 +1747,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     // now the actual instruction
     context.emit_parse_key_args(max_count, keys.size(), first_key_index, optkey_env->frameEnd(), aokp.notnilp());
     ql::list keyvars;
-    for (auto &it : keys)
+    for (auto& it : keys)
       keyvars << it._ArgTarget;
     List_sp lkeyvars = keyvars.cons();
     List_sp kdecls = decls_for_vars(lkeyvars, declares);
@@ -1765,7 +1762,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   }
   // Generate defaulting code for optional args, and bind them properly.
   if (optional_count > 0) {
-    for (auto &it : optionals) {
+    for (auto& it : optionals) {
       T_sp optional_var = it._ArgTarget;
       T_sp defaulting_form = it._Default;
       T_sp supplied_var = it._Sensor._ArgTarget;
@@ -1786,7 +1783,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   }
   // Generate defaulting code for key args, and special-bind them if necessary
   if (key_flag.notnilp()) {
-    for (auto &it : keys) {
+    for (auto& it : keys) {
       T_sp key_var = it._ArgTarget;
       T_sp defaulting_form = it._Default;
       T_sp supplied_var = it._Sensor._ArgTarget;
@@ -1810,7 +1807,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   // special, and so that any free special declarations are processed.
   // Similarly for notinline and other free declarations.
   ql::list auxbinds;
-  for (auto &it : auxs)
+  for (auto& it : auxs)
     auxbinds << Cons_O::createList(it._ArgTarget, it._Expression);
   T_sp declexpr = Cons_O::create(cl::_sym_declare, declares);
   T_sp lbody = Cons_O::create(declexpr, code);

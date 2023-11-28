@@ -6,12 +6,13 @@
   abort();
 }
 
-[[noreturn]] void throw_hard_error_implement_me(const char* funcname, const char* filename, size_t lineno ) noexcept(false) {
+[[noreturn]] void throw_hard_error_implement_me(const char* funcname, const char* filename, size_t lineno) noexcept(false) {
   printf("%s:%d:%s %s %s %lu\n", __FILE__, __LINE__, __FUNCTION__, funcname, filename, lineno);
   abort();
 }
 
-[[noreturn]] void throw_hard_error_implement_me_message(const char* funcname, const char* filename, size_t lineno, const std::string& msg ) noexcept(false) {
+[[noreturn]] void throw_hard_error_implement_me_message(const char* funcname, const char* filename, size_t lineno,
+                                                        const std::string& msg) noexcept(false) {
   printf("%s:%d:%s %s %s %zu %s\n", __FILE__, __LINE__, __FUNCTION__, funcname, filename, lineno, msg.c_str());
   abort();
 }
@@ -26,7 +27,7 @@
   abort();
 }
 
-[[noreturn]] void throw_hard_error_subclass_must_implement(const std::string& className, const std::string& method) { 
+[[noreturn]] void throw_hard_error_subclass_must_implement(const std::string& className, const std::string& method) {
   printf("%s:%d:%s className: %s method: %s\n", __FILE__, __LINE__, __FUNCTION__, className.c_str(), method.c_str());
   abort();
 }
@@ -41,14 +42,13 @@
   abort();
 };
 
-
 [[noreturn]] void throw_hard_error_bad_client(void* ptr) {
-  printf("%s:%d Bad client pointer %p\n", __FILE__, __LINE__, ptr );
+  printf("%s:%d Bad client pointer %p\n", __FILE__, __LINE__, ptr);
   abort();
 }
 
 [[noreturn]] void throw_hard_error_size_stack_damaged(size_t totalSize, size_t calcSize) {
-  printf("%s:%d:%s totalSize: %lu calcSize: %lu\n", __FILE__, __LINE__, __FUNCTION__, totalSize, calcSize );
+  printf("%s:%d:%s totalSize: %lu calcSize: %lu\n", __FILE__, __LINE__, __FUNCTION__, totalSize, calcSize);
   abort();
 }
 
@@ -59,13 +59,10 @@
   throw_hard_error(fmt::format("The Layout_code table contained an illegal command -> {}", cmd));
 }
 [[noreturn]] void throw_hard_error_mps_bad_result(const char* method) {
-  throw_hard_error(fmt::format("Method is not applicable {}" , method));
+  throw_hard_error(fmt::format("Method is not applicable {}", method));
 }
 
-
-HardError::HardError(const string &msg) {
-  this->_Message = msg;
-}
+HardError::HardError(const string& msg) { this->_Message = msg; }
 
 HardError::HardError(const char* file, const char* func, int lineno, const char* msg) {
   stringstream ss;
@@ -73,11 +70,4 @@ HardError::HardError(const char* file, const char* func, int lineno, const char*
   this->_Message = ss.str();
 }
 
-string HardError::message() {
-  return this->_Message;
-}
-
-
-
-  
-  
+string HardError::message() { return this->_Message; }

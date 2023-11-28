@@ -40,7 +40,7 @@ THE SOFTWARE.
 namespace core {
 
 CL_DEFUN T_sp core__derivable_stamp(T_sp obj) {
-  General_O *client_ptr = gctools::untag_general<General_O *>((General_O *)obj.raw_());
+  General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)obj.raw_());
   uintptr_t stamp = (uintptr_t)(llvmo::template_read_derived_stamp(client_ptr));
   //  core::clasp_write_string(fmt::format("{}:{}:{} stamp = {}u\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
   T_sp result((gctools::Tagged)stamp);

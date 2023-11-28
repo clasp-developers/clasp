@@ -231,7 +231,7 @@ string argument_mode_as_string(ArgumentMode mode) {
   return "-unknownAddArgumentMode-";
 }
 
-bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_sp &key_flag) {
+bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode& mode, T_sp& key_flag) {
   LOG("In switch_add_argument_mode argument is a symbol: {} {}", _rep_(symbol), symbol.get());
   switch (mode) {
   case required:
@@ -485,9 +485,9 @@ void checkTargetArgument(T_sp arg) {
  *
  * Return true if bindings will be defined and false if not.
  */
-bool parse_lambda_list(List_sp original_lambda_list, T_sp context, gctools::Vec0<RequiredArgument> &reqs,
-                       gctools::Vec0<OptionalArgument> &optionals, RestArgument &restarg, T_sp &key_flag,
-                       gctools::Vec0<KeywordArgument> &keys, T_sp &allow_other_keys, gctools::Vec0<AuxArgument> &auxs) {
+bool parse_lambda_list(List_sp original_lambda_list, T_sp context, gctools::Vec0<RequiredArgument>& reqs,
+                       gctools::Vec0<OptionalArgument>& optionals, RestArgument& restarg, T_sp& key_flag,
+                       gctools::Vec0<KeywordArgument>& keys, T_sp& allow_other_keys, gctools::Vec0<AuxArgument>& auxs) {
   reqs.clear();
   optionals.clear();
   keys.clear();
@@ -663,14 +663,14 @@ DONE:
   return true;
 }
 
-List_sp lexical_variable_names(gctools::Vec0<RequiredArgument> &reqs, gctools::Vec0<OptionalArgument> &optionals,
-                               RestArgument &restarg, gctools::Vec0<KeywordArgument> &keys, gctools::Vec0<AuxArgument> &auxs) {
+List_sp lexical_variable_names(gctools::Vec0<RequiredArgument>& reqs, gctools::Vec0<OptionalArgument>& optionals,
+                               RestArgument& restarg, gctools::Vec0<KeywordArgument>& keys, gctools::Vec0<AuxArgument>& auxs) {
   ql::list result;
   // required arguments  req = ( num req1 req2 ...)
-  for (auto &it : reqs)
+  for (auto& it : reqs)
     result << it._ArgTarget;
   // optional arguments   opts = (num opt1 init1 flag1 ...)
-  for (auto &it : optionals) {
+  for (auto& it : optionals) {
     result << it._ArgTarget;
     if (it._Sensor._ArgTarget.notnilp()) {
       result << it._Sensor._ArgTarget;
@@ -680,14 +680,14 @@ List_sp lexical_variable_names(gctools::Vec0<RequiredArgument> &reqs, gctools::V
     result << restarg._ArgTarget;
   }
   // optional arguments   keys = (num key1 var1 init1 flag1 ...)
-  for (auto &it : keys) {
+  for (auto& it : keys) {
     result << it._ArgTarget;
     if (it._Sensor._ArgTarget.notnilp()) {
       result << it._Sensor._ArgTarget;
     }
   }
   //	    lauxs << make_fixnum((int)auxs.size());
-  for (auto &it : auxs) {
+  for (auto& it : auxs) {
     result << it._ArgTarget;
   }
   return result.cons();
@@ -712,21 +712,21 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   ql::list lreqs;
   { // required arguments  req = ( num req1 req2 ...)
     lreqs << make_fixnum((int)reqs.size());
-    for (auto &it : reqs) {
+    for (auto& it : reqs) {
       lreqs << it._ArgTarget;
     }
   }
   ql::list lopts;
   { // optional arguments   opts = (num opt1 init1 flag1 ...)
     lopts << make_fixnum((int)optionals.size());
-    for (auto &it : optionals) {
+    for (auto& it : optionals) {
       lopts << it._ArgTarget << it._Default << it._Sensor._ArgTarget;
     }
   }
   ql::list lkeys;
   { // optional arguments   keys = (num key1 var1 init1 flag1 ...)
     lkeys << make_fixnum((int)keys.size());
-    for (auto &it : keys) {
+    for (auto& it : keys) {
       lkeys << it._Keyword << it._ArgTarget << it._Default << it._Sensor._ArgTarget;
     }
   }
@@ -734,7 +734,7 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   if (auxs.size() != 0) { // auxes arguments   auxs = (num aux1 init1 ...)
     // !!!! The above is not true auxs = nil or (aux1 init1 aux2 init2)
     //	    lauxs << make_fixnum((int)auxs.size());
-    for (auto &it : auxs) {
+    for (auto& it : auxs) {
       lauxs << it._ArgTarget << it._Expression;
     }
   }
@@ -756,18 +756,18 @@ T_sp lambda_list_for_name(T_sp raw_lambda_list) {
   T_sp allow_other_keys;
   parse_lambda_list(raw_lambda_list, cl::_sym_Function_O, reqs, optionals, restarg, key_flag, keys, allow_other_keys, auxs);
   ql::list result;
-  for (auto &it : reqs)
+  for (auto& it : reqs)
     result << it._ArgTarget;
   if (optionals.size() > 0) {
     result << cl::_sym_AMPoptional;
-    for (auto &it : optionals)
+    for (auto& it : optionals)
       result << it._ArgTarget;
   }
   if (restarg._ArgTarget.notnilp())
     result << cl::_sym_AMPrest << restarg._ArgTarget;
   if (key_flag.notnilp()) {
     result << cl::_sym_AMPkey;
-    for (auto &it : keys)
+    for (auto& it : keys)
       result << it._Keyword;
   }
   if (allow_other_keys.notnilp())

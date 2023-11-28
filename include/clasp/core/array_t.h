@@ -24,23 +24,23 @@ public:
 public:
   static value_type default_initial_element(void) { return nil<T_O>(); }
   static value_type from_object(T_sp obj) { return obj; };
-  static T_sp to_object(const value_type &v) { return v; };
+  static T_sp to_object(const value_type& v) { return v; };
 
 public:
   // Simple vectors include pointers, so they can't have uninitialized contents.
   // Therefore we always pass initialElementSupplied=true.
   SimpleVector_O(){};
   SimpleVector_O(size_t length, value_type initialElement = default_initial_element(), bool initialElementSupplied = true,
-                 size_t initialContentsSize = 0, const value_type *initialContents = NULL)
+                 size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static SimpleVector_sp make(size_t length, T_sp initialElement = nil<T_O>(), bool initialElementSupplied = true,
-                              size_t initialContentsSize = 0, const T_sp *initialContents = NULL, bool static_vector_p = false) {
+                              size_t initialContentsSize = 0, const T_sp* initialContents = NULL, bool static_vector_p = false) {
     auto bs = gctools::GC<SimpleVector_O>::allocate_container<gctools::RuntimeStage>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);
     return bs;
   }
   // Used in one place in lisp.cc. FIXME: Maybe remove?
-  static SimpleVector_sp make(const gc::Vec0<T_sp> &objs) {
+  static SimpleVector_sp make(const gc::Vec0<T_sp>& objs) {
     size_t len = objs.size();
     if (len == 0)
       return make(0);

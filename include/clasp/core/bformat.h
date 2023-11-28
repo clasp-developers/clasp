@@ -32,5 +32,5 @@ THE SOFTWARE.
 namespace core {
 
 T_sp cl__format(T_sp dest, T_sp control, List_sp args);
-T_sp core__fmt(T_sp dest, const string &control, List_sp args);
+T_sp core__fmt(T_sp dest, const string& control, List_sp args);
 }; // namespace core

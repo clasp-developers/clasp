@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+// #define DEBUG_LEVEL_FULL
 
 // ---------------------------------------------------------------------------
 //  CLASP FOUNDATION INCLUDE - HAS TO BE FIRST INCLUDE !!!
@@ -107,7 +107,7 @@ THE SOFTWARE.
 #endif
 
 namespace llvmo {
-void initialize_llvm(int argc, char **argv);
+void initialize_llvm(int argc, char** argv);
 
 };
 
@@ -117,14 +117,14 @@ void initialize_llvm(int argc, char **argv);
 
 // PRINT STACKTRACE PROGRAMMICALLY
 
-static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames = 63) {
+static inline void print_stacktrace(FILE* out = stderr, unsigned int max_frames = 63) {
   fprintf(out, "stack trace:\n");
 
   // storage array for stack trace address data
-  void *addrlist[max_frames + 1];
+  void* addrlist[max_frames + 1];
 
   // retrieve current stack addresses
-  int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void *));
+  int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
 
   if (addrlen == 0) {
     fprintf(out, "  <empty, possibly corrupt>\n");
@@ -133,11 +133,11 @@ static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames 
 
   // resolve addresses into strings containing "filename(function+address)",
   // this array must be free()-ed
-  char **symbollist = backtrace_symbols(addrlist, addrlen);
+  char** symbollist = backtrace_symbols(addrlist, addrlen);
 
   // allocate string which will be filled with the demangled function name
   size_t funcnamesize = 256;
-  char *funcname = (char *)malloc(funcnamesize);
+  char* funcname = (char*)malloc(funcnamesize);
 
   // iterate over the returned symbol lines. skip the first, it is the
   // address of this function.
@@ -146,7 +146,7 @@ static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames 
 
     // find parentheses and +address offset surrounding the mangled name:
     // ./module(function+0x15c) [0x8048a6d]
-    for (char *p = symbollist[i]; *p; ++p) {
+    for (char* p = symbollist[i]; *p; ++p) {
       if (*p == '(')
         begin_name = p;
       else if (*p == '+')
@@ -167,7 +167,7 @@ static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames 
       // __cxa_demangle():
 
       int status;
-      char *ret = abi::__cxa_demangle(begin_name, funcname, &funcnamesize, &status);
+      char* ret = abi::__cxa_demangle(begin_name, funcname, &funcnamesize, &status);
       if (status == 0) {
         funcname = ret; // use possibly realloc()-ed string
         fprintf(out, "  %s : %s+%s\n", symbollist[i], funcname, begin_offset);
@@ -196,7 +196,7 @@ void handle_unhandled_exception(void) {
 
   try {
     throw;
-  } catch (const std::exception &e) {
+  } catch (const std::exception& e) {
     fprintf(stderr, "Unhandled ecception: %s", e.what());
   } catch (...) {
     fprintf(stderr, "Unknown unhandled ecception");
@@ -207,7 +207,7 @@ void handle_unhandled_exception(void) {
 //     M A I N
 // -------------------------------------------------------------------------
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char* argv[]) {
   // - SET STACK SIZE
   rlimit rl;
   getrlimit(RLIMIT_STACK, &rl);
@@ -226,10 +226,10 @@ int main(int argc, const char *argv[]) {
   getrlimit(RLIMIT_STACK, &rl);
 
   gctools::ClaspInfo claspInfo(argc, argv, rl.rlim_cur);
-  void *stackMarker = &stackMarker;
+  void* stackMarker = &stackMarker;
   int exit_code = 0;
   if (startup_clasp(&stackMarker, &claspInfo, &exit_code)) {
-   exit_code = run_clasp(&claspInfo);
+    exit_code = run_clasp(&claspInfo);
   }
 
   shutdown_clasp(&claspInfo);

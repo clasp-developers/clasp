@@ -119,7 +119,7 @@ public:
   T_sp valueUnsafe() const {
 #ifdef CLASP_THREADS
     uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    auto &bindings = my_thread->_Bindings;
+    auto& bindings = my_thread->_Bindings;
     if (bindings.thread_local_boundp(index))
       return bindings.thread_local_value(index);
     else
@@ -129,7 +129,7 @@ public:
   T_sp valueUnsafeSeqCst() const {
 #ifdef CLASP_THREADS
     uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    auto &bindings = my_thread->_Bindings;
+    auto& bindings = my_thread->_Bindings;
     if (bindings.thread_local_boundp(index))
       return bindings.thread_local_value(index);
     else
@@ -149,7 +149,7 @@ public:
   void set_value(T_sp value) {
 #ifdef CLASP_THREADS
     uint32_t index = _BindingIdx.load(std::memory_order_relaxed);
-    auto &bindings = my_thread->_Bindings;
+    auto& bindings = my_thread->_Bindings;
     if (bindings.thread_local_boundp(index))
       bindings.set_thread_local_value(value, index);
     else
@@ -174,7 +174,7 @@ public:
   void set_valueSeqCst(T_sp value) {
 #ifdef CLASP_THREADS
     uint32_t index = _BindingIdx.load(std::memory_order_relaxed);
-    auto &bindings = my_thread->_Bindings;
+    auto& bindings = my_thread->_Bindings;
     if (bindings.thread_local_boundp(index))
       bindings.set_thread_local_value(value, index);
     else
@@ -184,7 +184,7 @@ public:
   T_sp cas_valueSeqCst(T_sp cmp, T_sp new_value) {
 #ifdef CLASP_THREADS
     uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
-    auto &bindings = my_thread->_Bindings;
+    auto& bindings = my_thread->_Bindings;
     if (bindings.thread_local_boundp(index)) {
       // Not actually atomic, since local bindings are only
       // accessible within their thread. For now at least.
@@ -202,7 +202,7 @@ public:
   // Give the cell a new thread local value and return the old value,
   // which may be an unboundedness marker.
   T_sp bind(T_sp nval) {
-    auto &bindings = my_thread->_Bindings;
+    auto& bindings = my_thread->_Bindings;
     uint32_t index = ensureBindingIndex();
     T_sp oval = bindings.thread_local_value(index);
     bindings.set_thread_local_value(nval, index);
@@ -217,7 +217,7 @@ public:
 
 public:
   virtual void __write__(T_sp stream) const; // in write_ugly.cc
-  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     // Reset the _BindingIdx (erasing any local bindings).
     if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp)
       _BindingIdx.store(NO_THREAD_LOCAL_BINDINGS);
@@ -248,7 +248,7 @@ public:
 
   /*! Only used when creating special symbols at boot time.
           Before NIL, UNBOUND etc are defined */
-  static Symbol_sp create_from_string(const string &nm);
+  static Symbol_sp create_from_string(const string& nm);
   static Symbol_sp create(SimpleString_sp snm) {
     // This is used to allocate roots that are pointed
     // to by global variable _sym_XXX  and will never be collected
@@ -282,9 +282,9 @@ public: // Flags access
   void setf_specialP(bool m) { setFlag(m, IS_SPECIAL); }
   void makeSpecial(); // TODO: Redundant, remove?
 public:               // Hashing
-  void sxhash_(HashGenerator &hg) const override;
-  void sxhash_equal(HashGenerator &hg) const override;
-  void sxhash_equalp(HashGenerator &hg) const override { this->sxhash_equal(hg); };
+  void sxhash_(HashGenerator& hg) const override;
+  void sxhash_equal(HashGenerator& hg) const override;
+  void sxhash_equalp(HashGenerator& hg) const override { this->sxhash_equal(hg); };
 
 public: // Miscellaneous
   bool isKeywordSymbol();
@@ -393,7 +393,7 @@ public: // packages, the name, misc
 
 public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */
-  explicit Symbol_O(const only_at_startup &);
+  explicit Symbol_O(const only_at_startup&);
   explicit Symbol_O(SimpleBaseString_sp name)
       : _Name(name), _Value(unbound<VariableCell_O>()), _Function(unbound<FunctionCell_O>()),
         _SetfFunction(unbound<FunctionCell_O>()){};

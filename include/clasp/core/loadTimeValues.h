@@ -49,7 +49,7 @@ public:       // ctor/dtor for classes with shared virtual base
 public: // Functions here
   static LoadTimeValues_sp make(size_t dataDimension);
 
-  T_sp &operator[](size_t index) {
+  T_sp& operator[](size_t index) {
     BOUNDS_ASSERT(index < this->_Objects.size());
     return this->_Objects[index];
   }
@@ -57,12 +57,12 @@ public: // Functions here
   int numberOfValues() const { return this->_Objects.size(); };
   //  int numberOfSymbols() const { return this->_Symbols.size(); };
 
-  void dumpValues(vector<gctools::Fixnum> &indices);
+  void dumpValues(vector<gctools::Fixnum>& indices);
   //  void dumpSymbols(vector<gctools::Fixnum> &indices);
 
   // -------- Regular data storage
 
-  inline T_sp &data_element(size_t i) { return this->_Objects[i]; };
+  inline T_sp& data_element(size_t i) { return this->_Objects[i]; };
   size_t data_vectorPushExtend(T_sp val, size_t extension);
   CL_DEFMETHOD void load_time_value_array_setf(size_t index, T_sp object) { this->_Objects[index] = object; };
   // -------- Symbols storage

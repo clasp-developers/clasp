@@ -2,9 +2,9 @@
 typedef bool _Bool;
 #include <clasp/core/foundation.h>
 #include <type_traits>
-//#include <llvm/Support/system_error.h>
+// #include <llvm/Support/system_error.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
-//#include <llvm/ExecutionEngine/SectionMemoryManager.h>
+// #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/LinkAllPasses.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
@@ -33,7 +33,7 @@ typedef bool _Bool;
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/IR/Verifier.h>
 #include "llvm/IR/AssemblyAnnotationWriter.h" // will be llvm/IR
-//#include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
+// #include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
 
 #include <clang/Frontend/ASTUnit.h>
 #include <clang/AST/Comment.h>
@@ -75,7 +75,7 @@ typedef bool _Bool;
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/smallMultimap.h>
-//#include "core/symbolVector.h"
+// #include "core/symbolVector.h"
 #include <clasp/core/designators.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/hashTableEq.h>
@@ -95,8 +95,8 @@ typedef bool _Bool;
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/character.h>
-//#include <clasp/core/reader.h>
-//#include <clasp/core/regex.h>
+// #include <clasp/core/reader.h>
+// #include <clasp/core/regex.h>
 #include <clasp/core/array.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/nativeVector.h>
@@ -152,11 +152,11 @@ eg: offsetof(MACRO_SAFE_TYPE(a<b,c>),d)
 #define SAFE_TYPE_MACRO(...) __VA_ARGS__
 
 #ifdef _TARGET_OS_DARWIN
-// The OS X offsetof macro is defined as __offsetof which is defined as __builtin_offsetof - take out one level of macro so that the MACRO_SAFE_TYPE hack works
+// The OS X offsetof macro is defined as __offsetof which is defined as __builtin_offsetof - take out one level of macro so that the
+// MACRO_SAFE_TYPE hack works
 #undef offsetof
-#define offsetof(t,x) __builtin_offsetof(t,x)
+#define offsetof(t, x) __builtin_offsetof(t, x)
 #endif
-
 
 /* ----------------------------------------------------------------------
  *
@@ -164,31 +164,25 @@ eg: offsetof(MACRO_SAFE_TYPE(a<b,c>),d)
  *
  */
 
+#define BAD_HEADER(msg, hdr)                                                                                                       \
+  printf("%s:%d Illegal header@%p in %s  header->header=%" PRIxPTR "  header->data[0]=%" PRIxPTR "  header->data[1]=%" PRIxPTR     \
+         "\n",                                                                                                                     \
+         __FILE__, __LINE__, &hdr, msg, hdr.header._value, hdr.additional_data[0], hdr.additional_data[1]);
 
-
-#define BAD_HEADER(msg,hdr) \
-  printf("%s:%d Illegal header@%p in %s  header->header=%" PRIxPTR "  header->data[0]=%" PRIxPTR "  header->data[1]=%" PRIxPTR "\n", __FILE__, __LINE__, &hdr, msg, hdr.header._value, hdr.additional_data[0], hdr.additional_data[1]);
-
-template <typename RT, typename...ARGS>
-NOINLINE void expose_function(const std::string& pkg_sym,
-                              RT (*fp)(ARGS...),
-                              const std::string& lambdaList)
-{
-  maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),pkg_sym);
+template <typename RT, typename... ARGS>
+NOINLINE void expose_function(const std::string& pkg_sym, RT (*fp)(ARGS...), const std::string& lambdaList) {
+  maybe_register_symbol_using_dladdr(*(void**)&fp, sizeof(fp), pkg_sym);
   std::string pkgName;
   std::string symbolName;
-  core::colon_split(pkg_sym,pkgName,symbolName);
-//  printf("%s:%d  expose_function   pkgName=%s  symbolName=%s\n", __FILE__, __LINE__, pkgName.c_str(), symbolName.c_str() );
-  core::wrap_function(pkgName,symbolName,fp,lambdaList);
+  core::colon_split(pkg_sym, pkgName, symbolName);
+  //  printf("%s:%d  expose_function   pkgName=%s  symbolName=%s\n", __FILE__, __LINE__, pkgName.c_str(), symbolName.c_str() );
+  core::wrap_function(pkgName, symbolName, fp, lambdaList);
 }
 
-template <typename RT, typename...ARGS>
-NOINLINE void expose_function_setf(const std::string& pkg_sym,
-                                   RT (*fp)(ARGS...),
-                                   const std::string& lambdaList)
-{
+template <typename RT, typename... ARGS>
+NOINLINE void expose_function_setf(const std::string& pkg_sym, RT (*fp)(ARGS...), const std::string& lambdaList) {
   std::string pkgName;
   std::string symbolName;
-  core::colon_split(pkg_sym,pkgName,symbolName);
-  core::wrap_function_setf(pkgName,symbolName,fp,lambdaList);
+  core::colon_split(pkg_sym, pkgName, symbolName);
+  core::wrap_function_setf(pkgName, symbolName, fp, lambdaList);
 }

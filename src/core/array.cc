@@ -130,7 +130,7 @@ namespace core {
 //
 //
 
-void Array_O::sxhash_equalp(HashGenerator &hg) const {
+void Array_O::sxhash_equalp(HashGenerator& hg) const {
   // TODO:  Write optimized versions for different array types
   for (size_t i = 0; i < this->length(); ++i) {
     if (!hg.isFilling())
@@ -172,7 +172,7 @@ void Array_O::fillInitialContents(T_sp ic) {
 
 // Like ARRAY-ROW-MAJOR-INDEX, but with a vector<int> instead of a list.
 // Used only in the printer, below.
-size_t Array_O::index_vector_int(const vector<int> &indices) const {
+size_t Array_O::index_vector_int(const vector<int>& indices) const {
   size_t rank = this->rank();
   size_t offset = 0;
   size_t oneIndex = 0;
@@ -330,7 +330,7 @@ T_sp MDArray_O::replaceArray(T_sp other) {
 
 void MDArray_O::set_data(Array_sp a) { this->_Data = a; }
 
-void MDArray_O::sxhash_(HashGenerator &hg) const {
+void MDArray_O::sxhash_(HashGenerator& hg) const {
   // Just to get it working. FIXME
   this->General_O::sxhash_(hg);
 }
@@ -475,9 +475,9 @@ CL_DEFUN size_t core__arrayFlags(Array_sp a) {
 DOCGROUP(clasp);
 CL_DEFUN void core__mdarray_dump(Array_sp a) {
   MDArray_sp mda = gc::As<MDArray_sp>(a);
-  clasp_write_string(fmt::format("MDArray address = {}\n", (void *)&*mda));
+  clasp_write_string(fmt::format("MDArray address = {}\n", (void*)&*mda));
   clasp_write_string(fmt::format("MDArray _ArrayTotalSize = {}\n", mda->_ArrayTotalSize));
-  clasp_write_string(fmt::format("MDArray _Data = {}\n", (void *)&*(mda->_Data)));
+  clasp_write_string(fmt::format("MDArray _Data = {}\n", (void*)&*(mda->_Data)));
   clasp_write_string(fmt::format("MDArray _DisplacedIndexOffset = {}\n", mda->_DisplacedIndexOffset));
   clasp_write_string(fmt::format("MDArray _Flags = {}\n", mda->_Flags._Flags));
   clasp_write_string(fmt::format("MDArray _Dimensions.length() = {}\n", mda->_Dimensions.length()));
@@ -518,7 +518,7 @@ CL_DOCSTRING(R"dx(arrayDisplacement)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
   unlikely_if(!gc::IsA<MDArray_sp>(array)) { return Values(nil<T_O>(), clasp_make_fixnum(0)); }
-  MDArray_O *mdarray = reinterpret_cast<MDArray_O *>(&*array);
+  MDArray_O* mdarray = reinterpret_cast<MDArray_O*>(&*array);
   return Values(mdarray->displacedTo(), clasp_make_fixnum(mdarray->displacedIndexOffset()));
 }
 
@@ -649,7 +649,7 @@ struct RecursivePrint {
   vector<int> indices;
   stringstream ss;
 
-  RecursivePrint(const Array_sp &array) {
+  RecursivePrint(const Array_sp& array) {
     this->me = array;
     this->indices.resize(array->rank(), 0);
     this->depth = array->rank() - 1;
@@ -738,7 +738,7 @@ bool AbstractSimpleVector_O::equalp(T_sp other) const {
 
 namespace core {
 
-size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t &rank) {
+size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& rank) {
   size_t arrayTotalSize = 1;
   rank = 0;
   // dimensions has to be right
@@ -1089,8 +1089,8 @@ CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object) {
       AbstractSimpleVector_sp asv;
       size_t start, end;
       source->asAbstractSimpleVectorRange(asv, start, end);
-      const unsigned char *memory_start = reinterpret_cast<const unsigned char *>(asv->rowMajorAddressOfElement_(start));
-      const unsigned char *memory_end = reinterpret_cast<const unsigned char *>(asv->rowMajorAddressOfElement_(end));
+      const unsigned char* memory_start = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(start));
+      const unsigned char* memory_end = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(end));
       SimpleVector_byte8_t_sp result =
           SimpleVector_byte8_t_O::make((memory_end - memory_start), 0, false, (memory_end - memory_start), memory_start);
       return result;
@@ -1098,8 +1098,8 @@ CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object) {
       AbstractSimpleVector_sp asv;
       size_t start, end;
       source->asAbstractSimpleVectorRange(asv, start, end);
-      const unsigned char *memory_start = reinterpret_cast<const unsigned char *>(asv->rowMajorAddressOfElement_(start));
-      const unsigned char *memory_end = reinterpret_cast<const unsigned char *>(asv->rowMajorAddressOfElement_(end));
+      const unsigned char* memory_start = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(start));
+      const unsigned char* memory_end = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(end));
       SimpleVector_byte8_t_sp result =
           SimpleVector_byte8_t_O::make((memory_end - memory_start), 0, false, (memory_end - memory_start), memory_start);
       return result;
@@ -1108,7 +1108,7 @@ CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object) {
   } else if (gc::IsA<clasp_ffi::ForeignData_sp>(object)) {
     clasp_ffi::ForeignData_sp source = gc::As_unsafe<clasp_ffi::ForeignData_sp>(object);
     SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(
-        source->foreign_data_size(), 0, false, source->foreign_data_size(), (const unsigned char *)source->orig_data_ptr());
+        source->foreign_data_size(), 0, false, source->foreign_data_size(), (const unsigned char*)source->orig_data_ptr());
     return result;
   }
   SIMPLE_ERROR("Add support for coercing {} to a byte8 vector", _rep_(object));
@@ -1122,11 +1122,11 @@ CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp 
     AbstractSimpleVector_sp asv;
     size_t start, end;
     source->asAbstractSimpleVectorRange(asv, start, end);
-    const unsigned char *memory_start = reinterpret_cast<const unsigned char *>(asv->rowMajorAddressOfElement_(start));
-    const unsigned char *memory_end = reinterpret_cast<const unsigned char *>(asv->rowMajorAddressOfElement_(end));
+    const unsigned char* memory_start = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(start));
+    const unsigned char* memory_end = reinterpret_cast<const unsigned char*>(asv->rowMajorAddressOfElement_(end));
     auto data = gctools::GC<clasp_ffi::ForeignData_O>::allocate_with_default_constructor();
     data->allocate(ext::_sym_byte8, DeleteOnDtor, memory_end - memory_start);
-    memcpy(const_cast<void *>(data->orig_data_ptr()), (void *)memory_start, memory_end - memory_start);
+    memcpy(const_cast<void*>(data->orig_data_ptr()), (void*)memory_start, memory_end - memory_start);
     return data;
   }
   SIMPLE_ERROR("Add support for coercing {} to a simple-base-string", _rep_(source));
@@ -1139,7 +1139,7 @@ CL_DEFUN clasp_ffi::ForeignData_sp core__static_vector_address(Array_sp source) 
 
 DOCGROUP(clasp);
 CL_DEFUN clasp_ffi::ForeignData_sp core__static_vector_pointer(Array_sp source, size_t offset) {
-  return clasp_ffi::ForeignData_O::create((char *)source->rowMajorAddressOfElement_(0) + offset);
+  return clasp_ffi::ForeignData_O::create((char*)source->rowMajorAddressOfElement_(0) + offset);
 }
 
 CL_DOCSTRING(R"dx(Return the simple-vector that stores the data for this array - this is like sbcl sb-ext:array-storage-vector)dx");
@@ -1165,7 +1165,7 @@ CL_DOCSTRING(R"dx(Pin the objects in the list in memory and then call the thunk)
 DOCGROUP(clasp);
 CL_DEFUN T_mv ext__pinned_objects_funcall(List_sp objects, T_sp thunk) {
   size_t num = cl__length(objects);
-  T_O *pointerArray[num];
+  T_O* pointerArray[num];
   size_t idx = 0;
   for (auto cur : objects) {
     T_sp obj = CONS_CAR(cur);

@@ -33,7 +33,7 @@ bool global_debug_vm = false;
 #define DBG_VM(...)                                                                                                                \
   {                                                                                                                                \
     if (global_debug_vm) {                                                                                                         \
-      printf("%s:%6d pc: %p sp: %p fp: %p | ", __FILE__, __LINE__, (void *)vm._pc, sp, fp);                                        \
+      printf("%s:%6d pc: %p sp: %p fp: %p | ", __FILE__, __LINE__, (void*)vm._pc, sp, fp);                                         \
       printf(__VA_ARGS__);                                                                                                         \
     }                                                                                                                              \
   }
@@ -81,7 +81,7 @@ void BytecodeModule_O::register_for_debug() {
     newc->setCdr(old);
 }
 
-static inline int16_t read_s16(unsigned char *pc) {
+static inline int16_t read_s16(unsigned char* pc) {
   uint8_t byte0 = *pc;
   uint8_t byte1 = *(pc + 1);
   uint16_t nibble = byte0 | (byte1 << 8);
@@ -94,7 +94,7 @@ static inline int16_t read_s16(unsigned char *pc) {
   return convert.i;
 }
 
-static inline int32_t read_label(unsigned char *pc, size_t nbytes) {
+static inline int32_t read_label(unsigned char* pc, size_t nbytes) {
   // Labels are stored little-endian.
   uint32_t result = 0;
   for (size_t i = 0; i < nbytes - 1; ++i)
@@ -138,10 +138,10 @@ static size_t global_counterStep = 1024;
 static size_t global_stackTrigger = 16384;
 
 enum RecordingEnum { idle, playback, record };
-static FILE *global_recordingFile = NULL;
+static FILE* global_recordingFile = NULL;
 static RecordingEnum global_recordingState = idle;
 
-void open_telemetry_file(const std::string &filename, RecordingEnum state) {
+void open_telemetry_file(const std::string& filename, RecordingEnum state) {
   if (state == record) {
     global_recordingFile = fopen(filename.c_str(), "wb");
     global_recordingState = record;
@@ -151,7 +151,7 @@ void open_telemetry_file(const std::string &filename, RecordingEnum state) {
   }
 }
 
-CL_DEFUN void core__start_recording_vm(const std::string &filename) {
+CL_DEFUN void core__start_recording_vm(const std::string& filename) {
   global_recordingFile = fopen(filename.c_str(), "wb");
   global_recordingState = record;
 }
@@ -164,7 +164,7 @@ CL_DEFUN void core__stop_recording_vm() {
   global_recordingState = idle;
 }
 
-CL_DEFUN void core__start_playback_vm(const std::string &filename) {
+CL_DEFUN void core__start_playback_vm(const std::string& filename) {
   global_recordingFile = fopen(filename.c_str(), "rb");
   global_recordingState = playback;
 }
@@ -179,17 +179,17 @@ CL_DEFUN void core__stop_playback_vm() {
 
 void vm_error() { printf("Error in vm\n"); }
 
-void vm_record_playback(void *value, const char *name) {
+void vm_record_playback(void* value, const char* name) {
   if (global_recordingFile) {
     if (global_recordingState == record) {
-      fwrite((void *)&(value), sizeof(value), 1, global_recordingFile);
+      fwrite((void*)&(value), sizeof(value), 1, global_recordingFile);
     }
     if (global_recordingState == playback) {
-      void *read_value;
-      fread((void *)&read_value, sizeof(read_value), 1, global_recordingFile);
-      if (read_value != (void *)value) {
+      void* read_value;
+      fread((void*)&read_value, sizeof(read_value), 1, global_recordingFile);
+      if (read_value != (void*)value) {
         printf("%s:%d:%s Mismatch between recorded %s %p and current %p\n", __FILE__, __LINE__, __FUNCTION__, name, read_value,
-               (void *)value);
+               (void*)value);
         vm_error();
         throw VM_error();
       }
@@ -204,18 +204,18 @@ void vm_record_playback(void *value, const char *name) {
 #define VM_RECORD_PLAYBACK(value, name)
 #endif
 
-static unsigned char *long_dispatch(VirtualMachine &, unsigned char *, MultipleValues &multipleValues, T_O **, T_O **, Closure_O *,
-                                    core::T_O **, core::T_O **, size_t, core::T_O **, uint8_t);
+static unsigned char* long_dispatch(VirtualMachine&, unsigned char*, MultipleValues& multipleValues, T_O**, T_O**, Closure_O*,
+                                    core::T_O**, core::T_O**, size_t, core::T_O**, uint8_t);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
 #ifdef DEBUG_VIRTUAL_MACHINE
 __attribute__((optnone))
 #endif
 gctools::return_type
-bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure,
-            core::T_O **fp, // frame pointer
-            core::T_O **sp, // stack pointer
-            size_t lcc_nargs, core::T_O **lcc_args) {
+bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure,
+            core::T_O** fp, // frame pointer
+            core::T_O** sp, // stack pointer
+            size_t lcc_nargs, core::T_O** lcc_args) {
   ASSERT(literals == NULL || (uintptr_t)literals > 65536);
   ASSERT((((uintptr_t)literals) & 0x7) == 0); // must be aligned
   ASSERT((((uintptr_t)closure) & 0x7) == 0);  // must be aligned
@@ -232,8 +232,8 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
   uintptr_t bytecode_start = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(0);
   uintptr_t bytecode_end = (uintptr_t)gc::As<Array_sp>(bc)->rowMajorAddressOfElement_(cl__length(bc));
 #endif
-  MultipleValues &multipleValues = core::lisp_multipleValues();
-  unsigned char *pc = vm._pc;
+  MultipleValues& multipleValues = core::lisp_multipleValues();
+  unsigned char* pc = vm._pc;
   while (1) {
     VM_PC_CHECK(vm, pc, bytecode_start, bytecode_end);
 #if DEBUG_VM_RECORD_PLAYBACK == 1
@@ -261,7 +261,7 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
     case vm_const: {
       uint8_t n = *(++pc);
       DBG_VM1("const %" PRIu8 "\n", n);
-      T_O *value = literals[n];
+      T_O* value = literals[n];
       vm.push(sp, value);
       VM_RECORD_PLAYBACK(value, "const");
       pc++;
@@ -277,14 +277,14 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
     case vm_call: {
       uint8_t nargs = *(++pc);
       DBG_VM1("call %" PRIu8 "\n", nargs);
-      T_O *func = *(vm.stackref(sp, nargs));
-      T_O **args = vm.stackref(sp, nargs - 1);
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs - 1);
       // ASSERT(gctools::tagged_generalp<T_O*>(func));
-      if (!(gctools::tagged_generalp<T_O *>(func))) {
+      if (!(gctools::tagged_generalp<T_O*>(func))) {
         T_sp tfun((gctools::Tagged)func);
         SIMPLE_ERROR("Tried to call {} which is not a function", _rep_(tfun));
       }
-      vm.push(sp, (T_O *)pc);
+      vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -296,10 +296,10 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
     case vm_call_receive_one: {
       uint8_t nargs = *(++pc);
       DBG_VM1("call-receive-one %" PRIu8 "\n", nargs);
-      T_O *func = *(vm.stackref(sp, nargs));
+      T_O* func = *(vm.stackref(sp, nargs));
       VM_RECORD_PLAYBACK(func, "vm_call_receive_one_func");
-      VM_RECORD_PLAYBACK((void *)(uintptr_t)nargs, "vm_call_receive_one_nargs");
-      T_O **args = vm.stackref(sp, nargs - 1);
+      VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs, "vm_call_receive_one_nargs");
+      T_O** args = vm.stackref(sp, nargs - 1);
 #if DEBUG_VM_RECORD_PLAYBACK == 1
       for (size_t ii = 0; ii < nargs; ii++) {
         stringstream name_args;
@@ -307,7 +307,7 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
         VM_RECORD_PLAYBACK(args[ii], name_args.str().c_str());
       }
 #endif
-      vm.push(sp, (T_O *)pc);
+      vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -321,9 +321,9 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
       uint8_t nargs = *(++pc);
       uint8_t nvals = *(++pc);
       DBG_VM("call-receive-fixed %" PRIu8 " %" PRIu8 "\n", nargs, nvals);
-      T_O *func = *(vm.stackref(sp, nargs));
-      T_O **args = vm.stackref(sp, nargs - 1);
-      vm.push(sp, (T_O *)pc);
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs - 1);
+      vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -372,7 +372,7 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
       DBG_VM("cell-set\n");
       T_sp cons((gctools::Tagged)vm.pop(sp));
       Cons_sp ccons = gc::As_assert<Cons_sp>(cons);
-      T_O *val = vm.pop(sp);
+      T_O* val = vm.pop(sp);
       T_sp tval((gctools::Tagged)val);
       ccons->rplaca(tval);
       pc++;
@@ -387,7 +387,7 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
       DBG_VM("  nclosed = %zu\n", nclosed);
       Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
       // FIXME: Can we use some more abstracted access?
-      vm.copyto(sp, nclosed, (T_O **)(closure->_Slots.data()));
+      vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
       vm.drop(sp, nclosed);
       vm.push(sp, closure.raw_());
       pc++;
@@ -415,7 +415,7 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
       GlobalBytecodeSimpleFun_sp fn = gc::As_assert<GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
-      vm.copyto(sp, nclosed, (T_O **)(closure->_Slots.data()));
+      vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
       vm.drop(sp, nclosed);
       pc++;
       break;
@@ -507,14 +507,14 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
         ptrdiff_t arg_index;
         for (arg_index = lcc_nargs - 1; arg_index >= more_start; arg_index -= 2) {
           bool valid_key_p = false;
-          T_O *key = lcc_args[arg_index - 1];
+          T_O* key = lcc_args[arg_index - 1];
           if (key == kw::_sym_allow_other_keys.raw_()) {
             valid_key_p = true; // aok is always valid.
             T_sp value((gctools::Tagged)(lcc_args[arg_index]));
             aokp = value.notnilp();
           }
           for (size_t key_id = 0; key_id < key_count; ++key_id) {
-            T_O *ckey = literals[key_id + key_literal_start];
+            T_O* ckey = literals[key_id + key_literal_start];
             if (key == ckey) {
               valid_key_p = true;
               *vm.reg(fp, key_frame_start + key_id) = lcc_args[arg_index];
@@ -676,9 +676,9 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
       DBG_VM("  nargs = %zu\n", nargs);
-      T_O *func = *(vm.stackref(sp, nargs));
-      T_O **args = vm.stackref(sp, nargs - 1);
-      vm.push(sp, (T_O *)pc);
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs - 1);
+      vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -692,9 +692,9 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
       DBG_VM("  nargs = %zu\n", nargs);
-      T_O *func = *(vm.stackref(sp, nargs));
-      T_O **args = vm.stackref(sp, nargs - 1);
-      vm.push(sp, (T_O *)pc);
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs - 1);
+      vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
       T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -709,9 +709,9 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
       DBG_VM("mv-call-receive-fixed %" PRIu8 "\n", nvals);
       T_sp tnargs((gctools::Tagged)vm.pop(sp));
       size_t nargs = tnargs.unsafe_fixnum();
-      T_O *func = *(vm.stackref(sp, nargs));
-      T_O **args = vm.stackref(sp, nargs - 1);
-      vm.push(sp, (T_O *)pc);
+      T_O* func = *(vm.stackref(sp, nargs));
+      T_O** args = vm.stackref(sp, nargs - 1);
+      vm.push(sp, (T_O*)pc);
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -744,7 +744,7 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
       DBG_VM("entry %" PRIu8 "\n", n);
       pc++;
       jmp_buf target;
-      void *frame = __builtin_frame_address(0);
+      void* frame = __builtin_frame_address(0);
       vm._pc = pc;
       TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
       vm.setreg(fp, n, env.raw_());
@@ -756,7 +756,7 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
         bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
         sp = vm._stackPointer;
         pc = vm._pc;
-      } catch (Unwind &uw) {
+      } catch (Unwind& uw) {
         if (uw.getFrame() == frame) {
           my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
           goto again;
@@ -870,7 +870,7 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
     }
     case vm_dup: {
       DBG_VM1("dup\n");
-      T_O *obj = vm.pop(sp);
+      T_O* obj = vm.pop(sp);
       vm.push(sp, obj);
       vm.push(sp, obj);
       pc++;
@@ -893,7 +893,7 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
       //  have funcallable function cells.)
       uint8_t c = *(++pc);
       DBG_VM1("called-fdefinition %" PRIu8 "\n", c);
-      T_O *fun = literals[c];
+      T_O* fun = literals[c];
       vm.push(sp, fun);
       VM_RECORD_PLAYBACK(fun, "called-fdefinition");
       pc++;
@@ -911,16 +911,16 @@ bytecode_vm(VirtualMachine &vm, T_O **literals, T_O **closed, Closure_O *closure
     default:
       SimpleFun_sp ep = closure->entryPoint();
       BytecodeModule_sp bcm = gc::As<GlobalBytecodeSimpleFun_sp>(ep)->code();
-      unsigned char *codeStart = (unsigned char *)gc::As<Array_sp>(bcm->_Bytecode)->rowMajorAddressOfElement_(0);
-      unsigned char *codeEnd = codeStart + gc::As<Array_sp>(bcm->_Bytecode)->arrayTotalSize();
-      SIMPLE_ERROR("Unknown opcode {} pc: {}  module: {} - {}", *pc, (void *)pc, (void *)codeStart, (void *)codeEnd);
+      unsigned char* codeStart = (unsigned char*)gc::As<Array_sp>(bcm->_Bytecode)->rowMajorAddressOfElement_(0);
+      unsigned char* codeEnd = codeStart + gc::As<Array_sp>(bcm->_Bytecode)->arrayTotalSize();
+      SIMPLE_ERROR("Unknown opcode {} pc: {}  module: {} - {}", *pc, (void*)pc, (void*)codeStart, (void*)codeEnd);
     };
   }
 }
 
-static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, MultipleValues &multipleValues, T_O **literals,
-                                    T_O **closed, Closure_O *closure, core::T_O **fp, core::T_O **sp, size_t lcc_nargs,
-                                    core::T_O **lcc_args, uint8_t sub_opcode) {
+static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, MultipleValues& multipleValues, T_O** literals,
+                                    T_O** closed, Closure_O* closure, core::T_O** fp, core::T_O** sp, size_t lcc_nargs,
+                                    core::T_O** lcc_args, uint8_t sub_opcode) {
   switch (sub_opcode) {
   case vm_ref: {
     uint8_t low = *(pc + 1);
@@ -934,7 +934,7 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long const %" PRIu16 "\n", n);
-    T_O *value = literals[n];
+    T_O* value = literals[n];
     vm.push(sp, value);
     VM_RECORD_PLAYBACK(value, "long const");
     pc++;
@@ -952,9 +952,9 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call %" PRIu16 "\n", nargs);
-    T_O *func = *(vm.stackref(sp, nargs));
-    T_O **args = vm.stackref(sp, nargs - 1);
-    vm.push(sp, (T_O *)pc);
+    T_O* func = *(vm.stackref(sp, nargs));
+    T_O** args = vm.stackref(sp, nargs - 1);
+    vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -967,10 +967,10 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
     uint8_t low = *(pc + 1);
     uint16_t nargs = low + (*(pc + 2) << 8);
     DBG_VM1("long call-receive-one %" PRIu16 "\n", nargs);
-    T_O *func = *(vm.stackref(sp, nargs));
+    T_O* func = *(vm.stackref(sp, nargs));
     VM_RECORD_PLAYBACK(func, "vm_call_receive_one_func");
-    VM_RECORD_PLAYBACK((void *)(uintptr_t)nargs, "vm_call_receive_one_nargs");
-    T_O **args = vm.stackref(sp, nargs - 1);
+    VM_RECORD_PLAYBACK((void*)(uintptr_t)nargs, "vm_call_receive_one_nargs");
+    T_O** args = vm.stackref(sp, nargs - 1);
 #if DEBUG_VM_RECORD_PLAYBACK == 1
     for (size_t ii = 0; ii < nargs; ii++) {
       stringstream name_args;
@@ -978,7 +978,7 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
       VM_RECORD_PLAYBACK(args[ii], name_args.str().c_str());
     }
 #endif
-    vm.push(sp, (T_O *)pc);
+    vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
     T_sp res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -994,9 +994,9 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
     uint8_t low_nvals = *(pc + 3);
     uint16_t nvals = low_nvals + (*(pc + 4) << 8);
     DBG_VM("long call-receive-fixed %" PRIu16 " %" PRIu16 "\n", nargs, nvals);
-    T_O *func = *(vm.stackref(sp, nargs));
-    T_O **args = vm.stackref(sp, nargs - 1);
-    vm.push(sp, (T_O *)pc);
+    T_O* func = *(vm.stackref(sp, nargs));
+    T_O** args = vm.stackref(sp, nargs - 1);
+    vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -1050,7 +1050,7 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
     DBG_VM("  nclosed = %zu\n", nclosed);
     Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
     // FIXME: Can we use some more abstracted access?
-    vm.copyto(sp, nclosed, (T_O **)(closure->_Slots.data()));
+    vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
     vm.drop(sp, nclosed);
     vm.push(sp, closure.raw_());
     pc += 3;
@@ -1080,7 +1080,7 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
     GlobalBytecodeSimpleFun_sp fn = gc::As_assert<GlobalBytecodeSimpleFun_sp>(closure->entryPoint());
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
-    vm.copyto(sp, nclosed, (T_O **)(closure->_Slots.data()));
+    vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
     vm.drop(sp, nclosed);
     pc += 3;
     break;
@@ -1150,14 +1150,14 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
       ptrdiff_t arg_index;
       for (arg_index = lcc_nargs - 1; arg_index >= more_start; arg_index -= 2) {
         bool valid_key_p = false;
-        T_O *key = lcc_args[arg_index - 1];
+        T_O* key = lcc_args[arg_index - 1];
         if (key == kw::_sym_allow_other_keys.raw_()) {
           valid_key_p = true; // aok is always valid.
           T_sp value((gctools::Tagged)(lcc_args[arg_index]));
           aokp = value.notnilp();
         }
         for (size_t key_id = 0; key_id < key_count; ++key_id) {
-          T_O *ckey = literals[key_id + key_literal_start];
+          T_O* ckey = literals[key_id + key_literal_start];
           if (key == ckey) {
             valid_key_p = true;
             *vm.reg(fp, key_frame_start + key_id) = lcc_args[arg_index];
@@ -1215,9 +1215,9 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
     DBG_VM("long mv-call-receive-fixed %" PRIu16 "\n", nvals);
     T_sp tnargs((gctools::Tagged)vm.pop(sp));
     size_t nargs = tnargs.unsafe_fixnum();
-    T_O *func = *(vm.stackref(sp, nargs));
-    T_O **args = vm.stackref(sp, nargs - 1);
-    vm.push(sp, (T_O *)pc);
+    T_O* func = *(vm.stackref(sp, nargs));
+    T_O** args = vm.stackref(sp, nargs - 1);
+    vm.push(sp, (T_O*)pc);
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = funcall_general<core::Function_O>((gc::Tagged)func, nargs, args);
@@ -1253,7 +1253,7 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
     DBG_VM("long entry %" PRIu16 "\n", n);
     pc++;
     jmp_buf target;
-    void *frame = __builtin_frame_address(0);
+    void* frame = __builtin_frame_address(0);
     vm._pc = pc;
     TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
     vm.setreg(fp, n, env.raw_());
@@ -1265,7 +1265,7 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
       bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
       sp = vm._stackPointer;
       pc = vm._pc;
-    } catch (Unwind &uw) {
+    } catch (Unwind& uw) {
       if (uw.getFrame() == frame) {
         my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
         goto again;
@@ -1313,7 +1313,7 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
     uint8_t low = *(++pc);
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("long called-fdefinition %" PRIu16 "\n", n);
-    T_O *fun = literals[n];
+    T_O* fun = literals[n];
     vm.push(sp, fun);
     VM_RECORD_PLAYBACK(fun, "long called-fdefinition");
     pc++;
@@ -1327,7 +1327,7 @@ static unsigned char *long_dispatch(VirtualMachine &vm, unsigned char *pc, Multi
 }
 
 void VMFrameDynEnv_O::proceed() {
-  VirtualMachine &vm = my_thread->_VM;
+  VirtualMachine& vm = my_thread->_VM;
   vm._stackPointer = this->old_sp;
   vm._framePointer = this->old_fp;
 }
@@ -1338,16 +1338,15 @@ extern "C" {
 
 #define BYTECODE_COMPILE_THRESHOLD 65535
 
-gctools::return_type bytecode_call(unsigned char *pc, core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args) {
-  core::Closure_O *closure = gctools::untag_general<core::Closure_O *>((core::Closure_O *)lcc_closure);
+gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
+  core::Closure_O* closure = gctools::untag_general<core::Closure_O*>((core::Closure_O*)lcc_closure);
   ASSERT(gc::IsA<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint()));
   auto entry = closure->entryPoint();
   core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(entry);
   // Maybe compile this function, if it's been called a lot.
   entryPoint->countCall();
-  if (entryPoint->callCount() >= BYTECODE_COMPILE_THRESHOLD
-      && comp::_sym_STARautocompile_hookSTAR->boundP()
-      && comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
+  if (entryPoint->callCount() >= BYTECODE_COMPILE_THRESHOLD && comp::_sym_STARautocompile_hookSTAR->boundP() &&
+      comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
     core::T_sp nat = core::eval::funcall(comp::_sym_STARautocompile_hookSTAR->symbolValue(), entry, nil<core::T_O>());
     entryPoint->setSimpleFun(gc::As_assert<core::SimpleFun_sp>(nat));
   }
@@ -1357,28 +1356,28 @@ gctools::return_type bytecode_call(unsigned char *pc, core::T_O *lcc_closure, si
   // for subsequent calls.
   closure->setSimpleFun(entry->entryPoint());
   // Proceed with the bytecode call.
-  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
+  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc);
   size_t nlocals = entryPoint->_LocalsFrameSize;
   core::BytecodeModule_sp module = gc::As_assert<core::BytecodeModule_sp>(entryPoint->_Code);
-  core::T_O **literals = (core::T_O **)&gc::As_assert<core::SimpleVector_sp>(module->_Literals)->_Data[0];
-  core::T_O **closed = (core::T_O **)(closure->_Slots.data());
-  core::VirtualMachine &vm = my_thread->_VM;
+  core::T_O** literals = (core::T_O**)&gc::As_assert<core::SimpleVector_sp>(module->_Literals)->_Data[0];
+  core::T_O** closed = (core::T_O**)(closure->_Slots.data());
+  core::VirtualMachine& vm = my_thread->_VM;
   VM_CURRENT_DATA(vm, (lcc_nargs >= 2) ? lcc_args[1] : NULL);
   VM_CURRENT_DATA1(vm, (lcc_nargs >= 3) ? lcc_args[2] : NULL);
   VM_INC_COUNTER0(vm);
   // We save the old PC for returns. We do _not_ do this for nonlocal exits,
   // since in that case the NLXing VM invocation sets the PC before escaping.
-  unsigned char *old_pc = vm._pc;
+  unsigned char* old_pc = vm._pc;
   vm._pc = pc;
   // This is the only place we read the vm._stackPointer. Everywhere else we
   // use a local variable. This means we start new frames appropriately when
   // we're called from wherever, and also that we use the correct sp when
   // being unwound to.
-  core::T_O **old_fp = vm._framePointer;
-  core::T_O **old_sp = vm._stackPointer;
-  vm.push(vm._stackPointer, (core::T_O *)old_fp);
-  core::T_O **fp = vm._framePointer = vm._stackPointer;
-  core::T_O **sp = vm.push_frame(fp, nlocals);
+  core::T_O** old_fp = vm._framePointer;
+  core::T_O** old_sp = vm._stackPointer;
+  vm.push(vm._stackPointer, (core::T_O*)old_fp);
+  core::T_O** fp = vm._framePointer = vm._stackPointer;
+  core::T_O** sp = vm.push_frame(fp, nlocals);
   try {
     gctools::StackAllocate<core::VMFrameDynEnv_O> frame(old_sp, old_fp);
     gctools::StackAllocate<core::Cons_O> sa_ec(frame.asSmartPtr(), my_thread->dynEnvStackGet());
@@ -1386,7 +1385,7 @@ gctools::return_type bytecode_call(unsigned char *pc, core::T_O *lcc_closure, si
     gctools::return_type res = bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
     vm._pc = old_pc;
     return res;
-  } catch (core::VM_error &err) {
+  } catch (core::VM_error& err) {
     printf("%s:%d:%s Recovering from VM_error\n", __FILE__, __LINE__, __FUNCTION__);
     return gctools::return_type(nil<core::T_O>().raw_(), 0);
   }
@@ -1404,23 +1403,23 @@ CL_DEFUN void core__vm_counter_step(size_t counterStep) { global_counterStep = c
 CL_DEFUN void core__vm_stack_trigger(size_t trigger) { global_stackTrigger = trigger; }
 #endif
 
-bool bytecode_module_contains_address_p(BytecodeModule_sp module, void *pc) {
+bool bytecode_module_contains_address_p(BytecodeModule_sp module, void* pc) {
   // FIXME: Not sure if this is the best way to go about it.
   Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
-  void *start = bytecode->rowMajorAddressOfElement_(0);
-  void *end = (byte8_t *)start + bytecode->length() * sizeof(byte8_t);
+  void* start = bytecode->rowMajorAddressOfElement_(0);
+  void* end = (byte8_t*)start + bytecode->length() * sizeof(byte8_t);
   return (start <= pc) && (pc <= end);
 }
 
-bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp fun, void *pc) {
+bool bytecode_function_contains_address_p(GlobalBytecodeSimpleFun_sp fun, void* pc) {
   BytecodeModule_sp module = fun->code();
   Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
-  void *start = bytecode->rowMajorAddressOfElement_(fun->entryPcN());
-  void *end = (byte8_t *)bytecode->rowMajorAddressOfElement_(fun->entryPcN() + fun->bytecodeSize()) + sizeof(byte8_t);
+  void* start = bytecode->rowMajorAddressOfElement_(fun->entryPcN());
+  void* end = (byte8_t*)bytecode->rowMajorAddressOfElement_(fun->entryPcN() + fun->bytecodeSize()) + sizeof(byte8_t);
   return (start <= pc) && (pc <= end);
 }
 
-T_sp bytecode_function_for_pc(BytecodeModule_sp module, void *pc) {
+T_sp bytecode_function_for_pc(BytecodeModule_sp module, void* pc) {
   T_sp debuginfo = module->debugInfo();
   if (debuginfo.notnilp()) {
     for (auto info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
@@ -1434,10 +1433,10 @@ T_sp bytecode_function_for_pc(BytecodeModule_sp module, void *pc) {
   return nil<T_O>();
 }
 
-T_sp bytecode_spi_for_pc(BytecodeModule_sp module, void *pc) {
+T_sp bytecode_spi_for_pc(BytecodeModule_sp module, void* pc) {
   Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
-  void *start = bytecode->rowMajorAddressOfElement_(0);
-  ptrdiff_t bpc = (byte8_t *)pc - (byte8_t *)start;
+  void* start = bytecode->rowMajorAddressOfElement_(0);
+  ptrdiff_t bpc = (byte8_t*)pc - (byte8_t*)start;
   // Find the location info with the tightest enclosing bounds.
   size_t best_start = 0;
   size_t best_end = SIZE_MAX;
@@ -1457,10 +1456,10 @@ T_sp bytecode_spi_for_pc(BytecodeModule_sp module, void *pc) {
   return best_spi;
 }
 
-List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void *pc, T_O **fp) {
+List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void* pc, T_O** fp) {
   Array_sp bytecode = gc::As_assert<Array_sp>(module->bytecode());
-  void *start = bytecode->rowMajorAddressOfElement_(0);
-  ptrdiff_t bpc = (byte8_t *)pc - (byte8_t *)start;
+  void* start = bytecode->rowMajorAddressOfElement_(0);
+  ptrdiff_t bpc = (byte8_t*)pc - (byte8_t*)start;
   ql::list bindings;
   for (T_sp info : *(gc::As_assert<SimpleVector_sp>(module->debugInfo()))) {
     if (gc::IsA<BytecodeDebugVars_sp>(info)) {
@@ -1477,7 +1476,7 @@ List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void *pc, T_O **fp) {
             if (cdr.fixnump()) {
               gc::Fixnum index = cdr.unsafe_fixnum();
               // We add one here because *fp is the previous fp.
-              T_O *tvalue = *(fp + index + 1);
+              T_O* tvalue = *(fp + index + 1);
               T_sp value((gctools::Tagged)tvalue);
               bindings << Cons_O::create(name, value);
             } else if (gc::IsA<Cons_sp>(cdr)) {
@@ -1498,7 +1497,7 @@ List_sp bytecode_bindings_for_pc(BytecodeModule_sp module, void *pc, T_O **fp) {
   return bindings.cons();
 }
 
-void *bytecode_pc() { return my_thread->_VM._pc; }
+void* bytecode_pc() { return my_thread->_VM._pc; }
 
 CL_DOCSTRING(
     R"(Call a function on each registered bytecode module. Order is undefined. New modules created during the mapping process may be skipped; this function does not synchronize. Return value undefined.)")

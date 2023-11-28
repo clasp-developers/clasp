@@ -135,16 +135,16 @@ namespace detail {
 struct derivable_class_registration;
 
 struct derivable_class_registration : registration {
-  derivable_class_registration(char const *name);
+  derivable_class_registration(char const* name);
 
   void register_() const;
 
-  const char *m_name;
+  const char* m_name;
 
   virtual std::string name() const { return this->m_name; }
   virtual std::string kind() const { return "derivable_class_registration"; };
 
-  mutable std::map<const char *, int, detail::ltstr> m_static_constants;
+  mutable std::map<const char*, int, detail::ltstr> m_static_constants;
 
   typedef std::pair<type_id, cast_function> base_desc;
   mutable std::vector<base_desc> m_bases;
@@ -157,37 +157,37 @@ struct derivable_class_registration : registration {
 
   scope_ m_scope;
   scope_ m_members;
-  detail::registration *m_default_constructor;
+  detail::registration* m_default_constructor;
   scope_ m_default_members;
   bool m_derivable;
 };
 
 struct CLBIND_API derivable_class_base : scope_ {
 public:
-  derivable_class_base(char const *name);
+  derivable_class_base(char const* name);
 
   struct base_desc {
     type_id type;
     int ptr_offset;
   };
 
-  void init(type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
+  void init(type_id const& type, class_id id, type_id const& wrapped_type, class_id wrapper_id, bool derivable);
 
-  void add_base(type_id const &base, cast_function cast);
+  void add_base(type_id const& base, cast_function cast);
 
-  void set_default_constructor(registration *member);
-  void add_member(registration *member);
-  void add_default_member(registration *member);
+  void set_default_constructor(registration* member);
+  void add_member(registration* member);
+  void add_default_member(registration* member);
 
-  const char *name() const;
+  const char* name() const;
 
-  void add_static_constant(const char *name, int val);
-  void add_inner_scope(scope_ &s);
+  void add_static_constant(const char* name, int val);
+  void add_inner_scope(scope_& s);
 
   void add_cast(class_id src, class_id target, cast_function cast);
 
 private:
-  derivable_class_registration *m_registration;
+  derivable_class_registration* m_registration;
 
 public:
   int m_init_counter;
@@ -199,8 +199,8 @@ public:
 template <class Class, class Policies>
 struct constructor_registration<Class, reg::null_type, default_constructor, Policies, construct_derivable_class>
     : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
-  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares,
-                           string const &docstring)
+  constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares,
+                           string const& docstring)
       : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares,
                                                                                             docstring),
         mm_name(name){};
@@ -226,7 +226,7 @@ template <class T, class Base = no_bases> struct derivable_class_ : detail::deri
   typedef derivable_class_<T, Base> self_t;
 
 private:
-  template <class A, class B> derivable_class_(const derivable_class_<A, B> &);
+  template <class A, class B> derivable_class_(const derivable_class_<A, B>&);
 
 public:
   // WrappedType MUST inherit from T
@@ -234,7 +234,7 @@ public:
 
   typedef std::unique_ptr<T> HoldType;
 
-  template <class Src, class Target> void add_downcast(Src *, Target *) {
+  template <class Src, class Target> void add_downcast(Src*, Target*) {
     if constexpr (std::is_polymorphic_v<Src>) {
       add_cast(reg::registered_class<Src>::id, reg::registered_class<Target>::id, detail::dynamic_cast_<Src, Target>::execute);
     }
@@ -248,7 +248,7 @@ public:
     add_base(typeid(To), detail::static_cast_<T, To>::execute);
     add_cast(reg::registered_class<T>::id, reg::registered_class<To>::id, detail::static_cast_<T, To>::execute);
 
-    add_downcast((To *)0, (T *)0);
+    add_downcast((To*)0, (T*)0);
     return 0;
   }
 
@@ -260,7 +260,7 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
-  derivable_class_(scope_ &outer_scope, const char *name, default_constructor_type, const char *docstring = "")
+  derivable_class_(scope_& outer_scope, const char* name, default_constructor_type, const char* docstring = "")
       : derivable_class_base(name), _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
@@ -273,7 +273,7 @@ public:
     this->_outer_scope->operator,(*this);
   }
 
-  derivable_class_(scope_ &outer_scope, const char *name, const char *docstring = "") : derivable_class_base(name), scope(*this) {
+  derivable_class_(scope_& outer_scope, const char* name, const char* docstring = "") : derivable_class_base(name), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
@@ -282,8 +282,8 @@ public:
   }
 
   template <typename... Types>
-  derivable_class_ &def_constructor(const string &name, constructor<Types...> sig, string const &arguments = "",
-                                    string const &declares = "", string const &docstring = "") {
+  derivable_class_& def_constructor(const string& name, constructor<Types...> sig, string const& arguments = "",
+                                    string const& declares = "", string const& docstring = "") {
     if (isDerivableCxxClass<T>(0)) {
       THROW_HARD_ERROR("ERROR - The derivable class %s should not have other constructors", this->name());
     }
@@ -291,25 +291,25 @@ public:
   }
 
   template <typename... Types, class Policies>
-  derivable_class_ &def_constructor(const string &name, constructor<Types...> sig, const Policies &policies,
-                                    string const &arguments = "", string const &declares = "", string const &docstring = "") {
+  derivable_class_& def_constructor(const string& name, constructor<Types...> sig, const Policies& policies,
+                                    string const& arguments = "", string const& declares = "", string const& docstring = "") {
     if (isDerivableCxxClass<T>(0)) {
       THROW_HARD_ERROR("ERROR - The derivable class %s should not have other constructors with policies", this->name());
     }
     return this->def_constructor_(name, &sig, policies, arguments, declares, docstring);
   }
 
-  template <class F, class... PTypes> derivable_class_ &def(const char *name, F f, PTypes... pols) {
+  template <class F, class... PTypes> derivable_class_& def(const char* name, F f, PTypes... pols) {
     typedef policies<PTypes...> Policies;
     Policies curPolicies;
-    maybe_register_symbol_using_dladdr(*(void **)&f, sizeof(f), name);
+    maybe_register_symbol_using_dladdr(*(void**)&f, sizeof(f), name);
     walk_policy(curPolicies, pols...);
     return this->virtual_def(PrepareName(name), f, curPolicies, reg::null_type());
   }
 
   template <class Getter>
-  derivable_class_ &property(const char *name, Getter g, string const &arguments = "", string const &declares = "",
-                             string const &docstring = "") {
+  derivable_class_& property(const char* name, Getter g, string const& arguments = "", string const& declares = "",
+                             string const& docstring = "") {
     this->add_member(new detail::property_registration<T, Getter, reg::null_type>(name // name
                                                                                   ,
                                                                                   g // Get
@@ -322,8 +322,8 @@ public:
   }
 
   template <class Begin, class End>
-  derivable_class_ &iterator(const char *iteratorName, Begin beginFn, End endFn, string const &arguments = "",
-                             string const &declares = "", string const &docstring = "") {
+  derivable_class_& iterator(const char* iteratorName, Begin beginFn, End endFn, string const& arguments = "",
+                             string const& declares = "", string const& docstring = "") {
     this->add_member(new detail::iterator_registration<T, Begin, End, reg::null_type>(iteratorName // name
                                                                                       ,
                                                                                       beginFn // begin
@@ -341,18 +341,18 @@ public:
     return enum_maker(this, converter);
   }
 #endif
-  scope_ *_outer_scope;
+  scope_* _outer_scope;
   detail::static_scope<self_t> scope;
 
 private:
-  void operator=(derivable_class_ const &);
+  void operator=(derivable_class_ const&);
 
-  void add_wrapper_cast(reg::null_type *) {}
+  void add_wrapper_cast(reg::null_type*) {}
 
-  template <class U> void add_wrapper_cast(U *) {
+  template <class U> void add_wrapper_cast(U*) {
     add_cast(reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
 
-    add_downcast((T *)0, (U *)0);
+    add_downcast((T*)0, (U*)0);
   }
 
   void init(bool hasConstructor) {
@@ -367,22 +367,22 @@ private:
                                isDerivableCxxClass<T>(0));
 
     //            printf("%s:%d Should I be adding a wrapper cast???\n", __FILE__, __LINE__ );
-    add_wrapper_cast((WrappedType *)0);
+    add_wrapper_cast((WrappedType*)0);
 
     generate_baseclass_list(detail::type_<bases_t>());
   }
 
   // these handle default implementation of virtual functions
   template <class F, class Policies>
-  derivable_class_ &virtual_def(const std::string &name, F const &fn, Policies const &policies, reg::null_type) {
-    maybe_register_symbol_using_dladdr(*(void **)&fn, sizeof(fn), name);
+  derivable_class_& virtual_def(const std::string& name, F const& fn, Policies const& policies, reg::null_type) {
+    maybe_register_symbol_using_dladdr(*(void**)&fn, sizeof(fn), name);
     this->add_member(new detail::memfun_registration<T, F, Policies>(name, fn, policies));
     return *this;
   }
 
   template <class Policies>
-  derivable_class_ &def_default_constructor_(const char *name, void *, Policies const &, string const &arguments,
-                                             string const &declares, string const &docstring) {
+  derivable_class_& def_default_constructor_(const char* name, void*, Policies const&, string const& arguments,
+                                             string const& declares, string const& docstring) {
     typedef T construct_type;
     this->set_default_constructor(
         new detail::constructor_registration<construct_type, reg::null_type, default_constructor, Policies,
@@ -391,8 +391,8 @@ private:
   }
 
   template <class Signature, class Policies>
-  derivable_class_ &def_constructor_(const string &name, Signature *, Policies const &, string const &arguments,
-                                     string const &declares, string const &docstring) {
+  derivable_class_& def_constructor_(const string& name, Signature*, Policies const&, string const& arguments,
+                                     string const& declares, string const& docstring) {
     typedef Signature signature;
 
     typedef std::conditional_t<std::is_same_v<WrappedType, reg::null_type>, T, WrappedType> construct_type;
@@ -412,7 +412,7 @@ private:
 
 public:
   // static functions
-  template <typename... Types> derivable_class_ &def(constructor<Types...> sig) {
+  template <typename... Types> derivable_class_& def(constructor<Types...> sig) {
     printf("%s:%d def(expose::init...)\n", __FILE__, __LINE__);
     stringstream ss;
     ss << "make-";
@@ -420,7 +420,7 @@ public:
     if (this->m_init_counter) {
       ss << this->m_init_counter;
     }
-    maybe_register_symbol_using_dladdr((void *)sig, sizeof(sig), ss.str());
+    maybe_register_symbol_using_dladdr((void*)sig, sizeof(sig), ss.str());
     this->def_constructor_(ss.str(), &sig, policies<>(), "", "", "");
     this->m_init_counter++;
     return *this;

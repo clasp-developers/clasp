@@ -84,7 +84,7 @@ THE SOFTWARE.
   (k[0] + ((uintptr_t)k[1] << 8) + ((uintptr_t)k[2] << 16) + ((uintptr_t)k[3] << 24) + ((uintptr_t)k[4] << 32) +                   \
    ((uintptr_t)k[5] << 40) + ((uintptr_t)k[6] << 48) + ((uintptr_t)k[7] << 52))
 
-inline uintptr_t hash_string(int initval, const unsigned char *k, int length) {
+inline uintptr_t hash_string(int initval, const unsigned char* k, int length) {
   uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
   int len;
   for (len = length; len >= 24; len -= 24) {
@@ -193,7 +193,7 @@ inline uintptr_t hash_string(int initval, const unsigned char *k, int length) {
   }
 #define extract_word(k) (k[0] + ((uintptr_t)k[1] << 8) + ((uintptr_t)k[2] << 16) + ((uintptr_t)k[3] << 24))
 
-inline uintptr_t hash_string(int initval, const unsigned char *k, int length) {
+inline uintptr_t hash_string(int initval, const unsigned char* k, int length) {
   uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
   int len;
   for (len = length; len >= 12; len -= 12) {

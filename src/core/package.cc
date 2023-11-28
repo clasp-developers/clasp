@@ -410,7 +410,7 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   size_t fillPointer = ss->fillPointer();
 #define GENTEMP_TRIES 1000000
   size_t tries = GENTEMP_TRIES;
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   while (1) {
     ++static_gentemp_counter;
     core__integer_to_string(ss, Integer_O::create(static_gentemp_counter), clasp_make_fixnum(10), false, false);
@@ -477,7 +477,7 @@ SYMBOL_EXPORT_SC_(CorePkg, unintern_name_conflict);
 SYMBOL_EXPORT_SC_(CorePkg, use_package_name_conflict);
 SYMBOL_EXPORT_SC_(CorePkg, package_lock_violation);
 
-Package_sp Package_O::create(const string &name) {
+Package_sp Package_O::create(const string& name) {
   Package_sp p = Package_O::create();
   p->setName(name);
   return p;
@@ -502,7 +502,7 @@ string Package_O::packageName() const { return this->_Name->get_std_string(); }
 
 string Package_O::getName() const { return this->packageName(); };
 
-void Package_O::setName(const string &n) {
+void Package_O::setName(const string& n) {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   this->_Name = SimpleBaseString_O::make(n);
 };
@@ -533,9 +533,9 @@ void Package_O::__write__(T_sp stream) const { clasp_write_string(this->__repr__
 
 class PackageMapper : public KeyValueMapper {
 public:
-  stringstream *ssP;
+  stringstream* ssP;
   string type;
-  PackageMapper(const string &t, stringstream *sstr) : ssP(sstr), type(t){};
+  PackageMapper(const string& t, stringstream* sstr) : ssP(sstr), type(t){};
   virtual bool mapKeyValue(T_sp key, T_sp value) {
     (*(this->ssP)) << type << " " << _rep_(value) << std::endl;
     return true;
@@ -557,7 +557,7 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
   T_mv ei = this->_ExternalSymbols->gethash(nameKey, nil<T_O>());
   //  client_validate(nameKey);
   Symbol_sp val = gc::As<Symbol_sp>(ei);
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   bool foundp = mvn.second(ei.number_of_values()).isTrue();
   if (foundp) {
     //    client_validate(val->_Name);
@@ -595,7 +595,7 @@ Symbol_mv Package_O::findSymbol_SimpleString(SimpleString_sp nameKey) const {
   return this->findSymbol_SimpleString_no_lock(nameKey);
 }
 
-Symbol_mv Package_O::findSymbol(const string &name) const {
+Symbol_mv Package_O::findSymbol(const string& name) const {
   SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
   return this->findSymbol_SimpleString(sname);
 }
@@ -681,7 +681,7 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
   Symbol_sp svalue = gc::As<Symbol_sp>(value);
   Symbol_mv values = this->_me->findSymbol_SimpleString_no_lock(nameKey);
   Symbol_sp mine = values;
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   T_sp foundp = mvn.second(values.number_of_values());
   if (foundp.notnilp() && mine != svalue) {
     // If mine is in my shadowing list then it's not a conflict
@@ -768,7 +768,7 @@ bool Package_O::unusePackage(Package_sp usePackage) {
 // Return a list of packages that will have a conflict if this package
 // starts exporting this new symbol. Lock needs to be held around this.
 List_sp Package_O::export_conflicts(SimpleString_sp nameKey, Symbol_sp sym) {
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   List_sp conflicts = nil<List_V>();
   for (auto use_pkg : this->_PackagesUsedBy) {
     ASSERT(use_pkg.generalp());
@@ -784,7 +784,7 @@ List_sp Package_O::export_conflicts(SimpleString_sp nameKey, Symbol_sp sym) {
 
 void Package_O::_export2(Symbol_sp sym) {
   SimpleString_sp nameKey = sym->_Name;
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   List_sp conflicts;
 start : {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
@@ -838,7 +838,7 @@ bool Package_O::shadow(String_sp ssymbolName) {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   Symbol_mv values = this->findSymbol_SimpleString_no_lock(symbolName);
   shadowSym = values;
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
   if (status.nilp() || (status != kw::_sym_internal && status != kw::_sym_external)) {
     shadowSym = Symbol_O::create(symbolName);
@@ -862,7 +862,7 @@ bool Package_O::shadow(List_sp symbolNames) {
 void Package_O::unexport(Symbol_sp sym) {
   // Make sure we don't signal an error without releasing the lock first.
   // (The printer will try to access the package name or something, and hang.)
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     // Don't allow unexporting from locked packages
@@ -903,7 +903,7 @@ void Package_O::add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bo
   this->add_symbol_to_package_no_lock(nameKey, sym, exportp);
 }
 
-void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp, bool shadowp) {
+void Package_O::bootstrap_add_symbol_to_package(const char* symName, Symbol_sp sym, bool exportp, bool shadowp) {
   SimpleBaseString_sp nameKey = SimpleBaseString_O::make(std::string(symName));
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   this->add_symbol_to_package_no_lock(nameKey, sym, exportp);
@@ -918,7 +918,7 @@ T_mv Package_O::intern(SimpleString_sp name) {
   Symbol_mv values = this->findSymbol_SimpleString_no_lock(name);
   //  client_validate(values->_Name);
   Symbol_sp sym = values;
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   Symbol_sp status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
   if (status.nilp()) {
     sym = Symbol_O::create(name);
@@ -950,7 +950,7 @@ bool Package_O::unintern_unsafe(Symbol_sp sym) {
     Symbol_sp foundSym;
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     foundSym = values;
-    MultipleValues &mvn = core::lisp_multipleValues();
+    MultipleValues& mvn = core::lisp_multipleValues();
     status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
     // If the symbol is not in the package there is nothing to unintern.
     if ((foundSym != sym) || (status.nilp()))
@@ -987,7 +987,7 @@ bool Package_O::unintern(Symbol_sp sym) {
       // all or nothing.
       // This is a list of symbols with the same name as the symbol
       // being uninterned that are exported by packages this package uses.
-      MultipleValues &mvn = core::lisp_multipleValues();
+      MultipleValues& mvn = core::lisp_multipleValues();
       for (auto it = this->_UsingPackages.begin(); it != this->_UsingPackages.end(); it++) {
         Symbol_sp uf, status;
         {
@@ -1027,7 +1027,7 @@ bool Package_O::isExported(Symbol_sp sym) {
   WITH_PACKAGE_READ_LOCK(this);
   SimpleString_sp nameKey = sym->_Name;
   T_mv values = this->_ExternalSymbols->gethash(nameKey, nil<T_O>());
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   T_sp presentp = mvn.valueGet(1, values.number_of_values());
   LOG("isExported test of symbol[{}] isExported[{}]", sym->symbolNameAsString(), presentp.isTrue());
   return (presentp.isTrue());
@@ -1040,7 +1040,7 @@ void Package_O::import1(Symbol_sp symbolToImport) {
     SimpleString_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     foundSymbol = values;
-    MultipleValues &mvn = core::lisp_multipleValues();
+    MultipleValues& mvn = core::lisp_multipleValues();
     Symbol_sp status = gc::As<Symbol_sp>(mvn.valueGet(1, values.number_of_values()));
     if (status.nilp()) {
       // No conflict: add the symbol.
@@ -1063,7 +1063,7 @@ void Package_O::import(List_sp symbols) {
 }
 
 void Package_O::shadowingImport(List_sp symbols) {
-  MultipleValues &mvn = core::lisp_multipleValues();
+  MultipleValues& mvn = core::lisp_multipleValues();
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   for (auto cur : symbols) {
     Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
@@ -1086,13 +1086,13 @@ List_sp Package_O::shadowingSymbols() const {
   return cur;
 }
 
-void Package_O::mapExternals(KeyValueMapper *mapper) {
+void Package_O::mapExternals(KeyValueMapper* mapper) {
   // I don't know what the caller will do with this so read/write lock
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   this->_ExternalSymbols->lowLevelMapHash(mapper);
 }
 
-void Package_O::mapInternals(KeyValueMapper *mapper) {
+void Package_O::mapInternals(KeyValueMapper* mapper) {
   // I don't know what the caller will do with this so read/write lock
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   this->_InternalSymbols->lowLevelMapHash(mapper);

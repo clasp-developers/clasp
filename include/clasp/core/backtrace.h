@@ -83,6 +83,6 @@ FORWARD(SectionedAddress);
 namespace core {
 
 T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_sp dcontext, llvmo::SectionedAddress_sp sa,
-              void *&codeStart, void *&functionStartAddress, bool &XEPp, int &arityCode);
+              void*& codeStart, void*& functionStartAddress, bool& XEPp, int& arityCode);
 
 } // namespace core

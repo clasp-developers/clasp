@@ -28,14 +28,14 @@ public:
 public:
   static value_type default_initial_element(void) { return 0.0; }
   static value_type from_object(T_sp obj) { return clasp_to_double(obj); };
-  static T_sp to_object(const value_type &v) { return core::clasp_make_double_float(v); };
+  static T_sp to_object(const value_type& v) { return core::clasp_make_double_float(v); };
 
 public:
   SimpleVector_double_O(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                        size_t initialContentsSize = 0, const value_type *initialContents = NULL)
+                        size_t initialContentsSize = 0, const value_type* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
-                             size_t initialContentsSize = 0, const value_type *initialContents = NULL,
+                             size_t initialContentsSize = 0, const value_type* initialContents = NULL,
                              bool static_vector_p = false) {
     auto bs = gctools::GC<my_type>::allocate_container<gctools::RuntimeStage>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);
@@ -47,8 +47,8 @@ public:
 
 public: // Provide the API that I used for NVector_sp
   static SimpleVector_double_sp create(size_t sz) { return make(sz, 0.0, false, 0, NULL); }
-  double &element(size_t i) { return this->operator[](i); };
-  double &getElement(size_t i) { return this->operator[](i); };
+  double& element(size_t i) { return this->operator[](i); };
+  double& getElement(size_t i) { return this->operator[](i); };
   void setElement(size_t i, double v) { this->operator[](i) = v; };
   void addToElement(size_t i, double v) { this->operator[](i) += v; };
   void zero() {

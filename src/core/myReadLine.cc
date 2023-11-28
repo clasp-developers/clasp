@@ -31,17 +31,17 @@ THE SOFTWARE.
 #include <clasp/core/myReadLine.h>
 
 #ifdef READLINE
-extern "C" char *readline(const char *prompt);
-extern "C" void add_history(char *line);
+extern "C" char* readline(const char* prompt);
+extern "C" void add_history(char* line);
 #endif
 
 namespace core {
 
-string myReadLine(const string &prompt, bool &end_of_transmission) {
+string myReadLine(const string& prompt, bool& end_of_transmission) {
   end_of_transmission = false;
   string res;
 #ifdef READLINE
-  char *line_read;
+  char* line_read;
   /* Get a line from the user. */
   //      lisp->print(BF("%s")%prompt);
   stringstream ss;

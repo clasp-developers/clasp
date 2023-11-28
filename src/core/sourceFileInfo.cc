@@ -220,7 +220,7 @@ void FileScope_O::fields(Record_sp node) {
   }
 }
 
-FileScope_sp FileScope_O::create(const string &str, int handle) {
+FileScope_sp FileScope_O::create(const string& str, int handle) {
   Pathname_sp pn = cl__pathname(SimpleBaseString_O::make(str));
   return FileScope_O::create(pn, handle);
 }
@@ -249,19 +249,19 @@ string FileScope_O::parentPathName() const {
   return s->get_std_string();
 }
 
-const char *FileScope_O::permanentPathName() {
+const char* FileScope_O::permanentPathName() {
   if (this->_PermanentPathName == NULL) {
     string fn = this->namestring();
-    this->_PermanentPathName = (char *)malloc(fn.size() + 1);
+    this->_PermanentPathName = (char*)malloc(fn.size() + 1);
     ::strcpy(this->_PermanentPathName, fn.c_str());
   }
   return this->_PermanentPathName;
 }
 
-const char *FileScope_O::permanentFileName() {
+const char* FileScope_O::permanentFileName() {
   if (this->_PermanentFileName == NULL) {
     string fn = this->fileName();
-    this->_PermanentFileName = (char *)malloc(fn.size() + 1);
+    this->_PermanentFileName = (char*)malloc(fn.size() + 1);
     ::strcpy(this->_PermanentFileName, fn.c_str());
   }
   return this->_PermanentFileName;
@@ -271,7 +271,7 @@ CL_DOCSTRING(
     R"dx(Like make-pathname lets you build a source-pos-info object from scratch or by referencing a defaults source-pos-info that provides default information)dx");
 CL_LAMBDA(&key (filename "-nofile-" filenamep) (filepos 0 fileposp) (lineno 0 linenop) (column 0 columnp) (function-scope nil function_scope_p) (inlined-at nil inlined_at_p) (defaults nil defaults_p));
 DOCGROUP(clasp);
-CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string &filename, bool filenamep, size_t filepos, bool fileposp,
+CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp,
                                                   size_t lineno, bool linenop, size_t column, bool columnp, T_sp function_scope,
                                                   bool function_scope_p, T_sp inlined_at, bool inlined_at_p, T_sp defaults,
                                                   bool defaults_p) {
@@ -422,7 +422,7 @@ string SourcePosInfo_O::__repr__() const {
   ss << " :column " << this->_Column;
   ss << " :function-scope " << _rep_(this->_FunctionScope);
   ss << " :inlined_at " << _rep_(this->_InlinedAt);
-  ss << " @" << (void *)this;
+  ss << " @" << (void*)this;
   ss << ">";
   return ss.str();
 }

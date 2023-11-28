@@ -39,7 +39,7 @@ protected:
   uint _QueueBack;
 
 protected:
-  void advanceQueueIndex(uint &idx);
+  void advanceQueueIndex(uint& idx);
 
 public:
   IntQueue() {
@@ -66,7 +66,7 @@ inline void IntQueue::reset() {
   this->_QueueFront = 0;
 }
 
-inline void IntQueue::advanceQueueIndex(uint &idx) {
+inline void IntQueue::advanceQueueIndex(uint& idx) {
   idx++;
   if (idx >= INT_QUEUE_SIZE)
     idx = 0;

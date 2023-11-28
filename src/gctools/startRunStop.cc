@@ -105,21 +105,21 @@ int handleFatalCondition() {
   int exitCode = 0;
   try {
     throw;
-  } catch (core::ExitProgramException &ee) {
+  } catch (core::ExitProgramException& ee) {
     // Do nothing
     //            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
     exitCode = ee.getExitResult();
-  } catch (core::TerminateProgramIfBatch &ee) {
+  } catch (core::TerminateProgramIfBatch& ee) {
     // Do nothing
     printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
-  } catch (core::CatchThrow &ee) {
+  } catch (core::CatchThrow& ee) {
     core::clasp_write_string(fmt::format("{}:{} Uncaught THROW tag[{}] - this should NEVER happen - the stack should never be "
-                                       "unwound unless there is a CATCH clause that matches the THROW",
-                                       __FILE__, __LINE__, ee.getTag()));
-  } catch (core::Unwind &ee) {
+                                         "unwound unless there is a CATCH clause that matches the THROW",
+                                         __FILE__, __LINE__, ee.getTag()));
+  } catch (core::Unwind& ee) {
     core::clasp_write_string(
-        fmt::format("At {}:{} - Unwind caught frame: {} index: {}", __FILE__, __LINE__, (void *)ee.getFrame(), ee.index()));
-  } catch (HardError &ee) {
+        fmt::format("At {}:{} - Unwind caught frame: {} index: {}", __FILE__, __LINE__, (void*)ee.getFrame(), ee.index()));
+  } catch (HardError& ee) {
     core::clasp_write_string(fmt::format("At {}:{} - HardError caught: {}", __FILE__, __LINE__, ee.message()));
   }
   return exitCode;
@@ -153,7 +153,7 @@ static void clasp_terminate_handler(void) {
     abort();
   try {
     throw;
-  } catch (const std::exception &e) {
+  } catch (const std::exception& e) {
     fprintf(stderr, "%s:%d There was an unhandled std::exception in process [pid: %d] e.what()=[%s] - do something about it.\n",
             __FILE__, __LINE__, getpid(), e.what());
   } catch (...) {
@@ -167,19 +167,19 @@ static void clasp_terminate_handler(void) {
 
 extern "C" {
 
-int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCode) {
+int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCode) {
 
   if (gctools::Header_s::weak_mtag != gctools::character_tag) {
     printf("%s:%d:%s The Header_s::weak_mtag (%lu) MUST have the same value as gctools::character_tag(%lu)\n", __FILE__, __LINE__,
            __FUNCTION__, (uintptr_t)gctools::Header_s::weak_mtag, (uintptr_t)gctools::character_tag);
     abort();
   }
-  gctools::_global_stack_marker = (const char *)stackMarker;
+  gctools::_global_stack_marker = (const char*)stackMarker;
   gctools::_global_stack_max_size = claspInfo->_stackMax;
   gctools::global_alignup_sizeof_header = gctools::AlignUp(sizeof(gctools::Header_s));
   gctools::global_sizeof_fwd = gctools::AlignUp(sizeof(gctools::Header_s));
 
-  const char *trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
+  const char* trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
   if (trigger) {
     size_t strigger = atoi(trigger);
     core::global_compile_discriminating_function_trigger = strigger;
@@ -188,7 +188,7 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   if (getenv("CLASP_TIME_EXIT")) {
     atexit(core::last_exit);
   }
-  const char *dof = getenv("CLASP_DEBUG_OBJECT_FILES");
+  const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
   if (dof) {
     if (strcmp(dof, "save") == 0) {
       llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrintSave;
@@ -198,7 +198,7 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   }
 
 #ifdef DEBUG_DYN_ENV_STACK
-  const char *ddes = getenv("CLASP_DEBUG_DYN_ENV_STACK");
+  const char* ddes = getenv("CLASP_DEBUG_DYN_ENV_STACK");
   if (ddes)
     core::global_debug_dyn_env_stack = true;
 #endif
@@ -212,7 +212,7 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
 
   {
     std::string exename(claspInfo->_argv[0]);
-    gctools::set_exe_name(basename((char *)exename.c_str()));
+    gctools::set_exe_name(basename((char*)exename.c_str()));
   }
 
   // - SET THE APPLICATION NAME
@@ -227,14 +227,14 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   core::dumpDebuggingLayouts();
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
     stringstream ss;
-    char *username = getenv("USER");
+    char* username = getenv("USER");
     if (!username) {
       printf("%s:%d:%s Could not get USER environment variable\n", __FILE__, __LINE__, __FUNCTION__);
       exit(1);
     }
     ss << "/tmp/clasp_pid_" << getenv("USER");
     printf("%s:%d:%s  Setting up clasp for debugging - writing PID to %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str());
-    FILE *fout = fopen(ss.str().c_str(), "w");
+    FILE* fout = fopen(ss.str().c_str(), "w");
     if (!fout) {
       printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str());
       exit(1);
@@ -245,7 +245,7 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   //
   // Pause before any allocations take place
   //
-  char *pause_startup = getenv("CLASP_PAUSE_STARTUP");
+  char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
   if (pause_startup) {
     gctools::setup_user_signal();
     gctools::wait_for_user_signal("Paused at startup before all initialization");
@@ -279,7 +279,7 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   // as in export CLASP_MEMORY_PROFILE="16000000 1024"
   // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
   //        and call HitAllocationNumberThreshold every time 1024 allocations take place
-  char *cur = getenv("CLASP_MEMORY_PROFILE");
+  char* cur = getenv("CLASP_MEMORY_PROFILE");
   size_t values[2];
   int numValues = 0;
   if (cur) {
@@ -306,24 +306,24 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
     core::global_initialize_builtin_classes = false;
   }
 
-  void *start_of_snapshot = NULL;
-  void *end_of_snapshot = NULL;
+  void* start_of_snapshot = NULL;
+  void* end_of_snapshot = NULL;
 
 #ifdef USE_PRECISE_GC
 #ifdef _TARGET_OS_DARWIN
-  const struct mach_header_64 *exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT, "_mh_execute_header");
+  const struct mach_header_64* exec_header = (const struct mach_header_64*)dlsym(RTLD_DEFAULT, "_mh_execute_header");
   size_t size;
   start_of_snapshot = getsectiondata(exec_header, SNAPSHOT_SEGMENT, SNAPSHOT_SECTION, &size);
   end_of_snapshot = NULL;
   if (start_of_snapshot) {
-    end_of_snapshot = (void *)((char *)start_of_snapshot + size);
+    end_of_snapshot = (void*)((char*)start_of_snapshot + size);
   }
 #endif
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   extern const char __attribute__((weak)) SNAPSHOT_START;
   extern const char __attribute__((weak)) SNAPSHOT_END;
-  start_of_snapshot = (void *)&SNAPSHOT_START;
-  end_of_snapshot = (void *)&SNAPSHOT_END;
+  start_of_snapshot = (void*)&SNAPSHOT_START;
+  end_of_snapshot = (void*)&SNAPSHOT_END;
 #endif
 #endif
 
@@ -346,9 +346,9 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
     }
     try {
       int argc = claspInfo->_argc;
-      char **argv = (char **)claspInfo->_argv;
+      char** argv = (char**)claspInfo->_argv;
       mpip::Mpi_O::Init(argc, argv, claspInfo->_mpiEnabled, claspInfo->_mpiRank, claspInfo->_mpiSize);
-    } catch (HardError &err) {
+    } catch (HardError& err) {
       fprintf(stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n", gctools::exe_name().c_str(), __FILE__, __LINE__);
       abort();
     }
@@ -357,7 +357,7 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   }
 #endif
 
-  const char *jls = getenv("CLASP_JIT_LOG_SYMBOLS");
+  const char* jls = getenv("CLASP_JIT_LOG_SYMBOLS");
   if (jls || core::global_options->_JITLogSymbols) {
     core::global_jit_log_symbols = true;
   }
@@ -365,7 +365,7 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   //
   // Look around the local directories for source and fasl files.
   //
-  core::Bundle *bundle = new core::Bundle(core::global_options->_ExecutableName);
+  core::Bundle* bundle = new core::Bundle(core::global_options->_ExecutableName);
   globals_->_Bundle = bundle;
 
   //
@@ -473,11 +473,11 @@ int startup_clasp(void **stackMarker, gctools::ClaspInfo *claspInfo, int *exitCo
   return _lisp->load(*exitCode);
 }
 
-int run_clasp(gctools::ClaspInfo *claspInfo) {
+int run_clasp(gctools::ClaspInfo* claspInfo) {
   int exitCode;
   try {
     exitCode = _lisp->run();
-  } catch (core::SaveLispAndDie &ee) {
+  } catch (core::SaveLispAndDie& ee) {
 #ifdef USE_PRECISE_GC
     snapshotSaveLoad::snapshot_save(ee);
 #endif
@@ -486,7 +486,7 @@ int run_clasp(gctools::ClaspInfo *claspInfo) {
   return exitCode;
 };
 
-void shutdown_clasp(gctools::ClaspInfo *claspInfo) {
+void shutdown_clasp(gctools::ClaspInfo* claspInfo) {
   delete claspInfo->_lispHolder;
   _lisp->_Roots._ClaspJIT = nil<core::T_O>();
   mp::ClaspThreads_exit(); // run pthreads_exit

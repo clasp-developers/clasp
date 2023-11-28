@@ -140,11 +140,11 @@ namespace core {
 
 String_sp clasp_strerror(int e) { return SimpleBaseString_O::make(std::string(strerror(e))); }
 
-void rmtree(const char *path) {
+void rmtree(const char* path) {
   size_t path_len;
-  DIR *dir;
+  DIR* dir;
   struct stat stat_path, stat_entry;
-  struct dirent *entry;
+  struct dirent* entry;
 
   // stat for the path
   stat(path, &stat_path);
@@ -211,7 +211,7 @@ static String_sp coerce_to_posix_filename(T_sp pathname) {
   return cl__string_right_trim(SimpleBaseString_O::make(DIR_SEPARATOR), sfilename);
 }
 
-static int safe_chdir(const char *path, T_sp tprefix) {
+static int safe_chdir(const char* path, T_sp tprefix) {
   if (cl__stringp(tprefix)) {
     String_sp prefix = gc::As_unsafe<String_sp>(tprefix);
     stringstream ss;
@@ -220,7 +220,7 @@ static int safe_chdir(const char *path, T_sp tprefix) {
   } else {
     int output;
     clasp_disable_interrupts();
-    output = chdir((char *)path);
+    output = chdir((char*)path);
     clasp_enable_interrupts();
     return output;
   }
@@ -389,7 +389,7 @@ The **old-set** can be a core:sigset or nil (NULL).
 Returns (values NIL(success)/T(fail) errno)")
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set) {
-  sigset_t *old_setp;
+  sigset_t* old_setp;
   if (old_set.nilp()) {
     old_setp = NULL;
   } else {
@@ -490,7 +490,7 @@ CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
   SIMPLE_ERROR("Could not convert {} to a namestring", _rep_(dir));
 };
 
-static int safe_stat(const char *path, struct stat *sb) {
+static int safe_stat(const char* path, struct stat* sb) {
   int output;
   clasp_disable_interrupts();
   output = stat(path, sb);
@@ -499,7 +499,7 @@ static int safe_stat(const char *path, struct stat *sb) {
 }
 
 #ifdef HAVE_LSTAT
-static int safe_lstat(const char *path, struct stat *sb) {
+static int safe_lstat(const char* path, struct stat* sb) {
   int output;
   clasp_disable_interrupts();
   output = lstat(path, sb);
@@ -532,7 +532,7 @@ CL_DOCSTRING(R"dx(Return the unix current working directory)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
-  const char *ok = ::getcwd(NULL, 0);
+  const char* ok = ::getcwd(NULL, 0);
   if (!ok) {
     SIMPLE_ERROR("There was an error in ext__getcwd - error: {}", strerror(errno));
   }
@@ -574,7 +574,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // Pad with 4 characters for / and terminator \0
   core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize + 2, '\0', true, core::clasp_make_fixnum(0));
   StringPushStringCharStar(output, ok);
-  ::free((void *)ok);
+  ::free((void*)ok);
 #if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   // Add a terminal '/' if there is none.
   if ((*output)[output->fillPointer() - 1] != DIR_SEPARATOR_CHAR) {
@@ -596,7 +596,7 @@ namespace core {
  * Using a certain path, guess the type of the object it points to.
  */
 
-static Symbol_sp file_kind(const char *filename, bool follow_links) {
+static Symbol_sp file_kind(const char* filename, bool follow_links) {
   Symbol_sp output;
   struct stat buf;
 #ifdef DEBUG_FILE_KIND
@@ -647,18 +647,18 @@ static Symbol_sp file_kind(const char *filename, bool follow_links) {
 static Symbol_sp smart_file_kind(String_sp sfilename, bool follow_links) {
   ASSERT(cl__stringp(sfilename));
   if (follow_links) {
-    Symbol_sp kind_follow_links = file_kind((char *)(sfilename->get_std_string().c_str()), true);
+    Symbol_sp kind_follow_links = file_kind((char*)(sfilename->get_std_string().c_str()), true);
     if (kind_follow_links.notnilp()) {
       return kind_follow_links;
     } else {
       // If its a broken link return _sym_file
-      Symbol_sp kind_no_follow_links = file_kind((char *)(sfilename->get_std_string().c_str()), false);
+      Symbol_sp kind_no_follow_links = file_kind((char*)(sfilename->get_std_string().c_str()), false);
       if (kind_no_follow_links.nilp())
         return nil<T_O>();
       return kw::_sym_broken_link;
     }
   } else {
-    Symbol_sp kind = file_kind((char *)(sfilename->get_std_string().c_str()), false);
+    Symbol_sp kind = file_kind((char*)(sfilename->get_std_string().c_str()), false);
     return kind;
   }
 }
@@ -689,12 +689,12 @@ CL_DEFUN T_sp core__readlink(String_sp filename) {
   do {
     output = Str8Ns_O::make(size + 2, '*', true, clasp_make_fixnum(0));
     clasp_disable_interrupts();
-    written = readlink((char *)filename->get_std_string().c_str(), (char *)output->rowMajorAddressOfElement_(0), size);
+    written = readlink((char*)filename->get_std_string().c_str(), (char*)output->rowMajorAddressOfElement_(0), size);
     clasp_enable_interrupts();
     size += 256;
   } while (written == size - 256);
   (*output)[written] = '\0';
-  kind = file_kind((const char *)output->rowMajorAddressOfElement_(0), false);
+  kind = file_kind((const char*)output->rowMajorAddressOfElement_(0), false);
   if (kind == kw::_sym_directory) {
     (*output)[written++] = DIR_SEPARATOR_CHAR;
     (*output)[written] = '\0';
@@ -737,7 +737,7 @@ static Pathname_sp enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignor
   aux = gc::As<String_sp>(clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING));
   aux = gc::As<String_sp>(aux->subseq(0, clasp_make_fixnum(aux->length() - 1)));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
-  kind = file_kind((const char *)aux->rowMajorAddressOfElement_(0), false);
+  kind = file_kind((const char*)aux->rowMajorAddressOfElement_(0), false);
   if (kind.nilp()) {
     if (ignore_if_failure)
       return nil<Pathname_O>();
@@ -813,7 +813,7 @@ static Pathname_mv file_truename(T_sp pathname, T_sp filename, int flags) {
       SIMPLE_ERROR("Unprintable pathname {} found in TRUENAME", _rep_(pathname));
     }
   }
-  kind = file_kind((char *)gc::As<String_sp>(filename)->get_std_string().c_str(), false);
+  kind = file_kind((char*)gc::As<String_sp>(filename)->get_std_string().c_str(), false);
   //  kind = smart_file_kind( filename, false);
   if (kind.nilp()) {
     CANNOT_OPEN_FILE_ERROR(filename);
@@ -906,7 +906,7 @@ CL_DEFUN Pathname_sp cl__truename(T_sp orig_pathname) {
   return truename;
 }
 
-int clasp_backup_open(const char *filename, int option, int mode) {
+int clasp_backup_open(const char* filename, int option, int mode) {
   stringstream sbackup;
   sbackup << filename << ".BAK";
   string backupfilename = sbackup.str();
@@ -998,7 +998,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
   }
   {
     clasp_disable_interrupts();
-    if (rename((char *)old_filename->get_std_string().c_str(), (char *)new_filename->get_std_string().c_str()) == 0) {
+    if (rename((char*)old_filename->get_std_string().c_str(), (char*)new_filename->get_std_string().c_str()) == 0) {
       goto SUCCESS;
     }
   }
@@ -1036,7 +1036,7 @@ CL_DEFUN T_sp cl__delete_file(T_sp file) {
   int ok;
 
   clasp_disable_interrupts();
-  ok = (isdir ? rmdir : unlink)((char *)filename->get_std_string().c_str());
+  ok = (isdir ? rmdir : unlink)((char*)filename->get_std_string().c_str());
   clasp_enable_interrupts();
 
   if (ok < 0) {
@@ -1077,7 +1077,7 @@ CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   String_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
   time = nil<Number_O>();
-  if (safe_stat((char *)filename->get_std_string().c_str(), &filestatus) >= 0) {
+  if (safe_stat((char*)filename->get_std_string().c_str(), &filestatus) >= 0) {
     Number_sp accJan1st1970UT(Integer_O::create((gc::Fixnum)(24 * 60 * 60)));
     accJan1st1970UT = contagion_mul(accJan1st1970UT, Integer_O::create((gc::Fixnum)(17 + 365 * 70)));
     time = Integer_O::create((gc::Fixnum)filestatus.st_mtime);
@@ -1097,7 +1097,7 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
   Pathname_sp pn = cl__pathname(file);
   String_sp filename = coerce_to_posix_filename(pn);
   struct stat filestatus;
-  if (safe_stat((char *)filename->get_std_string().c_str(), &filestatus) < 0) {
+  if (safe_stat((char*)filename->get_std_string().c_str(), &filestatus) < 0) {
     std::string msg = "Unable to read file author for ~S."
                       "~%C library error: ~S";
     T_sp c_error = clasp_strerror(errno);
@@ -1110,7 +1110,7 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
   }
 #ifdef HAVE_PWD_H
   {
-    struct passwd *pwent;
+    struct passwd* pwent;
     clasp_disable_interrupts();
     pwent = ::getpwuid(filestatus.st_uid);
     clasp_enable_interrupts();
@@ -1125,21 +1125,21 @@ CL_DEFUN T_sp cl__file_author(T_sp file) {
 Pathname_sp clasp_homedir_pathname(T_sp tuser) {
   size_t i;
   String_sp namestring;
-  const char *h;
+  const char* h;
 #if defined(CLASP_MS_WINDOWS_HOST)
-  const char *d;
+  const char* d;
 #endif
   if (cl__stringp(tuser)) {
     String_sp user = gc::As_unsafe<String_sp>(tuser);
 #ifdef HAVE_PWD_H
-    struct passwd *pwent = NULL;
+    struct passwd* pwent = NULL;
 #endif
-    char *p;
+    char* p;
     /* This ensures that our string has the right length
            and it is terminated with a '\0' */
     user = SimpleBaseString_O::make(user->get_std_string());
     std::string suser = user->get_std_string();
-    p = (char *)suser.c_str();
+    p = (char*)suser.c_str();
     i = user->length();
     if (i > 0 && *p == '~') {
       p++;
@@ -1182,7 +1182,7 @@ CL_DEFUN Pathname_sp cl__user_homedir_pathname(T_sp host) {
   return clasp_homedir_pathname(nil<T_O>());
 }
 
-static bool string_match(const char *s, T_sp pattern) {
+static bool string_match(const char* s, T_sp pattern) {
   if (pattern.nilp() || pattern == kw::_sym_wild) {
     return 1;
   } else {
@@ -1204,13 +1204,13 @@ static T_sp list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, in
     SIMPLE_ERROR("{} is about to pass NIL to clasp_namestring", __FUNCTION__);
   T_sp prefix = clasp_namestring(base_dir, CLASP_NAMESTRING_FORCE_BASE_STRING);
   T_sp component, component_path, kind;
-  char *text;
-  DIR *dir;
-  struct dirent *entry;
-  MultipleValues &mvn = core::lisp_multipleValues();
+  char* text;
+  DIR* dir;
+  struct dirent* entry;
+  MultipleValues& mvn = core::lisp_multipleValues();
 
   clasp_disable_interrupts();
-  dir = opendir((char *)gc::As<String_sp>(prefix)->get_std_string().c_str());
+  dir = opendir((char*)gc::As<String_sp>(prefix)->get_std_string().c_str());
   if (dir == NULL) {
     out = nil<T_O>();
     goto OUTPUT;
@@ -1250,7 +1250,7 @@ OUTPUT:
 
 // TODO This will need to be adjusted if we port to Windows.
 Pathname_sp clasp_temporary_directory() {
-  const char *tmp_env = getenv("TMPDIR");
+  const char* tmp_env = getenv("TMPDIR");
 #ifdef P_tmpdir
   std::string tempdir = tmp_env ? tmp_env : P_tmpdir;
 #else
@@ -1331,8 +1331,8 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN void ext__rmtree(const string &spath) {
-  const char *path = spath.c_str();
+CL_DEFUN void ext__rmtree(const string& spath) {
+  const char* path = spath.c_str();
   rmtree(path);
 };
 
@@ -1353,7 +1353,7 @@ CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
   std::vector<char> dst_path(outname.begin(), outname.end());
   dst_path.push_back('\0');
   clasp_disable_interrupts();
-  const char *dirname = mkdtemp(&dst_path[0]);
+  const char* dirname = mkdtemp(&dst_path[0]);
   if (dirname == NULL) {
     SIMPLE_ERROR("There was an error in mkdtemp - errno {}", errno);
   }
@@ -1538,7 +1538,7 @@ DOCGROUP(clasp);
 CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
   mode_t code = clasp_to_uint32_t(mode);
   T_sp filename = coerce_to_posix_filename(file);
-  unlikely_if(chmod((char *)gc::As<String_sp>(filename)->get_std_string().c_str(), code)) {
+  unlikely_if(chmod((char*)gc::As<String_sp>(filename)->get_std_string().c_str(), code)) {
     T_sp c_error = clasp_strerror(errno);
     std::string msg = "Unable to change mode of file ~S to value ~O"
                       "~%C library error: ~S";
@@ -1569,7 +1569,7 @@ CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   if (in) {
     out = fopen(sdest->get_std_string().c_str(), "w");
     if (out) {
-      unsigned char *buffer = (unsigned char *)malloc(1024);
+      unsigned char* buffer = (unsigned char*)malloc(1024);
       cl_index size;
       do {
         size = fread(buffer, 1, 1024, in);
@@ -1720,7 +1720,7 @@ CL_DOCSTRING(R"dx(unixDaylightSavingTime return true if in daylight saving time)
 DOCGROUP(clasp);
 CL_DEFUN bool core__unix_daylight_saving_time(Integer_sp unix_time) {
   time_t when = clasp_to_uint64_t(unix_time);
-  struct tm *ltm = localtime(&when);
+  struct tm* ltm = localtime(&when);
   return ltm->tm_isdst;
 }
 
@@ -1781,9 +1781,9 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   }
 //    clasp_disable_interrupts();
 #if defined(CLASP_MS_WINDOWS_HOST)
-  ok = mkdir((char *)filename->c_str());
+  ok = mkdir((char*)filename->c_str());
 #else
-  ok = mkdir((char *)filename->get_std_string().c_str(), modeint);
+  ok = mkdir((char*)filename->get_std_string().c_str(), modeint);
 #endif
   //    clasp_enable_interrupts();
 
@@ -1864,7 +1864,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
 
   bool bReturnStream = return_stream.isTrue();
 
-  std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
+  std::vector<char const*> execvp_args(cl__length(call_and_arguments) + 1);
 
   size_t idx = 0;
 
@@ -1873,7 +1873,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
     size_t sarg_size = sarg->length();
     //    printf("%s:%d sarg = %s sarg->size() = %ld  strlen(sarg->c_str()) = %ld\n", __FILE__, __LINE__, sarg->c_str(),
     //    sarg->size(), strlen(sarg->c_str()));
-    char *arg = (char *)malloc(sarg_size + 1);
+    char* arg = (char*)malloc(sarg_size + 1);
     std::strncpy(arg, sarg->get_std_string().c_str(), sarg_size);
     arg[sarg_size] = '\0';
     execvp_args[idx++] = arg;
@@ -1917,7 +1917,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
         sigaddset(&new_sigset, SIGCHLD);
 
         rc = sigthreadmask(SIG_SETMASK, &new_sigset, &old_sigset); // TODO: Check return value
-        rc = execvp(execvp_args[0], (char *const *)execvp_args.data());
+        rc = execvp(execvp_args[0], (char* const*)execvp_args.data());
         sigthreadmask(SIG_SETMASK, &old_sigset, NULL); // Restore signal mask
 
         if (rc == -1) // An  error has occurred during - we do a retry
@@ -1965,7 +1965,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
 
       // Clean up args
       for (int i(0); i < execvp_args.size() - 1; ++i) {
-        free((void *)execvp_args[i]);
+        free((void*)execvp_args[i]);
         execvp_args[i] = nullptr;
       }
 
@@ -1991,7 +1991,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
       // error
       DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % errno % strerror(errno) % 0);
 
-      char *serr = std::strerror(errno);
+      char* serr = std::strerror(errno);
       return Values(clasp_make_fixnum(errno), SimpleBaseString_O::make(serr), nil<T_O>());
     }
   } else {
@@ -1999,7 +1999,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
 
     // Clean up args
     for (int i(0); i < execvp_args.size() - 1; ++i) {
-      free((void *)execvp_args[i]);
+      free((void*)execvp_args[i]);
       execvp_args[i] = nullptr;
     }
 
@@ -2016,13 +2016,13 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
   bool bReturnStream = return_stream.isTrue();
   if (call_and_arguments.nilp())
     return Values0<T_O>();
-  std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
+  std::vector<char const*> execvp_args(cl__length(call_and_arguments) + 1);
   size_t idx = 0;
   for (auto cur : call_and_arguments) {
     String_sp sarg = gc::As<String_sp>(oCar(cur));
     size_t sarg_size = sarg->length();
     //    printf("%s:%d sarg = %s sarg->size() = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size());
-    char *arg = (char *)malloc(sarg_size + 1);
+    char* arg = (char*)malloc(sarg_size + 1);
     std::strncpy(arg, sarg->get_std_string().c_str(), sarg_size);
     arg[sarg_size] = '\0';
     execvp_args[idx++] = arg;
@@ -2047,7 +2047,7 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
         int flags = fcntl(STDOUT_FILENO, F_GETFL, 0);
         fcntl(STDOUT_FILENO, F_SETFL, flags | FD_CLOEXEC);
       }
-      execvp(execvp_args[0], (char *const *)execvp_args.data());
+      execvp(execvp_args[0], (char* const*)execvp_args.data());
       printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n", __FILE__, __LINE__, errno, strerror(errno));
       for (int i = 0; execvp_args[i] != NULL; ++i) {
         printf("    arg#%d  %s\n", i, execvp_args[i]);
@@ -2060,7 +2060,7 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
       pid_t wait_ret = wait(&status);
       // Clean up args
       for (int i(0); i < execvp_args.size() - 1; ++i)
-        free((void *)execvp_args[i]);
+        free((void*)execvp_args[i]);
       if (wait_ret >= 0) {
         if (wait_ret != child_PID) {
           printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
@@ -2080,7 +2080,7 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
   } else {
     // Clean up args
     for (int i(0); i < execvp_args.size() - 1; ++i)
-      free((void *)execvp_args[i]);
+      free((void*)execvp_args[i]);
     return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)), nil<T_O>());
   }
 }
@@ -2091,7 +2091,7 @@ CL_DOCSTRING(R"dx(Get environment variable NAME)dx");
 DOCGROUP(clasp);
 CL_DEFUN T_sp ext__getenv(String_sp arg) {
   ASSERT(cl__stringp(arg));
-  char *sres = getenv(arg->get_std_string().c_str());
+  char* sres = getenv(arg->get_std_string().c_str());
   if (sres == NULL) {
     return nil<T_O>();
   }

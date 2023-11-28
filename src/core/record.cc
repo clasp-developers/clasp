@@ -41,7 +41,7 @@ THE SOFTWARE.
 namespace core {
 
 T_sp record_circle_subst(Record_sp record, T_sp tree) {
-  RECORD_LOG("Checking record_circle_subst orig@{}: {}\n", (void *)(tree.raw_()), _rep_(tree));
+  RECORD_LOG("Checking record_circle_subst orig@{}: {}\n", (void*)(tree.raw_()), _rep_(tree));
   T_sp result;
   T_sp patching_callback = record->_patching_callback;
   if (patching_callback.notnilp()) {
@@ -51,8 +51,7 @@ T_sp record_circle_subst(Record_sp record, T_sp tree) {
   }
 #ifdef DEBUG_RECORD
   if (result.raw_() != tree.raw_()) {
-    RECORD_LOG("  YES!!! record_circle_subst tree@{} subst@{}: {}\n", (void *)(tree.raw_()), (void *)(result.raw_()),
-               _rep_(result));
+    RECORD_LOG("  YES!!! record_circle_subst tree@{} subst@{}: {}\n", (void*)(tree.raw_()), (void*)(result.raw_()), _rep_(result));
   }
 #endif
   return result;

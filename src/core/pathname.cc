@@ -415,7 +415,7 @@ bool Pathname_O::equal(T_sp obj) const {
   return false;
 }
 
-void Pathname_O::sxhash_(HashGenerator &hg) const {
+void Pathname_O::sxhash_(HashGenerator& hg) const {
   if (hg.isFilling())
     hg.hashObject(this->_Host);
   if (hg.isFilling())
@@ -430,7 +430,7 @@ void Pathname_O::sxhash_(HashGenerator &hg) const {
     hg.hashObject(this->_Version);
 }
 
-void Pathname_O::sxhash_equal(HashGenerator &hg) const {
+void Pathname_O::sxhash_equal(HashGenerator& hg) const {
   if (hg.isFilling())
     HashTable_O::sxhash_equal(hg, this->_Host);
   if (hg.isFilling())
@@ -445,7 +445,7 @@ void Pathname_O::sxhash_equal(HashGenerator &hg) const {
     HashTable_O::sxhash_equal(hg, this->_Version);
 }
 
-void Pathname_O::sxhash_equalp(HashGenerator &hg) const {
+void Pathname_O::sxhash_equalp(HashGenerator& hg) const {
   if (hg.isFilling())
     HashTable_O::sxhash_equalp(hg, this->_Host);
   if (hg.isFilling())
@@ -511,7 +511,7 @@ static int is_null(int c) { return c == '\0'; }
  *	3) "" or _Nil<T_O>() when word has no elements
  *	5) A non empty string
  */
-static T_sp parse_word(T_sp st, delim_fn delim, int flags, size_t start, size_t end, size_t *end_of_word) {
+static T_sp parse_word(T_sp st, delim_fn delim, int flags, size_t start, size_t end, size_t* end_of_word) {
   size_t i, j, last_delim = end;
   bool wild_inferiors = false;
   String_sp ss = gc::As<String_sp>(st);
@@ -597,7 +597,7 @@ static T_sp parse_word(T_sp st, delim_fn delim, int flags, size_t start, size_t 
  * pathname-name or pathname-type when the same error is detected.
  */
 
-static T_sp parse_directories(T_sp s, int flags, size_t start, size_t end, size_t *end_of_dir) {
+static T_sp parse_directories(T_sp s, int flags, size_t start, size_t end, size_t* end_of_dir) {
   size_t i, j;
   List_sp path = nil<T_O>();
   delim_fn delim = (flags & WORD_LOGICAL) ? is_semicolon : is_slash;
@@ -629,7 +629,7 @@ CL_DOCSTRING(R"dx(Returns the host's list of translations. Each translation is a
 two elements: from-wildcard and to-wildcard. From-wildcard is a logical
 pathname whose host is host. To-wildcard is a pathname.)dx")
 CL_DEFUN List_sp cl__logical_pathname_translations(String_sp host) {
-  KeyValuePair *pair = _lisp->pathnameTranslations_()->find(host);
+  KeyValuePair* pair = _lisp->pathnameTranslations_()->find(host);
   if (!pair) // This type error should be (satisfies logical-host-p)
     TYPE_ERROR(host, cl::_sym_string);
   return pair->_Value;
@@ -694,7 +694,7 @@ CL_DEFUN T_sp core__list_all_logical_hosts() { return _lisp->pathnameTranslation
  *	pathname-name, pathname-type = word | wildcard-word | ""
  *
  */
-Pathname_sp clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep, T_sp default_host) {
+Pathname_sp clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t* ep, T_sp default_host) {
   T_sp host, device, path, name, type, aux, version;
   bool logical = false;
 
@@ -751,7 +751,7 @@ Pathname_sp clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep, 
   } else {
     T_mv version_mv = cl__parse_integer(gc::As<String_sp>(aux), 0, nil<T_O>(), 10, _lisp->_true());
     T_sp tversion = version_mv;
-    MultipleValues &mvn = core::lisp_multipleValues();
+    MultipleValues& mvn = core::lisp_multipleValues();
     Fixnum_sp parsed_length = gc::As<Fixnum_sp>(mvn.valueGet(1, version_mv.number_of_values()));
     if (unbox_fixnum(parsed_length) == cl__length(aux) && cl__integerp(tversion) && clasp_plusp(gc::As<Integer_sp>(tversion))) {
       version = gc::As<Integer_sp>(tversion);
@@ -1801,7 +1801,7 @@ static T_sp find_list_wilds(T_sp a, T_sp mask) {
   return cl__nreverse(l);
 }
 
-static T_sp copy_wildcards(T_sp *wilds_list, T_sp pattern) {
+static T_sp copy_wildcards(T_sp* wilds_list, T_sp pattern) {
   // TESTME
   size_t i, l, j;
   bool new_string;
@@ -1848,7 +1848,7 @@ static T_sp copy_wildcards(T_sp *wilds_list, T_sp pattern) {
   return pattern;
 }
 
-static T_sp copy_list_wildcards(T_sp *wilds, T_sp to) {
+static T_sp copy_list_wildcards(T_sp* wilds, T_sp to) {
   T_sp l = nil<T_O>();
 
   while (!cl__endp(to)) {

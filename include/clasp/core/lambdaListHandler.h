@@ -60,11 +60,11 @@ typedef enum { required, optional, dot_rest, va_rest, rest, keyword, allowOtherK
 
 namespace core {
 
-bool parse_lambda_list(List_sp, T_sp, gctools::Vec0<RequiredArgument> &, gctools::Vec0<OptionalArgument> &, RestArgument &, T_sp &,
-                       gctools::Vec0<KeywordArgument> &, T_sp &, gctools::Vec0<AuxArgument> &);
+bool parse_lambda_list(List_sp, T_sp, gctools::Vec0<RequiredArgument>&, gctools::Vec0<OptionalArgument>&, RestArgument&, T_sp&,
+                       gctools::Vec0<KeywordArgument>&, T_sp&, gctools::Vec0<AuxArgument>&);
 
-List_sp lexical_variable_names(gctools::Vec0<RequiredArgument> &reqs, gctools::Vec0<OptionalArgument> &optionals,
-                               RestArgument &restarg, gctools::Vec0<KeywordArgument> &keys, gctools::Vec0<AuxArgument> &auxs);
+List_sp lexical_variable_names(gctools::Vec0<RequiredArgument>& reqs, gctools::Vec0<OptionalArgument>& optionals,
+                               RestArgument& restarg, gctools::Vec0<KeywordArgument>& keys, gctools::Vec0<AuxArgument>& auxs);
 
 T_sp lambda_list_for_name(T_sp);
 List_sp core__canonicalize_declarations(List_sp declares);

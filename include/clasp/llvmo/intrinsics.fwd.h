@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: intrinsics.h
 */
@@ -24,12 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef llvmo_intrinsics_fwd_H
-#define llvmo_intrinsics_fwd_H
 
 extern "C" {
-NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,
-                                           std::size_t min, std::size_t max);
+NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs, std::size_t min, std::size_t max);
 };
-
-#endif

@@ -37,21 +37,21 @@ public: // Simple default ctor/dtor
   Pointer_O() : m_raw_data(NULL){};
 
 protected: // instance variables here
-  void *m_raw_data;
+  void* m_raw_data;
 
 public:
-  static Pointer_sp create(void *p);
+  static Pointer_sp create(void* p);
   /*! Create a pointer to a T_sp shared-ptr */
   static Pointer_sp createForT_sp(T_sp obj);
 
 public: // Functions here
-  void *ptr() const { return this->m_raw_data; };
+  void* ptr() const { return this->m_raw_data; };
   virtual bool eql_(T_sp obj) const override;
   bool in_pointer_range(Pointer_sp other, intptr_t size) {
-    return ((char *)this->m_raw_data >= (char *)other->m_raw_data) && (char *)this->m_raw_data < ((char *)other->m_raw_data + size);
+    return ((char*)this->m_raw_data >= (char*)other->m_raw_data) && (char*)this->m_raw_data < ((char*)other->m_raw_data + size);
   };
   bool in_pointer_range(Pointer_sp low, Pointer_sp high) {
-    return ((char *)this->m_raw_data >= (char *)low->m_raw_data) && (char *)this->m_raw_data < ((char *)high->m_raw_data);
+    return ((char*)this->m_raw_data >= (char*)low->m_raw_data) && (char*)this->m_raw_data < ((char*)high->m_raw_data);
   };
   string __repr__() const override;
 

@@ -177,21 +177,21 @@ const std::string FROM_OBJECT_FN_NAME_PREFIX("from_object_");
 void setup_endianess_info(void);
 void register_foreign_types(void);
 void register_foreign_type_spec(core::ComplexVector_T_sp sp_tst, uint32_t n_index, const core::Symbol_sp lisp_symbol,
-                                const std::string &lisp_name, const size_t size, const size_t alignment,
-                                const std::string &cxx_name);
+                                const std::string& lisp_name, const size_t size, const size_t alignment,
+                                const std::string& cxx_name);
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 template <typename T, typename... U> size_t get_fn_address(std::function<T(U...)> f) {
   typedef T(fn_type)(U...);
-  fn_type **fn_ptr = f.template target<fn_type *>();
+  fn_type** fn_ptr = f.template target<fn_type*>();
   return (size_t)*fn_ptr;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 template <typename T> struct register_foreign_type {
-  static void doit(core::ComplexVector_T_sp sp_tst, uint32_t n_index, core::Symbol_sp lisp_symbol, const std::string &cxx_name) {
+  static void doit(core::ComplexVector_T_sp sp_tst, uint32_t n_index, core::Symbol_sp lisp_symbol, const std::string& cxx_name) {
     size_t size = sizeof(T);
     size_t alignment = std::alignment_of<T>::value;
 
@@ -233,8 +233,8 @@ inline void setup_endianess_info(void) {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 void register_foreign_type_spec(core::ComplexVector_T_sp sp_tst, uint32_t n_index, const core::Symbol_sp lisp_symbol,
-                                const std::string &lisp_name, const size_t size, const size_t alignment,
-                                const std::string &cxx_name) {
+                                const std::string& lisp_name, const size_t size, const size_t alignment,
+                                const std::string& cxx_name) {
 
   std::locale loc = std::locale("C");
   std::string tmp_str;
@@ -316,13 +316,13 @@ inline void register_foreign_types(void) {
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, single_float, float, kw::_sym_single_float, "float");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, long_double, long double, kw::_sym_long_double, "long double");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, time, time_t, kw::_sym_time, "time");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, pointer, void *, kw::_sym_pointer, "pointer");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, pointer, void*, kw::_sym_pointer, "pointer");
 
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, size, size_t, kw::_sym_size, "size");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, ssize, ssize_t, kw::_sym_ssize, "ssize");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, ptrdiff, ptrdiff_t, kw::_sym_ptrdiff, "ptrdiff");
 
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, pointer, void *, kw::_sym_void, "void");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst, n_index++, pointer, void*, kw::_sym_void, "void");
 
   //  - 1.2 : ASSIGN FOREGN TYPE SPEC TABLE TO GLOBAL SYMBOL
 
@@ -369,16 +369,16 @@ ForeignData_O::~ForeignData_O() {
 inline string ForeignData_O::__repr__() const {
   stringstream ss;
 
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " @ " << fmt::format("{}", (void *)this) << " :kind "
-     << this->m_kind << " :size " << this->m_size << " :ownership-flags " << this->m_ownership_flags << " :data-ptr "
-     << fmt::format("{}", (void *)this->m_raw_data) << " :orig-ptr " << fmt::format("{}", (void *)this->m_orig_data_ptr) << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " @ " << fmt::format("{}", (void*)this) << " :kind " << this->m_kind
+     << " :size " << this->m_size << " :ownership-flags " << this->m_ownership_flags << " :data-ptr "
+     << fmt::format("{}", (void*)this->m_raw_data) << " :orig-ptr " << fmt::format("{}", (void*)this->m_orig_data_ptr) << ">";
 
   return ss.str();
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void *ForeignData_O::externalObject() const { return this->m_raw_data; }
+void* ForeignData_O::externalObject() const { return this->m_raw_data; }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -396,14 +396,14 @@ void ForeignData_O::allocate(core::T_sp kind, core::ForeignDataFlagEnum ownershi
   this->m_kind = kind;
   this->m_ownership_flags = ownership_flags;
   this->m_size = size;
-  this->m_raw_data = (void *)gctools::clasp_alloc_atomic(size);
+  this->m_raw_data = (void*)gctools::clasp_alloc_atomic(size);
   this->m_orig_data_ptr = this->m_raw_data;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 void ForeignData_O::free_(void) {
-  gctools::clasp_dealloc((char *)this->m_orig_data_ptr);
+  gctools::clasp_dealloc((char*)this->m_orig_data_ptr);
   this->m_orig_data_ptr = nullptr;
   this->m_raw_data = nullptr;
   this->m_size = 0;
@@ -487,14 +487,14 @@ void ForeignData_O::PERCENTfree_foreign_data(void) { this->free_(); }
 // ---------------------------------------------------------------------------
 ForeignData_sp ForeignData_O::create(uintptr_t address) {
   auto self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
-  self->m_raw_data = reinterpret_cast<void *>(address);
+  self->m_raw_data = reinterpret_cast<void*>(address);
   self->set_kind(kw::_sym_clasp_foreign_data_kind_pointer);
   return self;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::create(void *p_address, size_t size) {
+ForeignData_sp ForeignData_O::create(void* p_address, size_t size) {
   auto self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->m_raw_data = p_address;
   self->m_size = size;
@@ -504,7 +504,7 @@ ForeignData_sp ForeignData_O::create(void *p_address, size_t size) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp make_pointer(void *p_address) { return ForeignData_O::create(p_address); }
+ForeignData_sp make_pointer(void* p_address) { return ForeignData_O::create(p_address); }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -568,7 +568,7 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer_in_place(core::Integer_sp offse
   uintptr_t offset_ = core::clasp_to_uintptr_t(offset);
 
   new_address = raw_data_address + offset_;
-  this->m_raw_data = reinterpret_cast<void *>(new_address);
+  this->m_raw_data = reinterpret_cast<void*>(new_address);
 
   return this->asSmartPtr();
 }
@@ -581,7 +581,7 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer(core::Integer_sp offset) {
   uintptr_t offset_ = core::clasp_to_uintptr_t(offset);
 
   new_address = raw_data_address + offset_;
-  return (make_pointer(reinterpret_cast<void *>(new_address)))->asSmartPtr();
+  return (make_pointer(reinterpret_cast<void*>(new_address)))->asSmartPtr();
 }
 
 // ---------------------------------------------------------------------------
@@ -626,7 +626,7 @@ core::T_sp PERCENTdlopen(core::T_sp path_designator) {
   string str_path = gc::As<core::String_sp>(core::cl__namestring(path))->get_std_string();
 
   auto result = core::do_dlopen(str_path, n_mode);
-  void *p_handle = std::get<0>(result);
+  void* p_handle = std::get<0>(result);
 
   if (p_handle == nullptr) {
     return (Values(nil<core::T_O>(), core::Str_O::create(get<1>(result))));
@@ -657,7 +657,7 @@ core::T_sp PERCENTdlsym(core::String_sp name) {
 
   ForeignData_sp sp_sym;
   auto result = core::do_dlsym(RTLD_DEFAULT, name->get_std_string().c_str());
-  void *p_sym = std::get<0>(result);
+  void* p_sym = std::get<0>(result);
 
   if (!p_sym) {
     return (Values(nil<core::T_O>(), core::Str_O::create(get<1>(result))));
@@ -703,7 +703,7 @@ ForeignTypeSpec_O::~ForeignTypeSpec_O() {
 inline string ForeignTypeSpec_O::__repr__() const {
   stringstream ss;
 
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " @ " << fmt::format("{}", (void *)this) << " :lisp-symbol "
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " @ " << fmt::format("{}", (void*)this) << " :lisp-symbol "
      << this->m_lisp_symbol << " :lisp-name " << this->m_lisp_name << " :size " << this->m_size << " :alignment "
      << this->m_alignment << " :cxx-name " << this->m_cxx_name << " :llvm-type-symbol-fn " << this->m_llvm_type_symbol_fn
      << " :to-object-fn-name " << this->m_to_object_fn_name << " :from-object-fn-name " << this->m_from_object_fn_name << ">";
@@ -798,7 +798,7 @@ core::Integer_sp PERCENToffset_address_as_integer(core::T_sp address_or_foreign_
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 template <class T> inline T mem_ref(uintptr_t address) {
-  T *ptr = reinterpret_cast<T *>(address);
+  T* ptr = reinterpret_cast<T*>(address);
   return (*ptr);
 }
 
@@ -927,7 +927,7 @@ core::T_sp PERCENTmem_ref_time(core::Integer_sp address) {
 }
 
 core::T_sp PERCENTmem_ref_pointer(core::Integer_sp address) {
-  void *v = mem_ref<void *>(core::clasp_to_uintptr_t(address));
+  void* v = mem_ref<void*>(core::clasp_to_uintptr_t(address));
   DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v);
   return mk_pointer(v);
 }
@@ -977,13 +977,13 @@ core::T_sp PERCENTmem_ref_unsigned_char(core::Integer_sp address) {
 //   return v._v;
 // }
 
-void *clasp_to_void_pointer(ForeignData_sp sp_lisp_value) { return sp_lisp_value->ptr(); }
+void* clasp_to_void_pointer(ForeignData_sp sp_lisp_value) { return sp_lisp_value->ptr(); }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 template <typename T> inline T mem_set(uintptr_t address, T value) {
-  *(reinterpret_cast<T *>(address)) = value;
-  return *(reinterpret_cast<T *>(address));
+  *(reinterpret_cast<T*>(address)) = value;
+  return *(reinterpret_cast<T*>(address));
 }
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -1135,9 +1135,9 @@ core::T_sp PERCENTmem_set_time(core::Integer_sp address, core::T_sp value) {
 }
 
 core::T_sp PERCENTmem_set_pointer(core::Integer_sp address, core::T_sp value) {
-  void *tmp;
-  translate::from_object<void *> v(value);
-  tmp = mem_set<void *>(core::clasp_to_uintptr_t(address), v._v);
+  void* tmp;
+  translate::from_object<void*> v(value);
+  tmp = mem_set<void*>(core::clasp_to_uintptr_t(address), v._v);
   DEBUG_PRINT(BF("%s (%s:%d) | v = %p\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v);
   return mk_pointer(tmp);
 }
@@ -1182,12 +1182,12 @@ core::T_sp PERCENTmem_set_unsigned_char(core::Integer_sp address, core::T_sp val
   return mk_fixnum_uint8(tmp);
 }
 
-const struct section_64 *get_section_data(const char *segment_name, const char *section_name) {
-  const struct section_64 *p_section = (struct section_64 *)NULL;
+const struct section_64* get_section_data(const char* segment_name, const char* section_name) {
+  const struct section_64* p_section = (struct section_64*)NULL;
 
 #if defined(__APPLE__)
   unsigned long section_size = 0;
-  p_section = (struct section_64 *)getsectiondata(&_mh_execute_header, segment_name, section_name, &section_size);
+  p_section = (struct section_64*)getsectiondata(&_mh_execute_header, segment_name, section_name, &section_size);
 #endif
 
   return p_section;
@@ -1196,13 +1196,13 @@ const struct section_64 *get_section_data(const char *segment_name, const char *
 core::T_mv PERCENTget_section_data(core::String_sp sp_segment_name, core::String_sp sp_section_name) {
 #if defined(__APPLE__)
 
-  const struct section_64 *p_section = (struct section_64 *)NULL;
+  const struct section_64* p_section = (struct section_64*)NULL;
   unsigned long section_size = 0;
 
   p_section = get_section_data(sp_segment_name->get_std_string().c_str(), sp_section_name->get_std_string().c_str());
   if (p_section != nullptr) {
     unsigned long long section_start_address = p_section->addr;
-    ForeignData_sp fd = ForeignData_O::create((void *)section_start_address, section_size);
+    ForeignData_sp fd = ForeignData_O::create((void*)section_start_address, section_size);
     return Values(fd, core::lisp_true());
   } else {
     return Values(nil<core::T_O>(), _lisp->_true());

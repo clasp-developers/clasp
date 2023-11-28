@@ -37,10 +37,10 @@ class LightUserData_O : public core::General_O {
   LISP_CLASS(core, CorePkg, LightUserData_O, "LightUserData", General_O);
 
 public:
-  void *_ptr;
+  void* _ptr;
 
 public:
-  static LightUserData_sp create(void *ptr) {
+  static LightUserData_sp create(void* ptr) {
     auto v = gctools::GC<LightUserData_O>::allocate_with_default_constructor();
     v->_ptr = ptr;
     return v;
@@ -53,12 +53,12 @@ public:
     }
     return false;
   }
-  void *ptr() const { return this->_ptr; };
+  void* ptr() const { return this->_ptr; };
   explicit LightUserData_O() : Base(), _ptr(NULL){};
   virtual ~LightUserData_O(){};
 };
 
-typedef void (*DestructUserDataFn)(void *data);
+typedef void (*DestructUserDataFn)(void* data);
 
 // set this class up by hand
 SMART(UserData);
@@ -71,7 +71,7 @@ private:
 public:
   static UserData_sp create(size_t size, DestructUserDataFn dtor) {
     auto v = gctools::GC<UserData_O>::allocate_with_default_constructor();
-    v->_ptr = (void *)malloc(size);
+    v->_ptr = (void*)malloc(size);
     v->_Dtor = dtor;
     return v;
   }

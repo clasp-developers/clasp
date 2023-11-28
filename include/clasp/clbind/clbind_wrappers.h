@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <clasp/clbind/inheritance.h>
 
 namespace core {
-bool maybe_demangle(const std::string &fnName, std::string &output);
+bool maybe_demangle(const std::string& fnName, std::string& output);
 };
 
 namespace clbind {
@@ -47,21 +47,21 @@ template <class OT, class WT> gctools::smart_ptr<OT> RP_Create_wrapper() {
 }
 
 template <typename T> struct no_deleter {
-  static void deleter(T *p){};
+  static void deleter(T* p){};
 };
 
 template <typename T> struct new_deleter {
-  static void deleter(T *p) { delete p; };
+  static void deleter(T* p) { delete p; };
 };
 
 template <typename T, typename = void> struct maybe_release {
-  static void call(T &obj) {
+  static void call(T& obj) {
     //            printf("%s:%d - no release to call\n", __FILE__, __LINE__);
   }
 };
 
 template <typename T> struct maybe_release<T, decltype(std::declval<T>().release(), void(0))> {
-  static void call(T &obj) {
+  static void call(T& obj) {
     //            printf("%s:%d - calling release\n", __FILE__, __LINE__);
     obj.release();
   }
@@ -75,11 +75,11 @@ struct is_deletable_impl {
 template <class T> struct is_deletable : decltype(is_deletable_impl::test<T>(0)) {};
 
 template <typename OT, bool Deletable> struct maybe_delete {
-  static void doit(OT *ptr) { delete ptr; };
+  static void doit(OT* ptr) { delete ptr; };
 };
 
 template <typename OT> struct maybe_delete<OT, false> {
-  static void doit(OT *ptr){};
+  static void doit(OT* ptr){};
 };
 }; // namespace clbind
 
@@ -89,7 +89,7 @@ namespace clbind {
       The wrapper does not own the pointer unless the HolderType
       is a std::unique_ptr or std::shared_ptr some other holder that takes care of ownership
  */
-template <class OT, class HolderType = OT *> class Wrapper : public core::WrappedPointer_O {
+template <class OT, class HolderType = OT*> class Wrapper : public core::WrappedPointer_O {
 public:
   typedef core::WrappedPointer_O TemplatedBase;
 
@@ -99,27 +99,27 @@ public:
 
 public: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
   HolderType p_gc_ignore;
-  void *weak;
+  void* weak;
   class_id dynamic_id;
-  void *dynamic_ptr;
+  void* dynamic_ptr;
 
 public:
   //
   // Get a raw pointer from whatever HolderType we have
   //
   template <typename HType> struct RawGetter {
-    static HType get_pointer(HType &ptr) { return ptr; };
-    static const HType get_pointer(const HType &ptr) { return ptr; };
+    static HType get_pointer(HType& ptr) { return ptr; };
+    static const HType get_pointer(const HType& ptr) { return ptr; };
   };
 
   template <typename PtrType> struct RawGetter<std::unique_ptr<PtrType>> {
-    static PtrType *get_pointer(std::unique_ptr<PtrType> &ptr) { return ptr.get(); };
-    static const PtrType *get_pointer(const std::unique_ptr<PtrType> &ptr) { return ptr.get(); };
+    static PtrType* get_pointer(std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
+    static const PtrType* get_pointer(const std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
   };
 
   template <typename PtrType> struct RawGetter<std::shared_ptr<PtrType>> {
-    static PtrType *get_pointer(std::shared_ptr<PtrType> &ptr) { return ptr.get(); };
-    static const PtrType *get_pointer(const std::shared_ptr<PtrType> &ptr) { return ptr.get(); };
+    static PtrType* get_pointer(std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
+    static const PtrType* get_pointer(const std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
   };
 
 public:
@@ -136,21 +136,21 @@ public:
 #endif
   }
 
-  Wrapper(OT *naked, class_id dynamic_id, void *dynamic_ptr)
+  Wrapper(OT* naked, class_id dynamic_id, void* dynamic_ptr)
       : p_gc_ignore(naked), weak(0), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {
     //    printf("%s:%d:%s naked ctor OT\n", __FILE__, __LINE__, __FUNCTION__ );
     this->do_checks();
   };
 
   // ctor that takes a unique_ptr
-  Wrapper(std::unique_ptr<OT> naked, class_id dynamic_id, void *dynamic_ptr)
+  Wrapper(std::unique_ptr<OT> naked, class_id dynamic_id, void* dynamic_ptr)
       : p_gc_ignore(std::move(naked)), weak(0), dynamic_id(dynamic_id), dynamic_ptr(dynamic_ptr) {
     //    printf("%s:%d:%s unique_ptr ctor OT\n", __FILE__, __LINE__, __FUNCTION__ );
     this->do_checks();
   };
 
   size_t templatedSizeof() const { return sizeof(*this); };
-  void *mostDerivedPointer() const { return (void *)RawGetter<HolderType>::get_pointer(this->p_gc_ignore); };
+  void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_pointer(this->p_gc_ignore); };
 
   virtual class_id classId() const { return this->dynamic_id; };
 
@@ -162,9 +162,9 @@ public:
     }
   }
 
-  static gctools::smart_ptr<WrapperType> make_wrapper(OT *naked, class_id dynamic_id) {
+  static gctools::smart_ptr<WrapperType> make_wrapper(OT* naked, class_id dynamic_id) {
     //    printf("%s:%d:%s DEBUG_WRAPPER with OT*\n", __FILE__, __LINE__, __FUNCTION__ );
-    void *dynamic_ptr = (void *)naked;
+    void* dynamic_ptr = (void*)naked;
     auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id, dynamic_ptr);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     if (!classSymbol.unboundp()) {
@@ -181,10 +181,10 @@ public:
                  dynamic_id);
   }
 
-  static gctools::smart_ptr<WrapperType> make_wrapper(const OT &val, class_id dynamic_id) {
+  static gctools::smart_ptr<WrapperType> make_wrapper(const OT& val, class_id dynamic_id) {
     printf("%s:%d:%s with OT&\n", __FILE__, __LINE__, __FUNCTION__);
-    OT *naked = new OT(val);
-    void *dynamic_ptr = (void *)naked;
+    OT* naked = new OT(val);
+    void* dynamic_ptr = (void*)naked;
     auto obj = gctools::GC<WrapperType>::allocate(naked, dynamic_id, dynamic_ptr);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
@@ -193,7 +193,7 @@ public:
 
   static gctools::smart_ptr<WrapperType> make_wrapper(std::unique_ptr<OT> val, class_id dynamic_id) {
     //    printf("%s:%d:%s with unique_ptr\n", __FILE__, __LINE__, __FUNCTION__ );
-    void *dynamic_ptr = (void *)val.get();
+    void* dynamic_ptr = (void*)val.get();
     auto obj = gctools::GC<WrapperType>::allocate(std::move(val), dynamic_id, dynamic_ptr);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
@@ -209,9 +209,9 @@ public:
   };
 
   /*! Release the pointer - invalidate the wrapper and return the pointer */
-  virtual void *pointerRelease() {
+  virtual void* pointerRelease() {
     if (RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL) {
-      void *ptr = const_cast<typename std::remove_const<OT>::type *>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+      void* ptr = const_cast<typename std::remove_const<OT>::type*>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
       maybe_release<HolderType>::call(this->p_gc_ignore);
       return ptr;
     }
@@ -243,10 +243,10 @@ public:
     return clbind::support_instanceSet<ExternalType>(idx, val, RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
   }
 
-  virtual void *castTo(class_id cid) const {
+  virtual void* castTo(class_id cid) const {
     this->throwIfInvalid();
-    std::pair<void *, int> res = globalCastGraph->cast(
-        const_cast<typename std::remove_const<OT>::type *>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore)) // ptr
+    std::pair<void*, int> res = globalCastGraph->cast(
+        const_cast<typename std::remove_const<OT>::type*>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore)) // ptr
         ,
         reg::registered_class<OT>::id // src
         ,
@@ -272,15 +272,15 @@ public:
 };
 }; // namespace clbind
 
-template <typename T> struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
+template <typename T> struct gctools::GCInfo<clbind::Wrapper<T, T*>> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
-template <typename T> class gctools::GCStamp<clbind::Wrapper<T, T *>> {
+template <typename T> class gctools::GCStamp<clbind::Wrapper<T, T*>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::StampWtag;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, T*>::TemplatedBase>::StampWtag;
 };
 
 template <typename T> struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
@@ -312,14 +312,14 @@ public:
 namespace translate {
 
 template <typename T> struct debug_deleter {
-  void operator()(T *p) {
+  void operator()(T* p) {
     printf("%s:%d:%s Deleting object of type %s\n", __FILE__, __LINE__, __FUNCTION__, typeid(T).name());
     delete p;
   };
 };
 
 /*! Translate pointers that I adopt */
-template <typename T> struct to_object<const std::unique_ptr<T> &, translate::adopt_pointer> {
+template <typename T> struct to_object<const std::unique_ptr<T>&, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<const T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
@@ -337,7 +337,7 @@ template <typename T> struct to_object<std::unique_ptr<T>, translate::adopt_poin
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  static core::T_sp convert(std::unique_ptr<T> &ptr) {
+  static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
       return nil<core::T_O>();
     }
@@ -353,7 +353,7 @@ template <typename T> struct to_object<std::unique_ptr<T>, translate::dont_adopt
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  static core::T_sp convert(std::unique_ptr<T> &ptr) {
+  static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
       return nil<core::T_O>();
     }
@@ -362,11 +362,11 @@ public:
 };
 
 /*! Translate pointers that I adopt */
-template <typename T> struct to_object<const T *&, translate::adopt_pointer> {
+template <typename T> struct to_object<const T*&, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<const T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
-  static core::T_sp convert(const T *ptr) {
+  static core::T_sp convert(const T* ptr) {
     if (ptr == NULL) {
       return nil<core::T_O>();
     }
@@ -376,10 +376,10 @@ public:
 };
 
 /*! Translate pointers that I dont adopt */
-template <typename T> struct to_object<const T *&, translate::dont_adopt_pointer> {
+template <typename T> struct to_object<const T*&, translate::dont_adopt_pointer> {
 public:
-  typedef clbind::Wrapper<const T, const T *> WrapperType;
-  static core::T_sp convert(const T *ptr) {
+  typedef clbind::Wrapper<const T, const T*> WrapperType;
+  static core::T_sp convert(const T* ptr) {
     if (ptr == NULL) {
       return nil<core::T_O>();
     }
@@ -389,11 +389,11 @@ public:
 };
 
 /*! Translate pointers that I adopt */
-template <typename T> struct to_object<T *, translate::adopt_pointer> {
+template <typename T> struct to_object<T*, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  static core::T_sp convert(T *ptr) {
+  static core::T_sp convert(T* ptr) {
     if (ptr == NULL) {
       return nil<core::T_O>();
     }
@@ -402,10 +402,10 @@ public:
   }
 };
 
-template <typename T> struct to_object<T *, translate::dont_adopt_pointer> {
+template <typename T> struct to_object<T*, translate::dont_adopt_pointer> {
 public:
-  typedef clbind::Wrapper<T, T *> WrapperType;
-  static core::T_sp convert(T *ptr) {
+  typedef clbind::Wrapper<T, T*> WrapperType;
+  static core::T_sp convert(T* ptr) {
     if (ptr == NULL) {
       return nil<core::T_O>();
     }
@@ -415,11 +415,11 @@ public:
 };
 
 /*! Translate pointers that I adopt */
-template <typename T> struct to_object<T *const, translate::adopt_pointer> {
+template <typename T> struct to_object<T* const, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  static core::T_sp convert(T *const ptr) {
+  static core::T_sp convert(T* const ptr) {
     if (ptr == NULL) {
       return nil<core::T_O>();
     }
@@ -428,10 +428,10 @@ public:
   }
 };
 
-template <typename T> struct to_object<T *const, translate::dont_adopt_pointer> {
+template <typename T> struct to_object<T* const, translate::dont_adopt_pointer> {
 public:
-  typedef clbind::Wrapper<T, T *const> WrapperType;
-  static core::T_sp convert(T *const ptr) {
+  typedef clbind::Wrapper<T, T* const> WrapperType;
+  static core::T_sp convert(T* const ptr) {
     if (ptr == NULL) {
       return nil<core::T_O>();
     }
@@ -440,10 +440,10 @@ public:
   }
 };
 
-template <typename T> struct to_object<T &, translate::dont_adopt_pointer> {
+template <typename T> struct to_object<T&, translate::dont_adopt_pointer> {
 public:
-  typedef clbind::Wrapper<T, T *> WrapperType;
-  static core::T_sp convert(T &val) {
+  typedef clbind::Wrapper<T, T*> WrapperType;
+  static core::T_sp convert(T& val) {
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(&val, reg::registered_class<T>::id);
     return wrapper;
   }
@@ -454,8 +454,8 @@ template <typename T> struct to_object<T, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  static core::T_sp convert(const T &val) {
-    T *ptr = new T(val);
+  static core::T_sp convert(const T& val) {
+    T* ptr = new T(val);
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
@@ -467,8 +467,8 @@ template <typename T> struct to_object<T, translate::dont_adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  static core::T_sp convert(const T &val) {
-    T *ptr = new T(val);
+  static core::T_sp convert(const T& val) {
+    T* ptr = new T(val);
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
@@ -479,8 +479,8 @@ template <typename T> struct to_object<const T, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  static core::T_sp convert(const T &val) {
-    T *ptr = new T(val);
+  static core::T_sp convert(const T& val) {
+    T* ptr = new T(val);
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
@@ -492,9 +492,9 @@ template <typename T> struct to_object<const T, translate::dont_adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  static core::T_sp convert(const T &val) {
+  static core::T_sp convert(const T& val) {
     HARD_IMPLEMENT_MEF("This doesn't make sense - copy but don't adopt pointer???");
-    T *ptr = new T(val);
+    T* ptr = new T(val);
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
   }
@@ -520,19 +520,19 @@ template <typename T> struct from_object<std::unique_ptr<T>> {
   from_object(core::T_sp o) {
     static_assert(!std::is_pod<T>::value, "T must NOT be POD");
     if (o.nilp()) {
-      this->_v = std::unique_ptr<T>(static_cast<T *>(NULL));
+      this->_v = std::unique_ptr<T>(static_cast<T*>(NULL));
       return;
     } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
       this->_v = std::unique_ptr<T>(/*gc::As<core::WrappedPointer_sp>(o)*/ wp->cast<T>());
       return;
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
-      this->_v = std::unique_ptr<T>(static_cast<T *>(pp->ptr()));
+      this->_v = std::unique_ptr<T>(static_cast<T*>(pp->ptr()));
       return;
     } else if (o.generalp()) {
-      core::General_O *gp = (core::General_O *)&(*o);
-      T *v_alien = reinterpret_cast<T *>(gp->pointerToAlienWithin());
+      core::General_O* gp = (core::General_O*)&(*o);
+      T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
       if (!v_alien) {
-        SIMPLE_ERROR("Wrong type of argument - clbind object@{} of type: {}", (void *)gp, typeid(T).name());
+        SIMPLE_ERROR("Wrong type of argument - clbind object@{} of type: {}", (void*)gp, typeid(T).name());
       }
 
       ASSERT(v_alien);
@@ -548,36 +548,36 @@ template <typename T> struct from_object<std::unique_ptr<T>> {
     if (o.generalp()) {
       core::General_sp go(o.unsafe_general());
       printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n",
-             dynamic_cast<clbind::Derivable<T> *>(&(*go)));
+             dynamic_cast<clbind::Derivable<T>*>(&(*go)));
       printf("o.px_ref() = %p\n", go.raw_());
-      printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T *), typeid(T *).name());
-      printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *),
-             typeid(clbind::Derivable<T> *).name());
-      SIMPLE_ERROR("Could not convert {} of RTTI type {} to {}", _rep_(go), typeid(o).name(), typeid(T *).name());
+      printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T*), typeid(T*).name());
+      printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T>*),
+             typeid(clbind::Derivable<T>*).name());
+      SIMPLE_ERROR("Could not convert {} of RTTI type {} to {}", _rep_(go), typeid(o).name(), typeid(T*).name());
     } else {
       printf("%s:%d Can't handle object\n", __FILE__, __LINE__);
     }
   }
 };
 
-template <typename T> struct from_object<T *> {
-  typedef T *DeclareType;
+template <typename T> struct from_object<T*> {
+  typedef T* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
     // static_assert(!std::is_pod<T>::value, "T must NOT be POD");
     //    int*** i = T();
     if (o.nilp()) {
-      this->_v = static_cast<T *>(NULL);
+      this->_v = static_cast<T*>(NULL);
       return;
     } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
       this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/ wp->cast<T>();
       return;
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
-      this->_v = static_cast<T *>(pp->ptr());
+      this->_v = static_cast<T*>(pp->ptr());
       return;
     } else if (o.generalp()) {
-      core::General_O *gp = o.unsafe_general();
-      T *v_alien = reinterpret_cast<T *>(gp->pointerToAlienWithin());
+      core::General_O* gp = o.unsafe_general();
+      T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
       if (!v_alien) {
         std::string expectedType(typeid(T).name());
         std::string demangled;
@@ -600,40 +600,40 @@ template <typename T> struct from_object<T *> {
   }
 };
 
-template <typename T> struct from_object<const T *&> {
-  typedef const T *DeclareType;
+template <typename T> struct from_object<const T*&> {
+  typedef const T* DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
     if (o.nilp()) {
-      this->_v = static_cast<T *>(NULL);
+      this->_v = static_cast<T*>(NULL);
       return;
     } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
       this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/ wp->cast<T>();
       return;
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
-      this->_v = static_cast<T *>(pp->ptr());
+      this->_v = static_cast<T*>(pp->ptr());
       return;
     } else if (core::General_sp gp = o.asOrNull<core::General_O>()) {
       // What do I do here?
     }
-    SIMPLE_ERROR("Could not convert {} of RTTI type {} to {}", _rep_(o).c_str(), typeid(o).name(), typeid(T *&).name());
+    SIMPLE_ERROR("Could not convert {} of RTTI type {} to {}", _rep_(o).c_str(), typeid(o).name(), typeid(T*&).name());
   }
 };
 
 /*! If the argument is a pure-out-value then don't use the passed to initialize _v */
-template <typename T> struct from_object<const T *&, std::false_type> {
-  typedef const T *DeclareType;
+template <typename T> struct from_object<const T*&, std::false_type> {
+  typedef const T* DeclareType;
   DeclareType _v;
-  from_object(const core::T_sp &o) : _v(NULL){};
+  from_object(const core::T_sp& o) : _v(NULL){};
 };
 
-template <typename T> struct from_object<const T &> {
-  typedef const T &DeclareType;
+template <typename T> struct from_object<const T&> {
+  typedef const T& DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(*(from_object<T *>(o)._v)){};
+  from_object(core::T_sp o) : _v(*(from_object<T*>(o)._v)){};
 };
 
-template <typename T> T &safe_deref(T *ptr) {
+template <typename T> T& safe_deref(T* ptr) {
   if (ptr) {
     return *ptr;
   }
@@ -641,15 +641,15 @@ template <typename T> T &safe_deref(T *ptr) {
                "function that expects a real object");
 }
 
-template <typename T> struct from_object<T &> {
-  typedef T &DeclareType;
+template <typename T> struct from_object<T&> {
+  typedef T& DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(safe_deref<T>((from_object<T *>(o)._v))){};
+  from_object(core::T_sp o) : _v(safe_deref<T>((from_object<T*>(o)._v))){};
   ~from_object(){/*non trivial*/};
 };
 
-template <typename T> struct from_object<T &, std::false_type> {
-  typedef T &DeclareType;
+template <typename T> struct from_object<T&, std::false_type> {
+  typedef T& DeclareType;
   T _v;
   from_object(core::T_sp o){};
   ~from_object(){/*non trivial*/};
@@ -659,7 +659,7 @@ template <typename T> struct from_object<T> {
   typedef T DeclareType;
   DeclareType _v;
   from_object(core::T_sp o)
-      : _v(*(from_object<T *>(o)._v)){
+      : _v(*(from_object<T*>(o)._v)){
             /*!!!!!!!! Did a EXC_BAD_ACCESS happen here???
               !!!!!!!! If it did - maybe this isn't the right from_object translator
               !!!!!!!! and you need to implement a more specialized one.
@@ -684,14 +684,14 @@ template <typename T> struct from_object<T> {
 
 namespace translate {
 
-template <> struct from_object<int &, std::true_type> {
+template <> struct from_object<int&, std::true_type> {
   typedef int DeclareType;
   int _v;
   from_object(gctools::smart_ptr<core::T_O> vv) : _v(core::clasp_to_int(vv)){};
   ~from_object(){/* Non-trivial */};
 };
 
-template <> struct from_object<int &, std::false_type> {
+template <> struct from_object<int&, std::false_type> {
   typedef int DeclareType;
   int _v;
   from_object(gctools::smart_ptr<core::T_O> vv) { (void)vv; };
@@ -700,7 +700,7 @@ template <> struct from_object<int &, std::false_type> {
   };
 };
 
-template <> struct from_object<int *, std::false_type> {
+template <> struct from_object<int*, std::false_type> {
   typedef int DeclareType;
   int _v;
   from_object(gctools::smart_ptr<core::T_O> vv) { (void)vv; };
@@ -709,17 +709,17 @@ template <> struct from_object<int *, std::false_type> {
   };
 };
 
-template <> struct from_object<const char *, std::true_type> {
-  typedef const char *DeclareType;
-  mutable char *_v;
+template <> struct from_object<const char*, std::true_type> {
+  typedef const char* DeclareType;
+  mutable char* _v;
   from_object(gctools::smart_ptr<core::T_O> vv) {
     core::String_sp strng = gc::As<core::String_sp>(vv);
     size_t len = core::cl__length(strng);
-    this->_v = (char *)malloc(len + 1);
+    this->_v = (char*)malloc(len + 1);
     strncpy(this->_v, strng->get_std_string().data(), len);
     this->_v[len] = '\0';
   }
-  from_object(const from_object<const char *, std::true_type> &other) {
+  from_object(const from_object<const char*, std::true_type>& other) {
     this->_v = other._v;
     other._v = NULL;
   }

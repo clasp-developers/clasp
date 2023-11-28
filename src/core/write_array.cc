@@ -116,7 +116,7 @@ static void write_array_dimensions(size_t rank, std::vector<size_t> dims, T_sp s
 
 // Generae dense (6-bit) character strings from blobs of bytes
 // See the reverse function denseReadTo8Bit
-std::vector<char> denseWriteTo6Bit(const unsigned char *inputBytes, size_t byteCount) {
+std::vector<char> denseWriteTo6Bit(const unsigned char* inputBytes, size_t byteCount) {
   std::vector<char> result;
 
 #define CODING
@@ -192,9 +192,9 @@ std::vector<char> denseWriteTo6Bit(const unsigned char *inputBytes, size_t byteC
   return result;
 }
 
-void write_array_readable_dense(T_sp stream, const std::string kind, void *start, void *end) {
-  size_t size = ((const char *)end) - ((const char *)start);
-  auto result = denseWriteTo6Bit((const unsigned char *)start, size);
+void write_array_readable_dense(T_sp stream, const std::string kind, void* start, void* end) {
+  size_t size = ((const char*)end) - ((const char*)start);
+  auto result = denseWriteTo6Bit((const unsigned char*)start, size);
   writestr_stream("#", stream);
   std::string num = std::to_string(result.size());
   writestr_stream(num.c_str(), stream);

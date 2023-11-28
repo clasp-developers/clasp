@@ -73,14 +73,14 @@ public: // instance variables
   bool zombieP = false;
 
 public: // Creation class functions
-  static Package_sp create(const string &p);
+  static Package_sp create(const string& p);
 
 public:
   /*! Very low level - add to internal symbols unless keyword
           package, in that case add to external symbols */
   void add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp sym, bool exportp = false);
   void add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bool exportp = false);
-  void bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false, bool shadowp = false);
+  void bootstrap_add_symbol_to_package(const char* symName, Symbol_sp sym, bool exportp = false, bool shadowp = false);
 
 private:
   // Returns a list of packages that will newly conflict.
@@ -121,7 +121,7 @@ public:
   void unexport(Symbol_sp sym);
 
   string getName() const;
-  void setName(const string &n);
+  void setName(const string& n);
 
   bool isExported(Symbol_sp sym);
 
@@ -136,7 +136,7 @@ public:
 
   /*! Return the (values symbol [:inherited,:external,:internal])
    */
-  Symbol_mv findSymbol(const string &name) const;
+  Symbol_mv findSymbol(const string& name) const;
   Symbol_mv findSymbol(String_sp name) const;
 
   //	T_mv findSymbol(const string& symbolName);
@@ -190,10 +190,10 @@ public:
   T_mv hashTables() const;
 
   /*! Map over the External key/value pairs */
-  void mapExternals(KeyValueMapper *mapper);
+  void mapExternals(KeyValueMapper* mapper);
 
   /*! Map over the Internal key/value pairs */
-  void mapInternals(KeyValueMapper *mapper);
+  void mapInternals(KeyValueMapper* mapper);
 
   void setSystemLockedP(bool value) { this->systemLockedP = value; }
 
@@ -213,7 +213,7 @@ public:
       : _ActsLikeKeywordPackage(false), _Nicknames(nil<T_O>()), _LocalNicknames(nil<T_O>()), _Documentation(nil<T_O>()),
         _Lock(PACKAGE__NAMEWORD){};
 
-  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup *fixup) {
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
       //      printf("%s:%d:%s About to initialize an mp::SharedMutex for a Package_O object\n", __FILE__, __LINE__, __FUNCTION__ );
       new (&this->_Lock) mp::SharedMutex(PACKAGE__NAMEWORD);

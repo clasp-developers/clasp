@@ -54,7 +54,7 @@ struct MaybeTrace {
   string _Msg;
   size_t _depth;
 #ifdef DEBUG_BACKTRACE
-  MaybeTrace(const string &msg) : _Msg(msg), _depth(global_MaybeTraceDepth++) {
+  MaybeTrace(const string& msg) : _Msg(msg), _depth(global_MaybeTraceDepth++) {
     printf("%s%2lu> %s\n", this->spaces().c_str(), this->_depth, msg.c_str());
   };
   ~MaybeTrace() {
@@ -70,7 +70,7 @@ struct MaybeTrace {
   }
 
 #else
-  MaybeTrace(const string &msg){};
+  MaybeTrace(const string& msg){};
 #endif
 };
 
@@ -100,7 +100,7 @@ std::string DebuggerFrame_O::__repr__() const {
 }
 
 #ifdef USE_LIBUNWIND
-static SimpleBaseString_sp lu_procname(unw_cursor_t *cursorp) {
+static SimpleBaseString_sp lu_procname(unw_cursor_t* cursorp) {
   size_t nbytes = 64; // numbers chosen arbitrarily
   do {
     char fname[nbytes];
@@ -162,7 +162,7 @@ static T_sp getSourcePosInfoForAddress(llvmo::DWARFContext_sp dcontext, llvmo::S
 }
 
 T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_sp dcontext, llvmo::SectionedAddress_sp sa,
-              void *&codeStart, void *&functionStartAddress, bool &XEPp, int &arityCode) {
+              void*& codeStart, void*& functionStartAddress, bool& XEPp, int& arityCode) {
   MaybeTrace trace(__FUNCTION__);
   functionStartAddress = NULL;
   D(printf("%s:%d:%s frameIndex = %lu\n", __FILE__, __LINE__, __FUNCTION__, frameIndex););
@@ -170,7 +170,7 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
   // If the object file contains the interpreter_trampoline - then we are in the interpreter
   //
   if (ofi->codeStart() <= (uintptr_t)bytecode_trampoline && (uintptr_t)bytecode_trampoline < ofi->codeEnd()) {
-    functionStartAddress = (void *)bytecode_trampoline;
+    functionStartAddress = (void*)bytecode_trampoline;
     D(printf("%s:%d:%s bytecode trampoline functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress););
     return nil<T_O>();
   }
@@ -184,23 +184,23 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
         printf("%s:%d:%s There is more than one range - there are %lu\n", __FILE__, __LINE__, __FUNCTION__, ranges.size());
       } else {
         llvmo::ObjectFile_sp code = ofi;
-        codeStart = (void *)code->codeStart();
+        codeStart = (void*)code->codeStart();
         uintptr_t absolute_LowPC = ranges.begin()->LowPC + (uintptr_t)codeStart;
-        functionStartAddress = (void *)(absolute_LowPC);
+        functionStartAddress = (void*)(absolute_LowPC);
         D(printf("%s:%d:%s Calculated functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, functionStartAddress););
-        T_O **rliterals = code->TOLiteralsStart();
+        T_O** rliterals = code->TOLiteralsStart();
         size_t nliterals = code->TOLiteralsSize();
         D(printf("%s%s:%d:%s sectioned address %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__,
                  _rep_(sa).c_str()););
-        D(printf("%s%s:%d:%s codeStart = %p - %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void *)codeStart,
-                 (void *)codeEnd););
+        D(printf("%s%s:%d:%s codeStart = %p - %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)codeStart,
+                 (void*)codeEnd););
         D(printf("%s%s:%d:%s objectFile = %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(ofi).c_str()););
         D(for (auto range
                : ranges) {
           uintptr_t absolute_LowPC = range.LowPC + (uintptr_t)codeStart;
           uintptr_t absolute_HighPC = range.HighPC + (uintptr_t)codeStart;
           printf("%s%s:%d:%s found range %p - %p  Absolute %p - %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__,
-                 (void *)range.LowPC, (void *)range.HighPC, (void *)absolute_LowPC, (void *)absolute_HighPC);
+                 (void*)range.LowPC, (void*)range.HighPC, (void*)absolute_LowPC, (void*)absolute_HighPC);
         } printf("%s%s:%d:%s rliterals = %p nliterals = %lu\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, rliterals,
                  nliterals););
         for (size_t i = 0; i < nliterals; ++i) {
@@ -209,20 +209,20 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
             LocalSimpleFun_sp ep = gc::As_unsafe<LocalSimpleFun_sp>(literal);
             uintptr_t absolute_entry = (uintptr_t)(ep->_Entry);
             D(printf("%s%s:%d:%s LocalSimpleFun_sp %s  absolute_entry = %p   FunctionDescription name %s\n", trace.spaces().c_str(),
-                     __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), (void *)absolute_entry,
+                     __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str(), (void*)absolute_entry,
                      _rep_(ep->functionDescription()).c_str()););
             for (auto range : ranges) {
               uintptr_t absolute_LowPC = range.LowPC + (uintptr_t)codeStart;
               uintptr_t absolute_HighPC = range.HighPC + (uintptr_t)codeStart;
               if ((absolute_LowPC <= absolute_entry) && (absolute_entry < absolute_HighPC)) {
                 D(printf("%s%s:%d:%s Matched absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__, __LINE__,
-                         __FUNCTION__, (void *)absolute_LowPC, (void *)absolute_HighPC););
+                         __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC););
                 XEPp = false;
                 // This will be identical to the entry point address in LocalSimpleFun_sp ep
                 return ep;
               } else {
                 D(printf("%s%s:%d:%s DID NOT match absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(), __FILE__,
-                         __LINE__, __FUNCTION__, (void *)absolute_LowPC, (void *)absolute_HighPC););
+                         __LINE__, __FUNCTION__, (void*)absolute_LowPC, (void*)absolute_HighPC););
               }
             }
           } else if (gc::IsA<GlobalSimpleFun_sp>(literal)) {
@@ -236,7 +236,7 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
                 uintptr_t absolute_HighPC = range.HighPC + (uintptr_t)codeStart;
                 if ((absolute_LowPC <= absolute_entry) && (absolute_entry < absolute_HighPC)) {
                   D(printf("%s%s:%d:%s Matched arityCode: %lu absolute_LowPC/absolute_HighPC %p/%p\n", trace.spaces().c_str(),
-                           __FILE__, __LINE__, __FUNCTION__, j, (void *)absolute_LowPC, (void *)absolute_HighPC););
+                           __FILE__, __LINE__, __FUNCTION__, j, (void*)absolute_LowPC, (void*)absolute_HighPC););
                   XEPp = true;
                   // This will be identical to ONE of the the entry point address in GlobalSimpleFun_sp ep
                   // arityCode is the index into the GlobalSimpleFun_sp vector corresponding to functionStartAddress
@@ -260,8 +260,8 @@ T_sp dwarf_ep(size_t frameIndex, llvmo::ObjectFile_sp ofi, llvmo::DWARFContext_s
   return nil<T_O>();
 }
 
-__attribute__((optnone)) static bool args_from_offset(size_t fi, void *ip, const char *string, T_sp name, bool XEPp, int arityCode,
-                                                      void *frameptr, int32_t offset32, T_sp &closure, T_sp &args,
+__attribute__((optnone)) static bool args_from_offset(size_t fi, void* ip, const char* string, T_sp name, bool XEPp, int arityCode,
+                                                      void* frameptr, int32_t offset32, T_sp& closure, T_sp& args,
                                                       int64_t patch_point_id) {
   MaybeTrace trace(__FUNCTION__);
   int64_t offset64 = static_cast<int64_t>(offset32);
@@ -270,7 +270,7 @@ __attribute__((optnone)) static bool args_from_offset(size_t fi, void *ip, const
   int64_t arity_code;
   if (frameptr && is_entry_point_arity(patch_point_id, arity_code)) {
     D(printf("%s%s:%d:%s entry_point arity_code %ld\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, arity_code););
-    T_O **register_save_area = (T_O **)((intptr_t)frameptr + offset64);
+    T_O** register_save_area = (T_O**)((intptr_t)frameptr + offset64);
     D(printf("%s%s:%d:%s fi=%lu ip=%p fp %p arity_code %ld rsa=%p %s XEP(y=%d,a=%d) ", trace.spaces().c_str(), __FILE__, __LINE__,
              __FUNCTION__, fi, ip, frameptr, arity_code, register_save_area, _rep_(name).c_str(), XEPp, arityCode););
     D(if (string) printf("%s", string););
@@ -294,11 +294,11 @@ __attribute__((optnone)) static bool args_from_offset(size_t fi, void *ip, const
       }
       ql::list largs;
       // Get the arg ptr from the register save area
-      T_O **arg_ptr = (T_O **)register_save_area[LCC_ARGS_PTR_REGISTER];
+      T_O** arg_ptr = (T_O**)register_save_area[LCC_ARGS_PTR_REGISTER];
       // get the args from the arg_ptr
       D(printf("%s%s:%d:%s About to read %lu xep args\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs););
       for (size_t i = 0; i < nargs; ++i) {
-        T_O *rarg = arg_ptr[i];
+        T_O* rarg = arg_ptr[i];
         T_sp temp((gctools::Tagged)rarg);
         D(printf("%s%s:%d:%s     read xep(general) arg %lu -> %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, i,
                  _rep_(temp).c_str()););
@@ -326,7 +326,7 @@ __attribute__((optnone)) static bool args_from_offset(size_t fi, void *ip, const
       if (args_on_stack > 0) {
         printf("%s:%d:%s Check if extraction of arguments from the stack works properly\n", __FILE__, __LINE__, __FUNCTION__);
         for (size_t i = 0; i < args_on_stack; ++i) {
-          T_O *rarg = ((T_O **)frameptr)[i + 2]; // +2 skips to where args are
+          T_O* rarg = ((T_O**)frameptr)[i + 2]; // +2 skips to where args are
           T_sp temp((gctools::Tagged)rarg);
           if (((uintptr_t)temp.raw_() & UNBOUND_TAG) == UNBOUND_TAG) {
             printf("%s:%d:%s And UNBOUND special value %p is leaking into a backtrace\n", __FILE__, __LINE__, __FUNCTION__,
@@ -345,11 +345,11 @@ __attribute__((optnone)) static bool args_from_offset(size_t fi, void *ip, const
   D(printf("%s%s:%d:%s Extracted args: %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(args).c_str()););
 }
 
-bool sanity_check_args(void *frameptr, int32_t offset32, int64_t patch_point_id) {
+bool sanity_check_args(void* frameptr, int32_t offset32, int64_t patch_point_id) {
   MaybeTrace trace(__FUNCTION__);
   int64_t offset = static_cast<int64_t>(offset32);
   if (frameptr) {
-    T_O **register_save_area = (T_O **)((intptr_t)frameptr + offset);
+    T_O** register_save_area = (T_O**)((intptr_t)frameptr + offset);
     T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
     if (!gc::IsA<Function_sp>(tclosure)) {
       fprintf(stderr, "%s:%d:%s When trying to get arguments from CL frame read what should be a closure %p but it isn't\n",
@@ -366,7 +366,7 @@ bool sanity_check_args(void *frameptr, int32_t offset32, int64_t patch_point_id)
         }
       }
       // check if first argument is a tagged pointer (must be closure)
-      core::T_O *closure = (core::T_O *)register_save_area[LCC_CLOSURE_REGISTER];
+      core::T_O* closure = (core::T_O*)register_save_area[LCC_CLOSURE_REGISTER];
       T_sp tclosure((gctools::Tagged)closure);
       if (!gc::IsA<Function_sp>(tclosure)) {
         fprintf(stderr, "%s:%d:%s  The first entry in register_save_area %p is not a closure\n", __FILE__, __LINE__, __FUNCTION__,
@@ -379,9 +379,9 @@ bool sanity_check_args(void *frameptr, int32_t offset32, int64_t patch_point_id)
   return true; // information not being available is unfortunate but sane
 }
 
-__attribute__((optnone)) static bool args_for_function(size_t fi, void *ip, const char *string, bool XEPp, int arityCode,
-                                                       void *code_start, void *functionStartAddress, llvmo::ObjectFile_sp ofi,
-                                                       T_sp &functionDescriptionOrNil, void *frameptr, T_sp &closure, T_sp &args) {
+__attribute__((optnone)) static bool args_for_function(size_t fi, void* ip, const char* string, bool XEPp, int arityCode,
+                                                       void* code_start, void* functionStartAddress, llvmo::ObjectFile_sp ofi,
+                                                       T_sp& functionDescriptionOrNil, void* frameptr, T_sp& closure, T_sp& args) {
   MaybeTrace trace(__FUNCTION__);
   if (!functionStartAddress) {
     D(printf("%s:%d:%s functionStartAddress is NULL returning\n", __FILE__, __LINE__, __FUNCTION__););
@@ -399,13 +399,13 @@ __attribute__((optnone)) static bool args_for_function(size_t fi, void *ip, cons
   if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil))
     name = gc::As_unsafe<FunctionDescription_sp>(functionDescriptionOrNil);
   D(printf("%s%s:%d:%s functionStartAddress FunctionDescription %s  code_start = %p  functionStartAddress = %p\n",
-           trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(name).c_str(), (void *)code_start,
+           trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(name).c_str(), (void*)code_start,
            functionStartAddress););
-  auto thunk = [&](size_t _, const smStkSizeRecord &function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
+  auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
     if (function.FunctionAddress == (uintptr_t)functionStartAddress) {
       MaybeTrace tracel("functionStartAddress_thunk");
       D(printf("%s%s:%d:%s function.FunctionAddress = %p  functionStartAddress = %p\n", trace.spaces().c_str(), __FILE__, __LINE__,
-               __FUNCTION__, (void *)function.FunctionAddress, functionStartAddress););
+               __FUNCTION__, (void*)function.FunctionAddress, functionStartAddress););
       if (args_from_offset(fi, ip, string, name, XEPp, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
         args_available |= true;
       return;
@@ -419,8 +419,8 @@ __attribute__((optnone)) static bool args_for_function(size_t fi, void *ip, cons
   return args_available;
 }
 
-static DebuggerFrame_sp make_lisp_frame(size_t frameIndex, void *absolute_ip, const char *string, llvmo::ObjectFile_sp ofi,
-                                        void *fbp) {
+static DebuggerFrame_sp make_lisp_frame(size_t frameIndex, void* absolute_ip, const char* string, llvmo::ObjectFile_sp ofi,
+                                        void* fbp) {
   MaybeTrace trace(__FUNCTION__);
   llvmo::SectionedAddress_sp sa = object_file_sectioned_address(absolute_ip, ofi, false);
   llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
@@ -429,12 +429,12 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex, void *absolute_ip, co
   D(printf("%s%s:%d:%s spi= %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(spi).c_str()););
   bool XEPp = false;
   int arityCode;
-  void *codeStart;
-  void *functionStartAddress;
+  void* codeStart;
+  void* functionStartAddress;
   T_sp ep = dwarf_ep(frameIndex, ofi, dcontext, sa, codeStart, functionStartAddress, XEPp, arityCode);
   D(printf("%s:%d:%s dwarf_ep returned ep = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(ep).c_str()););
   D(printf("%s:%d:%s dwarf_ep returned functionStartAddress = %p\n", __FILE__, __LINE__, __FUNCTION__,
-           (void *)functionStartAddress););
+           (void*)functionStartAddress););
   T_sp functionDescriptionOrNil =
       ep.notnilp() ? gc::As_unsafe<SimpleFun_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
   D(printf("%s:%d:%s functionDescriptionOrNil = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(functionDescriptionOrNil).c_str()););
@@ -463,7 +463,7 @@ static DebuggerFrame_sp make_lisp_frame(size_t frameIndex, void *absolute_ip, co
                                nil<T_O>(), INTERN_(kw, lisp), XEPp);
 }
 
-static DebuggerFrame_sp make_bytecode_frame_from_function(GlobalBytecodeSimpleFun_sp fun, void *bpc, T_O **bfp) {
+static DebuggerFrame_sp make_bytecode_frame_from_function(GlobalBytecodeSimpleFun_sp fun, void* bpc, T_O** bfp) {
   // We can get the closure easy if the function actually isn't one.
   // Otherwise we'd have to poke through bytecode_vm arguments or maybe
   // the vm stack?
@@ -474,14 +474,14 @@ static DebuggerFrame_sp make_bytecode_frame_from_function(GlobalBytecodeSimpleFu
                                INTERN_(kw, bytecode), false);
 }
 
-static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char *&pc, T_O **&fp) {
+static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& pc, T_O**& fp) {
   // Get the PC and frame pointer for the next frame.
-  void *bpc = pc;
-  T_O **bfp = fp;
+  void* bpc = pc;
+  T_O** bfp = fp;
   if (fp) { // null fp means we've hit the end.
     // PC was pushed just before the frame pointer.
-    pc = (unsigned char *)(*(fp - 1));
-    fp = (T_O **)(*fp);
+    pc = (unsigned char*)(*(fp - 1));
+    fp = (T_O**)(*fp);
   }
   // Find the bytecode module containing the current pc.
   List_sp modules = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
@@ -497,11 +497,11 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char *&p
                                nil<T_O>(), INTERN_(kw, bytecode), false);
 }
 
-bool maybe_demangle(const std::string &fnName, std::string &output) {
-  char *funcname = (char *)malloc(1024);
+bool maybe_demangle(const std::string& fnName, std::string& output) {
+  char* funcname = (char*)malloc(1024);
   size_t funcnamesize = 1024;
   int status;
-  char *ret = abi::__cxa_demangle(fnName.c_str(), funcname, &funcnamesize, &status);
+  char* ret = abi::__cxa_demangle(fnName.c_str(), funcname, &funcnamesize, &status);
   if (status == 0) {
     std::string demangled(funcname);
     free(ret);
@@ -511,7 +511,7 @@ bool maybe_demangle(const std::string &fnName, std::string &output) {
   if (fnName[0] == '_') {
     // try stripping off the first underscore
     std::string shortFnName = fnName.substr(1, std::string::npos);
-    char *ret = abi::__cxa_demangle(shortFnName.c_str(), funcname, &funcnamesize, &status);
+    char* ret = abi::__cxa_demangle(shortFnName.c_str(), funcname, &funcnamesize, &status);
     if (status == 0) {
       std::string demangled(funcname);
       free(ret);
@@ -524,7 +524,7 @@ bool maybe_demangle(const std::string &fnName, std::string &output) {
   return false;
 }
 
-static DebuggerFrame_sp make_cxx_frame(size_t fi, void *ip, const char *cstring, unsigned char *&bytecode_pc, T_O **&bytecode_fp) {
+static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring, unsigned char*& bytecode_pc, T_O**& bytecode_fp) {
   MaybeTrace trace(__FUNCTION__);
 #ifdef USE_LIBUNWIND
   std::string linkname(cstring);
@@ -577,8 +577,8 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void *ip, const char *cstring,
                                INTERN_(kw, c_PLUS__PLUS_), false);
 }
 
-static DebuggerFrame_sp make_frame(size_t fi, void *absolute_ip, const char *string, void *fbp, unsigned char *&bytecode_pc,
-                                   T_O **&bytecode_fp) {
+static DebuggerFrame_sp make_frame(size_t fi, void* absolute_ip, const char* string, void* fbp, unsigned char*& bytecode_pc,
+                                   T_O**& bytecode_fp) {
   MaybeTrace trace(__FUNCTION__);
   T_sp of = llvmo::only_object_file_for_instruction_pointer(absolute_ip);
   if (of.nilp())
@@ -588,7 +588,7 @@ static DebuggerFrame_sp make_frame(size_t fi, void *absolute_ip, const char *str
     return make_lisp_frame(fi, absolute_ip, string, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
 }
 
-static bool sanity_check_frame(size_t frameIndex, void *ip, void *fbp) {
+static bool sanity_check_frame(size_t frameIndex, void* ip, void* fbp) {
   MaybeTrace trace(__FUNCTION__);
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp())
@@ -597,8 +597,8 @@ static bool sanity_check_frame(size_t frameIndex, void *ip, void *fbp) {
     llvmo::ObjectFile_sp ofi = gc::As_unsafe<llvmo::ObjectFile_sp>(of);
     llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
     llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
-    void *codeStart;
-    void *functionStartAddress;
+    void* codeStart;
+    void* functionStartAddress;
     bool XEPp = false;
     int arityCode;
     T_sp ep = dwarf_ep(frameIndex, ofi, dcontext, sa, codeStart, functionStartAddress, XEPp, arityCode);
@@ -607,7 +607,7 @@ static bool sanity_check_frame(size_t frameIndex, void *ip, void *fbp) {
     if (gc::IsA<LocalSimpleFun_sp>(ep)) {
       LocalSimpleFun_sp localEntryPoint = gc::As_unsafe<LocalSimpleFun_sp>(ep);
       bool result = true;
-      auto thunk = [&](size_t _, const smStkSizeRecord &function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
+      auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
         if (function.FunctionAddress == (uintptr_t)(localEntryPoint->_Entry)) {
           if (!sanity_check_args(fbp, offsetOrSmallConstant, patchPointId))
             result = false;
@@ -622,7 +622,7 @@ static bool sanity_check_frame(size_t frameIndex, void *ip, void *fbp) {
     } else if (gc::IsA<GlobalSimpleFun_sp>(ep)) {
       GlobalSimpleFun_sp globalEntryPoint = gc::As_unsafe<GlobalSimpleFun_sp>(ep);
       bool result = true;
-      auto thunk = [&](size_t _, const smStkSizeRecord &function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
+      auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
         if (function.FunctionAddress == (uintptr_t)(globalEntryPoint->_EntryPoints[arityCode])) {
           if (!sanity_check_args(fbp, offsetOrSmallConstant, patchPointId))
             result = false;
@@ -659,33 +659,33 @@ __attribute__((optnone)) static T_mv lu_call_with_frame(std::function<T_mv(Debug
   int resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
   int resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
 
-  VirtualMachine &vm = my_thread->_VM;
-  unsigned char *bytecode_pc = vm._pc;
-  T_O **bytecode_fp = vm._framePointer;
+  VirtualMachine& vm = my_thread->_VM;
+  unsigned char* bytecode_pc = vm._pc;
+  T_O** bytecode_fp = vm._framePointer;
 
   if (resip || resbp) {
     fprintf(stderr, "%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip,
-            (void *)ip, resbp, (void *)fbp);
+            (void*)ip, resbp, (void*)fbp);
   }
   // This is slightly inefficient in that we allocate a simple base string
   // only to get a C string from it, but writing it to use stack allocation
   // is a pain in the ass for very little gain.
   std::string sstring = lu_procname(&cursor)->get_std_string();
   int fi(0);
-  DebuggerFrame_sp bot = make_frame(fi++, (void *)ip, sstring.c_str(), (void *)fbp);
+  DebuggerFrame_sp bot = make_frame(fi++, (void*)ip, sstring.c_str(), (void*)fbp);
   DebuggerFrame_sp prev = bot;
   while (unw_step(&cursor) > 0) {
     resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
     resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
     if (resip || resbp) {
-      printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void *)ip,
-             resbp, (void *)fbp);
+      printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip,
+             resbp, (void*)fbp);
     }
     // Subtract 1 from IPs in case they are just beyond the end of the function
     // as happens with return instructions sometimes.
     --ip;
     std::string sstring = lu_procname(&cursor)->get_std_string();
-    DebuggerFrame_sp frame = make_frame(fi++, (void *)ip, sstring.c_str(), (void *)fbp, bytecode_pc, bytecode_fp);
+    DebuggerFrame_sp frame = make_frame(fi++, (void*)ip, sstring.c_str(), (void*)fbp, bytecode_pc, bytecode_fp);
     frame->down = prev;
     prev->up = frame;
     prev = frame;
@@ -704,10 +704,10 @@ static bool lu_sanity_check_backtrace() {
     int resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
     if (resip || resbp) {
       fprintf(stderr, "%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip,
-              (void *)ip, resbp, (void *)fbp);
+              (void*)ip, resbp, (void*)fbp);
       return false;
     }
-    if (!(sanity_check_frame(frameIndex, (void *)ip, (void *)fbp)))
+    if (!(sanity_check_frame(frameIndex, (void*)ip, (void*)fbp)))
       return false;
     int resstep = unw_step(&cursor);
     if (resstep == 0)
@@ -722,7 +722,7 @@ static bool lu_sanity_check_backtrace() {
 
 #else // non-libunwind version
 
-bool accessible_memory_p(void *ptr) {
+bool accessible_memory_p(void* ptr) {
   int fd[2];
   bool res = true;
   if (pipe(fd) >= 0) {
@@ -741,27 +741,27 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func) {
 #define MAX_BACKTRACE_SIZE_LOG2 20
   MaybeTrace trace(__FUNCTION__);
   size_t num = START_BACKTRACE_SIZE;
-  void **buffer = (void **)calloc(sizeof(void *), num);
+  void** buffer = (void**)calloc(sizeof(void*), num);
 
-  VirtualMachine &vm = my_thread->_VM;
-  unsigned char *bytecode_pc = vm._pc;
-  T_O **bytecode_fp = vm._framePointer;
+  VirtualMachine& vm = my_thread->_VM;
+  unsigned char* bytecode_pc = vm._pc;
+  T_O** bytecode_fp = vm._framePointer;
 
   for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
     size_t returned = backtrace(buffer, num);
     if (returned < num) {
-      char **strings = backtrace_symbols(buffer, returned);
-      void *fbp = __builtin_frame_address(0); // TODO later
+      char** strings = backtrace_symbols(buffer, returned);
+      void* fbp = __builtin_frame_address(0); // TODO later
       uintptr_t bplow = (uintptr_t)&fbp;
       uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
       DebuggerFrame_sp bot = make_frame(0, buffer[0], strings[0], fbp, bytecode_pc, bytecode_fp);
       DebuggerFrame_sp prev = bot;
-      void *newfbp;
+      void* newfbp;
       for (size_t j = 1; j < returned; ++j) {
-        if (!accessible_memory_p((void *)fbp)) {
+        if (!accessible_memory_p((void*)fbp)) {
           newfbp = NULL;
         } else if (fbp) {
-          newfbp = *(void **)fbp;
+          newfbp = *(void**)fbp;
           if (newfbp && !(bplow < (uintptr_t)newfbp && (uintptr_t)newfbp < bphigh)) { // newfbp is out of the stack.
             //          fprintf(stderr, "%s:%d:%s The frame pointer walk went out of bounds bplow is %p bphigh is %p and newfbp is
             //          %p\n",
@@ -776,7 +776,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func) {
         fbp = newfbp;
         // Subtract one from IPs in case they are just beyond the end of the
         // function, as happens with return instructions at times.
-        void *absolute_ip = (void *)((uintptr_t)buffer[j] - 1);
+        void* absolute_ip = (void*)((uintptr_t)buffer[j] - 1);
         D(printf("%s%s:%d:%s top-frame[%lu] absolute_ip = %p %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, j,
                  absolute_ip, strings[j]););
         DebuggerFrame_sp frame = make_frame(j, absolute_ip, strings[j], fbp, bytecode_pc, bytecode_fp);
@@ -791,7 +791,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func) {
     }
     // realloc_array would be nice, but macs don't have it
     num *= 2;
-    buffer = (void **)realloc(buffer, sizeof(void *) * num);
+    buffer = (void**)realloc(buffer, sizeof(void*) * num);
   }
   fprintf(stderr, "%s:%d Couldn't get backtrace\n", __FILE__, __LINE__);
   abort();
@@ -799,11 +799,11 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func) {
 static bool os_sanity_check_backtrace() {
   MaybeTrace trace(__FUNCTION__);
   size_t num = START_BACKTRACE_SIZE;
-  void **buffer = (void **)calloc(sizeof(void *), num);
+  void** buffer = (void**)calloc(sizeof(void*), num);
   for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
     size_t returned = backtrace(buffer, num);
     if (returned < num) {
-      void *fbp = __builtin_frame_address(0);
+      void* fbp = __builtin_frame_address(0);
       for (size_t j = 0; j < returned; ++j) {
         /*
         if (fbp && !((stackbot <= (uintptr_t)fbp) && ((uintptr_t)fbp <= stacktop))) {
@@ -816,7 +816,7 @@ static bool os_sanity_check_backtrace() {
         */
         if (!sanity_check_frame(0, buffer[j], fbp))
           return false;
-        void *nfbp = *(void **)fbp;
+        void* nfbp = *(void**)fbp;
         if (nfbp && !((uintptr_t)fbp < (uintptr_t)nfbp)) {
           fprintf(stderr, "%s:%d:%s In backtrace sanity check, the frame pointer is not monotonically increasing from %p to %p\n",
                   __FILE__, __LINE__, __FUNCTION__, fbp, nfbp);
@@ -828,7 +828,7 @@ static bool os_sanity_check_backtrace() {
       return true;
     } else {
       num *= 2;
-      buffer = (void **)realloc(buffer, sizeof(void *) * num);
+      buffer = (void**)realloc(buffer, sizeof(void*) * num);
     }
   }
   fprintf(stderr, "%s:%d:%s  too many frames\n", __FILE__, __LINE__, __FUNCTION__);

@@ -445,7 +445,7 @@ CL_DEFUN T_sp cl__char_equal(Vaslist_sp chars) {
   };
 };
 
-Character_sp clasp_character_create_from_name(string const &name) {
+Character_sp clasp_character_create_from_name(string const& name) {
   Character_sp ch;
   string ssup = boost::to_upper_copy(name);
   if ((ssup == "TAB") || (ssup == "Tab"))
@@ -478,7 +478,7 @@ Character_sp clasp_character_create_from_name(string const &name) {
 }; // namespace core
 namespace core {
 
-const char *OrderedCharacterNames[] = {
+const char* OrderedCharacterNames[] = {
     "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "Backspace", "Tab", "Newline", "VT", "Page", "Return", "SO", "SI",
     "DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB", "CAN", "EM", "SUB", "ESC", "FS", "GS", "RS", "US", "Space",
     "EXCLAMATION_MARK", "QUOTATION_MARK", "NUMBER_SIGN", "DOLLAR_SIGN", "PERCENT_SIGN", "AMPERSAND", "APOSTROPHE",
@@ -536,7 +536,7 @@ void CharacterInfo::initialize() {
   this->gCharacterNames.resize(num_chars, nil<T_O>());
   this->gIndexedCharacters.resize(num_chars, nil<T_O>());
   for (size_t fci = 0; fci < num_chars; ++fci) {
-    const char *name = OrderedCharacterNames[fci];
+    const char* name = OrderedCharacterNames[fci];
 
     // printf("%s:%d Adding char: %s  at: %d\n", __FILE__, __LINE__, name,(int) fci);
     //  we later compare with Uppercase

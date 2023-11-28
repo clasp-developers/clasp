@@ -79,9 +79,9 @@ void WrappedPointer_O::_setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
 std::string WrappedPointer_O::__repr__() const {
   stringstream ss;
   ss << "#<wrapped-pointer :ptr ";
-  ss << (void *)this->mostDerivedPointer();
+  ss << (void*)this->mostDerivedPointer();
   ss << " @";
-  ss << (void *)this;
+  ss << (void*)this;
   ss << ">";
   return ss.str();
 }
@@ -94,7 +94,7 @@ bool WrappedPointer_O::eql_(T_sp obj) const {
 }
 
 Pointer_sp WrappedPointer_O::address() const {
-  void *addr = this->mostDerivedPointer();
+  void* addr = this->mostDerivedPointer();
   return Pointer_O::create(addr);
 }
 
@@ -128,7 +128,7 @@ CL_DEFUN void core__verify_wrapped_pointer_layout(size_t stamp_offset) {
 namespace core {
 
 CL_DEFUN T_sp core__wrapped_stamp(T_sp obj) {
-  General_O *client_ptr = gctools::untag_general<General_O *>((General_O *)obj.raw_());
+  General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)obj.raw_());
   uintptr_t stamp = (uintptr_t)(llvmo::template_read_wrapped_stamp(client_ptr));
   //  core::clasp_write_string(fmt::format("{}:{}:{} stamp = {}u\n", __FILE__, __LINE__, __FUNCTION__, stamp ));
   T_sp result((gctools::Tagged)stamp);

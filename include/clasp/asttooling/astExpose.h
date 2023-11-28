@@ -64,9 +64,9 @@ public:
   dont_expose<clang::SourceLocation> _Value;
 };
 
-core::T_sp mostDerivedDecl(const clang::Decl *d);
-core::T_sp mostDerivedStmt(const clang::Stmt *d);
-core::T_sp mostDerivedType(const clang::Type *d);
+core::T_sp mostDerivedDecl(const clang::Decl* d);
+core::T_sp mostDerivedStmt(const clang::Stmt* d);
+core::T_sp mostDerivedType(const clang::Type* d);
 
 void initialize_astExpose();
 }; // namespace asttooling

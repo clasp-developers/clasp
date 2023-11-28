@@ -47,7 +47,7 @@ class Bignum_O : public Integer_O {
 
 public:
   Bignum_O(int64_t signed_length, mp_limb_t initialElement = 0, bool initialElementSupplied = false, size_t initialContentsSize = 0,
-           const mp_limb_t *initialContents = NULL)
+           const mp_limb_t* initialContents = NULL)
       : _limbs(signed_length, initialElement, initialElementSupplied, initialContentsSize, initialContents) {}
 
 public:
@@ -61,13 +61,13 @@ public: // Functions here
   // (b) it would cause ambiguity with create(fixnum).
   static Bignum_sp create_from_limbs(int64_t signed_number_of_limbs, mp_limb_t initialElement = 0,
                                      bool initialElementSupplied = false, size_t initialContentsSize = 0,
-                                     const mp_limb_t *initialContents = NULL) {
+                                     const mp_limb_t* initialContents = NULL) {
     auto b = gctools::GC<Bignum_O>::allocate_container<gctools::RuntimeStage>(false /*static_vector_p*/, signed_number_of_limbs,
                                                                               initialElement, initialElementSupplied,
                                                                               initialContentsSize, initialContents);
     return b;
   };
-  static Bignum_sp create(const mpz_class &);
+  static Bignum_sp create(const mpz_class&);
   static Bignum_sp create(gc::Fixnum fix) { return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true); }
 #if !defined(CLASP_UNSIGNED_LONG_LONG_IS_UINT64)
   static Bignum_sp create(unsigned long long ull) {
@@ -93,12 +93,12 @@ public: // Functions here
     return create(rop);
   }
 
-  static Bignum_sp make(const string &value_in_string);
+  static Bignum_sp make(const string& value_in_string);
 
   mp_size_t length() const { return _limbs.signedLength(); }
-  const mp_limb_t *limbs() const { return &(_limbs._Data[0]); }
+  const mp_limb_t* limbs() const { return &(_limbs._Data[0]); }
 
-  void sxhash_(HashGenerator &hg) const;
+  void sxhash_(HashGenerator& hg) const;
 
   mpz_class mpz() const;
 
@@ -141,7 +141,7 @@ public: // Functions here
       // The actual conversion is a KLUDGE right now.
       // We assume the type is exactly big enough to fit one mp_limb_t.
       mp_size_t len = this->length();
-      const mp_limb_t *limbs = this->limbs();
+      const mp_limb_t* limbs = this->limbs();
       if (std::is_signed<integral>::value) {
         if (len == 1)
           return limbs[0];
@@ -167,7 +167,7 @@ public: // Functions here
   }
 
 Bignum_sp core__next_from_fixnum(Fixnum);
-Integer_sp bignum_result(mp_size_t, const mp_limb_t *);
+Integer_sp bignum_result(mp_size_t, const mp_limb_t*);
 Integer_sp core__next_fmul(Bignum_sp, Fixnum);
 Bignum_sp core__next_mul(Bignum_sp, Bignum_sp);
 Bignum_sp core__mul_fixnums(Fixnum, Fixnum);

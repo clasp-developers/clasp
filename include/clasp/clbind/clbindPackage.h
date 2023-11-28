@@ -6,14 +6,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -40,4 +40,4 @@ public:
   ClbindExposer_O(core::LispPtr lisp) : Exposer_O(lisp, ClbindPkg){};
   virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
 };
-};
+}; // namespace clbind

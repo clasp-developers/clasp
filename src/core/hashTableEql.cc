@@ -53,7 +53,7 @@ HashTableEql_sp HashTableEql_O::create_default() {
 
 bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const { return cl__eql(entryKey, searchKey); }
 
-gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator &hg) const {
+gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
   HashTable_O::sxhash_eql(hg, obj);
   gc::Fixnum hash = hg.hashBound(bound);
   LOG("HashTableEql_O::sxhashKey obj[{}] raw_hash[{}] bound[{}] hash[{}]", _rep_(obj), hg.asString(), bound, hash);

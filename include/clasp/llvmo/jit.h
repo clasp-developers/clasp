@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     File: jit.h
 */
@@ -27,10 +29,6 @@ THE SOFTWARE.
 
 // #define USE_JITLINKER 1
 
-
-#ifndef llvmoExpose_jit_H //[
-#define llvmoExpose_jit_H
-
 #include <clasp/core/common.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/hashTableEqual.h>
@@ -45,9 +43,9 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Orc/ExecutorProcessControl.h>
 #include <llvm/MC/MCSubtargetInfo.h>
 #include <llvm/CodeGen/TargetSubtargetInfo.h>
-//#include "llvm/ExecutionEngine/JIT.h"
+// #include "llvm/ExecutionEngine/JIT.h"
 #include <llvm/ExecutionEngine/MCJIT.h>
-//#include "llvm/ExecutionEngine/JITMemoryManager.h"
+// #include "llvm/ExecutionEngine/JITMemoryManager.h"
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/ExecutionEngine/JITEventListener.h>
@@ -76,7 +74,7 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
 #include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
-//#include "llvm/Support/IRBuilder.h"
+// #include "llvm/Support/IRBuilder.h"
 
 #include <stdio.h>
 #include <string>
@@ -95,27 +93,22 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugLoc.fwd.h>
 #include <clasp/llvmo/llvmoPackage.h>
 
-
-
-
 namespace llvmo {
 
-  FORWARD(ModuleHandle);
-  FORWARD(ClaspJIT);
-  
-  using namespace llvm;
-  using namespace llvm::orc;
+FORWARD(ModuleHandle);
+FORWARD(ClaspJIT);
 
-//  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
-};
+using namespace llvm;
+using namespace llvm::orc;
 
-
+//  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo&
+//  loaded_object_info);
+}; // namespace llvmo
 
 // Don't allow the object to move, but maybe I'll need to collect it
 // if we create a ClaspJIT_O for each thread and need to collect it when
 // the thread is killed
-template <>
-struct gctools::GCInfo<llvmo::ClaspJIT_O> {
+template <> struct gctools::GCInfo<llvmo::ClaspJIT_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = collectable_immobile;
@@ -127,6 +120,7 @@ FORWARD(ObjectFile);
 FORWARD(ClaspJIT);
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
+
 public:
   bool do_lookup(JITDylib_sp dylib, const std::string& Name, void*& pointer);
   core::Pointer_sp lookup(JITDylib_sp dylib, const std::string& Name);
@@ -134,28 +128,28 @@ public:
   JITDylib_sp getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
   void registerJITDylibAfterLoad(JITDylib_O* jitDylib);
-  
-  ObjectFile_sp addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context, size_t startupID);
-  ObjectFile_sp addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print, size_t startupId );
+
+  ObjectFile_sp addIRModule(JITDylib_sp dylib, Module_sp cM, ThreadSafeContext_sp context, size_t startupID);
+  ObjectFile_sp addObjectFile(JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print, size_t startupId);
   /*! Return a pointer to a function WHAT FUNCTION???????
         llvm_sys__jitFinalizeReplFunction needs to build a closure over it
    */
-  void* runStartupCode(JITDylib_sp dylib, const std::string& startupName, core::T_sp initialDataOrUnbound );
-  ClaspJIT_O( bool loading, JITDylib_O* mainJITDylib );
+  void* runStartupCode(JITDylib_sp dylib, const std::string& startupName, core::T_sp initialDataOrUnbound);
+  ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib);
   ~ClaspJIT_O();
+
 public:
   JITDylib_sp _MainJITDylib;
-  std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
+  std::unique_ptr<llvm::orc::LLJIT> _LLJIT;
 };
 
-};
+}; // namespace llvmo
 
-
-#ifdef _TARGET_OS_DARWIN    
+#ifdef _TARGET_OS_DARWIN
 #define TEXT_NAME "__TEXT,__text"
 #define DATA_NAME "__DATA,__data"
 #define EH_FRAME_NAME "__TEXT,__eh_frame"
-#define BSS_NAME  "__DATA,__bss"
+#define BSS_NAME "__DATA,__bss"
 #define STACKMAPS_NAME "__LLVM_STACKMAPS,__llvm_stackmaps"
 #define OS_GCROOTS_IN_MODULE_NAME ("_" GCROOTS_IN_MODULE_NAME)
 #define OS_LITERALS_NAME ("_" LITERALS_NAME)
@@ -163,7 +157,7 @@ public:
 #define TEXT_NAME ".text"
 #define EH_FRAME_NAME ".eh_frame"
 #define DATA_NAME ".data"
-#define BSS_NAME  ".bss"
+#define BSS_NAME ".bss"
 #define STACKMAPS_NAME ".llvm_stackmaps"
 #define OS_GCROOTS_IN_MODULE_NAME (GCROOTS_IN_MODULE_NAME)
 #define OS_LITERALS_NAME (LITERALS_NAME)
@@ -171,7 +165,7 @@ public:
 #define TEXT_NAME ".text"
 #define EH_FRAME_NAME ".eh_frame"
 #define DATA_NAME ".data"
-#define BSS_NAME  ".bss"
+#define BSS_NAME ".bss"
 #define STACKMAPS_NAME ".llvm_stackmaps"
 #define OS_GCROOTS_IN_MODULE_NAME (GCROOTS_IN_MODULE_NAME)
 #define OS_LITERALS_NAME (LITERALS_NAME)
@@ -184,12 +178,9 @@ extern std::string gcroots_in_module_name;
 extern std::string literals_name;
 extern std::atomic<size_t> global_JITDylibCounter;
 
+void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer);
 
- void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer);
+uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf);
+void llvm_sys__create_lljit_thread_pool();
 
- uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf);
- void llvm_sys__create_lljit_thread_pool();
-
-};
-
-#endif
+}; // namespace llvmo

@@ -88,7 +88,7 @@ void validateRackOffset(size_t wrapped_type_offset) {
 namespace clbind {
 namespace detail {
 
-derivable_class_registration::derivable_class_registration(char const *name) : m_default_constructor(NULL) { m_name = name; }
+derivable_class_registration::derivable_class_registration(char const* name) : m_default_constructor(NULL) { m_name = name; }
 
 void derivable_class_registration::register_() const {
   LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
@@ -131,14 +131,14 @@ void derivable_class_registration::register_() const {
 
   m_members.register_();
 
-  cast_graph *const casts = globalCastGraph;
-  class_id_map *const class_ids = globalClassIdMap;
+  cast_graph* const casts = globalCastGraph;
+  class_id_map* const class_ids = globalClassIdMap;
 
   class_ids->put(m_id, m_type);
   if (has_wrapper)
     class_ids->put(m_wrapper_id, m_wrapper_type);
 
-  BOOST_FOREACH (cast_entry const &e, m_casts) {
+  BOOST_FOREACH (cast_entry const& e, m_casts) {
     casts->insert(e.src, e.target, e.cast);
   }
 
@@ -167,10 +167,10 @@ void derivable_class_registration::register_() const {
 
 // -- interface ---------------------------------------------------------
 
-derivable_class_base::derivable_class_base(char const *name)
+derivable_class_base::derivable_class_base(char const* name)
     : scope_(std::unique_ptr<registration>(m_registration = new derivable_class_registration(name))), m_init_counter(0) {}
 
-void derivable_class_base::init(type_id const &type_id_, class_id id, type_id const &wrapper_type, class_id wrapper_id,
+void derivable_class_base::init(type_id const& type_id_, class_id id, type_id const& wrapper_type, class_id wrapper_id,
                                 bool derivable) {
   m_registration->m_type = type_id_;
   m_registration->m_id = id;
@@ -179,30 +179,30 @@ void derivable_class_base::init(type_id const &type_id_, class_id id, type_id co
   m_registration->m_derivable = derivable;
 }
 
-void derivable_class_base::add_base(type_id const &base, cast_function cast) {
+void derivable_class_base::add_base(type_id const& base, cast_function cast) {
   m_registration->m_bases.push_back(std::make_pair(base, cast));
 }
 
-void derivable_class_base::set_default_constructor(registration *member) {
+void derivable_class_base::set_default_constructor(registration* member) {
   //            std::auto_ptr<registration> ptr(member);
   m_registration->m_default_constructor = member;
 }
 
-void derivable_class_base::add_member(registration *member) {
+void derivable_class_base::add_member(registration* member) {
   std::unique_ptr<registration> ptr(member);
   m_registration->m_members.operator,(scope_(std::move(ptr)));
 }
 
-void derivable_class_base::add_default_member(registration *member) {
+void derivable_class_base::add_default_member(registration* member) {
   std::unique_ptr<registration> ptr(member);
   m_registration->m_default_members.operator,(scope_(std::move(ptr)));
 }
 
-const char *derivable_class_base::name() const { return m_registration->m_name; }
+const char* derivable_class_base::name() const { return m_registration->m_name; }
 
-void derivable_class_base::add_static_constant(const char *name, int val) { m_registration->m_static_constants[name] = val; }
+void derivable_class_base::add_static_constant(const char* name, int val) { m_registration->m_static_constants[name] = val; }
 
-void derivable_class_base::add_inner_scope(scope_ &s) { m_registration->m_scope.operator,(s); }
+void derivable_class_base::add_inner_scope(scope_& s) { m_registration->m_scope.operator,(s); }
 
 void derivable_class_base::add_cast(class_id src, class_id target, cast_function cast) {
   //            printf("%s:%d:%s   src[%" PRu "] target[%lu]\n", __FILE__,__LINE__,__FUNCTION__,src,target);

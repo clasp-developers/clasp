@@ -117,10 +117,10 @@ template <> struct from_object<clang::tooling::ArgumentsAdjuster> {
     if (o.nilp()) {
       SIMPLE_ERROR("You cannot pass nil as a function");
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
-      void *function_address = (void *)func->entry();
+      void* function_address = (void*)func->entry();
       // printf("%s:%d   intermediate from_object<clang::tooling::ArgumentsAdjuster> with Function arg: %s@%p - function_address:
       // %p\n", __FILE__, __LINE__, _rep_(o).c_str(), (void*)o.tagged_(), function_address);
-      this->_v = [func, function_address](const clang::tooling::CommandLineArguments &args,
+      this->_v = [func, function_address](const clang::tooling::CommandLineArguments& args,
                                           llvm::StringRef filename) -> clang::tooling::CommandLineArguments {
         // Should resolve to vector<string>
         core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
@@ -130,11 +130,11 @@ template <> struct from_object<clang::tooling::ArgumentsAdjuster> {
         //          _rep_(tfilename).c_str(), function_address);
         core::T_mv result = core::eval::funcall(func, targs, tfilename);
         ;
-        translate::from_object<const clang::tooling::CommandLineArguments &> cresult(result);
+        translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
         return cresult._v;
       };
       return;
-    } else if (clang::tooling::ArgumentsAdjuster *argAdj =
+    } else if (clang::tooling::ArgumentsAdjuster* argAdj =
                    gc::As<core::WrappedPointer_sp>(o)->cast<clang::tooling::ArgumentsAdjuster>()) {
       this->_v = *argAdj;
       return;
@@ -151,7 +151,7 @@ But the class that cxxRecordDecl() is supposed to match is CXXRECORD-DECL (lispi
 So I'll fix it here by converting names that start with "cxx" to start with "CXX"
 Also fix up CUDA and RV.*/
 DOCGROUP(clasp);
-CL_DEFUN std::string ast_tooling__fix_matcher_name(const string &orig_name) {
+CL_DEFUN std::string ast_tooling__fix_matcher_name(const string& orig_name) {
   if (orig_name.substr(0, 3) == "cxx") {
     stringstream fixed;
     fixed << "CXX" << orig_name.substr(3);
@@ -171,13 +171,13 @@ CL_DEFUN std::string ast_tooling__fix_matcher_name(const string &orig_name) {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN core::Symbol_sp ast_tooling__intern_matcher_keyword(const string &orig_name) {
+CL_DEFUN core::Symbol_sp ast_tooling__intern_matcher_keyword(const string& orig_name) {
   core::Symbol_sp name = core::lispify_intern_keyword(ast_tooling__fix_matcher_name(orig_name));
   return name;
 }
 
 SYMBOL_EXPORT_SC_(AstToolingPkg, STARmatcher_namesSTAR);
-void add_matcher_name(const string &name, core::Symbol_sp symbol) {
+void add_matcher_name(const string& name, core::Symbol_sp symbol) {
   core::List_sp one = core::Cons_O::createList(symbol, core::SimpleBaseString_O::make(name));
   _sym_STARmatcher_namesSTAR->defparameter(core::Cons_O::create(one, _sym_STARmatcher_namesSTAR->symbolValue()));
 }
@@ -514,7 +514,7 @@ CL_DEFUN core::T_sp ast_tooling__clangVersionString() {
 };
 
 core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
-  clang::ast_matchers::dynamic::VariantMatcher *vp =
+  clang::ast_matchers::dynamic::VariantMatcher* vp =
       gc::As<core::WrappedPointer_sp>(variantMatcher)->cast<clang::ast_matchers::dynamic::VariantMatcher>();
 #if LLVM_VERSION_MAJOR < 16
   llvm::Optional<clang::ast_matchers::internal::DynTypedMatcher> dtm = vp->getSingleMatcher();
@@ -533,24 +533,24 @@ core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
 };
 
 core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
-  if (const clang::ast_matchers::BoundNodes *boundNodes =
+  if (const clang::ast_matchers::BoundNodes* boundNodes =
           gc::As<core::WrappedPointer_sp>(bn)->cast<const clang::ast_matchers::BoundNodes>()) {
     core::HashTable_sp ht = core::HashTable_O::create(::cl::_sym_eq);
-    const clang::ast_matchers::BoundNodes::IDToNodeMap &nodemap = boundNodes->getMap();
+    const clang::ast_matchers::BoundNodes::IDToNodeMap& nodemap = boundNodes->getMap();
     clang::ast_matchers::BoundNodes::IDToNodeMap::const_iterator it;
     for (it = nodemap.begin(); it != nodemap.end(); it++) {
-      const string &key = it->first;
-      const clang::DynTypedNode &dtn = it->second;
+      const string& key = it->first;
+      const clang::DynTypedNode& dtn = it->second;
       core::T_sp value;
-      if (const clang::Decl *decl = dtn.get<clang::Decl>()) {
+      if (const clang::Decl* decl = dtn.get<clang::Decl>()) {
         value = mostDerivedDecl(decl);
-      } else if (const clang::Stmt *stmt = dtn.get<clang::Stmt>()) {
+      } else if (const clang::Stmt* stmt = dtn.get<clang::Stmt>()) {
         value = mostDerivedStmt(stmt);
-      } else if (const clang::Type *type = dtn.get<clang::Type>()) {
+      } else if (const clang::Type* type = dtn.get<clang::Type>()) {
         value = mostDerivedType(type);
-      } else if (const clang::QualType *qtype = dtn.get<clang::QualType>()) {
+      } else if (const clang::QualType* qtype = dtn.get<clang::QualType>()) {
         value = translate::to_object<clang::QualType>::convert(*qtype);
-      } else if (const clang::TypeLoc *typeLocType = dtn.get<clang::TypeLoc>()) {
+      } else if (const clang::TypeLoc* typeLocType = dtn.get<clang::TypeLoc>()) {
         value = translate::to_object<clang::TypeLoc>::convert(*typeLocType);
       } else {
         SIMPLE_ERROR("{}:{} Handle boxing of other node types in ast_tooling__IDToNodeMap", __FILE__, __LINE__);
@@ -563,19 +563,19 @@ core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
 }
 
 void ast_tooling__match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext) {
-  clang::ast_matchers::MatchFinder *matchFinder =
+  clang::ast_matchers::MatchFinder* matchFinder =
       gc::As<core::WrappedPointer_sp>(tmatchFinder)->cast<clang::ast_matchers::MatchFinder>();
-  clang::ASTContext *astContext = gc::As<core::WrappedPointer_sp>(tastContext)->cast<clang::ASTContext>();
+  clang::ASTContext* astContext = gc::As<core::WrappedPointer_sp>(tastContext)->cast<clang::ASTContext>();
   core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(tnode);
-  if (clang::Decl *decl = wp_node->castOrNull<clang::Decl>()) {
+  if (clang::Decl* decl = wp_node->castOrNull<clang::Decl>()) {
     matchFinder->match(*decl, *astContext);
-  } else if (clang::Stmt *stmt = wp_node->castOrNull<clang::Stmt>()) {
+  } else if (clang::Stmt* stmt = wp_node->castOrNull<clang::Stmt>()) {
     matchFinder->match(*stmt, *astContext);
-  } else if (clang::Type *type = wp_node->castOrNull<clang::Type>()) {
+  } else if (clang::Type* type = wp_node->castOrNull<clang::Type>()) {
     matchFinder->match(*type, *astContext);
-  } else if (clang::QualType *qtype = wp_node->castOrNull<clang::QualType>()) {
+  } else if (clang::QualType* qtype = wp_node->castOrNull<clang::QualType>()) {
     matchFinder->match(*qtype, *astContext);
-  } else if (clang::TypeLoc *typeloc = wp_node->castOrNull<clang::TypeLoc>()) {
+  } else if (clang::TypeLoc* typeloc = wp_node->castOrNull<clang::TypeLoc>()) {
     matchFinder->match(*typeloc, *astContext);
   } else {
     SIMPLE_ERROR("{}:{} Handle unboxing of other node types in ast_tooling__match", __FILE__, __LINE__);
@@ -586,7 +586,7 @@ void ast_tooling__match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp ta
 #define DECL_ast_tooling__newFrontendActionFactory ""
 #define DOCS_ast_tooling__newFrontendActionFactory "newFrontendActionFactory"
 core::T_sp ast_tooling__newFrontendActionFactory(core::T_sp consumerFactory) {
-  if (clang::ast_matchers::MatchFinder *matchFinder =
+  if (clang::ast_matchers::MatchFinder* matchFinder =
           gc::As<core::WrappedPointer_sp>(consumerFactory)->cast<clang::ast_matchers::MatchFinder>()) {
     typedef clbind::Wrapper<clang::tooling::FrontendActionFactory, std::unique_ptr<clang::tooling::FrontendActionFactory>>
         wrapped_type;
@@ -603,8 +603,8 @@ core::T_sp ast_tooling__newFrontendActionFactory(core::T_sp consumerFactory) {
   SIMPLE_ERROR("Implement newFrontendActionFactory for {}", _rep_(consumerFactory));
 };
 
-core::List_sp ast_tooling__ReplacementsAsList(clang::tooling::RefactoringTool &refactoringTool) {
-  map<std::string, clang::tooling::Replacements> &mapReplacements = refactoringTool.getReplacements();
+core::List_sp ast_tooling__ReplacementsAsList(clang::tooling::RefactoringTool& refactoringTool) {
+  map<std::string, clang::tooling::Replacements>& mapReplacements = refactoringTool.getReplacements();
   ql::list ll;
   for (auto pair : mapReplacements) {
     for (auto rep : pair.second) {
@@ -614,11 +614,11 @@ core::List_sp ast_tooling__ReplacementsAsList(clang::tooling::RefactoringTool &r
   return ll.result();
 }
 
-void ast_tooling__RefactoringToolReplacementsAdd(clang::tooling::RefactoringTool &refactoringTool,
-                                                 const clang::tooling::Replacement &replacement) {
+void ast_tooling__RefactoringToolReplacementsAdd(clang::tooling::RefactoringTool& refactoringTool,
+                                                 const clang::tooling::Replacement& replacement) {
   auto filePath = replacement.getFilePath();
   //  printf("%s:%d:%s filePath = %s\n", __FILE__, __LINE__, __FUNCTION__, filePath.str().c_str() );
-  map<std::string, clang::tooling::Replacements> &mapReplacements = refactoringTool.getReplacements();
+  map<std::string, clang::tooling::Replacements>& mapReplacements = refactoringTool.getReplacements();
   //  printf("%s:%d:%s map size = %lu\n", __FILE__, __LINE__, __FUNCTION__, mapReplacements.size() );
   auto ii = mapReplacements.find(filePath.str());
   if (ii == mapReplacements.end()) {
@@ -685,7 +685,7 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
 
 #if 1
 DOCGROUP(clasp);
-CL_DEFUN void ast_tooling__testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
+CL_DEFUN void ast_tooling__testDerivable(clang::ast_matchers::MatchFinder::MatchCallback* ptr) {
   printf("%s:%d - got DerivableMatchCallback object --> %p\n", __FILE__, __LINE__, ptr);
   ptr->onEndOfTranslationUnit();
 };
@@ -695,11 +695,11 @@ CL_DEFUN void ast_tooling__testDerivable(clang::ast_matchers::MatchFinder::Match
 namespace asttooling {
 
 /*Return the field offset in bits */
-size_t getFieldOffset(clang::ASTContext *context, clang::RecordDecl *record, size_t fieldIndex) {
-  const clang::Type *type = record->getTypeForDecl();
+size_t getFieldOffset(clang::ASTContext* context, clang::RecordDecl* record, size_t fieldIndex) {
+  const clang::Type* type = record->getTypeForDecl();
   if (type->isDependentType())
     return 0;
-  const clang::ASTRecordLayout &layout = context->getASTRecordLayout(record);
+  const clang::ASTRecordLayout& layout = context->getASTRecordLayout(record);
   //  printf("getFieldOffset context = %p record = %p(%s) fieldIndex = %" PRu "\n", context, record,
   //  record->getNameAsString().c_str(), fieldIndex ); printf("  layout = %p\n", &layout );
   size_t offset = layout.getFieldOffset(fieldIndex);
@@ -707,12 +707,12 @@ size_t getFieldOffset(clang::ASTContext *context, clang::RecordDecl *record, siz
   return offset;
 }
 
-size_t getRecordSize(clang::ASTContext *context, clang::RecordDecl *record) {
-  const clang::Type *type = record->getTypeForDecl();
+size_t getRecordSize(clang::ASTContext* context, clang::RecordDecl* record) {
+  const clang::Type* type = record->getTypeForDecl();
   if (type->isDependentType())
     return 0;
   //  printf("getRecordSize context = %p record = %p(%s)\n", context, record, record->getNameAsString().c_str() );
-  const clang::ASTRecordLayout &layout = context->getASTRecordLayout(record);
+  const clang::ASTRecordLayout& layout = context->getASTRecordLayout(record);
   //  printf("  layout = %p\n", &layout );
   size_t size = layout.getSize().getQuantity();
   //  printf("Returning size=%" PRu "\n", size);
@@ -761,29 +761,29 @@ namespace asttooling {
 #endif
 
 DOCGROUP(clasp);
-CL_DEFUN bool ast_tooling__isFileID(const clang::SourceLocation &ploc) { return ploc.isValid(); }
+CL_DEFUN bool ast_tooling__isFileID(const clang::SourceLocation& ploc) { return ploc.isValid(); }
 
 DOCGROUP(clasp);
-CL_DEFUN std::string ast_tooling__printToString(const clang::SourceLocation &ploc, const clang::SourceManager &SM) {
+CL_DEFUN std::string ast_tooling__printToString(const clang::SourceLocation& ploc, const clang::SourceManager& SM) {
   return ploc.printToString(SM);
 }
 
 DOCGROUP(clasp);
-CL_DEFUN bool ast_tooling__isValid(const clang::PresumedLoc &ploc) { return ploc.isValid(); }
+CL_DEFUN bool ast_tooling__isValid(const clang::PresumedLoc& ploc) { return ploc.isValid(); }
 
 DOCGROUP(clasp);
-CL_DEFUN bool ast_tooling__isInvalid(const clang::PresumedLoc &ploc) { return ploc.isInvalid(); }
+CL_DEFUN bool ast_tooling__isInvalid(const clang::PresumedLoc& ploc) { return ploc.isInvalid(); }
 
 DOCGROUP(clasp);
-CL_DEFUN std::string ast_tooling__PresumedLoc_getFilename(const clang::PresumedLoc &ploc) { return ploc.getFilename(); }
+CL_DEFUN std::string ast_tooling__PresumedLoc_getFilename(const clang::PresumedLoc& ploc) { return ploc.getFilename(); }
 DOCGROUP(clasp);
-CL_DEFUN unsigned ast_tooling__getLine(const clang::PresumedLoc &ploc) { return ploc.getLine(); }
+CL_DEFUN unsigned ast_tooling__getLine(const clang::PresumedLoc& ploc) { return ploc.getLine(); }
 
 DOCGROUP(clasp);
-CL_DEFUN unsigned ast_tooling__getColumn(const clang::PresumedLoc &ploc) { return ploc.getColumn(); }
+CL_DEFUN unsigned ast_tooling__getColumn(const clang::PresumedLoc& ploc) { return ploc.getColumn(); }
 
 DOCGROUP(clasp);
-CL_DEFUN clang::SourceLocation ast_tooling__getIncludeLoc(const clang::PresumedLoc &ploc) { return ploc.getIncludeLoc(); }
+CL_DEFUN clang::SourceLocation ast_tooling__getIncludeLoc(const clang::PresumedLoc& ploc) { return ploc.getIncludeLoc(); }
 
 }; // namespace asttooling
 namespace asttooling {
@@ -793,12 +793,11 @@ CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(co
   std::string ErrorMessage;
   std::unique_ptr<clang::tooling::JSONCompilationDatabase> result = clang::tooling::JSONCompilationDatabase::loadFromFile(
       gc::As<core::String_sp>(FilePath)->get_std_string(), ErrorMessage, syntax);
-  return Values(
-      translate::to_object<clang::tooling::JSONCompilationDatabase *, translate::adopt_pointer>::convert(result.release()),
-      core::SimpleBaseString_O::make(ErrorMessage));
+  return Values(translate::to_object<clang::tooling::JSONCompilationDatabase*, translate::adopt_pointer>::convert(result.release()),
+                core::SimpleBaseString_O::make(ErrorMessage));
 }
 
-CL_DEFUN core::T_sp ast_tooling__build_asts(clang::tooling::ClangTool &tool) {
+CL_DEFUN core::T_sp ast_tooling__build_asts(clang::tooling::ClangTool& tool) {
   std::vector<std::unique_ptr<clang::ASTUnit>> ASTs;
   tool.buildASTs(ASTs);
   ql::list ll;
@@ -813,11 +812,11 @@ void initialize_clangTooling() {
 
   initialize_matchers();
   // overloaded functions that had trouble resolving
-  clang::ASTContext &(clang::ASTUnit::*clang_ASTUnit_getASTContext)() = &clang::ASTUnit::getASTContext;
+  clang::ASTContext& (clang::ASTUnit::*clang_ASTUnit_getASTContext)() = &clang::ASTUnit::getASTContext;
   {
     // AST-TOOLING, pkg must be in its own scope
     package_ pkg(AstToolingPkg, {}, {});
-    scope_ &m = pkg.scope();
+    scope_& m = pkg.scope();
     class_<clang::tooling::CompilationDatabase>(m, "CompilationDatabase")
         .def("getAllFiles", &clang::tooling::CompilationDatabase::getAllFiles)
         .def("getCompileCommands", &clang::tooling::CompilationDatabase::getCompileCommands)
@@ -889,7 +888,7 @@ void initialize_clangTooling() {
     derivable_class_<DerivableASTFrontendAction, clang::ASTFrontendAction> dc_a(m, "ASTFrontendAction", create_default_constructor);
     dc_a.def("CreateASTConsumer", &DerivableASTFrontendAction::CreateASTConsumer, adopt<result>());
     class_<clang::tooling::ClangTool> cc_a(m, "ClangTool");
-    cc_a.def_constructor("newClangTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
+    cc_a.def_constructor("newClangTool", constructor<const clang::tooling::CompilationDatabase&, llvm::ArrayRef<std::string>>())
         .def("clearArgumentsAdjusters", &clang::tooling::ClangTool::clearArgumentsAdjusters)
         //            .  def("addArgumentsAdjuster",&clang::tooling::ClangTool::addArgumentsAdjuster)
         .def("appendArgumentsAdjuster", &clang::tooling::ClangTool::appendArgumentsAdjuster)
@@ -906,7 +905,7 @@ void initialize_clangTooling() {
         });
 #endif
     class_<clang::tooling::Replacement>(m, "Replacement")
-        .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, llvm::StringRef>())
+        .def_constructor("newReplacement", constructor<clang::SourceManager&, const clang::CharSourceRange&, llvm::StringRef>())
         .def("toString", &clang::tooling::Replacement::toString)
         .def("getFilePath", &clang::tooling::Replacement::getFilePath)
         .def("replacement-apply", &clang::tooling::Replacement::apply);
@@ -918,12 +917,12 @@ void initialize_clangTooling() {
     class_<clang::tooling::RefactoringTool, clang::tooling::ClangTool> cl_ap(m, "RefactoringTool");
     cl_ap
         .def_constructor("newRefactoringTool",
-                         constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
+                         constructor<const clang::tooling::CompilationDatabase&, llvm::ArrayRef<std::string>>())
         //        .def("getReplacements", &clang::tooling::RefactoringTool::getReplacements)
         .def("applyAllReplacements", &clang::tooling::RefactoringTool::applyAllReplacements)
         .def("runAndSave", &clang::tooling::RefactoringTool::runAndSave);
     class_<clang::Rewriter> cl_aq(m, "Rewriter");
-    cl_aq.def_constructor("makeRewriter", constructor<clang::SourceManager &, const clang::LangOptions &>());
+    cl_aq.def_constructor("makeRewriter", constructor<clang::SourceManager&, const clang::LangOptions&>());
     class_<clang::ASTUnit> cl_ar(m, "ASTUnit");
     cl_ar.def("getASTContext", clang_ASTUnit_getASTContext); // (clang::ASTContext&(*)())&clang::ASTUnit::getASTContext)
     derivable_class_<DerivableSyntaxOnlyAction, clang::SyntaxOnlyAction> cl_as(m, "SyntaxOnlyAction", create_default_constructor);
@@ -950,7 +949,7 @@ void initialize_clangTooling() {
     class_<clang::ast_matchers::dynamic::VariantValue> cl_ay(m, "VariantValue");
     cl_ay.def_constructor("newVariantValueUnsigned", constructor<unsigned>())
         .def_constructor("newVariantValueString", constructor<std::string>())
-        .def_constructor("newVariantValueMatcher", constructor<const clang::ast_matchers::dynamic::VariantMatcher &>());
+        .def_constructor("newVariantValueMatcher", constructor<const clang::ast_matchers::dynamic::VariantMatcher&>());
     class_<clang::ast_matchers::dynamic::VariantMatcher> cl_az(m, "VariantMatcher");
     cl_az.def("getTypeAsString", &clang::ast_matchers::dynamic::VariantMatcher::getTypeAsString);
     m.def("getSingleMatcher", &ast_tooling__getSingleMatcher);
@@ -985,7 +984,7 @@ void initialize_clangTooling() {
   {
     // CLANG-COMMENTS pkgcc must be in its own scope
     package_ pkgcc("CLANG-COMMENTS", {}, {});
-    scope_ &ss = pkgcc.scope();
+    scope_& ss = pkgcc.scope();
     class_<clang::comments::Comment> cl_bg(ss, "Comment");
     cl_bg.def("getSourceRange", &clang::comments::Comment::getSourceRange);
     class_<clang::comments::FullComment, clang::comments::Comment> cl_bh(ss, "FullComment");
@@ -993,7 +992,7 @@ void initialize_clangTooling() {
 }
 
 DOCGROUP(clasp);
-CL_DEFUN core::T_sp ast_tooling__parse_dynamic_matcher(const string &matcher) {
+CL_DEFUN core::T_sp ast_tooling__parse_dynamic_matcher(const string& matcher) {
   //  printf("%s:%d:%s got matcher %s\n", __FILE__, __LINE__, __FUNCTION__, matcher.c_str());
   llvm::StringRef matchersr(matcher);
   clang::ast_matchers::dynamic::Diagnostics error;
