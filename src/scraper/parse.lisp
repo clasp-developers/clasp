@@ -1,15 +1,21 @@
 (in-package :cscrape)
 
-(defvar +white-space+ '(#\space #\return #\newline #\tab))
+(defvar +whitespace+ '(#\space #\return #\newline #\tab))
+
+(defun whitespace-char-p (char)
+  (and (member char +whitespace+) t))
+
+(defun string-trim-whitespace (string)
+  (string-trim +whitespace+ string))
 
 (defun maybe-remove-one-prefix-from-start (instr prefixes)
-  (let ((str (string-trim '(#\newline #\space #\tab) instr)))
+  (let ((str (string-trim-whitespace instr)))
     (block done
       (dolist (prefix prefixes)
         (let ((pos (search prefix str)))
           (when pos
               (when (= pos 0)
-                  (return-from done (string-trim '(#\newline #\space #\tab) (subseq str (length prefix))))))))
+                  (return-from done (string-trim-whitespace (subseq str (length prefix))))))))
       str)))
 
 (defun backwards-space (str pos)
@@ -47,7 +53,7 @@ If the name has the form: class::name then it's a static class method
 and not a simple-function so return (values name class::name nil)"
   (declare (optimize (speed 3)) (ignore tag))
   (let* ((sig (maybe-remove-one-prefix-from-start raw-sig '("inline" "static")))
-	 (tsig (string-trim '(#\newline #\space #\tab) sig))
+	 (tsig (string-trim-whitespace sig))
          (first-space (position-if
                        (lambda (c) (or (char= c #\newline)
                                        (char= c #\space)
@@ -64,10 +70,10 @@ and not a simple-function so return (values name class::name nil)"
           (values full-function-name full-function-name t)))))
 
 (defun maybe-remove-cast (str)
-  (let* ((tstr (string-trim '(#\newline #\space #\tab) str))
+  (let* ((tstr (string-trim-whitespace str))
          (close-paren (position #\( tstr :from-end t)))
     (if close-paren
-        (string-trim '(#\newline #\space #\tab) (subseq tstr (1+ close-paren)))
+        (string-trim-whitespace (subseq tstr (1+ close-paren)))
         tstr)))
 
 (defun extract-class-method-name-from-signature (sig)
@@ -144,19 +150,21 @@ Split a C++ parameter specification string like \"const string &b\" into (values
 Trim whitespace from each member of the pair.
 Rudimentarily detects and skips initializers."
   (declare (optimize (speed 3)))
-  (let* ((initializer-start (position #\= type-name :from-end t))
-         (name-start
-           (or (position-if #'(lambda (c)
-                                (not (or (alphanumericp c) (char= c #\_))))
-                            type-name
-                            :end initializer-start
-                            :from-end t)
-               (error "Bad type-name ~s for ~a. Should be a C++ type followed by a space followed by a parameter name.
+  (let ((name-end (position-if-not #'whitespace-char-p type-name
+                                   :end (or (position #\= type-name :from-end t)
+                                            (length type-name))
+                                   :from-end t)))
+    (let ((name-start (position-if #'(lambda (c)
+                                  (not (or (alphanumericp c) (char= c #\_))))
+                              type-name
+                              :end name-end
+                              :from-end t)))
+      (unless name-start
+        (error "Bad type-name ~s for ~a. Should be a C++ type followed by a space followed by a parameter name.
 This may indicate a C++ arglist with type names but without the parameter names the scraper requires."
-                      type-name 'split-type-name)))
-         (first (subseq type-name 0 (1+ name-start)))
-         (second (subseq type-name (1+ name-start) initializer-start)))
-    (values (string-trim +white-space+ first) (string-trim +white-space+ second))))
+               type-name 'split-type-name))
+      (values (string-trim-whitespace (subseq type-name 0 (1+ name-start)))
+              (string-trim-whitespace (subseq type-name name-start (1+ name-end)))))))
 
 (defun extract-lambda-list-from-c++-arguments (typed-arguments)
   "* Arguments
@@ -177,7 +185,7 @@ into two lists (int int string) and (a b c) and return as two values"
                                 (when (string= argname "t")
                                   (error "An argument list ~a had the name T - Common Lisp won't like that - change it to something else" typed-arguments))
                                 (format sout "~a " argname))))))
-        (string-trim +white-space+ lambda-list))))
+        (string-trim-whitespace lambda-list))))
 
 (defun prepend-dispatch-variable (lambda-list class)
   (with-output-to-string (sout)
@@ -191,7 +199,7 @@ into two lists (int int string) and (a b c) and return as two values"
 - Extract from the C++ function arguments a lambda list."
   (let* ((open-paren (position #\( signature))
          (close-paren (position #\) signature))
-         (arguments (string-trim +white-space+ (subseq signature (1+ open-paren) close-paren)))
+         (arguments (string-trim-whitespace (subseq signature (1+ open-paren) close-paren)))
          (lambda-list (extract-lambda-list-from-c++-arguments arguments)))
     (if class
         (prepend-dispatch-variable lambda-list class)
@@ -201,8 +209,7 @@ into two lists (int int string) and (a b c) and return as two values"
   (flet ((strip-keyword (keyword line)
            (let ((pos (search keyword line)))
              (if pos
-                 (string-trim
-                  +white-space+
+                 (string-trim-whitespace
                   (concatenate 'string
                                (subseq line 0 pos)
                                (subseq line (+ pos (length keyword)) nil)))
@@ -211,33 +218,22 @@ into two lists (int int string) and (a b c) and return as two values"
 
 (defun parse-types-from-signature (rsignature)
   (declare (optimize debug))
-  (let* ((trimmed (string-trim +white-space+ rsignature))
+  (let* ((trimmed (string-trim-whitespace rsignature))
          (open-paren (position #\( trimmed))
          (close-paren (position #\) trimmed))
          (front (subseq trimmed 0 open-paren))
-         (args (string-trim +white-space+ (subseq trimmed (1+ open-paren) close-paren)))
-         (split-args (progn
-                       (if (not (or (string= args "void") (string= args "")))
-                           (mapcar (lambda (x) (string-trim +white-space+ x))
-                                   (split-by-one-char args #\,))
-                           nil)))
-         (arg-types (progn
-                      (if split-args
-                          (mapcar (lambda (x)
-                                    (let ((pos (position-if
-                                                (lambda (c)
-                                                  (member c (list* #\& #\* +white-space+)))
-                                                x :from-end t)))
-                                      (string-trim
-                                       +white-space+
-                                       (subseq x 0 (1+ pos)))))
-                                  split-args))))
+         (args (string-trim-whitespace (subseq trimmed (1+ open-paren) close-paren)))
+         (split-args (if (not (or (string= args "void") (string= args "")))
+                         (mapcar (lambda (x) (string-trim-whitespace x))
+                                 (split-by-one-char args #\,))
+                         nil))
+         (arg-types (if split-args
+                        (mapcar #'split-type-name split-args)))
          (return-pos (position-if
                       (lambda (c)
-                        (member c (list* #\& #\* +white-space+)))
+                        (member c (list* #\& #\* +whitespace+)))
                       front :from-end t))
-         (maybe-return-type (string-trim
-                             +white-space+
+         (maybe-return-type (string-trim-whitespace
                              (subseq front 0 return-pos)))
          (return-type (strip-non-type-keywords maybe-return-type)))
     (values return-type arg-types)))
