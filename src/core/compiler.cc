@@ -1663,6 +1663,8 @@ void initialize_compiler_primitives(LispPtr lisp) {
   cleavirPrimop::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
   comp::_sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());
   comp::_sym_STARsourceLocationsSTAR->makeSpecial();
+  comp::_sym_STARbtb_compile_hookSTAR->defparameter(nil<T_O>());
+  comp::_sym_STARautocompile_hookSTAR->defparameter(nil<T_O>());
   {
     Fixnum_sp one = clasp_make_fixnum(1);
     comp::_sym_STARoptimizeSTAR->defparameter(

@@ -45,6 +45,8 @@ SYMBOL_EXPORT_SC_(CompPkg, STARsaved_module_from_clasp_jitSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARcodeWalkerSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARsourceLocationsSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARoptimizeSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARbtb_compile_hookSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARautocompile_hookSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, optimize_module_for_compile);
 SYMBOL_EXPORT_SC_(CompPkg, compile_quick_module_dump);
 void initialize_compPackage() {

@@ -1022,13 +1022,15 @@ public:
 public:
   // Convenience method to link the module and return the new bytecode function
   // corresponding to this cfunction. Good for cl:compile.
-  CL_DEFMETHOD GlobalBytecodeSimpleFun_sp link_function(T_sp compile_info);
+  CL_DEFMETHOD Function_sp link_function(T_sp compile_info);
 };
 
 // Main entry point
-GlobalBytecodeSimpleFun_sp bytecompile(T_sp, Lexenv_sp);
+Function_sp bytecompile(T_sp, Lexenv_sp);
 // main entry point for using the evaluator
 T_mv cmp__bytecode_implicit_compile_form(T_sp, T_sp);
 T_mv bytecode_toplevel_eval(T_sp, T_sp);
+// Used in loader
+bool btb_bcfun_p(GlobalBytecodeSimpleFun_sp, SimpleVector_sp);
 
 }; // namespace comp

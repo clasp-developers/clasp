@@ -22,26 +22,6 @@
         (replace name string :start1 index)
         (incf index (length string))))))
 
-(defun bind-lambda-list-arguments (lambda-list function)
-  (flet ((argument (symbol)
-           (make-instance 'bir:argument
-             :name symbol :function function)))
-    (multiple-value-bind (required optional rest keyp keys aokp aux varestp)
-        (core:process-lambda-list lambda-list 'cl:function)
-      (declare (ignore aux))
-      (nconc (mapcar #'argument (cdr required))
-             (unless (zerop (car optional)) (list '&optional))
-             (loop for (var default -p) on (cdr optional)
-                   by #'cdddr
-                   collect (list (argument var) (argument -p)))
-             (when rest
-               (list (if varestp 'core:&va-rest '&rest) (argument rest)))
-             (when keyp (list '&key))
-             (loop for (key var default -p) on (cdr keys)
-                   by #'cddddr
-                   collect (list key (argument var) (argument -p)))
-             (when aokp (list '&allow-other-keys))))))
-
 (defun function-spi (function)
   (multiple-value-bind (path filepos lineno column)
       (core:function-source-pos function)
@@ -56,6 +36,7 @@
          (function (make-instance 'bir:function
                      :returni nil ; set by :return compilation
                      :name (core:function-name bytecode-function)
+                     :lambda-list nil
                      :docstring (core:function-docstring bytecode-function)
                      :original-lambda-list lambda-list
                      :origin (function-spi bytecode-function)
@@ -63,8 +44,6 @@
                      :attributes nil
                      :module module)))
     (set:nadjoinf (bir:functions module) function)
-    (setf (bir:lambda-list function)
-          (bind-lambda-list-arguments lambda-list function))
     function))
 
 (defun next-arg (argspec bytecode opip ip nbytes)
@@ -76,54 +55,6 @@
     ((cmpref::keys-arg-p argspec)
      (cons :keys (cmpref::bc-unsigned bytecode ip nbytes)))
     (t (cons :operand (cmpref::bc-unsigned bytecode ip nbytes)))))
-
-(defmacro do-instructions ((mnemonic args opip ip)
-                           (bytecode &key (start 0) end)
-                           &body body)
-  (let ((bsym (gensym "BYTECODE"))
-        (gend (gensym "END"))
-        (longp (gensym "LONGP"))
-        (op (gensym "OP")))
-    `(loop with ,bsym = ,bytecode
-           with ,ip = ,start
-           with ,longp = nil
-           with ,gend = ,(or end `(+ ,ip (length ,bsym)))
-           for ,op = (cmpref::decode-instr (aref ,bsym ,ip))
-           for ,mnemonic = (intern (string-upcase (first ,op)) "KEYWORD")
-           if (eql ,mnemonic :long)
-             do (setf ,longp t)
-           else
-             do (let ((,opip ,ip))
-                  (incf ,ip)
-                  (let ((,args
-                          (loop for argspec
-                                  in (if ,longp (fourth ,op) (third ,op))
-                                for nbytes = (logandc2 argspec
-                                                       cmpref::+mask-arg+)
-                                collect (next-arg argspec ,bsym ,opip ,ip
-                                                  nbytes)
-                                do (incf ,ip nbytes))))
-                    (declare (ignorable ,args ,ip))
-                    ,@body
-                    (setf ,longp nil)))
-           until (>= ,ip ,gend))))
-
-;;; FIXME: Should be encoded in *full-codes* probably.
-(defparameter *dynenv-instructions*
-  '(:push-values :append-values :pop-values :entry :catch-8 :catch-16
-    :special-bind :progv
-    ;; terminators as well
-    ;; these are necessary in case of multiple arguments
-    ;; we could track things to only do that if we need to, but
-    ;; extra blocks should be pretty harmless
-    :mv-call :mv-call-receive-one :mv-call-receive-fixed
-    :cdentry-close :catch-close :unbind))
-
-;;; FIXME: Also one for full-codes
-(defparameter *branch-instructions*
-  '(:jump-8 :jump-16 :jump-24
-    :jump-if-8 :jump-if-16 :jump-if-24
-    :jump-if-supplied-8 :jump-if-supplied-16))
 
 (defun bcfun/entry (bcfun)
   (core:global-bytecode-simple-fun/entry-pc-n bcfun))
@@ -219,43 +150,12 @@
     :successors (bt:block-entry-successors block)
     :dynamic-environment (context-dynamic-environment context)))
 
-(defun install-ll-vars (locals lambda-list annots)
-  (multiple-value-bind (required optional rest keyp keys)
-      (core:process-lambda-list lambda-list 'cl:function)
-    (declare (ignore keyp))
-    (let ((index 0))
-      ;; The bytecode compiler sets out the indices as follows:
-      ;; 1) required variables
-      ;; 2) optional
-      ;; 3) key
-      ;; 4) optional -p
-      ;; 5) rest
-      ;; 6) key -p
-      (flet ((newvar (name)
-               (setf (aref locals index)
-                     (cons (make-instance 'bir:variable
-                             :name name
-                             :ignore (variable-ignore name annots))
-                           nil))
-               (incf index)))
-        (mapc #'newvar (rest required))
-        (loop for (opt) on (rest optional) by #'cdddr
-              do (newvar opt))
-        (loop for (key kvar) on (rest keys) by #'cddddr
-              do (newvar kvar))
-        (loop for (_ _1 -p) on (rest optional) by #'cdddr
-              when -p do (incf index)) ; -p variables are bound by SET.
-        (when rest (incf index)) ; since we bind &rest vars with SET, no var needed here.
-        (loop for (_ _1 _2 -p) on (rest keys) by #'cddddr
-              when -p do (incf index))))))
-
 (defun make-context (function block annots)
   (let* ((bcfun (bt:function-entry-bcfun function))
          (irfun (bt:function-entry-extra function))
          (nlocals (bcfun/locals-size bcfun))
          (locals (make-array nlocals))
          (successors (bt:block-entry-successors block)))
-    (install-ll-vars locals (core:function-lambda-list bcfun) annots)
     (%make-context locals successors irfun)))
 
 ;;; Alist of IR functions to sequences of variables they close over,
@@ -418,7 +318,8 @@
                                (setf ctype (ctype:conjoin sys ctype ct))))))
                         ;; FIXME: Hardcoded. Bad
                         ((dynamic-extent ftype ignorable ignore inline
-                                         notinline optimize special))
+                                         notinline optimize special
+                                         core:lambda-name core:lambda-list))
                         (otherwise ; assume a type
                          (when (member varname rest)
                            (let ((ct (cleavir-env:parse-type-specifier
@@ -765,72 +666,94 @@
 (defmethod compile-instruction ((mnemonic (eql :bind-required-args))
                                 inserter annots context &rest args)
   (destructuring-bind (nreq) args
-    (let* ((iblock (ast-to-bir::iblock inserter))
-           (ifun (bir:function iblock))
-           (ll (bir:lambda-list ifun))
-           (args (subseq ll 0 nreq)))
+    (let* ((varannot
+             (find-if (lambda (a) (typep a 'core:bytecode-debug-vars))
+                      annots))
+           (bindings
+             (and varannot (core:bytecode-debug-vars/bindings varannot)))
+           (iblock (ast-to-bir::iblock inserter))
+           (ifun (bir:function iblock)))
+      (assert (= (length bindings) nreq))
       (loop with locals = (context-locals context)
             for i from 0
-            for arg in args
-            for (var . cellp) = (aref locals i)
-            do (bind-variable var arg inserter annots)))))
+            for (name . index) in bindings
+            for cellp = (consp index)
+            for rindex = (if cellp (car index) index)
+            for ignore = (variable-ignore name annots)
+            for arg = (make-instance 'bir:argument
+                        :name name :function ifun)
+            for var = (make-instance 'bir:variable
+                        :name name :ignore ignore)
+            do (assert (= i rindex))
+               (setf (aref locals i) (cons var cellp))
+               (bind-variable var arg inserter annots)
+            collect arg into args
+            finally (setf (bir:lambda-list ifun) args)))))
 
 (defmethod compile-instruction ((mnemonic (eql :bind-optional-args))
                                 inserter annots context &rest args)
   (destructuring-bind (start nopt) args
     (let* ((iblock (ast-to-bir::iblock inserter))
            (ifun (bir:function iblock))
-           (ll (bir:lambda-list ifun))
-           (args (subseq (cdr (member '&optional ll)) 0 nopt)))
+           (ll (bir:lambda-list ifun)))
       (loop with locals = (context-locals context)
+            repeat nopt
             for i from start
-            for (arg -p) in args
-            for (var . cellp) = (aref locals i)
+            for arg = (make-instance 'bir:argument :function ifun)
+            for -p = (make-instance 'bir:argument :function ifun)
+            for var = (make-instance 'bir:variable :ignore nil)
             ;; We use %bind rather than bind because we don't want
             ;; to assert the type of a possibly unprovided argument.
-            do (%bind-variable var arg inserter)))))
+            do (setf (aref locals i) (cons var nil))
+               (%bind-variable var arg inserter)
+            collect (list arg -p) into ll-app
+            finally (setf (bir:lambda-list ifun)
+                          (append ll '(&optional) ll-app))))))
 
 ;;; FIXME: Why does this instruction not put it immediately into a var
 (defmethod compile-instruction ((mnemonic (eql :listify-rest-args))
                                 inserter annot context &rest args)
   (declare (ignore annot))
   (destructuring-bind (start) args
-    (declare (ignore start))
     (let* ((iblock (ast-to-bir::iblock inserter))
            (ifun (bir:function iblock))
            (ll (bir:lambda-list ifun))
-           (rarg (second (member '&rest ll))))
-      (check-type rarg bir:argument)
+           (rarg (make-instance 'bir:argument :function ifun)))
+      (setf (bir:lambda-list ifun) (append ll `(&rest ,rarg)))
       (stack-push rarg context))))
 (defmethod compile-instruction ((mnemonic (eql :vaslistify-rest-args))
                                 inserter annot context &rest args)
   (declare (ignore annot))
   (destructuring-bind (start) args
-    (declare (ignore start))
     (let* ((iblock (ast-to-bir::iblock inserter))
            (ifun (bir:function iblock))
            (ll (bir:lambda-list ifun))
-           (rarg (second (member 'core:&va-rest ll))))
-      (check-type rarg bir:argument)
+           (rarg (make-instance 'bir:argument :function ifun)))
+      (setf (bir:lambda-list ifun) (append ll `(core:&va-rest ,rarg)))
       (stack-push rarg context))))
 
 (defmethod compile-instruction ((mnemonic (eql :parse-key-args))
                                 inserter annots context &rest args)
-  (destructuring-bind (start key-count-info key-start frame-start) args
-    (declare (ignore start key-count-info key-start))
+  (destructuring-bind (start (key-count . aokp) keys frame-start) args
+    (declare (ignore key-count))
     (let* ((iblock (ast-to-bir::iblock inserter))
            (ifun (bir:function iblock))
-           (ll (bir:lambda-list ifun))
-           (args (ldiff (cdr (member '&key ll)) (member '&allow-other-keys ll))))
+           (ll (bir:lambda-list ifun)))
       (loop with locals = (context-locals context)
             for i from frame-start
-            for spec in args
-            for (var . cellp) = (aref locals i)
-            while (consp spec)
-            do (destructuring-bind (key arg -p) spec
-                 (declare (ignore key -p))
-                 ;; %bind to avoid asserting type of unprovided arg
-                 (%bind-variable var arg inserter))))))
+            for key in keys
+            for arg = (make-instance 'bir:argument :function ifun)
+            for -p = (make-instance 'bir:argument :function ifun)
+            for var = (make-instance 'bir:variable :name key :ignore nil)
+            do (setf (aref locals i) (cons var nil))
+               ;; %bind to avoid asserting type of unprovided arg
+               (%bind-variable var arg inserter)
+            collect (list key arg -p) into ll-app
+            finally (setf (bir:lambda-list ifun)
+                          (append ll `(&key ,@ll-app)
+                                  (if aokp
+                                      '(&allow-other-keys)
+                                      ())))))))
 
 (defun compile-jump (inserter context destination)
   (declare (ignore context))
@@ -1345,8 +1268,11 @@
                      in (core:bytecode-debug-decls/decls annot)
                    when (eq spec 'cl:optimize)
                      do (loop for optim in rest
-                              unless (assoc (car optim) optimize)
-                                do (push optim optimize)))
+                              for roptim = (if (consp optim)
+                                               optim
+                                               `(,optim 3))
+                              unless (assoc (car roptim) optimize)
+                                do (push roptim optimize)))
         finally (return
                   ;; If the declarations don't have enough OPTIMIZE qualities
                   ;; to cover the gamut (arguably they always should), fill
@@ -1420,6 +1346,17 @@
                    value)
                   ((:operand) value))))
 
+(defun compute-pka-args (args literals)
+  (let ((more-args (cdr (first args)))
+        (key-count-info (cdr (second args)))
+        (key-literals-start (cdr (third args)))
+        (key-frame-start (cdr (fourth args))))
+    (list more-args key-count-info
+          (loop for i from key-literals-start
+                repeat (car key-count-info)
+                collect (aref literals i))
+          key-frame-start)))
+
 (defun compile-bytecode (bytecode literals function-entries
                          block-entries annotations)
   (let* ((all-function-entries function-entries)
@@ -1444,7 +1381,7 @@
     (assert (zerop (bt:function-entry-start function)))
     (setf (bir:start (bt:function-entry-extra function))
           (bt:block-entry-extra block))
-    (do-instructions (mnemonic args opip ip) (bytecode)
+    (core::do-instructions (mnemonic args opip ip) (bytecode)
       ;; Update annotations.
       ;; Note that we keep tighter annotations at the front.
       (setf (values *active-annotations* next-annotation-index
@@ -1459,9 +1396,11 @@
             (bir:*policy*
               (cleavir-policy:compute-policy
                (compute-optimize *active-annotations*)
-               clasp-cleavir:*clasp-env*)))
-        (apply #'compile-instruction mnemonic inserter annots context
-               (compute-args args literals all-block-entries))
+               clasp-cleavir:*clasp-env*))
+            (args (if (eq mnemonic :parse-key-args)
+                      (compute-pka-args args literals)
+                      (compute-args args literals all-block-entries))))
+        (apply #'compile-instruction mnemonic inserter annots context args)
         (maybe-compile-the annots inserter context)
         ;; Update current block and function if required.
         (when (and block-entries
@@ -1534,11 +1473,7 @@
          (bytecode (core:bytecode-module/bytecode bytecode-module))
          (literals (core:bytecode-module/literals bytecode-module))
          (functions (bytecode-module/functions bytecode-module))
-         ;; bit circuitous to work around a bug in compile-file that
-         ;; doesn't maintain identities of module bcfuns in the
-         ;; debug info. FIXME
-         (fpos (position (bcfun/entry function) functions
-                         :key #'bcfun/entry))
+         (fpos (position function functions))
          (annotations
            (core:bytecode-module/debug-info bytecode-module))
          (*closures* nil))
@@ -1581,4 +1516,7 @@
 ;;; To be bound to cmp:*btb-compile-hook*.
 (defun compile-hook (definition environment)
   (declare (ignore environment))
-  (compile-function definition))
+  (handler-case (compile-function definition)
+    (error (e)
+      (warn "BUG: Error during BTB compilation: ~a" e)
+      definition)))

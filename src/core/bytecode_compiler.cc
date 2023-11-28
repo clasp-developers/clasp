@@ -1078,10 +1078,44 @@ SimpleVector_byte8_t_sp Module_O::create_bytecode() {
 
 CL_DEFUN T_sp lambda_list_for_name(T_sp raw_lambda_list) { return core::lambda_list_for_name(raw_lambda_list); }
 
-GlobalBytecodeSimpleFun_sp Cfunction_O::link_function(T_sp compile_info) {
+Function_sp Cfunction_O::link_function(T_sp compile_info) {
   this->module()->link_load(compile_info);
   // Linking installed the GBEP in this cfunction's info. Return that.
   return this->info();
+}
+
+// Should we BTB compile this new bytecode function?
+// We say yes if there's a (speed 3) declaration anywhere in it.
+bool btb_bcfun_p(GlobalBytecodeSimpleFun_sp fun,
+                 SimpleVector_sp debug_info) {
+  size_t start = fun->entryPcN();
+  size_t end = start + fun->bytecodeSize();
+  for (size_t i = 0; i < debug_info->length(); ++i) {
+    T_sp tinfo = (*debug_info)[i];
+    if (gc::IsA<BytecodeDebugDecls_sp>(tinfo)) {
+      BytecodeDebugDecls_sp info = gc::As_unsafe<BytecodeDebugDecls_sp>(tinfo);
+      size_t infostart = info->start().unsafe_fixnum();
+      size_t infoend = info->start().unsafe_fixnum();
+      if (infostart > end) return false; // overshot.
+      if (infostart < start || infoend > end) continue;
+      // Look for an optimize speed 3.
+      for (auto cur : info->decls()) {
+        T_sp decl = oCar(cur);
+        if (gc::IsA<Cons_sp>(decl) && oCar(decl) == cl::_sym_optimize)
+          for (auto copt : gc::As<List_sp>(oCdr(decl))) {
+            T_sp opt = oCar(copt);
+            if (opt == cl::_sym_speed
+                || (gc::IsA<Cons_sp>(opt)
+                    && oCar(opt) == cl::_sym_speed
+                    && gc::IsA<Cons_sp>(oCdr(opt))
+                    && gc::IsA<Fixnum_sp>(oCadr(opt))
+                    && oCadr(opt).unsafe_fixnum() == 3))
+              return true;
+          }
+      }
+    }
+  }
+  return false;
 }
 
 void Module_O::link() {
@@ -1157,6 +1191,21 @@ void Module_O::link_load(T_sp compile_info) {
   bytecode_module->setf_bytecode(bytecode);
   bytecode_module->setf_debugInfo(debug_info);
   bytecode_module->setf_compileInfo(compile_info);
+  // Native-compile anything that really seems like it should be,
+  // and install the resulting simple funs.
+  // We can only do native compilations after the module is
+  // fully realized above.
+  if (_sym_STARautocompile_hookSTAR->boundP()
+      && _sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
+    for (T_sp tfun : *cfunctions) {
+      Cfunction_sp cfun = gc::As_assert<Cfunction_sp>(tfun);
+      GlobalBytecodeSimpleFun_sp fun = cfun->info();
+      if (btb_bcfun_p(fun, debug_info)) {
+        T_sp nat = eval::funcall(_sym_STARautocompile_hookSTAR->symbolValue(), fun, nil<T_O>());
+        fun->setSimpleFun(gc::As_assert<SimpleFun_sp>(nat));
+      }
+    }
+  }
 }
 
 void compile_literal(T_sp literal, Lexenv_sp env, const Context context) {
@@ -1599,6 +1648,12 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     Label_sp begin_label = Label_O::make();
     // Bind the required arguments.
     context.assemble1(vm_bind_required_args, min_count);
+    List_sp svdecls = decls_for_vars(lreqs.cons(), declares);
+    if (svdecls.notnilp()) {
+      Label_sp debug_begin_label = Label_O::make();
+      debug_begin_label->contextualize(context);
+      context.push_debug_info(BytecodeDebugDecls_O::make(debug_begin_label, end_label, svdecls));
+    }
     ql::list debugbindings;
     ql::list debugdecls;
     ql::list sreqs; // required parameters that are special
@@ -1622,9 +1677,6 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     T_sp dbindings = debugbindings.cons();
     if (dbindings.notnilp())
       context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, dbindings));
-    List_sp vdecls = decls_for_vars(lreqs.cons(), declares);
-    if (vdecls.notnilp())
-      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, vdecls));
   }
   Lexenv_sp optkey_env = new_env;
   if (optional_count > 0) {
@@ -1637,11 +1689,48 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     ql::list opts;
     for (auto &it : optionals)
       opts << it._ArgTarget;
-    optkey_env = optkey_env->bind_vars(opts.cons(), context);
+    List_sp lopts = opts.cons();
+    optkey_env = optkey_env->bind_vars(lopts, context);
+    // Grab declarations. We do this here so that the b2b compiler can
+    // make variables with proper ignore/whatever declarations.
+    List_sp odecls = decls_for_vars(lopts, declares);
+    if (odecls.notnilp()) {
+      Label_sp begin_label = Label_O::make();
+      begin_label->contextualize(context);
+      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, odecls));
+    }
     // new_env has enough space for the optional arguments, but without the
     // variables actually bound, so that default forms can be compiled correctly
     new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(), optkey_env->blocks(), optkey_env->funs(), optkey_env->decls(),
                              optkey_env->frameEnd());
+  }
+  // &rest
+  if (restarg._ArgTarget.notnilp()) {
+    Symbol_sp rest = restarg._ArgTarget;
+    bool varestp = restarg.VaRest;
+    if (varestp) {
+      context.assemble1(vm_vaslistify_rest_args, max_count);
+    } else {
+      context.assemble1(vm_listify_rest_args, max_count);
+    }
+    context.assemble1(vm_set, new_env->frameEnd());
+    new_env = new_env->bind1var(rest, context);
+    optkey_env = optkey_env->bind1var(rest, context);
+    auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(rest));
+    if (special_binding_p(rest, specials, env)) {
+      context.assemble1(vm_ref, lvinfo->frameIndex());
+      context.emit_special_bind(rest);
+      ++special_binding_count;
+      new_env = new_env->add_specials(Cons_O::createList(rest));
+    } else {
+      context.maybe_emit_encage(lvinfo);
+      Label_sp begin_label = Label_O::make();
+      begin_label->contextualize(context);
+      context.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(rest, lvinfo->lex()))));
+      List_sp rdecls = decls_for_var(rest, declares);
+      if (rdecls.notnilp())
+        context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, rdecls));
+    }
   }
   if (key_flag.notnilp()) {
     // Generate code to parse the key args. As with optionals, we don't do
@@ -1663,7 +1752,14 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     ql::list keyvars;
     for (auto &it : keys)
       keyvars << it._ArgTarget;
-    optkey_env = optkey_env->bind_vars(keyvars.cons(), context);
+    List_sp lkeyvars = keyvars.cons();
+    List_sp kdecls = decls_for_vars(lkeyvars, declares);
+    if (kdecls.notnilp()) {
+      Label_sp begin_label = Label_O::make();
+      begin_label->contextualize(context);
+      context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, kdecls));
+    }
+    optkey_env = optkey_env->bind_vars(lkeyvars, context);
     new_env = Lexenv_O::make(new_env->vars(), optkey_env->tags(), optkey_env->blocks(), optkey_env->funs(), optkey_env->decls(),
                              optkey_env->frameEnd());
   }
@@ -1686,34 +1782,6 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
         ++special_binding_count;
       if (supplied_special_p)
         ++special_binding_count;
-    }
-  }
-  // &rest
-  if (restarg._ArgTarget.notnilp()) {
-    Symbol_sp rest = restarg._ArgTarget;
-    bool varestp = restarg.VaRest;
-    if (varestp) {
-      context.assemble1(vm_vaslistify_rest_args, max_count);
-    } else {
-      context.assemble1(vm_listify_rest_args, max_count);
-    }
-    context.assemble1(vm_set, new_env->frameEnd());
-    new_env = new_env->bind1var(rest, context);
-    auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(rest));
-    if (special_binding_p(rest, specials, env)) {
-      context.assemble1(vm_ref, lvinfo->frameIndex());
-      context.emit_special_bind(rest);
-      ++special_binding_count;
-      new_env = new_env->add_specials(Cons_O::createList(rest));
-    } else {
-      context.maybe_emit_encage(lvinfo);
-      Label_sp begin_label = Label_O::make();
-      begin_label->contextualize(context);
-      context.push_debug_info(
-          BytecodeDebugVars_O::make(begin_label, end_label, Cons_O::createList(Cons_O::create(rest, lvinfo->lex()))));
-      List_sp rdecls = decls_for_var(rest, declares);
-      if (rdecls.notnilp())
-        context.push_debug_info(BytecodeDebugDecls_O::make(begin_label, end_label, rdecls));
     }
   }
   // Generate defaulting code for key args, and special-bind them if necessary
@@ -2348,7 +2416,7 @@ static T_sp symbol_macrolet_bindings(Lexenv_sp menv, List_sp bindings, T_sp vars
     T_sp lexpr = Cons_O::createList(cl::_sym_lambda, Cons_O::createList(formv, envv),
                                     Cons_O::createList(cl::_sym_declare, Cons_O::createList(cl::_sym_ignore, formv, envv)),
                                     Cons_O::createList(cl::_sym_quote, expansion));
-    GlobalBytecodeSimpleFun_sp expander = bytecompile(lexpr, menv);
+    Function_sp expander = bytecompile(lexpr, menv);
     SymbolMacroVarInfo_sp info = SymbolMacroVarInfo_O::make(expander);
     vars = Cons_O::create(Cons_O::create(name, info), vars);
   }
@@ -2369,7 +2437,7 @@ static List_sp macrolet_bindings(Lexenv_sp menv, List_sp bindings, List_sp funs)
     T_sp lambda_list = oCadr(binding);
     T_sp body = oCddr(binding);
     T_sp eform = eval::funcall(ext::_sym_parse_macro, name, lambda_list, body, menv);
-    GlobalBytecodeSimpleFun_sp expander = bytecompile(eform, menv);
+    Function_sp expander = bytecompile(eform, menv);
     LocalMacroInfo_sp info = LocalMacroInfo_O::make(expander);
     funs = Cons_O::create(Cons_O::create(name, info), funs);
   }
@@ -2568,7 +2636,7 @@ CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
 }
 
 CL_LAMBDA(lambda-expression &optional (env (cmp::make-null-lexical-environment)));
-CL_DEFUN GlobalBytecodeSimpleFun_sp bytecompile(T_sp lambda_expression, Lexenv_sp env) {
+CL_DEFUN Function_sp bytecompile(T_sp lambda_expression, Lexenv_sp env) {
   Module_sp module = Module_O::make();
   Cfunction_sp cf = bytecompile_into(module, lambda_expression, env);
   return cf->link_function(Cons_O::create(lambda_expression, env));

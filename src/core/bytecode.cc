@@ -1335,12 +1335,29 @@ void VMFrameDynEnv_O::proceed() {
 }; // namespace core
 
 extern "C" {
+
+#define BYTECODE_COMPILE_THRESHOLD 65535
+
 gctools::return_type bytecode_call(unsigned char *pc, core::T_O *lcc_closure, size_t lcc_nargs, core::T_O **lcc_args) {
   core::Closure_O *closure = gctools::untag_general<core::Closure_O *>((core::Closure_O *)lcc_closure);
   ASSERT(gc::IsA<core::GlobalBytecodeSimpleFun_sp>(closure->entryPoint()));
   auto entry = closure->entryPoint();
   core::GlobalBytecodeSimpleFun_sp entryPoint = gctools::As_assert<core::GlobalBytecodeSimpleFun_sp>(entry);
-  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc);
+  // Maybe compile this function, if it's been called a lot.
+  entryPoint->countCall();
+  if (entryPoint->callCount() >= BYTECODE_COMPILE_THRESHOLD
+      && comp::_sym_STARautocompile_hookSTAR->boundP()
+      && comp::_sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
+    core::T_sp nat = core::eval::funcall(comp::_sym_STARautocompile_hookSTAR->symbolValue(), entry, nil<core::T_O>());
+    entryPoint->setSimpleFun(gc::As_assert<core::SimpleFun_sp>(nat));
+  }
+  // Set the closure's simple fun to be its simple fun's simple fun.
+  // This is so that if a bytecode's simple fun has been replaced with
+  // a native compiled version, that native simple fun will be used
+  // for subsequent calls.
+  closure->setSimpleFun(entry->entryPoint());
+  // Proceed with the bytecode call.
+  DBG_printf("%s:%d:%s This is where we evaluate bytecode functions pc: %p\n", __FILE__, __LINE__, __FUNCTION__, pc );
   size_t nlocals = entryPoint->_LocalsFrameSize;
   core::BytecodeModule_sp module = gc::As_assert<core::BytecodeModule_sp>(entryPoint->_Code);
   core::T_O **literals = (core::T_O **)&gc::As_assert<core::SimpleVector_sp>(module->_Literals)->_Data[0];

@@ -10,6 +10,29 @@
      (cons :keys (cmpref::bc-unsigned bytecode ip nbytes)))
     (t (cons :operand (cmpref::bc-unsigned bytecode ip nbytes)))))
 
+(defun collect-pka-args (bytecode ip nbytes)
+  ;; parse-key-args is eccentric, so we special case it.
+  ;; we have more-start, key-count-info, key-literal-start, key-frame-start.
+  ;; the first is an index into the arguments, the second is weird, the third
+  ;; is an index into the literals that's used a bit differently than usual,
+  ;; and the last is an index into the frame.
+  (let* ((more-start
+           (prog1 (cmpref::bc-unsigned bytecode ip nbytes)
+             (incf ip nbytes)))
+         (key-count-info
+           (prog1 (cmpref::bc-unsigned bytecode ip nbytes)
+             (incf ip nbytes)))
+         (key-count (ldb (byte (1- (* 8 nbytes)) 0) key-count-info))
+         (aokp (logbitp (1- (* 8 nbytes)) key-count-info))
+         (key-literal-start
+           (prog1 (cmpref::bc-unsigned bytecode ip nbytes)
+             (incf ip nbytes)))
+         (key-frame-start (cmpref::bc-unsigned bytecode ip nbytes)))
+    (list (cons :operand more-start)
+          (cons :key-count-info (cons key-count aokp))
+          (cons :keys key-literal-start)
+          (cons :operand key-frame-start))))
+
 ;;; Compute a list of annotations that start at the given IP.
 ;;; Return the list, and the index of the next annotation.
 (defun new-annotations (annotations index ip)
@@ -47,13 +70,17 @@
              do (let ((,opip ,ip))
                   (incf ,ip)
                   (let ((,args
-                          (loop for argspec
-                                  in (if ,longp (fourth ,op) (third ,op))
-                                for nbytes = (logandc2 argspec
-                                                       cmpref::+mask-arg+)
-                                collect (bytecode-next-arg argspec ,bsym ,opip ,ip
-                                                           nbytes)
-                                do (incf ,ip nbytes))))
+                          (if (eq ,mnemonic :parse-key-args)
+                              (let ((nbytes (if ,longp 2 1)))
+                                (prog1 (collect-pka-args ,bsym ,ip nbytes)
+                                  (incf ,ip (* 4 nbytes))))
+                              (loop for argspec
+                                      in (if ,longp (fourth ,op) (third ,op))
+                                    for nbytes = (logandc2 argspec
+                                                           cmpref::+mask-arg+)
+                                    collect (bytecode-next-arg argspec ,bsym ,opip ,ip
+                                                               nbytes)
+                                    do (incf ,ip nbytes)))))
                     (declare (ignorable ,args ,ip))
                     (setf (values ,annots ,next-annotation-index)
                           (new-annotations ,gannotations

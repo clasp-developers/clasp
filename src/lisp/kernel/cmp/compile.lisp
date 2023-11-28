@@ -48,18 +48,17 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 
 (export 'builtin-wrapper-form :cmp)
 
-;;; Hook called to compile bytecode functions to native.
-(defvar *btb-compile-hook*)
-
 (defun %compile (definition environment)
   (cond
     ((and (typep definition 'core:global-bytecode-simple-fun)
-          (boundp '*btb-compile-hook*))
+          (boundp '*btb-compile-hook*)
+          *btb-compile-hook*)
      (compile-in-env definition environment *btb-compile-hook*))
     ((and (typep definition 'core:closure)
           (typep (core:function/entry-point definition)
                  'core:global-bytecode-simple-fun)
-          (boundp '*btb-compile-hook*))
+          (boundp '*btb-compile-hook*)
+          *btb-compile-hook*)
      (multiple-value-bind (csfun warn fail)
          (compile-in-env (core:function/entry-point definition)
                          environment *btb-compile-hook*)

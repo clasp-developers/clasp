@@ -701,12 +701,24 @@ argument was specialized.
 (defun compile-method (method)
   (let ((mf (method-function method)))
     (if (typep mf '%method-function)
-        (let ((fmf (%mf-fast-method-function mf)))
-          (multiple-value-bind (new-fmf warningsp failurep)
-              (compile nil fmf)
-            (unless failurep
-              (setf (%mf-fast-method-function mf) new-fmf))
-            (values mf warningsp failurep)))
+        (let ((fmf (%mf-fast-method-function mf))
+              (contf (%mf-contf mf)))
+          ;; I don't see how a %method-function can have neither an
+          ;; fmf or contf, but if it doesn't, just fail without erroring.
+          ;; Since this compilation may have been initiated automatically.
+          ;; TODO: Maybe also compile the slow method function?
+          (cond (fmf
+                 (multiple-value-bind (new-fmf warningsp failurep)
+                     (compile nil fmf)
+                   (unless failurep
+                     (setf (%mf-fast-method-function mf) new-fmf))
+                   (values mf warningsp failurep)))
+                (contf
+                 (multiple-value-bind (new-contf warningsp failurep)
+                     (compile nil contf)
+                   (unless failurep
+                     (setf (%mf-contf mf) new-contf))
+                   (values mf warningsp failurep)))))
         (values mf nil nil))))
 
 ;;; ----------------------------------------------------------------------
